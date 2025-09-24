@@ -216,6 +216,7 @@
 		13D93BCF2E58B2F1001E31E8 /* HighlightedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D93BCE2E58B2ED001E31E8 /* HighlightedText.swift */; };
 		13D93BD62E58C7F5001E31E8 /* View+Container.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D93BD52E58C7F1001E31E8 /* View+Container.swift */; };
 		13D93BD82E58C8C6001E31E8 /* BannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D93BD72E58C8C3001E31E8 /* BannerView.swift */; };
+		13D9EBF32E84492F0089B2A7 /* AddFolderScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D9EBF22E84492B0089B2A7 /* AddFolderScreen.swift */; };
 		13DD3B172E3CFE5900D46FA0 /* OffsetObservingScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD3B162E3CFE5800D46FA0 /* OffsetObservingScrollView.swift */; };
 		13DD3B1A2E3CFE7D00D46FA0 /* FlatPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD3B192E3CFE6E00D46FA0 /* FlatPicker.swift */; };
 		13DD547C2E561598007335DA /* SettingsOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD547B2E561598007335DA /* SettingsOption.swift */; };
@@ -1296,6 +1297,7 @@
 		13D93BCE2E58B2ED001E31E8 /* HighlightedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightedText.swift; sourceTree = "<group>"; };
 		13D93BD52E58C7F1001E31E8 /* View+Container.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Container.swift"; sourceTree = "<group>"; };
 		13D93BD72E58C8C3001E31E8 /* BannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerView.swift; sourceTree = "<group>"; };
+		13D9EBF22E84492B0089B2A7 /* AddFolderScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFolderScreen.swift; sourceTree = "<group>"; };
 		13DD3B162E3CFE5800D46FA0 /* OffsetObservingScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffsetObservingScrollView.swift; sourceTree = "<group>"; };
 		13DD3B192E3CFE6E00D46FA0 /* FlatPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlatPicker.swift; sourceTree = "<group>"; };
 		13DD547B2E561598007335DA /* SettingsOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsOption.swift; sourceTree = "<group>"; };
@@ -2712,6 +2714,7 @@
 		139642362E79950C00CFEFAF /* VaultSelector */ = {
 			isa = PBXGroup;
 			children = (
+				13D9EBF22E84492B0089B2A7 /* AddFolderScreen.swift */,
 				1368C2762E83355B00BB240D /* EditFolderScreen.swift */,
 				1396423C2E79A77400CFEFAF /* Views */,
 				139642392E79A63A00CFEFAF /* ViewModels */,
@@ -5475,6 +5478,7 @@
 				465A8D532B9E689B006E7457 /* SolanaService.swift in Sources */,
 				A51AE8C62C958A0200EF9A7A /* FastVaultEnterPasswordView+macOS.swift in Sources */,
 				A6BFE1C32D94902A000B73C0 /* SwapFromToCoin.swift in Sources */,
+				13D9EBF32E84492F0089B2A7 /* AddFolderScreen.swift in Sources */,
 				A69FBBC42C8BB5AD00A4B78B /* NoCameraPermissionView+iOS.swift in Sources */,
 				A66A0BD92BA12DF50021A483 /* RenameVaultView.swift in Sources */,
 				B5B5E2782CCADD69001167C3 /* FunctionCallStake.swift in Sources */,

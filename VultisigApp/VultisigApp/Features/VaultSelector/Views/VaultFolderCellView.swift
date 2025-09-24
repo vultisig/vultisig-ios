@@ -19,7 +19,9 @@ struct VaultFolderCellView: View {
         VaultCellView(
             vault: vault,
             isSelected: isSelected,
-            isEditing: .constant(false),
+            isEditing: .constant(true),
+            rightDragIndicator: false,
+            showTrailingDetails: false,
             trailingView: {
                 Toggle("", isOn: $isOnFolderInternal)
                     .labelsHidden()
@@ -28,6 +30,7 @@ struct VaultFolderCellView: View {
             },
             action: {}
         )
+        .background(Theme.colors.bgPrimary)
         .onLoad {
             isOnFolderInternal = isOnFolder
         }

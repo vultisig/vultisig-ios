@@ -19,7 +19,7 @@ struct FolderCellView: View {
     
     var body: some View {
         Button(action: action) {
-            VaultEditCellContainer(isEditing: $isEditing) {
+            VaultEditCellContainer(isEditing: $isEditing, rightDragIndicator: true) {
                 HStack {
                     Icon(named: isSelected ? "folder-fill" : "folder", color: Theme.colors.alertInfo, size: 16)
                         .padding(12)
@@ -33,6 +33,8 @@ struct FolderCellView: View {
                         Text(folder.folderName)
                             .foregroundStyle(Theme.colors.textPrimary)
                             .font(Theme.fonts.bodySMedium)
+                            .multilineTextAlignment(.leading)
+                            .lineLimit(2)
                         
                         if isSelected {
                             selectedSubtitle

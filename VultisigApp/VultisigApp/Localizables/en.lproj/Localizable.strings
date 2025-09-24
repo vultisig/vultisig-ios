@@ -887,3 +887,6 @@
 "wrongVaultSelected" = "You chose the wrong vault";
 "vaultTypeMismatch" = "Vault type doesn't match, initiate device and pair device's vault type are different";
 "failedToDecodePeerDiscoveryMessage" = "Failed to decode peer discovery message";
+"addFolder" = "Add folder";
+"editFolder" = "Edit folder";
+"selectVaults" = "Select Vaults";

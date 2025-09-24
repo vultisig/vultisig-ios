@@ -10,16 +10,22 @@ import SwiftData
 
 struct EditFolderScreen: View {
     let folder: Folder
+    var onDelete: (Folder) -> Void
     
     @Query var folders: [Folder]
     @Query var vaults: [Vault]
     
     @State var folderName: String = ""
+    @State var disableSelection: Bool = false
     @StateObject var folderViewModel = FolderDetailViewModel()
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var viewModel: HomeViewModel
+    
+    var saveButtonDisabled: Bool {
+        folderName.isEmpty
+    }
     
     var body: some View {
         view
@@ -33,9 +39,6 @@ struct EditFolderScreen: View {
             .onLoad {
                 setData()
             }
-            .onChange(of: folder.containedVaultNames) { oldValue, newValue in
-                setData()
-            }
     }
     
     var view: some View {
@@ -46,26 +49,30 @@ struct EditFolderScreen: View {
     }
     
     var content: some View {
-        List {
-            CommonTextField(
-                text: $folderName,
-                label: "folderName".localized,
-                placeholder: "typeHere".localized,
-            )
-            .plainListItem()
-            .onLoad(perform: setupFolder)
-            
-            sectionHeader(title: "activeVaults".localized)
-            selectedVaultsList
-            sectionHeader(title: "available".localized)
-                .showIf(!folderViewModel.remaningVaults.isEmpty)
-            vaultsList
+        VStack {
+            header
+            List {
+                CommonTextField(
+                    text: $folderName,
+                    label: "folderName".localized,
+                    placeholder: "typeHere".localized,
+                )
+                .plainListItem()
+                .onLoad(perform: setupFolder)
+                
+                sectionHeader(title: "activeVaults".localized)
+                selectedVaultsList
+                sectionHeader(title: "available".localized)
+                    .showIf(!folderViewModel.remainingVaults.isEmpty)
+                vaultsList
+            }
+            .listSectionSpacing(0)
+            .listStyle(.plain)
+            .buttonStyle(.borderless)
+            .scrollContentBackground(.hidden)
+            .background(Theme.colors.bgPrimary)
+            .animation(.interpolatingSpring, value: folder.containedVaultNames)
         }
-        .listSectionSpacing(0)
-        .listStyle(.plain)
-        .buttonStyle(.borderless)
-        .scrollContentBackground(.hidden)
-        .background(Theme.colors.bgPrimary)
     }
     
     var selectedVaultsList: some View {
@@ -79,18 +86,18 @@ struct EditFolderScreen: View {
                 onSelection: { removeVault(vault) }
             )
             .plainListItem()
-            .disabled(folderViewModel.selectedVaults.count == 1)
+            .disabled(disableSelection)
         }
         .onMove(perform: move)
     }
     
     var vaultsList: some View {
-        ForEach(folderViewModel.remaningVaults, id: \.self) { vault in
+        ForEach(folderViewModel.remainingVaults, id: \.self) { vault in
             VaultFolderCellView(
                 vault: vault,
                 isOnFolder: false,
                 isSelected: viewModel.selectedVault == vault,
-                onSelection: { selectVault(vault) }
+                onSelection: { addVault(vault) }
             )
             .plainListItem()
         }
@@ -100,11 +107,21 @@ struct EditFolderScreen: View {
         PrimaryButton(title: "saveChanges") {
             saveFolder()
         }
-        .padding(16)
         .edgesIgnoringSafeArea(.bottom)
         .frame(maxHeight: nil)
         .clipped()
-        .background(Theme.colors.bgPrimary)
+        .background(
+            LinearGradient(
+                stops: [
+                    Gradient.Stop(color: Theme.colors.bgPrimary, location: 0.50),
+                    Gradient.Stop(color: Theme.colors.bgPrimary.opacity(0.5), location: 0.85),
+                    Gradient.Stop(color: Theme.colors.bgPrimary.opacity(0), location: 1.00),
+                ],
+                startPoint: UnitPoint(x: 0.5, y: 1),
+                endPoint: UnitPoint(x: 0.5, y: 0)
+            )
+        )
+        .disabled(saveButtonDisabled)
     }
     
     var alert: Alert {
@@ -123,22 +140,30 @@ struct EditFolderScreen: View {
             .plainListItem()
     }
     
+    var header: some View {
+        HStack {
+            HStack {}
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Text("editFolder".localized)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .font(Theme.fonts.title3)
+            HStack {
+                BottomSheetButton(icon: "trash", type: .alert) {
+                    deleteFolder()
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .trailing)
+        }
+    }
+    
     private func setData() {
-        filterVaults()
+        viewModel.filterVaults(vaults: vaults, folders: folders)
         folderViewModel.setData(
             vaults: vaults,
             vaultFolder: folder,
             filteredVaults: viewModel.filteredVaults
         )
-    }
-    
-    private func filterVaults() {
-        viewModel.filterVaults(vaults: vaults, folders: folders)
-    }
-    
-    private func handleVaultSelection(for vault: Vault) {
-        removeVault(vault)
-        filterVaults()
+        updateSelection()
     }
     
     private func move(from: IndexSet, to: Int) {
@@ -150,11 +175,9 @@ struct EditFolderScreen: View {
         try? self.modelContext.save()
     }
     
-    private func selectVault(_ vault: Vault) {
-        folderViewModel.selectedVaults.append(vault)
-        folder.containedVaultNames = folderViewModel.selectedVaults.map({ vault in
-            vault.name
-        })
+    private func addVault(_ vault: Vault) {
+        folderViewModel.addVault(vault: vault)
+        updateFolder()
     }
     
     private func removeVault(_ vault: Vault) {
@@ -165,11 +188,17 @@ struct EditFolderScreen: View {
             return
         }
         
-        folderViewModel.removeVaultAtIndex(count: count, vault: vault)
-        
-        folder.containedVaultNames = folderViewModel.selectedVaults.map({ vault in
-            vault.name
-        })
+        folderViewModel.removeVault(vault: vault)
+        updateFolder()
+    }
+    
+    func updateFolder() {
+        folder.containedVaultNames = folderViewModel.selectedVaults.map(\.name)
+        updateSelection()
+    }
+    
+    func updateSelection() {
+        disableSelection = folderViewModel.selectedVaults.count == 1
     }
     
     private func setupFolder() {
@@ -177,16 +206,23 @@ struct EditFolderScreen: View {
     }
     
     private func saveFolder() {
-        filterVaults()
+        viewModel.filterVaults(vaults: vaults, folders: folders)
         folder.folderName = folderName
+        
+        dismiss()
+    }
 
+    func deleteFolder() {
+        onDelete(folder)
         dismiss()
     }
 }
 
+
 #Preview {
     EditFolderScreen(
-        folder: Folder.example
+        folder: Folder.example,
+        onDelete: { _ in }
     )
     .environmentObject(HomeViewModel())
 }

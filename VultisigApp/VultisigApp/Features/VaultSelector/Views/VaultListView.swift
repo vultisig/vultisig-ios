@@ -13,6 +13,7 @@ struct VaultListView: View {
     var onAddVault: () -> Void
     var onSelectVault: (Vault) -> Void
     var onSelectFolder: (Folder) -> Void
+    var onAddFolder: () -> Void
     
     @Query(sort: \Vault.order, order: .forward) var vaults: [Vault]
     @Query(sort: \Folder.order, order: .forward) var folders: [Folder]
@@ -42,17 +43,21 @@ struct VaultListView: View {
     }
     
     var body: some View {
-        VStack(spacing: 20) {
-            header
-            List {
-                foldersList
-                vaultsList
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 20) {
+                header
+                List {
+                    foldersList
+                    vaultsList
+                }
+                .listSectionSpacing(0)
+                .listStyle(.plain)
+                .buttonStyle(.borderless)
+                .scrollContentBackground(.hidden)
+                .padding(.bottom, isEditing ? 100 : 0)
+                .background(Theme.colors.bgPrimary)
             }
-            .listSectionSpacing(0)
-            .listStyle(.plain)
-            .buttonStyle(.borderless)
-            .scrollContentBackground(.hidden)
-            .background(Theme.colors.bgPrimary)
+            addFolderButton
         }
     }
     
@@ -69,16 +74,20 @@ struct VaultListView: View {
     
     var editingHeader: some View {
         HStack {
-            Spacer()
+            HStack {}
+                .frame(maxWidth: .infinity, alignment: .leading)
             Text("editVaults".localized)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.title3)
-            Spacer()
-            BottomSheetButton(icon: "check") {
-                withAnimation {
-                    isEditing.toggle()
+            
+            HStack {
+                BottomSheetButton(icon: "check") {
+                    withAnimation {
+                        isEditing.toggle()
+                    }
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .trailing)
         }
     }
     
@@ -138,6 +147,19 @@ struct VaultListView: View {
         .onMove(perform: isEditing ? moveVaults : nil)
     }
     
+    var addFolderButton: some View {
+        PrimaryButton(
+            title: "addFolder",
+            leadingIcon: "folder-add",
+            type: .secondary,
+            action: onAddFolder
+        )
+        .padding(16)
+        .background(Theme.colors.bgPrimary)
+        .transition(.opacity)
+        .showIf(isEditing)
+    }
+    
     func sectionHeader(title: String) -> some View {
         Text(title)
             .font(Theme.fonts.caption12)
@@ -172,6 +194,7 @@ struct VaultListView: View {
         onSelectVault: {_ in
         },
         onSelectFolder: { _ in
+        }, onAddFolder: {
         }
     )
     .environmentObject(HomeViewModel())

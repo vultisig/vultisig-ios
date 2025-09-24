@@ -19,7 +19,8 @@ struct VaultManagementSheet: View {
     @State var isEditing: Bool = false
     @State var selectedFolder: Folder?
     @State var folderToEdit: Folder?
-    @State var detents: Set<PresentationDetent> = [.medium]
+    @State var showAddFolder: Bool = false
+    @State var detents: Set<PresentationDetent> = [.medium, .large]
     @State var detentSelection = PresentationDetent.medium
     
     var onAddVault: () -> Void
@@ -43,6 +44,8 @@ struct VaultManagementSheet: View {
                         onSelectVault: onSelectVault
                     ) {
                         self.selectedFolder = $0
+                    } onAddFolder: {
+                        showAddFolder = true
                     }
                     .transition(.move(edge: .leading))
                 }
@@ -53,26 +56,31 @@ struct VaultManagementSheet: View {
         .padding(.horizontal, 16)
         .presentationDragIndicator(.visible)
         .presentationDetents(detents, selection: $detentSelection)
+        .presentationCompactAdaptation(.none)
         .presentationBackground { Theme.colors.bgPrimary.padding(.bottom, -1000) }
         .onChange(of: isEditing) { _, newValue in
             updateDetents(whileAnimation: true)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                withAnimation {
                     if newValue {
                         detentSelection = .large
                     } else {
                         detentSelection = .medium
                     }
-                
+                }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     updateDetents(whileAnimation: false)
                 }
             }
         }
+        .customDetentsSheet(item: $folderToEdit) {
+            EditFolderScreen(folder: $0, onDelete: onDelete)
+        }
+        .customDetentsSheet(isPresented: $showAddFolder) {
+            AddFolderScreen()
+        }
         .onAppear {
             updateDetents(whileAnimation: false)
-        }
-        .sheet(item: $folderToEdit) {
-            EditFolderScreen(folder: $0)
         }
     }
     
@@ -107,6 +115,16 @@ struct VaultManagementSheet: View {
     
     func onFolderBack() {
         selectedFolder = nil
+    }
+    
+    func onDelete(_ folder: Folder) {
+        selectedFolder = nil
+        modelContext.delete(folder)
+        do {
+            try modelContext.save()
+        } catch {
+            print("Error while deleting folder: \(error)")
+        }
     }
 }
 
@@ -182,4 +200,63 @@ struct BottomSheetButton: View {
         }
     }
 }
+
+private struct CustomDetentsSheetWithItem<Item: Identifiable & Equatable, SheetContent: View>: ViewModifier {
+    @Binding var item: Item?
+    var sheetContent: (Item) -> SheetContent
+    
+    @State var itemInternal: Item? = nil
+    
+    func body(content: Content) -> some View {
+        content
+            .if(item != nil) {
+                $0.sheet(item: $itemInternal) {
+                    sheetContent($0)
+                }
+            }
+            .onChange(of: item) { _, newValue in
+                DispatchQueue.main.async {
+                    itemInternal = newValue
+                }
+            }
+            .onChange(of: itemInternal) { _, newValue in
+                DispatchQueue.main.async {
+                    item = newValue
+                }
+            }
+    }
+}
+
+private struct CustomDetentsSheetWithBoolean<SheetContent: View>: ViewModifier {
+    @Binding var isPresented: Bool
+    var sheetContent: () -> SheetContent
+    
+    @State var isPresentedInternal: Bool = false
+    
+    func body(content: Content) -> some View {
+        content
+            .sheet(isPresented: $isPresentedInternal) {
+                sheetContent()
+                    .onDisappear {
+                        isPresented = false
+                    }
+            }
+            .onChange(of: isPresented) { _, newValue in
+                DispatchQueue.main.async {
+                    isPresentedInternal = newValue
+                }
+            }
+    }
+}
+
+extension View {
+    func customDetentsSheet<Item: Identifiable & Equatable, SheetContent: View>(item: Binding<Item?>, content: @escaping (Item) -> SheetContent) -> some View {
+        modifier(CustomDetentsSheetWithItem(item: item, sheetContent: content))
+    }
+    
+    func customDetentsSheet<SheetContent: View>(isPresented: Binding<Bool>, content: @escaping () -> SheetContent) -> some View {
+        modifier(CustomDetentsSheetWithBoolean(isPresented: isPresented, sheetContent: content))
+    }
+}
+
 

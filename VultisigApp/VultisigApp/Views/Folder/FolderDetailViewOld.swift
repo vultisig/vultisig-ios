@@ -35,9 +35,6 @@ struct FolderDetailViewOld: View {
         .onAppear {
             setData()
         }
-        .onChange(of: vaultFolder.containedVaultNames) { oldValue, newValue in
-            setData()
-        }
     }
     
     var view: some View {
@@ -158,8 +155,8 @@ struct FolderDetailViewOld: View {
     }
     
     var vaultsList: some View {
-        ForEach(folderViewModel.remaningVaults, id: \.self) { vault in
-            FolderDetailRemainingVaultCell(vault: vault)
+        ForEach(folderViewModel.remainingVaults, id: \.self) { vault in
+            FolderDetailremainingVaultsCell(vault: vault)
                 .listRowInsets(EdgeInsets())
                 .listRowSeparator(.hidden)
                 .padding(.vertical, 8)
@@ -192,6 +189,7 @@ struct FolderDetailViewOld: View {
     }
     
     private func setData() {
+        filterVaults()
         folderViewModel.setData(
             vaults: vaults,
             vaultFolder: vaultFolder,
@@ -236,7 +234,7 @@ struct FolderDetailViewOld: View {
             return
         }
         
-        folderViewModel.removeVaultAtIndex(count: count, vault: vault)
+        folderViewModel.removeVault(vault: vault)
         
         vaultFolder.containedVaultNames = folderViewModel.selectedVaults.map({ vault in
             vault.name

@@ -22,11 +22,12 @@ class Folder: Hashable, Equatable {
     }
     
     static func == (lhs: Folder, rhs: Folder) -> Bool {
-        lhs.id == rhs.id
+        lhs.folderName == rhs.folderName && lhs.containedVaultNames == rhs.containedVaultNames
     }
     
     func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
+        hasher.combine(folderName)
+        hasher.combine(containedVaultNames)
     }
     
     static let example = Folder(folderName: "Folder", containedVaultNames: ["12345"], order: 0)
