@@ -20,11 +20,26 @@ class HomeViewModel: ObservableObject {
     @Published var alertTitle: String = ""
     
     var vaultBalanceText: String {
+        balanceText(for: selectedVault)
+    }
+    
+    func balanceText(for vaults: [Vault]) -> String {
         guard !hideVaultBalance else {
             return Array.init(repeating: "•", count: 8).joined(separator: " ")
         }
         
-        return selectedVault?.coins.totalBalanceInFiatString ?? ""
+        return vaults
+            .map(\.coins.totalBalanceInFiatDecimal)
+            .reduce(0, +)
+            .formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
+    }
+    
+    func balanceText(for vault: Vault?) -> String {
+        guard !hideVaultBalance else {
+            return Array.init(repeating: "•", count: 8).joined(separator: " ")
+        }
+        
+        return vault?.coins.totalBalanceInFiatString ?? ""
     }
 
     func loadSelectedVault(for vaults: [Vault]) {
@@ -50,9 +65,13 @@ class HomeViewModel: ObservableObject {
     }
     
     func filterVaults(vaults: [Vault], folders: [Folder]) {
+        filteredVaults = getFilteredVaults(vaults: vaults, folders: folders)
+    }
+    
+    func getFilteredVaults(vaults: [Vault], folders: [Folder]) -> [Vault] {
         let vaultNames = Set(folders.flatMap { $0.containedVaultNames })
         
-        filteredVaults = vaults.filter({ vault in
+        return vaults.filter({ vault in
             !vaultNames.contains(vault.name)
         })
     }

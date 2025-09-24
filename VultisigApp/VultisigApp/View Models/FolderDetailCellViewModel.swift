@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+// TODO: - To remove
 class FolderDetailCellViewModel: ObservableObject {
     @Published var order: Int = 0
     @Published var totalSigners: Int = 0

@@ -5,17 +5,21 @@
 //  Created by Gaston Mazzeo on 09/09/2025.
 //
 
+import SwiftData
 import SwiftUI
 
 struct VaultMainScreen: View {
     @ObservedObject var vault: Vault
     
+    @Environment(\.modelContext) var modelContext
     @EnvironmentObject var viewModel: VaultDetailViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     @State private var addressToCopy: GroupedChain?
     @State private var scrollOffset: CGFloat = 0
     @State var showBalanceInHeader: Bool = false
+    @State var showVaultSelector: Bool = false
+    @State var showCreateVault: Bool = false
     @State var showChainSelection: Bool = false
     @State var showSearchHeader: Bool = false
     @State var focusSearch: Bool = false
@@ -65,6 +69,18 @@ struct VaultMainScreen: View {
                     }
                 }
             }
+            .navigationDestination(isPresented: $showCreateVault) {
+                CreateVaultView(selectedVault: nil, showBackButton: true)
+            }
+            .sheet(isPresented: $showVaultSelector) {
+                VaultManagementSheet {
+                    showVaultSelector.toggle()
+                    showCreateVault.toggle()
+                } onSelectVault: { vault in
+                    showVaultSelector.toggle()
+                    homeViewModel.setSelectedVault(vault)
+                }
+            }
             .sheet(isPresented: $showChainSelection) {
                 VaultSelectChainScreen(
                     vault: homeViewModel.selectedVault ?? .example,
@@ -110,7 +126,7 @@ struct VaultMainScreen: View {
                 if showSearchHeader {
                     searchBottomSectionHeader
                 } else {
-                   defaultBottomSectionHeader
+                    defaultBottomSectionHeader
                 }
             }
             .transition(.opacity)
@@ -171,7 +187,7 @@ struct VaultMainScreen: View {
     }
     
     func onVaultSelector() {
-        // TODO: - Add vault selector in upcoming PRs
+        showVaultSelector.toggle()
     }
     
     func onSettings() {

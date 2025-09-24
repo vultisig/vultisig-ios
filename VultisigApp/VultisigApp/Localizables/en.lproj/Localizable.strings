@@ -873,6 +873,7 @@
 "coinAddressCopied" = "%@ address copied";
 "portfolioBalance" = "Portfolio Balance";
 "addressBookDuplicate" = "Address already exists in your address book.";
+"active" = "Active";
 "selectChains" = "Select chains";
 "noChainsFound" = "No chains found";
 "noChainsFoundSubtitle" = "Make sure that the chain you’re looking for is enabled.";
@@ -881,6 +882,11 @@
 "noTokensFoundSubtitle" = "You’ve disabled all tokens. Make sure that the token you’re looking for is enabled.";
 "customizeTokens" = "Manage tokens";
 "copyAddress" = "Copy address";
+"editVaults" = "Edit Vaults";
+"activeVaults" = "Active Vaults";
 "wrongVaultSelected" = "You chose the wrong vault";
 "vaultTypeMismatch" = "Vault type doesn't match, initiate device and pair device's vault type are different";
 "failedToDecodePeerDiscoveryMessage" = "Failed to decode peer discovery message";
+"addFolder" = "Add folder";
+"editFolder" = "Edit folder";
+"selectVaults" = "Select Vaults";

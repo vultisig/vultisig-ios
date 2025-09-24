@@ -16,6 +16,10 @@ class CreateFolderViewModel: ObservableObject {
     @Published var alertTitle = ""
     @Published var alertDescription = ""
     
+    var saveButtonDisabled: Bool {
+        name.isEmpty || selectedVaults.isEmpty
+    }
+    
     func runChecks(_ folders: [Folder]) -> Bool {
         if name.isEmpty {
             alertTitle = "emptyField"

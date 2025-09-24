@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+// TODO: - To remove
 
 struct FolderDetailSelectedVaultCell: View {
     

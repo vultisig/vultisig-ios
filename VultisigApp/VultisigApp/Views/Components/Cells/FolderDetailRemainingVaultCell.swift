@@ -1,5 +1,5 @@
 //
-//  FolderDetailRemainingVaultCell.swift
+//  FolderDetailremainingVaultsCell.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2024-10-07.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct FolderDetailRemainingVaultCell: View {
+struct FolderDetailremainingVaultsCell: View {
     let vault: Vault
     
     var body: some View {
@@ -40,5 +40,5 @@ struct FolderDetailRemainingVaultCell: View {
 }
 
 #Preview {
-    FolderDetailRemainingVaultCell(vault: Vault.example)
+    FolderDetailremainingVaultsCell(vault: Vault.example)
 }

@@ -1,5 +1,5 @@
 //
-//  FolderDetailView.swift
+//  FolderDetailViewOld.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2024-10-04.
@@ -8,7 +8,8 @@
 import SwiftUI
 import SwiftData
 
-struct FolderDetailView: View {
+// TODO: - To remove
+struct FolderDetailViewOld: View {
     let selectedFolder: Folder
     @Binding var vaultFolder: Folder
     @Binding var showVaultsList: Bool
@@ -33,9 +34,6 @@ struct FolderDetailView: View {
             alert
         }
         .onAppear {
-            setData()
-        }
-        .onChange(of: vaultFolder.containedVaultNames) { oldValue, newValue in
             setData()
         }
     }
@@ -158,8 +156,8 @@ struct FolderDetailView: View {
     }
     
     var vaultsList: some View {
-        ForEach(folderViewModel.remaningVaults, id: \.self) { vault in
-            FolderDetailRemainingVaultCell(vault: vault)
+        ForEach(folderViewModel.remainingVaults, id: \.self) { vault in
+            FolderDetailremainingVaultsCell(vault: vault)
                 .listRowInsets(EdgeInsets())
                 .listRowSeparator(.hidden)
                 .padding(.vertical, 8)
@@ -192,6 +190,7 @@ struct FolderDetailView: View {
     }
     
     private func setData() {
+        filterVaults()
         folderViewModel.setData(
             vaults: vaults,
             vaultFolder: vaultFolder,
@@ -236,7 +235,7 @@ struct FolderDetailView: View {
             return
         }
         
-        folderViewModel.removeVaultAtIndex(count: count, vault: vault)
+        folderViewModel.removeVault(vault: vault)
         
         vaultFolder.containedVaultNames = folderViewModel.selectedVaults.map({ vault in
             vault.name
@@ -272,7 +271,7 @@ struct FolderDetailView: View {
 }
 
 #Preview {
-    FolderDetailView(
+    FolderDetailViewOld(
         selectedFolder: Folder.example, 
         vaultFolder: .constant(Folder.example),
         showVaultsList: .constant(false),

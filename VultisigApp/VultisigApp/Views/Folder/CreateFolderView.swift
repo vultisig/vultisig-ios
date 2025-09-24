@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 
+// TODO: - To remove
 struct CreateFolderView: View {
     
     let count: Int
