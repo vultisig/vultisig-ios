@@ -167,6 +167,11 @@
 "invalidTransactionAmountError" = "Cantidad de transacción inválida proporcionada.";
 "walletBalanceExceededSolanaError" = "La cantidad combinada y la tarifa exceden el saldo de tu cartera. Intenta de nuevo.";
 "notEnoughBalanceError" = "No tienes suficiente saldo para enviar esta transacción";
+"notEnoughUTXOError" = "UTXOs insuficientes disponibles. Tu billetera tiene suficiente saldo pero los UTXOs (salidas de transacción) son demasiado pequeños o no suficientes para cubrir el monto de la transacción más las tarifas. Intenta enviar una cantidad menor o espera a que se confirmen las transacciones pendientes.";
+"utxoTooSmallError" = "Los UTXOs disponibles son demasiado pequeños para esta transacción. Las salidas de transacción individuales en tu billetera no cumplen con los requisitos mínimos. Considera consolidar cantidades más pequeñas primero.";
+"utxoSelectionFailedError" = "Falló la selección de UTXO. No se pudieron encontrar salidas de transacción adecuadas para cubrir el monto más las tarifas estimadas. Intenta reducir el monto de la transacción.";
+"utxoSuggestionTitle" = "Consejos para Transacciones UTXO";
+"utxoSuggestionMessage" = "Para criptomonedas basadas en UTXO como Dogecoin:\n\n• Intenta enviar una cantidad menor\n• Espera a que se confirmen las transacciones pendientes\n• Considera consolidar UTXOs pequeños primero\n• Verifica que tengas suficiente saldo para las tarifas";
 "gasEstimateETHError" = "Error al estimar gas para ETH";
 "gasEstimateTOKENError" = "Error al estimar gas para el TOKEN";
 "gasEstimateError:" = "Error estimando gas: ";
@@ -697,3 +702,6 @@
 "unstakeFromAutoCompoundingTCYDeposits" = "Retirar de depósitos TCY auto-compounding";
 "insufficientBalanceForFunctions" = "Saldo insuficiente. Por favor, ingresa una cantidad menor o igual a tus fondos disponibles.";
 "addressBookDuplicate" = "La dirección ya existe en tu libreta de direcciones.";
+"wrongVaultSelected" = "Elegiste la bóveda incorrecta";
+"vaultTypeMismatch" = "El tipo de bóveda no coincide, el dispositivo iniciador y el dispositivo emparejado tienen tipos de bóveda diferentes";
+"failedToDecodePeerDiscoveryMessage" = "Error al decodificar el mensaje de descubrimiento de pares";

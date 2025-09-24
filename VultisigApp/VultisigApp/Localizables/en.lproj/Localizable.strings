@@ -165,6 +165,11 @@
 "invalidTransactionAmountError" = "Invalid transaction amount provided.";
 "walletBalanceExceededSolanaError" = "The combined amount and fee exceed your wallet's balance. Try again.";
 "notEnoughBalanceError" = "You don't have enough balance to send this transaction";
+"notEnoughUTXOError" = "Insufficient UTXOs available. Your wallet has enough balance but the UTXOs (transaction outputs) are too small or not sufficient to cover the transaction amount plus fees. Try sending a smaller amount or wait for pending transactions to confirm.";
+"utxoTooSmallError" = "Available UTXOs are too small for this transaction. The individual transaction outputs in your wallet don't meet the minimum requirements. Consider consolidating smaller amounts first.";
+"utxoSelectionFailedError" = "UTXO selection failed. Unable to find suitable transaction outputs to cover the amount plus estimated fees. Try reducing the transaction amount.";
+"utxoSuggestionTitle" = "UTXO Transaction Tips";
+"utxoSuggestionMessage" = "For UTXO-based cryptocurrencies like Dogecoin:\n\n• Try sending a smaller amount\n• Wait for pending transactions to confirm\n• Consider consolidating small UTXOs first\n• Check if you have enough balance for fees";
 "gasEstimateETHError" = "Error to estimate gas for ETH";
 "gasEstimateTOKENError" = "Error to estimate gas for the TOKEN";
 "gasEstimateError:" = "Error estimating gas: ";
@@ -879,4 +884,6 @@
 "copyAddress" = "Copy address";
 "editVaults" = "Edit Vaults";
 "activeVaults" = "Active Vaults";
-
+"wrongVaultSelected" = "You chose the wrong vault";
+"vaultTypeMismatch" = "Vault type doesn't match, initiate device and pair device's vault type are different";
+"failedToDecodePeerDiscoveryMessage" = "Failed to decode peer discovery message";

@@ -51,17 +51,14 @@ public struct FlatPicker<ItemView: View, Item: Equatable & Hashable>: View {
                     }
                     .onChange(of: scrollOffset) { _, newOffset in
                         // Calculate current visible index for haptic feedback
-                        let center = (containerSize - itemSize) / 2
-                        let offset = -newOffset + center
-                        let index = Int(round(offset / itemSize))
-                        let clampedIndex = min(max(index, 0), items.count - 1)
+                        let newIndex = calculateIndex(newOffset: newOffset, containerSize: containerSize)
                         
                         // Trigger haptic feedback when passing through a new item
-                        if clampedIndex != currentVisibleIndex {
+                        if newIndex != currentVisibleIndex {
                             #if os(iOS)
                                 impactGenerator.impactOccurred()
                             #endif
-                            currentVisibleIndex = clampedIndex
+                            currentVisibleIndex = newIndex
                         }
                         
                         scrollCheckWorkItem?.cancel()
@@ -74,12 +71,9 @@ public struct FlatPicker<ItemView: View, Item: Equatable & Hashable>: View {
                         scrollCheckWorkItem = workItem
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: workItem)
                     }
-                    .onChange(of: lastOffset) { _, _ in
-                        let center = (containerSize - itemSize) / 2
-                        let offset = -scrollOffset + center
-                        let index = Int(round(offset / itemSize))
-                        let newItemIndex = min(max(index, 0), items.count - 1)
-
+                    .onChange(of: lastOffset) { previousOffset, lastOffset in
+                        let newItemIndex = calculateIndex(newOffset: lastOffset, containerSize: containerSize)
+                        
                         if selectedItem != items[newItemIndex] {
                             selectedItem = items[newItemIndex]
                         }
@@ -102,6 +96,14 @@ public struct FlatPicker<ItemView: View, Item: Equatable & Hashable>: View {
 }
 
 private extension FlatPicker {
+    func calculateIndex(newOffset: CGFloat, containerSize: CGFloat) -> Int {
+        let center = (containerSize - itemSize) / 2
+        let offset = -newOffset + center
+        let index = Int(round(offset / itemSize))
+        let clampedIndex = min(max(index, 0), items.count - 1)
+        return clampedIndex
+    }
+    
     func updateCurrentVisibilityIndex(animated: Bool) {
         guard let selectedItem else { return }
         if let initialIndex = items.firstIndex(of: selectedItem) {

@@ -167,6 +167,9 @@
 "invalidTransactionAmountError" = "Quantidade de transação inválida fornecida.";
 "walletBalanceExceededSolanaError" = "A quantidade combinada e a taxa excedem o saldo da sua carteira. Tente novamente.";
 "notEnoughBalanceError" = "Você não tem saldo suficiente para enviar esta transação";
+"notEnoughUTXOError" = "UTXOs insuficientes disponíveis. Sua carteira tem saldo suficiente, mas os UTXOs (saídas de transação) são muito pequenos ou não suficientes para cobrir o valor da transação mais as taxas. Tente enviar um valor menor ou aguarde as transações pendentes serem confirmadas.";
+"utxoTooSmallError" = "UTXOs disponíveis são muito pequenos para esta transação. As saídas de transação individuais em sua carteira não atendem aos requisitos mínimos. Considere consolidar valores menores primeiro.";
+"utxoSelectionFailedError" = "Falha na seleção de UTXO. Não foi possível encontrar saídas de transação adequadas para cobrir o valor mais as taxas estimadas. Tente reduzir o valor da transação.";
 "gasEstimateETHError" = "Erro ao estimar gás para ETH";
 "gasEstimateTOKENError" = "Erro ao estimar gás para o TOKEN";
 "gasEstimateError:" = "Erro estimando gás: ";
@@ -698,3 +701,6 @@
 "unstakeFromAutoCompoundingTCYDeposits" = "Retirar de depósitos TCY auto-compounding";
 "insufficientBalanceForFunctions" = "Saldo insuficiente. Por favor, digite um valor menor ou igual aos seus fundos disponíveis.";
 "addressBookDuplicate" = "O endereço já existe no seu catálogo de endereços.";
+"wrongVaultSelected" = "Você escolheu o cofre errado";
+"vaultTypeMismatch" = "O tipo de cofre não corresponde, o dispositivo iniciador e o dispositivo emparelhado têm tipos de cofre diferentes";
+"failedToDecodePeerDiscoveryMessage" = "Falha ao decodificar a mensagem de descoberta de pares";

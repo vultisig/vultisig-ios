@@ -14,7 +14,6 @@ struct NavigationHelpButton: View {
         Link(destination: URL(string: Endpoint.supportDocumentLink)!) {
             image
         }
-        .offset(x: 8)
     }
     
     var image: some View {

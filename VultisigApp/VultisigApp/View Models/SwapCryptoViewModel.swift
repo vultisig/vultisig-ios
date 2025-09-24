@@ -485,7 +485,17 @@ private extension SwapCryptoViewModel {
 
         } catch {
             print("Update fees error: \(error.localizedDescription)")
-            self.error = Errors.insufficientFunds
+            
+            // Handle UTXO-specific errors for better user experience
+            switch error {
+            case KeysignPayloadFactory.Errors.notEnoughUTXOError,
+                 KeysignPayloadFactory.Errors.utxoTooSmallError,
+                 KeysignPayloadFactory.Errors.utxoSelectionFailedError:
+                // These are UTXO-specific errors that should be shown directly
+                self.error = error
+            default:
+                self.error = Errors.insufficientFunds
+            }
         }
     }
     
@@ -509,25 +519,33 @@ private extension SwapCryptoViewModel {
             return (maxFeePerGas + priorityFee) * gasLimit
         case .UTXO:
             let keysignFactory = KeysignPayloadFactory()
-            let keysignPayload = try await keysignFactory.buildTransfer(
-                coin: tx.fromCoin,
-                toAddress: tx.fromCoin.address,
-                amount: tx.amountInCoinDecimal,
-                memo: nil,
-                chainSpecific: chainSpecific,
-                swapPayload: nil,
-                vault: vault
-            )
-            let utxo = UTXOChainsHelper(
-                coin: tx.fromCoin.coinType,
-                vaultHexPublicKey: vault.pubKeyECDSA,
-                vaultHexChainCode: vault.hexChainCode
-            )
-            let plan = try utxo.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
-            if plan.fee <= 0 && tx.fromAmountDecimal > 0 {
+            do {
+                let keysignPayload = try await keysignFactory.buildTransfer(
+                    coin: tx.fromCoin,
+                    toAddress: tx.fromCoin.address,
+                    amount: tx.amountInCoinDecimal,
+                    memo: nil,
+                    chainSpecific: chainSpecific,
+                    swapPayload: nil,
+                    vault: vault
+                )
+                let utxo = UTXOChainsHelper(
+                    coin: tx.fromCoin.coinType,
+                    vaultHexPublicKey: vault.pubKeyECDSA,
+                    vaultHexChainCode: vault.hexChainCode
+                )
+                let plan = try utxo.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
+                if plan.fee <= 0 && tx.fromAmountDecimal > 0 {
+                    throw Errors.insufficientFunds
+                }
+                return BigInt(plan.fee)
+            } catch {
+                // Re-throw UTXO-specific errors to provide better user feedback
+                if error is KeysignPayloadFactory.Errors {
+                    throw error
+                }
                 throw Errors.insufficientFunds
             }
-            return BigInt(plan.fee)
             
         case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton, .Ripple, .Tron, .Cardano:
             return chainSpecific.gas

@@ -22,7 +22,7 @@ import Combine
  */
 
 class FunctionCallCosmosUnmerge: ObservableObject {
-    @Published var amount: Decimal = 0.0  // RUJI amount (what user enters/sees)
+    @Published var amount: Decimal = 0.0  // User input amount
     @Published var destinationAddress: String = ""
     @Published var fnCall: String = ""
     
@@ -30,6 +30,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
     @Published var fnCallValid: Bool = true
     
     @Published var isTheFormValid: Bool = false
+    @Published var customErrorMessage: String? = nil
     
     @Published var tokens: [IdentifiableString] = []
     @Published var tokenValid: Bool = false
@@ -38,6 +39,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
     @Published var balanceLabel: String = "Shares"
     @Published var sharePrice: Decimal = 0  // Price per share (not used for transaction)
     @Published var totalShares: String = "0"  // Total shares owned
+    @Published var availableBalance: Decimal = 0.0  // Available balance for validation
     @Published var isLoading: Bool = false
     
     @ObservedObject var tx: SendTransaction
@@ -149,11 +151,14 @@ class FunctionCallCosmosUnmerge: ObservableObject {
             totalShares = rujiBalance.shares
             sharePrice = rujiBalance.price
             
-            // For unmerge, amount is shares converted to decimal (8 decimal places like THOR)
+            // Store available balance for validation (shares converted to decimal)
             if let sharesRaw = Decimal(string: rujiBalance.shares) {
                 let divisor = NSDecimalNumber(decimal: pow(Decimal(10), 8))
-                amount = sharesRaw / divisor.decimalValue
+                availableBalance = sharesRaw / divisor.decimalValue
             }
+            
+            // Reset user input amount when balance changes
+            amount = 0.0
             
             updateBalanceLabel()
             objectWillChange.send() // Force UI update after setting values
@@ -161,6 +166,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
             print("Error fetching merged balance: \(error)")
             balanceLabel = "Error loading balance"
             amount = 0
+            availableBalance = 0
             totalShares = "0"
             sharePrice = 0
             objectWillChange.send() // Force UI update on error
@@ -169,17 +175,17 @@ class FunctionCallCosmosUnmerge: ObservableObject {
     
     @MainActor
     private func updateBalanceLabel() {
-        balanceLabel = "Shares ( Balance: \(amount.formatDecimalToLocale()) )"
+        balanceLabel = "Shares ( Balance: \(availableBalance.formatDecimalToLocale()) )"
         objectWillChange.send() // Force UI update
     }
     
     private func setupValidation() {
-        // Validate amount
+        // Validate amount with debounce like in FunctionCallStake
         $amount
-            .sink { [weak self] value in
-                guard let self = self else { return }
-                // Amount is valid if greater than 0
-                self.amountValid = value > 0
+            .removeDuplicates()
+            .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
+            .sink { [weak self] newAmount in
+                self?.validateAmount()
             }
             .store(in: &cancellables)
         
@@ -192,9 +198,32 @@ class FunctionCallCosmosUnmerge: ObservableObject {
         
         // Overall form validation
         Publishers.CombineLatest3($amountValid, $tokenValid, $fnCallValid)
-            .map { $0 && $1 && $2 }
+            .map { $0 && $1 && $2 && !self.amount.isZero }
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
+    }
+    
+    private func validateAmount() {
+        // Reset error message
+        customErrorMessage = nil
+        
+        // Check if amount is positive
+        guard amount > 0 else {
+            amountValid = false
+            customErrorMessage = NSLocalizedString("insufficientBalanceForFunctions", comment: "Error message when amount is invalid")
+            return
+        }
+        
+        // Check if amount doesn't exceed available balance
+        guard amount <= availableBalance else {
+            amountValid = false
+            customErrorMessage = NSLocalizedString("insufficientBalanceForFunctions", comment: "Error message when user tries to enter amount greater than available balance")
+            return
+        }
+        
+        // Amount is valid
+        amountValid = true
+        customErrorMessage = nil
     }
     
     func getView() -> AnyView {
@@ -204,7 +233,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
     }
     
     var formattedBalanceText: String {
-        return "\(amount.formatDecimalToLocale()) shares"
+        return "\(availableBalance.formatDecimalToLocale()) shares"
     }
     
     var description: String {
@@ -246,11 +275,13 @@ struct UnmergeView: View {
                 mandatoryMessage: "*",
                 descriptionProvider: { $0.value },
                 onSelect: { asset in
-                    // Reset balance before fetching new one
+                    // Reset balance and user input before fetching new one
                     viewModel.amount = 0
+                    viewModel.availableBalance = 0
                     viewModel.totalShares = "0"
                     viewModel.sharePrice = 0
                     viewModel.balanceLabel = "Loading..."
+                    viewModel.customErrorMessage = nil
                     
                     viewModel.selectToken(asset)
                 }
@@ -260,21 +291,29 @@ struct UnmergeView: View {
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle())
             } else {
-                StyledFloatingPointField(
-                    label: viewModel.balanceLabel,
-                    placeholder: viewModel.balanceLabel,
-                    value: Binding(
-                        get: { viewModel.amount },
-                        set: {
-                            viewModel.amount = $0
-                            viewModel.objectWillChange.send()
-                        }
-                    ),
-                    isValid: Binding(
-                        get: { viewModel.amountValid },
-                        set: { viewModel.amountValid = $0 }
+                VStack(alignment: .leading, spacing: 8) {
+                    StyledFloatingPointField(
+                        label: viewModel.balanceLabel,
+                        placeholder: "Enter amount to unmerge",
+                        value: Binding(
+                            get: { viewModel.amount },
+                            set: {
+                                viewModel.amount = $0
+                                viewModel.objectWillChange.send()
+                            }
+                        ),
+                        isValid: Binding(
+                            get: { viewModel.amountValid },
+                            set: { viewModel.amountValid = $0 }
+                        )
                     )
-                )
+                    
+                    if let errorMessage = viewModel.customErrorMessage {
+                        Text(errorMessage)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                    }
+                }
             }
         }
     }

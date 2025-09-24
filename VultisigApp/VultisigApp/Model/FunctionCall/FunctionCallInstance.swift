@@ -413,7 +413,7 @@ enum FunctionCallInstance {
         case .dydx:
             return .vote(FunctionCallVote())
         case .ton:
-            return .stake(FunctionCallStake())
+            return .stake(FunctionCallStake(tx: tx))
         case .gaiaChain:
             return .theSwitch(FunctionCallCosmosSwitch(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
         case .kujira:

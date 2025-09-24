@@ -12,6 +12,9 @@ struct KeysignPayloadFactory {
     
     enum Errors: String, Error, LocalizedError {
         case notEnoughBalanceError
+        case notEnoughUTXOError
+        case utxoTooSmallError
+        case utxoSelectionFailedError
         case failToGetAccountNumber
         case failToGetSequenceNo
         case failToGetRecentBlockHash
@@ -79,7 +82,7 @@ struct KeysignPayloadFactory {
             }
             
         case .UTXO(let byteFee, _):
-            // Bitcoin, Litecoin etc. - use Blockchair
+            // Bitcoin, Litecoin, Dogecoin etc. - use Blockchair
             // 148 is estimate vbytes for every input
             // estimate we will use maximum 10 utxos
             let totalAmount = amount + BigInt(byteFee * 1480)
@@ -92,6 +95,18 @@ struct KeysignPayloadFactory {
                         index: UInt32($0.index ?? -1)
                     )
                 }), !info.isEmpty else {
+                // Check what specific UTXO issue we have
+                if let blockchairData = utxo.blockchairData.get(coin.blockchairKey) {
+                    if blockchairData.utxo?.isEmpty ?? true {
+                        throw Errors.notEnoughUTXOError
+                    }
+                    let dustThreshold = coin.coinType.getFixedDustThreshold()
+                    let usableUtxos = blockchairData.utxo?.filter { ($0.value ?? 0) >= Int(dustThreshold) } ?? []
+                    if usableUtxos.isEmpty {
+                        throw Errors.utxoTooSmallError
+                    }
+                    throw Errors.utxoSelectionFailedError
+                }
                 throw Errors.notEnoughBalanceError
             }
             utxos = info

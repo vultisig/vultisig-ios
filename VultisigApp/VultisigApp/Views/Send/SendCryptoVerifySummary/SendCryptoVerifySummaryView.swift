@@ -32,7 +32,6 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             securityScannerHeader
             fields
         }
-        .padding(.top, 20)
     }
     
     var securityScannerHeader: some View {
@@ -47,6 +46,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             }
             .padding(.horizontal, contentPadding)
         }
+        .padding(.top, 20)
     }
     
     var summary: some View {
