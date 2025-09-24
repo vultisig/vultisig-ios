@@ -165,6 +165,9 @@
 "invalidTransactionAmountError" = "Invalid transaction amount provided.";
 "walletBalanceExceededSolanaError" = "The combined amount and fee exceed your wallet's balance. Try again.";
 "notEnoughBalanceError" = "You don't have enough balance to send this transaction";
+"insufficientGasTokenError" = "Not enough %@ to cover gas fees for sending %@";
+"noGasTokenFoundError" = "No gas token found for %@ chain. Please add the native token to your vault.";
+"unableToVerifyGasTokenError" = "Unable to verify gas token balance. Please try again.";
 "notEnoughUTXOError" = "Insufficient UTXOs available. Your wallet has enough balance but the UTXOs (transaction outputs) are too small or not sufficient to cover the transaction amount plus fees. Try sending a smaller amount or wait for pending transactions to confirm.";
 "utxoTooSmallError" = "Available UTXOs are too small for this transaction. The individual transaction outputs in your wallet don't meet the minimum requirements. Consider consolidating smaller amounts first.";
 "utxoSelectionFailedError" = "UTXO selection failed. Unable to find suitable transaction outputs to cover the amount plus estimated fees. Try reducing the transaction amount.";

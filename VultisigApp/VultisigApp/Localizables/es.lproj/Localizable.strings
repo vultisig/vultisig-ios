@@ -167,6 +167,9 @@
 "invalidTransactionAmountError" = "Cantidad de transacción inválida proporcionada.";
 "walletBalanceExceededSolanaError" = "La cantidad combinada y la tarifa exceden el saldo de tu cartera. Intenta de nuevo.";
 "notEnoughBalanceError" = "No tienes suficiente saldo para enviar esta transacción";
+"insufficientGasTokenError" = "No hay suficiente %@ para cubrir las tarifas de gas para enviar %@";
+"noGasTokenFoundError" = "No se encontró token de gas para la cadena %@. Por favor agrega el token nativo a tu vault.";
+"unableToVerifyGasTokenError" = "No se pudo verificar el saldo del token de gas. Por favor intenta de nuevo.";
 "notEnoughUTXOError" = "UTXOs insuficientes disponibles. Tu billetera tiene suficiente saldo pero los UTXOs (salidas de transacción) son demasiado pequeños o no suficientes para cubrir el monto de la transacción más las tarifas. Intenta enviar una cantidad menor o espera a que se confirmen las transacciones pendientes.";
 "utxoTooSmallError" = "Los UTXOs disponibles son demasiado pequeños para esta transacción. Las salidas de transacción individuales en tu billetera no cumplen con los requisitos mínimos. Considera consolidar cantidades más pequeñas primero.";
 "utxoSelectionFailedError" = "Falló la selección de UTXO. No se pudieron encontrar salidas de transacción adecuadas para cubrir el monto más las tarifas estimadas. Intenta reducir el monto de la transacción.";
