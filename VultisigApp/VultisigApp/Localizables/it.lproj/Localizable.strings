@@ -439,7 +439,7 @@
 "migrate" = "Migrare";
 "migratePasswordDescription" = "Inserisci la tua password per sbloccare la quota del server e iniziare l'aggiornamento";
 "migrateVault" = "Migrare GG20 Vault su DKLS";
-"migrationFailed" = "Impossibile a migrare la volta GG20 a DKLS";
+"migrationFailed" = "Impossibile migrare la cassaforte GG20 a DKLS";
 "monthlyBackupTitle" = "Non dimenticare di eseguire il backup delle\nquote del tuo caveau e verificarne la completezza.";
 "moreInfo" = "Maggiori informazioni";
 "moreInfoDescription" = "Questo accade perché la password viene utilizzata per crittografare localmente il file di backup, in modo simile a come viene crittografato un disco rigido. Nel passaggio successivo, hai la possibilità di aggiungere un suggerimento.";
@@ -776,14 +776,14 @@
 "validAddressDomainError" = "Inserisci un indirizzo valido per la blockchain selezionata.";
 "validAddressError" = "Per favore, inserisci un indirizzo valido.";
 "value" = "Valore";
-"vault" = "Cassaforti";
+"vault" = "Cassaforte";
 "vaultAlreadyExists" = "Il caveau esiste già";
 "vaultCreated" = "Vault creato";
 "vaultDetailsDescription" = "Visualizza i dettagli della tua cassaforte";
 "vaultDetailsTitle" = "Dettagli";
 "vaultExistsError" = "Un caveau con lo stesso nome esiste già.\nSi prega di provare un nome diverso.";
 "vaultInfo" = "Informazioni sul Vault";
-"vaultLibType" = "tipo di volta";
+"vaultLibType" = "Tipo di cassaforte";
 "vaultManagement" = "Gestione del caveau";
 "vaultName" = "Nome Cassaforte";
 "vaultNameExists" = "Il nome del deposito %s esiste già";
