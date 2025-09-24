@@ -30,7 +30,7 @@ struct VaultListView: View {
     var headerSubtitle: String {
         let vaultsText: String = vaults.count > 1 ? "vaults".localized : "vault".localized
         var subtitle = "\(vaults.count) \(vaultsText)"
-    
+        
         if vaults.count > 1 {
             subtitle += " · \(homeViewModel.balanceText(for: vaults))"
         }
@@ -44,18 +44,21 @@ struct VaultListView: View {
     
     var body: some View {
         ZStack(alignment: .bottom) {
-            VStack(spacing: 20) {
+            VStack(spacing: 0) {
                 header
                 List {
                     foldersList
                     vaultsList
                 }
                 .listSectionSpacing(0)
-                .listStyle(.plain)
+                .listRowSpacing(0)
+                .listStyle(.grouped)
                 .buttonStyle(.borderless)
                 .scrollContentBackground(.hidden)
+                .scrollIndicators(.hidden)
                 .padding(.bottom, isEditing ? 100 : 0)
                 .background(Theme.colors.bgPrimary)
+                .padding(.top, 20)
             }
             addFolderButton
         }
@@ -69,7 +72,18 @@ struct VaultListView: View {
                 defaultHeader
             }
         }
-        .transition(.opacity)
+        .transition(.opacity.animation(.interpolatingSpring))
+        .background(
+            LinearGradient(
+                stops: [
+                    Gradient.Stop(color: Theme.colors.bgPrimary, location: 0.50),
+                    Gradient.Stop(color: Theme.colors.bgPrimary.opacity(0.5), location: 0.85),
+                    Gradient.Stop(color: Theme.colors.bgPrimary.opacity(0), location: 1.00),
+                ],
+                startPoint: UnitPoint(x: 0.5, y: 0),
+                endPoint: UnitPoint(x: 0.5, y: 1)
+            )
+        )
     }
     
     var editingHeader: some View {
@@ -114,37 +128,47 @@ struct VaultListView: View {
     
     @ViewBuilder
     var foldersList: some View {
-        ForEach(folders) { folder in
-            FolderCellView(
-                folder: folder,
-                selectedVaultName: homeViewModel.selectedVault?.name,
-                isEditing: $isEditing
-            ) {
-                onSelectFolder(folder)
+        Section {
+            ForEach(folders) { folder in
+                FolderCellView(
+                    folder: folder,
+                    selectedVaultName: homeViewModel.selectedVault?.name,
+                    isEditing: $isEditing
+                ) {
+                    onSelectFolder(folder)
+                }
+                .disabled(isEditing)
+                .plainListItem()
+                .background(Theme.colors.bgPrimary)
             }
-            .disabled(isEditing)
-            .plainListItem()
-            .background(Theme.colors.bgPrimary)
+            .onMove(perform: isEditing ? moveFolder : nil)
+        } header: {
+            sectionHeader(title: "folders".localized)
+                .plainListItem()
         }
-        .onMove(perform: isEditing ? moveFolder : nil)
+        .listSectionSpacing(0)
     }
     
     @ViewBuilder
     var vaultsList: some View {
-        sectionHeader(title: "vaults".localized)
-            .plainListItem()
-        ForEach(filteredVaults) { vault in
-            VaultCellView(
-                vault: vault,
-                isSelected: homeViewModel.selectedVault == vault,
-                isEditing: $isEditing) {
-                onSelectVault(vault)
+        Section {
+            ForEach(filteredVaults) { vault in
+                VaultCellView(
+                    vault: vault,
+                    isSelected: homeViewModel.selectedVault == vault,
+                    isEditing: $isEditing) {
+                        onSelectVault(vault)
+                    }
+                    .disabled(isEditing)
+                    .plainListItem()
+                    .background(Theme.colors.bgPrimary)
             }
-            .disabled(isEditing)
-            .plainListItem()
-            .background(Theme.colors.bgPrimary)
+            .onMove(perform: isEditing ? moveVaults : nil)
+        } header: {
+            sectionHeader(title: "vaults".localized)
+                .plainListItem()
         }
-        .onMove(perform: isEditing ? moveVaults : nil)
+        .listSectionSpacing(0)
     }
     
     var addFolderButton: some View {
@@ -154,7 +178,7 @@ struct VaultListView: View {
             type: .secondary,
             action: onAddFolder
         )
-        .padding(16)
+        .padding(.vertical, 16)
         .background(Theme.colors.bgPrimary)
         .transition(.opacity)
         .showIf(isEditing)

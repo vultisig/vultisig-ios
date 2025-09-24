@@ -38,27 +38,14 @@ struct VaultMainChainListView: View {
     
     var chainList: some View {
         ForEach(Array(viewModel.filteredGroups.enumerated()), id: \.element.id) { index, group in
-            let isFirst = index == 0
-            let isLast = index == viewModel.filteredGroups.count - 1
-            
-            VStack(spacing: 0) {
-                GradientListSeparator()
-                    .showIf(isFirst)
-                VaultChainCellView(group: group, vault: vault) {
-                    onCopy(group)
-                } onAction: {
-                    onAction(group)
-                }
-                Separator(color: Theme.colors.borderLight, opacity: 1)
-                    .showIf(!isLast)
+            VaultChainCellView(group: group, vault: vault) {
+                onCopy(group)
+            } onAction: {
+                onAction(group)
             }
-            .clipShape(
-                .rect(
-                    topLeadingRadius: isFirst ? 12 : 0,
-                    bottomLeadingRadius: isLast ? 12 : 0,
-                    bottomTrailingRadius: isLast ? 12 : 0,
-                    topTrailingRadius: isFirst ? 12 : 0
-                )
+            .commonListItemContainer(
+                index: index,
+                itemsCount: viewModel.filteredGroups.count
             )
         }
     }

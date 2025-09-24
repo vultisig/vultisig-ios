@@ -59,48 +59,57 @@ struct EditFolderScreen: View {
                 )
                 .plainListItem()
                 .onLoad(perform: setupFolder)
-                
-                sectionHeader(title: "activeVaults".localized)
                 selectedVaultsList
-                sectionHeader(title: "available".localized)
-                    .showIf(!folderViewModel.remainingVaults.isEmpty)
                 vaultsList
             }
             .listSectionSpacing(0)
             .listStyle(.plain)
             .buttonStyle(.borderless)
             .scrollContentBackground(.hidden)
+            .scrollIndicators(.hidden)
             .background(Theme.colors.bgPrimary)
             .animation(.interpolatingSpring, value: folder.containedVaultNames)
         }
     }
     
     var selectedVaultsList: some View {
-        ForEach(folderViewModel.selectedVaults.sorted(by: {
-            $0.order < $1.order
-        }), id: \.self) { vault in
-            VaultFolderCellView(
-                vault: vault,
-                isOnFolder: true,
-                isSelected: viewModel.selectedVault == vault,
-                onSelection: { removeVault(vault) }
-            )
-            .plainListItem()
-            .disabled(disableSelection)
+        Section {
+            ForEach(folderViewModel.selectedVaults.sorted(by: {
+                $0.order < $1.order
+            }), id: \.self) { vault in
+                VaultFolderCellView(
+                    vault: vault,
+                    isOnFolder: true,
+                    isSelected: viewModel.selectedVault == vault,
+                    onSelection: { removeVault(vault) }
+                )
+                .plainListItem()
+                .disabled(disableSelection)
+            }
+            .onMove(perform: move)
+        } header: {
+            sectionHeader(title: "activeVaults".localized)
+                .padding(.top, 24)
         }
-        .onMove(perform: move)
+        .listSectionSpacing(0)
     }
     
     var vaultsList: some View {
-        ForEach(folderViewModel.remainingVaults, id: \.self) { vault in
-            VaultFolderCellView(
-                vault: vault,
-                isOnFolder: false,
-                isSelected: viewModel.selectedVault == vault,
-                onSelection: { addVault(vault) }
-            )
-            .plainListItem()
+        Section {
+            ForEach(folderViewModel.remainingVaults, id: \.self) { vault in
+                VaultFolderCellView(
+                    vault: vault,
+                    isOnFolder: false,
+                    isSelected: viewModel.selectedVault == vault,
+                    onSelection: { addVault(vault) }
+                )
+                .plainListItem()
+            }
+        } header: {
+            sectionHeader(title: "available".localized)
+                .showIf(!folderViewModel.remainingVaults.isEmpty)
         }
+        .listSectionSpacing(0)
     }
     
     var saveButton: some View {
@@ -155,8 +164,10 @@ struct EditFolderScreen: View {
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
     }
-    
-    private func setData() {
+}
+
+private extension EditFolderScreen {
+    func setData() {
         viewModel.filterVaults(vaults: vaults, folders: folders)
         folderViewModel.setData(
             vaults: vaults,
@@ -166,7 +177,7 @@ struct EditFolderScreen: View {
         updateSelection()
     }
     
-    private func move(from: IndexSet, to: Int) {
+    func move(from: IndexSet, to: Int) {
         var s = folderViewModel.selectedVaults.sorted(by: { $0.order < $1.order })
         s.move(fromOffsets: from, toOffset: to)
         for (index, item) in s.enumerated() {
@@ -175,12 +186,12 @@ struct EditFolderScreen: View {
         try? self.modelContext.save()
     }
     
-    private func addVault(_ vault: Vault) {
+    func addVault(_ vault: Vault) {
         folderViewModel.addVault(vault: vault)
         updateFolder()
     }
     
-    private func removeVault(_ vault: Vault) {
+    func removeVault(_ vault: Vault) {
         let count = folderViewModel.selectedVaults.count
         
         guard count > 1 else {
@@ -201,11 +212,11 @@ struct EditFolderScreen: View {
         disableSelection = folderViewModel.selectedVaults.count == 1
     }
     
-    private func setupFolder() {
+    func setupFolder() {
         folderName = folder.folderName
     }
     
-    private func saveFolder() {
+    func saveFolder() {
         viewModel.filterVaults(vaults: vaults, folders: folders)
         folder.folderName = folderName
         

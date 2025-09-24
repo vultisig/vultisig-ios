@@ -67,12 +67,13 @@ struct VaultCellView<TrailingView: View>: View {
                             .font(Theme.fonts.caption12)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
-                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(isEditing ? Theme.colors.textExtraLight : Theme.colors.borderLight))
+                            .background(RoundedRectangle(cornerRadius: 8).stroke(isEditing ? Theme.colors.textExtraLight : Theme.colors.borderLight))
+                            .fixedSize()
                     }
                     .showIf(showTrailingDetails)
                     trailingView()
                 }
-                .padding(12)
+                .padding(8)
                 .background(isSelected && !isEditing ? selectedBackground : nil)
             }
             .contentShape(Rectangle())
@@ -82,36 +83,6 @@ struct VaultCellView<TrailingView: View>: View {
     var selectedBackground: some View {
         RoundedRectangle(cornerRadius: 12)
             .fill(Theme.colors.bgSecondary)
-    }
-}
-
-struct VaultCellMainView: View {
-    let vault: Vault
-    
-    @EnvironmentObject var homeViewModel: HomeViewModel
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            VaultIconTypeView(isFastVault: vault.isFastVault)
-                .padding(12)
-                .background(Circle().fill(Theme.colors.bgTertiary))
-                .overlay(
-                    Circle()
-                        .inset(by: 0.5)
-                        .stroke(Theme.colors.borderLight, lineWidth: 1)
-                )
-            VStack(alignment: .leading, spacing: 2) {
-                Text(vault.name)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                    .font(Theme.fonts.bodySMedium)
-                    .multilineTextAlignment(.leading)
-                    .lineLimit(2)
-                
-                Text(homeViewModel.balanceText(for: vault))
-                    .foregroundStyle(Theme.colors.textLight)
-                    .font(Theme.fonts.priceFootnote)
-            }
-        }
     }
 }
 

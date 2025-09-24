@@ -35,7 +35,7 @@ struct FolderDetailView: View {
     }
     
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 0) {
             header
             List {
                 vaultsList
@@ -44,7 +44,9 @@ struct FolderDetailView: View {
             .listStyle(.plain)
             .buttonStyle(.borderless)
             .scrollContentBackground(.hidden)
+            .scrollIndicators(.hidden)
             .background(Theme.colors.bgPrimary)
+            .padding(.top, 20)
         }
     }
     
@@ -71,6 +73,17 @@ struct FolderDetailView: View {
                 action: onEditFolder
             )
         }
+        .background(
+            LinearGradient(
+                stops: [
+                    Gradient.Stop(color: Theme.colors.bgPrimary, location: 0.50),
+                    Gradient.Stop(color: Theme.colors.bgPrimary.opacity(0.5), location: 0.85),
+                    Gradient.Stop(color: Theme.colors.bgPrimary.opacity(0), location: 1.00),
+                ],
+                startPoint: UnitPoint(x: 0.5, y: 0),
+                endPoint: UnitPoint(x: 0.5, y: 1)
+            )
+        )
     }
     
     @ViewBuilder

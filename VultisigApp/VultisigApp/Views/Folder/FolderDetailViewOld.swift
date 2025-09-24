@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 
+// TODO: - To remove
 struct FolderDetailViewOld: View {
     let selectedFolder: Folder
     @Binding var vaultFolder: Folder

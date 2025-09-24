@@ -49,29 +49,34 @@ struct AddFolderScreen: View {
                     placeholder: "typeHere".localized,
                 )
                 .plainListItem()
-                
-                sectionHeader(title: "selectVaults".localized)
                 vaultsList
             }
             .listSectionSpacing(0)
             .listStyle(.plain)
             .buttonStyle(.borderless)
             .scrollContentBackground(.hidden)
+            .scrollIndicators(.hidden)
             .background(Theme.colors.bgPrimary)
         }
     }
     
     var vaultsList: some View {
-        ForEach(filteredVaults, id: \.self) { vault in
-            AddFolderVaultCellView(
-                vault: vault,
-                isSelected: folderViewModel.selectedVaults.contains(vault),
-                onSelection: {
-                    handleSelection(vault: vault, isSelected: $0)
-                }
-            )
-            .plainListItem()
+        Section {
+            ForEach(Array(filteredVaults.enumerated()), id: \.element) { index, vault in
+                AddFolderVaultCellView(
+                    vault: vault,
+                    isSelected: folderViewModel.selectedVaults.contains(vault),
+                    onSelection: {
+                        handleSelection(vault: vault, isSelected: $0)
+                    }
+                )
+                .commonListItemContainer(index: index, itemsCount: filteredVaults.count)
+            }
+        } header: {
+            sectionHeader(title: "selectVaults".localized)
+                .padding(.top, 24)
         }
+        .listSectionSpacing(0)
     }
     
     var saveButton: some View {
@@ -126,13 +131,15 @@ struct AddFolderScreen: View {
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
     }
-    
-    private func setData() {
+}
+
+private extension AddFolderScreen {
+    func setData() {
         viewModel.filterVaults(vaults: vaults, folders: folders)
         self.filteredVaults = viewModel.filteredVaults
     }
 
-    private func saveFolder() {
+    func saveFolder() {
         guard folderViewModel.runChecks(folders) else {
             return
         }
@@ -150,7 +157,7 @@ struct AddFolderScreen: View {
         }
     }
     
-    private func handleSelection(vault: Vault, isSelected: Bool) {
+    func handleSelection(vault: Vault, isSelected: Bool) {
         if isSelected {
             folderViewModel.selectedVaults.append(vault)
         } else {
@@ -158,7 +165,7 @@ struct AddFolderScreen: View {
         }
     }
     
-    private func removeVault(_ vault: Vault) {
+    func removeVault(_ vault: Vault) {
         for index in 0..<folderViewModel.selectedVaults.count {
             if areVaultsSame(folderViewModel.selectedVaults[index], vault) {
                 folderViewModel.selectedVaults.remove(at: index)
@@ -167,44 +174,8 @@ struct AddFolderScreen: View {
         }
     }
     
-    private func areVaultsSame(_ selectedVault: Vault, _ vault: Vault) -> Bool {
+    func areVaultsSame(_ selectedVault: Vault, _ vault: Vault) -> Bool {
         selectedVault.name == vault.name && selectedVault.pubKeyECDSA == vault.pubKeyECDSA && selectedVault.pubKeyEdDSA == vault.pubKeyEdDSA
-    }
-}
-
-struct AddFolderVaultCellView: View {
-    let vault: Vault
-    let isSelected: Bool
-    var onSelection: (Bool) -> Void
-    @State var isSelectedInternal: Bool = false
-    
-    var body: some View {
-        HStack {
-            VaultCellMainView(vault: vault)
-                .opacity(isSelectedInternal ? 1 : 0.5)
-                .animation(.interpolatingSpring, value: isSelectedInternal)
-            Spacer()
-            Toggle("", isOn: $isSelectedInternal)
-                .labelsHidden()
-                .scaleEffect(0.8)
-                .tint(Theme.colors.primaryAccent4)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(Theme.colors.bgSecondary)
-        .onLoad {
-            isSelectedInternal = isSelected
-        }
-        .onChange(of: isSelectedInternal) {
-            guard isSelectedInternal != isSelected else {
-                return
-            }
-            
-            // Wait for toggle animation to complete
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                onSelection(isSelectedInternal)
-            }
-        }
     }
 }
 
@@ -212,3 +183,4 @@ struct AddFolderVaultCellView: View {
     AddFolderScreen()
     .environmentObject(HomeViewModel())
 }
+

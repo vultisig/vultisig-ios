@@ -22,24 +22,11 @@ struct ChainDetailListView: View {
     
     var tokensList: some View {
         ForEach(Array(viewModel.filteredTokens.enumerated()), id: \.element.id) { index, token in
-            let isFirst = index == 0
-            let isLast = index == viewModel.filteredTokens.count - 1
-            
-            VStack(spacing: 0) {
-                GradientListSeparator()
-                    .showIf(isFirst)
-                TokenCellView(coin: token)
-                Separator(color: Theme.colors.borderLight, opacity: 1)
-                    .showIf(!isLast)
-            }
-            .clipShape(
-                .rect(
-                    topLeadingRadius: isFirst ? 12 : 0,
-                    bottomLeadingRadius: isLast ? 12 : 0,
-                    bottomTrailingRadius: isLast ? 12 : 0,
-                    topTrailingRadius: isFirst ? 12 : 0
+            TokenCellView(coin: token)
+                .commonListItemContainer(
+                    index: index,
+                    itemsCount: viewModel.filteredTokens.count
                 )
-            )
         }
     }
     

@@ -140,6 +140,7 @@
 		139DE1262E4CF7F200BC2FD3 /* SendPairScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139DE1252E4CF7E900BC2FD3 /* SendPairScreen.swift */; };
 		139DE1282E4D095000BC2FD3 /* SendKeysignScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139DE1272E4D094D00BC2FD3 /* SendKeysignScreen.swift */; };
 		139DE12A2E4D0B3A00BC2FD3 /* SendDoneScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139DE1292E4D0B3200BC2FD3 /* SendDoneScreen.swift */; };
+		13A078622E845AEB0093496F /* CommonListItemContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A078612E845AEA0093496F /* CommonListItemContainer.swift */; };
 		13A899002E43C0FE006F75F0 /* PreferredAssetSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A898FF2E43C0EE006F75F0 /* PreferredAssetSelectionView.swift */; };
 		13A899022E43CEF3006F75F0 /* THORChainTokenMetadataFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A899012E43CEEB006F75F0 /* THORChainTokenMetadataFactory.swift */; };
 		13A899042E43FA4D006F75F0 /* PreferredAssetSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A899032E43FA4B006F75F0 /* PreferredAssetSelectionViewModel.swift */; };
@@ -217,6 +218,10 @@
 		13D93BD62E58C7F5001E31E8 /* View+Container.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D93BD52E58C7F1001E31E8 /* View+Container.swift */; };
 		13D93BD82E58C8C6001E31E8 /* BannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D93BD72E58C8C3001E31E8 /* BannerView.swift */; };
 		13D9EBF32E84492F0089B2A7 /* AddFolderScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D9EBF22E84492B0089B2A7 /* AddFolderScreen.swift */; };
+		13D9EBF92E8456BE0089B2A7 /* AddFolderVaultCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D9EBF82E8456BD0089B2A7 /* AddFolderVaultCellView.swift */; };
+		13D9EBFB2E8457580089B2A7 /* BottomSheetButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D9EBFA2E8457570089B2A7 /* BottomSheetButton.swift */; };
+		13D9EC002E8457C80089B2A7 /* DetentsAwareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D9EBFF2E8457C20089B2A7 /* DetentsAwareSheet.swift */; };
+		13D9EC022E84584A0089B2A7 /* VaultCellMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D9EC012E8458490089B2A7 /* VaultCellMainView.swift */; };
 		13DD3B172E3CFE5900D46FA0 /* OffsetObservingScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD3B162E3CFE5800D46FA0 /* OffsetObservingScrollView.swift */; };
 		13DD3B1A2E3CFE7D00D46FA0 /* FlatPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD3B192E3CFE6E00D46FA0 /* FlatPicker.swift */; };
 		13DD547C2E561598007335DA /* SettingsOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD547B2E561598007335DA /* SettingsOption.swift */; };
@@ -1222,6 +1227,7 @@
 		139DE1252E4CF7E900BC2FD3 /* SendPairScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendPairScreen.swift; sourceTree = "<group>"; };
 		139DE1272E4D094D00BC2FD3 /* SendKeysignScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendKeysignScreen.swift; sourceTree = "<group>"; };
 		139DE1292E4D0B3200BC2FD3 /* SendDoneScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDoneScreen.swift; sourceTree = "<group>"; };
+		13A078612E845AEA0093496F /* CommonListItemContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonListItemContainer.swift; sourceTree = "<group>"; };
 		13A898FF2E43C0EE006F75F0 /* PreferredAssetSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetSelectionView.swift; sourceTree = "<group>"; };
 		13A899012E43CEEB006F75F0 /* THORChainTokenMetadataFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainTokenMetadataFactory.swift; sourceTree = "<group>"; };
 		13A899032E43FA4B006F75F0 /* PreferredAssetSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetSelectionViewModel.swift; sourceTree = "<group>"; };
@@ -1298,6 +1304,10 @@
 		13D93BD52E58C7F1001E31E8 /* View+Container.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Container.swift"; sourceTree = "<group>"; };
 		13D93BD72E58C8C3001E31E8 /* BannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerView.swift; sourceTree = "<group>"; };
 		13D9EBF22E84492B0089B2A7 /* AddFolderScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFolderScreen.swift; sourceTree = "<group>"; };
+		13D9EBF82E8456BD0089B2A7 /* AddFolderVaultCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFolderVaultCellView.swift; sourceTree = "<group>"; };
+		13D9EBFA2E8457570089B2A7 /* BottomSheetButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetButton.swift; sourceTree = "<group>"; };
+		13D9EBFF2E8457C20089B2A7 /* DetentsAwareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetentsAwareSheet.swift; sourceTree = "<group>"; };
+		13D9EC012E8458490089B2A7 /* VaultCellMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultCellMainView.swift; sourceTree = "<group>"; };
 		13DD3B162E3CFE5800D46FA0 /* OffsetObservingScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffsetObservingScrollView.swift; sourceTree = "<group>"; };
 		13DD3B192E3CFE6E00D46FA0 /* FlatPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlatPicker.swift; sourceTree = "<group>"; };
 		13DD547B2E561598007335DA /* SettingsOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsOption.swift; sourceTree = "<group>"; };
@@ -2239,6 +2249,7 @@
 		049BBB4E2B71E37B004C231F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				13D9EBFC2E84579F0089B2A7 /* Sheet */,
 				135B9FD52E7C8DBC0087D85D /* List */,
 				13B25BF42E82FA24002BCF55 /* NotificationBanner */,
 				138C5E682E79EDD300C559C7 /* Toolbar */,
@@ -2260,7 +2271,6 @@
 				13DD3B152E3CFE4800D46FA0 /* ScrollView */,
 				13DF05732E3CEF580000188C /* TextField */,
 				135C88182E3AADB000FD097D /* GradientListSeparator.swift */,
-				137B2C762E3A4A3F0074F648 /* BottomSheet */,
 				A6725D3F2C40C36700D47716 /* AddressBook */,
 				A5BA150D2C085ED300AA6C07 /* ImageView */,
 				A6F9F7D92B9BA2CF00790258 /* Cells */,
@@ -2579,6 +2589,7 @@
 		135B9FD52E7C8DBC0087D85D /* List */ = {
 			isa = PBXGroup;
 			children = (
+				13A078612E845AEA0093496F /* CommonListItemContainer.swift */,
 				135B9FD62E7C8DC00087D85D /* View+PlainListItem.swift */,
 			);
 			path = List;
@@ -2714,11 +2725,9 @@
 		139642362E79950C00CFEFAF /* VaultSelector */ = {
 			isa = PBXGroup;
 			children = (
-				13D9EBF22E84492B0089B2A7 /* AddFolderScreen.swift */,
-				1368C2762E83355B00BB240D /* EditFolderScreen.swift */,
+				13D9EBF42E8454540089B2A7 /* Screens */,
 				1396423C2E79A77400CFEFAF /* Views */,
 				139642392E79A63A00CFEFAF /* ViewModels */,
-				139642372E79951900CFEFAF /* VaultManagementSheet.swift */,
 			);
 			path = VaultSelector;
 			sourceTree = "<group>";
@@ -2734,6 +2743,8 @@
 		1396423C2E79A77400CFEFAF /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				13D9EC012E8458490089B2A7 /* VaultCellMainView.swift */,
+				13D9EBF82E8456BD0089B2A7 /* AddFolderVaultCellView.swift */,
 				1368C2782E833DE500BB240D /* VaultFolderCellView.swift */,
 				1368C2742E832ED800BB240D /* FolderDetailView.swift */,
 				1368C2722E832CBE00BB240D /* VaultListView.swift */,
@@ -3008,15 +3019,6 @@
 			path = AddressBook;
 			sourceTree = "<group>";
 		};
-		13D179032E57804C00007B48 /* Sheets */ = {
-			isa = PBXGroup;
-			children = (
-				13D179042E57805100007B48 /* SheetHeaderView.swift */,
-				13D179012E577ED500007B48 /* PlatformSheet.swift */,
-			);
-			path = Sheets;
-			sourceTree = "<group>";
-		};
 		13D179062E5787CA00007B48 /* AddressBook */ = {
 			isa = PBXGroup;
 			children = (
@@ -3040,6 +3042,27 @@
 				132666C32E42920A007FDAC5 /* ContainerView.swift */,
 			);
 			path = Layout;
+			sourceTree = "<group>";
+		};
+		13D9EBF42E8454540089B2A7 /* Screens */ = {
+			isa = PBXGroup;
+			children = (
+				13D9EBF22E84492B0089B2A7 /* AddFolderScreen.swift */,
+				1368C2762E83355B00BB240D /* EditFolderScreen.swift */,
+				139642372E79951900CFEFAF /* VaultManagementSheet.swift */,
+			);
+			path = Screens;
+			sourceTree = "<group>";
+		};
+		13D9EBFC2E84579F0089B2A7 /* Sheet */ = {
+			isa = PBXGroup;
+			children = (
+				13D9EBFF2E8457C20089B2A7 /* DetentsAwareSheet.swift */,
+				13D179012E577ED500007B48 /* PlatformSheet.swift */,
+				13D179042E57805100007B48 /* SheetHeaderView.swift */,
+				137B2C762E3A4A3F0074F648 /* BottomSheet */,
+			);
+			path = Sheet;
 			sourceTree = "<group>";
 		};
 		13DD3B152E3CFE4800D46FA0 /* ScrollView */ = {
@@ -3578,6 +3601,7 @@
 		A633B1232B993FCC003D1738 /* Buttons */ = {
 			isa = PBXGroup;
 			children = (
+				13D9EBFA2E8457570089B2A7 /* BottomSheetButton.swift */,
 				13D178FF2E5775A800007B48 /* NavigationBarButtonView.swift */,
 				1385741F2E2DB6C8002532BF /* IconButton */,
 				138574122E2DA91E002532BF /* PrimaryButton */,
@@ -4567,7 +4591,6 @@
 				13E1E7652E6DD71000D68F5D /* Forms */,
 				13E1E7622E6DD6B900D68F5D /* Transitions */,
 				131603442E609D6B001ED972 /* FileExporterSheet.swift */,
-				13D179032E57804C00007B48 /* Sheets */,
 				137B2C792E3A4A970074F648 /* PreferenceKeys */,
 				13095A342E3264E1009F8785 /* Utils */,
 				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
@@ -5330,6 +5353,7 @@
 				A6AF96122C2E3D6100992578 /* ImportFileCell.swift in Sources */,
 				A65BA98A2BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift in Sources */,
 				A65618012CB64EB200E9CF19 /* SettingVaultRegistrationCell.swift in Sources */,
+				13A078622E845AEB0093496F /* CommonListItemContainer.swift in Sources */,
 				B5A41F642DAB33E70075E921 /* FunctionCallCosmosMerge.swift in Sources */,
 				B5A41F652DAB33E70075E921 /* FunctionCallCosmosUnmerge.swift in Sources */,
 				A6386DB22C90263400DDD58E /* ToggleSelectionCell+iOS.swift in Sources */,
@@ -5394,6 +5418,7 @@
 				A65617F92CB4F53C00E9CF19 /* CreateFolderViewModel.swift in Sources */,
 				A646DFA32E0CFF53006E8ECC /* ReferralMemoParameter.swift in Sources */,
 				B54B019C2BDE135C00FDA472 /* RpcService.swift in Sources */,
+				13D9EBF92E8456BE0089B2A7 /* AddFolderVaultCellView.swift in Sources */,
 				DE15729F2B70F284009BC7C5 /* KeysignDiscoveryView.swift in Sources */,
 				13D7643A2E4127B100F048DE /* Array.swift in Sources */,
 				A601D3AB2DBB687E004B6A0A /* PasswordVerifyReminderView.swift in Sources */,
@@ -5496,6 +5521,7 @@
 				A51AE8C12C931C6000EF9A7A /* FastVaultEmailView.swift in Sources */,
 				A54676522C179A93004DD782 /* Coin+Swaps.swift in Sources */,
 				A6182F312C922B750059BFDD /* AsyncImageView+macOS.swift in Sources */,
+				13D9EC022E84584A0089B2A7 /* VaultCellMainView.swift in Sources */,
 				A6F7B6FA2D4D515100AC8104 /* SecureBackupVaultOverview.swift in Sources */,
 				A6C3ABC82C3E595000F13ED0 /* AddressBookView.swift in Sources */,
 				A6ECA19E2C93FB7B00456110 /* Search+macOS.swift in Sources */,
@@ -5787,6 +5813,7 @@
 				13D764382E41030300F048DE /* SwapCoinSelectionViewModel.swift in Sources */,
 				A6F7B7192D4EC25D00AC8104 /* BackupVaultSuccessView+macOS.swift in Sources */,
 				13A8990B2E44F547006F75F0 /* RedactedText.swift in Sources */,
+				13D9EBFB2E8457580089B2A7 /* BottomSheetButton.swift in Sources */,
 				A62766532C852765002C666A /* ImportWalletView+macOS.swift in Sources */,
 				A52313DE2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift in Sources */,
 				DEEDAEE32B8AF8B1005170E8 /* publickey.swift in Sources */,
@@ -5877,6 +5904,7 @@
 				1336BB342E81752E00597070 /* ChainDetailViewModel.swift in Sources */,
 				13D0C84B2E7461F600A1301F /* TabBarItem.swift in Sources */,
 				A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */,
+				13D9EC002E8457C80089B2A7 /* DetentsAwareSheet.swift in Sources */,
 				A6E0C9212DE9013A00A01543 /* ReferralLaunchView.swift in Sources */,
 				A65617FF2CB4FE1500E9CF19 /* FolderDetailHeader.swift in Sources */,
 				13AF0D1A2E4CE672004D4FD2 /* NavigationRouter+EnvironmentKey.swift in Sources */,
