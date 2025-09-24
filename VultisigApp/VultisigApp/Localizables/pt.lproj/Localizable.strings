@@ -553,7 +553,7 @@
 "referralOverviewCheckbox2" = "Estou enviando para o endereço correto";
 "referralProgram" = "Programa de Indicação";
 "referralProgramTooltipDescription" = "O programa de indicação se aplica às trocas da THORChain e opera com base no melhor esforço. Para usar a indicação Vultisig, você deve registrar um THORName. A taxa de registro é de 10 RUNE mais 1 RUNE por ano, paga à rede THORChain.";
-"referredSaveOnSwaps" = "Salvar % ON SWAPS - Adicione uma referência";
+"referredSaveOnSwaps" = "Economize %@ em swaps - Adicione uma indicação";
 "registerGuide" = "Guia de registro";
 "registerVault" = "Registrar Cofre";
 "registerVaultText1" = "1. Salve o código QR do seu Cofre";
@@ -592,7 +592,7 @@
 "save" = "Salvar";
 "saveAddress" = "Salvar endereço";
 "saveChanges" = "Salvar alterações";
-"saveOnSwaps" = "Salvar % ON SWAPS";
+"saveOnSwaps" = "Economize %@ em swaps";
 "saveOrShare" = "Salvar ou compartilhar";
 "saveQRCode" = "Salvar código QR";
 "saveReferral" = "Salvar indicação";
