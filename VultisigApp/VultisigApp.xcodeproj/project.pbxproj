@@ -216,6 +216,7 @@
 		13D1790A2E57889F00007B48 /* AddressBookChainCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D179092E57889E00007B48 /* AddressBookChainCell.swift */; };
 		13D1790D2E5788BE00007B48 /* AddressBookChainCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D1790C2E5788BE00007B48 /* AddressBookChainCellView.swift */; };
 		13D3AC942E85720800BA4273 /* VaultMainRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D3AC932E85720500BA4273 /* VaultMainRoute.swift */; };
+		13D3AC962E85901F00BA4273 /* VaultActionRouteBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D3AC952E85901700BA4273 /* VaultActionRouteBuilder.swift */; };
 		13D764382E41030300F048DE /* SwapCoinSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D764372E4102F500F048DE /* SwapCoinSelectionViewModel.swift */; };
 		13D7643A2E4127B100F048DE /* Array.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D764392E4127AF00F048DE /* Array.swift */; };
 		13D7643C2E41309E00F048DE /* TokenSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D7643B2E41309D00F048DE /* TokenSearchService.swift */; };
@@ -1307,6 +1308,7 @@
 		13D179092E57889E00007B48 /* AddressBookChainCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookChainCell.swift; sourceTree = "<group>"; };
 		13D1790C2E5788BE00007B48 /* AddressBookChainCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookChainCellView.swift; sourceTree = "<group>"; };
 		13D3AC932E85720500BA4273 /* VaultMainRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainRoute.swift; sourceTree = "<group>"; };
+		13D3AC952E85901700BA4273 /* VaultActionRouteBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultActionRouteBuilder.swift; sourceTree = "<group>"; };
 		13D764372E4102F500F048DE /* SwapCoinSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCoinSelectionViewModel.swift; sourceTree = "<group>"; };
 		13D764392E4127AF00F048DE /* Array.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Array.swift; sourceTree = "<group>"; };
 		13D7643B2E41309D00F048DE /* TokenSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSearchService.swift; sourceTree = "<group>"; };
@@ -2938,6 +2940,7 @@
 		13C880552E70A312009C67F1 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				13D3AC952E85901700BA4273 /* VaultActionRouteBuilder.swift */,
 				139642362E79950C00CFEFAF /* VaultSelector */,
 				1336BB2F2E81739C00597070 /* ChainDetail */,
 				138C5E622E79DE2300C559C7 /* VaultSelectChain */,
@@ -5303,6 +5306,7 @@
 				B52FD1CE2CDDA7740031FB71 /* TerraService.swift in Sources */,
 				049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */,
 				A6C670922C9CFE1600F59B6A /* HomeView+macOS.swift in Sources */,
+				13D3AC962E85901F00BA4273 /* VaultActionRouteBuilder.swift in Sources */,
 				DE727C0C2D000FC9007E9273 /* LibType.swift in Sources */,
 				1385741E2E2DB441002532BF /* PrimaryNavigationButton.swift in Sources */,
 				A622C8362C9BB76A00908332 /* CoinPickerView+iOS.swift in Sources */,

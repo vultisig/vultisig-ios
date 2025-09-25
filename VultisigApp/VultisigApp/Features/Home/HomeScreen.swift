@@ -71,7 +71,12 @@ struct HomeScreen: View {
         }
         .onChange(of: shouldSendCrypto) { _, newValue in
             guard newValue else { return }
-            vaultRoute = .mainAction(.send)
+            vaultRoute = .mainAction(.send(coin: vaultDetailViewModel.selectedGroup?.nativeCoin, hasPreselectedCoin: false))
+        }
+        .navigationDestination(isPresented: $shouldKeysignTransaction) {
+            if let vault = homeViewModel.selectedVault {
+                JoinKeysignView(vault: vault)
+            }
         }
     }
     
@@ -91,39 +96,7 @@ extension HomeScreen {
         case .createVault:
             CreateVaultView(selectedVault: vault, showBackButton: true)
         case .mainAction(let action):
-            buildActionRoute(action: action)
-        }
-    }
-    
-    @ViewBuilder
-    func buildActionRoute(action: CoinAction) -> some View {
-        switch action {
-        case .send:
-            SendRouteBuilder().buildDetailsScreen(
-                coin: vaultDetailViewModel.selectedGroup?.nativeCoin,
-                hasPreselectedCoin: false,
-                tx: sendTx,
-                vault: vault
-            )
-        case .swap:
-            if let fromCoin = vaultDetailViewModel.selectedGroup?.nativeCoin {
-                SwapCryptoView(fromCoin: fromCoin, vault: vault)
-            }
-        case .deposit, .bridge, .memo:
-            FunctionCallView(
-                tx: sendTx,
-                vault: vault,
-                coin: vaultDetailViewModel.selectedGroup?.nativeCoin
-            )
-        case .buy:
-            SendRouteBuilder().buildBuyScreen(
-                address: vaultDetailViewModel.selectedGroup?.address ?? "",
-                blockChainCode: vaultDetailViewModel.selectedGroup?.chain.banxaBlockchainCode ?? "",
-                coinType: vaultDetailViewModel.selectedGroup?.nativeCoin.ticker ?? ""
-            )
-        case .sell, .receive:
-            // TODO: - Action not implemented yet
-            EmptyView()
+            VaultActionRouteBuilder().buildActionRoute(action: action, sendTx: sendTx, vault: vault)
         }
     }
 }

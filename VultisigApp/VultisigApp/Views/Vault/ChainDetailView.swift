@@ -182,7 +182,7 @@ struct ChainDetailView: View {
         VStack(spacing: 0) {
             Separator()
             NavigationLink {
-                CoinDetailView(coin: coin, group: group, vault: vault, sendTx: sendTx, resetActive: $resetActive)
+                CoinDetailView(coin: coin, group: group, vault: vault, sendTx: sendTx)
             } label: {
                 CoinCell(coin: coin)
             }

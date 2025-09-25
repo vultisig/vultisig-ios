@@ -9,5 +9,12 @@ enum VaultMainRoute: Equatable, Hashable {
     case chainDetail(GroupedChain)
     case settings
     case createVault
-    case mainAction(CoinAction)
+    case mainAction(VaultAction)
+}
+
+enum VaultAction: Equatable, Hashable {
+    case send(coin: Coin?, hasPreselectedCoin: Bool)
+    case swap(fromCoin: Coin)
+    case function(coin: Coin?)
+    case buy(address: String, blockChainCode: String, coinType: String)
 }

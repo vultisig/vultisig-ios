@@ -109,7 +109,7 @@ struct VaultMainScreen: View {
             VaultMainBalanceView(vault: vault)
             CoinActionsView(
                 actions: viewModel.availableActions,
-                onAction: { routeToPresent = .mainAction($0) }
+                onAction: onAction
             )
             VaultBannerView(
                 title: "signFasterThanEverBefore".localized,
@@ -220,6 +220,35 @@ struct VaultMainScreen: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             clearSearch()
         }
+    }
+    
+    func onAction(_ action: CoinAction) {
+        var vaultAction: VaultAction?
+        
+        switch action {
+        case .send:
+            vaultAction = .send(coin: viewModel.selectedGroup?.nativeCoin, hasPreselectedCoin: false)
+        case .swap:
+            guard let fromCoin = viewModel.selectedGroup?.nativeCoin else { return }
+            vaultAction = .swap(fromCoin: fromCoin)
+        case .deposit, .bridge, .memo:
+            vaultAction = .function(coin: viewModel.selectedGroup?.nativeCoin)
+        case .buy:
+            vaultAction = .buy(
+                address: viewModel.selectedGroup?.address ?? "",
+                blockChainCode: viewModel.selectedGroup?.chain.banxaBlockchainCode ?? "",
+                coinType: viewModel.selectedGroup?.nativeCoin.ticker ?? ""
+            )
+        case .sell:
+            // TODO: - To add
+            break
+        case .receive:
+            // TODO: - To add
+            break
+        }
+        
+        guard let vaultAction else { return }
+        routeToPresent = .mainAction(vaultAction)
     }
 }
 

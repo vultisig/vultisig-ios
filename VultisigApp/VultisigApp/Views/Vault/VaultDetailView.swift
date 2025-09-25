@@ -113,7 +113,7 @@ struct VaultDetailView: View {
                 .presentationDetents([.height(260)])
         }
 //        .navigationDestination(isPresented: $shouldSendCrypto) {
-//            SendRouteBuilder().buildDetailsScreen(coin: viewModel.selectedGroup?.nativeCoin, hasPreselectedCoin: false, tx: sendTx, vault: vault)
+//            SendRouteBuilder().buildDetailsScreen(coin: c, hasPreselectedCoin: false, tx: sendTx, vault: vault)
 //        }
 //        .navigationDestination(isPresented: $isSendLinkActive) {
 //            SendRouteBuilder().buildDetailsScreen(coin: viewModel.selectedGroup?.nativeCoin, hasPreselectedCoin: false, tx: sendTx, vault: vault)

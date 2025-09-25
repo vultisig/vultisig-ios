@@ -20,16 +20,19 @@ struct ChainDetailScreen: View {
     
     @ObservedObject var group: GroupedChain
     let vault: Vault
+    @State var vaultAction: VaultAction?
     
     @StateObject var viewModel: ChainDetailViewModel
     
     @State private var addressToCopy: GroupedChain?
     @State var showManageAssets: Bool = false
     @State var showSearchHeader: Bool = false
+    @State var coinToShow: Coin?
     @State var focusSearch: Bool = false
     @State var showReceiveSheet: Bool = false
     @State var scrollProxy: ScrollViewProxy?
     @State var sheetType: SheetType? = nil
+    @StateObject var sendTx = SendTransaction()
     
     private let scrollReferenceId = "chainDetailScreenBottomContentId"
     
@@ -98,6 +101,12 @@ struct ChainDetailScreen: View {
         .onLoad {
             viewModel.refresh(group: group)
         }
+        .navigationDestination(item: $vaultAction) {
+            VaultActionRouteBuilder().buildActionRoute(action: $0, sendTx: sendTx, vault: vault)
+        }
+        .navigationDestination(item: $coinToShow) {
+            CoinDetailView(coin: $0, group: group, vault: vault, sendTx: sendTx)
+        }
     }
     
     var topContentSection: some View {
@@ -124,7 +133,7 @@ struct ChainDetailScreen: View {
             .padding(.bottom, 16)
             
             ChainDetailListView(viewModel: viewModel) {
-                // TODO: - On Press - will add in upcoming PRs
+                coinToShow = $0
             } onManageTokens: {
                 sheetType = .tokenSelection
             }
@@ -205,13 +214,31 @@ private extension ChainDetailScreen {
     }
     
     func onAction(_ action: CoinAction) {
+        var vaultAction: VaultAction?
         switch action {
         case .receive:
             showReceiveSheet = true
-        default:
-            // TODO: - Add action
+            return
+        case .send:
+            vaultAction = .send(coin: group.nativeCoin, hasPreselectedCoin: false)
+        case .swap:
+            guard let fromCoin = viewModel.tokens.first else { return }
+            vaultAction = .swap(fromCoin: fromCoin)
+        case .deposit, .bridge, .memo:
+            vaultAction = .function(coin: group.nativeCoin)
+        case .buy:
+            vaultAction = .buy(
+                address: group.nativeCoin.address,
+                blockChainCode: group.nativeCoin.chain.banxaBlockchainCode,
+                coinType: group.nativeCoin.ticker
+            )
+        case .sell:
+            // TODO: - To add
             break
         }
+        
+        guard let vaultAction else { return }
+        self.vaultAction = vaultAction
     }
     
     func onCopy() {
@@ -247,5 +274,8 @@ extension ChainDetailScreen {
 #endif
 
 #Preview {
-    ChainDetailScreen(group: .example, vault: .example)
+    ChainDetailScreen(
+        group: .example,
+        vault: .example
+    )
 }
