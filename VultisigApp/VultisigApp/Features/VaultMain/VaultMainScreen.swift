@@ -39,75 +39,77 @@ struct VaultMainScreen: View {
     }
     
     var body: some View {
-        ZStack(alignment: .top) {
-            ScrollViewReader { proxy in
-                OffsetObservingScrollView(
-                    showsIndicators: false,
-                    contentInset: contentInset,
-                    ns: .scrollView,
-                    scrollOffset: $scrollOffset
-                ) {
-                    LazyVStack(spacing: 20) {
-                        topContentSection
-                        Separator(color: Theme.colors.borderLight, opacity: 1)
-                        bottomContentSection
+        VStack {
+            ZStack(alignment: .top) {
+                ScrollViewReader { proxy in
+                    OffsetObservingScrollView(
+                        showsIndicators: false,
+                        contentInset: contentInset,
+                        ns: .scrollView,
+                        scrollOffset: $scrollOffset
+                    ) {
+                        LazyVStack(spacing: 20) {
+                            topContentSection
+                            Separator(color: Theme.colors.borderLight, opacity: 1)
+                            bottomContentSection
+                        }
+                        .padding(.horizontal, 16)
                     }
-                    .padding(.horizontal, 16)
-                }
-                .onLoad {
-                    scrollProxy = proxy
-                }
-            }
-            header
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(VaultMainScreenBackground())
-        .withAddressCopy(group: $addressToCopy)
-        .onChange(of: scrollOffset) { _, newValue in
-            onScrollOffsetChange(newValue)
-        }
-        .onChange(of: showSearchHeader) { _, showSearchHeader in
-            if showSearchHeader {
-                focusSearch = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
-                    withAnimation {
-                        scrollProxy?.scrollTo(scrollReferenceId, anchor: .center)
+                    .onLoad {
+                        scrollProxy = proxy
                     }
                 }
+                header
             }
-        }
-        .sheet(isPresented: $showVaultSelector) {
-            VaultManagementSheet {
-                showVaultSelector.toggle()
-                routeToPresent = .createVault
-            } onSelectVault: { vault in
-                showVaultSelector.toggle()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    homeViewModel.setSelectedVault(vault)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .background(VaultMainScreenBackground())
+            .withAddressCopy(group: $addressToCopy)
+            .onChange(of: scrollOffset) { _, newValue in
+                onScrollOffsetChange(newValue)
+            }
+            .onChange(of: showSearchHeader) { _, showSearchHeader in
+                if showSearchHeader {
+                    focusSearch = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                        withAnimation {
+                            scrollProxy?.scrollTo(scrollReferenceId, anchor: .center)
+                        }
+                    }
                 }
             }
+            .sheet(isPresented: $showVaultSelector) {
+                VaultManagementSheet {
+                    showVaultSelector.toggle()
+                    routeToPresent = .createVault
+                } onSelectVault: { vault in
+                    showVaultSelector.toggle()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        homeViewModel.setSelectedVault(vault)
+                    }
+                }
+            }
+            .sheet(isPresented: $showChainSelection) {
+                VaultSelectChainScreen(
+                    vault: homeViewModel.selectedVault ?? .example,
+                    isPresented: $showChainSelection
+                )
+            }
+            .sheet(isPresented: $showBackupNow) {
+                VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: vault))
+            }
+            .withUpgradeVault(vault: vault, shouldShow: $showUpgradeVaultSheet)
+            .withBiweeklyPasswordVerification(vault: vault)
+            .withMonthlyBackupWarning(vault: vault)
+            .onAppear(perform: refresh)
+            .refreshable { refresh() }
+            .onChange(of: homeViewModel.selectedVault?.coins) {
+                refresh()
+            }
+            .onChange(of: settingsViewModel.selectedCurrency) {
+                refresh()
+            }
+            .id(vault.id)
         }
-        .sheet(isPresented: $showChainSelection) {
-            VaultSelectChainScreen(
-                vault: homeViewModel.selectedVault ?? .example,
-                isPresented: $showChainSelection
-            )
-        }
-        .sheet(isPresented: $showBackupNow) {
-            VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: vault))
-        }
-        .withUpgradeVault(vault: vault, shouldShow: $showUpgradeVaultSheet)
-        .withBiweeklyPasswordVerification(vault: vault)
-        .withMonthlyBackupWarning(vault: vault)
-        .onAppear(perform: refresh)
-        .refreshable { refresh() }
-        .onChange(of: homeViewModel.selectedVault?.coins) {
-            refresh()
-        }
-        .onChange(of: settingsViewModel.selectedCurrency) {
-            refresh()
-        }
-        .id(vault.id)
     }
     
     var header: some View {
