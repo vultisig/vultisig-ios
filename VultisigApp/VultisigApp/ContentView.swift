@@ -78,7 +78,7 @@ struct ContentView: View {
     }
     
     var homeView: some View {
-        HomeView()
+        HomeScreen()
     }
     
     var createVaultView: some View {

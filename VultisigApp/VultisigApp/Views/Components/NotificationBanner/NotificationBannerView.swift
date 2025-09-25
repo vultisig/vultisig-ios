@@ -1,0 +1,83 @@
+//
+//  NotificationBannerView.swift
+//  VultisigApp
+//
+//  Created by Gaston Mazzeo on 11/09/2025.
+//
+
+import SwiftUI
+
+struct NotificationBannerView: View {
+    let text: String
+    @State private var progress: Double = 1.0
+    @Binding var isVisible: Bool
+    @State var isVisibleInternal: Bool = false
+    
+    private let duration: Double = 1
+    
+    var body: some View {
+        VStack {
+            Spacer()
+            VStack(spacing: 8) {
+                ZStack {
+                    Circle()
+                        .stroke(Theme.colors.border, lineWidth: 2)
+                        .frame(width: 18, height: 18)
+                    
+                    Circle()
+                        .trim(from: 0, to: progress)
+                        .stroke(Theme.colors.alertSuccess, style: StrokeStyle(lineWidth: 2, lineCap: .round))
+                        .frame(width: 18, height: 18)
+                        .rotationEffect(.degrees(-90))
+                        .animation(.linear(duration: duration), value: progress)
+                    Icon(named: "check", color: Theme.colors.alertSuccess, size: 9)
+                }
+                
+                Text(text)
+                    .font(Theme.fonts.footnote)
+                    .foregroundStyle(Theme.colors.textPrimary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .background(RoundedRectangle(cornerRadius: 24)
+                .inset(by: 0.5)
+                .stroke(Theme.colors.border, lineWidth: 1)
+                .fill(Theme.colors.bgSecondary)
+            )
+            .scaleEffect(isVisibleInternal ? 1.0 : 0.8)
+            .opacity(isVisibleInternal ? 1.0 : 0.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isVisibleInternal)
+            .onAppear {
+                withAnimation {
+                    progress = 0.0
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        isVisibleInternal = false
+                    }
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        isVisible = false
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, 12)
+        .onAppear {
+            withAnimation {
+                isVisibleInternal = true
+            }
+        }
+    }
+}
+
+#Preview {
+    VStack {
+        Spacer()
+        NotificationBannerView(text: "Address copied", isVisible: .constant(true))
+            .padding(.horizontal, 16)
+        Spacer()
+    }
+    .background(Color.black)
+}

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct TokenSelectionView: View {
-    let chainDetailView: ChainDetailView
+    let chainDetailView: ChainDetailScreen
     let vault: Vault
     @ObservedObject var group: GroupedChain
     
@@ -166,7 +166,7 @@ struct TokenSelectionView: View {
 
 #Preview {
     TokenSelectionView(
-        chainDetailView: ChainDetailView(group: GroupedChain.example, vault: Vault.example),
+        chainDetailView: ChainDetailScreen(group: .example, vault: .example),
         vault: Vault.example,
         group: GroupedChain.example
     )

@@ -28,7 +28,7 @@ struct ImportWalletView: View {
                 backupViewModel.handleFileImporter(result)
             }
             .navigationDestination(isPresented: $backupViewModel.isLinkActive) {
-                HomeView(selectedVault: backupViewModel.selectedVault)
+                HomeScreen(initialVault: backupViewModel.selectedVault)
             }
             .onAppear {
                 setData()

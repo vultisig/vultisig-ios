@@ -6,7 +6,6 @@ struct CoinDetailView: View {
     @ObservedObject var group: GroupedChain
     let vault: Vault
     @StateObject var sendTx: SendTransaction
-    @Binding var resetActive: Bool
     
     @State var isLoading = false
     @State var isLoadingBonds = false

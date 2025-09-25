@@ -12,9 +12,8 @@ struct VaultPartView: View {
     
     var body: some View {
         HStack(alignment: .center, spacing: 4) {
-            image
-                .frame(width: 16, height: 16)
-            Text(partText)
+            VaultIconTypeView(isFastVault: vault.isFastVault)
+            Text(vault.signerPartDescription)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textExtraLight)
         }
@@ -27,29 +26,6 @@ struct VaultPartView: View {
                 .inset(by: 1)
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
-    }
-    
-    var partText: String {
-        guard let index = vault.signers.firstIndex(of: vault.localPartyID) else {
-            return "-"
-        }
-        let partText = vault.libType == .DKLS ? "partOf".localized : "shareOf".localized
-        return String(format: partText, index + 1, vault.signers.count)
-    }
-
-    @ViewBuilder
-    var image: some View {
-        if vault.isFastVault {
-            Image("lightning")
-                .resizable()
-                .aspectRatio(1, contentMode: .fit)
-                .foregroundStyle(Theme.colors.alertWarning)
-        } else {
-            Image("shield")
-                .resizable()
-                .aspectRatio(1, contentMode: .fit)
-                .foregroundStyle(Theme.colors.bgButtonPrimary)
-        }
     }
 }
 

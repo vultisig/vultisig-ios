@@ -8,18 +8,18 @@
 import SwiftUI
 
 class FolderDetailViewModel: ObservableObject {
+    @Published var allVaults: [Vault] = []
     @Published var selectedVaults: [Vault] = []
-    @Published var remaningVaults: [Vault] = []
+    @Published var remainingVaults: [Vault] = []
     
     @Published var showAlert = false
     @Published var alertTitle = ""
     @Published var alertDescription = ""
     
     func setData(vaults: [Vault], vaultFolder: Folder, filteredVaults: [Vault]) {
-        selectedVaults = []
-        remaningVaults = []
+        allVaults = vaults
         selectedVaults = getContainedVaults(vaults: vaults, vaultFolder: vaultFolder)
-        remaningVaults = filteredVaults.filter({ vault in
+        remainingVaults = filteredVaults.filter({ vault in
             !selectedVaults.contains(vault)
         })
     }
@@ -44,12 +44,13 @@ class FolderDetailViewModel: ObservableObject {
         showAlert = true
     }
     
-    func removeVaultAtIndex(count: Int, vault: Vault) {
-        for index in 0..<count {
-            if selectedVaults[index] == vault {
-                selectedVaults.remove(at: index)
-                return
-            }
-        }
+    func removeVault(vault: Vault) {
+        selectedVaults.removeAll(where: { $0 == vault })
+        remainingVaults.append(vault)
+    }
+    
+    func addVault(vault: Vault) {
+        selectedVaults.append(vault)
+        remainingVaults.removeAll(where: { $0 == vault })
     }
 }

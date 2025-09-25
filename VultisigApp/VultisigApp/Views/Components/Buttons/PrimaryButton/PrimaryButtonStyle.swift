@@ -66,7 +66,7 @@ private extension PrimaryButtonStyle {
     func font(for size: ButtonSize) -> Font {
         switch size {
         case .medium, .small: return Theme.fonts.buttonRegularSemibold
-        case .mini: return Theme.fonts.bodyMMedium
+        case .mini: return Theme.fonts.caption12
         }
     }
     

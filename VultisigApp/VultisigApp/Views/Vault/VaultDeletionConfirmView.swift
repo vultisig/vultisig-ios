@@ -45,7 +45,7 @@ struct VaultDeletionConfirmView: View {
             CreateVaultView(selectedVault: nil, showBackButton: false)
         }
         .navigationDestination(isPresented: $navigateBackToHome) {
-            HomeView(selectedVault: nextSelectedVault, showVaultsList: true)
+            HomeScreen(initialVault: nextSelectedVault, showingVaultSelector: true)
         }
     }
     

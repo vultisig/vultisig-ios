@@ -12,6 +12,10 @@ extension Int {
         let cleanedHex = hex.stripHexPrefix()
         self.init(cleanedHex, radix: 16)
     }
+    
+    var isOdd: Bool {
+        self / 2 != 0
+    }
 }
 
 extension Numeric {

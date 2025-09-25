@@ -106,6 +106,10 @@ class Coin: ObservableObject, Codable, Hashable {
         return balanceDecimal.formatForDisplay()
     }
     
+    var balanceStringWithTicker: String {
+        "\(balanceString) \(ticker)"
+    }
+    
     var balanceInFiat: String {
         return balanceInFiatDecimal.formatToFiat()
     }

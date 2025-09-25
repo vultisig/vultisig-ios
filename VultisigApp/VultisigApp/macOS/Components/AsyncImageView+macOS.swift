@@ -14,6 +14,7 @@ extension AsyncImageView {
             if let image = NSImage(named: logoName) {
                 Image(nsImage: image)
                     .resizable()
+                    .aspectRatio(1, contentMode: .fit)
                     .frame(width: size.width, height: size.height)
             } else {
                 fallbackText
