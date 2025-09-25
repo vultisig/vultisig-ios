@@ -10,7 +10,7 @@ import SwiftUI
 import WalletCore
 
 struct CustomTokenView: View {
-    let chainDetailView: ChainDetailView
+    let chainDetailView: ChainDetailScreen
     let vault: Vault
     @ObservedObject var group: GroupedChain
     

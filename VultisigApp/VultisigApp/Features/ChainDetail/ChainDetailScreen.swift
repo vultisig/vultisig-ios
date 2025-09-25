@@ -8,21 +8,37 @@
 import SwiftUI
 
 struct ChainDetailScreen: View {
+    // TODO: - Remove after new manage assets is done
+    enum SheetType: Int, Identifiable {
+        case tokenSelection = 1
+        case customToken = 2
+        
+        var id: Int {
+            return self.rawValue
+        }
+    }
+    
     @ObservedObject var group: GroupedChain
     let vault: Vault
+    @State var vaultAction: VaultAction?
     
     @StateObject var viewModel: ChainDetailViewModel
     
     @State private var addressToCopy: GroupedChain?
     @State var showManageAssets: Bool = false
     @State var showSearchHeader: Bool = false
+    @State var coinToShow: Coin?
     @State var focusSearch: Bool = false
     @State var showReceiveSheet: Bool = false
     @State var scrollProxy: ScrollViewProxy?
+    @State var sheetType: SheetType? = nil
+    @StateObject var sendTx = SendTransaction()
     
     private let scrollReferenceId = "chainDetailScreenBottomContentId"
     
+    @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @Environment(\.openURL) var openURL
+    @Environment(\.dismiss) var dismiss
     
     init(group: GroupedChain, vault: Vault) {
         self.group = group
@@ -46,16 +62,57 @@ struct ChainDetailScreen: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .refreshable {
-                viewModel.refresh(group: group)
+                refresh()
             }
-            .background(VaultMainScreenBackground())
         }
+        .background(VaultMainScreenBackground())
         .withAddressCopy(group: $addressToCopy)
         .sheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(groupedChain: group, isPresented: $showReceiveSheet)
         }
+        // TODO: - Remove after new manage assets is done
+        .platformSheet(isPresented: Binding<Bool>(
+            get: { sheetType != nil },
+            set: { newValue in
+                if !newValue {
+                    sheetType = nil
+                }
+            }
+        )) {
+            if let sheetType = sheetType {
+                switch sheetType {
+                case .tokenSelection:
+                    TokenSelectionView(
+                        chainDetailView: self,
+                        vault: vault,
+                        group: group
+                    )
+                case .customToken:
+                    CustomTokenView(
+                        chainDetailView: self,
+                        vault: vault,
+                        group: group
+                    )
+                }
+            }
+        }
         .onLoad {
-            viewModel.refresh(group: group)
+            refresh()
+        }
+        .navigationDestination(item: $vaultAction) {
+            VaultActionRouteBuilder().buildActionRoute(action: $0, sendTx: sendTx, vault: vault)
+        }
+        .navigationDestination(item: $coinToShow) {
+            CoinDetailView(coin: $0, group: group, vault: vault, sendTx: sendTx)
+        }
+        .onChange(of: vaultAction) { oldValue, newValue in
+            if case .function(_) = newValue {
+                if let nativeCoin = viewModel.tokens.first(where: { $0.isNativeToken }) {
+                    sendTx.reset(coin: nativeCoin)
+                } else if let firstCoin = viewModel.tokens.first {
+                    sendTx.reset(coin: firstCoin)
+                }
+            }
         }
     }
     
@@ -83,9 +140,9 @@ struct ChainDetailScreen: View {
             .padding(.bottom, 16)
             
             ChainDetailListView(viewModel: viewModel) {
-                // TODO: - On Press - will add in upcoming PRs
+                coinToShow = $0
             } onManageTokens: {
-                // TODO: - On Manage - will add in upcoming PRs
+                sheetType = .tokenSelection
             }
             .background(
                 // Reference to scroll when search gets presented
@@ -107,7 +164,7 @@ struct ChainDetailScreen: View {
                 toggleSearch()
             }
             CircularAccessoryIconButton(icon: "write") {
-                showManageAssets.toggle()
+                sheetType = .tokenSelection
             }
         }
     }
@@ -133,9 +190,45 @@ struct ChainDetailScreen: View {
             openURL(linkURL)
         }
     }
+    
+    // TODO: - Remove after new manage assets is done
+    func chooseTokensButton(_ text: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: "plus")
+            Text(text)
+            Spacer()
+        }
+        .font(Theme.fonts.bodyMMedium)
+        .foregroundColor(Theme.colors.bgButtonPrimary)
+        .padding(.bottom, 32)
+    }
 }
 
 private extension ChainDetailScreen {
+    func refresh() {
+        viewModel.refresh(group: group)
+        Task {
+            await updateBalances()
+            await MainActor.run {
+                coinSelectionViewModel.setData(for: vault)
+            }
+        }
+    }
+
+    func updateBalances() async {
+        let vault = self.vault // Capture on main actor
+        await withTaskGroup(of: Void.self) { taskGroup in
+            for coin in group.coins {
+                taskGroup.addTask {
+                    await coinSelectionViewModel.loadData(coin: coin)
+                    if coin.isNativeToken {
+                        await CoinService.addDiscoveredTokens(nativeToken: coin, to: vault)
+                    }
+                }
+            }
+        }
+    }
+    
     func toggleSearch() {
         withAnimation(.interpolatingSpring) {
             showSearchHeader.toggle()
@@ -152,13 +245,31 @@ private extension ChainDetailScreen {
     }
     
     func onAction(_ action: CoinAction) {
+        var vaultAction: VaultAction?
         switch action {
         case .receive:
             showReceiveSheet = true
-        default:
-            // TODO: - Add action
+            return
+        case .send:
+            vaultAction = .send(coin: group.nativeCoin, hasPreselectedCoin: false)
+        case .swap:
+            guard let fromCoin = viewModel.tokens.first else { return }
+            vaultAction = .swap(fromCoin: fromCoin)
+        case .deposit, .bridge, .memo:
+            vaultAction = .function(coin: group.nativeCoin)
+        case .buy:
+            vaultAction = .buy(
+                address: group.nativeCoin.address,
+                blockChainCode: group.nativeCoin.chain.banxaBlockchainCode,
+                coinType: group.nativeCoin.ticker
+            )
+        case .sell:
+            // TODO: - To add
             break
         }
+        
+        guard let vaultAction else { return }
+        self.vaultAction = vaultAction
     }
     
     func onCopy() {
@@ -169,12 +280,15 @@ private extension ChainDetailScreen {
 #if os(macOS)
 extension ChainDetailScreen {
     func container<Content: View>(content: () -> Content) -> some View {
-        ZStack(alignment: .topLeading) {
+        ZStack(alignment: .top) {
             content()
             HStack {
+                CircularIconButton(icon: "chevron-right", action: { dismiss() })
+                    .rotationEffect(.radians(.pi))
                 Spacer()
                 CircularIconButton(icon: "square-3d", action: onExplorer)
             }
+            .padding(.top, isMacOS ? 8 : 0)
             .padding(.horizontal, 24)
             .frame(height: 40)
         }
@@ -194,5 +308,8 @@ extension ChainDetailScreen {
 #endif
 
 #Preview {
-    ChainDetailScreen(group: .example, vault: .example)
+    ChainDetailScreen(
+        group: .example,
+        vault: .example
+    )
 }

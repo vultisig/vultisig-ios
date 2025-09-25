@@ -171,7 +171,7 @@ struct ReferralTransactionDetailsView: View {
     
     var button: some View {
         PrimaryNavigationButton(title: "done") {
-            HomeView()
+            HomeScreen()
         }
     }
 }

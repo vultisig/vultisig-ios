@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ChainDetailListView: View {
     @ObservedObject var viewModel: ChainDetailViewModel
-    var onPress: () -> Void
+    var onPress: (Coin) -> Void
     var onManageTokens: () -> Void
     
     var body: some View {
@@ -22,11 +22,15 @@ struct ChainDetailListView: View {
     
     var tokensList: some View {
         ForEach(Array(viewModel.filteredTokens.enumerated()), id: \.element.id) { index, token in
-            TokenCellView(coin: token)
-                .commonListItemContainer(
-                    index: index,
-                    itemsCount: viewModel.filteredTokens.count
-                )
+            Button {
+                onPress(token)
+            } label: {
+                TokenCellView(coin: token)
+                    .commonListItemContainer(
+                        index: index,
+                        itemsCount: viewModel.filteredTokens.count
+                    )
+            }
         }
     }
     
@@ -57,7 +61,7 @@ struct ChainDetailListView: View {
 #Preview {
     ChainDetailListView(
         viewModel: ChainDetailViewModel(vault: .example, group: .example),
-        onPress: {},
+        onPress: { _ in },
         onManageTokens: {}
     )
 }

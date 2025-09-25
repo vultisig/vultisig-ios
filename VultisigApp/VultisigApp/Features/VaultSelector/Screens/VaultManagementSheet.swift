@@ -110,7 +110,6 @@ private extension VaultManagementSheet {
             break
         }
         
-        print("Setting non editing")
         self.detents = stateDetents + whileAnimationDetents
     }
     

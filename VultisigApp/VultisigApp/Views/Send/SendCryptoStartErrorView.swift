@@ -20,7 +20,7 @@ struct SendCryptoStartErrorView: View {
         ) {
             navigateToHome = true
         }.navigationDestination(isPresented: $navigateToHome) {
-            HomeView()
+            HomeScreen()
         }
     }
 }

@@ -24,7 +24,7 @@ struct JoinKeysignDoneView: View {
         }
         .redacted(reason: viewModel.showRedacted ? .placeholder : [])
         .navigationDestination(isPresented: $moveToHome) {
-            HomeView(selectedVault: vault, showVaultsList: false)
+            HomeScreen(initialVault: vault, showingVaultSelector: false)
         }
     }
 }

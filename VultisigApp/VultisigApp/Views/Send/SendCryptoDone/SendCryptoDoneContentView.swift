@@ -61,7 +61,7 @@ struct SendCryptoDoneContentView: View {
         }
         .navigationDestination(isPresented: $navigateToHome) {
             if let vault = homeViewModel.selectedVault {
-                HomeView(selectedVault: vault)
+                HomeScreen(initialVault: vault)
             }
         }
         .onLoad {

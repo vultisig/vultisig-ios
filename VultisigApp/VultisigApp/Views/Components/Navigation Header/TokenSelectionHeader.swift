@@ -7,7 +7,7 @@ import SwiftUI
 
 struct TokenSelectionHeader: View {
     let title: String
-    let chainDetailView: ChainDetailView
+    let chainDetailView: ChainDetailScreen
     
     @Environment(\.dismiss) var dismiss
     
@@ -45,6 +45,6 @@ struct TokenSelectionHeader: View {
 #Preview {
     TokenSelectionHeader(
         title: "choose",
-        chainDetailView: ChainDetailView(group: GroupedChain.example, vault: Vault.example)
+        chainDetailView: ChainDetailScreen(group: GroupedChain.example, vault: Vault.example)
     )
 }
