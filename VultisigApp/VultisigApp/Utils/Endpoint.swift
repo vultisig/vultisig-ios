@@ -397,7 +397,7 @@ class Endpoint {
     }
     static func blockchairDashboard(_ address: String, _ coinName: String) -> URL {
         // ?state=latest
-        "\(vultisigApiProxy)/blockchair/\(coinName)/dashboards/address/\(address)?state=latest".asUrl
+        "\(vultisigApiProxy)/blockchair/\(coinName)/dashboards/address/\(address)".asUrl
     }
     
     static func ethereumLabelTxHash(_ value: String) -> String {
@@ -600,14 +600,14 @@ class Endpoint {
     }
     
     static func triggerConstantContractTron() -> String {
-        "https://api.trongrid.io/wallet/triggerconstantcontract"
+        "https://api.vultisig.com/tron/wallet/triggerconstantcontract"
     }
     
     static func triggerSolidityConstantContractTron() -> String {
-        "https://api.trongrid.io/walletsolidity/triggerconstantcontract"
+        "https://api.vultisig.com/tron/walletsolidity/triggerconstantcontract"
     }
     
-    static let tronEvmServiceRpc = "https://api.trongrid.io/jsonrpc"
+    static let tronEvmServiceRpc = "https://api.vultisig.com/tron/jsonrpc"
     
     static func getChainParametersTron() -> String {
         "\(tronServiceRpc)/wallet/getchainparameters"
