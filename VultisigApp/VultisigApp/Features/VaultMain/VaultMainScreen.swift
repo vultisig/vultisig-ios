@@ -109,7 +109,7 @@ struct VaultMainScreen: View {
             VaultMainBalanceView(vault: vault)
             CoinActionsView(
                 actions: viewModel.availableActions,
-                onAction: onAction
+                onAction: { routeToPresent = .mainAction($0) }
             )
             VaultBannerView(
                 title: "signFasterThanEverBefore".localized,
@@ -190,10 +190,6 @@ struct VaultMainScreen: View {
     
     func onVaultSelector() {
         showVaultSelector.toggle()
-    }
-    
-    func onAction(_ action: CoinAction) {
-        // TODO: - Add action in upcoming PRs
     }
     
     func onBannerAction() {

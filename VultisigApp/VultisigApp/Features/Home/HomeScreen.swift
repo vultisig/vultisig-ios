@@ -20,6 +20,7 @@ struct HomeScreen: View {
     @StateObject var sendTx = SendTransaction()
     @State var selectedChain: Chain? = nil
     
+    @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
@@ -85,6 +86,40 @@ extension HomeScreen {
             SettingsMainScreen()
         case .createVault:
             CreateVaultView(selectedVault: vault, showBackButton: true)
+        case .mainAction(let action):
+            buildActionRoute(action: action)
+        }
+    }
+    
+    @ViewBuilder
+    func buildActionRoute(action: CoinAction) -> some View {
+        switch action {
+        case .send:
+            SendRouteBuilder().buildDetailsScreen(
+                coin: vaultDetailViewModel.selectedGroup?.nativeCoin,
+                hasPreselectedCoin: false,
+                tx: sendTx,
+                vault: vault
+            )
+        case .swap:
+            if let fromCoin = vaultDetailViewModel.selectedGroup?.nativeCoin {
+                SwapCryptoView(fromCoin: fromCoin, vault: vault)
+            }
+        case .deposit, .bridge, .memo:
+            FunctionCallView(
+                tx: sendTx,
+                vault: vault,
+                coin: vaultDetailViewModel.selectedGroup?.nativeCoin
+            )
+        case .buy:
+            SendRouteBuilder().buildBuyScreen(
+                address: vaultDetailViewModel.selectedGroup?.address ?? "",
+                blockChainCode: vaultDetailViewModel.selectedGroup?.chain.banxaBlockchainCode ?? "",
+                coinType: vaultDetailViewModel.selectedGroup?.nativeCoin.ticker ?? ""
+            )
+        case .sell, .receive:
+            // TODO: - Add
+            fatalError("Not implemented yet")
         }
     }
 }
