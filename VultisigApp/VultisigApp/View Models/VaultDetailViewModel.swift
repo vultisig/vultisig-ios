@@ -27,7 +27,8 @@ class VaultDetailViewModel: ObservableObject {
     private var updateBalanceTask: Task<Void, Never>?
     
     var availableActions: [CoinAction] {
-        [.swap, .buy, .send, .receive]
+        // TODO: - Add receive
+        [.swap, .buy, .send]
     }
     
     @Published var selectedTab: VaultTab = .portfolio

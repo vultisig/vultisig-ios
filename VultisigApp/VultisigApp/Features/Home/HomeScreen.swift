@@ -73,9 +73,10 @@ struct HomeScreen: View {
     }
     
     func content(selectedVault: Vault) -> some View {
+        // TODO: - Add earn tab when it's ready
         VultiTabBar(
             selectedItem: $selectedTab,
-            items: [HomeTab.wallet, .earn],
+            items: [HomeTab.wallet],
             accessory: .camera,
         ) { tab in
             switch tab {
