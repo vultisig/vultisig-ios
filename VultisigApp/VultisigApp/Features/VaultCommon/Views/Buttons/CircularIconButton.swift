@@ -8,13 +8,14 @@
 import SwiftUI
 
 struct CircularIconButton: View {
+    @State var isHovered: Bool = false
     let icon: String
     var action: () -> Void
     
     var body: some View {
         if #available(iOS 26.0, macOS 26.0, *) {
             button
-                .glassEffect(.regular.interactive(), in: Circle())
+                .glassEffect(.regular.tint(isHovered ? .white.opacity(0.1) : .clear).interactive(), in: Circle())
                 .buttonStyle(.plain)
         } else {
             button
@@ -25,6 +26,11 @@ struct CircularIconButton: View {
         Button(action: action) {
             Icon(named: icon, color: Theme.colors.textPrimary, size: 24)
                 .padding(10)
+        }
+        .onHover { isHovered in
+            withAnimation {
+                self.isHovered = isHovered
+            }
         }
     }
 }
