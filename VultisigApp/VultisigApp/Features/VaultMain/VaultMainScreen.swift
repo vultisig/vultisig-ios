@@ -10,6 +10,7 @@ import SwiftUI
 
 struct VaultMainScreen: View {
     @ObservedObject var vault: Vault
+    @Binding var routeToPresent: VaultMainRoute?
     
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var viewModel: VaultDetailViewModel
@@ -19,13 +20,11 @@ struct VaultMainScreen: View {
     @State private var scrollOffset: CGFloat = 0
     @State var showBalanceInHeader: Bool = false
     @State var showVaultSelector: Bool = false
-    @State var showCreateVault: Bool = false
     @State var showChainSelection: Bool = false
     @State var showSearchHeader: Bool = false
     @State var focusSearch: Bool = false
     @State var scrollProxy: ScrollViewProxy?
-    @State private var presentedChainDetail: GroupedChain?
-    
+
     private let scrollReferenceId = "vaultMainScreenBottomContentId"
     
     private let contentInset: CGFloat = 78
@@ -69,13 +68,10 @@ struct VaultMainScreen: View {
                     }
                 }
             }
-            .navigationDestination(isPresented: $showCreateVault) {
-                CreateVaultView(selectedVault: nil, showBackButton: true)
-            }
             .sheet(isPresented: $showVaultSelector) {
                 VaultManagementSheet {
                     showVaultSelector.toggle()
-                    showCreateVault.toggle()
+                    routeToPresent = .createVault
                 } onSelectVault: { vault in
                     showVaultSelector.toggle()
                     homeViewModel.setSelectedVault(vault)
@@ -88,9 +84,6 @@ struct VaultMainScreen: View {
                 )
             }
         }
-        .navigationDestination(item: $presentedChainDetail) {
-            ChainDetailScreen(group: $0, vault: vault)
-        }
     }
     
     var header: some View {
@@ -98,7 +91,7 @@ struct VaultMainScreen: View {
             vault: vault,
             showBalance: $showBalanceInHeader,
             vaultSelectorAction: onVaultSelector,
-            settingsAction: onSettings
+            settingsAction: { routeToPresent = .settings }
         )
     }
     
@@ -136,7 +129,7 @@ struct VaultMainScreen: View {
             VaultMainChainListView(
                 vault: vault,
                 onCopy: onCopy,
-                onAction: onChainAction,
+                onAction: { routeToPresent = .chainDetail($0) },
                 onCustomizeChains: onCustomizeChains
             )
             .background(
@@ -190,10 +183,6 @@ struct VaultMainScreen: View {
         showVaultSelector.toggle()
     }
     
-    func onSettings() {
-        // TODO: - Add settings in upcoming PRs
-    }
-    
     func onAction(_ action: CoinAction) {
         // TODO: - Add action in upcoming PRs
     }
@@ -206,16 +195,8 @@ struct VaultMainScreen: View {
         // TODO: - Add banner close in upcoming PRs
     }
     
-    func onSearch() {
-        // TODO: - Add search in upcoming PRs
-    }
-    
     func onCopy(_ group: GroupedChain) {
         addressToCopy = group
-    }
-    
-    func onChainAction(_ group: GroupedChain) {
-        presentedChainDetail = group
     }
     
     func onScrollOffsetChange(_ offset: CGFloat) {
@@ -237,7 +218,7 @@ struct VaultMainScreen: View {
 }
 
 #Preview {
-    VaultMainScreen(vault: .example)
+    VaultMainScreen(vault: .example, routeToPresent: .constant(nil))
         .environmentObject(HomeViewModel())
         .environmentObject(VaultDetailViewModel())
 }

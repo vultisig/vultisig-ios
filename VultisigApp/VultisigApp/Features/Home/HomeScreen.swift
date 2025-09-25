@@ -10,6 +10,7 @@ import SwiftUI
 struct HomeScreen: View {
     let vault: Vault
     @State private var selectedTab: HomeTab = .wallet
+    @State var vaultRoute: VaultMainRoute?
     
     var tabs: [HomeTab] {
         // Fake `camera` button on liquid glass tabs
@@ -28,7 +29,7 @@ struct HomeScreen: View {
         ) { tab in
             switch tab {
             case .wallet:
-                VaultMainScreen(vault: vault)
+                VaultMainScreen(vault: vault, routeToPresent: $vaultRoute)
             case .earn:
                 EmptyView()
             case .camera:
@@ -44,9 +45,25 @@ struct HomeScreen: View {
                 onCamera()
             }
         }
+        .navigationDestination(item: $vaultRoute) {
+            buildVaultRoute(route: $0)
+        }
     }
-    func onCamera() {
-        
+    
+    func onCamera() {}
+}
+
+extension HomeScreen {
+    @ViewBuilder
+    func buildVaultRoute(route: VaultMainRoute) -> some View {
+        switch route {
+        case .chainDetail(let groupedChain):
+            ChainDetailScreen(group: groupedChain, vault: vault)
+        case .settings:
+            SettingsMainScreen()
+        case .createVault:
+            CreateVaultView(selectedVault: vault, showBackButton: true)
+        }
     }
 }
 

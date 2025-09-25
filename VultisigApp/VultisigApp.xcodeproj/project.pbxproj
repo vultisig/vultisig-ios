@@ -215,6 +215,7 @@
 		13D179082E5787D100007B48 /* AddressBookChainType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D179072E5787D100007B48 /* AddressBookChainType.swift */; };
 		13D1790A2E57889F00007B48 /* AddressBookChainCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D179092E57889E00007B48 /* AddressBookChainCell.swift */; };
 		13D1790D2E5788BE00007B48 /* AddressBookChainCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D1790C2E5788BE00007B48 /* AddressBookChainCellView.swift */; };
+		13D3AC942E85720800BA4273 /* VaultMainRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D3AC932E85720500BA4273 /* VaultMainRoute.swift */; };
 		13D764382E41030300F048DE /* SwapCoinSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D764372E4102F500F048DE /* SwapCoinSelectionViewModel.swift */; };
 		13D7643A2E4127B100F048DE /* Array.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D764392E4127AF00F048DE /* Array.swift */; };
 		13D7643C2E41309E00F048DE /* TokenSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D7643B2E41309D00F048DE /* TokenSearchService.swift */; };
@@ -1305,6 +1306,7 @@
 		13D179072E5787D100007B48 /* AddressBookChainType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookChainType.swift; sourceTree = "<group>"; };
 		13D179092E57889E00007B48 /* AddressBookChainCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookChainCell.swift; sourceTree = "<group>"; };
 		13D1790C2E5788BE00007B48 /* AddressBookChainCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookChainCellView.swift; sourceTree = "<group>"; };
+		13D3AC932E85720500BA4273 /* VaultMainRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainRoute.swift; sourceTree = "<group>"; };
 		13D764372E4102F500F048DE /* SwapCoinSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCoinSelectionViewModel.swift; sourceTree = "<group>"; };
 		13D764392E4127AF00F048DE /* Array.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Array.swift; sourceTree = "<group>"; };
 		13D7643B2E41309D00F048DE /* TokenSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSearchService.swift; sourceTree = "<group>"; };
@@ -2364,6 +2366,7 @@
 		130C40E92E73238B00509C61 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				13D3AC932E85720500BA4273 /* VaultMainRoute.swift */,
 				130C40EA2E73239200509C61 /* VaultTab.swift */,
 			);
 			path = Model;
@@ -5511,6 +5514,7 @@
 				A6BFE1C32D94902A000B73C0 /* SwapFromToCoin.swift in Sources */,
 				13D9EBF32E84492F0089B2A7 /* AddFolderScreen.swift in Sources */,
 				A69FBBC42C8BB5AD00A4B78B /* NoCameraPermissionView+iOS.swift in Sources */,
+				13D3AC942E85720800BA4273 /* VaultMainRoute.swift in Sources */,
 				A66A0BD92BA12DF50021A483 /* RenameVaultView.swift in Sources */,
 				B5B5E2782CCADD69001167C3 /* FunctionCallStake.swift in Sources */,
 				13B676442E37C9B0002F016C /* SendCryptoTransactionHashRowView.swift in Sources */,
