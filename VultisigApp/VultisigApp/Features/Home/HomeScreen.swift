@@ -12,6 +12,16 @@ struct HomeScreen: View {
     @State private var selectedTab: HomeTab = .wallet
     @State var vaultRoute: VaultMainRoute?
     
+    // Properties for QR Code scanner
+    @State var showScanner: Bool = false
+    @State var shouldJoinKeygen = false
+    @State var shouldKeysignTransaction = false
+    @State var shouldSendCrypto = false
+    @StateObject var sendTx = SendTransaction()
+    @State var selectedChain: Chain? = nil
+    
+    @EnvironmentObject var homeViewModel: HomeViewModel
+    
     var tabs: [HomeTab] {
         // Fake `camera` button on liquid glass tabs
         if #available(iOS 26.0, macOS 26.0, *) {
@@ -48,9 +58,29 @@ struct HomeScreen: View {
         .navigationDestination(item: $vaultRoute) {
             buildVaultRoute(route: $0)
         }
+        .sheet(isPresented: $showScanner, content: {
+            GeneralCodeScannerView(
+                showSheet: $showScanner,
+                shouldJoinKeygen: $shouldJoinKeygen,
+                shouldKeysignTransaction: $shouldKeysignTransaction,
+                shouldSendCrypto: $shouldSendCrypto,
+                selectedChain: $selectedChain,
+                sendTX: sendTx
+            )
+        })
+        .navigationDestination(isPresented: $shouldJoinKeygen) {
+            JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: vault)
+        }
+        .navigationDestination(isPresented: $shouldKeysignTransaction) {
+            if let vault = homeViewModel.selectedVault {
+                JoinKeysignView(vault: vault)
+            }
+        }
     }
     
-    func onCamera() {}
+    func onCamera() {
+        showScanner = true
+    }
 }
 
 extension HomeScreen {
