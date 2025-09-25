@@ -8,6 +8,16 @@
 import SwiftUI
 
 struct ChainDetailScreen: View {
+    // TODO: - Remove after new manage assets is done
+    enum SheetType: Int, Identifiable {
+        case tokenSelection = 1
+        case customToken = 2
+        
+        var id: Int {
+            return self.rawValue
+        }
+    }
+    
     @ObservedObject var group: GroupedChain
     let vault: Vault
     
@@ -19,6 +29,7 @@ struct ChainDetailScreen: View {
     @State var focusSearch: Bool = false
     @State var showReceiveSheet: Bool = false
     @State var scrollProxy: ScrollViewProxy?
+    @State var sheetType: SheetType? = nil
     
     private let scrollReferenceId = "chainDetailScreenBottomContentId"
     
@@ -54,6 +65,36 @@ struct ChainDetailScreen: View {
         .sheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(groupedChain: group, isPresented: $showReceiveSheet)
         }
+        // TODO: - Remove after new manage assets is done
+        .sheet(isPresented: Binding<Bool>(
+            get: { sheetType != nil },
+            set: { newValue in
+                if !newValue {
+                    sheetType = nil
+                }
+            }
+        )) {
+            if let sheetType = sheetType {
+                switch sheetType {
+                case .tokenSelection:
+                    NavigationView {
+                        TokenSelectionView(
+                            chainDetailView: self,
+                            vault: vault,
+                            group: group
+                        )
+                    }
+                case .customToken:
+                    NavigationView {
+                        CustomTokenView(
+                            chainDetailView: self,
+                            vault: vault,
+                            group: group
+                        )
+                    }
+                }
+            }
+        }
         .onLoad {
             viewModel.refresh(group: group)
         }
@@ -85,7 +126,7 @@ struct ChainDetailScreen: View {
             ChainDetailListView(viewModel: viewModel) {
                 // TODO: - On Press - will add in upcoming PRs
             } onManageTokens: {
-                // TODO: - On Manage - will add in upcoming PRs
+                sheetType = .tokenSelection
             }
             .background(
                 // Reference to scroll when search gets presented
@@ -107,7 +148,7 @@ struct ChainDetailScreen: View {
                 toggleSearch()
             }
             CircularAccessoryIconButton(icon: "write") {
-                showManageAssets.toggle()
+                sheetType = .tokenSelection
             }
         }
     }
@@ -132,6 +173,18 @@ struct ChainDetailScreen: View {
         {
             openURL(linkURL)
         }
+    }
+    
+    // TODO: - Remove after new manage assets is done
+    func chooseTokensButton(_ text: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: "plus")
+            Text(text)
+            Spacer()
+        }
+        .font(Theme.fonts.bodyMMedium)
+        .foregroundColor(Theme.colors.bgButtonPrimary)
+        .padding(.bottom, 32)
     }
 }
 

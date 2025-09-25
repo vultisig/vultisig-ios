@@ -71,18 +71,18 @@ struct VaultDetailView: View {
         .onChange(of: settingsViewModel.selectedCurrency) {
             setData()
         }
-        .navigationDestination(isPresented: $isSwapLinkActive) {
-            if let fromCoin = viewModel.selectedGroup?.nativeCoin {
-                SwapCryptoView(fromCoin: fromCoin, vault: vault)
-            }
-        }
-        .navigationDestination(isPresented: $isMemoLinkActive) {
-            FunctionCallView(
-                tx: sendTx,
-                vault: vault,
-                coin: viewModel.selectedGroup?.nativeCoin
-            )
-        }
+//        .navigationDestination(isPresented: $isSwapLinkActive) {
+//            if let fromCoin = viewModel.selectedGroup?.nativeCoin {
+//                SwapCryptoView(fromCoin: fromCoin, vault: vault)
+//            }
+//        }
+//        .navigationDestination(isPresented: $isMemoLinkActive) {
+//            FunctionCallView(
+//                tx: sendTx,
+//                vault: vault,
+//                coin: viewModel.selectedGroup?.nativeCoin
+//            )
+//        }
         .navigationDestination(isPresented: $isBackupLinkActive) {
             VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: vault))
         }
@@ -112,17 +112,17 @@ struct VaultDetailView: View {
             PasswordVerifyReminderView(vault: vault, isSheetPresented: $isBiweeklyPasswordVerifyLinkActive)
                 .presentationDetents([.height(260)])
         }
-        .navigationDestination(isPresented: $shouldSendCrypto) {
-            SendRouteBuilder().buildDetailsScreen(coin: viewModel.selectedGroup?.nativeCoin, hasPreselectedCoin: false, tx: sendTx, vault: vault)
-        }
-        .navigationDestination(isPresented: $isSendLinkActive) {
-            SendRouteBuilder().buildDetailsScreen(coin: viewModel.selectedGroup?.nativeCoin, hasPreselectedCoin: false, tx: sendTx, vault: vault)
-        }
-        .navigationDestination(isPresented: $isBuyLinkActive) {
-            SendRouteBuilder().buildBuyScreen(address: viewModel.selectedGroup?.address ?? "",
-                                              blockChainCode: viewModel.selectedGroup?.chain.banxaBlockchainCode ?? "",
-                                              coinType: viewModel.selectedGroup?.nativeCoin.ticker ?? "")
-        }
+//        .navigationDestination(isPresented: $shouldSendCrypto) {
+//            SendRouteBuilder().buildDetailsScreen(coin: viewModel.selectedGroup?.nativeCoin, hasPreselectedCoin: false, tx: sendTx, vault: vault)
+//        }
+//        .navigationDestination(isPresented: $isSendLinkActive) {
+//            SendRouteBuilder().buildDetailsScreen(coin: viewModel.selectedGroup?.nativeCoin, hasPreselectedCoin: false, tx: sendTx, vault: vault)
+//        }
+//        .navigationDestination(isPresented: $isBuyLinkActive) {
+//            SendRouteBuilder().buildBuyScreen(address: viewModel.selectedGroup?.address ?? "",
+//                                              blockChainCode: viewModel.selectedGroup?.chain.banxaBlockchainCode ?? "",
+//                                              coinType: viewModel.selectedGroup?.nativeCoin.ticker ?? "")
+//        }
     }
     
     var shadowView: some View {

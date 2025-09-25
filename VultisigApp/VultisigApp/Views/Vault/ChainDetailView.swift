@@ -74,35 +74,35 @@ struct ChainDetailView: View {
             .refreshable {
                 refreshAction()
             }
-            .sheet(isPresented: Binding<Bool>(
-                get: { sheetType != nil },
-                set: { newValue in
-                    if !newValue {
-                        sheetType = nil
-                    }
-                }
-            )) {
-                if let sheetType = sheetType {
-                    switch sheetType {
-                    case .tokenSelection:
-                        NavigationView {
-                            TokenSelectionView(
-                                chainDetailView: self,
-                                vault: vault,
-                                group: group
-                            )
-                        }
-                    case .customToken:
-                        NavigationView {
-                            CustomTokenView(
-                                chainDetailView: self,
-                                vault: vault,
-                                group: group
-                            )
-                        }
-                    }
-                }
-            }
+//            .sheet(isPresented: Binding<Bool>(
+//                get: { sheetType != nil },
+//                set: { newValue in
+//                    if !newValue {
+//                        sheetType = nil
+//                    }
+//                }
+//            )) {
+//                if let sheetType = sheetType {
+//                    switch sheetType {
+//                    case .tokenSelection:
+//                        NavigationView {
+//                            TokenSelectionView(
+//                                chainDetailView: self,
+//                                vault: vault,
+//                                group: group
+//                            )
+//                        }
+//                    case .customToken:
+//                        NavigationView {
+//                            CustomTokenView(
+//                                chainDetailView: self,
+//                                vault: vault,
+//                                group: group
+//                            )
+//                        }
+//                    }
+//                }
+//            }
             .onAppear {
                 setupView()
             }
@@ -146,26 +146,26 @@ struct ChainDetailView: View {
         }
     }
     
-    var sheetView: some View {
-        ZStack {
-            if let sheetType = sheetType {
-                switch sheetType {
-                case .tokenSelection:
-                    TokenSelectionView(
-                        chainDetailView: self,
-                        vault: vault,
-                        group: group
-                    )
-                case .customToken:
-                    CustomTokenView(
-                        chainDetailView: self,
-                        vault: vault,
-                        group: group
-                    )
-                }
-            }
-        }
-    }
+//    var sheetView: some View {
+//        ZStack {
+//            if let sheetType = sheetType {
+//                switch sheetType {
+//                case .tokenSelection:
+//                    TokenSelectionView(
+//                        chainDetailView: self,
+//                        vault: vault,
+//                        group: group
+//                    )
+//                case .customToken:
+//                    CustomTokenView(
+//                        chainDetailView: self,
+//                        vault: vault,
+//                        group: group
+//                    )
+//                }
+//            }
+//        }
+//    }
     
     func chooseTokensButton(_ text: String) -> some View {
         HStack(spacing: 10) {

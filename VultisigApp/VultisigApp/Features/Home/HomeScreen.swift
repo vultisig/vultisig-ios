@@ -69,6 +69,10 @@ struct HomeScreen: View {
                 JoinKeysignView(vault: vault)
             }
         }
+        .onChange(of: shouldSendCrypto) { _, newValue in
+            guard newValue else { return }
+            vaultRoute = .mainAction(.send)
+        }
     }
     
     func onCamera() {
@@ -118,8 +122,8 @@ extension HomeScreen {
                 coinType: vaultDetailViewModel.selectedGroup?.nativeCoin.ticker ?? ""
             )
         case .sell, .receive:
-            // TODO: - Add
-            fatalError("Not implemented yet")
+            // TODO: - Action not implemented yet
+            EmptyView()
         }
     }
 }
