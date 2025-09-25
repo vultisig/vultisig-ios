@@ -8,6 +8,7 @@
 #if os(iOS)
 import SwiftUI
 
+// TODO: - Remove
 extension VaultDetailScanButton {
     var content: some View {
         ZStack {

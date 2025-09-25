@@ -52,6 +52,18 @@ struct HomeScreen: View {
             setData()
             showVaultSelector = showingVaultSelector
         }
+        .alert(
+            NSLocalizedString("newUpdateAvailable", comment: ""),
+            isPresented: $phoneCheckUpdateViewModel.showUpdateAlert
+        ) {
+            Link(destination: StaticURL.AppStoreVultisigURL) {
+                Text(NSLocalizedString("updateNow", comment: ""))
+            }
+
+            Button(NSLocalizedString("dismiss", comment: ""), role: .cancel) {}
+        } message: {
+            Text(phoneCheckUpdateViewModel.latestVersionString)
+        }
     }
     
     var initialView: some View {
@@ -91,16 +103,26 @@ struct HomeScreen: View {
         .navigationDestination(item: $vaultRoute) {
             buildVaultRoute(route: $0, vault: selectedVault)
         }
-        .sheet(isPresented: $showScanner, content: {
-            GeneralCodeScannerView(
-                showSheet: $showScanner,
-                shouldJoinKeygen: $shouldJoinKeygen,
-                shouldKeysignTransaction: $shouldKeysignTransaction,
-                shouldSendCrypto: $shouldSendCrypto,
-                selectedChain: $selectedChain,
-                sendTX: sendTx
-            )
-        })
+        #if os(macOS)
+        .navigationDestination(isPresented: $showScanner) {
+            MacScannerView(type: .SignTransaction, sendTx: sendTx, selectedVault: selectedVault)
+        }
+        #else
+        .sheet(isPresented: $showScanner) {
+            if ProcessInfo.processInfo.isiOSAppOnMac {
+                GeneralQRImportMacView(type: .SignTransaction, sendTx: sendTx, selectedVault: selectedVault)
+            } else {
+                GeneralCodeScannerView(
+                    showSheet: $showScanner,
+                    shouldJoinKeygen: $shouldJoinKeygen,
+                    shouldKeysignTransaction: $shouldKeysignTransaction,
+                    shouldSendCrypto: $shouldSendCrypto,
+                    selectedChain: $selectedChain,
+                    sendTX: sendTx
+                )
+            }
+        }
+        #endif
         .navigationDestination(isPresented: $shouldJoinKeygen) {
             JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: selectedVault)
         }
@@ -132,6 +154,7 @@ struct HomeScreen: View {
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
         homeViewModel.selectedVault = nil
+        checkUpdate()
         
         if let vault = initialVault {
             homeViewModel.setSelectedVault(vault)
@@ -189,6 +212,10 @@ struct HomeScreen: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             shouldKeysignTransaction = true
         }
+    }
+    
+    func checkUpdate() {
+        phoneCheckUpdateViewModel.checkForUpdates(isAutoCheck: true)
     }
 }
 

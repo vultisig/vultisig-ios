@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+// TODO: - Remove
+
 struct VaultDetailScanButton: View {
     @Binding var showSheet: Bool
 

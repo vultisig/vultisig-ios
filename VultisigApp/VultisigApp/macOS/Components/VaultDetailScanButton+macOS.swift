@@ -8,6 +8,8 @@
 #if os(macOS)
 import SwiftUI
 
+// TODO: - Remove
+
 extension VaultDetailScanButton {
     var content: some View {
         NavigationLink {

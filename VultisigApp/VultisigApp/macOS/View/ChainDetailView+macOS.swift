@@ -49,14 +49,15 @@ extension ChainDetailView {
     }
     
     var addButton: some View {
-        NavigationLink {
-            sheetView
-                .onAppear {
-                    sheetType = .tokenSelection
-                }
-        } label: {
-            chooseTokensButton(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
-        }
+        EmptyView()
+//        NavigationLink {
+//            sheetView
+//                .onAppear {
+//                    sheetType = .tokenSelection
+//                }
+//        } label: {
+//            chooseTokensButton(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
+//        }
     }
     
 }

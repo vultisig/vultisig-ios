@@ -16,12 +16,16 @@ struct VaultMainScreen: View {
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var viewModel: VaultDetailViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
+    @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     @State private var addressToCopy: GroupedChain?
     @State private var scrollOffset: CGFloat = 0
     @State var showBalanceInHeader: Bool = false
     @State var showChainSelection: Bool = false
     @State var showSearchHeader: Bool = false
+    @State var showUpgradeVaultSheet: Bool = false
     @State var focusSearch: Bool = false
     @State var scrollProxy: ScrollViewProxy?
     @State var frameHeight: CGFloat = 0
@@ -29,6 +33,10 @@ struct VaultMainScreen: View {
     private let scrollReferenceId = "vaultMainScreenBottomContentId"
     
     private let contentInset: CGFloat = 78
+    
+    var shouldRefresh: Bool {
+        !showChainSelection
+    }
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -53,9 +61,6 @@ struct VaultMainScreen: View {
             header
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .refreshable {
-            viewModel.updateBalance(vault: vault)
-        }
         .background(VaultMainScreenBackground())
         .withAddressCopy(group: $addressToCopy)
         .onChange(of: scrollOffset) { _, newValue in
@@ -88,6 +93,20 @@ struct VaultMainScreen: View {
                 isPresented: $showChainSelection
             )
         }
+        .sheet(isPresented: $showBackupNow) {
+            VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: vault))
+        }
+        .withUpgradeVault(vault: vault, shouldShow: $showUpgradeVaultSheet)
+        .withBiweeklyPasswordVerification(vault: vault)
+        .withMonthlyBackupWarning(vault: vault)
+        .onAppear(perform: refresh)
+        .refreshable { refresh() }
+        .onChange(of: homeViewModel.selectedVault?.coins) {
+            refresh()
+        }
+        .onChange(of: settingsViewModel.selectedCurrency) {
+            refresh()
+        }
         .id(vault.id)
     }
     
@@ -107,15 +126,47 @@ struct VaultMainScreen: View {
                 actions: viewModel.availableActions,
                 onAction: onAction
             )
-            VaultBannerView(
-                title: "signFasterThanEverBefore".localized,
-                subtitle: "upgradeYourVaultNow".localized,
-                buttonTitle: "upgradeNow".localized,
-                bgImage: "referral-banner-2",
-                action: onBannerAction,
-                onClose: onBannerClose
-            )
+            upgradeVaultBanner
         }
+    }
+    
+    @State var showUpgradeBanner = true
+    @ViewBuilder
+    var upgradeVaultBanner: some View {
+        VaultBannerView(
+            title: "signFasterThanEverBefore".localized,
+            subtitle: "upgradeYourVaultNow".localized,
+            buttonTitle: "upgradeNow".localized,
+            bgImage: "referral-banner-2",
+            action: { showUpgradeVaultSheet = true },
+            onClose: {
+                withAnimation {
+                    showUpgradeBanner = false
+                }
+            }
+        )
+        .transition(.verticalGrowAndFade)
+        .showIf(vault.libType == .GG20 && showUpgradeBanner)
+    }
+    
+    @State var showBackupBanner = true
+    @State var showBackupNow = false
+    @ViewBuilder
+    var backupBanner: some View {
+        VaultBannerView(
+            title: "backupYourVaultNow".localized,
+            subtitle: "",
+            buttonTitle: "backupNow".localized,
+            bgImage: "referral-banner-2",
+            action: { showBackupNow = true },
+            onClose: {
+                withAnimation {
+                    showBackupBanner = false
+                }
+            }
+        )
+        .transition(.verticalGrowAndFade)
+        .showIf(!vault.isBackedUp && showBackupBanner)
     }
     
     var bottomContentSection: some View {
@@ -190,6 +241,7 @@ struct VaultMainScreen: View {
     
     func onBannerAction() {
         // TODO: - Add banner action in upcoming PRs
+        showUpgradeVaultSheet = true
     }
     
     func onBannerClose() {
@@ -198,6 +250,15 @@ struct VaultMainScreen: View {
     
     func onCopy(_ group: GroupedChain) {
         addressToCopy = group
+    }
+    
+    func refresh() {
+        viewModel.updateBalance(vault: vault)
+        viewModel.getGroupAsync(tokenSelectionViewModel)
+        
+        tokenSelectionViewModel.setData(for: vault)
+        settingsDefaultChainViewModel.setData(tokenSelectionViewModel.groupedAssets)
+        viewModel.categorizeCoins(vault: vault)
     }
     
     func onScrollOffsetChange(_ offset: CGFloat) {
