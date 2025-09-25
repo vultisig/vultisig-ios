@@ -94,7 +94,7 @@ private struct ScrollOffsetPreferenceKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     
     private static var lastUpdateTime: CFTimeInterval = 0
-    private static let targetFrameRate: Double = 60.0
+    private static let targetFrameRate: Double = 30
     private static var frameInterval: CFTimeInterval { 1.0 / targetFrameRate }
 
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {

@@ -24,10 +24,12 @@ struct VaultMainHeaderView: View {
                 isFastVault: vault.isFastVault,
                 action: vaultSelectorAction
             )
-            .layoutPriority(1)
-            Spacer()
-            trailingView
-                .transition(.opacity)
+            
+            HStack {
+                Spacer()
+                trailingView
+                    .transition(.opacity)
+            }
         }
         .padding(.top, 24)
         .padding(.bottom, 16)

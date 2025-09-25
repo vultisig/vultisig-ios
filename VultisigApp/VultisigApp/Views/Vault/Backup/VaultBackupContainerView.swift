@@ -24,7 +24,7 @@ struct VaultBackupContainerView<Content: View>: View {
         content()
             .sensoryFeedback(.success, trigger: backupType.vault.isBackedUp)
             .navigationDestination(isPresented: $presentHome) {
-                HomeView(selectedVault: backupType.vault)
+                HomeScreen(initialVault: backupType.vault)
             }
             .navigationDestination(isPresented: $presentSuccess) {
                 BackupVaultSuccessView(tssType: tssType, vault: backupType.vault)

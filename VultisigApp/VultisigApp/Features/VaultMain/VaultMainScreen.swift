@@ -11,6 +11,7 @@ import SwiftUI
 struct VaultMainScreen: View {
     @ObservedObject var vault: Vault
     @Binding var routeToPresent: VaultMainRoute?
+    @Binding var showVaultSelector: Bool
     
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var viewModel: VaultDetailViewModel
@@ -19,7 +20,6 @@ struct VaultMainScreen: View {
     @State private var addressToCopy: GroupedChain?
     @State private var scrollOffset: CGFloat = 0
     @State var showBalanceInHeader: Bool = false
-    @State var showVaultSelector: Bool = false
     @State var showChainSelection: Bool = false
     @State var showSearchHeader: Bool = false
     @State var focusSearch: Bool = false
@@ -31,37 +31,30 @@ struct VaultMainScreen: View {
     private let contentInset: CGFloat = 78
     
     var body: some View {
-        GeometryReader { geo in
-            ZStack(alignment: .top) {
-                ScrollViewReader { proxy in
-                    OffsetObservingScrollView(
-                        showsIndicators: false,
-                        contentInset: contentInset,
-                        ns: .scrollView,
-                        scrollOffset: $scrollOffset
-                    ) {
-                        LazyVStack(spacing: 20) {
-                            topContentSection
-                            Separator(color: Theme.colors.borderLight, opacity: 1)
-                            bottomContentSection
-                        }
-                        .padding(.horizontal, 16)
+        ZStack(alignment: .top) {
+            ScrollViewReader { proxy in
+                OffsetObservingScrollView(
+                    showsIndicators: false,
+                    contentInset: contentInset,
+                    ns: .scrollView,
+                    scrollOffset: $scrollOffset
+                ) {
+                    LazyVStack(spacing: 20) {
+                        topContentSection
+                        Separator(color: Theme.colors.borderLight, opacity: 1)
+                        bottomContentSection
                     }
-                    .onLoad {
-                        scrollProxy = proxy
-                    }
+                    .padding(.horizontal, 16)
                 }
-                header
+                .onLoad {
+                    scrollProxy = proxy
+                }
             }
-            .onLoad {
-                frameHeight = geo.size.height
-            }
+            header
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .refreshable {
-            if let vault = homeViewModel.selectedVault {
-                viewModel.updateBalance(vault: vault)
-            }
+            viewModel.updateBalance(vault: vault)
         }
         .background(VaultMainScreenBackground())
         .withAddressCopy(group: $addressToCopy)
@@ -84,7 +77,9 @@ struct VaultMainScreen: View {
                 routeToPresent = .createVault
             } onSelectVault: { vault in
                 showVaultSelector.toggle()
-                homeViewModel.setSelectedVault(vault)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    homeViewModel.setSelectedVault(vault)
+                }
             }
         }
         .sheet(isPresented: $showChainSelection) {
@@ -93,6 +88,7 @@ struct VaultMainScreen: View {
                 isPresented: $showChainSelection
             )
         }
+        .id(vault.id)
     }
     
     var header: some View {
@@ -205,7 +201,6 @@ struct VaultMainScreen: View {
     }
     
     func onScrollOffsetChange(_ offset: CGFloat) {
-        print("Offset \(offset) \(frameHeight)")
         showBalanceInHeader = offset < contentInset
     }
     
@@ -253,7 +248,11 @@ struct VaultMainScreen: View {
 }
 
 #Preview {
-    VaultMainScreen(vault: .example, routeToPresent: .constant(nil))
-        .environmentObject(HomeViewModel())
-        .environmentObject(VaultDetailViewModel())
+    VaultMainScreen(
+        vault: .example,
+        routeToPresent: .constant(nil),
+        showVaultSelector: .constant(false)
+    )
+    .environmentObject(HomeViewModel())
+    .environmentObject(VaultDetailViewModel())
 }

@@ -75,7 +75,7 @@ struct VaultServerBackupScreen: View {
             }
         }
         .navigationDestination(isPresented: $moveToHome) {
-            HomeView(selectedVault: vault, showVaultsList: false)
+            HomeScreen(initialVault: vault, showingVaultSelector: false)
         }
     }
     

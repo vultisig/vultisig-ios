@@ -6,9 +6,16 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct HomeScreen: View {
-    let vault: Vault
+    let initialVault: Vault?
+    let showingVaultSelector: Bool
+    
+    @State var selectedVault: Vault? = nil
+    @State var showVaultSelector: Bool = false
+    
+    @State var vaults: [Vault] = []
     @State private var selectedTab: HomeTab = .wallet
     @State var vaultRoute: VaultMainRoute?
     
@@ -17,13 +24,42 @@ struct HomeScreen: View {
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
     @State var shouldSendCrypto = false
+    @State var shouldImportBackup = false
     @StateObject var sendTx = SendTransaction()
     @State var selectedChain: Chain? = nil
     
     @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
+    @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var phoneCheckUpdateViewModel: PhoneCheckUpdateViewModel
+    @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
+    @Environment(\.modelContext) private var modelContext
+    
+    init(initialVault: Vault? = nil, showingVaultSelector: Bool = false) {
+        self.initialVault = initialVault
+        self.showingVaultSelector = showingVaultSelector
+    }
     
     var body: some View {
+        ZStack {
+            if let selectedVault = homeViewModel.selectedVault {
+                content(selectedVault: selectedVault)
+            } else {
+                initialView
+            }
+        }
+        .onLoad {
+            setData()
+            showVaultSelector = showingVaultSelector
+        }
+    }
+    
+    var initialView: some View {
+        VaultMainScreenBackground()
+            .ignoresSafeArea()
+    }
+    
+    func content(selectedVault: Vault) -> some View {
         VultiTabBar(
             selectedItem: $selectedTab,
             items: [HomeTab.wallet, .earn],
@@ -31,7 +67,11 @@ struct HomeScreen: View {
         ) { tab in
             switch tab {
             case .wallet:
-                VaultMainScreen(vault: vault, routeToPresent: $vaultRoute)
+                VaultMainScreen(
+                    vault: selectedVault,
+                    routeToPresent: $vaultRoute,
+                    showVaultSelector: $showVaultSelector
+                )
             case .earn:
                 EmptyView()
             case .camera:
@@ -49,7 +89,7 @@ struct HomeScreen: View {
             }
         }
         .navigationDestination(item: $vaultRoute) {
-            buildVaultRoute(route: $0)
+            buildVaultRoute(route: $0, vault: selectedVault)
         }
         .sheet(isPresented: $showScanner, content: {
             GeneralCodeScannerView(
@@ -62,7 +102,7 @@ struct HomeScreen: View {
             )
         })
         .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: vault)
+            JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: selectedVault)
         }
         .navigationDestination(isPresented: $shouldKeysignTransaction) {
             if let vault = homeViewModel.selectedVault {
@@ -78,23 +118,90 @@ struct HomeScreen: View {
                 JoinKeysignView(vault: vault)
             }
         }
+        .navigationDestination(isPresented: $shouldImportBackup) {
+            ImportWalletView()
+        }
     }
     
     func onCamera() {
         showScanner = true
     }
+    
+    func setData() {
+        fetchVaults()
+        shouldJoinKeygen = false
+        shouldKeysignTransaction = false
+        homeViewModel.selectedVault = nil
+        
+        if let vault = initialVault {
+            homeViewModel.setSelectedVault(vault)
+            selectedVault = nil
+            return
+        } else {
+            homeViewModel.loadSelectedVault(for: vaults)
+        }
+        
+        presetValuesForDeeplink()
+    }
+    
+    func presetValuesForDeeplink() {
+        if let _ = vultExtensionViewModel.documentData {
+            shouldImportBackup = true
+        }
+        
+        guard let type = deeplinkViewModel.type else {
+            return
+        }
+        deeplinkViewModel.type = nil
+        
+        switch type {
+        case .NewVault:
+            moveToCreateVaultView()
+        case .SignTransaction:
+            moveToVaultsView()
+        case .Unknown:
+            return
+        }
+    }
+    
+    func fetchVaults() {
+        let fetchVaultDescriptor = FetchDescriptor<Vault>()
+        do {
+            vaults = try modelContext.fetch(fetchVaultDescriptor)
+        } catch {
+            print(error)
+        }
+    }
+    
+    private func moveToCreateVaultView() {
+        showVaultSelector = false
+        shouldJoinKeygen = true
+    }
+    
+    private func moveToVaultsView() {
+        guard let vault = deeplinkViewModel.selectedVault else {
+            return
+        }
+        
+        homeViewModel.setSelectedVault(vault)
+        showVaultSelector = false
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            shouldKeysignTransaction = true
+        }
+    }
 }
 
 extension HomeScreen {
     @ViewBuilder
-    func buildVaultRoute(route: VaultMainRoute) -> some View {
+    func buildVaultRoute(route: VaultMainRoute, vault: Vault) -> some View {
         switch route {
         case .chainDetail(let groupedChain):
             ChainDetailScreen(group: groupedChain, vault: vault)
         case .settings:
             SettingsMainScreen()
         case .createVault:
-            CreateVaultView(selectedVault: vault, showBackButton: true)
+            CreateVaultView(selectedVault: selectedVault, showBackButton: true)
         case .mainAction(let action):
             VaultActionRouteBuilder().buildActionRoute(action: action, sendTx: sendTx, vault: vault)
         }
@@ -102,7 +209,7 @@ extension HomeScreen {
 }
 
 #Preview {
-    HomeScreen(vault: .example)
+    HomeScreen(initialVault: .example, showingVaultSelector: false)
         .environmentObject(HomeViewModel())
         .environmentObject(VaultDetailViewModel())
 }

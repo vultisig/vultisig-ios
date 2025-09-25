@@ -35,7 +35,8 @@ struct HomeView: View {
     
     var body: some View {
         if let selectedVault = viewModel.selectedVault {
-            HomeScreen(vault: selectedVault)
+            HomeScreen(initialVault: selectedVault)
+                .id(selectedVault.id)
         } else {
             // TODO: - Remove after design overhaul is finished
             VStack {}.onAppear { setData() }
@@ -176,7 +177,7 @@ struct HomeView: View {
 }
 
 #Preview {
-    HomeView()
+    HomeScreen()
         .environmentObject(DeeplinkViewModel())
         .environmentObject(HomeViewModel())
         .environmentObject(PhoneCheckUpdateViewModel())
