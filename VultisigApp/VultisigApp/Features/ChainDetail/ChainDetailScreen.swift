@@ -36,6 +36,7 @@ struct ChainDetailScreen: View {
     
     private let scrollReferenceId = "chainDetailScreenBottomContentId"
     
+    @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @Environment(\.openURL) var openURL
     
     init(group: GroupedChain, vault: Vault) {
@@ -60,7 +61,7 @@ struct ChainDetailScreen: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .refreshable {
-                viewModel.refresh(group: group)
+                refresh()
             }
             .background(VaultMainScreenBackground())
         }
@@ -99,13 +100,22 @@ struct ChainDetailScreen: View {
             }
         }
         .onLoad {
-            viewModel.refresh(group: group)
+            refresh()
         }
         .navigationDestination(item: $vaultAction) {
             VaultActionRouteBuilder().buildActionRoute(action: $0, sendTx: sendTx, vault: vault)
         }
         .navigationDestination(item: $coinToShow) {
             CoinDetailView(coin: $0, group: group, vault: vault, sendTx: sendTx)
+        }
+        .onChange(of: vaultAction) { oldValue, newValue in
+            if case .function(_) = newValue {
+                if let nativeCoin = viewModel.tokens.first(where: { $0.isNativeToken }) {
+                    sendTx.reset(coin: nativeCoin)
+                } else if let firstCoin = viewModel.tokens.first {
+                    sendTx.reset(coin: firstCoin)
+                }
+            }
         }
     }
     
@@ -198,6 +208,30 @@ struct ChainDetailScreen: View {
 }
 
 private extension ChainDetailScreen {
+    func refresh() {
+        viewModel.refresh(group: group)
+        Task {
+            await updateBalances()
+            await MainActor.run {
+                coinSelectionViewModel.setData(for: vault)
+            }
+        }
+    }
+
+    func updateBalances() async {
+        let vault = self.vault // Capture on main actor
+        await withTaskGroup(of: Void.self) { taskGroup in
+            for coin in group.coins {
+                taskGroup.addTask {
+                    await coinSelectionViewModel.loadData(coin: coin)
+                    if coin.isNativeToken {
+                        await CoinService.addDiscoveredTokens(nativeToken: coin, to: vault)
+                    }
+                }
+            }
+        }
+    }
+    
     func toggleSearch() {
         withAnimation(.interpolatingSpring) {
             showSearchHeader.toggle()
