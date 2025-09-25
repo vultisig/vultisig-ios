@@ -35,16 +35,18 @@ struct SendDetailsAmountTab: View {
         SendFormExpandableSection(isExpanded: isExpanded) {
             titleSection
         } content: {
-            separator
-            amountFieldSection
-            
-            if sendCryptoViewModel.showAmountAlert {
-                errorText
+            VStack(spacing: 16) {
+                separator
+                amountFieldSection
+                
+                if sendCryptoViewModel.showAmountAlert {
+                    errorText
+                }
+                
+                percentageButtons
+                balanceSection
+                additionalOptionsSection
             }
-            
-            percentageButtons
-            balanceSection
-            additionalOptionsSection
         }
     }
     
