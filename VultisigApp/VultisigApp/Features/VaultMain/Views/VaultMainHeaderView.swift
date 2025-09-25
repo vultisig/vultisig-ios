@@ -24,6 +24,7 @@ struct VaultMainHeaderView: View {
                 isFastVault: vault.isFastVault,
                 action: vaultSelectorAction
             )
+            .layoutPriority(1)
             Spacer()
             trailingView
                 .transition(.opacity)

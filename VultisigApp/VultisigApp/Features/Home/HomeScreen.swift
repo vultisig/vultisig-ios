@@ -22,15 +22,6 @@ struct HomeScreen: View {
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
-    var tabs: [HomeTab] {
-        // Fake `camera` button on liquid glass tabs
-        if #available(iOS 26.0, macOS 26.0, *) {
-            return [.wallet, .earn, .camera]
-        } else {
-            return [.wallet, .earn]
-        }
-    }
-    
     var body: some View {
         VultiTabBar(
             selectedItem: $selectedTab,
@@ -48,6 +39,7 @@ struct HomeScreen: View {
         } onAccessory: {
             onCamera()
         }
+        .sensoryFeedback(homeViewModel.showAlert ? .stop : .impact, trigger: homeViewModel.showAlert)
         .customNavigationBarHidden(true)
         .onChange(of: selectedTab) { oldValue, newValue in
             if newValue == .camera {

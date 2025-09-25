@@ -24,17 +24,23 @@ struct VaultMainScreen: View {
     @State var showSearchHeader: Bool = false
     @State var focusSearch: Bool = false
     @State var scrollProxy: ScrollViewProxy?
-
+    @State var frameHeight: CGFloat = 0
+    
     private let scrollReferenceId = "vaultMainScreenBottomContentId"
     
     private let contentInset: CGFloat = 78
     
     var body: some View {
-        VStack {
+        GeometryReader { geo in
             ZStack(alignment: .top) {
                 ScrollViewReader { proxy in
-                    OffsetObservingScrollView(showsIndicators: false, contentInset: contentInset, scrollOffset: $scrollOffset) {
-                        VStack(spacing: 20) {
+                    OffsetObservingScrollView(
+                        showsIndicators: false,
+                        contentInset: contentInset,
+                        ns: .scrollView,
+                        scrollOffset: $scrollOffset
+                    ) {
+                        LazyVStack(spacing: 20) {
                             topContentSection
                             Separator(color: Theme.colors.borderLight, opacity: 1)
                             bottomContentSection
@@ -47,42 +53,45 @@ struct VaultMainScreen: View {
                 }
                 header
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .refreshable {
-                if let vault = homeViewModel.selectedVault {
-                    viewModel.updateBalance(vault: vault)
-                }
+            .onLoad {
+                frameHeight = geo.size.height
             }
-            .background(VaultMainScreenBackground())
-            .withAddressCopy(group: $addressToCopy)
-            .onChange(of: scrollOffset) { _, newValue in
-                onScrollOffsetChange(newValue)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .refreshable {
+            if let vault = homeViewModel.selectedVault {
+                viewModel.updateBalance(vault: vault)
             }
-            .onChange(of: showSearchHeader) { _, showSearchHeader in
-                if showSearchHeader {
-                    focusSearch = true
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
-                        withAnimation {
-                            scrollProxy?.scrollTo(scrollReferenceId, anchor: .center)
-                        }
+        }
+        .background(VaultMainScreenBackground())
+        .withAddressCopy(group: $addressToCopy)
+        .onChange(of: scrollOffset) { _, newValue in
+            onScrollOffsetChange(newValue)
+        }
+        .onChange(of: showSearchHeader) { _, showSearchHeader in
+            if showSearchHeader {
+                focusSearch = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                    withAnimation {
+                        scrollProxy?.scrollTo(scrollReferenceId, anchor: .center)
                     }
                 }
             }
-            .sheet(isPresented: $showVaultSelector) {
-                VaultManagementSheet {
-                    showVaultSelector.toggle()
-                    routeToPresent = .createVault
-                } onSelectVault: { vault in
-                    showVaultSelector.toggle()
-                    homeViewModel.setSelectedVault(vault)
-                }
+        }
+        .sheet(isPresented: $showVaultSelector) {
+            VaultManagementSheet {
+                showVaultSelector.toggle()
+                routeToPresent = .createVault
+            } onSelectVault: { vault in
+                showVaultSelector.toggle()
+                homeViewModel.setSelectedVault(vault)
             }
-            .sheet(isPresented: $showChainSelection) {
-                VaultSelectChainScreen(
-                    vault: homeViewModel.selectedVault ?? .example,
-                    isPresented: $showChainSelection
-                )
-            }
+        }
+        .sheet(isPresented: $showChainSelection) {
+            VaultSelectChainScreen(
+                vault: homeViewModel.selectedVault ?? .example,
+                isPresented: $showChainSelection
+            )
         }
     }
     
@@ -96,7 +105,7 @@ struct VaultMainScreen: View {
     }
     
     var topContentSection: some View {
-        VStack(spacing: 32) {
+        LazyVStack(spacing: 32) {
             VaultMainBalanceView(vault: vault)
             CoinActionsView(
                 actions: viewModel.availableActions,
@@ -200,6 +209,7 @@ struct VaultMainScreen: View {
     }
     
     func onScrollOffsetChange(_ offset: CGFloat) {
+        print("Offset \(offset) \(frameHeight)")
         showBalanceInHeader = offset < contentInset
     }
     
