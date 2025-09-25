@@ -239,15 +239,6 @@ struct VaultMainScreen: View {
         showVaultSelector.toggle()
     }
     
-    func onBannerAction() {
-        // TODO: - Add banner action in upcoming PRs
-        showUpgradeVaultSheet = true
-    }
-    
-    func onBannerClose() {
-        // TODO: - Add banner close in upcoming PRs
-    }
-    
     func onCopy(_ group: GroupedChain) {
         addressToCopy = group
     }
