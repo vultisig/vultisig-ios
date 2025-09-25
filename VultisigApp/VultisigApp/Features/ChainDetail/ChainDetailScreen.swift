@@ -38,6 +38,7 @@ struct ChainDetailScreen: View {
     
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @Environment(\.openURL) var openURL
+    @Environment(\.dismiss) var dismiss
     
     init(group: GroupedChain, vault: Vault) {
         self.group = group
@@ -63,14 +64,14 @@ struct ChainDetailScreen: View {
             .refreshable {
                 refresh()
             }
-            .background(VaultMainScreenBackground())
         }
+        .background(VaultMainScreenBackground())
         .withAddressCopy(group: $addressToCopy)
         .sheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(groupedChain: group, isPresented: $showReceiveSheet)
         }
         // TODO: - Remove after new manage assets is done
-        .sheet(isPresented: Binding<Bool>(
+        .platformSheet(isPresented: Binding<Bool>(
             get: { sheetType != nil },
             set: { newValue in
                 if !newValue {
@@ -81,21 +82,17 @@ struct ChainDetailScreen: View {
             if let sheetType = sheetType {
                 switch sheetType {
                 case .tokenSelection:
-                    NavigationView {
-                        TokenSelectionView(
-                            chainDetailView: self,
-                            vault: vault,
-                            group: group
-                        )
-                    }
+                    TokenSelectionView(
+                        chainDetailView: self,
+                        vault: vault,
+                        group: group
+                    )
                 case .customToken:
-                    NavigationView {
-                        CustomTokenView(
-                            chainDetailView: self,
-                            vault: vault,
-                            group: group
-                        )
-                    }
+                    CustomTokenView(
+                        chainDetailView: self,
+                        vault: vault,
+                        group: group
+                    )
                 }
             }
         }
@@ -283,12 +280,15 @@ private extension ChainDetailScreen {
 #if os(macOS)
 extension ChainDetailScreen {
     func container<Content: View>(content: () -> Content) -> some View {
-        ZStack(alignment: .topLeading) {
+        ZStack(alignment: .top) {
             content()
             HStack {
+                CircularIconButton(icon: "chevron-right", action: { dismiss() })
+                    .rotationEffect(.radians(.pi))
                 Spacer()
                 CircularIconButton(icon: "square-3d", action: onExplorer)
             }
+            .padding(.top, isMacOS ? 8 : 0)
             .padding(.horizontal, 24)
             .frame(height: 40)
         }

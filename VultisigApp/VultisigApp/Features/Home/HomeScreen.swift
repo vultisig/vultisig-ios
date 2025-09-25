@@ -14,6 +14,7 @@ struct HomeScreen: View {
     
     @State var selectedVault: Vault? = nil
     @State var showVaultSelector: Bool = false
+    @State var addressToCopy: GroupedChain?
     
     @State var vaults: [Vault] = []
     @State private var selectedTab: HomeTab = .wallet
@@ -82,8 +83,12 @@ struct HomeScreen: View {
                 VaultMainScreen(
                     vault: selectedVault,
                     routeToPresent: $vaultRoute,
-                    showVaultSelector: $showVaultSelector
+                    showVaultSelector: $showVaultSelector,
+                    addressToCopy: $addressToCopy
                 )
+                #if os(macOS)
+                .navigationBarBackButtonHidden()
+                #endif
             case .earn:
                 EmptyView()
             case .camera:
@@ -94,6 +99,7 @@ struct HomeScreen: View {
         }
         .sensoryFeedback(homeViewModel.showAlert ? .stop : .impact, trigger: homeViewModel.showAlert)
         .customNavigationBarHidden(true)
+        .withAddressCopy(group: $addressToCopy)
         .onChange(of: selectedTab) { oldValue, newValue in
             if newValue == .camera {
                 selectedTab = oldValue

@@ -12,6 +12,7 @@ struct VaultMainScreen: View {
     @ObservedObject var vault: Vault
     @Binding var routeToPresent: VaultMainRoute?
     @Binding var showVaultSelector: Bool
+    @Binding var addressToCopy: GroupedChain?
     
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var viewModel: VaultDetailViewModel
@@ -20,7 +21,6 @@ struct VaultMainScreen: View {
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     
-    @State private var addressToCopy: GroupedChain?
     @State private var scrollOffset: CGFloat = 0
     @State var showBalanceInHeader: Bool = false
     @State var showChainSelection: Bool = false
@@ -63,7 +63,6 @@ struct VaultMainScreen: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .background(VaultMainScreenBackground())
-            .withAddressCopy(group: $addressToCopy)
             .onChange(of: scrollOffset) { _, newValue in
                 onScrollOffsetChange(newValue)
             }
@@ -305,7 +304,8 @@ struct VaultMainScreen: View {
     VaultMainScreen(
         vault: .example,
         routeToPresent: .constant(nil),
-        showVaultSelector: .constant(false)
+        showVaultSelector: .constant(false),
+        addressToCopy: .constant(nil)
     )
     .environmentObject(HomeViewModel())
     .environmentObject(VaultDetailViewModel())

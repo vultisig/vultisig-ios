@@ -17,6 +17,7 @@ private struct AddressCopyBannerViewModifier: ViewModifier {
         content
             .overlay(
                 NotificationBannerView(text: text, isVisible: $isVisible)
+                    .padding(.bottom, isMacOS ? 24 : 0)
                     .showIf(isVisible)
                     .zIndex(2)
             )
