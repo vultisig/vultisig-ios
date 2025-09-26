@@ -61,7 +61,7 @@ extension View {
         modifier(DetentsAwareSheetWithItem(item: item, sheetContent: content))
     }
     
-    func detentsAwareSheet<SheetContent: View>(isPresented: Binding<Bool>, content: @escaping () -> SheetContent) -> some View {
+    func detentsAwareSheet<SheetContent: View>(isPresented: Binding<Bool>, @ViewBuilder content: @escaping () -> SheetContent) -> some View {
         modifier(DetentsAwareSheetWithBoolean(isPresented: isPresented, sheetContent: content))
     }
 }

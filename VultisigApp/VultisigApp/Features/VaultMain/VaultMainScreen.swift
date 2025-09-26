@@ -12,7 +12,8 @@ struct VaultMainScreen: View {
     @ObservedObject var vault: Vault
     @Binding var routeToPresent: VaultMainRoute?
     @Binding var showVaultSelector: Bool
-    @Binding var addressToCopy: GroupedChain?
+    @Binding var addressToCopy: Coin?
+    @Binding var showUpgradeVaultSheet: Bool
     
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var viewModel: VaultDetailViewModel
@@ -25,7 +26,7 @@ struct VaultMainScreen: View {
     @State var showBalanceInHeader: Bool = false
     @State var showChainSelection: Bool = false
     @State var showSearchHeader: Bool = false
-    @State var showUpgradeVaultSheet: Bool = false
+    @State var showReceiveList: Bool = false
     @State var focusSearch: Bool = false
     @State var scrollProxy: ScrollViewProxy?
     @State var frameHeight: CGFloat = 0
@@ -96,9 +97,13 @@ struct VaultMainScreen: View {
             .sheet(isPresented: $showBackupNow) {
                 VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: vault))
             }
-            .withUpgradeVault(vault: vault, shouldShow: $showUpgradeVaultSheet)
-            .withBiweeklyPasswordVerification(vault: vault)
-            .withMonthlyBackupWarning(vault: vault)
+            .platformSheet(isPresented: $showReceiveList) {
+                ReceiveChainSelectionScreen(
+                    vault: vault,
+                    isPresented: $showReceiveList,
+                    viewModel: viewModel
+                )
+            }
             .onAppear(perform: refresh)
             .refreshable { refresh() }
             .onChange(of: homeViewModel.selectedVault?.coins) {
@@ -241,7 +246,7 @@ struct VaultMainScreen: View {
     }
     
     func onCopy(_ group: GroupedChain) {
-        addressToCopy = group
+        addressToCopy = group.nativeCoin
     }
     
     func refresh() {
@@ -291,8 +296,8 @@ struct VaultMainScreen: View {
             // TODO: - To add
             break
         case .receive:
-            // TODO: - To add
-            break
+            showReceiveList = true
+            return
         }
         
         guard let vaultAction else { return }
@@ -305,7 +310,8 @@ struct VaultMainScreen: View {
         vault: .example,
         routeToPresent: .constant(nil),
         showVaultSelector: .constant(false),
-        addressToCopy: .constant(nil)
+        addressToCopy: .constant(nil),
+        showUpgradeVaultSheet: .constant(false)
     )
     .environmentObject(HomeViewModel())
     .environmentObject(VaultDetailViewModel())

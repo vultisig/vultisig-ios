@@ -28,7 +28,7 @@ struct SendCryptoAddressTextField: View {
 #endif
     
     var body: some View {
-        VStack {
+        VStack(spacing: 16) {
             container
             
             if sendCryptoViewModel.showAddressAlert {

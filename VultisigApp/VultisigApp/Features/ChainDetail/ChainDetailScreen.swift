@@ -21,10 +21,11 @@ struct ChainDetailScreen: View {
     @ObservedObject var group: GroupedChain
     let vault: Vault
     @State var vaultAction: VaultAction?
+    @State var showAction: Bool = false
     
     @StateObject var viewModel: ChainDetailViewModel
     
-    @State private var addressToCopy: GroupedChain?
+    @State private var addressToCopy: Coin?
     @State var showManageAssets: Bool = false
     @State var showSearchHeader: Bool = false
     @State var coinToShow: Coin?
@@ -66,9 +67,9 @@ struct ChainDetailScreen: View {
             }
         }
         .background(VaultMainScreenBackground())
-        .withAddressCopy(group: $addressToCopy)
+        .withAddressCopy(coin: $addressToCopy)
         .sheet(isPresented: $showReceiveSheet) {
-            ReceiveQRCodeBottomSheet(groupedChain: group, isPresented: $showReceiveSheet)
+            ReceiveQRCodeBottomSheet(coin: group.nativeCoin, isPresented: $showReceiveSheet)
         }
         // TODO: - Remove after new manage assets is done
         .platformSheet(isPresented: Binding<Bool>(
@@ -99,8 +100,10 @@ struct ChainDetailScreen: View {
         .onLoad {
             refresh()
         }
-        .navigationDestination(item: $vaultAction) {
-            VaultActionRouteBuilder().buildActionRoute(action: $0, sendTx: sendTx, vault: vault)
+        .navigationDestination(isPresented: $showAction) {
+            if let vaultAction {
+                VaultActionRouteBuilder().buildActionRoute(action: vaultAction, sendTx: sendTx, vault: vault)
+            }
         }
         .navigationDestination(item: $coinToShow) {
             CoinDetailView(coin: $0, group: group, vault: vault, sendTx: sendTx)
@@ -270,10 +273,11 @@ private extension ChainDetailScreen {
         
         guard let vaultAction else { return }
         self.vaultAction = vaultAction
+        self.showAction = true
     }
     
     func onCopy() {
-        addressToCopy = group
+        addressToCopy = group.nativeCoin
     }
 }
 
@@ -282,6 +286,7 @@ extension ChainDetailScreen {
     func container<Content: View>(content: () -> Content) -> some View {
         ZStack(alignment: .top) {
             content()
+                .padding(.top, 40)
             HStack {
                 CircularIconButton(icon: "chevron-right", action: { dismiss() })
                     .rotationEffect(.radians(.pi))

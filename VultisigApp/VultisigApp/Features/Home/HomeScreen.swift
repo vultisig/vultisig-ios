@@ -14,7 +14,8 @@ struct HomeScreen: View {
     
     @State var selectedVault: Vault? = nil
     @State var showVaultSelector: Bool = false
-    @State var addressToCopy: GroupedChain?
+    @State var addressToCopy: Coin?
+    @State var showUpgradeVaultSheet: Bool = false
     
     @State var vaults: [Vault] = []
     @State private var selectedTab: HomeTab = .wallet
@@ -85,7 +86,8 @@ struct HomeScreen: View {
                     vault: selectedVault,
                     routeToPresent: $vaultRoute,
                     showVaultSelector: $showVaultSelector,
-                    addressToCopy: $addressToCopy
+                    addressToCopy: $addressToCopy,
+                    showUpgradeVaultSheet: $showUpgradeVaultSheet
                 )
                 #if os(macOS)
                 .navigationBarBackButtonHidden()
@@ -100,7 +102,10 @@ struct HomeScreen: View {
         }
         .sensoryFeedback(homeViewModel.showAlert ? .stop : .impact, trigger: homeViewModel.showAlert)
         .customNavigationBarHidden(true)
-        .withAddressCopy(group: $addressToCopy)
+        .withAddressCopy(coin: $addressToCopy)
+        .withUpgradeVault(vault: selectedVault, shouldShow: $showUpgradeVaultSheet)
+        .withBiweeklyPasswordVerification(vault: selectedVault)
+        .withMonthlyBackupWarning(vault: selectedVault)
         .onChange(of: selectedTab) { oldValue, newValue in
             if newValue == .camera {
                 selectedTab = oldValue
@@ -132,11 +137,6 @@ struct HomeScreen: View {
         #endif
         .navigationDestination(isPresented: $shouldJoinKeygen) {
             JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: selectedVault)
-        }
-        .navigationDestination(isPresented: $shouldKeysignTransaction) {
-            if let vault = homeViewModel.selectedVault {
-                JoinKeysignView(vault: vault)
-            }
         }
         .onChange(of: shouldSendCrypto) { _, newValue in
             guard newValue else { return }
