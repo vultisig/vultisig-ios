@@ -45,7 +45,7 @@ class PendingTransactionManager {
     /// Add a pending transaction to tracking (memory only)
     func addPendingTransaction(txHash: String, address: String, chain: Chain, sequence: UInt64) {
         let transaction = PendingTransaction(txHash: txHash, address: address, chain: chain, sequence: sequence)
-        self.pendingTransactions.set(txHash, transaction)
+        self.pendingTransactions.setSync(txHash, transaction)
         print("Added pending transaction: \(txHash) for address: \(address) with sequence: \(sequence)")
             
         // Start polling only for this specific chain
@@ -128,7 +128,7 @@ class PendingTransactionManager {
             }
             print("PendingTransactionManager: Polling task cancelled for chain: \(chain)")
         }
-        self.pollingTasks.set(chain, t)
+        self.pollingTasks.setSync(chain, t)
         
     }
     

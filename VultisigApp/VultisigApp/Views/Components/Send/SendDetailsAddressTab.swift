@@ -37,8 +37,10 @@ struct SendDetailsAddressTab: View {
         SendFormExpandableSection(isExpanded: isExpanded) {
             titleSection
         } content: {
-            separator
-            fields
+            VStack(spacing: 16) {
+                separator
+                fields
+            }
         }
     }
     

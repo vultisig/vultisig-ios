@@ -34,4 +34,10 @@ public protocol FontSystemProtocol {
     var buttonRegularMedium: Font { get }
     var buttonSSemibold: Font { get }
     var buttonSMedium: Font { get }
+    
+    var priceLargeTitle: Font { get }
+    var priceTitle1: Font { get }
+    var priceBodyS: Font { get }
+    var priceFootnote: Font { get }
+    var priceCaption: Font { get }
 }

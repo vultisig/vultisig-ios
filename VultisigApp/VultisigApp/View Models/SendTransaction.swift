@@ -86,16 +86,17 @@ class SendTransaction: ObservableObject, Hashable {
                 let nativeTokenBalance = nativeToken.rawBalance.toBigInt()
                 
                 if specific.fee > nativeTokenBalance {
-                    errorMessage = "Insufficient \(nativeToken.ticker) balance for the \(coin.ticker) transaction fees."
+                    errorMessage = String(format: "insufficientGasTokenError".localized, nativeToken.ticker, coin.ticker)
                     
                     return (false, errorMessage)
                 }
                 return (true, errorMessage)
             } else {
-                errorMessage = "No native token found for chain \(coin.chain.name)"
+                errorMessage = String(format: "noGasTokenFoundError".localized, coin.chain.name)
                 return (false, errorMessage)
             }
         }
+        errorMessage = "unableToVerifyGasTokenError".localized
         return (false, errorMessage)
     }
     

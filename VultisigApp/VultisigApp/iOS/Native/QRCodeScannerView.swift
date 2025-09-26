@@ -128,7 +128,7 @@ struct QRCodeScannerView: View {
     }
     
     var uploadButton: some View {
-        PrimaryButtonView(title: "uploadQR", leadingIcon: "arrow.up.document")
+        PrimaryButtonView(title: "uploadQR", leadingIcon: "share")
     }
 
     private func getIcon(for icon: String) -> some View {

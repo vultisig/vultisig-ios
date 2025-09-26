@@ -19,7 +19,7 @@ struct SendCryptoVaultErrorView: View {
         ) {
             navigateToHome = true
         }.navigationDestination(isPresented: $navigateToHome) {
-            HomeView(showVaultsList: true)
+            HomeScreen(showingVaultSelector: true)
         }
     }
 }

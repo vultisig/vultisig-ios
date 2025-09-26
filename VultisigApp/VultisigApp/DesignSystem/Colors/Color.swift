@@ -28,6 +28,14 @@ extension Color {
     init(light: PlatformColor, dark: PlatformColor?) {
         self.init(.dynamic(light: light, dark: dark ?? light))
     }
+    
+    var toCGColor: CGColor {
+        #if canImport(UIKit)
+        UIColor(self).cgColor
+        #elseif canImport(AppKit)
+        NSColor(self).cgColor
+        #endif
+    }
 }
 
 extension PlatformColor {

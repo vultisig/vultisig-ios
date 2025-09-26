@@ -36,7 +36,7 @@ public struct CrossPlatformShareButton<Label: View>: View {
 
 @MainActor
 private func renderPNGData(from image: Image, scale: CGFloat) -> Data? {
-    let renderer = ImageRenderer(content: image) // no resizing
+    let renderer = ImageRenderer(content: image)
     renderer.scale = scale
     #if os(iOS)
     return renderer.uiImage?.pngData()
@@ -83,14 +83,13 @@ private struct IOSShareButton<Label: View>: View {
     }
 
     private func share() {
-        // Build from cached pieces (fast), with a safe fallback
         var items: [Any] = [caption]
         if let ui = cachedImage {
-            items.insert(ui, at: 0) // [image, text]
+            items.insert(ui, at: 0)
         } else if let png = renderPNGData(from: image, scale: scale),
                   let ui = UIImage(data: png) {
             items.insert(ui, at: 0)
-            cachedImage = ui // cache for next time
+            cachedImage = ui
         }
 
         payload = SharePayload(items: items)
@@ -102,10 +101,10 @@ private struct ActivityViewController: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> UIActivityViewController {
         let vc = UIActivityViewController(activityItems: items, applicationActivities: nil)
-        vc.popoverPresentationController?.sourceView = UIApplication.shared
-            .connectedScenes
-            .compactMap { ($0 as? UIWindowScene)?.keyWindow }
-            .first
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first {
+            vc.popoverPresentationController?.sourceView = window.rootViewController?.view
+        }
         return vc
     }
 
@@ -113,68 +112,112 @@ private struct ActivityViewController: UIViewControllerRepresentable {
 }
 #endif
 
-
 #if os(macOS)
 import AppKit
 
-private struct MacShareButton<Label: View>: NSViewRepresentable {
+private struct MacShareButton<Label: View>: View {
     let image: Image
     let caption: String
     let scale: CGFloat
     @ViewBuilder var label: () -> Label
+    
+    @State private var cachedImage: NSImage?
+    @State private var showSharePicker = false
+    @State private var buttonFrame: CGRect = .zero
 
-    func makeNSView(context: Context) -> NSButton {
-        let hosting = NSHostingView(rootView: AnyView(label()))
-        hosting.translatesAutoresizingMaskIntoConstraints = false
-
-        let button = NSButton()
-        button.bezelStyle = .texturedRounded
-        button.title = ""
-        button.target = context.coordinator
-        button.action = #selector(Coordinator.share)
-
-        button.addSubview(hosting)
-        NSLayoutConstraint.activate([
-            hosting.leadingAnchor.constraint(equalTo: button.leadingAnchor),
-            hosting.trailingAnchor.constraint(equalTo: button.trailingAnchor),
-            hosting.topAnchor.constraint(equalTo: button.topAnchor),
-            hosting.bottomAnchor.constraint(equalTo: button.bottomAnchor)
-        ])
-
-        context.coordinator.button = button
-        return button
+    var body: some View {
+        Button(action: share) {
+            label()
+        }
+        .background(
+            GeometryReader { geometry in
+                Color.clear
+                    .preference(key: FramePreferenceKey.self, value: geometry.frame(in: .global))
+            }
+        )
+        .onPreferenceChange(FramePreferenceKey.self) { frame in
+            buttonFrame = frame
+        }
+        .task {
+            if cachedImage == nil,
+               let png = renderPNGData(from: image, scale: scale) {
+                cachedImage = NSImage(data: png)
+            }
+        }
+        .background(
+            // Invisible view to handle the share picker
+            SharePickerView(
+                items: shareItems,
+                isPresented: $showSharePicker,
+                sourceRect: buttonFrame
+            )
+        )
     }
+    
+    private var shareItems: [Any] {
+        var items: [Any] = [caption]
+        if let cachedImage = cachedImage {
+            items.insert(cachedImage, at: 0)
+        } else if let png = renderPNGData(from: image, scale: scale),
+                  let nsImage = NSImage(data: png) {
+            items.insert(nsImage, at: 0)
+        }
+        return items
+    }
+    
+    private func share() {
+        showSharePicker = true
+    }
+}
 
-    func updateNSView(_ nsView: NSButton, context: Context) {}
-
+// Helper view to manage the macOS share picker
+private struct SharePickerView: NSViewRepresentable {
+    let items: [Any]
+    @Binding var isPresented: Bool
+    let sourceRect: CGRect
+    
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        context.coordinator.parentView = view
+        return view
+    }
+    
+    func updateNSView(_ nsView: NSView, context: Context) {
+        if isPresented {
+            context.coordinator.showSharePicker(items: items, sourceRect: sourceRect)
+            DispatchQueue.main.async {
+                isPresented = false
+            }
+        }
+    }
+    
     func makeCoordinator() -> Coordinator {
-        Coordinator(image: image, caption: caption, scale: scale)
+        Coordinator()
     }
-
-    final class Coordinator: NSObject {
-        let image: Image
-        let caption: String
-        let scale: CGFloat
-        weak var button: NSButton?
-
-        init(image: Image, caption: String, scale: CGFloat) {
-            self.image = image
-            self.caption = caption
-            self.scale = scale
-        }
-
-        @MainActor @objc func share() {
-            var items: [Any] = [caption]
-            if let png = renderPNGData(from: image, scale: scale),
-               let ns = NSImage(data: png) {
-                items.insert(ns, at: 0)
-            }
-
+    
+    class Coordinator: NSObject {
+        weak var parentView: NSView?
+        
+        func showSharePicker(items: [Any], sourceRect: CGRect) {
+            guard let parentView = parentView,
+                  let window = parentView.window else { return }
+            
             let picker = NSSharingServicePicker(items: items)
-            if let button = button {
-                picker.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-            }
+            
+            // Convert the global frame to the window's coordinate system
+            let windowRect = window.convertFromScreen(sourceRect)
+            let viewRect = parentView.convert(windowRect, from: nil)
+            
+            picker.show(relativeTo: viewRect, of: parentView, preferredEdge: .minY)
         }
+    }
+}
+
+// Helper preference key for getting the button's frame
+private struct FramePreferenceKey: PreferenceKey {
+    static var defaultValue: CGRect = .zero
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+        value = nextValue()
     }
 }
 #endif

@@ -49,7 +49,7 @@ struct SendCryptoKeysignView: View {
             navigateToHome = true
         }
         .navigationDestination(isPresented: $navigateToHome) {
-            HomeView()
+            HomeScreen()
         }
     }
     
