@@ -44,7 +44,7 @@ struct VaultMainChainListView: View {
             title: "noChainsFound".localized,
             subtitle: "noChainsFoundSubtitle".localized,
             buttonTitle: "customizeChains".localized,
-            buttonIcon: "write".localized,
+            buttonIcon: "write",
             action: onCustomizeChains
         )
     }
