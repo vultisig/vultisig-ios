@@ -32,9 +32,6 @@ struct VaultActionRouteBuilder {
                 blockChainCode: blockChainCode,
                 coinType: coinType
             )
-            // TODO: - Action not implemented yet
-//        case .sell, .receive:
-            // TODO: - Action not implemented yet
         }
     }
 }

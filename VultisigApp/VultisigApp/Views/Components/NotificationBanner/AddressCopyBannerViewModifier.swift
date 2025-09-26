@@ -8,7 +8,7 @@
 import SwiftUI
 
 private struct AddressCopyBannerViewModifier: ViewModifier {
-    @Binding var group: GroupedChain?
+    @Binding var coin: Coin?
 
     @State var isVisible: Bool = false
     @State var text: String = ""
@@ -21,25 +21,25 @@ private struct AddressCopyBannerViewModifier: ViewModifier {
                     .showIf(isVisible)
                     .zIndex(2)
             )
-            .onChange(of: group) { _, group in
-                guard let group else {
+            .onChange(of: coin) { _, coin in
+                guard let coin else {
                     isVisible = false
                     text = ""
                     return
                 }
-                ClipboardManager.copyToClipboard(group.address)
+                ClipboardManager.copyToClipboard(coin.address)
                 isVisible = true
-                text = String(format: "coinAddressCopied".localized, group.name)
+                text = String(format: "coinAddressCopied".localized, coin.chain.name)
             }
             .onChange(of: isVisible) { _, newValue in
                 guard !newValue else { return }
-                group = nil
+                coin = nil
             }
     }
 }
 
 extension View {
-    func withAddressCopy(group: Binding<GroupedChain?>) -> some View {
-        modifier(AddressCopyBannerViewModifier(group: group))
+    func withAddressCopy(coin: Binding<Coin?>) -> some View {
+        modifier(AddressCopyBannerViewModifier(coin: coin))
     }
 }

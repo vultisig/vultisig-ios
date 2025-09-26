@@ -162,6 +162,7 @@
 		13AF0D232E4CE7A9004D4FD2 /* VultisigRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AF0D222E4CE7A6004D4FD2 /* VultisigRouter.swift */; };
 		13AF0D272E4CEA3C004D4FD2 /* SendDetailsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AF0D262E4CEA35004D4FD2 /* SendDetailsScreen.swift */; };
 		13AF0D552E4CF5C1004D4FD2 /* CryptoAmountFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AF0D542E4CF5B2004D4FD2 /* CryptoAmountFormatter.swift */; };
+		13B0DCE32E86C70500D4E609 /* ReceiveChainSelectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B0DCE22E86C6FE00D4E609 /* ReceiveChainSelectionScreen.swift */; };
 		13B1C2C22E65D21E00050637 /* VaultPairDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 461AD1B62BC6706500959278 /* VaultPairDetailView.swift */; };
 		13B1C2C42E65D28700050637 /* VaultPairView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B1C2C32E65D28700050637 /* VaultPairView.swift */; };
 		13B1C2C62E65DB2000050637 /* ChooseBackupSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B1C2C52E65DB1800050637 /* ChooseBackupSheetView.swift */; };
@@ -1227,6 +1228,7 @@
 		13AF0D222E4CE7A6004D4FD2 /* VultisigRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultisigRouter.swift; sourceTree = "<group>"; };
 		13AF0D262E4CEA35004D4FD2 /* SendDetailsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDetailsScreen.swift; sourceTree = "<group>"; };
 		13AF0D542E4CF5B2004D4FD2 /* CryptoAmountFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoAmountFormatter.swift; sourceTree = "<group>"; };
+		13B0DCE22E86C6FE00D4E609 /* ReceiveChainSelectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiveChainSelectionScreen.swift; sourceTree = "<group>"; };
 		13B1C2C32E65D28700050637 /* VaultPairView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultPairView.swift; sourceTree = "<group>"; };
 		13B1C2C52E65DB1800050637 /* ChooseBackupSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseBackupSheetView.swift; sourceTree = "<group>"; };
 		13B1C2C72E65E3F900050637 /* VaultServerBackupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultServerBackupScreen.swift; sourceTree = "<group>"; };
@@ -2482,7 +2484,6 @@
 		1336BB382E8175FC00597070 /* View */ = {
 			isa = PBXGroup;
 			children = (
-				13B25B8F2E81B7E2002BCF55 /* ReceiveQRCodeBottomSheet.swift */,
 				1336BB3D2E817DDC00597070 /* TokenCellView.swift */,
 				1336BB3B2E81774000597070 /* ChainDetailHeaderView.swift */,
 				1336BB392E81766B00597070 /* ChainDetailListView.swift */,
@@ -2763,6 +2764,23 @@
 			path = Formatters;
 			sourceTree = "<group>";
 		};
+		13B0DCE02E86C6EA00D4E609 /* Receive */ = {
+			isa = PBXGroup;
+			children = (
+				13B0DCE12E86C6F100D4E609 /* Screens */,
+			);
+			path = Receive;
+			sourceTree = "<group>";
+		};
+		13B0DCE12E86C6F100D4E609 /* Screens */ = {
+			isa = PBXGroup;
+			children = (
+				13B0DCE22E86C6FE00D4E609 /* ReceiveChainSelectionScreen.swift */,
+				13B25B8F2E81B7E2002BCF55 /* ReceiveQRCodeBottomSheet.swift */,
+			);
+			path = Screens;
+			sourceTree = "<group>";
+		};
 		13B1C2C92E65FC3200050637 /* Vault */ = {
 			isa = PBXGroup;
 			children = (
@@ -2883,6 +2901,7 @@
 		13C880552E70A312009C67F1 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				13B0DCE02E86C6EA00D4E609 /* Receive */,
 				13D3AC952E85901700BA4273 /* VaultActionRouteBuilder.swift */,
 				139642362E79950C00CFEFAF /* VaultSelector */,
 				1336BB2F2E81739C00597070 /* ChainDetail */,
@@ -5108,6 +5127,7 @@
 				DE6EF0512D06709200A36D6A /* DKLSMessenger.swift in Sources */,
 				46AAA49D2BC3B4CF00E5BAB4 /* DecimalExtension.swift in Sources */,
 				B51119332C0072620020B711 /* FunctionCallCustom.swift in Sources */,
+				13B0DCE32E86C70500D4E609 /* ReceiveChainSelectionScreen.swift in Sources */,
 				A564ED422BC350520056FDC0 /* SwapTransaction.swift in Sources */,
 				A67530622CAFBDC200B1E344 /* Folder.swift in Sources */,
 				138574262E2DB9C6002532BF /* NavigationIconButton.swift in Sources */,

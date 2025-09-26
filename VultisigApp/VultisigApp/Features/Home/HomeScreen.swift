@@ -14,7 +14,7 @@ struct HomeScreen: View {
     
     @State var selectedVault: Vault? = nil
     @State var showVaultSelector: Bool = false
-    @State var addressToCopy: GroupedChain?
+    @State var addressToCopy: Coin?
     @State var showUpgradeVaultSheet: Bool = false
     
     @State var vaults: [Vault] = []
@@ -102,7 +102,7 @@ struct HomeScreen: View {
         }
         .sensoryFeedback(homeViewModel.showAlert ? .stop : .impact, trigger: homeViewModel.showAlert)
         .customNavigationBarHidden(true)
-        .withAddressCopy(group: $addressToCopy)
+        .withAddressCopy(coin: $addressToCopy)
         .withUpgradeVault(vault: selectedVault, shouldShow: $showUpgradeVaultSheet)
         .withBiweeklyPasswordVerification(vault: selectedVault)
         .withMonthlyBackupWarning(vault: selectedVault)
