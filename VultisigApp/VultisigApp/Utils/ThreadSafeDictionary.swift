@@ -9,9 +9,14 @@ final class ThreadSafeDictionary<Key: Hashable & Sendable, Value: Sendable> : @u
             return dictionary[key]
         }
     }
+    func setSync(_ key: Key, _ value: Value) {
+        queue.sync(flags: .barrier) {
+            self.dictionary[key] = value
+        }
+    }
     
     func set(_ key: Key, _ value: Value) {
-        queue.sync {
+        queue.async(flags: .barrier) {
             self.dictionary[key] = value
         }
     }
