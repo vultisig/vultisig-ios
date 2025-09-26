@@ -37,6 +37,8 @@ enum FunctionCallInstance {
     case stakeRuji(FunctionCallStakeRuji)
     case unstakeRuji(FunctionCallUnstakeRuji)
     case withdrawRujiRewards(FunctionCallWithdrawRujiRewards)
+    case securedAsset(FunctionCallSecuredAsset)
+    case withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset)
     
     var view: AnyView {
         switch self {
@@ -91,6 +93,10 @@ enum FunctionCallInstance {
         case .unstakeRuji(let memo):
             return memo.getView()
         case .withdrawRujiRewards(let memo):
+            return memo.getView()
+        case .securedAsset(let memo):
+            return memo.getView()
+        case .withdrawSecuredAsset(let memo):
             return memo.getView()
         }
     }
@@ -149,6 +155,10 @@ enum FunctionCallInstance {
             return memo.description
         case .withdrawRujiRewards(let memo):
             return memo.description
+        case .securedAsset(let memo):
+            return memo.description
+        case .withdrawSecuredAsset(let memo):
+            return memo.description
         }
     }
     
@@ -206,6 +216,10 @@ enum FunctionCallInstance {
             return .zero  // The amount goes in the memo
         case .withdrawRujiRewards(let memo):
             return memo.amount
+        case .securedAsset(let memo):
+            return memo.amount
+        case .withdrawSecuredAsset(let memo):
+            return memo.amount
         }
     }
     
@@ -241,6 +255,11 @@ enum FunctionCallInstance {
             return memo.destinationAddress
         case .withdrawRujiRewards(let memo):
             return memo.destinationAddress
+        case .securedAsset(let memo):
+            // For secured assets (MINT), return the inbound address
+            return memo.tx.toAddress.isEmpty ? nil : memo.tx.toAddress
+        case .withdrawSecuredAsset(_):
+            return nil // Withdraw is done via MsgDeposit on THORChain
         default:
             return nil
         }
@@ -299,6 +318,10 @@ enum FunctionCallInstance {
         case .unstakeRuji(let memo):
             return memo.toDictionary()
         case .withdrawRujiRewards(let memo):
+            return memo.toDictionary()
+        case .securedAsset(let memo):
+            return memo.toDictionary()
+        case .withdrawSecuredAsset(let memo):
             return memo.toDictionary()
         }
     }
@@ -380,6 +403,10 @@ enum FunctionCallInstance {
             return memo.isTheFormValid
         case .withdrawRujiRewards(let memo):
             return memo.isTheFormValid
+        case .securedAsset(let memo):
+            return memo.isTheFormValid
+        case .withdrawSecuredAsset(let memo):
+            return memo.isTheFormValid
         }
     }
     
@@ -398,6 +425,10 @@ enum FunctionCallInstance {
         case .redeemRune(let memo):
             return memo.customErrorMessage
         case .redeemTCY(let memo):
+            return memo.customErrorMessage
+        case .securedAsset(let memo):
+            return memo.customErrorMessage
+        case .withdrawSecuredAsset(let memo):
             return memo.customErrorMessage
         default:
             return nil
@@ -445,6 +476,10 @@ enum FunctionCallInstance {
             return call.wasmContractPayload
         case .redeemTCY(let call):
             return call.wasmContractPayload
+        case .securedAsset(_):
+            return nil // Secured assets don't use WASM contracts
+        case .withdrawSecuredAsset(_):
+            return nil // Withdraw secured assets don't use WASM contracts
         default:
             return nil
         }
