@@ -40,26 +40,13 @@ struct VaultMainChainListView: View {
     }
     
     var customizeChainsView: some View {
-        VStack(spacing: 12) {
-            Icon(named: "crypto-outline", color: Theme.colors.primaryAccent4, size: 24)
-            VStack(spacing: 8) {
-                Text("noChainsFound")
-                    .foregroundStyle(Theme.colors.textPrimary)
-                    .font(Theme.fonts.subtitle)
-                Text("noChainsFoundSubtitle")
-                    .foregroundStyle(Theme.colors.textExtraLight)
-                    .font(Theme.fonts.footnote)
-            }
-            .frame(maxWidth: 263)
-            .multilineTextAlignment(.center)
-          
-            PrimaryButton(title: "customizeChains", leadingIcon: "write", size: .mini, action: onCustomizeChains)
-                .fixedSize()
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 32)
-        .frame(maxWidth: .infinity)
-        .background(RoundedRectangle(cornerRadius: 12).fill(Theme.colors.bgSecondary))
+        ActionBannerView(
+            title: "noChainsFound".localized,
+            subtitle: "noChainsFoundSubtitle".localized,
+            buttonTitle: "customizeChains".localized,
+            buttonIcon: "write",
+            action: onCustomizeChains
+        )
     }
 }
 
