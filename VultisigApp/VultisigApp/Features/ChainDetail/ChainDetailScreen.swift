@@ -8,16 +8,6 @@
 import SwiftUI
 
 struct ChainDetailScreen: View {
-    // TODO: - Remove after new manage assets is done
-    enum SheetType: Int, Identifiable {
-        case tokenSelection = 1
-        case customToken = 2
-        
-        var id: Int {
-            return self.rawValue
-        }
-    }
-    
     @ObservedObject var group: GroupedChain
     let vault: Vault
     @State var vaultAction: VaultAction?
@@ -33,8 +23,6 @@ struct ChainDetailScreen: View {
     @State var showReceiveSheet: Bool = false
     @State var scrollProxy: ScrollViewProxy?
     
-    // TODO: - Remove
-    @State var sheetType: SheetType? = nil
     @StateObject var sendTx = SendTransaction()
     
     private let scrollReferenceId = "chainDetailScreenBottomContentId"
@@ -74,41 +62,13 @@ struct ChainDetailScreen: View {
             ReceiveQRCodeBottomSheet(coin: group.nativeCoin, isPresented: $showReceiveSheet)
         }
         .sheet(isPresented: $showManageTokens) {
-            TokenSelectionScreen(
+            TokenSelectionContainerScreen(
                 vault: vault,
                 group: group,
                 isPresented: $showManageTokens
             )
         }
-//        // TODO: - Remove after new manage assets is done
-//        .platformSheet(isPresented: Binding<Bool>(
-//            get: { sheetType != nil },
-//            set: { newValue in
-//                if !newValue {
-//                    sheetType = nil
-//                }
-//            }
-//        )) {
-//            if let sheetType = sheetType {
-//                switch sheetType {
-//                case .tokenSelection:
-//                    TokenSelectionView(
-//                        chainDetailView: self,
-//                        vault: vault,
-//                        group: group
-//                    )
-//                case .customToken:
-//                    CustomTokenView(
-//                        chainDetailView: self,
-//                        vault: vault,
-//                        group: group
-//                    )
-//                }
-//            }
-//        }
-        .onLoad {
-            refresh()
-        }
+        .onLoad(perform: refresh)
         .navigationDestination(isPresented: $showAction) {
             if let vaultAction {
                 VaultActionRouteBuilder().buildActionRoute(action: vaultAction, sendTx: sendTx, vault: vault)

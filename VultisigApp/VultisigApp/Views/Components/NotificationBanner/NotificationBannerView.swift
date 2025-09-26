@@ -13,6 +13,7 @@ struct NotificationBannerView: View {
     @Binding var isVisible: Bool
     @State var isVisibleInternal: Bool = false
     
+    let animation: Animation = .interpolatingSpring(mass: 1, stiffness: 100, damping: 15)
     private let duration: Double = 1
     
     var body: some View {
@@ -65,7 +66,7 @@ struct NotificationBannerView: View {
         }
         .padding(.horizontal, 12)
         .onAppear {
-            withAnimation {
+            withAnimation(.interpolatingSpring(mass: 1, stiffness: 100, damping: 15)) {
                 isVisibleInternal = true
             }
         }

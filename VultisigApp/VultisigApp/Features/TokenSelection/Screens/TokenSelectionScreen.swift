@@ -16,6 +16,7 @@ struct TokenSelectionScreen: View {
     let vault: Vault
     let group: GroupedChain
     @Binding var isPresented: Bool
+    var onCustomToken: () -> Void
     
     @StateObject var tokenViewModel = TokenSelectionViewModel()
     @EnvironmentObject var coinViewModel: CoinSelectionViewModel
@@ -53,7 +54,7 @@ struct TokenSelectionScreen: View {
     func cellBuilder(_ asset: TokenSelectionAsset) -> some View {
         switch asset {
         case .custom:
-            EmptyView()
+            CustomTokenGridCell(action: onCustomToken)
         case .token(let coin):
             TokenSelectionGridCell(
                 coin: coin,
@@ -84,6 +85,7 @@ struct TokenSelectionScreen: View {
     TokenSelectionScreen(
         vault: .example,
         group: .example,
-        isPresented: .constant(true)
+        isPresented: .constant(true),
+        onCustomToken: {}
     )
 }
