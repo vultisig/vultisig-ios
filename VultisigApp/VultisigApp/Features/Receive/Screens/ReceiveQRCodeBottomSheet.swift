@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct ReceiveQRCodeBottomSheet: View {
-    let groupedChain: GroupedChain
+    let coin: Coin
     @Binding var isPresented: Bool
     
     @State var qrCodeImage: Image?
-    @State var addressToCopy: GroupedChain?
+    @State var addressToCopy: Coin?
     @Environment(\.displayScale) var displayScale
     @Environment(\.dismiss) var dismiss
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
@@ -21,7 +21,7 @@ struct ReceiveQRCodeBottomSheet: View {
         GeometryReader { proxy in
             VStack(spacing: 24) {
                 topSection
-                Text(groupedChain.address)
+                Text(coin.address)
                     .font(Theme.fonts.footnote)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .frame(maxWidth: 216)
@@ -32,7 +32,7 @@ struct ReceiveQRCodeBottomSheet: View {
             .padding(.horizontal, 16)
             .background(backgroundView(width: proxy.size.width))
             .overlay(macOSOverlay)
-            .withAddressCopy(group: $addressToCopy)
+            .withAddressCopy(coin: $addressToCopy)
             .presentationDetents([.height(465)])
             .presentationBackground(Theme.colors.bgSecondary)
             .presentationDragIndicator(.visible)
@@ -40,9 +40,9 @@ struct ReceiveQRCodeBottomSheet: View {
         .frame(height: 465)
         .onLoad {
             let qrCodeImage = QRCodeGenerator().generateImage(
-                qrStringData: groupedChain.address,
+                qrStringData: coin.address,
                 size: CGSize(width: 200, height: 200),
-                logoImage: PlatformImage(named: groupedChain.logo),
+                logoImage: PlatformImage(named: coin.logo),
                 scale: displayScale
             )
             
@@ -56,7 +56,7 @@ struct ReceiveQRCodeBottomSheet: View {
                 qrCodeData: nil,
                 displayScale: displayScale,
                 type: .Address,
-                addressData: groupedChain.address
+                addressData: coin.logo
             )
         }
     }
@@ -101,7 +101,7 @@ struct ReceiveQRCodeBottomSheet: View {
                         .padding(8)
                 )
             
-            Text("\("receive".localized) \(groupedChain.name)")
+            Text("\("receive".localized) \(coin.chain.name)")
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
         }
@@ -121,7 +121,7 @@ struct ReceiveQRCodeBottomSheet: View {
                 .buttonStyle(PrimaryButtonStyle(type: .secondary))
             }
             PrimaryButton(title: "copyAddress".localized) {
-                addressToCopy = groupedChain
+                addressToCopy = coin
             }
         }
     }
@@ -150,6 +150,6 @@ struct ReceiveQRCodeBottomSheet: View {
             show = true
         }
     }
-    .overlay(show ? ReceiveQRCodeBottomSheet(groupedChain: .example, isPresented: $show) : nil)
+    .overlay(show ? ReceiveQRCodeBottomSheet(coin: .example, isPresented: $show) : nil)
     
 }

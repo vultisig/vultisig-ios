@@ -25,7 +25,7 @@ struct ChainDetailScreen: View {
     
     @StateObject var viewModel: ChainDetailViewModel
     
-    @State private var addressToCopy: GroupedChain?
+    @State private var addressToCopy: Coin?
     @State var showManageAssets: Bool = false
     @State var showSearchHeader: Bool = false
     @State var coinToShow: Coin?
@@ -67,9 +67,9 @@ struct ChainDetailScreen: View {
             }
         }
         .background(VaultMainScreenBackground())
-        .withAddressCopy(group: $addressToCopy)
+        .withAddressCopy(coin: $addressToCopy)
         .sheet(isPresented: $showReceiveSheet) {
-            ReceiveQRCodeBottomSheet(groupedChain: group, isPresented: $showReceiveSheet)
+            ReceiveQRCodeBottomSheet(coin: group.nativeCoin, isPresented: $showReceiveSheet)
         }
         // TODO: - Remove after new manage assets is done
         .platformSheet(isPresented: Binding<Bool>(
@@ -277,7 +277,7 @@ private extension ChainDetailScreen {
     }
     
     func onCopy() {
-        addressToCopy = group
+        addressToCopy = group.nativeCoin
     }
 }
 
