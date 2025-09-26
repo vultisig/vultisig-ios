@@ -75,9 +75,9 @@ struct FunctionCallDetailsView: View {
                         rebondInstance.newAddress = newAddress
                         rebondInstance.newAddressValid = Self.validateNodeAddress(newAddress)
                     }
-                    if let amountStr = dict.get("amount"), let amountDecimal = Decimal(string: amountStr) {
-                        rebondInstance.amount = amountDecimal
-                        rebondInstance.amountValid = true
+                    if let amountStr = dict.get("rebondAmount"), let amountDecimal = Decimal(string: amountStr) {
+                        rebondInstance.rebondAmount = amountDecimal
+                        rebondInstance.rebondAmountValid = true
                     }
                     self._fnCallInstance = State(initialValue: .rebond(rebondInstance))
                     return

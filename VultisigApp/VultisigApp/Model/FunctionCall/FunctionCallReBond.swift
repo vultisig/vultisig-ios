@@ -10,12 +10,12 @@ import Foundation
 import Combine
 
 class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
-    @Published var amount: Decimal = 0.0
+    @Published var rebondAmount: Decimal = 0.0  // Amount to rebond (goes in memo only)
     @Published var nodeAddress: String = ""
     @Published var newAddress: String = ""
     
     // Internal
-    @Published var amountValid: Bool = true  // Optional field, defaults to all
+    @Published var rebondAmountValid: Bool = true  // Optional field, defaults to all
     @Published var nodeAddressValid: Bool = false
     @Published var newAddressValid: Bool = false
     
@@ -64,6 +64,12 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
         validateRuneToken()
     }
     
+    // IMPORTANT: For REBOND, the actual transaction amount must be 0
+    // The rebondAmount is only used in the memo
+    var amount: Decimal {
+        return 0  // REBOND transactions must send 0 RUNE
+    }
+    
     var balance: String {
         let balance = tx.coin.balanceDecimal.formatForDisplay()
         
@@ -71,17 +77,11 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
     }
     
     private func setupValidation() {
-        // Combine validators and balance check
-        Publishers.CombineLatest3($amountValid, $nodeAddressValid, $newAddressValid)
+        // Combine validators
+        Publishers.CombineLatest3($rebondAmountValid, $nodeAddressValid, $newAddressValid)
             .map { amountValid, nodeValid, newValid in
                 // Check all validations
                 let basicValid = amountValid && nodeValid && newValid
-                
-                // Additional validation: amount should not exceed balance
-                if self.amount > 0 && self.amount > self.tx.coin.balanceDecimal {
-                    self.customErrorMessage = "Insufficient balance. Available: \(self.tx.coin.balanceDecimal.formatForDisplay()) \(self.tx.coin.ticker)"
-                    return false
-                }
                 
                 // Clear error if validation passes
                 if basicValid {
@@ -93,23 +93,15 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
         
-        // Watch for amount changes to validate against balance
-        $amount
+        // Watch for rebond amount changes - just validate it's a positive number or 0
+        $rebondAmount
             .sink { [weak self] newAmount in
                 guard let self = self else { return }
-                if newAmount > 0 {
-                    if newAmount > self.tx.coin.balanceDecimal {
-                        self.amountValid = false
-                        self.customErrorMessage = "Amount exceeds available balance"
-                    } else {
-                        self.amountValid = true
-                        if self.nodeAddressValid && self.newAddressValid {
-                            self.customErrorMessage = nil
-                        }
-                    }
-                } else {
-                    // Amount of 0 is valid (means transfer all)
-                    self.amountValid = true
+                // Rebond amount of 0 is valid (means transfer all)
+                // Any positive amount is also valid
+                self.rebondAmountValid = newAmount >= 0
+                if self.rebondAmountValid && self.nodeAddressValid && self.newAddressValid {
+                    self.customErrorMessage = nil
                 }
             }
             .store(in: &cancellables)
@@ -130,10 +122,10 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
     func toString() -> String {
         var memo = "REBOND:\(self.nodeAddress):\(self.newAddress)"
         // Amount is optional - if zero or equal to full bond, it will transfer all
-        if self.amount > 0 {
+        if self.rebondAmount > 0 {
             // Convert decimal amount to smallest unit (assuming 8 decimals for RUNE)
             // Use NSDecimalNumber for precise decimal scaling, then convert to Int64
-            let amountInSmallestUnit = NSDecimalNumber(decimal: self.amount)
+            let amountInSmallestUnit = NSDecimalNumber(decimal: self.rebondAmount)
                 .multiplying(byPowerOf10: 8)
                 .int64Value
             memo += ":\(amountInSmallestUnit)"
@@ -145,8 +137,8 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("nodeAddress", self.nodeAddress)
         dict.set("newAddress", self.newAddress)
-        if self.amount > 0 {
-            dict.set("amount", "\(self.amount)")
+        if self.rebondAmount > 0 {
+            dict.set("rebondAmount", "\(self.rebondAmount)")
         }
         dict.set("memo", self.toString())
         return dict
@@ -174,32 +166,30 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
                 )
             )
             
-            // Amount field (optional - if empty, transfers all bonded RUNE)
+            // Rebond Amount field (optional - if empty, transfers all bonded RUNE)
+            // Note: This amount goes in the memo only, not in the transaction
             StyledFloatingPointField(
-                label: "\(NSLocalizedString("amount", comment: "")) \(self.balance) (Optional - leave empty to transfer all)",
-                placeholder: NSLocalizedString("enterAmount", comment: ""),
+                label: "Rebond Amount (Optional - leave empty to transfer all bonded RUNE)",
+                placeholder: "Amount to rebond (memo only)",
                 value: Binding(
-                    get: { self.amount },
+                    get: { self.rebondAmount },
                     set: { newValue in
-                        self.amount = newValue
-                        // Validate amount doesn't exceed balance
-                        if newValue > 0 && newValue > self.tx.coin.balanceDecimal {
-                            self.amountValid = false
-                            self.customErrorMessage = "Amount exceeds available balance"
-                        } else {
-                            self.amountValid = true
-                            if self.nodeAddressValid && self.newAddressValid {
-                                self.customErrorMessage = nil
-                            }
-                        }
+                        self.rebondAmount = newValue
+                        self.rebondAmountValid = newValue >= 0
                     }
                 ),
                 isValid: Binding(
-                    get: { self.amountValid },
-                    set: { self.amountValid = $0 }
+                    get: { self.rebondAmountValid },
+                    set: { self.rebondAmountValid = $0 }
                 ),
                 isOptional: true
             )
+            
+            // Info message about transaction amount
+            Text("Note: REBOND transactions must send 0 RUNE. The amount above only goes in the memo.")
+                .font(.caption)
+                .foregroundColor(.orange)
+                .padding(.horizontal)
             
             // Show error message if any
             if let errorMessage = self.customErrorMessage {

@@ -161,8 +161,8 @@ enum FunctionCallInstance {
         switch self {
         case .bond(let memo):
             return memo.amount
-        case .rebond(let memo):
-            return memo.amount
+        case .rebond:
+            return 0  // REBOND must send 0 RUNE in the transaction
         case .unbond:
             return .zero
         case .bondMaya(let memo):
