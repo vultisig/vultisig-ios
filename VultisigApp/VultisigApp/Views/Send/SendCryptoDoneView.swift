@@ -56,7 +56,7 @@ struct SendCryptoDoneView: View {
             PopupCapsule(text: alertTitle, showPopup: $showAlert)
         }
         .navigationDestination(isPresented: $navigateToHome) {
-            HomeView(selectedVault: vault)
+            HomeScreen(initialVault: vault)
         }
     }
     

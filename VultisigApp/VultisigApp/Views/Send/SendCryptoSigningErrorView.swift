@@ -21,7 +21,7 @@ struct SendCryptoSigningErrorView: View {
         ) {
             navigateToHome = true
         }.navigationDestination(isPresented: $navigateToHome) {
-            HomeView()
+            HomeScreen()
         }
     }
 }

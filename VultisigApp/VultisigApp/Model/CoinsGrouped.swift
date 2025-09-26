@@ -9,13 +9,26 @@ import Foundation
 import SwiftUI
 import Combine
 
-class GroupedChain: ObservableObject {
+class GroupedChain: ObservableObject, Identifiable, Hashable {
+    static func == (lhs: GroupedChain, rhs: GroupedChain) -> Bool {
+        lhs.chain == rhs.chain
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(chain)
+    }
+    
     let id: String
     let chain: Chain
     let address: String
     var logo: String
     var count: Int
     var coins: [Coin]
+    
+    var truncatedAddress: String {
+        address.prefix(4) + "..." + address.suffix(4)
+    }
 
     var totalBalanceInFiatDecimal: Decimal {
         return coins.totalBalanceInFiatDecimal

@@ -8,16 +8,28 @@
 import SwiftUI
 
 public enum FontStyle: String, CaseIterable {
-    case bold
-    case medium
-    case regular
-    case semibold
+    case brockmanBold
+    case brockmanMedium
+    case brockmanRegular
+    case brockmanSemibold
+    case satoshiMedium
 
     public func size(_ size: CGFloat) -> Font {
         return Font.custom(fontName, size: size)
     }
 
     var fontName: String {
-        "Brockmann-\(rawValue.capitalized)"
+        switch self {
+        case .brockmanBold:
+            "Brockmann-Bold"
+        case .brockmanMedium:
+            "Brockmann-Medium"
+        case .brockmanRegular:
+            "Brockmann-Regular"
+        case .brockmanSemibold:
+            "Brockmann-Semibold"
+        case .satoshiMedium:
+            "Satoshi-Medium"
+        }
     }
 }
