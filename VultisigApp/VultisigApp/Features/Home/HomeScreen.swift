@@ -138,11 +138,6 @@ struct HomeScreen: View {
         .navigationDestination(isPresented: $shouldJoinKeygen) {
             JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: selectedVault)
         }
-        .navigationDestination(isPresented: $shouldKeysignTransaction) {
-            if let vault = homeViewModel.selectedVault {
-                JoinKeysignView(vault: vault)
-            }
-        }
         .onChange(of: shouldSendCrypto) { _, newValue in
             guard newValue else { return }
             vaultRoute = .mainAction(.send(coin: vaultDetailViewModel.selectedGroup?.nativeCoin, hasPreselectedCoin: false))
