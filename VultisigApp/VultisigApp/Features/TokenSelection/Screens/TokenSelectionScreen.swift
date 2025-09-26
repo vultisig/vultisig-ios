@@ -76,7 +76,7 @@ struct TokenSelectionScreen: View {
     func onSave() {
         Task {
             await CoinService.saveAssets(for: vault, selection: coinViewModel.selection)
-            await MainActor.run { isPresented.toggle() }
+            await MainActor.run { isPresented = false }
         }
     }
 }
