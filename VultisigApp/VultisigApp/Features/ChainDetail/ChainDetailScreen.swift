@@ -286,6 +286,7 @@ extension ChainDetailScreen {
     func container<Content: View>(content: () -> Content) -> some View {
         ZStack(alignment: .top) {
             content()
+                .padding(.top, 40)
             HStack {
                 CircularIconButton(icon: "chevron-right", action: { dismiss() })
                     .rotationEffect(.radians(.pi))
