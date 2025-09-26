@@ -40,6 +40,7 @@ struct SearchTextField: View {
             HStack(spacing: 8) {
                 clearButton
                     .opacity(showClearButton ? 1 : 0)
+                    .allowsHitTesting(showClearButton)
                     .animation(.easeInOut, value: showClearButton)
                 
                 pasteButton
