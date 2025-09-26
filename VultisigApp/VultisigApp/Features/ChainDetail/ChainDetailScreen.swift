@@ -21,6 +21,7 @@ struct ChainDetailScreen: View {
     @ObservedObject var group: GroupedChain
     let vault: Vault
     @State var vaultAction: VaultAction?
+    @State var showAction: Bool = false
     
     @StateObject var viewModel: ChainDetailViewModel
     
@@ -99,8 +100,10 @@ struct ChainDetailScreen: View {
         .onLoad {
             refresh()
         }
-        .navigationDestination(item: $vaultAction) {
-            VaultActionRouteBuilder().buildActionRoute(action: $0, sendTx: sendTx, vault: vault)
+        .navigationDestination(isPresented: $showAction) {
+            if let vaultAction {
+                VaultActionRouteBuilder().buildActionRoute(action: vaultAction, sendTx: sendTx, vault: vault)
+            }
         }
         .navigationDestination(item: $coinToShow) {
             CoinDetailView(coin: $0, group: group, vault: vault, sendTx: sendTx)
@@ -270,6 +273,7 @@ private extension ChainDetailScreen {
         
         guard let vaultAction else { return }
         self.vaultAction = vaultAction
+        self.showAction = true
     }
     
     func onCopy() {
