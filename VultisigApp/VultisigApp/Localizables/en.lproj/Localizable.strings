@@ -269,7 +269,7 @@
 "vaultRestoreFailed" = "Failed to restore vault";
 "backupDecryptionFailed" = "Failed to decrypt the backup";
 "incorrectPassword" = "Incorrect Password";
-"findCustomTokens" = "Find Your Custom Token";
+"findCustomTokens" = "Find custom token";
 "customToken" = "Custom Token";
 "details" = "Details";
 "vaultType" = "Vault Share";
@@ -893,3 +893,8 @@
 "addFolder" = "Add folder";
 "editFolder" = "Edit folder";
 "selectVaults" = "Select Vaults";
+"selectTokensTitle" = "Select tokens";
+"selectTokensSubtitle" = "Enable at least one token to view balances and manage positions.";
+"custom" = "Custom";
+"customTokenErrorSubtitle" = "Possible reasons: wrong contract, unsupported chain, or token removed from registries.";
+"addingToken" = "Adding Token...";
