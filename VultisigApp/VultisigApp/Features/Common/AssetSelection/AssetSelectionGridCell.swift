@@ -1,33 +1,29 @@
 //
-//  ChainGridCell.swift
+//  AssetSelectionGridCell.swift
 //  VultisigApp
 //
-//  Created by Gaston Mazzeo on 16/09/2025.
+//  Created by Gaston Mazzeo on 26/09/2025.
 //
 
 import SwiftUI
 
-struct ChainGridCell: View {
-    let assets: [CoinMeta]
-    var onSelection: (ChainSelection) -> Void
-    
-    @State var isSelected = false
-    @EnvironmentObject var viewModel: CoinSelectionViewModel
-    
-    var nativeAsset: CoinMeta {
-        assets[0]
-    }
+struct AssetSelectionGridCell: View {
+    let name: String
+    let ticker: String
+    let logo: String
+    @Binding var isSelected: Bool
+    var onSelection: () -> Void
     
     var body: some View {
         Button {
             isSelected.toggle()
-            onSelection(ChainSelection(selected: isSelected, asset: nativeAsset))
+            onSelection()
         } label: {
             VStack(spacing: 10) {
                 AsyncImageView(
-                    logo: nativeAsset.chain.logo,
+                    logo: logo,
                     size: CGSize(width: 28, height: 28),
-                    ticker: nativeAsset.ticker,
+                    ticker: ticker,
                     tokenChainLogo: nil
                 )
                 .aspectRatio(contentMode: .fit)
@@ -41,7 +37,7 @@ struct ChainGridCell: View {
                 .clipShape(RoundedRectangle(cornerRadius: 24))
                 .animation(.easeInOut, value: isSelected)
                 
-                Text(nativeAsset.chain.name)
+                Text(name)
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .fixedSize(horizontal: true, vertical: false)
@@ -50,7 +46,6 @@ struct ChainGridCell: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .onAppear(perform: onAppear)
     }
     
     var selectedOverlay: some View {
@@ -70,24 +65,13 @@ struct ChainGridCell: View {
                 .strokeBorder(Theme.colors.border, lineWidth: 1.5)
         }
     }
-    
-    func onAppear() {
-        guard let nativeAsset = assets.first else {
-            return
-        }
-        
-        if viewModel.selection.contains(where: { cm in
-            cm.chain == nativeAsset.chain && cm.ticker.lowercased() == nativeAsset.ticker.lowercased()
-        }) {
-            isSelected = true
-        } else {
-            isSelected = false
-        }
-    }
 }
 
 #Preview {
-    ChainGridCell(assets: [.example]) { _ in }
-        .environmentObject(CoinSelectionViewModel())
-    
+    AssetSelectionGridCell(
+        name: "RUNE",
+        ticker: "",
+        logo: "rune",
+        isSelected: .constant(true)
+    ) {}
 }

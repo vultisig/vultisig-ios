@@ -1,18 +1,43 @@
 //
-//  VaultSelectChainScreen.swift
+//  AssetSelectionContainerScreen.swift
 //  VultisigApp
 //
-//  Created by Gaston Mazzeo on 16/09/2025.
+//  Created by Gaston Mazzeo on 26/09/2025.
 //
 
 import SwiftUI
 
-struct VaultSelectChainScreen: View {
-    let vault: Vault
+struct AssetSelectionContainerScreen<Asset: Hashable, CellView: View, EmptyStateView: View>: View {
+    let title: String
+    let subtitle: String?
     @Binding var isPresented: Bool
+    @Binding var searchText: String
+    let elements: [Asset]
+    var onSave: () -> Void
+    var cellBuilder: (Asset) -> CellView
+    var emptyStateBuilder: () -> EmptyStateView
+    
     @State var searchBarFocused: Bool = false
-        
-    @EnvironmentObject var viewModel: CoinSelectionViewModel
+    
+    init(
+        title: String,
+        subtitle: String? = nil,
+        isPresented: Binding<Bool>,
+        searchText: Binding<String>,
+        elements: [Asset],
+        onSave: @escaping () -> Void,
+        cellBuilder: @escaping (Asset) -> CellView,
+        emptyStateBuilder: @escaping () -> EmptyStateView
+    ) {
+        self.title = title
+        self.subtitle = subtitle
+        self._isPresented = isPresented
+        self._searchText = searchText
+        self.elements = elements
+        self.onSave = onSave
+        self.cellBuilder = cellBuilder
+        self.emptyStateBuilder = emptyStateBuilder
+    }
     
     var body: some View {
         NavigationStack {
@@ -21,8 +46,8 @@ struct VaultSelectChainScreen: View {
                     VStack(spacing: 24) {
                         textfield
                         Group {
-                            if viewModel.searchText.isNotEmpty && viewModel.filteredChains.isEmpty {
-                                emptyChainsView
+                            if searchText.isNotEmpty && elements.isEmpty {
+                                emptyStateBuilder()
                             } else {
                                 ScrollView(showsIndicators: false) {
                                     chainsGrid
@@ -31,7 +56,7 @@ struct VaultSelectChainScreen: View {
                             }
                         }
                         .transition(.opacity)
-                        .animation(.easeInOut, value: viewModel.searchText)
+                        .animation(.easeInOut, value: searchText)
                     }
                     .padding(.top, 24)
                     .padding(.horizontal, 16)
@@ -43,9 +68,6 @@ struct VaultSelectChainScreen: View {
             .presentationDetents([.large])
             .presentationBackground(Theme.colors.bgPrimary)
             .presentationDragIndicator(.visible)
-            .onLoad {
-                viewModel.setData(for: vault)
-            }
         }
     }
     
@@ -63,15 +85,22 @@ struct VaultSelectChainScreen: View {
     
     var textfield: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("selectChains".localized)
+            Text(title)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.title2)
+                .multilineTextAlignment(.leading)
             
+            if let subtitle {
+                Text(subtitle)
+                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .font(Theme.fonts.bodySMedium)
+                    .multilineTextAlignment(.leading)
+            }
+
             HStack(spacing: 12) {
-                SearchTextField(value: $viewModel.searchText, isFocused: $searchBarFocused)
-                
+                SearchTextField(value: $searchText, isFocused: $searchBarFocused)
                 Button {
-                    viewModel.searchText = ""
+                    searchText = ""
                     searchBarFocused.toggle()
                 } label: {
                     Text("cancel".localized)
@@ -94,31 +123,12 @@ struct VaultSelectChainScreen: View {
             columns: Array.init(repeating: gridItem, count: 4),
             spacing: spacing
         ) {
-            ForEach(viewModel.filteredChains, id: \.self) { key in
-                ChainGridCell(
-                    assets: viewModel.groupedAssets[key] ?? [],
-                    onSelection: onSelection
-                )
+            ForEach(elements, id: \.self) { element in
+                cellBuilder(element)
             }
         }
         .padding(.bottom, 64)
         .frame(maxWidth: .infinity)
-    }
-    
-    var emptyChainsView: some View {
-        VStack {
-            VStack(spacing: 12) {
-                Icon(named: "crypto", color: Theme.colors.primaryAccent4, size: 24)
-                Text("noChainsFound")
-                    .foregroundStyle(Theme.colors.textPrimary)
-                    .font(Theme.fonts.subtitle)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 32)
-            .frame(maxWidth: .infinity)
-            .background(RoundedRectangle(cornerRadius: 12).fill(Theme.colors.bgSecondary))
-            Spacer()
-        }
     }
     
     var closeButton: some View {
@@ -129,24 +139,13 @@ struct VaultSelectChainScreen: View {
     
     var saveButton: some View {
         ToolbarButton(image: "checkmark") {
-            Task {
-                await saveAssets()
-            }
-            isPresented.toggle()
+            onSave()
         }
-    }
-    
-    func onSelection(_ chainSelection: ChainSelection) {
-        viewModel.handleSelection(isSelected: chainSelection.selected, asset: chainSelection.asset)
-    }
-    
-    private func saveAssets() async {
-        await CoinService.saveAssets(for: vault, selection: viewModel.selection)
     }
 }
 
 #if os(macOS)
-extension VaultSelectChainScreen {
+extension AssetSelectionContainerScreen {
     func container<Content: View>(content: () -> Content) -> some View {
         VStack {
             HStack {
@@ -162,7 +161,7 @@ extension VaultSelectChainScreen {
     }
 }
 #else
-extension VaultSelectChainScreen {
+extension AssetSelectionContainerScreen {
     func container<Content: View>(content: () -> Content) -> some View {
         content()
             .toolbar {
@@ -180,9 +179,14 @@ extension VaultSelectChainScreen {
 
 
 #Preview {
-    VaultSelectChainScreen(
-        vault: .example,
-        isPresented: .constant(true)
+    AssetSelectionContainerScreen(
+        title: "Select chains",
+        isPresented: .constant(true),
+        searchText: .constant(""),
+        elements: [Coin.example],
+        onSave: {},
+        cellBuilder: { _ in ChainSelectionGridCell(assets: [.example], onSelection: { _ in }) },
+        emptyStateBuilder: { EmptyView() }
     )
 }
 

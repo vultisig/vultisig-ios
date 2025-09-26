@@ -893,3 +893,5 @@
 "addFolder" = "Add folder";
 "editFolder" = "Edit folder";
 "selectVaults" = "Select Vaults";
+"selectTokensTitle" = "Select tokens";
+"selectTokensSubtitle" = "Enable at least one token to view balances and manage positions.";

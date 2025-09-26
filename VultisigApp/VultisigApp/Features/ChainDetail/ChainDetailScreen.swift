@@ -26,12 +26,14 @@ struct ChainDetailScreen: View {
     @StateObject var viewModel: ChainDetailViewModel
     
     @State private var addressToCopy: Coin?
-    @State var showManageAssets: Bool = false
+    @State var showManageTokens: Bool = false
     @State var showSearchHeader: Bool = false
     @State var coinToShow: Coin?
     @State var focusSearch: Bool = false
     @State var showReceiveSheet: Bool = false
     @State var scrollProxy: ScrollViewProxy?
+    
+    // TODO: - Remove
     @State var sheetType: SheetType? = nil
     @StateObject var sendTx = SendTransaction()
     
@@ -71,32 +73,39 @@ struct ChainDetailScreen: View {
         .sheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(coin: group.nativeCoin, isPresented: $showReceiveSheet)
         }
-        // TODO: - Remove after new manage assets is done
-        .platformSheet(isPresented: Binding<Bool>(
-            get: { sheetType != nil },
-            set: { newValue in
-                if !newValue {
-                    sheetType = nil
-                }
-            }
-        )) {
-            if let sheetType = sheetType {
-                switch sheetType {
-                case .tokenSelection:
-                    TokenSelectionView(
-                        chainDetailView: self,
-                        vault: vault,
-                        group: group
-                    )
-                case .customToken:
-                    CustomTokenView(
-                        chainDetailView: self,
-                        vault: vault,
-                        group: group
-                    )
-                }
-            }
+        .sheet(isPresented: $showManageTokens) {
+            TokenSelectionScreen(
+                vault: vault,
+                group: group,
+                isPresented: $showManageTokens
+            )
         }
+//        // TODO: - Remove after new manage assets is done
+//        .platformSheet(isPresented: Binding<Bool>(
+//            get: { sheetType != nil },
+//            set: { newValue in
+//                if !newValue {
+//                    sheetType = nil
+//                }
+//            }
+//        )) {
+//            if let sheetType = sheetType {
+//                switch sheetType {
+//                case .tokenSelection:
+//                    TokenSelectionView(
+//                        chainDetailView: self,
+//                        vault: vault,
+//                        group: group
+//                    )
+//                case .customToken:
+//                    CustomTokenView(
+//                        chainDetailView: self,
+//                        vault: vault,
+//                        group: group
+//                    )
+//                }
+//            }
+//        }
         .onLoad {
             refresh()
         }
@@ -145,7 +154,7 @@ struct ChainDetailScreen: View {
             ChainDetailListView(viewModel: viewModel) {
                 coinToShow = $0
             } onManageTokens: {
-                sheetType = .tokenSelection
+                showManageTokens = true
             }
             .background(
                 // Reference to scroll when search gets presented
@@ -167,7 +176,7 @@ struct ChainDetailScreen: View {
                 toggleSearch()
             }
             CircularAccessoryIconButton(icon: "write") {
-                sheetType = .tokenSelection
+                showManageTokens = true
             }
         }
     }
