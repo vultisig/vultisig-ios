@@ -505,9 +505,9 @@ private extension SwapCryptoViewModel {
     
     func feeCoin(tx: SwapTransaction) -> Coin {
         switch tx.fromCoin.chainType {
-        case .UTXO, .THORChain, .Cosmos, .Polkadot, .Sui, .Ton, .Cardano, .Ripple, .Tron:
+        case .UTXO: // UTXO chains should only have 1 coin per chain
             return tx.fromCoin
-        case .EVM, .Solana:
+        case .EVM, .Solana , .THORChain , .Cosmos,.Polkadot,.Sui,.Ton,.Cardano,.Ripple,.Tron:
             guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
             return tx.fromCoins.first(where: { $0.chain == tx.fromCoin.chain && $0.isNativeToken }) ?? tx.fromCoin
         }
