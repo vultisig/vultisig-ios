@@ -867,6 +867,7 @@
 		B52243432D239BC2003C734A /* akash.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52243422D239BC2003C734A /* akash.swift */; };
 		B524F55B2CF049F600D5B19D /* FunctionCallBondMayaChain.swift in Sources */ = {isa = PBXBuildFile; fileRef = B524F55A2CF049F600D5B19D /* FunctionCallBondMayaChain.swift */; };
 		B5293CDB2DBC00C300C6C66A /* StringExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5293CDA2DBC00B800C6C66A /* StringExtensionTests.swift */; };
+		B52E7DC22E8629B800AF5137 /* FunctionCallReBond.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52E7DC12E8629B800AF5137 /* FunctionCallReBond.swift */; };
 		B52FD1CE2CDDA7740031FB71 /* TerraService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52FD1CD2CDDA7740031FB71 /* TerraService.swift */; };
 		B52FD1D02CDDAFE50031FB71 /* terra.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52FD1CF2CDDAFE50031FB71 /* terra.swift */; };
 		B530F8742C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B530F8732C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift */; };
@@ -1934,6 +1935,7 @@
 		B52243422D239BC2003C734A /* akash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = akash.swift; sourceTree = "<group>"; };
 		B524F55A2CF049F600D5B19D /* FunctionCallBondMayaChain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallBondMayaChain.swift; sourceTree = "<group>"; };
 		B5293CDA2DBC00B800C6C66A /* StringExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtensionTests.swift; sourceTree = "<group>"; };
+		B52E7DC12E8629B800AF5137 /* FunctionCallReBond.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallReBond.swift; sourceTree = "<group>"; };
 		B52FD1CD2CDDA7740031FB71 /* TerraService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerraService.swift; sourceTree = "<group>"; };
 		B52FD1CF2CDDAFE50031FB71 /* terra.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = terra.swift; sourceTree = "<group>"; };
 		B530F8732C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RpcEvmServiceEnsServiceExtension.swift; sourceTree = "<group>"; };
@@ -4533,6 +4535,7 @@
 				D7620B1C2DF6BFD700294396 /* FunctionCallNodeMaintenance.swift */,
 				B50E399C2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift */,
 				B53D8CC72BF7F21500B795D3 /* FunctionCallBond.swift */,
+				B52E7DC12E8629B800AF5137 /* FunctionCallReBond.swift */,
 				B585A1FD2DA9779900ED0D5B /* FunctionCallCosmosIBC.swift */,
 				B5C5B4AB2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift */,
 				B5A41F632DAB33E70075E921 /* FunctionCallCosmosMerge.swift */,
@@ -5180,6 +5183,7 @@
 				A649AB9E2C6C54AA004710A9 /* PopupCapsule.swift in Sources */,
 				DE6EF0512D06709200A36D6A /* DKLSMessenger.swift in Sources */,
 				46AAA49D2BC3B4CF00E5BAB4 /* DecimalExtension.swift in Sources */,
+				B52E7DC22E8629B800AF5137 /* FunctionCallReBond.swift in Sources */,
 				B51119332C0072620020B711 /* FunctionCallCustom.swift in Sources */,
 				13B0DCE32E86C70500D4E609 /* ReceiveChainSelectionScreen.swift in Sources */,
 				A564ED422BC350520056FDC0 /* SwapTransaction.swift in Sources */,
