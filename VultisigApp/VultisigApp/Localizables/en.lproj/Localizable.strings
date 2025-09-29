@@ -899,3 +899,4 @@
 "customTokenErrorSubtitle" = "Possible reasons: wrong contract, unsupported chain, or token removed from registries.";
 "addingToken" = "Adding Token...";
 "pleaseWaitMinutes" = "Please wait %@ minutes";
+"price" = "Price";

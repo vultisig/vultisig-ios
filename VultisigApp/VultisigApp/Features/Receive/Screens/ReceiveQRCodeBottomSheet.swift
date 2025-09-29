@@ -30,7 +30,7 @@ struct ReceiveQRCodeBottomSheet: View {
             }
             .padding(.top, 40)
             .padding(.horizontal, 16)
-            .background(backgroundView(width: proxy.size.width))
+            .background(ModalBackgroundView(width: proxy.size.width))
             .overlay(macOSOverlay)
             .withAddressCopy(coin: $addressToCopy)
             .presentationDetents([.height(465)])
@@ -60,36 +60,7 @@ struct ReceiveQRCodeBottomSheet: View {
             )
         }
     }
-    
-    @ViewBuilder
-    func backgroundView(width: CGFloat) -> some View {
-        let cornerRadius: CGFloat = 34
-        ZStack(alignment: .bottom) {
-            magicPattern
-                .frame(maxWidth: width)
-                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-            LinearGradient(
-                stops: [
-                    Gradient.Stop(color: Theme.colors.bgSecondary, location: 0.50),
-                    Gradient.Stop(color: Theme.colors.bgSecondary.opacity(0.5), location: 0.85),
-                    Gradient.Stop(color: Theme.colors.bgSecondary.opacity(0), location: 1.00),
-                ],
-                startPoint: UnitPoint(x: 0.5, y: 1),
-                endPoint: UnitPoint(x: 0.5, y: 0)
-            )
-            .frame(height: 230)
-        }
-    }
-    
-    var magicPattern: some View {
-        Image("magic-pattern")
-            .resizable()
-            .scaledToFill()
-            .opacity(0.2)
-            .frame(maxHeight: .infinity)
-            .clipped()
-    }
-    
+
     var topSection: some View {
         VStack(spacing: 8) {
             RoundedRectangle(cornerRadius: 24)
