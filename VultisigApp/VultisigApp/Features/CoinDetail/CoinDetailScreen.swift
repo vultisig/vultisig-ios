@@ -47,7 +47,7 @@ struct CoinDetailScreen: View {
             .background(ModalBackgroundView(width: proxy.size.width))
             .overlay(macOSOverlay)
             .onLoad(perform: viewModel.setup)
-            
+            .onAppear(perform: onAppear)
         }
         .presentationDetents([.medium])
         .presentationBackground(Theme.colors.bgSecondary)
@@ -76,6 +76,12 @@ struct CoinDetailScreen: View {
 }
 
 private extension CoinDetailScreen {
+    func onAppear() {
+        Task { @MainActor in
+            await BalanceService.shared.updateBalance(for: coin)
+        }
+    }
+    
     func onAction(_ action: CoinAction) {
         sendTx.reset(coin: coin)
         var vaultAction: VaultAction?
