@@ -15,9 +15,7 @@ struct VaultChainCellView: View {
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     @StateObject var viewModel = ChainCellViewModel()
-    
-    let hideBalanceText = Array.init(repeating: "•", count: 8).joined(separator: " ")
-    
+        
     var trailingSubtitle: String {
         group.coins.count > 1 ? "\(group.coins.count) \("assets".localized)" : group.nativeCoin.balanceStringWithTicker
     }
@@ -52,10 +50,10 @@ struct VaultChainCellView: View {
                 HStack(spacing: 8) {
                     Spacer()
                     VStack(alignment: .trailing, spacing: 4) {
-                        Text(homeViewModel.hideVaultBalance ? hideBalanceText : group.totalBalanceInFiatString)
+                        Text(homeViewModel.hideVaultBalance ? String.hideBalanceText : group.totalBalanceInFiatString)
                             .font(Theme.fonts.priceBodyS)
                             .foregroundStyle(Theme.colors.textPrimary)
-                        Text(homeViewModel.hideVaultBalance ? hideBalanceText : trailingSubtitle)
+                        Text(homeViewModel.hideVaultBalance ? String.hideBalanceText : trailingSubtitle)
                             .font(Theme.fonts.priceCaption)
                             .foregroundStyle(Theme.colors.textExtraLight)
                     }

@@ -842,7 +842,7 @@
 "passwordIsRequired" = "Password is required.";
 "emailIsRequired" = "Email is required.";
 "requestServerVaultShareSuccess" = "We’ve sent a copy of your vault share to your email. It should arrive shortly.";
-"requestServerVaultShareTooManyRequestsError" = "You've requested a vault share too many times in a short period of time. Please wait a couple a minutes and try again.";
+"requestServerVaultShareTooManyRequestsError" = "You've requested a vault share too many times in a short period of time. Please wait %@ minutes and try again.";
 "requestServerVaultShareUnknownError" = "We couldn't send a new copy of your vault share. Please wait a couple of minutes and try again.";
 "requestServerVaultShareBadRequestError" = "Password for your vault is incorrect. Please check and try again.";
 "vult" = "$VULT";
@@ -898,3 +898,5 @@
 "custom" = "Custom";
 "customTokenErrorSubtitle" = "Possible reasons: wrong contract, unsupported chain, or token removed from registries.";
 "addingToken" = "Adding Token...";
+"pleaseWaitMinutes" = "Please wait %@ minutes";
+"price" = "Price";

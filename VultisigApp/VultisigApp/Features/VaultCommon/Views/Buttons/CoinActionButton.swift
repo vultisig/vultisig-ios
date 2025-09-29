@@ -42,6 +42,7 @@ struct CoinActionButton: View {
             }
             .opacity(isEnabled ? 1 : 0.3)
         }
+        .buttonStyle(.plain)
     }
 }
 

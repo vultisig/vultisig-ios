@@ -42,8 +42,10 @@ struct Screen<Content: View>: View {
         }
 #else
         contentContainer
-            .if(showNavigationBar) {
-                $0.navigationTitle(title)
+            .if(showNavigationBar) { view in
+                view
+                    .navigationTitle(title)
+                    .navigationBarTitleDisplayMode(.inline)
             }
 #endif
     }
