@@ -55,6 +55,11 @@
 		1336BB3A2E81767000597070 /* ChainDetailListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1336BB392E81766B00597070 /* ChainDetailListView.swift */; };
 		1336BB3C2E81774400597070 /* ChainDetailHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1336BB3B2E81774000597070 /* ChainDetailHeaderView.swift */; };
 		1336BB3E2E817DE300597070 /* TokenCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1336BB3D2E817DDC00597070 /* TokenCellView.swift */; };
+		133CA3CC2E8AD183009588F3 /* CoinDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CA3CB2E8AD180009588F3 /* CoinDetailScreen.swift */; };
+		133CA3CF2E8ADC5A009588F3 /* CoinDetailHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CA3CE2E8ADC56009588F3 /* CoinDetailHeaderView.swift */; };
+		133CA3D22E8ADEE1009588F3 /* CoinDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CA3D12E8ADEDC009588F3 /* CoinDetailViewModel.swift */; };
+		133CA3D42E8ADFFF009588F3 /* CoinPriceNetworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CA3D32E8ADFFB009588F3 /* CoinPriceNetworkView.swift */; };
+		133CA3D62E8AE230009588F3 /* ModalBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CA3D52E8AE229009588F3 /* ModalBackgroundView.swift */; };
 		133EEA192E68787900E18280 /* SettingsCommonOptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133EEA182E68785F00E18280 /* SettingsCommonOptionView.swift */; };
 		133EEA1C2E6885A300E18280 /* SecureTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133EEA1B2E68859F00E18280 /* SecureTextField.swift */; };
 		133EEA1E2E68864000E18280 /* FastSigningPasswordSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133EEA1D2E68863600E18280 /* FastSigningPasswordSheetView.swift */; };
@@ -1124,6 +1129,11 @@
 		1336BB392E81766B00597070 /* ChainDetailListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailListView.swift; sourceTree = "<group>"; };
 		1336BB3B2E81774000597070 /* ChainDetailHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailHeaderView.swift; sourceTree = "<group>"; };
 		1336BB3D2E817DDC00597070 /* TokenCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenCellView.swift; sourceTree = "<group>"; };
+		133CA3CB2E8AD180009588F3 /* CoinDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDetailScreen.swift; sourceTree = "<group>"; };
+		133CA3CE2E8ADC56009588F3 /* CoinDetailHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDetailHeaderView.swift; sourceTree = "<group>"; };
+		133CA3D12E8ADEDC009588F3 /* CoinDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDetailViewModel.swift; sourceTree = "<group>"; };
+		133CA3D32E8ADFFB009588F3 /* CoinPriceNetworkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinPriceNetworkView.swift; sourceTree = "<group>"; };
+		133CA3D52E8AE229009588F3 /* ModalBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalBackgroundView.swift; sourceTree = "<group>"; };
 		133EEA182E68785F00E18280 /* SettingsCommonOptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCommonOptionView.swift; sourceTree = "<group>"; };
 		133EEA1B2E68859F00E18280 /* SecureTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureTextField.swift; sourceTree = "<group>"; };
 		133EEA1D2E68863600E18280 /* FastSigningPasswordSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FastSigningPasswordSheetView.swift; sourceTree = "<group>"; };
@@ -2500,6 +2510,33 @@
 			path = View;
 			sourceTree = "<group>";
 		};
+		133CA3CA2E8AD17A009588F3 /* CoinDetail */ = {
+			isa = PBXGroup;
+			children = (
+				133CA3D02E8ADED4009588F3 /* ViewModel */,
+				133CA3CD2E8ADC52009588F3 /* View */,
+				133CA3CB2E8AD180009588F3 /* CoinDetailScreen.swift */,
+			);
+			path = CoinDetail;
+			sourceTree = "<group>";
+		};
+		133CA3CD2E8ADC52009588F3 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				133CA3D32E8ADFFB009588F3 /* CoinPriceNetworkView.swift */,
+				133CA3CE2E8ADC56009588F3 /* CoinDetailHeaderView.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		133CA3D02E8ADED4009588F3 /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				133CA3D12E8ADEDC009588F3 /* CoinDetailViewModel.swift */,
+			);
+			path = ViewModel;
+			sourceTree = "<group>";
+		};
 		1344BD1A2E4B9D7900CBD493 /* Swap */ = {
 			isa = PBXGroup;
 			children = (
@@ -2783,6 +2820,7 @@
 		13B0DCE12E86C6F100D4E609 /* Screens */ = {
 			isa = PBXGroup;
 			children = (
+				133CA3D52E8AE229009588F3 /* ModalBackgroundView.swift */,
 				13B0DCE22E86C6FE00D4E609 /* ReceiveChainSelectionScreen.swift */,
 				13B25B8F2E81B7E2002BCF55 /* ReceiveQRCodeBottomSheet.swift */,
 			);
@@ -2962,6 +3000,7 @@
 		13C880552E70A312009C67F1 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				133CA3CA2E8AD17A009588F3 /* CoinDetail */,
 				13C7C1DF2E86EDD500A529FD /* Common */,
 				13C7C1D92E86DD7F00A529FD /* TokenSelection */,
 				13B0DCE02E86C6EA00D4E609 /* Receive */,
@@ -5393,6 +5432,7 @@
 				A686C0B22C58C3AE00BBCE9C /* VaultSetupCard.swift in Sources */,
 				A6A6EFBF2D7036F70062F6EA /* PeerDiscoveryScanDeviceDisclaimer.swift in Sources */,
 				130C40EE2E73278A00509C61 /* CircularAccessoryIconButton.swift in Sources */,
+				133CA3CF2E8ADC5A009588F3 /* CoinDetailHeaderView.swift in Sources */,
 				A6E0C9382DF0A1B800A01543 /* ReferralTextFieldAction.swift in Sources */,
 				A622C8582C9BCCC600908332 /* JoinKeygenView+macOS.swift in Sources */,
 				B52196442C12C3540021D27A /* CustomTokenScreen.swift in Sources */,
@@ -5554,6 +5594,7 @@
 				A65649F52B966F3E00E4B329 /* DecodableDefault.swift in Sources */,
 				DE491CEF2B708260007C88D5 /* KeygenView.swift in Sources */,
 				A6C556F42CE59A5500E5E44E /* BackupNowDisclaimer+iOS.swift in Sources */,
+				133CA3D22E8ADEE1009588F3 /* CoinDetailViewModel.swift in Sources */,
 				1344BD1C2E4B9D8C00CBD493 /* SwapProviderId.swift in Sources */,
 				DE6EF0532D068BE700A36D6A /* DKLSKeygen.swift in Sources */,
 				B54E317D2BF5A19200D4FC0A /* StyledTextField.swift in Sources */,
@@ -5918,6 +5959,7 @@
 				A608E3792C02472C00E40B85 /* SwapCryptoAmountTextField.swift in Sources */,
 				13DD547F2E56161F007335DA /* VaultAdvancedSettingsScreen.swift in Sources */,
 				A6182F272C9225CB0059BFDD /* UpdateCheckUpdateNowView.swift in Sources */,
+				133CA3D62E8AE230009588F3 /* ModalBackgroundView.swift in Sources */,
 				A622C8642C9BED5100908332 /* PhoneCheckUpdateView.swift in Sources */,
 				A67EC5B22E0399290031A22A /* CreateReferralDetailsView.swift in Sources */,
 				A564ED442BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift in Sources */,
@@ -5937,6 +5979,7 @@
 				A58760582CBD3F1A0070956A /* KeychainService.swift in Sources */,
 				1390D8C02E393FB6003F3E20 /* BlockaidConstants.swift in Sources */,
 				1390D8C62E3943AE003F3E20 /* SecurityScannerServiceProtocol.swift in Sources */,
+				133CA3CC2E8AD183009588F3 /* CoinDetailScreen.swift in Sources */,
 				130C40F32E7353D500509C61 /* VaultChainCellView.swift in Sources */,
 				A6E0C9172DE6B59D00A01543 /* ReferredOnboardingView.swift in Sources */,
 				A69FBBA82C8ADC4600A4B78B /* WelcomeView+macOS.swift in Sources */,
@@ -6031,6 +6074,7 @@
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
 				134E8D812E451F800086EBC4 /* PreferredAssetFactory.swift in Sources */,
 				A622C8542C9BC9E500908332 /* FastVaultSetPasswordView+macOS.swift in Sources */,
+				133CA3D42E8ADFFF009588F3 /* CoinPriceNetworkView.swift in Sources */,
 				A6D739E02E0B993A0005697D /* SendDetailsViewModel.swift in Sources */,
 				A6C670862C9CF67E00F59B6A /* JoinKeysignView+macOS.swift in Sources */,
 				A69FBB9A2C8AD63C00A4B78B /* CreateVaultView+macOS.swift in Sources */,

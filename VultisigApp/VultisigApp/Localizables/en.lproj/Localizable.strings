@@ -898,3 +898,4 @@
 "custom" = "Custom";
 "customTokenErrorSubtitle" = "Possible reasons: wrong contract, unsupported chain, or token removed from registries.";
 "addingToken" = "Adding Token...";
+"price" = "Price";

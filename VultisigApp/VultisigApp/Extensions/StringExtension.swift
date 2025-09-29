@@ -52,6 +52,8 @@ extension String {
     var isNotEmpty: Bool {
         !isEmpty
     }
+    
+    static let hideBalanceText = Array.init(repeating: "•", count: 8).joined(separator: " ")
 }
 
 // MARK: - String constants

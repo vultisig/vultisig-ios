@@ -71,11 +71,12 @@ struct ChainDetailScreen: View {
         .onLoad(perform: refresh)
         .navigationDestination(isPresented: $showAction) {
             if let vaultAction {
-                VaultActionRouteBuilder().buildActionRoute(action: vaultAction, sendTx: sendTx, vault: vault)
+                VaultActionRouteBuilder().buildActionRoute(
+                    action: vaultAction,
+                    sendTx: sendTx,
+                    vault: vault
+                )
             }
-        }
-        .navigationDestination(item: $coinToShow) {
-            CoinDetailView(coin: $0, group: group, vault: vault, sendTx: sendTx)
         }
         .onChange(of: vaultAction) { oldValue, newValue in
             if case .function(_) = newValue {
@@ -85,6 +86,9 @@ struct ChainDetailScreen: View {
                     sendTx.reset(coin: firstCoin)
                 }
             }
+        }
+        .sheet(item: $coinToShow) {
+            CoinDetailScreen(coin: $0, vault: vault, group: group)
         }
     }
     
