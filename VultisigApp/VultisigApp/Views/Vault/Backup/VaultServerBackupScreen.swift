@@ -31,7 +31,7 @@ struct VaultServerBackupScreen: View {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 12) {
                         InfoBannerView(
-                            description: (viewModel.alertError ?? ResendVaultShareError.unknown).localizedDescription,
+                            description: viewModel.alertErrorDescription ?? "",
                             type: .error,
                             leadingIcon: "triangle-alert"
                         )
@@ -134,7 +134,7 @@ struct VaultServerBackupScreen: View {
                 
                 Spacer()
                 
-                PrimaryButton(title: "next".localized) {
+                PrimaryButton(title: viewModel.buttonTitle) {
                     focusedFieldBinding = nil
                     Task {
                         await viewModel.requestServerVaultShare(vault: vault)
