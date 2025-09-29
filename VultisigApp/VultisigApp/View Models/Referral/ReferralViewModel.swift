@@ -74,7 +74,7 @@ class ReferralViewModel: ObservableObject {
     }
     
     var savedReferralCode: String {
-        currentVault?.referralCode?.code ?? .empty
+        .empty
     }
     
     var hasReferralCode: Bool {
@@ -327,17 +327,17 @@ class ReferralViewModel: ObservableObject {
             return
         }
         do {
-            let details = try await thorchainReferralService.getThornameDetails(name: savedReferralCode)
-            let lastBlock = try await thorchainReferralService.getLastBlock()
-            let expiresOn = ReferralExpiryDataCalculator.getFormattedExpiryDate(expiryBlock: details.expireBlockHeight, currentBlock: lastBlock)
-            let collectedRunes = await calculateCollectedRewards(details: details)
-            // Saved referral code and vault association
-            await MainActor.run {
-                self.currentBlockheight = lastBlock
-                self.expiresOn = expiresOn
-                self.collectedRewards = collectedRunes
-                self.thornameDetails = details
-            }
+//            let details = try await thorchainReferralService.getThornameDetails(name: savedReferralCode)
+//            let lastBlock = try await thorchainReferralService.getLastBlock()
+//            let expiresOn = ReferralExpiryDataCalculator.getFormattedExpiryDate(expiryBlock: details.expireBlockHeight, currentBlock: lastBlock)
+//            let collectedRunes = await calculateCollectedRewards(details: details)
+//            // Saved referral code and vault association
+//            await MainActor.run {
+//                self.currentBlockheight = lastBlock
+//                self.expiresOn = expiresOn
+//                self.collectedRewards = collectedRunes
+//                self.thornameDetails = details
+//            }
         } catch {
             await MainActor.run {
                 self.expiresOn = "-"
