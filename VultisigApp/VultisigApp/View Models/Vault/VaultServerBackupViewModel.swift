@@ -16,15 +16,39 @@ final class VaultServerBackupViewModel: ObservableObject {
     @Published var requestError: String?
     @Published var isLoading = false
     
-    
     @Published var showSuccess = false
     @Published var showAlert: Bool = false
-    @Published var alertError: ResendVaultShareError?
+    @Published private var alertError: ResendVaultShareError?
     
+    @AppStorage("lastServerBackupRequestDate") private var lastServerBackupRequestDate: Double?
+    private let waitingPeriodInSeconds: TimeInterval = 180
+    
+    @Published var currentTime = Date()
+    private var timer: Timer?
+
     var cancellables = Set<AnyCancellable>()
+
+    var buttonTitle: String {
+        guard isInWaitPeriod else { return "next".localized }
+        return String(format: "pleaseWaitMinutes".localized, arguments: [formattedRemainingWaitTime])
+    }
     
+    var alertErrorDescription: String? {
+        guard let alertError else { return nil }
+        switch alertError {
+        case .tooManyRequests:
+            return String(format: alertError.localizedDescription, formattedRemainingWaitTime)
+        case .badRequest, .unknown:
+            return alertError.localizedDescription
+        }
+    }
+
     var validForm: Bool {
-        email.isNotEmpty && password.isNotEmpty && emailError == nil && passwordError == nil && !isLoading
+        email.isNotEmpty &&
+        password.isNotEmpty &&
+        emailError == nil &&
+        passwordError == nil &&
+        !isLoading && !isInWaitPeriod
     }
     
     var validEmail: Bool {
@@ -38,6 +62,14 @@ final class VaultServerBackupViewModel: ObservableObject {
     let service = VultiServerService()
     
     func onLoad() {
+        // Start timer if we're already in a wait period
+        if isInWaitPeriod {
+            startTimer()
+            
+            alertError = .tooManyRequests
+            showAlert = true
+        }
+
         $email
             .dropFirst()
             .receive(on: DispatchQueue.main)
@@ -46,7 +78,7 @@ final class VaultServerBackupViewModel: ObservableObject {
                 self.validate(email: email)
             }
             .store(in: &cancellables)
-        
+
         $password
             .dropFirst()
             .receive(on: DispatchQueue.main)
@@ -92,9 +124,61 @@ final class VaultServerBackupViewModel: ObservableObject {
         } catch {
             await MainActor.run {
                 isLoading = false
-                alertError = error as? ResendVaultShareError
+                let vaultShareError = error as? ResendVaultShareError
+                alertError = vaultShareError
                 showAlert = true
+
+                // Handle tooManyRequests error by setting the timestamp
+                if vaultShareError == .tooManyRequests {
+                    lastServerBackupRequestDate = Date().timeIntervalSince1970
+                    startTimer()
+                }
             }
         }
+    }
+
+    deinit {
+        stopTimer()
+    }
+}
+
+private extension VaultServerBackupViewModel {
+    var isInWaitPeriod: Bool {
+        guard let lastRequestDate = lastServerBackupRequestDate else { return false }
+        let elapsed = currentTime.timeIntervalSince1970 - lastRequestDate
+        return elapsed < waitingPeriodInSeconds
+    }
+
+    var remainingWaitTime: TimeInterval {
+        guard let lastRequestDate = lastServerBackupRequestDate else { return 0 }
+        let elapsed = currentTime.timeIntervalSince1970 - lastRequestDate
+        return max(0, waitingPeriodInSeconds - elapsed)
+    }
+    
+    var formattedRemainingWaitTime: String {
+        let remaining = remainingWaitTime
+        let minutes = Int(remaining) / 60
+        let seconds = Int(remaining) % 60
+        return "\(minutes):\(String(format: "%02d", seconds))"
+    }
+    
+    func startTimer() {
+        stopTimer()
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            self.currentTime = Date()
+
+            // Stop timer when wait period is over
+            if !self.isInWaitPeriod {
+                self.stopTimer()
+                showAlert = false
+                alertError = nil
+            }
+        }
+    }
+
+    func stopTimer() {
+        timer?.invalidate()
+        timer = nil
     }
 }
