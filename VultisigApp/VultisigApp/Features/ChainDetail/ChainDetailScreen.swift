@@ -78,17 +78,14 @@ struct ChainDetailScreen: View {
                 )
             }
         }
-        .onChange(of: vaultAction) { oldValue, newValue in
-            if case .function(_) = newValue {
-                if let nativeCoin = viewModel.tokens.first(where: { $0.isNativeToken }) {
-                    sendTx.reset(coin: nativeCoin)
-                } else if let firstCoin = viewModel.tokens.first {
-                    sendTx.reset(coin: firstCoin)
-                }
-            }
-        }
         .sheet(item: $coinToShow) {
-            CoinDetailScreen(coin: $0, vault: vault, group: group)
+            CoinDetailScreen(
+                coin: $0,
+                vault: vault,
+                group: group,
+                sendTx: sendTx,
+                onCoinAction: onCoinAction
+            )
         }
     }
     
@@ -108,7 +105,7 @@ struct ChainDetailScreen: View {
                 if showSearchHeader {
                     searchBottomSectionHeader
                 } else {
-                   defaultBottomSectionHeader
+                    defaultBottomSectionHeader
                 }
             }
             .transition(.opacity)
@@ -166,18 +163,6 @@ struct ChainDetailScreen: View {
             openURL(linkURL)
         }
     }
-    
-    // TODO: - Remove after new manage assets is done
-    func chooseTokensButton(_ text: String) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: "plus")
-            Text(text)
-            Spacer()
-        }
-        .font(Theme.fonts.bodyMMedium)
-        .foregroundColor(Theme.colors.bgButtonPrimary)
-        .padding(.bottom, 32)
-    }
 }
 
 private extension ChainDetailScreen {
@@ -221,6 +206,7 @@ private extension ChainDetailScreen {
     }
     
     func onAction(_ action: CoinAction) {
+        sendTx.reset(coin: group.nativeCoin)
         var vaultAction: VaultAction?
         switch action {
         case .receive:
@@ -232,6 +218,11 @@ private extension ChainDetailScreen {
             guard let fromCoin = viewModel.tokens.first else { return }
             vaultAction = .swap(fromCoin: fromCoin)
         case .deposit, .bridge, .memo:
+            if let nativeCoin = viewModel.tokens.first(where: { $0.isNativeToken }) {
+                sendTx.reset(coin: nativeCoin)
+            } else if let firstCoin = viewModel.tokens.first {
+                sendTx.reset(coin: firstCoin)
+            }
             vaultAction = .function(coin: group.nativeCoin)
         case .buy:
             vaultAction = .buy(
@@ -251,6 +242,12 @@ private extension ChainDetailScreen {
     
     func onCopy() {
         addressToCopy = group.nativeCoin
+    }
+    
+    func onCoinAction(_ action: VaultAction) {
+        coinToShow = nil
+        self.vaultAction = action
+        self.showAction = true
     }
 }
 

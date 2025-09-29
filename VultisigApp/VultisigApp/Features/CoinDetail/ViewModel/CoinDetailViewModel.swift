@@ -18,7 +18,7 @@ final class CoinDetailViewModel: ObservableObject {
     }
     
     func setup() {
-        Task {
+        Task { @MainActor in
             availableActions = await actionResolver.resolveActions(for: coin.chain)
         }
     }

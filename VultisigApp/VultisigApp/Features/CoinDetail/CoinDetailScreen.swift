@@ -11,15 +11,21 @@ struct CoinDetailScreen: View {
     let coin: Coin
     let vault: Vault
     @ObservedObject var group: GroupedChain
+    @ObservedObject var sendTx: SendTransaction
+    var onCoinAction: (VaultAction) -> Void
 
+    @State var showReceiveSheet: Bool = false
+    
     @StateObject var viewModel: CoinDetailViewModel
     @Environment(\.dismiss) var dismiss
     
-    init(coin: Coin, vault: Vault, group: GroupedChain) {
+    init(coin: Coin, vault: Vault, group: GroupedChain, sendTx: SendTransaction, onCoinAction: @escaping (VaultAction) -> Void) {
         self.coin = coin
         self.vault = vault
         self.group = group
+        self.sendTx = sendTx
         self._viewModel = StateObject(wrappedValue: .init(coin: coin))
+        self.onCoinAction = onCoinAction
     }
     
     var body: some View {
@@ -41,11 +47,15 @@ struct CoinDetailScreen: View {
             .background(ModalBackgroundView(width: proxy.size.width))
             .overlay(macOSOverlay)
             .onLoad(perform: viewModel.setup)
+            
         }
         .presentationDetents([.medium])
         .presentationBackground(Theme.colors.bgSecondary)
         .presentationDragIndicator(.visible)
         .applySheetHeight()
+        .sheet(isPresented: $showReceiveSheet) {
+            ReceiveQRCodeBottomSheet(coin: coin, isPresented: $showReceiveSheet)
+        }
     }
     
     @ViewBuilder
@@ -67,7 +77,31 @@ struct CoinDetailScreen: View {
 
 private extension CoinDetailScreen {
     func onAction(_ action: CoinAction) {
+        sendTx.reset(coin: coin)
+        var vaultAction: VaultAction?
+        switch action {
+        case .receive:
+            showReceiveSheet = true
+        case .send:
+            vaultAction = .send(coin: coin, hasPreselectedCoin: true)
+        case .swap:
+            vaultAction = .swap(fromCoin: coin)
+        case .deposit, .bridge, .memo:
+            sendTx.coin = coin
+            vaultAction = .function(coin: group.nativeCoin)
+        case .buy:
+            vaultAction = .buy(
+                address: coin.address,
+                blockChainCode: coin.chain.banxaBlockchainCode,
+                coinType: coin.ticker
+            )
+        case .sell:
+            // TODO: - To add
+            break
+        }
         
+        guard let vaultAction else { return }
+        onCoinAction(vaultAction)
     }
 }
 
@@ -75,6 +109,8 @@ private extension CoinDetailScreen {
     CoinDetailScreen(
         coin: .example,
         vault: .example,
-        group: .example
+        group: .example,
+        sendTx: .init(),
+        onCoinAction: { _ in}
     )
 }
