@@ -13,7 +13,7 @@ struct KyberSwapService {
     static let shared = KyberSwapService()
     
     static let sourceIdentifier = "vultisig-ios"
-    static let referrerAddress = "0xa4a4f610e89488eb4ecc6c63069f241a54485269"
+    static let referrerAddress = "0x8E247a480449c84a5fDD25974A8501f3EFa4ABb9"
     
     private var nullAddress: String {
         return "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
