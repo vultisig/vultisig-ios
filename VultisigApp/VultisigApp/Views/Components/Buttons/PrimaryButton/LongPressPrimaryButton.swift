@@ -10,9 +10,7 @@ import SwiftUI
 struct LongPressPrimaryButton: View {
     @State private var progress: CGFloat = 0.0
     @State private var isPressed = false
-    @State private var timer: Timer?
-    
-    @State private var workItem: DispatchWorkItem?
+    @State private var longPressTask: Task<Void, Never>?
 
     let title: String
     let action: () -> Void
@@ -49,7 +47,12 @@ private extension LongPressPrimaryButton {
     func startHold() {
         guard !isPressed else { return }
         
-        workItem = DispatchWorkItem {
+        longPressTask = Task { @MainActor in
+            // Small delay to prevent tap gesture conflicts
+            try? await Task.sleep(for: .milliseconds(100))
+            
+            guard !Task.isCancelled else { return }
+            
             #if os(iOS)
                 HapticFeedbackManager.shared.startHapticFeedback(duration: longPressDuration, interval: 0.15)
             #endif
@@ -59,21 +62,23 @@ private extension LongPressPrimaryButton {
                 progress = 1.0
             }
             
-            timer = Timer.scheduledTimer(withTimeInterval: longPressDuration, repeats: false) { _ in
-                onLongPressComplete()
+            // Wait for the long press duration
+            try? await Task.sleep(for: .seconds(longPressDuration))
+            
+            guard !Task.isCancelled else { 
+                return
             }
+            
+            onLongPressComplete()
         }
-        
-        // Delay to prevent tapGesture getting executed when the user starts holding
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: workItem!)
     }
     
     func stopHold() {
         isPressed = false
         
-        timer?.invalidate()
-        timer = nil
-        cancelWork()
+        // Cancel the long press task
+        longPressTask?.cancel()
+        longPressTask = nil
         
         #if os(iOS)
             HapticFeedbackManager.shared.stopHapticFeedback()
@@ -91,14 +96,11 @@ private extension LongPressPrimaryButton {
         #endif
         
         // Delay for smoother transition
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(200))
             stopHold()
             longPressAction()
         }
     }
-    
-    func cancelWork() {
-        workItem?.cancel()
-        workItem = nil
-    }
+
 }
