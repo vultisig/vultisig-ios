@@ -31,11 +31,13 @@ class GroupedChain: ObservableObject, Identifiable, Hashable {
     }
 
     var totalBalanceInFiatDecimal: Decimal {
-        return coins.totalBalanceInFiatDecimal
+        // Remove duplicates by ID before calculating total
+        let uniqueCoins = Array(Set(coins))
+        return uniqueCoins.totalBalanceInFiatDecimal
     }
 
     var totalBalanceInFiatString: String {
-        return coins.totalBalanceInFiatString
+        return totalBalanceInFiatDecimal.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
     }
 
     var name: String {
