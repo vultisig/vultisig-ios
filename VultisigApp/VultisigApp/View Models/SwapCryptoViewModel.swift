@@ -168,7 +168,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     func approveFeeString(tx: SwapTransaction) -> String {
         let fromCoin = feeCoin(tx: tx)
-        let fee = fromCoin.fiat(gas: tx.fee)
+        let fee = fromCoin.fiat(value: tx.fee)
         return fee.formatToFiat(includeCurrencySymbol: true)
     }
     
@@ -178,7 +178,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         let fromCoin = feeCoin(tx: tx)
         let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
         let providerFee = tx.toCoin.fiat(value: inboundFee)
-        let networkFee = fromCoin.fiat(gas: tx.fee)
+        let networkFee = fromCoin.fiat(value: tx.fee)
         let totalFee = providerFee + networkFee
         return totalFee.formatToFiat(includeCurrencySymbol: true)
     }

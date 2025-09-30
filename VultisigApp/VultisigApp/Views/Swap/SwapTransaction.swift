@@ -82,7 +82,7 @@ class SwapTransaction: ObservableObject {
     var isAlliliate: Bool {
         let fiatAmount = RateProvider.shared.fiatBalance(
             value: fromAmountDecimal,
-            coin: fromCoin,
+            cryptoId:  fromCoin.cryptoId(),
             currency: .USD
         )
 

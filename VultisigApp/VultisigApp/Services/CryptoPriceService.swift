@@ -56,7 +56,7 @@ private extension CryptoPriceService {
         var contracts: [Chain: [String]] = [:]
         
         for coin in coins {
-            switch RateProvider.cryptoId(for: coin) {
+            switch coin.cryptoId() {
             case .priceProvider(let id):
                 providerIds.append(id)
             case .contract(let id):

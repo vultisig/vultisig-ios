@@ -7,8 +7,12 @@
 
 import Foundation
 
-struct Rate: DatabaseMappable, Hashable {
-
+class Rate: DatabaseMappable, Hashable,Equatable {
+    
+    static func == (lhs: Rate, rhs: Rate) -> Bool {
+        return lhs.id == rhs.id && lhs.value == rhs.value && lhs.fiat == rhs.fiat && lhs.crypto == rhs.crypto
+    }
+    
     static func identifier(fiat: String, crypto: String) -> String {
         return "\(fiat.lowercased())-\(crypto.lowercased())"
     }
@@ -25,7 +29,7 @@ struct Rate: DatabaseMappable, Hashable {
         self.value = value
     }
 
-    init(object: DatabaseRate) {
+    required init(object: DatabaseRate) {
         self.id = object.id
         self.fiat = object.fiat
         self.crypto = object.crypto

@@ -62,6 +62,6 @@ struct JoinKeysignGasViewModel {
         }
         
         let fee = nativeCoin.decimal(for: fee)
-        return RateProvider.shared.fiatBalanceString(value: fee, coin: nativeCoin)
+        return RateProvider.shared.fiatBalanceString(value: fee, cryptoId:  nativeCoin.cryptoId())
     }
 }

@@ -28,8 +28,7 @@ class EditReferralViewModel: ObservableObject {
     }
     
     var totalFeeFiatAmountText: String {
-        let fiatAmount = RateProvider.shared.fiatBalance(value: totalFeeAmount, coin: nativeCoin)
-        return fiatAmount.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
+        return RateProvider.shared.fiatBalanceString(value: totalFeeAmount, cryptoId:  nativeCoin.cryptoId())
     }
     
     var totalFeeAmount: Decimal {

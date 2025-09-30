@@ -196,7 +196,7 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     var price: Double {
-        return RateProvider.shared.rate(for: self)?.value ?? 0
+        return RateProvider.shared.rate(cryptoId: self.cryptoId())?.value ?? 0
     }
     
     func decimal(for value: BigInt) -> Decimal {
@@ -214,16 +214,12 @@ class Coin: ObservableObject, Codable, Hashable {
     
     func fiat(value: BigInt) -> Decimal {
         let decimal = decimal(for: value)
-        return RateProvider.shared.fiatBalance(value: decimal, coin: self)
+        return RateProvider.shared.fiatBalance(value: decimal, cryptoId: self.cryptoId())
     }
     
-    func fiat(gas: BigInt) -> Decimal {
-        let decimal = decimal(for: gas)
-        return RateProvider.shared.fiatBalance(value: decimal, coin: self)
-    }
     
     func fiat(decimal: Decimal) -> Decimal {
-        return RateProvider.shared.fiatBalance(value: decimal, coin: self)
+        return RateProvider.shared.fiatBalance(value: decimal, cryptoId: self.cryptoId())
     }
     
     var swapAsset: String {
@@ -259,7 +255,7 @@ class Coin: ObservableObject, Codable, Hashable {
     
     var balanceInFiatDecimal: Decimal {
         let combined = combinedBalanceDecimal
-        let fiat = RateProvider.shared.fiatBalance(value: combined, coin: self)
+        let fiat = RateProvider.shared.fiatBalance(value: combined, cryptoId:  self.cryptoId())
         return fiat
     }
     
@@ -294,6 +290,19 @@ class Coin: ObservableObject, Codable, Hashable {
     
     func toCoinMeta() -> CoinMeta {
         return CoinMeta(chain: chain, ticker: ticker, logo: logo, decimals: decimals, priceProviderId: priceProviderId, contractAddress: contractAddress, isNativeToken: isNativeToken)
+    }
+    
+    func cryptoId() -> CryptoId {
+        switch self.chain.chainType {
+        case .EVM, .Solana, .Sui, .THORChain:
+            if self.isNativeToken || !self.priceProviderId.isEmpty {
+                return .priceProvider(self.priceProviderId)
+            } else {
+                return .contract(self.contractAddress)
+            }
+        default:
+            return .priceProvider(self.priceProviderId)
+        }
     }
 }
 

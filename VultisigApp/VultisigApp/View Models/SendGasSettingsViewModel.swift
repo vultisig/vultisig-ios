@@ -62,7 +62,7 @@ final class SendGasSettingsViewModel: ObservableObject {
         let totalFeeGwei = Decimal(string: totalFee) ?? .zero
         let totalFeeWei = totalFeeGwei * Decimal(EVMHelper.weiPerGWei)
         let totalFee = nativeCoin.decimal(for: BigInt(stringLiteral: totalFeeWei.description))
-        return RateProvider.shared.fiatBalanceString(value: totalFee, coin: nativeCoin)
+        return RateProvider.shared.fiatBalanceString(value: totalFee, cryptoId:  nativeCoin.cryptoId())
     }
 
     func fetch(chain: Chain) async throws {

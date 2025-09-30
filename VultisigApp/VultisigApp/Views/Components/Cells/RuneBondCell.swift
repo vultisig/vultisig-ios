@@ -15,7 +15,7 @@ struct RuneBondCell: View {
     
     private var bondValueInFiat: String {
         let bondDecimal = convertFromBaseUnits(bondNode.bond)
-        return RateProvider.shared.fiatBalance(value: bondDecimal, coin: coin).formatToFiat()
+        return RateProvider.shared.fiatBalanceString(value: bondDecimal, cryptoId: coin.cryptoId())
     }
     
     private var bondValueInRune: String {

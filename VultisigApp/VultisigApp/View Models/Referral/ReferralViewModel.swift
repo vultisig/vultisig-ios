@@ -167,7 +167,7 @@ class ReferralViewModel: ObservableObject {
             return ""
         }
         
-        let fiatAmount = RateProvider.shared.fiatBalance(value: amount, coin: nativeCoin)
+        let fiatAmount = RateProvider.shared.fiatBalance(value: amount, cryptoId:  nativeCoin.cryptoId())
         return fiatAmount.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
     }
     
