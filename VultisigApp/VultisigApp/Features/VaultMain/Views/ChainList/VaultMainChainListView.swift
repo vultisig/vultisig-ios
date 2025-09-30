@@ -22,8 +22,6 @@ struct VaultMainChainListView: View {
             } else {
                 customizeChainsView
             }
-        }.onChange(of: vault) {
-            viewModel.categorizeCoins(vault: vault)
         }
     }
     
