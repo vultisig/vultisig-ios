@@ -29,7 +29,7 @@ final class ChainDetailViewModel: ObservableObject {
     
     func refresh(group: GroupedChain) {
         Task { @MainActor in
-            availableActions = await actionResolver.resolveActions(for: group.chain)
+            availableActions = await actionResolver.resolveActions(for: group.chain).filtered
         }
     }
     
