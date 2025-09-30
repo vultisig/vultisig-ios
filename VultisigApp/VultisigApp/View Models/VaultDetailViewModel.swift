@@ -103,8 +103,11 @@ private extension VaultDetailViewModel {
             return
         }
         
-        group.coins.append(coin)
-        group.count += 1
+        // Check if coin already exists in group to prevent duplicates
+        if !group.coins.contains(where: { $0.id == coin.id }) {
+            group.coins.append(coin)
+            group.count += 1
+        }
         if coin.isNativeToken {
             group.logo = coin.logo
         }
