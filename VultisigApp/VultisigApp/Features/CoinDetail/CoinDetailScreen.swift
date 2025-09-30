@@ -62,7 +62,7 @@ struct CoinDetailScreen: View {
     var macOSOverlay: some View {
         #if os(macOS)
         VStack(alignment: .trailing) {
-            CircularIconButton(icon: "x") {
+            ToolbarButton(image: "x") {
                 dismiss()
             }
             .padding(16)

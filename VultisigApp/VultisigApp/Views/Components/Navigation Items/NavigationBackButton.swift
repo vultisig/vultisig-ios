@@ -13,14 +13,8 @@ struct NavigationBackButton: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        Button(action: {
-            dismiss()
-        }) {
-            Image(systemName: "chevron.backward")
-                .font(Theme.fonts.bodyLMedium)
-                .foregroundColor(tint)
-        }
-        .buttonStyle(.plain)
+        ToolbarButton(image: "chevron-right", action: { dismiss() })
+            .rotationEffect(.radians(.pi))
     }
 }
 

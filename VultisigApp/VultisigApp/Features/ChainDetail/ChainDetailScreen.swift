@@ -258,10 +258,10 @@ extension ChainDetailScreen {
             content()
                 .padding(.top, 40)
             HStack {
-                CircularIconButton(icon: "chevron-right", action: { dismiss() })
+                ToolbarButton(image: "chevron-right", action: { dismiss() })
                     .rotationEffect(.radians(.pi))
                 Spacer()
-                CircularIconButton(icon: "square-3d", action: onExplorer)
+                ToolbarButton(image: "square-3d", action: onExplorer)
             }
             .padding(.top, isMacOS ? 8 : 0)
             .padding(.horizontal, 24)
@@ -275,7 +275,7 @@ extension ChainDetailScreen {
         content()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    ToolbarButton(image: "cube", action: onExplorer)
+                    ToolbarButton(image: "square-3d", action: onExplorer)
                 }
             }
     }

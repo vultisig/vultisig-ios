@@ -138,7 +138,7 @@ struct CustomTokenScreen: View {
     }
     
     var closeButton: some View {
-        ToolbarButton(image: "xmark", type: .secondary) {
+        ToolbarButton(image: "x") {
             onClose()
         }
     }

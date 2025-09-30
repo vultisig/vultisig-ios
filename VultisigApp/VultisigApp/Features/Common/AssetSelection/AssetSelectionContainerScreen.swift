@@ -132,13 +132,13 @@ struct AssetSelectionContainerScreen<Asset: Hashable, CellView: View, EmptyState
     }
     
     var closeButton: some View {
-        ToolbarButton(image: "xmark", type: .secondary) {
+        ToolbarButton(image: "x") {
             isPresented.toggle()
         }
     }
     
     var saveButton: some View {
-        ToolbarButton(image: "checkmark") {
+        ToolbarButton(image: "check", type: .confirmation) {
             onSave()
         }
     }
