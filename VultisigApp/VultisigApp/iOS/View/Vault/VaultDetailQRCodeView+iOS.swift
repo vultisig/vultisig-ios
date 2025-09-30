@@ -12,7 +12,7 @@ extension VaultDetailQRCodeView {
     private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     
     var buttons: some View {
-        VStack(spacing: 15) {
+        VStack(spacing: 16) {
             shareButton
             saveButton
         }

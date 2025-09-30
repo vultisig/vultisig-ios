@@ -23,7 +23,11 @@ struct VaultDetailMacQRCode: View {
         }
         .padding(22)
         .frame(width: 960, height: 1400)
-        .background(LinearGradient.primaryGradientLinear)
+        .background(
+            RoundedRectangle(cornerRadius: 24)
+                .fill(Theme.colors.bgSecondary.opacity(0.6))
+                .stroke(Theme.colors.borderLight, lineWidth: 1)
+        )
     }
     
     var qrCodeContent: some View {
@@ -39,9 +43,12 @@ struct VaultDetailMacQRCode: View {
             .resizable()
             .frame(width: 700, height: 700)
             .scaledToFit()
-            .padding(3)
-            .cornerRadius(10)
             .foregroundColor(Theme.colors.textPrimary)
+            .padding(24)
+            .overlay(
+                RoundedRectangle(cornerRadius: 24)
+                    .stroke(Theme.colors.borderLight, lineWidth: 1)
+            )
     }
     
     var logo: some View {
