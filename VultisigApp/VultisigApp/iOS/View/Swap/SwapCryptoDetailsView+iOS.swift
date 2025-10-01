@@ -8,11 +8,11 @@
 #if os(iOS)
 import SwiftUI
 
-extension SwapCryptoDetailsView {    
+extension SwapCryptoDetailsView {
     var view: some View {
        content
             .toolbar {
-                ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                toolbarItemWithHiddenBackground(placement: Placement.topBarTrailing.getPlacement()) {
                     refreshCounter
                 }
                 

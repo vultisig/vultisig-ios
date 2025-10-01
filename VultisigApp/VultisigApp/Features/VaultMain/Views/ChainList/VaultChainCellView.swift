@@ -19,8 +19,8 @@ struct VaultChainCellView: View {
     @State private var fiatBalanceText: String = ""
     
     var body: some View {
-        HStack {
-            Button(action: onCopy) {
+        Button(action: onAction) {
+            HStack {
                 HStack(spacing: 12) {
                     AsyncImageView(
                         logo: group.logo,
@@ -33,18 +33,17 @@ struct VaultChainCellView: View {
                         Text(group.name)
                             .font(Theme.fonts.bodySMedium)
                             .foregroundStyle(Theme.colors.textPrimary)
-                        HStack(spacing: 4) {
-                            Text(group.truncatedAddress)
-                                .font(Theme.fonts.caption12)
-                                .foregroundStyle(Theme.colors.textExtraLight)
-                            Icon(named: "copy", color: Theme.colors.textExtraLight, size: 12)
-                        }
-                        
+                        Button(action: onCopy) {
+                            HStack(spacing: 4) {
+                                Text(group.truncatedAddress)
+                                    .font(Theme.fonts.caption12)
+                                    .foregroundStyle(Theme.colors.textExtraLight)
+                                Icon(named: "copy", color: Theme.colors.textExtraLight, size: 12)
+                            }
+                        }.buttonStyle(.plain)
                     }
                 }
-            }
-            
-            Button(action: onAction) {
+                
                 HStack(spacing: 8) {
                     Spacer()
                     VStack(alignment: .trailing, spacing: 4) {
@@ -58,10 +57,12 @@ struct VaultChainCellView: View {
                     Icon(named: "chevron-right-small", color: Theme.colors.textPrimary, size: 16)
                 }
             }
+            .contentShape(Rectangle())
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(Theme.colors.bgSecondary)
+        .buttonStyle(.plain)
         .onLoad(perform: updateTexts)
         .onChange(of: group.coins) { _, _ in
             updateTexts()
