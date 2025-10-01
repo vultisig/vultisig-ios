@@ -63,7 +63,7 @@ struct AssetSelectionContainerScreen<Asset: Hashable, CellView: View, EmptyState
                 gradientOverlay
             }
             .ignoresSafeArea(.container, edges: .bottom)
-            .crossPlatformToolbar {
+            .crossPlatformToolbar(showsBackButton: false) {
                 CustomToolbarItem(placement: .leading) {
                     ToolbarButton(image: "x") {
                         isPresented.toggle()
@@ -79,6 +79,7 @@ struct AssetSelectionContainerScreen<Asset: Hashable, CellView: View, EmptyState
             .presentationDetents([.large])
             .presentationBackground(Theme.colors.bgPrimary)
             .presentationDragIndicator(.visible)
+            
         }
     }
     

@@ -14,15 +14,7 @@ extension SettingsDefaultChainView {
     }
     
     var main: some View {
-        VStack(spacing: 0) {
-            headerMac
-            cellContent
-        }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "defaultChains")
-            .padding(.bottom, 8)
+        cellContent
     }
 }
 #endif

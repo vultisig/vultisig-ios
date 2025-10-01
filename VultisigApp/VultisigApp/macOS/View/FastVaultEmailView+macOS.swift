@@ -14,20 +14,14 @@ extension FastVaultEmailView {
             Background()
             main
         }
+        .crossPlatformToolbar(showsBackButton: !backButtonHidden)
     }
     
     var main: some View {
-        VStack {
-            headerMac
-            view
-        }
-        .navigationDestination(isPresented: $isLinkActive) {
-            FastVaultSetPasswordView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: email, fastVaultExist: fastVaultExist)
-        }
-    }
-
-    var headerMac: some View {
-        GeneralMacHeader(title: "", showActions: !backButtonHidden)
+        view
+            .navigationDestination(isPresented: $isLinkActive) {
+                FastVaultSetPasswordView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: email, fastVaultExist: fastVaultExist)
+            }
     }
     
     var view: some View {

@@ -55,15 +55,7 @@ struct CoinDetailScreen: View {
         .sheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(coin: coin, isPresented: $showReceiveSheet)
         }
-        .crossPlatformToolbar {
-            #if os(macOS)
-            CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "x") {
-                    dismiss()
-                }
-            }
-            #endif
-        }
+        .crossPlatformToolbar(showsBackButton: true)
     }
 }
 

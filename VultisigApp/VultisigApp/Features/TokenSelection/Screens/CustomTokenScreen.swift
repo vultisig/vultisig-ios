@@ -78,7 +78,7 @@ struct CustomTokenScreen: View {
         }
         .withLoading(text: "pleaseWait".localized, isLoading: $isLoading)
         .withLoading(text: "addingToken".localized, isLoading: $isAddingToken)
-        .crossPlatformToolbar {
+        .crossPlatformToolbar(showsBackButton: false) {
             CustomToolbarItem(placement: .leading) {
                 ToolbarButton(image: "x") {
                     onClose()

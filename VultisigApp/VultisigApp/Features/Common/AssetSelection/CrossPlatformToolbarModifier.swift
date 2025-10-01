@@ -62,20 +62,28 @@ public struct CustomToolbarItemsBuilder {
 public struct CrossPlatformToolbarModifier: ViewModifier {
     private let items: [CustomToolbarItem]
     private let navigationTitle: String?
+    private let ignoresTopEdge: Bool
+    private let showsBackButton: Bool
 
     public init(
-        items: [CustomToolbarItem],
-        navigationTitle: String? = nil
+        items: [CustomToolbarItem]? = nil,
+        navigationTitle: String? = nil,
+        ignoresTopEdge: Bool = true,
+        showsBackButton: Bool = true
     ) {
-        self.items = items
+        self.items = items ?? []
         self.navigationTitle = navigationTitle
+        self.ignoresTopEdge = ignoresTopEdge
+        self.showsBackButton = showsBackButton
     }
 
     public func body(content: Content) -> some View {
         #if os(macOS)
         MacOSToolbarView(
             items: items,
-            navigationTitle: navigationTitle
+            navigationTitle: navigationTitle,
+            ignoresTopEdge: ignoresTopEdge,
+            showsBackButton: showsBackButton
         ) {
             content
         }
@@ -128,25 +136,66 @@ public extension View {
     /// Cross-platform toolbar modifier that works on both iOS and macOS
     /// - Parameters:
     ///   - navigationTitle: Optional title to display in the navigation bar/toolbar center
+    ///   - ignoresTopEdge: On macOS, if true uses ZStack overlay (default), if false uses VStack layout
+    ///   - showsBackButton: On macOS, if true shows back button automatically (default), iOS ignores this
     ///   - items: CustomToolbarItems builder for toolbar content
     func crossPlatformToolbar(
         navigationTitle: String? = nil,
+        ignoresTopEdge: Bool = false,
+        showsBackButton: Bool = true,
         @CustomToolbarItemsBuilder items: () -> [CustomToolbarItem]
     ) -> some View {
         modifier(CrossPlatformToolbarModifier(
             items: items(),
-            navigationTitle: navigationTitle
+            navigationTitle: navigationTitle,
+            ignoresTopEdge: ignoresTopEdge,
+            showsBackButton: showsBackButton
+        ))
+    }
+    
+    /// Cross-platform toolbar modifier without custom items
+    /// - Parameters:
+    ///   - navigationTitle: Optional title to display in the navigation bar/toolbar center
+    ///   - ignoresTopEdge: On macOS, if true uses ZStack overlay (default), if false uses VStack layout
+    ///   - showsBackButton: On macOS, if true shows back button automatically (default), iOS ignores this
+    func crossPlatformToolbar(
+        navigationTitle: String? = nil,
+        ignoresTopEdge: Bool = false,
+        showsBackButton: Bool = true
+    ) -> some View {
+        modifier(CrossPlatformToolbarModifier(
+            items: nil,
+            navigationTitle: navigationTitle,
+            ignoresTopEdge: ignoresTopEdge,
+            showsBackButton: showsBackButton
         ))
     }
     
     /// Convenience method for toolbar with navigation title
     func crossPlatformToolbar(
         _ navigationTitle: String,
+        ignoresTopEdge: Bool = true,
+        showsBackButton: Bool = true,
         @CustomToolbarItemsBuilder items: () -> [CustomToolbarItem]
     ) -> some View {
         crossPlatformToolbar(
             navigationTitle: navigationTitle,
+            ignoresTopEdge: ignoresTopEdge,
+            showsBackButton: showsBackButton,
             items: items
+        )
+    }
+    
+    /// Convenience method for toolbar with navigation title and no custom items
+    func crossPlatformToolbar(
+        _ navigationTitle: String,
+        ignoresTopEdge: Bool = true,
+        showsBackButton: Bool = true
+    ) -> some View {
+        crossPlatformToolbar(
+            navigationTitle: navigationTitle,
+            ignoresTopEdge: ignoresTopEdge,
+            showsBackButton: showsBackButton
         )
     }
     

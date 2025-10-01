@@ -58,15 +58,7 @@ struct ReceiveQRCodeBottomSheet: View {
                 addressData: coin.logo
             )
         }
-        .crossPlatformToolbar {
-            #if os(macOS)
-            CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "x") {
-                    dismiss()
-                }
-            }
-            #endif
-        }
+        .crossPlatformToolbar(showsBackButton: true)
     }
 
     var topSection: some View {

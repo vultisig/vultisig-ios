@@ -18,14 +18,8 @@ extension CoinPickerView {
     }
     
     var main: some View {
-        VStack(spacing: 0) {
-            headerMac
-            view
-        }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "chains")
+        view
+            .crossPlatformToolbar("chains".localized)
     }
     
     var view: some View {

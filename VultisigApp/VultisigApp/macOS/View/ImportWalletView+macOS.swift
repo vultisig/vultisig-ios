@@ -23,10 +23,8 @@ extension ImportWalletView {
     }
     
     var main: some View {
-        VStack {
-            headerMac
-            view
-        }
+        view
+            .crossPlatformToolbar("import".localized)
     }
 }
 #endif

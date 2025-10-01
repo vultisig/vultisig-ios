@@ -30,8 +30,8 @@ struct MacScannerView: View {
         ZStack(alignment: .top) {
             Background()
             main
-            headerMac
         }
+        .crossPlatformToolbar(cameraViewModel.getTitle(type))
         .navigationDestination(isPresented: $cameraViewModel.shouldJoinKeygen) {
             JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: selectedVault)
         }
@@ -64,11 +64,6 @@ struct MacScannerView: View {
                 coinSelectionViewModel: coinSelectionViewModel
             )
         }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: cameraViewModel.getTitle(type))
-            .padding(.bottom, 8)
     }
     
     var view: some View {

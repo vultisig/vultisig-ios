@@ -21,7 +21,7 @@ struct GeneralQRImportMacView: View {
     @State var isButtonEnabled = false
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
-   
+    
 #if os(iOS)
     @State var selectedImage: UIImage?
 #elseif os(macOS)
@@ -42,14 +42,8 @@ struct GeneralQRImportMacView: View {
     }
     
     var main: some View {
-        VStack {
-            headerMac
-            content
-        }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: getTitle())
+        content
+            .crossPlatformToolbar(getTitle())
     }
     
     var content: some View {

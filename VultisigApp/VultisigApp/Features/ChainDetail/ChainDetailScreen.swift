@@ -85,14 +85,7 @@ struct ChainDetailScreen: View {
                 onCoinAction: onCoinAction
             )
         }
-        .crossPlatformToolbar {
-            #if os(macOS)
-            CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "chevron-right", action: { dismiss() })
-                    .rotationEffect(.radians(.pi))
-            }
-            #endif
-            
+        .crossPlatformToolbar(ignoresTopEdge: true) {            
             CustomToolbarItem(placement: .trailing) {
                 ToolbarButton(image: "square-3d", action: onExplorer)
             }
