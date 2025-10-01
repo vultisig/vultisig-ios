@@ -68,7 +68,9 @@ struct ChainDetailScreen: View {
                 isPresented: $showManageTokens
             )
         }
-        .onLoad(perform: refresh)
+        .onLoad{
+            viewModel.refresh(group: group)
+        }
         .navigationDestination(isPresented: $showAction) {
             if let vaultAction {
                 VaultActionRouteBuilder().buildActionRoute(
@@ -167,8 +169,7 @@ struct ChainDetailScreen: View {
 
 private extension ChainDetailScreen {
     func refresh() {
-        viewModel.refresh(group: group)
-        Task {
+        Task.detached {
             await updateBalances()
             await MainActor.run {
                 coinSelectionViewModel.setData(for: vault)
