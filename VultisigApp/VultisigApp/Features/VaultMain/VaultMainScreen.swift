@@ -38,10 +38,9 @@ struct VaultMainScreen: View {
         VStack {
             ZStack(alignment: .top) {
                 ScrollViewReader { proxy in
-                    OffsetObservingScrollView(
+                    VaultMainScreenScrollView(
                         showsIndicators: false,
                         contentInset: contentInset,
-                        ns: .scrollView,
                         scrollOffset: $scrollOffset
                     ) {
                         LazyVStack(spacing: 20) {
@@ -253,7 +252,9 @@ struct VaultMainScreen: View {
     }
     
     func onScrollOffsetChange(_ offset: CGFloat) {
-        showBalanceInHeader = offset < contentInset
+        let showBalanceInHeader: Bool = offset < contentInset
+        guard showBalanceInHeader != self.showBalanceInHeader else { return }
+        self.showBalanceInHeader = showBalanceInHeader
     }
     
     func clearSearch() {

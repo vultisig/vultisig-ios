@@ -14,11 +14,9 @@ struct VaultChainCellView: View {
     var onAction: () -> Void
     
     @EnvironmentObject var homeViewModel: HomeViewModel
-    @StateObject var viewModel = ChainCellViewModel()
-        
-    var trailingSubtitle: String {
-        group.coins.count > 1 ? "\(group.coins.count) \("assets".localized)" : group.nativeCoin.balanceStringWithTicker
-    }
+    
+    @State private var trailingSubtitle: String = ""
+    @State private var fiatBalanceText: String = ""
     
     var body: some View {
         HStack {
@@ -50,21 +48,43 @@ struct VaultChainCellView: View {
                 HStack(spacing: 8) {
                     Spacer()
                     VStack(alignment: .trailing, spacing: 4) {
-                        Text(homeViewModel.hideVaultBalance ? String.hideBalanceText : group.totalBalanceInFiatString)
+                        Text(fiatBalanceText)
                             .font(Theme.fonts.priceBodyS)
                             .foregroundStyle(Theme.colors.textPrimary)
-                        Text(homeViewModel.hideVaultBalance ? String.hideBalanceText : trailingSubtitle)
+                        Text(trailingSubtitle)
                             .font(Theme.fonts.priceCaption)
                             .foregroundStyle(Theme.colors.textExtraLight)
                     }
-                    Icon(named: "chevron-down-small", color: Theme.colors.textPrimary, size: 16)
-                        .rotationEffect(.degrees(-90))
+                    Icon(named: "chevron-right-small", color: Theme.colors.textPrimary, size: 16)
                 }
             }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(Theme.colors.bgSecondary)
+        .onLoad(perform: updateTexts)
+        .onChange(of: group.coins) { _, _ in
+            updateTexts()
+        }
+        .onChange(of: homeViewModel.hideVaultBalance) { _, _ in
+            updateTexts()
+        }
+    }
+}
+
+private extension VaultChainCellView {
+    func updateTexts() {
+        updateTrailingSubtitle()
+        updateFiatBalanceText()
+    }
+    
+    func updateTrailingSubtitle() {
+        let trailingSubtitle = group.coins.count > 1 ? "\(group.coins.count) \("assets".localized)" : group.nativeCoin.balanceStringWithTicker
+        self.trailingSubtitle = homeViewModel.hideVaultBalance ? String.hideBalanceText : trailingSubtitle
+    }
+    
+    func updateFiatBalanceText() {
+        fiatBalanceText = homeViewModel.hideVaultBalance ? String.hideBalanceText : group.totalBalanceInFiatString
     }
 }
 

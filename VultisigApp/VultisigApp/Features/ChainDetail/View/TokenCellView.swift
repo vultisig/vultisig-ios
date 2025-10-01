@@ -44,8 +44,7 @@ struct TokenCellView: View {
                         .font(Theme.fonts.priceCaption)
                         .foregroundStyle(Theme.colors.textExtraLight)
                 }
-                Icon(named: "chevron-down-small", color: Theme.colors.textPrimary, size: 16)
-                    .rotationEffect(.degrees(-90))
+                Icon(named: "chevron-right-small", color: Theme.colors.textPrimary, size: 16)
             }
         }
         .padding(.horizontal, 16)
