@@ -60,6 +60,7 @@ struct VaultChainCellView: View {
                         .rotationEffect(.degrees(-90))
                 }
             }
+            .contentShape(Rectangle())
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
