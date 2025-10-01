@@ -216,6 +216,7 @@
 		13C880582E70A32B009C67F1 /* VaultMainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C880572E70A327009C67F1 /* VaultMainScreen.swift */; };
 		13C8805B2E70A375009C67F1 /* VaultSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C8805A2E70A371009C67F1 /* VaultSelectorView.swift */; };
 		13C880602E70A41B009C67F1 /* VaultIconTypeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C8805F2E70A417009C67F1 /* VaultIconTypeView.swift */; };
+		13CB4C492E8D863E0098BC08 /* ToolbarItem+HiddenBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13CB4C482E8D86300098BC08 /* ToolbarItem+HiddenBackground.swift */; };
 		13CCEC0C2E54EE3000F28937 /* SettingsSectionContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13CCEC0B2E54EE2800F28937 /* SettingsSectionContainerView.swift */; };
 		13CCEC0F2E55010D00F28937 /* InfoBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13CCEC0E2E55010C00F28937 /* InfoBannerView.swift */; };
 		13D0C84B2E7461F600A1301F /* TabBarItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D0C84A2E7461F500A1301F /* TabBarItem.swift */; };
@@ -1284,6 +1285,7 @@
 		13C880572E70A327009C67F1 /* VaultMainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainScreen.swift; sourceTree = "<group>"; };
 		13C8805A2E70A371009C67F1 /* VaultSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultSelectorView.swift; sourceTree = "<group>"; };
 		13C8805F2E70A417009C67F1 /* VaultIconTypeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultIconTypeView.swift; sourceTree = "<group>"; };
+		13CB4C482E8D86300098BC08 /* ToolbarItem+HiddenBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ToolbarItem+HiddenBackground.swift"; sourceTree = "<group>"; };
 		13CCEC0B2E54EE2800F28937 /* SettingsSectionContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSectionContainerView.swift; sourceTree = "<group>"; };
 		13CCEC0E2E55010C00F28937 /* InfoBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoBannerView.swift; sourceTree = "<group>"; };
 		13D0C84A2E7461F500A1301F /* TabBarItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarItem.swift; sourceTree = "<group>"; };
@@ -2679,6 +2681,7 @@
 		138C5E682E79EDD300C559C7 /* Toolbar */ = {
 			isa = PBXGroup;
 			children = (
+				13CB4C482E8D86300098BC08 /* ToolbarItem+HiddenBackground.swift */,
 				13A078652E8464BA0093496F /* View+NavigationBarHidden.swift */,
 				138C5E712E7A01C200C559C7 /* ToolbarButton.swift */,
 				138C5E692E79EDDA00C559C7 /* ToolbarStyle.swift */,
@@ -5487,6 +5490,7 @@
 				B57138502CC5713E000E925B /* TonService.swift in Sources */,
 				DEFF58F22BCBACDA005DFDF9 /* VultisigRelay.swift in Sources */,
 				A506B59F2D3AD1DB00490BEB /* SolanaSwaps.swift in Sources */,
+				13CB4C492E8D863E0098BC08 /* ToolbarItem+HiddenBackground.swift in Sources */,
 				A65518052BF867CF006BB924 /* KeysignSameDeviceShareErrorView.swift in Sources */,
 				A6980C2A2BC0870000F452AB /* SettingsOptionsStore.swift in Sources */,
 				B5FFB0F42E7858EB0062F63C /* PendingTransactionManager.swift in Sources */,

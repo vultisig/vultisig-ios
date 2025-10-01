@@ -8,7 +8,6 @@
 import Foundation
 import SwiftUI
 
-@MainActor
 class VaultDetailViewModel: ObservableObject {
     @Published var selectedGroup: GroupedChain? = nil
     @Published var groups = [GroupedChain]()
@@ -19,7 +18,7 @@ class VaultDetailViewModel: ObservableObject {
             return groups
         }
         return groups.filter {
-            $0.name.localizedCaseInsensitiveContains(searchText)
+            $0.name.localizedCaseInsensitiveContains(searchText) || $0.nativeCoin.ticker.localizedCaseInsensitiveContains(searchText)
         }
     }
 
@@ -34,26 +33,28 @@ class VaultDetailViewModel: ObservableObject {
     
     var tabs: [SegmentedControlItem<VaultTab>] = [
         SegmentedControlItem(value: .portfolio, title: "portfolio".localized),
+        // TODO: - Add when NFTs are implemented
         SegmentedControlItem(value: .nfts, title: "nfts".localized, tag: "soon".localized, isEnabled: false)
     ]
     
     func updateBalance(vault: Vault) {
+        print("Updating balance for vault: \(vault.name)")
         updateBalanceTask?.cancel()
-        updateBalanceTask = Task {
-            await balanceService.updateBalances(vault: vault)
+        updateBalanceTask = Task.detached {
+            await self.balanceService.updateBalances(vault: vault)
             if !Task.isCancelled {
-                categorizeCoins(vault: vault)
+                await self.categorizeCoins(vault: vault)
             }
         }
     }
     
     func getGroupAsync(_ viewModel: CoinSelectionViewModel) {
-        Task {
+        Task {@MainActor in
             selectedGroup = await getGroup(viewModel)
         }
     }
     
-    func categorizeCoins(vault: Vault) {
+    @MainActor func categorizeCoins(vault: Vault) {
         var groups = [GroupedChain]()
 
         for coin in vault.coins {
