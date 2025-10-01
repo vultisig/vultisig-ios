@@ -38,6 +38,7 @@ struct CircularAccessoryIconButton: View {
                 .padding(12)
                 .background(Circle().fill(Theme.colors.bgButtonSecondary))
         }
+        .buttonStyle(.plain)
     }
 }
 

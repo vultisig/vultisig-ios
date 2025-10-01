@@ -55,6 +55,7 @@ struct VaultMainScreen: View {
                             bottomContentSection
                         }
                         .padding(.horizontal, 16)
+                        .padding(.bottom, 32)
                     }
                     .onLoad {
                         scrollProxy = proxy
