@@ -33,8 +33,9 @@ class VaultDetailViewModel: ObservableObject {
     @Published var selectedTab: VaultTab = .portfolio
     
     var tabs: [SegmentedControlItem<VaultTab>] = [
-        SegmentedControlItem(value: .portfolio, title: "portfolio".localized),
-        SegmentedControlItem(value: .nfts, title: "nfts".localized, tag: "soon".localized, isEnabled: false)
+        SegmentedControlItem(value: .portfolio, title: "portfolio".localized)
+        // TODO: - Add when NFTs are implemented
+//        SegmentedControlItem(value: .nfts, title: "nfts".localized, tag: "soon".localized, isEnabled: false)
     ]
     
     func updateBalance(vault: Vault) {
