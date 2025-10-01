@@ -60,10 +60,10 @@ class FunctionCallViewModel: ObservableObject, TransferViewModel {
     }
     
     func moveToNextView() {
-        currentIndex += 1
-        if currentIndex > titles.count {
+        if (currentIndex+1) > titles.count {
             return
         }
+        currentIndex += 1
         currentTitle = titles[currentIndex-1]
     }
     
@@ -77,10 +77,11 @@ class FunctionCallViewModel: ObservableObject, TransferViewModel {
     }
     
     func handleBackTap() {
-        currentIndex-=1
-        if currentIndex < 1 {
+        if (currentIndex - 1) == 1 {
             return
         }
+        currentIndex -= 1
+        
         currentTitle = titles[currentIndex-1]
     }
     
