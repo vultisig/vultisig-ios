@@ -14,7 +14,7 @@ extension View {
         placement: ToolbarItemPlacement,
         @ViewBuilder content: () -> Content
     ) -> some ToolbarContent {
-        if #available(iOS 26.0, *) {
+        if #available(iOS 26.0, macOS 26.0, *) {
             ToolbarItem(placement: placement, content: content)
                 .sharedBackgroundVisibility(.hidden)
         } else {
