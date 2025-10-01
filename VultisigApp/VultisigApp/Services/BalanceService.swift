@@ -59,7 +59,8 @@ class BalanceService {
         }
     }
     
-    @MainActor func updateBalance(for coin: Coin) async {
+    func updateBalance(for coin: Coin) async {
+        print("Updating balance for coin: \(coin.ticker) on chain: \(coin.chain.rawValue)")
         do {
             try await cryptoPriceService.fetchPrice(coin: coin)
         } catch {
@@ -71,8 +72,9 @@ class BalanceService {
             
             let stakedBalance = try await fetchStakedBalance(for: coin)
             try await updateCoin(coin, stakedBalance: stakedBalance)
-            
-            try Storage.shared.save()
+            try await MainActor.run {
+                try Storage.shared.save()
+            }
         } catch {
             print("Fetch Balance error: \(error.localizedDescription)")
         }
