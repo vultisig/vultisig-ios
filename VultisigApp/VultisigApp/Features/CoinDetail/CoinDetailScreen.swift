@@ -77,7 +77,7 @@ struct CoinDetailScreen: View {
 
 private extension CoinDetailScreen {
     func onAppear() {
-        Task { @MainActor in
+        Task {
             await BalanceService.shared.updateBalance(for: coin)
         }
     }
