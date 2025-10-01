@@ -88,7 +88,7 @@ struct SwapCoinPickerView: View {
                     }
                 }
                 .padding(.vertical, 8)
-                .padding(.bottom, 50)
+                .padding(.bottom, 80)
             }
             
             VStack(spacing: 12) {
