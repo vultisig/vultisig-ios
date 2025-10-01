@@ -61,6 +61,9 @@ class FunctionCallViewModel: ObservableObject, TransferViewModel {
     
     func moveToNextView() {
         currentIndex += 1
+        if currentIndex > titles.count {
+            return
+        }
         currentTitle = titles[currentIndex-1]
     }
     
@@ -75,6 +78,9 @@ class FunctionCallViewModel: ObservableObject, TransferViewModel {
     
     func handleBackTap() {
         currentIndex-=1
+        if currentIndex < 1 {
+            return
+        }
         currentTitle = titles[currentIndex-1]
     }
     
