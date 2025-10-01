@@ -45,7 +45,6 @@ struct CoinDetailScreen: View {
             .padding(.top, 45)
             .padding(.horizontal, 24)
             .background(ModalBackgroundView(width: proxy.size.width))
-            .overlay(macOSOverlay)
             .onLoad(perform: viewModel.setup)
             .onAppear(perform: onAppear)
         }
@@ -56,22 +55,15 @@ struct CoinDetailScreen: View {
         .sheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(coin: coin, isPresented: $showReceiveSheet)
         }
-    }
-    
-    @ViewBuilder
-    var macOSOverlay: some View {
-        #if os(macOS)
-        VStack(alignment: .trailing) {
-            ToolbarButton(image: "x") {
-                dismiss()
+        .crossPlatformToolbar {
+            #if os(macOS)
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "x") {
+                    dismiss()
+                }
             }
-            .padding(16)
-            Spacer()
+            #endif
         }
-        .frame(maxWidth: .infinity, alignment: .trailing)
-        #else
-        EmptyView()
-        #endif
     }
 }
 

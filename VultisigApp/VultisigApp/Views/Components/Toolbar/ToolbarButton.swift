@@ -53,6 +53,7 @@ struct ToolbarButton: View {
                         isHovered = hovering
                     }
                 }
+                .buttonStyle(.plain)
             } else {
                 customButton
                     .onHover { hovering in

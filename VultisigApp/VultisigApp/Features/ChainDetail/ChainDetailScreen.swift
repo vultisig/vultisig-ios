@@ -38,23 +38,21 @@ struct ChainDetailScreen: View {
     }
     
     var body: some View {
-        container {
-            ScrollViewReader { proxy in
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 20) {
-                        topContentSection
-                        bottomContentSection
-                    }
-                    .padding(.horizontal, 16)
+        ScrollViewReader { proxy in
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 20) {
+                    topContentSection
+                    bottomContentSection
                 }
-                .onLoad {
-                    scrollProxy = proxy
-                }
+                .padding(.horizontal, 16)
+                .padding(.top, 50)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .refreshable {
-                refresh()
+            .onLoad {
+                scrollProxy = proxy
             }
+        }
+        .refreshable {
+            refresh()
         }
         .background(VaultMainScreenBackground())
         .withAddressCopy(coin: $addressToCopy)
@@ -86,6 +84,18 @@ struct ChainDetailScreen: View {
                 sendTx: sendTx,
                 onCoinAction: onCoinAction
             )
+        }
+        .crossPlatformToolbar {
+            #if os(macOS)
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "chevron-right", action: { dismiss() })
+                    .rotationEffect(.radians(.pi))
+            }
+            #endif
+            
+            CustomToolbarItem(placement: .trailing) {
+                ToolbarButton(image: "square-3d", action: onExplorer)
+            }
         }
     }
     
@@ -250,37 +260,6 @@ private extension ChainDetailScreen {
         self.showAction = true
     }
 }
-
-#if os(macOS)
-extension ChainDetailScreen {
-    func container<Content: View>(content: () -> Content) -> some View {
-        ZStack(alignment: .top) {
-            content()
-                .padding(.top, 40)
-            HStack {
-                ToolbarButton(image: "chevron-right", action: { dismiss() })
-                    .rotationEffect(.radians(.pi))
-                Spacer()
-                ToolbarButton(image: "square-3d", action: onExplorer)
-            }
-            .padding(.top, isMacOS ? 8 : 0)
-            .padding(.horizontal, 24)
-            .frame(height: 40)
-        }
-    }
-}
-#else
-extension ChainDetailScreen {
-    func container<Content: View>(content: () -> Content) -> some View {
-        content()
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    ToolbarButton(image: "square-3d", action: onExplorer)
-                }
-            }
-    }
-}
-#endif
 
 #Preview {
     ChainDetailScreen(

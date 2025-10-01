@@ -31,7 +31,6 @@ struct ReceiveQRCodeBottomSheet: View {
             .padding(.top, 40)
             .padding(.horizontal, 16)
             .background(ModalBackgroundView(width: proxy.size.width))
-            .overlay(macOSOverlay)
             .withAddressCopy(coin: $addressToCopy)
             .presentationDetents([.height(465)])
             .presentationBackground(Theme.colors.bgSecondary)
@@ -58,6 +57,15 @@ struct ReceiveQRCodeBottomSheet: View {
                 type: .Address,
                 addressData: coin.logo
             )
+        }
+        .crossPlatformToolbar {
+            #if os(macOS)
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "x") {
+                    dismiss()
+                }
+            }
+            #endif
         }
     }
 
@@ -95,22 +103,6 @@ struct ReceiveQRCodeBottomSheet: View {
                 addressToCopy = coin
             }
         }
-    }
-    
-    @ViewBuilder
-    var macOSOverlay: some View {
-        #if os(macOS)
-        VStack(alignment: .trailing) {
-            ToolbarButton(image: "x") {
-                dismiss()
-            }
-            .padding(16)
-            Spacer()
-        }
-        .frame(maxWidth: .infinity, alignment: .trailing)
-        #else
-        EmptyView()
-        #endif
     }
 }
 
