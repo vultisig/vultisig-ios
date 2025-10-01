@@ -15,14 +15,14 @@ struct VaultChainCellView: View {
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     @StateObject var viewModel = ChainCellViewModel()
-        
+    
     var trailingSubtitle: String {
         group.coins.count > 1 ? "\(group.coins.count) \("assets".localized)" : group.nativeCoin.balanceStringWithTicker
     }
     
     var body: some View {
-        HStack {
-            Button(action: onCopy) {
+        Button(action: onAction) {
+            HStack {
                 HStack(spacing: 12) {
                     AsyncImageView(
                         logo: group.logo,
@@ -35,18 +35,17 @@ struct VaultChainCellView: View {
                         Text(group.name)
                             .font(Theme.fonts.bodySMedium)
                             .foregroundStyle(Theme.colors.textPrimary)
-                        HStack(spacing: 4) {
-                            Text(group.truncatedAddress)
-                                .font(Theme.fonts.caption12)
-                                .foregroundStyle(Theme.colors.textExtraLight)
-                            Icon(named: "copy", color: Theme.colors.textExtraLight, size: 12)
-                        }
-                        
+                        Button(action: onCopy) {
+                            HStack(spacing: 4) {
+                                Text(group.truncatedAddress)
+                                    .font(Theme.fonts.caption12)
+                                    .foregroundStyle(Theme.colors.textExtraLight)
+                                Icon(named: "copy", color: Theme.colors.textExtraLight, size: 12)
+                            }
+                        }.buttonStyle(.plain)
                     }
                 }
-            }
-            
-            Button(action: onAction) {
+                
                 HStack(spacing: 8) {
                     Spacer()
                     VStack(alignment: .trailing, spacing: 4) {
@@ -61,10 +60,12 @@ struct VaultChainCellView: View {
                         .rotationEffect(.degrees(-90))
                 }
             }
+            .contentShape(Rectangle())
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(Theme.colors.bgSecondary)
+        .buttonStyle(.plain)
     }
 }
 
