@@ -50,6 +50,7 @@ struct MacOSToolbarView<Content: View>: View {
                 // Content below toolbar
                 content
             }
+            .background(Theme.colors.bgPrimary)
         }
     }
     
@@ -74,8 +75,8 @@ struct MacOSToolbarView<Content: View>: View {
             // Navigation title in the center
             if let navigationTitle {
                 Text(navigationTitle)
-                    .font(.headline)
-                    .foregroundColor(.primary)
+                    .foregroundColor(Theme.colors.textPrimary)
+                    .font(.title3)
             }
             
             Spacer()

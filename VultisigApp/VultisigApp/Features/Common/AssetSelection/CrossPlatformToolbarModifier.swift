@@ -68,7 +68,7 @@ public struct CrossPlatformToolbarModifier: ViewModifier {
     public init(
         items: [CustomToolbarItem]? = nil,
         navigationTitle: String? = nil,
-        ignoresTopEdge: Bool = true,
+        ignoresTopEdge: Bool = false,
         showsBackButton: Bool = true
     ) {
         self.items = items ?? []
@@ -174,7 +174,7 @@ public extension View {
     /// Convenience method for toolbar with navigation title
     func crossPlatformToolbar(
         _ navigationTitle: String,
-        ignoresTopEdge: Bool = true,
+        ignoresTopEdge: Bool = false,
         showsBackButton: Bool = true,
         @CustomToolbarItemsBuilder items: () -> [CustomToolbarItem]
     ) -> some View {
@@ -189,7 +189,7 @@ public extension View {
     /// Convenience method for toolbar with navigation title and no custom items
     func crossPlatformToolbar(
         _ navigationTitle: String,
-        ignoresTopEdge: Bool = true,
+        ignoresTopEdge: Bool = false,
         showsBackButton: Bool = true
     ) -> some View {
         crossPlatformToolbar(
