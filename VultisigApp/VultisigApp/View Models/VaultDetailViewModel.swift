@@ -18,7 +18,7 @@ class VaultDetailViewModel: ObservableObject {
             return groups
         }
         return groups.filter {
-            $0.name.localizedCaseInsensitiveContains(searchText)
+            $0.name.localizedCaseInsensitiveContains(searchText) || $0.nativeCoin.ticker.localizedCaseInsensitiveContains(searchText)
         }
     }
 
@@ -33,6 +33,7 @@ class VaultDetailViewModel: ObservableObject {
     
     var tabs: [SegmentedControlItem<VaultTab>] = [
         SegmentedControlItem(value: .portfolio, title: "portfolio".localized),
+        // TODO: - Add when NFTs are implemented
         SegmentedControlItem(value: .nfts, title: "nfts".localized, tag: "soon".localized, isEnabled: false)
     ]
     
