@@ -136,7 +136,7 @@ struct ChainDetailScreen: View {
             CircularAccessoryIconButton(icon: "magnifying-glass") {
                 toggleSearch()
             }
-            CircularAccessoryIconButton(icon: "write") {
+            CircularAccessoryIconButton(icon: "crypto-wallet-pen", type: .secondary) {
                 showManageTokens = true
             }
         }
