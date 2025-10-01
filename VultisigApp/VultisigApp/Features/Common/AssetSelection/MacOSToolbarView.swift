@@ -46,11 +46,11 @@ struct MacOSToolbarView<Content: View>: View {
             VStack(spacing: 0) {
                 // macOS toolbar
                 toolbarContent
+                    .background(Theme.colors.bgPrimary)
                 
                 // Content below toolbar
                 content
             }
-            .background(Theme.colors.bgPrimary)
         }
     }
     

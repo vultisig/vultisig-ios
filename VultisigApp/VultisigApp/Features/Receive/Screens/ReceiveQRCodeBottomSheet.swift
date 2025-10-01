@@ -58,7 +58,7 @@ struct ReceiveQRCodeBottomSheet: View {
                 addressData: coin.logo
             )
         }
-        .crossPlatformToolbar(showsBackButton: true)
+        .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: true)
     }
 
     var topSection: some View {

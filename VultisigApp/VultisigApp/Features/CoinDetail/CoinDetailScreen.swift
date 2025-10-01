@@ -55,7 +55,7 @@ struct CoinDetailScreen: View {
         .sheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(coin: coin, isPresented: $showReceiveSheet)
         }
-        .crossPlatformToolbar(showsBackButton: true)
+        .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: true)
     }
 }
 
