@@ -19,7 +19,7 @@ class VaultDetailViewModel: ObservableObject {
             return groups
         }
         return groups.filter {
-            $0.name.localizedCaseInsensitiveContains(searchText)
+            $0.name.localizedCaseInsensitiveContains(searchText) || $0.nativeCoin.ticker.localizedCaseInsensitiveContains(searchText)
         }
     }
 
