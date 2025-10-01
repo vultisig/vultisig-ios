@@ -57,8 +57,8 @@ class FunctionCallBond: FunctionCallAddressable, ObservableObject {
     }
     
     func initialize() {
-        // Ensure RUNE token is selected for BOND operations on THORChain
-        if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
+        // Ensure RUNE token is selected for BOND operations on THORChain, but preserve TCY selection
+        if tx.coin.chain == .thorChain && !tx.coin.isNativeToken && tx.coin.ticker.uppercased() != "TCY" {
             DispatchQueue.main.async {
                 self.functionCallViewModel.setRuneToken(to: self.tx, vault: self.vault)
             }

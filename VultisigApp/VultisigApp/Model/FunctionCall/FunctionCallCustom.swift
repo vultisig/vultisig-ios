@@ -21,6 +21,9 @@ class FunctionCallCustom: FunctionCallAddressable, ObservableObject {
     @Published var customValid: Bool = false
     
     private var cancellables = Set<AnyCancellable>()
+    private var tx: SendTransaction?
+    private var vault: Vault?
+    private var functionCallViewModel: FunctionCallViewModel?
     
     var addressFields: [String: String] {
         get { [:] }
@@ -32,6 +35,12 @@ class FunctionCallCustom: FunctionCallAddressable, ObservableObject {
     
     init(custom: String) {
         self.custom = custom
+    }
+    
+    init(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault) {
+        self.tx = tx
+        self.functionCallViewModel = functionCallViewModel
+        self.vault = vault
     }
     
     func initialize() {

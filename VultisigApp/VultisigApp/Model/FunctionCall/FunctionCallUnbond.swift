@@ -62,7 +62,7 @@ class FunctionCallUnbond: FunctionCallAddressable, ObservableObject {
     func initialize() {
         // Ensure RUNE token is selected for UNBOND operations on THORChain
         if let tx = tx, let vault = vault, let functionCallViewModel = functionCallViewModel,
-           tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
+           tx.coin.chain == .thorChain && !tx.coin.isNativeToken && tx.coin.ticker.uppercased() != "TCY" {
             DispatchQueue.main.async {
                 functionCallViewModel.setRuneToken(to: tx, vault: vault)
             }

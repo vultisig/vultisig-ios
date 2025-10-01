@@ -434,7 +434,7 @@ enum FunctionCallInstance {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
             return .addThorLP(FunctionCallAddThorLP(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
         default:
-            return .custom(FunctionCallCustom())
+            return .custom(FunctionCallCustom(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
         }
     }
     

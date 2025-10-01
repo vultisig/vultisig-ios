@@ -55,7 +55,7 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
     
     func initialize() {
         // Ensure RUNE token is selected for REBOND operations on THORChain
-        if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
+        if tx.coin.chain == .thorChain && !tx.coin.isNativeToken && tx.coin.ticker.uppercased() != "TCY" {
             DispatchQueue.main.async {
                 self.functionCallViewModel.setRuneToken(to: self.tx, vault: self.vault)
             }
