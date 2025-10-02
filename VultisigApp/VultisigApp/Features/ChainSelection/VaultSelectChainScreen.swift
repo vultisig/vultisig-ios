@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct VaultSelectChainScreen: View {
-    let vault: Vault
+    @ObservedObject var vault: Vault
     @Binding var isPresented: Bool
+    var onSave: () -> Void
     @State var searchBarFocused: Bool = false
         
     @EnvironmentObject var viewModel: CoinSelectionViewModel
@@ -20,7 +21,7 @@ struct VaultSelectChainScreen: View {
             isPresented: $isPresented,
             searchText: $viewModel.searchText,
             elements: viewModel.filteredChains,
-            onSave: onSave
+            onSave: onSaveInternal
         ) { asset in
             ChainSelectionGridCell(
                 assets: viewModel.groupedAssets[asset] ?? [],
@@ -52,9 +53,10 @@ struct VaultSelectChainScreen: View {
 }
 
 private extension VaultSelectChainScreen {
-    func onSave() {
+    func onSaveInternal() {
         Task {
             await saveAssets()
+            onSave()
         }
         isPresented.toggle()
     }
@@ -72,7 +74,8 @@ private extension VaultSelectChainScreen {
 #Preview {
     VaultSelectChainScreen(
         vault: .example,
-        isPresented: .constant(true)
+        isPresented: .constant(true),
+        onSave: {}
     )
 }
 
