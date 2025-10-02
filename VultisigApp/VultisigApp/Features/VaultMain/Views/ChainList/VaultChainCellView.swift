@@ -11,7 +11,7 @@ struct VaultChainCellView: View {
     @ObservedObject var group: GroupedChain
     let vault: Vault
     var onCopy: () -> Void
-    var onAction: () -> Void
+//    var onAction: () -> Void
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
@@ -19,7 +19,10 @@ struct VaultChainCellView: View {
     @State private var fiatBalanceText: String = ""
     
     var body: some View {
-        Button(action: onAction) {
+//        Button(action: onAction) {
+        NavigationLink {
+            ChainDetailScreen(group: group, vault: vault)
+        } label: {
             HStack {
                 HStack(spacing: 12) {
                     AsyncImageView(
@@ -91,6 +94,7 @@ private extension VaultChainCellView {
 
 #Preview {
     VaultChainCellView(group: .example, vault: .example) {
-    } onAction: {
-    }.environmentObject(HomeViewModel())
+    }
+//    onAction: {}
+        .environmentObject(HomeViewModel())
 }
