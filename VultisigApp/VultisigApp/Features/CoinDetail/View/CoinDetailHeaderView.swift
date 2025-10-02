@@ -28,7 +28,6 @@ struct CoinDetailHeaderView: View {
                 ticker: coin.ticker,
                 tokenChainLogo: nil
             )
-            .clipShape(RoundedRectangle(cornerRadius: 8))
             
             Text(coin.ticker)
                 .font(Theme.fonts.footnote)

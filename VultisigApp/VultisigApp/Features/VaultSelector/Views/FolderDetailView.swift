@@ -49,6 +49,8 @@ struct FolderDetailView: View {
             .background(Theme.colors.bgPrimary)
             .padding(.top, 20)
         }
+        .padding(.top, 24)
+        .padding(.horizontal, 16)
     }
     
     var header: some View {
