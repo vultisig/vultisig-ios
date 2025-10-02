@@ -30,6 +30,8 @@ class THORChainSwaps {
     let vaultHexChainCode: String
     let vault: Vault?
     
+    //vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode
+    
     init(vaultHexPublicKey: String, vaultHexChainCode: String) {
         self.vaultHexPublicKey = vaultHexPublicKey
         self.vaultHexChainCode = vaultHexChainCode
@@ -37,7 +39,7 @@ class THORChainSwaps {
     }
     
     init (vault: Vault) {
-        self.vaultHexPublicKey = vault.hexChainCode
+        self.vaultHexPublicKey = vault.pubKeyECDSA
         self.vaultHexChainCode = vault.hexChainCode
         self.vault = vault
     }
