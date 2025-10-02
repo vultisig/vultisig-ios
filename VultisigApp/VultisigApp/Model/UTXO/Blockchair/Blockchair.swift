@@ -8,13 +8,13 @@
 import Foundation
 import WalletCore
 
-class BlockchairResponse: Codable {
+struct BlockchairResponse: Codable {
 	let data: [String: Blockchair]
 }
 
-class Blockchair: Codable {
-	var address: BlockchairAddress?
-	var utxo: [BlockchairUtxo]?
+struct Blockchair: Codable {
+	let address: BlockchairAddress?
+	let utxo: [BlockchairUtxo]?
 	
     func selectUTXOsForPayment(amountNeeded: Int64, coinType: CoinType) -> [BlockchairUtxo] {
         let txrefs = self.utxo ?? []
@@ -47,9 +47,9 @@ class Blockchair: Codable {
         return selectedTxRefs
     }
 	
-	class BlockchairAddress: Codable {
-		var scriptHex: String?
-		var balance: Int?
+    struct BlockchairAddress: Codable {
+		let scriptHex: String?
+		let balance: Int?
 
 		var balanceInBTC: String {
 			formatAsBitcoin(balance ?? 0)
@@ -63,9 +63,9 @@ class Blockchair: Codable {
 		}
 	}
 	
-	class BlockchairUtxo: Codable {
-		var transactionHash: String?
-		var index: Int?
-		var value: Int?
+    struct BlockchairUtxo: Codable {
+        let transactionHash: String?
+        let index: Int?
+        let value: Int?
 	}
 }

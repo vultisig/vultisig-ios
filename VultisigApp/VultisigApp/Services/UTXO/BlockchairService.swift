@@ -8,15 +8,15 @@
 import Foundation
 import BigInt
 
-class BlockchairService {
+actor BlockchairService {
+    
+    private init() {}
     
     static let shared = BlockchairService()
 
     var blockchairData: ThreadSafeDictionary<String,Blockchair> = ThreadSafeDictionary()
 
     private var cacheFeePrice: [String: (data: BigInt, timestamp: Date)] = [:]
-
-    private init() {}
 
     func fetchBlockchairData(coin: Coin) async throws -> Blockchair {
         let coinName = coin.chain.name.lowercased()
@@ -52,6 +52,10 @@ class BlockchairService {
         } else {
             throw Errors.fetchSatsPriceFailed
         }
+    }
+    
+    func getByKey(key: String) -> Blockchair? {
+        return blockchairData.get(key)
     }
 }
 

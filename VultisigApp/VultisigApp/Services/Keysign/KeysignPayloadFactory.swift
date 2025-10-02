@@ -86,8 +86,7 @@ struct KeysignPayloadFactory {
             // 148 is estimate vbytes for every input
             // estimate we will use maximum 10 utxos
             let totalAmount = amount + BigInt(byteFee * 1480)
-            guard let info = utxo.blockchairData
-                .get(coin.blockchairKey)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmount),coinType: coin.coinType)
+            guard let info = await utxo.getByKey(key: coin.blockchairKey)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmount),coinType: coin.coinType)
                 .map({
                     UtxoInfo(
                         hash: $0.transactionHash ?? "",
@@ -96,7 +95,7 @@ struct KeysignPayloadFactory {
                     )
                 }), !info.isEmpty else {
                 // Check what specific UTXO issue we have
-                if let blockchairData = utxo.blockchairData.get(coin.blockchairKey) {
+                if let blockchairData = await utxo.getByKey(key: coin.blockchairKey) {
                     if blockchairData.utxo?.isEmpty ?? true {
                         throw Errors.notEnoughUTXOError
                     }
