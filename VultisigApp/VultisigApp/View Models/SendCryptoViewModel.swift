@@ -94,17 +94,17 @@ class SendCryptoViewModel: ObservableObject {
     }
     
     // TODO: Refactor to remove duplication
-    func setMaxValues(tx: SendTransaction, percentage: Double = 100)  {
+    func setMaxValues(tx: SendTransaction, percentage: Double = 100) {
         errorMessage = ""
         let coinName = tx.coin.chain.name.lowercased()
         let key: String = "\(tx.fromAddress)-\(coinName)"
         isLoading = true
         switch tx.coin.chain {
         case .bitcoin,.dogecoin,.litecoin,.bitcoinCash,.dash, .zcash:
-            tx.sendMaxAmount = percentage == 100 // Never set this to true if the percentage is not 100, otherwise it will wipe your wallet.
-            tx.amount = utxo.blockchairData.get(key)?.address?.balanceInBTC ?? "0.0"
-            setPercentageAmount(tx: tx, for: percentage)
-            Task{
+            Task {
+                tx.sendMaxAmount = percentage == 100 // Never set this to true if the percentage is not 100, otherwise it will wipe your wallet.
+                tx.amount = await utxo.getByKey(key: key)?.address?.balanceInBTC ?? "0.0"
+                setPercentageAmount(tx: tx, for: percentage)
                 convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
                 isLoading = false
             }
@@ -616,10 +616,9 @@ class SendCryptoViewModel: ObservableObject {
         return false
     }
     
-    private func getTransactionPlan(tx: SendTransaction, key:String) -> TW_Bitcoin_Proto_TransactionPlan? {
+    private func getTransactionPlan(tx: SendTransaction, key:String) async -> TW_Bitcoin_Proto_TransactionPlan? {
         let totalAmount = tx.amountInRaw + BigInt(tx.gas * 1480)
-        guard let utxoInfo = utxo.blockchairData
-            .get(key)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmount),coinType:tx.coin.coinType)
+        guard let utxoInfo = await utxo.getByKey(key: key)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmount),coinType:tx.coin.coinType)
             .map({
                 UtxoInfo(
                     hash: $0.transactionHash ?? "",
