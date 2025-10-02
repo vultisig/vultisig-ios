@@ -420,6 +420,9 @@ enum FunctionCallInstance {
     static func getDefault(for coin: Coin, tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault) -> FunctionCallInstance {
         switch coin.chain {
         case .thorChain:
+            if coin.ticker.uppercased() == "TCY" {
+                return .custom(FunctionCallCustom())
+            }
             return .bond(FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
         case .mayaChain:
             return .bondMaya(FunctionCallBondMayaChain(assets: nil))

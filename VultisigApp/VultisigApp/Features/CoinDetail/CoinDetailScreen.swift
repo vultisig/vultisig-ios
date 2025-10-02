@@ -78,7 +78,7 @@ private extension CoinDetailScreen {
             vaultAction = .swap(fromCoin: coin)
         case .deposit, .bridge, .memo:
             sendTx.coin = coin
-            vaultAction = .function(coin: group.nativeCoin)
+            vaultAction = .function(coin: coin)
         case .buy:
             vaultAction = .buy(
                 address: coin.address,
