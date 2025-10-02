@@ -135,24 +135,13 @@ class ThorchainService: ThorchainSwapProvider {
             referredCode: referredCode
         )
         
-        print("🔍 THORChain Quote Request:")
-        print("   From Asset: \(fromAsset)")
-        print("   To Asset: \(toAsset)")
-        print("   Amount: \(amount)")
-        print("   URL: \(url)")
-        
         let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
         
         do {
             let response = try JSONDecoder().decode(ThorchainSwapQuote.self, from: data)
-            print("✅ THORChain Quote Success:")
-            print("   Expected Amount Out: \(response.expectedAmountOut)")
             return response
         } catch {
             let error = try JSONDecoder().decode(ThorchainSwapError.self, from: data)
-            print("❌ THORChain Quote Error:")
-            print("   Error Message: \(error.message)")
-            print("   Raw Response: \(String(data: data, encoding: .utf8) ?? "Unable to decode")")
             throw error
         }
     }
