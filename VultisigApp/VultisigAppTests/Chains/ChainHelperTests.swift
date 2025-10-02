@@ -55,20 +55,20 @@ final class ChainHelperTests: XCTestCase {
     private func runTestCaseWithSwap(_ testCase: ChainHelperTestCase, keysignPayload: KeysignPayload) throws {
         var result: [String] = []
         if keysignPayload.approvePayload != nil {
-            let swaps = THORChainSwaps(vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode)
+            let swaps = THORChainSwaps(vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode, vaultHexPublicKeyEdDSA: "")
             let approvalImageHash = try swaps.getPreSignedApproveImageHash(approvePayload: keysignPayload.approvePayload!, keysignPayload: keysignPayload)
             result += approvalImageHash
         }
         let incrementNonce = keysignPayload.approvePayload != nil
         switch keysignPayload.swapPayload {
         case .thorchain(let swapPayload):
-            let swaps = THORChainSwaps(vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode)
+            let swaps = THORChainSwaps(vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode, vaultHexPublicKeyEdDSA: "")
             let imageHash = try swaps.getPreSignedImageHash(swapPayload: swapPayload,
                                                             keysignPayload: keysignPayload,
                                                             incrementNonce: incrementNonce)
             result += imageHash
         case .mayachain(let swapPayload):
-            let swaps = THORChainSwaps(vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode)
+            let swaps = THORChainSwaps(vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode, vaultHexPublicKeyEdDSA: "")
             let imageHash = try swaps.getPreSignedImageHash(swapPayload: swapPayload,
                                                             keysignPayload: keysignPayload,
                                                             incrementNonce: incrementNonce)
