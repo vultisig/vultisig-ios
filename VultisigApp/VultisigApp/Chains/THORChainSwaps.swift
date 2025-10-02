@@ -28,18 +28,12 @@ class THORChainSwaps {
 
     let vaultHexPublicKey: String
     let vaultHexChainCode: String
-    let vault: Vault?
+    let vaultHexPublicKeyEdDSA: String
     
-    init(vaultHexPublicKey: String, vaultHexChainCode: String) {
+    init(vaultHexPublicKey: String, vaultHexChainCode: String, vaultHexPublicKeyEdDSA: String = "") {
         self.vaultHexPublicKey = vaultHexPublicKey
         self.vaultHexChainCode = vaultHexChainCode
-        self.vault = nil
-    }
-    
-    init (vault: Vault) {
-        self.vaultHexPublicKey = vault.pubKeyECDSA
-        self.vaultHexChainCode = vault.hexChainCode
-        self.vault = vault
+        self.vaultHexPublicKeyEdDSA = vaultHexPublicKeyEdDSA
     }
     
     func getPreSignedInputData(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> Data {
@@ -159,12 +153,13 @@ class THORChainSwaps {
         case .ripple:
             return try RippleHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
         case .tron:
-            
-            guard let vault = vault else {
-                throw HelperError.runtimeError("not support")
-            }
-            
-            return try TronHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures, vault: vault)
+            return try TronHelper.getSignedTransaction(
+                keysignPayload: keysignPayload, 
+                signatures: signatures,
+                publicKeyECDSA: vaultHexPublicKey,
+                publicKeyEdDSA: vaultHexPublicKeyEdDSA,
+                hexChainCode: vaultHexChainCode
+            )
         default:
             throw HelperError.runtimeError("not support")
         }

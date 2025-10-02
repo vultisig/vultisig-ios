@@ -134,13 +134,15 @@ enum TronHelper {
     static func getSignedTransaction(
         keysignPayload: KeysignPayload,
         signatures: [String: TssKeysignResponse],
-        vault: Vault
+        publicKeyECDSA: String,
+        publicKeyEdDSA: String,
+        hexChainCode: String
     ) throws -> SignedTransactionResult
     {
         let publicKey = try CoinFactory.publicKey(asset: keysignPayload.coin.toCoinMeta(),
-                                                  publicKeyECDSA: vault.pubKeyECDSA,
-                                                  publicKeyEdDSA: vault.pubKeyEdDSA,
-                                                  hexChainCode: vault.hexChainCode)
+                                                  publicKeyECDSA: publicKeyECDSA,
+                                                  publicKeyEdDSA: publicKeyEdDSA,
+                                                  hexChainCode: hexChainCode)
         let inputData = try getPreSignedInputData(
             keysignPayload: keysignPayload
         )
@@ -183,6 +185,21 @@ enum TronHelper {
                                              transactionHash: output.id.hexString)
         
         return result
+    }
+    
+    static func getSignedTransaction(
+        keysignPayload: KeysignPayload,
+        signatures: [String: TssKeysignResponse],
+        vault: Vault
+    ) throws -> SignedTransactionResult
+    {
+        return try getSignedTransaction(
+            keysignPayload: keysignPayload,
+            signatures: signatures,
+            publicKeyECDSA: vault.pubKeyECDSA,
+            publicKeyEdDSA: vault.pubKeyEdDSA,
+            hexChainCode: vault.hexChainCode
+        )
     }
 }
 
