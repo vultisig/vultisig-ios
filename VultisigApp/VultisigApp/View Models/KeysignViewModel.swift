@@ -454,7 +454,13 @@ class KeysignViewModel: ObservableObject {
             let transaction = try RippleHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
             return .regular(transaction)
         case .Tron:
-            let transaction = try TronHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures, vault: vault)
+            let transaction = try TronHelper.getSignedTransaction(
+                keysignPayload: keysignPayload, 
+                signatures: signatures,
+                publicKeyECDSA: vault.pubKeyECDSA,
+                publicKeyEdDSA: vault.pubKeyEdDSA,
+                hexChainCode: vault.hexChainCode
+            )
             return .regular(transaction)
         }
         

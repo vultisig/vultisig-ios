@@ -186,20 +186,5 @@ enum TronHelper {
         
         return result
     }
-    
-    static func getSignedTransaction(
-        keysignPayload: KeysignPayload,
-        signatures: [String: TssKeysignResponse],
-        vault: Vault
-    ) throws -> SignedTransactionResult
-    {
-        return try getSignedTransaction(
-            keysignPayload: keysignPayload,
-            signatures: signatures,
-            publicKeyECDSA: vault.pubKeyECDSA,
-            publicKeyEdDSA: vault.pubKeyEdDSA,
-            hexChainCode: vault.hexChainCode
-        )
-    }
 }
 
