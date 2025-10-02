@@ -45,7 +45,6 @@ struct ChainDetailScreen: View {
                     bottomContentSection
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 50)
             }
             .onLoad {
                 scrollProxy = proxy
