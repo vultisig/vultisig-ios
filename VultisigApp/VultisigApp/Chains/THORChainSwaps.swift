@@ -28,10 +28,18 @@ class THORChainSwaps {
 
     let vaultHexPublicKey: String
     let vaultHexChainCode: String
+    let vault: Vault?
     
     init(vaultHexPublicKey: String, vaultHexChainCode: String) {
         self.vaultHexPublicKey = vaultHexPublicKey
         self.vaultHexChainCode = vaultHexChainCode
+        self.vault = nil
+    }
+    
+    init (vault: Vault) {
+        self.vaultHexPublicKey = vault.hexChainCode
+        self.vaultHexChainCode = vault.hexChainCode
+        self.vault = vault
     }
     
     func getPreSignedInputData(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> Data {
@@ -50,6 +58,8 @@ class THORChainSwaps {
             return try ATOMHelper().getSwapPreSignedInputData(keysignPayload:keysignPayload)
         case .ripple:
             return try RippleHelper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
+        case .tron:
+            return try TronHelper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
         default:
             throw HelperError.runtimeError("not support yet")
         }
@@ -75,6 +85,8 @@ class THORChainSwaps {
             return preSigningOutput.hashPublicKeys.map { $0.dataHash.hexString }
         case .ripple:
             return try RippleHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
+        case .tron:
+            return try TronHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         default:
             throw HelperError.runtimeError("not support yet")
         }
@@ -146,6 +158,13 @@ class THORChainSwaps {
             return try ATOMHelper().getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
         case .ripple:
             return try RippleHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
+        case .tron:
+            
+            guard let vault = vault else {
+                throw HelperError.runtimeError("not support")
+            }
+            
+            return try TronHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures, vault: vault)
         default:
             throw HelperError.runtimeError("not support")
         }

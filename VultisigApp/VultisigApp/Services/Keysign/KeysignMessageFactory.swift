@@ -19,7 +19,7 @@ struct KeysignMessageFactory {
         var messages: [String] = []
         
         if let approvePayload =  payload.approvePayload {
-            let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+            let swaps = THORChainSwaps(vault: vault)
             messages += try swaps.getPreSignedApproveImageHash(approvePayload: approvePayload, keysignPayload: payload)
         }
         if let swapPayload = payload.swapPayload {
@@ -27,7 +27,7 @@ struct KeysignMessageFactory {
             switch swapPayload {
             case .thorchain(let swapPayload):
                 _ = ThorchainService.shared.ensureTHORChainChainID()
-                let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                let swaps = THORChainSwaps(vault: vault)
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
             case .generic(let swapPayload):
                 switch payload.coin.chain {
@@ -44,7 +44,7 @@ struct KeysignMessageFactory {
                 if payload.coin.chain.chainType != .EVM  || payload.coin.isNativeToken {
                     break
                 }
-                let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                let swaps = THORChainSwaps(vault: vault)
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
             }
         }

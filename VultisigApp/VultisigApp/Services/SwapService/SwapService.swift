@@ -86,6 +86,15 @@ private extension SwapService {
             /// https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
             let normalizedAmount = amount * fromCoin.thorswapMultiplier
             
+            print("🔄 SwapService Cross-Chain Quote:")
+            print("   From Coin: \(fromCoin.ticker) (\(fromCoin.chain.name))")
+            print("   To Coin: \(toCoin.ticker) (\(toCoin.chain.name))")
+            print("   From Asset: \(fromCoin.swapAsset)")
+            print("   To Asset: \(toCoin.swapAsset)")
+            print("   Original Amount: \(amount)")
+            print("   Normalized Amount: \(normalizedAmount)")
+            print("   Provider: \(provider)")
+            
             let quote = try await service.fetchSwapQuotes(
                 address: toCoin.address,
                 fromAsset: fromCoin.swapAsset,
@@ -115,6 +124,10 @@ private extension SwapService {
             }
         }
         catch let error as ThorchainSwapError {
+            print("❌ ThorchainSwapError caught:")
+            print("   Error Code: \(error.code)")
+            print("   Error Message: \(error.message)")
+            
             if error.code == 3 {
                 if error.message.contains("not enough asset to pay for fees") {
                     throw SwapError.swapAmountTooSmall
