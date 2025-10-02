@@ -11,7 +11,6 @@ struct VaultChainCellView: View {
     @ObservedObject var group: GroupedChain
     let vault: Vault
     var onCopy: () -> Void
-//    var onAction: () -> Void
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
@@ -19,7 +18,6 @@ struct VaultChainCellView: View {
     @State private var fiatBalanceText: String = ""
     
     var body: some View {
-//        Button(action: onAction) {
         NavigationLink {
             ChainDetailScreen(group: group, vault: vault)
         } label: {
@@ -95,6 +93,5 @@ private extension VaultChainCellView {
 #Preview {
     VaultChainCellView(group: .example, vault: .example) {
     }
-//    onAction: {}
         .environmentObject(HomeViewModel())
 }
