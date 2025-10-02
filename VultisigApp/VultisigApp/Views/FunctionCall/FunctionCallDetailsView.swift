@@ -113,8 +113,8 @@ struct FunctionCallDetailsView: View {
                 let currentNodeAddress = extractNodeAddress(from: fnCallInstance)
                 switch selectedFunctionMemoType {
                 case .bond:
-                    // Ensure RUNE token is selected for BOND operations on THORChain, if not TCY
-                    if tx.coin.chain == .thorChain && !tx.coin.isNativeToken && tx.coin.ticker.uppercased() != "TCY" {
+                    // Ensure RUNE token is selected for BOND operations on THORChain
+                    if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
                         functionCallViewModel.setRuneToken(to: tx, vault: vault)
                     }
                     let bondInstance = FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
@@ -126,7 +126,7 @@ struct FunctionCallDetailsView: View {
                     fnCallInstance = .bond(bondInstance)
                 case .unbond:
                     // Ensure RUNE token is selected for UNBOND operations on THORChain
-                    if tx.coin.chain == .thorChain && !tx.coin.isNativeToken && tx.coin.ticker.uppercased() != "TCY" {
+                    if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
                         functionCallViewModel.setRuneToken(to: tx, vault: vault)
                     }
                     let unbondInstance = FunctionCallUnbond(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
@@ -140,7 +140,7 @@ struct FunctionCallDetailsView: View {
                     
                 case .rebond:
                     // Ensure RUNE token is selected for REBOND operations on THORChain
-                    if tx.coin.chain == .thorChain && !tx.coin.isNativeToken && tx.coin.ticker.uppercased() != "TCY"{
+                    if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
                         functionCallViewModel.setRuneToken(to: tx, vault: vault)
                     }
                     let rebondInstance = FunctionCallReBond(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
@@ -185,7 +185,7 @@ struct FunctionCallDetailsView: View {
                     
                 case .leave:
                     // Ensure RUNE token is selected for LEAVE operations on THORChain
-                    if tx.coin.chain == .thorChain && !tx.coin.isNativeToken && tx.coin.ticker.uppercased() != "TCY" {
+                    if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
                         functionCallViewModel.setRuneToken(to: tx, vault: vault)
                     }
                     let leaveInstance = FunctionCallLeave(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
