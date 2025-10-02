@@ -192,7 +192,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .noble: return "USDC"
         case .ripple: return "XRP"
         case .akash: return "AKT"
-        case .tron: return "TRON.TRX"
+        case .tron: return "TRON"
         case .ethereumSepolia: return "ETH"
         case .zcash: return "ZEC"
         case .mantle: return "MANTLE"

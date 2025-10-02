@@ -244,9 +244,6 @@ class Coin: ObservableObject, Codable, Hashable {
             if chain == .arbitrum || chain == .base {
                 return "\(chain.swapAsset).ETH"
             }
-            if chain == .tron {
-                return chain.swapAsset
-            }
             return "\(chain.swapAsset).\(chain.ticker)"
         }
 
