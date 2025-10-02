@@ -176,7 +176,7 @@ extension Vault {
         guard let index = signers.firstIndex(of: localPartyID) else {
             return "-"
         }
-        let partText = libType == .DKLS ? "partOf".localized : "shareOf".localized
+        let partText = libType == .DKLS ? "shareOf".localized : "partOf".localized
         return String(format: partText, index + 1, signers.count)
     }
 }

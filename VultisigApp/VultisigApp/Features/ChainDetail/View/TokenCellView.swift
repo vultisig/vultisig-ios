@@ -10,9 +10,7 @@ import SwiftUI
 struct TokenCellView: View {
     @ObservedObject var coin: Coin
     @EnvironmentObject var homeViewModel: HomeViewModel
-    
-    let hideBalanceText = Array.init(repeating: "•", count: 8).joined(separator: " ")
-    
+        
     var body: some View {
         HStack {
             HStack(spacing: 12) {
@@ -39,15 +37,14 @@ struct TokenCellView: View {
             HStack(spacing: 8) {
                 Spacer()
                 VStack(alignment: .trailing, spacing: 4) {
-                    Text(homeViewModel.hideVaultBalance ? hideBalanceText : coin.balanceInFiat)
+                    Text(homeViewModel.hideVaultBalance ? String.hideBalanceText : coin.balanceInFiat)
                         .font(Theme.fonts.priceBodyS)
                         .foregroundStyle(Theme.colors.textPrimary)
-                    Text(homeViewModel.hideVaultBalance ? hideBalanceText : coin.balanceStringWithTicker)
+                    Text(homeViewModel.hideVaultBalance ? String.hideBalanceText : coin.balanceStringWithTicker)
                         .font(Theme.fonts.priceCaption)
                         .foregroundStyle(Theme.colors.textExtraLight)
                 }
-                Icon(named: "chevron-down-small", color: Theme.colors.textPrimary, size: 16)
-                    .rotationEffect(.degrees(-90))
+                Icon(named: "chevron-right-small", color: Theme.colors.textPrimary, size: 16)
             }
         }
         .padding(.horizontal, 16)

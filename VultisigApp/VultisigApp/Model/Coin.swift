@@ -143,7 +143,14 @@ class Coin: ObservableObject, Codable, Hashable {
             }
         case .arbitrum:
             return "120000"
-        case .base,.blast,.optimism,.cronosChain, .polygon, .polygonV2:
+        case .base:
+            // Base requires higher gas limits due to L1 data availability costs
+            if self.isNativeToken {
+                return "50000"  // Increased from 40000
+            } else {
+                return "150000" // Increased from 120000
+            }
+        case .blast,.optimism,.cronosChain, .polygon, .polygonV2:
             if self.isNativeToken {
                 return "40000"
             } else {

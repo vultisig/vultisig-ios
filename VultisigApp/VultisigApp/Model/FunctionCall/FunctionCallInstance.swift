@@ -12,6 +12,7 @@ import VultisigCommonData
 
 enum FunctionCallInstance {
     case bond(FunctionCallBond)
+    case rebond(FunctionCallReBond)
     case unbond(FunctionCallUnbond)
     case bondMaya(FunctionCallBondMayaChain)
     case unbondMaya(FunctionCallUnbondMayaChain)
@@ -43,6 +44,8 @@ enum FunctionCallInstance {
     var view: AnyView {
         switch self {
         case .bond(let memo):
+            return memo.getView()
+        case .rebond(let memo):
             return memo.getView()
         case .unbond(let memo):
             return memo.getView()
@@ -105,6 +108,8 @@ enum FunctionCallInstance {
         switch self {
         case .bond(let memo):
             return memo.description
+        case .rebond(let memo):
+            return memo.description
         case .unbond(let memo):
             return memo.description
         case .bondMaya(let memo):
@@ -166,6 +171,8 @@ enum FunctionCallInstance {
         switch self {
         case .bond(let memo):
             return memo.amount
+        case .rebond:
+            return 0  // REBOND must send 0 RUNE in the transaction
         case .unbond:
             return .zero
         case .bondMaya(let memo):
@@ -269,6 +276,8 @@ enum FunctionCallInstance {
         switch self {
         case .bond(let memo):
             return memo.toDictionary()
+        case .rebond(let memo):
+            return memo.toDictionary()
         case .unbond(let memo):
             return memo.toDictionary()
         case .bondMaya(let memo):
@@ -353,6 +362,8 @@ enum FunctionCallInstance {
         switch self {
         case .bond(let memo):
             return memo.isTheFormValid
+        case .rebond(let memo):
+            return memo.isTheFormValid
         case .unbond(let memo):
             return memo.isTheFormValid
         case .bondMaya(let memo):
@@ -412,6 +423,8 @@ enum FunctionCallInstance {
     
     var customErrorMessage: String? {
         switch self {
+        case .rebond(let memo):
+            return memo.customErrorMessage
         case .addThorLP(let memo):
             return memo.customErrorMessage
         case .stakeTcy(let memo):

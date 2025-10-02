@@ -14,10 +14,8 @@ struct VaultDetailQRCode: View {
     
     var body: some View {
         VStack(spacing: 12) {
-            VStack(spacing: 8) {
-                name
-                uid
-            }
+            name
+            uid
             qrCodeContent
             webLink
         }
@@ -27,6 +25,7 @@ struct VaultDetailQRCode: View {
                 .fill(Theme.colors.bgSecondary.opacity(0.6))
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     var qrCodeContent: some View {

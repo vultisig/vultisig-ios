@@ -11,6 +11,7 @@ import Combine
 
 enum FunctionCallType: String, CaseIterable, Identifiable {
     case bond,
+         rebond,
          unbond,
          bondMaya,
          unbondMaya,
@@ -48,6 +49,8 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
                 return "Add Bondprovider to WL"
             }
             return "Bond"
+        case .rebond:
+            return "Rebond"
         case .unbond:
             if coin.chain == .mayaChain {
                 return "Remove Bondprovider from WL"
@@ -113,6 +116,7 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
         case .thorChain:
             return [
                 FunctionCallType.bond,
+                .rebond,
                 .unbond,
                 .leave,
                 .merge,

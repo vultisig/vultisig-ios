@@ -14,11 +14,10 @@ extension VaultDetailQRCodeView {
     }
     
     var buttons: some View {
-        HStack(spacing: 22) {
+        HStack(spacing: 16) {
             shareButton
             saveButton
         }
-        .padding(.horizontal, 25)
     }
 }
 #endif

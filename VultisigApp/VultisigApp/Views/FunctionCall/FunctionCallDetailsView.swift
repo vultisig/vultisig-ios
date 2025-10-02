@@ -62,6 +62,25 @@ struct FunctionCallDetailsView: View {
                     }
                     self._fnCallInstance = State(initialValue: .unbond(unbondInstance))
                     return
+                    
+                case "rebond":
+                    functionType = .rebond
+                    self._selectedFunctionMemoType = State(initialValue: functionType)
+                    self._selectedContractMemoType = State(initialValue: FunctionCallContractType.getDefault(for: defaultCoin))
+                    
+                    let rebondInstance = FunctionCallReBond(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
+                    rebondInstance.nodeAddress = nodeAddress
+                    rebondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
+                    if let newAddress = dict.get("newAddress") {
+                        rebondInstance.newAddress = newAddress
+                        rebondInstance.newAddressValid = Self.validateNodeAddress(newAddress)
+                    }
+                    if let amountStr = dict.get("rebondAmount"), let amountDecimal = Decimal(string: amountStr) {
+                        rebondInstance.rebondAmount = amountDecimal
+                        rebondInstance.rebondAmountValid = true
+                    }
+                    self._fnCallInstance = State(initialValue: .rebond(rebondInstance))
+                    return
                 default:
                     break
                 }
@@ -118,6 +137,20 @@ struct FunctionCallDetailsView: View {
                     }
                     
                     fnCallInstance = .unbond(unbondInstance)
+                    
+                case .rebond:
+                    // Ensure RUNE token is selected for REBOND operations on THORChain
+                    if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
+                        functionCallViewModel.setRuneToken(to: tx, vault: vault)
+                    }
+                    let rebondInstance = FunctionCallReBond(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
+                    
+                    if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
+                        rebondInstance.nodeAddress = nodeAddress
+                        rebondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
+                    }
+                    
+                    fnCallInstance = .rebond(rebondInstance)
                 case .bondMaya:
                     
                     DispatchQueue.main.async {
@@ -273,6 +306,8 @@ struct FunctionCallDetailsView: View {
         switch instance {
         case .bond(let bond):
             return bond.nodeAddress
+        case .rebond(let rebond):
+            return rebond.nodeAddress
         case .unbond(let unbond):
             return unbond.nodeAddress
         case .leave(let leave):

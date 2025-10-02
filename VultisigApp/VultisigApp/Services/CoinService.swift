@@ -122,6 +122,12 @@ struct CoinService {
                                              publicKeyECDSA: vault.pubKeyECDSA,
                                              publicKeyEdDSA: vault.pubKeyEdDSA,
                                              hexChainCode: vault.hexChainCode)
+        
+        // Check if coin with same ID already exists
+        if vault.coins.contains(where: { $0.id == newCoin.id }) {
+            return vault.coins.first(where: { $0.id == newCoin.id })
+        }
+        
         if let priceProviderId {
             newCoin.priceProviderId = priceProviderId
         }

@@ -280,11 +280,16 @@ extension SwapCryptoDetailsView {
             tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.75).formatToDecimal(digits: decimalsToUse)
             handleFromCoinUpdate()
         case 100:
-            tx.fromAmount = tx.fromCoin.balanceDecimal.formatToDecimal(digits: decimalsToUse)
-            handleFromCoinUpdate()
-            let amountLessFee = tx.fromCoin.rawBalance.toBigInt() - tx.fee
-            let amountLessFeeDecimal = amountLessFee.toDecimal(decimals: tx.fromCoin.decimals) / pow(10, tx.fromCoin.decimals)
-            tx.fromAmount = amountLessFeeDecimal.formatToDecimal(digits: decimalsToUse)
+            if tx.fromCoin.isNativeToken {
+                tx.fromAmount = tx.fromCoin.balanceDecimal.formatToDecimal(digits: decimalsToUse)
+                handleFromCoinUpdate()
+                let amountLessFee = tx.fromCoin.rawBalance.toBigInt() - tx.fee
+                let amountLessFeeDecimal = amountLessFee.toDecimal(decimals: tx.fromCoin.decimals) / pow(10, tx.fromCoin.decimals)
+                tx.fromAmount = amountLessFeeDecimal.formatToDecimal(digits: decimalsToUse)
+            } else {
+                tx.fromAmount = tx.fromCoin.balanceDecimal.formatToDecimal(digits: decimalsToUse)
+                handleFromCoinUpdate()
+            }
         default:
             break
         }

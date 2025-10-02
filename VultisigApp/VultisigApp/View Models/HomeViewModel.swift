@@ -62,6 +62,7 @@ class HomeViewModel: ObservableObject {
         selectedVault = vault
         vaultName = vault?.name ?? ""
         selectedPubKeyECDSA = vault?.pubKeyECDSA ?? ""
+        ApplicationState.shared.currentVault = vault
     }
     
     func filterVaults(vaults: [Vault], folders: [Folder]) {

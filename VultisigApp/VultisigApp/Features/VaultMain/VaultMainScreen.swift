@@ -12,7 +12,7 @@ struct VaultMainScreen: View {
     @ObservedObject var vault: Vault
     @Binding var routeToPresent: VaultMainRoute?
     @Binding var showVaultSelector: Bool
-    @Binding var addressToCopy: GroupedChain?
+    @Binding var addressToCopy: Coin?
     @Binding var showUpgradeVaultSheet: Bool
     
     @Environment(\.modelContext) var modelContext
@@ -26,26 +26,21 @@ struct VaultMainScreen: View {
     @State var showBalanceInHeader: Bool = false
     @State var showChainSelection: Bool = false
     @State var showSearchHeader: Bool = false
+    @State var showReceiveList: Bool = false
     @State var focusSearch: Bool = false
     @State var scrollProxy: ScrollViewProxy?
     @State var frameHeight: CGFloat = 0
     
     private let scrollReferenceId = "vaultMainScreenBottomContentId"
-    
     private let contentInset: CGFloat = 78
-    
-    var shouldRefresh: Bool {
-        !showChainSelection
-    }
     
     var body: some View {
         VStack {
             ZStack(alignment: .top) {
                 ScrollViewReader { proxy in
-                    OffsetObservingScrollView(
+                    VaultMainScreenScrollView(
                         showsIndicators: false,
                         contentInset: contentInset,
-                        ns: .scrollView,
                         scrollOffset: $scrollOffset
                     ) {
                         LazyVStack(spacing: 20) {
@@ -54,6 +49,7 @@ struct VaultMainScreen: View {
                             bottomContentSection
                         }
                         .padding(.horizontal, 16)
+                        .padding(.bottom, 32)
                     }
                     .onLoad {
                         scrollProxy = proxy
@@ -89,22 +85,28 @@ struct VaultMainScreen: View {
             }
             .sheet(isPresented: $showChainSelection) {
                 VaultSelectChainScreen(
-                    vault: homeViewModel.selectedVault ?? .example,
+                    vault: vault,
                     isPresented: $showChainSelection
-                )
+                ) { refresh() }
             }
             .sheet(isPresented: $showBackupNow) {
                 VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: vault))
             }
+            .platformSheet(isPresented: $showReceiveList) {
+                ReceiveChainSelectionScreen(
+                    vault: vault,
+                    isPresented: $showReceiveList,
+                    viewModel: viewModel
+                )
+            }
             .onAppear(perform: refresh)
             .refreshable { refresh() }
-            .onChange(of: homeViewModel.selectedVault?.coins) {
-                refresh()
-            }
             .onChange(of: settingsViewModel.selectedCurrency) {
                 refresh()
             }
-            .id(vault.id)
+        }
+        .onChange(of: vault) { oldValue, newValue in
+            refresh()
         }
     }
     
@@ -205,7 +207,7 @@ struct VaultMainScreen: View {
             CircularAccessoryIconButton(icon: "magnifying-glass") {
                 toggleSearch()
             }
-            CircularAccessoryIconButton(icon: "write") {
+            CircularAccessoryIconButton(icon: "crypto-wallet-pen", type: .secondary) {
                 showChainSelection.toggle()
             }
         }
@@ -238,20 +240,22 @@ struct VaultMainScreen: View {
     }
     
     func onCopy(_ group: GroupedChain) {
-        addressToCopy = group
+        addressToCopy = group.nativeCoin
     }
     
     func refresh() {
-        viewModel.updateBalance(vault: vault)
+        tokenSelectionViewModel.setData(for: vault)
         viewModel.getGroupAsync(tokenSelectionViewModel)
         
-        tokenSelectionViewModel.setData(for: vault)
         settingsDefaultChainViewModel.setData(tokenSelectionViewModel.groupedAssets)
         viewModel.categorizeCoins(vault: vault)
+        viewModel.updateBalance(vault: vault)
     }
     
     func onScrollOffsetChange(_ offset: CGFloat) {
-        showBalanceInHeader = offset < contentInset
+        let showBalanceInHeader: Bool = offset < contentInset
+        guard showBalanceInHeader != self.showBalanceInHeader else { return }
+        self.showBalanceInHeader = showBalanceInHeader
     }
     
     func clearSearch() {
@@ -288,8 +292,8 @@ struct VaultMainScreen: View {
             // TODO: - To add
             break
         case .receive:
-            // TODO: - To add
-            break
+            showReceiveList = true
+            return
         }
         
         guard let vaultAction else { return }

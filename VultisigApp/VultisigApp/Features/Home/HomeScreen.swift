@@ -14,10 +14,10 @@ struct HomeScreen: View {
     
     @State var selectedVault: Vault? = nil
     @State var showVaultSelector: Bool = false
-    @State var addressToCopy: GroupedChain?
+    @State var addressToCopy: Coin?
     @State var showUpgradeVaultSheet: Bool = false
     
-    @State var vaults: [Vault] = []
+    @Query var vaults: [Vault] = []
     @State private var selectedTab: HomeTab = .wallet
     @State var vaultRoute: VaultMainRoute?
     
@@ -102,7 +102,7 @@ struct HomeScreen: View {
         }
         .sensoryFeedback(homeViewModel.showAlert ? .stop : .impact, trigger: homeViewModel.showAlert)
         .customNavigationBarHidden(true)
-        .withAddressCopy(group: $addressToCopy)
+        .withAddressCopy(coin: $addressToCopy)
         .withUpgradeVault(vault: selectedVault, shouldShow: $showUpgradeVaultSheet)
         .withBiweeklyPasswordVerification(vault: selectedVault)
         .withMonthlyBackupWarning(vault: selectedVault)
@@ -157,7 +157,6 @@ struct HomeScreen: View {
     }
     
     func setData() {
-        fetchVaults()
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
         homeViewModel.selectedVault = nil
@@ -191,15 +190,6 @@ struct HomeScreen: View {
             moveToVaultsView()
         case .Unknown:
             return
-        }
-    }
-    
-    func fetchVaults() {
-        let fetchVaultDescriptor = FetchDescriptor<Vault>()
-        do {
-            vaults = try modelContext.fetch(fetchVaultDescriptor)
-        } catch {
-            print(error)
         }
     }
     
