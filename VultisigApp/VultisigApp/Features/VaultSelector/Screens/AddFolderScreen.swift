@@ -9,6 +9,8 @@ import SwiftUI
 import SwiftData
 
 struct AddFolderScreen: View {
+    var onClose: () -> Void
+    
     @Query var vaults: [Vault]
     @Query var folders: [Folder]
     
@@ -16,7 +18,6 @@ struct AddFolderScreen: View {
     
     @StateObject var folderViewModel = CreateFolderViewModel()
     
-    @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var viewModel: HomeViewModel
     
@@ -24,9 +25,6 @@ struct AddFolderScreen: View {
         view
             .padding(.top, 24)
             .padding(.horizontal, 16)
-            .presentationDragIndicator(.visible)
-            .presentationBackground(Theme.colors.bgPrimary)
-            .applySheetHeight()
             .onLoad(perform: setData)
             .alert(isPresented: $folderViewModel.showAlert) {
                 alert
@@ -100,7 +98,7 @@ struct AddFolderScreen: View {
                 .font(Theme.fonts.title3)
             HStack {
                 BottomSheetButton(icon: "x", type: .secondary) {
-                    dismiss()
+                    onClose()
                 }
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
@@ -128,7 +126,7 @@ private extension AddFolderScreen {
         
         DispatchQueue.main.asyncAfter(deadline: .now()) {
             modelContext.insert(vaultFolder)
-            dismiss()
+            onClose()
         }
     }
     
@@ -155,7 +153,7 @@ private extension AddFolderScreen {
 }
 
 #Preview {
-    AddFolderScreen()
+    AddFolderScreen {}
     .environmentObject(HomeViewModel())
 }
 
