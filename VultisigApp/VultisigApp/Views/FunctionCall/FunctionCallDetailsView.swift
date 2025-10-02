@@ -199,7 +199,7 @@ struct FunctionCallDetailsView: View {
                     
                     fnCallInstance = .leave(leaveInstance)
                 case .custom:
-                    fnCallInstance = .custom(FunctionCallCustom(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
+                    fnCallInstance = .custom(FunctionCallCustom())
                 case .vote:
                     fnCallInstance = .vote(FunctionCallVote())
                 case .stake:
