@@ -77,7 +77,7 @@ class FunctionCallViewModel: ObservableObject, TransferViewModel {
     }
     
     func handleBackTap() {
-        if (currentIndex - 1) == 1 {
+        if (currentIndex - 1) < 0 {
             return
         }
         currentIndex -= 1
