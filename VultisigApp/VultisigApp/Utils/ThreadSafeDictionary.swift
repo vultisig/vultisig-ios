@@ -10,7 +10,7 @@ final class ThreadSafeDictionary<Key: Hashable & Sendable, Value: Sendable> : @u
         }
     }
     func setSync(_ key: Key, _ value: Value) {
-        queue.sync(flags: .barrier) {
+        queue.sync {
             self.dictionary[key] = value
         }
     }
