@@ -32,12 +32,7 @@ struct VaultMainScreen: View {
     @State var frameHeight: CGFloat = 0
     
     private let scrollReferenceId = "vaultMainScreenBottomContentId"
-    
     private let contentInset: CGFloat = 78
-    
-    var shouldRefresh: Bool {
-        !showChainSelection
-    }
     
     var body: some View {
         VStack {
@@ -90,9 +85,9 @@ struct VaultMainScreen: View {
             }
             .sheet(isPresented: $showChainSelection) {
                 VaultSelectChainScreen(
-                    vault: homeViewModel.selectedVault ?? .example,
+                    vault: vault,
                     isPresented: $showChainSelection
-                )
+                ) { refresh() }
             }
             .sheet(isPresented: $showBackupNow) {
                 VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: vault))
@@ -106,13 +101,12 @@ struct VaultMainScreen: View {
             }
             .onAppear(perform: refresh)
             .refreshable { refresh() }
-            .onChange(of: homeViewModel.selectedVault?.coins) {
-                refresh()
-            }
             .onChange(of: settingsViewModel.selectedCurrency) {
                 refresh()
             }
-            .id(vault.id)
+        }
+        .onChange(of: vault) { oldValue, newValue in
+            refresh()
         }
     }
     
@@ -250,12 +244,12 @@ struct VaultMainScreen: View {
     }
     
     func refresh() {
-        viewModel.updateBalance(vault: vault)
+        tokenSelectionViewModel.setData(for: vault)
         viewModel.getGroupAsync(tokenSelectionViewModel)
         
-        tokenSelectionViewModel.setData(for: vault)
         settingsDefaultChainViewModel.setData(tokenSelectionViewModel.groupedAssets)
         viewModel.categorizeCoins(vault: vault)
+        viewModel.updateBalance(vault: vault)
     }
     
     func onScrollOffsetChange(_ offset: CGFloat) {
