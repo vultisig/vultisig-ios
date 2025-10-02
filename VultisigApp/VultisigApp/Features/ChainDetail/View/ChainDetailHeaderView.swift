@@ -30,7 +30,6 @@ struct ChainDetailHeaderView: View {
                 ticker: group.chain.ticker,
                 tokenChainLogo: group.chain.logo
             )
-            .clipShape(RoundedRectangle(cornerRadius: 8))
             
             Text(group.name)
                 .font(Theme.fonts.footnote)

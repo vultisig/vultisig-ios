@@ -8,13 +8,19 @@
 import SwiftData
 import SwiftUI
 
+fileprivate enum VaultSheetType: Equatable {
+    case main
+    case editFolder
+    case addFolder
+}
+
 struct VaultManagementSheet: View {
     @Query(sort: \Vault.order, order: .forward) var vaults: [Vault]
     @Query(sort: \Folder.order, order: .forward) var folders: [Folder]
-        
+    
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var homeViewModel: HomeViewModel
-        
+    
     @State var isEditing: Bool = false
     @State var selectedFolder: Folder?
     @State var folderToEdit: Folder?
@@ -22,11 +28,52 @@ struct VaultManagementSheet: View {
     @State var detents: [PresentationDetent] = [.medium, .large]
     @State var detentSelection = PresentationDetent.medium
     
+    @State private var sheetType = VaultSheetType.main
+    @State private var shouldUseMoveTransition = true
+    
     var onAddVault: () -> Void
     var onSelectVault: (Vault) -> Void
     
     var body: some View {
         VStack {
+            Group {
+                switch sheetType {
+                case .main:
+                    mainSheetView
+                case .editFolder:
+                    EditFolderScreen(folder: folderToEdit!, onDelete: onDelete) {
+                        updateSheet(.main)
+                    }
+                case .addFolder:
+                    AddFolderScreen {
+                        updateSheet(.main)
+                    }
+                }
+            }
+            .transition(.opacity)
+        }
+#if os(iOS)
+        .presentationDragIndicator(.visible)
+        .presentationDetents(Set(detents), selection: $detentSelection)
+        .presentationCompactAdaptation(.none)
+        .presentationBackground { Theme.colors.bgPrimary.padding(.bottom, -1000) }
+        .onChange(of: isEditing) { _, isEditing in
+            updateDetents(isEditing: isEditing)
+        }
+        .onChange(of: sheetType) { _, _ in
+            updateDetents(isEditing: isEditing)
+        }
+        .onLoad {
+            updateDetents(whileAnimation: false)
+        }
+#else
+        .applySheetHeight()
+        .background(Theme.colors.bgPrimary)
+#endif
+    }
+    
+    var mainSheetView: some View {
+        ZStack {
             Group {
                 if let selectedFolder {
                     FolderDetailView(
@@ -41,34 +88,17 @@ struct VaultManagementSheet: View {
                         isEditing: $isEditing,
                         onAddVault: onAddVault,
                         onSelectVault: onSelectVault
-                    ) {
-                        self.selectedFolder = $0
+                    ) { selectedFolder in
+                        shouldUseMoveTransition = true
+                        withAnimation(.interpolatingSpring) {
+                            self.selectedFolder = selectedFolder
+                        }
                     } onAddFolder: {
-                        showAddFolder = true
+                        updateSheet(.addFolder)
                     }
                     .transition(.move(edge: .leading))
                 }
             }
-            .animation(.easeInOut, value: selectedFolder)
-        }
-        .padding(.top, 24)
-        .padding(.horizontal, 16)
-        .presentationDragIndicator(.visible)
-        .presentationDetents(Set(detents), selection: $detentSelection)
-        .presentationCompactAdaptation(.none)
-        .presentationBackground { Theme.colors.bgPrimary.padding(.bottom, -1000) }
-        .applySheetHeight()
-        .onChange(of: isEditing) { _, isEditing in
-            updateDetents(isEditing: isEditing)
-        }
-        .detentsAwareSheet(item: $folderToEdit) {
-            EditFolderScreen(folder: $0, onDelete: onDelete)
-        }
-        .detentsAwareSheet(isPresented: $showAddFolder) {
-            AddFolderScreen()
-        }
-        .onLoad {
-            updateDetents(whileAnimation: false)
         }
     }
 }
@@ -88,7 +118,7 @@ private extension VaultManagementSheet {
         let whileAnimationDetents: [PresentationDetent] = whileAnimation ? [.large, .medium] : []
         let stateDetents: [PresentationDetent]
         
-        if isEditing {
+        if isEditing || sheetType != .main {
             self.detents = [.large] + whileAnimationDetents
             return
         }
@@ -115,19 +145,33 @@ private extension VaultManagementSheet {
     
     func onEditFolder() {
         folderToEdit = selectedFolder
+        updateSheet(.editFolder)
     }
     
     func onFolderBack() {
-        selectedFolder = nil
+        shouldUseMoveTransition = true
+        withAnimation(.interpolatingSpring) {
+            selectedFolder = nil
+        }
     }
     
     func onDelete(_ folder: Folder) {
         selectedFolder = nil
         modelContext.delete(folder)
+        updateSheet(.main)
         do {
             try modelContext.save()
         } catch {
             print("Error while deleting folder: \(error)")
+        }
+    }
+    
+    func updateSheet(_ sheetType: VaultSheetType) {
+        shouldUseMoveTransition = false
+        DispatchQueue.main.async {
+            withAnimation(.interpolatingSpring) {
+                self.sheetType = sheetType
+            }
         }
     }
 }
@@ -136,22 +180,22 @@ private extension VaultManagementSheet {
     struct PreviewContainer: View {
         @State var isPresented: Bool = false
         
-       var body: some View {
-           VStack {
-               Button("Open Sheet") {
-                   isPresented.toggle()
-               }
-           }
-           .sheet(isPresented: $isPresented) {
-               VaultManagementSheet(
-                onAddVault: {},
-                onSelectVault: { _ in }
-               )
-           }
-           .background(Theme.colors.bgPrimary)
+        var body: some View {
+            VStack {
+                Button("Open Sheet") {
+                    isPresented.toggle()
+                }
+            }
+            .sheet(isPresented: $isPresented) {
+                VaultManagementSheet(
+                    onAddVault: {},
+                    onSelectVault: { _ in },
+                )
+            }
+            .background(Theme.colors.bgPrimary)
         }
     }
-
+    
     return PreviewContainer()
         .environmentObject(HomeViewModel())
 }
