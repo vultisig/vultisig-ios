@@ -14,6 +14,8 @@ enum ToolbarButtonType {
 }
 
 struct ToolbarButton: View {
+    @Environment(\.isNativeToolbarItem) private var isNativeToolbarItem
+    
     let image: String
     let type: ToolbarButtonType
     let action: () -> Void
@@ -29,7 +31,7 @@ struct ToolbarButton: View {
     var tintColor: Color {
         switch type {
         case .outline:
-            Color.white.opacity(0.05)
+            isNativeToolbarItem ? Color.white.opacity(0.05) : Theme.colors.bgSecondary
         case .confirmation:
             Theme.colors.primaryAccent3
         case .destructive:
@@ -65,11 +67,20 @@ struct ToolbarButton: View {
         }
 #else
         if #available(iOS 26.0, *) {
-            Button(action: action) {
-                iconView
+            if isNativeToolbarItem {
+                Button(action: action) {
+                    iconView
+                }
+                .buttonStyle(.glassProminent)
+                .tint(tintColor)
+            } else {
+                Button(action: action) {
+                    iconView
+                        .padding(12)
+                        .overlay(Circle().inset(by: 0.5).strokeBorder(.white.opacity(0.1), lineWidth: 1))
+                }
+                .glassEffect(.clear.tint(tintColor).interactive())
             }
-            .buttonStyle(.glassProminent)
-            .tint(tintColor)
         } else {
             customButton
         }

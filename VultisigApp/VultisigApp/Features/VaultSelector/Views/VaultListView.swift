@@ -84,7 +84,7 @@ struct VaultListView: View {
                 .font(Theme.fonts.title3)
             
             HStack {
-                BottomSheetButton(icon: "check") {
+                ToolbarButton(image: "check", type: .confirmation) {
                     withAnimation {
                         isEditing.toggle()
                     }
@@ -97,7 +97,7 @@ struct VaultListView: View {
     var defaultHeader: some View {
         HStack(spacing: 8) {
             #if os(macOS)
-            BottomSheetButton(icon: "chevron-right", type: .secondary) {
+            ToolbarButton(image: "chevron-right", type: .outline) {
                 dismiss()
             }
             .rotationEffect(.radians(.pi))
@@ -111,12 +111,12 @@ struct VaultListView: View {
                     .font(Theme.fonts.caption12)
             }
             Spacer()
-            BottomSheetButton(icon: "pencil", type: .secondary) {
+            ToolbarButton(image: "pencil", type: .outline) {
                 withAnimation {
                     isEditing.toggle()
                 }
             }
-            BottomSheetButton(icon: "plus", action: onAddVault)
+            ToolbarButton(image: "plus", type: .confirmation, action: onAddVault)
         }
         .padding(.leading, 8)
     }

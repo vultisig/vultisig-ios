@@ -31,12 +31,14 @@ struct IOSToolbarView<Content: View>: View {
                 ToolbarItemGroup(placement: .cancellationAction) {
                     ForEach(Array(leadingItems.enumerated()), id: \.offset) { _, item in
                         item.content
+                            .environment(\.isNativeToolbarItem, true)
                     }
                 }
                 
                 ToolbarItemGroup(placement: .confirmationAction) {
                     ForEach(Array(trailingItems.enumerated()), id: \.offset) { _, item in
                         item.content
+                            .environment(\.isNativeToolbarItem, true)
                     }
                 }
             }
