@@ -11,6 +11,7 @@ import SwiftData
 struct EditFolderScreen: View {
     let folder: Folder
     var onDelete: (Folder) -> Void
+    var onClose: () -> Void
     
     @Query var folders: [Folder]
     @Query var vaults: [Vault]
@@ -19,7 +20,6 @@ struct EditFolderScreen: View {
     @State var disableSelection: Bool = false
     @StateObject var folderViewModel = FolderDetailViewModel()
     
-    @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var viewModel: HomeViewModel
     
@@ -31,8 +31,6 @@ struct EditFolderScreen: View {
         view
             .padding(.top, 24)
             .padding(.horizontal, 16)
-            .presentationDragIndicator(.visible)
-            .presentationBackground(Theme.colors.bgPrimary)
             .applySheetHeight()
             .alert(isPresented: $folderViewModel.showAlert) {
                 alert
@@ -191,20 +189,20 @@ private extension EditFolderScreen {
         viewModel.filterVaults(vaults: vaults, folders: folders)
         folder.folderName = folderName
         
-        dismiss()
+        onClose()
     }
 
     func deleteFolder() {
         onDelete(folder)
-        dismiss()
+        onClose()
     }
 }
-
 
 #Preview {
     EditFolderScreen(
         folder: Folder.example,
-        onDelete: { _ in }
+        onDelete: { _ in },
+        onClose: {}
     )
     .environmentObject(HomeViewModel())
 }
