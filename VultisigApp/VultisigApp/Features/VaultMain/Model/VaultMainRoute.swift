@@ -6,7 +6,6 @@
 //
 
 enum VaultMainRoute: Equatable, Hashable {
-    case chainDetail(GroupedChain)
     case settings
     case createVault
     case mainAction(VaultAction)

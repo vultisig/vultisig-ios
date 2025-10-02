@@ -185,7 +185,6 @@ struct VaultMainScreen: View {
             VaultMainChainListView(
                 vault: vault,
                 onCopy: onCopy,
-                onAction: { routeToPresent = .chainDetail($0) },
                 onCustomizeChains: onCustomizeChains
             )
             .background(
