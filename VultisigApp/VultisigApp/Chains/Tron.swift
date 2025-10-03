@@ -12,6 +12,11 @@ import BigInt
 
 enum TronHelper {
     
+    static func getSwapPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
+        // For TRX swaps, we use the same logic as regular transactions but with swap memo
+        return try getPreSignedInputData(keysignPayload: keysignPayload)
+    }
+    
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         
         guard keysignPayload.coin.chain.ticker == "TRX" else {
@@ -129,13 +134,15 @@ enum TronHelper {
     static func getSignedTransaction(
         keysignPayload: KeysignPayload,
         signatures: [String: TssKeysignResponse],
-        vault: Vault
+        publicKeyECDSA: String,
+        publicKeyEdDSA: String,
+        hexChainCode: String
     ) throws -> SignedTransactionResult
     {
         let publicKey = try CoinFactory.publicKey(asset: keysignPayload.coin.toCoinMeta(),
-                                                  publicKeyECDSA: vault.pubKeyECDSA,
-                                                  publicKeyEdDSA: vault.pubKeyEdDSA,
-                                                  hexChainCode: vault.hexChainCode)
+                                                  publicKeyECDSA: publicKeyECDSA,
+                                                  publicKeyEdDSA: publicKeyEdDSA,
+                                                  hexChainCode: hexChainCode)
         let inputData = try getPreSignedInputData(
             keysignPayload: keysignPayload
         )

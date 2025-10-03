@@ -231,8 +231,6 @@ extension HomeScreen {
     @ViewBuilder
     func buildVaultRoute(route: VaultMainRoute, vault: Vault) -> some View {
         switch route {
-        case .chainDetail(let groupedChain):
-            ChainDetailScreen(group: groupedChain, vault: vault)
         case .settings:
             SettingsMainScreen()
         case .createVault:

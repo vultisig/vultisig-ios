@@ -31,7 +31,7 @@ struct VaultMainHeaderView: View {
                     .transition(.opacity)
             }
         }
-        .padding(.top, 24)
+        .padding(.top, isMacOS ? 16 : 0)
         .padding(.bottom, 16)
         .padding(.horizontal, 16)
         .background(backgroundView)

@@ -28,10 +28,12 @@ class THORChainSwaps {
 
     let vaultHexPublicKey: String
     let vaultHexChainCode: String
+    let vaultHexPublicKeyEdDSA: String
     
-    init(vaultHexPublicKey: String, vaultHexChainCode: String) {
+    init(vaultHexPublicKey: String, vaultHexChainCode: String, vaultHexPublicKeyEdDSA: String = "") {
         self.vaultHexPublicKey = vaultHexPublicKey
         self.vaultHexChainCode = vaultHexChainCode
+        self.vaultHexPublicKeyEdDSA = vaultHexPublicKeyEdDSA
     }
     
     func getPreSignedInputData(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> Data {
@@ -50,6 +52,8 @@ class THORChainSwaps {
             return try ATOMHelper().getSwapPreSignedInputData(keysignPayload:keysignPayload)
         case .ripple:
             return try RippleHelper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
+        case .tron:
+            return try TronHelper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
         default:
             throw HelperError.runtimeError("not support yet")
         }
@@ -75,6 +79,8 @@ class THORChainSwaps {
             return preSigningOutput.hashPublicKeys.map { $0.dataHash.hexString }
         case .ripple:
             return try RippleHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
+        case .tron:
+            return try TronHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         default:
             throw HelperError.runtimeError("not support yet")
         }
@@ -146,6 +152,14 @@ class THORChainSwaps {
             return try ATOMHelper().getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
         case .ripple:
             return try RippleHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
+        case .tron:
+            return try TronHelper.getSignedTransaction(
+                keysignPayload: keysignPayload, 
+                signatures: signatures,
+                publicKeyECDSA: vaultHexPublicKey,
+                publicKeyEdDSA: vaultHexPublicKeyEdDSA,
+                hexChainCode: vaultHexChainCode
+            )
         default:
             throw HelperError.runtimeError("not support")
         }

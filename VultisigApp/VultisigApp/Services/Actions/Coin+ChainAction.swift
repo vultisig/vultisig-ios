@@ -13,7 +13,7 @@ extension CoinAction {
         .solana,.bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash,
         .thorChain, .mayaChain, .ethereum, .avalanche, .base, .arbitrum,.blast,.mantle,
         .polygon, .polygonV2, .optimism, .bscChain, .gaiaChain, .kujira, .zksync, .zcash, .ripple,
-        .cronosChain
+        .cronosChain, .tron
     ]
     
     static var memoChains: [Chain] = [
