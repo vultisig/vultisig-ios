@@ -198,10 +198,15 @@ struct VaultMainScreen: View {
     
     var defaultBottomSectionHeader: some View {
         HStack(spacing: 8) {
-            SegmentedControl(
-                selection: $viewModel.selectedTab,
-                items: viewModel.tabs
-            )
+            VStack(spacing: 8) {
+                Text("portfolio".localized)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                Rectangle()
+                    .fill(Theme.colors.primaryAccent4)
+                    .frame(height: 2)
+            }
+            .fixedSize()
             Spacer()
             CircularAccessoryIconButton(icon: "magnifying-glass") {
                 toggleSearch()

@@ -29,12 +29,6 @@ class VaultDetailViewModel: ObservableObject {
         [.send,.buy,.swap, .receive].filtered
     }
     
-    @Published var selectedTab: VaultTab = .portfolio
-    
-    var tabs: [SegmentedControlItem<VaultTab>] = [
-        SegmentedControlItem(value: .portfolio, title: "portfolio".localized)
-    ]
-    
     func updateBalance(vault: Vault) {
         print("Updating balance for vault: \(vault.name)")
         updateBalanceTask?.cancel()
