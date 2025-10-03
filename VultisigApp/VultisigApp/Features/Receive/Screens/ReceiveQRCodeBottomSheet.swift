@@ -42,7 +42,7 @@ struct ReceiveQRCodeBottomSheet: View {
             let qrCodeImage = QRCodeGenerator().generateImage(
                 qrStringData: coin.address,
                 size: CGSize(width: 200, height: 200),
-                logoImage: PlatformImage(named: coin.logo),
+                logoImage: PlatformImage(named: coin.chain.logo),
                 scale: displayScale
             )
             
