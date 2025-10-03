@@ -81,8 +81,8 @@ private extension SendGasSettingsViewModel {
 
     func fetchEVM() async throws {
         let service = try EvmServiceFactory.getService(forChain: chain)
-        async let baseFeeWeiTask = try await service.getBaseFee()
-        async let tmpFeeMapTask =  try await service.fetchMaxPriorityFeesPerGas()
+        async let baseFeeWeiTask = service.getBaseFee()
+        async let tmpFeeMapTask =  service.fetchMaxPriorityFeesPerGas()
         let (baseFeeWei, tmpFeeMap) = try await (baseFeeWeiTask, tmpFeeMapTask)
         let baseFeeGwei = Decimal(baseFeeWei) / Decimal(EVMHelper.weiPerGWei)
         await MainActor.run {
