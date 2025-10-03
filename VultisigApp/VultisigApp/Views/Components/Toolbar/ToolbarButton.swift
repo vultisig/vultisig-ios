@@ -67,6 +67,7 @@ struct ToolbarButton: View {
         }
 #else
         if #available(iOS 26.0, *) {
+            // If it's native iOS toolbar, we use the default button with tint as it looks better, toolbar already styles it
             if isNativeToolbarItem {
                 Button(action: action) {
                     iconView
@@ -74,6 +75,7 @@ struct ToolbarButton: View {
                 .buttonStyle(.glassProminent)
                 .tint(tintColor)
             } else {
+                // Otherwise, we customize the glass effect ourselves
                 Button(action: action) {
                     iconView
                         .padding(12)
@@ -91,6 +93,7 @@ struct ToolbarButton: View {
         Icon(named: image, color: Theme.colors.textPrimary, size: 20)
     }
     
+    // Custom button with "fake" glass effect for styling
     var customButton: some View {
         Button(action: action) {
             iconView
