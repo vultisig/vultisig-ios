@@ -79,23 +79,27 @@ final class SendGasSettingsViewModel: ObservableObject {
 
 private extension SendGasSettingsViewModel {
 
-    @MainActor func fetchEVM() async throws {
+    func fetchEVM() async throws {
         let service = try EvmServiceFactory.getService(forChain: chain)
-        let baseFeeWei = try await service.getBaseFee()
+        async let baseFeeWeiTask = try await service.getBaseFee()
+        async let tmpFeeMapTask =  try await service.fetchMaxPriorityFeesPerGas()
+        let (baseFeeWei, tmpFeeMap) = try await (baseFeeWeiTask, tmpFeeMapTask)
         let baseFeeGwei = Decimal(baseFeeWei) / Decimal(EVMHelper.weiPerGWei)
-
-        baseFee = baseFeeGwei.description
-        priorityFeesMap = try await service.fetchMaxPriorityFeesPerGas()
+        await MainActor.run {
+            baseFee = baseFeeGwei.description
+            priorityFeesMap = tmpFeeMap
+        }
     }
 
-    @MainActor func fetchUTXO() async throws {
+    func fetchUTXO() async throws {
         let service = BlockChainService.shared
         let fee =  try await service.fetchUTXOFee(
             coin: coin,
             action: .transfer,
             feeMode: selectedMode
         )
-
-        byteFee = fee.description
+        await MainActor.run {
+            byteFee = fee.description
+        }
     }
 }
