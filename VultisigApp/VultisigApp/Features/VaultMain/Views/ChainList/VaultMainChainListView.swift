@@ -12,7 +12,6 @@ struct VaultMainChainListView: View {
     @EnvironmentObject var viewModel: VaultDetailViewModel
     
     var onCopy: (GroupedChain) -> Void
-    var onAction: (GroupedChain) -> Void
     var onCustomizeChains: () -> Void
     
     var body: some View {
@@ -29,8 +28,6 @@ struct VaultMainChainListView: View {
         ForEach(Array(viewModel.filteredGroups.enumerated()), id: \.element.id) { index, group in
             VaultChainCellView(group: group, vault: vault) {
                 onCopy(group)
-            } onAction: {
-                onAction(group)
             }
             .commonListItemContainer(
                 index: index,
@@ -52,8 +49,6 @@ struct VaultMainChainListView: View {
 
 #Preview {
     VaultMainChainListView(vault: .example) { _ in
-    } onAction: { _ in
-        
     } onCustomizeChains: {
         
     }.environmentObject(VaultDetailViewModel())
