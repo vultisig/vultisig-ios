@@ -23,7 +23,7 @@ enum VaultBackupType {
     
     func markBackedUp() {
         switch self {
-        case .single:
+        case .single(let vault):
             vault.isBackedUp = true
         case .multiple(let vaults, let selectedVault):
             selectedVault.isBackedUp = true
