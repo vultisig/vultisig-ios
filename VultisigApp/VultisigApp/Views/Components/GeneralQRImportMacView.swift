@@ -39,11 +39,11 @@ struct GeneralQRImportMacView: View {
             main
         }
         .navigationBarBackButtonHidden(true)
+        .crossPlatformToolbar(getTitle())
     }
     
     var main: some View {
         content
-            .crossPlatformToolbar(getTitle())
     }
     
     var content: some View {

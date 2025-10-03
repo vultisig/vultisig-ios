@@ -85,7 +85,7 @@ struct SettingsMainScreen: View {
                         VaultDetailQRCodeView(vault: vault)
                     }
                 } label: {
-                    NavigationQRCodeButton()
+                    ToolbarButton(image: "qr-code", action: {})
                 }
             }
         }

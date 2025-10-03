@@ -33,12 +33,12 @@ struct AddressBookView: View {
                     } else {
                         list
                         addAddressButton
+                            .padding(.bottom, 12)
                     }
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        // TODO: - Test
         .crossPlatformToolbar("addressBook".localized) {
             CustomToolbarItem(placement: .trailing) {
                 navigationButton
@@ -116,25 +116,17 @@ struct AddressBookView: View {
         }
     }
     
+    @ViewBuilder
     var navigationButton: some View {
-        Button {
-            toggleEdit()
-        } label: {
-            navigationEditButton
-        }
-    }
-    
-    var navigationEditButton: some View {
-        VStack {
-            Group {
-                if isEditing {
-                    NavigationBarButtonView(title: "done".localized)
-                } else {
-                    NavigationEditButton()
-                }
+        if isEditing {
+            Button { toggleEdit() } label: {
+                NavigationBarButtonView(title: "done".localized)
+            }
+        } else {
+            ToolbarButton(image: "pencil") {
+                toggleEdit()
             }
         }
-        .frame(width: 60, height: 32, alignment: .trailing)
     }
     
     private func toggleEdit() {

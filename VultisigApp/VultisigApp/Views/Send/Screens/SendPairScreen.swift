@@ -34,7 +34,6 @@ struct SendPairScreen: View {
         .navigationDestination(item: $keysignInput) { input in
             SendRouteBuilder().buildKeysignScreen(input: input, tx: tx)
         }
-        // TODO: - Test
         .crossPlatformToolbar("pair".localized) {
             CustomToolbarItem(placement: .trailing) {
                 NavigationQRShareButton(

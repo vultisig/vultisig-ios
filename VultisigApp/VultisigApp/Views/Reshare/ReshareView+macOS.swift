@@ -18,13 +18,13 @@ extension ReshareView {
                 Loader()
             }
         }
+        .crossPlatformToolbar("reshare".localized)
     }
 
     var main: some View {
         view
             .padding(.bottom, 30)
             .padding(.horizontal, 40)
-            .crossPlatformToolbar("reshare".localized)
     }
 
     var joinReshareButton: some View {

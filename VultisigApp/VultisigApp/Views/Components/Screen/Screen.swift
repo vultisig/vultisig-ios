@@ -32,7 +32,6 @@ struct Screen<Content: View>: View {
             .background(Theme.colors.bgPrimary, ignoresSafeAreaEdges: .all)
     }
     
-    // TODO: - Check trailing item
     @ViewBuilder
     var container: some View {
 #if os(macOS)
