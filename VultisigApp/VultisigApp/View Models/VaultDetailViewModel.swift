@@ -86,7 +86,7 @@ private extension VaultDetailViewModel {
             let chain = GroupedChain(
                 chain: coin.chain,
                 address: coin.address,
-                logo: coin.logo,
+                logo: coin.chain.logo,
                 count: 1,
                 coins: [coin]
             )
@@ -101,7 +101,7 @@ private extension VaultDetailViewModel {
             group.count += 1
         }
         if coin.isNativeToken {
-            group.logo = coin.logo
+            group.logo = coin.chain.logo
         }
         return
     }
