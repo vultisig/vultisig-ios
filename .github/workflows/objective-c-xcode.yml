@@ -27,7 +27,7 @@ jobs:
       - name: Set Default Scheme
         working-directory: VultisigApp
         run: |
-          sudo xcode-select -s /Applications/Xcode_26.0.0.app
+          sudo xcode-select -s /Applications/Xcode_26.0.1.app
           mdfind "kMDItemCFBundleIdentifier = 'com.apple.dt.Xcode'"
           xcrun --find xcodebuild
           scheme_list=$(xcodebuild -list -json | tr -d "\n")
