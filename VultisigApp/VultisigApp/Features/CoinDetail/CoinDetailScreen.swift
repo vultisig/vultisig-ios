@@ -12,14 +12,14 @@ struct CoinDetailScreen: View {
     let vault: Vault
     @ObservedObject var group: GroupedChain
     @ObservedObject var sendTx: SendTransaction
-    var onCoinAction: (VaultAction) -> Void
+    var onCoinAction: (VaultAction, Coin) -> Void
 
     @State var showReceiveSheet: Bool = false
     
     @StateObject var viewModel: CoinDetailViewModel
     @Environment(\.dismiss) var dismiss
     
-    init(coin: Coin, vault: Vault, group: GroupedChain, sendTx: SendTransaction, onCoinAction: @escaping (VaultAction) -> Void) {
+    init(coin: Coin, vault: Vault, group: GroupedChain, sendTx: SendTransaction, onCoinAction: @escaping (VaultAction, Coin) -> Void) {
         self.coin = coin
         self.vault = vault
         self.group = group
@@ -107,7 +107,7 @@ private extension CoinDetailScreen {
         }
         
         guard let vaultAction else { return }
-        onCoinAction(vaultAction)
+        onCoinAction(vaultAction, coin)
     }
 }
 
@@ -117,6 +117,6 @@ private extension CoinDetailScreen {
         vault: .example,
         group: .example,
         sendTx: .init(),
-        onCoinAction: { _ in}
+        onCoinAction: { _, _ in}
     )
 }

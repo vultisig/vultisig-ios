@@ -10,7 +10,6 @@ import SwiftUI
 struct ChainDetailScreen: View {
     @ObservedObject var group: GroupedChain
     let vault: Vault
-    @State var vaultAction: VaultAction?
     @State var showAction: Bool = false
     
     @StateObject var viewModel: ChainDetailViewModel
@@ -22,6 +21,12 @@ struct ChainDetailScreen: View {
     @State var focusSearch: Bool = false
     @State var showReceiveSheet: Bool = false
     @State var scrollProxy: ScrollViewProxy?
+    
+    @State var isSendLinkActive = false
+    @State var isSwapLinkActive = false
+    @State var isMemoLinkActive = false
+    @State var isBuyLinkActive = false
+    @State var actionCoin: Coin?
     
     @StateObject var sendTx = SendTransaction()
     
@@ -68,17 +73,8 @@ struct ChainDetailScreen: View {
                 isPresented: $showManageTokens
             )
         }
-        .onLoad{
+        .onLoad {
             viewModel.refresh(group: group)
-        }
-        .navigationDestination(isPresented: $showAction) {
-            if let vaultAction {
-                VaultActionRouteBuilder().buildActionRoute(
-                    action: vaultAction,
-                    sendTx: sendTx,
-                    vault: vault
-                )
-            }
         }
         .sheet(item: $coinToShow) {
             CoinDetailScreen(
@@ -87,6 +83,33 @@ struct ChainDetailScreen: View {
                 group: group,
                 sendTx: sendTx,
                 onCoinAction: onCoinAction
+            )
+        }
+        .navigationDestination(isPresented: $isSwapLinkActive) {
+            if let fromCoin = (actionCoin ?? viewModel.tokens.first) {
+                SwapCryptoView(fromCoin: fromCoin, vault: vault)
+            }
+        }
+        .navigationDestination(isPresented: $isMemoLinkActive) {
+            FunctionCallView(
+                tx: sendTx,
+                vault: vault,
+                coin: actionCoin ?? group.nativeCoin
+            )
+        }
+        .navigationDestination(isPresented: $isSendLinkActive) {
+            SendRouteBuilder().buildDetailsScreen(
+                coin: actionCoin ?? group.nativeCoin,
+                hasPreselectedCoin: actionCoin != nil,
+                tx: sendTx,
+                vault: vault
+            )
+        }
+        .navigationDestination(isPresented: $isBuyLinkActive) {
+            SendRouteBuilder().buildBuyScreen(
+                address: (actionCoin ?? group.nativeCoin).address,
+                blockChainCode: (actionCoin ?? group.nativeCoin).chain.banxaBlockchainCode,
+                coinType: (actionCoin ?? group.nativeCoin).ticker
             )
         }
     }
@@ -176,7 +199,7 @@ private extension ChainDetailScreen {
             }
         }
     }
-
+    
     func updateBalances() async {
         let vault = self.vault // Capture on main actor
         await withTaskGroup(of: Void.self) { taskGroup in
@@ -207,48 +230,57 @@ private extension ChainDetailScreen {
     }
     
     func onAction(_ action: CoinAction) {
+        actionCoin = nil
         sendTx.reset(coin: group.nativeCoin)
-        var vaultAction: VaultAction?
         switch action {
         case .receive:
             showReceiveSheet = true
             return
         case .send:
-            vaultAction = .send(coin: group.nativeCoin, hasPreselectedCoin: false)
+            isSendLinkActive = true
+            return
         case .swap:
-            guard let fromCoin = viewModel.tokens.first else { return }
-            vaultAction = .swap(fromCoin: fromCoin)
+            isSwapLinkActive = true
+            return
         case .deposit, .bridge, .memo:
             if let nativeCoin = viewModel.tokens.first(where: { $0.isNativeToken }) {
                 sendTx.reset(coin: nativeCoin)
             } else if let firstCoin = viewModel.tokens.first {
                 sendTx.reset(coin: firstCoin)
             }
-            vaultAction = .function(coin: group.nativeCoin)
+            isMemoLinkActive = true
+            return
         case .buy:
-            vaultAction = .buy(
-                address: group.nativeCoin.address,
-                blockChainCode: group.nativeCoin.chain.banxaBlockchainCode,
-                coinType: group.nativeCoin.ticker
-            )
+            isBuyLinkActive = true
+            return
         case .sell:
             // TODO: - To add
             break
         }
-        
-        guard let vaultAction else { return }
-        self.vaultAction = vaultAction
-        self.showAction = true
     }
     
     func onCopy() {
         addressToCopy = group.nativeCoin
     }
     
-    func onCoinAction(_ action: VaultAction) {
+    func onCoinAction(_ action: VaultAction, _ coin: Coin) {
         coinToShow = nil
-        self.vaultAction = action
-        self.showAction = true
+        self.actionCoin = coin
+        
+        switch action {
+        case .send:
+            isSendLinkActive = true
+            return
+        case .swap:
+            isSwapLinkActive = true
+            return
+        case .function:
+            isMemoLinkActive = true
+            return
+        case .buy:
+            isBuyLinkActive = true
+            return
+        }
     }
 }
 
