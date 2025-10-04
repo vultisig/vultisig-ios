@@ -596,8 +596,7 @@
 "reviewConditionsMessage" = "Kindly review and agree to all the listed conditions.";
 "rippleExistentialDepositError" = "XRP requires a minimum balance of 1 XRP. The blockchain will block any transaction that would reduce the account balance below this amount. To send your full balance, the account must be deleted.";
 "sameDeviceShareError" = "Same vault share";
-"sameNameFolder" = "Folder with same name exists";
-"sameNameFolderDescription" = "Please choose a unique name for the folder and try again.";
+"sameNameFolderDescription" = "That folder name already exists. Try a new one.";
 "sameUseReferralCodeErrorMessage" = "Used referral code can not be the same as your referral code";
 "sameWifiEntendedInstruction" = "Keep devices on the same WiFi Network, have a stable connection and be on the correct vault and pair devices.";
 "save" = "Save";

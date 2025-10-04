@@ -24,7 +24,7 @@ struct EditFolderScreen: View {
     @EnvironmentObject var viewModel: HomeViewModel
     
     var saveButtonDisabled: Bool {
-        folderName.isEmpty
+        folderName.isEmpty || folderViewModel.selectedVaults.count == 0
     }
     
     var body: some View {
@@ -32,9 +32,6 @@ struct EditFolderScreen: View {
             .padding(.top, 24)
             .padding(.horizontal, 16)
             .applySheetHeight()
-            .alert(isPresented: $folderViewModel.showAlert) {
-                alert
-            }
             .onLoad {
                 setData()
             }
