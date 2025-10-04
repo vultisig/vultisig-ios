@@ -282,7 +282,7 @@
 "fetchingVaultDetails" = "Fetching Vault Details";
 "findCustomTokens" = "Find custom token";
 "folder" = "Folder";
-"folderName" = "Folder name";
+"folderName" = "Folder Name";
 "folderNeedsOneVault" = "Folder needs to have at least one selected vault.";
 "folders" = "Folders";
 "from" = "From";

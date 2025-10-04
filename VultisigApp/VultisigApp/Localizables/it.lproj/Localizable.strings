@@ -282,7 +282,7 @@
 "fetchingVaultDetails" = "Recupero dei dettagli del caveau";
 "findCustomTokens" = "Trova Il Tuo Token Personalizzato";
 "folder" = "Cartella";
-"folderName" = "Nome della cartella";
+"folderName" = "Nome della Cartella";
 "folderNeedsOneVault" = "La cartella deve contenere almeno un Vault selezionato.";
 "folders" = "Cartelle";
 "from" = "Da";

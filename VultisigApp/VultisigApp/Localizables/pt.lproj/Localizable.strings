@@ -282,7 +282,7 @@
 "fetchingVaultDetails" = "Buscando detalhes do cofre";
 "findCustomTokens" = "Encontre Seu Token Personalizado";
 "folder" = "Pasta";
-"folderName" = "Nome da pasta";
+"folderName" = "Nome da Pasta";
 "folderNeedsOneVault" = "A pasta precisa ter pelo menos um cofre selecionado.";
 "folders" = "Pastas";
 "from" = "De";

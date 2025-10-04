@@ -282,7 +282,7 @@
 "fetchingVaultDetails" = "Dohvaćanje pojedinosti o spremištu";
 "findCustomTokens" = "Pronađite Svoj Prilagođeni Token";
 "folder" = "Mapa";
-"folderName" = "Naziv mape";
+"folderName" = "Naziv Mape";
 "folderNeedsOneVault" = "Mapa mora sadržavati barem jedan odabrani trezor.";
 "folders" = "Mape";
 "from" = "Od";
