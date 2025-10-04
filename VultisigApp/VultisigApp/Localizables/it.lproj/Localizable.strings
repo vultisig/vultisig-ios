@@ -199,7 +199,7 @@
 "enterUpto4Characters" = "Inserisci fino a 4 caratteri";
 "enterValidFolderName" = "Si prega di inserire un nome di cartella valido e riprovare.";
 "enterVaultEmail" = "Inserisci l'e -mail per ricevere la condivisione Vault.";
-"enterVaultName" = "Inserisci il nome del caveau";
+"enterVaultName" = "Inserisci il Nome del Caveau";
 "enterVaultPassword" = "Immettere la password impostata durante la creazione di questo Vault.";
 "enterYourEmail" = "Inserisci la tua e-mail";
 "enterYourEmailDescription" = "Questa email viene utilizzata solo per inviare il backup del server.";

@@ -199,7 +199,7 @@
 "enterUpto4Characters" = "Enter up to 4 characters";
 "enterValidFolderName" = "Please enter a valid folder name and try again.";
 "enterVaultEmail" = "Enter the email to receive the vault share.";
-"enterVaultName" = "Enter vault name";
+"enterVaultName" = "Enter Vault Name";
 "enterVaultPassword" = "Enter the password you set when creating this Vault.";
 "enterYourEmail" = "Enter your email";
 "enterYourEmailDescription" = "This email is only used to send the server backup.";

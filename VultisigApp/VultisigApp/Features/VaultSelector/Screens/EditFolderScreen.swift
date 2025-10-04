@@ -53,7 +53,7 @@ struct EditFolderScreen: View {
             CommonTextField(
                 text: $folderName,
                 label: "folderName".localized,
-                placeholder: "typeHere".localized,
+                placeholder: "enterVaultName".localized,
             )
             List {
                 CommonListHeaderView(title: "activeVaults".localized)

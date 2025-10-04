@@ -32,13 +32,12 @@ struct SearchTextField: View {
             )            
             TextField(NSLocalizedString("Search", comment: "Search"), text: $value)
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textPrimary)
                 .disableAutocorrection(true)
                 .borderlessTextFieldStyle()
                 .colorScheme(.dark)
                 .padding(.horizontal, 8)
                 .focused($focusedState)
-                .tint(Theme.colors.textPrimary)
             
             HStack(spacing: 8) {
                 clearButton

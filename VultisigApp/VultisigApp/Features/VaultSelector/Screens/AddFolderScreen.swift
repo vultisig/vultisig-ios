@@ -44,7 +44,7 @@ struct AddFolderScreen: View {
             CommonTextField(
                 text: $folderViewModel.name,
                 label: "folderName".localized,
-                placeholder: "typeHere".localized,
+                placeholder: "enterVaultName".localized,
             )
             List {
                 CommonListHeaderView(title: "selectVaults".localized)
