@@ -307,19 +307,14 @@ extension BlockChainSpecific {
                 hasProgramId: value.programID
             )
         case .polkadotSpecific(let value):
-            // Parse currentBlockNumber which may contain "blockNumber|gas" format
-            let parts = value.currentBlockNumber.components(separatedBy: "|")
-            let blockNumber = BigInt(stringLiteral: parts[0])
-            let gas = parts.count > 1 ? BigInt(stringLiteral: parts[1]) : nil
-            
             self = .Polkadot(
                 recentBlockHash: value.recentBlockHash,
                 nonce: value.nonce,
-                currentBlockNumber: blockNumber,
+                currentBlockNumber: BigInt(stringLiteral: value.currentBlockNumber),
                 specVersion: value.specVersion,
                 transactionVersion: value.transactionVersion,
                 genesisHash: value.genesisHash,
-                gas: gas
+                gas: value.gas == 0 ? nil : BigInt(value.gas)
             )
         case .suicheSpecific(let value):
             let coinsArray: [[String: String]] = value.coins.map { coin in
@@ -453,15 +448,11 @@ extension BlockChainSpecific {
             return .polkadotSpecific(.with {
                 $0.recentBlockHash = recentBlockHash
                 $0.nonce = nonce
-                // Encode gas in currentBlockNumber as "blockNumber|gas" if gas exists
-                if let gas = gas {
-                    $0.currentBlockNumber = "\(currentBlockNumber)|\(gas)"
-                } else {
-                    $0.currentBlockNumber = String(currentBlockNumber)
-                }
+                $0.currentBlockNumber = String(currentBlockNumber)
                 $0.specVersion = specVersion
                 $0.transactionVersion = transactionVersion
                 $0.genesisHash = genesisHash
+                $0.gas = UInt64(gas ?? 0)
             })
         case .Ripple(let sequence, let gas, let lastLedgerSequence):
             return .rippleSpecific(.with {

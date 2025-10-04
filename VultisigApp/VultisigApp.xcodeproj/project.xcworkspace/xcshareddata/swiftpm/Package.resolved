@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vultisig/commondata",
       "state" : {
-        "branch" : "main",
-        "revision" : "6fab5142aaf682a6bd672b1c72b8f759eb011f71"
+        "branch" : "polkadot-fee",
+        "revision" : "2e9d588e7fee27c4a68c80c47c8b680c0d10d27c"
       }
     },
     {
