@@ -54,7 +54,7 @@ enum BlockChainSpecific: Codable, Hashable {
             return referenceGasPrice
         case .Polkadot(_, _, _, _, _, _, let gas):
             guard let dynamicGas = gas else {
-                fatalError("Polkadot requires dynamic fee calculation - gas parameter must be provided")
+                return 0 // We should throw
             }
             return dynamicGas
         case .Ton(_,_,_,_,_,_):
