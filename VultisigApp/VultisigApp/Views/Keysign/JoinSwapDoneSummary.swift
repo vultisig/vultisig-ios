@@ -320,20 +320,17 @@ struct JoinSwapDoneSummary: View {
     }
     
     func feesInReadable(coin: Coin, fee: BigInt) -> String {
-        var nativeCoinAux: Coin?
-        
-        if coin.isNativeToken {
-            nativeCoinAux = coin
-        } else {
-            nativeCoinAux = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == coin.chain && $0.isNativeToken })
-        }
-        
-        guard let nativeCoin = nativeCoinAux else {
+        // Always try to get the native coin from the current vault first for accurate price data
+        guard let vault = ApplicationState.shared.currentVault else {
             return ""
         }
         
-        let fee = nativeCoin.decimal(for: fee)
-        return RateProvider.shared.fiatBalanceString(value: fee, coin: nativeCoin)
+        guard let nativeCoin = vault.nativeCoin(for: coin.chain) else {
+            return ""
+        }
+        
+        let feeDecimal = nativeCoin.decimal(for: fee)
+        return RateProvider.shared.fiatBalanceString(value: feeDecimal, coin: nativeCoin)
     }
     
     private func shareLink(txid: String) {

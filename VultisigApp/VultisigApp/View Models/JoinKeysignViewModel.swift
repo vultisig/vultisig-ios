@@ -253,6 +253,8 @@ class JoinKeysignViewModel: ObservableObject {
                        !correctVault.localPartyID.isEmpty {
                         self.vault = correctVault
                         self.localPartyID = correctVault.localPartyID
+                        // Update ApplicationState so fee calculations can access the correct vault
+                        ApplicationState.shared.currentVault = correctVault
                         logger.info("Auto-selected correct vault: \(correctVault.name) with pubKey: \(correctVault.pubKeyECDSA)")
                     }
                 }
@@ -395,11 +397,11 @@ class JoinKeysignViewModel: ObservableObject {
     
     func getCalculatedNetworkFee() -> (feeCrypto: String, feeFiat: String) {
         guard let keysignPayload else { return (.empty, .empty) }
-        return gasViewModel.getCalculatedNetworkFee(payload: keysignPayload)
+        return gasViewModel.getCalculatedNetworkFee(payload: keysignPayload, vault: vault)
     }
     
     func getJoinedCalculatedNetworkFee() -> String {
         guard let keysignPayload else { return "" }
-        return gasViewModel.getJoinedCalculatedNetworkFee(payload: keysignPayload)
+        return gasViewModel.getJoinedCalculatedNetworkFee(payload: keysignPayload, vault: vault)
     }
 }
