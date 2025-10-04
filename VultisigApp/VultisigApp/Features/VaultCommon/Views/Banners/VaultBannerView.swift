@@ -38,7 +38,7 @@ struct VaultBannerView: View {
             
             Spacer()
             
-            CircularIconButton(icon: "x", action: onClose)
+            ToolbarButton(image: "x", action: onClose)
         }
         .padding(8)
         .background(backgroundImage)

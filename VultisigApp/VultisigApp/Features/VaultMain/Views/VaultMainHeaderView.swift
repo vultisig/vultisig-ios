@@ -64,7 +64,7 @@ struct VaultMainHeaderView: View {
     
     var buttonsStack: some View {
         HStack(spacing: 8) {
-            CircularIconButton(icon: "settings", action: settingsAction)
+            ToolbarButton(image: "settings", action: settingsAction)
         }
     }
     

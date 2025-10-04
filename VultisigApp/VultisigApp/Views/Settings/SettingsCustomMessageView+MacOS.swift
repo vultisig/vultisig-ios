@@ -11,16 +11,10 @@ import SwiftUI
 extension SettingsCustomMessageView {
 
     var main: some View {
-        VStack {
-            headerMac
-            view
-        }
+        view
+            .crossPlatformToolbar(viewModel.state.title)
     }
 
-    var headerMac: some View {
-        GeneralMacHeader(title: viewModel.state.title)
-    }
-    
     var button: some View {
         buttonLabel
             .padding(.horizontal)

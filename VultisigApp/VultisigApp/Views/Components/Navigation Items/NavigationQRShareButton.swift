@@ -30,18 +30,12 @@ struct NavigationQRShareButton: View {
         ZStack {
             if let image = viewModel.renderedImage {
                 CrossPlatformShareButton(image: image, caption: viewModel.qrCodeData ?? .empty) {
-                    content
+                    ToolbarButton(image: "share", action: {})
                 }
             } else {
                 ProgressView()
             }
         }
-    }
-    
-    var content: some View {
-        Image(systemName: "arrow.up.doc")
-            .font(Theme.fonts.bodyLMedium)
-            .foregroundColor(tint)
     }
 }
 

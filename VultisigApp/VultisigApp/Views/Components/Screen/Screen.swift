@@ -36,9 +36,10 @@ struct Screen<Content: View>: View {
     var container: some View {
 #if os(macOS)
         VStack {
-            GeneralMacHeader(title: title)
-                .showIf(showNavigationBar)
             contentContainer
+                .if(showNavigationBar) {
+                    $0.crossPlatformToolbar(title)
+                }
         }
 #else
         contentContainer

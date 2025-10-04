@@ -12,23 +12,13 @@ extension FastVaultSetPasswordView {
     var content: some View {
         ZStack {
             Background()
-            main
+            view
 
             if isLoading {
                 Loader()
             }
         }
-    }
-    
-    var main: some View {
-        VStack {
-            headerMac
-            view
-        }
-    }
-
-    var headerMac: some View {
-        GeneralMacHeader(title: "")
+        .crossPlatformToolbar()
     }
     
     var view: some View {

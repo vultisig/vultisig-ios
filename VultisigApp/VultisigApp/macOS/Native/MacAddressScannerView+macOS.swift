@@ -26,8 +26,8 @@ struct MacAddressScannerView: View {
         ZStack(alignment: .top) {
             Background()
             content
-            headerMac
         }
+        .crossPlatformToolbar("scanQRCode".localized, ignoresTopEdge: true)
         .onChange(of: scannerViewModel.detectedQRCode) { oldValue, newValue in
             handleScan()
         }
@@ -48,11 +48,6 @@ struct MacAddressScannerView: View {
     
     var importOption: some View {
         GeneralQRImportMacView(type: .Unknown, sendTx: tx, selectedVault: selectedVault)
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "scanQRCode")
-            .padding(.bottom, 8)
     }
     
     var camera: some View {

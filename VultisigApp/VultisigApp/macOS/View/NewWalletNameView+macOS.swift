@@ -12,20 +12,10 @@ extension NewWalletNameView {
     var content: some View {
         ZStack {
             Background()
-            main
-        }
-    }
-    
-    var main: some View {
-        VStack {
-            headerMac
             view
                 .padding(.horizontal, 24)
         }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "")
+        .crossPlatformToolbar()
     }
 }
 #endif

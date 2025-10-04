@@ -34,42 +34,40 @@ struct CustomTokenScreen: View {
     
     var body: some View {
         NavigationStack {
-            container {
-                ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("findCustomTokens".localized)
-                            .foregroundStyle(Theme.colors.textPrimary)
-                            .font(Theme.fonts.title2)
-                            .multilineTextAlignment(.leading)
-                        HStack(spacing: 12) {
-                            SearchTextField(
-                                value: $contractAddress,
-                                showPasteButton: true
-                            )
-                            CircularAccessoryIconButton(icon: "search-menu") {
-                                Task {
-                                    await fetchTokenInfo()
-                                }
-                            }
-                        }
-                        
-                        if let error = error {
-                            errorView(error: error)
-                                .transition(.opacity)
-                        }
-                        
-                        if showTokenInfo {
-                            tokenInfoView
-                            
-                            PrimaryButton(title: "Add \(tokenSymbol) token") {
-                                saveAssets()
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("findCustomTokens".localized)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                        .font(Theme.fonts.title2)
+                        .multilineTextAlignment(.leading)
+                    HStack(spacing: 12) {
+                        SearchTextField(
+                            value: $contractAddress,
+                            showPasteButton: true
+                        )
+                        CircularAccessoryIconButton(icon: "search-menu") {
+                            Task {
+                                await fetchTokenInfo()
                             }
                         }
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 24)
-                    .padding(.horizontal, 16)
+                    
+                    if let error = error {
+                        errorView(error: error)
+                            .transition(.opacity)
+                    }
+                    
+                    if showTokenInfo {
+                        tokenInfoView
+                        
+                        PrimaryButton(title: "Add \(tokenSymbol) token") {
+                            saveAssets()
+                        }
+                    }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 24)
+                .padding(.horizontal, 16)
             }
         }
         .onLoad {
@@ -80,8 +78,15 @@ struct CustomTokenScreen: View {
         }
         .withLoading(text: "pleaseWait".localized, isLoading: $isLoading)
         .withLoading(text: "addingToken".localized, isLoading: $isAddingToken)
+        .crossPlatformToolbar(showsBackButton: false) {
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "x") {
+                    onClose()
+                }
+            }
+        }
     }
-
+    
     func errorView(error: Error) -> some View {
         ActionBannerView(
             title: error.localizedDescription,
@@ -92,7 +97,7 @@ struct CustomTokenScreen: View {
             Task { await fetchTokenInfo() }
         }
     }
-
+    
     var tokenInfoView: some View {
         ZStack(alignment: .top) {
             HStack(spacing: 12) {
@@ -135,12 +140,6 @@ struct CustomTokenScreen: View {
                 topTrailingRadius: 12
             )
         )
-    }
-    
-    var closeButton: some View {
-        ToolbarButton(image: "xmark", type: .secondary) {
-            onClose()
-        }
     }
     
     private func fetchTokenInfo() async {
@@ -249,32 +248,3 @@ struct CustomTokenScreen: View {
     }
     
 }
-
-#if os(macOS)
-extension CustomTokenScreen {
-    func container<Content: View>(content: () -> Content) -> some View {
-        VStack {
-            HStack {
-                closeButton
-                Spacer()
-            }
-            .padding(.top, 16)
-            .padding(.horizontal, 16)
-            content()
-        }
-        .frame(maxWidth: 700, minHeight: 600)
-    }
-}
-#else
-extension CustomTokenScreen {
-    func container<Content: View>(content: () -> Content) -> some View {
-        content()
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    closeButton
-                }
-            }
-    }
-}
-#endif
-

@@ -67,7 +67,7 @@ struct SettingsMainScreen: View {
     ]
     
     var body: some View {
-        Screen(title: "settings".localized, edgeInsets: ScreenEdgeInsets(bottom: 0)) {
+        Screen(showNavigationBar: false, edgeInsets: ScreenEdgeInsets(bottom: 0)) {
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 14) {
                     ForEach(groups) { group in
@@ -78,13 +78,15 @@ struct SettingsMainScreen: View {
                 }
             }
         }
-        .screenToolbar {
-            NavigationLink {
-                if let vault = homeViewModel.selectedVault {
-                    VaultDetailQRCodeView(vault: vault)
+        .crossPlatformToolbar("settings".localized) {
+            CustomToolbarItem(placement: .trailing) {
+                NavigationLink {
+                    if let vault = homeViewModel.selectedVault {
+                        VaultDetailQRCodeView(vault: vault)
+                    }
+                } label: {
+                    ToolbarButton(image: "qr-code", action: {})
                 }
-            } label: {
-                NavigationQRCodeButton()
             }
         }
         .navigationDestination(item: $selectedOption) { option in

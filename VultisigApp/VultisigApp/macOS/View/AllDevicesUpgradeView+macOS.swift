@@ -11,18 +11,14 @@ import SwiftUI
 extension AllDevicesUpgradeView {
     var content: some View {
         VStack {
-            header
             Spacer()
             animation
             Spacer()
             description
             button
         }
+        .crossPlatformToolbar("Upgrade")
         .padding(.bottom,30)
-    }
-    
-    var header: some View {
-        GeneralMacHeader(title: "Upgrade")
     }
 }
 #endif

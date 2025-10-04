@@ -12,19 +12,9 @@ extension TransactionsView {
     var content: some View {
         ZStack {
             Background()
-            main
-        }
-    }
-    
-    var main: some View {
-        VStack {
-            headerMac
             view
         }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "transactions")
+        .crossPlatformToolbar("transactions".localized)
     }
 }
 #endif

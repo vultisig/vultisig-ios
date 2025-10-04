@@ -37,11 +37,7 @@ struct ImportWalletView: View {
                 resetData()
             }
     }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "import")
-    }
-    
+
     var view: some View {
         VStack(spacing: 15) {
             Spacer()

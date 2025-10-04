@@ -55,9 +55,9 @@ struct FolderDetailView: View {
     
     var header: some View {
         HStack(spacing: 16) {
-            BottomSheetButton(
-                icon: "chevron-right",
-                type: .secondary,
+            ToolbarButton(
+                image: "chevron-right",
+                type: .outline,
                 action: onBack
             )
             .rotationEffect(.radians(.pi))
@@ -70,9 +70,9 @@ struct FolderDetailView: View {
                     .font(Theme.fonts.caption12)
             }
             Spacer()
-            BottomSheetButton(
-                icon: "pencil",
-                type: .secondary,
+            ToolbarButton(
+                image: "pencil",
+                type: .outline,
                 action: onEditFolder
             )
         }

@@ -10,18 +10,11 @@ import SwiftUI
 
 extension SettingsAdvancedView {
     var container: some View {
-        VStack {
-            header
-            
-            ScrollView {
-                content
-                    .padding(40)
-            }
+        ScrollView {
+            content
+                .padding(40)
         }
-    }
-    
-    var header: some View {
-        GeneralMacHeader(title: "advanced")
+        .crossPlatformToolbar("advanced".localized)
     }
 }
 #endif

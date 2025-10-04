@@ -12,20 +12,10 @@ extension CoinPickerView {
     var content: some View {
         ZStack {
             Background()
-            main
-        }
-        .navigationBarBackButtonHidden(true)
-    }
-    
-    var main: some View {
-        VStack(spacing: 0) {
-            headerMac
             view
         }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "chains")
+        .navigationBarBackButtonHidden(true)
+        .crossPlatformToolbar("chains".localized)
     }
     
     var view: some View {
