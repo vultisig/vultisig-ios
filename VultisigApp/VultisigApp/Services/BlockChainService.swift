@@ -369,7 +369,8 @@ private extension BlockChainService {
             let dynamicFee = try await dot.calculateDynamicFee(
                 fromAddress: coin.address,
                 toAddress: toAddress ?? "",
-                amount: amount ?? BigInt.zero
+                amount: amount ?? BigInt.zero,
+                memo: memo
             )
             
             return .Polkadot(

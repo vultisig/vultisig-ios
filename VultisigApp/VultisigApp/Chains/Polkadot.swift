@@ -21,7 +21,6 @@ enum PolkadotHelper {
      */
     static let defaultExistentialDeposit: BigInt = 10_000_000_000 // 1 DOT
     
-    
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard keysignPayload.coin.chain == .polkadot else {
             throw HelperError.runtimeError("coin is not DOT")

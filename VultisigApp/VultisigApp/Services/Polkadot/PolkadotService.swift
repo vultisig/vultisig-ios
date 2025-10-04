@@ -142,7 +142,7 @@ class PolkadotService: RpcService {
         }
     }
     
-    func calculateDynamicFee(fromAddress: String, toAddress: String, amount: BigInt) async throws -> BigInt {
+    func calculateDynamicFee(fromAddress: String, toAddress: String, amount: BigInt, memo: String? = nil) async throws -> BigInt {
         let gasInfo = try await getGasInfo(fromAddress: fromAddress)
         
         guard let polkadotCoin = TokensStore.TokenSelectionAssets.first(where: { $0.chain == .polkadot && $0.isNativeToken }) else {
@@ -164,7 +164,7 @@ class PolkadotService: RpcService {
                 genesisHash: gasInfo.genesisHash
             ),
             utxos: [],
-            memo: nil,
+            memo: memo,
             swapPayload: nil,
             approvePayload: nil,
             vaultPubKeyECDSA: "",
