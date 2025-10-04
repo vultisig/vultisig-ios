@@ -21,63 +21,6 @@ enum PolkadotHelper {
      */
     static let defaultExistentialDeposit: BigInt = 10_000_000_000 // 1 DOT
     
-    static func calculateDynamicFee(fromAddress: String, toAddress: String, amount: BigInt) async throws -> BigInt {
-        let keysignPayload = try await buildPolkadotKeysignPayload(
-            fromAddress: fromAddress,
-            toAddress: toAddress,
-            amount: amount
-        )
-        
-        let serializedTransaction = try getZeroSignedTransaction(keysignPayload: keysignPayload)
-        let partialFee = try await PolkadotService.shared.getPartialFee(serializedTransaction: serializedTransaction)
-        
-        return partialFee
-    }
-    
-    static func calculateDynamicFee(for tx: SendTransaction) async throws -> BigInt {
-        guard tx.coin.chain == .polkadot else {
-            throw HelperError.runtimeError("Transaction is not for Polkadot")
-        }
-        
-        return try await calculateDynamicFee(
-            fromAddress: tx.coin.address,
-            toAddress: tx.toAddress,
-            amount: tx.amountInRaw
-        )
-    }
-    
-    private static func buildPolkadotKeysignPayload(fromAddress: String, toAddress: String, amount: BigInt) async throws -> KeysignPayload {
-        let gasInfo = try await PolkadotService.shared.getGasInfo(fromAddress: fromAddress)
-        
-        guard let polkadotCoin = TokensStore.TokenSelectionAssets.first(where: { $0.chain == .polkadot && $0.isNativeToken }) else {
-            throw HelperError.runtimeError("Polkadot coin not found")
-        }
-        
-        let coin = Coin(asset: polkadotCoin, address: fromAddress, hexPublicKey: "")
-        
-        return KeysignPayload(
-            coin: coin,
-            toAddress: toAddress,
-            toAmount: amount,
-            chainSpecific: .Polkadot(
-                recentBlockHash: gasInfo.recentBlockHash,
-                nonce: UInt64(gasInfo.nonce),
-                currentBlockNumber: gasInfo.currentBlockNumber,
-                specVersion: gasInfo.specVersion,
-                transactionVersion: gasInfo.transactionVersion,
-                genesisHash: gasInfo.genesisHash
-            ),
-            utxos: [],
-            memo: nil,
-            swapPayload: nil,
-            approvePayload: nil,
-            vaultPubKeyECDSA: "",
-            vaultLocalPartyID: "",
-            libType: "",
-            wasmExecuteContractPayload: nil,
-            skipBroadcast: false
-        )
-    }
     
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard keysignPayload.coin.chain == .polkadot else {
