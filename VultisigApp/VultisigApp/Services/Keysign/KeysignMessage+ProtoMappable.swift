@@ -443,7 +443,7 @@ extension BlockChainSpecific {
             })
             
             
-        case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber, let specVersion, let transactionVersion, let genesisHash):
+        case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber, let specVersion, let transactionVersion, let genesisHash, _):
             return .polkadotSpecific(.with {
                 $0.recentBlockHash = recentBlockHash
                 $0.nonce = nonce

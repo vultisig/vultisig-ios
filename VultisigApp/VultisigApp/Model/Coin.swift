@@ -190,7 +190,7 @@ class Coin: ObservableObject, Codable, Hashable {
         case .sui:
             return "3000000"
         case .polkadot:
-            return "250000000" // 0.025
+            fatalError("Polkadot uses ONLY dynamic fee calculation - no default fees allowed")
         case .ton:
             return TonHelper.defaultFee.description
         case .ripple:

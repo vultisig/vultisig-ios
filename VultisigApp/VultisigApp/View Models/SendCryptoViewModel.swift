@@ -221,9 +221,18 @@ class SendCryptoViewModel: ObservableObject {
                     
                     var gas = BigInt.zero
                     if percentage == 100 {
-                        // For max sends, fetch actual gas estimation instead of using default fee
-                        let polkadotSpecific = try await blockchainService.fetchSpecific(tx: tx)
-                        gas = polkadotSpecific.gas
+                        let balance = tx.coin.rawBalance.toBigInt()
+                        let estimatedAmount = balance * 99 / 100
+                        
+                        if estimatedAmount > 0 && !tx.toAddress.isEmpty {
+                            gas = try await PolkadotHelper.calculateDynamicFee(
+                                fromAddress: tx.coin.address,
+                                toAddress: tx.toAddress,
+                                amount: estimatedAmount
+                            )
+                        } else {
+                            throw HelperError.runtimeError("Cannot calculate dynamic fee: insufficient balance or empty toAddress")
+                        }
                     }
                     
                     tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
@@ -231,19 +240,7 @@ class SendCryptoViewModel: ObservableObject {
                     
                     convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
                 } catch {
-                    // Fallback to default fee if gas estimation fails
-                    await BalanceService.shared.updateBalance(for: tx.coin)
-                    
-                    var gas = BigInt.zero
-                    if percentage == 100 {
-                        gas = tx.coin.feeDefault.toBigInt()
-                    }
-                    
-                    tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
-                    setPercentageAmount(tx: tx, for: percentage)
-                    
-                    convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
-                    print("Failed to get DOT gas estimation, using default fee: \(error.localizedDescription)")
+                    throw error
                 }
                 
                 isLoading = false

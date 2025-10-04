@@ -120,4 +120,24 @@ class PolkadotService: RpcService {
         async let genesisHash = fetchGenesisBlockHash()
         return await (try recentBlockHash, try currentBlockNumber, Int64(try nonce), try runtime.specVersion, try runtime.transactionVersion, try genesisHash)
     }
+    
+    func getPartialFee(serializedTransaction: String) async throws -> BigInt {
+        let hexWithPrefix = serializedTransaction.hasPrefix("0x") ? serializedTransaction : "0x\(serializedTransaction)"
+        
+        return try await sendRPCRequest(method: "payment_queryInfo", params: [hexWithPrefix]) { result in
+            guard let resultDict = result as? [String: Any] else {
+                throw RpcServiceError.rpcError(code: 500, message: "Error to convert the RPC result to Dictionary")
+            }
+            
+            guard let partialFeeString = resultDict["partialFee"] as? String else {
+                throw RpcServiceError.rpcError(code: 404, message: "partialFee not found in the response")
+            }
+            
+            guard let partialFee = BigInt(partialFeeString) else {
+                throw RpcServiceError.rpcError(code: 500, message: "Error to convert partialFee to BigInt")
+            }
+            
+            return partialFee
+        }
+    }
 }

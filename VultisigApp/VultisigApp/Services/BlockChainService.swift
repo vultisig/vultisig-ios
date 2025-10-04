@@ -170,6 +170,25 @@ private extension BlockChainService {
         }
     }
     func fetchSpecificForNonEVM(tx: SendTransaction) async throws -> BlockChainSpecific {
+        if tx.coin.chain == .polkadot {
+            let gasInfo = try await dot.getGasInfo(fromAddress: tx.coin.address)
+            let dynamicFee = try await PolkadotHelper.calculateDynamicFee(
+                fromAddress: tx.coin.address,
+                toAddress: tx.toAddress,
+                amount: tx.amountInRaw
+            )
+            
+            return .Polkadot(
+                recentBlockHash: gasInfo.recentBlockHash,
+                nonce: UInt64(gasInfo.nonce),
+                currentBlockNumber: gasInfo.currentBlockNumber,
+                specVersion: gasInfo.specVersion,
+                transactionVersion: gasInfo.transactionVersion,
+                genesisHash: gasInfo.genesisHash,
+                gas: dynamicFee
+            )
+        }
+        
         let cacheKey = getCacheKey(for: tx.coin,
                                    action: .transfer,
                                    sendMaxAmount: tx.sendMaxAmount,
