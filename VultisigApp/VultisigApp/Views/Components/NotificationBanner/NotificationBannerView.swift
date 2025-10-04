@@ -29,7 +29,8 @@ struct NotificationBannerView: View {
                         .trim(from: 0, to: progress)
                         .stroke(Theme.colors.alertSuccess, style: StrokeStyle(lineWidth: 2, lineCap: .round))
                         .frame(width: 18, height: 18)
-                        .rotationEffect(.degrees(-90))
+                        .rotationEffect(.radians(-.pi / 2))
+                        .scaleEffect(x: -1, y: 1)
                         .animation(.linear(duration: duration), value: progress)
                     Icon(named: "check", color: Theme.colors.alertSuccess, size: 9)
                 }
