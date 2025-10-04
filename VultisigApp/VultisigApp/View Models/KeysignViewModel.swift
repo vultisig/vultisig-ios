@@ -337,7 +337,7 @@ class KeysignViewModel: ObservableObject {
         var signedTransactions: [SignedTransactionResult] = []
         
         if let approvePayload = keysignPayload.approvePayload {
-            let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+            let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, vaultHexPublicKeyEdDSA: vault.pubKeyEdDSA)
             let transaction = try swaps.getSignedApproveTransaction(approvePayload: approvePayload, keysignPayload: keysignPayload, signatures: signatures)
             signedTransactions.append(transaction)
         }
@@ -346,7 +346,7 @@ class KeysignViewModel: ObservableObject {
             let incrementNonce = keysignPayload.approvePayload != nil
             switch swapPayload {
             case .thorchain(let payload):
-                let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, vaultHexPublicKeyEdDSA: vault.pubKeyEdDSA)
                 let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                 signedTransactions.append(transaction)
                 
@@ -365,7 +365,7 @@ class KeysignViewModel: ObservableObject {
                 if keysignPayload.coin.chainType != .EVM || keysignPayload.coin.isNativeToken{
                     break
                 }
-                let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, vaultHexPublicKeyEdDSA: vault.pubKeyEdDSA)
                 let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                 signedTransactions.append(transaction)
             }
@@ -454,7 +454,13 @@ class KeysignViewModel: ObservableObject {
             let transaction = try RippleHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
             return .regular(transaction)
         case .Tron:
-            let transaction = try TronHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures, vault: vault)
+            let transaction = try TronHelper.getSignedTransaction(
+                keysignPayload: keysignPayload, 
+                signatures: signatures,
+                publicKeyECDSA: vault.pubKeyECDSA,
+                publicKeyEdDSA: vault.pubKeyEdDSA,
+                hexChainCode: vault.hexChainCode
+            )
             return .regular(transaction)
         }
         

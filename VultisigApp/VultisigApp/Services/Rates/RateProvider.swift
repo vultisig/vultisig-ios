@@ -84,7 +84,25 @@ final class RateProvider {
         // if a rate is newer , we use the newer one
         let newRateIds = Set(newRates.map { $0.id })
         rates = rates.filter { !newRateIds.contains($0.id) }.union(newRates)
-        Storage.shared.insert(newRates.map { $0.mapToObject() })
+        
+        // Update existing or insert new rates
+        for rate in newRates {
+            let rateId = rate.id // Capture the value outside the predicate
+            let descriptor = FetchDescriptor<DatabaseRate>(
+                predicate: #Predicate { $0.id == rateId }
+            )
+            
+            if let existingRate = try Storage.shared.modelContext.fetch(descriptor).first {
+                // Update existing rate
+                existingRate.fiat = rate.fiat
+                existingRate.crypto = rate.crypto
+                existingRate.value = rate.value
+            } else {
+                // Insert new rate
+                Storage.shared.insert(rate.mapToObject())
+            }
+        }
+        
         try Storage.shared.modelContext.save()
     }
 }

@@ -60,6 +60,8 @@ struct VaultListView: View {
             }
             addFolderButton
         }
+        .padding(.top, 24)
+        .padding(.horizontal, 16)
     }
     
     var header: some View {

@@ -86,7 +86,10 @@ class TronService: RpcService {
         let expiration = nowMillis + oneHourMillis
         
         let calculatedFee = try await calculateTronFee(coin: coin, to: to, memo: memo)
-        let estimation = String(calculatedFee)
+        
+        // For swaps, if fee calculation returns 0, use default fee
+        let finalFee = calculatedFee == 0 ? coin.feeDefault.toBigInt() : calculatedFee
+        let estimation = String(finalFee)
         
         return BlockChainSpecific.Tron(
             timestamp: currentTimestampMillis,

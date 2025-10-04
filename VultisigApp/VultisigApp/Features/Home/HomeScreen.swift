@@ -17,7 +17,7 @@ struct HomeScreen: View {
     @State var addressToCopy: Coin?
     @State var showUpgradeVaultSheet: Bool = false
     
-    @Query var vaults: [Vault] = []
+    @State var vaults: [Vault] = []
     @State private var selectedTab: HomeTab = .wallet
     @State var vaultRoute: VaultMainRoute?
     
@@ -156,7 +156,18 @@ struct HomeScreen: View {
         showScanner = true
     }
     
+    func fetchVaults() {
+        var fetchVaultDescriptor = FetchDescriptor<Vault>()
+        fetchVaultDescriptor.relationshipKeyPathsForPrefetching = [\.coins, \.hiddenTokens, \.referralCode, \.referredCode]
+        do {
+            vaults = try modelContext.fetch(fetchVaultDescriptor)
+        } catch {
+            print(error)
+        }
+    }
+    
     func setData() {
+        fetchVaults()
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
         homeViewModel.selectedVault = nil
@@ -220,8 +231,6 @@ extension HomeScreen {
     @ViewBuilder
     func buildVaultRoute(route: VaultMainRoute, vault: Vault) -> some View {
         switch route {
-        case .chainDetail(let groupedChain):
-            ChainDetailScreen(group: groupedChain, vault: vault)
         case .settings:
             SettingsMainScreen()
         case .createVault:

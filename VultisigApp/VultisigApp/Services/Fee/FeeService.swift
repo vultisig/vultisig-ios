@@ -55,7 +55,7 @@ class EthereumFeeService: FeeService {
     private func calculateEip1559Fees(limit: BigInt, isSwap: Bool, priorityFee: BigInt, chain: Chain,nonce: Int64) async throws -> FeeEnum {
         let baseFee = try await rpcEvmService.getBaseFee()
         
-        let calculatedPriorityFee = try await calculateMaxPriorityFeePerGas(
+        let calculatedPriorityFee = calculateMaxPriorityFeePerGas(
             originalPriorityFee: priorityFee,
             chain: chain
         )
@@ -84,7 +84,7 @@ class EthereumFeeService: FeeService {
         )
     }
     
-    private func calculateMaxPriorityFeePerGas(originalPriorityFee: BigInt, chain: Chain) async throws -> BigInt {
+    private func calculateMaxPriorityFeePerGas(originalPriorityFee: BigInt, chain: Chain) -> BigInt {
         let gwei = BigInt(10).power(9)
         let defaultMaxPriorityFeePerGasL2 = BigInt(20)
         let defaultMaxPriorityFeePolygon = BigInt(30)

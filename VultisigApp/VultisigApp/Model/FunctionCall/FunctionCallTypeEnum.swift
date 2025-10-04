@@ -164,6 +164,9 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
     static func getDefault(for coin: Coin) -> FunctionCallType {
         switch coin.chain {
         case .thorChain:
+            if coin.ticker.contains("TCY") {
+                return .custom
+            }
             return .bond
         case .mayaChain:
             return .bondMaya
