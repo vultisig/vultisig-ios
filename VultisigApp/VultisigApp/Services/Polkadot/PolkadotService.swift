@@ -7,6 +7,7 @@
 
 import Foundation
 import BigInt
+import VultisigCommonData
 
 class PolkadotService: RpcService {
     static let rpcEndpoint = Endpoint.polkadotServiceRpc
@@ -139,5 +140,43 @@ class PolkadotService: RpcService {
             
             return partialFee
         }
+    }
+    
+    func calculateDynamicFee(fromAddress: String, toAddress: String, amount: BigInt) async throws -> BigInt {
+        let gasInfo = try await getGasInfo(fromAddress: fromAddress)
+        
+        guard let polkadotCoin = TokensStore.TokenSelectionAssets.first(where: { $0.chain == .polkadot && $0.isNativeToken }) else {
+            throw HelperError.runtimeError("Polkadot coin not found")
+        }
+        
+        let coin = Coin(asset: polkadotCoin, address: fromAddress, hexPublicKey: "")
+        
+        let keysignPayload = KeysignPayload(
+            coin: coin,
+            toAddress: toAddress,
+            toAmount: amount,
+            chainSpecific: .Polkadot(
+                recentBlockHash: gasInfo.recentBlockHash,
+                nonce: UInt64(gasInfo.nonce),
+                currentBlockNumber: gasInfo.currentBlockNumber,
+                specVersion: gasInfo.specVersion,
+                transactionVersion: gasInfo.transactionVersion,
+                genesisHash: gasInfo.genesisHash
+            ),
+            utxos: [],
+            memo: nil,
+            swapPayload: nil,
+            approvePayload: nil,
+            vaultPubKeyECDSA: "",
+            vaultLocalPartyID: "",
+            libType: "",
+            wasmExecuteContractPayload: nil,
+            skipBroadcast: false
+        )
+        
+        let serializedTransaction = try PolkadotHelper.getZeroSignedTransaction(keysignPayload: keysignPayload)
+        let partialFee = try await getPartialFee(serializedTransaction: serializedTransaction)
+        
+        return partialFee
     }
 }
