@@ -42,6 +42,7 @@ struct ChainDetailScreen: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 20) {
                     topContentSection
+                        .padding(.top, isMacOS ? 60 : 0)
                     bottomContentSection
                 }
                 .padding(.horizontal, 16)
@@ -56,7 +57,11 @@ struct ChainDetailScreen: View {
         .background(VaultMainScreenBackground())
         .withAddressCopy(coin: $addressToCopy)
         .sheet(isPresented: $showReceiveSheet) {
-            ReceiveQRCodeBottomSheet(coin: group.nativeCoin, isPresented: $showReceiveSheet)
+            ReceiveQRCodeBottomSheet(
+                coin: group.nativeCoin,
+                isNativeCoin: true,
+                isPresented: $showReceiveSheet
+            )
         }
         .sheet(isPresented: $showManageTokens) {
             TokenSelectionContainerScreen(

@@ -33,14 +33,10 @@ struct MacOSToolbarView<Content: View>: View {
     
     var body: some View {
         if ignoresTopEdge {
-            // ZStack overlay approach (existing behavior)
-            ZStack(alignment: .top) {
-                // Content
-                content
-                
-                // macOS toolbar with transparent background
-                toolbarContent
-            }
+            content
+                .overlay(toolbarContent, alignment: .top)
+                // Workaround to remove translucent window toolbar on MacOS Tahoe (Liquid glass)
+                .padding(.top, 1)
         } else {
             // VStack layout approach
             VStack(spacing: 0) {

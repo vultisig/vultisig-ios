@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ReceiveQRCodeBottomSheet: View {
     let coin: Coin
+    let isNativeCoin: Bool
     @Binding var isPresented: Bool
     
     @State var qrCodeImage: Image?
@@ -16,6 +17,14 @@ struct ReceiveQRCodeBottomSheet: View {
     @Environment(\.displayScale) var displayScale
     @Environment(\.dismiss) var dismiss
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
+    
+    var coinLogo: String {
+        isNativeCoin ? coin.chain.logo : coin.logo
+    }
+    
+    var coinName: String {
+        isNativeCoin ? coin.chain.name : coin.ticker
+    }
     
     var body: some View {
         GeometryReader { proxy in
@@ -41,7 +50,7 @@ struct ReceiveQRCodeBottomSheet: View {
             let qrCodeImage = QRCodeGenerator().generateImage(
                 qrStringData: coin.address,
                 size: CGSize(width: 200, height: 200),
-                logoImage: PlatformImage(named: coin.chain.logo),
+                logoImage: PlatformImage(named: coinLogo),
                 scale: displayScale
             )
             
@@ -55,7 +64,7 @@ struct ReceiveQRCodeBottomSheet: View {
                 qrCodeData: nil,
                 displayScale: displayScale,
                 type: .Address,
-                addressData: coin.logo
+                addressData: coin.address
             )
         }
         .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: true)
@@ -72,7 +81,7 @@ struct ReceiveQRCodeBottomSheet: View {
                         .padding(8)
                 )
             
-            Text("\("receive".localized) \(coin.chain.name)")
+            Text("\("receive".localized) \(coinName)")
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
         }
@@ -105,6 +114,6 @@ struct ReceiveQRCodeBottomSheet: View {
             show = true
         }
     }
-    .overlay(show ? ReceiveQRCodeBottomSheet(coin: .example, isPresented: $show) : nil)
+    .overlay(show ? ReceiveQRCodeBottomSheet(coin: .example, isNativeCoin: false, isPresented: $show) : nil)
     
 }
