@@ -10,7 +10,7 @@ import BigInt
 
 // TODO: - Extend and reuse for both on-device and co-pairing signing
 struct JoinKeysignGasViewModel {
-    func getCalculatedNetworkFee(payload: KeysignPayload, vault: Vault? = nil) -> (feeCrypto: String, feeFiat: String) {
+    func getCalculatedNetworkFee(payload: KeysignPayload) -> (feeCrypto: String, feeFiat: String) {
         guard let nativeToken = TokensStore.TokenSelectionAssets.first(where: {
             $0.isNativeToken && $0.chain == payload.coin.chain
         }) else {
@@ -28,7 +28,7 @@ struct JoinKeysignGasViewModel {
             let gasGwei = gasDecimal / weiPerGWeiDecimal
             let gasInReadable = gasGwei.formatToDecimal(digits: nativeToken.decimals)
 
-            var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.fee, vault: vault)
+            var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.fee)
             feeInReadable = feeInReadable.nilIfEmpty.map { $0 } ?? ""
 
             return ("\(gasInReadable) \(payload.coin.chain.feeUnit)", feeInReadable)
@@ -37,37 +37,29 @@ struct JoinKeysignGasViewModel {
         let gasAmount = Decimal(payload.chainSpecific.gas) / pow(10, nativeToken.decimals)
         let gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
 
-        var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.gas, vault: vault)
+        var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.gas)
         feeInReadable = feeInReadable.nilIfEmpty.map { $0 } ?? ""
 
         return ("\(gasInReadable) \(payload.coin.chain.feeUnit)", feeInReadable)
     }
     
-    func getJoinedCalculatedNetworkFee(payload: KeysignPayload, vault: Vault? = nil) -> String {
-        let fees = getCalculatedNetworkFee(payload: payload, vault: vault)
+    func getJoinedCalculatedNetworkFee(payload: KeysignPayload) -> String {
+        let fees = getCalculatedNetworkFee(payload: payload)
         return fees.feeCrypto + " (~\(fees.feeFiat))"
     }
     
-    func feesInReadable(coin: Coin, fee: BigInt, vault: Vault? = nil) -> String {
-        // Use provided vault or fallback to ApplicationState
-        let targetVault = vault ?? ApplicationState.shared.currentVault
-        guard let targetVault = targetVault else {
-            return ""
+    func feesInReadable(coin: Coin, fee: BigInt) -> String {
+        // Try to get native coin from vault first (has up-to-date price data)
+        if let vaultNativeCoin = ApplicationState.shared.currentVault?.nativeCoin(for: coin.chain) {
+            let feeDecimal = vaultNativeCoin.decimal(for: fee)
+            let fiatString = RateProvider.shared.fiatBalanceString(value: feeDecimal, coin: vaultNativeCoin)
+            if !fiatString.isEmpty {
+                return fiatString
+            }
         }
         
-        guard let nativeCoin = targetVault.nativeCoin(for: coin.chain) else {
-            return ""
-        }
-        
-        let feeDecimal = nativeCoin.decimal(for: fee)
-        let fiatString = RateProvider.shared.fiatBalanceString(value: feeDecimal, coin: nativeCoin)
-        
-        // If fiat string is empty, try with the original payload coin as fallback
-        if fiatString.isEmpty {
-            let fallbackFiatString = RateProvider.shared.fiatBalanceString(value: feeDecimal, coin: coin)
-            return fallbackFiatString
-        }
-        
-        return fiatString
+        // Fallback to the payload coin itself
+        let feeDecimal = coin.decimal(for: fee)
+        return RateProvider.shared.fiatBalanceString(value: feeDecimal, coin: coin)
     }
 }

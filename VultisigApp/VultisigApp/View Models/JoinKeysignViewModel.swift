@@ -397,11 +397,11 @@ class JoinKeysignViewModel: ObservableObject {
     
     func getCalculatedNetworkFee() -> (feeCrypto: String, feeFiat: String) {
         guard let keysignPayload else { return (.empty, .empty) }
-        return gasViewModel.getCalculatedNetworkFee(payload: keysignPayload, vault: vault)
+        return gasViewModel.getCalculatedNetworkFee(payload: keysignPayload)
     }
     
     func getJoinedCalculatedNetworkFee() -> String {
         guard let keysignPayload else { return "" }
-        return gasViewModel.getJoinedCalculatedNetworkFee(payload: keysignPayload, vault: vault)
+        return gasViewModel.getJoinedCalculatedNetworkFee(payload: keysignPayload)
     }
 }
