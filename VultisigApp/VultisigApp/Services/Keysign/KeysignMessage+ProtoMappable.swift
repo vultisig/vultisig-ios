@@ -307,13 +307,19 @@ extension BlockChainSpecific {
                 hasProgramId: value.programID
             )
         case .polkadotSpecific(let value):
+            // Parse currentBlockNumber which may contain "blockNumber|gas" format
+            let parts = value.currentBlockNumber.components(separatedBy: "|")
+            let blockNumber = BigInt(stringLiteral: parts[0])
+            let gas = parts.count > 1 ? BigInt(stringLiteral: parts[1]) : nil
+            
             self = .Polkadot(
                 recentBlockHash: value.recentBlockHash,
                 nonce: value.nonce,
-                currentBlockNumber: BigInt(stringLiteral: value.currentBlockNumber),
+                currentBlockNumber: blockNumber,
                 specVersion: value.specVersion,
                 transactionVersion: value.transactionVersion,
-                genesisHash: value.genesisHash
+                genesisHash: value.genesisHash,
+                gas: gas
             )
         case .suicheSpecific(let value):
             let coinsArray: [[String: String]] = value.coins.map { coin in
@@ -443,11 +449,16 @@ extension BlockChainSpecific {
             })
             
             
-        case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber, let specVersion, let transactionVersion, let genesisHash, _):
+        case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber, let specVersion, let transactionVersion, let genesisHash, let gas):
             return .polkadotSpecific(.with {
                 $0.recentBlockHash = recentBlockHash
                 $0.nonce = nonce
-                $0.currentBlockNumber = String(currentBlockNumber)
+                // Encode gas in currentBlockNumber as "blockNumber|gas" if gas exists
+                if let gas = gas {
+                    $0.currentBlockNumber = "\(currentBlockNumber)|\(gas)"
+                } else {
+                    $0.currentBlockNumber = String(currentBlockNumber)
+                }
                 $0.specVersion = specVersion
                 $0.transactionVersion = transactionVersion
                 $0.genesisHash = genesisHash
