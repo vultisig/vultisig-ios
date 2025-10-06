@@ -61,7 +61,7 @@ class EthereumFeeService: FeeService {
         )
         
         let baseNetworkPrice = isSwap ? (baseFee * 110) / 100 : baseFee
-        let maxFeePerGas = baseNetworkPrice + calculatedPriorityFee
+        let maxFeePerGas = (baseNetworkPrice * 120) / 100 + calculatedPriorityFee
         
         return .Eip1559(
             limit: limit,
