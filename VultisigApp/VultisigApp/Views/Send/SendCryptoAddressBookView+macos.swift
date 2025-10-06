@@ -10,16 +10,13 @@ import SwiftUI
 extension SendCryptoAddressBookView {
     var content: some View {
         VStack(spacing: 12) {
-            headerMac
             listSelector
             list
-        }.padding(16)
-            .frame(width: 500)
+        }
+        .padding(16)
+        .crossPlatformToolbar("addressBook".localized)
+        .frame(width: 500)
     }
-    var headerMac: some View {
-        GeneralMacHeader(title: "addressBook")
-    }
-    
 }
 
 #endif

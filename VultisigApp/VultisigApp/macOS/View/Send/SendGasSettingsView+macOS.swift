@@ -15,11 +15,11 @@ extension SendGasSettingsView {
                 .frame(width: 500)
             
             VStack {
-                headerMac
                 view
                 buttons
             }
         }
+        .crossPlatformToolbar("advanced".localized)
     }
     
     func textField(title: String, text: Binding<String>, label: String? = nil, disabled: Bool = false) -> some View {
@@ -51,10 +51,6 @@ extension SendGasSettingsView {
                 .foregroundColor(Theme.colors.bgSecondary)
         )
         .padding(.horizontal, 16)
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "Advanced")
     }
     
     var buttons: some View {

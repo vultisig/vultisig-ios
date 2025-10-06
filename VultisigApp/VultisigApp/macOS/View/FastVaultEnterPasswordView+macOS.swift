@@ -12,19 +12,13 @@ extension FastVaultEnterPasswordView {
     var body: some View {
         ZStack {
             Background()
-            VStack {
-                headerMac
                 view
                     .padding(.horizontal, 25)
-            }
             if isLoading {
                 Loader()
             }
         }
-    }
-
-    var headerMac: some View {
-        GeneralMacHeader(title: "")
+        .crossPlatformToolbar()
     }
 }
 #endif

@@ -11,7 +11,6 @@ import SwiftUI
 extension NavigationBlankBackButton {
     var body: some View {
         image
-            .offset(x: -8)
     }
 }
 #endif

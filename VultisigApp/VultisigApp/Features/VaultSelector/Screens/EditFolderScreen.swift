@@ -125,7 +125,7 @@ struct EditFolderScreen: View {
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.title3)
             HStack {
-                BottomSheetButton(icon: "trash", type: .alert) {
+                ToolbarButton(image: "trash", type: .destructive) {
                     deleteFolder()
                 }
             }
