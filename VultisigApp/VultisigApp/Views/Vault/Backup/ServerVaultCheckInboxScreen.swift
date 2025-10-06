@@ -18,6 +18,7 @@ struct ServerVaultCheckInboxScreen: View {
     var body: some View {
         Screen(title: "serverBackup".localized) {
             VStack {
+                Spacer()
                 VStack(spacing: 40) {
                     Image("check-inbox")
                         .resizable()
@@ -39,11 +40,12 @@ struct ServerVaultCheckInboxScreen: View {
                                 .foregroundStyle(Theme.colors.textPrimary)
                                 .font(Theme.fonts.bodySMedium)
                                 .underline()
-                        }.showIf(showCheckInboxButton)
+                        }
+                        .showIf(showCheckInboxButton)
+                        .buttonStyle(.plain)
                     }
                     .padding(.horizontal, 16)
                 }
-                
                 Spacer()
                 
                 PrimaryButton(
