@@ -20,6 +20,11 @@ struct ImportWalletView: View {
     
     var body: some View {
         content
+            .crossPlatformToolbar("import".localized) {
+                CustomToolbarItem(placement: .trailing) {
+                    NavigationHelpButton()
+                }
+            }
             .fileImporter(
                 isPresented: $backupViewModel.showVaultImporter,
                 allowedContentTypes: [.data],

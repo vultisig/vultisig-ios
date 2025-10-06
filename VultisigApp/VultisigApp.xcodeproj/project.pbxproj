@@ -328,7 +328,6 @@
 		A53065F62D57CAED000B82E6 /* OnboardingSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A53065F52D57CAED000B82E6 /* OnboardingSummaryView.swift */; };
 		A53065FA2D5A9FEF000B82E6 /* fastvault_overview.riv in Resources */ = {isa = PBXBuildFile; fileRef = A53065F92D5A9FEF000B82E6 /* fastvault_overview.riv */; };
 		A53065FC2D5AA5D3000B82E6 /* securevault_overview.riv in Resources */ = {isa = PBXBuildFile; fileRef = A53065FB2D5AA5D3000B82E6 /* securevault_overview.riv */; };
-		A53287B52C4DB874009FD3D3 /* CoinPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A53287B42C4DB874009FD3D3 /* CoinPickerView.swift */; };
 		A533E6402CEC814F00FCBAEB /* MonthlyBackupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A533E63F2CEC814F00FCBAEB /* MonthlyBackupView.swift */; };
 		A5340A672CEC9503002ADD35 /* DateExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5340A662CEC9503002ADD35 /* DateExtension.swift */; };
 		A5340A692CECF093002ADD35 /* MonthlyBackupView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5340A682CECF093002ADD35 /* MonthlyBackupView+iOS.swift */; };
@@ -434,8 +433,6 @@
 		A61BC81B2BA26D9900484689 /* ChainSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC81A2BA26D9900484689 /* ChainSelectionCell.swift */; };
 		A622C8322C9BB26F00908332 /* VultisigApp+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8312C9BB26F00908332 /* VultisigApp+iOS.swift */; };
 		A622C8342C9BB28000908332 /* VultisigApp+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8332C9BB28000908332 /* VultisigApp+macOS.swift */; };
-		A622C8362C9BB76A00908332 /* CoinPickerView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8352C9BB76A00908332 /* CoinPickerView+iOS.swift */; };
-		A622C8382C9BB83800908332 /* CoinPickerView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8372C9BB83800908332 /* CoinPickerView+macOS.swift */; };
 		A622C8462C9BBD2F00908332 /* FunctionCallView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8452C9BBD2F00908332 /* FunctionCallView+iOS.swift */; };
 		A622C8482C9BBD3900908332 /* FunctionCallView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8472C9BBD3900908332 /* FunctionCallView+macOS.swift */; };
 		A622C84A2C9BBE2800908332 /* FunctionCallDetailsView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8492C9BBE2800908332 /* FunctionCallDetailsView+iOS.swift */; };
@@ -858,7 +855,6 @@
 		B51160132E62879900534A43 /* TonService+Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51160122E62879100534A43 /* TonService+Models.swift */; };
 		B51819862DCC0A480013C435 /* FunctionCallStakeTCY.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51819852DCC0A480013C435 /* FunctionCallStakeTCY.swift */; };
 		B51819882DCC1D920013C435 /* FunctionCallUnstakeTCY.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51819872DCC1D920013C435 /* FunctionCallUnstakeTCY.swift */; };
-		B51BA0AF2E304E000075BEBE /* SwapCustomTokenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51BA0AE2E304E000075BEBE /* SwapCustomTokenView.swift */; };
 		B520B2FE2C3250230097C590 /* TextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B520B2FD2C3250230097C590 /* TextField.swift */; };
 		B52196422C1296DF0021D27A /* IntExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52196412C1296DF0021D27A /* IntExtension.swift */; };
 		B52196442C12C3540021D27A /* CustomTokenScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52196432C12C3540021D27A /* CustomTokenScreen.swift */; };
@@ -1399,7 +1395,6 @@
 		A53065F52D57CAED000B82E6 /* OnboardingSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSummaryView.swift; sourceTree = "<group>"; };
 		A53065F92D5A9FEF000B82E6 /* fastvault_overview.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = fastvault_overview.riv; sourceTree = "<group>"; };
 		A53065FB2D5AA5D3000B82E6 /* securevault_overview.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = securevault_overview.riv; sourceTree = "<group>"; };
-		A53287B42C4DB874009FD3D3 /* CoinPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinPickerView.swift; sourceTree = "<group>"; };
 		A533E63F2CEC814F00FCBAEB /* MonthlyBackupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthlyBackupView.swift; sourceTree = "<group>"; };
 		A5340A662CEC9503002ADD35 /* DateExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateExtension.swift; sourceTree = "<group>"; };
 		A5340A682CECF093002ADD35 /* MonthlyBackupView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MonthlyBackupView+iOS.swift"; sourceTree = "<group>"; };
@@ -1504,8 +1499,6 @@
 		A61BC81A2BA26D9900484689 /* ChainSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainSelectionCell.swift; sourceTree = "<group>"; };
 		A622C8312C9BB26F00908332 /* VultisigApp+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VultisigApp+iOS.swift"; sourceTree = "<group>"; };
 		A622C8332C9BB28000908332 /* VultisigApp+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VultisigApp+macOS.swift"; sourceTree = "<group>"; };
-		A622C8352C9BB76A00908332 /* CoinPickerView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoinPickerView+iOS.swift"; sourceTree = "<group>"; };
-		A622C8372C9BB83800908332 /* CoinPickerView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoinPickerView+macOS.swift"; sourceTree = "<group>"; };
 		A622C8452C9BBD2F00908332 /* FunctionCallView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FunctionCallView+iOS.swift"; sourceTree = "<group>"; };
 		A622C8472C9BBD3900908332 /* FunctionCallView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FunctionCallView+macOS.swift"; sourceTree = "<group>"; };
 		A622C8492C9BBE2800908332 /* FunctionCallDetailsView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FunctionCallDetailsView+iOS.swift"; sourceTree = "<group>"; };
@@ -1926,7 +1919,6 @@
 		B51160122E62879100534A43 /* TonService+Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TonService+Models.swift"; sourceTree = "<group>"; };
 		B51819852DCC0A480013C435 /* FunctionCallStakeTCY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallStakeTCY.swift; sourceTree = "<group>"; };
 		B51819872DCC1D920013C435 /* FunctionCallUnstakeTCY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallUnstakeTCY.swift; sourceTree = "<group>"; };
-		B51BA0AE2E304E000075BEBE /* SwapCustomTokenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCustomTokenView.swift; sourceTree = "<group>"; };
 		B520B2FD2C3250230097C590 /* TextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextField.swift; sourceTree = "<group>"; };
 		B52196412C1296DF0021D27A /* IntExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntExtension.swift; sourceTree = "<group>"; };
 		B52196432C12C3540021D27A /* CustomTokenScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTokenScreen.swift; sourceTree = "<group>"; };
@@ -3454,14 +3446,6 @@
 			path = Reshare;
 			sourceTree = "<group>";
 		};
-		A53287B32C4DB835009FD3D3 /* CoinPicker */ = {
-			isa = PBXGroup;
-			children = (
-				A53287B42C4DB874009FD3D3 /* CoinPickerView.swift */,
-			);
-			path = CoinPicker;
-			sourceTree = "<group>";
-		};
 		A543B3992BEA6E3E003FB989 /* 1inch */ = {
 			isa = PBXGroup;
 			children = (
@@ -4186,7 +4170,6 @@
 				A69FBBA52C8ADC2E00A4B78B /* WelcomeView+iOS.swift */,
 				A69FBBC32C8BB5AD00A4B78B /* NoCameraPermissionView+iOS.swift */,
 				A69FBBC92C8BB77900A4B78B /* CoverView+iOS.swift */,
-				A622C8352C9BB76A00908332 /* CoinPickerView+iOS.swift */,
 				A622C85D2C9BCE6800908332 /* PeerDiscoveryView+iOS.swift */,
 				A6C670CC2C9E8D3500F59B6A /* SetupQRCodeView+iOS.swift */,
 				A6C670D02C9E8E1F00F59B6A /* NewWalletNameView+iOS.swift */,
@@ -4227,7 +4210,6 @@
 				A6386D892C8BBB7C00DDD58E /* JoinKeysignDoneView+macOS.swift */,
 				A6386DB32C90263E00DDD58E /* ToggleSelectionCell+macOS.swift */,
 				A51AE8C52C958A0200EF9A7A /* FastVaultEnterPasswordView+macOS.swift */,
-				A622C8372C9BB83800908332 /* CoinPickerView+macOS.swift */,
 				A622C84F2C9BC7D600908332 /* FastVaultEmailView+macOS.swift */,
 				A622C8532C9BC9E500908332 /* FastVaultSetPasswordView+macOS.swift */,
 				A622C8572C9BCCC600908332 /* JoinKeygenView+macOS.swift */,
@@ -4640,7 +4622,6 @@
 				A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */,
 				A65518022BF849FC006BB924 /* CoverView.swift */,
 				A52B0D012CA53DBE00507966 /* Reshare */,
-				A53287B32C4DB835009FD3D3 /* CoinPicker */,
 				A6C3ABC62C3E594400F13ED0 /* Address Book */,
 				B5A97CEB2BF41554007574D7 /* FunctionCall */,
 				46D067E42B8852B70052F535 /* Keygen */,
@@ -4741,7 +4722,6 @@
 		D9AD8EEF2B6731570009F8D5 /* Swap */ = {
 			isa = PBXGroup;
 			children = (
-				B51BA0AE2E304E000075BEBE /* SwapCustomTokenView.swift */,
 				A6966D2E2BA4045C00903CA4 /* SwapCryptoView.swift */,
 				A564ED412BC350520056FDC0 /* SwapTransaction.swift */,
 				A543B3A12BEA93D4003FB989 /* SwapQuote.swift */,
@@ -5328,7 +5308,6 @@
 				13D3AC962E85901F00BA4273 /* VaultActionRouteBuilder.swift in Sources */,
 				DE727C0C2D000FC9007E9273 /* LibType.swift in Sources */,
 				1385741E2E2DB441002532BF /* PrimaryNavigationButton.swift in Sources */,
-				A622C8362C9BB76A00908332 /* CoinPickerView+iOS.swift in Sources */,
 				A622C8342C9BB28000908332 /* VultisigApp+macOS.swift in Sources */,
 				A6980C262BC0848F00F452AB /* SettingCell.swift in Sources */,
 				A622C8522C9BC9D200908332 /* FastVaultSetPasswordView+iOS.swift in Sources */,
@@ -5705,7 +5684,6 @@
 				13D178FE2E57644F00007B48 /* AddressBookChainSelector.swift in Sources */,
 				A622C8622C9BEC2100908332 /* PhoneCheckUpdateViewModel.swift in Sources */,
 				A698222C2CB398E700966D19 /* FolderCell.swift in Sources */,
-				A53287B52C4DB874009FD3D3 /* CoinPickerView.swift in Sources */,
 				A6C670CD2C9E8D3500F59B6A /* SetupQRCodeView+iOS.swift in Sources */,
 				A60CA7EB2BB1020900FDEB5C /* DetectOrientation.swift in Sources */,
 				B5C4A42C2C62EC6500AF9B8B /* AddressService.swift in Sources */,
@@ -5795,7 +5773,6 @@
 				1368C2752E832EDB00BB240D /* FolderDetailView.swift in Sources */,
 				4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */,
 				A622C84C2C9BBE3100908332 /* FunctionCallDetailsView+macOS.swift in Sources */,
-				A622C8382C9BB83800908332 /* CoinPickerView+macOS.swift in Sources */,
 				A6ACAD612D110A0A00432CC4 /* SettingsAdvancedView+macOS.swift in Sources */,
 				A61BC81B2BA26D9900484689 /* ChainSelectionCell.swift in Sources */,
 				A6182F4F2C9296350059BFDD /* StyledIntegerField+iOS.swift in Sources */,
@@ -5820,7 +5797,6 @@
 				A6C6713D2CA3C87600F59B6A /* KeygenViewInstructions+macOS.swift in Sources */,
 				A622C85C2C9BCD6E00908332 /* KeygenView+macOS.swift in Sources */,
 				B57DD59E2C3E69F500934CBB /* TokenAccountsByOwner.swift in Sources */,
-				B51BA0AF2E304E000075BEBE /* SwapCustomTokenView.swift in Sources */,
 				A66BFCCD2C1347D5004DCD4F /* NavigationQRShareButton.swift in Sources */,
 				A622C8482C9BBD3900908332 /* FunctionCallView+macOS.swift in Sources */,
 				A5CBA32C2BCD747C00088CC3 /* TappableTextFieldStyle.swift in Sources */,

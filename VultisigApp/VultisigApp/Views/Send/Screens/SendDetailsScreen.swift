@@ -29,9 +29,7 @@ struct SendDetailsScreen: View {
     @State var nativeTokenBalance = ""
     @State var coinBalance: String? = nil
     @State var showMemoField = false
-    
-    @State var isCoinPickerActive = false
-    
+        
     @StateObject var keyboardObserver = KeyboardObserver()
     
     @FocusState var focusedField: Field?
@@ -131,12 +129,6 @@ struct SendDetailsScreen: View {
             }
             .alert(isPresented: $sendCryptoViewModel.showAlert) {
                 alert
-            }
-            .navigationDestination(isPresented: $isCoinPickerActive) {
-                CoinPickerView(coins: sendCryptoViewModel.pickerCoins(vault: vault, tx: tx)) { coin in
-                    tx.coin = coin
-                    tx.fromAddress = coin.address
-                }
             }
     }
     
