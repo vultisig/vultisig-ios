@@ -57,7 +57,7 @@ struct SwapCryptoDetailsView: View {
         Screen(showNavigationBar: false) {
             view
         }
-        .platformSheet(isPresented: $swapViewModel.showFromChainSelector) {
+        .crossPlatformSheet(isPresented: $swapViewModel.showFromChainSelector) {
             SwapChainPickerView(
                 filterType: .swap,
                 vault: vault,
@@ -66,7 +66,7 @@ struct SwapCryptoDetailsView: View {
             )
             .environmentObject(coinSelectionViewModel)
         }
-        .platformSheet(isPresented: $swapViewModel.showToChainSelector) {
+        .crossPlatformSheet(isPresented: $swapViewModel.showToChainSelector) {
             SwapChainPickerView(
                 filterType: .swap,
                 vault: vault,
@@ -75,7 +75,7 @@ struct SwapCryptoDetailsView: View {
             )
             .environmentObject(coinSelectionViewModel)
         }
-        .platformSheet(isPresented: $swapViewModel.showFromCoinSelector) {
+        .crossPlatformSheet(isPresented: $swapViewModel.showFromCoinSelector) {
             SwapCoinPickerView(
                 vault: vault,
                 showSheet: $swapViewModel.showFromCoinSelector,
@@ -84,7 +84,7 @@ struct SwapCryptoDetailsView: View {
             )
             .environmentObject(coinSelectionViewModel)
         }
-        .platformSheet(isPresented: $swapViewModel.showToCoinSelector) {
+        .crossPlatformSheet(isPresented: $swapViewModel.showToCoinSelector) {
             SwapCoinPickerView(
                 vault: vault,
                 showSheet: $swapViewModel.showToCoinSelector,

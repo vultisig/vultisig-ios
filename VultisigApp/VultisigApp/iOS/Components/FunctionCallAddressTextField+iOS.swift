@@ -18,7 +18,7 @@ extension FunctionCallAddressTextField {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Theme.colors.bgSecondary)
             .cornerRadius(10)
-            .platformSheet(isPresented: $showScanner) {
+            .crossPlatformSheet(isPresented: $showScanner) {
                 codeScanner
             }
             .sheet(isPresented: $showImagePicker, onDismiss: processImage) {

@@ -64,7 +64,7 @@ struct PeerDiscoveryView: View {
             .onLoad {
                 showInfo()
             }
-            .platformSheet(isPresented: $showInfoSheet) {
+            .crossPlatformSheet(isPresented: $showInfoSheet) {
                 PeerDiscoveryInfoBanner(isPresented: $showInfoSheet)
                     .presentationDetents([.height(450)])
             }

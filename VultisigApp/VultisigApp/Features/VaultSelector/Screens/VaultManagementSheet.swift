@@ -67,7 +67,7 @@ struct VaultManagementSheet: View {
             updateDetents(whileAnimation: false)
         }
 #else
-        .applySheetHeight()
+        .applySheetSize()
         .background(Theme.colors.bgPrimary)
 #endif
     }
@@ -186,7 +186,7 @@ private extension VaultManagementSheet {
                     isPresented.toggle()
                 }
             }
-            .platformSheet(isPresented: $isPresented) {
+            .crossPlatformSheet(isPresented: $isPresented) {
                 VaultManagementSheet(
                     onAddVault: {},
                     onSelectVault: { _ in },

@@ -32,7 +32,7 @@ struct AddressBookChainSelectionScreen: View {
                 .cornerRadius(12)
             }
         }
-        .frame(width: 700, height: 650)
+        .applySheetSize()
         .onLoad(perform: viewModel.setup)
     }
     

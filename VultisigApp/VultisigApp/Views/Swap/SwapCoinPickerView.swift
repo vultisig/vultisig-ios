@@ -42,7 +42,8 @@ struct SwapCoinPickerView: View {
         Screen(title: "selectAsset".localized) {
             content
         }
-        .frame(width: 700, height: 650)
+        .applySheetSize()
+        .sheetStyle()
     }
     
     var content: some View {

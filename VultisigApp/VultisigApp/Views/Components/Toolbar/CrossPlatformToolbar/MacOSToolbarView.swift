@@ -56,7 +56,9 @@ struct MacOSToolbarView<Content: View>: View {
             HStack(spacing: 8) {
                 // Automatic back button
                 if showsBackButton {
-                    ToolbarButton(image: "chevron-right", action: { dismiss() })
+                    ToolbarButton(image: "chevron-right", action: {
+                        dismiss()
+                    })
                         .rotationEffect(.radians(.pi))
                 }
                 
@@ -72,7 +74,7 @@ struct MacOSToolbarView<Content: View>: View {
             if let navigationTitle {
                 Text(navigationTitle)
                     .foregroundColor(Theme.colors.textPrimary)
-                    .font(.title3)
+                    .font(Theme.fonts.bodyLMedium)
             }
             
             Spacer()

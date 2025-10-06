@@ -9,7 +9,7 @@ import SwiftUI
 
 extension View {
     func shareSheet(isPresented: Binding<Bool>, activityItems: [Any], completion: ((Bool) -> Void)?, applicationActivities: [UIActivity]? = nil) -> some View {
-        self.platformSheet(isPresented: isPresented) {
+        self.crossPlatformSheet(isPresented: isPresented) {
             ShareSheetViewController(
                 isPresented: isPresented,
                 activityItems: activityItems,

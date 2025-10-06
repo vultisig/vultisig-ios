@@ -51,7 +51,7 @@ struct BottomSheetModifier<SheetContent: BottomSheetContentView>: ViewModifier {
 
 private extension BottomSheetModifier {
     func nativeBottomSheet(content: Content) -> some View {
-        content.platformSheet(isPresented: $isPresented) {
+        content.crossPlatformSheet(isPresented: $isPresented) {
             VStack {
                 BottomSheetContainer {
                     sheetContent

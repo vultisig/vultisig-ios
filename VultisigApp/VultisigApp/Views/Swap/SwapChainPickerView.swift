@@ -19,6 +19,7 @@ struct SwapChainPickerView: View {
     @Binding var selectedChain: Chain?
     
     @EnvironmentObject var viewModel: CoinSelectionViewModel
+    @Environment(\.dismiss) var dismiss
     
     init(
         filterType: ChainFilterType = .send,
@@ -36,7 +37,8 @@ struct SwapChainPickerView: View {
         Screen(title: "selectChain".localized) {
             views
         }
-        .frame(width: 700, height: 650)
+        .applySheetSize()
+        .sheetStyle()
         .onDisappear { viewModel.searchText = "" }
     }
     

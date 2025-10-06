@@ -31,7 +31,7 @@ struct EditFolderScreen: View {
         view
             .padding(.top, 24)
             .padding(.horizontal, 16)
-            .applySheetHeight()
+            .applySheetSize()
             .alert(isPresented: $folderViewModel.showAlert) {
                 alert
             }

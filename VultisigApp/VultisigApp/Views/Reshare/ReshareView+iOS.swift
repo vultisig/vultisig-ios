@@ -30,7 +30,7 @@ extension ReshareView {
                 NavigationHelpButton()
             }
         }
-        .platformSheet(isPresented: $showJoinReshare) {
+        .crossPlatformSheet(isPresented: $showJoinReshare) {
             GeneralCodeScannerView(
                 showSheet: $showJoinReshare,
                 shouldJoinKeygen: $shouldJoinKeygen,

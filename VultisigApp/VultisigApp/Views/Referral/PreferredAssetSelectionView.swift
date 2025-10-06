@@ -14,23 +14,24 @@ struct PreferredAssetSelectionView: View {
     @StateObject var viewModel = PreferredAssetSelectionViewModel()
     
     var body: some View {
-        VStack(spacing: 8) {
-            SheetHeaderView(title: "selectAsset".localized, isPresented: $isPresented)
-                .padding(.top, 8)
-                .padding(.bottom, 10)
-            SearchTextField(value: $viewModel.searchText)
-            ScrollView {
-                if viewModel.isLoading {
-                    loadingView
-                } else if !viewModel.filteredAssets.isEmpty {
-                    list
-                } else {
-                    emptyMessage
+        Screen(title: "selectAsset".localized) {
+            VStack(spacing: 8) {
+                SearchTextField(value: $viewModel.searchText)
+                ScrollView {
+                    if viewModel.isLoading {
+                        loadingView
+                    } else if !viewModel.filteredAssets.isEmpty {
+                        list
+                    } else {
+                        emptyMessage
+                    }
                 }
+                .cornerRadius(12)
             }
-            .cornerRadius(12)
         }
-        .fullScreenSheet()
+        .applySheetSize()
+        .sheetStyle()
+        .onDisappear { viewModel.searchText = "" }
         .onLoad {
             Task {
                 await viewModel.setup()

@@ -198,7 +198,7 @@ struct SwapVerifyView: View {
             } longPressAction: {
                 onSignPress()
             }
-            .platformSheet(isPresented: $fastPasswordPresented) {
+            .crossPlatformSheet(isPresented: $fastPasswordPresented) {
                 FastVaultEnterPasswordView(
                     password: $tx.fastVaultPassword,
                     vault: vault,

@@ -87,7 +87,7 @@ struct SendDetailsScreen: View {
             // Stop all polling when leaving Send screen
             PendingTransactionManager.shared.stopAllPolling()
         }
-        .platformSheet(isPresented: $settingsPresented) {
+        .crossPlatformSheet(isPresented: $settingsPresented) {
             SendGasSettingsView(
                 viewModel: SendGasSettingsViewModel(
                     coin: tx.coin,
@@ -102,7 +102,7 @@ struct SendDetailsScreen: View {
         .navigationDestination(isPresented: $navigateToVerify) {
             SendRouteBuilder().buildVerifyScreen(tx: tx, vault: vault)
         }
-        .platformSheet(isPresented: $sendDetailsViewModel.showChainPickerSheet) {
+        .crossPlatformSheet(isPresented: $sendDetailsViewModel.showChainPickerSheet) {
             SwapChainPickerView(
                 vault: vault,
                 showSheet: $sendDetailsViewModel.showChainPickerSheet,
@@ -110,7 +110,7 @@ struct SendDetailsScreen: View {
             )
             .environmentObject(coinSelectionViewModel)
         }
-        .platformSheet(isPresented: $sendDetailsViewModel.showCoinPickerSheet) {
+        .crossPlatformSheet(isPresented: $sendDetailsViewModel.showCoinPickerSheet) {
             SwapCoinPickerView(
                 vault: vault,
                 showSheet: $sendDetailsViewModel.showCoinPickerSheet,

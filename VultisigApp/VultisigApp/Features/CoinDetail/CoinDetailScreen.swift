@@ -51,8 +51,8 @@ struct CoinDetailScreen: View {
         .presentationDetents([.medium])
         .presentationBackground(Theme.colors.bgSecondary)
         .presentationDragIndicator(.visible)
-        .applySheetHeight()
-        .platformSheet(isPresented: $showReceiveSheet) {
+        .applySheetSize()
+        .crossPlatformSheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(
                 coin: coin,
                 isNativeCoin: false,

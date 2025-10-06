@@ -43,10 +43,8 @@ struct Screen<Content: View>: View {
         }
 #else
         contentContainer
-            .if(showNavigationBar) { view in
-                view
-                    .navigationTitle(title)
-                    .navigationBarTitleDisplayMode(.inline)
+            .if(showNavigationBar) {
+                $0.crossPlatformToolbar(title)
             }
 #endif
     }
