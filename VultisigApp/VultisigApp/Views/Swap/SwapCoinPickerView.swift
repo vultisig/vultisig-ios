@@ -39,44 +39,15 @@ struct SwapCoinPickerView: View {
     }
     
     var body: some View {
-        VStack {
-            header
+        Screen(title: "selectAsset".localized) {
             content
         }
-        .fullScreenSheet()
-    }
-    
-    var header: some View {
-        HStack {
-            backButton
-            Spacer()
-            title
-            Spacer()
-            backButton
-                .opacity(0)
-        }
-    }
-    
-    @ViewBuilder
-    var backButton: some View {
-        #if os(macOS)
-            Button {
-                showSheet = false
-            } label: {
-                NavigationBlankBackButton()
-            }
-        #endif
-    }
-    
-    var title: some View {
-        Text(NSLocalizedString("selectAsset", comment: ""))
-            .foregroundColor(Theme.colors.textPrimary)
-            .font(Theme.fonts.bodyLMedium)
+        .frame(width: 700, height: 650)
     }
     
     var content: some View {
         ZStack(alignment: .bottom) {
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack(spacing: 12) {
                     searchBar
                     
@@ -196,6 +167,7 @@ struct SwapCoinPickerView: View {
                     .animation(.easeInOut, value: isSelected)
                 }
                 .frame(width: itemContainerSize)
+                .buttonStyle(.plain)
             }
             
             Capsule()

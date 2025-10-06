@@ -22,6 +22,7 @@ extension VultisigApp {
             .environmentObject(settingsDefaultChainViewModel)
             .environmentObject(phoneCheckUpdateViewModel)
             .environmentObject(globalStateViewModel)
+            .environmentObject(sheetPresentedCounterManager)
             .onChange(of: scenePhase) {
                 switch scenePhase {
                 case .active:

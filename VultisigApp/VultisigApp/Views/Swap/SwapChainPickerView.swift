@@ -33,44 +33,11 @@ struct SwapChainPickerView: View {
     }
     
     var body: some View {
-        VStack {
-            header
-            content
+        Screen(title: "selectChain".localized) {
+            views
         }
-        .fullScreenSheet()
-    }
-    
-    var content: some View {
-        views
-            .onDisappear { viewModel.searchText = "" }
-    }
-    
-    var header: some View {
-        HStack {
-            backButton
-            Spacer()
-            title
-            Spacer()
-            backButton
-                .opacity(0)
-        }
-    }
-    
-    @ViewBuilder
-    var backButton: some View {
-        #if os(macOS)
-            Button {
-                showSheet = false
-            } label: {
-                NavigationBlankBackButton()
-            }
-        #endif
-    }
-    
-    var title: some View {
-        Text(NSLocalizedString("selectChain", comment: ""))
-            .foregroundColor(Theme.colors.textPrimary)
-            .font(Theme.fonts.bodyLMedium)
+        .frame(width: 700, height: 650)
+        .onDisappear { viewModel.searchText = "" }
     }
     
     var view: some View {

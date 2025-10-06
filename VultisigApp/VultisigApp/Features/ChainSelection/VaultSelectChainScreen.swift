@@ -30,6 +30,7 @@ struct VaultSelectChainScreen: View {
         } emptyStateBuilder: {
             emptyStateView
         }
+        .frame(width: 700, height: 650)
         .onLoad {
             viewModel.setData(for: vault)
         }

@@ -82,7 +82,7 @@ struct ChainDetailScreen: View {
                 )
             }
         }
-        .sheet(item: $coinToShow) {
+        .platformSheet(item: $coinToShow) {
             CoinDetailScreen(
                 coin: $0,
                 vault: vault,
