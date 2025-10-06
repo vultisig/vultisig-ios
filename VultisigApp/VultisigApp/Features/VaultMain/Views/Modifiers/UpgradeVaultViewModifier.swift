@@ -15,7 +15,7 @@ struct UpgradeVaultViewModifier: ViewModifier {
     
     func body(content: Content) -> some View {
         content
-            .sheet(isPresented: $shouldShow) {
+            .platformSheet(isPresented: $shouldShow) {
                 UpgradeYourVaultView(
                     showSheet: $shouldShow,
                     navigationLinkActive: $upgradeYourVaultLinkActive

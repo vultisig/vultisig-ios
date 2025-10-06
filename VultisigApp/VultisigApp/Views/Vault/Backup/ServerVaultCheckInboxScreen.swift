@@ -57,6 +57,7 @@ struct ServerVaultCheckInboxScreen: View {
                 isPresented.toggle()
             }
         }
+        .fullScreenSheet()
         .confirmationDialog("chooseEmailApp".localized, isPresented: $presentEmailDialog) {
             ForEach(emailOptions) { option in
                 Button(option.name) {

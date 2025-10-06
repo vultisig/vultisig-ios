@@ -33,16 +33,14 @@ struct PlatformSheet<SheetContent: View>: ViewModifier {
     
 #if os(macOS)
     func macOS(content: Content) -> some View {
-        ZStack(alignment: .center) {
-            content
-                .overlay(isPresented ? overlay : nil)
-            
-            Screen(showNavigationBar: false) {
-                sheetContent()
-            }
-            .frame(maxWidth: 700, maxHeight: 450)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .showIf(isPresented)
+        content
+            .overlay(isPresented ? sheetView : nil)
+    }
+    
+    var sheetView: some View {
+        ZStack {
+            overlay
+            sheetContent()
         }
     }
     
@@ -54,11 +52,31 @@ struct PlatformSheet<SheetContent: View>: ViewModifier {
     func iOS(content: Content) -> some View {
         content
             .sheet(isPresented: $isPresented) {
-                Screen(showNavigationBar: false) {
-                    sheetContent()
-                }
-                .sheetStyle()
+                sheetContent()
             }
     }
 #endif
+}
+
+struct FullScreenSheetModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        #if os(macOS)
+        Screen(showNavigationBar: false) {
+            content()
+        }
+        .frame(maxWidth: 700, maxHeight: 450)
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+        #else
+        Screen(showNavigationBar: false) {
+            content
+        }
+        .sheetStyle()
+        #endif
+    }
+}
+
+extension View {
+    func fullScreenSheet() -> some View {
+        modifier(FullScreenSheetModifier())
+    }
 }

@@ -30,6 +30,7 @@ struct PreferredAssetSelectionView: View {
             }
             .cornerRadius(12)
         }
+        .fullScreenSheet()
         .onLoad {
             Task {
                 await viewModel.setup()

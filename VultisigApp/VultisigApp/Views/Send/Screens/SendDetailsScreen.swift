@@ -87,7 +87,7 @@ struct SendDetailsScreen: View {
             // Stop all polling when leaving Send screen
             PendingTransactionManager.shared.stopAllPolling()
         }
-        .sheet(isPresented: $settingsPresented) {
+        .platformSheet(isPresented: $settingsPresented) {
             SendGasSettingsView(
                 viewModel: SendGasSettingsViewModel(
                     coin: tx.coin,

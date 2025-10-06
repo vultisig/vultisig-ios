@@ -186,7 +186,7 @@ private extension VaultManagementSheet {
                     isPresented.toggle()
                 }
             }
-            .sheet(isPresented: $isPresented) {
+            .platformSheet(isPresented: $isPresented) {
                 VaultManagementSheet(
                     onAddVault: {},
                     onSelectVault: { _ in },

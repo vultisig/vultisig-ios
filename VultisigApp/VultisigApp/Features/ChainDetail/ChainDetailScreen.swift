@@ -56,14 +56,14 @@ struct ChainDetailScreen: View {
         }
         .background(VaultMainScreenBackground())
         .withAddressCopy(coin: $addressToCopy)
-        .sheet(isPresented: $showReceiveSheet) {
+        .platformSheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(
                 coin: group.nativeCoin,
                 isNativeCoin: true,
                 isPresented: $showReceiveSheet
             )
         }
-        .sheet(isPresented: $showManageTokens) {
+        .platformSheet(isPresented: $showManageTokens) {
             TokenSelectionContainerScreen(
                 vault: vault,
                 group: group,

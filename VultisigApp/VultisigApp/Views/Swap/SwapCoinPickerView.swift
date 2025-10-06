@@ -43,6 +43,7 @@ struct SwapCoinPickerView: View {
             header
             content
         }
+        .fullScreenSheet()
     }
     
     var header: some View {

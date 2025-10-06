@@ -37,6 +37,7 @@ struct SwapChainPickerView: View {
             header
             content
         }
+        .fullScreenSheet()
     }
     
     var content: some View {

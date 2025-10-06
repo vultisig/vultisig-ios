@@ -15,7 +15,7 @@ struct BiweeklyPasswordVerificationViewModifier: ViewModifier {
     
     func body(content: Content) -> some View {
         content
-            .sheet(isPresented: $shouldShow) {
+            .platformSheet(isPresented: $shouldShow) {
                 PasswordVerifyReminderView(vault: vault, isSheetPresented: $shouldShow)
                     .presentationDetents([.height(260)])
             }

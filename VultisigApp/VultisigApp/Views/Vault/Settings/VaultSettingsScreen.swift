@@ -74,7 +74,7 @@ struct VaultSettingsScreen: View {
                 AllDevicesUpgradeView(vault: vault)
             }
         }
-        .sheet(isPresented: $showUpgradeYourVaultSheet) {
+        .platformSheet(isPresented: $showUpgradeYourVaultSheet) {
             UpgradeYourVaultView(
                 showSheet: $showUpgradeYourVaultSheet,
                 navigationLinkActive: $upgradeYourVaultLinkActive

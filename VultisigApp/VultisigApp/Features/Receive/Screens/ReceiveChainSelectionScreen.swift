@@ -37,6 +37,7 @@ struct ReceiveChainSelectionScreen: View {
                 .cornerRadius(12)
             }
         }
+        .fullScreenSheet()
         .onDisappear { viewModel.searchText = "" }
         .sheet(item: $selectedCoin) {
             ReceiveQRCodeBottomSheet(

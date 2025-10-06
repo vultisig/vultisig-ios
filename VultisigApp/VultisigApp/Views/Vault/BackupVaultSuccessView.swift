@@ -25,12 +25,12 @@ struct BackupVaultSuccessView: View {
             .navigationDestination(isPresented: $isHomeViewActive) {
                 HomeScreen(initialVault: vault, showingVaultSelector: false)
             }
-            .sheet(isPresented: $isFastSummaryActive) {
+            .platformSheet(isPresented: $isFastSummaryActive) {
                 OnboardingSummaryView(kind: .fast, isPresented: $isFastSummaryActive, onDismiss: {
                     isHomeViewActive = true
                 }, vault: vault)
             }
-            .sheet(isPresented: $isSecureSummaryActive) {
+            .platformSheet(isPresented: $isSecureSummaryActive) {
                 OnboardingSummaryView(kind: .secure, isPresented: $isSecureSummaryActive, onDismiss: {
                     isHomeViewActive = true
                 }, vault: vault)

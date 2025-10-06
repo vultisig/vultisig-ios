@@ -34,6 +34,7 @@ struct AddressBookChainSelectionScreen: View {
                 .cornerRadius(12)
             }
         }
+        .fullScreenSheet()
         .onLoad(perform: viewModel.setup)
     }
     

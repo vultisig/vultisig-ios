@@ -37,7 +37,7 @@ struct SendCryptoAddressTextField: View {
             
             buttons
         }
-        .sheet(isPresented: $showAddressBookSheet) {
+        .platformSheet(isPresented: $showAddressBookSheet) {
             SendCryptoAddressBookView(tx: tx, showSheet: $showAddressBookSheet)
         }
     }

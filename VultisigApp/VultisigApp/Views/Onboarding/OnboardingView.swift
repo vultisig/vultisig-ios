@@ -56,7 +56,7 @@ struct OnboardingView: View {
         .onDisappear {
             animationVM?.stop()
         }
-        .sheet(isPresented: $showSummary) {
+        .platformSheet(isPresented: $showSummary) {
             OnboardingSummaryView(kind: .initial, isPresented: $showSummary, onDismiss: {
                 accountViewModel.showOnboarding = false
             })

@@ -32,7 +32,7 @@ extension AddressBookTextField {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .sheet(isPresented: $showScanner) {
+        .platformSheet(isPresented: $showScanner) {
             codeScanner
         }
     }

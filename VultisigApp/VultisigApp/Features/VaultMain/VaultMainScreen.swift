@@ -72,7 +72,7 @@ struct VaultMainScreen: View {
                     }
                 }
             }
-            .sheet(isPresented: $showVaultSelector) {
+            .platformSheet(isPresented: $showVaultSelector) {
                 VaultManagementSheet {
                     showVaultSelector.toggle()
                     routeToPresent = .createVault
@@ -83,13 +83,13 @@ struct VaultMainScreen: View {
                     }
                 }
             }
-            .sheet(isPresented: $showChainSelection) {
+            .platformSheet(isPresented: $showChainSelection) {
                 VaultSelectChainScreen(
                     vault: vault,
                     isPresented: $showChainSelection
                 ) { refresh() }
             }
-            .sheet(isPresented: $showBackupNow) {
+            .platformSheet(isPresented: $showBackupNow) {
                 VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: vault))
             }
             .platformSheet(isPresented: $showReceiveList) {

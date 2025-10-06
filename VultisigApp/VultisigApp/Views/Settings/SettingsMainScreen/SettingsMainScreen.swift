@@ -129,7 +129,7 @@ struct SettingsMainScreen: View {
         .navigationDestination(isPresented: $referredViewModel.navigationToReferralsView) {
             referralView
         }
-        .sheet(isPresented: $referredViewModel.showReferralBannerSheet) {
+        .platformSheet(isPresented: $referredViewModel.showReferralBannerSheet) {
             referralOverviewSheet
         }
     }

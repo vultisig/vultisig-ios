@@ -41,7 +41,7 @@ private struct DetentsAwareSheetWithBoolean<SheetContent: View>: ViewModifier {
     
     func body(content: Content) -> some View {
         content
-            .sheet(isPresented: $isPresentedInternal) {
+            .platformSheet(isPresented: $isPresentedInternal) {
                 sheetContent()
                     .onDisappear {
                         isPresented = false

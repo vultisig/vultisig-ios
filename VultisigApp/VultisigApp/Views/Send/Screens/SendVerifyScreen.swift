@@ -127,7 +127,7 @@ struct SendVerifyScreen: View {
                 } longPressAction: {
                     onSignPress()
                 }
-                .sheet(isPresented: $fastPasswordPresented) {
+                .platformSheet(isPresented: $fastPasswordPresented) {
                     FastVaultEnterPasswordView(
                         password: $tx.fastVaultPassword,
                         vault: vault,
