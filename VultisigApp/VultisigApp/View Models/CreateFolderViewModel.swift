@@ -8,13 +8,15 @@
 import SwiftUI
 
 class CreateFolderViewModel: ObservableObject {
-    @Published var name = ""
+    @Published var name = "" {
+        didSet {
+            folderNameError = nil
+        }
+    }
     @Published var selectedVaults: [Vault] = []
     @Published var vaultFolder: Folder? = nil
     
-    @Published var showAlert = false
-    @Published var alertTitle = ""
-    @Published var alertDescription = ""
+    @Published var folderNameError: String?
     
     var saveButtonDisabled: Bool {
         name.isEmpty || selectedVaults.isEmpty
@@ -22,35 +24,28 @@ class CreateFolderViewModel: ObservableObject {
     
     func runChecks(_ folders: [Folder]) -> Bool {
         if name.isEmpty {
-            alertTitle = "emptyField"
-            alertDescription = "enterValidFolderName"
-            showAlert = true
+            folderNameError = "enterValidFolderName".localized
             return false
         }
         
         if selectedVaults.isEmpty {
-            alertTitle = "error"
-            alertDescription = "selectAtleastOneVault"
-            showAlert = true
+            folderNameError = "selectAtleastOneVault".localized
             return false
         }
         
         for folder in folders {
             if folder.folderName == name {
-                alertTitle = "sameNameFolder"
-                alertDescription = "sameNameFolderDescription"
-                showAlert = true
+                folderNameError = "sameNameFolderDescription".localized
                 return false
             }
         }
         
+        folderNameError = nil
         return true
     }
     
     func showErrorAlert() {
-        alertTitle = "error"
-        alertDescription = "somethingWentWrongTryAgain"
-        showAlert = true
+        folderNameError = "somethingWentWrongTryAgain".localized
     }
     
     func setupFolder(_ count: Int) {

@@ -199,7 +199,7 @@
 "enterUpto4Characters" = "Ingresa hasta 4 caracteres";
 "enterValidFolderName" = "Por favor, ingrese un nombre de carpeta válido e inténtelo de nuevo.";
 "enterVaultEmail" = "Ingrese el correo electrónico para recibir la bóveda compartida.";
-"enterVaultName" = "Introduce el nombre del almacén";
+"enterVaultName" = "Introduce el Nombre del Almacén";
 "enterVaultPassword" = "Ingrese la contraseña que establece al crear esta bóveda.";
 "enterYourEmail" = "Introduce tu correo electrónico";
 "enterYourEmailDescription" = "Este correo electrónico solo se utiliza para enviar la copia de seguridad del servidor.";
@@ -282,7 +282,7 @@
 "fetchingVaultDetails" = "Obteniendo detalles del almacén";
 "findCustomTokens" = "Encuentra Tu Token Personalizado";
 "folder" = "Carpeta";
-"folderName" = "Nombre de la carpeta";
+"folderName" = "Nombre de la Carpeta";
 "folderNeedsOneVault" = "La carpeta debe tener al menos un Vault seleccionado.";
 "folders" = "Carpetas";
 "from" = "De";

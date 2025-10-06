@@ -199,7 +199,7 @@
 "enterUpto4Characters" = "Bis zu 4 Zeichen eingeben";
 "enterValidFolderName" = "Bitte gebe einen gültigen Ordnernamen ein und versuche es erneut.";
 "enterVaultEmail" = "Geben Sie die E -Mail ein, um die Tresorfreigabe zu erhalten.";
-"enterVaultName" = "Tresornamen eingeben";
+"enterVaultName" = "Tresornamen Eingeben";
 "enterVaultPassword" = "Geben Sie das Passwort ein, das Sie beim Erstellen dieses Tresors festgelegt haben.";
 "enterYourEmail" = "Geben Sie Ihre E-Mail ein";
 "enterYourEmailDescription" = "Diese E-Mail wird nur zum Senden des Server-Backups verwendet.";
