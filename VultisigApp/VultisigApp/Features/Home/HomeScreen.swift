@@ -27,6 +27,7 @@ struct HomeScreen: View {
     @State var shouldKeysignTransaction = false
     @State var shouldSendCrypto = false
     @State var shouldImportBackup = false
+    @State var showBackupNow = false
     @StateObject var sendTx = SendTransaction()
     @State var selectedChain: Chain? = nil
     
@@ -87,7 +88,8 @@ struct HomeScreen: View {
                     routeToPresent: $vaultRoute,
                     showVaultSelector: $showVaultSelector,
                     addressToCopy: $addressToCopy,
-                    showUpgradeVaultSheet: $showUpgradeVaultSheet
+                    showUpgradeVaultSheet: $showUpgradeVaultSheet,
+                    showBackupNow: $showBackupNow
                 )
                 #if os(macOS)
                 .navigationBarBackButtonHidden()
@@ -149,6 +151,11 @@ struct HomeScreen: View {
         }
         .navigationDestination(isPresented: $shouldImportBackup) {
             ImportWalletView()
+        }
+        .navigationDestination(isPresented: $showBackupNow) {
+            if let vault = homeViewModel.selectedVault {
+                VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: vault))
+            }
         }
     }
     

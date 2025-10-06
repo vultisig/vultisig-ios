@@ -14,6 +14,7 @@ struct VaultMainScreen: View {
     @Binding var showVaultSelector: Bool
     @Binding var addressToCopy: Coin?
     @Binding var showUpgradeVaultSheet: Bool
+    @Binding var showBackupNow: Bool
     
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var viewModel: VaultDetailViewModel
@@ -89,9 +90,6 @@ struct VaultMainScreen: View {
                     isPresented: $showChainSelection
                 ) { refresh() }
             }
-            .crossPlatformSheet(isPresented: $showBackupNow) {
-                VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: vault))
-            }
             .crossPlatformSheet(isPresented: $showReceiveList) {
                 ReceiveChainSelectionScreen(
                     vault: vault,
@@ -127,10 +125,12 @@ struct VaultMainScreen: View {
                 onAction: onAction
             )
             upgradeVaultBanner
+            backupBanner
         }
     }
     
     @State var showUpgradeBanner = true
+    var upgradeBannerEnabled: Bool { vault.libType == .GG20 && showUpgradeBanner }
     @ViewBuilder
     var upgradeVaultBanner: some View {
         VaultBannerView(
@@ -146,11 +146,11 @@ struct VaultMainScreen: View {
             }
         )
         .transition(.verticalGrowAndFade)
-        .showIf(vault.libType == .GG20 && showUpgradeBanner)
+        .showIf(upgradeBannerEnabled)
     }
     
     @State var showBackupBanner = true
-    @State var showBackupNow = false
+    var backupBannerEnabled: Bool { !vault.isBackedUp && showBackupBanner && !upgradeBannerEnabled }
     @ViewBuilder
     var backupBanner: some View {
         VaultBannerView(
@@ -166,7 +166,7 @@ struct VaultMainScreen: View {
             }
         )
         .transition(.verticalGrowAndFade)
-        .showIf(!vault.isBackedUp && showBackupBanner)
+        .showIf(backupBannerEnabled)
     }
     
     var bottomContentSection: some View {
@@ -311,7 +311,8 @@ struct VaultMainScreen: View {
         routeToPresent: .constant(nil),
         showVaultSelector: .constant(false),
         addressToCopy: .constant(nil),
-        showUpgradeVaultSheet: .constant(false)
+        showUpgradeVaultSheet: .constant(false),
+        showBackupNow: .constant(false)
     )
     .environmentObject(HomeViewModel())
     .environmentObject(VaultDetailViewModel())
