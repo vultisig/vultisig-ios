@@ -26,9 +26,6 @@ struct AddFolderScreen: View {
             .padding(.top, 24)
             .padding(.horizontal, 16)
             .onLoad(perform: setData)
-            .alert(isPresented: $folderViewModel.showAlert) {
-                alert
-            }
     }
     
     var view: some View {
@@ -44,7 +41,8 @@ struct AddFolderScreen: View {
             CommonTextField(
                 text: $folderViewModel.name,
                 label: "folderName".localized,
-                placeholder: "typeHere".localized,
+                placeholder: "enterVaultName".localized,
+                error: $folderViewModel.folderNameError
             )
             List {
                 CommonListHeaderView(title: "selectVaults".localized)
@@ -79,14 +77,6 @@ struct AddFolderScreen: View {
             }
             .disabled(folderViewModel.saveButtonDisabled)
         }
-    }
-    
-    var alert: Alert {
-        Alert(
-            title: Text(NSLocalizedString(folderViewModel.alertTitle, comment: "")),
-            message: Text(NSLocalizedString(folderViewModel.alertDescription, comment: "")),
-            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-        )
     }
     
     var header: some View {

@@ -24,7 +24,7 @@ struct EditFolderScreen: View {
     @EnvironmentObject var viewModel: HomeViewModel
     
     var saveButtonDisabled: Bool {
-        folderName.isEmpty
+        folderName.isEmpty || folderViewModel.selectedVaults.count == 0
     }
     
     var body: some View {
@@ -32,9 +32,6 @@ struct EditFolderScreen: View {
             .padding(.top, 24)
             .padding(.horizontal, 16)
             .applySheetSize()
-            .alert(isPresented: $folderViewModel.showAlert) {
-                alert
-            }
             .onLoad {
                 setData()
             }
@@ -53,7 +50,7 @@ struct EditFolderScreen: View {
             CommonTextField(
                 text: $folderName,
                 label: "folderName".localized,
-                placeholder: "typeHere".localized,
+                placeholder: "enterVaultName".localized,
             )
             List {
                 CommonListHeaderView(title: "activeVaults".localized)
