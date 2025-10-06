@@ -50,6 +50,7 @@ struct IOSToolbarView<Content: View>: View {
         if isSheetPresented, navigationTitle != nil {
             NavigationStack {
                 contentWithTitle
+                    .background(Theme.colors.bgPrimary.ignoresSafeArea())
             }
         } else {
             contentWithTitle

@@ -35,7 +35,7 @@ struct SwapChainPickerView: View {
     
     var body: some View {
         Screen(title: "selectChain".localized) {
-            views
+            view
         }
         .applySheetSize()
         .sheetStyle()
@@ -92,13 +92,6 @@ struct SwapChainPickerView: View {
     var emptyMessage: some View {
         ErrorMessage(text: "noResultFound")
             .padding(.top, 48)
-    }
-    
-    var views: some View {
-        ZStack {
-            Background()
-            view
-        }
     }
     
     var searchBar: some View {
