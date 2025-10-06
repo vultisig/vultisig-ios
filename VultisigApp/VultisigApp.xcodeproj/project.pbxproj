@@ -6661,7 +6661,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/vultisig/commondata";
 			requirement = {
-				branch = polkadot-fee;
+				branch = main;
 				kind = branch;
 			};
 		};

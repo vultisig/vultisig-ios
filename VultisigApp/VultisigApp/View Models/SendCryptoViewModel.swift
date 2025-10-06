@@ -228,7 +228,10 @@ class SendCryptoViewModel: ObservableObject {
                     
                     convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
                 } catch {
-                    throw error
+                    tx.amount = "\(tx.coin.getMaxValue(0))"
+                    setPercentageAmount(tx: tx, for: percentage)
+                    convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
+                    print("Failed to get Polkadot dynamic fee, error: \(error.localizedDescription)")
                 }
                 
                 isLoading = false
