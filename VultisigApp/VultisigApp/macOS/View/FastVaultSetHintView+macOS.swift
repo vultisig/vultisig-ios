@@ -14,20 +14,14 @@ extension FastVaultSetHintView {
             Background()
             main
         }
+        .crossPlatformToolbar()
     }
     
     var main: some View {
-        VStack {
-            headerMac
-            view
-        }
-        .navigationDestination(isPresented: $isLinkActive) {
-            PeerDiscoveryView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastSignConfig: fastSignConfig)
-        }
-    }
-
-    var headerMac: some View {
-        GeneralMacHeader(title: "")
+        view
+            .navigationDestination(isPresented: $isLinkActive) {
+                PeerDiscoveryView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastSignConfig: fastSignConfig)
+            }
     }
     
     var view: some View {

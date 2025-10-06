@@ -38,28 +38,30 @@ struct ChainDetailScreen: View {
     }
     
     var body: some View {
-        container {
-            ScrollViewReader { proxy in
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 20) {
-                        topContentSection
-                        bottomContentSection
-                    }
-                    .padding(.horizontal, 16)
+        ScrollViewReader { proxy in
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 20) {
+                    topContentSection
+                        .padding(.top, isMacOS ? 60 : 0)
+                    bottomContentSection
                 }
-                .onLoad {
-                    scrollProxy = proxy
-                }
+                .padding(.horizontal, 16)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .refreshable {
-                refresh()
+            .onLoad {
+                scrollProxy = proxy
             }
+        }
+        .refreshable {
+            refresh()
         }
         .background(VaultMainScreenBackground())
         .withAddressCopy(coin: $addressToCopy)
         .sheet(isPresented: $showReceiveSheet) {
-            ReceiveQRCodeBottomSheet(coin: group.nativeCoin, isPresented: $showReceiveSheet)
+            ReceiveQRCodeBottomSheet(
+                coin: group.nativeCoin,
+                isNativeCoin: true,
+                isPresented: $showReceiveSheet
+            )
         }
         .sheet(isPresented: $showManageTokens) {
             TokenSelectionContainerScreen(
@@ -88,6 +90,11 @@ struct ChainDetailScreen: View {
                 sendTx: sendTx,
                 onCoinAction: onCoinAction
             )
+        }
+        .crossPlatformToolbar(ignoresTopEdge: true) {            
+            CustomToolbarItem(placement: .trailing) {
+                ToolbarButton(image: "square-3d", action: onExplorer)
+            }
         }
     }
     
@@ -256,37 +263,6 @@ private extension ChainDetailScreen {
         self.showAction = true
     }
 }
-
-#if os(macOS)
-extension ChainDetailScreen {
-    func container<Content: View>(content: () -> Content) -> some View {
-        ZStack(alignment: .top) {
-            content()
-                .padding(.top, 40)
-            HStack {
-                CircularIconButton(icon: "chevron-right", action: { dismiss() })
-                    .rotationEffect(.radians(.pi))
-                Spacer()
-                CircularIconButton(icon: "square-3d", action: onExplorer)
-            }
-            .padding(.top, isMacOS ? 8 : 0)
-            .padding(.horizontal, 24)
-            .frame(height: 40)
-        }
-    }
-}
-#else
-extension ChainDetailScreen {
-    func container<Content: View>(content: () -> Content) -> some View {
-        content()
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    ToolbarButton(image: "cube", action: onExplorer)
-                }
-            }
-    }
-}
-#endif
 
 #Preview {
     ChainDetailScreen(

@@ -10,10 +10,12 @@ import SwiftUI
 
 extension CreateReferralDetailsView {
     var container: some View {
-        VStack(spacing: 0) {
-            header
-            content
-        }
+        content
+            .crossPlatformToolbar("createReferral".localized) {
+                CustomToolbarItem(placement: .trailing) {
+                    infoButton
+                }
+            }
     }
     
     var infoButton: some View {
@@ -23,14 +25,6 @@ extension CreateReferralDetailsView {
             infoLabel
         }
         .padding(.trailing, 24)
-    }
-    
-    var header: some View {
-        HStack {
-            GeneralMacHeader(title: "createReferral")
-            infoButton
-        }
-        .background(Theme.colors.bgPrimary)
     }
 }
 #endif

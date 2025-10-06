@@ -12,20 +12,9 @@ extension SetupQRCodeView {
     var content: some View {
         ZStack {
             Background()
-            main
-        }
-    }
-    
-    var main: some View {
-        VStack(spacing: 0) {
-            headerMac
             view
         }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "chooseSetUp")
-            .padding(.bottom, 8)
+        .crossPlatformToolbar("chooseSetUp".localized)
     }
 }
 #endif

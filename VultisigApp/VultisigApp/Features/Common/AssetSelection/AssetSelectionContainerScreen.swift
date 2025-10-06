@@ -41,33 +41,45 @@ struct AssetSelectionContainerScreen<Asset: Hashable, CellView: View, EmptyState
     
     var body: some View {
         NavigationStack {
-            container {
-                ZStack(alignment: .bottom) {
-                    VStack(spacing: 24) {
-                        textfield
-                        Group {
-                            if searchText.isNotEmpty && elements.isEmpty {
-                                emptyStateBuilder()
-                            } else {
-                                ScrollView(showsIndicators: false) {
-                                    chainsGrid
-                                }
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            ZStack(alignment: .bottom) {
+                VStack(spacing: 24) {
+                    textfield
+                    Group {
+                        if searchText.isNotEmpty && elements.isEmpty {
+                            emptyStateBuilder()
+                        } else {
+                            ScrollView(showsIndicators: false) {
+                                chainsGrid
                             }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
                         }
-                        .transition(.opacity)
-                        .animation(.easeInOut, value: searchText)
                     }
-                    .padding(.top, 24)
-                    .padding(.horizontal, 16)
-                    
-                    gradientOverlay
+                    .transition(.opacity)
+                    .animation(.easeInOut, value: searchText)
                 }
-                .ignoresSafeArea(.container, edges: .bottom)
+                .padding(.top, 24)
+                .padding(.horizontal, 16)
+                
+                gradientOverlay
+            }
+            .ignoresSafeArea(.container, edges: .bottom)
+            .crossPlatformToolbar(showsBackButton: false) {
+                CustomToolbarItem(placement: .leading) {
+                    ToolbarButton(image: "x") {
+                        isPresented.toggle()
+                    }
+                }
+                
+                CustomToolbarItem(placement: .trailing) {
+                    ToolbarButton(image: "check", type: .confirmation) {
+                        onSave()
+                    }
+                }
             }
             .presentationDetents([.large])
             .presentationBackground(Theme.colors.bgPrimary)
             .presentationDragIndicator(.visible)
+            
         }
     }
     
@@ -130,53 +142,7 @@ struct AssetSelectionContainerScreen<Asset: Hashable, CellView: View, EmptyState
         .padding(.bottom, 64)
         .frame(maxWidth: .infinity)
     }
-    
-    var closeButton: some View {
-        ToolbarButton(image: "xmark", type: .secondary) {
-            isPresented.toggle()
-        }
-    }
-    
-    var saveButton: some View {
-        ToolbarButton(image: "checkmark") {
-            onSave()
-        }
-    }
 }
-
-#if os(macOS)
-extension AssetSelectionContainerScreen {
-    func container<Content: View>(content: () -> Content) -> some View {
-        VStack {
-            HStack {
-                closeButton
-                Spacer()
-                saveButton
-            }
-            .padding(.top, 16)
-            .padding(.horizontal, 16)
-            content()
-        }
-        .frame(maxWidth: 700, minHeight: 600)
-    }
-}
-#else
-extension AssetSelectionContainerScreen {
-    func container<Content: View>(content: () -> Content) -> some View {
-        content()
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    closeButton
-                }
-                
-                ToolbarItem(placement: .confirmationAction) {
-                    saveButton
-                }
-            }
-    }
-}
-#endif
-
 
 #Preview {
     AssetSelectionContainerScreen(

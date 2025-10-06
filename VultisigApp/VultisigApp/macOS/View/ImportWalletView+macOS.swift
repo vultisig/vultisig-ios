@@ -12,20 +12,14 @@ extension ImportWalletView {
     var content: some View {
         ZStack {
             Background()
-            main
+            view
         }
+        .crossPlatformToolbar("import".localized)
         .onDrop(of: [.data], isTargeted: $isUploading) { providers -> Bool in
             Task{
                 await backupViewModel.handleOnDrop(providers: providers)
             }
             return true
-        }
-    }
-    
-    var main: some View {
-        VStack {
-            headerMac
-            view
         }
     }
 }

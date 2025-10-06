@@ -39,7 +39,11 @@ struct ReceiveChainSelectionScreen: View {
         }
         .onDisappear { viewModel.searchText = "" }
         .sheet(item: $selectedCoin) {
-            ReceiveQRCodeBottomSheet(coin: $0, isPresented: $isPresented)
+            ReceiveQRCodeBottomSheet(
+                coin: $0,
+                isNativeCoin: true,
+                isPresented: $isPresented
+            )
         }
     }
     
