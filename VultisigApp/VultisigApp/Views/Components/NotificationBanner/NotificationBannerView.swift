@@ -50,16 +50,16 @@ struct NotificationBannerView: View {
             .opacity(isVisibleInternal ? 1.0 : 0.0)
             .animation(.interpolatingSpring(mass: 1, stiffness: 100, damping: 15), value: isVisibleInternal)
             .onAppear {
-                withAnimation {
+                withAnimation(animation) {
                     progress = 0.0
                 }
                 
-                DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
-                    withAnimation(.interpolatingSpring(mass: 1, stiffness: 100, damping: 15)) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + duration + 0.2) {
+                    withAnimation(animation) {
                         isVisibleInternal = false
                     }
                     
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                         isVisible = false
                     }
                 }
