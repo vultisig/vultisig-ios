@@ -41,9 +41,10 @@ struct ReceiveChainSelectionScreen: View {
         .crossPlatformSheet(item: $selectedCoin) {
             ReceiveQRCodeBottomSheet(
                 coin: $0,
-                isNativeCoin: true,
-                isPresented: $isPresented
-            )
+                isNativeCoin: true
+            ) {
+                isPresented = false
+            }
         }
     }
     

@@ -9,7 +9,8 @@ import SwiftUI
 
 private struct AddressCopyBannerViewModifier: ViewModifier {
     @Binding var coin: Coin?
-
+    var onFinish: () -> Void
+    
     @State var isVisible: Bool = false
     @State var text: String = ""
     
@@ -34,12 +35,13 @@ private struct AddressCopyBannerViewModifier: ViewModifier {
             .onChange(of: isVisible) { _, newValue in
                 guard !newValue else { return }
                 coin = nil
+                onFinish()
             }
     }
 }
 
 extension View {
-    func withAddressCopy(coin: Binding<Coin?>) -> some View {
-        modifier(AddressCopyBannerViewModifier(coin: coin))
+    func withAddressCopy(coin: Binding<Coin?>, onFinish: @escaping () -> Void = {}) -> some View {
+        modifier(AddressCopyBannerViewModifier(coin: coin, onFinish: onFinish))
     }
 }

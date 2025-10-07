@@ -10,7 +10,7 @@ import SwiftUI
 struct ReceiveQRCodeBottomSheet: View {
     let coin: Coin
     let isNativeCoin: Bool
-    @Binding var isPresented: Bool
+    var onFinish: () -> Void
     
     @State var qrCodeImage: Image?
     @State var addressToCopy: Coin?
@@ -40,7 +40,9 @@ struct ReceiveQRCodeBottomSheet: View {
             .padding(.top, 40)
             .padding(.horizontal, 16)
             .background(ModalBackgroundView(width: proxy.size.width))
-            .withAddressCopy(coin: $addressToCopy)
+            .withAddressCopy(coin: $addressToCopy) {
+                onFinish()
+            }
             .presentationDetents([.height(465)])
             .presentationBackground(Theme.colors.bgSecondary)
             .presentationDragIndicator(.visible)
@@ -113,6 +115,6 @@ struct ReceiveQRCodeBottomSheet: View {
             show = true
         }
     }
-    .overlay(show ? ReceiveQRCodeBottomSheet(coin: .example, isNativeCoin: false, isPresented: $show) : nil)
+    .overlay(show ? ReceiveQRCodeBottomSheet(coin: .example, isNativeCoin: false, onFinish: {}) : nil)
     
 }
