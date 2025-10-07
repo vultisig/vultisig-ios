@@ -18,8 +18,8 @@ struct AddAddressBookScreen: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     @State var title = ""
-    @State var address = ""
-    @State var selectedChain = AddressBookChainType.evm
+    @State var address: String
+    @State var selectedChain: AddressBookChainType
     
     @State var alertTitle = ""
     @State var alertMessage = ""
