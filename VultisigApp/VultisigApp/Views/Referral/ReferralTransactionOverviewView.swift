@@ -24,6 +24,7 @@ struct ReferralTransactionOverviewView: View {
                     hash: hash,
                     explorerLink: Endpoint.getExplorerURL(chain: sendTx.coin.chain, txid: hash),
                     memo: sendTx.memo,
+                    isSend: false,
                     fromAddress: sendTx.fromAddress,
                     toAddress: sendTx.toAddress,
                     fee: (sendTx.gasInReadable, referralViewModel.totalFeeFiat)

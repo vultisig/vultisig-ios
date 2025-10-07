@@ -22,6 +22,7 @@ struct SendDoneScreen: View {
                 chain: chain,
                 sendTransaction: tx,
                 swapTransaction: nil,
+                isSend: true,
                 contentPadding: 0
             )
         }
