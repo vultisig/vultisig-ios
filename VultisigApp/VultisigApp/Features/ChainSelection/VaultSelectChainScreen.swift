@@ -42,7 +42,7 @@ struct VaultSelectChainScreen: View {
         VStack {
             VStack(spacing: 12) {
                 Icon(named: "crypto", color: Theme.colors.primaryAccent4, size: 24)
-                Text("noChainsFound")git
+                Text("noChainsFound")
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.subtitle)
             }
