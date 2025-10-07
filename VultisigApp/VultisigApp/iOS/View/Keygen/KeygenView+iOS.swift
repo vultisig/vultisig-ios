@@ -18,16 +18,13 @@ extension KeygenView {
             .onLoad {
                 Task{
                     await setData()
-                    await viewModel.startKeygen(
-                        context: context,
-                        defaultChains: settingsDefaultChainViewModel.defaultChains
-                    )
+                    await viewModel.startKeygen(context: context)
                 }
             }
             .onAppear {
                 UIApplication.shared.isIdleTimerDisabled = true
             }
-            .onDisappear(){
+            .onDisappear {
                 UIApplication.shared.isIdleTimerDisabled = false
             }
     }

@@ -42,7 +42,6 @@ struct KeygenView: View {
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var context
-    @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     
     var body: some View {
         content
@@ -370,7 +369,6 @@ struct KeygenView: View {
             hideBackButton: .constant(false),
             selectedTab: SetupVaultState.active
         )
-        .environmentObject(SettingsDefaultChainViewModel())
     }
     .frame(height: 600)
 }

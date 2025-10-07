@@ -195,7 +195,6 @@ struct GeneralCodeScannerView: View {
         sendTX: SendTransaction()
     )
     .environmentObject(DeeplinkViewModel())
-    .environmentObject(SettingsDefaultChainViewModel())
     .environmentObject(HomeViewModel())
     .environmentObject(VaultDetailViewModel())
     .environmentObject(CoinSelectionViewModel())
