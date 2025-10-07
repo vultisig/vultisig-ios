@@ -49,19 +49,17 @@ struct JoinKeysignGasViewModel {
     }
     
     func feesInReadable(coin: Coin, fee: BigInt) -> String {
-        var nativeCoinAux: Coin?
-        
-        if coin.isNativeToken {
-            nativeCoinAux = coin
-        } else {
-            nativeCoinAux = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == coin.chain && $0.isNativeToken })
+        // Try to get native coin from vault first (has up-to-date price data)
+        if let vaultNativeCoin = ApplicationState.shared.currentVault?.nativeCoin(for: coin.chain) {
+            let feeDecimal = vaultNativeCoin.decimal(for: fee)
+            let fiatString = RateProvider.shared.fiatBalanceString(value: feeDecimal, coin: vaultNativeCoin)
+            if !fiatString.isEmpty {
+                return fiatString
+            }
         }
         
-        guard let nativeCoin = nativeCoinAux else {
-            return ""
-        }
-        
-        let fee = nativeCoin.decimal(for: fee)
-        return RateProvider.shared.fiatBalanceString(value: fee, coin: nativeCoin)
+        // Fallback to the payload coin itself
+        let feeDecimal = coin.decimal(for: fee)
+        return RateProvider.shared.fiatBalanceString(value: feeDecimal, coin: coin)
     }
 }
