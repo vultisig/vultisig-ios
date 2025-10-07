@@ -50,7 +50,9 @@ class SendSummaryViewModel: ObservableObject {
     
     func feesInReadable(tx: SendTransaction, vault: Vault) -> String {
         guard let nativeCoin = vault.nativeCoin(for: tx.coin) else { return .empty }
-        let fee = nativeCoin.decimal(for: tx.gas)
+        // Use tx.fee (total fee amount) instead of tx.gas (sats/byte rate) like Android does
+        let feeToUse = tx.coin.chainType == .UTXO ? tx.fee : tx.gas
+        let fee = nativeCoin.decimal(for: feeToUse)
         return RateProvider.shared.fiatBalanceString(value: fee, coin: nativeCoin)
     }
 }

@@ -78,7 +78,14 @@ class SendCryptoViewModel: ObservableObject {
         do {
             let specific = try await blockchainService.fetchSpecific(tx: tx)
             tx.gas = specific.gas
-            tx.fee = specific.fee
+            
+            // For UTXO chains, calculate actual total fee using WalletCore plan.fee (like Android)
+            if tx.coin.chainType == .UTXO {
+                tx.fee = try await calculateUTXOPlanFee(tx: tx, chainSpecific: specific)
+            } else {
+                tx.fee = specific.fee
+            }
+            
             tx.estematedGasLimit = specific.gasLimit
         } catch {
             print("error fetching data: \(error.localizedDescription)")
@@ -656,5 +663,32 @@ class SendCryptoViewModel: ObservableObject {
         }
         
         return try? helper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
+    }
+    
+    private func calculateUTXOPlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
+        guard let vault = ApplicationState.shared.currentVault else {
+            return chainSpecific.gas // Fallback to gas if no vault
+        }
+        
+        // Use a small amount to get accurate fee calculation
+        let testAmount = BigInt(10000) // 0.0001 BTC for fee estimation
+        
+        let keysignFactory = KeysignPayloadFactory()
+        let keysignPayload = try await keysignFactory.buildTransfer(
+            coin: tx.coin,
+            toAddress: tx.toAddress.isEmpty ? tx.coin.address : tx.toAddress,
+            amount: testAmount,
+            memo: tx.memo.isEmpty ? nil : tx.memo,
+            chainSpecific: chainSpecific,
+            swapPayload: nil,
+            vault: vault
+        )
+        
+        guard let helper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) else {
+            return chainSpecific.gas // Fallback to gas if no helper
+        }
+        
+        let plan = try helper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
+        return BigInt(plan.fee) // ✅ Real WalletCore calculated fee
     }
 }

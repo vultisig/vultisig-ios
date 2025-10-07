@@ -143,6 +143,7 @@ class SendTransaction: ObservableObject, Hashable {
     
     var gasInReadable: String {
         var decimals = coin.decimals
+        
         if coin.chain.chainType == .EVM {
             // convert to Gwei , show as Gwei for EVM chain only
             guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) else {
@@ -150,6 +151,10 @@ class SendTransaction: ObservableObject, Hashable {
             }
             return "\(gasDecimal / weiPerGWeiDecimal) \(coin.chain.feeUnit)"
         }
+        
+        // For UTXO chains, use total fee amount (like Android) instead of sats/byte rate
+        let feeToDisplay = coin.chainType == .UTXO ? fee : gas
+        let feeDecimal = Decimal(feeToDisplay)
         
         // If not a native token we need to get the decimals from the native token
         if !coin.isNativeToken {
@@ -160,7 +165,7 @@ class SendTransaction: ObservableObject, Hashable {
             }
         }
         
-        return "\((gasDecimal / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(coin.chain.feeUnit)"
+        return "\((feeDecimal / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(coin.ticker)"
     }
     
     init() { }

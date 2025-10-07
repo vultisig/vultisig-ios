@@ -67,7 +67,9 @@ enum BlockChainSpecific: Codable, Hashable {
         switch self {
         case .Ethereum(let maxFeePerGas, _, _, let gasLimit):
             return maxFeePerGas * gasLimit
-        case .UTXO, .Cardano, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot, .Ton, .Ripple, .Tron:
+        case .UTXO:
+            return gas // This will be the real WalletCore plan.fee calculated in BlockChainService
+        case .Cardano, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot, .Ton, .Ripple, .Tron:
             return gas
         }
     }
