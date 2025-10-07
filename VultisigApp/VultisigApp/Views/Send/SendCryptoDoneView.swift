@@ -12,6 +12,7 @@ struct SendCryptoDoneView: View {
     let hash: String
     let approveHash: String?
     let chain: Chain
+    let isSend: Bool
 
     var progressLink: String? = nil
     
@@ -37,6 +38,7 @@ struct SendCryptoDoneView: View {
         progressLink: String? = nil,
         sendTransaction: SendTransaction?,
         swapTransaction: SwapTransaction?,
+        isSend: Bool,
         contentPadding: CGFloat = 16
     ) {
         self.vault = vault
@@ -46,6 +48,7 @@ struct SendCryptoDoneView: View {
         self.progressLink = progressLink
         self.sendTransaction = sendTransaction
         self.swapTransaction = swapTransaction
+        self.isSend = isSend
         self.contentPadding = contentPadding
     }
     
@@ -74,6 +77,7 @@ struct SendCryptoDoneView: View {
                 hash: hash,
                 explorerLink: explorerLink(),
                 memo: tx.memo,
+                isSend: isSend,
                 fromAddress: tx.fromAddress,
                 toAddress: tx.toAddress,
                 fee: (tx.gasInReadable, sendSummaryViewModel.feesInReadable(tx: tx, vault: vault))
@@ -136,7 +140,8 @@ struct SendCryptoDoneView: View {
         chain: .thorChain,
         progressLink: "https://blockstream.info/tx/",
         sendTransaction: nil,
-        swapTransaction: SwapTransaction()
+        swapTransaction: SwapTransaction(),
+        isSend: true
     )
     .environmentObject(SettingsViewModel())
 }

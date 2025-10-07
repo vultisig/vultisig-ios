@@ -13,6 +13,7 @@ struct SendCryptoDoneContentView: View {
     @Binding var showAlert: Bool
     var onDone: () -> Void = {}
     
+    @State var navigateToTransactionDetails = false
     @State var navigateToHome = false
     @State var animationVM: RiveViewModel? = nil
     @EnvironmentObject var homeViewModel: HomeViewModel
@@ -59,6 +60,12 @@ struct SendCryptoDoneContentView: View {
                 onDoneButtonPressed()
             }
         }
+        .navigationDestination(isPresented: $navigateToTransactionDetails) {
+            SendCryptoSecondaryDoneView(
+                input: input,
+                onDone: onDoneButtonPressed
+            )
+        }
         .navigationDestination(isPresented: $navigateToHome) {
             if let vault = homeViewModel.selectedVault {
                 HomeScreen(initialVault: vault)
@@ -75,17 +82,17 @@ struct SendCryptoDoneContentView: View {
     }
     
     var transactionDetailsButton: some View {
-        NavigationLink {
-            SendCryptoSecondaryDoneView(input: input) {
-                onDoneButtonPressed()
-            }
+        Button {
+            navigateToTransactionDetails = true
         } label: {
             HStack {
                 Text(NSLocalizedString("transactionDetails", comment: ""))
                 Spacer()
                 Image(systemName: "chevron.right")
             }
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
     }
     
     var animation: some View {
@@ -112,6 +119,7 @@ struct SendCryptoDoneContentView: View {
         approveHash: "",
         chain: .thorChain,
         sendTransaction: nil,
-        swapTransaction: nil
+        swapTransaction: nil,
+        isSend: true
     )
 }

@@ -122,7 +122,15 @@ struct FunctionCallView: View {
     var doneView: some View {
         ZStack {
             if let hash = functionCallViewModel.hash, let chain = keysignPayload?.coin.chain  {
-                SendCryptoDoneView(vault: vault, hash: hash, approveHash: nil, chain: chain, sendTransaction: tx, swapTransaction: nil)
+                SendCryptoDoneView(
+                    vault: vault,
+                    hash: hash,
+                    approveHash: nil,
+                    chain: chain,
+                    sendTransaction: tx,
+                    swapTransaction: nil,
+                    isSend: false
+                )
             } else {
                 SendCryptoSigningErrorView(errorString: functionCallViewModel.errorMessage)
             }

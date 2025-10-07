@@ -118,7 +118,8 @@ struct SwapCryptoView: View {
                     chain: tx.fromCoin.chain,
                     progressLink: swapViewModel.progressLink(tx: tx, hash: hash),
                     sendTransaction: nil,
-                    swapTransaction: tx
+                    swapTransaction: tx,
+                    isSend: false
                 )
             } else {
                 SendCryptoSigningErrorView(errorString: swapViewModel.error?.localizedDescription ?? "Error")
