@@ -45,7 +45,7 @@ class GroupedChain: ObservableObject, Identifiable, Hashable {
     }
 
     var nativeCoin: Coin {
-        return coins[0]
+        return coins.first(where: { $0.isNativeToken }) ?? coins[0]
     }
 
     init(chain: Chain, address: String, logo: String, count: Int = 0, coins: [Coin]) {

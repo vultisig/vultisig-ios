@@ -7,29 +7,29 @@
 
 import SwiftUI
 
-public struct CrossPlatformShareButton<Label: View>: View {
+public struct CrossPlatformShareButton<Content: View>: View {
     private let image: Image
     private let caption: String
     private let scale: CGFloat
-    private let label: () -> Label
+    private let content: (@escaping () -> Void) -> Content
 
     public init(
         image: Image,
         caption: String,
         scale: CGFloat = 2,
-        @ViewBuilder label: @escaping () -> Label
+        @ViewBuilder content: @escaping (@escaping () -> Void) -> Content
     ) {
         self.image = image
         self.caption = caption
         self.scale = scale
-        self.label = label
+        self.content = content
     }
 
     public var body: some View {
         #if os(iOS)
-        IOSShareButton(image: image, caption: caption, scale: scale, label: { label() })
+        IOSShareButton(image: image, caption: caption, scale: scale, content: content)
         #elseif os(macOS)
-        MacShareButton(image: image, caption: caption, scale: scale, label: { label() })
+        MacShareButton(image: image, caption: caption, scale: scale, content: content)
         #endif
     }
 }
@@ -58,17 +58,17 @@ private struct SharePayload: Identifiable {
     let items: [Any]
 }
 
-private struct IOSShareButton<Label: View>: View {
+private struct IOSShareButton<Content: View>: View {
     let image: Image
     let caption: String
     let scale: CGFloat
-    @ViewBuilder var label: () -> Label
+    let content: (@escaping () -> Void) -> Content
 
     @State private var cachedImage: UIImage?
     @State private var payload: SharePayload?
 
     var body: some View {
-        Button(action: share, label: label)
+        content(share)
             .task {
                 if cachedImage == nil,
                    let png = renderPNGData(from: image, scale: scale),
@@ -115,43 +115,41 @@ private struct ActivityViewController: UIViewControllerRepresentable {
 #if os(macOS)
 import AppKit
 
-private struct MacShareButton<Label: View>: View {
+private struct MacShareButton<Content: View>: View {
     let image: Image
     let caption: String
     let scale: CGFloat
-    @ViewBuilder var label: () -> Label
+    let content: (@escaping () -> Void) -> Content
     
     @State private var cachedImage: NSImage?
     @State private var showSharePicker = false
     @State private var buttonFrame: CGRect = .zero
 
     var body: some View {
-        Button(action: share) {
-            label()
-        }
-        .background(
-            GeometryReader { geometry in
-                Color.clear
-                    .preference(key: FramePreferenceKey.self, value: geometry.frame(in: .global))
-            }
-        )
-        .onPreferenceChange(FramePreferenceKey.self) { frame in
-            buttonFrame = frame
-        }
-        .task {
-            if cachedImage == nil,
-               let png = renderPNGData(from: image, scale: scale) {
-                cachedImage = NSImage(data: png)
-            }
-        }
-        .background(
-            // Invisible view to handle the share picker
-            SharePickerView(
-                items: shareItems,
-                isPresented: $showSharePicker,
-                sourceRect: buttonFrame
+        content(share)
+            .background(
+                GeometryReader { geometry in
+                    Color.clear
+                        .preference(key: FramePreferenceKey.self, value: geometry.frame(in: .global))
+                }
             )
-        )
+            .onPreferenceChange(FramePreferenceKey.self) { frame in
+                buttonFrame = frame
+            }
+            .task {
+                if cachedImage == nil,
+                   let png = renderPNGData(from: image, scale: scale) {
+                    cachedImage = NSImage(data: png)
+                }
+            }
+            .background(
+                // Invisible view to handle the share picker
+                SharePickerView(
+                    items: shareItems,
+                    isPresented: $showSharePicker,
+                    sourceRect: buttonFrame
+                )
+            )
     }
     
     private var shareItems: [Any] {

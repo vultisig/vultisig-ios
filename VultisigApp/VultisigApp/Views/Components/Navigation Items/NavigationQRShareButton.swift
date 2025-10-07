@@ -29,8 +29,8 @@ struct NavigationQRShareButton: View {
     var shareLink: some View {
         ZStack {
             if let image = viewModel.renderedImage {
-                CrossPlatformShareButton(image: image, caption: viewModel.qrCodeData ?? .empty) {
-                    ToolbarButton(image: "share", action: {})
+                CrossPlatformShareButton(image: image, caption: viewModel.qrCodeData ?? .empty) { onShare in
+                    ToolbarButton(image: "share", action: onShare)
                 }
             } else {
                 ProgressView()

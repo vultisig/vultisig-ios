@@ -104,7 +104,7 @@ struct AddressBookView: View {
     
     var addAddressButton: some View {
         PrimaryNavigationButton(title: "addAddress") {
-            AddAddressBookScreen(count: savedAddresses.count)
+            AddAddressBookScreen()
         }
     }
     
