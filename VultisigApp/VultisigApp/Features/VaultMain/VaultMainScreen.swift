@@ -20,7 +20,6 @@ struct VaultMainScreen: View {
     @EnvironmentObject var viewModel: VaultDetailViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
-    @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     @State private var scrollOffset: CGFloat = 0
@@ -251,7 +250,6 @@ struct VaultMainScreen: View {
         tokenSelectionViewModel.setData(for: vault)
         viewModel.getGroupAsync(tokenSelectionViewModel)
         
-        settingsDefaultChainViewModel.setData(tokenSelectionViewModel.groupedAssets)
         viewModel.categorizeCoins(vault: vault)
         viewModel.updateBalance(vault: vault)
     }

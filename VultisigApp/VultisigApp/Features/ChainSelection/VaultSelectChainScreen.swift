@@ -12,6 +12,7 @@ struct VaultSelectChainScreen: View {
     @Binding var isPresented: Bool
     var onSave: () -> Void
     @State var searchBarFocused: Bool = false
+    @State var isLoading: Bool = false
         
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
@@ -30,6 +31,7 @@ struct VaultSelectChainScreen: View {
         } emptyStateBuilder: {
             emptyStateView
         }
+        .withLoading(text: "pleaseWait".localized, isLoading: $isLoading)
         .applySheetSize()
         .onLoad {
             viewModel.setData(for: vault)
@@ -40,7 +42,7 @@ struct VaultSelectChainScreen: View {
         VStack {
             VStack(spacing: 12) {
                 Icon(named: "crypto", color: Theme.colors.primaryAccent4, size: 24)
-                Text("noChainsFound")
+                Text("noChainsFound")git
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.subtitle)
             }
@@ -55,11 +57,15 @@ struct VaultSelectChainScreen: View {
 
 private extension VaultSelectChainScreen {
     func onSaveInternal() {
+        isLoading = true
         Task {
             await saveAssets()
-            onSave()
+            await MainActor.run {
+                isLoading = false
+                onSave()
+                isPresented.toggle()
+            }
         }
-        isPresented.toggle()
     }
     
     func onSelection(_ chainSelection: ChainSelection) {

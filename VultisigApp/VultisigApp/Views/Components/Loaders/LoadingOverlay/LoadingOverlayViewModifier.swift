@@ -27,7 +27,9 @@ struct LoadingOverlayViewModifier: ViewModifier {
     var overlay: some View {
         if isLoadingInternal {
             ZStack {
+                Theme.colors.bgPrimary.opacity(0.4).ignoresSafeArea()
                 LoadingBanner(text: text, isVisible: $isLoadingInternal)
+                    .shadow(color: Color.black.opacity(0.4), radius: 8, x: 0, y: 4)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .ignoresSafeArea()
