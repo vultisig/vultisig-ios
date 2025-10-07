@@ -17,17 +17,10 @@ extension PeerDiscoveryView {
             Background()
             main
         }
-        .navigationTitle("scanQR")
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(hideBackButton)
-        .detectOrientation($orientation)
-        .onChange(of: orientation) { oldValue, newValue in
-            setData()
-        }
-        .toolbar {
-            // only show the QR share button when it is in peer discovery
-            if isShareButtonVisible {
-                ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+        .crossPlatformToolbar("scanQR".localized) {
+            
+            CustomToolbarItem(placement: .trailing) {
+                if isShareButtonVisible {
                     NavigationQRShareButton(
                         vault: vault,
                         type: .Keygen,
@@ -35,6 +28,11 @@ extension PeerDiscoveryView {
                     )
                 }
             }
+        }
+        .navigationBarBackButtonHidden(hideBackButton)
+        .detectOrientation($orientation)
+        .onChange(of: orientation) { oldValue, newValue in
+            setData()
         }
         .onAppear {
             UIApplication.shared.isIdleTimerDisabled = true
@@ -143,11 +141,11 @@ extension PeerDiscoveryView {
         SwitchToLocalLink(isForKeygen: true, selectedNetwork: $viewModel.selectedNetwork)
             .disabled(viewModel.isLoading)
     }
-
+    
     var isShareButtonVisible: Bool {
         return viewModel.status == .WaitingForDevices && selectedTab.hasOtherDevices
     }
-
+    
     func setData() {
         guard let (qrCodeString, qrCodeImage) = viewModel.getQRCodeData(size: 100) else {
             return

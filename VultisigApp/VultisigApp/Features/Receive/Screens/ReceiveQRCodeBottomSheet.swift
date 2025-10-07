@@ -95,10 +95,9 @@ struct ReceiveQRCodeBottomSheet: View {
     var bottomSection: some View {
         HStack(spacing: 8) {
             if let image = shareSheetViewModel.renderedImage {
-                CrossPlatformShareButton(image: image, caption: shareSheetViewModel.qrCodeData ?? .empty) {
-                    PrimaryButtonView(title: "share".localized)
+                CrossPlatformShareButton(image: image, caption: shareSheetViewModel.qrCodeData ?? .empty) { onShare in
+                    PrimaryButton(title: "share".localized, action: onShare)
                 }
-                .buttonStyle(PrimaryButtonStyle(type: .secondary))
             }
             PrimaryButton(title: "copyAddress".localized) {
                 addressToCopy = coin

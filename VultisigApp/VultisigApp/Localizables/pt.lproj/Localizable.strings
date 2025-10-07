@@ -58,7 +58,7 @@
 "backupOptionsBox1Highlighted" = "seguro sem";
 "backupOptionsBox2" = "Se você optar por adicionar uma senha, isso será usado para criptografar o arquivo de backup.";
 "backupOptionsBox2Highlighted" = "Criptografar";
-"backupOptionsBox3" = "Lembre -se: se você esquecer sua senha do cofre, ela não poderá ser redefinida ou recuperada.";
+"backupOptionsBox3" = "Lembre -se: Se você esquecer sua senha do cofre, ela não poderá ser redefinida ou recuperada.";
 "backupOptionsBox3Highlighted" = "não pode";
 "backupOptionsTitle" = "Deseja criptografar seu backup com uma senha?";
 "backupPart1" = "Cópia de Segurança 1";
@@ -884,3 +884,4 @@
 "youreSwapping" = "Você está trocando";
 "yourFriendsReferralCode" = "Seu código de referência de amigo";
 "yourReferralCode" = "Seu código de indicação";
+"addToAddressBook" = "Adicionar ao Catálogo de Endereços";
