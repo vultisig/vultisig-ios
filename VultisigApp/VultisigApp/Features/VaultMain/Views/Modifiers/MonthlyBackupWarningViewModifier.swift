@@ -16,7 +16,7 @@ struct MonthlyBackupWarningViewModifier: ViewModifier {
     
     func body(content: Content) -> some View {
         content
-            .sheet(isPresented: $shouldShow) {
+            .crossPlatformSheet(isPresented: $shouldShow) {
                 MonthlyBackupView(isPresented: $shouldShow, isBackupPresented: $isBackupLinkActive)
                     .presentationDetents([.height(224)])
             }

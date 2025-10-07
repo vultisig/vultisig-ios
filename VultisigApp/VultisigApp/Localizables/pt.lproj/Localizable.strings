@@ -199,7 +199,7 @@
 "enterUpto4Characters" = "Digite até 4 caracteres";
 "enterValidFolderName" = "Insira um nome de pasta válido e tente novamente.";
 "enterVaultEmail" = "Digite o email para receber o compartilhamento do Vault.";
-"enterVaultName" = "Digite o nome do cofre";
+"enterVaultName" = "Digite o Nome do Cofre";
 "enterVaultPassword" = "Digite a senha definida ao criar este cofre.";
 "enterYourEmail" = "Digite seu e-mail";
 "enterYourEmailDescription" = "Este e-mail é usado apenas para enviar o backup do servidor.";
@@ -282,7 +282,7 @@
 "fetchingVaultDetails" = "Buscando detalhes do cofre";
 "findCustomTokens" = "Encontre Seu Token Personalizado";
 "folder" = "Pasta";
-"folderName" = "Nome da pasta";
+"folderName" = "Nome da Pasta";
 "folderNeedsOneVault" = "A pasta precisa ter pelo menos um cofre selecionado.";
 "folders" = "Pastas";
 "from" = "De";

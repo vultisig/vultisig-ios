@@ -25,12 +25,14 @@ struct SearchTextField: View {
     
     var body: some View {
         HStack(spacing: 0) {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(Theme.colors.textExtraLight)
-            
+            Icon(
+                named: "magnifying-glass",
+                color: Theme.colors.textLight,
+                size: 16
+            )            
             TextField(NSLocalizedString("Search", comment: "Search"), text: $value)
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textPrimary)
                 .disableAutocorrection(true)
                 .borderlessTextFieldStyle()
                 .colorScheme(.dark)
@@ -51,7 +53,7 @@ struct SearchTextField: View {
         .frame(height: 44)
         .padding(.horizontal, 12)
         .background(Theme.colors.bgSecondary)
-        .cornerRadius(12)
+        .cornerRadius(99)
         .onChange(of: focusedState) { _, newValue in
             isFocused = newValue
         }
@@ -76,8 +78,7 @@ struct SearchTextField: View {
             guard let pasted = ClipboardManager.pasteFromClipboard() else { return }
             value = pasted
         } label: {
-            Image(systemName: "doc.on.clipboard")
-                .foregroundColor(Theme.colors.textLight)
+            Icon(named: "copy-2", color: Theme.colors.textLight, size: 20)
         }
         .buttonStyle(.plain)
     }

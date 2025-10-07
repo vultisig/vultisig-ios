@@ -22,9 +22,7 @@ struct ReceiveChainSelectionScreen: View {
     }
     
     var body: some View {
-        VStack {
-            SheetHeaderView(title: "selectChain".localized, isPresented: $isPresented)
-                .padding(.top, 12)
+        Screen(title: "selectChain".localized) {
             VStack(spacing: 12) {
                 SearchTextField(value: $viewModel.searchText)
                 ScrollView {
@@ -37,8 +35,10 @@ struct ReceiveChainSelectionScreen: View {
                 .cornerRadius(12)
             }
         }
+        .applySheetSize()
+        .sheetStyle()
         .onDisappear { viewModel.searchText = "" }
-        .sheet(item: $selectedCoin) {
+        .crossPlatformSheet(item: $selectedCoin) {
             ReceiveQRCodeBottomSheet(
                 coin: $0,
                 isNativeCoin: true,

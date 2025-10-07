@@ -69,7 +69,7 @@ struct VaultServerBackupScreen: View {
                 focusedField = newValue
             }
         }
-        .platformSheet(isPresented: $viewModel.showSuccess) {
+        .crossPlatformSheet(isPresented: $viewModel.showSuccess) {
             ServerVaultCheckInboxScreen(isPresented: $viewModel.showSuccess) {
                 moveToHome = true
             }

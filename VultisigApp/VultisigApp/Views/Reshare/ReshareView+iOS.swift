@@ -30,7 +30,7 @@ extension ReshareView {
                 NavigationHelpButton()
             }
         }
-        .sheet(isPresented: $showJoinReshare, content: {
+        .crossPlatformSheet(isPresented: $showJoinReshare) {
             GeneralCodeScannerView(
                 showSheet: $showJoinReshare,
                 shouldJoinKeygen: $shouldJoinKeygen,
@@ -39,7 +39,7 @@ extension ReshareView {
                 selectedChain: .constant(nil),              // -
                 sendTX: SendTransaction()                   // -
             )
-        })
+        }
     }
 
     var joinReshareButton: some View {

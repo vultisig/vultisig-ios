@@ -27,6 +27,7 @@ struct HomeScreen: View {
     @State var shouldKeysignTransaction = false
     @State var shouldSendCrypto = false
     @State var shouldImportBackup = false
+    @State var showBackupNow = false
     @StateObject var sendTx = SendTransaction()
     @State var selectedChain: Chain? = nil
     
@@ -87,7 +88,8 @@ struct HomeScreen: View {
                     routeToPresent: $vaultRoute,
                     showVaultSelector: $showVaultSelector,
                     addressToCopy: $addressToCopy,
-                    showUpgradeVaultSheet: $showUpgradeVaultSheet
+                    showUpgradeVaultSheet: $showUpgradeVaultSheet,
+                    showBackupNow: $showBackupNow
                 )
                 #if os(macOS)
                 .navigationBarBackButtonHidden()
@@ -120,7 +122,7 @@ struct HomeScreen: View {
             MacScannerView(type: .SignTransaction, sendTx: sendTx, selectedVault: selectedVault)
         }
         #else
-        .sheet(isPresented: $showScanner) {
+        .crossPlatformSheet(isPresented: $showScanner) {
             if ProcessInfo.processInfo.isiOSAppOnMac {
                 GeneralQRImportMacView(type: .SignTransaction, sendTx: sendTx, selectedVault: selectedVault)
             } else {
@@ -149,6 +151,11 @@ struct HomeScreen: View {
         }
         .navigationDestination(isPresented: $shouldImportBackup) {
             ImportWalletView()
+        }
+        .navigationDestination(isPresented: $showBackupNow) {
+            if let vault = homeViewModel.selectedVault {
+                VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: vault))
+            }
         }
     }
     

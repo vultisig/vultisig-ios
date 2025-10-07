@@ -129,6 +129,10 @@
 		138C5E6D2E79EFDD00C559C7 /* ChainSelectionGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138C5E6C2E79EFD900C559C7 /* ChainSelectionGridCell.swift */; };
 		138C5E702E79FB3600C559C7 /* ChainSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138C5E6F2E79FB3500C559C7 /* ChainSelection.swift */; };
 		138C5E722E7A01C600C559C7 /* ToolbarButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138C5E712E7A01C200C559C7 /* ToolbarButton.swift */; };
+		138E1D5E2E9480500085EA8E /* SheetPresentedViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138E1D5D2E9480500085EA8E /* SheetPresentedViewModifier.swift */; };
+		138E1D602E9480740085EA8E /* SheetPresentedCounterManagerKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138E1D5F2E9480720085EA8E /* SheetPresentedCounterManagerKey.swift */; };
+		138E1D622E9480830085EA8E /* SheetPresentedCounterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138E1D612E9480820085EA8E /* SheetPresentedCounterManager.swift */; };
+		138E1D662E9480C60085EA8E /* IsSheetPresentedEnvironmentKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138E1D652E9480BB0085EA8E /* IsSheetPresentedEnvironmentKey.swift */; };
 		138E370C2E439A7D0032C31C /* EditReferralDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138E370B2E439A780032C31C /* EditReferralDetailsView.swift */; };
 		138FD7FF2E79D381000903B1 /* FolderCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138FD7FE2E79D37A000903B1 /* FolderCellView.swift */; };
 		1390D8B82E3938BF003F3E20 /* BlockaidRpcClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8B72E3938B9003F3E20 /* BlockaidRpcClientProtocol.swift */; };
@@ -153,7 +157,7 @@
 		13A0786A2E846EB50093496F /* CommonListHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A078692E846EB50093496F /* CommonListHeaderView.swift */; };
 		13A0786C2E846FBA0093496F /* View+ListSectionSpacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A0786B2E846FBA0093496F /* View+ListSectionSpacing.swift */; };
 		13A078702E8484280093496F /* ListBottomSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A0786F2E8484250093496F /* ListBottomSection.swift */; };
-		13A078722E8488960093496F /* View+PlatformSheetHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A078712E84888E0093496F /* View+PlatformSheetHeight.swift */; };
+		13A078722E8488960093496F /* View+SheetStyling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A078712E84888E0093496F /* View+SheetStyling.swift */; };
 		13A899002E43C0FE006F75F0 /* PreferredAssetSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A898FF2E43C0EE006F75F0 /* PreferredAssetSelectionView.swift */; };
 		13A899022E43CEF3006F75F0 /* THORChainTokenMetadataFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A899012E43CEEB006F75F0 /* THORChainTokenMetadataFactory.swift */; };
 		13A899042E43FA4D006F75F0 /* PreferredAssetSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A899032E43FA4B006F75F0 /* PreferredAssetSelectionViewModel.swift */; };
@@ -229,8 +233,7 @@
 		13D178FC2E57544A00007B48 /* AddressBookChainSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D178FB2E57543E00007B48 /* AddressBookChainSelectionViewModel.swift */; };
 		13D178FE2E57644F00007B48 /* AddressBookChainSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D178FD2E57644B00007B48 /* AddressBookChainSelector.swift */; };
 		13D179002E5775AE00007B48 /* NavigationBarButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D178FF2E5775A800007B48 /* NavigationBarButtonView.swift */; };
-		13D179022E577ED900007B48 /* PlatformSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D179012E577ED500007B48 /* PlatformSheet.swift */; };
-		13D179052E57805800007B48 /* SheetHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D179042E57805100007B48 /* SheetHeaderView.swift */; };
+		13D179022E577ED900007B48 /* CrossPlatformSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D179012E577ED500007B48 /* CrossPlatformSheet.swift */; };
 		13D179082E5787D100007B48 /* AddressBookChainType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D179072E5787D100007B48 /* AddressBookChainType.swift */; };
 		13D1790A2E57889F00007B48 /* AddressBookChainCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D179092E57889E00007B48 /* AddressBookChainCell.swift */; };
 		13D1790D2E5788BE00007B48 /* AddressBookChainCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D1790C2E5788BE00007B48 /* AddressBookChainCellView.swift */; };
@@ -247,7 +250,6 @@
 		13D93BD82E58C8C6001E31E8 /* BannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D93BD72E58C8C3001E31E8 /* BannerView.swift */; };
 		13D9EBF32E84492F0089B2A7 /* AddFolderScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D9EBF22E84492B0089B2A7 /* AddFolderScreen.swift */; };
 		13D9EBF92E8456BE0089B2A7 /* AddFolderVaultCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D9EBF82E8456BD0089B2A7 /* AddFolderVaultCellView.swift */; };
-		13D9EC002E8457C80089B2A7 /* DetentsAwareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D9EBFF2E8457C20089B2A7 /* DetentsAwareSheet.swift */; };
 		13D9EC022E84584A0089B2A7 /* VaultCellMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D9EC012E8458490089B2A7 /* VaultCellMainView.swift */; };
 		13DD3B172E3CFE5900D46FA0 /* OffsetObservingScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD3B162E3CFE5800D46FA0 /* OffsetObservingScrollView.swift */; };
 		13DD3B1A2E3CFE7D00D46FA0 /* FlatPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD3B192E3CFE6E00D46FA0 /* FlatPicker.swift */; };
@@ -962,8 +964,6 @@
 		DE1572A02B70F284009BC7C5 /* KeysignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE15729D2B70F284009BC7C5 /* KeysignView.swift */; };
 		DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572AB2B7174D3009BC7C5 /* Utils.swift */; };
 		DE1905272BD8CC4D0043577E /* KeysignVerify.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1905262BD8CC4D0043577E /* KeysignVerify.swift */; };
-		DE214FF22E2E131200CEEA71 /* SendCryptoAddressBookView+macos.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE214FF12E2E130400CEEA71 /* SendCryptoAddressBookView+macos.swift */; };
-		DE214FF42E2E13A200CEEA71 /* SendCryptoAddressBookView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE214FF32E2E139100CEEA71 /* SendCryptoAddressBookView+iOS.swift */; };
 		DE214FF62E308EEE00CEEA71 /* ChainHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE214FF52E308EE800CEEA71 /* ChainHelperTests.swift */; };
 		DE214FF82E30B3EE00CEEA71 /* KeysignPayloadCodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE214FF72E30B3E400CEEA71 /* KeysignPayloadCodable.swift */; };
 		DE320E6E2C846C610068D0E1 /* ReshareRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE320E6D2C846C610068D0E1 /* ReshareRequest.swift */; };
@@ -1198,6 +1198,10 @@
 		138C5E6C2E79EFD900C559C7 /* ChainSelectionGridCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainSelectionGridCell.swift; sourceTree = "<group>"; };
 		138C5E6F2E79FB3500C559C7 /* ChainSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainSelection.swift; sourceTree = "<group>"; };
 		138C5E712E7A01C200C559C7 /* ToolbarButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarButton.swift; sourceTree = "<group>"; };
+		138E1D5D2E9480500085EA8E /* SheetPresentedViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetPresentedViewModifier.swift; sourceTree = "<group>"; };
+		138E1D5F2E9480720085EA8E /* SheetPresentedCounterManagerKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetPresentedCounterManagerKey.swift; sourceTree = "<group>"; };
+		138E1D612E9480820085EA8E /* SheetPresentedCounterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetPresentedCounterManager.swift; sourceTree = "<group>"; };
+		138E1D652E9480BB0085EA8E /* IsSheetPresentedEnvironmentKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IsSheetPresentedEnvironmentKey.swift; sourceTree = "<group>"; };
 		138E370B2E439A780032C31C /* EditReferralDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditReferralDetailsView.swift; sourceTree = "<group>"; };
 		138FD7FE2E79D37A000903B1 /* FolderCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderCellView.swift; sourceTree = "<group>"; };
 		1390D8B72E3938B9003F3E20 /* BlockaidRpcClientProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockaidRpcClientProtocol.swift; sourceTree = "<group>"; };
@@ -1222,7 +1226,7 @@
 		13A078692E846EB50093496F /* CommonListHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonListHeaderView.swift; sourceTree = "<group>"; };
 		13A0786B2E846FBA0093496F /* View+ListSectionSpacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+ListSectionSpacing.swift"; sourceTree = "<group>"; };
 		13A0786F2E8484250093496F /* ListBottomSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListBottomSection.swift; sourceTree = "<group>"; };
-		13A078712E84888E0093496F /* View+PlatformSheetHeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+PlatformSheetHeight.swift"; sourceTree = "<group>"; };
+		13A078712E84888E0093496F /* View+SheetStyling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+SheetStyling.swift"; sourceTree = "<group>"; };
 		13A898FF2E43C0EE006F75F0 /* PreferredAssetSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetSelectionView.swift; sourceTree = "<group>"; };
 		13A899012E43CEEB006F75F0 /* THORChainTokenMetadataFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainTokenMetadataFactory.swift; sourceTree = "<group>"; };
 		13A899032E43FA4B006F75F0 /* PreferredAssetSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetSelectionViewModel.swift; sourceTree = "<group>"; };
@@ -1297,8 +1301,7 @@
 		13D178FB2E57543E00007B48 /* AddressBookChainSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookChainSelectionViewModel.swift; sourceTree = "<group>"; };
 		13D178FD2E57644B00007B48 /* AddressBookChainSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookChainSelector.swift; sourceTree = "<group>"; };
 		13D178FF2E5775A800007B48 /* NavigationBarButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBarButtonView.swift; sourceTree = "<group>"; };
-		13D179012E577ED500007B48 /* PlatformSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformSheet.swift; sourceTree = "<group>"; };
-		13D179042E57805100007B48 /* SheetHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetHeaderView.swift; sourceTree = "<group>"; };
+		13D179012E577ED500007B48 /* CrossPlatformSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossPlatformSheet.swift; sourceTree = "<group>"; };
 		13D179072E5787D100007B48 /* AddressBookChainType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookChainType.swift; sourceTree = "<group>"; };
 		13D179092E57889E00007B48 /* AddressBookChainCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookChainCell.swift; sourceTree = "<group>"; };
 		13D1790C2E5788BE00007B48 /* AddressBookChainCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookChainCellView.swift; sourceTree = "<group>"; };
@@ -1315,7 +1318,6 @@
 		13D93BD72E58C8C3001E31E8 /* BannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerView.swift; sourceTree = "<group>"; };
 		13D9EBF22E84492B0089B2A7 /* AddFolderScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFolderScreen.swift; sourceTree = "<group>"; };
 		13D9EBF82E8456BD0089B2A7 /* AddFolderVaultCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFolderVaultCellView.swift; sourceTree = "<group>"; };
-		13D9EBFF2E8457C20089B2A7 /* DetentsAwareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetentsAwareSheet.swift; sourceTree = "<group>"; };
 		13D9EC012E8458490089B2A7 /* VaultCellMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultCellMainView.swift; sourceTree = "<group>"; };
 		13DD3B162E3CFE5800D46FA0 /* OffsetObservingScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffsetObservingScrollView.swift; sourceTree = "<group>"; };
 		13DD3B192E3CFE6E00D46FA0 /* FlatPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlatPicker.swift; sourceTree = "<group>"; };
@@ -2030,8 +2032,6 @@
 		DE1572A12B70F873009BC7C5 /* Tss.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:G8Q5XUAJD9:Cortina Ventures PTY LTD"; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		DE1572AB2B7174D3009BC7C5 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		DE1905262BD8CC4D0043577E /* KeysignVerify.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeysignVerify.swift; sourceTree = "<group>"; };
-		DE214FF12E2E130400CEEA71 /* SendCryptoAddressBookView+macos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SendCryptoAddressBookView+macos.swift"; sourceTree = "<group>"; };
-		DE214FF32E2E139100CEEA71 /* SendCryptoAddressBookView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SendCryptoAddressBookView+iOS.swift"; sourceTree = "<group>"; };
 		DE214FF52E308EE800CEEA71 /* ChainHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainHelperTests.swift; sourceTree = "<group>"; };
 		DE214FF72E30B3E400CEEA71 /* KeysignPayloadCodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignPayloadCodable.swift; sourceTree = "<group>"; };
 		DE2B4E4A2C97DA9200FF4C49 /* VultisigApp.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = VultisigApp.xctestplan; sourceTree = "<group>"; };
@@ -2714,6 +2714,17 @@
 			path = Model;
 			sourceTree = "<group>";
 		};
+		138E1D5C2E9480430085EA8E /* SheetPresentedCounterManager */ = {
+			isa = PBXGroup;
+			children = (
+				138E1D652E9480BB0085EA8E /* IsSheetPresentedEnvironmentKey.swift */,
+				138E1D612E9480820085EA8E /* SheetPresentedCounterManager.swift */,
+				138E1D5F2E9480720085EA8E /* SheetPresentedCounterManagerKey.swift */,
+				138E1D5D2E9480500085EA8E /* SheetPresentedViewModifier.swift */,
+			);
+			path = SheetPresentedCounterManager;
+			sourceTree = "<group>";
+		};
 		1390D8B62E3938A1003F3E20 /* Blockaid */ = {
 			isa = PBXGroup;
 			children = (
@@ -3143,10 +3154,9 @@
 		13D9EBFC2E84579F0089B2A7 /* Sheet */ = {
 			isa = PBXGroup;
 			children = (
-				13A078712E84888E0093496F /* View+PlatformSheetHeight.swift */,
-				13D9EBFF2E8457C20089B2A7 /* DetentsAwareSheet.swift */,
-				13D179012E577ED500007B48 /* PlatformSheet.swift */,
-				13D179042E57805100007B48 /* SheetHeaderView.swift */,
+				138E1D5C2E9480430085EA8E /* SheetPresentedCounterManager */,
+				13A078712E84888E0093496F /* View+SheetStyling.swift */,
+				13D179012E577ED500007B48 /* CrossPlatformSheet.swift */,
 				137B2C762E3A4A3F0074F648 /* BottomSheet */,
 			);
 			path = Sheet;
@@ -4731,8 +4741,6 @@
 				A65BA9892BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift */,
 				A65BA98B2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift */,
 				A646DFB62E179B6F006E8ECC /* SendCryptoAddressBookView.swift */,
-				DE214FF32E2E139100CEEA71 /* SendCryptoAddressBookView+iOS.swift */,
-				DE214FF12E2E130400CEEA71 /* SendCryptoAddressBookView+macos.swift */,
 				A64A81AC2E1E2755002D0CDD /* SendCryptoSecondaryDoneView.swift */,
 			);
 			path = Send;
@@ -5562,6 +5570,7 @@
 				A6386DA82C90244800DDD58E /* TokenSelectionCell+macOS.swift in Sources */,
 				A6182F252C9225B60059BFDD /* UpdateCheckUpToDateView.swift in Sources */,
 				A6C6708E2C9CFD0A00F59B6A /* KeysignView+macOS.swift in Sources */,
+				138E1D622E9480830085EA8E /* SheetPresentedCounterManager.swift in Sources */,
 				13792A892E53B2AB0063CE99 /* isMacOS.swift in Sources */,
 				A6ACAD632D110A1E00432CC4 /* SettingsAdvancedView+iOS.swift in Sources */,
 				B5E95E092BED84D9003778F0 /* ImagePicker.swift in Sources */,
@@ -5570,7 +5579,7 @@
 				DEF722602C520377002FFE8A /* THORChainNetworkStatus.swift in Sources */,
 				A53065F62D57CAED000B82E6 /* OnboardingSummaryView.swift in Sources */,
 				DE1572962B70F254009BC7C5 /* TssMessenger.swift in Sources */,
-				13A078722E8488960093496F /* View+PlatformSheetHeight.swift in Sources */,
+				13A078722E8488960093496F /* View+SheetStyling.swift in Sources */,
 				A68696232C1B5DD2004EDE0B /* EncryptedBackupViewModel.swift in Sources */,
 				A683EDEB2BCF635E00BB706E /* InstructionPrompt.swift in Sources */,
 				A6BB9BD12DA9E56A0085E117 /* VaultShareBackupsView+iOS.swift in Sources */,
@@ -5879,11 +5888,11 @@
 				DEA1C7022DB0CD9900424466 /* THORChainTokenMetadata.swift in Sources */,
 				A6182F532C9296CF0059BFDD /* StyledFloatingPointField+iOS.swift in Sources */,
 				13AF0D212E4CE76B004D4FD2 /* SendRouter.swift in Sources */,
+				138E1D662E9480C60085EA8E /* IsSheetPresentedEnvironmentKey.swift in Sources */,
 				A65649E22B96602700E4B329 /* DataExtension.swift in Sources */,
 				B590DF862C2E70B800ED934E /* FunctionCallVote.swift in Sources */,
 				A6966D292BA400B700903CA4 /* SendCryptoAddressTextField.swift in Sources */,
 				A6ACAD652D110B6000432CC4 /* SettingToggleCell.swift in Sources */,
-				DE214FF22E2E131200CEEA71 /* SendCryptoAddressBookView+macos.swift in Sources */,
 				A6F9F7EB2B9D1B3700790258 /* VaultDetailViewModel.swift in Sources */,
 				A65BA9842BAA07B500B2D8AA /* Background.swift in Sources */,
 				A65649F22B966A2300E4B329 /* UTXOTransactionStatus.swift in Sources */,
@@ -5895,7 +5904,6 @@
 				A524F5712D4AD63500F294B2 /* LiFiSwapError.swift in Sources */,
 				DE64A4CE2BA7FEE100C342E3 /* JoinKeysignViewModel.swift in Sources */,
 				1378B04B2E462ADB005CC32D /* CircularProgressIndicator.swift in Sources */,
-				13D179052E57805800007B48 /* SheetHeaderView.swift in Sources */,
 				1390D8BA2E393902003F3E20 /* BlockaidModels.swift in Sources */,
 				A65518032BF849FC006BB924 /* CoverView.swift in Sources */,
 				A6C9D5C12BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift in Sources */,
@@ -5910,6 +5918,7 @@
 				A6E0C92A2DEF717500A01543 /* ReferredViewModel.swift in Sources */,
 				A6CBF2DC2C251D4100FD8080 /* LookingForDevicesLoader.swift in Sources */,
 				A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */,
+				138E1D602E9480740085EA8E /* SheetPresentedCounterManagerKey.swift in Sources */,
 				B530F8742C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift in Sources */,
 				13CCEC0F2E55010D00F28937 /* InfoBannerView.swift in Sources */,
 				A670CEC12DD7CFD400E33B09 /* NavigationBlankBackButton+macOS.swift in Sources */,
@@ -5925,7 +5934,6 @@
 				137650832E8DC1060012C60A /* VaultMainScreenScrollView.swift in Sources */,
 				13D0C84B2E7461F600A1301F /* TabBarItem.swift in Sources */,
 				A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */,
-				13D9EC002E8457C80089B2A7 /* DetentsAwareSheet.swift in Sources */,
 				A6E0C9212DE9013A00A01543 /* ReferralLaunchView.swift in Sources */,
 				A65617FF2CB4FE1500E9CF19 /* FolderDetailHeader.swift in Sources */,
 				13AF0D1A2E4CE672004D4FD2 /* NavigationRouter+EnvironmentKey.swift in Sources */,
@@ -6018,6 +6026,7 @@
 				133EEA192E68787900E18280 /* SettingsCommonOptionView.swift in Sources */,
 				13C320032E61F8DB00255138 /* ReferralVaultSelectionScreen.swift in Sources */,
 				B5F7581A2BD8E7230097B5B9 /* SuiService.swift in Sources */,
+				138E1D5E2E9480500085EA8E /* SheetPresentedViewModifier.swift in Sources */,
 				A6505ACE2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift in Sources */,
 				A5D49F582BE26C63001766C8 /* CoinActionResolver.swift in Sources */,
 				13A899042E43FA4D006F75F0 /* PreferredAssetSelectionViewModel.swift in Sources */,
@@ -6042,7 +6051,6 @@
 				138C5E702E79FB3600C559C7 /* ChainSelection.swift in Sources */,
 				A6C670C52C9D173800F59B6A /* VaultDetailQRCodeView+iOS.swift in Sources */,
 				A6505ADE2CA66F750002FBF4 /* ViewExtension+iOS.swift in Sources */,
-				DE214FF42E2E13A200CEEA71 /* SendCryptoAddressBookView+iOS.swift in Sources */,
 				A625D9C62C5B5FE30078FBF4 /* KeygenViewInstructionsMac.swift in Sources */,
 				A65649F02B966A1200E4B329 /* UTXOTransactionMempoolOutput.swift in Sources */,
 				A6E0C91B2DE6BC8500A01543 /* ReferralOnboardingBanner.swift in Sources */,
@@ -6139,7 +6147,7 @@
 				A6182F5D2C9299ED0059BFDD /* MemoTextField+imacOS.swift in Sources */,
 				13A899002E43C0FE006F75F0 /* PreferredAssetSelectionView.swift in Sources */,
 				DEEAE0D72D0A7ED1007FDA14 /* SchnorrKeysign.swift in Sources */,
-				13D179022E577ED900007B48 /* PlatformSheet.swift in Sources */,
+				13D179022E577ED900007B48 /* CrossPlatformSheet.swift in Sources */,
 				A64A81AD2E1E2755002D0CDD /* SendCryptoSecondaryDoneView.swift in Sources */,
 				13052B972E8C5511000285D2 /* CrossPlatformToolbarModifier.swift in Sources */,
 				A6C0D5692BB3C6D400156689 /* ErrorMessage.swift in Sources */,
@@ -6397,7 +6405,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 15;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
@@ -6460,7 +6468,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 15;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
@@ -6518,7 +6526,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 15;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -6544,7 +6552,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 15;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
 				ENABLE_TESTABILITY = NO;
@@ -6570,7 +6578,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 15;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
@@ -6591,7 +6599,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 15;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;

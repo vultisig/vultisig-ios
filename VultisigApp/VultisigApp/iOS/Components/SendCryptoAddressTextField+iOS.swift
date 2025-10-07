@@ -18,7 +18,7 @@ extension SendCryptoAddressTextField {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Theme.colors.bgSecondary)
             .cornerRadius(10)
-            .sheet(isPresented: $showScanner) {
+            .crossPlatformSheet(isPresented: $showScanner) {
                 codeScanner
             }
             .sheet(isPresented: $showImagePicker, onDismiss: processImage) {

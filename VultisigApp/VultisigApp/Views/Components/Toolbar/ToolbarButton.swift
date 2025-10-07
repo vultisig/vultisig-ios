@@ -80,8 +80,9 @@ struct ToolbarButton: View {
                     iconView
                         .padding(12)
                         .overlay(Circle().inset(by: 0.5).strokeBorder(.white.opacity(0.1), lineWidth: 1))
+                        .background(Circle().fill(tintColor))
                 }
-                .glassEffect(.clear.tint(tintColor).interactive())
+                .glassEffect(.clear.interactive())
             }
         } else {
             customButton
@@ -100,8 +101,9 @@ struct ToolbarButton: View {
                 .padding(12)
                 .background(
                     Circle()
-                        .fill(.white.opacity(isHovered ? 0.2 : 0.05))
+                        .fill(tintColor.opacity(isHovered ? 0.2 : 1))
                         .overlay(
+                            type == .outline ?
                             EllipticalGradient(
                                 stops: [
                                     Gradient.Stop(color: Color(red: 0.16, green: 0.59, blue: 0.95), location: 0.00),
@@ -111,6 +113,7 @@ struct ToolbarButton: View {
                             )
                             .offset(y: 25)
                             .opacity(0.2)
+                            : nil
                         )
                         .animation(.easeInOut(duration: 0.15), value: isHovered)
                 )

@@ -24,6 +24,7 @@ struct VultisigApp: App {
     @StateObject var phoneCheckUpdateViewModel = PhoneCheckUpdateViewModel()
     @StateObject var globalStateViewModel = GlobalStateViewModel()
     @StateObject var navigationRouter = NavigationRouter()
+    @StateObject var sheetPresentedCounterManager = SheetPresentedCounterManager()
     
     init() {
 #if os(macOS)
