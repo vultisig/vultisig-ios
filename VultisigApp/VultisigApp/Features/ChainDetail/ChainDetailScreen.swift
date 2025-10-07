@@ -70,7 +70,7 @@ struct ChainDetailScreen: View {
                 isPresented: $showManageTokens
             )
         }
-        .onLoad{
+        .onLoad {
             viewModel.refresh(group: group)
         }
         .navigationDestination(isPresented: $showAction) {

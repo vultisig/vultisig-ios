@@ -10,7 +10,9 @@ import SwiftData
 import WalletCore
 
 struct AddAddressBookScreen: View {
-    let count: Int
+    var onDismiss: (() -> Void)?
+    
+    @Query var savedAddresses: [AddressBookItem]
     
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
@@ -26,6 +28,12 @@ struct AddAddressBookScreen: View {
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
+    
+    init(address: String? = nil, chain: AddressBookChainType? = nil, onDismiss: (() -> Void)? = nil) {
+        self.address = address ?? ""
+        self.selectedChain = chain ?? .evm
+        self.onDismiss = onDismiss
+    }
     
     var body: some View {
         Screen(title: "addAddress".localized) {
@@ -131,12 +139,16 @@ struct AddAddressBookScreen: View {
             title: title,
             address: address,
             coinMeta: coin,
-            order: count
+            order: savedAddresses.count
         )
         
         DispatchQueue.main.asyncAfter(deadline: .now()) {
             modelContext.insert(data)
-            dismiss()
+            if let onDismiss {
+                onDismiss()
+            } else {
+                dismiss()
+            }
         }
     }
     
@@ -160,7 +172,7 @@ struct AddAddressBookScreen: View {
 }
 
 #Preview {
-    AddAddressBookScreen(count: 0)
+    AddAddressBookScreen()
         .environmentObject(CoinSelectionViewModel())
         .environmentObject(HomeViewModel())
 }

@@ -59,11 +59,14 @@ struct SendCryptoSecondaryDoneView: View {
                 separator
             }
             
+            // TODO: - Here
             Group {
                 SendCryptoTransactionDetailsRow(
                     title: "to",
                     description: input.toAddress
-                )
+                ) {
+                    addToAddressBookButton
+                }
                 separator
             }
             .showIf(input.toAddress.isNotEmpty)
@@ -110,6 +113,25 @@ struct SendCryptoSecondaryDoneView: View {
         PrimaryButton(title: "done") {
             onDone()
         }
+    }
+    
+    var addToAddressBookButton: some View {
+        Button {
+            
+        } label: {
+            HStack(spacing: 6) {
+                Icon(named: "plus", color: Theme.colors.alertSuccess, size: 16)
+                
+                Text("addToAddressBook".localized)
+                    .font(Theme.fonts.caption10)
+                    .foregroundStyle(Theme.colors.alertSuccess)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .overlay(RoundedRectangle(cornerRadius: 99).stroke(Theme.colors.alertSuccess, lineWidth: 0.5))
+            .fixedSize()
+        }
+        .buttonStyle(.plain)
     }
     
     func openLink() {
