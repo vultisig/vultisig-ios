@@ -22,6 +22,7 @@ extension VultisigApp {
             .environmentObject(vultExtensionViewModel)
             .environmentObject(phoneCheckUpdateViewModel)
             .environmentObject(globalStateViewModel)
+            .environmentObject(sheetPresentedCounterManager)
             .buttonStyle(BorderlessButtonStyle())
             .frame(minWidth: 900, minHeight: 600)
             .onAppear{

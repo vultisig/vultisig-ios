@@ -36,7 +36,7 @@ struct EditAddressBookScreen: View {
         .alert(isPresented: $showAlert) {
             alert
         }
-        .platformSheet(isPresented: $presentSelector) {
+        .crossPlatformSheet(isPresented: $presentSelector) {
             let coins = coinSelectionViewModel.groupedAssets.keys
                 .compactMap { coinSelectionViewModel.groupedAssets[$0]?.first }
             AddressBookChainSelectionScreen(

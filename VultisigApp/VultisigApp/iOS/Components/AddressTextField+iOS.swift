@@ -21,7 +21,7 @@ extension AddressTextField {
         .padding(.horizontal, 12)
         .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
-        .sheet(isPresented: $showScanner) {
+        .crossPlatformSheet(isPresented: $showScanner) {
             codeScanner
         }
         .sheet(isPresented: $showImagePicker, onDismiss: processImage) {

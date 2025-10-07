@@ -29,7 +29,7 @@ struct FastBackupVaultOverview: View {
             animation
             container
         }
-        .sheet(isPresented: $isVerificationLinkActive) {
+        .crossPlatformSheet(isPresented: $isVerificationLinkActive) {
             ServerBackupVerificationView(
                 tssType: tssType,
                 vault: vault,

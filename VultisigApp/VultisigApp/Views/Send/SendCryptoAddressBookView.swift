@@ -24,18 +24,14 @@ struct SendCryptoAddressBookView: View {
     }
     
     var body: some View {
-        ZStack {
-            Background()
-            content
+        Screen(title: "addressBook".localized) {
+            VStack(spacing: 12) {
+                listSelector
+                list
+            }
         }
-        .buttonStyle(BorderlessButtonStyle())
         .presentationDetents([.medium, .large])
-    }
-    
-    var title: some View {
-        Text(NSLocalizedString("addressBook", comment: ""))
-            .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+        .applySheetSize()
     }
     
     var listSelector: some View {
@@ -57,6 +53,7 @@ struct SendCryptoAddressBookView: View {
         } label: {
             getCell(for: "savedAddresses", isSelected: isSavedAddressesSelected)
         }
+        .buttonStyle(.plain)
     }
     
     var myVaultsButton: some View {
@@ -65,6 +62,7 @@ struct SendCryptoAddressBookView: View {
         } label: {
             getCell(for: "myVaults", isSelected: !isSavedAddressesSelected)
         }
+        .buttonStyle(.plain)
     }
     
     var list: some View {

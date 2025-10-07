@@ -30,6 +30,7 @@ struct VaultSelectChainScreen: View {
         } emptyStateBuilder: {
             emptyStateView
         }
+        .applySheetSize()
         .onLoad {
             viewModel.setData(for: vault)
         }

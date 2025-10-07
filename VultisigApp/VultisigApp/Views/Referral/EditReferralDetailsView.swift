@@ -30,7 +30,7 @@ struct EditReferralDetailsView: View {
         Screen(title: "editReferral".localized) {
             content
         }
-        .platformSheet(isPresented: $showPreferredAssetSelection) {
+        .crossPlatformSheet(isPresented: $showPreferredAssetSelection) {
             PreferredAssetSelectionView(isPresented: $showPreferredAssetSelection, preferredAsset: $viewModel.preferredAsset) {
                 showPreferredAssetSelection = false
             }
