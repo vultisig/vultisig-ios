@@ -26,7 +26,7 @@ class VaultDetailViewModel: ObservableObject {
     private var updateBalanceTask: Task<Void, Never>?
     
     var availableActions: [CoinAction] {
-        [.send,.buy,.swap, .receive].filtered
+        [.swap,.send,.buy,.receive].filtered
     }
     
     func updateBalance(vault: Vault) {

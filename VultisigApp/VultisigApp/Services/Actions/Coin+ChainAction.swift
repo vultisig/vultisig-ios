@@ -25,8 +25,13 @@ extension CoinAction {
 
 extension Chain {
     var defaultActions: [CoinAction] {
-        var actions: [CoinAction] = [.send] // always include send
         
+        var actions: [CoinAction] = []
+        
+        if CoinAction.swapChains.contains(self) {
+            actions.append(.swap)
+        }
+        actions.append(.send) // always include send
         let hasBuyEnabledSet = UserDefaults.standard.value(forKey: "BuyEnabled")
         // when hasBuyEnabledSet has not been set , set it to true
         if hasBuyEnabledSet == nil {
@@ -41,9 +46,6 @@ extension Chain {
             actions.append(.sell)
         }
         
-        if CoinAction.swapChains.contains(self) {
-            actions.append(.swap)
-        }
         if CoinAction.memoChains.contains(self) {
             actions.append(.memo)
         }
