@@ -58,7 +58,7 @@
 "backupOptionsBox1Highlighted" = "osigurati bez";
 "backupOptionsBox2" = "Ako odlučite dodati lozinku, ovo će se koristiti za šifriranje sigurnosne kopije.";
 "backupOptionsBox2Highlighted" = "šifrirati";
-"backupOptionsBox3" = "Zapamtite: ako zaboravite svoju lozinku za trezor, ona se ne može resetirati ili oporaviti.";
+"backupOptionsBox3" = "Zapamtite: Ako zaboravite svoju lozinku za trezor, ona se ne može resetirati ili oporaviti.";
 "backupOptionsBox3Highlighted" = "ne može";
 "backupOptionsTitle" = "Želite li svoju sigurnosnu kopiju šifrirati lozinkom?";
 "backupPart1" = "Rezervna Kopija 1";
