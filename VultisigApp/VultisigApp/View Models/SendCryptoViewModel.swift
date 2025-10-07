@@ -667,28 +667,46 @@ class SendCryptoViewModel: ObservableObject {
     
     private func calculateUTXOPlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
         guard let vault = ApplicationState.shared.currentVault else {
-            return chainSpecific.gas // Fallback to gas if no vault
+            print("calculateUTXOPlanFee: No vault available, using fallback")
+            return chainSpecific.gas
         }
         
-        // Use a small amount to get accurate fee calculation
-        let testAmount = BigInt(10000) // 0.0001 BTC for fee estimation
-        
-        let keysignFactory = KeysignPayloadFactory()
-        let keysignPayload = try await keysignFactory.buildTransfer(
-            coin: tx.coin,
-            toAddress: tx.toAddress.isEmpty ? tx.coin.address : tx.toAddress,
-            amount: testAmount,
-            memo: tx.memo.isEmpty ? nil : tx.memo,
-            chainSpecific: chainSpecific,
-            swapPayload: nil,
-            vault: vault
-        )
-        
-        guard let helper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) else {
-            return chainSpecific.gas // Fallback to gas if no helper
+        do {
+            // Use a very small amount to get accurate fee calculation
+            let testAmount = BigInt(1000) // 0.00001 BTC for fee estimation
+            print("calculateUTXOPlanFee: Using testAmount = \(testAmount), coin balance = \(tx.coin.rawBalance)")
+            
+            let keysignFactory = KeysignPayloadFactory()
+            let keysignPayload = try await keysignFactory.buildTransfer(
+                coin: tx.coin,
+                toAddress: tx.toAddress.isEmpty ? tx.coin.address : tx.toAddress,
+                amount: testAmount,
+                memo: tx.memo.isEmpty ? nil : tx.memo,
+                chainSpecific: chainSpecific,
+                swapPayload: nil,
+                vault: vault
+            )
+            
+            guard let helper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) else {
+                print("calculateUTXOPlanFee: No UTXO helper available, using fallback")
+                return chainSpecific.gas
+            }
+            
+            let plan = try helper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
+            let planFee = BigInt(plan.fee)
+            
+            print("calculateUTXOPlanFee: plan.fee = \(plan.fee), chainSpecific.gas = \(chainSpecific.gas)")
+            
+            // If plan.fee is 0, use fallback
+            if planFee == 0 {
+                print("calculateUTXOPlanFee: plan.fee is 0, using fallback gas")
+                return chainSpecific.gas
+            }
+            
+            return planFee
+        } catch {
+            print("calculateUTXOPlanFee: Error calculating plan fee: \(error), using fallback")
+            return chainSpecific.gas
         }
-        
-        let plan = try helper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
-        return BigInt(plan.fee) // ✅ Real WalletCore calculated fee
     }
 }

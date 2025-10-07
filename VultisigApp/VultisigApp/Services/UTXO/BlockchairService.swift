@@ -57,6 +57,18 @@ actor BlockchairService {
     func getByKey(key: String) -> Blockchair? {
         return blockchairData.get(key)
     }
+    
+    /// Clear UTXO cache for a specific address to force fresh UTXO fetch
+    func clearUTXOCache(for coin: Coin) {
+        blockchairData.remove(coin.blockchairKey)
+        print("Cleared UTXO cache for \(coin.chain.name) address: \(coin.address)")
+    }
+    
+    /// Clear all UTXO cache
+    func clearAllUTXOCache() {
+        blockchairData.clear()
+        print("Cleared all UTXO cache")
+    }
 }
 
 private extension BlockchairService {

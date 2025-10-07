@@ -537,6 +537,10 @@ class KeysignViewModel: ObservableObject {
                         switch result {
                         case .success(let transactionHash):
                             self.txid = transactionHash
+                            // Clear UTXO cache after successful broadcast to prevent using spent UTXOs
+                            Task {
+                                await BlockchairService.shared.clearUTXOCache(for: keysignPayload.coin)
+                            }
                         case .failure(let error):
                             self.handleBroadcastError(error: error, transactionType: transactionType)
                         }
@@ -547,6 +551,10 @@ class KeysignViewModel: ObservableObject {
                         switch result {
                         case .success(let transactionHash):
                             self.txid = transactionHash
+                            // Clear UTXO cache after successful broadcast to prevent using spent UTXOs
+                            Task {
+                                await BlockchairService.shared.clearUTXOCache(for: keysignPayload.coin)
+                            }
                         case .failure(let error):
                             self.handleBroadcastError(error: error, transactionType: transactionType)
                         }
@@ -557,6 +565,10 @@ class KeysignViewModel: ObservableObject {
                         switch result {
                         case .success(let transactionHash):
                             self.txid = transactionHash
+                            // Clear UTXO cache after successful broadcast to prevent using spent UTXOs
+                            Task {
+                                await BlockchairService.shared.clearUTXOCache(for: keysignPayload.coin)
+                            }
                         case .failure(let error):
                             print("Transaction Type: \(transactionType)")
                             
