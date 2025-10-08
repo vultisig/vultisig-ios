@@ -58,7 +58,7 @@
 "backupOptionsBox1Highlighted" = "sicuro senza";
 "backupOptionsBox2" = "Se si sceglie di aggiungere una password, verrà utilizzato per crittografare il file di backup.";
 "backupOptionsBox2Highlighted" = "crittografare";
-"backupOptionsBox3" = "Ricorda: se dimentichi la password del Vault, non può essere ripristinato o recuperato.";
+"backupOptionsBox3" = "Ricorda: Se dimentichi la password del Vault, non può essere ripristinato o recuperato.";
 "backupOptionsBox3Highlighted" = "non può";
 "backupOptionsTitle" = "Vuoi crittografare il tuo backup con una password?";
 "backupPart1" = "Copia di Backup 1";
@@ -890,3 +890,4 @@
 "backupBannerTitle" = "Esegui il backup del tuo Vault";
 "backupBannerSubtitle" = "Mantieni l'accesso sicuro, archivia online";
 "backupBannerButtonTitle" = "Backup Vault";
+"addToAddressBook" = "Aggiungi alla Rubrica";

@@ -58,7 +58,7 @@
 "backupOptionsBox1Highlighted" = "secure without";
 "backupOptionsBox2" = "If you choose to add a password, this  will be used to encrypt the backup file.";
 "backupOptionsBox2Highlighted" = "encrypt";
-"backupOptionsBox3" = "Remember: if you forget your vault password, it cannot be reset or recovered.";
+"backupOptionsBox3" = "Remember: If you forget your vault password, it cannot be reset or recovered.";
 "backupOptionsBox3Highlighted" = "cannot";
 "backupOptionsTitle" = "Do you want to encrypt your backup with a password?";
 "backupPart1" = "Backup Share 1";
@@ -889,3 +889,4 @@
 "backupBannerTitle" = "Back Up Your Vault";
 "backupBannerSubtitle" = "Keep access safe, store online";
 "backupBannerButtonTitle" = "Backup Vault";
+"addToAddressBook" = "Add to Address Book";

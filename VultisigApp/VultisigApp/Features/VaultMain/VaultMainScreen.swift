@@ -20,7 +20,6 @@ struct VaultMainScreen: View {
     @EnvironmentObject var viewModel: VaultDetailViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
-    @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @Environment(\.openURL) var openURL
     
@@ -233,7 +232,6 @@ struct VaultMainScreen: View {
         viewModel.setupBanners(for: vault)
         viewModel.getGroupAsync(tokenSelectionViewModel)
         
-        settingsDefaultChainViewModel.setData(tokenSelectionViewModel.groupedAssets)
         viewModel.categorizeCoins(vault: vault)
         viewModel.updateBalance(vault: vault)
     }

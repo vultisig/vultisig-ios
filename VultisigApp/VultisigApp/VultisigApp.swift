@@ -19,7 +19,6 @@ struct VultisigApp: App {
     @StateObject var deeplinkViewModel = DeeplinkViewModel()
     @StateObject var settingsViewModel = SettingsViewModel.shared
     @StateObject var homeViewModel = HomeViewModel()
-    @StateObject var settingsDefaultChainViewModel = SettingsDefaultChainViewModel()
     @StateObject var vultExtensionViewModel = VultExtensionViewModel()
     @StateObject var phoneCheckUpdateViewModel = PhoneCheckUpdateViewModel()
     @StateObject var globalStateViewModel = GlobalStateViewModel()
