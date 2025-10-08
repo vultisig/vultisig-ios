@@ -50,11 +50,7 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
             
             Spacer()
             
-            ToolbarButton(
-                image: "cross-small",
-                iconSize: 16,
-                action: onClose
-            )
+            CarouselBannerCloseButton(action: onClose)
         }
         .padding(8)
         .background(backgroundView)
@@ -69,6 +65,39 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
         default:
             Theme.colors.bgPrimary
         }
+    }
+}
+
+private struct CarouselBannerCloseButton: View {
+    let action: () -> Void
+    
+    var body: some View {
+        if #available(iOS 26.0, macOS 26.0, *) {
+            Button(action: action) {
+                icon
+                    .padding(12)
+            }
+            .glassEffect(.regular.interactive(), in: .circle)
+        } else {
+            Button(action: action) {
+                icon
+                    .padding(12)
+                    .background(.ultraThinMaterial, in: Circle())
+                    .overlay {
+                        Circle()
+                            .stroke(.white.opacity(0.3), lineWidth: 0.5)
+                    }
+            }
+            .buttonStyle(.plain)
+        }
+    }
+    
+    var icon: some View {
+        Icon(
+            named: "cross-small",
+            color: Theme.colors.textPrimary,
+            size: 16
+        )
     }
 }
 
