@@ -70,15 +70,14 @@ class VaultDetailViewModel: ObservableObject {
                     return false
                 }
                 
-                return true
-//                switch banner {
-//                case .backupVault:
-//                    return !vault.isBackedUp
-//                case .upgradeVault:
-//                    return vault.libType == .GG20
-//                case .followVultisig:
-//                    return true
-//                }
+                switch banner {
+                case .backupVault:
+                    return !vault.isBackedUp
+                case .upgradeVault:
+                    return vault.libType == .GG20
+                case .followVultisig:
+                    return true
+                }
             }
     }
     
@@ -87,6 +86,7 @@ class VaultDetailViewModel: ObservableObject {
         vault.closedBanners = Array(Set(vault.closedBanners + [banner.rawValue]))
         do {
             try Storage.shared.save()
+            setupBanners(for: vault)
         } catch {
             print("Error while saving closedBanners for vault", error.localizedDescription)
         }

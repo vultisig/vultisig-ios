@@ -107,6 +107,12 @@ struct VaultMainScreen: View {
         .onChange(of: vault) { oldValue, newValue in
             refresh()
         }
+        .onChange(of: viewModel.vaultBanners) { _, banners in
+            withAnimation(.easeInOut) {
+                print("banners.count > 0", banners.count > 0)
+                showVaultBanners = banners.count > 0
+            }
+        }
     }
     
     var header: some View {
@@ -118,9 +124,7 @@ struct VaultMainScreen: View {
         )
     }
     
-    var showVaultBanners: Bool {
-        viewModel.vaultBanners.count > 0
-    }
+    @State var showVaultBanners: Bool = false
     
     var topContentSection: some View {
         LazyVStack(spacing: 32) {
@@ -134,9 +138,10 @@ struct VaultMainScreen: View {
                 onBanner: onBannerPressed,
                 onClose: onBannerClosed
             )
+            .frame(height: showVaultBanners ? nil : 0)
             .transition(.verticalGrowAndFade)
-            .animation(.interpolatingSpring, value: showVaultBanners)
             .showIf(showVaultBanners)
+//            .id(vault.id)
         }
     }
     
