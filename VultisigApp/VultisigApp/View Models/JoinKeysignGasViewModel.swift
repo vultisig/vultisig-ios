@@ -52,7 +52,8 @@ struct JoinKeysignGasViewModel {
         // Try to get native coin from vault first (has up-to-date price data)
         if let vaultNativeCoin = ApplicationState.shared.currentVault?.nativeCoin(for: coin.chain) {
             let feeDecimal = vaultNativeCoin.decimal(for: fee)
-            let fiatString = RateProvider.shared.fiatBalanceString(value: feeDecimal, coin: vaultNativeCoin)
+            // Use fee-specific formatting with more decimal places (5 instead of 2)
+            let fiatString = RateProvider.shared.fiatFeeString(value: feeDecimal, coin: vaultNativeCoin)
             if !fiatString.isEmpty {
                 return fiatString
             }
@@ -60,6 +61,7 @@ struct JoinKeysignGasViewModel {
         
         // Fallback to the payload coin itself
         let feeDecimal = coin.decimal(for: fee)
-        return RateProvider.shared.fiatBalanceString(value: feeDecimal, coin: coin)
+        // Use fee-specific formatting with more decimal places (5 instead of 2)
+        return RateProvider.shared.fiatFeeString(value: feeDecimal, coin: coin)
     }
 }

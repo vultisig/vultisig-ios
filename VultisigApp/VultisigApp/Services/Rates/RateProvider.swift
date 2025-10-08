@@ -58,7 +58,9 @@ final class RateProvider {
         guard let rate = rate(for: coin, currency: currency) else {
             return .zero
         }
-        return value * Decimal(rate.value)
+        let result = value * Decimal(rate.value)
+        // Don't truncate here - let the formatter handle precision
+        return result
     }
 
     func fiatBalance(for coin: Coin, currency: SettingsCurrency = .current) -> Decimal {
@@ -72,6 +74,14 @@ final class RateProvider {
     func fiatBalanceString(value: Decimal, coin: Coin, currency: SettingsCurrency = .current) -> String {
         let balance = fiatBalance(value: value, coin: coin, currency: currency)
         return balance.formatToFiat(includeCurrencySymbol: true)
+    }
+    
+    /// Format fiat balance for fee display with more decimal places (e.g., $0.0065 instead of $0.00)
+    func fiatFeeString(value: Decimal, coin: Coin, currency: SettingsCurrency = .current) -> String {
+        let balance = fiatBalance(value: value, coin: coin, currency: currency)
+        let result = balance.formatToFiatForFee(includeCurrencySymbol: true)
+        print("RateProvider.fiatFeeString: value=\(value), coin=\(coin.ticker), price=\(coin.price), balance=\(balance), result=\(result)")
+        return result
     }
 
     func rate(for coin: Coin, currency: SettingsCurrency = .current) -> Rate? {
