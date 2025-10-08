@@ -29,7 +29,6 @@ struct VaultMainScreen: View {
     @State var showChainSelection: Bool = false
     @State var showSearchHeader: Bool = false
     @State var showReceiveList: Bool = false
-    @State var showVaultBanners: Bool = false
     @State var focusSearch: Bool = false
     @State var scrollProxy: ScrollViewProxy?
     @State var frameHeight: CGFloat = 0
@@ -114,12 +113,6 @@ struct VaultMainScreen: View {
             refresh()
             viewModel.resetBanners(for: newValue)
         }
-        .onChange(of: viewModel.vaultBanners) { _, banners in
-            withAnimation(.easeInOut) {
-                print("show banners ", banners.count > 0)
-                showVaultBanners = banners.count > 0
-            }
-        }
     }
     
     var header: some View {
@@ -142,15 +135,12 @@ struct VaultMainScreen: View {
             }
             .padding(.horizontal, horizontalPadding)
             
-            BannerCarousel(
+            BannersCarousel(
                 banners: $viewModel.vaultBanners,
                 availableWidth: width,
                 onBanner: onBannerPressed,
                 onClose: onBannerClosed
             )
-            .frame(height: showVaultBanners ? nil : 0)
-            .transition(.verticalGrowAndFade)
-            .showIf(showVaultBanners)
             .id(vault.id)
         }
     }

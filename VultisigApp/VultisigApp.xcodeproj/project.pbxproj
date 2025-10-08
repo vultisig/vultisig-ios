@@ -79,6 +79,7 @@
 		134A9FC32E959FB700030C56 /* CarouselBannerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FC22E959FB700030C56 /* CarouselBannerType.swift */; };
 		134A9FC72E95A3A400030C56 /* VaultBannerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FC62E95A39F00030C56 /* VaultBannerType.swift */; };
 		134A9FC92E96A23300030C56 /* VaultBannerBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FC82E96A23200030C56 /* VaultBannerBackground.swift */; };
+		134A9FCB2E96AD1B00030C56 /* BannerLayoutProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FCA2E96AD1400030C56 /* BannerLayoutProperties.swift */; };
 		134E8D7F2E451F6F0086EBC4 /* PreferredAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D7E2E451F6C0086EBC4 /* PreferredAsset.swift */; };
 		134E8D812E451F800086EBC4 /* PreferredAssetFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D802E451F7A0086EBC4 /* PreferredAssetFactory.swift */; };
 		134E8D832E45300C0086EBC4 /* THORChainAPIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D822E4530060086EBC4 /* THORChainAPIError.swift */; };
@@ -94,7 +95,7 @@
 		135B9FD32E7C8D6E0087D85D /* VaultEditCellContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B9FD22E7C8D6D0087D85D /* VaultEditCellContainer.swift */; };
 		135B9FD72E7C8DC60087D85D /* View+PlainListItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B9FD62E7C8DC00087D85D /* View+PlainListItem.swift */; };
 		135C88192E3AADB800FD097D /* GradientListSeparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C88182E3AADB000FD097D /* GradientListSeparator.swift */; };
-		1364A0942E9587C60023E869 /* BannerCarousel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1364A0932E9587C00023E869 /* BannerCarousel.swift */; };
+		1364A0942E9587C60023E869 /* BannersCarousel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1364A0932E9587C00023E869 /* BannersCarousel.swift */; };
 		1368C2732E832CC100BB240D /* VaultListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368C2722E832CBE00BB240D /* VaultListView.swift */; };
 		1368C2752E832EDB00BB240D /* FolderDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368C2742E832ED800BB240D /* FolderDetailView.swift */; };
 		1368C2772E83355E00BB240D /* EditFolderScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368C2762E83355B00BB240D /* EditFolderScreen.swift */; };
@@ -1152,6 +1153,7 @@
 		134A9FC22E959FB700030C56 /* CarouselBannerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselBannerType.swift; sourceTree = "<group>"; };
 		134A9FC62E95A39F00030C56 /* VaultBannerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBannerType.swift; sourceTree = "<group>"; };
 		134A9FC82E96A23200030C56 /* VaultBannerBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBannerBackground.swift; sourceTree = "<group>"; };
+		134A9FCA2E96AD1400030C56 /* BannerLayoutProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerLayoutProperties.swift; sourceTree = "<group>"; };
 		134E8D7E2E451F6C0086EBC4 /* PreferredAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAsset.swift; sourceTree = "<group>"; };
 		134E8D802E451F7A0086EBC4 /* PreferredAssetFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetFactory.swift; sourceTree = "<group>"; };
 		134E8D822E4530060086EBC4 /* THORChainAPIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainAPIError.swift; sourceTree = "<group>"; };
@@ -1167,7 +1169,7 @@
 		135B9FD22E7C8D6D0087D85D /* VaultEditCellContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultEditCellContainer.swift; sourceTree = "<group>"; };
 		135B9FD62E7C8DC00087D85D /* View+PlainListItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+PlainListItem.swift"; sourceTree = "<group>"; };
 		135C88182E3AADB000FD097D /* GradientListSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientListSeparator.swift; sourceTree = "<group>"; };
-		1364A0932E9587C00023E869 /* BannerCarousel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerCarousel.swift; sourceTree = "<group>"; };
+		1364A0932E9587C00023E869 /* BannersCarousel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannersCarousel.swift; sourceTree = "<group>"; };
 		1368C2722E832CBE00BB240D /* VaultListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultListView.swift; sourceTree = "<group>"; };
 		1368C2742E832ED800BB240D /* FolderDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailView.swift; sourceTree = "<group>"; };
 		1368C2762E83355B00BB240D /* EditFolderScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditFolderScreen.swift; sourceTree = "<group>"; };
@@ -2319,9 +2321,10 @@
 		130C40E02E7303C800509C61 /* Banners */ = {
 			isa = PBXGroup;
 			children = (
+				134A9FCA2E96AD1400030C56 /* BannerLayoutProperties.swift */,
 				134A9FC82E96A23200030C56 /* VaultBannerBackground.swift */,
 				134A9FC22E959FB700030C56 /* CarouselBannerType.swift */,
-				1364A0932E9587C00023E869 /* BannerCarousel.swift */,
+				1364A0932E9587C00023E869 /* BannersCarousel.swift */,
 				130C40E12E7303CB00509C61 /* CarouselBannerView.swift */,
 			);
 			path = Banners;
@@ -5987,7 +5990,7 @@
 				1390D8C82E394527003F3E20 /* SecurityScannerSettingsService.swift in Sources */,
 				A6BB9BD32DA9E5750085E117 /* VaultShareBackupsView+macOS.swift in Sources */,
 				A6D739DE2E0B30440005697D /* SendDetailsAssetTab.swift in Sources */,
-				1364A0942E9587C60023E869 /* BannerCarousel.swift in Sources */,
+				1364A0942E9587C60023E869 /* BannersCarousel.swift in Sources */,
 				A5AB69C42D63E07D00E54DEB /* VaultBackupNowScreen.swift in Sources */,
 				B520B2FE2C3250230097C590 /* TextField.swift in Sources */,
 				A58760582CBD3F1A0070956A /* KeychainService.swift in Sources */,
@@ -6012,6 +6015,7 @@
 				A6B662D52D38CDD5001E8BC1 /* MacAddressScannerViewModel+macOS.swift in Sources */,
 				A625D9C22C5AD15A0078FBF4 /* KeygenViewInstructions.swift in Sources */,
 				A6ECA1A92C9410D100456110 /* ShareSheetViewModel+iOS.swift in Sources */,
+				134A9FCB2E96AD1B00030C56 /* BannerLayoutProperties.swift in Sources */,
 				A63001B12C54AC0100D18E25 /* EditAddressBookScreen.swift in Sources */,
 				DEFF58F82BCF4E11005DFDF9 /* BackupVault.swift in Sources */,
 				A65649EE2B9669DD00E4B329 /* UTXOTransactionMempoolInput.swift in Sources */,

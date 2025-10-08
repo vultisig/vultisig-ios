@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct BannerCarousel<Banner: CarouselBannerType>: View {
+struct BannersCarousel<Banner: CarouselBannerType>: View {
     @Binding var banners: [Banner]
     let availableWidth: CGFloat
     var onBanner: (Banner) -> Void
@@ -21,49 +21,64 @@ struct BannerCarousel<Banner: CarouselBannerType>: View {
     
     @State var internalBanners: [Banner] = []
     
+    var bannerWidth: CGFloat {
+        let availableBannerWidth = availableWidth - BannerLayoutProperties.minimumPadding * 2
+        return min(availableBannerWidth, BannerLayoutProperties.maxWidth)
+    }
+    
+    var horizontalPadding: CGFloat {
+        (availableWidth - bannerWidth) / 2
+    }
+    
+    private let bannerHeight: CGFloat = 128
+    private let spacing: CGFloat = 12
+    private let indicatorsHeight: CGFloat = BannerLayoutProperties.indicatorsHeight
+    
     var body: some View {
-        VStack(spacing: 12) {
-            ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: 0) {
-                    ForEach(internalBanners.indices, id: \.self) { index in
-                        let banner = internalBanners[index]
-                        let shouldRemove = bannersToRemove.contains(AnyHashable(banner.id)) && banners.count > 0
-                        VStack {
-                            CarouselBannerView(
-                                banner: banner,
-                                action: { onBanner(banner) },
-                                onClose: { removeBanner(banner) }
-                            )
-                            .frame(width: shouldRemove ? 0 : 345, height: 128, alignment: .leading)
+        ZStack {
+            VStack(spacing: spacing) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(spacing: 0) {
+                        ForEach(internalBanners.indices, id: \.self) { index in
+                            let banner = internalBanners[index]
+                            let shouldRemove = bannersToRemove.contains(AnyHashable(banner.id)) && banners.count > 0
+                            VStack {
+                                CarouselBannerView(
+                                    banner: banner,
+                                    action: { onBanner(banner) },
+                                    onClose: { removeBanner(banner) }
+                                )
+                                .frame(width: bannerWidth, height: bannerHeight, alignment: .leading)
+                            }
+                            .padding(.horizontal, horizontalPadding)
+                            .opacity(shouldRemove ? 0 : 1)
+                            .animation(.easeInOut(duration: 0.4), value: shouldRemove)
+                            .scrollTransition { content, phase in
+                                content
+                                    .scaleEffect(y: phase.isIdentity ? 1 : 0.8)
+                            }
+                            .id(banner.id)
                         }
-                        .padding(.horizontal, (availableWidth - 345) / 2)
-                        .opacity(shouldRemove ? 0 : 1)
-                        .scaleEffect(x: shouldRemove ? 0.8 : 1.0)
-                        .animation(.easeInOut(duration: 0.4), value: shouldRemove)
-                        .scrollTransition { content, phase in
-                            content
-                                .scaleEffect(y: phase.isIdentity ? 1 : 0.7)
-                        }
-                        .id(banner.id)
                     }
+                    .scrollTargetLayout()
+                    .animation(.easeInOut(duration: 0.3), value: internalBanners.count)
                 }
-                .scrollTargetLayout()
-                .animation(.easeInOut(duration: 0.3), value: internalBanners.count)
+                .scrollTargetBehavior(.viewAligned)
+                .scrollPosition(id: $scrollPosition, anchor: .center)
+                .scrollIndicators(.hidden)
+                
+                VaultBannerCarouselIndicators(
+                    currentIndex: $currentIndex,
+                    bannersCount: $bannersCount
+                )
+                .id(internalBanners.count)
+                .transition(.verticalGrowAndFade)
+                .animation(.easeInOut, value: bannersCount)
+                .showIf(bannersCount > 1)
             }
-            .scrollTargetBehavior(.viewAligned)
-            .scrollPosition(id: $scrollPosition, anchor: .center)
-            .scrollIndicators(.hidden)
-            
-            VaultBannerCarouselIndicators(
-                currentIndex: $currentIndex,
-                bannersCount: $bannersCount
-            )
-            .id(internalBanners.count)
-            .transition(.verticalGrowAndFade)
-            .animation(.easeInOut, value: bannersCount)
-            .showIf(bannersCount > 1)
+            .frame(height: bannersCount > 0 ? nil : 0)
+            .opacity(bannersCount > 0 ? 1 : 0)
         }
-        .frame(height: 4 + 12 + 128)
         .onLoad {
             internalBanners = banners
         }
@@ -72,7 +87,9 @@ struct BannerCarousel<Banner: CarouselBannerType>: View {
             internalBanners = banners
         }
         .onChange(of: internalBanners) { _, newValue in
-            bannersCount = newValue.count
+            withAnimation(.interpolatingSpring) {
+                bannersCount = newValue.count
+            }
         }
         .onAppear {
             startTimer()
@@ -99,6 +116,12 @@ struct BannerCarousel<Banner: CarouselBannerType>: View {
     
     func removeBanner(_ banner: Banner) {
         stopTimer()
+        
+        if bannersCount == 1 {
+            withAnimation(.interpolatingSpring) {
+                bannersCount = 0
+            }
+        }
         
         guard let indexToRemove = internalBanners.firstIndex(where: { $0.id == banner.id }) else {
             print("Banner not found")
@@ -204,12 +227,13 @@ private struct VaultBannerCarouselIndicator: View {
     @State var progress: CGFloat = 0
     
     let capsuleWidth: CGFloat = 20
+    let capsuleHeight: CGFloat = BannerLayoutProperties.indicatorsHeight
     let animation: Animation = .interpolatingSpring(mass: 1, stiffness: 100, damping: 15)
     
     var body: some View {
         Capsule()
             .fill(Theme.colors.bgTertiary)
-            .frame(width: isActive ? capsuleWidth : 4, height: 4)
+            .frame(width: isActive ? capsuleWidth : capsuleHeight, height: capsuleHeight)
             .padding(.horizontal, 0.1)
             .overlay(isActive ? overlayView : nil, alignment: .leading)
             .onLoad {
@@ -223,7 +247,7 @@ private struct VaultBannerCarouselIndicator: View {
     var overlayView: some View {
         Capsule()
             .fill(Theme.colors.textLight)
-            .frame(width: progress, height: 4.1)
+            .frame(width: progress, height: capsuleHeight + 0.1)
             .offset(x: -1)
             .onAppear {
                 withAnimation(.linear(duration: 2.5).delay(0.5)) {
@@ -245,7 +269,7 @@ private struct VaultBannerCarouselIndicator: View {
 #Preview {
     @Previewable @State var banners = [VaultBannerType.upgradeVault, .backupVault, .followVultisig]
     
-    BannerCarousel(
+    BannersCarousel(
         banners: $banners,
         availableWidth: 500,
         onBanner: { _ in },
