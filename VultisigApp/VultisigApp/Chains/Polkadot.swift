@@ -11,10 +11,9 @@ import BigInt
 enum PolkadotHelper {
     
     /*
-     https://polkadot.network/blog/polkadot_q4_update_data
-     Average daily transaction fees hovered close to 0.02 DOT for all of December. The chart above features data supplied by DotLake, a data platform reflecting activity on Polkadot and its ecosystem, and maintained by engineers and analysts at Parity Technologies.
-    */
-    static let defaultFeeInPlancks: BigInt = 250_000_000
+     Polkadot now uses ONLY dynamic fee calculation - no default fees.
+     Fees are calculated in real-time using the payment_queryInfo RPC method.
+     */
     
     /*
      https://support.polkadot.network/support/solutions/articles/65000168651-what-is-the-existential-deposit-
@@ -27,7 +26,7 @@ enum PolkadotHelper {
             throw HelperError.runtimeError("coin is not DOT")
         }
         
-        guard case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber, let specVersion, let transactionVersion, let genesisHash) = keysignPayload.chainSpecific else {
+        guard case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber, let specVersion, let transactionVersion, let genesisHash, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("getPreSignedInputData fail to get DOT transaction information from RPC")
         }
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .polkadot) else {
@@ -66,6 +65,34 @@ enum PolkadotHelper {
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
         return [preSigningOutput.data.hexString]
+    }
+    
+    static func getZeroSignedTransaction(keysignPayload: KeysignPayload) throws -> String {
+        let dummyPrivateKey = PrivateKey()
+        let dummyPublicKey = dummyPrivateKey.getPublicKeyEd25519()
+        
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        
+        let allSignatures = DataVector()
+        let publicKeys = DataVector()
+        
+        let dummySignature = Data(repeating: 0, count: 64)
+        allSignatures.add(data: dummySignature)
+        publicKeys.add(data: dummyPublicKey.data)
+        
+        let compiledWithSignature = TransactionCompiler.compileWithSignatures(
+            coinType: .polkadot,
+            txInputData: inputData,
+            signatures: allSignatures,
+            publicKeys: publicKeys
+        )
+        
+        let output = try PolkadotSigningOutput(serializedBytes: compiledWithSignature)
+        if !output.errorMessage.isEmpty {
+            throw HelperError.runtimeError(output.errorMessage)
+        }
+        
+        return output.encoded.hexString
     }
     
     static func getSignedTransaction(vaultHexPubKey: String,

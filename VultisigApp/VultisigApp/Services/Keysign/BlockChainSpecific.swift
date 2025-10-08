@@ -18,7 +18,7 @@ enum BlockChainSpecific: Codable, Hashable {
     case Cosmos(accountNumber: UInt64, sequence: UInt64, gas: UInt64, transactionType: Int, ibcDenomTrace: CosmosIbcDenomTraceDenomTrace?)
     case Solana(recentBlockHash: String, priorityFee: BigInt, fromAddressPubKey: String?, toAddressPubKey: String?, hasProgramId: Bool) // priority fee is in microlamports
     case Sui(referenceGasPrice: BigInt, coins: [[String:String]])
-    case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String)
+    case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String, gas: BigInt? = nil)
     case Ton(sequenceNumber: UInt64, expireAt: UInt64, bounceable: Bool, sendMaxAmount: Bool, jettonAddress: String = "", isActiveDestination: Bool = false)
     case Ripple(sequence: UInt64, gas: UInt64, lastLedgerSequence: UInt64)
     
@@ -52,8 +52,11 @@ enum BlockChainSpecific: Codable, Hashable {
             return SolanaHelper.defaultFeeInLamports
         case .Sui(let referenceGasPrice, _):
             return referenceGasPrice
-        case .Polkadot:
-            return PolkadotHelper.defaultFeeInPlancks
+        case .Polkadot(_, _, _, _, _, _, let gas):
+            guard let dynamicGas = gas else {
+                return 0 // We should throw
+            }
+            return dynamicGas
         case .Ton(_,_,_,_,_,_):
             return TonHelper.defaultFee
         case .Ripple(_, let gas, _):
