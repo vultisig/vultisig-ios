@@ -12,6 +12,7 @@ struct SendCryptoContent {
     let hash: String
     let explorerLink: String
     let memo: String
+    let isSend: Bool
     
     let fromAddress: String
     let toAddress: String

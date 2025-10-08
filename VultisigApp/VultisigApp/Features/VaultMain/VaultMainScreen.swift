@@ -14,12 +14,12 @@ struct VaultMainScreen: View {
     @Binding var showVaultSelector: Bool
     @Binding var addressToCopy: Coin?
     @Binding var showUpgradeVaultSheet: Bool
+    @Binding var showBackupNow: Bool
     
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var viewModel: VaultDetailViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
-    @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     @State private var scrollOffset: CGFloat = 0
@@ -72,7 +72,7 @@ struct VaultMainScreen: View {
                     }
                 }
             }
-            .sheet(isPresented: $showVaultSelector) {
+            .crossPlatformSheet(isPresented: $showVaultSelector) {
                 VaultManagementSheet {
                     showVaultSelector.toggle()
                     routeToPresent = .createVault
@@ -83,16 +83,13 @@ struct VaultMainScreen: View {
                     }
                 }
             }
-            .sheet(isPresented: $showChainSelection) {
+            .crossPlatformSheet(isPresented: $showChainSelection) {
                 VaultSelectChainScreen(
                     vault: vault,
                     isPresented: $showChainSelection
                 ) { refresh() }
             }
-            .sheet(isPresented: $showBackupNow) {
-                VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: vault))
-            }
-            .platformSheet(isPresented: $showReceiveList) {
+            .crossPlatformSheet(isPresented: $showReceiveList) {
                 ReceiveChainSelectionScreen(
                     vault: vault,
                     isPresented: $showReceiveList,
@@ -127,10 +124,12 @@ struct VaultMainScreen: View {
                 onAction: onAction
             )
             upgradeVaultBanner
+            backupBanner
         }
     }
     
     @State var showUpgradeBanner = true
+    var upgradeBannerEnabled: Bool { vault.libType == .GG20 && showUpgradeBanner }
     @ViewBuilder
     var upgradeVaultBanner: some View {
         VaultBannerView(
@@ -146,11 +145,11 @@ struct VaultMainScreen: View {
             }
         )
         .transition(.verticalGrowAndFade)
-        .showIf(vault.libType == .GG20 && showUpgradeBanner)
+        .showIf(upgradeBannerEnabled)
     }
     
     @State var showBackupBanner = true
-    @State var showBackupNow = false
+    var backupBannerEnabled: Bool { !vault.isBackedUp && showBackupBanner && !upgradeBannerEnabled }
     @ViewBuilder
     var backupBanner: some View {
         VaultBannerView(
@@ -166,7 +165,7 @@ struct VaultMainScreen: View {
             }
         )
         .transition(.verticalGrowAndFade)
-        .showIf(!vault.isBackedUp && showBackupBanner)
+        .showIf(backupBannerEnabled)
     }
     
     var bottomContentSection: some View {
@@ -251,7 +250,6 @@ struct VaultMainScreen: View {
         tokenSelectionViewModel.setData(for: vault)
         viewModel.getGroupAsync(tokenSelectionViewModel)
         
-        settingsDefaultChainViewModel.setData(tokenSelectionViewModel.groupedAssets)
         viewModel.categorizeCoins(vault: vault)
         viewModel.updateBalance(vault: vault)
     }
@@ -311,7 +309,8 @@ struct VaultMainScreen: View {
         routeToPresent: .constant(nil),
         showVaultSelector: .constant(false),
         addressToCopy: .constant(nil),
-        showUpgradeVaultSheet: .constant(false)
+        showUpgradeVaultSheet: .constant(false),
+        showBackupNow: .constant(false)
     )
     .environmentObject(HomeViewModel())
     .environmentObject(VaultDetailViewModel())

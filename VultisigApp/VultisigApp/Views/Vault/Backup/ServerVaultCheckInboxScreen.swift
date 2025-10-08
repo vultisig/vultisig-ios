@@ -16,47 +16,49 @@ struct ServerVaultCheckInboxScreen: View {
     @State var presentEmailDialog = false
 
     var body: some View {
-        VStack {
-            SheetHeaderView(title: "serverBackup".localized, isPresented: $isPresented)
-                .padding(.top, 12)
-            Spacer()
-
-            VStack(spacing: 40) {
-                Image("check-inbox")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: 365)
-
-                VStack(spacing: 16) {
-                    Text("backupShareSent")
-                        .foregroundStyle(Theme.colors.textPrimary)
-                        .font(Theme.fonts.title1)
-                    Text("weJustSentYourBackupShare")
-                        .foregroundStyle(Theme.colors.textExtraLight)
-                        .font(Theme.fonts.bodySMedium)
-                        .multilineTextAlignment(.center)
-                    Button {
-                        onCheckEmail()
-                    } label: {
-                        Text("checkEmail")
+        Screen(title: "serverBackup".localized) {
+            VStack {
+                Spacer()
+                VStack(spacing: 40) {
+                    Image("check-inbox")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(maxWidth: 365)
+                    
+                    VStack(spacing: 16) {
+                        Text("backupShareSent")
                             .foregroundStyle(Theme.colors.textPrimary)
+                            .font(Theme.fonts.title1)
+                        Text("weJustSentYourBackupShare")
+                            .foregroundStyle(Theme.colors.textExtraLight)
                             .font(Theme.fonts.bodySMedium)
-                            .underline()
-                    }.showIf(showCheckInboxButton)
+                            .multilineTextAlignment(.center)
+                        Button {
+                            onCheckEmail()
+                        } label: {
+                            Text("checkEmail")
+                                .foregroundStyle(Theme.colors.textPrimary)
+                                .font(Theme.fonts.bodySMedium)
+                                .underline()
+                        }
+                        .showIf(showCheckInboxButton)
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal, 16)
                 }
-                .padding(.horizontal, 16)
-            }
-
-            Spacer()
-
-            PrimaryButton(
-                title: "close".localized,
-                type: .secondary
-            ) {
-                onClose()
-                isPresented.toggle()
+                Spacer()
+                
+                PrimaryButton(
+                    title: "close".localized,
+                    type: .secondary
+                ) {
+                    onClose()
+                    isPresented.toggle()
+                }
             }
         }
+        .sheetStyle()
+        .applySheetSize()
         .confirmationDialog("chooseEmailApp".localized, isPresented: $presentEmailDialog) {
             ForEach(emailOptions) { option in
                 Button(option.name) {

@@ -58,7 +58,7 @@
 "backupOptionsBox1Highlighted" = "secure without";
 "backupOptionsBox2" = "If you choose to add a password, this  will be used to encrypt the backup file.";
 "backupOptionsBox2Highlighted" = "encrypt";
-"backupOptionsBox3" = "Remember: if you forget your vault password, it cannot be reset or recovered.";
+"backupOptionsBox3" = "Remember: If you forget your vault password, it cannot be reset or recovered.";
 "backupOptionsBox3Highlighted" = "cannot";
 "backupOptionsTitle" = "Do you want to encrypt your backup with a password?";
 "backupPart1" = "Backup Share 1";
@@ -199,7 +199,7 @@
 "enterUpto4Characters" = "Enter up to 4 characters";
 "enterValidFolderName" = "Please enter a valid folder name and try again.";
 "enterVaultEmail" = "Enter the email to receive the vault share.";
-"enterVaultName" = "Enter vault name";
+"enterVaultName" = "Enter Vault Name";
 "enterVaultPassword" = "Enter the password you set when creating this Vault.";
 "enterYourEmail" = "Enter your email";
 "enterYourEmailDescription" = "This email is only used to send the server backup.";
@@ -282,7 +282,7 @@
 "fetchingVaultDetails" = "Fetching Vault Details";
 "findCustomTokens" = "Find custom token";
 "folder" = "Folder";
-"folderName" = "Folder name";
+"folderName" = "Folder Name";
 "folderNeedsOneVault" = "Folder needs to have at least one selected vault.";
 "folders" = "Folders";
 "from" = "From";
@@ -596,8 +596,7 @@
 "reviewConditionsMessage" = "Kindly review and agree to all the listed conditions.";
 "rippleExistentialDepositError" = "XRP requires a minimum balance of 1 XRP. The blockchain will block any transaction that would reduce the account balance below this amount. To send your full balance, the account must be deleted.";
 "sameDeviceShareError" = "Same vault share";
-"sameNameFolder" = "Folder with same name exists";
-"sameNameFolderDescription" = "Please choose a unique name for the folder and try again.";
+"sameNameFolderDescription" = "That folder name already exists. Try a new one.";
 "sameUseReferralCodeErrorMessage" = "Used referral code can not be the same as your referral code";
 "sameWifiEntendedInstruction" = "Keep devices on the same WiFi Network, have a stable connection and be on the correct vault and pair devices.";
 "save" = "Save";
@@ -884,3 +883,4 @@
 "youreSwapping" = "You’re swapping";
 "yourFriendsReferralCode" = "Your Friend Referral Code";
 "yourReferralCode" = "Your Referral Code";
+"addToAddressBook" = "Add to Address Book";

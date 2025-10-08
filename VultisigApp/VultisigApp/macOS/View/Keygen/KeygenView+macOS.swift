@@ -14,10 +14,7 @@ extension KeygenView {
             .onLoad {
                 Task{
                     await setData()
-                    await viewModel.startKeygen(
-                        context: context,
-                        defaultChains: settingsDefaultChainViewModel.defaultChains
-                    )
+                    await viewModel.startKeygen(context: context)
                 }
             }
     }

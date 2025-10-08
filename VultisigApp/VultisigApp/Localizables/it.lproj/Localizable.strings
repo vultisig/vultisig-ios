@@ -58,7 +58,7 @@
 "backupOptionsBox1Highlighted" = "sicuro senza";
 "backupOptionsBox2" = "Se si sceglie di aggiungere una password, verrà utilizzato per crittografare il file di backup.";
 "backupOptionsBox2Highlighted" = "crittografare";
-"backupOptionsBox3" = "Ricorda: se dimentichi la password del Vault, non può essere ripristinato o recuperato.";
+"backupOptionsBox3" = "Ricorda: Se dimentichi la password del Vault, non può essere ripristinato o recuperato.";
 "backupOptionsBox3Highlighted" = "non può";
 "backupOptionsTitle" = "Vuoi crittografare il tuo backup con una password?";
 "backupPart1" = "Copia di Backup 1";
@@ -199,7 +199,7 @@
 "enterUpto4Characters" = "Inserisci fino a 4 caratteri";
 "enterValidFolderName" = "Si prega di inserire un nome di cartella valido e riprovare.";
 "enterVaultEmail" = "Inserisci l'e -mail per ricevere la condivisione Vault.";
-"enterVaultName" = "Inserisci il nome del caveau";
+"enterVaultName" = "Inserisci il Nome del Caveau";
 "enterVaultPassword" = "Immettere la password impostata durante la creazione di questo Vault.";
 "enterYourEmail" = "Inserisci la tua e-mail";
 "enterYourEmailDescription" = "Questa email viene utilizzata solo per inviare il backup del server.";
@@ -282,7 +282,7 @@
 "fetchingVaultDetails" = "Recupero dei dettagli del caveau";
 "findCustomTokens" = "Trova Il Tuo Token Personalizzato";
 "folder" = "Cartella";
-"folderName" = "Nome della cartella";
+"folderName" = "Nome della Cartella";
 "folderNeedsOneVault" = "La cartella deve contenere almeno un Vault selezionato.";
 "folders" = "Cartelle";
 "from" = "Da";
@@ -884,3 +884,4 @@
 "youreSwapping" = "Stai scambiando";
 "yourFriendsReferralCode" = "Il tuo codice di riferimento";
 "yourReferralCode" = "Il tuo codice referral";
+"addToAddressBook" = "Aggiungi alla Rubrica";

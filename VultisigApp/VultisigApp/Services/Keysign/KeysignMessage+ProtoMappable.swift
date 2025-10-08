@@ -313,7 +313,8 @@ extension BlockChainSpecific {
                 currentBlockNumber: BigInt(stringLiteral: value.currentBlockNumber),
                 specVersion: value.specVersion,
                 transactionVersion: value.transactionVersion,
-                genesisHash: value.genesisHash
+                genesisHash: value.genesisHash,
+                gas: value.gas == 0 ? nil : BigInt(value.gas)
             )
         case .suicheSpecific(let value):
             let coinsArray: [[String: String]] = value.coins.map { coin in
@@ -443,7 +444,7 @@ extension BlockChainSpecific {
             })
             
             
-        case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber, let specVersion, let transactionVersion, let genesisHash):
+        case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber, let specVersion, let transactionVersion, let genesisHash, let gas):
             return .polkadotSpecific(.with {
                 $0.recentBlockHash = recentBlockHash
                 $0.nonce = nonce
@@ -451,6 +452,7 @@ extension BlockChainSpecific {
                 $0.specVersion = specVersion
                 $0.transactionVersion = transactionVersion
                 $0.genesisHash = genesisHash
+                $0.gas = UInt64(gas ?? 0)
             })
         case .Ripple(let sequence, let gas, let lastLedgerSequence):
             return .rippleSpecific(.with {

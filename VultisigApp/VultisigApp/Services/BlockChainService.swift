@@ -131,7 +131,8 @@ final class BlockChainService {
             fromAddress: tx.fromCoin.address,
             toAddress: nil,  // Swaps don't have a specific toAddress in the same way
             memo: nil,  // Swaps don't have memos
-            feeMode: .fast
+            feeMode: .fast,
+            amount: nil
         )
         // Use centralized cache setting method
         setCacheIfAllowed(for: tx.fromCoin.chain, cacheKey: cacheKey, blockSpecific: specific)
@@ -197,7 +198,8 @@ private extension BlockChainService {
             fromAddress: tx.fromAddress,
             toAddress: tx.toAddress,
             memo: tx.memo,
-            feeMode: tx.feeMode
+            feeMode: tx.feeMode,
+            amount: tx.amountInRaw
         )
         // Use centralized cache setting method
         setCacheIfAllowed(for: tx.coin.chain, cacheKey: cacheKey, blockSpecific: blockSpecific)
@@ -238,7 +240,8 @@ private extension BlockChainService {
             fromAddress: tx.fromAddress,
             toAddress: tx.toAddress,
             memo: tx.memo,
-            feeMode: tx.feeMode
+            feeMode: tx.feeMode,
+            amount: tx.amountInRaw
         )
         self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
         print("Fetched specific: \(specific) for \(tx.coin.chain)")
@@ -255,7 +258,8 @@ private extension BlockChainService {
                        fromAddress: String?,
                        toAddress: String?,
                        memo: String?,
-                       feeMode: FeeMode) async throws -> BlockChainSpecific {
+                       feeMode: FeeMode,
+                       amount: BigInt?) async throws -> BlockChainSpecific {
         switch coin.chain {
         case .zcash:
             return .UTXO(byteFee: coin.feeDefault.toBigInt(), sendMaxAmount: sendMaxAmount)
@@ -362,8 +366,23 @@ private extension BlockChainService {
             
         case .polkadot:
             let gasInfo = try await dot.getGasInfo(fromAddress: coin.address)
-            return .Polkadot(recentBlockHash: gasInfo.recentBlockHash, nonce: UInt64(gasInfo.nonce), currentBlockNumber: gasInfo.currentBlockNumber, specVersion: gasInfo.specVersion, transactionVersion: gasInfo.transactionVersion, genesisHash: gasInfo.genesisHash)
+            let dynamicFee = try await dot.calculateDynamicFee(
+                fromAddress: coin.address,
+                toAddress: toAddress ?? "",
+                amount: amount ?? BigInt.zero,
+                memo: memo
+            )
             
+            return .Polkadot(
+                recentBlockHash: gasInfo.recentBlockHash,
+                nonce: UInt64(gasInfo.nonce),
+                currentBlockNumber: gasInfo.currentBlockNumber,
+                specVersion: gasInfo.specVersion,
+                transactionVersion: gasInfo.transactionVersion,
+                genesisHash: gasInfo.genesisHash,
+                gas: dynamicFee
+            )
+        
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain,.ethereumSepolia, .mantle:
             let gasLimit = gasLimit ?? normalizeGasLimit(coin: coin, action: action)
             let feeService = try EthereumFeeService(chain: coin.chain)

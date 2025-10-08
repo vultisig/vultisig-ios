@@ -46,9 +46,9 @@ struct FolderCellView: View {
                     Spacer()
                     
                     Icon(
-                        named: "chevron-right",
+                        named: "chevron-right-small",
                         color: Theme.colors.textPrimary,
-                        size: 24
+                        size: 16
                     )
                     .opacity(isEditing ? 0 : 1)
                 }

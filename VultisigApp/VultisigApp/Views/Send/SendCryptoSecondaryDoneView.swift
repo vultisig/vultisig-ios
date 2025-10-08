@@ -6,13 +6,20 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct SendCryptoSecondaryDoneView: View {
     let input: SendCryptoContent
     let onDone: () -> Void
     
+    @State var navigateToAddressBook = false
     @Environment(\.openURL) var openURL
     @EnvironmentObject var homeViewModel: HomeViewModel
+    @Query var savedAddresses: [AddressBookItem]
+
+    var showAddressBookButton: Bool {
+        input.isSend && !savedAddresses.map(\.address).contains(input.toAddress)
+    }
     
     var body: some View {
         Screen(title: "transactionDetails".localized) {
@@ -26,6 +33,14 @@ struct SendCryptoSecondaryDoneView: View {
                 }
                 
                 continueButton
+            }
+        }
+        .navigationDestination(isPresented: $navigateToAddressBook) {
+            AddAddressBookScreen(
+                address: input.toAddress,
+                chain: .init(coinMeta: input.coin.toCoinMeta())
+            ) {
+                onDone()
             }
         }
     }
@@ -59,11 +74,15 @@ struct SendCryptoSecondaryDoneView: View {
                 separator
             }
             
+            // TODO: - Here
             Group {
                 SendCryptoTransactionDetailsRow(
                     title: "to",
                     description: input.toAddress
-                )
+                ) {
+                    addToAddressBookButton
+                        .showIf(showAddressBookButton)
+                }
                 separator
             }
             .showIf(input.toAddress.isNotEmpty)
@@ -79,10 +98,10 @@ struct SendCryptoSecondaryDoneView: View {
             
             
             SendCryptoTransactionDetailsRow(
-                    title: "network",
-                    description: input.coin.chain.name,
-                    icon: input.coin.chain.logo
-                )
+                title: "network",
+                description: input.coin.chain.name,
+                icon: input.coin.chain.logo
+            )
             
             separator
             
@@ -112,6 +131,25 @@ struct SendCryptoSecondaryDoneView: View {
         }
     }
     
+    var addToAddressBookButton: some View {
+        Button {
+            navigateToAddressBook = true
+        } label: {
+            HStack(spacing: 6) {
+                Icon(named: "plus", color: Theme.colors.alertSuccess, size: 16)
+                
+                Text("addToAddressBook".localized)
+                    .font(Theme.fonts.caption10)
+                    .foregroundStyle(Theme.colors.alertSuccess)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .overlay(RoundedRectangle(cornerRadius: 99).stroke(Theme.colors.alertSuccess, lineWidth: 0.5))
+            .fixedSize()
+        }
+        .buttonStyle(.plain)
+    }
+    
     func openLink() {
         if let url = URL(string: input.explorerLink) {
             openURL(url)
@@ -128,6 +166,7 @@ struct SendCryptoSecondaryDoneView: View {
             hash: "44B447A6A8BCABCCEC6E3EE9DE366EA4E0CDFC2C0BFB59D51E1A12D27B0C51AB",
             explorerLink: "https://thorchain.net/tx/44B447A6A8BCABCCEC6E3EE9DE366EA4E0CDFC2C0BFB59D51E1A12D27B0C51AB",
             memo: "test",
+            isSend: true,
             fromAddress: "thor1kkmnmgvd85puk8zsvqfxx36cqy9mxqret39t8z",
             toAddress: "thor1kkmnmgvd85puk8zsvqfxx36cqy9mxqret39t8z",
             fee: ("0.001 RUNE", "US$ 0.00")

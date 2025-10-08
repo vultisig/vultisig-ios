@@ -45,6 +45,8 @@ struct ContentView: View {
         }
         .id(accountViewModel.referenceID)
         .colorScheme(.dark)
+        .sheetPresentedStyle()
+        .background(Theme.colors.bgPrimary)
     }
     
     var content: some View {

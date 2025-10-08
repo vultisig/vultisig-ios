@@ -7,6 +7,7 @@
 
 import Foundation
 import BigInt
+import VultisigCommonData
 
 class PolkadotService: RpcService {
     static let rpcEndpoint = Endpoint.polkadotServiceRpc
@@ -119,5 +120,63 @@ class PolkadotService: RpcService {
         async let runtime = fetchRuntimeVersion()
         async let genesisHash = fetchGenesisBlockHash()
         return await (try recentBlockHash, try currentBlockNumber, Int64(try nonce), try runtime.specVersion, try runtime.transactionVersion, try genesisHash)
+    }
+    
+    func getPartialFee(serializedTransaction: String) async throws -> BigInt {
+        let hexWithPrefix = serializedTransaction.hasPrefix("0x") ? serializedTransaction : "0x\(serializedTransaction)"
+        
+        return try await sendRPCRequest(method: "payment_queryInfo", params: [hexWithPrefix]) { result in
+            guard let resultDict = result as? [String: Any] else {
+                throw RpcServiceError.rpcError(code: 500, message: "Error to convert the RPC result to Dictionary")
+            }
+            
+            guard let partialFeeString = resultDict["partialFee"] as? String else {
+                throw RpcServiceError.rpcError(code: 404, message: "partialFee not found in the response")
+            }
+            
+            guard let partialFee = BigInt(partialFeeString) else {
+                throw RpcServiceError.rpcError(code: 500, message: "Error to convert partialFee to BigInt")
+            }
+            
+            return partialFee
+        }
+    }
+    
+    func calculateDynamicFee(fromAddress: String, toAddress: String, amount: BigInt, memo: String? = nil) async throws -> BigInt {
+        let gasInfo = try await getGasInfo(fromAddress: fromAddress)
+        
+        guard let polkadotCoin = TokensStore.TokenSelectionAssets.first(where: { $0.chain == .polkadot && $0.isNativeToken }) else {
+            throw HelperError.runtimeError("Polkadot coin not found")
+        }
+        
+        let coin = Coin(asset: polkadotCoin, address: fromAddress, hexPublicKey: "")
+        
+        let keysignPayload = KeysignPayload(
+            coin: coin,
+            toAddress: toAddress,
+            toAmount: amount,
+            chainSpecific: .Polkadot(
+                recentBlockHash: gasInfo.recentBlockHash,
+                nonce: UInt64(gasInfo.nonce),
+                currentBlockNumber: gasInfo.currentBlockNumber,
+                specVersion: gasInfo.specVersion,
+                transactionVersion: gasInfo.transactionVersion,
+                genesisHash: gasInfo.genesisHash
+            ),
+            utxos: [],
+            memo: memo,
+            swapPayload: nil,
+            approvePayload: nil,
+            vaultPubKeyECDSA: "",
+            vaultLocalPartyID: "",
+            libType: "",
+            wasmExecuteContractPayload: nil,
+            skipBroadcast: false
+        )
+        
+        let serializedTransaction = try PolkadotHelper.getZeroSignedTransaction(keysignPayload: keysignPayload)
+        let partialFee = try await getPartialFee(serializedTransaction: serializedTransaction)
+        
+        return partialFee
     }
 }

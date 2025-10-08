@@ -19,12 +19,10 @@ struct AddressBookChainSelectionScreen: View {
     }
     
     var body: some View {
-        VStack {
-            SheetHeaderView(title: "selectChain".localized, isPresented: $isPresented)
-                .padding(.top, 12)
+        Screen(title: "selectChain".localized) {
             VStack(spacing: 12) {
                 SearchTextField(value: $viewModel.searchText)
-                ScrollView {
+                ScrollView(showsIndicators: false) {
                     if !viewModel.filteredChains.isEmpty {
                         list
                     } else {
@@ -34,6 +32,7 @@ struct AddressBookChainSelectionScreen: View {
                 .cornerRadius(12)
             }
         }
+        .applySheetSize()
         .onLoad(perform: viewModel.setup)
     }
     

@@ -19,11 +19,11 @@ struct VultisigApp: App {
     @StateObject var deeplinkViewModel = DeeplinkViewModel()
     @StateObject var settingsViewModel = SettingsViewModel.shared
     @StateObject var homeViewModel = HomeViewModel()
-    @StateObject var settingsDefaultChainViewModel = SettingsDefaultChainViewModel()
     @StateObject var vultExtensionViewModel = VultExtensionViewModel()
     @StateObject var phoneCheckUpdateViewModel = PhoneCheckUpdateViewModel()
     @StateObject var globalStateViewModel = GlobalStateViewModel()
     @StateObject var navigationRouter = NavigationRouter()
+    @StateObject var sheetPresentedCounterManager = SheetPresentedCounterManager()
     
     init() {
 #if os(macOS)

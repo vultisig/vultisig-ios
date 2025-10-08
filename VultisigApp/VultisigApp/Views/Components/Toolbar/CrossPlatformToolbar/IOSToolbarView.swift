@@ -13,6 +13,8 @@ struct IOSToolbarView<Content: View>: View {
     let navigationTitle: String?
     let content: Content
     
+    @Environment(\.isSheetPresented) var isSheetPresented
+    
     init(
         items: [CustomToolbarItem],
         navigationTitle: String?,
@@ -24,9 +26,7 @@ struct IOSToolbarView<Content: View>: View {
     }
     
     var body: some View {
-        content
-            .unwrap(navigationTitle) { $0.navigationTitle($1) }
-            .navigationBarTitleDisplayMode(.inline)
+        contentContainer
             .toolbar {
                 ToolbarItemGroup(placement: .cancellationAction) {
                     ForEach(Array(leadingItems.enumerated()), id: \.offset) { _, item in
@@ -42,6 +42,25 @@ struct IOSToolbarView<Content: View>: View {
                     }
                 }
             }
+    }
+    
+    @ViewBuilder
+    var contentContainer: some View {
+        // Wrap sheet content on NavigationStack to make navigation title visible
+        if isSheetPresented, navigationTitle != nil {
+            NavigationStack {
+                contentWithTitle
+                    .background(Theme.colors.bgPrimary.ignoresSafeArea())
+            }
+        } else {
+            contentWithTitle
+        }
+    }
+    
+    var contentWithTitle: some View {
+        content
+            .unwrap(navigationTitle) { $0.navigationTitle($1) }
+            .navigationBarTitleDisplayMode(.inline)
     }
     
     private var leadingItems: [CustomToolbarItem] {

@@ -14,7 +14,7 @@ extension CreateVaultView {
             .navigationDestination(isPresented: $shouldJoinKeygen) {
                 JoinKeygenView(vault: createVault(), selectedVault: selectedVault)
             }
-            .sheet(isPresented: $showSheet, content: {
+            .crossPlatformSheet(isPresented: $showSheet) {
                 GeneralCodeScannerView(
                     showSheet: $showSheet,
                     shouldJoinKeygen: $shouldJoinKeygen,
@@ -23,7 +23,7 @@ extension CreateVaultView {
                     selectedChain: .constant(nil),              // -
                     sendTX: SendTransaction()                   // -
                 )
-            })
+            }
     }
     
     var scanButton: some View {

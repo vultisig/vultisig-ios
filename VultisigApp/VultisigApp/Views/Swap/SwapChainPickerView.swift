@@ -19,6 +19,7 @@ struct SwapChainPickerView: View {
     @Binding var selectedChain: Chain?
     
     @EnvironmentObject var viewModel: CoinSelectionViewModel
+    @Environment(\.dismiss) var dismiss
     
     init(
         filterType: ChainFilterType = .send,
@@ -33,43 +34,12 @@ struct SwapChainPickerView: View {
     }
     
     var body: some View {
-        VStack {
-            header
-            content
+        Screen(title: "selectChain".localized) {
+            view
         }
-    }
-    
-    var content: some View {
-        views
-            .onDisappear { viewModel.searchText = "" }
-    }
-    
-    var header: some View {
-        HStack {
-            backButton
-            Spacer()
-            title
-            Spacer()
-            backButton
-                .opacity(0)
-        }
-    }
-    
-    @ViewBuilder
-    var backButton: some View {
-        #if os(macOS)
-            Button {
-                showSheet = false
-            } label: {
-                NavigationBlankBackButton()
-            }
-        #endif
-    }
-    
-    var title: some View {
-        Text(NSLocalizedString("selectChain", comment: ""))
-            .foregroundColor(Theme.colors.textPrimary)
-            .font(Theme.fonts.bodyLMedium)
+        .applySheetSize()
+        .sheetStyle()
+        .onDisappear { viewModel.searchText = "" }
     }
     
     var view: some View {
@@ -122,13 +92,6 @@ struct SwapChainPickerView: View {
     var emptyMessage: some View {
         ErrorMessage(text: "noResultFound")
             .padding(.top, 48)
-    }
-    
-    var views: some View {
-        ZStack {
-            Background()
-            view
-        }
     }
     
     var searchBar: some View {

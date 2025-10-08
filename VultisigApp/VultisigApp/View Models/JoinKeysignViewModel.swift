@@ -253,6 +253,8 @@ class JoinKeysignViewModel: ObservableObject {
                        !correctVault.localPartyID.isEmpty {
                         self.vault = correctVault
                         self.localPartyID = correctVault.localPartyID
+                        // Update ApplicationState so fee calculations can access the correct vault
+                        ApplicationState.shared.currentVault = correctVault
                         logger.info("Auto-selected correct vault: \(correctVault.name) with pubKey: \(correctVault.pubKeyECDSA)")
                     }
                 }
