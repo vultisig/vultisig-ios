@@ -65,6 +65,7 @@ class VaultDetailViewModel: ObservableObject {
     
     @MainActor
     func resetBanners(for vault: Vault) {
+        vaultBanners = []
         vault.closedBanners = []
         do {
             try Storage.shared.save()

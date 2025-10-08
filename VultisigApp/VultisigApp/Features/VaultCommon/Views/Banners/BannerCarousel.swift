@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct BannerCarousel<Banner: CarouselBannerType>: View {
-    
     @Binding var banners: [Banner]
+    let availableWidth: CGFloat
     var onBanner: (Banner) -> Void
     var onClose: (Banner) -> Void
     
@@ -28,12 +28,15 @@ struct BannerCarousel<Banner: CarouselBannerType>: View {
                     ForEach(internalBanners.indices, id: \.self) { index in
                         let banner = internalBanners[index]
                         let shouldRemove = bannersToRemove.contains(AnyHashable(banner.id)) && banners.count > 0
-                        CarouselBannerView(
-                            banner: banner,
-                            action: { onBanner(banner) },
-                            onClose: { removeBanner(banner) }
-                        )
-                        .frame(width: shouldRemove ? 0 : 345, height: 128, alignment: .leading)
+                        VStack {
+                            CarouselBannerView(
+                                banner: banner,
+                                action: { onBanner(banner) },
+                                onClose: { removeBanner(banner) }
+                            )
+                            .frame(width: shouldRemove ? 0 : 345, height: 128, alignment: .leading)
+                        }
+                        .padding(.horizontal, (availableWidth - 345) / 2)
                         .opacity(shouldRemove ? 0 : 1)
                         .scaleEffect(x: shouldRemove ? 0.8 : 1.0)
                         .animation(.easeInOut(duration: 0.4), value: shouldRemove)
@@ -244,6 +247,7 @@ private struct VaultBannerCarouselIndicator: View {
     
     BannerCarousel(
         banners: $banners,
+        availableWidth: 500,
         onBanner: { _ in },
         onClose: { _ in }
     )

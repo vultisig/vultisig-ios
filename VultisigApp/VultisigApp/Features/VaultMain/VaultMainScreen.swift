@@ -29,79 +29,85 @@ struct VaultMainScreen: View {
     @State var showChainSelection: Bool = false
     @State var showSearchHeader: Bool = false
     @State var showReceiveList: Bool = false
+    @State var showVaultBanners: Bool = false
     @State var focusSearch: Bool = false
     @State var scrollProxy: ScrollViewProxy?
     @State var frameHeight: CGFloat = 0
     
     private let scrollReferenceId = "vaultMainScreenBottomContentId"
     private let contentInset: CGFloat = 78
+    private let horizontalPadding: CGFloat = 16
     
     var body: some View {
-        VStack {
-            ZStack(alignment: .top) {
-                ScrollViewReader { proxy in
-                    VaultMainScreenScrollView(
-                        showsIndicators: false,
-                        contentInset: contentInset,
-                        scrollOffset: $scrollOffset
-                    ) {
-                        LazyVStack(spacing: 20) {
-                            topContentSection
-                            Separator(color: Theme.colors.borderLight, opacity: 1)
-                            bottomContentSection
+        GeometryReader { geo in
+            VStack {
+                ZStack(alignment: .top) {
+                    ScrollViewReader { proxy in
+                        VaultMainScreenScrollView(
+                            showsIndicators: false,
+                            contentInset: contentInset,
+                            scrollOffset: $scrollOffset
+                        ) {
+                            LazyVStack(spacing: 20) {
+                                topContentSection(width: geo.size.width)
+                                Group {
+                                    Separator(color: Theme.colors.borderLight, opacity: 1)
+                                    bottomContentSection
+                                }
+                                .padding(.horizontal, horizontalPadding)
+                            }
+                            .padding(.bottom, 32)
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.bottom, 32)
-                    }
-                    .onLoad {
-                        scrollProxy = proxy
-                    }
-                }
-                header
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .background(VaultMainScreenBackground())
-            .onChange(of: scrollOffset) { _, newValue in
-                onScrollOffsetChange(newValue)
-            }
-            .onChange(of: showSearchHeader) { _, showSearchHeader in
-                if showSearchHeader {
-                    focusSearch = true
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
-                        withAnimation {
-                            scrollProxy?.scrollTo(scrollReferenceId, anchor: .center)
+                        .onLoad {
+                            scrollProxy = proxy
                         }
                     }
+                    header
                 }
-            }
-            .crossPlatformSheet(isPresented: $showVaultSelector) {
-                VaultManagementSheet {
-                    showVaultSelector.toggle()
-                    routeToPresent = .createVault
-                } onSelectVault: { vault in
-                    showVaultSelector.toggle()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        homeViewModel.setSelectedVault(vault)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .background(VaultMainScreenBackground())
+                .onChange(of: scrollOffset) { _, newValue in
+                    onScrollOffsetChange(newValue)
+                }
+                .onChange(of: showSearchHeader) { _, showSearchHeader in
+                    if showSearchHeader {
+                        focusSearch = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                            withAnimation {
+                                scrollProxy?.scrollTo(scrollReferenceId, anchor: .center)
+                            }
+                        }
                     }
                 }
-            }
-            .crossPlatformSheet(isPresented: $showChainSelection) {
-                VaultSelectChainScreen(
-                    vault: vault,
-                    isPresented: $showChainSelection
-                ) { refresh() }
-            }
-            .crossPlatformSheet(isPresented: $showReceiveList) {
-                ReceiveChainSelectionScreen(
-                    vault: vault,
-                    isPresented: $showReceiveList,
-                    viewModel: viewModel
-                )
-            }
-            .onAppear(perform: refresh)
-            .refreshable { refresh() }
-            .onChange(of: settingsViewModel.selectedCurrency) {
-                refresh()
+                .crossPlatformSheet(isPresented: $showVaultSelector) {
+                    VaultManagementSheet {
+                        showVaultSelector.toggle()
+                        routeToPresent = .createVault
+                    } onSelectVault: { vault in
+                        showVaultSelector.toggle()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            homeViewModel.setSelectedVault(vault)
+                        }
+                    }
+                }
+                .crossPlatformSheet(isPresented: $showChainSelection) {
+                    VaultSelectChainScreen(
+                        vault: vault,
+                        isPresented: $showChainSelection
+                    ) { refresh() }
+                }
+                .crossPlatformSheet(isPresented: $showReceiveList) {
+                    ReceiveChainSelectionScreen(
+                        vault: vault,
+                        isPresented: $showReceiveList,
+                        viewModel: viewModel
+                    )
+                }
+                .onAppear(perform: refresh)
+                .refreshable { refresh() }
+                .onChange(of: settingsViewModel.selectedCurrency) {
+                    refresh()
+                }
             }
         }
         .onChange(of: vault) { oldValue, newValue in
@@ -125,17 +131,20 @@ struct VaultMainScreen: View {
         )
     }
     
-    @State var showVaultBanners: Bool = false
-    
-    var topContentSection: some View {
+    func topContentSection(width: CGFloat) -> some View {
         LazyVStack(spacing: 32) {
-            VaultMainBalanceView(vault: vault)
-            CoinActionsView(
-                actions: viewModel.availableActions,
-                onAction: onAction
-            )
+            Group {
+                VaultMainBalanceView(vault: vault)
+                CoinActionsView(
+                    actions: viewModel.availableActions,
+                    onAction: onAction
+                )
+            }
+            .padding(.horizontal, horizontalPadding)
+            
             BannerCarousel(
                 banners: $viewModel.vaultBanners,
+                availableWidth: width,
                 onBanner: onBannerPressed,
                 onClose: onBannerClosed
             )
