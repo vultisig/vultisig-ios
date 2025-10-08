@@ -43,6 +43,7 @@ struct ReceiveChainSelectionScreen: View {
                 coin: $0,
                 isNativeCoin: true
             ) {
+                selectedCoin = nil
                 isPresented = false
             }
         }
