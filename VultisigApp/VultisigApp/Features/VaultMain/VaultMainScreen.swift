@@ -109,9 +109,12 @@ struct VaultMainScreen: View {
                 }
             }
         }
+        .onLoad {
+            viewModel.resetBanners(for: vault)
+            refresh()
+        }
         .onChange(of: vault) { oldValue, newValue in
             refresh()
-            viewModel.resetBanners(for: newValue)
         }
     }
     

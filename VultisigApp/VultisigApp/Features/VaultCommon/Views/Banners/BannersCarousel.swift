@@ -71,13 +71,12 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
                     currentIndex: $currentIndex,
                     bannersCount: $bannersCount
                 )
-                .id(internalBanners.count)
                 .transition(.verticalGrowAndFade)
                 .animation(.easeInOut, value: bannersCount)
                 .showIf(bannersCount > 1)
             }
-            .frame(height: bannersCount > 0 ? nil : 0)
-            .opacity(bannersCount > 0 ? 1 : 0)
+            .transition(.verticalGrowAndFade)
+            .showIf(bannersCount > 0)
         }
         .onLoad {
             internalBanners = banners
@@ -110,6 +109,7 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
             
             withAnimation {
                 currentIndex = newScrollPosition
+                startTimer()
             }
         }
     }
