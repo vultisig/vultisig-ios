@@ -887,3 +887,6 @@
 "followVultisigBannerTitle" = "Vultisig sta costruendo con te.";
 "followVultisigBannerSubtitle" = "Seguici su X";
 "followVultisigBannerButtonTitle" = "Segui @Vultisig";
+"backupBannerTitle" = "Esegui il backup del tuo Vault";
+"backupBannerSubtitle" = "Mantieni l'accesso sicuro, archivia online";
+"backupBannerButtonTitle" = "Backup Vault";

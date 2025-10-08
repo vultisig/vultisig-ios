@@ -887,3 +887,6 @@
 "followVultisigBannerTitle" = "Vultisig baut mit dir.";
 "followVultisigBannerSubtitle" = "Folge uns auf X";
 "followVultisigBannerButtonTitle" = "Folge @Vultisig";
+"backupBannerTitle" = "Sichere deinen Tresor";
+"backupBannerSubtitle" = "Halte den Zugang sicher, speichere online";
+"backupBannerButtonTitle" = "Tresor sichern";

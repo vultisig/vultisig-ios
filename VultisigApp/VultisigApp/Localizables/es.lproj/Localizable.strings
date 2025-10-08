@@ -887,3 +887,6 @@
 "followVultisigBannerTitle" = "Vultisig está construyendo contigo.";
 "followVultisigBannerSubtitle" = "Síguenos en X";
 "followVultisigBannerButtonTitle" = "Seguir @Vultisig";
+"backupBannerTitle" = "Respalda tu Bóveda";
+"backupBannerSubtitle" = "Mantén el acceso seguro, almacena en línea";
+"backupBannerButtonTitle" = "Respaldar Bóveda";
