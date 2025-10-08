@@ -883,6 +883,9 @@
 "youreSwapping" = "You’re swapping";
 "yourFriendsReferralCode" = "Your Friend Referral Code";
 "yourReferralCode" = "Your Referral Code";
-"followVultisigBannerTitle" = "Vultisig is building with you.";
+"followVultisigBannerTitle" = "Vultisig is building with you";
 "followVultisigBannerSubtitle" = "Follow us on X";
 "followVultisigBannerButtonTitle" = "Follow @Vultisig";
+"backupBannerTitle" = "Back Up Your Vault";
+"backupBannerSubtitle" = "Keep access safe, store online";
+"backupBannerButtonTitle" = "Backup Vault";

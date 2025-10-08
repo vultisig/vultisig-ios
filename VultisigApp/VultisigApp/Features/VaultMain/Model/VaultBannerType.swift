@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 enum VaultBannerType: String, CarouselBannerType, CaseIterable {
     case upgradeVault, backupVault, followVultisig
@@ -19,7 +20,7 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
         case .upgradeVault:
             "signFasterThanEverBefore".localized
         case .backupVault:
-            "backupYourVaultNow".localized
+            "backupBannerTitle".localized
         case .followVultisig:
             "followVultisigBannerTitle".localized
         }
@@ -29,19 +30,42 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
         case .upgradeVault:
             "upgradeYourVaultNow".localized
         case .backupVault:
-            ""
+            "backupBannerSubtitle".localized
         case .followVultisig:
             "followVultisigBannerSubtitle".localized
         }
     }
+    
     var buttonTitle: String {
         switch self {
         case .upgradeVault:
             "upgradeNow".localized
         case .backupVault:
-            "backupNow".localized
+            "backupBannerButtonTitle".localized
         case .followVultisig:
             "followVultisigBannerButtonTitle".localized
+        }
+    }
+    
+    var image: String {
+        switch self {
+        case .upgradeVault:
+            "upgrade-vault-banner-icon"
+        case .backupVault:
+            "backup-vault-banner-icon"
+        case .followVultisig:
+            "follow-vultisig-banner-icon"
+        }
+    }
+    
+    var background: String? {
+        switch self {
+        case .upgradeVault:
+            nil
+        case .backupVault:
+            "backup-vault-banner-background"
+        case .followVultisig:
+            "follow-vultisig-banner-background"
         }
     }
 }

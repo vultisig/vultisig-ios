@@ -1,5 +1,5 @@
 //
-//  VaultBannerCarousel.swift
+//  BannerCarousel.swift
 //  VultisigApp
 //
 //  Created by Gaston Mazzeo on 07/10/2025.
@@ -28,11 +28,8 @@ struct BannerCarousel<Banner: CarouselBannerType>: View {
                     ForEach(internalBanners.indices, id: \.self) { index in
                         let banner = internalBanners[index]
                         let shouldRemove = bannersToRemove.contains(AnyHashable(banner.id)) && banners.count > 0
-                        VaultBannerView(
-                            title: banner.title,
-                            subtitle: banner.subtitle,
-                            buttonTitle: banner.buttonTitle,
-                            bgImage: "referral-banner-2",
+                        CarouselBannerView(
+                            banner: banner,
                             action: { onBanner(banner) },
                             onClose: { removeBanner(banner) }
                         )

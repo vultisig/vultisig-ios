@@ -106,10 +106,11 @@ struct VaultMainScreen: View {
         }
         .onChange(of: vault) { oldValue, newValue in
             refresh()
+            viewModel.resetBanners(for: newValue)
         }
         .onChange(of: viewModel.vaultBanners) { _, banners in
             withAnimation(.easeInOut) {
-                print("banners.count > 0", banners.count > 0)
+                print("show banners ", banners.count > 0)
                 showVaultBanners = banners.count > 0
             }
         }
@@ -141,7 +142,7 @@ struct VaultMainScreen: View {
             .frame(height: showVaultBanners ? nil : 0)
             .transition(.verticalGrowAndFade)
             .showIf(showVaultBanners)
-//            .id(vault.id)
+            .id(vault.id)
         }
     }
     

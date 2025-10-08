@@ -1,5 +1,5 @@
 //
-//  VaultBannerView.swift
+//  CarouselBannerView.swift
 //  VultisigApp
 //
 //  Created by Gaston Mazzeo on 11/09/2025.
@@ -7,30 +7,37 @@
 
 import SwiftUI
 
-struct VaultBannerView: View {
-    let title: String
-    let subtitle: String
-    let buttonTitle: String
-    let bgImage: String
+struct CarouselBannerView<Banner: CarouselBannerType>: View {
+    let banner: Banner
     let action: () -> Void
     let onClose: () -> Void
+    
+    init(
+        banner: Banner,
+        action: @escaping () -> Void,
+        onClose: @escaping () -> Void
+    ) {
+        self.banner = banner
+        self.action = action
+        self.onClose = onClose
+    }
     
     var body: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
+                    Text(banner.title)
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textExtraLight)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: true, vertical: false)
-                    Text(subtitle)
+                    Text(banner.subtitle)
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textPrimary)
                 }
                 
                 PrimaryButton(
-                    title: buttonTitle,
+                    title: banner.buttonTitle,
                     type: .primarySuccess,
                     size: .mini,
                     action: action
@@ -50,25 +57,24 @@ struct VaultBannerView: View {
             )
         }
         .padding(8)
-        .background(backgroundImage)
+        .background(backgroundView)
         .containerStyle()
     }
 
-    var backgroundImage: some View {
-        Image(bgImage)
-            .resizable()
-            .aspectRatio(contentMode: .fill)
+    @ViewBuilder
+    var backgroundView: some View {
+        switch banner {
+        case let type as VaultBannerType:
+            VaultBannerBackground(type: type)
+        default:
+            Theme.colors.bgPrimary
+        }
     }
 }
 
 #Preview {
     VStack {
-        VaultBannerView(
-            title: "signFasterThanEverBefore",
-            subtitle: "upgradeYourVaultNow",
-            buttonTitle: "upgradeNow",
-            bgImage: "referral-banner-2"
-        ) {} onClose: {}
+        CarouselBannerView(banner: VaultBannerType.backupVault) {} onClose: {}
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     .background(Theme.colors.bgPrimary)

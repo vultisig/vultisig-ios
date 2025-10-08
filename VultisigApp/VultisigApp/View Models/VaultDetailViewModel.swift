@@ -63,21 +63,32 @@ class VaultDetailViewModel: ObservableObject {
         self.groups = groups
     }
     
+    @MainActor
+    func resetBanners(for vault: Vault) {
+        vault.closedBanners = []
+        do {
+            try Storage.shared.save()
+        } catch {
+            print("Error while saving closedBanners for vault", error.localizedDescription)
+        }
+    }
+    
     func setupBanners(for vault: Vault) {
         vaultBanners = VaultBannerType.allCases
             .filter { banner in
-                guard !vault.closedBanners.contains(banner.rawValue) else {
-                    return false
-                }
+//                guard !vault.closedBanners.contains(banner.rawValue) else {
+//                    return false
+//                }
                 
-                switch banner {
-                case .backupVault:
-                    return !vault.isBackedUp
-                case .upgradeVault:
-                    return vault.libType == .GG20
-                case .followVultisig:
-                    return true
-                }
+                return true
+//                switch banner {
+//                case .backupVault:
+//                    return !vault.isBackedUp
+//                case .upgradeVault:
+//                    return vault.libType == .GG20
+//                case .followVultisig:
+//                    return true
+//                }
             }
     }
     
