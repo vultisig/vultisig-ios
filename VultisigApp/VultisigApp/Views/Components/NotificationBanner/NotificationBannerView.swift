@@ -9,12 +9,13 @@ import SwiftUI
 
 struct NotificationBannerView: View {
     let text: String
-    @State private var progress: Double = 1.0
+    @State private var progress: Double = 0.0
     @Binding var isVisible: Bool
     @State var isVisibleInternal: Bool = false
     
     let animation: Animation = .interpolatingSpring(mass: 1, stiffness: 100, damping: 15)
-    private let duration: Double = 1
+    private let duration: Double = 1.3
+    private let progressDelay: CGFloat = 0.1
     
     var body: some View {
         VStack {
@@ -30,8 +31,7 @@ struct NotificationBannerView: View {
                         .stroke(Theme.colors.alertSuccess, style: StrokeStyle(lineWidth: 2, lineCap: .round))
                         .frame(width: 18, height: 18)
                         .rotationEffect(.radians(-.pi / 2))
-                        .scaleEffect(x: -1, y: 1)
-                        .animation(.linear(duration: duration), value: progress)
+                        .animation(animation.delay(progressDelay), value: progress)
                     Icon(named: "check", color: Theme.colors.alertSuccess, size: 9)
                 }
                 
@@ -50,16 +50,14 @@ struct NotificationBannerView: View {
             .opacity(isVisibleInternal ? 1.0 : 0.0)
             .animation(.interpolatingSpring(mass: 1, stiffness: 100, damping: 15), value: isVisibleInternal)
             .onAppear {
-                withAnimation {
-                    progress = 0.0
-                }
+                progress = 1.0
                 
-                DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
-                    withAnimation(.interpolatingSpring(mass: 1, stiffness: 100, damping: 15)) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + duration + progressDelay) {
+                    withAnimation(animation) {
                         isVisibleInternal = false
                     }
                     
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                         isVisible = false
                     }
                 }
