@@ -12,6 +12,9 @@ class VaultDetailViewModel: ObservableObject {
     @Published var selectedGroup: GroupedChain? = nil
     @Published var groups = [GroupedChain]()
     @Published var searchText: String = ""
+    @Published var vaultBanners: [VaultBannerType] = []
+    
+    @AppStorage("appClosedBanners") private var appClosedBanners: [String] = []
     
     var filteredGroups: [GroupedChain] {
         guard !searchText.isEmpty else {
@@ -60,6 +63,43 @@ class VaultDetailViewModel: ObservableObject {
             return $0.totalBalanceInFiatDecimal > $1.totalBalanceInFiatDecimal
         }
         self.groups = groups
+    }
+    
+    func setupBanners(for vault: Vault) {
+        vaultBanners = VaultBannerType.allCases
+            .filter { banner in
+                if banner.isAppBanner && appClosedBanners.contains(banner.rawValue) {
+                    return false
+                } else if vault.closedBanners.contains(banner.rawValue) {
+                    return false
+                }
+                
+                switch banner {
+                case .backupVault:
+                    return !vault.isBackedUp
+                case .upgradeVault:
+                    return vault.libType == .GG20
+                case .followVultisig:
+                    return true
+                }
+            }
+    }
+    
+    @MainActor
+    func removeBanner(for vault: Vault, banner: VaultBannerType) {
+        guard !banner.isAppBanner else {
+            appClosedBanners.append(banner.rawValue)
+            setupBanners(for: vault)
+            return
+        }
+        
+        vault.closedBanners = Array(Set(vault.closedBanners + [banner.rawValue]))
+        do {
+            try Storage.shared.save()
+            setupBanners(for: vault)
+        } catch {
+            print("Error while saving closedBanners for vault", error.localizedDescription)
+        }
     }
 }
 

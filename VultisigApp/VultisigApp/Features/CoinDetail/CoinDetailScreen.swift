@@ -55,9 +55,10 @@ struct CoinDetailScreen: View {
         .crossPlatformSheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(
                 coin: coin,
-                isNativeCoin: false,
-                isPresented: $showReceiveSheet
-            )
+                isNativeCoin: false
+            ) {
+                showReceiveSheet = false
+            }
         }
         .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: true)
     }
