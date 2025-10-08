@@ -884,4 +884,10 @@
 "youreSwapping" = "Você está trocando";
 "yourFriendsReferralCode" = "Seu código de referência de amigo";
 "yourReferralCode" = "Seu código de indicação";
+"followVultisigBannerTitle" = "Vultisig está construindo com você.";
+"followVultisigBannerSubtitle" = "Siga-nos no X";
+"followVultisigBannerButtonTitle" = "Seguir @Vultisig";
+"backupBannerTitle" = "Faça Backup do Seu Cofre";
+"backupBannerSubtitle" = "Mantenha o acesso seguro, armazene online";
+"backupBannerButtonTitle" = "Backup do Cofre";
 "addToAddressBook" = "Adicionar ao Catálogo de Endereços";

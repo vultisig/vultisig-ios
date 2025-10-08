@@ -17,15 +17,17 @@ struct ToolbarButton: View {
     @Environment(\.isNativeToolbarItem) private var isNativeToolbarItem
     
     let image: String
+    let iconSize: CGFloat
     let type: ToolbarButtonType
     let action: () -> Void
     
     @State private var isHovered: Bool = false
     
-    init(image: String, type: ToolbarButtonType = .outline, action: @escaping () -> Void) {
+    init(image: String, iconSize: CGFloat = 20, type: ToolbarButtonType = .outline, action: @escaping () -> Void) {
         self.image = image
         self.type = type
         self.action = action
+        self.iconSize = iconSize
     }
     
     var tintColor: Color {
@@ -91,7 +93,7 @@ struct ToolbarButton: View {
     }
     
     var iconView: some View {
-        Icon(named: image, color: Theme.colors.textPrimary, size: 20)
+        Icon(named: image, color: Theme.colors.textPrimary, size: iconSize)
     }
     
     // Custom button with "fake" glass effect for styling
