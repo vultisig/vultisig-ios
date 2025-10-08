@@ -54,11 +54,10 @@ struct AsyncImageView: View {
             }
             
             if let chainIcon = tokenChainLogo, logo != tokenChainLogo {
-                Image(chainIcon)
-                    .resizable()
-                    .frame(width: size.width / 2, height: size.height / 2)
-                    .cornerRadius(16)
-                    .offset(x: size.width / 2.5, y: size.width / 2.5)
+                ChainIconView(
+                    icon: "chain-" + chainIcon,
+                    size: size.width / 4.5
+                ).offset(x: size.width / 2.5, y: size.width / 2.5)
             }
         }
     }
@@ -70,5 +69,21 @@ struct AsyncImageView: View {
             .background(Color.white)
             .foregroundColor(Theme.colors.bgSecondary)
             .cornerRadius(100)
+    }
+}
+
+struct ChainIconView: View {
+    let icon: String
+    let size: CGFloat
+    
+    var body: some View {
+        Image(icon)
+            .resizable()
+            .aspectRatio(1, contentMode: .fit)
+            .frame(width: size, height: size)
+            .foregroundStyle(Theme.colors.bgSecondary)
+            .padding(size / 2)
+            .background(Circle().fill(Theme.colors.textPrimary))
+            .overlay(Circle().inset(by: -1).stroke(Theme.colors.bgSecondary, lineWidth: 2))
     }
 }
