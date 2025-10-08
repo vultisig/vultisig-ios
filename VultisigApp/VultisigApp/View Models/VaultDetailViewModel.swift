@@ -12,6 +12,7 @@ class VaultDetailViewModel: ObservableObject {
     @Published var selectedGroup: GroupedChain? = nil
     @Published var groups = [GroupedChain]()
     @Published var searchText: String = ""
+    @Published var vaultBanners: [VaultBannerType] = []
     
     var filteredGroups: [GroupedChain] {
         guard !searchText.isEmpty else {
@@ -26,7 +27,7 @@ class VaultDetailViewModel: ObservableObject {
     private var updateBalanceTask: Task<Void, Never>?
     
     var availableActions: [CoinAction] {
-        [.send,.buy,.swap, .receive].filtered
+        [.send, .buy, .swap, .receive].filtered
     }
     
     func updateBalance(vault: Vault) {
@@ -60,6 +61,35 @@ class VaultDetailViewModel: ObservableObject {
             return $0.totalBalanceInFiatDecimal > $1.totalBalanceInFiatDecimal
         }
         self.groups = groups
+    }
+    
+    func setupBanners(for vault: Vault) {
+        vaultBanners = VaultBannerType.allCases
+            .filter { banner in
+                guard !vault.closedBanners.contains(banner.rawValue) else {
+                    return false
+                }
+                
+                return true
+//                switch banner {
+//                case .backupVault:
+//                    return !vault.isBackedUp
+//                case .upgradeVault:
+//                    return vault.libType == .GG20
+//                case .followVultisig:
+//                    return true
+//                }
+            }
+    }
+    
+    @MainActor
+    func removeBanner(for vault: Vault, banner: VaultBannerType) {
+        vault.closedBanners = Array(Set(vault.closedBanners + [banner.rawValue]))
+        do {
+            try Storage.shared.save()
+        } catch {
+            print("Error while saving closedBanners for vault", error.localizedDescription)
+        }
     }
 }
 

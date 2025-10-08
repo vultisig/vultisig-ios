@@ -22,6 +22,8 @@ struct VaultBannerView: View {
                     Text(title)
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textExtraLight)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: true, vertical: false)
                     Text(subtitle)
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textPrimary)
@@ -29,16 +31,23 @@ struct VaultBannerView: View {
                 
                 PrimaryButton(
                     title: buttonTitle,
-                    size: .small,
+                    type: .primarySuccess,
+                    size: .mini,
                     action: action
                 )
-                .scaledToFit()
+                .frame(maxWidth: 100, alignment: .leading)
+                .buttonStyle(.borderless)
             }
             .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
             
             Spacer()
             
-            ToolbarButton(image: "x", action: onClose)
+            ToolbarButton(
+                image: "cross-small",
+                iconSize: 16,
+                action: onClose
+            )
         }
         .padding(8)
         .background(backgroundImage)

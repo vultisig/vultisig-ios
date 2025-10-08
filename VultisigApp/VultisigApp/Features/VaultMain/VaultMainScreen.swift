@@ -22,6 +22,7 @@ struct VaultMainScreen: View {
     @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     @EnvironmentObject var settingsViewModel: SettingsViewModel
+    @Environment(\.openURL) var openURL
     
     @State private var scrollOffset: CGFloat = 0
     @State var showBalanceInHeader: Bool = false
@@ -117,6 +118,10 @@ struct VaultMainScreen: View {
         )
     }
     
+    var showVaultBanners: Bool {
+        viewModel.vaultBanners.count > 0
+    }
+    
     var topContentSection: some View {
         LazyVStack(spacing: 32) {
             VaultMainBalanceView(vault: vault)
@@ -124,49 +129,15 @@ struct VaultMainScreen: View {
                 actions: viewModel.availableActions,
                 onAction: onAction
             )
-            upgradeVaultBanner
-            backupBanner
+            BannerCarousel(
+                banners: $viewModel.vaultBanners,
+                onBanner: onBannerPressed,
+                onClose: onBannerClosed
+            )
+            .transition(.verticalGrowAndFade)
+            .animation(.interpolatingSpring, value: showVaultBanners)
+            .showIf(showVaultBanners)
         }
-    }
-    
-    @State var showUpgradeBanner = true
-    var upgradeBannerEnabled: Bool { vault.libType == .GG20 && showUpgradeBanner }
-    @ViewBuilder
-    var upgradeVaultBanner: some View {
-        VaultBannerView(
-            title: "signFasterThanEverBefore".localized,
-            subtitle: "upgradeYourVaultNow".localized,
-            buttonTitle: "upgradeNow".localized,
-            bgImage: "referral-banner-2",
-            action: { showUpgradeVaultSheet = true },
-            onClose: {
-                withAnimation {
-                    showUpgradeBanner = false
-                }
-            }
-        )
-        .transition(.verticalGrowAndFade)
-        .showIf(upgradeBannerEnabled)
-    }
-    
-    @State var showBackupBanner = true
-    var backupBannerEnabled: Bool { !vault.isBackedUp && showBackupBanner && !upgradeBannerEnabled }
-    @ViewBuilder
-    var backupBanner: some View {
-        VaultBannerView(
-            title: "backupYourVaultNow".localized,
-            subtitle: "",
-            buttonTitle: "backupNow".localized,
-            bgImage: "referral-banner-2",
-            action: { showBackupNow = true },
-            onClose: {
-                withAnimation {
-                    showBackupBanner = false
-                }
-            }
-        )
-        .transition(.verticalGrowAndFade)
-        .showIf(backupBannerEnabled)
     }
     
     var bottomContentSection: some View {
@@ -249,6 +220,7 @@ struct VaultMainScreen: View {
     
     func refresh() {
         tokenSelectionViewModel.setData(for: vault)
+        viewModel.setupBanners(for: vault)
         viewModel.getGroupAsync(tokenSelectionViewModel)
         
         settingsDefaultChainViewModel.setData(tokenSelectionViewModel.groupedAssets)
@@ -302,6 +274,21 @@ struct VaultMainScreen: View {
         
         guard let vaultAction else { return }
         routeToPresent = .mainAction(vaultAction)
+    }
+    
+    func onBannerPressed(_ banner: VaultBannerType) {
+        switch banner {
+        case .upgradeVault:
+            showUpgradeVaultSheet = true
+        case .backupVault:
+            showBackupNow = true
+        case .followVultisig:
+            openURL(StaticURL.XVultisigURL)
+        }
+    }
+    
+    func onBannerClosed(_ banner: VaultBannerType) {
+        viewModel.removeBanner(for: vault, banner: banner)
     }
 }
 

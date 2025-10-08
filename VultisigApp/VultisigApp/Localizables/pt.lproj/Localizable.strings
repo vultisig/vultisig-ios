@@ -884,3 +884,6 @@
 "youreSwapping" = "Você está trocando";
 "yourFriendsReferralCode" = "Seu código de referência de amigo";
 "yourReferralCode" = "Seu código de indicação";
+"followVultisigBannerTitle" = "Vultisig está construindo com você.";
+"followVultisigBannerSubtitle" = "Siga-nos no X";
+"followVultisigBannerButtonTitle" = "Seguir @Vultisig";
