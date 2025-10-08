@@ -10,6 +10,8 @@ import SwiftUI
 struct BannersCarousel<Banner: CarouselBannerType>: View {
     @Binding var banners: [Banner]
     let availableWidth: CGFloat
+    /// Used for VStack spacing
+    let paddingTop: CGFloat?
     var onBanner: (Banner) -> Void
     var onClose: (Banner) -> Void
     
@@ -75,6 +77,7 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
                 .animation(.easeInOut, value: bannersCount)
                 .showIf(bannersCount > 1)
             }
+            .unwrap(paddingTop) { $0.padding(.top, $1) }
             .transition(.verticalGrowAndFade)
             .showIf(bannersCount > 0)
         }
@@ -207,6 +210,7 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
     BannersCarousel(
         banners: $banners,
         availableWidth: 500,
+        paddingTop: nil,
         onBanner: { _ in },
         onClose: { _ in }
     )

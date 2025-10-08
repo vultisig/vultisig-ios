@@ -110,7 +110,6 @@ struct VaultMainScreen: View {
             }
         }
         .onLoad {
-            viewModel.resetBanners(for: vault)
             refresh()
         }
         .onChange(of: vault) { oldValue, newValue in
@@ -118,6 +117,7 @@ struct VaultMainScreen: View {
         }
     }
     
+    @ViewBuilder
     var header: some View {
         VaultMainHeaderView(
             vault: vault,
@@ -128,9 +128,10 @@ struct VaultMainScreen: View {
     }
     
     func topContentSection(width: CGFloat) -> some View {
-        LazyVStack(spacing: 32) {
+        LazyVStack(spacing: 0) {
             Group {
                 VaultMainBalanceView(vault: vault)
+                    .padding(.bottom, 32)
                 CoinActionsView(
                     actions: viewModel.availableActions,
                     onAction: onAction
@@ -141,6 +142,7 @@ struct VaultMainScreen: View {
             BannersCarousel(
                 banners: $viewModel.vaultBanners,
                 availableWidth: width,
+                paddingTop: 32,
                 onBanner: onBannerPressed,
                 onClose: onBannerClosed
             )

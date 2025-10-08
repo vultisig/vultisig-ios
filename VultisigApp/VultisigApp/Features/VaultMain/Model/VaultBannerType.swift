@@ -14,6 +14,15 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
     var id: String {
         rawValue
     }
+    
+    var isAppBanner: Bool {
+        switch self {
+        case .upgradeVault, .backupVault:
+            return false
+        case .followVultisig:
+            return true
+        }
+    }
 
     var title: String {
         switch self {

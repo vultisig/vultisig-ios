@@ -14,6 +14,8 @@ class VaultDetailViewModel: ObservableObject {
     @Published var searchText: String = ""
     @Published var vaultBanners: [VaultBannerType] = []
     
+    @AppStorage("appClosedBanners") private var appClosedBanners: [String] = []
+    
     var filteredGroups: [GroupedChain] {
         guard !searchText.isEmpty else {
             return groups
@@ -63,21 +65,12 @@ class VaultDetailViewModel: ObservableObject {
         self.groups = groups
     }
     
-    @MainActor
-    func resetBanners(for vault: Vault) {
-        vaultBanners = []
-        vault.closedBanners = []
-        do {
-            try Storage.shared.save()
-        } catch {
-            print("Error while saving closedBanners for vault", error.localizedDescription)
-        }
-    }
-    
     func setupBanners(for vault: Vault) {
         vaultBanners = VaultBannerType.allCases
             .filter { banner in
-                guard !vault.closedBanners.contains(banner.rawValue) else {
+                if banner.isAppBanner && appClosedBanners.contains(banner.rawValue) {
+                    return false
+                } else if vault.closedBanners.contains(banner.rawValue) {
                     return false
                 }
                 
@@ -94,6 +87,12 @@ class VaultDetailViewModel: ObservableObject {
     
     @MainActor
     func removeBanner(for vault: Vault, banner: VaultBannerType) {
+        guard !banner.isAppBanner else {
+            appClosedBanners.append(banner.rawValue)
+            setupBanners(for: vault)
+            return
+        }
+        
         vault.closedBanners = Array(Set(vault.closedBanners + [banner.rawValue]))
         do {
             try Storage.shared.save()
