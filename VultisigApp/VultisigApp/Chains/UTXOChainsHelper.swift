@@ -208,6 +208,21 @@ class UTXOChainsHelper {
 
     func getBitcoinTransactionPlan(keysignPayload: KeysignPayload) throws -> BitcoinTransactionPlan {
         let input = try getBitcoinSigningInput(keysignPayload: keysignPayload)
+        
+        // Debug: Print what we're sending to WalletCore
+        print("UTXOChainsHelper.getBitcoinTransactionPlan:")
+        print("  - coin: \(coin)")
+        print("  - amount: \(input.amount)")
+        print("  - byteFee: \(input.byteFee)")
+        print("  - toAddress: \(input.toAddress)")
+        print("  - changeAddress: \(input.changeAddress)")
+        print("  - utxo count: \(input.utxo.count)")
+        print("  - useMaxAmount: \(input.useMaxAmount)")
+        
+        for (index, utxo) in input.utxo.enumerated() {
+            print("  - UTXO[\(index)]: amount=\(utxo.amount), script.length=\(utxo.script.count)")
+        }
+        
         var plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
         
         if coin == .zcash {

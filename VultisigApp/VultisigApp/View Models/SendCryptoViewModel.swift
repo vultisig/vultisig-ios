@@ -81,7 +81,13 @@ class SendCryptoViewModel: ObservableObject {
             
             // For UTXO chains, calculate actual total fee using WalletCore plan.fee (like Android)
             if tx.coin.chainType == .UTXO {
-                tx.fee = try await calculateUTXOPlanFee(tx: tx, chainSpecific: specific)
+                if tx.amountInRaw > 0 {
+                    // Only calculate accurate fee when user has entered an amount
+                    tx.fee = try await calculateUTXOPlanFee(tx: tx, chainSpecific: specific)
+                } else {
+                    // Initial state - no amount yet, use 0 to indicate fee not calculated yet
+                    tx.fee = BigInt.zero
+                }
             } else {
                 tx.fee = specific.fee
             }
@@ -342,6 +348,9 @@ class SendCryptoViewModel: ObservableObject {
             let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2) // Assuming 2 decimal places for fiat
             tx.amountInFiat = truncatedValueFiat.formatToDecimal(digits: tx.coin.decimals)
             tx.sendMaxAmount = setMaxValue
+            
+            // Recalculate UTXO fees when amount changes
+            recalculateUTXOFeesIfNeeded(tx: tx)
         } else {
             tx.amountInFiat = ""
         }
@@ -655,46 +664,108 @@ class SendCryptoViewModel: ObservableObject {
     
     private func calculateUTXOPlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
         guard let vault = ApplicationState.shared.currentVault else {
-            print("calculateUTXOPlanFee: No vault available, using fallback")
-            return chainSpecific.gas
+            throw HelperError.runtimeError("No vault available for UTXO fee calculation")
         }
         
-        do {
-            // Use a very small amount to get accurate fee calculation
-            let testAmount = BigInt(1000) // 0.00001 BTC for fee estimation
-            print("calculateUTXOPlanFee: Using testAmount = \(testAmount), coin balance = \(tx.coin.rawBalance)")
-            
-            let keysignFactory = KeysignPayloadFactory()
-            let keysignPayload = try await keysignFactory.buildTransfer(
-                coin: tx.coin,
-                toAddress: tx.toAddress.isEmpty ? tx.coin.address : tx.toAddress,
-                amount: testAmount,
-                memo: tx.memo.isEmpty ? nil : tx.memo,
-                chainSpecific: chainSpecific,
-                swapPayload: nil,
-                vault: vault
-            )
-            
-            guard let helper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) else {
-                print("calculateUTXOPlanFee: No UTXO helper available, using fallback")
-                return chainSpecific.gas
-            }
-            
-            let plan = try helper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
-            let planFee = BigInt(plan.fee)
-            
-            print("calculateUTXOPlanFee: plan.fee = \(plan.fee), chainSpecific.gas = \(chainSpecific.gas)")
-            
-            // If plan.fee is 0, use fallback
-            if planFee == 0 {
-                print("calculateUTXOPlanFee: plan.fee is 0, using fallback gas")
-                return chainSpecific.gas
-            }
-            
+        // Don't calculate plan fee if amount is 0 or empty
+        let actualAmount = tx.amountInRaw
+        if actualAmount == 0 {
+            throw HelperError.runtimeError("Enter an amount to calculate accurate UTXO fees")
+        }
+        
+        print("calculateUTXOPlanFee: Using actualAmount = \(actualAmount), coin balance = \(tx.coin.rawBalance)")
+        print("calculateUTXOPlanFee: Chain = \(tx.coin.chain.name), Address = \(tx.coin.address)")
+        
+        // Force fresh UTXO fetch for fee calculation to avoid stale cache
+        await BlockchairService.shared.clearUTXOCache(for: tx.coin)
+        
+        // Fetch fresh UTXOs from API
+        let _ = try await BlockchairService.shared.fetchBlockchairData(coin: tx.coin)
+        print("calculateUTXOPlanFee: Fresh UTXOs fetched from API")
+        
+        let keysignFactory = KeysignPayloadFactory()
+        let keysignPayload = try await keysignFactory.buildTransfer(
+            coin: tx.coin,
+            toAddress: tx.toAddress.isEmpty ? tx.coin.address : tx.toAddress,
+            amount: actualAmount,
+            memo: tx.memo.isEmpty ? nil : tx.memo,
+            chainSpecific: chainSpecific,
+            swapPayload: nil,
+            vault: vault
+        )
+        
+        // Debug: Print UTXOs being used
+        print("calculateUTXOPlanFee: Selected UTXOs count: \(keysignPayload.utxos.count)")
+        let totalUTXOValue = keysignPayload.utxos.reduce(0) { $0 + $1.amount }
+        print("calculateUTXOPlanFee: Total UTXO value: \(totalUTXOValue), needed: \(actualAmount)")
+        
+        for (index, utxo) in keysignPayload.utxos.enumerated() {
+            print("calculateUTXOPlanFee: UTXO[\(index)]: hash=\(utxo.hash.prefix(8))..., amount=\(utxo.amount), index=\(utxo.index)")
+        }
+        
+        guard let helper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) else {
+            throw HelperError.runtimeError("UTXO helper not available for \(tx.coin.chain.name)")
+        }
+        
+        let plan = try helper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
+        let planFee = BigInt(plan.fee)
+        
+        print("calculateUTXOPlanFee: WalletCore plan details:")
+        print("  - plan.fee = \(plan.fee)")
+        print("  - plan.amount = \(plan.amount)")
+        print("  - plan.change = \(plan.change)")
+        print("  - plan.availableAmount = \(plan.availableAmount)")
+        print("  - plan.error = \(plan.error)")
+        
+        // WalletCore must return valid fee
+        if planFee > 0 {
             return planFee
-        } catch {
-            print("calculateUTXOPlanFee: Error calculating plan fee: \(error), using fallback")
-            return chainSpecific.gas
+        }
+        
+        // TEMPORARY: For DOGE, if WalletCore fails, use realistic fee estimate
+        // Based on actual transaction data: ~9 DOGE for typical transaction
+        if tx.coin.chain == .dogecoin {
+            print("calculateUTXOPlanFee: WalletCore failed for DOGE, using realistic estimate")
+            // Estimate based on actual DOGE network: ~500k sats/byte * ~1800 bytes = 900M sats = 9 DOGE
+            let realisticDogeFee = BigInt(900_000_000) // 9 DOGE
+            return realisticDogeFee
+        }
+        
+        // For other chains, throw error
+        let errorMsg = plan.error == .ok ? "Unknown error" : "\(plan.error)"
+        throw HelperError.runtimeError("WalletCore returned zero fee - \(errorMsg)")
+    }
+    
+    /// Recalculate UTXO fees when amount changes
+    func recalculateUTXOFeesIfNeeded(tx: SendTransaction) {
+        guard tx.coin.chainType == .UTXO && tx.amountInRaw > 0 else { 
+            print("recalculateUTXOFeesIfNeeded: Skipped - chainType=\(tx.coin.chainType), amount=\(tx.amountInRaw)")
+            return 
+        }
+        
+        print("recalculateUTXOFeesIfNeeded: Starting recalculation for \(tx.coin.chain.name)")
+        
+        Task {
+            await MainActor.run {
+                tx.isCalculatingFee = true
+            }
+            
+            do {
+                let specific = try await blockchainService.fetchSpecific(tx: tx)
+                let oldFee = tx.fee
+                let newFee = try await calculateUTXOPlanFee(tx: tx, chainSpecific: specific)
+                
+                await MainActor.run {
+                    tx.fee = newFee
+                    tx.isCalculatingFee = false
+                    print("recalculateUTXOFeesIfNeeded: Updated fee from \(oldFee) to \(newFee)")
+                }
+            } catch {
+                await MainActor.run {
+                    tx.isCalculatingFee = false
+                }
+                print("Failed to recalculate UTXO fee: \(error.localizedDescription)")
+            }
         }
     }
 }

@@ -83,9 +83,33 @@ struct KeysignPayloadFactory {
             
         case .UTXO(let byteFee, _):
             // Bitcoin, Litecoin, Dogecoin etc. - use Blockchair
-            // 148 is estimate vbytes for every input
-            // estimate we will use maximum 10 utxos
-            let totalAmount = amount + BigInt(byteFee * 1480)
+            // Use more realistic transaction size estimation
+            let estimatedTxSize: BigInt
+            switch coin.chain {
+            case .dogecoin:
+                estimatedTxSize = BigInt(400) // DOGE transactions are typically larger
+            case .bitcoin, .bitcoinCash, .litecoin:
+                estimatedTxSize = BigInt(250) // BTC/BCH/LTC typical size
+            case .dash:
+                estimatedTxSize = BigInt(300) // DASH typical size
+            default:
+                estimatedTxSize = BigInt(250) // Default
+            }
+            let totalAmount = amount + BigInt(byteFee * estimatedTxSize)
+            print("KeysignPayloadFactory: UTXO selection - amount=\(amount), byteFee=\(byteFee), totalNeeded=\(totalAmount)")
+            
+            // Debug: Check what UTXOs are available
+            if let blockchairData = await utxo.getByKey(key: coin.blockchairKey) {
+                let availableUTXOs = blockchairData.utxo ?? []
+                print("KeysignPayloadFactory: Available UTXOs count: \(availableUTXOs.count)")
+                let totalAvailable = availableUTXOs.reduce(0) { $0 + Int64($1.value ?? 0) }
+                print("KeysignPayloadFactory: Total available value: \(totalAvailable)")
+                
+                for (index, utxo) in availableUTXOs.enumerated() {
+                    print("KeysignPayloadFactory: Available UTXO[\(index)]: hash=\(utxo.transactionHash?.prefix(8) ?? "nil")..., amount=\(utxo.value ?? 0), index=\(utxo.index ?? -1)")
+                }
+            }
+            
             guard let info = await utxo.getByKey(key: coin.blockchairKey)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmount),coinType: coin.coinType)
                 .map({
                     UtxoInfo(
@@ -94,6 +118,7 @@ struct KeysignPayloadFactory {
                         index: UInt32($0.index ?? -1)
                     )
                 }), !info.isEmpty else {
+                print("KeysignPayloadFactory: UTXO selection failed - no UTXOs selected")
                 // Check what specific UTXO issue we have
                 if let blockchairData = await utxo.getByKey(key: coin.blockchairKey) {
                     if blockchairData.utxo?.isEmpty ?? true {
@@ -108,6 +133,15 @@ struct KeysignPayloadFactory {
                 }
                 throw Errors.notEnoughBalanceError
             }
+            // Debug: Print selected UTXOs
+            print("KeysignPayloadFactory: Successfully selected \(info.count) UTXOs")
+            let selectedTotal = info.reduce(0) { $0 + $1.amount }
+            print("KeysignPayloadFactory: Selected total value: \(selectedTotal)")
+            
+            for (index, utxo) in info.enumerated() {
+                print("KeysignPayloadFactory: Selected UTXO[\(index)]: hash=\(utxo.hash.prefix(8))..., amount=\(utxo.amount), index=\(utxo.index)")
+            }
+            
             utxos = info
             
         default:

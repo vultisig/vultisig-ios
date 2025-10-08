@@ -141,9 +141,23 @@ final class BlockChainService {
     
     func fetchUTXOFee(coin: Coin, action: Action, feeMode: FeeMode) async throws -> BigInt {
         let sats = try await utxo.fetchSatsPrice(coin: coin)
-        let normalized = Self.normalizeUTXOFee(sats)
-        let prioritized = Float(normalized) * feeMode.utxoMultiplier
-        return BigInt(prioritized)
+        
+        // DOGE has extremely high base fees from API, need to reduce significantly
+        let result: BigInt
+        if coin.chain == .dogecoin {
+            // For DOGE, the API returns 500k sats/byte which is too high for WalletCore
+            // Use a much lower value that WalletCore can work with: divide by 10
+            result = sats / 10 // 500k / 10 = 50k sats/byte (still high but workable)
+            print("fetchUTXOFee: chain=\(coin.chain.name), apiSats=\(sats), reduced for WalletCore, result=\(result)")
+        } else {
+            // For other chains, use normal normalization and multipliers
+            let normalized = Self.normalizeUTXOFee(sats)
+            let prioritized = Float(normalized) * feeMode.utxoMultiplier
+            result = BigInt(prioritized)
+            print("fetchUTXOFee: chain=\(coin.chain.name), apiSats=\(sats), normalized=\(normalized), feeMode=\(feeMode), multiplier=\(feeMode.utxoMultiplier), result=\(result)")
+        }
+        
+        return result
     }
     
     func getCacheKey(for coin: Coin,
