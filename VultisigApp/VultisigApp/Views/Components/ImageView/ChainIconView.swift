@@ -14,9 +14,8 @@ struct ChainIconView: View {
     var body: some View {
         Image(icon)
             .resizable()
-            .aspectRatio(1, contentMode: .fit)
-            .frame(width: size, height: size)
-            .foregroundStyle(Theme.colors.bgSecondary)
+            .aspectRatio(contentMode: .fit)
+            .frame(width: size)
             .padding(size / 2)
             .background(Circle().fill(Theme.colors.textPrimary))
             .overlay(Circle().inset(by: -1).stroke(Theme.colors.bgSecondary, lineWidth: 2))
