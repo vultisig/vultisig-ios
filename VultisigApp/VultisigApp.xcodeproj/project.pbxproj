@@ -80,6 +80,8 @@
 		134A9FC72E95A3A400030C56 /* VaultBannerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FC62E95A39F00030C56 /* VaultBannerType.swift */; };
 		134A9FC92E96A23300030C56 /* VaultBannerBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FC82E96A23200030C56 /* VaultBannerBackground.swift */; };
 		134A9FCB2E96AD1B00030C56 /* BannerLayoutProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FCA2E96AD1400030C56 /* BannerLayoutProperties.swift */; };
+		134A9FCD2E96B49800030C56 /* VaultBannerCarouselIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FCC2E96B49700030C56 /* VaultBannerCarouselIndicator.swift */; };
+		134A9FCF2E96B4B500030C56 /* VaultBannerCarouselIndicators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FCE2E96B4B000030C56 /* VaultBannerCarouselIndicators.swift */; };
 		134E8D7F2E451F6F0086EBC4 /* PreferredAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D7E2E451F6C0086EBC4 /* PreferredAsset.swift */; };
 		134E8D812E451F800086EBC4 /* PreferredAssetFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D802E451F7A0086EBC4 /* PreferredAssetFactory.swift */; };
 		134E8D832E45300C0086EBC4 /* THORChainAPIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D822E4530060086EBC4 /* THORChainAPIError.swift */; };
@@ -1154,6 +1156,8 @@
 		134A9FC62E95A39F00030C56 /* VaultBannerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBannerType.swift; sourceTree = "<group>"; };
 		134A9FC82E96A23200030C56 /* VaultBannerBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBannerBackground.swift; sourceTree = "<group>"; };
 		134A9FCA2E96AD1400030C56 /* BannerLayoutProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerLayoutProperties.swift; sourceTree = "<group>"; };
+		134A9FCC2E96B49700030C56 /* VaultBannerCarouselIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBannerCarouselIndicator.swift; sourceTree = "<group>"; };
+		134A9FCE2E96B4B000030C56 /* VaultBannerCarouselIndicators.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBannerCarouselIndicators.swift; sourceTree = "<group>"; };
 		134E8D7E2E451F6C0086EBC4 /* PreferredAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAsset.swift; sourceTree = "<group>"; };
 		134E8D802E451F7A0086EBC4 /* PreferredAssetFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetFactory.swift; sourceTree = "<group>"; };
 		134E8D822E4530060086EBC4 /* THORChainAPIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainAPIError.swift; sourceTree = "<group>"; };
@@ -2321,6 +2325,8 @@
 		130C40E02E7303C800509C61 /* Banners */ = {
 			isa = PBXGroup;
 			children = (
+				134A9FCE2E96B4B000030C56 /* VaultBannerCarouselIndicators.swift */,
+				134A9FCC2E96B49700030C56 /* VaultBannerCarouselIndicator.swift */,
 				134A9FCA2E96AD1400030C56 /* BannerLayoutProperties.swift */,
 				134A9FC82E96A23200030C56 /* VaultBannerBackground.swift */,
 				134A9FC22E959FB700030C56 /* CarouselBannerType.swift */,
@@ -6088,6 +6094,7 @@
 				A52B0D052CA59E8200507966 /* ReshareViewModel.swift in Sources */,
 				A506B59D2D3AB77A00490BEB /* LifiQuoteResponse.swift in Sources */,
 				A622C8462C9BBD2F00908332 /* FunctionCallView+iOS.swift in Sources */,
+				134A9FCF2E96B4B500030C56 /* VaultBannerCarouselIndicators.swift in Sources */,
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
 				134E8D812E451F800086EBC4 /* PreferredAssetFactory.swift in Sources */,
 				A622C8542C9BC9E500908332 /* FastVaultSetPasswordView+macOS.swift in Sources */,
@@ -6205,6 +6212,7 @@
 				A52B0D092CA621B500507966 /* ReshareView+macOS.swift in Sources */,
 				DE9773A62CAF97B00071C08C /* FeatureFlagService.swift in Sources */,
 				1390D8BE2E3939EF003F3E20 /* BlockaidRpcClient.swift in Sources */,
+				134A9FCD2E96B49800030C56 /* VaultBannerCarouselIndicator.swift in Sources */,
 				A52B0D032CA53DCE00507966 /* ReshareView.swift in Sources */,
 				13B25BF12E82E302002BCF55 /* PlatformTypes.swift in Sources */,
 				A6725D3A2C3F9B4400D47716 /* AddAddressBookScreen.swift in Sources */,
