@@ -1,21 +1,16 @@
-<ns0:svg xmlns:ns0="http://www.w3.org/2000/svg" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 30.4 26.6" style="enable-background:new 0 0 30.4 26.6;" xml:space="preserve" width="120" height="120">
-<ns0:style type="text/css">
-	.st0{fill-rule:evenodd;clip-rule:evenodd;fill:#ED3524;}
-	.st1{fill-rule:evenodd;clip-rule:evenodd;fill:#AE1E23;}
-</ns0:style>
-<ns0:title>akash logo</ns0:title>
-<ns0:desc>Created with Sketch.</ns0:desc>
-<ns0:g id="Page-1">
-	<ns0:g id="R15_Mobile_Home" transform="translate(-172.000000, -62.000000)">
-		<ns0:g id="Top">
-			<ns0:g id="Group-20" transform="translate(17.000000, 61.000000)">
-				<ns0:g id="akash-logo" transform="translate(155.000000, 1.000000)">
-					<ns0:polygon id="Fill-11" class="st0" points="9.9,0 25.3,26.6 30.4,17.7 20.1,0      " />
-					<ns0:polygon id="Fill-12" class="st1" points="9.9,18.2 15.2,26.6 25.8,26.6 20.5,18.2      " />
-					<ns0:polygon id="Fill-13" class="st0" points="5.3,8.4 0,17.5 5.3,26.6 16,8.4      " />
-				</ns0:g>
-			</ns0:g>
-		</ns0:g>
-	</ns0:g>
-</ns0:g>
-</ns0:svg>
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_48948_110034)">
+<path d="M19.9193 19.7812L23.8501 26.6704H15.9098L11.9375 19.7812H19.9193Z" fill="url(#paint0_linear_48948_110034)"/>
+<path d="M23.848 26.6705L27.8138 19.7814L19.8756 6H11.9375L23.848 26.6705Z" fill="#FF414C"/>
+<path d="M7.96903 12.8828H15.9072L7.97234 26.6642L4 19.7752L7.96903 12.8828Z" fill="#FF414C"/>
+</g>
+<defs>
+<linearGradient id="paint0_linear_48948_110034" x1="19.1255" y1="24.5445" x2="22.0343" y2="21.0539" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FF414C"/>
+<stop offset="1" stop-color="#FF414C" stop-opacity="0"/>
+</linearGradient>
+<clipPath id="clip0_48948_110034">
+<rect width="24" height="20.8" fill="white" transform="translate(4 6)"/>
+</clipPath>
+</defs>
+</svg>

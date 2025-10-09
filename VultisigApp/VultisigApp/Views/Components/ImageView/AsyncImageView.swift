@@ -41,9 +41,8 @@ struct AsyncImageView: View {
                     CachedAsyncImage(url: url, urlCache: .imageCache) { image in
                         image
                             .resizable()
-                            .aspectRatio(1, contentMode: .fit)
-                            .frame(width: size.width, height: size.height)
-                            .cornerRadius(100)
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: size.width)
                     } placeholder: {
                         ProgressView()
                             .frame(width: size.width, height: size.height)
