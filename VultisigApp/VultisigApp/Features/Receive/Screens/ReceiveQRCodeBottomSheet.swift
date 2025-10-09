@@ -98,7 +98,7 @@ struct ReceiveQRCodeBottomSheet: View {
         HStack(spacing: 8) {
             if let image = shareSheetViewModel.renderedImage {
                 CrossPlatformShareButton(image: image, caption: shareSheetViewModel.qrCodeData ?? .empty) { onShare in
-                    PrimaryButton(title: "share".localized, action: onShare)
+                    PrimaryButton(title: "share".localized, type: .secondary, action: onShare)
                 }
             }
             PrimaryButton(title: "copyAddress".localized) {
