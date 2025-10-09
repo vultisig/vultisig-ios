@@ -22,7 +22,7 @@ struct AssetSelectionGridCell: View {
             VStack(spacing: 10) {
                 AsyncImageView(
                     logo: logo,
-                    size: CGSize(width: 28, height: 28),
+                    size: CGSize(width: 36, height: 36),
                     ticker: ticker,
                     tokenChainLogo: nil
                 )
