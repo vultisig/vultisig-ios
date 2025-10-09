@@ -20,6 +20,7 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
     @State var bannersCount: Int = 0
     @State var bannersToRemove: Set<AnyHashable> = []
     @State private var timer: Timer?
+    @State var showCarousel: Bool = false
     
     @State var internalBanners: [Banner] = []
     
@@ -79,19 +80,17 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
             }
             .unwrap(paddingTop) { $0.padding(.top, $1) }
             .transition(.verticalGrowAndFade)
-            .showIf(bannersCount > 0)
+            .showIf(showCarousel)
         }
         .onLoad {
             internalBanners = banners
         }
         .onChange(of: banners) { _, newValue in
-            guard Set(internalBanners) != Set(newValue), newValue.count > 0 else { return }
+            guard Set(internalBanners) != Set(newValue) else { return }
             internalBanners = banners
         }
         .onChange(of: internalBanners) { _, newValue in
-            withAnimation(.interpolatingSpring) {
-                bannersCount = newValue.count
-            }
+            updateBannersCount(newValue.count)
         }
         .onAppear {
             startTimer()
@@ -122,7 +121,7 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
         
         if bannersCount == 1 {
             withAnimation(.interpolatingSpring) {
-                bannersCount = 0
+                updateBannersCount(0)
             }
         }
         
@@ -201,6 +200,14 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
     private func stopTimer() {
         timer?.invalidate()
         timer = nil
+    }
+    
+    private func updateBannersCount(_ count: Int) {
+        let shouldShow = count > 0
+        withAnimation(.easeInOut) {
+            showCarousel = shouldShow
+            bannersCount = count
+        }
     }
 }
 
