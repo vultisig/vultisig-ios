@@ -26,8 +26,7 @@ struct VaultCellMainView: View {
                 Text(vault.name)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.bodySMedium)
-                    .multilineTextAlignment(.leading)
-                    .lineLimit(2)
+                    .lineLimit(1)
                 
                 Text(homeViewModel.balanceText(for: vault))
                     .foregroundStyle(Theme.colors.textLight)

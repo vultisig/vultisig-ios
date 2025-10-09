@@ -34,7 +34,7 @@ struct FolderCellView: View {
                             .foregroundStyle(Theme.colors.textPrimary)
                             .font(Theme.fonts.bodySMedium)
                             .multilineTextAlignment(.leading)
-                            .lineLimit(2)
+                            .lineLimit(1)
                         
                         if isSelected {
                             selectedSubtitle
