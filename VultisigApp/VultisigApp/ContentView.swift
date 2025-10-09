@@ -16,8 +16,6 @@ struct ContentView: View {
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var accountViewModel: AccountViewModel
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
-    @AppStorage("appClosedBanners") private var appClosedBanners: [String] = []
-
     
     init(navigationRouter: NavigationRouter) {
         self.navigationRouter = navigationRouter
@@ -44,9 +42,6 @@ struct ContentView: View {
             if accountViewModel.showCover {
                 CoverView()
             }
-        }
-        .onLoad {
-            appClosedBanners = []
         }
         .id(accountViewModel.referenceID)
         .colorScheme(.dark)
