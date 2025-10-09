@@ -51,9 +51,11 @@ struct VaultChainCellView: View {
                         Text(fiatBalanceText)
                             .font(Theme.fonts.priceBodyS)
                             .foregroundStyle(Theme.colors.textPrimary)
+                            .contentTransition(.numericText())
                         Text(trailingSubtitle)
                             .font(Theme.fonts.priceCaption)
                             .foregroundStyle(Theme.colors.textExtraLight)
+                            .contentTransition(.numericText())
                     }
                     Icon(named: "chevron-right-small", color: Theme.colors.textPrimary, size: 16)
                 }
@@ -82,11 +84,15 @@ private extension VaultChainCellView {
     
     func updateTrailingSubtitle() {
         let trailingSubtitle = group.coins.count > 1 ? "\(group.coins.count) \("assets".localized)" : group.nativeCoin.balanceStringWithTicker
-        self.trailingSubtitle = homeViewModel.hideVaultBalance ? String.hideBalanceText : trailingSubtitle
+        withAnimation(.interpolatingSpring) {
+            self.trailingSubtitle = homeViewModel.hideVaultBalance ? String.hideBalanceText : trailingSubtitle
+        }
     }
     
     func updateFiatBalanceText() {
-        fiatBalanceText = homeViewModel.hideVaultBalance ? String.hideBalanceText : group.totalBalanceInFiatString
+        withAnimation(.interpolatingSpring) {
+            fiatBalanceText = homeViewModel.hideVaultBalance ? String.hideBalanceText : group.totalBalanceInFiatString
+        }
     }
 }
 
