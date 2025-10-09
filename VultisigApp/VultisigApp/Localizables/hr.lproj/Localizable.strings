@@ -884,4 +884,10 @@
 "youreSwapping" = "Zamjenjuješ";
 "yourFriendsReferralCode" = "Kod vašeg prijatelja za upućivanje prijatelja";
 "yourReferralCode" = "Tvoj referalni kod";
+"followVultisigBannerTitle" = "Vultisig gradi s tobom.";
+"followVultisigBannerSubtitle" = "Prati nas na X";
+"followVultisigBannerButtonTitle" = "Prati @Vultisig";
+"backupBannerTitle" = "Napravi sigurnosnu kopiju svog trezora";
+"backupBannerSubtitle" = "Zadrži siguran pristup, pohrani online";
+"backupBannerButtonTitle" = "Sigurnosno kopiraj trezor";
 "addToAddressBook" = "Dodaj u Adresar";

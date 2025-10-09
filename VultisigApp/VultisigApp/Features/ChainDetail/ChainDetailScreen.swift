@@ -55,13 +55,14 @@ struct ChainDetailScreen: View {
             refresh()
         }
         .background(VaultMainScreenBackground())
-        .withAddressCopy(coin: $addressToCopy)
+        .withAddressCopy(coin: $addressToCopy) { }
         .crossPlatformSheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(
                 coin: group.nativeCoin,
-                isNativeCoin: true,
-                isPresented: $showReceiveSheet
-            )
+                isNativeCoin: true
+            ) {
+                showReceiveSheet = false
+            }
         }
         .crossPlatformSheet(isPresented: $showManageTokens) {
             TokenSelectionContainerScreen(
