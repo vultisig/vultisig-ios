@@ -83,19 +83,14 @@ struct KeysignPayloadFactory {
             
         case .UTXO(let byteFee, _):
             // Bitcoin, Litecoin, Dogecoin etc. - use Blockchair
-            // Use more realistic transaction size estimation
-            let estimatedTxSize: BigInt
-            switch coin.chain {
-            case .dogecoin:
-                estimatedTxSize = BigInt(400) // DOGE transactions are typically larger
-            case .bitcoin, .bitcoinCash, .litecoin:
-                estimatedTxSize = BigInt(250) // BTC/BCH/LTC typical size
-            case .dash:
-                estimatedTxSize = BigInt(300) // DASH typical size
-            default:
-                estimatedTxSize = BigInt(250) // Default
-            }
-            let totalAmount = amount + BigInt(byteFee * estimatedTxSize)
+            // Use WalletCore's exact fee calculation logic via DRY method
+            let estimatedInputs = UTXOTransactionsService.estimateUTXOInputs(amount: Int64(amount), chain: coin.chain.name)
+            let estimatedFee = UTXOTransactionsService.calculateTransactionFee(
+                inputs: estimatedInputs,
+                byteFee: Int64(byteFee),
+                chain: coin.chain.name
+            )
+            let totalAmount = amount + BigInt(estimatedFee)
             print("KeysignPayloadFactory: UTXO selection - amount=\(amount), byteFee=\(byteFee), totalNeeded=\(totalAmount)")
             
             // Debug: Check what UTXOs are available

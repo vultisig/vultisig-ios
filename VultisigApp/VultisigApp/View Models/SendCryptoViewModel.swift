@@ -723,9 +723,28 @@ class SendCryptoViewModel: ObservableObject {
             return planFee
         }
                 
-        // For other chains, throw error
-        let errorMsg = plan.error == .ok ? "Unknown error" : "\(plan.error)"
-        throw HelperError.runtimeError("WalletCore returned zero fee - \(errorMsg)")
+        // If WalletCore returns 0, calculate estimated fee using same logic as WalletCore
+        let utxoCount = keysignPayload.utxos.count
+        
+        // Calculate fee using WalletCore's logic (assumes 2 outputs: 1 main + 1 change)
+        let estimatedFee = UTXOTransactionsService.calculateTransactionFee(
+            inputs: utxoCount,
+            byteFee: Int64(chainSpecific.gas),
+            chain: tx.coin.chain.name
+        )
+        let totalNeeded = actualAmount + BigInt(estimatedFee)
+        let shortfall = totalNeeded - BigInt(tx.coin.rawBalance.toBigInt())
+        
+        print("calculateUTXOPlanFee: WalletCore failed - estimated fee = \(estimatedFee), total needed = \(totalNeeded), shortfall = \(shortfall)")
+        
+        // For other chains, throw specific insufficient balance error with amount needed
+        if shortfall > 0 {
+            let shortfallDecimal = tx.coin.decimal(for: shortfall)
+            throw HelperError.runtimeError("Insufficient balance. You need approximately \(shortfallDecimal.formatForDisplay()) \(tx.coin.ticker) more to cover transaction fees.")
+        } else {
+            let errorMsg = plan.error == .ok ? "Unknown error" : "\(plan.error)"
+            throw HelperError.runtimeError("WalletCore returned zero fee - \(errorMsg)")
+        }
     }
     
     /// Recalculate UTXO fees when amount changes

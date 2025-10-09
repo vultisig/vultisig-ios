@@ -8,7 +8,6 @@ enum UTXOTransactionError: Error {
     case unexpectedResponse
     case unknown(Error) // Wraps an unknown error
 }
-@MainActor
 public class UTXOTransactionsService: ObservableObject {
     @Published var walletData: [UTXOTransactionMempool]?
     @Published var errorMessage: String?
@@ -156,5 +155,87 @@ public class UTXOTransactionsService: ObservableObject {
     func formatAmount(_ amountSatoshis: Int, tx: SendTransaction) -> String {
         let amountBTC = Decimal(amountSatoshis) / 100_000_000 // Convert satoshis to BTC
         return  amountBTC.formatForDisplay()
+    }
+    
+    /// Calculate transaction fee using WalletCore's exact logic
+    /// 
+    /// **WalletCore Reference:**
+    /// - File: `src/Bitcoin/TransactionBuilder.cpp`
+    /// - Lines: ~108-120 (output_size = 2 + extraOutputs for normal transactions)
+    /// - Lines: ~167-184 (fee calculation formulas)
+    /// 
+    /// - Parameters:
+    ///   - inputs: Number of UTXO inputs
+    ///   - byteFee: Fee rate in sats per byte
+    ///   - chain: The blockchain chain type
+    /// - Returns: Calculated fee in sats
+    static func calculateTransactionFee(inputs: Int, byteFee: Int64, chain: String) -> Int64 {
+        // WalletCore uses 2 outputs by default (1 main + 1 change) for fee estimation
+        // Source: src/Bitcoin/TransactionBuilder.cpp:108-120
+        // Comment: "we use a max amount of transaction outputs to simplify the algorithm"
+        let outputs = 2
+        let estimatedTxSize: Double
+        
+        switch chain.lowercased() {
+        case "bitcoin", "bitcoincash", "litecoin":
+            // SegWit calculation from WalletCore
+            // Source: src/Bitcoin/FeeCalculator.cpp:15-25
+            // Constants: gSegwitBytesPerInput = 101.25, gSegwitBytesPerOutput = 31, gDefaultBytesBase = 10
+            estimatedTxSize = Double(inputs) * 101.25 + Double(outputs) * 31.0 + 10.0
+        case "dogecoin", "dash":
+            // Legacy calculation from WalletCore  
+            // Source: src/Bitcoin/FeeCalculator.cpp:15-25
+            // Constants: gDefaultBytesPerInput = 148, gDefaultBytesPerOutput = 34, gDefaultBytesBase = 10
+            estimatedTxSize = Double(inputs) * 148.0 + Double(outputs) * 34.0 + 10.0
+        default:
+            // Default to legacy calculation (same as WalletCore fallback)
+            estimatedTxSize = Double(inputs) * 148.0 + Double(outputs) * 34.0 + 10.0
+        }
+        
+        let txSize = Int64(ceil(estimatedTxSize))
+        return txSize * byteFee
+    }
+    
+    /// Estimate how many UTXOs will be needed for a given amount using WalletCore's approach
+    /// 
+    /// **WalletCore Reference:**
+    /// - File: `src/Bitcoin/InputSelector.cpp`
+    /// - Lines: ~140-200 (InputSelector::select method)
+    /// - Logic: WalletCore iterates from 1 input up to N inputs, calculating fee for each iteration
+    /// - Formula: targetWithFee = targetValue + feeCalculator.calculate(numInputs, numOutputs, byteFee)
+    /// 
+    /// - Parameters:
+    ///   - amount: Amount in sats
+    ///   - chain: The blockchain chain type
+    /// - Returns: Estimated number of UTXOs needed
+    static func estimateUTXOInputs(amount: Int64, chain: String) -> Int {
+        // WalletCore's approach: try increasing numbers of inputs until fee + amount is reasonable
+        // Source: src/Bitcoin/InputSelector.cpp:140-200
+        
+        // Assume average UTXO size for estimation (WalletCore uses actual UTXOs, we estimate)
+        let averageUTXOSize: Int64
+        switch chain.lowercased() {
+        case "bitcoin", "bitcoincash", "litecoin":
+            averageUTXOSize = 500_000 // ~0.005 BTC average UTXO
+        case "dogecoin":
+            averageUTXOSize = 50_000_000_000 // ~50 DOGE average UTXO  
+        case "dash":
+            averageUTXOSize = 10_000_000 // ~0.1 DASH average UTXO
+        default:
+            averageUTXOSize = 1_000_000 // Default 0.01 unit
+        }
+        
+        // WalletCore iterates from 1 to N inputs, we simulate this
+        for numInputs in 1...10 { // Max 10 inputs for estimation
+            let estimatedUTXOValue = Int64(numInputs) * averageUTXOSize
+            let estimatedFee = calculateTransactionFee(inputs: numInputs, byteFee: 10, chain: chain) // Use low byteFee for estimation
+            
+            if estimatedUTXOValue >= amount + estimatedFee {
+                return numInputs
+            }
+        }
+        
+        // Fallback: if amount is very large, return reasonable estimate
+        return min(10, max(1, Int(amount / averageUTXOSize) + 1))
     }
 }
