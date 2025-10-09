@@ -722,16 +722,7 @@ class SendCryptoViewModel: ObservableObject {
         if planFee > 0 {
             return planFee
         }
-        
-        // TEMPORARY: For DOGE, if WalletCore fails, use realistic fee estimate
-        // Based on actual transaction data: ~9 DOGE for typical transaction
-        if tx.coin.chain == .dogecoin {
-            print("calculateUTXOPlanFee: WalletCore failed for DOGE, using realistic estimate")
-            // Estimate based on actual DOGE network: ~500k sats/byte * ~1800 bytes = 900M sats = 9 DOGE
-            let realisticDogeFee = BigInt(900_000_000) // 9 DOGE
-            return realisticDogeFee
-        }
-        
+                
         // For other chains, throw error
         let errorMsg = plan.error == .ok ? "Unknown error" : "\(plan.error)"
         throw HelperError.runtimeError("WalletCore returned zero fee - \(errorMsg)")
