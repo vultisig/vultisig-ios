@@ -23,7 +23,7 @@ struct ChainDetailHeaderView: View {
     }
     
     var chainNameView: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 4) {
             AsyncImageView(
                 logo: group.logo,
                 size: CGSize(width: 24, height: 24),
