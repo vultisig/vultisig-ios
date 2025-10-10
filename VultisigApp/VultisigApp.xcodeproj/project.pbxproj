@@ -848,6 +848,8 @@
 		A6SEC0012E1234567890AB01 /* SecurityScannerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0012E1234567890AB02 /* SecurityScannerService.swift */; };
 		A6SEC0072E1234567890AB01 /* BlockaidScannerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0072E1234567890AB02 /* BlockaidScannerService.swift */; };
 		A6SEC0132E1234567890AB01 /* SecurityScannerBottomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0132E1234567890AB02 /* SecurityScannerBottomSheet.swift */; };
+		B20B5D662E99126600DFB573 /* CustomAppDelegate+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20B5D652E99125D00DFB573 /* CustomAppDelegate+iOS.swift */; };
+		B20B5D682E9912DC00DFB573 /* CustomAppDelegate+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20B5D672E9912D400DFB573 /* CustomAppDelegate+macOS.swift */; };
 		B23481202E6E7DCF00AA655D /* WalletCore in Frameworks */ = {isa = PBXBuildFile; productRef = B2482ADF2E6E47D900B29B6F /* WalletCore */; };
 		B2482AE22E6E47D900B29B6F /* WalletCoreSwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = B2482AE12E6E47D900B29B6F /* WalletCoreSwiftProtobuf */; };
 		B2ADDD782E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2ADDD772E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift */; };
@@ -1919,6 +1921,8 @@
 		A6SEC0072E1234567890AB02 /* BlockaidScannerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockaidScannerService.swift; sourceTree = "<group>"; };
 		A6SEC0132E1234567890AB02 /* SecurityScannerBottomSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerBottomSheet.swift; sourceTree = "<group>"; };
 		ADA7840E8472A961595D3663 /* KyberSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapPayload.swift; sourceTree = "<group>"; };
+		B20B5D652E99125D00DFB573 /* CustomAppDelegate+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CustomAppDelegate+iOS.swift"; sourceTree = "<group>"; };
+		B20B5D672E9912D400DFB573 /* CustomAppDelegate+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CustomAppDelegate+macOS.swift"; sourceTree = "<group>"; };
 		B2ADDD772E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChainDetailActionButtons+macOS.swift"; sourceTree = "<group>"; };
 		B2ADDDC42E5D639700DB3B98 /* BanxaDisclaimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BanxaDisclaimer.swift; sourceTree = "<group>"; };
 		B2C8B5392E684A3700DFA097 /* SwapFeatureGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapFeatureGate.swift; sourceTree = "<group>"; };
@@ -4904,6 +4908,8 @@
 		DE49A1652B65F6D9000F3AFB /* VultisigApp */ = {
 			isa = PBXGroup;
 			children = (
+				B20B5D652E99125D00DFB573 /* CustomAppDelegate+iOS.swift */,
+				B20B5D672E9912D400DFB573 /* CustomAppDelegate+macOS.swift */,
 				13C880552E70A312009C67F1 /* Features */,
 				13AF0D162E4CE64B004D4FD2 /* Navigation */,
 				13BD8D262E3D49600013B67E /* DesignSystem */,
@@ -5360,6 +5366,7 @@
 				A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */,
 				B51819882DCC1D920013C435 /* FunctionCallUnstakeTCY.swift in Sources */,
 				469ED3942B98E776008D4951 /* ThorchainService.swift in Sources */,
+				B20B5D662E99126600DFB573 /* CustomAppDelegate+iOS.swift in Sources */,
 				A56644D22D0087C9000F4149 /* SettingsCustomMessageView.swift in Sources */,
 				A6505AF12CA675F70002FBF4 /* KeyboardObserver+macOS.swift in Sources */,
 				A6F7B6C02D4977F500AC8104 /* PeerDiscoveryInfoBanner.swift in Sources */,
@@ -5368,6 +5375,7 @@
 				B51819862DCC0A480013C435 /* FunctionCallStakeTCY.swift in Sources */,
 				13B25BF32E82E321002BCF55 /* PlatformImageExtension.swift in Sources */,
 				A60F29E32DA5A50B00C24765 /* SwapCryptoDoneView+iOS.swift in Sources */,
+				B20B5D682E9912DC00DFB573 /* CustomAppDelegate+macOS.swift in Sources */,
 				B5A97CF52BF4287A007574D7 /* FunctionCallSelectorDropdown.swift in Sources */,
 				A6F7B6C62D4AB86900AC8104 /* EmptyPeerCell.swift in Sources */,
 				A58CC34B2C32FA760086D16B /* ProtoMappable.swift in Sources */,

@@ -24,7 +24,12 @@ struct VultisigApp: App {
     @StateObject var globalStateViewModel = GlobalStateViewModel()
     @StateObject var navigationRouter = NavigationRouter()
     @StateObject var sheetPresentedCounterManager = SheetPresentedCounterManager()
-    
+    #if os(macOS)
+    @NSApplicationDelegateAdaptor private var appDelegate: CustomAppDelegate
+    #endif
+    #if os(iOS)
+    @UIApplicationDelegateAdaptor private var appDelegate: CustomAppDelegate
+    #endif
     init() {
 #if os(macOS)
         // Check for --version flag
@@ -41,7 +46,9 @@ struct VultisigApp: App {
     }
     var body: some Scene {
         WindowGroup {
-            content
+            content.onAppear(){
+                appDelegate.app = self
+            }
         }
         .modelContainer(sharedModelContainer)
         

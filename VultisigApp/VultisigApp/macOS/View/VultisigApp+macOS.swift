@@ -7,6 +7,7 @@
 
 #if os(macOS)
 import SwiftUI
+import UserNotifications
 
 extension VultisigApp {
     var content: some View {

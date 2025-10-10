@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import UserNotifications
 
 struct ContentView: View {
     @Query var vaults: [Vault]
@@ -21,7 +22,7 @@ struct ContentView: View {
         self.navigationRouter = navigationRouter
         self._router = StateObject(wrappedValue: VultisigRouter(navigationRouter: navigationRouter))
     }
-
+    let notificationCenter = UNUserNotificationCenter.current()
     var body: some View {
         ZStack {
             NavigationStack(path: $navigationRouter.navPath) {
@@ -36,6 +37,13 @@ struct ContentView: View {
             .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
                 if let incomingURL = userActivity.webpageURL {
                     handleDeeplink(incomingURL)
+                }
+            }
+            .task {
+                do{
+                    try await notificationCenter.requestAuthorization(options: [.alert, .badge, .sound])
+                }catch{
+                    print("Notification permission error: \(error.localizedDescription)")
                 }
             }
             
