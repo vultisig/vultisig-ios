@@ -128,9 +128,7 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
         stopTimer()
         
         if bannersCount == 1 {
-            withAnimation(.interpolatingSpring) {
-                updateBannersCount(0)
-            }
+            updateBannersCount(0)
         }
         
         guard let indexToRemove = internalBanners.firstIndex(where: { $0.id == banner.id }) else {

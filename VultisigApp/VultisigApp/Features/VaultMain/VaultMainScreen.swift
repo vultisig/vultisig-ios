@@ -173,6 +173,7 @@ struct VaultMainScreen: View {
                     .id(scrollReferenceId)
             )
         }
+        .id(vault.id)
     }
     
     var defaultBottomSectionHeader: some View {
