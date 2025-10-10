@@ -145,7 +145,6 @@ struct VaultMainScreen: View {
                 onBanner: onBannerPressed,
                 onClose: onBannerClosed
             )
-            .id(vault.id)
         }
     }
     

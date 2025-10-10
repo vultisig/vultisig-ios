@@ -79,7 +79,6 @@ struct AssetSelectionContainerScreen<Asset: Hashable, CellView: View, EmptyState
             .presentationDetents([.large])
             .presentationBackground(Theme.colors.bgPrimary)
             .presentationDragIndicator(.visible)
-            
         }
     }
     
@@ -139,6 +138,7 @@ struct AssetSelectionContainerScreen<Asset: Hashable, CellView: View, EmptyState
                 cellBuilder(element)
             }
         }
+        .padding(.top, 8)
         .padding(.bottom, 64)
         .frame(maxWidth: .infinity)
     }

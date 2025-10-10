@@ -59,6 +59,8 @@ struct VaultMainHeaderView: View {
             Text(homeViewModel.vaultBalanceText)
                 .font(Theme.fonts.priceBodyS)
                 .foregroundStyle(Theme.colors.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .contentTransition(.numericText())
         }
     }
     

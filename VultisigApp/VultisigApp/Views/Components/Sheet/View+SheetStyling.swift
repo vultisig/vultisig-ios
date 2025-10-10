@@ -16,10 +16,10 @@ extension View {
         #endif
     }
     
-    func sheetStyle() -> some View {
+    func sheetStyle(padding: CGFloat? = nil) -> some View {
         #if os(iOS)
         self
-            .padding(.top, 8)
+            .padding(.top, padding ?? 8)
             .presentationBackground(Theme.colors.bgPrimary)
             .presentationDragIndicator(.visible)
             .presentationDetents([.large])

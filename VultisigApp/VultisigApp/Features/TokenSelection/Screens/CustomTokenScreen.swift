@@ -69,6 +69,13 @@ struct CustomTokenScreen: View {
                 .padding(.top, 24)
                 .padding(.horizontal, 16)
             }
+            .crossPlatformToolbar(showsBackButton: false) {
+                CustomToolbarItem(placement: .leading) {
+                    ToolbarButton(image: "x") {
+                        onClose()
+                    }
+                }
+            }
         }
         .onLoad {
             tokenViewModel.loadData(groupedChain: group)
@@ -78,13 +85,6 @@ struct CustomTokenScreen: View {
         }
         .withLoading(text: "pleaseWait".localized, isLoading: $isLoading)
         .withLoading(text: "addingToken".localized, isLoading: $isAddingToken)
-        .crossPlatformToolbar(showsBackButton: false) {
-            CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "x") {
-                    onClose()
-                }
-            }
-        }
     }
     
     func errorView(error: Error) -> some View {
