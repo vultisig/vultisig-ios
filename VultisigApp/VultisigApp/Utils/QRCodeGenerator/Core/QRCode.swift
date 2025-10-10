@@ -15,8 +15,11 @@ struct QRCode {
     private let logoContentAreaPercentage = 0.75
     private let paddingPercentage = 0.4
     private let maximumAllowedLogoPercentage = 0.4
+    private let enableLogoCutout: Bool
 
-    init(_ data: Data) {
+    init(_ data: Data, enableLogoCutout: Bool = true) {
+        self.enableLogoCutout = enableLogoCutout
+        
         guard let result = self.generator.generate(data, errorCorrection: errorCorrection.rawValue) else {
             self.current = BoolMatrix()
             return
@@ -38,6 +41,11 @@ struct QRCode {
     }
 
     var cutOutFrameRange: (start: Int, end: Int) {
+        // If cutout is disabled, return a range that includes no pixels
+        guard enableLogoCutout else {
+            return (0, 0)
+        }
+        
         let pointSize = pixelSize.isOdd ? pixelSize - 1 : pixelSize
         let center = pixelSize / 2
 
@@ -48,6 +56,11 @@ struct QRCode {
     }
 
     var paddedCutOutFrame: (start: Int, end: Int) {
+        // If cutout is disabled, return a range that includes no pixels
+        guard enableLogoCutout else {
+            return (0, 0)
+        }
+        
         let logoCutOutPercenatge = 1 - paddingPercentage
         let cutOutFrame = cutOutFrameRange
         return (Int(Double(cutOutFrame.start) * logoCutOutPercenatge), Int(Double(cutOutFrame.end) * logoCutOutPercenatge))

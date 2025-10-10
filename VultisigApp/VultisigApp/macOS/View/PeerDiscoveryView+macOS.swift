@@ -59,18 +59,13 @@ extension PeerDiscoveryView {
     var paringBarcode: some View {
         ZStack {
             animation
-            qrCodeContent
+            qrCodeImage?
+                .resizable()
+                .frame(width: getMinSize(), height: getMinSize())
+                .padding(24)
         }
-        .offset(x: 24)
     }
-    
-    var qrCodeContent: some View {
-        qrCodeImage?
-            .resizable()
-            .padding(32)
-            .frame(width: getMinSize(), height: getMinSize())
-    }
-    
+
     var animation: some View {
         animationVM?.view()
     }
@@ -87,6 +82,8 @@ extension PeerDiscoveryView {
             .animation(.easeInOut(duration: 0.2), value: viewModel.selections)
         }
         .frame(maxWidth: .infinity)
+        .padding(.horizontal, 24)
+        .padding(.top, 8)
     }
     
     var networkPrompts: some View {
@@ -111,7 +108,7 @@ extension PeerDiscoveryView {
         PrimaryButton(title: isButtonDisabled ? "waitingOnDevices..." : "next") {
             viewModel.startKeygen()
         }
-        .padding(.horizontal, 40)
+        .padding(.horizontal, 24)
         .padding(.top, 20)
         .padding(.bottom, 10)
         .disabled(isButtonDisabled)
@@ -123,17 +120,14 @@ extension PeerDiscoveryView {
         ZStack {
             if viewModel.selectedNetwork == .Local {
                 LocalModeDisclaimer()
-            } else if showDisclaimer {
-                if tssType != .Migrate {
+            } else if showDisclaimer && tssType != .Migrate {
                     PeerDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
-                } else {
-                    Spacer()
-                        .frame(height: 24)
-                }
+            } else {
+                Spacer()
+                    .frame(height: 24)
             }
         }
-        .padding(.leading, 24)
-        .padding(.horizontal, 48)
+        .padding(.horizontal, 24)
     }
     
     var switchLink: some View {
@@ -142,7 +136,7 @@ extension PeerDiscoveryView {
     }
     
     func setData() {
-        guard let (qrCodeString, qrCodeImage) = viewModel.getQRCodeData(size: 100) else {
+        guard let (qrCodeString, qrCodeImage) = viewModel.getQRCodeData(size: 500, displayScale: displayScale) else {
             return
         }
         self.qrCodeImage = qrCodeImage
@@ -156,7 +150,7 @@ extension PeerDiscoveryView {
     }
     
     func getMinSize() -> CGFloat {
-        min(screenWidth/2.5, screenHeight/1.5)
+        min(screenWidth/2.5, screenHeight/2.5)
     }
     
     private func getHeaderTitle() -> String {

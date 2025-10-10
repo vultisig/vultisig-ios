@@ -16,6 +16,7 @@ struct VaultChainCellView: View {
     
     @State private var trailingSubtitle: String = ""
     @State private var fiatBalanceText: String = ""
+    @State private var hasLoaded: Bool = false
     @State private var trailingSubtitleFont: Font = Theme.fonts.priceCaption
     
     var body: some View {
@@ -52,11 +53,15 @@ struct VaultChainCellView: View {
                         Text(fiatBalanceText)
                             .font(Theme.fonts.priceBodyS)
                             .foregroundStyle(Theme.colors.textPrimary)
-                            .contentTransition(.numericText())
+                            .if(hasLoaded) {
+                                $0.contentTransition(.numericText())
+                            }
                         Text(trailingSubtitle)
                             .font(trailingSubtitleFont)
                             .foregroundStyle(Theme.colors.textExtraLight)
-                            .contentTransition(.numericText())
+                            .if(hasLoaded) {
+                                $0.contentTransition(.numericText())
+                            }
                     }
                     Icon(named: "chevron-right-small", color: Theme.colors.textPrimary, size: 16)
                 }
@@ -81,6 +86,11 @@ private extension VaultChainCellView {
     func updateTexts() {
         updateTrailingSubtitle()
         updateFiatBalanceText()
+        
+        guard !hasLoaded else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            hasLoaded = true
+        }
     }
     
     func updateTrailingSubtitle() {

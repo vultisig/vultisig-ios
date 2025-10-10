@@ -18,18 +18,22 @@ struct InfoBannerView: View {
     let description: String
     let type: InfoBannerType
     let leadingIcon: String?
+    let iconColor: Color?
+    let onClose: (() -> Void)?
     
-    init(description: String, type: InfoBannerType, leadingIcon: String?) {
+    init(description: String, type: InfoBannerType, leadingIcon: String?, iconColor: Color? = nil, onClose: (() -> Void)? = nil) {
         self.description = description
         self.type = type
         self.leadingIcon = leadingIcon
+        self.iconColor = iconColor
+        self.onClose = onClose
     }
     
     
     var body: some View {
         HStack(spacing: 12) {
             if let leadingIcon {
-                Icon(named: leadingIcon, color: fontColor, size: 12)
+                Icon(named: leadingIcon, color: iconColor ?? fontColor, size: 16)
             }
             
             Text(description)
@@ -37,6 +41,16 @@ struct InfoBannerView: View {
                 .foregroundStyle(fontColor)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .multilineTextAlignment(.leading)
+            
+            Spacer()
+            
+            if let onClose {
+                Button(action: onClose) {
+                    Icon(named: "x", color: Theme.colors.textLight, size: 12)
+                        .padding(8)
+                        .background(Circle().fill(Theme.colors.bgTertiary))
+                }
+            }
         }
         .padding(16)
         .background(

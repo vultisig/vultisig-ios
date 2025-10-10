@@ -12,20 +12,29 @@ import RiveRuntime
 extension PeerDiscoveryView {
     private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     
+    var qrCodeSize: CGFloat {
+        screenHeight / 3.5
+    }
+    
     var content: some View {
-        ZStack {
-            Background()
-            main
-        }
-        .crossPlatformToolbar("scanQR".localized) {
-            
-            CustomToolbarItem(placement: .trailing) {
-                if isShareButtonVisible {
-                    NavigationQRShareButton(
-                        vault: vault,
-                        type: .Keygen,
-                        viewModel: shareSheetViewModel
-                    )
+        GeometryReader { proxy in
+            ZStack {
+                Background()
+                main
+            }
+            .onAppear {
+                screenHeight = proxy.size.height
+                setData()
+            }
+            .crossPlatformToolbar("scanQR".localized) {
+                CustomToolbarItem(placement: .trailing) {
+                    if isShareButtonVisible {
+                        NavigationQRShareButton(
+                            vault: vault,
+                            type: .Keygen,
+                            viewModel: shareSheetViewModel
+                        )
+                    }
                 }
             }
         }
@@ -48,28 +57,21 @@ extension PeerDiscoveryView {
     
     var portraitContent: some View {
         ScrollView {
-            qrCode
-            list
+            VStack(spacing: 16) {
+                qrCode
+                list
+            }
         }
     }
     
     var paringBarcode: some View {
         ZStack {
             animation
-            qrCodeContent
+            qrCodeImage?
+                .resizable()
+                .frame(maxWidth: qrCodeSize, maxHeight: qrCodeSize)
+                .padding(20)
         }
-        .padding(8)
-    }
-    
-    var qrCodeContent: some View {
-        qrCodeImage?
-            .resizable()
-            .frame(maxWidth: 500, maxHeight: 500)
-            .aspectRatio(contentMode: .fill)
-            .padding(16)
-            .background(Color.clear)
-            .cornerRadius(38)
-            .padding(2)
     }
     
     var animation: some View {
@@ -77,18 +79,17 @@ extension PeerDiscoveryView {
     }
     
     var scrollList: some View {
-        VStack {
+        VStack(alignment: .leading, spacing: 24) {
             listTitle
-            
-            LazyVGrid(columns: adaptiveColumns, spacing: 18) {
+            LazyVGrid(columns: adaptiveColumns, spacing: 12) {
                 ThisDevicePeerCell(deviceName: idiom == .phone ? "iPhone" : "iPad")
                 devices
                 EmptyPeerCell(counter: participantDiscovery.peersFound.count)
             }
-            .padding(.horizontal, 12)
             .animation(.easeInOut(duration: 0.2), value: viewModel.selections)
         }
         .frame(maxWidth: .infinity)
+        .padding(.horizontal, idiom == .pad ? 24 : 16)
     }
     
     var networkPrompts: some View {
@@ -125,16 +126,11 @@ extension PeerDiscoveryView {
         ZStack {
             if viewModel.selectedNetwork == .Local {
                 LocalModeDisclaimer()
-            } else if showDisclaimer {
-                if tssType != .Migrate {
-                    PeerDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
-                } else {
-                    Spacer()
-                        .frame(height: 24)
-                }
+            } else if showDisclaimer && tssType != .Migrate {
+                PeerDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
             }
         }
-        .padding(.horizontal, idiom == .pad ? 24 : 12)
+        .padding(.horizontal, idiom == .pad ? 24 : 16)
     }
     
     var switchLink: some View {
@@ -147,7 +143,8 @@ extension PeerDiscoveryView {
     }
     
     func setData() {
-        guard let (qrCodeString, qrCodeImage) = viewModel.getQRCodeData(size: 100) else {
+        guard self.qrCodeImage == nil, qrCodeSize > 0 else { return }
+        guard let (qrCodeString, qrCodeImage) = viewModel.getQRCodeData(size: qrCodeSize, displayScale: displayScale) else {
             return
         }
         
