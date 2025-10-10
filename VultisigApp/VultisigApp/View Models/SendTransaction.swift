@@ -51,10 +51,6 @@ class SendTransaction: ObservableObject, Hashable {
         let totalTransactionCost = amountInRaw + feeToUse
         let comparison = totalTransactionCost > coin.rawBalance.toBigInt(decimals: coin.decimals)
         
-        if comparison && coin.chainType == .UTXO {
-            print("isAmountExceeded: amount=\(amountInRaw), fee=\(feeToUse), total=\(totalTransactionCost), balance=\(coin.rawBalance)")
-        }
-        
         return comparison
     }
     
@@ -164,10 +160,6 @@ class SendTransaction: ObservableObject, Hashable {
         let feeToDisplay = coin.chainType == .UTXO ? fee : gas
         let feeDecimal = Decimal(feeToDisplay)
         
-        // Debug fee display
-        if coin.chainType == .UTXO {
-            print("SendTransaction.gasInReadable: chain=\(coin.chain.name), gas=\(gas), fee=\(fee), displaying=\(feeToDisplay)")
-        }
         
         // If not a native token we need to get the decimals from the native token
         if !coin.isNativeToken {
@@ -178,11 +170,7 @@ class SendTransaction: ObservableObject, Hashable {
             }
         }
         
-        let result = "\((feeDecimal / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(coin.ticker)"
-        if coin.chainType == .UTXO {
-            print("SendTransaction.gasInReadable: result=\(result)")
-        }
-        return result
+        return "\((feeDecimal / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(coin.ticker)"
     }
     
     init() { }

@@ -494,7 +494,6 @@ class KeysignViewModel: ObservableObject {
                     switch broadcastResult {
                     case .success(let txHash):
                         self.txid = txHash
-                        print("Transaction successful, hash: \(txHash)")
                         
                         // Store pending transaction for nonce tracking
                         if case .THORChain(_, let sequence, _, _, _) = keysignPayload.chainSpecific {
@@ -515,7 +514,6 @@ class KeysignViewModel: ObservableObject {
                     switch broadcastResult {
                     case .success(let txHash):
                         self.txid = txHash
-                        print("Transaction successful, hash: \(txHash)")
                         
                         // Store pending transaction for nonce tracking
                         if case .MayaChain(_, let sequence, _) = keysignPayload.chainSpecific {
@@ -619,7 +617,6 @@ class KeysignViewModel: ObservableObject {
                     switch broadcastResult {
                     case .success(let txHash):
                         self.txid = txHash
-                        print("Transaction successful, hash: \(txHash)")
                     case .failure(let error):
                         throw error
                     }

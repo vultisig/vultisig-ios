@@ -91,19 +91,6 @@ struct KeysignPayloadFactory {
                 chain: coin.chain.name
             )
             let totalAmount = amount + BigInt(estimatedFee)
-            print("KeysignPayloadFactory: UTXO selection - amount=\(amount), byteFee=\(byteFee), totalNeeded=\(totalAmount)")
-            
-            // Debug: Check what UTXOs are available
-            if let blockchairData = await utxo.getByKey(key: coin.blockchairKey) {
-                let availableUTXOs = blockchairData.utxo ?? []
-                print("KeysignPayloadFactory: Available UTXOs count: \(availableUTXOs.count)")
-                let totalAvailable = availableUTXOs.reduce(0) { $0 + Int64($1.value ?? 0) }
-                print("KeysignPayloadFactory: Total available value: \(totalAvailable)")
-                
-                for (index, utxo) in availableUTXOs.enumerated() {
-                    print("KeysignPayloadFactory: Available UTXO[\(index)]: hash=\(utxo.transactionHash?.prefix(8) ?? "nil")..., amount=\(utxo.value ?? 0), index=\(utxo.index ?? -1)")
-                }
-            }
             
             guard let info = await utxo.getByKey(key: coin.blockchairKey)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmount),coinType: coin.coinType)
                 .map({
@@ -113,7 +100,6 @@ struct KeysignPayloadFactory {
                         index: UInt32($0.index ?? -1)
                     )
                 }), !info.isEmpty else {
-                print("KeysignPayloadFactory: UTXO selection failed - no UTXOs selected")
                 // Check what specific UTXO issue we have
                 if let blockchairData = await utxo.getByKey(key: coin.blockchairKey) {
                     if blockchairData.utxo?.isEmpty ?? true {
@@ -127,14 +113,6 @@ struct KeysignPayloadFactory {
                     throw Errors.utxoSelectionFailedError
                 }
                 throw Errors.notEnoughBalanceError
-            }
-            // Debug: Print selected UTXOs
-            print("KeysignPayloadFactory: Successfully selected \(info.count) UTXOs")
-            let selectedTotal = info.reduce(0) { $0 + $1.amount }
-            print("KeysignPayloadFactory: Selected total value: \(selectedTotal)")
-            
-            for (index, utxo) in info.enumerated() {
-                print("KeysignPayloadFactory: Selected UTXO[\(index)]: hash=\(utxo.hash.prefix(8))..., amount=\(utxo.amount), index=\(utxo.index)")
             }
             
             utxos = info

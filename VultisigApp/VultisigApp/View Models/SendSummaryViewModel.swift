@@ -50,18 +50,14 @@ class SendSummaryViewModel: ObservableObject {
     
     func feesInReadable(tx: SendTransaction, vault: Vault) -> String {
         guard let nativeCoin = vault.nativeCoin(for: tx.coin) else { 
-            print("SendSummaryViewModel.feesInReadable: No native coin found for \(tx.coin.chain)")
             return .empty 
         }
         
         // Use tx.fee (total fee amount) instead of tx.gas (sats/byte rate) like Android does
         let feeToUse = tx.coin.chainType == .UTXO ? tx.fee : tx.gas
-        print("SendSummaryViewModel.feesInReadable: chain=\(tx.coin.chain), feeToUse=\(feeToUse), nativeCoin=\(nativeCoin.ticker)")
         
         let fee = nativeCoin.decimal(for: feeToUse)
         // Use fee-specific formatting with more decimal places (5 instead of 2)
-        let result = RateProvider.shared.fiatFeeString(value: fee, coin: nativeCoin)
-        print("SendSummaryViewModel.feesInReadable: result=\(result)")
-        return result
+        return RateProvider.shared.fiatFeeString(value: fee, coin: nativeCoin)
     }
 }

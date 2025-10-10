@@ -72,10 +72,8 @@ public class UTXOTransactionsService: ObservableObject {
                 }
             }
             if let data = data, let txid = String(data: data, encoding: .utf8) {
-                print("Broadcasted TXID: \(txid)")
                 finish(.success(txid))
             } else if let error = error {
-                print("Error: \(error)")
                 finish(.failure(error))
             }
         }
