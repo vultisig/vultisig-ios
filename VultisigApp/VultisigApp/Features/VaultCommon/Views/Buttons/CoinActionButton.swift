@@ -39,6 +39,7 @@ struct CoinActionButton: View {
                 Text(title)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.caption12)
+                    .fixedSize()
             }
             .opacity(isEnabled ? 1 : 0.3)
         }

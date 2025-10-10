@@ -26,10 +26,10 @@ struct ThisDevicePeerCell: View {
         .padding(16)
         .frame(height: 70)
         .background(Theme.colors.bgSuccess)
-        .cornerRadius(10)
+        .cornerRadius(16)
         .overlay (
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Theme.colors.alertInfo.opacity(0.25), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Theme.colors.alertSuccess.opacity(0.25), lineWidth: 1)
         )
         .padding(1)
     }
