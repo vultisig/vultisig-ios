@@ -435,6 +435,7 @@ private extension SwapCryptoViewModel {
     }
     
     func updateQuotes(tx: SwapTransaction, referredCode: String) async {
+        print("Fetching quotes with referred code: \(referredCode)")
         isLoadingQuotes = true
         defer { isLoadingQuotes = false }
         
