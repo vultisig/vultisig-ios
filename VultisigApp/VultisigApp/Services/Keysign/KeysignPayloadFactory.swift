@@ -81,16 +81,10 @@ struct KeysignPayloadFactory {
                 throw Errors.notEnoughBalanceError
             }
             
-        case .UTXO(let byteFee, _):
+        case .UTXO(_, _):
             // Bitcoin, Litecoin, Dogecoin etc. - use Blockchair
-            // Use WalletCore's exact fee calculation logic via DRY method
-            let estimatedInputs = UTXOTransactionsService.estimateUTXOInputs(amount: Int64(amount), chain: coin.chain.name)
-            let estimatedFee = UTXOTransactionsService.calculateTransactionFee(
-                inputs: estimatedInputs,
-                byteFee: Int64(byteFee),
-                chain: coin.chain.name
-            )
-            let totalAmount = amount + BigInt(estimatedFee)
+            // Use only the amount as suggested by Johnny/Hidra
+            let totalAmount = amount
             
             guard let info = await utxo.getByKey(key: coin.blockchairKey)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmount),coinType: coin.coinType)
                 .map({

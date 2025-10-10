@@ -428,13 +428,24 @@ class SendCryptoViewModel: ObservableObject {
             isLoading = false
             return isValidForm
         }
-        // check UTXO minimum amount
+        // check UTXO minimum amount and fee validation
         if tx.coin.chainType == .UTXO {
             let dustThreshold = tx.coin.coinType.getFixedDustThreshold()
             if tx.amountInRaw < dustThreshold {
                 errorTitle = "error"
                 errorMessage = "amount is below the dust threshold."
                 showAmountAlert = true
+                isValidForm = false
+                isLoading = false
+                return isValidForm
+            }
+            
+            // Check if WalletCore returned 0 fee (insufficient balance for UTXO transaction)
+            if tx.fee == 0 && tx.amountInRaw > 0 {
+                errorTitle = "error"
+                errorMessage = "walletBalanceExceededError"
+                showAmountAlert = true
+                logger.log("Insufficient UTXO balance to cover transaction and fees.")
                 isValidForm = false
                 isLoading = false
                 return isValidForm
@@ -705,26 +716,9 @@ class SendCryptoViewModel: ObservableObject {
             return planFee
         }
                 
-        // If WalletCore returns 0, calculate estimated fee using same logic as WalletCore
-        let utxoCount = keysignPayload.utxos.count
-        
-        // Calculate fee using WalletCore's logic (assumes 2 outputs: 1 main + 1 change)
-        let estimatedFee = UTXOTransactionsService.calculateTransactionFee(
-            inputs: utxoCount,
-            byteFee: Int64(chainSpecific.gas),
-            chain: tx.coin.chain.name
-        )
-        let totalNeeded = actualAmount + BigInt(estimatedFee)
-        let shortfall = totalNeeded - BigInt(tx.coin.rawBalance.toBigInt())
-        
-        // For other chains, throw specific insufficient balance error with amount needed
-        if shortfall > 0 {
-            let shortfallDecimal = tx.coin.decimal(for: shortfall)
-            throw HelperError.runtimeError("Insufficient balance. You need approximately \(shortfallDecimal.formatForDisplay()) \(tx.coin.ticker) more to cover transaction fees.")
-        } else {
-            let errorMsg = plan.error == .ok ? "Unknown error" : "\(plan.error)"
-            throw HelperError.runtimeError("WalletCore returned zero fee - \(errorMsg)")
-        }
+        // If WalletCore returns 0, it means insufficient balance
+        // Return 0 and let the form validation handle it via tx.isAmountExceeded
+        return BigInt.zero
     }
     
     /// Recalculate UTXO fees when amount changes
@@ -740,7 +734,6 @@ class SendCryptoViewModel: ObservableObject {
             
             do {
                 let specific = try await blockchainService.fetchSpecific(tx: tx)
-                let oldFee = tx.fee
                 let newFee = try await calculateUTXOPlanFee(tx: tx, chainSpecific: specific)
                 
                 await MainActor.run {
