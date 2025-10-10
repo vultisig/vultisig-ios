@@ -742,7 +742,7 @@
 "switchToLocalMode" = "Passa alla modalità locale";
 "systemErrorMessage" = "Errore di sistema. Riprova.";
 "termsOfService" = "Termini di servizio";
-"thisDevice" = "Questo Dispositivo:";
+"thisDevice" = "Questo Dispositivo";
 "ThisDeviceIs" = "Questo dispositivo è il";
 "thisVaultOnly" = "Solo questo Vault";
 "thresholdNotReachedMessage" = "Soglia non raggiunta.\nMancano dispositivi iniziali sufficienti.";

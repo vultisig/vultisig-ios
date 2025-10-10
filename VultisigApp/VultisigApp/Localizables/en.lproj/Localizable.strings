@@ -741,7 +741,7 @@
 "switchToLocalMode" = "Switch to local mode";
 "systemErrorMessage" = "System error. Please try again.";
 "termsOfService" = "Terms of Service";
-"thisDevice" = "This Device:";
+"thisDevice" = "This Device";
 "ThisDeviceIs" = "This device is the";
 "thisVaultOnly" = "This Vault Only";
 "thresholdNotReachedMessage" = "Threshold not reached.\nMissing enough initial devices.";

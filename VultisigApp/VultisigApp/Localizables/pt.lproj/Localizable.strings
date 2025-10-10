@@ -742,7 +742,7 @@
 "switchToLocalMode" = "Mudar para o modo local";
 "systemErrorMessage" = "Erro do sistema. Tente novamente.";
 "termsOfService" = "Termos de Serviço";
-"thisDevice" = "Este Dispositivo:";
+"thisDevice" = "Este Dispositivo";
 "ThisDeviceIs" = "Este dispositivo é o";
 "thisVaultOnly" = "Apenas este cofre";
 "thresholdNotReachedMessage" = "Limite não alcançado.\nFaltam dispositivos iniciais suficientes.";
