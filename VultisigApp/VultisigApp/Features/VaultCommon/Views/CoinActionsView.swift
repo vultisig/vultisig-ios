@@ -11,17 +11,28 @@ struct CoinActionsView: View {
     let actions: [CoinAction]
     var onAction: (CoinAction) -> Void
     
+    @State private var availableWidth: CGFloat = 0
+    
+    var calculatedSpacing: CGFloat {
+        min(availableWidth / 20, 20)
+    }
+    
     var body: some View {
-        HStack(spacing: 20) {
+        HStack(spacing: calculatedSpacing) {
             ForEach(actions, id: \.self) { action in
-                CoinActionButton(
-                    title: action.buttonTitle,
-                    icon: action.buttonIcon,
-                    isHighlighted: action.shouldHightlight
-                ) {
-                    onAction(action)
+                VStack {
+                    CoinActionButton(
+                        title: action.buttonTitle,
+                        icon: action.buttonIcon,
+                        isHighlighted: action.shouldHightlight
+                    ) {
+                        onAction(action)
+                    }
                 }
             }
+        }
+        .readSize { size in
+            availableWidth = size.width
         }
     }
 }

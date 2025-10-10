@@ -25,8 +25,15 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
     @State var internalBanners: [Banner] = []
     
     var bannerWidth: CGFloat {
-        let availableBannerWidth = availableWidth - BannerLayoutProperties.minimumPadding * 2
-        return min(availableBannerWidth, BannerLayoutProperties.maxWidth)
+        #if os(iOS)
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            return availableWidth - spacing * 2
+        } else {
+            return BannerLayoutProperties.maxWidth
+        }
+        #else
+        return BannerLayoutProperties.maxWidth
+        #endif
     }
     
     var horizontalPadding: CGFloat {
@@ -34,7 +41,7 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
     }
     
     private let bannerHeight: CGFloat = 128
-    private let spacing: CGFloat = 12
+    private let spacing: CGFloat = 16
     private let indicatorsHeight: CGFloat = BannerLayoutProperties.indicatorsHeight
     
     var body: some View {
@@ -53,7 +60,8 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
                                 )
                                 .frame(width: bannerWidth, height: bannerHeight, alignment: .leading)
                             }
-                            .padding(.horizontal, horizontalPadding)
+                            .padding(.horizontal, spacing)
+                            .frame(width: availableWidth, alignment: .center)
                             .opacity(shouldRemove ? 0 : 1)
                             .animation(.easeInOut(duration: 0.4), value: shouldRemove)
                             .scrollTransition { content, phase in
@@ -120,9 +128,7 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
         stopTimer()
         
         if bannersCount == 1 {
-            withAnimation(.interpolatingSpring) {
-                updateBannersCount(0)
-            }
+            updateBannersCount(0)
         }
         
         guard let indexToRemove = internalBanners.firstIndex(where: { $0.id == banner.id }) else {
