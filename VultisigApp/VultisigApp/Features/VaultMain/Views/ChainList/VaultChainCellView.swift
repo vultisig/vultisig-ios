@@ -16,6 +16,7 @@ struct VaultChainCellView: View {
     
     @State private var trailingSubtitle: String = ""
     @State private var fiatBalanceText: String = ""
+    @State private var trailingSubtitleFont: Font = Theme.fonts.priceCaption
     
     var body: some View {
         NavigationLink {
@@ -53,7 +54,7 @@ struct VaultChainCellView: View {
                             .foregroundStyle(Theme.colors.textPrimary)
                             .contentTransition(.numericText())
                         Text(trailingSubtitle)
-                            .font(Theme.fonts.priceCaption)
+                            .font(trailingSubtitleFont)
                             .foregroundStyle(Theme.colors.textExtraLight)
                             .contentTransition(.numericText())
                     }
@@ -83,9 +84,11 @@ private extension VaultChainCellView {
     }
     
     func updateTrailingSubtitle() {
-        let trailingSubtitle = group.coins.count > 1 ? "\(group.coins.count) \("assets".localized)" : group.nativeCoin.balanceStringWithTicker
+        let showPrice = group.coins.count > 1
+        let trailingSubtitle = showPrice ? "\(group.coins.count) \("assets".localized)" : group.nativeCoin.balanceStringWithTicker
         withAnimation(.interpolatingSpring) {
             self.trailingSubtitle = homeViewModel.hideVaultBalance ? String.hideBalanceText : trailingSubtitle
+            self.trailingSubtitleFont = (showPrice && !homeViewModel.hideVaultBalance) ? Theme.fonts.priceCaption : Theme.fonts.caption12
         }
     }
     
