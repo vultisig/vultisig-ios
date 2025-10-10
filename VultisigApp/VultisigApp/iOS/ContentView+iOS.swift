@@ -13,6 +13,9 @@ extension ContentView {
         content
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarTitleTextColor(Theme.colors.textPrimary)
+            .navigationDestination(isPresented: $vultExtensionViewModel.showImportView) {
+                ImportWalletView()
+            }
     }
 }
 #endif
