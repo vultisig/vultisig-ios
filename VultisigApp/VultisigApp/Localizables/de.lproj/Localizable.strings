@@ -742,7 +742,7 @@
 "switchToLocalMode" = "Wechsle in den lokalen Modus";
 "systemErrorMessage" = "Systemfehler. Bitte versuche es erneut.";
 "termsOfService" = "Nutzungsbedingungen";
-"thisDevice" = "Dieses Gerät:";
+"thisDevice" = "Dieses Gerät";
 "ThisDeviceIs" = "Dieses Gerät ist das";
 "thisVaultOnly" = "Nur dieses Gewölbe";
 "thresholdNotReachedMessage" = "Schwelle nicht erreicht.\nEs fehlen genügend Anfangsgeräte.";

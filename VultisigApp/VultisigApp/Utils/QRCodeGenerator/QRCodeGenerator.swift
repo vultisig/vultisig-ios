@@ -16,13 +16,14 @@ struct QRCodeGenerator {
     func generateImage(
         qrStringData: String,
         size: CGSize,
-        logoImage: PlatformImage?,
-        scale: CGFloat
+        logoImage: PlatformImage? = nil,
+        scale: CGFloat,
+        bgColor: Color? = nil
     ) -> Image? {
         let data = qrStringData.data(using: .utf8) ?? Data()
-        let qrcode = QRCode(data)
+        let qrcode = QRCode(data, enableLogoCutout: logoImage != nil)
         let coreSize = CGSize(width: size.width * scale, height: size.height * scale)
-        guard let qrImage = qrcode.cgImage(coreSize, shape: QRCodeShape(), style: QRCodeStyle()) else { return nil }
+        guard let qrImage = qrcode.cgImage(coreSize, shape: QRCodeShape(), style: QRCodeStyle(background: bgColor)) else { return nil }
         
         #if os(iOS)
         let qrcodeImage = UIImage(cgImage: qrImage, scale: scale, orientation: .up)

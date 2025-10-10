@@ -9,33 +9,12 @@ import SwiftUI
 
 struct LocalModeDisclaimer: View {
     var body: some View {
-        HStack(spacing: 12) {
-            infoIcon
-            text
-        }
-        .foregroundColor(Theme.colors.textPrimary)
-        .padding(12)
-        .background(Theme.colors.bgSecondary)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Theme.colors.primaryAccent4, lineWidth: 1)
+        InfoBannerView(
+            description: "youAreInLocalMode".localized,
+            type: .info,
+            leadingIcon: "cloud-off",
+            iconColor: Theme.colors.primaryAccent4
         )
-        .padding(.horizontal, 8)
-        .padding(.vertical, 12)
-    }
-    
-    var infoIcon: some View {
-        Image(systemName: "icloud.slash")
-            .resizable()
-            .frame(width: 16, height: 16)
-            .foregroundColor(Theme.colors.primaryAccent4)
-    }
-    
-    var text: some View {
-        Text(NSLocalizedString("youAreInLocalMode", comment: ""))
-            .font(Theme.fonts.bodySMedium)
-            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

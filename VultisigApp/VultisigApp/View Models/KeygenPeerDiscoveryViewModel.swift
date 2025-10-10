@@ -264,11 +264,20 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
     }
     
-    func getQRCodeData(size: CGFloat) -> (String, Image)? {
-        guard let qrCodeData = generateQRdata() else {
+    func getQRCodeData(size: CGFloat, displayScale: CGFloat) -> (String, Image)? {
+        guard
+            let qrCodeData = generateQRdata(),
+            let image = QRCodeGenerator().generateImage(
+                qrStringData: qrCodeData,
+                size: CGSize(width: size, height: size),
+                scale: displayScale,
+                bgColor: Theme.colors.bgSecondary
+            )
+        else {
             return nil
         }
-        return (qrCodeData, Utils.generateQRCodeImage(from: qrCodeData))
+        
+        return (qrCodeData, image)
     }
     
     private func generateQRdata() -> String? {

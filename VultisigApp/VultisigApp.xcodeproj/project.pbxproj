@@ -12,6 +12,7 @@
 		13052B972E8C5511000285D2 /* CrossPlatformToolbarModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13052B962E8C5511000285D2 /* CrossPlatformToolbarModifier.swift */; };
 		13052B992E8C5744000285D2 /* MacOSToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13052B982E8C5744000285D2 /* MacOSToolbarView.swift */; };
 		13052B9B2E8C574C000285D2 /* IOSToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13052B9A2E8C574C000285D2 /* IOSToolbarView.swift */; };
+		1305A1292E988BB8005873CA /* ReadSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1305A1282E988BB4005873CA /* ReadSize.swift */; };
 		13095A362E3264E6009F8785 /* HapticFeedbackManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */; };
 		130C40DD2E71E0BE00509C61 /* VaultMainBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40DC2E71E0B800509C61 /* VaultMainBalanceView.swift */; };
 		130C40DF2E72FD7100509C61 /* CoinActionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40DE2E72FD6000509C61 /* CoinActionsView.swift */; };
@@ -1082,6 +1083,7 @@
 		13052B962E8C5511000285D2 /* CrossPlatformToolbarModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossPlatformToolbarModifier.swift; sourceTree = "<group>"; };
 		13052B982E8C5744000285D2 /* MacOSToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSToolbarView.swift; sourceTree = "<group>"; };
 		13052B9A2E8C574C000285D2 /* IOSToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOSToolbarView.swift; sourceTree = "<group>"; };
+		1305A1282E988BB4005873CA /* ReadSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadSize.swift; sourceTree = "<group>"; };
 		13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticFeedbackManager.swift; sourceTree = "<group>"; };
 		130C40DC2E71E0B800509C61 /* VaultMainBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainBalanceView.swift; sourceTree = "<group>"; };
 		130C40DE2E72FD6000509C61 /* CoinActionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinActionsView.swift; sourceTree = "<group>"; };
@@ -2461,6 +2463,7 @@
 		1334C73D2E30079000CBAA3E /* ViewModifiers */ = {
 			isa = PBXGroup;
 			children = (
+				1305A1282E988BB4005873CA /* ReadSize.swift */,
 				138C5E662E79E85A00C559C7 /* GlassEffect.swift */,
 				1334C73E2E30079F00CBAA3E /* OnLoad.swift */,
 			);
@@ -5959,6 +5962,7 @@
 				13DD547F2E56161F007335DA /* VaultAdvancedSettingsScreen.swift in Sources */,
 				A6182F272C9225CB0059BFDD /* UpdateCheckUpdateNowView.swift in Sources */,
 				133CA3D62E8AE230009588F3 /* ModalBackgroundView.swift in Sources */,
+				1305A1292E988BB8005873CA /* ReadSize.swift in Sources */,
 				A622C8642C9BED5100908332 /* PhoneCheckUpdateView.swift in Sources */,
 				A67EC5B22E0399290031A22A /* CreateReferralDetailsView.swift in Sources */,
 				A564ED442BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift in Sources */,

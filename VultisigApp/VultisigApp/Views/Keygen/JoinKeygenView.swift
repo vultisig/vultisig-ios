@@ -163,6 +163,7 @@ struct JoinKeygenView: View {
             
             HStack {
                 Text(NSLocalizedString("thisDevice", comment: "This device"))
+                Text(":")
                 Text(self.viewModel.localPartyID)
             }
             .padding(.bottom, 22)

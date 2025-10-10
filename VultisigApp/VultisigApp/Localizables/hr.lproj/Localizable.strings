@@ -742,7 +742,7 @@
 "switchToLocalMode" = "Prijeđi na lokalni način rada";
 "systemErrorMessage" = "Sistemska greška. Pokušajte ponovno.";
 "termsOfService" = "Uvjeti korištenja";
-"thisDevice" = "Ovaj uređaj:";
+"thisDevice" = "Ovaj uređaj";
 "ThisDeviceIs" = "Ovaj uređaj je";
 "thisVaultOnly" = "Samo ovaj trezor";
 "thresholdNotReachedMessage" = "Prag nije dosegnut.\nNedostaje dovoljno početnih uređaja.";
