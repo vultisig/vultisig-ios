@@ -147,7 +147,6 @@ class SendTransaction: ObservableObject, Hashable {
     
     var gasInReadable: String {
         var decimals = coin.decimals
-        
         if coin.chain.chainType == .EVM {
             // convert to Gwei , show as Gwei for EVM chain only
             guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) else {

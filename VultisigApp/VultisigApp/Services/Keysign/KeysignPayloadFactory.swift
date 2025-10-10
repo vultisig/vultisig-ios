@@ -114,7 +114,6 @@ struct KeysignPayloadFactory {
                 }
                 throw Errors.notEnoughBalanceError
             }
-            
             utxos = info
             
         default:
