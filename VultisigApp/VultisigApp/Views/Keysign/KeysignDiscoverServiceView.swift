@@ -50,6 +50,7 @@ struct KeysignDiscoverServiceView: View {
     var deviceID: some View {
         HStack {
             Text(NSLocalizedString("thisDevice", comment: ""))
+            Text(":")
             Text(viewModel.localPartyID)
         }
     }
