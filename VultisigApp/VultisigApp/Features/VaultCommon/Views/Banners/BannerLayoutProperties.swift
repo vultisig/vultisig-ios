@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum BannerLayoutProperties {
-    static let maxWidth: CGFloat = 345
+    static let maxWidth: CGFloat = 400
     static let minimumPadding: CGFloat = 16
     static let indicatorsHeight: CGFloat = 4
 }
