@@ -632,48 +632,6 @@ class SendCryptoViewModel: ObservableObject {
         return false
     }
     
-    private func getTransactionPlan(tx: SendTransaction, key:String) async -> TW_Bitcoin_Proto_TransactionPlan? {
-        let totalAmount = tx.amountInRaw + BigInt(tx.gas * 1480)
-        guard let utxoInfo = await utxo.getByKey(key: key)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmount),coinType:tx.coin.coinType)
-            .map({
-                UtxoInfo(
-                    hash: $0.transactionHash ?? "",
-                    amount: Int64($0.value ?? 0),
-                    index: UInt32($0.index ?? -1)
-                )
-            }), !utxoInfo.isEmpty else {
-            return nil
-        }
-        
-        let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
-        
-        guard let vault = ApplicationState.shared.currentVault else {
-            return nil
-        }
-        
-        let keysignPayload = KeysignPayload(
-            coin: tx.coin,
-            toAddress: tx.toAddress,
-            toAmount: BigInt(totalSelectedAmount),
-            chainSpecific: BlockChainSpecific.UTXO(byteFee: tx.gas, sendMaxAmount: tx.sendMaxAmount),
-            utxos: utxoInfo,
-            memo: tx.memo,
-            swapPayload: nil,
-            approvePayload: nil,
-            vaultPubKeyECDSA: vault.pubKeyECDSA,
-            vaultLocalPartyID: vault.localPartyID,
-            libType: (vault.libType ?? .GG20).toString(),
-            wasmExecuteContractPayload: nil,
-            skipBroadcast: false
-        )
-        
-        guard let helper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) else {
-            return nil
-        }
-        
-        return try? helper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
-    }
-    
     private func calculateUTXOPlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
         guard let vault = ApplicationState.shared.currentVault else {
             throw HelperError.runtimeError("No vault available for UTXO fee calculation")
