@@ -46,6 +46,9 @@ enum THORChainHelper {
                             $0.symbol = swapPayload.fromCoin.ticker.uppercased().replacingOccurrences(of: "X/", with: "")
                             $0.ticker = swapPayload.fromCoin.ticker.uppercased().replacingOccurrences(of: "X/", with: "")
                             $0.synth = false
+                            let securedAssetsTickers = ["BTC", "ETH", "BCH", "LTC", "DOGE", "AVAX", "BNB"]
+                            let isSecured = securedAssetsTickers.contains(swapPayload.fromCoin.ticker.uppercased())
+                            $0.secured = isSecured
                         }
                         $0.amount = String(swapPayload.fromAmount)
                         $0.decimals = Int64(swapPayload.fromCoin.decimals)
@@ -102,6 +105,9 @@ enum THORChainHelper {
                 message = try buildThorchainSendMessage(keysignPayload: keysignPayload, fromAddress: fromAddr)
             }
         }
+        
+        print("message: \(message)")
+        print("\(try message.jsonString())")
         
         let input = CosmosSigningInput.with {
             $0.publicKey = pubKeyData
@@ -243,18 +249,26 @@ enum THORChainHelper {
     private static func buildThorchainDepositMessage(keysignPayload: KeysignPayload, fromAddress: AnyAddress) -> CosmosMessage {
         let symbol = getTicker(coin: keysignPayload.coin)
         let assetTicker = getTicker(coin: keysignPayload.coin)
+        
         let coin = CosmosTHORChainCoin.with {
             $0.asset = TW_Cosmos_Proto_THORChainAsset.with {
-                $0.chain = "THOR"
-                $0.symbol = symbol
-                $0.ticker = assetTicker
+                $0.chain = "DOGE"
+                $0.symbol = "DOGE"
+                $0.ticker = "DOGE"
                 $0.synth = false
+                let securedAssetsTickers = ["BTC", "ETH", "BCH", "LTC", "DOGE", "AVAX", "BNB"]
+                let isSecured = securedAssetsTickers.contains(keysignPayload.coin.ticker.uppercased()) && !keysignPayload.coin.isNativeToken
+                $0.secured = isSecured
             }
             if keysignPayload.toAmount > 0 {
                 $0.amount = String(keysignPayload.toAmount)
                 $0.decimals = Int64(keysignPayload.coin.decimals)
             }
         }
+        
+        print("chain: \(coin.asset.chain)")
+        print("ticker: \(coin.asset.ticker)")
+        print("symbol: \(coin.asset.symbol)")
         
         return CosmosMessage.with {
             $0.thorchainDepositMessage = CosmosMessage.THORChainDeposit.with {
@@ -285,7 +299,21 @@ enum THORChainHelper {
     }
     
     private static func getTicker(coin: Coin) -> String {
-        coin.isNativeToken ? "RUNE" : coin.ticker.uppercased().replacingOccurrences(of: "X/", with: "")
+        coin.isNativeToken ? "RUNE" : getNotNativeTicker(coin: coin)
+    }
+    
+    private static func getNotNativeTicker(coin: Coin) -> String {
+        let securedAssetsTickers = ["BTC", "ETH", "BCH", "LTC", "DOGE", "AVAX", "BNB"]
+        
+        if securedAssetsTickers.contains(coin.ticker) {
+            
+            if coin.ticker.uppercased() == "BNB" {
+                return "BSC-BNB"
+            }
+            
+            return "\(coin.ticker.uppercased())-\(coin.ticker.uppercased())"
+        }
+        return coin.ticker.uppercased().replacingOccurrences(of: "X/", with: "")
     }
 }
 
