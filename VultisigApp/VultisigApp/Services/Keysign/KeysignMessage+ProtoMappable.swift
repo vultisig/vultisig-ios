@@ -57,12 +57,18 @@ extension CustomMessagePayload: ProtoMappable {
     init(proto: VSCustomMessagePayload) throws {
         self.method = proto.method
         self.message = proto.message
+        self.vaultLocalPartyID = proto.vaultLocalPartyID
+        self.vaultPublicKeyECDSA = proto.vaultPublicKeyEcdsa
+        self.chain = proto.chain
     }
     
     func mapToProtobuff() -> VSCustomMessagePayload {
         return VSCustomMessagePayload.with {
             $0.method = method
             $0.message = message
+            $0.vaultLocalPartyID = vaultLocalPartyID
+            $0.vaultPublicKeyEcdsa = vaultPublicKeyECDSA
+            $0.chain = chain
         }
     }
 }
