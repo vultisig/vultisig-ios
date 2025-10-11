@@ -252,10 +252,9 @@ class JoinKeysignViewModel: ObservableObject {
             
             if let keysignPayload = keysignMsg.payload {
                 vaultPublicKeyECDSAInQrCode = keysignPayload.vaultPubKeyECDSA
-                
             }
             // Auto-select correct vault BEFORE preparing messages
-            if vault.pubKeyECDSA != vaultPublicKeyECDSAInQrCode {
+            if vaultPublicKeyECDSAInQrCode != .empty && vault.pubKeyECDSA != vaultPublicKeyECDSAInQrCode {
                 if let correctVault = fetchVaults().first(where: { $0.pubKeyECDSA == vaultPublicKeyECDSAInQrCode }),
                    !correctVault.localPartyID.isEmpty {
                     self.vault = correctVault
