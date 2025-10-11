@@ -34,10 +34,18 @@ struct JoinKeysignGasViewModel {
             return ("\(gasInReadable) \(payload.coin.chain.feeUnit)", feeInReadable)
         }
 
-        let gasAmount = Decimal(payload.chainSpecific.gas) / pow(10, nativeToken.decimals)
+        // For UTXO chains, calculate total fee using WalletCore (like first device)
+        var feeToUse = payload.chainSpecific.gas
+        if payload.coin.chainType == .UTXO {
+            feeToUse = calculateUTXOTotalFee(payload: payload) ?? payload.chainSpecific.gas
+        }
+
+        // Use the same fee for both crypto and fiat display for UTXO chains
+        let gasAmountToDisplay = payload.coin.chainType == .UTXO ? feeToUse : payload.chainSpecific.gas
+        let gasAmount = Decimal(gasAmountToDisplay) / pow(10, nativeToken.decimals)
         let gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
 
-        var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.gas)
+        var feeInReadable = feesInReadable(coin: payload.coin, fee: feeToUse)
         feeInReadable = feeInReadable.nilIfEmpty.map { $0 } ?? ""
 
         return ("\(gasInReadable) \(payload.coin.chain.feeUnit)", feeInReadable)
@@ -52,7 +60,8 @@ struct JoinKeysignGasViewModel {
         // Try to get native coin from vault first (has up-to-date price data)
         if let vaultNativeCoin = ApplicationState.shared.currentVault?.nativeCoin(for: coin.chain) {
             let feeDecimal = vaultNativeCoin.decimal(for: fee)
-            let fiatString = RateProvider.shared.fiatBalanceString(value: feeDecimal, coin: vaultNativeCoin)
+            // Use fee-specific formatting with more decimal places (5 instead of 2)
+            let fiatString = RateProvider.shared.fiatFeeString(value: feeDecimal, coin: vaultNativeCoin)
             if !fiatString.isEmpty {
                 return fiatString
             }
@@ -60,6 +69,21 @@ struct JoinKeysignGasViewModel {
         
         // Fallback to the payload coin itself
         let feeDecimal = coin.decimal(for: fee)
-        return RateProvider.shared.fiatBalanceString(value: feeDecimal, coin: coin)
+        // Use fee-specific formatting with more decimal places (5 instead of 2)
+        return RateProvider.shared.fiatFeeString(value: feeDecimal, coin: coin)
+    }
+    
+    private func calculateUTXOTotalFee(payload: KeysignPayload) -> BigInt? {
+        guard let vault = ApplicationState.shared.currentVault,
+              let helper = UTXOChainsHelper.getHelper(vault: vault, coin: payload.coin) else {
+            return nil
+        }
+        
+        do {
+            let plan = try helper.getBitcoinTransactionPlan(keysignPayload: payload)
+            return plan.fee > 0 ? BigInt(plan.fee) : nil
+        } catch {
+            return nil
+        }
     }
 }

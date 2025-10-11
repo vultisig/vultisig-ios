@@ -81,34 +81,23 @@ struct KeysignPayloadFactory {
                 throw Errors.notEnoughBalanceError
             }
             
-        case .UTXO(let byteFee, _):
+        case .UTXO(_, _):
             // Bitcoin, Litecoin, Dogecoin etc. - use Blockchair
-            // 148 is estimate vbytes for every input
-            // estimate we will use maximum 10 utxos
-            let totalAmount = amount + BigInt(byteFee * 1480)
-            guard let info = await utxo.getByKey(key: coin.blockchairKey)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmount),coinType: coin.coinType)
+            // Use only the amount as suggested by Johnny/Hidra
+            let totalAmount = amount
+            
+            let info = await utxo.getByKey(key: coin.blockchairKey)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmount),coinType: coin.coinType)
                 .map({
                     UtxoInfo(
                         hash: $0.transactionHash ?? "",
                         amount: Int64($0.value ?? 0),
                         index: UInt32($0.index ?? -1)
                     )
-                }), !info.isEmpty else {
-                // Check what specific UTXO issue we have
-                if let blockchairData = await utxo.getByKey(key: coin.blockchairKey) {
-                    if blockchairData.utxo?.isEmpty ?? true {
-                        throw Errors.notEnoughUTXOError
-                    }
-                    let dustThreshold = coin.coinType.getFixedDustThreshold()
-                    let usableUtxos = blockchairData.utxo?.filter { ($0.value ?? 0) >= Int(dustThreshold) } ?? []
-                    if usableUtxos.isEmpty {
-                        throw Errors.utxoTooSmallError
-                    }
-                    throw Errors.utxoSelectionFailedError
-                }
-                throw Errors.notEnoughBalanceError
+                })
+                
+            if let utxosInfo = info {
+                utxos = utxosInfo
             }
-            utxos = info
             
         default:
             // Non-UTXO chains don't need UTXO selection

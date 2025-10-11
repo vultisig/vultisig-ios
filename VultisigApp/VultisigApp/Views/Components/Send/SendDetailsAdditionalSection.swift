@@ -81,15 +81,22 @@ struct SendDetailsAdditionalSection: View {
     }
     
     var networkFeeDescription: some View {
-        VStack(alignment: .trailing) {
-            Text(tx.gasInReadable)
-            
-            if let selectedVault = homeViewModel.selectedVault {
-                Text(sendCryptoViewModel.feesInReadable(tx: tx, vault: selectedVault))
-                    .foregroundStyle(Theme.colors.textExtraLight)
+        HStack(spacing: 8) {
+            if tx.isCalculatingFee {
+                ProgressView()
+                    .scaleEffect(0.7)
             }
+            
+            VStack(alignment: .trailing) {
+                Text(tx.gasInReadable)
+                
+                if let selectedVault = homeViewModel.selectedVault {
+                    Text(sendCryptoViewModel.feesInReadable(tx: tx, vault: selectedVault))
+                        .foregroundStyle(Theme.colors.textExtraLight)
+                }
+            }
+            .font(Theme.fonts.bodySMedium)
         }
-        .font(Theme.fonts.bodySMedium)
     }
     
     private func getFieldTitle(_ title: String) -> some View {
