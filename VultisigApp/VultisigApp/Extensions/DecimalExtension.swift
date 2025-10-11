@@ -18,7 +18,8 @@ extension Decimal {
         return truncated
     }
     
-    func formatToFiat(includeCurrencySymbol: Bool = true, useAbbreviation: Bool = false) -> String {
+    /// Base method for formatting fiat values with configurable decimal places
+    private func formatToFiat(includeCurrencySymbol: Bool = true, useAbbreviation: Bool = false, maximumFractionDigits: Int) -> String {
         let formatter = NumberFormatter()
         if includeCurrencySymbol {
             formatter.numberStyle = .currency
@@ -26,7 +27,7 @@ extension Decimal {
         } else {
             formatter.numberStyle = .decimal
         }
-        formatter.maximumFractionDigits = 2
+        formatter.maximumFractionDigits = maximumFractionDigits
         formatter.minimumFractionDigits = 2
         formatter.decimalSeparator = Locale.current.decimalSeparator ?? "."
         formatter.groupingSeparator = Locale.current.groupingSeparator ?? ","
@@ -36,23 +37,14 @@ extension Decimal {
         return formatter.string(from: number) ?? ""
     }
     
+    /// Format fiat value with standard 2 decimal places
+    func formatToFiat(includeCurrencySymbol: Bool = true, useAbbreviation: Bool = false) -> String {
+        return formatToFiat(includeCurrencySymbol: includeCurrencySymbol, useAbbreviation: useAbbreviation, maximumFractionDigits: 2)
+    }
+    
     /// Format fiat value for fee display with more decimal places to show small fees
     func formatToFiatForFee(includeCurrencySymbol: Bool = true) -> String {
-        let formatter = NumberFormatter()
-        if includeCurrencySymbol {
-            formatter.numberStyle = .currency
-            formatter.currencyCode = SettingsCurrency.current.rawValue
-        } else {
-            formatter.numberStyle = .decimal
-        }
-        formatter.maximumFractionDigits = 5 // Show up to 5 decimal places for fees
-        formatter.minimumFractionDigits = 2 // At least 2 decimal places
-        formatter.decimalSeparator = Locale.current.decimalSeparator ?? "."
-        formatter.groupingSeparator = Locale.current.groupingSeparator ?? ","
-        formatter.roundingMode = .down
-        
-        let number = NSDecimalNumber(decimal: self)
-        return formatter.string(from: number) ?? ""
+        return formatToFiat(includeCurrencySymbol: includeCurrencySymbol, useAbbreviation: false, maximumFractionDigits: 5)
     }
     
     func formatDecimalToLocale(locale: Locale = Locale.current) -> String {
