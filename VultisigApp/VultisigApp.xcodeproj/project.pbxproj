@@ -158,6 +158,7 @@
 		1396423E2E79A78A00CFEFAF /* VaultCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1396423D2E79A78400CFEFAF /* VaultCellView.swift */; };
 		139880502E39007C00EC5D3F /* CosmosCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1398804F2E39007900EC5D3F /* CosmosCoin.swift */; };
 		139B400C2E42466F00238C2C /* MacOSOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139B400B2E42466800238C2C /* MacOSOverlay.swift */; };
+		139D15A82E9C7461006F671C /* VultDiscountTiersScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139D15A72E9C7459006F671C /* VultDiscountTiersScreen.swift */; };
 		139DE1262E4CF7F200BC2FD3 /* SendPairScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139DE1252E4CF7E900BC2FD3 /* SendPairScreen.swift */; };
 		139DE1282E4D095000BC2FD3 /* SendKeysignScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139DE1272E4D094D00BC2FD3 /* SendKeysignScreen.swift */; };
 		139DE12A2E4D0B3A00BC2FD3 /* SendDoneScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139DE1292E4D0B3200BC2FD3 /* SendDoneScreen.swift */; };
@@ -600,7 +601,6 @@
 		A6833D842C65BC59002029E1 /* FunctionCallHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D832C65BC59002029E1 /* FunctionCallHeader.swift */; };
 		A6833D862C65BF6D002029E1 /* JoinKeygenHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D852C65BF6D002029E1 /* JoinKeygenHeader.swift */; };
 		A6833D882C65C129002029E1 /* PeerDiscoveryHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D872C65C129002029E1 /* PeerDiscoveryHeader.swift */; };
-		A6833D8A2C65CF07002029E1 /* HomeHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D892C65CF07002029E1 /* HomeHeader.swift */; };
 		A6833D8D2C65D2A1002029E1 /* AddressQRCodeHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D8C2C65D2A1002029E1 /* AddressQRCodeHeader.swift */; };
 		A6833D912C66A0B5002029E1 /* CreateVaultHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D902C66A0B5002029E1 /* CreateVaultHeader.swift */; };
 		A6833D932C66A4EA002029E1 /* SwapCryptoHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D922C66A4EA002029E1 /* SwapCryptoHeader.swift */; };
@@ -1229,6 +1229,7 @@
 		1396423D2E79A78400CFEFAF /* VaultCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultCellView.swift; sourceTree = "<group>"; };
 		1398804F2E39007900EC5D3F /* CosmosCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosCoin.swift; sourceTree = "<group>"; };
 		139B400B2E42466800238C2C /* MacOSOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSOverlay.swift; sourceTree = "<group>"; };
+		139D15A72E9C7459006F671C /* VultDiscountTiersScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultDiscountTiersScreen.swift; sourceTree = "<group>"; };
 		139DE1252E4CF7E900BC2FD3 /* SendPairScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendPairScreen.swift; sourceTree = "<group>"; };
 		139DE1272E4D094D00BC2FD3 /* SendKeysignScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendKeysignScreen.swift; sourceTree = "<group>"; };
 		139DE1292E4D0B3200BC2FD3 /* SendDoneScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDoneScreen.swift; sourceTree = "<group>"; };
@@ -1674,7 +1675,6 @@
 		A6833D832C65BC59002029E1 /* FunctionCallHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallHeader.swift; sourceTree = "<group>"; };
 		A6833D852C65BF6D002029E1 /* JoinKeygenHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinKeygenHeader.swift; sourceTree = "<group>"; };
 		A6833D872C65C129002029E1 /* PeerDiscoveryHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerDiscoveryHeader.swift; sourceTree = "<group>"; };
-		A6833D892C65CF07002029E1 /* HomeHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeHeader.swift; sourceTree = "<group>"; };
 		A6833D8C2C65D2A1002029E1 /* AddressQRCodeHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressQRCodeHeader.swift; sourceTree = "<group>"; };
 		A6833D902C66A0B5002029E1 /* CreateVaultHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateVaultHeader.swift; sourceTree = "<group>"; };
 		A6833D922C66A4EA002029E1 /* SwapCryptoHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoHeader.swift; sourceTree = "<group>"; };
@@ -4133,7 +4133,6 @@
 				A6833D832C65BC59002029E1 /* FunctionCallHeader.swift */,
 				A6833D852C65BF6D002029E1 /* JoinKeygenHeader.swift */,
 				A6833D872C65C129002029E1 /* PeerDiscoveryHeader.swift */,
-				A6833D892C65CF07002029E1 /* HomeHeader.swift */,
 				A6833D8C2C65D2A1002029E1 /* AddressQRCodeHeader.swift */,
 				A6833D902C66A0B5002029E1 /* CreateVaultHeader.swift */,
 				A6833D922C66A4EA002029E1 /* SwapCryptoHeader.swift */,
@@ -4175,6 +4174,7 @@
 		A6980C222BC0834E00F452AB /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				139D15A72E9C7459006F671C /* VultDiscountTiersScreen.swift */,
 				1348FA612E6894C2001551F6 /* SettingsPasswordHintScreen.swift */,
 				133EEA182E68785F00E18280 /* SettingsCommonOptionView.swift */,
 				13DD54802E561A4E007335DA /* SettingsSectionView.swift */,
@@ -5589,7 +5589,6 @@
 				A6BB9BD12DA9E56A0085E117 /* VaultShareBackupsView+iOS.swift in Sources */,
 				13D3AC9A2E85B76000BA4273 /* BiweeklyPasswordVerificationViewModifier.swift in Sources */,
 				A6F7B71F2D4ED2D800AC8104 /* SecureBackupVaultOverview+iOS.swift in Sources */,
-				A6833D8A2C65CF07002029E1 /* HomeHeader.swift in Sources */,
 				138574142E2DA932002532BF /* PrimaryButton.swift in Sources */,
 				132666D12E42A054007FDAC5 /* THORName.swift in Sources */,
 				13DD3B1A2E3CFE7D00D46FA0 /* FlatPicker.swift in Sources */,
@@ -6010,6 +6009,7 @@
 				D70D65FC2DF48824001C4492 /* RuneBondCell.swift in Sources */,
 				A646DFA52E12EEA6006E8ECC /* SendDetailsAddressTab.swift in Sources */,
 				A5D00E412BD65CE7009E025F /* ERC20ApprovePayload.swift in Sources */,
+				139D15A82E9C7461006F671C /* VultDiscountTiersScreen.swift in Sources */,
 				A6966D2D2BA402A900903CA4 /* TokenSelectorDropdown.swift in Sources */,
 				134A9FC92E96A23300030C56 /* VaultBannerBackground.swift in Sources */,
 				1326EBBB2E463C59008A3F8F /* ReferralCodeMemoFactory.swift in Sources */,
