@@ -45,6 +45,7 @@ struct KeysignPayloadFactory {
         switch chainSpecific {
         case .Cardano(let byteFee, let sendMaxAmount, _):
             // Fetch UTXOs for Cardano using Koios API
+            // TODO: investigate whether cardano can also use the transaction plan in walletcore
             do {
                 let cardanoUTXOs = try await CardanoService.shared.getUTXOs(coin: coin)
                 
@@ -81,34 +82,23 @@ struct KeysignPayloadFactory {
                 throw Errors.notEnoughBalanceError
             }
             
-        case .UTXO(let byteFee, _):
-            // Bitcoin, Litecoin, Dogecoin etc. - use Blockchair
-            // 148 is estimate vbytes for every input
-            // estimate we will use maximum 10 utxos
-            let totalAmount = amount + BigInt(byteFee * 1480)
-            guard let info = await utxo.getByKey(key: coin.blockchairKey)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmount),coinType: coin.coinType)
-                .map({
-                    UtxoInfo(
-                        hash: $0.transactionHash ?? "",
-                        amount: Int64($0.value ?? 0),
-                        index: UInt32($0.index ?? -1)
-                    )
-                }), !info.isEmpty else {
-                // Check what specific UTXO issue we have
-                if let blockchairData = await utxo.getByKey(key: coin.blockchairKey) {
-                    if blockchairData.utxo?.isEmpty ?? true {
-                        throw Errors.notEnoughUTXOError
-                    }
-                    let dustThreshold = coin.coinType.getFixedDustThreshold()
-                    let usableUtxos = blockchairData.utxo?.filter { ($0.value ?? 0) >= Int(dustThreshold) } ?? []
-                    if usableUtxos.isEmpty {
-                        throw Errors.utxoTooSmallError
-                    }
-                    throw Errors.utxoSelectionFailedError
-                }
-                throw Errors.notEnoughBalanceError
-            }
-            utxos = info
+        case .UTXO(_, _):
+            let payload = KeysignPayload(
+                coin: coin,
+                toAddress: toAddress,
+                toAmount: amount,
+                chainSpecific: chainSpecific,
+                utxos: utxos,
+                memo: memo,
+                swapPayload: swapPayload,
+                approvePayload: approvePayload,
+                vaultPubKeyECDSA: vault.pubKeyECDSA,
+                vaultLocalPartyID: vault.localPartyID,
+                libType: (vault.libType ?? .GG20).toString(),
+                wasmExecuteContractPayload: wasmExecuteContractPayload,
+                skipBroadcast: false
+            )
+            utxos = try await selectUTXOs(vault: vault, keysignPayload: payload)
             
         default:
             // Non-UTXO chains don't need UTXO selection
@@ -130,5 +120,55 @@ struct KeysignPayloadFactory {
             wasmExecuteContractPayload: wasmExecuteContractPayload,
             skipBroadcast: false
         )
+    }
+    
+    private func selectUTXOs(vault: Vault,keysignPayload: KeysignPayload) async throws -> [UtxoInfo] {
+        let info = await utxo.getByKey(key: keysignPayload.coin.blockchairKey)?.utxo?.map({
+            UtxoInfo(
+                hash: $0.transactionHash ?? "",
+                amount: Int64($0.value ?? 0),
+                index: UInt32($0.index ?? -1)
+            )
+        })
+        guard let utxosInfo = info else {
+            return []
+        }
+        
+        let dustThreshold = keysignPayload.coin.coinType.getFixedDustThreshold()
+        let usableUTXOs = utxosInfo.filter { $0.amount >= dustThreshold }
+        if usableUTXOs.isEmpty {
+            throw Errors.utxoTooSmallError
+        }
+        let helper = UTXOChainsHelper.getHelper(vault: vault, coin: keysignPayload.coin)
+        guard let utxoHelper = helper else {
+            throw Errors.utxoSelectionFailedError
+        }
+        let tmpKeysignPayload = KeysignPayload(
+            coin: keysignPayload.coin,
+            toAddress: keysignPayload.toAddress,
+            toAmount: keysignPayload.toAmount,
+            chainSpecific: keysignPayload.chainSpecific,
+            utxos: usableUTXOs,
+            memo: keysignPayload.memo,
+            swapPayload: keysignPayload.swapPayload,
+            approvePayload: keysignPayload.approvePayload,
+            vaultPubKeyECDSA: keysignPayload.vaultPubKeyECDSA,
+            vaultLocalPartyID: keysignPayload.vaultLocalPartyID,
+            libType: keysignPayload.libType,
+            wasmExecuteContractPayload: keysignPayload.wasmExecuteContractPayload,
+            skipBroadcast: keysignPayload.skipBroadcast
+        )
+        
+        let plan = try utxoHelper.getBitcoinTransactionPlan(keysignPayload: tmpKeysignPayload)
+        if plan.utxos.isEmpty {
+            throw Errors.notEnoughUTXOError
+        }
+        return plan.utxos.map { utxo in
+            UtxoInfo(
+                hash: utxo.outPoint.hash.reversed().toHexString(),
+                amount: utxo.amount,
+                index: utxo.outPoint.index
+            )
+        }
     }
 }

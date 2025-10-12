@@ -59,7 +59,6 @@ final class BlockChainService {
     /// Clear cache for a specific address to force fresh nonce fetch
     func clearCacheForAddress(_ address: String, chain: Chain) {
         localCache.clear()
-        print("Cleared cache after transaction confirmation for address: \(address) on chain: \(chain)")
     }
     
     /// Check if we should use cache for the given chain and cache key
@@ -119,7 +118,6 @@ final class BlockChainService {
         }
         
         let gasLimit = try await estimateSwapGasLimit(tx: tx)
-        print("Estimated gas limit for swap: \(String(describing: gasLimit)) for \(tx.fromCoin.chain)")
         let specific = try await fetchSpecific(
             for: tx.fromCoin,
             action: .swap,
@@ -141,9 +139,21 @@ final class BlockChainService {
     
     func fetchUTXOFee(coin: Coin, action: Action, feeMode: FeeMode) async throws -> BigInt {
         let sats = try await utxo.fetchSatsPrice(coin: coin)
-        let normalized = Self.normalizeUTXOFee(sats)
-        let prioritized = Float(normalized) * feeMode.utxoMultiplier
-        return BigInt(prioritized)
+        
+        // DOGE has extremely high base fees from API, need to reduce significantly
+        let result: BigInt
+        if coin.chain == .dogecoin {
+            // For DOGE, the API returns 500k sats/byte which is too high for WalletCore
+            // Use a much lower value that WalletCore can work with: divide by 10
+            result = sats / 10 // 500k / 10 = 50k sats/byte (still high but workable)
+        } else {
+            // For other chains, use normal normalization and multipliers
+            let normalized = Self.normalizeUTXOFee(sats)
+            let prioritized = Float(normalized) * feeMode.utxoMultiplier
+            result = BigInt(prioritized)
+        }
+        
+        return result
     }
     
     func getCacheKey(for coin: Coin,
@@ -225,7 +235,6 @@ private extension BlockChainService {
         }
         
         let estimateGasLimit = tx.coin.isNativeToken ? try await estimateGasLimit(tx: tx):await estimateERC20GasLimit(tx: tx)
-        print("Estimated gas limit: \(estimateGasLimit) for \(tx.coin.chain)")
         let defaultGasLimit = BigInt(EVMHelper.defaultERC20TransferGasUnit)
         let gasLimit = max(defaultGasLimit, estimateGasLimit)
         
@@ -244,7 +253,6 @@ private extension BlockChainService {
             amount: tx.amountInRaw
         )
         self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
-        print("Fetched specific: \(specific) for \(tx.coin.chain)")
         return specific
     }
     
