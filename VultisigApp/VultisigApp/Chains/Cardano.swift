@@ -180,7 +180,9 @@ class CardanoHelper {
     /// Calculate dynamic transaction fee using WalletCore's transaction planning
     /// Similar to how UTXO chains calculate fees dynamically
     func getCardanoTransactionPlan(keysignPayload: KeysignPayload) throws -> CardanoTransactionPlan {
-        let input = try getCardanoSigningInput(keysignPayload: keysignPayload)
+        // Reuse existing getPreSignedInputData and deserialize it
+        let inputData = try CardanoHelper.getPreSignedInputData(keysignPayload: keysignPayload)
+        let input = try CardanoSigningInput(serializedBytes: inputData)
         let plan: CardanoTransactionPlan = AnySigner.plan(input: input, coin: .cardano)
         
         // Check for transaction plan errors
@@ -198,54 +200,6 @@ class CardanoHelper {
         return BigInt(plan.fee)
     }
     
-    /// Create CardanoSigningInput for transaction planning
-    private func getCardanoSigningInput(keysignPayload: KeysignPayload) throws -> CardanoSigningInput {
-        guard keysignPayload.coin.chain == .cardano else {
-            throw HelperError.runtimeError("coin is not ADA")
-        }
-        
-        guard case .Cardano(_, let sendMaxAmount, let ttl) = keysignPayload.chainSpecific else {
-            throw HelperError.runtimeError("fail to get Cardano chain specific parameters")
-        }
-        
-        guard AnyAddress(string: keysignPayload.toAddress, coin: .cardano) != nil else {
-            throw HelperError.runtimeError("fail to get to address: \(keysignPayload.toAddress)")
-        }
-        
-        // Prevent from accidentally sending all balance
-        var safeGuardMaxAmount = false
-        if let rawBalance = Int64(keysignPayload.coin.rawBalance),
-           sendMaxAmount,
-           rawBalance > 0,
-           rawBalance == Int64(keysignPayload.toAmount) {
-            safeGuardMaxAmount = true
-        }
-        
-        var input = CardanoSigningInput.with {
-            $0.transferMessage = CardanoTransfer.with {
-                $0.toAddress = keysignPayload.toAddress
-                $0.changeAddress = keysignPayload.coin.address
-                $0.amount = UInt64(keysignPayload.toAmount)
-                $0.useMaxAmount = safeGuardMaxAmount
-            }
-            $0.ttl = ttl
-        }
-        
-        // Add UTXOs to the input
-        for inputUtxo in keysignPayload.utxos {
-            let utxo = CardanoTxInput.with {
-                $0.outPoint = CardanoOutPoint.with {
-                    $0.txHash = Data(hexString: inputUtxo.hash)!
-                    $0.outputIndex = UInt64(inputUtxo.index)
-                }
-                $0.amount = UInt64(inputUtxo.amount)
-                $0.address = keysignPayload.coin.address
-            }
-            input.utxos.append(utxo)
-        }
-        
-        return input
-    }
     
     // MARK: - Helper Functions
         

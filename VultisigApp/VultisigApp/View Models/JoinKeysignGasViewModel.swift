@@ -38,12 +38,12 @@ struct JoinKeysignGasViewModel {
         var feeToUse = payload.chainSpecific.gas
         if payload.coin.chainType == .UTXO {
             feeToUse = calculateUTXOTotalFee(payload: payload) ?? payload.chainSpecific.gas
-        } else if payload.coin.chain == .cardano {
+        } else if payload.coin.chainType == .Cardano  {
             feeToUse = calculateCardanoTotalFee(payload: payload) ?? payload.chainSpecific.gas
         }
 
         // Use the same fee for both crypto and fiat display for UTXO and Cardano chains
-        let gasAmountToDisplay = (payload.coin.chainType == .UTXO || payload.coin.chain == .cardano) ? feeToUse : payload.chainSpecific.gas
+        let gasAmountToDisplay = (payload.coin.chainType == .UTXO || payload.coin.chainType == .Cardano) ? feeToUse : payload.chainSpecific.gas
         let gasAmount = Decimal(gasAmountToDisplay) / pow(10, nativeToken.decimals)
         let gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
 
