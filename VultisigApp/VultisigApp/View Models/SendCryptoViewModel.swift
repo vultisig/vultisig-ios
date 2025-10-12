@@ -83,7 +83,7 @@ class SendCryptoViewModel: ObservableObject {
             if tx.coin.chainType == .UTXO || tx.coin.chainType == .Cardano {
                 if tx.amountInRaw > 0 {
                     // Only calculate accurate fee when user has entered an amount
-                    tx.fee = try await calculatePlanFee(tx: tx, chainSpecific: specific)
+                    tx.fee = try await calculateUTXOPlanFee(tx: tx, chainSpecific: specific)
                 } else {
                     // Initial state - no amount yet, use 0 to indicate fee not calculated yet
                     tx.fee = BigInt.zero
@@ -349,8 +349,8 @@ class SendCryptoViewModel: ObservableObject {
             tx.amountInFiat = truncatedValueFiat.formatToDecimal(digits: tx.coin.decimals)
             tx.sendMaxAmount = setMaxValue
             
-            // Recalculate plan-based fees when amount changes (UTXO and Cardano chains)
-            recalculatePlanFeesIfNeeded(tx: tx)
+            // Recalculate UTXO-based fees when amount changes (UTXO and Cardano chains)
+            recalculateUTXOFeesIfNeeded(tx: tx)
         } else {
             tx.amountInFiat = ""
         }
@@ -632,22 +632,23 @@ class SendCryptoViewModel: ObservableObject {
         return false
     }
     
-    private func calculatePlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
+    private func calculateUTXOPlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
         guard let vault = ApplicationState.shared.currentVault else {
-            throw HelperError.runtimeError("No vault available for plan fee calculation")
+            throw HelperError.runtimeError("No vault available for UTXO fee calculation")
         }
         
         // Don't calculate plan fee if amount is 0 or empty
         let actualAmount = tx.amountInRaw
         if actualAmount == 0 {
-            throw HelperError.runtimeError("Enter an amount to calculate accurate fees")
+            throw HelperError.runtimeError("Enter an amount to calculate accurate UTXO fees")
         }
         
-        // For UTXO chains, force fresh UTXO fetch for fee calculation to avoid stale cache
-        if tx.coin.chainType == .UTXO {
-            await BlockchairService.shared.clearUTXOCache(for: tx.coin)
-            let _ = try await BlockchairService.shared.fetchBlockchairData(coin: tx.coin)
-        }
+        
+        // Force fresh UTXO fetch for fee calculation to avoid stale cache
+        await BlockchairService.shared.clearUTXOCache(for: tx.coin)
+        
+        // Fetch fresh UTXOs from API
+        let _ = try await BlockchairService.shared.fetchBlockchairData(coin: tx.coin)
         
         let keysignFactory = KeysignPayloadFactory()
         let keysignPayload = try await keysignFactory.buildTransfer(
@@ -687,9 +688,9 @@ class SendCryptoViewModel: ObservableObject {
         return BigInt.zero
     }
     
-    /// Recalculate plan-based fees when amount changes (UTXO and Cardano chains)
-    func recalculatePlanFeesIfNeeded(tx: SendTransaction) {
-        guard (tx.coin.chainType == .UTXO || tx.coin.chain == .cardano) && tx.amountInRaw > 0 else { 
+    /// Recalculate UTXO-based fees when amount changes (UTXO and Cardano chains)
+    func recalculateUTXOFeesIfNeeded(tx: SendTransaction) {
+        guard (tx.coin.chainType == .UTXO || tx.coin.chainType == .Cardano) && tx.amountInRaw > 0 else { 
             return 
         }
         
@@ -700,7 +701,7 @@ class SendCryptoViewModel: ObservableObject {
             
             do {
                 let specific = try await blockchainService.fetchSpecific(tx: tx)
-                let newFee = try await calculatePlanFee(tx: tx, chainSpecific: specific)
+                let newFee = try await calculateUTXOPlanFee(tx: tx, chainSpecific: specific)
                 
                 await MainActor.run {
                     tx.fee = newFee
@@ -710,7 +711,7 @@ class SendCryptoViewModel: ObservableObject {
                 await MainActor.run {
                     tx.isCalculatingFee = false
                 }
-                print("Failed to recalculate plan fee for \(tx.coin.chain.name): \(error.localizedDescription)")
+                print("Failed to recalculate UTXO fee: \(error.localizedDescription)")
             }
         }
     }
