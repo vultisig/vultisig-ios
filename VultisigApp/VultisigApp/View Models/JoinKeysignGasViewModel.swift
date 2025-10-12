@@ -34,14 +34,16 @@ struct JoinKeysignGasViewModel {
             return ("\(gasInReadable) \(payload.coin.chain.feeUnit)", feeInReadable)
         }
 
-        // For UTXO chains, calculate total fee using WalletCore (like first device)
+        // For UTXO and Cardano chains, calculate total fee using WalletCore (like first device)
         var feeToUse = payload.chainSpecific.gas
         if payload.coin.chainType == .UTXO {
             feeToUse = calculateUTXOTotalFee(payload: payload) ?? payload.chainSpecific.gas
+        } else if payload.coin.chain == .cardano {
+            feeToUse = calculateCardanoTotalFee(payload: payload) ?? payload.chainSpecific.gas
         }
 
-        // Use the same fee for both crypto and fiat display for UTXO chains
-        let gasAmountToDisplay = payload.coin.chainType == .UTXO ? feeToUse : payload.chainSpecific.gas
+        // Use the same fee for both crypto and fiat display for UTXO and Cardano chains
+        let gasAmountToDisplay = (payload.coin.chainType == .UTXO || payload.coin.chain == .cardano) ? feeToUse : payload.chainSpecific.gas
         let gasAmount = Decimal(gasAmountToDisplay) / pow(10, nativeToken.decimals)
         let gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
 
@@ -82,6 +84,20 @@ struct JoinKeysignGasViewModel {
         do {
             let plan = try helper.getBitcoinTransactionPlan(keysignPayload: payload)
             return plan.fee > 0 ? BigInt(plan.fee) : nil
+        } catch {
+            return nil
+        }
+    }
+    
+    private func calculateCardanoTotalFee(payload: KeysignPayload) -> BigInt? {
+        guard let vault = ApplicationState.shared.currentVault,
+              let helper = CardanoHelper.getHelper(vault: vault, coin: payload.coin) else {
+            return nil
+        }
+        
+        do {
+            let planFee = try helper.calculateDynamicFee(keysignPayload: payload)
+            return planFee > 0 ? planFee : nil
         } catch {
             return nil
         }
