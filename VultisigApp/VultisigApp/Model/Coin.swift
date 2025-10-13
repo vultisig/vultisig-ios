@@ -278,8 +278,6 @@ class Coin: ObservableObject, Codable, Hashable {
         return !isNativeToken && chain.chainType == .EVM
     }
     
-    
-    
     var tokenChainLogo: String? {
         guard chain.logo != logo else { return nil }
         return chain.logo

@@ -159,6 +159,12 @@
 		139880502E39007C00EC5D3F /* CosmosCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1398804F2E39007900EC5D3F /* CosmosCoin.swift */; };
 		139B400C2E42466F00238C2C /* MacOSOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139B400B2E42466800238C2C /* MacOSOverlay.swift */; };
 		139D15A82E9C7461006F671C /* VultDiscountTiersScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139D15A72E9C7459006F671C /* VultDiscountTiersScreen.swift */; };
+		139D15AE2E9C78FD006F671C /* VultDiscountTier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139D15AD2E9C78F6006F671C /* VultDiscountTier.swift */; };
+		139D15B12E9C7F32006F671C /* VultDiscountTierView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139D15B02E9C7F31006F671C /* VultDiscountTierView.swift */; };
+		139D15B62E9D50E2006F671C /* VultDiscountTierIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139D15B52E9D50E1006F671C /* VultDiscountTierIcon.swift */; };
+		139D15B82E9D51C0006F671C /* VultDiscountTierBottomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139D15B72E9D51BA006F671C /* VultDiscountTierBottomSheet.swift */; };
+		139D15BA2E9D59BC006F671C /* VultDiscountTierStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139D15B92E9D59B5006F671C /* VultDiscountTierStyle.swift */; };
+		139D15BC2E9D5FA1006F671C /* VultTierService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139D15BB2E9D5F9B006F671C /* VultTierService.swift */; };
 		139DE1262E4CF7F200BC2FD3 /* SendPairScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139DE1252E4CF7E900BC2FD3 /* SendPairScreen.swift */; };
 		139DE1282E4D095000BC2FD3 /* SendKeysignScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139DE1272E4D094D00BC2FD3 /* SendKeysignScreen.swift */; };
 		139DE12A2E4D0B3A00BC2FD3 /* SendDoneScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139DE1292E4D0B3200BC2FD3 /* SendDoneScreen.swift */; };
@@ -1230,6 +1236,12 @@
 		1398804F2E39007900EC5D3F /* CosmosCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosCoin.swift; sourceTree = "<group>"; };
 		139B400B2E42466800238C2C /* MacOSOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSOverlay.swift; sourceTree = "<group>"; };
 		139D15A72E9C7459006F671C /* VultDiscountTiersScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultDiscountTiersScreen.swift; sourceTree = "<group>"; };
+		139D15AD2E9C78F6006F671C /* VultDiscountTier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultDiscountTier.swift; sourceTree = "<group>"; };
+		139D15B02E9C7F31006F671C /* VultDiscountTierView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultDiscountTierView.swift; sourceTree = "<group>"; };
+		139D15B52E9D50E1006F671C /* VultDiscountTierIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultDiscountTierIcon.swift; sourceTree = "<group>"; };
+		139D15B72E9D51BA006F671C /* VultDiscountTierBottomSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultDiscountTierBottomSheet.swift; sourceTree = "<group>"; };
+		139D15B92E9D59B5006F671C /* VultDiscountTierStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultDiscountTierStyle.swift; sourceTree = "<group>"; };
+		139D15BB2E9D5F9B006F671C /* VultTierService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultTierService.swift; sourceTree = "<group>"; };
 		139DE1252E4CF7E900BC2FD3 /* SendPairScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendPairScreen.swift; sourceTree = "<group>"; };
 		139DE1272E4D094D00BC2FD3 /* SendKeysignScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendKeysignScreen.swift; sourceTree = "<group>"; };
 		139DE1292E4D0B3200BC2FD3 /* SendDoneScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDoneScreen.swift; sourceTree = "<group>"; };
@@ -2784,6 +2796,44 @@
 			path = Covers;
 			sourceTree = "<group>";
 		};
+		139D15A92E9C78D5006F671C /* VultDiscountTiers */ = {
+			isa = PBXGroup;
+			children = (
+				139D15B42E9C7F88006F671C /* Service */,
+				139D15AF2E9C7F22006F671C /* View */,
+				139D15AA2E9C78ED006F671C /* Model */,
+				139D15A72E9C7459006F671C /* VultDiscountTiersScreen.swift */,
+			);
+			path = VultDiscountTiers;
+			sourceTree = "<group>";
+		};
+		139D15AA2E9C78ED006F671C /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				139D15B92E9D59B5006F671C /* VultDiscountTierStyle.swift */,
+				139D15AD2E9C78F6006F671C /* VultDiscountTier.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		139D15AF2E9C7F22006F671C /* View */ = {
+			isa = PBXGroup;
+			children = (
+				139D15B72E9D51BA006F671C /* VultDiscountTierBottomSheet.swift */,
+				139D15B52E9D50E1006F671C /* VultDiscountTierIcon.swift */,
+				139D15B02E9C7F31006F671C /* VultDiscountTierView.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		139D15B42E9C7F88006F671C /* Service */ = {
+			isa = PBXGroup;
+			children = (
+				139D15BB2E9D5F9B006F671C /* VultTierService.swift */,
+			);
+			path = Service;
+			sourceTree = "<group>";
+		};
 		13A899092E44F540006F75F0 /* Text */ = {
 			isa = PBXGroup;
 			children = (
@@ -3024,6 +3074,7 @@
 		13C880552E70A312009C67F1 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				139D15A92E9C78D5006F671C /* VultDiscountTiers */,
 				133CA3CA2E8AD17A009588F3 /* CoinDetail */,
 				13C7C1DF2E86EDD500A529FD /* Common */,
 				13C7C1D92E86DD7F00A529FD /* TokenSelection */,
@@ -4174,7 +4225,6 @@
 		A6980C222BC0834E00F452AB /* Settings */ = {
 			isa = PBXGroup;
 			children = (
-				139D15A72E9C7459006F671C /* VultDiscountTiersScreen.swift */,
 				1348FA612E6894C2001551F6 /* SettingsPasswordHintScreen.swift */,
 				133EEA182E68785F00E18280 /* SettingsCommonOptionView.swift */,
 				13DD54802E561A4E007335DA /* SettingsSectionView.swift */,
@@ -5440,6 +5490,7 @@
 				A622C8582C9BCCC600908332 /* JoinKeygenView+macOS.swift in Sources */,
 				B52196442C12C3540021D27A /* CustomTokenScreen.swift in Sources */,
 				B5A97CEF2BF41779007574D7 /* FunctionCallViewModel.swift in Sources */,
+				139D15B12E9C7F32006F671C /* VultDiscountTierView.swift in Sources */,
 				A6ECA1A22C93FC0D00456110 /* VaultSetupCard+macOS.swift in Sources */,
 				A6ECA1962C93F99700456110 /* InstructionPrompt+macOS.swift in Sources */,
 				DE1572972B70F254009BC7C5 /* LocalStateAccessorImp.swift in Sources */,
@@ -5533,6 +5584,7 @@
 				B5A97CFC2BF4365E007574D7 /* FunctionCallInstance.swift in Sources */,
 				1385741A2E2DAAE9002532BF /* PrimaryButtonView.swift in Sources */,
 				A6E0C9192DE6BAD600A01543 /* StepsAnimationView.swift in Sources */,
+				139D15AE2E9C78FD006F671C /* VultDiscountTier.swift in Sources */,
 				B50E399D2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift in Sources */,
 				13AF0D1D2E4CE73B004D4FD2 /* SendRoute.swift in Sources */,
 				13DD3B172E3CFE5900D46FA0 /* OffsetObservingScrollView.swift in Sources */,
@@ -5746,6 +5798,7 @@
 				A594A9EB2C64364600A3D09E /* Rate.swift in Sources */,
 				A6505AD92CA66CBA0002FBF4 /* Placement+iOS.swift in Sources */,
 				13DD54812E561A53007335DA /* SettingsSectionView.swift in Sources */,
+				139D15BA2E9D59BC006F671C /* VultDiscountTierStyle.swift in Sources */,
 				A65BA9922BAD439900B2D8AA /* KeysignDiscoverServiceView.swift in Sources */,
 				A6980C2E2BC089F900F452AB /* SettingSelectionCell.swift in Sources */,
 				A51AE8C02C931C6000EF9A7A /* FastVaultSetPasswordView.swift in Sources */,
@@ -5842,6 +5895,7 @@
 				138E370C2E439A7D0032C31C /* EditReferralDetailsView.swift in Sources */,
 				DE5FA58A2BAD1EF2008FD910 /* CosmosBalanceCacheEntry.swift in Sources */,
 				A69069A32BCE2FD300F28A8B /* KeygenStatusText.swift in Sources */,
+				139D15B82E9D51C0006F671C /* VultDiscountTierBottomSheet.swift in Sources */,
 				1321D74A2E8F13D300ABE613 /* NativeToolbarItem+PreferenceKey.swift in Sources */,
 				13D764382E41030300F048DE /* SwapCoinSelectionViewModel.swift in Sources */,
 				A6F7B7192D4EC25D00AC8104 /* BackupVaultSuccessView+macOS.swift in Sources */,
@@ -5901,6 +5955,7 @@
 				A65649F22B966A2300E4B329 /* UTXOTransactionStatus.swift in Sources */,
 				A646DFB12E16270F006E8ECC /* SendDetailsAmountTab.swift in Sources */,
 				A6BEF5C02BE2B11C007A84A1 /* DeeplinkViewModel.swift in Sources */,
+				139D15BC2E9D5FA1006F671C /* VultTierService.swift in Sources */,
 				A5C568952C246A0000E463B6 /* CoinFactory.swift in Sources */,
 				131603512E60C45D001ED972 /* VaultBackupContainerView.swift in Sources */,
 				A5D0C9372BEE778F0022D421 /* OneInchSwaps.swift in Sources */,
@@ -6133,6 +6188,7 @@
 				A594EC2B2D00BE6C00B74EBC /* SettingsCustomMessageViewModel.swift in Sources */,
 				A6F7B6772D42F64D00AC8104 /* OnboardingTextCard.swift in Sources */,
 				13B26D3F2E32B506000D3B3A /* SendFormExpandableSection.swift in Sources */,
+				139D15B62E9D50E2006F671C /* VultDiscountTierIcon.swift in Sources */,
 				B5E476AD2C1A556D005DB485 /* DydxService.swift in Sources */,
 				B54B01972BDCEB8E00FDA472 /* Polkadot.swift in Sources */,
 				A6AF960C2C2E2D6400992578 /* GeneralQRImportMacView.swift in Sources */,
