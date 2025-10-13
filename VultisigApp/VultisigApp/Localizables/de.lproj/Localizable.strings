@@ -891,3 +891,15 @@
 "backupBannerSubtitle" = "Halte den Zugang sicher, speichere online";
 "backupBannerButtonTitle" = "Tresor sichern";
 "addToAddressBook" = "Zum Adressbuch Hinzufügen";
+"vultDiscountTiers" = "$VULT Rabattstufen";
+"vultDiscountTiersDescription" = "Halten Sie $VULT, um niedrigere Handelsgebühren freizuschalten.";
+"bronze" = "Bronze";
+"silver" = "Silber";
+"gold" = "Gold";
+"platinum" = "Platin";
+"unlockTier" = "Stufe freischalten";
+"unlockXTier" = "%@ Stufe freischalten";
+"unlockXTierDescription" = "Durch das Halten von %@ $VULT schalten Sie die %@ Stufe frei und erhalten einen Rabatt von %@ bps auf alle Swaps.";
+"unlockXTierDescriptionHighlighted" = "%@ bps Handelsgebührenrabatt";
+"vultDiscount" = "Rabatt: %dbps";
+"hold" = "Halten";
