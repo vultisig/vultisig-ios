@@ -31,16 +31,16 @@ enum VultDiscountTier: String, Identifiable, CaseIterable {
         }
     }
     
-    var balanceToUnlock: BigInt {
+    var balanceToUnlock: Decimal {
         switch self {
         case .bronze:
-            BigInt(1_000)
+            1_000
         case .silver:
-            BigInt(2_500)
+            2_500
         case .gold:
-            BigInt(5_000)
+            5_000
         case .platinum:
-            BigInt(10_000)
+            10_000
         }
     }
     

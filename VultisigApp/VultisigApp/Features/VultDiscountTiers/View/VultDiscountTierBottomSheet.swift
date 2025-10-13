@@ -16,7 +16,7 @@ struct VultDiscountTierBottomSheet: View {
     var descriptionText: String {
         String(
             format: "unlockXTierDescription".localized,
-            tier.balanceToUnlock.toDecimal(decimals: 0).formatForDisplay(),
+            tier.balanceToUnlock.formatForDisplay(),
             tier.name.localized,
             "\(tier.bpsDiscount)"
         )

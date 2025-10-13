@@ -9,6 +9,7 @@ import SwiftUI
 
 struct VultDiscountTierView: View {
     let tier: VultDiscountTier
+    let vultToken: Coin
     let isActive: Bool
     var onExpand: () -> Void
     var onUnlock: () -> Void
@@ -17,8 +18,14 @@ struct VultDiscountTierView: View {
     @State var isActiveInternal: Bool = false
     
     var holdAmountText: String {
-        let value = tier.balanceToUnlock.toDecimal(decimals: 0).formatForDisplay()
-        return "\(value) $VULT"
+        let stringValue = "\(tier.balanceToUnlock.formatForDisplay()) $VULT"
+        let rate = RateProvider.shared.rate(for: vultToken)
+        // If rate == 0, we default to 1 for displaying purposes till provider returns $VULT
+        let rateToUse: Rate = (rate == nil || rate?.value == 0) ? Rate.identity : (rate ?? .identity)
+        let fiatValue: String = RateProvider.shared.fiatBalanceString(value: tier.balanceToUnlock, coin: vultToken, rate: rateToUse)
+        let formattedFiatValue = "(~\(fiatValue))"
+        
+        return [stringValue, formattedFiatValue].joined(separator: " ")
     }
     
     var body: some View {

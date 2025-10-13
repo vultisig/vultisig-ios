@@ -12,6 +12,7 @@ struct VultDiscountTiersScreen: View {
     @ObservedObject var vault: Vault
     
     @State private var activeTier: VultDiscountTier?
+    @State private var vultToken: Coin?
     @State private var showTierSheet: VultDiscountTier?
     @State private var scrollProxy: ScrollViewProxy?
     @State private var showSwapScren: Bool = false
@@ -23,26 +24,32 @@ struct VultDiscountTiersScreen: View {
         Screen(showNavigationBar: false, edgeInsets: .init(bottom: 0)) {
             ScrollViewReader { proxy in
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 12) {
-                        Image("vult-banner")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(maxWidth: 500)
-                            .padding(.bottom, 10)
-                        
-                        Text("vultDiscountTiersDescription".localized)
-                            .font(Theme.fonts.bodySRegular)
-                            .foregroundStyle(Theme.colors.textPrimary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .multilineTextAlignment(.leading)
-                        
-                        ForEach(VultDiscountTier.allCases) { tier in
-                            VultDiscountTierView(tier: tier, isActive: activeTier == tier) {
-                                onExpand(tier: tier)
-                            } onUnlock: {
-                                showTierSheet = tier
+                    if let vultToken {
+                        VStack(spacing: 12) {
+                            Image("vult-banner")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(maxWidth: 500)
+                                .padding(.bottom, 10)
+                            
+                            Text("vultDiscountTiersDescription".localized)
+                                .font(Theme.fonts.bodySRegular)
+                                .foregroundStyle(Theme.colors.textPrimary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .multilineTextAlignment(.leading)
+                            
+                            ForEach(VultDiscountTier.allCases) { tier in
+                                VultDiscountTierView(
+                                    tier: tier,
+                                    vultToken: vultToken,
+                                    isActive: activeTier == tier
+                                ) {
+                                    onExpand(tier: tier)
+                                } onUnlock: {
+                                    showTierSheet = tier
+                                }
+                                .id(tier.name)
                             }
-                            .id(tier.name)
                         }
                     }
                 }
@@ -64,6 +71,7 @@ struct VultDiscountTiersScreen: View {
             }
         }
         .onLoad {
+            getVultToken()
             refreshVultBalance()
         }
         .refreshable {
@@ -89,8 +97,15 @@ private extension VultDiscountTiersScreen {
     func refreshVultBalance() {
         Task {
             let activeTier = await service.fetchDiscountTier(for: vault)
-            await MainActor.run { self.activeTier = activeTier }
+            await MainActor.run {
+                self.activeTier = activeTier
+                getVultToken()
+            }
         }
+    }
+    
+    func getVultToken() {
+        self.vultToken = service.getVultToken(for: vault)
     }
 }
 

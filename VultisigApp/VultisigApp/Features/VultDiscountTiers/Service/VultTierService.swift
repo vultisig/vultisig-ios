@@ -53,7 +53,7 @@ private extension VultTierService {
         let lastFetchDate: Date
     }
     
-    func fetchVultBalance(for vault: Vault) async -> BigInt {
+    func fetchVultBalance(for vault: Vault) async -> Decimal {
         let vaultId = String(describing: vault.id)
         
         // Check if we need to fetch fresh balance
@@ -72,7 +72,7 @@ private extension VultTierService {
         
         // Return the balance from the coin (fresh or cached)
         guard let vultToken = getVultToken(for: vault) else { return .zero }
-        return vultToken.rawBalance.toBigInt()
+        return vultToken.balanceDecimal
     }
     
     func getOrAddVultTokenIfNeeded(to vault: Vault) async -> Coin? {
