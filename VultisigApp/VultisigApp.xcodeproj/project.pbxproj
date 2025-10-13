@@ -163,7 +163,6 @@
 		139D15B12E9C7F32006F671C /* VultDiscountTierView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139D15B02E9C7F31006F671C /* VultDiscountTierView.swift */; };
 		139D15B62E9D50E2006F671C /* VultDiscountTierIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139D15B52E9D50E1006F671C /* VultDiscountTierIcon.swift */; };
 		139D15B82E9D51C0006F671C /* VultDiscountTierBottomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139D15B72E9D51BA006F671C /* VultDiscountTierBottomSheet.swift */; };
-		139D15BA2E9D59BC006F671C /* VultDiscountTierStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139D15B92E9D59B5006F671C /* VultDiscountTierStyle.swift */; };
 		139D15BC2E9D5FA1006F671C /* VultTierService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139D15BB2E9D5F9B006F671C /* VultTierService.swift */; };
 		139DE1262E4CF7F200BC2FD3 /* SendPairScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139DE1252E4CF7E900BC2FD3 /* SendPairScreen.swift */; };
 		139DE1282E4D095000BC2FD3 /* SendKeysignScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139DE1272E4D094D00BC2FD3 /* SendKeysignScreen.swift */; };
@@ -1240,7 +1239,6 @@
 		139D15B02E9C7F31006F671C /* VultDiscountTierView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultDiscountTierView.swift; sourceTree = "<group>"; };
 		139D15B52E9D50E1006F671C /* VultDiscountTierIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultDiscountTierIcon.swift; sourceTree = "<group>"; };
 		139D15B72E9D51BA006F671C /* VultDiscountTierBottomSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultDiscountTierBottomSheet.swift; sourceTree = "<group>"; };
-		139D15B92E9D59B5006F671C /* VultDiscountTierStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultDiscountTierStyle.swift; sourceTree = "<group>"; };
 		139D15BB2E9D5F9B006F671C /* VultTierService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultTierService.swift; sourceTree = "<group>"; };
 		139DE1252E4CF7E900BC2FD3 /* SendPairScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendPairScreen.swift; sourceTree = "<group>"; };
 		139DE1272E4D094D00BC2FD3 /* SendKeysignScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendKeysignScreen.swift; sourceTree = "<group>"; };
@@ -2810,7 +2808,6 @@
 		139D15AA2E9C78ED006F671C /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				139D15B92E9D59B5006F671C /* VultDiscountTierStyle.swift */,
 				139D15AD2E9C78F6006F671C /* VultDiscountTier.swift */,
 			);
 			path = Model;
@@ -5798,7 +5795,6 @@
 				A594A9EB2C64364600A3D09E /* Rate.swift in Sources */,
 				A6505AD92CA66CBA0002FBF4 /* Placement+iOS.swift in Sources */,
 				13DD54812E561A53007335DA /* SettingsSectionView.swift in Sources */,
-				139D15BA2E9D59BC006F671C /* VultDiscountTierStyle.swift in Sources */,
 				A65BA9922BAD439900B2D8AA /* KeysignDiscoverServiceView.swift in Sources */,
 				A6980C2E2BC089F900F452AB /* SettingSelectionCell.swift in Sources */,
 				A51AE8C02C931C6000EF9A7A /* FastVaultSetPasswordView.swift in Sources */,

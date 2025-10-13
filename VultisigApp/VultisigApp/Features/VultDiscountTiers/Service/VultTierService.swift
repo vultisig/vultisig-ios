@@ -16,7 +16,9 @@ struct VultTierService {
             .sorted { $0.balanceToUnlock > $1.balanceToUnlock }
             .first { balance >= $0.balanceToUnlock }
     }
-    
+}
+
+private extension VultTierService {
     func fetchVultBalance(for vault: Vault) async -> BigInt {
         await addEthChainIfNeeded(for: vault)
         let vultToken = await getOrAddVultTokenIfNeeded(to: vault)
@@ -25,9 +27,7 @@ struct VultTierService {
         
         return vultToken.rawBalance.toBigInt()
     }
-}
-
-private extension VultTierService {
+    
     func getOrAddVultTokenIfNeeded(to vault: Vault) async -> Coin? {
         var vultToken = getVultToken(for: vault)
         if vultToken == nil {
