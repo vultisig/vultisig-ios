@@ -13,7 +13,7 @@ enum SwapQuote {
     case mayachain(ThorchainSwapQuote)
     case oneinch(EVMQuote, fee: BigInt?)
     case kyberswap(EVMQuote, fee: BigInt?)
-    case lifi(EVMQuote, fee: BigInt?)
+    case lifi(EVMQuote, fee: BigInt?, integratorFee: Decimal?)
     
     var swapProviderId: SwapProviderId? {
         switch self {
@@ -33,7 +33,7 @@ enum SwapQuote {
         case .thorchain(let quote), .mayachain(let quote):
             return quote.router
         case .oneinch(let quote, _),
-                .lifi(let quote, _),
+                .lifi(let quote, _, _),
                 .kyberswap(let quote, _):
             return quote.tx.to
         }
@@ -53,7 +53,7 @@ enum SwapQuote {
         case .thorchain(let quote), .mayachain(let quote):
             return quote.inboundAddress
         case .oneinch(let quote, _),
-                .lifi(let quote, _),
+                .lifi(let quote, _, _),
                 .kyberswap(let quote, _):
             return quote.tx.to
         }
@@ -79,11 +79,11 @@ enum SwapQuote {
         case .thorchain(let quote), .mayachain(let quote):
             guard let fees = Decimal(string: quote.fees.total) else { return nil }
             return fees / toCoin.thorswapMultiplier
-        case .lifi(let quote, _):
+        case .lifi(let quote, _, let integratorFee):
             // Li.Fi charges integrator fee on the output amount
             let toAmountBigInt = BigInt(quote.dstAmount) ?? .zero
             let toAmountDecimal = toCoin.decimal(for: toAmountBigInt)
-            return toAmountDecimal * LiFiService.integratorFeeDecimal
+            return toAmountDecimal * (integratorFee ?? 0)
         case .oneinch, .kyberswap:
             return .zero
         }
@@ -107,7 +107,7 @@ enum SwapQuote {
             return quote.hashValue ^ fee.hashValue
         case .kyberswap(let quote, let fee):
             return quote.hashValue ^ fee.hashValue
-        case .lifi(let quote, let fee):
+        case .lifi(let quote, let fee, _):
             return quote.hashValue ^ fee.hashValue
         }
     }

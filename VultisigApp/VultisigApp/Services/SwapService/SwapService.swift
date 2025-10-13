@@ -200,6 +200,6 @@ private extension SwapService {
             fromAmount: fromAmount,
             vultTierDiscount: vultTierDiscount
         )
-        return .lifi(response.quote, fee: response.fee)
+        return .lifi(response.quote, fee: response.fee, integratorFee: response.integratorFee)
     }
 }

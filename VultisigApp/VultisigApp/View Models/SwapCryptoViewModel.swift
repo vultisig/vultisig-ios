@@ -286,7 +286,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 
                 return true
                 
-            case .oneinch(let evmQuote, _), .lifi(let evmQuote, _), .kyberswap(let evmQuote, _):
+            case .oneinch(let evmQuote, _), .lifi(let evmQuote, _, _), .kyberswap(let evmQuote, _):
                 let keysignFactory = KeysignPayloadFactory()
                 let payload = GenericSwapPayload(
                     fromCoin: tx.fromCoin,
