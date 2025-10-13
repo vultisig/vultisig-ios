@@ -30,49 +30,50 @@ struct VultDiscountTierBottomSheet: View {
     }
     
     var body: some View {
-        GeometryReader { proxy in
-            VStack(spacing: 0) {
-                VStack(spacing: 24) {
-                    VultDiscountTierIcon(tier: tier, size: 72)
-                    HighlightedText(
-                        text: String(format: "unlockXTier".localized, tier.name.localized),
-                        highlightedText: tier.name.localized
-                    ) { attrString in
-                        attrString.font = Theme.fonts.title1
-                        attrString.foregroundColor = Theme.colors.textPrimary
-                    } highlightedTextStyle: { attrString in
-                        attrString.foregroundColor = tier.primaryColor
-                    }
-                }
-                Spacer()
+        VStack(spacing: 0) {
+            VStack(spacing: 24) {
+                VultDiscountTierIcon(tier: tier, size: 72)
                 HighlightedText(
-                    text: descriptionText,
-                    highlightedText: highlightedDescriptionText
+                    text: String(format: "unlockXTier".localized, tier.name.localized),
+                    highlightedText: tier.name.localized
                 ) { attrString in
-                    attrString.font = Theme.fonts.bodySRegular
-                    attrString.foregroundColor = Theme.colors.textLight
-                } highlightedTextStyle: { attrString in
-                    attrString.font = Theme.fonts.bodySMedium
+                    attrString.font = Theme.fonts.title1
                     attrString.foregroundColor = Theme.colors.textPrimary
+                } highlightedTextStyle: { attrString in
+                    attrString.foregroundColor = tier.primaryColor
                 }
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 300)
-                Spacer()
-                PrimaryButton(
-                    title: "unlockTier".localized,
-                    action: onUnlock
-                )
             }
-            .padding(.top, 40)
-            .padding(.horizontal, 24)
-            .background(ModalBackgroundView(width: width))
-            .presentationBackground(Theme.colors.bgSecondary)
-            .presentationDetents([.height(375)])
-            .presentationDragIndicator(.visible)
-            .applySheetSize()
-            .readSize {
-                width = $0.width
+            Spacer()
+            HighlightedText(
+                text: descriptionText,
+                highlightedText: highlightedDescriptionText
+            ) { attrString in
+                attrString.font = Theme.fonts.bodySRegular
+                attrString.foregroundColor = Theme.colors.textLight
+            } highlightedTextStyle: { attrString in
+                attrString.font = Theme.fonts.bodySMedium
+                attrString.foregroundColor = Theme.colors.textPrimary
             }
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: 300)
+            Spacer()
+            PrimaryButton(
+                title: "unlockTier".localized,
+                action: onUnlock
+            )
+        }
+        .padding(.top, 40)
+        .padding(.horizontal, 24)
+        #if os(macOS)
+        .padding(.bottom, 24)
+        .applySheetSize(400, 375)
+        #endif
+        .background(ModalBackgroundView(width: width))
+        .presentationBackground(Theme.colors.bgSecondary)
+        .presentationDetents([.height(375)])
+        .presentationDragIndicator(.visible)
+        .readSize {
+            width = $0.width
         }
         .crossPlatformToolbar(ignoresTopEdge: true)
     }

@@ -27,6 +27,7 @@ struct VultDiscountTiersScreen: View {
                         Image("vult-banner")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
+                            .frame(maxWidth: 500)
                             .padding(.bottom, 10)
                         
                         Text("vultDiscountTiersDescription".localized)
@@ -45,6 +46,7 @@ struct VultDiscountTiersScreen: View {
                         }
                     }
                 }
+                .padding(.bottom, 24)
                 .onLoad { scrollProxy = proxy }
             }
         }
