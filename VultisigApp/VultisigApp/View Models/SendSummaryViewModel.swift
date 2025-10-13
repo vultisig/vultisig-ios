@@ -54,7 +54,7 @@ class SendSummaryViewModel: ObservableObject {
         }
         
         // Use tx.fee (total fee amount) instead of tx.gas (sats/byte rate) like Android does
-        let feeToUse = tx.coin.chainType == .UTXO ? tx.fee : tx.gas
+        let feeToUse = (tx.coin.chainType == .UTXO || tx.coin.chainType == .Cardano) ? tx.fee : tx.gas
         
         let fee = nativeCoin.decimal(for: feeToUse)
         // Use fee-specific formatting with more decimal places (5 instead of 2)

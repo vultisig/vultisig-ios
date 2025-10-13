@@ -362,7 +362,7 @@ extension SendDetailsScreen: SendGasSettingsOutput {
         switch chain.chainType {
         case .EVM:
             tx.customGasLimit = gasLimit
-        case .UTXO:
+        case .UTXO, .Cardano:
             tx.customByteFee = byteFee
         default:
             return
