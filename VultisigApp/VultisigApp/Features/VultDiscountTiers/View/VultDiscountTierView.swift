@@ -10,10 +10,11 @@ import SwiftUI
 struct VultDiscountTierView: View {
     let tier: VultDiscountTier
     let isActive: Bool
-    @State var isExpanded: Bool = false
-    @State var isActiveInternal: Bool = false
     var onExpand: () -> Void
     var onUnlock: () -> Void
+    
+    @State var isExpanded: Bool = false
+    @State var isActiveInternal: Bool = false
     
     var holdAmountText: String {
         let value = tier.balanceToUnlock.toDecimal(decimals: 0).formatForDisplay()
