@@ -16,6 +16,10 @@ struct VultTierService {
             .sorted { $0.balanceToUnlock > $1.balanceToUnlock }
             .first { balance >= $0.balanceToUnlock }
     }
+    
+    func getVultToken(for vault: Vault) -> Coin? {
+        vault.coins.first(where: { $0.chain == .ethereum && $0.ticker == vultTicker })
+    }
 }
 
 private extension VultTierService {
@@ -36,10 +40,6 @@ private extension VultTierService {
         }
         
         return vultToken
-    }
-    
-    func getVultToken(for vault: Vault) -> Coin? {
-        vault.coins.first(where: { $0.chain == .ethereum && $0.ticker == vultTicker })
     }
     
     func addVultToken(to vault: Vault) async {

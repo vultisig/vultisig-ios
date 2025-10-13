@@ -14,7 +14,10 @@ struct VultDiscountTiersScreen: View {
     @State private var activeTier: VultDiscountTier?
     @State private var showTierSheet: VultDiscountTier?
     @State private var scrollProxy: ScrollViewProxy?
+    @State private var showSwapScren: Bool = false
     @Environment(\.openURL) var openURL
+    
+    private let service = VultTierService()
     
     var body: some View {
         Screen(showNavigationBar: false, edgeInsets: .init(bottom: 0)) {
@@ -54,7 +57,8 @@ struct VultDiscountTiersScreen: View {
         }
         .crossPlatformSheet(item: $showTierSheet) { tier in
             VultDiscountTierBottomSheet(tier: tier) {
-                onUnlock(tier: tier)
+                showTierSheet = nil
+                showSwapScren = true
             }
         }
         .onLoad {
@@ -63,14 +67,17 @@ struct VultDiscountTiersScreen: View {
         .refreshable {
             refreshVultBalance()
         }
+        .navigationDestination(isPresented: $showSwapScren) {
+            SwapCryptoView(
+                fromCoin: vault.nativeCoin(for: .ethereum),
+                toCoin: service.getVultToken(for: vault),
+                vault: vault
+            )
+        }
     }
 }
 
 private extension VultDiscountTiersScreen {
-    func onUnlock(tier: VultDiscountTier) {
-        // TODO: - Redirect to swaps
-    }
-    
     func onExpand(tier: VultDiscountTier) {
         withAnimation(.interpolatingSpring.delay(0.3)) {
             scrollProxy?.scrollTo(tier.name, anchor: .bottom)
@@ -79,10 +86,9 @@ private extension VultDiscountTiersScreen {
     
     func refreshVultBalance() {
         Task {
-            let activeTier = await VultTierService().fetchDiscountTier(for: vault)
+            let activeTier = await service.fetchDiscountTier(for: vault)
             await MainActor.run { self.activeTier = activeTier }
         }
-        
     }
 }
 
