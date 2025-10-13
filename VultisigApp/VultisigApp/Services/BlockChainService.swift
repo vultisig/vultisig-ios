@@ -276,8 +276,6 @@ private extension BlockChainService {
             return .UTXO(byteFee: byteFeeValue, sendMaxAmount: sendMaxAmount)
         case .cardano:
             let ttl = try await cardano.calculateDynamicTTL()
-            // For Cardano, we use fixed fee in BlockChainSpecific and calculate dynamic fee later
-            // This follows the same pattern as UTXO chains where dynamic calculation happens in the ViewModel
             let estimatedFee = cardano.estimateTransactionFee()
             return .Cardano(byteFee: BigInt(estimatedFee), sendMaxAmount: sendMaxAmount, ttl: ttl)
         case .thorChain:
