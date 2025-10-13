@@ -81,6 +81,7 @@ struct VultDiscountTierView: View {
         }
         .padding(16)
         .background(backgroundView.overlay(overlayView))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
         .onLoad { animate(isActive: isActive) }
         .onChange(of: isActive) { _, newValue in
             animate(isActive: newValue)
@@ -88,8 +89,19 @@ struct VultDiscountTierView: View {
     }
     
     var backgroundView: some View {
-        RoundedRectangle(cornerRadius: 16)
-            .fill(Theme.colors.bgSecondary)
+        ZStack {
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Theme.colors.bgSecondary)
+            
+            // Inner shadow with gradient
+            gradientView
+                .opacity(0.3)
+                .mask(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(lineWidth: 6)
+                        .blur(radius: 2)
+                )
+        }
     }
     
     var overlayView: some View {

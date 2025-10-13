@@ -53,14 +53,16 @@ struct VultDiscountTiersScreen: View {
                         }
                     }
                 }
+                #if os(macOS)
                 .padding(.bottom, 24)
+                #endif
                 .onLoad { scrollProxy = proxy }
             }
         }
         .crossPlatformToolbar("vultDiscountTiers".localized) {
             CustomToolbarItem(placement: .trailing) {
                 ToolbarButton(image: "globus") {
-                    openURL(StaticURL.VultisigVultURL)
+                    openURL(StaticURL.VultisigVultDocsURL)
                 }
             }
         }

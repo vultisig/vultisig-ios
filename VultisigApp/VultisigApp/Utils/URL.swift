@@ -18,4 +18,5 @@ class StaticURL {
     static let VultisigWebsiteURL = URL(string: "https://vultisig.com")!
     static let VultisigVultURL = URL(string: "https://vultisig.com/vult")!
     static let VultBackupURL = URL(string: "https://docs.vultisig.com/vultisig-vault-user-actions/managing-your-vault/vault-backup")!
+    static let VultisigVultDocsURL = URL(string: "https://docs.vultisig.com/vultisig-token/usdvult")!
 }
