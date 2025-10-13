@@ -1,0 +1,13 @@
+/* $VULT Discount Tiers - Spanish */
+"vultDiscountTiers" = "Niveles de Descuento $VULT";
+"vultDiscountTiersDescription" = "Mantén $VULT para desbloquear tarifas de intercambio más bajas.";
+"bronze" = "Bronce";
+"silver" = "Plata";
+"gold" = "Oro";
+"platinum" = "Platino";
+"unlockTier" = "Desbloquear Nivel";
+"unlockXTier" = "Desbloquear Nivel %@";
+"unlockXTierDescription" = "Al mantener %@ $VULT, desbloquearás el Nivel %@ y recibirás un descuento de %@ bps en las tarifas de intercambio en todos los swaps.";
+"unlockXTierDescriptionHighlighted" = "descuento de %@ bps en las tarifas de intercambio";
+"vultDiscount" = "Descuento: %dbps";
+"hold" = "Mantener";

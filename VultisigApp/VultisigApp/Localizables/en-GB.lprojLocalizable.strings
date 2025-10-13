@@ -1,0 +1,13 @@
+/* $VULT Discount Tiers - English (UK) */
+"vultDiscountTiers" = "$VULT Discount Tiers";
+"vultDiscountTiersDescription" = "Hold $VULT to unlock lower trading fees.";
+"bronze" = "Bronze";
+"silver" = "Silver";
+"gold" = "Gold";
+"platinum" = "Platinum";
+"unlockTier" = "Unlock Tier";
+"unlockXTier" = "Unlock %@ Tier";
+"unlockXTierDescription" = "By holding %@ $VULT, you'll unlock the %@ Tier and receive a %@ bps trading fee discount on all swaps.";
+"unlockXTierDescriptionHighlighted" = "%@ bps trading fee discount";
+"vultDiscount" = "Discount: %dbps";
+"hold" = "Hold";

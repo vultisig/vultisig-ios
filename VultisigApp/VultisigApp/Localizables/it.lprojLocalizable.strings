@@ -1,0 +1,13 @@
+/* $VULT Discount Tiers - Italian */
+"vultDiscountTiers" = "Livelli di Sconto $VULT";
+"vultDiscountTiersDescription" = "Tieni $VULT per sbloccare commissioni di trading più basse.";
+"bronze" = "Bronzo";
+"silver" = "Argento";
+"gold" = "Oro";
+"platinum" = "Platino";
+"unlockTier" = "Sblocca Livello";
+"unlockXTier" = "Sblocca Livello %@";
+"unlockXTierDescription" = "Tenendo %@ $VULT, sbloccherai il Livello %@ e riceverai uno sconto di %@ bps sulle commissioni di trading su tutti gli scambi.";
+"unlockXTierDescriptionHighlighted" = "sconto di %@ bps sulle commissioni di trading";
+"vultDiscount" = "Sconto: %dbps";
+"hold" = "Tieni";

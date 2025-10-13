@@ -164,6 +164,12 @@
 		139D15B62E9D50E2006F671C /* VultDiscountTierIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139D15B52E9D50E1006F671C /* VultDiscountTierIcon.swift */; };
 		139D15B82E9D51C0006F671C /* VultDiscountTierBottomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139D15B72E9D51BA006F671C /* VultDiscountTierBottomSheet.swift */; };
 		139D15BC2E9D5FA1006F671C /* VultTierService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139D15BB2E9D5F9B006F671C /* VultTierService.swift */; };
+		139D15BE2E9D7F2E006F671C /* de.lprojLocalizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 139D15BD2E9D7F2E006F671C /* de.lprojLocalizable.strings */; };
+		139D15C02E9D7F35006F671C /* es.lprojLocalizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 139D15BF2E9D7F35006F671C /* es.lprojLocalizable.strings */; };
+		139D15C22E9D7F3A006F671C /* pt.lprojLocalizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 139D15C12E9D7F3A006F671C /* pt.lprojLocalizable.strings */; };
+		139D15C42E9D7F40006F671C /* it.lprojLocalizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 139D15C32E9D7F40006F671C /* it.lprojLocalizable.strings */; };
+		139D15C62E9D7F46006F671C /* hr.lprojLocalizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 139D15C52E9D7F46006F671C /* hr.lprojLocalizable.strings */; };
+		139D15C82E9D7F4C006F671C /* en-GB.lprojLocalizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 139D15C72E9D7F4C006F671C /* en-GB.lprojLocalizable.strings */; };
 		139DE1262E4CF7F200BC2FD3 /* SendPairScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139DE1252E4CF7E900BC2FD3 /* SendPairScreen.swift */; };
 		139DE1282E4D095000BC2FD3 /* SendKeysignScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139DE1272E4D094D00BC2FD3 /* SendKeysignScreen.swift */; };
 		139DE12A2E4D0B3A00BC2FD3 /* SendDoneScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139DE1292E4D0B3200BC2FD3 /* SendDoneScreen.swift */; };
@@ -1240,6 +1246,12 @@
 		139D15B52E9D50E1006F671C /* VultDiscountTierIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultDiscountTierIcon.swift; sourceTree = "<group>"; };
 		139D15B72E9D51BA006F671C /* VultDiscountTierBottomSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultDiscountTierBottomSheet.swift; sourceTree = "<group>"; };
 		139D15BB2E9D5F9B006F671C /* VultTierService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultTierService.swift; sourceTree = "<group>"; };
+		139D15BD2E9D7F2E006F671C /* de.lprojLocalizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = de.lprojLocalizable.strings; sourceTree = "<group>"; };
+		139D15BF2E9D7F35006F671C /* es.lprojLocalizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = es.lprojLocalizable.strings; sourceTree = "<group>"; };
+		139D15C12E9D7F3A006F671C /* pt.lprojLocalizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = pt.lprojLocalizable.strings; sourceTree = "<group>"; };
+		139D15C32E9D7F40006F671C /* it.lprojLocalizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = it.lprojLocalizable.strings; sourceTree = "<group>"; };
+		139D15C52E9D7F46006F671C /* hr.lprojLocalizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = hr.lprojLocalizable.strings; sourceTree = "<group>"; };
+		139D15C72E9D7F4C006F671C /* en-GB.lprojLocalizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = "en-GB.lprojLocalizable.strings"; sourceTree = "<group>"; };
 		139DE1252E4CF7E900BC2FD3 /* SendPairScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendPairScreen.swift; sourceTree = "<group>"; };
 		139DE1272E4D094D00BC2FD3 /* SendKeysignScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendKeysignScreen.swift; sourceTree = "<group>"; };
 		139DE1292E4D0B3200BC2FD3 /* SendDoneScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDoneScreen.swift; sourceTree = "<group>"; };
@@ -3372,6 +3384,12 @@
 			isa = PBXGroup;
 			children = (
 				468029302BC8E4CE005A9EEF /* Localizable.strings */,
+				139D15BD2E9D7F2E006F671C /* de.lprojLocalizable.strings */,
+				139D15BF2E9D7F35006F671C /* es.lprojLocalizable.strings */,
+				139D15C12E9D7F3A006F671C /* pt.lprojLocalizable.strings */,
+				139D15C32E9D7F40006F671C /* it.lprojLocalizable.strings */,
+				139D15C52E9D7F46006F671C /* hr.lprojLocalizable.strings */,
+				139D15C72E9D7F4C006F671C /* en-GB.lprojLocalizable.strings */,
 			);
 			path = Localizables;
 			sourceTree = "<group>";
@@ -5229,6 +5247,7 @@
 				A6F7B6C82D4ABA5A00AC8104 /* WaitingForDevice.riv in Resources */,
 				A6621B852D67D98900757B43 /* vaultCreatedAnimation.riv in Resources */,
 				A65F8A172D42224100CF4DDB /* Brockmann-SemiBold.otf in Resources */,
+				139D15BE2E9D7F2E006F671C /* de.lprojLocalizable.strings in Resources */,
 				A53065FA2D5A9FEF000B82E6 /* fastvault_overview.riv in Resources */,
 				A65F8A182D42224100CF4DDB /* Brockmann-Regular.otf in Resources */,
 				1387FDA82E32C2CC007ECDB4 /* QRScanner.riv in Resources */,
@@ -5236,14 +5255,19 @@
 				A6F7B6F82D4C94D700AC8104 /* ConnectingWithServer.riv in Resources */,
 				DE8AD7432BC64A4C00339775 /* PrivacyInfo.xcprivacy in Resources */,
 				DE49A1712B65F6DB000F3AFB /* Preview Assets.xcassets in Resources */,
+				139D15C22E9D7F3A006F671C /* pt.lprojLocalizable.strings in Resources */,
 				A6CBF2E02C268D1400FD8080 /* Montserrat-Italic.ttf in Resources */,
 				A6C58D672D7A3E4B000D2833 /* FastVaultBackupSucces.riv in Resources */,
 				A6F7B6EB2D4B0D8500AC8104 /* CreatingVaultCheckmark.riv in Resources */,
 				A6F7B6C22D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv in Resources */,
 				468029362BC8E4CE005A9EEF /* Localizable.strings in Resources */,
 				A6CBF2DF2C268D1400FD8080 /* Montserrat.ttf in Resources */,
+				139D15C62E9D7F46006F671C /* hr.lprojLocalizable.strings in Resources */,
+				139D15C82E9D7F4C006F671C /* en-GB.lprojLocalizable.strings in Resources */,
+				139D15C42E9D7F40006F671C /* it.lprojLocalizable.strings in Resources */,
 				DE49A1942B65F7B6000F3AFB /* Mediator in Resources */,
 				A6BB9BCF2DA9E43B0085E117 /* all_devices_animation.riv in Resources */,
+				139D15C02E9D7F35006F671C /* es.lprojLocalizable.strings in Resources */,
 				DE49A16D2B65F6DB000F3AFB /* Assets.xcassets in Resources */,
 				A53065FC2D5AA5D3000B82E6 /* securevault_overview.riv in Resources */,
 				A6C58D822D7AD81D000D2833 /* securevault_summary.riv in Resources */,
