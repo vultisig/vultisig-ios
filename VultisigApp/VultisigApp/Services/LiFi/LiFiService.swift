@@ -14,12 +14,12 @@ struct LiFiService {
     static let integratorFeeDecimal: Decimal = 0.005
 
     private let integratorName: String = "vultisig-ios"
-    private let integratorFee: String = "0.005"
 
     func fetchQuotes(
         fromCoin: Coin,
         toCoin: Coin,
-        fromAmount: BigInt
+        fromAmount: BigInt,
+        vultTierDiscount: Int
     ) async throws -> (quote: EVMQuote, fee: BigInt?) {
 
         guard let fromChain = fromCoin.chain.chainID, let toChain = toCoin.chain.chainID else {
@@ -28,7 +28,7 @@ struct LiFiService {
         let fromToken = fromCoin.contractAddress.isEmpty ? fromCoin.ticker : fromCoin.contractAddress
         let toToken = toCoin.contractAddress.isEmpty ? toCoin.ticker : toCoin.contractAddress
         let integrator = fromCoin.isLifiFeesSupported ? integratorName : nil
-        let fee = fromCoin.isLifiFeesSupported ? integratorFee : nil
+        let fee = fromCoin.isLifiFeesSupported ? bps(for: vultTierDiscount) : nil
 
         let endpoint = Endpoint.fetchLiFiQuote(
             fromChain: String(fromChain),
@@ -103,5 +103,10 @@ private extension LiFiService {
 
     enum Errors: Error {
         case unexpectedError
+    }
+    
+    func bps(for discount: Int) -> String {
+        let feeDecimal = max(0, LiFiService.integratorFeeDecimal - Decimal(discount) * 0.001)
+        return String(format: "%.3f", NSDecimalNumber(decimal: feeDecimal).doubleValue)
     }
 }

@@ -79,7 +79,7 @@ class SwapTransaction: ObservableObject {
         return quote?.inboundFeeDecimal(toCoin: toCoin)
     }
 
-    var isAlliliate: Bool {
+    var isAffiliate: Bool {
         let fiatAmount = RateProvider.shared.fiatBalance(
             value: fromAmountDecimal,
             coin: fromCoin,
@@ -115,7 +115,7 @@ extension SwapTransaction {
             streamingInterval: String(provider.streamingInterval),
             streamingQuantity: "0",
             expirationTime: UInt64(expirationTime.timeIntervalSince1970),
-            isAffiliate: isAlliliate
+            isAffiliate: isAffiliate
         )
         return swapPayload
     }
