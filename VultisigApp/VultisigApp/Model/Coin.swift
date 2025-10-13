@@ -165,8 +165,10 @@ class Coin: ObservableObject, Codable, Hashable {
             }
         case .zksync:
             return "200000"
-        case .bitcoin,.bitcoinCash,.dash, .cardano:
+        case .bitcoin,.bitcoinCash,.dash:
             return "20"
+        case .cardano:
+            return "180000" // Fallback only - dynamic calculation is preferred
         case .zcash:
             return "1000" // "2000" for faster confirmation
         case .litecoin:
