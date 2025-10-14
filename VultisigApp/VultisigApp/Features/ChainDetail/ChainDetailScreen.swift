@@ -15,6 +15,7 @@ struct ChainDetailScreen: View {
     
     @StateObject var viewModel: ChainDetailViewModel
     
+    @State private var isRefreshing: Bool = false
     @State private var addressToCopy: Coin?
     @State var showManageTokens: Bool = false
     @State var showSearchHeader: Bool = false
@@ -92,7 +93,13 @@ struct ChainDetailScreen: View {
                 onCoinAction: onCoinAction
             )
         }
-        .crossPlatformToolbar(ignoresTopEdge: true) {            
+        .crossPlatformToolbar(ignoresTopEdge: true) {
+//            #if os(macOS)
+            CustomToolbarItem(placement: .trailing) {
+                RefreshToolbarButton(isRefreshing: $isRefreshing, onRefresh: onRefreshButton)
+            }
+//            #endif
+            
             CustomToolbarItem(placement: .trailing) {
                 ToolbarButton(image: "square-3d", action: onExplorer)
             }
@@ -181,6 +188,15 @@ struct ChainDetailScreen: View {
 }
 
 private extension ChainDetailScreen {
+    func onRefreshButton() {
+        isRefreshing = true
+        
+        refresh()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            isRefreshing = false
+        }
+    }
+    
     func refresh() {
         Task.detached {
             await updateBalances()
