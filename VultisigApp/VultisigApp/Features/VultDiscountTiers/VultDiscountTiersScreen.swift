@@ -61,7 +61,7 @@ struct VultDiscountTiersScreen: View {
         .crossPlatformToolbar("vultDiscountTiers".localized) {
             CustomToolbarItem(placement: .trailing) {
                 ToolbarButton(image: "globus") {
-                    openURL(StaticURL.VultisigVultDocsURL)
+                    openURL(StaticURL.VultisigVultURL)
                 }
             }
         }
