@@ -46,8 +46,8 @@ class SendTransaction: ObservableObject, Hashable {
             return comparison
         }
         
-        // For UTXO chains, use the actual fee (plan.fee) not the gas (sats/byte rate)
-        let feeToUse = coin.chainType == .UTXO ? fee : gas
+        // For UTXO and Cardano chains, use the actual fee (plan.fee) not the gas (sats/byte rate)
+        let feeToUse = (coin.chainType == .UTXO || coin.chainType == .Cardano) ? fee : gas
         let totalTransactionCost = amountInRaw + feeToUse
         let comparison = totalTransactionCost > coin.rawBalance.toBigInt(decimals: coin.decimals)
         
@@ -155,8 +155,8 @@ class SendTransaction: ObservableObject, Hashable {
             return "\(gasDecimal / weiPerGWeiDecimal) \(coin.chain.feeUnit)"
         }
         
-        // For UTXO chains, use total fee amount (like Android) instead of sats/byte rate
-        let feeToDisplay = coin.chainType == .UTXO ? fee : gas
+        // For UTXO and Cardano chains, use total fee amount (like Android) instead of sats/byte rate
+        let feeToDisplay = (coin.chainType == .UTXO || coin.chainType == .Cardano) ? fee : gas
         let feeDecimal = Decimal(feeToDisplay)
         
         

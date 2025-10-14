@@ -32,6 +32,8 @@ struct TokenCellView: View {
                         .padding(.horizontal, 8)
                         .background(RoundedRectangle(cornerRadius: 8).fill(Theme.colors.bgTertiary))
                         .fixedSize()
+                        .contentTransition(.numericText())
+                        .animation(.interpolatingSpring, value: coin.price)
                 }
             }
             HStack(spacing: 8) {
@@ -40,9 +42,13 @@ struct TokenCellView: View {
                     Text(homeViewModel.hideVaultBalance ? String.hideBalanceText : coin.balanceInFiat)
                         .font(Theme.fonts.priceBodyS)
                         .foregroundStyle(Theme.colors.textPrimary)
+                        .contentTransition(.numericText())
+                        .animation(.interpolatingSpring, value: coin.balanceInFiat)
                     Text(homeViewModel.hideVaultBalance ? String.hideBalanceText : coin.balanceStringWithTicker)
                         .font(Theme.fonts.priceCaption)
                         .foregroundStyle(Theme.colors.textExtraLight)
+                        .contentTransition(.numericText())
+                        .animation(.interpolatingSpring, value: coin.balanceStringWithTicker)
                 }
                 Icon(named: "chevron-right-small", color: Theme.colors.textPrimary, size: 16)
             }

@@ -13,21 +13,31 @@ enum ToolbarButtonType {
     case destructive
 }
 
-struct ToolbarButton: View {
+struct ToolbarButton<IconContent: View>: View {
     @Environment(\.isNativeToolbarItem) private var isNativeToolbarItem
     
     let image: String
     let iconSize: CGFloat
     let type: ToolbarButtonType
     let action: () -> Void
+    let iconContent: (Icon) -> IconContent
     
     @State private var isHovered: Bool = false
     
-    init(image: String, iconSize: CGFloat = 20, type: ToolbarButtonType = .outline, action: @escaping () -> Void) {
+    init(image: String, iconSize: CGFloat = 20, type: ToolbarButtonType = .outline, action: @escaping () -> Void) where IconContent == Icon {
         self.image = image
         self.type = type
         self.action = action
         self.iconSize = iconSize
+        self.iconContent = { icon in icon }
+    }
+    
+    init(image: String, iconSize: CGFloat = 20, type: ToolbarButtonType = .outline, action: @escaping () -> Void, @ViewBuilder iconContent: @escaping (Icon) -> IconContent) {
+        self.image = image
+        self.type = type
+        self.action = action
+        self.iconSize = iconSize
+        self.iconContent = iconContent
     }
     
     var tintColor: Color {
@@ -46,7 +56,7 @@ struct ToolbarButton: View {
         Group {
             if #available(macOS 26.0, *) {
                 Button(action: action) {
-                    iconView
+                    transformedIconView
                         .padding(12)
                         .overlay(isHovered ? Circle().fill(.white.opacity(0.1)) : nil)
                 }
@@ -72,14 +82,14 @@ struct ToolbarButton: View {
             // If it's native iOS toolbar, we use the default button with tint as it looks better, toolbar already styles it
             if isNativeToolbarItem {
                 Button(action: action) {
-                    iconView
+                    transformedIconView
                 }
                 .buttonStyle(.glassProminent)
                 .tint(tintColor)
             } else {
                 // Otherwise, we customize the glass effect ourselves
                 Button(action: action) {
-                    iconView
+                    transformedIconView
                         .padding(12)
                         .overlay(Circle().inset(by: 0.5).strokeBorder(.white.opacity(0.1), lineWidth: 1))
                         .background(Circle().fill(tintColor))
@@ -92,14 +102,18 @@ struct ToolbarButton: View {
 #endif
     }
     
-    var iconView: some View {
+    var transformedIconView: some View {
+        iconContent(iconView)
+    }
+    
+    var iconView: Icon {
         Icon(named: image, color: Theme.colors.textPrimary, size: iconSize)
     }
     
     // Custom button with "fake" glass effect for styling
     var customButton: some View {
         Button(action: action) {
-            iconView
+            transformedIconView
                 .padding(12)
                 .background(
                     Circle()

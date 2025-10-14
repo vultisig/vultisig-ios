@@ -79,8 +79,8 @@ class SendCryptoViewModel: ObservableObject {
             let specific = try await blockchainService.fetchSpecific(tx: tx)
             tx.gas = specific.gas
             
-            // For UTXO chains, calculate actual total fee using WalletCore plan.fee (like Android)
-            if tx.coin.chainType == .UTXO {
+            // For UTXO and Cardano chains, calculate actual total fee using WalletCore plan.fee (like Android)
+            if tx.coin.chainType == .UTXO || tx.coin.chainType == .Cardano {
                 if tx.amountInRaw > 0 {
                     // Only calculate accurate fee when user has entered an amount
                     tx.fee = try await calculateUTXOPlanFee(tx: tx, chainSpecific: specific)
@@ -349,7 +349,7 @@ class SendCryptoViewModel: ObservableObject {
             tx.amountInFiat = truncatedValueFiat.formatToDecimal(digits: tx.coin.decimals)
             tx.sendMaxAmount = setMaxValue
             
-            // Recalculate UTXO fees when amount changes
+            // Recalculate UTXO-based fees when amount changes (UTXO and Cardano chains)
             recalculateUTXOFeesIfNeeded(tx: tx)
         } else {
             tx.amountInFiat = ""
@@ -661,13 +661,22 @@ class SendCryptoViewModel: ObservableObject {
             vault: vault
         )
         
+        let planFee: BigInt
         
-        guard let helper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) else {
-            throw HelperError.runtimeError("UTXO helper not available for \(tx.coin.chain.name)")
+        switch tx.coin.chain {
+        case .cardano:
+            guard let cardanoHelper = CardanoHelper.getHelper(vault: vault, coin: tx.coin) else {
+                throw HelperError.runtimeError("Cardano helper not available")
+            }
+            planFee = try cardanoHelper.calculateDynamicFee(keysignPayload: keysignPayload)
+            
+        default: // UTXO chains
+            guard let utxoHelper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) else {
+                throw HelperError.runtimeError("UTXO helper not available for \(tx.coin.chain.name)")
+            }
+            let plan = try utxoHelper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
+            planFee = BigInt(plan.fee)
         }
-        
-        let plan = try helper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
-        let planFee = BigInt(plan.fee)
         
         // WalletCore must return valid fee
         if planFee > 0 {
@@ -679,9 +688,9 @@ class SendCryptoViewModel: ObservableObject {
         return BigInt.zero
     }
     
-    /// Recalculate UTXO fees when amount changes
+    /// Recalculate UTXO-based fees when amount changes (UTXO and Cardano chains)
     func recalculateUTXOFeesIfNeeded(tx: SendTransaction) {
-        guard tx.coin.chainType == .UTXO && tx.amountInRaw > 0 else { 
+        guard (tx.coin.chainType == .UTXO || tx.coin.chainType == .Cardano) && tx.amountInRaw > 0 else { 
             return 
         }
         

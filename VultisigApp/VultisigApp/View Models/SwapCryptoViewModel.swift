@@ -519,7 +519,7 @@ private extension SwapCryptoViewModel {
         switch chainSpecific {
         case .Ethereum(let maxFeePerGas, let priorityFee, _, let gasLimit):
             return (maxFeePerGas + priorityFee) * gasLimit
-        case .UTXO:
+        case .UTXO, .Cardano:
             let keysignFactory = KeysignPayloadFactory()
             do {
                 let keysignPayload = try await keysignFactory.buildTransfer(
@@ -531,25 +531,38 @@ private extension SwapCryptoViewModel {
                     swapPayload: nil,
                     vault: vault
                 )
-                let utxo = UTXOChainsHelper(
-                    coin: tx.fromCoin.coinType,
-                    vaultHexPublicKey: vault.pubKeyECDSA,
-                    vaultHexChainCode: vault.hexChainCode
-                )
-                let plan = try utxo.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
-                if plan.fee <= 0 && tx.fromAmountDecimal > 0 {
+                
+                let planFee: BigInt
+                switch tx.fromCoin.chain {
+                case .cardano:
+                    guard let cardanoHelper = CardanoHelper.getHelper(vault: vault, coin: tx.fromCoin) else {
+                        throw Errors.insufficientFunds
+                    }
+                    planFee = try cardanoHelper.calculateDynamicFee(keysignPayload: keysignPayload)
+                    
+                default: // UTXO chains
+                    let utxo = UTXOChainsHelper(
+                        coin: tx.fromCoin.coinType,
+                        vaultHexPublicKey: vault.pubKeyECDSA,
+                        vaultHexChainCode: vault.hexChainCode
+                    )
+                    let plan = try utxo.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
+                    planFee = BigInt(plan.fee)
+                }
+                
+                if planFee <= 0 && tx.fromAmountDecimal > 0 {
                     throw Errors.insufficientFunds
                 }
-                return BigInt(plan.fee)
+                return planFee
             } catch {
-                // Re-throw UTXO-specific errors to provide better user feedback
+                // Re-throw specific errors to provide better user feedback
                 if error is KeysignPayloadFactory.Errors {
                     throw error
                 }
                 throw Errors.insufficientFunds
             }
             
-        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton, .Ripple, .Tron, .Cardano:
+        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton, .Ripple, .Tron:
             return chainSpecific.gas
         }
     }

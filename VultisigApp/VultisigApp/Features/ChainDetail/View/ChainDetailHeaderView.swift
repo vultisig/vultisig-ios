@@ -42,6 +42,8 @@ struct ChainDetailHeaderView: View {
             .font(Theme.fonts.priceTitle1)
             .foregroundStyle(Theme.colors.textPrimary)
             .frame(height: 47)
+            .contentTransition(.numericText())
+            .animation(.interpolatingSpring, value: group.totalBalanceInFiatString)
     }
     
     var chainAddressView: some View {

@@ -73,7 +73,7 @@ struct VaultChainCellView: View {
         .background(Theme.colors.bgSecondary)
         .buttonStyle(.plain)
         .onLoad(perform: updateTexts)
-        .onChange(of: group.coins) { _, _ in
+        .onChange(of: group.coins.totalBalanceInFiatDecimal) { _, _ in
             updateTexts()
         }
         .onChange(of: homeViewModel.hideVaultBalance) { _, _ in
