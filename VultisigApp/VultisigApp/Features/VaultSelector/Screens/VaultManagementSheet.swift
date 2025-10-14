@@ -67,7 +67,7 @@ struct VaultManagementSheet: View {
             updateDetents(whileAnimation: false)
         }
 #else
-        .applySheetSize()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.colors.bgPrimary)
 #endif
     }
