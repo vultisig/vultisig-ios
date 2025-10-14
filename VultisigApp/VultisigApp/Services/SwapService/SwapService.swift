@@ -13,10 +13,43 @@ struct SwapService {
     
     func fetchQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool, referredCode: String) async throws -> SwapQuote {
 
-        guard let provider = SwapCoinsResolver.resolveProvider(fromCoin: fromCoin, toCoin: toCoin) else {
+        let providers = SwapCoinsResolver.resolveAllProviders(fromCoin: fromCoin, toCoin: toCoin)
+        
+        guard !providers.isEmpty else {
             throw SwapError.routeUnavailable
         }
 
+        var lastError: Error?
+        
+        // Try each provider in order until one succeeds
+        for provider in providers {
+            do {
+                return try await fetchQuoteForProvider(
+                    provider: provider,
+                    amount: amount,
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    isAffiliate: isAffiliate,
+                    referredCode: referredCode
+                )
+            } catch {
+                lastError = error
+                continue
+            }
+        }
+        
+        // If all providers failed, throw the last error
+        throw lastError ?? SwapError.routeUnavailable
+    }
+    
+    private func fetchQuoteForProvider(
+        provider: SwapProvider,
+        amount: Decimal,
+        fromCoin: Coin,
+        toCoin: Coin,
+        isAffiliate: Bool,
+        referredCode: String
+    ) async throws -> SwapQuote {
         switch provider {
         case .thorchain:
             return try await fetchCrossChainQuote(
