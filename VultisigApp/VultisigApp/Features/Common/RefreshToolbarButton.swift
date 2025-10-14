@@ -27,9 +27,9 @@ struct RefreshToolbarButton: View {
             isRefreshing = true
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
             self.disabled = false
-            withAnimation(.easeInOut(duration: 0.3)) {
+            withAnimation(.linear(duration: 0.3)) {
                 isRefreshing = false
             }
         }

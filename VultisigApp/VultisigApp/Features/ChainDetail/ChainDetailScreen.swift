@@ -93,11 +93,11 @@ struct ChainDetailScreen: View {
             )
         }
         .crossPlatformToolbar(ignoresTopEdge: true) {
-//            #if os(macOS)
+            #if os(macOS)
             CustomToolbarItem(placement: .trailing) {
                 RefreshToolbarButton(onRefresh: onRefreshButton)
             }
-//            #endif
+            #endif
             
             CustomToolbarItem(placement: .trailing) {
                 ToolbarButton(image: "square-3d", action: onExplorer)

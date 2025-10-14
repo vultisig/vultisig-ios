@@ -68,9 +68,9 @@ struct VaultMainHeaderView: View {
     
     var buttonsStack: some View {
         HStack(spacing: 8) {
-//            #if os(macOS)
+            #if os(macOS)
             RefreshToolbarButton(onRefresh: onRefresh)
-//            #endif
+            #endif
 
             ToolbarButton(image: "settings", action: settingsAction)
         }
