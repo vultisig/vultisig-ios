@@ -61,9 +61,9 @@ struct VaultMainHeaderView: View {
             Text(homeViewModel.vaultBalanceText)
                 .font(Theme.fonts.priceBodyS)
                 .foregroundStyle(Theme.colors.textPrimary)
-                .frame(maxWidth: .infinity, alignment: .center)
-                .contentTransition(.numericText())
+                .fixedSize(horizontal: false, vertical: true)
         }
+        .scaledToFit()
     }
     
     var buttonsStack: some View {
