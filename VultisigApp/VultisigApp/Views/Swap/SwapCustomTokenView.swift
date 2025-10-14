@@ -138,6 +138,13 @@ struct SwapCustomTokenView: View {
     
     private func fetchTokenInfo() async {
         guard !contractAddress.isEmpty else { return }
+        
+        // Validate address format before making API calls
+        guard isValidAddress else {
+            error = InvalidAddressError()
+            return
+        }
+        
         isLoading = true
         showTokenInfo = false
         error = nil
@@ -240,6 +247,12 @@ struct SwapCustomTokenView: View {
     private struct RateLimitError: LocalizedError {
         var errorDescription: String? {
             return NSLocalizedString("Too many requests. Please close this screen and try again later.", comment: "Rate limit error")
+        }
+    }
+    
+    private struct InvalidAddressError: LocalizedError {
+        var errorDescription: String? {
+            return NSLocalizedString("invalidAddress", comment: "Invalid address error")
         }
     }
 }
