@@ -19,7 +19,7 @@ struct VaultMainBalanceView: View {
                 balanceLabel
                 toggleBalanceVisibilityButton
             }
-            .animation(.interactiveSpring(duration: 0.3), value: homeViewModel.hideVaultBalance)
+            .frame(maxWidth: .infinity)
         }
     }
     
@@ -29,7 +29,7 @@ struct VaultMainBalanceView: View {
             .foregroundStyle(Theme.colors.textPrimary)
             .frame(height: 47)
             .contentTransition(.numericText())
-            .animation(.interpolatingSpring, value: homeViewModel.hideVaultBalance)
+            .animation(.interpolatingSpring, value: homeViewModel.vaultBalanceText)
     }
 
     var toggleBalanceVisibilityButton: some View {
@@ -39,13 +39,17 @@ struct VaultMainBalanceView: View {
                 color: Color(hex: "5180FC"),
                 size: 16
             )
+            .contentTransition(.symbolEffect)
             Text(homeViewModel.hideVaultBalance ? "showBalance".localized : "hideBalance".localized)
                 .foregroundStyle(Color(hex: "5180FC"))
                 .font(Theme.fonts.caption12)
+                .contentTransition(.interpolate)
         }
         .padding(.vertical, 4)
         .padding(.horizontal, 6)
         .background(RoundedRectangle(cornerRadius: 8).fill(Color(hex: "5180FC").opacity(0.12)))
+        .frame(width: 120)
+        .animation(.interactiveSpring(duration: 0.3), value: homeViewModel.hideVaultBalance)
     }
 }
 

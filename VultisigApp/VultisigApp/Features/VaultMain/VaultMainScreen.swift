@@ -122,7 +122,8 @@ struct VaultMainScreen: View {
             vault: vault,
             showBalance: $showBalanceInHeader,
             vaultSelectorAction: onVaultSelector,
-            settingsAction: { routeToPresent = .settings }
+            settingsAction: { routeToPresent = .settings },
+            onRefresh: refresh
         )
     }
     

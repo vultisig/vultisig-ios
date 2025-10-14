@@ -92,7 +92,13 @@ struct ChainDetailScreen: View {
                 onCoinAction: onCoinAction
             )
         }
-        .crossPlatformToolbar(ignoresTopEdge: true) {            
+        .crossPlatformToolbar(ignoresTopEdge: true) {
+            #if os(macOS)
+            CustomToolbarItem(placement: .trailing) {
+                RefreshToolbarButton(onRefresh: onRefreshButton)
+            }
+            #endif
+            
             CustomToolbarItem(placement: .trailing) {
                 ToolbarButton(image: "square-3d", action: onExplorer)
             }
@@ -181,6 +187,10 @@ struct ChainDetailScreen: View {
 }
 
 private extension ChainDetailScreen {
+    func onRefreshButton() {
+        refresh()
+    }
+    
     func refresh() {
         Task.detached {
             await updateBalances()

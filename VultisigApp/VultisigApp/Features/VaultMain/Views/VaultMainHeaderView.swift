@@ -14,6 +14,7 @@ struct VaultMainHeaderView: View {
     @Binding var showBalance: Bool
     var vaultSelectorAction: () -> Void
     var settingsAction: () -> Void
+    var onRefresh: () -> Void
     
     @State private var showBalanceInternal = false
     
@@ -66,6 +67,10 @@ struct VaultMainHeaderView: View {
     
     var buttonsStack: some View {
         HStack(spacing: 8) {
+            #if os(macOS)
+            RefreshToolbarButton(onRefresh: onRefresh)
+            #endif
+
             ToolbarButton(image: "settings", action: settingsAction)
         }
     }
@@ -83,10 +88,15 @@ struct VaultMainHeaderView: View {
 
 #Preview {
     VStack {
-        VaultMainHeaderView(vault: .example, showBalance: .constant(true)) {
+        VaultMainHeaderView(
+            vault: .example,
+            showBalance: .constant(true)
+        ) {
             print("Vault Selector Action")
         } settingsAction: {
             print("Settings action")
+        } onRefresh: {
+            print("On refresh action")
         }
     }
     .background(Theme.colors.bgPrimary)
