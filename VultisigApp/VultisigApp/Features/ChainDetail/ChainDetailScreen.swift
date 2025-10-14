@@ -15,7 +15,6 @@ struct ChainDetailScreen: View {
     
     @StateObject var viewModel: ChainDetailViewModel
     
-    @State private var isRefreshing: Bool = false
     @State private var addressToCopy: Coin?
     @State var showManageTokens: Bool = false
     @State var showSearchHeader: Bool = false
@@ -96,7 +95,7 @@ struct ChainDetailScreen: View {
         .crossPlatformToolbar(ignoresTopEdge: true) {
 //            #if os(macOS)
             CustomToolbarItem(placement: .trailing) {
-                RefreshToolbarButton(isRefreshing: $isRefreshing, onRefresh: onRefreshButton)
+                RefreshToolbarButton(onRefresh: onRefreshButton)
             }
 //            #endif
             
@@ -189,12 +188,7 @@ struct ChainDetailScreen: View {
 
 private extension ChainDetailScreen {
     func onRefreshButton() {
-        isRefreshing = true
-        
         refresh()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-            isRefreshing = false
-        }
     }
     
     func refresh() {

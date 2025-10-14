@@ -125,13 +125,7 @@ struct VaultMainScreen: View {
             isRefreshing: $isLoading,
             vaultSelectorAction: onVaultSelector,
             settingsAction: { routeToPresent = .settings },
-            onRefresh: {
-                isLoading = true
-                refresh()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    isLoading = false
-                }
-            }
+            onRefresh: refresh
         )
     }
     

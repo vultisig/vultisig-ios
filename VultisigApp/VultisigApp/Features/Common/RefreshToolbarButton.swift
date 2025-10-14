@@ -8,22 +8,31 @@
 import SwiftUI
 
 struct RefreshToolbarButton: View {
-    @Binding var isRefreshing: Bool
     var onRefresh: () -> Void
     
-    @State private var isRefreshingInternal = false
+    @State private var isRefreshing = false
+    @State private var disabled = false
     
     var body: some View {
-        ToolbarButton(image: "refresh", action: onRefresh) { icon in
+        ToolbarButton(image: "refresh", action: onPress) { icon in
             icon
-                .rotationEffect(.degrees(isRefreshingInternal ? 360 : 0))
-                .animation(isRefreshingInternal ? .easeInOut(duration: 1) : nil, value: isRefreshingInternal)
+                .rotationEffect(.degrees(isRefreshing ? 360 : 0))
         }
-        .disabled(isRefreshingInternal)
-        .onChange(of: isRefreshing) { _, newValue in
-            withAnimation {
-                isRefreshingInternal = newValue
+        .disabled(disabled)
+    }
+    
+    func onPress() {
+        self.disabled = true
+        withAnimation(.linear(duration: 1).repeatForever(autoreverses: false)) {
+            isRefreshing = true
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+            self.disabled = false
+            withAnimation(.easeInOut(duration: 0.3)) {
+                isRefreshing = false
             }
         }
+        onRefresh()
     }
 }

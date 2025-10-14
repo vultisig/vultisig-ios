@@ -18,7 +18,6 @@ struct VaultMainHeaderView: View {
     var onRefresh: () -> Void
     
     @State private var showBalanceInternal = false
-    @State private var animateRefreshButton = false
     
     var body: some View {
         HStack(spacing: 32) {
@@ -41,11 +40,6 @@ struct VaultMainHeaderView: View {
         .onChange(of: showBalance) { _, newValue in
             withAnimation(.interpolatingSpring) {
                 showBalanceInternal = newValue
-            }
-        }
-        .onChange(of: isRefreshing) { _, newValue in
-            withAnimation {
-                animateRefreshButton = newValue
             }
         }
     }
@@ -75,7 +69,7 @@ struct VaultMainHeaderView: View {
     var buttonsStack: some View {
         HStack(spacing: 8) {
 //            #if os(macOS)
-            RefreshToolbarButton(isRefreshing: $isRefreshing, onRefresh: onRefresh)
+            RefreshToolbarButton(onRefresh: onRefresh)
 //            #endif
 
             ToolbarButton(image: "settings", action: settingsAction)
