@@ -28,8 +28,7 @@ struct VultTierService {
     
     /// Clears the cached timestamp for a specific vault
     func clearCache(for vault: Vault) {
-        let vaultId = String(describing: vault.id)
-        cacheEntries.removeAll { $0.vaultId == vaultId }
+        cacheEntries.removeAll { $0.vaultId == vault.pubKeyEdDSA }
     }
     
     /// Clears all cached timestamps
@@ -39,8 +38,7 @@ struct VultTierService {
     
     /// Checks if we recently fetched the balance (within cache validity duration)
     func shouldFetchBalance(for vault: Vault) -> Bool {
-        let vaultId = vault.pubKeyEdDSA
-        guard let cacheEntry = cacheEntries.first(where: { $0.vaultId == vaultId }) else {
+        guard let cacheEntry = cacheEntries.first(where: { $0.vaultId == vault.pubKeyEdDSA }) else {
             print("Getting $VULT balance from network")
             return true
         }
@@ -57,8 +55,6 @@ private extension VultTierService {
     }
     
     func fetchVultBalance(for vault: Vault) async -> Decimal {
-        let vaultId = vault.pubKeyEdDSA
-        
         // Check if we need to fetch fresh balance
         if shouldFetchBalance(for: vault) {
             // Fetch fresh balance
@@ -69,8 +65,8 @@ private extension VultTierService {
             }
             
             // Update the cache entry
-            cacheEntries.removeAll { $0.vaultId == vaultId }
-            cacheEntries.append(CacheEntry(vaultId: vaultId, lastFetchDate: Date()))
+            cacheEntries.removeAll { $0.vaultId == vault.pubKeyEdDSA }
+            cacheEntries.append(CacheEntry(vaultId: vault.pubKeyEdDSA, lastFetchDate: Date()))
         }
         
         // Return the balance from the coin (fresh or cached)
