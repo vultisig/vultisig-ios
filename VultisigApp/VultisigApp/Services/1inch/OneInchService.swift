@@ -11,6 +11,7 @@ import BigInt
 struct OneInchService {
     
     static let shared = OneInchService()
+    static let referredFee = 0.5
     
     private var nullAddress: String {
         return "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
@@ -28,7 +29,15 @@ struct OneInchService {
     func isChainSupported(chain: Chain) -> Bool {
         return supportedChain.contains(chain)
     }
-    func fetchQuotes(chain: String, source: String, destination: String, amount: String, from: String, isAffiliate: Bool) async throws -> (quote: EVMQuote, fee: BigInt?) {
+    func fetchQuotes(
+        chain: String,
+        source: String,
+        destination: String,
+        amount: String,
+        from: String,
+        isAffiliate: Bool,
+        vultTierDiscount: Int
+    ) async throws -> (quote: EVMQuote, fee: BigInt?) {
         
         let sourceAddress = source.isEmpty ? nullAddress : source
         let destinationAddress = destination.isEmpty ? nullAddress : destination
@@ -41,7 +50,7 @@ struct OneInchService {
             from: from,
             slippage: "0.5",
             referrer: referrerAddress,
-            fee: 0.5,
+            fee: bps(for: vultTierDiscount),
             isAffiliate: isAffiliate
         )
         
@@ -73,6 +82,11 @@ struct OneInchService {
         return tokens
     }
     
+    
+    func bps(for discount: Int) -> Double {
+        let formattedDiscount = Double(discount) / 100.0
+        return min(0, Self.referredFee - formattedDiscount)
+    }
 }
 
 private extension OneInchService {

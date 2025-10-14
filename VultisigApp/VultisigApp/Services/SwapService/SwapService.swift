@@ -55,8 +55,11 @@ struct SwapService {
             return try await fetchOneInchQuote(
                 service: OneInchService.shared,
                 chain: fromChainID,
-                amount: amount, fromCoin: fromCoin,
-                toCoin: toCoin, isAffiliate: isAffiliate
+                amount: amount,
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                isAffiliate: isAffiliate,
+                vultTierDiscount: vultTierDiscount
             )
         case .kyberswap(_):
             guard let fromChainID = fromCoin.chain.chainID,
@@ -152,7 +155,15 @@ private extension SwapService {
         }
     }
 
-    func fetchOneInchQuote(service: OneInchService, chain: Int, amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
+    func fetchOneInchQuote(
+        service: OneInchService,
+        chain: Int,
+        amount: Decimal,
+        fromCoin: Coin,
+        toCoin: Coin,
+        isAffiliate: Bool,
+        vultTierDiscount: Int,
+    ) async throws -> SwapQuote {
         let rawAmount = fromCoin.raw(for: amount)
         let response = try await service.fetchQuotes(
             chain: String(chain),
@@ -160,7 +171,8 @@ private extension SwapService {
             destination: toCoin.contractAddress,
             amount: String(rawAmount),
             from: fromCoin.address,
-            isAffiliate: isAffiliate
+            isAffiliate: isAffiliate,
+            vultTierDiscount: vultTierDiscount
         )
         return .oneinch(response.quote, fee: response.fee)
     }
