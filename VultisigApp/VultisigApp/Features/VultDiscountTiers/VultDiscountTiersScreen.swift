@@ -15,7 +15,7 @@ struct VultDiscountTiersScreen: View {
     @State private var vultToken: Coin?
     @State private var showTierSheet: VultDiscountTier?
     @State private var scrollProxy: ScrollViewProxy?
-    @State private var showSwapScren: Bool = false
+    @State private var showSwapScreen: Bool = false
     @Environment(\.openURL) var openURL
     
     private let service = VultTierService()
@@ -68,7 +68,7 @@ struct VultDiscountTiersScreen: View {
         .crossPlatformSheet(item: $showTierSheet) { tier in
             VultDiscountTierBottomSheet(tier: tier) {
                 showTierSheet = nil
-                showSwapScren = true
+                showSwapScreen = true
             }
         }
         .onLoad {
@@ -79,7 +79,7 @@ struct VultDiscountTiersScreen: View {
         .refreshable {
             fetchVultTier()
         }
-        .navigationDestination(isPresented: $showSwapScren) {
+        .navigationDestination(isPresented: $showSwapScreen) {
             SwapCryptoView(
                 fromCoin: vault.nativeCoin(for: .ethereum),
                 toCoin: service.getVultToken(for: vault),

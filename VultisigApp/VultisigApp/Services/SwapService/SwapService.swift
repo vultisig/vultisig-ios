@@ -37,7 +37,8 @@ struct SwapService {
                     fromCoin: fromCoin,
                     toCoin: toCoin,
                     isAffiliate: isAffiliate,
-                    referredCode: referredCode
+                    referredCode: referredCode,
+                    vultTierDiscount: vultTierDiscount
                 )
             } catch {
                 lastError = error
@@ -55,7 +56,8 @@ struct SwapService {
         fromCoin: Coin,
         toCoin: Coin,
         isAffiliate: Bool,
-        referredCode: String
+        referredCode: String,
+        vultTierDiscount: Int,
     ) async throws -> SwapQuote {
         switch provider {
         case .thorchain:
