@@ -12,7 +12,6 @@ struct VaultMainHeaderView: View {
     
     let vault: Vault
     @Binding var showBalance: Bool
-    @Binding var isRefreshing: Bool
     var vaultSelectorAction: () -> Void
     var settingsAction: () -> Void
     var onRefresh: () -> Void
@@ -91,8 +90,7 @@ struct VaultMainHeaderView: View {
     VStack {
         VaultMainHeaderView(
             vault: .example,
-            showBalance: .constant(true),
-            isRefreshing: .constant(false)
+            showBalance: .constant(true)
         ) {
             print("Vault Selector Action")
         } settingsAction: {

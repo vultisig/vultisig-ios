@@ -23,7 +23,6 @@ struct VaultMainScreen: View {
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @Environment(\.openURL) var openURL
     
-    @State private var isLoading: Bool = false
     @State private var scrollOffset: CGFloat = 0
     @State var showBalanceInHeader: Bool = false
     @State var showChainSelection: Bool = false
@@ -122,7 +121,6 @@ struct VaultMainScreen: View {
         VaultMainHeaderView(
             vault: vault,
             showBalance: $showBalanceInHeader,
-            isRefreshing: $isLoading,
             vaultSelectorAction: onVaultSelector,
             settingsAction: { routeToPresent = .settings },
             onRefresh: refresh
