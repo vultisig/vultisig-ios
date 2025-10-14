@@ -51,17 +51,15 @@ struct VultDiscountTierView: View {
                     }
                 }
             }
-            
+                        
             VStack(spacing: 14) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("hold".localized)
                         .font(Theme.fonts.footnote)
                         .foregroundStyle(Theme.colors.textExtraLight)
-                    
-                    
                     HStack {
                         Text(holdAmountText)
-                            .font(Theme.fonts.priceBodyL)
+                            .font(Theme.fonts.priceBodyS)
                             .foregroundStyle(Theme.colors.textPrimary)
                         Spacer()
                         activeView
@@ -75,6 +73,8 @@ struct VultDiscountTierView: View {
                     type: .secondary,
                     action: onUnlock
                 )
+                .transition(.opacity)
+                .showIf(!isActiveInternal)
             }
             .transition(.verticalGrowAndFade)
             .showIf(isExpanded)
@@ -95,12 +95,14 @@ struct VultDiscountTierView: View {
             
             // Inner shadow with gradient
             gradientView
-                .opacity(0.3)
+                .opacity(0.35)
                 .mask(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(lineWidth: 6)
+                        .stroke(lineWidth: 8)
                         .blur(radius: 2)
                 )
+                .transition(.opacity)
+                .showIf(isExpanded)
         }
     }
     
@@ -125,7 +127,9 @@ struct VultDiscountTierView: View {
     
     var activeView: some View {
         HStack(spacing: 4) {
-            Icon(named: "check", color: Theme.colors.alertSuccess, size: 16)
+            Icon(named: "check", color: Theme.colors.alertSuccess, size: 10)
+                .padding(4)
+                .overlay(Circle().stroke(Theme.colors.alertSuccess))
             Text("active".localized)
                 .font(Theme.fonts.footnote)
                 .foregroundStyle(Theme.colors.alertSuccess)
