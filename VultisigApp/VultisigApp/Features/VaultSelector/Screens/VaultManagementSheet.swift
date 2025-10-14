@@ -31,6 +31,7 @@ struct VaultManagementSheet: View {
     @State private var sheetType = VaultSheetType.main
     @State private var shouldUseMoveTransition = true
     
+    let availableHeight: CGFloat
     var onAddVault: () -> Void
     var onSelectVault: (Vault) -> Void
     
@@ -52,11 +53,12 @@ struct VaultManagementSheet: View {
             }
             .transition(.opacity)
         }
-#if os(iOS)
         .presentationDragIndicator(.visible)
         .presentationDetents(Set(detents), selection: $detentSelection)
         .presentationCompactAdaptation(.none)
         .presentationBackground { Theme.colors.bgPrimary.padding(.bottom, -1000) }
+        .applySheetSize(700, availableHeight - 32)
+        .background(Theme.colors.bgPrimary)
         .onChange(of: isEditing) { _, isEditing in
             updateDetents(isEditing: isEditing)
         }
@@ -66,10 +68,6 @@ struct VaultManagementSheet: View {
         .onLoad {
             updateDetents(whileAnimation: false)
         }
-#else
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Theme.colors.bgPrimary)
-#endif
     }
     
     var mainSheetView: some View {
@@ -188,6 +186,7 @@ private extension VaultManagementSheet {
             }
             .crossPlatformSheet(isPresented: $isPresented) {
                 VaultManagementSheet(
+                    availableHeight: 300,
                     onAddVault: {},
                     onSelectVault: { _ in },
                 )
