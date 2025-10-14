@@ -41,9 +41,12 @@ struct VultTierService {
     func shouldFetchBalance(for vault: Vault) -> Bool {
         let vaultId = vault.pubKeyEdDSA
         guard let cacheEntry = cacheEntries.first(where: { $0.vaultId == vaultId }) else {
+            print("Getting $VULT balance from network")
             return true
         }
-        return Date().timeIntervalSince(cacheEntry.lastFetchDate) >= Self.cacheValidityDuration
+        let shouldFetch = Date().timeIntervalSince(cacheEntry.lastFetchDate) >= Self.cacheValidityDuration
+        print("Getting $VULT balance from cache:", shouldFetch)
+        return shouldFetch
     }
 }
 
