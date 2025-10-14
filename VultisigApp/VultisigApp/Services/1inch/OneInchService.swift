@@ -82,10 +82,9 @@ struct OneInchService {
         return tokens
     }
     
-    
     func bps(for discount: Int) -> Double {
         let formattedDiscount = Double(discount) / 100.0
-        return min(0, Self.referredFee - formattedDiscount)
+        return max(0, Self.referredFee - formattedDiscount)
     }
 }
 
