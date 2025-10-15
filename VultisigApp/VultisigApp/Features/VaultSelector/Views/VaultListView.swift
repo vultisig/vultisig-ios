@@ -45,6 +45,7 @@ struct VaultListView: View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 0) {
                 header
+                    .padding(.bottom, folders.isEmpty ? 16 : 0)
                 List {
                     sectionHeader(title: "folders".localized)
                     foldersList

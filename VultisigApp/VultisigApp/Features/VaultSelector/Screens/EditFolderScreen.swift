@@ -31,7 +31,6 @@ struct EditFolderScreen: View {
         view
             .padding(.top, 24)
             .padding(.horizontal, 16)
-            .applySheetSize()
             .onLoad {
                 setData()
             }
