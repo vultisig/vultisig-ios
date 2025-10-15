@@ -62,6 +62,7 @@ struct VaultListView: View {
             addFolderButton
         }
         .padding(.top, 24)
+        .padding(.bottom, isIPadOS ? 24 : 0)
         .padding(.horizontal, 16)
     }
     

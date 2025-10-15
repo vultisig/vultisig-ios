@@ -67,6 +67,7 @@ struct VaultManagementSheet: View {
         }
         .onLoad {
             updateDetents(whileAnimation: false)
+            detentSelection = detents[safe: 0] ?? .medium
         }
     }
     
@@ -113,7 +114,7 @@ private extension VaultManagementSheet {
         }
     }
     func updateDetents(whileAnimation: Bool) {
-        let whileAnimationDetents: [PresentationDetent] = whileAnimation ? [.large, .medium] : []
+        let whileAnimationDetents: [PresentationDetent] = whileAnimation ? [.large, .medium] + detents : []
         let stateDetents: [PresentationDetent]
         
         if isEditing || sheetType != .main {
@@ -134,7 +135,7 @@ private extension VaultManagementSheet {
             stateDetents = [.medium] + whileAnimationDetents
             break
         default:
-            stateDetents = [.medium, .large] + whileAnimationDetents
+            stateDetents = isIPadOS ? [.large] : [.medium, .large] + whileAnimationDetents
             break
         }
         

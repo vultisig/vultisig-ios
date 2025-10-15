@@ -30,6 +30,7 @@ struct EditFolderScreen: View {
     var body: some View {
         view
             .padding(.top, 24)
+            .padding(.bottom, isIPadOS ? 24 : 0)
             .padding(.horizontal, 16)
             .onLoad {
                 setData()

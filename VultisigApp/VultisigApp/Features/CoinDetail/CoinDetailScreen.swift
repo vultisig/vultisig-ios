@@ -48,7 +48,7 @@ struct CoinDetailScreen: View {
             .onLoad(perform: viewModel.setup)
             .onAppear(perform: onAppear)
         }
-        .presentationDetents([.medium])
+        .presentationDetents([isIPadOS ? .large : .medium])
         .presentationBackground(Theme.colors.bgSecondary)
         .presentationDragIndicator(.visible)
         .applySheetSize()
