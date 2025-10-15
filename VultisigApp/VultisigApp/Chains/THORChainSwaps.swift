@@ -8,16 +8,16 @@ import Tss
 import WalletCore
 
 class THORChainSwaps {
-    static var affiliateFeeRateBp: String {
+    static var affiliateFeeRateBp: Int {
 #if DEBUG
-        return "0"
+        return 0
 #else
-        return "50"
+        return 50
 #endif
     }
     
-    static var referredAffiliateFeeRateBp: String {
-        return "35"
+    static var referredAffiliateFeeRateBp: Int {
+        return 35
     }
     
     static var referredUserFeeRateBp: String {

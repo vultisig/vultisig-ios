@@ -53,14 +53,18 @@ final class RateProvider {
             fatalError(error.localizedDescription)
         }
     }
+    
+    func fiatBalance(value: Decimal, coin: Coin, rate: Rate, currency: SettingsCurrency = .current) -> Decimal {
+        let result = value * Decimal(rate.value)
+        // Don't truncate here - let the formatter handle precision
+        return result
+    }
 
     func fiatBalance(value: Decimal, coin: Coin, currency: SettingsCurrency = .current) -> Decimal {
         guard let rate = rate(for: coin, currency: currency) else {
             return .zero
         }
-        let result = value * Decimal(rate.value)
-        // Don't truncate here - let the formatter handle precision
-        return result
+        return fiatBalance(value: value, coin: coin, rate: rate, currency: currency)
     }
 
     func fiatBalance(for coin: Coin, currency: SettingsCurrency = .current) -> Decimal {
@@ -69,6 +73,11 @@ final class RateProvider {
 
     func fiatBalanceString(for coin: Coin, currency: SettingsCurrency = .current) -> String {
         return fiatBalanceString(value: coin.balanceDecimal, coin: coin, currency: currency)
+    }
+    
+    func fiatBalanceString(value: Decimal, coin: Coin, rate: Rate, currency: SettingsCurrency = .current) -> String {
+        let balance = fiatBalance(value: value, coin: coin, rate: rate, currency: currency)
+        return balance.formatToFiat(includeCurrencySymbol: true)
     }
 
     func fiatBalanceString(value: Decimal, coin: Coin, currency: SettingsCurrency = .current) -> String {

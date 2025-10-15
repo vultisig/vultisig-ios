@@ -891,3 +891,15 @@
 "backupBannerSubtitle" = "Zadrži siguran pristup, pohrani online";
 "backupBannerButtonTitle" = "Sigurnosno kopiraj trezor";
 "addToAddressBook" = "Dodaj u Adresar";
+"vultDiscountTiers" = "$VULT Razine Popusta";
+"vultDiscountTiersDescription" = "Držite $VULT da biste otključali niže naknade za trgovanje.";
+"bronze" = "Bronca";
+"silver" = "Srebro";
+"gold" = "Zlato";
+"platinum" = "Platina";
+"unlockTier" = "Otključaj razinu";
+"unlockXTier" = "Otključaj %@ razinu";
+"unlockXTierDescription" = "Držanjem %@ $VULT otključat ćete %@ razinu i primiti popust od %@ bps na naknade za trgovanje na svim swapovima.";
+"unlockXTierDescriptionHighlighted" = "popust od %@ bps na naknade za trgovanje";
+"vultDiscount" = "Popust: %dbps";
+"hold" = "Držite";

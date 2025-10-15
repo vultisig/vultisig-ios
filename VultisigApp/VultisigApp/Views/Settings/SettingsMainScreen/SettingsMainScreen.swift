@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct SettingsMainScreen: View {
+    @ObservedObject var vault: Vault
     @EnvironmentObject var settingsViewModel: SettingsViewModel
-    @EnvironmentObject var homeViewModel: HomeViewModel
     
     @StateObject var referredViewModel = ReferredViewModel()
     @StateObject var referralViewModel = ReferralViewModel()
@@ -25,6 +25,7 @@ struct SettingsMainScreen: View {
             title: "vault",
             options: [
                 .vaultSettings,
+                .vultDiscountTiers,
                 .registerVaults
             ]
         ),
@@ -53,7 +54,6 @@ struct SettingsMainScreen: View {
                 .twitter,
                 .discord,
                 .github,
-                .vult,
                 .website
             ]
         ),
@@ -81,9 +81,7 @@ struct SettingsMainScreen: View {
         .crossPlatformToolbar("settings".localized) {
             CustomToolbarItem(placement: .trailing) {
                 NavigationLink {
-                    if let vault = homeViewModel.selectedVault {
-                        VaultDetailQRCodeView(vault: vault)
-                    }
+                    VaultDetailQRCodeView(vault: vault)
                 } label: {
                     ToolbarButton(image: "qr-code", action: {})
                 }
@@ -92,17 +90,11 @@ struct SettingsMainScreen: View {
         .navigationDestination(item: $selectedOption) { option in
             switch option {
             case .vaultSettings:
-                if let vault = homeViewModel.selectedVault {
-                    VaultSettingsScreen(vault: vault)
-                } else {
-                    ErrorMessage(text: "errorFetchingVault")
-                }
+                VaultSettingsScreen(vault: vault)
+            case .vultDiscountTiers:
+                VultDiscountTiersScreen(vault: vault)
             case .registerVaults:
-                if let vault = homeViewModel.selectedVault {
-                    RegisterVaultView(vault: vault)
-                } else {
-                    ErrorMessage(text: "errorFetchingVault")
-                }
+                RegisterVaultView(vault: vault)
             case .language:
                 SettingsLanguageSelectionView()
             case .currency:
@@ -222,7 +214,7 @@ struct SettingsMainScreen: View {
     }
     
     var checkUpdateView: some View {
-            PhoneCheckUpdateView()
+        PhoneCheckUpdateView()
     }
     
     func onOption(_ option: SettingsOption) {
@@ -253,7 +245,6 @@ struct SettingsMainScreen: View {
 }
 
 #Preview {
-    SettingsMainScreen()
+    SettingsMainScreen(vault: .example)
         .environmentObject(SettingsViewModel())
-        .environmentObject(HomeViewModel())
 }

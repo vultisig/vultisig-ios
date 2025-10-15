@@ -11,16 +11,16 @@ import BigInt
 struct LiFiService {
     
     static let shared = LiFiService()
-    static let integratorFeeDecimal: Decimal = 0.005
+    static let integratorFeeBps: Int = 50
 
     private let integratorName: String = "vultisig-ios"
-    private let integratorFee: String = "0.005"
 
     func fetchQuotes(
         fromCoin: Coin,
         toCoin: Coin,
-        fromAmount: BigInt
-    ) async throws -> (quote: EVMQuote, fee: BigInt?) {
+        fromAmount: BigInt,
+        vultTierDiscount: Int
+    ) async throws -> (quote: EVMQuote, fee: BigInt?, integratorFee: Decimal?) {
 
         guard let fromChain = fromCoin.chain.chainID, let toChain = toCoin.chain.chainID else {
             throw Errors.unexpectedError
@@ -28,8 +28,12 @@ struct LiFiService {
         let fromToken = fromCoin.contractAddress.isEmpty ? fromCoin.ticker : fromCoin.contractAddress
         let toToken = toCoin.contractAddress.isEmpty ? toCoin.ticker : toCoin.contractAddress
         let integrator = fromCoin.isLifiFeesSupported ? integratorName : nil
-        let fee = fromCoin.isLifiFeesSupported ? integratorFee : nil
-
+        let integratorFee = fromCoin.isLifiFeesSupported ? bps(for: vultTierDiscount) : nil
+        var integratorFeeString: String?
+        if let integratorFee {
+            integratorFeeString = String(format: "%.3f", NSDecimalNumber(decimal: integratorFee).doubleValue)
+        }
+        
         let endpoint = Endpoint.fetchLiFiQuote(
             fromChain: String(fromChain),
             toChain: String(toChain),
@@ -39,7 +43,7 @@ struct LiFiService {
             fromAmount: String(fromAmount),
             fromAddress: fromCoin.address,
             integrator: integrator,
-            fee: fee
+            fee: integratorFeeString
         )
 
         let (data, _) = try await URLSession.shared.data(from: endpoint)
@@ -75,7 +79,7 @@ struct LiFiService {
                 )
             )
 
-            return (quote, response.fee)
+            return (quote, response.fee, integratorFee)
         case .solana(let quote):
             var gas: Int64 = 0
             if quote.estimate.gasCosts.count > 0  {
@@ -94,7 +98,7 @@ struct LiFiService {
                 )
             )
 
-            return (quote, response.fee)
+            return (quote, response.fee, integratorFee)
         }
     }
 }
@@ -103,5 +107,11 @@ private extension LiFiService {
 
     enum Errors: Error {
         case unexpectedError
+    }
+    
+    func bps(for discount: Int) -> Decimal {
+        let feeInt = max(0, LiFiService.integratorFeeBps - discount)
+        let formattedFee: Decimal = Decimal(feeInt) / 10_000
+        return formattedFee
     }
 }
