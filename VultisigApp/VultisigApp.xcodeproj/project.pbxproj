@@ -267,6 +267,8 @@
 		13D9EBF32E84492F0089B2A7 /* AddFolderScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D9EBF22E84492B0089B2A7 /* AddFolderScreen.swift */; };
 		13D9EBF92E8456BE0089B2A7 /* AddFolderVaultCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D9EBF82E8456BD0089B2A7 /* AddFolderVaultCellView.swift */; };
 		13D9EC022E84584A0089B2A7 /* VaultCellMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D9EC012E8458490089B2A7 /* VaultCellMainView.swift */; };
+		13DB87602E9FD78E008E89B0 /* DefiMainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DB875F2E9FD78A008E89B0 /* DefiMainScreen.swift */; };
+		13DB87632EA01182008E89B0 /* DefiMainBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DB87622EA0117E008E89B0 /* DefiMainBalanceView.swift */; };
 		13DD3B172E3CFE5900D46FA0 /* OffsetObservingScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD3B162E3CFE5800D46FA0 /* OffsetObservingScrollView.swift */; };
 		13DD3B1A2E3CFE7D00D46FA0 /* FlatPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD3B192E3CFE6E00D46FA0 /* FlatPicker.swift */; };
 		13DD547C2E561598007335DA /* SettingsOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD547B2E561598007335DA /* SettingsOption.swift */; };
@@ -1340,6 +1342,8 @@
 		13D9EBF22E84492B0089B2A7 /* AddFolderScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFolderScreen.swift; sourceTree = "<group>"; };
 		13D9EBF82E8456BD0089B2A7 /* AddFolderVaultCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFolderVaultCellView.swift; sourceTree = "<group>"; };
 		13D9EC012E8458490089B2A7 /* VaultCellMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultCellMainView.swift; sourceTree = "<group>"; };
+		13DB875F2E9FD78A008E89B0 /* DefiMainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiMainScreen.swift; sourceTree = "<group>"; };
+		13DB87622EA0117E008E89B0 /* DefiMainBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiMainBalanceView.swift; sourceTree = "<group>"; };
 		13DD3B162E3CFE5800D46FA0 /* OffsetObservingScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffsetObservingScrollView.swift; sourceTree = "<group>"; };
 		13DD3B192E3CFE6E00D46FA0 /* FlatPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlatPicker.swift; sourceTree = "<group>"; };
 		13DD547B2E561598007335DA /* SettingsOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsOption.swift; sourceTree = "<group>"; };
@@ -3033,6 +3037,7 @@
 		13C7C1DF2E86EDD500A529FD /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				13C8805E2E70A412009C67F1 /* Views */,
 				130ABEF82E9E281B0074BF67 /* RefreshToolbarButton.swift */,
 				13C7C1E02E86EDDB00A529FD /* AssetSelection */,
 			);
@@ -3068,18 +3073,12 @@
 		13C880552E70A312009C67F1 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				13DB875C2E9FD725008E89B0 /* Wallet */,
+				13DB875B2E9FD703008E89B0 /* Defi */,
 				139D15A92E9C78D5006F671C /* VultDiscountTiers */,
-				133CA3CA2E8AD17A009588F3 /* CoinDetail */,
 				13C7C1DF2E86EDD500A529FD /* Common */,
-				13C7C1D92E86DD7F00A529FD /* TokenSelection */,
-				13B0DCE02E86C6EA00D4E609 /* Receive */,
 				13D3AC952E85901700BA4273 /* VaultActionRouteBuilder.swift */,
 				139642362E79950C00CFEFAF /* VaultSelector */,
-				1336BB2F2E81739C00597070 /* ChainDetail */,
-				138C5E622E79DE2300C559C7 /* ChainSelection */,
-				130C40F62E737FBC00509C61 /* Home */,
-				13C8805C2E70A409009C67F1 /* VaultCommon */,
-				13C880562E70A317009C67F1 /* VaultMain */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -3106,14 +3105,6 @@
 				13C8805A2E70A371009C67F1 /* VaultSelectorView.swift */,
 			);
 			path = Views;
-			sourceTree = "<group>";
-		};
-		13C8805C2E70A409009C67F1 /* VaultCommon */ = {
-			isa = PBXGroup;
-			children = (
-				13C8805E2E70A412009C67F1 /* Views */,
-			);
-			path = VaultCommon;
 			sourceTree = "<group>";
 		};
 		13C8805E2E70A412009C67F1 /* Views */ = {
@@ -3217,6 +3208,45 @@
 				137B2C762E3A4A3F0074F648 /* BottomSheet */,
 			);
 			path = Sheet;
+			sourceTree = "<group>";
+		};
+		13DB875B2E9FD703008E89B0 /* Defi */ = {
+			isa = PBXGroup;
+			children = (
+				13DB875E2E9FD786008E89B0 /* DefiMain */,
+			);
+			path = Defi;
+			sourceTree = "<group>";
+		};
+		13DB875C2E9FD725008E89B0 /* Wallet */ = {
+			isa = PBXGroup;
+			children = (
+				13C880562E70A317009C67F1 /* VaultMain */,
+				133CA3CA2E8AD17A009588F3 /* CoinDetail */,
+				13C7C1D92E86DD7F00A529FD /* TokenSelection */,
+				13B0DCE02E86C6EA00D4E609 /* Receive */,
+				1336BB2F2E81739C00597070 /* ChainDetail */,
+				138C5E622E79DE2300C559C7 /* ChainSelection */,
+				130C40F62E737FBC00509C61 /* Home */,
+			);
+			path = Wallet;
+			sourceTree = "<group>";
+		};
+		13DB875E2E9FD786008E89B0 /* DefiMain */ = {
+			isa = PBXGroup;
+			children = (
+				13DB87612EA01174008E89B0 /* View */,
+				13DB875F2E9FD78A008E89B0 /* DefiMainScreen.swift */,
+			);
+			path = DefiMain;
+			sourceTree = "<group>";
+		};
+		13DB87612EA01174008E89B0 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				13DB87622EA0117E008E89B0 /* DefiMainBalanceView.swift */,
+			);
+			path = View;
 			sourceTree = "<group>";
 		};
 		13DD3B152E3CFE4800D46FA0 /* ScrollView */ = {
@@ -5415,6 +5445,7 @@
 				A60F29E32DA5A50B00C24765 /* SwapCryptoDoneView+iOS.swift in Sources */,
 				B5A97CF52BF4287A007574D7 /* FunctionCallSelectorDropdown.swift in Sources */,
 				A6F7B6C62D4AB86900AC8104 /* EmptyPeerCell.swift in Sources */,
+				13DB87632EA01182008E89B0 /* DefiMainBalanceView.swift in Sources */,
 				A58CC34B2C32FA760086D16B /* ProtoMappable.swift in Sources */,
 				A6505AE72CA670FE0002FBF4 /* StringExtension+iOS.swift in Sources */,
 				A6505AEB2CA673860002FBF4 /* MacCameraServiceViewModel+iOS.swift in Sources */,
@@ -5783,6 +5814,7 @@
 				A6AF96102C2E2DC900992578 /* FileQRCodeImporterMac.swift in Sources */,
 				DE9EB0FA2BA4491B001747D9 /* CoinExtension.swift in Sources */,
 				A52FE09D2D5D59E30016C9A0 /* OnboardingSummaryView+iOS.swift in Sources */,
+				13DB87602E9FD78E008E89B0 /* DefiMainScreen.swift in Sources */,
 				A6C671012CA276EF00F59B6A /* OnboardingView+iOS.swift in Sources */,
 				465A8D562B9E6E0B006E7457 /* SolanaRpc.swift in Sources */,
 				13417B8C2E3BB1DB00A66EE5 /* FunctionCallUnstakeRuji.swift in Sources */,

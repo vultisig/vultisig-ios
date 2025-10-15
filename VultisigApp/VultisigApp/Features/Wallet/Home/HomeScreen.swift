@@ -18,7 +18,7 @@ struct HomeScreen: View {
     @State var showUpgradeVaultSheet: Bool = false
     
     @State var vaults: [Vault] = []
-    @State private var selectedTab: HomeTab = .wallet
+    @State private var selectedTab: HomeTab = .defi
     @State var vaultRoute: VaultMainRoute?
     
     // Properties for QR Code scanner
@@ -75,32 +75,36 @@ struct HomeScreen: View {
     }
     
     func content(selectedVault: Vault) -> some View {
-        // TODO: - Add earn tab when it's ready
-        VultiTabBar(
-            selectedItem: $selectedTab,
-            items: [HomeTab.wallet],
-            accessory: .camera,
-        ) { tab in
-            switch tab {
-            case .wallet:
-                VaultMainScreen(
-                    vault: selectedVault,
-                    routeToPresent: $vaultRoute,
-                    showVaultSelector: $showVaultSelector,
-                    addressToCopy: $addressToCopy,
-                    showUpgradeVaultSheet: $showUpgradeVaultSheet,
-                    showBackupNow: $showBackupNow
-                )
+        ZStack(alignment: .top) {
+            VultiTabBar(
+                selectedItem: $selectedTab,
+                items: [HomeTab.wallet, .defi],
+                accessory: .camera,
+            ) { tab in
+                Group {
+                    switch tab {
+                    case .wallet:
+                        VaultMainScreen(
+                            vault: selectedVault,
+                            routeToPresent: $vaultRoute,
+                            addressToCopy: $addressToCopy,
+                            showUpgradeVaultSheet: $showUpgradeVaultSheet,
+                            showBackupNow: $showBackupNow
+                        )
+                    case .defi:
+                        DefiMainScreen(vault: selectedVault)
+                    case .camera:
+                        EmptyView()
+                    }
+                }
                 #if os(macOS)
                 .navigationBarBackButtonHidden()
                 #endif
-            case .earn:
-                EmptyView()
-            case .camera:
-                EmptyView()
+            } onAccessory: {
+                onCamera()
             }
-        } onAccessory: {
-            onCamera()
+            
+            header(vault: selectedVault)
         }
         .sensoryFeedback(homeViewModel.showAlert ? .stop : .impact, trigger: homeViewModel.showAlert)
         .customNavigationBarHidden(true)
@@ -157,6 +161,28 @@ struct HomeScreen: View {
                 VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: vault))
             }
         }
+        .crossPlatformSheet(isPresented: $showVaultSelector) {
+            VaultManagementSheet {
+                showVaultSelector.toggle()
+                vaultRoute = .createVault
+            } onSelectVault: { vault in
+                showVaultSelector.toggle()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    homeViewModel.setSelectedVault(vault)
+                }
+            }
+        }
+    }
+        
+        @ViewBuilder
+    func header(vault: Vault) -> some View {
+        VaultMainHeaderView(
+            vault: vault,
+            showBalance: .constant(false),
+            vaultSelectorAction: { showVaultSelector.toggle() },
+            settingsAction: { vaultRoute = .settings },
+            onRefresh: {}
+        )
     }
     
     func onCamera() {

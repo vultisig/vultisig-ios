@@ -11,7 +11,6 @@ import SwiftUI
 struct VaultMainScreen: View {
     @ObservedObject var vault: Vault
     @Binding var routeToPresent: VaultMainRoute?
-    @Binding var showVaultSelector: Bool
     @Binding var addressToCopy: Coin?
     @Binding var showUpgradeVaultSheet: Bool
     @Binding var showBackupNow: Bool
@@ -39,28 +38,25 @@ struct VaultMainScreen: View {
     var body: some View {
         GeometryReader { geo in
             VStack {
-                ZStack(alignment: .top) {
-                    ScrollViewReader { proxy in
-                        VaultMainScreenScrollView(
-                            showsIndicators: false,
-                            contentInset: contentInset,
-                            scrollOffset: $scrollOffset
-                        ) {
-                            LazyVStack(spacing: 20) {
-                                topContentSection(width: geo.size.width)
-                                Group {
-                                    Separator(color: Theme.colors.borderLight, opacity: 1)
-                                    bottomContentSection
-                                }
-                                .padding(.horizontal, horizontalPadding)
+                ScrollViewReader { proxy in
+                    VaultMainScreenScrollView(
+                        showsIndicators: false,
+                        contentInset: contentInset,
+                        scrollOffset: $scrollOffset
+                    ) {
+                        LazyVStack(spacing: 20) {
+                            topContentSection(width: geo.size.width)
+                            Group {
+                                Separator(color: Theme.colors.borderLight, opacity: 1)
+                                bottomContentSection
                             }
-                            .padding(.bottom, 32)
+                            .padding(.horizontal, horizontalPadding)
                         }
-                        .onLoad {
-                            scrollProxy = proxy
-                        }
+                        .padding(.bottom, 32)
                     }
-                    header
+                    .onLoad {
+                        scrollProxy = proxy
+                    }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .background(VaultMainScreenBackground())
@@ -74,17 +70,6 @@ struct VaultMainScreen: View {
                             withAnimation {
                                 scrollProxy?.scrollTo(scrollReferenceId, anchor: .center)
                             }
-                        }
-                    }
-                }
-                .crossPlatformSheet(isPresented: $showVaultSelector) {
-                    VaultManagementSheet {
-                        showVaultSelector.toggle()
-                        routeToPresent = .createVault
-                    } onSelectVault: { vault in
-                        showVaultSelector.toggle()
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            homeViewModel.setSelectedVault(vault)
                         }
                     }
                 }
@@ -116,21 +101,10 @@ struct VaultMainScreen: View {
         }
     }
     
-    @ViewBuilder
-    var header: some View {
-        VaultMainHeaderView(
-            vault: vault,
-            showBalance: $showBalanceInHeader,
-            vaultSelectorAction: onVaultSelector,
-            settingsAction: { routeToPresent = .settings },
-            onRefresh: refresh
-        )
-    }
-    
     func topContentSection(width: CGFloat) -> some View {
         LazyVStack(spacing: 0) {
             Group {
-                VaultMainBalanceView(vault: vault)
+                VaultMainBalanceView(vault: vault, balanceToShow: homeViewModel.vaultBalanceText, style: .wallet)
                     .padding(.bottom, 32)
                 CoinActionsView(
                     actions: viewModel.availableActions,
@@ -220,10 +194,6 @@ struct VaultMainScreen: View {
         }
     }
     
-    func onVaultSelector() {
-        showVaultSelector.toggle()
-    }
-    
     func onCopy(_ group: GroupedChain) {
         addressToCopy = group.nativeCoin
     }
@@ -305,7 +275,6 @@ struct VaultMainScreen: View {
     VaultMainScreen(
         vault: .example,
         routeToPresent: .constant(nil),
-        showVaultSelector: .constant(false),
         addressToCopy: .constant(nil),
         showUpgradeVaultSheet: .constant(false),
         showBackupNow: .constant(false)

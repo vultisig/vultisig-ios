@@ -8,14 +8,21 @@
 import SwiftUI
 
 struct VaultMainBalanceView: View {
+    enum Style {
+        case wallet
+        case defi
+    }
+    
     @ObservedObject var vault: Vault
+    let balanceToShow: String
+    let style: Style
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
         Button {
             homeViewModel.hideVaultBalance.toggle()
         } label: {
-            VStack(spacing: 12) {
+            VStack(spacing: spacing) {
                 balanceLabel
                 toggleBalanceVisibilityButton
             }
@@ -24,12 +31,11 @@ struct VaultMainBalanceView: View {
     }
     
     var balanceLabel: some View {
-        Text(homeViewModel.vaultBalanceText)
-            .font(Theme.fonts.priceLargeTitle)
+        Text(balanceToShow)
+            .font(font)
             .foregroundStyle(Theme.colors.textPrimary)
-            .frame(height: 47)
             .contentTransition(.numericText())
-            .animation(.interpolatingSpring, value: homeViewModel.vaultBalanceText)
+            .animation(.interpolatingSpring, value: balanceToShow)
     }
 
     var toggleBalanceVisibilityButton: some View {
@@ -51,12 +57,29 @@ struct VaultMainBalanceView: View {
         .frame(width: 120)
         .animation(.interactiveSpring(duration: 0.3), value: homeViewModel.hideVaultBalance)
     }
+    
+    var spacing: CGFloat {
+        switch style {
+        case .wallet: 12
+        case .defi: 8
+        }
+    }
+    
+    var font: Font {
+        switch style {
+        case .wallet: Theme.fonts.priceLargeTitle
+        case .defi: Theme.fonts.priceTitle1
+        }
+    }
 }
 
 #Preview {
     VStack {
-        VaultMainBalanceView(vault: .example)
-            .environmentObject(HomeViewModel())
+        VaultMainBalanceView(
+            vault: .example,
+            balanceToShow: "US$ 100.000.000,00",
+            style: .wallet
+        ).environmentObject(HomeViewModel())
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
 }
