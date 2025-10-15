@@ -70,7 +70,7 @@ struct VaultBackupPasswordOptionsScreen: View {
     func boxedText(_ text: String, highlighted: String, icon: String) -> some View {
         HStack(spacing: 12) {
             Icon(named: icon, color: Theme.colors.primaryAccent4, size: 24)
-            HighlightedText(localisedKey: text, highlightedText: highlighted) {
+            HighlightedText(text: String(format: text.localized, highlighted), highlightedText: highlighted) {
                 $0.foregroundColor = Theme.colors.textExtraLight
                 $0.font = Theme.fonts.footnote
             } highlightedTextStyle: {

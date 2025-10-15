@@ -286,7 +286,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 
                 return true
                 
-            case .oneinch(let evmQuote, _), .lifi(let evmQuote, _), .kyberswap(let evmQuote, _):
+            case .oneinch(let evmQuote, _), .lifi(let evmQuote, _, _), .kyberswap(let evmQuote, _):
                 let keysignFactory = KeysignPayloadFactory()
                 let payload = GenericSwapPayload(
                     fromCoin: tx.fromCoin,
@@ -390,7 +390,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         updateQuoteTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds delay
             guard !Task.isCancelled else { return }
-            await self?.updateQuotes(tx: tx, referredCode: referredCode)
+            await self?.updateQuotes(tx: tx, vault: vault, referredCode: referredCode)
             await self?.updateFees(tx: tx, vault: vault)
         }
     }
@@ -434,7 +434,7 @@ private extension SwapCryptoViewModel {
         }
     }
     
-    func updateQuotes(tx: SwapTransaction, referredCode: String) async {
+    func updateQuotes(tx: SwapTransaction, vault: Vault, referredCode: String) async {
         isLoadingQuotes = true
         defer { isLoadingQuotes = false }
         
@@ -449,12 +449,14 @@ private extension SwapCryptoViewModel {
                 return
             }
             
+            let vultTier = await VultTierService().fetchDiscountTier(for: vault)
             let quote = try await swapService.fetchQuote(
                 amount: tx.fromAmountDecimal,
                 fromCoin: tx.fromCoin,
                 toCoin: tx.toCoin,
-                isAffiliate: tx.isAlliliate,
-                referredCode: referredCode
+                isAffiliate: tx.isAffiliate,
+                referredCode: referredCode,
+                vultTierDiscount: vultTier?.bpsDiscount ?? 0
             )
             
             tx.quote = quote
