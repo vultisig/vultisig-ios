@@ -76,6 +76,11 @@ struct CustomTokenScreen: View {
                     }
                 }
             }
+            .onSubmit {
+                Task {
+                    await fetchTokenInfo()
+                }
+            }
         }
         .onLoad {
             tokenViewModel.loadData(groupedChain: group)
@@ -127,19 +132,13 @@ struct CustomTokenScreen: View {
                         .lineLimit(1)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, 12)
             .padding(.horizontal, 16)
             .background(RoundedRectangle(cornerRadius: 12).fill(Theme.colors.bgSecondary))
             GradientListSeparator()
         }
-        .clipShape(
-            .rect(
-                topLeadingRadius: 12,
-                bottomLeadingRadius: 0,
-                bottomTrailingRadius: 0,
-                topTrailingRadius: 12
-            )
-        )
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
     
     private func fetchTokenInfo() async {
