@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct HighlightedText: View {
-    let localisedKey: String
+    let text: String
     let highlightedText: String
     
     var textStyle: (inout AttributedString) -> Void
@@ -20,7 +20,7 @@ struct HighlightedText: View {
     
     private func makeAttributedString() -> AttributedString {
         // Get localized template string
-        let format = localisedKey.localized
+        let format = text
         
         // Format the string with parameters
         let fullString = String(format: format, highlightedText)

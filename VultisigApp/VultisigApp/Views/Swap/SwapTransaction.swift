@@ -46,7 +46,7 @@ class SwapTransaction: ObservableObject {
         switch quote {
         case .thorchain, .mayachain:
             return thorchainFee
-        case .oneinch(_ , let fee), .kyberswap(_, let fee), .lifi(_, let fee):
+        case .oneinch(_ , let fee), .kyberswap(_, let fee), .lifi(_, let fee, _):
             return fee ?? 0
         case nil:
             return .zero
@@ -61,8 +61,7 @@ class SwapTransaction: ObservableObject {
         case .mayachain(let quote), .thorchain(let quote):
             let expected = quote.expectedAmountOut.toDecimal()
             return expected / toCoin.thorswapMultiplier
-        case .oneinch(let quote, _), .lifi(let quote, _):
-
+        case .oneinch(let quote, _), .lifi(let quote, _, _):
             let amount = BigInt(quote.dstAmount) ?? BigInt.zero
             return toCoin.decimal(for: amount)
         case .kyberswap(let quote, _):
@@ -79,7 +78,7 @@ class SwapTransaction: ObservableObject {
         return quote?.inboundFeeDecimal(toCoin: toCoin)
     }
 
-    var isAlliliate: Bool {
+    var isAffiliate: Bool {
         let fiatAmount = RateProvider.shared.fiatBalance(
             value: fromAmountDecimal,
             coin: fromCoin,
@@ -115,7 +114,7 @@ extension SwapTransaction {
             streamingInterval: String(provider.streamingInterval),
             streamingQuantity: "0",
             expirationTime: UInt64(expirationTime.timeIntervalSince1970),
-            isAffiliate: isAlliliate
+            isAffiliate: isAffiliate
         )
         return swapPayload
     }

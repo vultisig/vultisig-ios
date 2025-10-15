@@ -239,7 +239,7 @@ extension HomeScreen {
     func buildVaultRoute(route: VaultMainRoute, vault: Vault) -> some View {
         switch route {
         case .settings:
-            SettingsMainScreen()
+            SettingsMainScreen(vault: vault)
         case .createVault:
             CreateVaultView(selectedVault: selectedVault, showBackButton: true)
         case .mainAction(let action):

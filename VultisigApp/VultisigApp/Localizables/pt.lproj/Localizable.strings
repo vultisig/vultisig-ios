@@ -891,3 +891,15 @@
 "backupBannerSubtitle" = "Mantenha o acesso seguro, armazene online";
 "backupBannerButtonTitle" = "Backup do Cofre";
 "addToAddressBook" = "Adicionar ao Catálogo de Endereços";
+"vultDiscountTiers" = "Níveis de Desconto $VULT";
+"vultDiscountTiersDescription" = "Mantenha $VULT para desbloquear taxas de negociação mais baixas.";
+"bronze" = "Bronze";
+"silver" = "Prata";
+"gold" = "Ouro";
+"platinum" = "Platina";
+"unlockTier" = "Desbloquear nível";
+"unlockXTier" = "Desbloquear nível %@";
+"unlockXTierDescription" = "Ao manter %@ $VULT, você desbloqueará o nível %@ e receberá um desconto de %@ bps nas taxas de negociação em todos os swaps.";
+"unlockXTierDescriptionHighlighted" = "desconto de %@ bps nas taxas de negociação";
+"vultDiscount" = "Desconto: %dbps";
+"hold" = "Manter";

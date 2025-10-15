@@ -891,3 +891,15 @@
 "backupBannerSubtitle" = "Mantieni l'accesso sicuro, archivia online";
 "backupBannerButtonTitle" = "Backup Vault";
 "addToAddressBook" = "Aggiungi alla Rubrica";
+"vultDiscountTiers" = "Livelli di Sconto $VULT";
+"vultDiscountTiersDescription" = "Mantieni $VULT per sbloccare commissioni di trading più basse.";
+"bronze" = "Bronzo";
+"silver" = "Argento";
+"gold" = "Oro";
+"platinum" = "Platino";
+"unlockTier" = "Sblocca livello";
+"unlockXTier" = "Sblocca livello %@";
+"unlockXTierDescription" = "Tenendo %@ $VULT, sbloccherai il livello %@ e riceverai uno sconto di %@ bps sulle commissioni di trading su tutti gli swap.";
+"unlockXTierDescriptionHighlighted" = "sconto di %@ bps sulle commissioni di trading";
+"vultDiscount" = "Sconto: %dbps";
+"hold" = "Mantieni";

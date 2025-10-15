@@ -191,7 +191,7 @@ private extension SecurityScannerTransactionFactory {
 private extension SecurityScannerTransactionFactory {
     func createEVMSecurityScanner(transaction: SwapTransaction) async throws -> SecurityScannerTransaction {
         switch transaction.quote {
-        case .oneinch(let quote, _), .lifi(let quote, _):
+        case .oneinch(let quote, _), .lifi(let quote, _, _):
             try buildSwapSecurityScannerTransaction(
                 srcToken: transaction.fromCoin,
                 from: quote.tx.from,

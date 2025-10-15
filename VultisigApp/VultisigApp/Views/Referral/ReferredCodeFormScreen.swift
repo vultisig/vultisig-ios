@@ -11,6 +11,7 @@ struct ReferredCodeFormScreen: View {
     @ObservedObject var referredViewModel: ReferredViewModel
     @ObservedObject var referralViewModel: ReferralViewModel
     
+    private let referralSavePercentage: String = "10%"    
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
@@ -33,8 +34,8 @@ struct ReferredCodeFormScreen: View {
         ScrollView {
             VStack(spacing: 8) {
                 HighlightedText(
-                    localisedKey: "referredSaveOnSwaps",
-                    highlightedText: "10%"
+                    text: String(format: "referredSaveOnSwaps".localized, referralSavePercentage),
+                    highlightedText: referralSavePercentage
                 ) {
                     $0.font = Theme.fonts.bodySMedium
                     $0.foregroundColor = Theme.colors.textPrimary
