@@ -226,8 +226,8 @@ struct SwapVerifyView: View {
         Task {
             if await swapViewModel.buildSwapKeysignPayload(tx: tx, vault: vault) {
                 swapViewModel.moveToNextView()
-                await MainActor.run { signButtonDisabled = false }
             }
+            await MainActor.run { signButtonDisabled = false }
         }
     }
     
