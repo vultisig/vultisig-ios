@@ -57,6 +57,7 @@ struct CoinService {
         
         // Remove them
         try removeCoins(coins: coinsToRemove, vault: vault)
+        vault.defiChains.removeAll { coinsToRemove.map(\.chain).contains($0) }
     }
     
     static func addNewlySelectedCoins(vault: Vault, selection: Set<CoinMeta>) async throws {
@@ -84,6 +85,7 @@ struct CoinService {
         
         // Add them with auto-discovery for native tokens
         try await addToChain(assets: newCoins, to: vault)
+        vault.defiChains.append(contentsOf: Array(Set(newCoins.map(\.chain))))
     }
     
     private static func findAllCoinsToRemove(vault: Vault, selection: Set<CoinMeta>) -> [Coin] {
