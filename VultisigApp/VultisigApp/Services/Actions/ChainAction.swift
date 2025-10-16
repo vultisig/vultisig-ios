@@ -54,7 +54,7 @@ enum CoinAction: String, Codable {
         case .send:
             "arrow-up-right"
         case .swap:
-            "arrow-right-left"
+            "arrow-left-right"
         case .deposit:
             "action"
         case .bridge:
