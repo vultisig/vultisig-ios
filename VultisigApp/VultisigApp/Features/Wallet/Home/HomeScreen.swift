@@ -31,6 +31,10 @@ struct HomeScreen: View {
     @StateObject var sendTx = SendTransaction()
     @State var selectedChain: Chain? = nil
     
+    @State var walletShowPortfolioHeader: Bool = false
+    @State var defiShowPortfolioHeader: Bool = false
+    @State var showPortfolioHeader: Bool = false
+    
     @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
@@ -62,7 +66,7 @@ struct HomeScreen: View {
             Link(destination: StaticURL.AppStoreVultisigURL) {
                 Text(NSLocalizedString("updateNow", comment: ""))
             }
-
+            
             Button(NSLocalizedString("dismiss", comment: ""), role: .cancel) {}
         } message: {
             Text(phoneCheckUpdateViewModel.latestVersionString)
@@ -75,114 +79,162 @@ struct HomeScreen: View {
     }
     
     func content(selectedVault: Vault) -> some View {
-        ZStack(alignment: .top) {
-            VultiTabBar(
-                selectedItem: $selectedTab,
-                items: [HomeTab.wallet, .defi],
-                accessory: .camera,
-            ) { tab in
-                Group {
-                    switch tab {
-                    case .wallet:
-                        VaultMainScreen(
-                            vault: selectedVault,
-                            routeToPresent: $vaultRoute,
-                            addressToCopy: $addressToCopy,
-                            showUpgradeVaultSheet: $showUpgradeVaultSheet,
-                            showBackupNow: $showBackupNow
-                        )
-                    case .defi:
-                        DefiMainScreen(vault: selectedVault)
-                    case .camera:
-                        EmptyView()
+        GeometryReader { geo in
+            ZStack(alignment: .top) {
+                VultiTabBar(
+                    selectedItem: $selectedTab,
+                    items: [HomeTab.wallet, .defi],
+                    accessory: .camera,
+                ) { tab in
+                    Group {
+                        switch tab {
+                        case .wallet:
+                            VaultMainScreen(
+                                vault: selectedVault,
+                                routeToPresent: $vaultRoute,
+                                addressToCopy: $addressToCopy,
+                                showUpgradeVaultSheet: $showUpgradeVaultSheet,
+                                showBackupNow: $showBackupNow,
+                                showBalanceInHeader: $walletShowPortfolioHeader
+                            )
+                        case .defi:
+                            DefiMainScreen(
+                                vault: selectedVault,
+                                showBalanceInHeader: $defiShowPortfolioHeader
+                            )
+                        case .camera:
+                            EmptyView()
+                        }
                     }
+#if os(macOS)
+                    .navigationBarBackButtonHidden()
+#endif
+                } onAccessory: {
+                    onCamera()
                 }
-                #if os(macOS)
-                .navigationBarBackButtonHidden()
-                #endif
-            } onAccessory: {
-                onCamera()
+                
+                header(vault: selectedVault)
             }
             
-            header(vault: selectedVault)
-        }
-        .sensoryFeedback(homeViewModel.showAlert ? .stop : .impact, trigger: homeViewModel.showAlert)
-        .customNavigationBarHidden(true)
-        .withAddressCopy(coin: $addressToCopy)
-        .withUpgradeVault(vault: selectedVault, shouldShow: $showUpgradeVaultSheet)
-        .withBiweeklyPasswordVerification(vault: selectedVault)
-        .withMonthlyBackupWarning(vault: selectedVault)
-        .onChange(of: selectedTab) { oldValue, newValue in
-            if newValue == .camera {
-                selectedTab = oldValue
-                onCamera()
+            .sensoryFeedback(homeViewModel.showAlert ? .stop : .impact, trigger: homeViewModel.showAlert)
+            .customNavigationBarHidden(true)
+            .withAddressCopy(coin: $addressToCopy)
+            .withUpgradeVault(vault: selectedVault, shouldShow: $showUpgradeVaultSheet)
+            .withBiweeklyPasswordVerification(vault: selectedVault)
+            .withMonthlyBackupWarning(vault: selectedVault)
+            .onChange(of: walletShowPortfolioHeader) { _,_ in updateHeader() }
+            .onChange(of: defiShowPortfolioHeader) { _,_ in updateHeader() }
+            .onChange(of: selectedTab) { oldValue, newValue in
+                updateHeader()
+                if newValue == .camera {
+                    selectedTab = oldValue
+                    onCamera()
+                }
             }
-        }
-        .navigationDestination(item: $vaultRoute) {
-            buildVaultRoute(route: $0, vault: selectedVault)
-        }
-        #if os(macOS)
-        .navigationDestination(isPresented: $showScanner) {
-            MacScannerView(type: .SignTransaction, sendTx: sendTx, selectedVault: selectedVault)
-        }
-        #else
-        .crossPlatformSheet(isPresented: $showScanner) {
-            if ProcessInfo.processInfo.isiOSAppOnMac {
-                GeneralQRImportMacView(type: .SignTransaction, sendTx: sendTx, selectedVault: selectedVault)
-            } else {
-                GeneralCodeScannerView(
-                    showSheet: $showScanner,
-                    shouldJoinKeygen: $shouldJoinKeygen,
-                    shouldKeysignTransaction: $shouldKeysignTransaction,
-                    shouldSendCrypto: $shouldSendCrypto,
-                    selectedChain: $selectedChain,
-                    sendTX: sendTx
-                )
+            .navigationDestination(item: $vaultRoute) {
+                buildVaultRoute(route: $0, vault: selectedVault)
             }
-        }
-        #endif
-        .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: selectedVault)
-        }
-        .onChange(of: shouldSendCrypto) { _, newValue in
-            guard newValue else { return }
-            vaultRoute = .mainAction(.send(coin: vaultDetailViewModel.selectedGroup?.nativeCoin, hasPreselectedCoin: false))
-        }
-        .navigationDestination(isPresented: $shouldKeysignTransaction) {
-            if let vault = homeViewModel.selectedVault {
-                JoinKeysignView(vault: vault)
+#if os(macOS)
+            .navigationDestination(isPresented: $showScanner) {
+                MacScannerView(type: .SignTransaction, sendTx: sendTx, selectedVault: selectedVault)
             }
-        }
-        .navigationDestination(isPresented: $shouldImportBackup) {
-            ImportWalletView()
-        }
-        .navigationDestination(isPresented: $showBackupNow) {
-            if let vault = homeViewModel.selectedVault {
-                VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: vault))
+#else
+            .crossPlatformSheet(isPresented: $showScanner) {
+                if ProcessInfo.processInfo.isiOSAppOnMac {
+                    GeneralQRImportMacView(type: .SignTransaction, sendTx: sendTx, selectedVault: selectedVault)
+                } else {
+                    GeneralCodeScannerView(
+                        showSheet: $showScanner,
+                        shouldJoinKeygen: $shouldJoinKeygen,
+                        shouldKeysignTransaction: $shouldKeysignTransaction,
+                        shouldSendCrypto: $shouldSendCrypto,
+                        selectedChain: $selectedChain,
+                        sendTX: sendTx
+                    )
+                }
             }
-        }
-        .crossPlatformSheet(isPresented: $showVaultSelector) {
-            VaultManagementSheet {
-                showVaultSelector.toggle()
-                vaultRoute = .createVault
-            } onSelectVault: { vault in
-                showVaultSelector.toggle()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    homeViewModel.setSelectedVault(vault)
+#endif
+            .navigationDestination(isPresented: $shouldJoinKeygen) {
+                JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: selectedVault)
+            }
+            .onChange(of: shouldSendCrypto) { _, newValue in
+                guard newValue else { return }
+                vaultRoute = .mainAction(.send(coin: vaultDetailViewModel.selectedGroup?.nativeCoin, hasPreselectedCoin: false))
+            }
+            .navigationDestination(isPresented: $shouldKeysignTransaction) {
+                if let vault = homeViewModel.selectedVault {
+                    JoinKeysignView(vault: vault)
+                }
+            }
+            .navigationDestination(isPresented: $shouldImportBackup) {
+                ImportWalletView()
+            }
+            .navigationDestination(isPresented: $showBackupNow) {
+                if let vault = homeViewModel.selectedVault {
+                    VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: vault))
+                }
+            }
+            .crossPlatformSheet(isPresented: $showVaultSelector) {
+                VaultManagementSheet(availableHeight: geo.size.height) {
+                    showVaultSelector.toggle()
+                    vaultRoute = .createVault
+                } onSelectVault: { vault in
+                    showVaultSelector.toggle()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        homeViewModel.setSelectedVault(vault)
+                    }
                 }
             }
         }
     }
-        
-        @ViewBuilder
+    
+    @ViewBuilder
     func header(vault: Vault) -> some View {
         VaultMainHeaderView(
             vault: vault,
-            showBalance: .constant(false),
+            showBalance: $showPortfolioHeader,
             vaultSelectorAction: { showVaultSelector.toggle() },
             settingsAction: { vaultRoute = .settings },
             onRefresh: {}
         )
+    }
+}
+
+private extension HomeScreen {
+    func updateHeader() {
+        let showOpaqueHeader: Bool
+        switch selectedTab {
+        case .defi:
+            showOpaqueHeader = defiShowPortfolioHeader
+        case .wallet:
+            showOpaqueHeader = walletShowPortfolioHeader
+        case .camera:
+            return
+        }
+        
+        self.showPortfolioHeader = showOpaqueHeader
+    }
+    
+    func moveToVaultsView() {
+        guard let vault = deeplinkViewModel.selectedVault else {
+            return
+        }
+        
+        homeViewModel.setSelectedVault(vault)
+        showVaultSelector = false
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            shouldKeysignTransaction = true
+        }
+    }
+    
+    func checkUpdate() {
+        phoneCheckUpdateViewModel.checkForUpdates(isAutoCheck: true)
+    }
+    
+    func moveToCreateVaultView() {
+        showVaultSelector = false
+        shouldJoinKeygen = true
     }
     
     func onCamera() {
@@ -235,28 +287,6 @@ struct HomeScreen: View {
         case .Unknown:
             return
         }
-    }
-    
-    private func moveToCreateVaultView() {
-        showVaultSelector = false
-        shouldJoinKeygen = true
-    }
-    
-    private func moveToVaultsView() {
-        guard let vault = deeplinkViewModel.selectedVault else {
-            return
-        }
-        
-        homeViewModel.setSelectedVault(vault)
-        showVaultSelector = false
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            shouldKeysignTransaction = true
-        }
-    }
-    
-    func checkUpdate() {
-        phoneCheckUpdateViewModel.checkForUpdates(isAutoCheck: true)
     }
 }
 

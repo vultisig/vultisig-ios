@@ -14,6 +14,7 @@ struct VaultMainScreen: View {
     @Binding var addressToCopy: Coin?
     @Binding var showUpgradeVaultSheet: Bool
     @Binding var showBackupNow: Bool
+    @Binding var showBalanceInHeader: Bool
     
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var viewModel: VaultDetailViewModel
@@ -23,7 +24,6 @@ struct VaultMainScreen: View {
     @Environment(\.openURL) var openURL
     
     @State private var scrollOffset: CGFloat = 0
-    @State var showBalanceInHeader: Bool = false
     @State var showChainSelection: Bool = false
     @State var showSearchHeader: Bool = false
     @State var showReceiveList: Bool = false
@@ -277,7 +277,8 @@ struct VaultMainScreen: View {
         routeToPresent: .constant(nil),
         addressToCopy: .constant(nil),
         showUpgradeVaultSheet: .constant(false),
-        showBackupNow: .constant(false)
+        showBackupNow: .constant(false),
+        showBalanceInHeader: .constant(false)
     )
     .environmentObject(HomeViewModel())
     .environmentObject(VaultDetailViewModel())

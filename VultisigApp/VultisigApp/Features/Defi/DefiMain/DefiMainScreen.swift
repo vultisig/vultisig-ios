@@ -10,6 +10,7 @@ import SwiftUI
 
 struct DefiMainScreen: View {
     @ObservedObject var vault: Vault
+    @Binding var showBalanceInHeader: Bool
     
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var viewModel: VaultDetailViewModel
@@ -72,6 +73,9 @@ struct DefiMainScreen: View {
                 .refreshable { refresh() }
                 .onChange(of: settingsViewModel.selectedCurrency) {
                     refresh()
+                }
+                .onChange(of: scrollOffset) { _, newValue in
+                    onScrollOffsetChange(newValue)
                 }
             }
         }
@@ -181,11 +185,18 @@ struct DefiMainScreen: View {
             clearSearch()
         }
     }
+    
+    func onScrollOffsetChange(_ offset: CGFloat) {
+        let showBalanceInHeader: Bool = offset < contentInset
+        guard showBalanceInHeader != self.showBalanceInHeader else { return }
+        self.showBalanceInHeader = showBalanceInHeader
+    }
 }
 
 #Preview {
     DefiMainScreen(
-        vault: .example
+        vault: .example,
+        showBalanceInHeader: .constant(false)
     )
     .environmentObject(HomeViewModel())
     .environmentObject(VaultDetailViewModel())
