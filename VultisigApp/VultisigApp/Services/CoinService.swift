@@ -59,7 +59,7 @@ struct CoinService {
         try removeCoins(coins: coinsToRemove, vault: vault)
     }
     
-    private static func addNewlySelectedCoins(vault: Vault, selection: Set<CoinMeta>) async throws {
+    static func addNewlySelectedCoins(vault: Vault, selection: Set<CoinMeta>) async throws {
         // Find chains where the native token is being removed from the selection
         let chainsBeingRemoved = findChainsBeingRemoved(selection: selection)
         

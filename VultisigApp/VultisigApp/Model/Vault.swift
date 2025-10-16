@@ -24,6 +24,7 @@ final class Vault: ObservableObject, Codable {
     var isBackedUp: Bool = false
     var libType: LibType? = LibType.GG20
     var closedBanners: [String] = []
+    var defiChains: [Chain] = []
     
     @Relationship(deleteRule: .cascade) var coins = [Coin]()
     @Relationship(deleteRule: .cascade) var hiddenTokens = [HiddenToken]()

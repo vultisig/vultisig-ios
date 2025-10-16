@@ -13,11 +13,7 @@ struct DefiMainScreen: View {
     @Binding var showBalanceInHeader: Bool
     
     @Environment(\.modelContext) var modelContext
-    @EnvironmentObject var viewModel: VaultDetailViewModel
-    @EnvironmentObject var homeViewModel: HomeViewModel
-    @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var settingsViewModel: SettingsViewModel
-    @Environment(\.openURL) var openURL
     
     @State var scrollProxy: ScrollViewProxy?
     @State var showSearchHeader: Bool = false
@@ -29,54 +25,54 @@ struct DefiMainScreen: View {
     private let contentInset: CGFloat = 78
     private let horizontalPadding: CGFloat = 16
     
+    @StateObject var viewModel = DefiMainViewModel()
+    
     var body: some View {
-        GeometryReader { geo in
-            VStack {
-                ScrollViewReader { proxy in
-                    VaultMainScreenScrollView(
-                        showsIndicators: false,
-                        contentInset: contentInset,
-                        scrollOffset: $scrollOffset
-                    ) {
-                        LazyVStack(spacing: 20) {
-                            topContentSection(width: geo.size.width)
-                            Separator(color: Theme.colors.borderLight, opacity: 1)
-                            bottomContentSection
-                            
-                        }
-                        .padding(.bottom, 32)
-                        .padding(.horizontal, horizontalPadding)
+        VStack {
+            ScrollViewReader { proxy in
+                VaultMainScreenScrollView(
+                    showsIndicators: false,
+                    contentInset: contentInset,
+                    scrollOffset: $scrollOffset
+                ) {
+                    LazyVStack(spacing: 20) {
+                        DefiMainBalanceView(vault: vault)
+                        Separator(color: Theme.colors.borderLight, opacity: 1)
+                        bottomContentSection
+                        
                     }
-                    .onLoad {
-                        scrollProxy = proxy
-                    }
+                    .padding(.bottom, 32)
+                    .padding(.horizontal, horizontalPadding)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .background(VaultMainScreenBackground())
-                .onChange(of: showSearchHeader) { _, showSearchHeader in
-                    if showSearchHeader {
-                        focusSearch = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
-                            withAnimation {
-                                scrollProxy?.scrollTo(scrollReferenceId, anchor: .center)
-                            }
+                .onLoad {
+                    scrollProxy = proxy
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .background(VaultMainScreenBackground())
+            .onChange(of: showSearchHeader) { _, showSearchHeader in
+                if showSearchHeader {
+                    focusSearch = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                        withAnimation {
+                            scrollProxy?.scrollTo(scrollReferenceId, anchor: .center)
                         }
                     }
                 }
-                //                .crossPlatformSheet(isPresented: $showChainSelection) {
-                //                    VaultSelectChainScreen(
-                //                        vault: vault,
-                //                        isPresented: $showChainSelection
-                //                    ) { refresh() }
-                //                }
-                .onAppear(perform: refresh)
-                .refreshable { refresh() }
-                .onChange(of: settingsViewModel.selectedCurrency) {
-                    refresh()
-                }
-                .onChange(of: scrollOffset) { _, newValue in
-                    onScrollOffsetChange(newValue)
-                }
+            }
+            .crossPlatformSheet(isPresented: $showChainSelection) {
+                DefiSelectChainScreen(
+                    vault: vault,
+                    isPresented: $showChainSelection
+                ) { refresh() }
+            }
+            .onAppear(perform: refresh)
+            .refreshable { refresh() }
+            .onChange(of: settingsViewModel.selectedCurrency) {
+                refresh()
+            }
+            .onChange(of: scrollOffset) { _, newValue in
+                onScrollOffsetChange(newValue)
             }
         }
         .onLoad {
@@ -85,11 +81,6 @@ struct DefiMainScreen: View {
         .onChange(of: vault) { oldValue, newValue in
             refresh()
         }
-    }
-    
-    func topContentSection(width: CGFloat) -> some View {
-        DefiMainBalanceView(vault: vault)
-            .padding(.bottom, 32)
     }
     
     var bottomContentSection: some View {
@@ -105,11 +96,11 @@ struct DefiMainScreen: View {
             .frame(height: 42)
             .padding(.bottom, 16)
             
-            //            VaultMainChainListView(
-            //                vault: vault,
-            //                onCopy: onCopy,
-            //                onCustomizeChains: onCustomizeChains
-            //            )
+            DefiChainListView(
+                vault: vault,
+                viewModel: viewModel,
+                onCustomizeChains: onCustomizeChains
+            )
             VStack {}
                 .background(
                     // Reference to scroll when search gets presented
@@ -165,12 +156,7 @@ struct DefiMainScreen: View {
     }
     
     func refresh() {
-        tokenSelectionViewModel.setData(for: vault)
-        viewModel.setupBanners(for: vault)
-        viewModel.getGroupAsync(tokenSelectionViewModel)
-        
-        viewModel.categorizeCoins(vault: vault)
-        viewModel.updateBalance(vault: vault)
+        viewModel.groupChains(vault: vault)
     }
     
     func clearSearch() {

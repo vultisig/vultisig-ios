@@ -1,17 +1,16 @@
 //
-//  VaultMainChainListView.swift
+//  DefiChainListView.swift
 //  VultisigApp
 //
-//  Created by Gaston Mazzeo on 11/09/2025.
+//  Created by Gaston Mazzeo on 16/10/2025.
 //
 
 import SwiftUI
 
-struct VaultMainChainListView: View {
+struct DefiChainListView: View {
     @ObservedObject var vault: Vault
-    @EnvironmentObject var viewModel: VaultDetailViewModel
+    @ObservedObject var viewModel: DefiMainViewModel
     
-    var onCopy: (GroupedChain) -> Void
     var onCustomizeChains: () -> Void
     
     var body: some View {
@@ -26,20 +25,16 @@ struct VaultMainChainListView: View {
     
     var chainList: some View {
         ForEach(Array(viewModel.filteredGroups.enumerated()), id: \.element.id) { index, group in
-            VaultChainCellView(group: group, vault: vault) {
-                onCopy(group)
-            }
-            .commonListItemContainer(
-                index: index,
-                itemsCount: viewModel.filteredGroups.count
-            )
+            DefiChainCellView(group: group, vault: vault)
+                .commonListItemContainer(
+                    index: index,
+                    itemsCount: viewModel.filteredGroups.count
+                )
         }
     }
 }
 
 #Preview {
-    VaultMainChainListView(vault: .example) { _ in
-    } onCustomizeChains: {
-        
+    DefiChainListView(vault: .example, viewModel: DefiMainViewModel()) {
     }.environmentObject(VaultDetailViewModel())
 }

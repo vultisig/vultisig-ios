@@ -115,13 +115,15 @@ struct HomeScreen: View {
                 
                 header(vault: selectedVault)
             }
-            
             .sensoryFeedback(homeViewModel.showAlert ? .stop : .impact, trigger: homeViewModel.showAlert)
             .customNavigationBarHidden(true)
             .withAddressCopy(coin: $addressToCopy)
             .withUpgradeVault(vault: selectedVault, shouldShow: $showUpgradeVaultSheet)
             .withBiweeklyPasswordVerification(vault: selectedVault)
             .withMonthlyBackupWarning(vault: selectedVault)
+            .onLoad {
+                onVaultLoaded(vault: selectedVault)
+            }
             .onChange(of: walletShowPortfolioHeader) { _,_ in updateHeader() }
             .onChange(of: defiShowPortfolioHeader) { _,_ in updateHeader() }
             .onChange(of: selectedTab) { oldValue, newValue in
@@ -190,8 +192,9 @@ struct HomeScreen: View {
     
     @ViewBuilder
     func header(vault: Vault) -> some View {
-        VaultMainHeaderView(
+        HomeMainHeaderView(
             vault: vault,
+            activeTab: $selectedTab,
             showBalance: $showPortfolioHeader,
             vaultSelectorAction: { showVaultSelector.toggle() },
             settingsAction: { vaultRoute = .settings },
@@ -286,6 +289,13 @@ private extension HomeScreen {
             moveToVaultsView()
         case .Unknown:
             return
+        }
+    }
+    
+    func onVaultLoaded(vault: Vault) {
+        // Enable chains for Defi tab if needed, only once per vault lifecycle
+        Task { @MainActor in
+            await VaultDefiChainsService().enableDefiChainsIfNeeded(for: vault)
         }
     }
 }

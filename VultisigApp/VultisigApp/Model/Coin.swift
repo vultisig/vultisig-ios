@@ -110,6 +110,14 @@ class Coin: ObservableObject, Codable, Hashable {
         "\(balanceString) \(ticker)"
     }
     
+    var defiBalanceString: String {
+        return stakedBalanceDecimal.formatForDisplay()
+    }
+    
+    var defiBalanceStringWithTicker: String {
+        "\(defiBalanceString) \(ticker)"
+    }
+    
     var balanceInFiat: String {
         return balanceInFiatDecimal.formatToFiat()
     }
@@ -268,6 +276,12 @@ class Coin: ObservableObject, Codable, Hashable {
     
     var balanceInFiatDecimal: Decimal {
         let combined = combinedBalanceDecimal
+        let fiat = RateProvider.shared.fiatBalance(value: combined, coin: self)
+        return fiat
+    }
+    
+    var defiBalanceInFiatDecimal: Decimal {
+        let combined = stakedBalanceDecimal
         let fiat = RateProvider.shared.fiatBalance(value: combined, coin: self)
         return fiat
     }

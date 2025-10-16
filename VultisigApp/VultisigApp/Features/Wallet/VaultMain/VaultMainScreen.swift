@@ -203,7 +203,7 @@ struct VaultMainScreen: View {
         viewModel.setupBanners(for: vault)
         viewModel.getGroupAsync(tokenSelectionViewModel)
         
-        viewModel.categorizeCoins(vault: vault)
+        viewModel.groupChains(vault: vault)
         viewModel.updateBalance(vault: vault)
     }
     

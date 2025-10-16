@@ -21,8 +21,7 @@ struct DefiMainBalanceView: View {
                 
                 VaultMainBalanceView(
                     vault: vault,
-                    // TODO: - Show Defi balance
-                    balanceToShow: homeViewModel.vaultBalanceText,
+                    balanceToShow: homeViewModel.defiBalanceText,
                     style: .defi
                 )
             }
