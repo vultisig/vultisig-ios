@@ -14,7 +14,16 @@ struct CoinActionsView: View {
     @State private var availableWidth: CGFloat = 0
     
     var calculatedSpacing: CGFloat {
-        min(availableWidth / 20, 20)
+        guard actions.count > 1 else { return 0 }
+        let buttonWidth: CGFloat = 52
+        let totalButtonWidth = CGFloat(actions.count) * buttonWidth
+        let availableSpaceForSpacing = availableWidth - totalButtonWidth
+        let numberOfSpaces = CGFloat(actions.count - 1)
+        
+        guard numberOfSpaces > 0 && availableSpaceForSpacing > 0 else { return 0 }
+        
+        let calculatedFromAvailableSpace = availableSpaceForSpacing / numberOfSpaces
+        return min(max(calculatedFromAvailableSpace, 8), 20) // Min 8pt, max 20pt
     }
     
     var body: some View {
@@ -31,6 +40,7 @@ struct CoinActionsView: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity)
         .readSize { size in
             availableWidth = size.width
         }
