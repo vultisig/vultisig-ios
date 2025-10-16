@@ -173,7 +173,7 @@ struct KeysignDiscoveryView: View {
             self.selectedNetwork = .Local
         }
         
-        viewModel.setData(
+        await viewModel.setData(
             vault: vault,
             keysignPayload: keysignPayload,
             customMessagePayload: customMessagePayload,

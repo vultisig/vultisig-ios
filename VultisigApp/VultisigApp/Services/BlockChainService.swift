@@ -61,10 +61,60 @@ final class BlockChainService {
         localCache.clear()
     }
     
+    /// Refresh Solana blockhash in the chainSpecific field of a KeysignPayload
+    /// This should be called right before TSS signing to ensure the blockhash is fresh
+    func refreshSolanaBlockhash(for payload: KeysignPayload) async throws -> KeysignPayload {
+        guard payload.coin.chain == .solana else {
+            // Not a Solana transaction, return as-is
+            return payload
+        }
+        
+        guard case .Solana(_, let priorityFee, let fromAddressPubKey, let toAddressPubKey, let hasProgramId) = payload.chainSpecific else {
+            // Not a Solana chainSpecific, return as-is
+            return payload
+        }
+        
+        // Fetch fresh blockhash
+        guard let freshBlockhash = try await sol.fetchRecentBlockhash() else {
+            throw Errors.failToGetRecentBlockHash
+        }
+        
+        // Create updated chainSpecific with fresh blockhash
+        let updatedChainSpecific = BlockChainSpecific.Solana(
+            recentBlockHash: freshBlockhash,
+            priorityFee: priorityFee,
+            fromAddressPubKey: fromAddressPubKey,
+            toAddressPubKey: toAddressPubKey,
+            hasProgramId: hasProgramId
+        )
+        
+        // Create and return updated payload with fresh blockhash
+        return KeysignPayload(
+            coin: payload.coin,
+            toAddress: payload.toAddress,
+            toAmount: payload.toAmount,
+            chainSpecific: updatedChainSpecific,
+            utxos: payload.utxos,
+            memo: payload.memo,
+            swapPayload: payload.swapPayload,
+            approvePayload: payload.approvePayload,
+            vaultPubKeyECDSA: payload.vaultPubKeyECDSA,
+            vaultLocalPartyID: payload.vaultLocalPartyID,
+            libType: payload.libType,
+            wasmExecuteContractPayload: payload.wasmExecuteContractPayload,
+            skipBroadcast: payload.skipBroadcast
+        )
+    }
+    
     /// Check if we should use cache for the given chain and cache key
     private func shouldUseCache(for chain: Chain, cacheKey: String) -> BlockChainSpecific? {
         // Skip cache for chains that support pending transactions to ensure fresh nonce
         guard !chain.supportsPendingTransactions else {
+            return nil
+        }
+        
+        // Skip cache for Solana to ensure fresh blockhash (expires in ~60 seconds)
+        guard chain != .solana else {
             return nil
         }
         
@@ -84,6 +134,11 @@ final class BlockChainService {
     private func setCacheIfAllowed(for chain: Chain, cacheKey: String, blockSpecific: BlockChainSpecific) {
         // Only cache for chains that don't support pending transactions
         guard !chain.supportsPendingTransactions else {
+            return
+        }
+        
+        // Don't cache Solana to ensure fresh blockhash
+        guard chain != .solana else {
             return
         }
         
