@@ -68,7 +68,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         participantDiscovery: ParticipantDiscovery,
         fastVaultPassword: String?,
         onFastKeysign: (() -> Void)?
-    ) {
+    ) async {
         self.vault = vault
         self.keysignPayload = keysignPayload
         self.customMessagePayload = customMessagePayload
@@ -91,7 +91,16 @@ class KeysignDiscoveryViewModel: ObservableObject {
         
         if let keysignPayload {
             do {
-                let keysignFactory = KeysignMessageFactory(payload: keysignPayload)
+                // Refresh Solana blockhash BEFORE generating messages to ensure both devices
+                // (including Fast Vault server) use the same fresh blockhash
+                var finalPayload = keysignPayload
+                if keysignPayload.coin.chain == .solana {
+                    finalPayload = try await BlockChainService.shared.refreshSolanaBlockhash(for: keysignPayload)
+                    self.keysignPayload = finalPayload
+                    logger.info("Refreshed Solana blockhash before generating keysign messages")
+                }
+                
+                let keysignFactory = KeysignMessageFactory(payload: finalPayload)
                 let preSignedImageHash = try keysignFactory.getKeysignMessages(vault: vault)
                 self.keysignMessages = preSignedImageHash.sorted()
             } catch {
