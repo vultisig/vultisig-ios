@@ -1358,7 +1358,7 @@ class TokensStore {
             ticker: "SHIB",
             logo: "shib",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "shiba-inu",
             contractAddress: "0x6f8a06447Ff6FcF75d803135a7de15CE88C1d4ec",
             isNativeToken: false
         ),
