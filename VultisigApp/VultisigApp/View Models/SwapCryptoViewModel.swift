@@ -479,6 +479,11 @@ private extension SwapCryptoViewModel {
         tx.gas = .zero
         tx.thorchainFee = .zero
         
+        // Skip fee calculation if no amount is entered
+        guard !tx.fromAmount.isEmpty, !tx.fromAmountDecimal.isZero else {
+            return
+        }
+        
         do {
             let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
             print("Fetched chain specific: \(chainSpecific)")
