@@ -45,8 +45,9 @@ struct VaultListView: View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 0) {
                 header
+                    .padding(.bottom, 16)
                 List {
-                    sectionHeader(title: "folders".localized)
+                    sectionHeader(title: "folders".localized, paddingTop: 0)
                     foldersList
                     sectionHeader(title: "vaults".localized)
                     vaultsList
@@ -61,6 +62,7 @@ struct VaultListView: View {
             addFolderButton
         }
         .padding(.top, 24)
+        .padding(.bottom, isIPadOS ? 24 : 0)
         .padding(.horizontal, 16)
     }
     
@@ -167,8 +169,8 @@ struct VaultListView: View {
         .animation(.interpolatingSpring.delay(0.3), value: isEditing)
     }
     
-    func sectionHeader(title: String) -> some View {
-        CommonListHeaderView(title: title)
+    func sectionHeader(title: String, paddingTop: CGFloat? = nil) -> some View {
+        CommonListHeaderView(title: title, paddingTop: paddingTop)
             .showIf(showListHeaders)
     }
     

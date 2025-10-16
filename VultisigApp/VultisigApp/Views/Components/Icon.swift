@@ -21,7 +21,7 @@ struct Icon: View {
     var body: some View {
         Image(name)
             .resizable()
-            .aspectRatio(1, contentMode: .fit)
+            .aspectRatio(contentMode: .fit)
             .frame(width: size, height: size)
             .foregroundColor(color)
     }

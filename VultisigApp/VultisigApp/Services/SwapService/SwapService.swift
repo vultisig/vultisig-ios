@@ -168,9 +168,15 @@ private extension SwapService {
             }
         }
         catch let error as ThorchainSwapError {
+            print("❌ [COSMOS DEBUG] THORChain error: code=\(error.code), message=\(error.message)")
             if error.code == 3 {
                 if error.message.contains("not enough asset to pay for fees") {
                     throw SwapError.swapAmountTooSmall
+                } else if error.message.localizedCaseInsensitiveContains("invalid symbol") ||
+                          error.message.localizedCaseInsensitiveContains("bad to asset") ||
+                          error.message.localizedCaseInsensitiveContains("bad from asset") {
+                    // This typically means no liquidity pool exists for this token pair
+                    throw SwapError.noLiquidityPool
                 } else {
                     throw SwapError.serverError(message: error.message)
                 }

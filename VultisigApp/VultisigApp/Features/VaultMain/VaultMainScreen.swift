@@ -78,7 +78,7 @@ struct VaultMainScreen: View {
                     }
                 }
                 .crossPlatformSheet(isPresented: $showVaultSelector) {
-                    VaultManagementSheet {
+                    VaultManagementSheet(availableHeight: geo.size.height) {
                         showVaultSelector.toggle()
                         routeToPresent = .createVault
                     } onSelectVault: { vault in

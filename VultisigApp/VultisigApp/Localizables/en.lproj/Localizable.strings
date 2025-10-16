@@ -735,8 +735,12 @@
 "swapTrackingLink" = "Swap tracking link";
 "swapTXHash" = "Swap Tx Hash";
 "swapVerifyCheckbox1Description" = "The swap amount is correct";
-"swapVerifyCheckbox2Description" = "I agree with the min. amount I’ll receive";
+"swapVerifyCheckbox2Description" = "I agree with the min. amount I'll receive";
 "swapVerifyCheckbox3Description" = "I agree with providing ERC20 allowance for exact swap amount";
+"swapRouteNotAvailable" = "Swap route not available";
+"swapAmountTooSmall" = "Swap amount too small";
+"swapAmountTooSmallRecommended" = "Swap amount too small. Recommended amount %@";
+"noLiquidityPool" = "No liquidity pool available for this token pair. This asset may not be supported.";
 "switchBackToInternetMode" = " Switch back to internet mode";
 "switchToLocalMode" = "Switch to local mode";
 "systemErrorMessage" = "System error. Please try again.";

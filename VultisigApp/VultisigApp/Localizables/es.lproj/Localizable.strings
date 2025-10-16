@@ -738,6 +738,10 @@
 "swapVerifyCheckbox1Description" = "La cantidad del intercambio es correcta";
 "swapVerifyCheckbox2Description" = "Acepto el monto mínimo que recibiré";
 "swapVerifyCheckbox3Description" = "Acepto proporcionar autorización ERC20 por el monto exacto del intercambio";
+"swapRouteNotAvailable" = "Ruta de intercambio no disponible";
+"swapAmountTooSmall" = "Cantidad de intercambio demasiado pequeña";
+"swapAmountTooSmallRecommended" = "Cantidad de intercambio demasiado pequeña. Cantidad recomendada %@";
+"noLiquidityPool" = "No hay pool de liquidez disponible para este par de tokens. Este activo puede no estar soportado.";
 "switchBackToInternetMode" = "Volver al modo internet";
 "switchToLocalMode" = "Cambiar al modo local";
 "systemErrorMessage" = "Error del sistema. Inténtalo de nuevo.";

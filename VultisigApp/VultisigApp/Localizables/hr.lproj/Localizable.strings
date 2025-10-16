@@ -738,6 +738,10 @@
 "swapVerifyCheckbox1Description" = "Iznos zamjene je točan";
 "swapVerifyCheckbox2Description" = "Slažem se s minimalnim iznosom koji ću primiti";
 "swapVerifyCheckbox3Description" = "Slažem se dati ERC20 dopuštenje za točan iznos zamjene";
+"swapRouteNotAvailable" = "Ruta zamjene nije dostupna";
+"swapAmountTooSmall" = "Iznos zamjene je premali";
+"swapAmountTooSmallRecommended" = "Iznos zamjene je premali. Preporučeni iznos %@";
+"noLiquidityPool" = "Nema dostupnog pool likvidnosti za ovaj par tokena. Ovaj asset možda nije podržan.";
 "switchBackToInternetMode" = "Vrati se na internetski način rada";
 "switchToLocalMode" = "Prijeđi na lokalni način rada";
 "systemErrorMessage" = "Sistemska greška. Pokušajte ponovno.";
