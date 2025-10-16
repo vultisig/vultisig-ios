@@ -42,7 +42,7 @@ struct AsyncImageView: View {
                         image
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .frame(width: size.width)
+                            .frame(width: size.width, height: size.height)
                     } placeholder: {
                         ProgressView()
                             .frame(width: size.width, height: size.height)
