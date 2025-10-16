@@ -56,17 +56,6 @@ class DefiSelectChainViewModel: ObservableObject {
         }
     }
     
-    func filterChains(type: ChainFilterType, vault: Vault) -> [Chain] {
-        switch type {
-        case .swap:
-            return filteredChains
-                .filter(\.isSwapAvailable)
-        case .send:
-            return filteredChains
-                .filter { vault.chains.contains($0) }
-        }
-    }
-    
     func save(for vault: Vault) async {
         do {
             let coinsMeta = TokensStore.TokenSelectionAssets
