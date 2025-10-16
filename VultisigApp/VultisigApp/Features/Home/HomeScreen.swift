@@ -18,7 +18,7 @@ struct HomeScreen: View {
     @State var showUpgradeVaultSheet: Bool = false
     
     @State var vaults: [Vault] = []
-    @State private var selectedTab: HomeTab = .defi
+    @State private var selectedTab: HomeTab = .wallet
     @State var vaultRoute: VaultMainRoute?
     
     // Properties for QR Code scanner
@@ -83,7 +83,7 @@ struct HomeScreen: View {
             ZStack(alignment: .top) {
                 VultiTabBar(
                     selectedItem: $selectedTab,
-                    items: [HomeTab.wallet, .defi],
+                    items: [HomeTab.wallet],
                     accessory: .camera,
                 ) { tab in
                     Group {
