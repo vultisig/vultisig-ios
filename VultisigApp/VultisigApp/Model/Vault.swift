@@ -24,6 +24,7 @@ final class Vault: ObservableObject, Codable {
     var isBackedUp: Bool = false
     var libType: LibType? = LibType.GG20
     var closedBanners: [String] = []
+    var defiChains: [Chain] = []
     
     @Relationship(deleteRule: .cascade) var coins = [Coin]()
     @Relationship(deleteRule: .cascade) var hiddenTokens = [HiddenToken]()
@@ -41,6 +42,7 @@ final class Vault: ObservableObject, Codable {
         case localPartyID
         case resharePrefix
         case libType
+        case defiChains
     }
     
     required init(from decoder: Decoder) throws {
@@ -55,6 +57,7 @@ final class Vault: ObservableObject, Codable {
         localPartyID = try container.decode(String.self, forKey: .localPartyID)
         resharePrefix = try container.decodeIfPresent(String.self, forKey: .resharePrefix)
         libType = try container.decodeIfPresent(LibType.self, forKey: .libType) ?? .GG20
+        defiChains = try container.decodeIfPresent([Chain].self, forKey: .defiChains) ?? []
     }
     
     init(name: String) {
@@ -87,6 +90,7 @@ final class Vault: ObservableObject, Codable {
         try container.encode(localPartyID, forKey: .localPartyID)
         try container.encodeIfPresent(resharePrefix, forKey: .resharePrefix)
         try container.encodeIfPresent(libType, forKey: .libType)
+        try container.encodeIfPresent(defiChains, forKey: .defiChains)
     }
     
     func setOrder(_ index: Int) {

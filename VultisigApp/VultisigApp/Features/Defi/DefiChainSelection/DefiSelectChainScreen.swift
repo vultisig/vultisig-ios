@@ -1,0 +1,74 @@
+//
+//  DefiSelectChainScreen.swift
+//  VultisigApp
+//
+//  Created by Gaston Mazzeo on 16/09/2025.
+//
+
+import SwiftUI
+
+struct DefiSelectChainScreen: View {
+    @ObservedObject var vault: Vault
+    @Binding var isPresented: Bool
+    var onSave: () -> Void
+    @State var searchBarFocused: Bool = false
+    @State var isLoading: Bool = false
+        
+    @StateObject var viewModel = DefiSelectChainViewModel()
+    
+    var body: some View {
+        AssetSelectionContainerScreen(
+            title: "selectChains".localized,
+            isPresented: $isPresented,
+            searchText: $viewModel.searchText,
+            elements: viewModel.filteredChains,
+            onSave: onSaveInternal
+        ) { asset in
+            DefiChainSelectionGridCell(
+                chain: asset,
+                viewModel: viewModel,
+                onSelection: onSelection
+            )
+        } emptyStateBuilder: {
+            ChainNotFoundEmptyStateView()
+        }
+        .withLoading(text: "pleaseWait".localized, isLoading: $isLoading)
+        .applySheetSize()
+        .onAppear {
+            viewModel.setData(for: vault)
+        }
+    }
+}
+
+private extension DefiSelectChainScreen {
+    func onSaveInternal() {
+        isLoading = true
+        Task {
+            await saveAssets()
+            await MainActor.run {
+                isLoading = false
+                onSave()
+                isPresented.toggle()
+            }
+        }
+    }
+    
+    func onSelection(_ chainSelection: DefiChainSelection) {
+        viewModel.handleSelection(isSelected: chainSelection.selected, chain: chainSelection.chain)
+    }
+    
+    func saveAssets() async {
+        await viewModel.save(for: vault)
+    }
+}
+
+
+#Preview {
+    DefiSelectChainScreen(
+        vault: .example,
+        isPresented: .constant(true),
+        onSave: {}
+    )
+}
+
+

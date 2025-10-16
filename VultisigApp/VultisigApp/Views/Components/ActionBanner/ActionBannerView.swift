@@ -32,19 +32,21 @@ struct ActionBannerView: View {
     }
     
     var body: some View {
-        ZStack(alignment: .top) {
+        VStack(spacing: 0) {
+            GradientListSeparator()
             VStack(spacing: 12) {
                 Icon(named: icon ?? "crypto-outline", color: Theme.colors.primaryAccent4, size: 24)
                 VStack(spacing: 8) {
                     Text(title)
                         .foregroundStyle(Theme.colors.textPrimary)
                         .font(Theme.fonts.subtitle)
+                        .multilineTextAlignment(.center)
                     Text(subtitle)
                         .foregroundStyle(Theme.colors.textExtraLight)
                         .font(Theme.fonts.footnote)
+                        .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: 263)
-                .multilineTextAlignment(.center)
                 
                 PrimaryButton(title: buttonTitle, size: .mini, action: action)
                     .fixedSize()
@@ -53,7 +55,6 @@ struct ActionBannerView: View {
             .padding(.vertical, 32)
             .frame(maxWidth: .infinity)
             .background(RoundedRectangle(cornerRadius: 12).fill(Theme.colors.bgSecondary))
-            GradientListSeparator()
         }
         .clipShape(
             .rect(

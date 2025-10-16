@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "defi-eth.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

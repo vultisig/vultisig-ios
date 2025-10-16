@@ -7,16 +7,21 @@
 
 import SwiftUI
 
-struct VaultMainHeaderView: View {
+struct HomeMainHeaderView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     let vault: Vault
+    @Binding var activeTab: HomeTab
     @Binding var showBalance: Bool
     var vaultSelectorAction: () -> Void
     var settingsAction: () -> Void
     var onRefresh: () -> Void
     
     @State private var showBalanceInternal = false
+    
+    var balanceText: String {
+        activeTab == .defi ? homeViewModel.defiBalanceText : homeViewModel.vaultBalanceText
+    }
     
     var body: some View {
         HStack(spacing: 32) {
@@ -57,10 +62,12 @@ struct VaultMainHeaderView: View {
             Text("portfolioBalance".localized)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textExtraLight)
-            Text(homeViewModel.vaultBalanceText)
+            Text(balanceText)
                 .font(Theme.fonts.priceBodyS)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
+                .contentTransition(.numericText())
+                .animation(.interpolatingSpring, value: balanceText)
         }
         .scaledToFit()
     }
@@ -88,8 +95,9 @@ struct VaultMainHeaderView: View {
 
 #Preview {
     VStack {
-        VaultMainHeaderView(
+        HomeMainHeaderView(
             vault: .example,
+            activeTab: .constant(.wallet),
             showBalance: .constant(true)
         ) {
             print("Vault Selector Action")
