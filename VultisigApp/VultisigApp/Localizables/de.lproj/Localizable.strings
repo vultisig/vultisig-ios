@@ -738,6 +738,10 @@
 "swapVerifyCheckbox1Description" = "Der Tauschbetrag ist korrekt";
 "swapVerifyCheckbox2Description" = "Ich stimme dem Mindestbetrag zu, den ich erhalten werde";
 "swapVerifyCheckbox3Description" = "Ich stimme zu, eine ERC20-Genehmigung für den genauen Tauschbetrag zu erteilen";
+"swapRouteNotAvailable" = "Tauschroute nicht verfügbar";
+"swapAmountTooSmall" = "Tauschbetrag zu klein";
+"swapAmountTooSmallRecommended" = "Tauschbetrag zu klein. Empfohlener Betrag %@";
+"noLiquidityPool" = "Kein Liquiditätspool für dieses Token-Paar verfügbar. Dieser Asset wird möglicherweise nicht unterstützt.";
 "switchBackToInternetMode" = "Wechsle zurück in den Internetmodus";
 "switchToLocalMode" = "Wechsle in den lokalen Modus";
 "systemErrorMessage" = "Systemfehler. Bitte versuche es erneut.";
