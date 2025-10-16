@@ -17,7 +17,7 @@ struct SettingsMainScreen: View {
     @State var tapCount = 0
     @State var scale: CGFloat = 1
     @State var showAdvancedSettings: Bool = false
-    
+    @State var showVaultDetailQRCode: Bool = false
     @State var selectedOption: SettingsOption?
 
     let groups: [SettingsOptionGroup] = [
@@ -80,10 +80,8 @@ struct SettingsMainScreen: View {
         }
         .crossPlatformToolbar("settings".localized) {
             CustomToolbarItem(placement: .trailing) {
-                NavigationLink {
-                    VaultDetailQRCodeView(vault: vault)
-                } label: {
-                    ToolbarButton(image: "qr-code", action: {})
+                ToolbarButton(image: "qr-code") {
+                    showVaultDetailQRCode = true
                 }
             }
         }
@@ -114,6 +112,9 @@ struct SettingsMainScreen: View {
         }
         .navigationDestination(isPresented: $showAdvancedSettings) {
             SettingsAdvancedView()
+        }
+        .navigationDestination(isPresented: $showVaultDetailQRCode) {
+            VaultDetailQRCodeView(vault: vault)
         }
         .navigationDestination(isPresented: $referredViewModel.navigationToReferralOverview) {
             ReferredOnboardingView(referredViewModel: referredViewModel)
