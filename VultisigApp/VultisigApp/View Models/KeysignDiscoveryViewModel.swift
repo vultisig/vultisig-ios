@@ -61,6 +61,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         }
     }
     
+    @MainActor
     func setData(
         vault: Vault,
         keysignPayload: KeysignPayload?,
