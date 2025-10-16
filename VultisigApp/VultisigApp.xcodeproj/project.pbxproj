@@ -96,6 +96,7 @@
 		135677B62E39369A002C10A2 /* HTTPClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135677AF2E39369A002C10A2 /* HTTPClientProtocol.swift */; };
 		135677B72E39369A002C10A2 /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135677AE2E39369A002C10A2 /* HTTPClient.swift */; };
 		135677B92E39369A002C10A2 /* HTTPError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135677B02E39369A002C10A2 /* HTTPError.swift */; };
+		135B6BBF2EA1470F00DD7140 /* ChainNotFoundEmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B6BBE2EA1470600DD7140 /* ChainNotFoundEmptyStateView.swift */; };
 		135B9FD32E7C8D6E0087D85D /* VaultEditCellContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B9FD22E7C8D6D0087D85D /* VaultEditCellContainer.swift */; };
 		135B9FD72E7C8DC60087D85D /* View+PlainListItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B9FD62E7C8DC00087D85D /* View+PlainListItem.swift */; };
 		135C7AC52EA12649002F879A /* DefiMainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7AC42EA12646002F879A /* DefiMainViewModel.swift */; };
@@ -1182,6 +1183,7 @@
 		135677B02E39369A002C10A2 /* HTTPError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPError.swift; sourceTree = "<group>"; };
 		135677B12E39369A002C10A2 /* HTTPMethod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPMethod.swift; sourceTree = "<group>"; };
 		135677B22E39369A002C10A2 /* TargetType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TargetType.swift; sourceTree = "<group>"; };
+		135B6BBE2EA1470600DD7140 /* ChainNotFoundEmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainNotFoundEmptyStateView.swift; sourceTree = "<group>"; };
 		135B9FD22E7C8D6D0087D85D /* VaultEditCellContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultEditCellContainer.swift; sourceTree = "<group>"; };
 		135B9FD62E7C8DC00087D85D /* View+PlainListItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+PlainListItem.swift"; sourceTree = "<group>"; };
 		135C7AC42EA12646002F879A /* DefiMainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiMainViewModel.swift; sourceTree = "<group>"; };
@@ -3128,6 +3130,7 @@
 		13C7C1E02E86EDDB00A529FD /* AssetSelection */ = {
 			isa = PBXGroup;
 			children = (
+				135B6BBE2EA1470600DD7140 /* ChainNotFoundEmptyStateView.swift */,
 				13C7C1E42E86EE2900A529FD /* AssetSelectionGridCell.swift */,
 				13C7C1DD2E86DE4C00A529FD /* AssetSelectionContainerScreen.swift */,
 			);
@@ -5756,6 +5759,7 @@
 				138574142E2DA932002532BF /* PrimaryButton.swift in Sources */,
 				132666D12E42A054007FDAC5 /* THORName.swift in Sources */,
 				13DD3B1A2E3CFE7D00D46FA0 /* FlatPicker.swift in Sources */,
+				135B6BBF2EA1470F00DD7140 /* ChainNotFoundEmptyStateView.swift in Sources */,
 				135677A62E391A6E002C10A2 /* SecurityScannerTransactionFactory.swift in Sources */,
 				A6BFE1BD2D945AA5000B73C0 /* SwapFromToField.swift in Sources */,
 				A6B84B102CE580DB006929A0 /* ServerBackupVerificationView+macOS.swift in Sources */,
