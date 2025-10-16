@@ -57,7 +57,7 @@ struct CoinService {
         
         // Remove them
         try removeCoins(coins: coinsToRemove, vault: vault)
-        vault.defiChains.removeAll { coinsToRemove.map(\.chain).contains($0) }
+        vault.defiChains.removeAll { chainsBeingRemoved.contains($0) }
     }
     
     static func addNewlySelectedCoins(vault: Vault, selection: Set<CoinMeta>) async throws {
