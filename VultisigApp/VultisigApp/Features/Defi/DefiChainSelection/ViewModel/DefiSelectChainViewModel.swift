@@ -45,7 +45,7 @@ class DefiSelectChainViewModel: ObservableObject {
     }
 
     func isSelected(asset: CoinMeta) -> Bool {
-        return selection.contains(where: { $0 == asset.chain && $0.ticker.lowercased() == asset.ticker.lowercased() })
+        return selection.contains(asset.chain)
     }
 
     func handleSelection(isSelected: Bool, chain: Chain) {

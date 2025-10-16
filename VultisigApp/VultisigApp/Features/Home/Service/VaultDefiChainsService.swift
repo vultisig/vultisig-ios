@@ -12,12 +12,16 @@ struct VaultDefiChainsService {
     @AppStorage("enabledVaults") private var enabledVaults: [String] = []
     
     func enableDefiChainsIfNeeded(for vault: Vault) async {
-        guard enabledVaults.contains(vault.pubKeyECDSA) else {
+        guard !enabledVaults.contains(vault.pubKeyECDSA) else {
             return
         }
         
         vault.defiChains = vault.chains.filter { CoinAction.memoChains.contains($0) }
-        try? await Storage.shared.save()
-        enabledVaults.append(vault.pubKeyECDSA)
+        do {
+            try await Storage.shared.save()
+            enabledVaults.append(vault.pubKeyECDSA)
+        } catch {
+            print("Failed to save DeFi chains for vault: \(error)")
+        }
     }
 }

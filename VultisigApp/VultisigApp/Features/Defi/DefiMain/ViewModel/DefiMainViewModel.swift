@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 final class DefiMainViewModel: ObservableObject {
     @Published private var groups = [GroupedChain]()
     @Published var searchText: String = ""
