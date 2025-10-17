@@ -16,10 +16,10 @@ struct ContainerView<Content: View>: View {
     }
     
     var body: some View {
+        // TODO: - Check relative views
         content()
             .font(Theme.fonts.bodyMMedium)
-            .padding(.vertical, 16)
-            .padding(.horizontal, 20)
+            .padding(16)
             .background(Theme.colors.bgSecondary)
             .containerStyle()
     }

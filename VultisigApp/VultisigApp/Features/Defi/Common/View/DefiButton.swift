@@ -32,7 +32,7 @@ struct DefiButton: View {
             .padding(12)
             .background(Circle().fill(.white.opacity(0.12)))
             .padding(.leading, 4)
-            .opacity(isEnabled ? 1 : 0.7)
+            .opacity(isEnabled ? 1 : 0.5)
     }
 }
 
