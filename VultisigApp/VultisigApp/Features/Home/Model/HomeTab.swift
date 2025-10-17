@@ -7,7 +7,7 @@
 
 enum HomeTab: TabBarItem, CaseIterable {
     case wallet
-    case earn
+    case defi
     // Only used to fake `camera` button for liquid glass
     case camera
     
@@ -15,8 +15,8 @@ enum HomeTab: TabBarItem, CaseIterable {
         switch self {
         case .wallet:
             "Wallet"
-        case .earn:
-            "Earn"
+        case .defi:
+            "Defi"
         case .camera:
             ""
         }
@@ -26,7 +26,7 @@ enum HomeTab: TabBarItem, CaseIterable {
         switch self {
         case .wallet:
             "wallet"
-        case .earn:
+        case .defi:
             "coins-add"
         case .camera:
             "camera-2"

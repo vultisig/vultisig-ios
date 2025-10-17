@@ -84,4 +84,13 @@ enum CoinAction: String, Codable {
             return false
         }
     }
+    
+    var isDefi: Bool {
+        switch self {
+        case .deposit, .bridge, .memo:
+            return true
+        case .send, .swap, .buy, .sell, .receive:
+            return false
+        }
+    }
 }

@@ -19,7 +19,7 @@ struct VaultMainChainListView: View {
             if !viewModel.filteredGroups.isEmpty {
                 chainList
             } else {
-                customizeChainsView
+                CustomizeChainsActionBanner(onCustomizeChains: onCustomizeChains)
             }
         }
     }
@@ -34,15 +34,6 @@ struct VaultMainChainListView: View {
                 itemsCount: viewModel.filteredGroups.count
             )
         }
-    }
-    
-    var customizeChainsView: some View {
-        ActionBannerView(
-            title: "noChainsFound".localized,
-            subtitle: "noChainsFoundSubtitle".localized,
-            buttonTitle: "customizeChains".localized,
-            action: onCustomizeChains
-        )
     }
 }
 

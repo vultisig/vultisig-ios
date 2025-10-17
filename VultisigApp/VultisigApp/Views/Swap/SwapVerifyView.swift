@@ -18,6 +18,7 @@ struct SwapVerifyView: View {
     let vault: Vault
     
     @State var fastPasswordPresented = false
+    @State private var signButtonDisabled = false
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
@@ -198,6 +199,7 @@ struct SwapVerifyView: View {
             } longPressAction: {
                 onSignPress()
             }
+            .disabled(signButtonDisabled)
             .crossPlatformSheet(isPresented: $fastPasswordPresented) {
                 FastVaultEnterPasswordView(
                     password: $tx.fastVaultPassword,
@@ -208,7 +210,7 @@ struct SwapVerifyView: View {
         } else {
             PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
                 onSignPress()
-            }
+            }.disabled(signButtonDisabled)
         }
     }
     
@@ -220,10 +222,12 @@ struct SwapVerifyView: View {
     }
     
     func signAndMoveToNextView() {
+        signButtonDisabled = true
         Task {
             if await swapViewModel.buildSwapKeysignPayload(tx: tx, vault: vault) {
                 swapViewModel.moveToNextView()
             }
+            await MainActor.run { signButtonDisabled = false }
         }
     }
     

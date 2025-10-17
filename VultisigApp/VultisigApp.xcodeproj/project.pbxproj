@@ -53,7 +53,7 @@
 		1334C7412E301B5300CBAA3E /* JoinKeysignGasViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C7402E301B5200CBAA3E /* JoinKeysignGasViewModel.swift */; };
 		1334C7442E301E4300CBAA3E /* SendCryptoDoneContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C7432E301E3C00CBAA3E /* SendCryptoDoneContentView.swift */; };
 		1334C7462E301E8800CBAA3E /* SendCryptoDoneContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C7452E301E8700CBAA3E /* SendCryptoDoneContent.swift */; };
-		133573672E70B18B00C0005F /* VaultMainHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133573662E70B18600C0005F /* VaultMainHeaderView.swift */; };
+		133573672E70B18B00C0005F /* HomeMainHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133573662E70B18600C0005F /* HomeMainHeaderView.swift */; };
 		1336BB312E8173A500597070 /* ChainDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1336BB302E8173A100597070 /* ChainDetailScreen.swift */; };
 		1336BB342E81752E00597070 /* ChainDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1336BB332E81752B00597070 /* ChainDetailViewModel.swift */; };
 		1336BB372E81755A00597070 /* ChainDetailTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1336BB362E81755600597070 /* ChainDetailTab.swift */; };
@@ -96,8 +96,19 @@
 		135677B62E39369A002C10A2 /* HTTPClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135677AF2E39369A002C10A2 /* HTTPClientProtocol.swift */; };
 		135677B72E39369A002C10A2 /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135677AE2E39369A002C10A2 /* HTTPClient.swift */; };
 		135677B92E39369A002C10A2 /* HTTPError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135677B02E39369A002C10A2 /* HTTPError.swift */; };
+		135B6BBF2EA1470F00DD7140 /* ChainNotFoundEmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B6BBE2EA1470600DD7140 /* ChainNotFoundEmptyStateView.swift */; };
 		135B9FD32E7C8D6E0087D85D /* VaultEditCellContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B9FD22E7C8D6D0087D85D /* VaultEditCellContainer.swift */; };
 		135B9FD72E7C8DC60087D85D /* View+PlainListItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B9FD62E7C8DC00087D85D /* View+PlainListItem.swift */; };
+		135C7AC52EA12649002F879A /* DefiMainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7AC42EA12646002F879A /* DefiMainViewModel.swift */; };
+		135C7ACD2EA12C69002F879A /* DefiSelectChainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7ACA2EA12C69002F879A /* DefiSelectChainScreen.swift */; };
+		135C7AD22EA13037002F879A /* DefiSelectChainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7AD12EA13033002F879A /* DefiSelectChainViewModel.swift */; };
+		135C7AD52EA13236002F879A /* DefiChainSelectionGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7AD42EA13231002F879A /* DefiChainSelectionGridCell.swift */; };
+		135C7AD82EA132C8002F879A /* DefiChainSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7AD72EA132C5002F879A /* DefiChainSelection.swift */; };
+		135C7ADA2EA13824002F879A /* DefiChainListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7AD92EA1381E002F879A /* DefiChainListView.swift */; };
+		135C7ADC2EA1387F002F879A /* DefiChainCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7ADB2EA1387B002F879A /* DefiChainCellView.swift */; };
+		135C7ADE2EA1388D002F879A /* GroupedChainCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7ADD2EA1388A002F879A /* GroupedChainCellView.swift */; };
+		135C7AE12EA14130002F879A /* CustomizeChainsActionBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7AE02EA1412B002F879A /* CustomizeChainsActionBanner.swift */; };
+		135C7AE42EA14359002F879A /* VaultDefiChainsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7AE32EA1434E002F879A /* VaultDefiChainsService.swift */; };
 		135C88192E3AADB800FD097D /* GradientListSeparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C88182E3AADB000FD097D /* GradientListSeparator.swift */; };
 		1364A0942E9587C60023E869 /* BannersCarousel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1364A0932E9587C00023E869 /* BannersCarousel.swift */; };
 		1368C2732E832CC100BB240D /* VaultListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368C2722E832CBE00BB240D /* VaultListView.swift */; };
@@ -267,6 +278,8 @@
 		13D9EBF32E84492F0089B2A7 /* AddFolderScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D9EBF22E84492B0089B2A7 /* AddFolderScreen.swift */; };
 		13D9EBF92E8456BE0089B2A7 /* AddFolderVaultCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D9EBF82E8456BD0089B2A7 /* AddFolderVaultCellView.swift */; };
 		13D9EC022E84584A0089B2A7 /* VaultCellMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D9EC012E8458490089B2A7 /* VaultCellMainView.swift */; };
+		13DB87602E9FD78E008E89B0 /* DefiMainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DB875F2E9FD78A008E89B0 /* DefiMainScreen.swift */; };
+		13DB87632EA01182008E89B0 /* DefiMainBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DB87622EA0117E008E89B0 /* DefiMainBalanceView.swift */; };
 		13DD3B172E3CFE5900D46FA0 /* OffsetObservingScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD3B162E3CFE5800D46FA0 /* OffsetObservingScrollView.swift */; };
 		13DD3B1A2E3CFE7D00D46FA0 /* FlatPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD3B192E3CFE6E00D46FA0 /* FlatPicker.swift */; };
 		13DD547C2E561598007335DA /* SettingsOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD547B2E561598007335DA /* SettingsOption.swift */; };
@@ -1127,7 +1140,7 @@
 		1334C7402E301B5200CBAA3E /* JoinKeysignGasViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinKeysignGasViewModel.swift; sourceTree = "<group>"; };
 		1334C7432E301E3C00CBAA3E /* SendCryptoDoneContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneContentView.swift; sourceTree = "<group>"; };
 		1334C7452E301E8700CBAA3E /* SendCryptoDoneContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneContent.swift; sourceTree = "<group>"; };
-		133573662E70B18600C0005F /* VaultMainHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainHeaderView.swift; sourceTree = "<group>"; };
+		133573662E70B18600C0005F /* HomeMainHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeMainHeaderView.swift; sourceTree = "<group>"; };
 		1336BB302E8173A100597070 /* ChainDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailScreen.swift; sourceTree = "<group>"; };
 		1336BB332E81752B00597070 /* ChainDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailViewModel.swift; sourceTree = "<group>"; };
 		1336BB362E81755600597070 /* ChainDetailTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailTab.swift; sourceTree = "<group>"; };
@@ -1170,8 +1183,19 @@
 		135677B02E39369A002C10A2 /* HTTPError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPError.swift; sourceTree = "<group>"; };
 		135677B12E39369A002C10A2 /* HTTPMethod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPMethod.swift; sourceTree = "<group>"; };
 		135677B22E39369A002C10A2 /* TargetType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TargetType.swift; sourceTree = "<group>"; };
+		135B6BBE2EA1470600DD7140 /* ChainNotFoundEmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainNotFoundEmptyStateView.swift; sourceTree = "<group>"; };
 		135B9FD22E7C8D6D0087D85D /* VaultEditCellContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultEditCellContainer.swift; sourceTree = "<group>"; };
 		135B9FD62E7C8DC00087D85D /* View+PlainListItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+PlainListItem.swift"; sourceTree = "<group>"; };
+		135C7AC42EA12646002F879A /* DefiMainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiMainViewModel.swift; sourceTree = "<group>"; };
+		135C7ACA2EA12C69002F879A /* DefiSelectChainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiSelectChainScreen.swift; sourceTree = "<group>"; };
+		135C7AD12EA13033002F879A /* DefiSelectChainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiSelectChainViewModel.swift; sourceTree = "<group>"; };
+		135C7AD42EA13231002F879A /* DefiChainSelectionGridCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiChainSelectionGridCell.swift; sourceTree = "<group>"; };
+		135C7AD72EA132C5002F879A /* DefiChainSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiChainSelection.swift; sourceTree = "<group>"; };
+		135C7AD92EA1381E002F879A /* DefiChainListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiChainListView.swift; sourceTree = "<group>"; };
+		135C7ADB2EA1387B002F879A /* DefiChainCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiChainCellView.swift; sourceTree = "<group>"; };
+		135C7ADD2EA1388A002F879A /* GroupedChainCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupedChainCellView.swift; sourceTree = "<group>"; };
+		135C7AE02EA1412B002F879A /* CustomizeChainsActionBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomizeChainsActionBanner.swift; sourceTree = "<group>"; };
+		135C7AE32EA1434E002F879A /* VaultDefiChainsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDefiChainsService.swift; sourceTree = "<group>"; };
 		135C88182E3AADB000FD097D /* GradientListSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientListSeparator.swift; sourceTree = "<group>"; };
 		1364A0932E9587C00023E869 /* BannersCarousel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannersCarousel.swift; sourceTree = "<group>"; };
 		1368C2722E832CBE00BB240D /* VaultListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultListView.swift; sourceTree = "<group>"; };
@@ -1340,6 +1364,8 @@
 		13D9EBF22E84492B0089B2A7 /* AddFolderScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFolderScreen.swift; sourceTree = "<group>"; };
 		13D9EBF82E8456BD0089B2A7 /* AddFolderVaultCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFolderVaultCellView.swift; sourceTree = "<group>"; };
 		13D9EC012E8458490089B2A7 /* VaultCellMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultCellMainView.swift; sourceTree = "<group>"; };
+		13DB875F2E9FD78A008E89B0 /* DefiMainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiMainScreen.swift; sourceTree = "<group>"; };
+		13DB87622EA0117E008E89B0 /* DefiMainBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiMainBalanceView.swift; sourceTree = "<group>"; };
 		13DD3B162E3CFE5800D46FA0 /* OffsetObservingScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffsetObservingScrollView.swift; sourceTree = "<group>"; };
 		13DD3B192E3CFE6E00D46FA0 /* FlatPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlatPicker.swift; sourceTree = "<group>"; };
 		13DD547B2E561598007335DA /* SettingsOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsOption.swift; sourceTree = "<group>"; };
@@ -2223,7 +2249,7 @@
 		049BBB4E2B71E37B004C231F /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				13C7C1EE2E87082500A529FD /* ActionBannerView.swift */,
+				135C7ADF2EA14124002F879A /* ActionBanner */,
 				13D9EBFC2E84579F0089B2A7 /* Sheet */,
 				135B9FD52E7C8DBC0087D85D /* List */,
 				13B25BF42E82FA24002BCF55 /* NotificationBanner */,
@@ -2363,6 +2389,7 @@
 		130C40F62E737FBC00509C61 /* Home */ = {
 			isa = PBXGroup;
 			children = (
+				135C7AE22EA1434A002F879A /* Service */,
 				130C40F92E7381E000509C61 /* Model */,
 				130C40F72E737FCD00509C61 /* HomeScreen.swift */,
 			);
@@ -2614,6 +2641,66 @@
 				135B9FD62E7C8DC00087D85D /* View+PlainListItem.swift */,
 			);
 			path = List;
+			sourceTree = "<group>";
+		};
+		135C7AC32EA1263A002F879A /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				135C7AC42EA12646002F879A /* DefiMainViewModel.swift */,
+			);
+			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		135C7ACB2EA12C69002F879A /* DefiChainSelection */ = {
+			isa = PBXGroup;
+			children = (
+				135C7AD62EA13296002F879A /* Model */,
+				135C7AD32EA1322E002F879A /* View */,
+				135C7AD02EA1302E002F879A /* ViewModel */,
+				135C7ACA2EA12C69002F879A /* DefiSelectChainScreen.swift */,
+			);
+			path = DefiChainSelection;
+			sourceTree = "<group>";
+		};
+		135C7AD02EA1302E002F879A /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				135C7AD12EA13033002F879A /* DefiSelectChainViewModel.swift */,
+			);
+			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		135C7AD32EA1322E002F879A /* View */ = {
+			isa = PBXGroup;
+			children = (
+				135C7AD42EA13231002F879A /* DefiChainSelectionGridCell.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		135C7AD62EA13296002F879A /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				135C7AD72EA132C5002F879A /* DefiChainSelection.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		135C7ADF2EA14124002F879A /* ActionBanner */ = {
+			isa = PBXGroup;
+			children = (
+				135C7AE02EA1412B002F879A /* CustomizeChainsActionBanner.swift */,
+				13C7C1EE2E87082500A529FD /* ActionBannerView.swift */,
+			);
+			path = ActionBanner;
+			sourceTree = "<group>";
+		};
+		135C7AE22EA1434A002F879A /* Service */ = {
+			isa = PBXGroup;
+			children = (
+				135C7AE32EA1434E002F879A /* VaultDefiChainsService.swift */,
+			);
+			path = Service;
 			sourceTree = "<group>";
 		};
 		1378B0492E462AD2005CC32D /* Loaders */ = {
@@ -3033,6 +3120,7 @@
 		13C7C1DF2E86EDD500A529FD /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				13C8805E2E70A412009C67F1 /* Views */,
 				130ABEF82E9E281B0074BF67 /* RefreshToolbarButton.swift */,
 				13C7C1E02E86EDDB00A529FD /* AssetSelection */,
 			);
@@ -3042,6 +3130,7 @@
 		13C7C1E02E86EDDB00A529FD /* AssetSelection */ = {
 			isa = PBXGroup;
 			children = (
+				135B6BBE2EA1470600DD7140 /* ChainNotFoundEmptyStateView.swift */,
 				13C7C1E42E86EE2900A529FD /* AssetSelectionGridCell.swift */,
 				13C7C1DD2E86DE4C00A529FD /* AssetSelectionContainerScreen.swift */,
 			);
@@ -3068,18 +3157,13 @@
 		13C880552E70A312009C67F1 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				130C40F62E737FBC00509C61 /* Home */,
+				13DB875C2E9FD725008E89B0 /* Wallet */,
+				13DB875B2E9FD703008E89B0 /* Defi */,
 				139D15A92E9C78D5006F671C /* VultDiscountTiers */,
-				133CA3CA2E8AD17A009588F3 /* CoinDetail */,
 				13C7C1DF2E86EDD500A529FD /* Common */,
-				13C7C1D92E86DD7F00A529FD /* TokenSelection */,
-				13B0DCE02E86C6EA00D4E609 /* Receive */,
 				13D3AC952E85901700BA4273 /* VaultActionRouteBuilder.swift */,
 				139642362E79950C00CFEFAF /* VaultSelector */,
-				1336BB2F2E81739C00597070 /* ChainDetail */,
-				138C5E622E79DE2300C559C7 /* ChainSelection */,
-				130C40F62E737FBC00509C61 /* Home */,
-				13C8805C2E70A409009C67F1 /* VaultCommon */,
-				13C880562E70A317009C67F1 /* VaultMain */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -3102,23 +3186,16 @@
 				130C40F12E7353CD00509C61 /* ChainList */,
 				130C40DC2E71E0B800509C61 /* VaultMainBalanceView.swift */,
 				132B04362E70C4E500745651 /* VaultMainScreenBackground.swift */,
-				133573662E70B18600C0005F /* VaultMainHeaderView.swift */,
+				133573662E70B18600C0005F /* HomeMainHeaderView.swift */,
 				13C8805A2E70A371009C67F1 /* VaultSelectorView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
 		};
-		13C8805C2E70A409009C67F1 /* VaultCommon */ = {
-			isa = PBXGroup;
-			children = (
-				13C8805E2E70A412009C67F1 /* Views */,
-			);
-			path = VaultCommon;
-			sourceTree = "<group>";
-		};
 		13C8805E2E70A412009C67F1 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				135C7ADD2EA1388A002F879A /* GroupedChainCellView.swift */,
 				130C40EC2E73277C00509C61 /* Buttons */,
 				130C40E02E7303C800509C61 /* Banners */,
 				130C40DE2E72FD6000509C61 /* CoinActionsView.swift */,
@@ -3217,6 +3294,48 @@
 				137B2C762E3A4A3F0074F648 /* BottomSheet */,
 			);
 			path = Sheet;
+			sourceTree = "<group>";
+		};
+		13DB875B2E9FD703008E89B0 /* Defi */ = {
+			isa = PBXGroup;
+			children = (
+				135C7ACB2EA12C69002F879A /* DefiChainSelection */,
+				13DB875E2E9FD786008E89B0 /* DefiMain */,
+			);
+			path = Defi;
+			sourceTree = "<group>";
+		};
+		13DB875C2E9FD725008E89B0 /* Wallet */ = {
+			isa = PBXGroup;
+			children = (
+				13C880562E70A317009C67F1 /* VaultMain */,
+				133CA3CA2E8AD17A009588F3 /* CoinDetail */,
+				13C7C1D92E86DD7F00A529FD /* TokenSelection */,
+				13B0DCE02E86C6EA00D4E609 /* Receive */,
+				1336BB2F2E81739C00597070 /* ChainDetail */,
+				138C5E622E79DE2300C559C7 /* ChainSelection */,
+			);
+			path = Wallet;
+			sourceTree = "<group>";
+		};
+		13DB875E2E9FD786008E89B0 /* DefiMain */ = {
+			isa = PBXGroup;
+			children = (
+				135C7AC32EA1263A002F879A /* ViewModel */,
+				13DB87612EA01174008E89B0 /* View */,
+				13DB875F2E9FD78A008E89B0 /* DefiMainScreen.swift */,
+			);
+			path = DefiMain;
+			sourceTree = "<group>";
+		};
+		13DB87612EA01174008E89B0 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				135C7ADB2EA1387B002F879A /* DefiChainCellView.swift */,
+				135C7AD92EA1381E002F879A /* DefiChainListView.swift */,
+				13DB87622EA0117E008E89B0 /* DefiMainBalanceView.swift */,
+			);
+			path = View;
 			sourceTree = "<group>";
 		};
 		13DD3B152E3CFE4800D46FA0 /* ScrollView */ = {
@@ -5283,6 +5402,7 @@
 				A6ACAD5F2D1109EF00432CC4 /* SettingsAdvancedView.swift in Sources */,
 				A594A9ED2C6436A800A3D09E /* DBMappable.swift in Sources */,
 				463408662BA9C1D200246248 /* CoinTypeExtension.swift in Sources */,
+				135C7ADC2EA1387F002F879A /* DefiChainCellView.swift in Sources */,
 				132666C62E429550007FDAC5 /* Icon.swift in Sources */,
 				1334C73C2E2FE57600CBAA3E /* SendCryptoVerifySummaryView.swift in Sources */,
 				A58760512CBD2D670070956A /* BiometryService.swift in Sources */,
@@ -5326,6 +5446,7 @@
 				13B1C2CB2E65FC3800050637 /* VaultServerBackupViewModel.swift in Sources */,
 				A6521C582C6ECA1A002D5C5F /* MacCameraPreview.swift in Sources */,
 				46E98FFC2BAE407300C53D97 /* DecodingErrorExtension.swift in Sources */,
+				135C7ADA2EA13824002F879A /* DefiChainListView.swift in Sources */,
 				DEFF58FA2BCF85FA005DFDF9 /* maya.swift in Sources */,
 				132666C02E428B76007FDAC5 /* CounterView.swift in Sources */,
 				A6C671232CA3BF3E00F59B6A /* SendCryptoAddressTextField+iOS.swift in Sources */,
@@ -5415,6 +5536,7 @@
 				A60F29E32DA5A50B00C24765 /* SwapCryptoDoneView+iOS.swift in Sources */,
 				B5A97CF52BF4287A007574D7 /* FunctionCallSelectorDropdown.swift in Sources */,
 				A6F7B6C62D4AB86900AC8104 /* EmptyPeerCell.swift in Sources */,
+				13DB87632EA01182008E89B0 /* DefiMainBalanceView.swift in Sources */,
 				A58CC34B2C32FA760086D16B /* ProtoMappable.swift in Sources */,
 				A6505AE72CA670FE0002FBF4 /* StringExtension+iOS.swift in Sources */,
 				A6505AEB2CA673860002FBF4 /* MacCameraServiceViewModel+iOS.swift in Sources */,
@@ -5536,6 +5658,7 @@
 				A6381D802CB71B4E003F628B /* RegisterVaultView+iOS.swift in Sources */,
 				A6FB96B32BD0CDA900D56F68 /* NavigationEditButton.swift in Sources */,
 				A6C670D72C9E8EFE00F59B6A /* SwapCryptoView+macOS.swift in Sources */,
+				135C7AE42EA14359002F879A /* VaultDefiChainsService.swift in Sources */,
 				DE3D44AF2BD2487900BD64CD /* CosmosSignature.swift in Sources */,
 				1390D8CC2E394778003F3E20 /* SecurityScannerServiceFactory.swift in Sources */,
 				A623A09F2BF09FEE00AA2F8D /* NewWalletNameView.swift in Sources */,
@@ -5636,6 +5759,7 @@
 				138574142E2DA932002532BF /* PrimaryButton.swift in Sources */,
 				132666D12E42A054007FDAC5 /* THORName.swift in Sources */,
 				13DD3B1A2E3CFE7D00D46FA0 /* FlatPicker.swift in Sources */,
+				135B6BBF2EA1470F00DD7140 /* ChainNotFoundEmptyStateView.swift in Sources */,
 				135677A62E391A6E002C10A2 /* SecurityScannerTransactionFactory.swift in Sources */,
 				A6BFE1BD2D945AA5000B73C0 /* SwapFromToField.swift in Sources */,
 				A6B84B102CE580DB006929A0 /* ServerBackupVerificationView+macOS.swift in Sources */,
@@ -5725,6 +5849,7 @@
 				13C7C1EF2E87082800A529FD /* ActionBannerView.swift in Sources */,
 				A6ECA1B02C9411E200456110 /* EncryptedBackupViewModel+macOS.swift in Sources */,
 				A558D74C2C298060007222EB /* SwapCoinsResolver.swift in Sources */,
+				135C7AC52EA12649002F879A /* DefiMainViewModel.swift in Sources */,
 				13B1C2C62E65DB2000050637 /* ChooseBackupSheetView.swift in Sources */,
 				DEFF58FC2BCFB384005DFDF9 /* MayaChainService.swift in Sources */,
 				A6C6712D2CA3C24F00F59B6A /* AddressTextField+macOS.swift in Sources */,
@@ -5745,6 +5870,7 @@
 				8F55CD3B2DC382E500B53E85 /* TokensStore+Token.swift in Sources */,
 				1352EDBD2E61218100FC0F51 /* ZipFileGenerator.swift in Sources */,
 				DE8AD74C2BC8E3FE00339775 /* KeygenVerify.swift in Sources */,
+				135C7AD22EA13037002F879A /* DefiSelectChainViewModel.swift in Sources */,
 				A6A41CAE2C63512D00C6858D /* ShareSheetViewController.swift in Sources */,
 				A6BFE1B52D93AC29000B73C0 /* SwapPercentageButtons+iOS.swift in Sources */,
 				A6386D962C8C2AA200DDD58E /* SwapCryptoDetailsView+macOS.swift in Sources */,
@@ -5754,6 +5880,7 @@
 				A6E0C93C2DF0AC9B00A01543 /* ReferralTextField+macOS.swift in Sources */,
 				A6182F472C9292EC0059BFDD /* NavigationButton+iOS.swift in Sources */,
 				A58760562CBD3D1E0070956A /* KeychainIdentifier.swift in Sources */,
+				135C7ADE2EA1388D002F879A /* GroupedChainCellView.swift in Sources */,
 				A6182F592C9299410059BFDD /* SwapCryptoAmountTextField+macOS.swift in Sources */,
 				13D93BD62E58C7F5001E31E8 /* View+Container.swift in Sources */,
 				DEA1C7002DB0CC8F00424466 /* InboundAddress.swift in Sources */,
@@ -5783,6 +5910,7 @@
 				A6AF96102C2E2DC900992578 /* FileQRCodeImporterMac.swift in Sources */,
 				DE9EB0FA2BA4491B001747D9 /* CoinExtension.swift in Sources */,
 				A52FE09D2D5D59E30016C9A0 /* OnboardingSummaryView+iOS.swift in Sources */,
+				13DB87602E9FD78E008E89B0 /* DefiMainScreen.swift in Sources */,
 				A6C671012CA276EF00F59B6A /* OnboardingView+iOS.swift in Sources */,
 				465A8D562B9E6E0B006E7457 /* SolanaRpc.swift in Sources */,
 				13417B8C2E3BB1DB00A66EE5 /* FunctionCallUnstakeRuji.swift in Sources */,
@@ -5875,6 +6003,7 @@
 				A6C6713D2CA3C87600F59B6A /* KeygenViewInstructions+macOS.swift in Sources */,
 				A622C85C2C9BCD6E00908332 /* KeygenView+macOS.swift in Sources */,
 				B57DD59E2C3E69F500934CBB /* TokenAccountsByOwner.swift in Sources */,
+				135C7ACD2EA12C69002F879A /* DefiSelectChainScreen.swift in Sources */,
 				B51BA0AF2E304E000075BEBE /* SwapCustomTokenView.swift in Sources */,
 				A66BFCCD2C1347D5004DCD4F /* NavigationQRShareButton.swift in Sources */,
 				A622C8482C9BBD3900908332 /* FunctionCallView+macOS.swift in Sources */,
@@ -6024,6 +6153,7 @@
 				A5AB69C42D63E07D00E54DEB /* VaultBackupNowScreen.swift in Sources */,
 				B520B2FE2C3250230097C590 /* TextField.swift in Sources */,
 				A58760582CBD3F1A0070956A /* KeychainService.swift in Sources */,
+				135C7AD52EA13236002F879A /* DefiChainSelectionGridCell.swift in Sources */,
 				1390D8C02E393FB6003F3E20 /* BlockaidConstants.swift in Sources */,
 				1390D8C62E3943AE003F3E20 /* SecurityScannerServiceProtocol.swift in Sources */,
 				133CA3CC2E8AD183009588F3 /* CoinDetailScreen.swift in Sources */,
@@ -6035,7 +6165,8 @@
 				13C7C1DC2E86DD8F00A529FD /* TokenSelectionScreen.swift in Sources */,
 				A6FB96B12BD086AD00D56F68 /* HomeViewModel.swift in Sources */,
 				A6980C2C2BC0896C00F452AB /* SettingsLanguageSelectionView.swift in Sources */,
-				133573672E70B18B00C0005F /* VaultMainHeaderView.swift in Sources */,
+				135C7AD82EA132C8002F879A /* DefiChainSelection.swift in Sources */,
+				133573672E70B18B00C0005F /* HomeMainHeaderView.swift in Sources */,
 				A5125F042BEBBE43008A79AA /* SwapService.swift in Sources */,
 				A6C671032CA276F800F59B6A /* OnboardingView+macOS.swift in Sources */,
 				A50E793A2BFE30210031DB47 /* Storage.swift in Sources */,
@@ -6076,6 +6207,7 @@
 				133EEA192E68787900E18280 /* SettingsCommonOptionView.swift in Sources */,
 				13C320032E61F8DB00255138 /* ReferralVaultSelectionScreen.swift in Sources */,
 				B5F7581A2BD8E7230097B5B9 /* SuiService.swift in Sources */,
+				135C7AE12EA14130002F879A /* CustomizeChainsActionBanner.swift in Sources */,
 				138E1D5E2E9480500085EA8E /* SheetPresentedViewModifier.swift in Sources */,
 				A6505ACE2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift in Sources */,
 				A5D49F582BE26C63001766C8 /* CoinActionResolver.swift in Sources */,
