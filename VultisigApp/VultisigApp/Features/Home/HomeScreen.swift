@@ -18,7 +18,7 @@ struct HomeScreen: View {
     @State var showUpgradeVaultSheet: Bool = false
     
     @State var vaults: [Vault] = []
-    @State private var selectedTab: HomeTab = .wallet
+    @State private var selectedTab: HomeTab = .defi
     @State var vaultRoute: VaultMainRoute?
     
     // Properties for QR Code scanner
@@ -98,10 +98,11 @@ struct HomeScreen: View {
                                 showBalanceInHeader: $walletShowPortfolioHeader
                             )
                         case .defi:
-                            DefiMainScreen(
-                                vault: selectedVault,
-                                showBalanceInHeader: $defiShowPortfolioHeader
-                            )
+                            DefiTHORChainMainScreen(vault: selectedVault)
+//                            DefiMainScreen(
+//                                vault: selectedVault,
+//                                showBalanceInHeader: $defiShowPortfolioHeader
+//                            )
                         case .camera:
                             EmptyView()
                         }

@@ -115,6 +115,8 @@
 		1368C2752E832EDB00BB240D /* FolderDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368C2742E832ED800BB240D /* FolderDetailView.swift */; };
 		1368C2772E83355E00BB240D /* EditFolderScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368C2762E83355B00BB240D /* EditFolderScreen.swift */; };
 		1368C2792E833DED00BB240D /* VaultFolderCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368C2782E833DE500BB240D /* VaultFolderCellView.swift */; };
+		1368D2CF2EA26B7B009A91CA /* DefiTHORChainMainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368D2CE2EA26B72009A91CA /* DefiTHORChainMainScreen.swift */; };
+		1368D2D32EA27391009A91CA /* DefiButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368D2D22EA2738F009A91CA /* DefiButton.swift */; };
 		1369C2212E34006F0002D815 /* WasmExecuteContractPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1369C2202E34006D0002D815 /* WasmExecuteContractPayload.swift */; };
 		136A12DC2E395F080001B1CA /* SecurityScannerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136A12DB2E395F080001B1CA /* SecurityScannerViewModel.swift */; };
 		136A12DE2E395F4F0001B1CA /* SecurityScannerHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136A12DD2E395F3F0001B1CA /* SecurityScannerHeaderView.swift */; };
@@ -1202,6 +1204,8 @@
 		1368C2742E832ED800BB240D /* FolderDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailView.swift; sourceTree = "<group>"; };
 		1368C2762E83355B00BB240D /* EditFolderScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditFolderScreen.swift; sourceTree = "<group>"; };
 		1368C2782E833DE500BB240D /* VaultFolderCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultFolderCellView.swift; sourceTree = "<group>"; };
+		1368D2CE2EA26B72009A91CA /* DefiTHORChainMainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainMainScreen.swift; sourceTree = "<group>"; };
+		1368D2D22EA2738F009A91CA /* DefiButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiButton.swift; sourceTree = "<group>"; };
 		1369C2202E34006D0002D815 /* WasmExecuteContractPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmExecuteContractPayload.swift; sourceTree = "<group>"; };
 		136A12DB2E395F080001B1CA /* SecurityScannerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerViewModel.swift; sourceTree = "<group>"; };
 		136A12DD2E395F3F0001B1CA /* SecurityScannerHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerHeaderView.swift; sourceTree = "<group>"; };
@@ -2703,6 +2707,30 @@
 			path = Service;
 			sourceTree = "<group>";
 		};
+		1368D2CB2EA26B2F009A91CA /* DefiTHORChain */ = {
+			isa = PBXGroup;
+			children = (
+				1368D2CE2EA26B72009A91CA /* DefiTHORChainMainScreen.swift */,
+			);
+			path = DefiTHORChain;
+			sourceTree = "<group>";
+		};
+		1368D2D02EA27386009A91CA /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				1368D2D12EA2738B009A91CA /* View */,
+			);
+			path = Common;
+			sourceTree = "<group>";
+		};
+		1368D2D12EA2738B009A91CA /* View */ = {
+			isa = PBXGroup;
+			children = (
+				1368D2D22EA2738F009A91CA /* DefiButton.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
 		1378B0492E462AD2005CC32D /* Loaders */ = {
 			isa = PBXGroup;
 			children = (
@@ -3299,6 +3327,8 @@
 		13DB875B2E9FD703008E89B0 /* Defi */ = {
 			isa = PBXGroup;
 			children = (
+				1368D2D02EA27386009A91CA /* Common */,
+				1368D2CB2EA26B2F009A91CA /* DefiTHORChain */,
 				135C7ACB2EA12C69002F879A /* DefiChainSelection */,
 				13DB875E2E9FD786008E89B0 /* DefiMain */,
 			);
@@ -6109,6 +6139,7 @@
 				137650832E8DC1060012C60A /* VaultMainScreenScrollView.swift in Sources */,
 				13D0C84B2E7461F600A1301F /* TabBarItem.swift in Sources */,
 				A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */,
+				1368D2D32EA27391009A91CA /* DefiButton.swift in Sources */,
 				A6E0C9212DE9013A00A01543 /* ReferralLaunchView.swift in Sources */,
 				A65617FF2CB4FE1500E9CF19 /* FolderDetailHeader.swift in Sources */,
 				13AF0D1A2E4CE672004D4FD2 /* NavigationRouter+EnvironmentKey.swift in Sources */,
@@ -6372,6 +6403,7 @@
 				A52B0D032CA53DCE00507966 /* ReshareView.swift in Sources */,
 				13B25BF12E82E302002BCF55 /* PlatformTypes.swift in Sources */,
 				A6725D3A2C3F9B4400D47716 /* AddAddressBookScreen.swift in Sources */,
+				1368D2CF2EA26B7B009A91CA /* DefiTHORChainMainScreen.swift in Sources */,
 				13417B8E2E3BB1EE00A66EE5 /* FunctionCallWithdrawRujiRewards.swift in Sources */,
 				A6ECA18A2C93F4F400456110 /* SetupVaultImageManager+macOS.swift in Sources */,
 				A58760542CBD3CE00070956A /* Keychain.swift in Sources */,
