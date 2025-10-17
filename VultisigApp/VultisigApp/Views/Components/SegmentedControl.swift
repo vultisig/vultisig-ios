@@ -104,7 +104,7 @@ struct SegmentedControl<T: Hashable>: View {
         // Only update if the frame has actually changed to avoid unnecessary updates
         guard index >= 0 && index < segmentFrames.count else { return }
         
-        let currentFrame = segmentFrames[index]
+        let currentFrame = segmentFrames[safe: index] ?? .zero
         if !currentFrame.equalTo(frame) {
             segmentFrames[index] = frame
         }
