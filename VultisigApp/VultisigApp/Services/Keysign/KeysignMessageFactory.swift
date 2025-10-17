@@ -65,8 +65,9 @@ struct KeysignMessageFactory {
             } else {
                 return try ERC20Helper.getHelper(coin: payload.coin).getPreSignedImageHash(keysignPayload: payload)
             }
-        case .thorChain:
-            _ = ThorchainService.shared.ensureTHORChainChainID()
+        case .thorChain, .thorChainStagenet:
+            let service = ThorchainServiceFactory.getService(for: payload.coin.chain)
+            _ = service.ensureTHORChainChainID()
             return try THORChainHelper.getPreSignedImageHash(keysignPayload: payload)
         case .mayaChain:
             return try MayaChainHelper.getPreSignedImageHash(keysignPayload: payload)

@@ -13,7 +13,6 @@ class BalanceService {
     static let shared = BalanceService()
     
     private let utxo = BlockchairService.shared
-    private let thor = ThorchainService.shared
     private let sol = SolanaService.shared
     private let sui = SuiService.shared
     private let maya = MayachainService.shared
@@ -85,43 +84,50 @@ private extension BalanceService {
     
     private var enableAutoCompoundStakedBalance: Bool { false }
     
+    func fetchThorchainStakedBalance(for coin: Coin, service: ThorchainService) async throws -> String {
+        // Handle TCY staked balance (includes both regular and auto-compound)
+        if coin.ticker.caseInsensitiveCompare("TCY") == .orderedSame {
+            let tcyStakedBalance = await service.fetchTcyStakedAmount(address: coin.address)
+            
+            if enableAutoCompoundStakedBalance {
+                let tcyAutoCompoundBalance = await service.fetchTcyAutoCompoundAmount(address: coin.address)
+                let totalStakedBalance = tcyStakedBalance + tcyAutoCompoundBalance
+                return totalStakedBalance.description
+            }
+            
+            let totalStakedBalance = tcyStakedBalance
+            return totalStakedBalance.description
+        }
+        
+        // Handle RUNE bonded balance
+        if coin.ticker.caseInsensitiveCompare("RUNE") == .orderedSame {
+            let runeBondedBalance = await service.fetchRuneBondedAmount(address: coin.address)
+            return runeBondedBalance.description
+        }
+        
+        // Handle merge account balances for non-native tokens
+        if !coin.isNativeToken {
+            let mergedAccounts = await service.fetchMergeAccounts(address: coin.address)
+            
+            if let matchedAccount = mergedAccounts.first(where: {
+                $0.pool.mergeAsset.metadata.symbol.caseInsensitiveCompare(coin.ticker) == .orderedSame
+            }) {
+                let amountInDecimal = matchedAccount.size.amount.toDecimal()
+                return amountInDecimal.description
+            }
+        }
+        
+        // Fallback return value
+        return "0"
+    }
+    
     func fetchStakedBalance(for coin: Coin) async throws -> String {
         switch coin.chain {
         case .thorChain:
-            // Handle TCY staked balance (includes both regular and auto-compound)
-            if coin.ticker.caseInsensitiveCompare("TCY") == .orderedSame {
-                let tcyStakedBalance = await thor.fetchTcyStakedAmount(address: coin.address)
-                
-                if enableAutoCompoundStakedBalance {
-                    let tcyAutoCompoundBalance = await thor.fetchTcyAutoCompoundAmount(address: coin.address)
-                    let totalStakedBalance = tcyStakedBalance + tcyAutoCompoundBalance
-                    return totalStakedBalance.description
-                }
-                
-                let totalStakedBalance = tcyStakedBalance
-                return totalStakedBalance.description
-                
-            }
+            return try await fetchThorchainStakedBalance(for: coin, service: ThorchainService.shared)
             
-            // Handle RUNE bonded balance
-            if coin.ticker.caseInsensitiveCompare("RUNE") == .orderedSame {
-                let runeBondedBalance = await thor.fetchRuneBondedAmount(address: coin.address)
-                return runeBondedBalance.description
-            }
-            
-            // Handle merge account balances for non-native tokens
-            if !coin.isNativeToken {
-                let mergedAccounts = await thor.fetchMergeAccounts(address: coin.address)
-                
-                if let matchedAccount = mergedAccounts.first(where: {
-                    $0.pool.mergeAsset.metadata.symbol.caseInsensitiveCompare(coin.ticker) == .orderedSame
-                }) {
-                    let amountInDecimal = matchedAccount.size.amount.toDecimal()
-                    return amountInDecimal.description
-                }
-            }
-            
-            // Fallback return value
+        case .thorChainStagenet:
+            // Stagenet doesn't support staking features yet
             return "0"
             
         default:
@@ -139,9 +145,10 @@ private extension BalanceService {
         case .cardano:
             return try await cardano.getBalance(coin: coin)
             
-        case .thorChain:
-            let thorBalances = try await thor.fetchBalances(coin.address)
-            return thorBalances.balance(denom: Chain.thorChain.ticker.lowercased(), coin: coin)
+        case .thorChain, .thorChainStagenet:
+            let service = ThorchainServiceFactory.getService(for: coin.chain)
+            let thorBalances = try await service.fetchBalances(coin.address)
+            return thorBalances.balance(denom: coin.chain.ticker.lowercased(), coin: coin)
             
         case .solana:
             return try await sol.getSolanaBalance(coin: coin)
