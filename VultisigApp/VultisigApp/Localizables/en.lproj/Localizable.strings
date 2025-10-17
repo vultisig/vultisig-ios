@@ -913,7 +913,6 @@
 "bondedRune" = "Bonded RUNE";
 "availableNodes" = "Available Nodes";
 "activeNodes" = "Active Nodes";
-"active" = "Active";
 "churnedOut" = "Churned Out";
 "nodeAddress" = "Node Address: %@";
 "requestToBond" = "Request to Bond";

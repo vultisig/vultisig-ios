@@ -105,7 +105,7 @@ struct DefiTHORChainActiveNodeView: View {
                 onUnbond(activeNode.node)
             }.disabled(!canUnbond)
             DefiButton(title: "bond".localized, icon: "chain-link-3") {
-                onUnbond(activeNode.node)
+                onBond(activeNode.node)
             }
         }
     }

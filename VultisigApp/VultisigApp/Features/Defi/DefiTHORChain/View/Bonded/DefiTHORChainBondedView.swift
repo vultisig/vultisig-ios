@@ -37,7 +37,7 @@ struct DefiTHORChainBondedView: View {
     ]
     
     var showBondButton: Bool {
-        coin.defiBalanceInFiatDecimal == 0
+        coin.stakedBalanceDecimal == 0
     }
     
     var bondedBalance: String {
