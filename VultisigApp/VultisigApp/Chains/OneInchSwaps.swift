@@ -59,8 +59,18 @@ private extension OneInchSwaps {
             }
         }
 
-        // TODO: - Check by provider?? Kyber swaps defaults to nil
-        let gasPrice = BigUInt(quote.tx.gasPrice) ?? BigUInt.zero
+        // Get gasPrice from quote, but ensure it's not too low
+        var gasPrice = BigUInt(quote.tx.gasPrice) ?? BigUInt.zero
+        
+        // For swap providers like LiFi, their gasPrice might be outdated or too low
+        // Compare with the calculated network fees and use the higher value
+        if case .Ethereum(let maxFeePerGasWei, _, _, _) = keysignPayload.chainSpecific {
+            let calculatedGasPrice = BigUInt(maxFeePerGasWei)
+            // Use the maximum of provider's gasPrice and our calculated maxFeePerGas
+            // This ensures transactions won't get stuck due to low gas prices
+            gasPrice = max(gasPrice, calculatedGasPrice)
+        }
+        
         // sometimes the `gas` field in oneinch tx is 0
         // when it is 0, we need to override it with defaultETHSwapGasUnit(600000)
         var normalizedGas = quote.tx.gas == 0 ? EVMHelper.defaultETHSwapGasUnit : quote.tx.gas
