@@ -7,6 +7,13 @@
 
 import SwiftUI
 
+struct TabContentHeightPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
 struct DefiTHORChainMainScreen: View {
     @ObservedObject var vault: Vault
     
@@ -31,7 +38,7 @@ struct DefiTHORChainMainScreen: View {
     
     var body: some View {
         GeometryReader { proxy in
-            Screen(edgeInsets: .init(bottom: .zero), backgroundType: .gradient) {
+            Screen(edgeInsets: .init(top: .zero, bottom: .zero), backgroundType: .gradient) {
                 ScrollView(showsIndicators: false) {
                     LazyVStack(spacing: 16) {
                         DefiTHORChainBalanceView(groupedChain: groupedChain)
@@ -39,6 +46,7 @@ struct DefiTHORChainMainScreen: View {
                         tabView(height: proxy.size.height)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(.top, isMacOS ? 60 : 16)
                 }
             }
             .overlay(bottomGradient, alignment: .bottom)
@@ -57,30 +65,33 @@ struct DefiTHORChainMainScreen: View {
     }
     
     func tabView(height: CGFloat) -> some View {
-        TabView(selection: $viewModel.selectedPosition) {
-            ForEach(viewModel.positions.map(\.value)) { position in
-                tabContent(for: position)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .tag(position)
-            }
-        }
-        .tabViewStyle(.page(indexDisplayMode: .never))
-        .frame(minHeight: height * 1.3)
+        tabContent(for: .bond)
+//        TabView(selection: $viewModel.selectedPosition) {
+//            ForEach(viewModel.positions.map(\.value)) { position in
+//                tabContent(for: position)
+//                    .frame(maxWidth: .infinity)
+//                    .tag(position)
+//            }
+//        }
+//        .tabViewStyle(.page(indexDisplayMode: .never))
+//        .frame(maxWidth: .infinity, minHeight: height)
     }
     
     @ViewBuilder
     func tabContent(for position: THORChainPositionType) -> some View {
-        switch position {
-        case .bond:
-            DefiTHORChainBondedView(coin: groupedChain.nativeCoin) { _ in
-                // TODO: - Redirect to bond
-            } onUnbond: { _ in
-                // TODO: - Redirect to unbond
+        Group {
+            switch position {
+            case .bond:
+                DefiTHORChainBondedView(coin: groupedChain.nativeCoin) { _ in
+                    // TODO: - Redirect to bond
+                } onUnbond: { _ in
+                    // TODO: - Redirect to unbond
+                }
+            case .stake:
+                DefiTHORChainStakedView()
+            case .liquidityPool:
+                DefiTHORChainLPsView()
             }
-        case .stake:
-            DefiTHORChainStakedView()
-        case .liquidityPool:
-            DefiTHORChainLPsView()
         }
     }
     

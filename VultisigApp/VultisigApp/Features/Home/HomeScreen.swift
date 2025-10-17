@@ -98,11 +98,10 @@ struct HomeScreen: View {
                                 showBalanceInHeader: $walletShowPortfolioHeader
                             )
                         case .defi:
-                            DefiTHORChainMainScreen(vault: selectedVault)
-//                            DefiMainScreen(
-//                                vault: selectedVault,
-//                                showBalanceInHeader: $defiShowPortfolioHeader
-//                            )
+                            DefiMainScreen(
+                                vault: selectedVault,
+                                showBalanceInHeader: $defiShowPortfolioHeader
+                            )
                         case .camera:
                             EmptyView()
                         }
