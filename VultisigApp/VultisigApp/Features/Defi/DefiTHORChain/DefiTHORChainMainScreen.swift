@@ -7,13 +7,6 @@
 
 import SwiftUI
 
-struct TabContentHeightPreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = max(value, nextValue())
-    }
-}
-
 struct DefiTHORChainMainScreen: View {
     @ObservedObject var vault: Vault
     
@@ -37,20 +30,17 @@ struct DefiTHORChainMainScreen: View {
     }
     
     var body: some View {
-        GeometryReader { proxy in
-            Screen(edgeInsets: .init(top: .zero, bottom: .zero), backgroundType: .gradient) {
-                ScrollView(showsIndicators: false) {
-                    LazyVStack(spacing: 16) {
-                        DefiTHORChainBalanceView(groupedChain: groupedChain)
-                        positionsSegmentedControlView
-                        tabView(height: proxy.size.height)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .padding(.top, isMacOS ? 60 : 16)
+        Screen(edgeInsets: .init(top: .zero, bottom: .zero), backgroundType: .gradient) {
+            ScrollView(showsIndicators: false) {
+                LazyVStack(spacing: 16) {
+                    DefiTHORChainBalanceView(groupedChain: groupedChain)
+                    positionsSegmentedControlView
+                    selectedPositionView
                 }
+                .padding(.top, isMacOS ? 60 : 16)
             }
-            .overlay(bottomGradient, alignment: .bottom)
         }
+        .overlay(bottomGradient, alignment: .bottom)
     }
     
     var positionsSegmentedControlView: some View {
@@ -64,23 +54,9 @@ struct DefiTHORChainMainScreen: View {
         }
     }
     
-    func tabView(height: CGFloat) -> some View {
-        tabContent(for: .bond)
-//        TabView(selection: $viewModel.selectedPosition) {
-//            ForEach(viewModel.positions.map(\.value)) { position in
-//                tabContent(for: position)
-//                    .frame(maxWidth: .infinity)
-//                    .tag(position)
-//            }
-//        }
-//        .tabViewStyle(.page(indexDisplayMode: .never))
-//        .frame(maxWidth: .infinity, minHeight: height)
-    }
-    
-    @ViewBuilder
-    func tabContent(for position: THORChainPositionType) -> some View {
+    var selectedPositionView: some View {
         Group {
-            switch position {
+            switch viewModel.selectedPosition {
             case .bond:
                 DefiTHORChainBondedView(coin: groupedChain.nativeCoin) { _ in
                     // TODO: - Redirect to bond
@@ -93,6 +69,27 @@ struct DefiTHORChainMainScreen: View {
                 DefiTHORChainLPsView()
             }
         }
+        .transition(.opacity)
+        .animation(.easeInOut, value: viewModel.selectedPosition)
+        .gesture(
+            DragGesture()
+                .onEnded { value in
+                    let horizontalMovement = value.translation.width
+                    let minimumSwipeDistance: CGFloat = 50
+                    
+                    if abs(horizontalMovement) > minimumSwipeDistance {
+                        withAnimation(.easeInOut) {
+                            if horizontalMovement > 0 {
+                                // Swipe right - move to previous position
+                                viewModel.moveToPreviousPosition()
+                            } else {
+                                // Swipe left - move to next position
+                                viewModel.moveToNextPosition()
+                            }
+                        }
+                    }
+                }
+        )
     }
     
     var bottomGradient: some View {

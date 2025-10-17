@@ -9,7 +9,7 @@ import SwiftUI
 
 struct DefiTHORChainLPsView: View {
     var body: some View {
-        Text("DefiTHORChainLPsView")
+        EmptyView()
     }
 }
 

@@ -50,7 +50,6 @@ struct DefiTHORChainBondedView: View {
             activeNodesSection
             availableNodesSection
         }
-        .frame(maxHeight: .infinity, alignment: .top)
     }
     
     var bondedSection: some View {

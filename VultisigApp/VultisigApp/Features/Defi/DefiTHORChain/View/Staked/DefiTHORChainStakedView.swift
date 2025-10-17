@@ -9,7 +9,7 @@ import SwiftUI
 
 struct DefiTHORChainStakedView: View {
     var body: some View {
-        Text("DefiTHORChainStakedView")
+        EmptyView()
     }
 }
 
