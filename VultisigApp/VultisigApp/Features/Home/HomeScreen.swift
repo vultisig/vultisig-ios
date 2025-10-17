@@ -83,7 +83,7 @@ struct HomeScreen: View {
             ZStack(alignment: .top) {
                 VultiTabBar(
                     selectedItem: $selectedTab,
-                    items: [HomeTab.wallet],
+                    items: [HomeTab.wallet, .defi],
                     accessory: .camera,
                 ) { tab in
                     Group {

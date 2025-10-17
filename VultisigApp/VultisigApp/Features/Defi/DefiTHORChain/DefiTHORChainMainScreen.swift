@@ -72,12 +72,13 @@ struct DefiTHORChainMainScreen: View {
         .transition(.opacity)
         .animation(.easeInOut, value: viewModel.selectedPosition)
         .gesture(
-            DragGesture()
+            DragGesture(minimumDistance: 50, coordinateSpace: .local)
                 .onEnded { value in
                     let horizontalMovement = value.translation.width
-                    let minimumSwipeDistance: CGFloat = 50
+                    let verticalMovement = value.translation.height
                     
-                    if abs(horizontalMovement) > minimumSwipeDistance {
+                    // Only handle if it's a primarily horizontal swipe with significant distance
+                    if abs(horizontalMovement) > abs(verticalMovement) * 2 && abs(horizontalMovement) > 80 {
                         withAnimation(.easeInOut) {
                             if horizontalMovement > 0 {
                                 // Swipe right - move to previous position
