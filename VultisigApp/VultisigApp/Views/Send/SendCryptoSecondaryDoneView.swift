@@ -74,7 +74,6 @@ struct SendCryptoSecondaryDoneView: View {
                 separator
             }
             
-            // TODO: - Here
             Group {
                 SendCryptoTransactionDetailsRow(
                     title: "to",

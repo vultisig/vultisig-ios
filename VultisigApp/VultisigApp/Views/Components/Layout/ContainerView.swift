@@ -16,7 +16,6 @@ struct ContainerView<Content: View>: View {
     }
     
     var body: some View {
-        // TODO: - Check relative views
         content()
             .font(Theme.fonts.bodyMMedium)
             .padding(16)
