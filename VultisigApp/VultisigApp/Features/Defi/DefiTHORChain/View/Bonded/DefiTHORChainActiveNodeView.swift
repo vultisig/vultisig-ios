@@ -62,7 +62,7 @@ struct DefiTHORChainActiveNodeView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 bondButtonsView
-                Text("waitChurnedOutNode")
+                Text("waitChurnedOutNode".localized)
                     .font(Theme.fonts.caption10)
                     .foregroundStyle(Theme.colors.textLight)
                     .showIf(unbondDisabled)
