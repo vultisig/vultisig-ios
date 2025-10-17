@@ -396,12 +396,15 @@ class KeysignViewModel: ObservableObject {
             }
             
         case .THORChain:
-            if keysignPayload.coin.chain == .thorChain {
+            switch keysignPayload.coin.chain {
+            case .thorChain, .thorChainStagenet:
                 let transaction = try THORChainHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
-            } else if keysignPayload.coin.chain == .mayaChain {
+            case .mayaChain:
                 let transaction = try MayaChainHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
+            default:
+                break
             }
             
         case .Solana:
@@ -489,8 +492,9 @@ class KeysignViewModel: ObservableObject {
             switch transactionType {
             case .regular(let tx):
                 switch keysignPayload.coin.chain {
-                case .thorChain:
-                    let broadcastResult = await ThorchainService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
+                case .thorChain, .thorChainStagenet:
+                    let service = ThorchainServiceFactory.getService(for: keysignPayload.coin.chain)
+                    let broadcastResult = await service.broadcastTransaction(jsonString: tx.rawTransaction)
                     switch broadcastResult {
                     case .success(let txHash):
                         self.txid = txHash

@@ -143,11 +143,35 @@ class Endpoint {
     
     static let fetchThorchainInboundAddressesNineRealms = "https://thornode.ninerealms.com/thorchain/inbound_addresses"
     
+    // Stagenet endpoints
+    static func fetchAccountNumberThorchainStagenet(_ address: String) -> String {
+        "https://stagenet-thornode.ninerealms.com/auth/accounts/\(address)"
+    }
+    
+    static let fetchThorchainStagenetNetworkInfoNineRealms = "https://stagenet-thornode.ninerealms.com/thorchain/network"
+    
+    static func fetchThorchainStagenetDenomMetadata(denom: String) -> String {
+        "https://stagenet-thornode.ninerealms.com/cosmos/bank/v1beta1/denoms_metadata/\(encodePathComponent(denom))"
+    }
+    
+    static func fetchThorchainStagenetAllDenomMetadata() -> String {
+        "https://stagenet-thornode.ninerealms.com/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
+    }
+    
+    static let thorchainStagenetNetworkInfo = "https://stagenet-rpc.ninerealms.com/status".asUrl
+    
+    static let fetchThorchainStagenetInboundAddressesNineRealms = "https://stagenet-thornode.ninerealms.com/thorchain/inbound_addresses"
+    
+    static let broadcastTransactionThorchainStagenet = "https://stagenet-thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
+    
     static func fetchAccountNumberMayachain(_ address: String) -> String {
         "https://mayanode.mayachain.info/auth/accounts/\(address)"
     }
     static func fetchAccountBalanceThorchainNineRealms(address: String) -> String {
         "https://thornode.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)"
+    }
+    static func fetchAccountBalanceThorchainStagenet(address: String) -> String {
+        "https://stagenet-thornode.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)"
     }
     static func fetchAccountBalanceMayachain(address: String) -> String {
         "https://mayanode.mayachain.info/cosmos/bank/v1beta1/balances/\(address)"
@@ -156,6 +180,10 @@ class Endpoint {
     // Fetch pool info for any THORChain asset
     static func fetchPoolInfo(asset: String) -> String {
         "https://thornode.ninerealms.com/thorchain/pool/\(asset)"
+    }
+    
+    static func fetchStagenetPoolInfo(asset: String) -> String {
+        "https://stagenet-thornode.ninerealms.com/thorchain/pool/\(asset)"
     }
     
     static func fetchTcyStakedAmount(address: String) -> String {
@@ -195,6 +223,13 @@ class Endpoint {
     }
     
     static let fetchThorchainPools = "https://thornode.ninerealms.com/thorchain/pools"
+    
+    // THORChain Stagenet LP endpoints
+    static func fetchThorchainStagenetPoolLiquidityProvider(asset: String, address: String) -> String {
+        "https://stagenet-thornode.ninerealms.com/thorchain/pool/\(asset)/liquidity_provider/\(address)"
+    }
+    
+    static let fetchThorchainStagenetPools = "https://stagenet-thornode.ninerealms.com/thorchain/pools"
     
     static func fetchSwapQuoteThorchain(
         chain: SwapChain,
@@ -683,6 +718,8 @@ class Endpoint {
             return "https://blockchair.com/zcash/transaction/\(txid)"
         case .thorChain:
             return "https://thorchain.net/tx/\(txid.stripHexPrefix())"
+        case .thorChainStagenet:
+            return "https://stagenet.thorchain.net/tx/\(txid.stripHexPrefix())"
         case .solana:
             return "https://solscan.io/tx/\(txid)"
         case .ethereum:
@@ -758,6 +795,8 @@ class Endpoint {
             return "https://blockchair.com/zcash/address/\(address)"
         case .thorChain:
             return "https://runescan.io/address/\(address)"
+        case .thorChainStagenet:
+            return "https://stagenet.thorchain.net/address/\(address)"
         case .solana:
             return "https://solscan.io/account/\(address)"
         case .ethereum:
@@ -821,6 +860,8 @@ class Endpoint {
         switch chain {
         case .thorChain:
             return "https://thorchain.net/address/\(address)"
+        case .thorChainStagenet:
+            return "https://stagenet.thorchain.net/address/\(address)"
         case .solana:
             return "https://solscan.io/account/\(address)"
         case .ethereum:

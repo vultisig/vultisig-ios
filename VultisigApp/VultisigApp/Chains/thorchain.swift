@@ -26,8 +26,9 @@ enum THORChainHelper {
         }
         
         var chainID = keysignPayload.coin.coinType.chainId
-        if chainID != ThorchainService.shared.network && !ThorchainService.shared.network.isEmpty {
-            chainID = ThorchainService.shared.network
+        let service = ThorchainServiceFactory.getService(for: keysignPayload.coin.chain)
+        if chainID != service.network && !service.network.isEmpty {
+            chainID = service.network
         }
         let input = CosmosSigningInput.with {
             $0.chainID = chainID
@@ -61,8 +62,8 @@ enum THORChainHelper {
     }
     
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        guard keysignPayload.coin.chain == .thorChain else {
-            throw HelperError.runtimeError("coin is not RUNE")
+        guard keysignPayload.coin.chain == .thorChain || keysignPayload.coin.chain == .thorChainStagenet else {
+            throw HelperError.runtimeError("coin is not RUNE or RUNE Stagenet")
         }
         guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain) else {
             throw HelperError.runtimeError("\(keysignPayload.coin.address) is invalid")
@@ -75,8 +76,9 @@ enum THORChainHelper {
         }
         let coin = CoinType.thorchain
         var chainID = coin.chainId
-        if chainID != ThorchainService.shared.network && !ThorchainService.shared.network.isEmpty {
-            chainID = ThorchainService.shared.network
+        let service = ThorchainServiceFactory.getService(for: keysignPayload.coin.chain)
+        if chainID != service.network && !service.network.isEmpty {
+            chainID = service.network
         }
                 
         let transactionType = VSTransactionType(rawValue: transactionTypeRawValue) ?? .unspecified
