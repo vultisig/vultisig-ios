@@ -24,7 +24,7 @@ struct DefiTHORChainActiveNodeView: View {
         dateFormatter.string(from: Date(timeIntervalSince1970: TimeInterval(activeNode.nextChurn)))
     }
     
-    var canUnbond: Bool { activeNode.node.state == .churnedOut }
+    var unbondDisabled: Bool { activeNode.node.state != .churnedOut }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -65,6 +65,7 @@ struct DefiTHORChainActiveNodeView: View {
                 Text("waitChurnedOutNode")
                     .font(Theme.fonts.caption10)
                     .foregroundStyle(Theme.colors.textLight)
+                    .showIf(unbondDisabled)
             }
         }
     }
@@ -77,7 +78,6 @@ struct DefiTHORChainActiveNodeView: View {
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textExtraLight)
             }
-            
             Text(formattedChurnDate)
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.textLight)
@@ -92,7 +92,6 @@ struct DefiTHORChainActiveNodeView: View {
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textExtraLight)
             }
-            
             HiddenBalanceText(coin.formatWithTicker(value: activeNode.nextReward))
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.textLight)
@@ -103,7 +102,7 @@ struct DefiTHORChainActiveNodeView: View {
         HStack(alignment: .top, spacing: 16) {
             DefiButton(title: "unbond".localized, icon: "broken-chain-3", type: .secondary) {
                 onUnbond(activeNode.node)
-            }.disabled(!canUnbond)
+            }.disabled(unbondDisabled)
             DefiButton(title: "bond".localized, icon: "chain-link-3") {
                 onBond(activeNode.node)
             }
