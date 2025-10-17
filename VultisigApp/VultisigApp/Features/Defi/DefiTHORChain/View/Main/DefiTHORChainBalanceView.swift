@@ -12,10 +12,6 @@ struct DefiTHORChainBalanceView: View {
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
-    var balanceText: String {
-        homeViewModel.hideVaultBalance ? String.hideBalanceText : groupedChain.defiBalanceInFiatString
-    }
-    
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(groupedChain.name)
@@ -27,7 +23,7 @@ struct DefiTHORChainBalanceView: View {
                 .font(Theme.fonts.caption12)
                 .padding(.top, 12)
             
-            Text(balanceText)
+            HiddenBalanceText(groupedChain.defiBalanceInFiatString)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.priceTitle1)
                 .contentTransition(.numericText())

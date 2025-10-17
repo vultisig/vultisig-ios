@@ -36,7 +36,7 @@ struct DefiTHORChainActiveNodeView: View {
                 BondNodeStateView(state: activeNode.node.state)
             }
             
-            Text(String(format: "bondedXCoin".localized, coin.formatWithTicker(value: activeNode.amount)))
+            HiddenBalanceText(String(format: "bondedXCoin".localized, coin.formatWithTicker(value: activeNode.amount)))
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.title3)
             
@@ -93,7 +93,7 @@ struct DefiTHORChainActiveNodeView: View {
                     .foregroundStyle(Theme.colors.textExtraLight)
             }
             
-            Text(coin.formatWithTicker(value: activeNode.nextReward))
+            HiddenBalanceText(coin.formatWithTicker(value: activeNode.nextReward))
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.textLight)
         }
@@ -139,4 +139,5 @@ struct DefiTHORChainActiveNodeView: View {
             onBond: { _ in }
         )
     }
+    .environmentObject(HomeViewModel())
 }

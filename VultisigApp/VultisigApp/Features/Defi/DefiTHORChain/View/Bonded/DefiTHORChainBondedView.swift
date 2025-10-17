@@ -40,6 +40,10 @@ struct DefiTHORChainBondedView: View {
         coin.defiBalanceInFiatDecimal == 0
     }
     
+    var bondedBalance: String {
+        coin.formatWithTicker(value: coin.stakedBalanceDecimal)
+    }
+        
     var body: some View {
         LazyVStack(spacing: 14) {
             bondedSection
@@ -66,9 +70,11 @@ struct DefiTHORChainBondedView: View {
                             .foregroundStyle(Theme.colors.textExtraLight)
                         
                         // TODO: - Replace with proper value after balance fetching is done
-                        Text(coin.formatWithTicker(value: coin.stakedBalanceDecimal))
+                        HiddenBalanceText(bondedBalance)
                             .font(Theme.fonts.priceTitle1)
                             .foregroundStyle(Theme.colors.textPrimary)
+                            .contentTransition(.numericText())
+                            .animation(.interpolatingSpring, value: bondedBalance)
                     }
                     Spacer()
                 }
