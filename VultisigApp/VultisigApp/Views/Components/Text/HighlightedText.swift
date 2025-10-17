@@ -19,14 +19,8 @@ struct HighlightedText: View {
     }
     
     private func makeAttributedString() -> AttributedString {
-        // Get localized template string
-        let format = text
-        
-        // Format the string with parameters
-        let fullString = String(format: format, highlightedText)
-        
         // Convert to AttributedString
-        var attributed = AttributedString(fullString)
+        var attributed = AttributedString(text)
         textStyle(&attributed)
         
         // Highlight parameters by finding their ranges
