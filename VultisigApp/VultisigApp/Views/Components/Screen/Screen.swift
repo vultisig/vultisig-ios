@@ -11,6 +11,7 @@ struct Screen<Content: View>: View {
     let title: String
     let edgeInsets: ScreenEdgeInsets
     let showNavigationBar: Bool
+    let backgroundType: BackgroundType
     
     let content: () -> Content
     
@@ -18,18 +19,20 @@ struct Screen<Content: View>: View {
         title: String = "",
         showNavigationBar: Bool = true,
         edgeInsets: ScreenEdgeInsets = .noInsets,
+        backgroundType: BackgroundType = .plain,
         @ViewBuilder content: @escaping () -> Content
     ) {
         self.title = title
         self.showNavigationBar = showNavigationBar
         self.edgeInsets = edgeInsets
+        self.backgroundType = backgroundType
         self.content = content
     }
     
     var body: some View {
         container
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Theme.colors.bgPrimary, ignoresSafeAreaEdges: .all)
+            .background(backgroundView.ignoresSafeArea())
     }
     
     @ViewBuilder
@@ -66,6 +69,21 @@ struct Screen<Content: View>: View {
     }
     
     var verticalPadding: CGFloat { 12 }
+    
+    @ViewBuilder
+    var backgroundView: some View {
+        switch backgroundType {
+        case .plain:
+            Theme.colors.bgPrimary
+        case .gradient:
+            VaultMainScreenBackground()
+        }
+    }
+    
+    enum BackgroundType {
+        case plain
+        case gradient
+    }
 }
 
 #Preview {
