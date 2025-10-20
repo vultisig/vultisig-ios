@@ -42,7 +42,7 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
                     counterManager.increment()
                     counter = counterManager.counter
                 } else {
-                    if counterManager.counter == counter {
+                    if counter == 1 {
                         counterManager.resetCounter()
                     } else {
                         counterManager.decrement()
@@ -78,7 +78,7 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
                     counterManager.increment()
                     counter = counterManager.counter
                 } else {
-                    if counterManager.counter == counter {
+                    if counter == 1 {
                         counterManager.resetCounter()
                     } else {
                         counterManager.decrement()
