@@ -39,8 +39,7 @@ struct DefiChainListView: View {
                         itemsCount: viewModel.filteredGroups.count
                     )
             }
-            .disabled(true) // disable until DEFI features are available
-            //.disabled(group.chain != .thorChain)
+            .disabled(group.chain != .thorChain)
         }
     }
 }
