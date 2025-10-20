@@ -115,6 +115,8 @@
 		1368C2752E832EDB00BB240D /* FolderDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368C2742E832ED800BB240D /* FolderDetailView.swift */; };
 		1368C2772E83355E00BB240D /* EditFolderScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368C2762E83355B00BB240D /* EditFolderScreen.swift */; };
 		1368C2792E833DED00BB240D /* VaultFolderCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368C2782E833DE500BB240D /* VaultFolderCellView.swift */; };
+		1368D2CF2EA26B7B009A91CA /* DefiTHORChainMainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368D2CE2EA26B72009A91CA /* DefiTHORChainMainScreen.swift */; };
+		1368D2D32EA27391009A91CA /* DefiButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368D2D22EA2738F009A91CA /* DefiButton.swift */; };
 		1369C2212E34006F0002D815 /* WasmExecuteContractPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1369C2202E34006D0002D815 /* WasmExecuteContractPayload.swift */; };
 		136A12DC2E395F080001B1CA /* SecurityScannerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136A12DB2E395F080001B1CA /* SecurityScannerViewModel.swift */; };
 		136A12DE2E395F4F0001B1CA /* SecurityScannerHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136A12DD2E395F3F0001B1CA /* SecurityScannerHeaderView.swift */; };
@@ -185,6 +187,20 @@
 		13A0786C2E846FBA0093496F /* View+ListSectionSpacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A0786B2E846FBA0093496F /* View+ListSectionSpacing.swift */; };
 		13A078702E8484280093496F /* ListBottomSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A0786F2E8484250093496F /* ListBottomSection.swift */; };
 		13A078722E8488960093496F /* View+SheetStyling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A078712E84888E0093496F /* View+SheetStyling.swift */; };
+		13A657A62EA27B1100323E4C /* DefiTHORChainBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657A52EA27B0500323E4C /* DefiTHORChainBalanceView.swift */; };
+		13A657A92EA283E000323E4C /* DefiTHORChainMainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657A82EA283DB00323E4C /* DefiTHORChainMainViewModel.swift */; };
+		13A657AC2EA283FA00323E4C /* THORChainPositionType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657AB2EA283F500323E4C /* THORChainPositionType.swift */; };
+		13A657B12EA28B8200323E4C /* DefiTHORChainBondedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657B02EA28B7800323E4C /* DefiTHORChainBondedView.swift */; };
+		13A657B62EA28BAE00323E4C /* DefiTHORChainLPsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657B52EA28BAE00323E4C /* DefiTHORChainLPsView.swift */; };
+		13A657B82EA28BBB00323E4C /* DefiTHORChainStakedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657B72EA28BBB00323E4C /* DefiTHORChainStakedView.swift */; };
+		13A657BA2EA2972200323E4C /* ExpandableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657B92EA2971C00323E4C /* ExpandableView.swift */; };
+		13A657BC2EA2977200323E4C /* DefiTHORChainAvailableNodesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657BB2EA2976800323E4C /* DefiTHORChainAvailableNodesView.swift */; };
+		13A657BE2EA2994D00323E4C /* BondNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657BD2EA2994900323E4C /* BondNode.swift */; };
+		13A657C02EA29A9300323E4C /* BondNodeStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657BF2EA29A8F00323E4C /* BondNodeStateView.swift */; };
+		13A657C22EA2A0FC00323E4C /* DefiTHORChainActiveNodesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657C12EA2A0FC00323E4C /* DefiTHORChainActiveNodesView.swift */; };
+		13A657C52EA2A22800323E4C /* ActiveBondedNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657C42EA2A22200323E4C /* ActiveBondedNode.swift */; };
+		13A657C72EA2AC5B00323E4C /* DefiTHORChainActiveNodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657C62EA2AC5900323E4C /* DefiTHORChainActiveNodeView.swift */; };
+		13A657C92EA2BCC400323E4C /* HiddenBalanceText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657C82EA2BCBE00323E4C /* HiddenBalanceText.swift */; };
 		13A899002E43C0FE006F75F0 /* PreferredAssetSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A898FF2E43C0EE006F75F0 /* PreferredAssetSelectionView.swift */; };
 		13A899022E43CEF3006F75F0 /* THORChainTokenMetadataFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A899012E43CEEB006F75F0 /* THORChainTokenMetadataFactory.swift */; };
 		13A899042E43FA4D006F75F0 /* PreferredAssetSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A899032E43FA4B006F75F0 /* PreferredAssetSelectionViewModel.swift */; };
@@ -555,7 +571,6 @@
 		A65518052BF867CF006BB924 /* KeysignSameDeviceShareErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65518042BF867CF006BB924 /* KeysignSameDeviceShareErrorView.swift */; };
 		A65617F92CB4F53C00E9CF19 /* CreateFolderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65617F82CB4F53C00E9CF19 /* CreateFolderViewModel.swift */; };
 		A65617FB2CB4F6DF00E9CF19 /* FolderDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65617FA2CB4F6DF00E9CF19 /* FolderDetailViewModel.swift */; };
-		A65617FD2CB4FCEA00E9CF19 /* FolderDetailCellViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65617FC2CB4FCEA00E9CF19 /* FolderDetailCellViewModel.swift */; };
 		A65617FF2CB4FE1500E9CF19 /* FolderDetailHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65617FE2CB4FE1500E9CF19 /* FolderDetailHeader.swift */; };
 		A65618012CB64EB200E9CF19 /* SettingVaultRegistrationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65618002CB64EB200E9CF19 /* SettingVaultRegistrationCell.swift */; };
 		A65618032CB6500A00E9CF19 /* RegisterVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65618022CB6500A00E9CF19 /* RegisterVaultView.swift */; };
@@ -1202,6 +1217,8 @@
 		1368C2742E832ED800BB240D /* FolderDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailView.swift; sourceTree = "<group>"; };
 		1368C2762E83355B00BB240D /* EditFolderScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditFolderScreen.swift; sourceTree = "<group>"; };
 		1368C2782E833DE500BB240D /* VaultFolderCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultFolderCellView.swift; sourceTree = "<group>"; };
+		1368D2CE2EA26B72009A91CA /* DefiTHORChainMainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainMainScreen.swift; sourceTree = "<group>"; };
+		1368D2D22EA2738F009A91CA /* DefiButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiButton.swift; sourceTree = "<group>"; };
 		1369C2202E34006D0002D815 /* WasmExecuteContractPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmExecuteContractPayload.swift; sourceTree = "<group>"; };
 		136A12DB2E395F080001B1CA /* SecurityScannerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerViewModel.swift; sourceTree = "<group>"; };
 		136A12DD2E395F3F0001B1CA /* SecurityScannerHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerHeaderView.swift; sourceTree = "<group>"; };
@@ -1272,6 +1289,20 @@
 		13A0786B2E846FBA0093496F /* View+ListSectionSpacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+ListSectionSpacing.swift"; sourceTree = "<group>"; };
 		13A0786F2E8484250093496F /* ListBottomSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListBottomSection.swift; sourceTree = "<group>"; };
 		13A078712E84888E0093496F /* View+SheetStyling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+SheetStyling.swift"; sourceTree = "<group>"; };
+		13A657A52EA27B0500323E4C /* DefiTHORChainBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainBalanceView.swift; sourceTree = "<group>"; };
+		13A657A82EA283DB00323E4C /* DefiTHORChainMainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainMainViewModel.swift; sourceTree = "<group>"; };
+		13A657AB2EA283F500323E4C /* THORChainPositionType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainPositionType.swift; sourceTree = "<group>"; };
+		13A657B02EA28B7800323E4C /* DefiTHORChainBondedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainBondedView.swift; sourceTree = "<group>"; };
+		13A657B52EA28BAE00323E4C /* DefiTHORChainLPsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainLPsView.swift; sourceTree = "<group>"; };
+		13A657B72EA28BBB00323E4C /* DefiTHORChainStakedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainStakedView.swift; sourceTree = "<group>"; };
+		13A657B92EA2971C00323E4C /* ExpandableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpandableView.swift; sourceTree = "<group>"; };
+		13A657BB2EA2976800323E4C /* DefiTHORChainAvailableNodesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainAvailableNodesView.swift; sourceTree = "<group>"; };
+		13A657BD2EA2994900323E4C /* BondNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondNode.swift; sourceTree = "<group>"; };
+		13A657BF2EA29A8F00323E4C /* BondNodeStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondNodeStateView.swift; sourceTree = "<group>"; };
+		13A657C12EA2A0FC00323E4C /* DefiTHORChainActiveNodesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainActiveNodesView.swift; sourceTree = "<group>"; };
+		13A657C42EA2A22200323E4C /* ActiveBondedNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveBondedNode.swift; sourceTree = "<group>"; };
+		13A657C62EA2AC5900323E4C /* DefiTHORChainActiveNodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainActiveNodeView.swift; sourceTree = "<group>"; };
+		13A657C82EA2BCBE00323E4C /* HiddenBalanceText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HiddenBalanceText.swift; sourceTree = "<group>"; };
 		13A898FF2E43C0EE006F75F0 /* PreferredAssetSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetSelectionView.swift; sourceTree = "<group>"; };
 		13A899012E43CEEB006F75F0 /* THORChainTokenMetadataFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainTokenMetadataFactory.swift; sourceTree = "<group>"; };
 		13A899032E43FA4B006F75F0 /* PreferredAssetSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetSelectionViewModel.swift; sourceTree = "<group>"; };
@@ -1645,7 +1676,6 @@
 		A65518042BF867CF006BB924 /* KeysignSameDeviceShareErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignSameDeviceShareErrorView.swift; sourceTree = "<group>"; };
 		A65617F82CB4F53C00E9CF19 /* CreateFolderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateFolderViewModel.swift; sourceTree = "<group>"; };
 		A65617FA2CB4F6DF00E9CF19 /* FolderDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailViewModel.swift; sourceTree = "<group>"; };
-		A65617FC2CB4FCEA00E9CF19 /* FolderDetailCellViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailCellViewModel.swift; sourceTree = "<group>"; };
 		A65617FE2CB4FE1500E9CF19 /* FolderDetailHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailHeader.swift; sourceTree = "<group>"; };
 		A65618002CB64EB200E9CF19 /* SettingVaultRegistrationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingVaultRegistrationCell.swift; sourceTree = "<group>"; };
 		A65618022CB6500A00E9CF19 /* RegisterVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterVaultView.swift; sourceTree = "<group>"; };
@@ -2703,6 +2733,33 @@
 			path = Service;
 			sourceTree = "<group>";
 		};
+		1368D2CB2EA26B2F009A91CA /* DefiTHORChain */ = {
+			isa = PBXGroup;
+			children = (
+				13A657AA2EA283F200323E4C /* Model */,
+				13A657A72EA283D300323E4C /* ViewModel */,
+				13A657A42EA27B0100323E4C /* View */,
+				1368D2CE2EA26B72009A91CA /* DefiTHORChainMainScreen.swift */,
+			);
+			path = DefiTHORChain;
+			sourceTree = "<group>";
+		};
+		1368D2D02EA27386009A91CA /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				1368D2D12EA2738B009A91CA /* View */,
+			);
+			path = Common;
+			sourceTree = "<group>";
+		};
+		1368D2D12EA2738B009A91CA /* View */ = {
+			isa = PBXGroup;
+			children = (
+				1368D2D22EA2738F009A91CA /* DefiButton.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
 		1378B0492E462AD2005CC32D /* Loaders */ = {
 			isa = PBXGroup;
 			children = (
@@ -2912,6 +2969,71 @@
 				139D15BB2E9D5F9B006F671C /* VultTierService.swift */,
 			);
 			path = Service;
+			sourceTree = "<group>";
+		};
+		13A657A42EA27B0100323E4C /* View */ = {
+			isa = PBXGroup;
+			children = (
+				13A657B32EA28B8C00323E4C /* Staked */,
+				13A657B22EA28B8600323E4C /* LPs */,
+				13A657AF2EA28B7100323E4C /* Bonded */,
+				13A657AE2EA28B5A00323E4C /* Main */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		13A657A72EA283D300323E4C /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				13A657A82EA283DB00323E4C /* DefiTHORChainMainViewModel.swift */,
+			);
+			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		13A657AA2EA283F200323E4C /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				13A657C42EA2A22200323E4C /* ActiveBondedNode.swift */,
+				13A657BD2EA2994900323E4C /* BondNode.swift */,
+				13A657AB2EA283F500323E4C /* THORChainPositionType.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		13A657AE2EA28B5A00323E4C /* Main */ = {
+			isa = PBXGroup;
+			children = (
+				13A657A52EA27B0500323E4C /* DefiTHORChainBalanceView.swift */,
+			);
+			path = Main;
+			sourceTree = "<group>";
+		};
+		13A657AF2EA28B7100323E4C /* Bonded */ = {
+			isa = PBXGroup;
+			children = (
+				13A657C62EA2AC5900323E4C /* DefiTHORChainActiveNodeView.swift */,
+				13A657BF2EA29A8F00323E4C /* BondNodeStateView.swift */,
+				13A657BB2EA2976800323E4C /* DefiTHORChainAvailableNodesView.swift */,
+				13A657C12EA2A0FC00323E4C /* DefiTHORChainActiveNodesView.swift */,
+				13A657B02EA28B7800323E4C /* DefiTHORChainBondedView.swift */,
+			);
+			path = Bonded;
+			sourceTree = "<group>";
+		};
+		13A657B22EA28B8600323E4C /* LPs */ = {
+			isa = PBXGroup;
+			children = (
+				13A657B52EA28BAE00323E4C /* DefiTHORChainLPsView.swift */,
+			);
+			path = LPs;
+			sourceTree = "<group>";
+		};
+		13A657B32EA28B8C00323E4C /* Staked */ = {
+			isa = PBXGroup;
+			children = (
+				13A657B72EA28BBB00323E4C /* DefiTHORChainStakedView.swift */,
+			);
+			path = Staked;
 			sourceTree = "<group>";
 		};
 		13A899092E44F540006F75F0 /* Text */ = {
@@ -3195,6 +3317,7 @@
 		13C8805E2E70A412009C67F1 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				13A657C82EA2BCBE00323E4C /* HiddenBalanceText.swift */,
 				135C7ADD2EA1388A002F879A /* GroupedChainCellView.swift */,
 				130C40EC2E73277C00509C61 /* Buttons */,
 				130C40E02E7303C800509C61 /* Banners */,
@@ -3269,6 +3392,7 @@
 		13D93BD32E58C772001E31E8 /* Layout */ = {
 			isa = PBXGroup;
 			children = (
+				13A657B92EA2971C00323E4C /* ExpandableView.swift */,
 				13D93BD52E58C7F1001E31E8 /* View+Container.swift */,
 				132666C32E42920A007FDAC5 /* ContainerView.swift */,
 			);
@@ -3299,6 +3423,8 @@
 		13DB875B2E9FD703008E89B0 /* Defi */ = {
 			isa = PBXGroup;
 			children = (
+				1368D2D02EA27386009A91CA /* Common */,
+				1368D2CB2EA26B2F009A91CA /* DefiTHORChain */,
 				135C7ACB2EA12C69002F879A /* DefiChainSelection */,
 				13DB875E2E9FD786008E89B0 /* DefiMain */,
 			);
@@ -4222,7 +4348,6 @@
 				136A12DB2E395F080001B1CA /* SecurityScannerViewModel.swift */,
 				A65617F82CB4F53C00E9CF19 /* CreateFolderViewModel.swift */,
 				A65617FA2CB4F6DF00E9CF19 /* FolderDetailViewModel.swift */,
-				A65617FC2CB4FCEA00E9CF19 /* FolderDetailCellViewModel.swift */,
 				A617B67D2CEC6540006E5122 /* SendSummaryViewModel.swift */,
 				A672643E2D02B9200002E97E /* JoinKeysignSummaryViewModel.swift */,
 				A594EC2A2D00BE6C00B74EBC /* SettingsCustomMessageViewModel.swift */,
@@ -5431,6 +5556,7 @@
 				A646DFB52E16DE34006E8ECC /* SendDetailsAdditionalSection.swift in Sources */,
 				A622C84E2C9BC7C300908332 /* FastVaultEmailView+iOS.swift in Sources */,
 				134E8D7F2E451F6F0086EBC4 /* PreferredAsset.swift in Sources */,
+				13A657BC2EA2977200323E4C /* DefiTHORChainAvailableNodesView.swift in Sources */,
 				A6E5823D2BE98C4F006DA410 /* NavigationBlankBackButton.swift in Sources */,
 				A5E66B512CCA472000B6DA47 /* WarningView.swift in Sources */,
 				A6BFE1C72D95F3C9000B73C0 /* SwapCoinPickerView.swift in Sources */,
@@ -5500,6 +5626,7 @@
 				13A0786A2E846EB50093496F /* CommonListHeaderView.swift in Sources */,
 				A686965A2C1F72FF004EDE0B /* HiddenTextField.swift in Sources */,
 				139B400C2E42466F00238C2C /* MacOSOverlay.swift in Sources */,
+				13A657C02EA29A9300323E4C /* BondNodeStateView.swift in Sources */,
 				B52FD1CE2CDDA7740031FB71 /* TerraService.swift in Sources */,
 				049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */,
 				13D3AC962E85901F00BA4273 /* VaultActionRouteBuilder.swift in Sources */,
@@ -5513,6 +5640,8 @@
 				A65BA9882BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift in Sources */,
 				DE64A4C62BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift in Sources */,
 				130C40F02E734BB000509C61 /* VaultMainChainListView.swift in Sources */,
+				13A657B82EA28BBB00323E4C /* DefiTHORChainStakedView.swift in Sources */,
+				13A657B62EA28BAE00323E4C /* DefiTHORChainLPsView.swift in Sources */,
 				A575F2CE2D50D421000C4F14 /* FastVaultSetHintView+macOS.swift in Sources */,
 				A527DD2E2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift in Sources */,
 				DEEB571D2D08F80C00B120D1 /* SchnorrKeygen.swift in Sources */,
@@ -5578,6 +5707,7 @@
 				DE64A4CC2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift in Sources */,
 				A65618032CB6500A00E9CF19 /* RegisterVaultView.swift in Sources */,
 				A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */,
+				13A657C72EA2AC5B00323E4C /* DefiTHORChainActiveNodeView.swift in Sources */,
 				A594EC2D2D072DAA00B74EBC /* SettingsCustomMessageView+iOS.swift in Sources */,
 				B5BC37562CECEFFA005A1C76 /* cosmos.swift in Sources */,
 				A622C85A2C9BCD6600908332 /* KeygenView+iOS.swift in Sources */,
@@ -5646,6 +5776,7 @@
 				A6A96C942DB0B12D00864353 /* UpgradingVaultView.swift in Sources */,
 				A672643F2D02B9200002E97E /* JoinKeysignSummaryViewModel.swift in Sources */,
 				A6ECA19C2C93FB7200456110 /* Search+iOS.swift in Sources */,
+				13A657C92EA2BCC400323E4C /* HiddenBalanceText.swift in Sources */,
 				A6951E882C52DB9D007292E7 /* Search.swift in Sources */,
 				B53D8CC82BF7F21500B795D3 /* FunctionCallBond.swift in Sources */,
 				B57178B62E66F86900BABE2E /* ThorchainService+Yield+Prices.swift in Sources */,
@@ -5667,6 +5798,7 @@
 				13AC28082E61E294001CB9AA /* ScreenEdgeInsets.swift in Sources */,
 				137B2C892E3A84460074F648 /* Screen.swift in Sources */,
 				46F8F7212B99FDB70099454E /* TransactionBroadcastResponse.swift in Sources */,
+				13A657B12EA28B8200323E4C /* DefiTHORChainBondedView.swift in Sources */,
 				131603452E609D74001ED972 /* FileExporterSheet.swift in Sources */,
 				B57138502CC5713E000E925B /* TonService.swift in Sources */,
 				DEFF58F22BCBACDA005DFDF9 /* VultisigRelay.swift in Sources */,
@@ -5774,6 +5906,7 @@
 				A60F29AD2DA08C5300C24765 /* SwapCryptoDoneView.swift in Sources */,
 				A6C6708A2C9CFAA800F59B6A /* KeysignDiscoveryView+macOS.swift in Sources */,
 				1343C90A2E70AF3900EA5986 /* CoinActionButton.swift in Sources */,
+				13A657BA2EA2972200323E4C /* ExpandableView.swift in Sources */,
 				469ED3A22B98F5CB008D4951 /* ThorchainAccountResult.swift in Sources */,
 				A6F9F7E72B9BB63700790258 /* VaultCell.swift in Sources */,
 				A57495822BBC3FCA00D5F172 /* SwapCryptoViewModel.swift in Sources */,
@@ -5816,6 +5949,7 @@
 				A5125F082BEBBFAB008A79AA /* OneInchService.swift in Sources */,
 				A522C34A2C46948A00BC4311 /* SwapError.swift in Sources */,
 				A69FBBD02C8BBA2100A4B78B /* FunctionCallVerifyView+iOS.swift in Sources */,
+				13A657A62EA27B1100323E4C /* DefiTHORChainBalanceView.swift in Sources */,
 				1390D8B82E3938BF003F3E20 /* BlockaidRpcClientProtocol.swift in Sources */,
 				1377C8DE2E5F9855006DC969 /* VaultBackupSelectionScreen.swift in Sources */,
 				A6DFC0592D5FE4F2001C9598 /* SecureBackupGuideAnimation.swift in Sources */,
@@ -5835,6 +5969,7 @@
 				D7620B1D2DF6BFD700294396 /* FunctionCallNodeMaintenance.swift in Sources */,
 				B57DD59A2C3DA5EA00934CBB /* SolanaFmTokenInfo.swift in Sources */,
 				A6966D312BA4048800903CA4 /* SwapCryptoDetailsView.swift in Sources */,
+				13A657AC2EA283FA00323E4C /* THORChainPositionType.swift in Sources */,
 				A5F97C8E2BBF0BCF000C30DF /* BalanceService.swift in Sources */,
 				137B2C872E3A84130074F648 /* OnChainSecurityScreen.swift in Sources */,
 				DEEDAEE12B8AF7EF005170E8 /* evm.swift in Sources */,
@@ -5957,6 +6092,7 @@
 				A6C6713B2CA3C86E00F59B6A /* KeygenViewInstructions+iOS.swift in Sources */,
 				DEFC7BFB2B8D87370090B07A /* erc20.swift in Sources */,
 				139DE12A2E4D0B3A00BC2FD3 /* SendDoneScreen.swift in Sources */,
+				13A657A92EA283E000323E4C /* DefiTHORChainMainViewModel.swift in Sources */,
 				A65617FB2CB4F6DF00E9CF19 /* FolderDetailViewModel.swift in Sources */,
 				13AF0D1F2E4CE754004D4FD2 /* SendRouteBuilder.swift in Sources */,
 				B50E399B2BF5AB2100B9A269 /* FunctionCallAddressable.swift in Sources */,
@@ -6058,7 +6194,6 @@
 				A646DFA72E12F187006E8ECC /* SendDetailsAddressFields.swift in Sources */,
 				A533E6402CEC814F00FCBAEB /* MonthlyBackupView.swift in Sources */,
 				DE63AE532BBA627B001BBE5C /* atom.swift in Sources */,
-				A65617FD2CB4FCEA00E9CF19 /* FolderDetailCellViewModel.swift in Sources */,
 				A52B0D072CA6216400507966 /* ReshareView+iOS.swift in Sources */,
 				A6BFE1C92D95F538000B73C0 /* SwapCoinCell.swift in Sources */,
 				DEA1C7022DB0CD9900424466 /* THORChainTokenMetadata.swift in Sources */,
@@ -6109,9 +6244,11 @@
 				137650832E8DC1060012C60A /* VaultMainScreenScrollView.swift in Sources */,
 				13D0C84B2E7461F600A1301F /* TabBarItem.swift in Sources */,
 				A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */,
+				1368D2D32EA27391009A91CA /* DefiButton.swift in Sources */,
 				A6E0C9212DE9013A00A01543 /* ReferralLaunchView.swift in Sources */,
 				A65617FF2CB4FE1500E9CF19 /* FolderDetailHeader.swift in Sources */,
 				13AF0D1A2E4CE672004D4FD2 /* NavigationRouter+EnvironmentKey.swift in Sources */,
+				13A657BE2EA2994D00323E4C /* BondNode.swift in Sources */,
 				A6833D862C65BF6D002029E1 /* JoinKeygenHeader.swift in Sources */,
 				A65BA9902BAD402A00B2D8AA /* KeysignMessageConfirmView.swift in Sources */,
 				B590DF8A2C2E88F900ED934E /* VoteOption.swift in Sources */,
@@ -6206,6 +6343,7 @@
 				DE49A1A02B67143B000F3AFB /* Chain.swift in Sources */,
 				133EEA192E68787900E18280 /* SettingsCommonOptionView.swift in Sources */,
 				13C320032E61F8DB00255138 /* ReferralVaultSelectionScreen.swift in Sources */,
+				13A657C52EA2A22800323E4C /* ActiveBondedNode.swift in Sources */,
 				B5F7581A2BD8E7230097B5B9 /* SuiService.swift in Sources */,
 				135C7AE12EA14130002F879A /* CustomizeChainsActionBanner.swift in Sources */,
 				138E1D5E2E9480500085EA8E /* SheetPresentedViewModifier.swift in Sources */,
@@ -6284,6 +6422,7 @@
 				138574182E2DA9D5002532BF /* ButtonType.swift in Sources */,
 				B5C02E542E3AAD050038938D /* FunctionCallCosmosYVault.swift in Sources */,
 				133EEA1C2E6885A300E18280 /* SecureTextField.swift in Sources */,
+				13A657C22EA2A0FC00323E4C /* DefiTHORChainActiveNodesView.swift in Sources */,
 				D9AD8EE62B6730A40009F8D5 /* PeerDiscoveryView.swift in Sources */,
 				461AD1BB2BC7239C00959278 /* DeviceInfo.swift in Sources */,
 				B5A97CF32BF426D4007574D7 /* FunctionCallDetailsView.swift in Sources */,
@@ -6372,6 +6511,7 @@
 				A52B0D032CA53DCE00507966 /* ReshareView.swift in Sources */,
 				13B25BF12E82E302002BCF55 /* PlatformTypes.swift in Sources */,
 				A6725D3A2C3F9B4400D47716 /* AddAddressBookScreen.swift in Sources */,
+				1368D2CF2EA26B7B009A91CA /* DefiTHORChainMainScreen.swift in Sources */,
 				13417B8E2E3BB1EE00A66EE5 /* FunctionCallWithdrawRujiRewards.swift in Sources */,
 				A6ECA18A2C93F4F400456110 /* SetupVaultImageManager+macOS.swift in Sources */,
 				A58760542CBD3CE00070956A /* Keychain.swift in Sources */,
@@ -6589,7 +6729,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 18;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
@@ -6652,7 +6792,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 18;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
@@ -6710,7 +6850,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 18;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -6736,7 +6876,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 18;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
 				ENABLE_TESTABILITY = NO;
@@ -6762,7 +6902,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 18;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
@@ -6783,7 +6923,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 18;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;

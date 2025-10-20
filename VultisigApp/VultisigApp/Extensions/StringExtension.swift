@@ -54,6 +54,10 @@ extension String {
     }
     
     static let hideBalanceText = Array.init(repeating: "•", count: 8).joined(separator: " ")
+    
+    var truncatedAddress: String {
+        self.prefix(4) + "..." + self.suffix(4)
+    }
 }
 
 // MARK: - String constants

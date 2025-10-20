@@ -52,7 +52,7 @@ enum CoinAction: String, Codable {
     var buttonIcon: String {
         switch self {
         case .send:
-            "arrow-up-right"
+            "arrow-up-right-1"
         case .swap:
             "arrow-left-right"
         case .deposit:

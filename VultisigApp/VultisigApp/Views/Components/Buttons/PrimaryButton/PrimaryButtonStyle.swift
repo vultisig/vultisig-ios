@@ -71,10 +71,7 @@ private extension PrimaryButtonStyle {
     }
     
     func cornerRadius(for size: ButtonSize) -> CGFloat {
-        switch size {
-        case .medium, .small: return 99
-        case .mini: return 30
-        }
+        99
     }
     
     // MARK: - Type Configuration with State-Based Colors
