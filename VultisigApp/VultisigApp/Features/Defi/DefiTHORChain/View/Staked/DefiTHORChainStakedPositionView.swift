@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct DefiTHORChainStakedPositionView: View {
-    @ObservedObject var vault: Vault
     let position: StakePosition
     var onStake: () -> Void
     var onUnstake: () -> Void
@@ -45,8 +44,9 @@ struct DefiTHORChainStakedPositionView: View {
         ContainerView {
             VStack(spacing: 16) {
                 header
-                Separator(color: Theme.colors.borderLight)
+                Separator(color: Theme.colors.borderLight, opacity: 1)
                 rewardsSection
+                Separator(color: Theme.colors.border, opacity: 1)
                 stakeButtonsView
             }
         }
@@ -155,8 +155,23 @@ struct DefiTHORChainStakedPositionView: View {
         HStack(spacing: 8) {
             PrimaryButton(title: withdrawTitle, action: onWidthdraw)
             
-            IconButton(icon: "dot-grid-1x3-vertical", type: .secondary) {
-                
+            Menu {
+                Section("actions".localized) {
+                    Button(role: .destructive) {
+                        onUnstake()
+                    } label: {
+                        Label(String(format: "unstakeCoin".localized, position.coin.ticker), systemImage: "minus")
+                    }
+                    .disabled(unstakeDisabled)
+                    
+                    Button {
+                        onStake()
+                    } label: {
+                        Label(String(format: "stakeCoin".localized, position.coin.ticker), systemImage: "plus")
+                    }
+                }
+            } label: {
+                IconButton(icon: "dot-grid-1x3-vertical", type: .secondary, size: .small, action: {})
             }
         }
     }
@@ -165,7 +180,6 @@ struct DefiTHORChainStakedPositionView: View {
 #Preview {
     VStack {
         DefiTHORChainStakedPositionView(
-            vault: .example,
             position: StakePosition(
                 coin: .example,
                 type: .stake,
@@ -182,7 +196,6 @@ struct DefiTHORChainStakedPositionView: View {
         )
         
         DefiTHORChainStakedPositionView(
-            vault: .example,
             position: StakePosition(
                 coin: .example,
                 type: .stake,
@@ -200,4 +213,5 @@ struct DefiTHORChainStakedPositionView: View {
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(Theme.colors.bgPrimary)
+    .environmentObject(HomeViewModel())
 }

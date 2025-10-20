@@ -932,3 +932,6 @@
 "stake" = "Stake";
 "unstake" = "Unstake";
 "withdrawAmount" = "Withdraw %@";
+"actions" = "Actions";
+"unstakeCoin" = "Unstake %@";
+"stakeCoin" = "Stake %@";

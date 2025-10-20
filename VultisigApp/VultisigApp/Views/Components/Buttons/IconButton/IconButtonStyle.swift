@@ -34,7 +34,7 @@ private extension IconButtonStyle {
         case .medium:
             return EdgeInsets(top: 14, leading: 32, bottom: 14, trailing: 32)
         case .small:
-            return EdgeInsets(top: 12, leading: 24, bottom: 12, trailing: 24)
+            return EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12)
         case .mini:
             return EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8)
         }
