@@ -21,16 +21,6 @@ struct SendDetailsAddressTab: View {
                     await handleClose(oldValue, newValue)
                 }
             }
-            .onChange(of: tx.toAddress) { oldValue, newValue in
-                Task {
-                    guard await sendCryptoViewModel.validateToAddress(tx: tx) else {
-                        viewModel.onSelect(tab: .address)
-                        return
-                    }
-                    viewModel.addressSetupDone = true
-                    viewModel.onSelect(tab: .amount)
-                }
-            }
     }
     
     var content: some View {
