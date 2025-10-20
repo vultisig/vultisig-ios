@@ -30,6 +30,6 @@ struct IconButtonView: View {
 }
 
 #Preview {
-    IconButtonView(icon: "chevron.right")
+    IconButtonView(icon: "chevron-right")
 }
 

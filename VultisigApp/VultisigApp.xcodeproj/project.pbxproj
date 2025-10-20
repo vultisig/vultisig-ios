@@ -110,6 +110,7 @@
 		135C7AE12EA14130002F879A /* CustomizeChainsActionBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7AE02EA1412B002F879A /* CustomizeChainsActionBanner.swift */; };
 		135C7AE42EA14359002F879A /* VaultDefiChainsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7AE32EA1434E002F879A /* VaultDefiChainsService.swift */; };
 		135C88192E3AADB800FD097D /* GradientListSeparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C88182E3AADB000FD097D /* GradientListSeparator.swift */; };
+		1363B4FC2EA6901600818DF7 /* DateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1363B4FB2EA6900D00818DF7 /* DateFormatter.swift */; };
 		1364A0942E9587C60023E869 /* BannersCarousel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1364A0932E9587C00023E869 /* BannersCarousel.swift */; };
 		1368C2732E832CC100BB240D /* VaultListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368C2722E832CBE00BB240D /* VaultListView.swift */; };
 		1368C2752E832EDB00BB240D /* FolderDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368C2742E832ED800BB240D /* FolderDetailView.swift */; };
@@ -1215,6 +1216,7 @@
 		135C7AE02EA1412B002F879A /* CustomizeChainsActionBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomizeChainsActionBanner.swift; sourceTree = "<group>"; };
 		135C7AE32EA1434E002F879A /* VaultDefiChainsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDefiChainsService.swift; sourceTree = "<group>"; };
 		135C88182E3AADB000FD097D /* GradientListSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientListSeparator.swift; sourceTree = "<group>"; };
+		1363B4FB2EA6900D00818DF7 /* DateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatter.swift; sourceTree = "<group>"; };
 		1364A0932E9587C00023E869 /* BannersCarousel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannersCarousel.swift; sourceTree = "<group>"; };
 		1368C2722E832CBE00BB240D /* VaultListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultListView.swift; sourceTree = "<group>"; };
 		1368C2742E832ED800BB240D /* FolderDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailView.swift; sourceTree = "<group>"; };
@@ -2739,6 +2741,13 @@
 			path = Service;
 			sourceTree = "<group>";
 		};
+		1363B4FA2EA68FFE00818DF7 /* New Group */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = "New Group";
+			sourceTree = "<group>";
+		};
 		1368D2CB2EA26B2F009A91CA /* DefiTHORChain */ = {
 			isa = PBXGroup;
 			children = (
@@ -3088,6 +3097,8 @@
 		13AF0D532E4CF5AE004D4FD2 /* Formatters */ = {
 			isa = PBXGroup;
 			children = (
+				1363B4FB2EA6900D00818DF7 /* DateFormatter.swift */,
+				13C02C602EA6699900C12071 /* AmountFormatter.swift */,
 				13AF0D542E4CF5B2004D4FD2 /* CryptoAmountFormatter.swift */,
 			);
 			path = Formatters;
@@ -5122,7 +5133,7 @@
 		DE1572AA2B7174C5009BC7C5 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				13C02C602EA6699900C12071 /* AmountFormatter.swift */,
+				1363B4FA2EA68FFE00818DF7 /* New Group */,
 				13B25BC42E82C915002BCF55 /* QRCodeGenerator */,
 				132FB6562E78705400599464 /* Platforms */,
 				1352EDBC2E61217C00FC0F51 /* ZipFileGenerator.swift */,
@@ -6460,6 +6471,7 @@
 				13B26D3F2E32B506000D3B3A /* SendFormExpandableSection.swift in Sources */,
 				139D15B62E9D50E2006F671C /* VultDiscountTierIcon.swift in Sources */,
 				B5E476AD2C1A556D005DB485 /* DydxService.swift in Sources */,
+				1363B4FC2EA6901600818DF7 /* DateFormatter.swift in Sources */,
 				B54B01972BDCEB8E00FDA472 /* Polkadot.swift in Sources */,
 				A6AF960C2C2E2D6400992578 /* GeneralQRImportMacView.swift in Sources */,
 				DE49A19E2B671416000F3AFB /* Coin.swift in Sources */,

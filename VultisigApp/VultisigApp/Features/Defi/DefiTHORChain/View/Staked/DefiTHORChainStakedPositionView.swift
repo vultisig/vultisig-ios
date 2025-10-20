@@ -13,13 +13,6 @@ struct DefiTHORChainStakedPositionView: View {
     var onUnstake: () -> Void
     var onWithdraw: () -> Void
     
-    
-    private let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d, yy"
-        return formatter
-    }()
-    
     var stakedAmount: String {
         AmountFormatter.formatCryptoAmount(value: position.amount, coin: position.coin)
     }
@@ -34,7 +27,7 @@ struct DefiTHORChainStakedPositionView: View {
     }
     
     var formattedPayoutDate: String {
-        dateFormatter.string(from: Date(timeIntervalSince1970: TimeInterval(position.nextPayout)))
+        CustomDateFormatter.formatMontDayYear(position.nextPayout)
     }
     
     var unstakeDisabled: Bool { position.amount.isZero }
