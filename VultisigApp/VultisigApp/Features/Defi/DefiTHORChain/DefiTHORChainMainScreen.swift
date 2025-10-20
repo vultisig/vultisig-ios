@@ -76,7 +76,12 @@ struct DefiTHORChainMainScreen: View {
                     }
                 )
             case .liquidityPool:
-                DefiTHORChainLPsView()
+                DefiTHORChainLPsView(vault: vault) { _ in
+                    // TODO: - Redirect to remove LP
+                } onAdd: { _ in
+                    // TODO: - Redirect to add LP
+                }
+
             }
         }
         .transition(.opacity)

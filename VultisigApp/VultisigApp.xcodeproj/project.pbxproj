@@ -111,6 +111,8 @@
 		135C7AE42EA14359002F879A /* VaultDefiChainsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7AE32EA1434E002F879A /* VaultDefiChainsService.swift */; };
 		135C88192E3AADB800FD097D /* GradientListSeparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C88182E3AADB000FD097D /* GradientListSeparator.swift */; };
 		1363B4FC2EA6901600818DF7 /* DateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1363B4FB2EA6900D00818DF7 /* DateFormatter.swift */; };
+		1363B4FE2EA6955500818DF7 /* LPPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1363B4FD2EA6955200818DF7 /* LPPosition.swift */; };
+		1363B5002EA6967200818DF7 /* DefiTHORChainLPPositionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1363B4FF2EA6967200818DF7 /* DefiTHORChainLPPositionView.swift */; };
 		1364A0942E9587C60023E869 /* BannersCarousel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1364A0932E9587C00023E869 /* BannersCarousel.swift */; };
 		1368C2732E832CC100BB240D /* VaultListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368C2722E832CBE00BB240D /* VaultListView.swift */; };
 		1368C2752E832EDB00BB240D /* FolderDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368C2742E832ED800BB240D /* FolderDetailView.swift */; };
@@ -1217,6 +1219,8 @@
 		135C7AE32EA1434E002F879A /* VaultDefiChainsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDefiChainsService.swift; sourceTree = "<group>"; };
 		135C88182E3AADB000FD097D /* GradientListSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientListSeparator.swift; sourceTree = "<group>"; };
 		1363B4FB2EA6900D00818DF7 /* DateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatter.swift; sourceTree = "<group>"; };
+		1363B4FD2EA6955200818DF7 /* LPPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LPPosition.swift; sourceTree = "<group>"; };
+		1363B4FF2EA6967200818DF7 /* DefiTHORChainLPPositionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainLPPositionView.swift; sourceTree = "<group>"; };
 		1364A0932E9587C00023E869 /* BannersCarousel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannersCarousel.swift; sourceTree = "<group>"; };
 		1368C2722E832CBE00BB240D /* VaultListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultListView.swift; sourceTree = "<group>"; };
 		1368C2742E832ED800BB240D /* FolderDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailView.swift; sourceTree = "<group>"; };
@@ -3008,6 +3012,7 @@
 		13A657AA2EA283F200323E4C /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				1363B4FD2EA6955200818DF7 /* LPPosition.swift */,
 				13C02C5E2EA667D600C12071 /* StakePosition.swift */,
 				13A657C42EA2A22200323E4C /* ActiveBondedNode.swift */,
 				13A657BD2EA2994900323E4C /* BondNode.swift */,
@@ -3039,6 +3044,7 @@
 		13A657B22EA28B8600323E4C /* LPs */ = {
 			isa = PBXGroup;
 			children = (
+				1363B4FF2EA6967200818DF7 /* DefiTHORChainLPPositionView.swift */,
 				13A657B52EA28BAE00323E4C /* DefiTHORChainLPsView.swift */,
 			);
 			path = LPs;
@@ -5606,6 +5612,7 @@
 				137B2C7B2E3A4AA50074F648 /* InnerHeightPreferenceKey.swift in Sources */,
 				A6182F4D2C92944A0059BFDD /* SendCryptoAmountTextField+macOS.swift in Sources */,
 				DE9EB0FC2BA463F7001747D9 /* KeygenViewModel.swift in Sources */,
+				1363B5002EA6967200818DF7 /* DefiTHORChainLPPositionView.swift in Sources */,
 				A5D8A3442CF8D5B0005A20A8 /* CustomMessagePayload.swift in Sources */,
 				134E8D832E45300C0086EBC4 /* THORChainAPIError.swift in Sources */,
 				B52FD1D02CDDAFE50031FB71 /* terra.swift in Sources */,
@@ -5951,6 +5958,7 @@
 				B5A97CF92BF42E72007574D7 /* FunctionCallAddressTextField.swift in Sources */,
 				A6182F572C9299370059BFDD /* SwapCryptoAmountTextField+iOS.swift in Sources */,
 				A6833D932C66A4EA002029E1 /* SwapCryptoHeader.swift in Sources */,
+				1363B4FE2EA6955500818DF7 /* LPPosition.swift in Sources */,
 				A6C670D12C9E8E1F00F59B6A /* NewWalletNameView+iOS.swift in Sources */,
 				1368C2732E832CC100BB240D /* VaultListView.swift in Sources */,
 				DE5F7E1F2C8155C50022030F /* VaultCreateRequest.swift in Sources */,

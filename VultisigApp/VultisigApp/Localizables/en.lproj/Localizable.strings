@@ -935,3 +935,7 @@
 "actions" = "Actions";
 "unstakeCoin" = "Unstake %@";
 "stakeCoin" = "Stake %@";
+"coinPool" = "%@ Pool";
+"position" = "Position";
+"remove" = "Remove";
+"add" = "Add";
