@@ -335,7 +335,8 @@ extension BlockChainSpecific {
             
             self = .Sui(
                 referenceGasPrice: BigInt(stringLiteral: value.referenceGasPrice),
-                coins: coinsArray
+                coins: coinsArray,
+                gasBudget: BigInt(stringLiteral: value.gasBudget)
             )
         case .tonSpecific(let value):
             self = .Ton(
@@ -422,7 +423,7 @@ extension BlockChainSpecific {
                 $0.toTokenAssociatedAddress = toTokenAssociatedAddress ?? .empty
                 $0.programID = tokenProgramId
             })
-        case .Sui(let referenceGasPrice, let coins):
+        case .Sui(let referenceGasPrice, let coins, let gasBudget):
             // `coins` is of type `[[String: String]]`
             let suiCoins: [VSSuiCoin] = coins.map { coinDict in
                 var suiCoin = VSSuiCoin()
@@ -436,6 +437,7 @@ extension BlockChainSpecific {
             
             return .suicheSpecific(.with {
                 $0.referenceGasPrice = String(referenceGasPrice)
+                $0.gasBudget = String(gasBudget)
                 $0.coins = suiCoins
             })
             
