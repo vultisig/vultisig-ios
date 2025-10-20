@@ -386,11 +386,14 @@ extension SendDetailsScreen {
             tx.coin = coin
             tx.fromAddress = coin.address
             tx.toAddress = deeplinkViewModel.address ?? ""
+            deeplinkViewModel.address = nil
             self.coin = nil
             selectedChain = coin.chain
         }
         
-        validateAddress()
+        if !tx.toAddress.isEmpty {
+            validateAddress()
+        }
         
         await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
     }
