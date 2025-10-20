@@ -83,7 +83,8 @@ struct VaultMainScreen: View {
                     ReceiveChainSelectionScreen(
                         vault: vault,
                         isPresented: $showReceiveList,
-                        viewModel: viewModel
+                        viewModel: viewModel,
+                        addressToCopy: $addressToCopy
                     )
                 }
                 .onAppear(perform: refresh)
