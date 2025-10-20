@@ -924,3 +924,11 @@
 "bondedXCoin" = "Bonded: %@";
 "bond" = "Bond";
 "unbond" = "Unbond";
+"stakedCoin" = "Staked %@";
+"compoundedCoin" = "Compounded %@";
+"apr" = "APR";
+"nextPayout" = "Next payout";
+"estimatedReward" = "Estimated reward";
+"stake" = "Stake";
+"unstake" = "Unstake";
+"withdrawAmount" = "Withdraw %@";
