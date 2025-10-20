@@ -11,7 +11,7 @@ struct DefiTHORChainStakedPositionView: View {
     let position: StakePosition
     var onStake: () -> Void
     var onUnstake: () -> Void
-    var onWidthdraw: () -> Void
+    var onWithdraw: () -> Void
     
     
     private let dateFormatter: DateFormatter = {
@@ -129,7 +129,7 @@ struct DefiTHORChainStakedPositionView: View {
     @ViewBuilder
     var stakeButtonsView: some View {
         if canWithdraw {
-            widthdrawButtonsView
+            withdrawButtonsView
         } else {
             defaultButtonsView
         }
@@ -151,9 +151,9 @@ struct DefiTHORChainStakedPositionView: View {
         return String(format: "withdrawAmount".localized, amount)
     }
     
-    var widthdrawButtonsView: some View {
+    var withdrawButtonsView: some View {
         HStack(spacing: 8) {
-            PrimaryButton(title: withdrawTitle, action: onWidthdraw)
+            PrimaryButton(title: withdrawTitle, action: onWithdraw)
             
             Menu {
                 Section("actions".localized) {
@@ -192,7 +192,7 @@ struct DefiTHORChainStakedPositionView: View {
             ),
             onStake: {},
             onUnstake: {},
-            onWidthdraw: {}
+            onWithdraw: {}
         )
         
         DefiTHORChainStakedPositionView(
@@ -208,7 +208,7 @@ struct DefiTHORChainStakedPositionView: View {
             ),
             onStake: {},
             onUnstake: {},
-            onWidthdraw: {}
+            onWithdraw: {}
         )
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)

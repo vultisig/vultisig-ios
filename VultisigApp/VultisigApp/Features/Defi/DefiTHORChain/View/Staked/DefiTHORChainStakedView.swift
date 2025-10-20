@@ -42,7 +42,7 @@ struct DefiTHORChainStakedView: View {
                     position: position,
                     onStake: { onStake(position) },
                     onUnstake: { onUnstake(position) },
-                    onWidthdraw: { onWithdraw(position) }
+                    onWithdraw: { onWithdraw(position) }
                 )
             }
         }
