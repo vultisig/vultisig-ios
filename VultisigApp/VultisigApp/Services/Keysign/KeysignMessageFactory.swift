@@ -29,6 +29,10 @@ struct KeysignMessageFactory {
                 _ = ThorchainService.shared.ensureTHORChainChainID()
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, vaultHexPublicKeyEdDSA: vault.pubKeyEdDSA)
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
+            case .thorchainStagenet(let swapPayload):
+                _ = ThorchainStagenetService.shared.ensureTHORChainChainID()
+                let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, vaultHexPublicKeyEdDSA: vault.pubKeyEdDSA)
+                messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
             case .generic(let swapPayload):
                 switch payload.coin.chain {
                 case .solana:

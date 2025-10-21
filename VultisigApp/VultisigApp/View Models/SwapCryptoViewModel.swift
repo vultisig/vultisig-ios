@@ -294,7 +294,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                     amount: tx.amountInCoinDecimal,
                     memo: quote.memo,
                     chainSpecific: chainSpecific,
-                    swapPayload: .thorchain(tx.buildThorchainSwapPayload(
+                    swapPayload: .thorchainStagenet(tx.buildThorchainSwapPayload(
                         quote: quote,
                         provider: .thorchainStagenet
                     )),

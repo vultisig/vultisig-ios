@@ -720,9 +720,9 @@ class Endpoint {
         case .zcash:
             return "https://blockchair.com/zcash/transaction/\(txid)"
         case .thorChain:
-            return "https://thorchain.net/tx/\(txid.stripHexPrefix())"
+            return "https://runescan.io/tx/\(txid.stripHexPrefix())"
         case .thorChainStagenet:
-            return "https://stagenet.thorchain.net/tx/\(txid.stripHexPrefix())"
+            return "https://runescan.io/tx/\(txid.stripHexPrefix())?network=stagenet"
         case .solana:
             return "https://solscan.io/tx/\(txid)"
         case .ethereum:
@@ -799,7 +799,7 @@ class Endpoint {
         case .thorChain:
             return "https://runescan.io/address/\(address)"
         case .thorChainStagenet:
-            return "https://stagenet.thorchain.net/address/\(address)"
+            return "https://runescan.io/address/\(address)?network=stagenet"
         case .solana:
             return "https://solscan.io/account/\(address)"
         case .ethereum:
@@ -862,9 +862,9 @@ class Endpoint {
     static func getExplorerByAddressURLByGroup(chain: Chain?, address: String) -> String? {
         switch chain {
         case .thorChain:
-            return "https://thorchain.net/address/\(address)"
+            return "https://runescan.io/address/\(address)"
         case .thorChainStagenet:
-            return "https://stagenet.thorchain.net/address/\(address)"
+            return "https://runescan.io/address/\(address)?network=stagenet"
         case .solana:
             return "https://solscan.io/account/\(address)"
         case .ethereum:

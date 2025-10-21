@@ -132,7 +132,7 @@ class KeysignViewModel: ObservableObject {
     
     func getSwapProgressURL(txid: String) -> String? {
         switch keysignPayload?.swapPayload {
-        case .thorchain:
+        case .thorchain, .thorchainStagenet:
             return Endpoint.getSwapProgressURL(txid: txid)
         case .mayachain:
             return Endpoint.getMayaSwapTracker(txid: txid)
@@ -345,7 +345,7 @@ class KeysignViewModel: ObservableObject {
         if let swapPayload = keysignPayload.swapPayload {
             let incrementNonce = keysignPayload.approvePayload != nil
             switch swapPayload {
-            case .thorchain(let payload):
+            case .thorchain(let payload), .thorchainStagenet(let payload):
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, vaultHexPublicKeyEdDSA: vault.pubKeyEdDSA)
                 let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                 signedTransactions.append(transaction)
