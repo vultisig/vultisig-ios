@@ -21,7 +21,7 @@ struct DefiTHORChainActiveNodeView: View {
     }()
     
     var formattedChurnDate: String {
-        dateFormatter.string(from: Date(timeIntervalSince1970: TimeInterval(activeNode.nextChurn)))
+        CustomDateFormatter.formatMonthDayYear(activeNode.nextChurn)
     }
     
     var unbondDisabled: Bool { activeNode.node.state != .churnedOut }

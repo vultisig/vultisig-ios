@@ -24,12 +24,12 @@ struct IconButtonView: View {
             ProgressView()
                 .scaleEffect(0.7)
         } else {
-            Image(systemName: icon)
+            Icon(named: icon)
         }
     }
 }
 
 #Preview {
-    IconButtonView(icon: "chevron.right")
+    IconButtonView(icon: "chevron-right")
 }
 

@@ -100,7 +100,7 @@ struct OnboardingView: View {
     }
     
     var nextButton: some View {
-        IconButton(icon: "chevron.right") {
+        IconButton(icon: "chevron-right") {
             nextTapped()
         }
         .frame(width: 80)

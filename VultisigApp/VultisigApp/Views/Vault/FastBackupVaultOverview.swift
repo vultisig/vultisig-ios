@@ -111,7 +111,7 @@ struct FastBackupVaultOverview: View {
     }
     
     var nextButton: some View {
-        IconButton(icon: "chevron.right") {
+        IconButton(icon: "chevron-right") {
             nextTapped()
         }
         .buttonStyle(PlainButtonStyle())

@@ -64,9 +64,24 @@ struct DefiTHORChainMainScreen: View {
                     // TODO: - Redirect to unbond
                 }
             case .stake:
-                DefiTHORChainStakedView()
+                DefiTHORChainStakedView(
+                    onStake: { _ in
+                        // TODO: - Redirect to stake
+                    },
+                    onUnstake: { _ in
+                        // TODO: - Redirect to unstake
+                    },
+                    onWithdraw: { _ in
+                        // TODO: - Redirect to withdraw
+                    }
+                )
             case .liquidityPool:
-                DefiTHORChainLPsView()
+                DefiTHORChainLPsView(vault: vault) { _ in
+                    // TODO: - Redirect to remove LP
+                } onAdd: { _ in
+                    // TODO: - Redirect to add LP
+                }
+
             }
         }
         .transition(.opacity)
