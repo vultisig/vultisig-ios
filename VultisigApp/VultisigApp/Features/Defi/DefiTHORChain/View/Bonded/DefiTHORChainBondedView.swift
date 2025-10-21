@@ -19,7 +19,7 @@ struct DefiTHORChainBondedView: View {
     }
     
     var bondedBalance: String {
-        coin.formatWithTicker(value: coin.stakedBalanceDecimal)
+        coin.defiBalanceStringWithTicker
     }
         
     var body: some View {
