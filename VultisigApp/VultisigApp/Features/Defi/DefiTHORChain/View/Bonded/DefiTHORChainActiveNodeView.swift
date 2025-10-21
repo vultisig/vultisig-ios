@@ -21,7 +21,10 @@ struct DefiTHORChainActiveNodeView: View {
     }()
     
     var formattedChurnDate: String {
-        CustomDateFormatter.formatMonthDayYear(activeNode.nextChurn)
+        guard let nextChurn = activeNode.nextChurn else {
+            return "-"
+        }
+        return CustomDateFormatter.formatMonthDayYear(nextChurn)
     }
     
     var unbondDisabled: Bool { !activeNode.node.state.canUnbond }
@@ -123,7 +126,7 @@ struct DefiTHORChainActiveNodeView: View {
                 amount: 500,
                 apy: 0.1,
                 nextReward: 200,
-                nextChurn: Date().timeIntervalSince1970 + 300
+                nextChurn: Date().addingTimeInterval(300)
             ),
             onUnbond: { _ in },
             onBond: { _ in }
@@ -136,7 +139,7 @@ struct DefiTHORChainActiveNodeView: View {
                 amount: 500,
                 apy: 0.1,
                 nextReward: 200,
-                nextChurn: Date().timeIntervalSince1970 + 300
+                nextChurn: Date().addingTimeInterval(400)
             ),
             onUnbond: { _ in },
             onBond: { _ in }

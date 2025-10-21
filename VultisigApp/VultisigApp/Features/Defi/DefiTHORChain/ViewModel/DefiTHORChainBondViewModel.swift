@@ -72,7 +72,7 @@ final class DefiTHORChainBondViewModel: ObservableObject {
                         amount: metrics.myBond,
                         apy: metrics.apy,
                         nextReward: metrics.myAward,
-                        nextChurn: metrics.nextChurnTimestamp
+                        nextChurn: metrics.nextChurnDate
                     )
 
                     activeNodes.append(activeNode)
