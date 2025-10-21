@@ -179,10 +179,6 @@ class Endpoint {
         "https://thornode-mainnet-api.bryanlabs.net/cosmwasm/wasm/v1/contract/thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px/smart/eyJzdGF0dXMiOiB7fX0="
     }
     
-    static func fetchRuneBondedAmount(address: String) -> String {
-        return "https://midgard.ninerealms.com/v2/bonds/\(address)"
-    }
-    
     static func fetchThorchainMergedAssets() -> String {
         "https://api.vultisig.com/ruji/api/graphql"
     }

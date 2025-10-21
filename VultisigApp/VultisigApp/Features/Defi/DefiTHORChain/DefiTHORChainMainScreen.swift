@@ -11,7 +11,7 @@ struct DefiTHORChainMainScreen: View {
     @ObservedObject var vault: Vault
     
     @StateObject var viewModel = DefiTHORChainMainViewModel()
-    
+    @StateObject var bondViewModel: DefiTHORChainBondViewModel
     @State private var showPositionSelection = false
     
     // TODO: - Inject - use grouped chain from vault
@@ -29,6 +29,10 @@ struct DefiTHORChainMainScreen: View {
         return groupedChain
     }
     
+    init(vault: Vault) {
+        self._bondViewModel = StateObject(wrappedValue: DefiTHORChainBondViewModel(vault: vault))
+    }
+    
     var body: some View {
         Screen(edgeInsets: .init(top: .zero, bottom: .zero), backgroundType: .gradient) {
             ScrollView(showsIndicators: false) {
@@ -41,6 +45,9 @@ struct DefiTHORChainMainScreen: View {
             }
         }
         .overlay(bottomGradient, alignment: .bottom)
+        .onChange(of: vault) { _, vault in
+            bondViewModel.update(vault: vault)
+        }
     }
     
     var positionsSegmentedControlView: some View {
@@ -58,7 +65,10 @@ struct DefiTHORChainMainScreen: View {
         Group {
             switch viewModel.selectedPosition {
             case .bond:
-                DefiTHORChainBondedView(coin: groupedChain.nativeCoin) { _ in
+                DefiTHORChainBondedView(
+                    viewModel: bondViewModel,
+                    coin: groupedChain.nativeCoin
+                ) { _ in
                     // TODO: - Redirect to bond
                 } onUnbond: { _ in
                     // TODO: - Redirect to unbond

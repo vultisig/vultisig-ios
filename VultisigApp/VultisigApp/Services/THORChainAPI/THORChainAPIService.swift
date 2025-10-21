@@ -8,7 +8,7 @@
 import Foundation
 
 struct THORChainAPIService {
-    private let httpClient: HTTPClientProtocol
+    let httpClient: HTTPClientProtocol
     private let decoder = JSONDecoder()
     
     init(httpClient: HTTPClientProtocol = HTTPClient()) {

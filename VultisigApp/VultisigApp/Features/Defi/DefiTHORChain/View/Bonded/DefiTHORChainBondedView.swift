@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct DefiTHORChainBondedView: View {
+    @ObservedObject var viewModel: DefiTHORChainBondViewModel
+    
     let coin: Coin
     var onBond: (BondNode?) -> Void
     var onUnbond: (BondNode) -> Void
@@ -109,6 +111,7 @@ struct DefiTHORChainBondedView: View {
 
 #Preview {
     DefiTHORChainBondedView(
+        viewModel: DefiTHORChainBondViewModel(),
         coin: Coin.example,
         onBond: { _ in },
         onUnbond: { _ in }
