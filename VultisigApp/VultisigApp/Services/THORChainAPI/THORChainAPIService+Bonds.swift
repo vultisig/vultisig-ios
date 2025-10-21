@@ -52,6 +52,7 @@ extension THORChainAPIService {
     }
     
     /// Calculate bond metrics for a specific node and bond address
+    /// Based on the JavaScript implementation - calculates APY per node
     func calculateBondMetrics(
         nodeAddress: String,
         myBondAddress: String
@@ -81,10 +82,33 @@ extension THORChainAPIService {
         // 5. Calculate current award after node operator fee
         let currentAward = (Decimal(string: nodeData.currentAward) ?? 0) * (1 - nodeOperatorFee)
         let myAward = myBondOwnershipPercentage * currentAward
-        
+
+        // 6. Get recent churn timestamp to calculate APY
+        let churns = try await getChurns()
+        guard let mostRecentChurn = churns.first,
+              let recentChurnTimestampNanos = Double(mostRecentChurn.date) else {
+            throw THORChainAPIError.invalidResponse
+        }
+
+        // Convert from nanoseconds to seconds
+        let recentChurnTimestamp = recentChurnTimestampNanos / 1_000_000_000
+
+        // 7. Calculate time since last churn
+        let currentTime = Date().timeIntervalSince1970
+        let timeDiff = currentTime - recentChurnTimestamp
+        let timeDiffInYears = timeDiff / (60 * 60 * 24 * 365.25)
+
+        // 8. Calculate APR and APY per node (matching JavaScript implementation)
+        let apr = myBond > 0 && timeDiffInYears > 0 ? (myAward / myBond) / Decimal(timeDiffInYears) : 0
+
+        // APY = (1 + APR/365)^365 - 1
+        let aprDouble = Double(truncating: apr as NSNumber)
+        let apy = pow(1 + aprDouble / 365, 365) - 1
+
         return BondMetrics(
             myBond: myBond,
             myAward: myAward,
+            apy: apy,
             nodeStatus: nodeData.status
         )
     }

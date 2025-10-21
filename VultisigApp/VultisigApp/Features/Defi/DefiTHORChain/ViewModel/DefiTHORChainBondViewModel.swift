@@ -70,10 +70,11 @@ final class DefiTHORChainBondViewModel: ObservableObject {
                     )
 
                     // Create ActiveBondedNode with calculated metrics
+                    // Use per-node APY calculated from actual rewards (matching JS implementation)
                     let activeNode = ActiveBondedNode(
                         node: bondNode,
                         amount: myBondMetrics.myBond,
-                        apy: networkInfo.apy,
+                        apy: myBondMetrics.apy,
                         nextReward: myBondMetrics.myAward,
                         nextChurn: networkInfo.nextChurnDate
                     )

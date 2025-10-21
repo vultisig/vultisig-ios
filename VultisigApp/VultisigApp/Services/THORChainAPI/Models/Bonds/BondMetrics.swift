@@ -11,5 +11,6 @@ import Foundation
 struct BondMetrics {
     let myBond: Decimal
     let myAward: Decimal
+    let apy: Double
     let nodeStatus: String
 }
