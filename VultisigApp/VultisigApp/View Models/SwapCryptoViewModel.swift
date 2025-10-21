@@ -88,7 +88,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     func progressLink(tx: SwapTransaction, hash: String) -> String? {
         switch tx.quote {
-        case .thorchain:
+        case .thorchain, .thorchainStagenet:
             return Endpoint.getSwapProgressURL(txid: hash)
         case .mayachain:
             return Endpoint.getMayaSwapTracker(txid: hash)
@@ -279,6 +279,24 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                     swapPayload: .thorchain(tx.buildThorchainSwapPayload(
                         quote: quote,
                         provider: .thorchain
+                    )),
+                    approvePayload: buildApprovePayload(tx: tx),
+                    vault: vault
+                )
+                
+                return true
+                
+            case .thorchainStagenet(let quote):
+                let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
+                keysignPayload = try await KeysignPayloadFactory().buildTransfer(
+                    coin: tx.fromCoin,
+                    toAddress: toAddress,
+                    amount: tx.amountInCoinDecimal,
+                    memo: quote.memo,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .thorchain(tx.buildThorchainSwapPayload(
+                        quote: quote,
+                        provider: .thorchainStagenet
                     )),
                     approvePayload: buildApprovePayload(tx: tx),
                     vault: vault

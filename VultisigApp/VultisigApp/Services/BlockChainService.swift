@@ -666,7 +666,7 @@ private extension BlockChainService {
         switch(tx.quote){
         case .mayachain(_):
             return nil
-        case .thorchain(_):
+        case .thorchain(_), .thorchainStagenet(_):
             return nil
         case .oneinch(let quote,_),.kyberswap(let quote, _),.lifi(let quote,_, _):
             if tx.fromCoin.isNativeToken {

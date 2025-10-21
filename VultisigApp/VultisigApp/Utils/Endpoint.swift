@@ -16,12 +16,15 @@ class Endpoint {
     
     enum SwapChain {
         case thorchain
+        case thorchainStagenet
         case maya
         
         var baseUrl: String {
             switch self {
             case .thorchain:
                 return "https://thornode.ninerealms.com/thorchain"
+            case .thorchainStagenet:
+                return "https://stagenet-thornode.ninerealms.com/thorchain"
             case .maya:
                 return "https://mayanode.mayachain.info/mayachain"
             }
@@ -243,7 +246,7 @@ class Endpoint {
         vultTierDiscount: Int
     ) -> URL {
         let isAffiliateParams: String
-        if chain == .thorchain && !referredCode.isEmpty {
+        if (chain == .thorchain || chain == .thorchainStagenet) && !referredCode.isEmpty {
             let affiliateFeeRateBp = bps(for: vultTierDiscount, affiliateFeeRate: THORChainSwaps.referredAffiliateFeeRateBp)
             // THORChain supports nested affiliates
             isAffiliateParams = isAffiliate ? "&affiliate=\(referredCode)&affiliate_bps=\(THORChainSwaps.referredUserFeeRateBp)&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(affiliateFeeRateBp)"

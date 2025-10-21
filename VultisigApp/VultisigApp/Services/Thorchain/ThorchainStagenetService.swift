@@ -126,7 +126,7 @@ class ThorchainStagenetService: ThorchainSwapProvider {
     ) async throws -> ThorchainSwapQuote {
         
         let url = Endpoint.fetchSwapQuoteThorchain(
-            chain: .thorchain,
+            chain: .thorchainStagenet,
             address: address,
             fromAsset: fromAsset,
             toAsset: toAsset,

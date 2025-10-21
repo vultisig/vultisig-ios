@@ -73,8 +73,10 @@ extension Coin {
             return [.oneinch(chain), .lifi] // KyberSwap not supported on zkSync
         case .blast:
             return [.lifi] // KyberSwap not supported on Blast
-        case .thorChain, .thorChainStagenet:
+        case .thorChain:
             return [.thorchain, .mayachain]
+        case .thorChainStagenet:
+            return [.thorchainStagenet, .mayachain]
         case .bitcoin:
             return [.thorchain, .mayachain]
         case .dogecoin, .bitcoinCash, .litecoin, .gaiaChain:
