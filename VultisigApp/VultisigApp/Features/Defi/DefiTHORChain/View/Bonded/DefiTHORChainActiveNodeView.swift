@@ -51,7 +51,7 @@ struct DefiTHORChainActiveNodeView: View {
                     .foregroundStyle(Theme.colors.textExtraLight)
                 Spacer()
                 
-                Text(activeNode.apy.formatted(.percent))
+                Text(activeNode.apy.formatted(.percent.precision(.fractionLength(2))))
                     .font(Theme.fonts.bodyMMedium)
                     .foregroundStyle(Theme.colors.alertSuccess)
             }
