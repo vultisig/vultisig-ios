@@ -88,6 +88,7 @@
 		1345D1372EA8135600FC7BFD /* THORChainHealth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1345D1362EA8135500FC7BFD /* THORChainHealth.swift */; };
 		1345D1392EA813F100FC7BFD /* THORChainNetworkInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1345D1382EA813F000FC7BFD /* THORChainNetworkInfo.swift */; };
 		1345D13B2EA8148700FC7BFD /* BondMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1345D13A2EA8148600FC7BFD /* BondMetrics.swift */; };
+		1345D13D2EA81A2D00FC7BFD /* NetworkBondInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1345D13C2EA81A2D00FC7BFD /* NetworkBondInfo.swift */; };
 		1348FA622E6894C7001551F6 /* SettingsPasswordHintScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1348FA612E6894C2001551F6 /* SettingsPasswordHintScreen.swift */; };
 		1348FA652E6895B7001551F6 /* CommonTextEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1348FA642E6895B3001551F6 /* CommonTextEditor.swift */; };
 		134A9FC32E959FB700030C56 /* CarouselBannerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FC22E959FB700030C56 /* CarouselBannerType.swift */; };
@@ -1206,6 +1207,7 @@
 		1345D1362EA8135500FC7BFD /* THORChainHealth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainHealth.swift; sourceTree = "<group>"; };
 		1345D1382EA813F000FC7BFD /* THORChainNetworkInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainNetworkInfo.swift; sourceTree = "<group>"; };
 		1345D13A2EA8148600FC7BFD /* BondMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondMetrics.swift; sourceTree = "<group>"; };
+		1345D13C2EA81A2D00FC7BFD /* NetworkBondInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkBondInfo.swift; sourceTree = "<group>"; };
 		1348FA612E6894C2001551F6 /* SettingsPasswordHintScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPasswordHintScreen.swift; sourceTree = "<group>"; };
 		1348FA642E6895B3001551F6 /* CommonTextEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonTextEditor.swift; sourceTree = "<group>"; };
 		134A9FC22E959FB700030C56 /* CarouselBannerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselBannerType.swift; sourceTree = "<group>"; };
@@ -2418,6 +2420,7 @@
 				1306524F2EA7CCF9002CAD99 /* THORChainAPIService+Bonds.swift */,
 				130652452EA7CCE8002CAD99 /* Models */,
 				130652472EA7CCE8002CAD99 /* THORChainAPIService.swift */,
+				1345D13C2EA81A2D00FC7BFD /* NetworkBondInfo.swift */,
 			);
 			path = THORChainAPI;
 			sourceTree = "<group>";
@@ -5896,6 +5899,7 @@
 				137587032E56151B0048C795 /* SettingsOptionView.swift in Sources */,
 				469ED39D2B98E8C0008D4951 /* CosmosBalancePagination.swift in Sources */,
 				A6C6711B2CA3BAD100F59B6A /* CachedAsyncImage+iOS.swift in Sources */,
+				1345D13D2EA81A2D00FC7BFD /* NetworkBondInfo.swift in Sources */,
 				A65BA98E2BAD311200B2D8AA /* Loader.swift in Sources */,
 				B5E654ED2D2788CC003A037C /* Tron.swift in Sources */,
 				A61173592BC8A10D00D616F9 /* ChainCellViewModel.swift in Sources */,

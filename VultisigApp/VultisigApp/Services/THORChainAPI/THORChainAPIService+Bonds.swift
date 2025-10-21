@@ -42,6 +42,15 @@ extension THORChainAPIService {
         return response.data
     }
 
+    /// Get network-wide bond information (APY and next churn date)
+    func getNetworkBondInfo() async throws -> NetworkBondInfo {
+        let network = try await getNetworkInfo()
+        let apy = Double(network.bondingAPY ?? "0") ?? 0
+        let nextChurnDate = try await estimateNextChurnETA(network: network)
+        
+        return NetworkBondInfo(apy: apy, nextChurnDate: nextChurnDate)
+    }
+    
     /// Calculate bond metrics for a specific node and bond address
     func calculateBondMetrics(
         nodeAddress: String,
@@ -73,16 +82,9 @@ extension THORChainAPIService {
         let currentAward = (Decimal(string: nodeData.currentAward) ?? 0) * (1 - nodeOperatorFee)
         let myAward = myBondOwnershipPercentage * currentAward
         
-        let network = try await getNetworkInfo()
-        let apy = Double(network.bondingAPY ?? "0") ?? 0
-
-        let nextChurnDate = try await estimateNextChurnETA(network: network)
-        
         return BondMetrics(
             myBond: myBond,
             myAward: myAward,
-            apy: apy,
-            nextChurnDate: nextChurnDate,
             nodeStatus: nodeData.status
         )
     }

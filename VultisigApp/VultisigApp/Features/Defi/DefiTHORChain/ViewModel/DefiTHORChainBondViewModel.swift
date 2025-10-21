@@ -40,6 +40,9 @@ final class DefiTHORChainBondViewModel: ObservableObject {
         await BalanceService.shared.updateBalance(for: runeCoin)
 
         do {
+            // Fetch network-wide bond info once (APY and next churn date)
+            let networkInfo = try await thorchainAPIService.getNetworkBondInfo()
+            
             // Fetch bonded nodes for this address
             let bondedNodes = try await thorchainAPIService.getBondedNodes(address: runeCoin.address)
 
@@ -51,14 +54,14 @@ final class DefiTHORChainBondViewModel: ObservableObject {
                 bondedNodeAddresses.insert(node.address)
 
                 do {
-                    // Calculate metrics for this node
-                    let metrics = try await thorchainAPIService.calculateBondMetrics(
+                    // Calculate metrics for this node using shared network info
+                    let myBondMetrics = try await thorchainAPIService.calculateBondMetrics(
                         nodeAddress: node.address,
                         myBondAddress: runeCoin.address
                     )
-
+                    
                     // Parse node state from API status
-                    let nodeState = BondNodeState(fromAPIStatus: metrics.nodeStatus) ?? .standby
+                    let nodeState = BondNodeState(fromAPIStatus: myBondMetrics.nodeStatus) ?? .standby
 
                     // Create BondNode
                     let bondNode = BondNode(
@@ -69,10 +72,10 @@ final class DefiTHORChainBondViewModel: ObservableObject {
                     // Create ActiveBondedNode with calculated metrics
                     let activeNode = ActiveBondedNode(
                         node: bondNode,
-                        amount: metrics.myBond,
-                        apy: metrics.apy,
-                        nextReward: metrics.myAward,
-                        nextChurn: metrics.nextChurnDate
+                        amount: myBondMetrics.myBond,
+                        apy: networkInfo.apy,
+                        nextReward: myBondMetrics.myAward,
+                        nextChurn: networkInfo.nextChurnDate
                     )
 
                     activeNodes.append(activeNode)

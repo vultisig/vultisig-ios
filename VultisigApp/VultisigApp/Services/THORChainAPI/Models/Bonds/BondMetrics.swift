@@ -11,7 +11,5 @@ import Foundation
 struct BondMetrics {
     let myBond: Decimal
     let myAward: Decimal
-    let apy: Double
-    let nextChurnDate: Date?
     let nodeStatus: String
 }
