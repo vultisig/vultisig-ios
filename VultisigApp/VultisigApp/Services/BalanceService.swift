@@ -96,7 +96,7 @@ private extension BalanceService {
         switch coin.chain {
         case .thorChain:
             // Should be handled by `updateBondedIfNeeded`
-            guard coin.isNativeToken else {
+            guard !coin.isNativeToken else {
                 return nil
             }
             

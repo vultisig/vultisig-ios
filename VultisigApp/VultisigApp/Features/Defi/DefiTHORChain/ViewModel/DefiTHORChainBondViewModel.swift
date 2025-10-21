@@ -82,15 +82,18 @@ final class DefiTHORChainBondViewModel: ObservableObject {
                 }
             }
 
-            // Filter available nodes to exclude already bonded nodes, keep 10 only for now
+            // Filter available nodes to exclude already bonded nodes
             let availableNodesList = vultiNodeAddresses
                 .filter { !bondedNodeAddresses.contains($0) }
-                .prefix(10)
                 .map { BondNode(address: $0, state: .active) }
 
+            // Create local copies to safely pass to MainActor
+            let finalActiveNodes = activeNodes
+            let finalAvailableNodes = Array(availableNodesList)
+
             await MainActor.run {
-                self.activeBondedNodes = activeNodes
-                self.availableNodes = availableNodesList
+                self.activeBondedNodes = finalActiveNodes
+                self.availableNodes = finalAvailableNodes
                 self.isLoading = false
             }
 
