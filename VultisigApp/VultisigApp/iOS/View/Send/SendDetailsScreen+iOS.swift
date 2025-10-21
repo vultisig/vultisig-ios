@@ -15,17 +15,6 @@ extension SendDetailsScreen {
         Screen(title: "send".localized) {
             content
         }
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                
-                Button {
-                    hideKeyboard()
-                } label: {
-                    Text(NSLocalizedString("done", comment: "Done"))
-                }
-            }
-        }
     }
     
     var view: some View {

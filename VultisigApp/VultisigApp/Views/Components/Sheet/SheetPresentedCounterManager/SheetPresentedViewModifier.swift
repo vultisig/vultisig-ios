@@ -23,7 +23,7 @@ private struct SheetPresentedViewModifier: ViewModifier {
         content
             .overlay(blurContent ? overlayView : nil)
             .blur(radius: blurContent ? 6 : 0)
-            .animation(.interpolatingSpring(duration: 0.15), value: blurContent)
+            .animation(.easeInOut(duration: 0.1), value: blurContent)
             .onReceive(sheetPresentedCounterManager.$counter) { newValue in
                 blurContent = newValue > 0
             }

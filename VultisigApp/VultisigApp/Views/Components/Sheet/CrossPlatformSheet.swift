@@ -24,6 +24,8 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
     
     @Environment(\.sheetPresentedCounterManager) var counterManager
     
+    @State var counter: Int = 0
+    
     init(isPresented: Binding<Bool>, @ViewBuilder sheetContent: @escaping () -> SheetContent) {
         self._isPresented = isPresented
         self.sheetContent = sheetContent
@@ -38,8 +40,13 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
             .onChange(of: isPresented) { _, newValue in
                 if newValue {
                     counterManager.increment()
+                    counter = counterManager.counter
                 } else {
-                    counterManager.decrement()
+                    if counter == 1 {
+                        counterManager.resetCounter()
+                    } else {
+                        counterManager.decrement()
+                    }
                 }
             }
     }
@@ -52,6 +59,8 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
     
     @Environment(\.sheetPresentedCounterManager) var counterManager
     @State private var isPresented: Bool = false
+    
+    @State var counter: Int = 0
     
     init(item: Binding<Item?>, @ViewBuilder sheetContent: @escaping (Item) -> SheetContent) {
         self._item = item
@@ -67,8 +76,13 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
             .onChange(of: item) { _, newValue in
                 if newValue != nil {
                     counterManager.increment()
+                    counter = counterManager.counter
                 } else {
-                    counterManager.decrement()
+                    if counter == 1 {
+                        counterManager.resetCounter()
+                    } else {
+                        counterManager.decrement()
+                    }
                 }
             }
     }

@@ -258,11 +258,62 @@ class SuiService {
         }
         return .empty
     }
+    
+    /// Simulates a transaction to get accurate gas estimates
+    /// - Parameter transactionBytes: Base64 encoded transaction bytes
+    /// - Returns: Tuple of (computationCost, storageCost)
+    func dryRunTransaction(transactionBytes: String) async throws -> (computationCost: BigInt, storageCost: BigInt) {
+        do {
+            let data = try await Utils.PostRequestRpc(
+                rpcURL: rpcURL,
+                method: "sui_dryRunTransactionBlock",
+                params: [transactionBytes]
+            )
+            
+            // Check for error first
+            if let error = Utils.extractResultFromJson(fromData: data, path: "result.effects.status.error") as? String, !error.isEmpty {
+                throw Errors.simulationFailed(error)
+            }
+            
+            // Extract gas costs
+            if let computationCostStr = Utils.extractResultFromJson(fromData: data, path: "result.effects.gasUsed.computationCost") as? String,
+               let storageCostStr = Utils.extractResultFromJson(fromData: data, path: "result.effects.gasUsed.storageCost") as? String {
+                
+                let computationCost = computationCostStr.toBigInt()
+                let storageCost = storageCostStr.toBigInt()
+                
+                return (computationCost, storageCost)
+            }
+            
+            throw Errors.failedToParseGasEstimate
+        } catch let error as Errors {
+            throw error
+        } catch {
+            print("Error in dry run transaction: \(error.localizedDescription)")
+            throw Errors.dryRunFailed(error.localizedDescription)
+        }
+    }
 }
 
 private extension SuiService {
     
-    enum Errors: Error {
+    enum Errors: Error, LocalizedError {
         case getBalanceFailed
+        case simulationFailed(String)
+        case failedToParseGasEstimate
+        case dryRunFailed(String)
+        
+        var errorDescription: String? {
+            switch self {
+            case .getBalanceFailed:
+                return "Failed to get balance"
+            case .simulationFailed(let error):
+                return "Simulation Error: \(error)"
+            case .failedToParseGasEstimate:
+                return "Failed to parse gas estimate from dry run"
+            case .dryRunFailed(let error):
+                return "Dry run failed: \(error)"
+            }
+        }
     }
 }

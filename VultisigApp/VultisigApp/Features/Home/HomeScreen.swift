@@ -163,7 +163,7 @@ struct HomeScreen: View {
                 guard newValue else { return }
                 shouldSendCrypto = false
                 let deeplinkChain = selectedVault.coins.first(where: { $0.isNativeToken && selectedChain == $0.chain })
-                vaultRoute = .mainAction(.send(coin: deeplinkChain ?? vaultDetailViewModel.selectedGroup?.nativeCoin, hasPreselectedCoin: false))
+                vaultRoute = .mainAction(.send(coin: deeplinkChain ?? vaultDetailViewModel.selectedGroup?.nativeCoin, hasPreselectedCoin: true))
             }
             .navigationDestination(isPresented: $shouldKeysignTransaction) {
                 if let vault = homeViewModel.selectedVault {

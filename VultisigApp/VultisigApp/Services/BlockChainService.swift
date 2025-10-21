@@ -425,7 +425,55 @@ private extension BlockChainService {
             
         case .sui:
             let (referenceGasPrice, allCoins) = try await sui.getGasInfo(coin: coin)
-            return .Sui(referenceGasPrice: referenceGasPrice, coins: allCoins)
+            
+            // Calculate dynamic gas budget using dry run simulation
+            let gasBudget: BigInt
+            if let amount = amount, amount > 0 {
+                // Create a temporary keysign payload for simulation
+                let tempPayload = KeysignPayload(
+                    coin: coin,
+                    toAddress: toAddress ?? coin.address, // Use same address for simulation if toAddress is nil
+                    toAmount: amount,
+                    chainSpecific: .Sui(referenceGasPrice: referenceGasPrice, coins: allCoins, gasBudget: BigInt(3000000)), // Use default for initial payload
+                    utxos: [],
+                    memo: memo,
+                    swapPayload: nil,
+                    approvePayload: nil,
+                    vaultPubKeyECDSA: "",
+                    vaultLocalPartyID: "",
+                    libType: "", // Not used for simulation
+                    wasmExecuteContractPayload: nil,
+                    skipBroadcast: false
+                )
+                
+                do {
+                    // Get zero-signed transaction for simulation
+                    let txSerialized = try SuiHelper.getZeroSignedTransaction(keysignPayload: tempPayload)
+                    
+                    // Simulate transaction to get accurate gas estimate
+                    let (computationCost, storageCost) = try await sui.dryRunTransaction(transactionBytes: txSerialized)
+                    
+                    // Calculate safe gas budget: (computation + storage) * 1.15 safety margin
+                    let totalCost = computationCost + storageCost
+                    gasBudget = (totalCost * 115) / 100
+                    
+                    // Ensure minimum gas budget of 2000 (network requirement)
+                    let finalGasBudget = max(gasBudget, BigInt(2000))
+                    
+                    return .Sui(referenceGasPrice: referenceGasPrice, coins: allCoins, gasBudget: finalGasBudget)
+                } catch {
+                    print("⚠️ Sui dry run failed, using default gas budget: \(error.localizedDescription)")
+                    // Fall back to default + 15% safety margin
+                    let defaultBudget = BigInt(3000000)
+                    gasBudget = (defaultBudget * 115) / 100
+                }
+            } else {
+                // No amount specified, use default with safety margin
+                let defaultBudget = BigInt(3000000)
+                gasBudget = (defaultBudget * 115) / 100
+            }
+            
+            return .Sui(referenceGasPrice: referenceGasPrice, coins: allCoins, gasBudget: gasBudget)
             
         case .polkadot:
             let gasInfo = try await dot.getGasInfo(fromAddress: coin.address)

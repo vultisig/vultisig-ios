@@ -15,6 +15,7 @@ struct CoinDetailScreen: View {
     var onCoinAction: (VaultAction) -> Void
 
     @State var showReceiveSheet: Bool = false
+    @State var addressToCopy: Coin?
     
     @StateObject var viewModel: CoinDetailViewModel
     @Environment(\.dismiss) var dismiss
@@ -47,6 +48,7 @@ struct CoinDetailScreen: View {
             .background(ModalBackgroundView(width: proxy.size.width))
             .onLoad(perform: viewModel.setup)
             .onAppear(perform: onAppear)
+            .withAddressCopy(coin: $addressToCopy)
         }
         .presentationDetents([isIPadOS ? .large : .medium])
         .presentationBackground(Theme.colors.bgSecondary)
@@ -56,8 +58,11 @@ struct CoinDetailScreen: View {
             ReceiveQRCodeBottomSheet(
                 coin: coin,
                 isNativeCoin: false
-            ) {
+            ) { coin in
                 showReceiveSheet = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    addressToCopy = coin
+                }
             }
         }
         .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: true)
