@@ -16,7 +16,7 @@ enum SolanaHelper {
         guard keysignPayload.coin.chain.ticker == "SOL" else {
             throw HelperError.runtimeError("coin is not SOL")
         }
-        guard case .Solana(let recentBlockHash, _, let fromAddressPubKey, let toAddressPubKey, let tokenProgramId) = keysignPayload.chainSpecific else {
+        guard case .Solana(let recentBlockHash, _, let fromAddressPubKey, let toAddressPubKey, let tokenProgramId, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get to address")
         }
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .solana) else {
@@ -221,5 +221,20 @@ enum SolanaHelper {
         )
         let output = try SolanaSigningOutput(serializedBytes: compiledWithSignature)
         return output.encoded
+    }
+    
+    /// Get the versioned message for fee calculation
+    /// - Parameter keysignPayload: The keysign payload
+    /// - Returns: Base64-encoded transaction message for use with getFeeForMessage RPC
+    static func getVersionedMessage(keysignPayload: KeysignPayload) throws -> String {
+        let input = try getPreSignedInputData(keysignPayload: keysignPayload)
+        let hashes = TransactionCompiler.preImageHashes(coinType: .solana, txInputData: input)
+        let preSigningOutput = try SolanaPreSigningOutput(serializedBytes: hashes)
+        
+        if !preSigningOutput.errorMessage.isEmpty {
+            throw HelperError.runtimeError(preSigningOutput.errorMessage)
+        }
+        
+        return preSigningOutput.data.base64EncodedString()
     }
 }

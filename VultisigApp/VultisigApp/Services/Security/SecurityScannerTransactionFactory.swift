@@ -87,7 +87,7 @@ private extension SecurityScannerTransactionFactory {
             type = .coinTransfer
         } else {
             type = .tokenTransfer
-            guard case let .Solana(recentBlockHash, priorityFee, fromAddressPubKey, toAddressPubKey, hasProgramId) = blockchainSpecific else {
+            guard case let .Solana(recentBlockHash, priorityFee, fromAddressPubKey, toAddressPubKey, hasProgramId, calculatedFee) = blockchainSpecific else {
                 throw SecurityScannerTransactionFactoryError.invalidBlockchainSpecific("Expected Solana specific data")
             }
             blockchainSpecific = BlockChainSpecific.Solana(
@@ -95,7 +95,8 @@ private extension SecurityScannerTransactionFactory {
                 priorityFee: priorityFee,
                 fromAddressPubKey: fromAddressPubKey,
                 toAddressPubKey: toAddressPubKey,
-                hasProgramId: hasProgramId
+                hasProgramId: hasProgramId,
+                calculatedFee: calculatedFee
             )
         }
         

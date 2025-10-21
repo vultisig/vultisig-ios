@@ -69,7 +69,7 @@ final class BlockChainService {
             return payload
         }
         
-        guard case .Solana(_, let priorityFee, let fromAddressPubKey, let toAddressPubKey, let hasProgramId) = payload.chainSpecific else {
+        guard case .Solana(_, let priorityFee, let fromAddressPubKey, let toAddressPubKey, let hasProgramId, let calculatedFee) = payload.chainSpecific else {
             // Not a Solana chainSpecific, return as-is
             return payload
         }
@@ -85,7 +85,8 @@ final class BlockChainService {
             priorityFee: priorityFee,
             fromAddressPubKey: fromAddressPubKey,
             toAddressPubKey: toAddressPubKey,
-            hasProgramId: hasProgramId
+            hasProgramId: hasProgramId,
+            calculatedFee: calculatedFee
         )
         
         // Create and return updated payload with fresh blockhash
@@ -368,18 +369,23 @@ private extension BlockChainService {
                 throw Errors.failToGetRecentBlockHash
             }
             
+            // Determine token accounts and program type
+            var associatedTokenAddressFrom: String? = nil
+            var associatedTokenAddressTo: String? = nil
+            var isToken2022 = false
+            
             if !coin.isNativeToken && fromAddress != nil {
-                let (associatedTokenAddressFrom, senderIsToken2022) = try await sol.fetchTokenAssociatedAccountByOwner(for: fromAddress!, mintAddress: coin.contractAddress)
+                let (fromTokenAccount, senderIsToken2022) = try await sol.fetchTokenAssociatedAccountByOwner(for: fromAddress!, mintAddress: coin.contractAddress)
                 
                 // Validate that we got a valid sender account
-                if associatedTokenAddressFrom.isEmpty {
+                if fromTokenAccount.isEmpty {
                     throw Errors.failToGetAssociatedTokenAddressFrom
                 }
                 
-                // Only fetch recipient's token account if toAddress is provided
-                var associatedTokenAddressTo: String? = nil
-                var isToken2022 = senderIsToken2022  // Use sender's program type as default
+                associatedTokenAddressFrom = fromTokenAccount
+                isToken2022 = senderIsToken2022
                 
+                // Only fetch recipient's token account if toAddress is provided
                 if let toAddress, !toAddress.isEmpty {
                     let (toTokenAddress, recipientTokenProgram) = try await sol.fetchTokenAssociatedAccountByOwner(for: toAddress, mintAddress: coin.contractAddress)
                     
@@ -407,21 +413,80 @@ private extension BlockChainService {
                         }
                     }
                 }
-                
-                // Important: Only return nil for toAddressPubKey if we're certain the account doesn't exist
-                // Empty string from RPC doesn't mean the account doesn't exist
-                let finalToAddress = associatedTokenAddressTo?.isEmpty == true ? nil : associatedTokenAddressTo
-                
-                // TODO: Add rent exemption balance check here
-                // If finalToAddress is nil (account needs creation), verify sender has enough SOL:
-                // - 0.00203928 SOL for token account creation
-                // - Plus transaction fees
-                // - Plus maintaining sender's own rent exemption
-                
-                return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee), fromAddressPubKey: associatedTokenAddressFrom, toAddressPubKey: finalToAddress, hasProgramId: isToken2022)
             }
             
-            return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee), fromAddressPubKey: nil, toAddressPubKey: nil, hasProgramId: false)
+            // Calculate dynamic fee like Android
+            let calculatedFee: BigInt?
+            if let amount = amount, amount > 0, let toAddress = toAddress, !toAddress.isEmpty {
+                do {
+                    // Build temporary keysign payload for fee calculation
+                    let tempPayload = KeysignPayload(
+                        coin: coin,
+                        toAddress: toAddress,
+                        toAmount: amount,
+                        chainSpecific: .Solana(
+                            recentBlockHash: recentBlockHash,
+                            priorityFee: BigInt(highPriorityFee),
+                            fromAddressPubKey: associatedTokenAddressFrom,
+                            toAddressPubKey: associatedTokenAddressTo?.isEmpty == true ? nil : associatedTokenAddressTo,
+                            hasProgramId: isToken2022,
+                            calculatedFee: nil // Will be calculated
+                        ),
+                        utxos: [],
+                        memo: memo,
+                        swapPayload: nil,
+                        approvePayload: nil,
+                        vaultPubKeyECDSA: "",
+                        vaultLocalPartyID: "",
+                        libType: "", // Not used for simulation
+                        wasmExecuteContractPayload: nil,
+                        skipBroadcast: false
+                    )
+                    
+                    // Serialize transaction to get message for fee calculation
+                    let versionedMessage = try SolanaHelper.getVersionedMessage(keysignPayload: tempPayload)
+                    
+                    // Get base fee from RPC
+                    let baseFee = try await sol.getFeeForMessage(message: versionedMessage)
+                    
+                    // Calculate rent exemption fee for SPL token transfers
+                    var rentExemptionFee = BigInt.zero
+                    if !coin.isNativeToken {
+                        // If recipient doesn't have a token account (toAddressPubKey is nil or empty), add rent exemption
+                        let needsAccountCreation = associatedTokenAddressTo?.isEmpty ?? true
+                        if needsAccountCreation {
+                            rentExemptionFee = try await sol.getMinimumBalanceForRentExemption()
+                        }
+                    }
+                    
+                    // Calculate priority fee amount (convert from microlamports to lamports)
+                    let priorityFeePrice = BigInt(1_000_000) // 1M microlamports (Turbo fee ~5 cents)
+                    let priorityFeeLimit = BigInt(100_000)
+                    let priorityFeeAmount = (priorityFeePrice * priorityFeeLimit) / BigInt(1_000_000)
+                    
+                    // Total fee = base fee + priority fee + rent exemption
+                    calculatedFee = baseFee + priorityFeeAmount + rentExemptionFee
+                } catch {
+                    print("Failed to calculate dynamic Solana fee: \(error.localizedDescription)")
+                    // Use default fee as fallback
+                    calculatedFee = SolanaHelper.defaultFeeInLamports
+                }
+            } else {
+                // Use default fee for estimation when no amount is set
+                calculatedFee = SolanaHelper.defaultFeeInLamports
+            }
+            
+            // Determine final toAddressPubKey
+            let finalToAddress = associatedTokenAddressTo?.isEmpty == true ? nil : associatedTokenAddressTo
+            
+            return .Solana(
+                recentBlockHash: recentBlockHash,
+                priorityFee: BigInt(highPriorityFee),
+                fromAddressPubKey: associatedTokenAddressFrom,
+                toAddressPubKey: finalToAddress,
+                hasProgramId: isToken2022,
+                calculatedFee: calculatedFee
+            )
             
         case .sui:
             let (referenceGasPrice, allCoins) = try await sui.getGasInfo(coin: coin)

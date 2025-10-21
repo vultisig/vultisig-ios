@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import WalletCore
+import BigInt
 
 enum SolanaServiceError: Error, LocalizedError {
     case blockhashExpired(message: String)
@@ -559,6 +560,55 @@ class SolanaService {
         }
         
         return (false, false)
+    }
+    
+    /// Get the fee for a serialized transaction message
+    /// - Parameter message: Base64-encoded transaction message
+    /// - Returns: Fee in lamports
+    func getFeeForMessage(message: String) async throws -> BigInt {
+        struct FeeForMessageResponse: Decodable {
+            let result: ResultValue
+            
+            struct ResultValue: Decodable {
+                let value: UInt64?
+            }
+        }
+        
+        let requestBody: [String: Any] = [
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "getFeeForMessage",
+            "params": [message, ["commitment": "confirmed"]],
+        ]
+        
+        let data = try await postRequest(with: requestBody, url: rpcURL)
+        let response = try JSONDecoder().decode(FeeForMessageResponse.self, from: data)
+        
+        guard let feeValue = response.result.value else {
+            throw SolanaServiceError.rpcError(message: "Failed to get fee for message", code: -1)
+        }
+        
+        return BigInt(feeValue)
+    }
+    
+    /// Get the minimum balance required for rent exemption for a token account (165 bytes)
+    /// - Returns: Minimum balance in lamports (typically ~2,039,280 lamports)
+    func getMinimumBalanceForRentExemption() async throws -> BigInt {
+        struct MinimumBalanceResponse: Decodable {
+            let result: UInt64
+        }
+        
+        let requestBody: [String: Any] = [
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "getMinimumBalanceForRentExemption",
+            "params": [165], // 165 bytes for token account
+        ]
+        
+        let data = try await postRequest(with: requestBody, url: rpcURL)
+        let response = try JSONDecoder().decode(MinimumBalanceResponse.self, from: data)
+        
+        return BigInt(response.result)
     }
     
 }
