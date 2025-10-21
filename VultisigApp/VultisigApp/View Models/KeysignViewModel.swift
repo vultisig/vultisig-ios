@@ -132,8 +132,10 @@ class KeysignViewModel: ObservableObject {
     
     func getSwapProgressURL(txid: String) -> String? {
         switch keysignPayload?.swapPayload {
-        case .thorchain, .thorchainStagenet:
+        case .thorchain:
             return Endpoint.getSwapProgressURL(txid: txid)
+        case .thorchainStagenet:
+            return Endpoint.getStagenetSwapProgressURL(txid: txid)
         case .mayachain:
             return Endpoint.getMayaSwapTracker(txid: txid)
         case .generic, .none:

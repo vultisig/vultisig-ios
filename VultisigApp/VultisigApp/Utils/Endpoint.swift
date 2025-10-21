@@ -647,7 +647,11 @@ class Endpoint {
     }
     
     static func getSwapProgressURL(txid: String) -> String {
-        return "https://thorchain.net/tx/\(txid.stripHexPrefix())"
+        return "https://runescan.io/tx/\(txid.stripHexPrefix())"
+    }
+    
+    static func getStagenetSwapProgressURL(txid: String) -> String {
+        return "https://runescan.io/tx/\(txid.stripHexPrefix())?network=stagenet"
     }
     
     static func thorchainNodeExplorerURL(_ address: String) -> String {
