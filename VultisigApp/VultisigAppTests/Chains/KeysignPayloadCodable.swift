@@ -348,18 +348,21 @@ extension VSSuiSpecific: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case referenceGasPrice = "reference_gas_price"
         case coins = "coins"
+        case gasBudget = "gas_budget"
     }
     
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(referenceGasPrice, forKey: .referenceGasPrice)
         try container.encode(coins, forKey: .coins)
+        try container.encode(gasBudget, forKey: .gasBudget)
     }
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.init()
         referenceGasPrice = try container.decode(String.self, forKey: .referenceGasPrice)
         coins = try container.decode([VSSuiCoin].self, forKey: .coins)
+        gasBudget = try container.decode(String.self, forKey: .gasBudget)
     }
 }
 
