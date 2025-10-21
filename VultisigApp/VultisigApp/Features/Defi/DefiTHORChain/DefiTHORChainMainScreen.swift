@@ -9,27 +9,15 @@ import SwiftUI
 
 struct DefiTHORChainMainScreen: View {
     @ObservedObject var vault: Vault
+    let group: GroupedChain
     
     @StateObject var viewModel = DefiTHORChainMainViewModel()
     @StateObject var bondViewModel: DefiTHORChainBondViewModel
     @State private var showPositionSelection = false
     
-    // TODO: - Inject - use grouped chain from vault
-    var groupedChain: GroupedChain {
-        let asset = CoinMeta(chain: .thorChain, ticker: "RUNE", logo: "rune", decimals: 8, priceProviderId: "thorchain", contractAddress: "", isNativeToken: true)
-        let coin = Coin(asset: asset, address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szstey", hexPublicKey: "HexPublicKeyExample")
-        let groupedChain = GroupedChain(
-            chain: .thorChain,
-            address: "bc1psrjtwm7682v6nhx2...uwfgcfelrennd7pcvq",
-            logo: "thorchain",
-            count: 3,
-            coins: [coin]
-        )
-        
-        return groupedChain
-    }
-    
-    init(vault: Vault) {
+    init(vault: Vault, group: GroupedChain) {
+        self.vault = vault
+        self.group = group
         self._bondViewModel = StateObject(wrappedValue: DefiTHORChainBondViewModel(vault: vault))
     }
     
@@ -37,7 +25,7 @@ struct DefiTHORChainMainScreen: View {
         Screen(edgeInsets: .init(top: .zero, bottom: .zero), backgroundType: .gradient) {
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 16) {
-                    DefiTHORChainBalanceView(groupedChain: groupedChain)
+                    DefiTHORChainBalanceView(groupedChain: group)
                     positionsSegmentedControlView
                     selectedPositionView
                 }
@@ -45,6 +33,8 @@ struct DefiTHORChainMainScreen: View {
             }
         }
         .overlay(bottomGradient, alignment: .bottom)
+        .onLoad { Task { await refresh() } }
+        .refreshable(action: refresh)
         .onChange(of: vault) { _, vault in
             bondViewModel.update(vault: vault)
         }
@@ -67,7 +57,7 @@ struct DefiTHORChainMainScreen: View {
             case .bond:
                 DefiTHORChainBondedView(
                     viewModel: bondViewModel,
-                    coin: groupedChain.nativeCoin
+                    coin: group.nativeCoin
                 ) { _ in
                     // TODO: - Redirect to bond
                 } onUnbond: { _ in
@@ -96,26 +86,30 @@ struct DefiTHORChainMainScreen: View {
         }
         .transition(.opacity)
         .animation(.easeInOut, value: viewModel.selectedPosition)
-        .gesture(
-            DragGesture(minimumDistance: 50, coordinateSpace: .local)
-                .onEnded { value in
-                    let horizontalMovement = value.translation.width
-                    let verticalMovement = value.translation.height
-                    
-                    // Only handle if it's a primarily horizontal swipe with significant distance
-                    if abs(horizontalMovement) > abs(verticalMovement) * 2 && abs(horizontalMovement) > 80 {
-                        withAnimation(.easeInOut) {
-                            if horizontalMovement > 0 {
-                                // Swipe right - move to previous position
-                                viewModel.moveToPreviousPosition()
-                            } else {
-                                // Swipe left - move to next position
-                                viewModel.moveToNextPosition()
-                            }
+        .gesture(dragGesture)
+    }
+}
+
+private extension DefiTHORChainMainScreen {
+    var dragGesture: some Gesture {
+        DragGesture(minimumDistance: 50, coordinateSpace: .local)
+            .onEnded { value in
+                let horizontalMovement = value.translation.width
+                let verticalMovement = value.translation.height
+                
+                // Only handle if it's a primarily horizontal swipe with significant distance
+                if abs(horizontalMovement) > abs(verticalMovement) * 2 && abs(horizontalMovement) > 80 {
+                    withAnimation(.easeInOut) {
+                        if horizontalMovement > 0 {
+                            // Swipe right - move to previous position
+                            viewModel.moveToPreviousPosition()
+                        } else {
+                            // Swipe left - move to next position
+                            viewModel.moveToNextPosition()
                         }
                     }
                 }
-        )
+            }
     }
     
     var bottomGradient: some View {
@@ -133,7 +127,13 @@ struct DefiTHORChainMainScreen: View {
     }
 }
 
+private extension DefiTHORChainMainScreen {
+    func refresh() async {
+        await bondViewModel.refresh()
+    }
+}
+
 #Preview {
-    DefiTHORChainMainScreen(vault: .example)
+    DefiTHORChainMainScreen(vault: .example, group: .example)
         .environmentObject(HomeViewModel())
 }

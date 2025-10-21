@@ -25,6 +25,8 @@
 		130652582EA7CF87002CAD99 /* BondedNodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130652572EA7CF82002CAD99 /* BondedNodes.swift */; };
 		1306525A2EA7D1DE002CAD99 /* THORChainNodesResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130652592EA7D1DB002CAD99 /* THORChainNodesResponse.swift */; };
 		1306525C2EA7D7D7002CAD99 /* DefiTHORChainBondViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1306525B2EA7D7CF002CAD99 /* DefiTHORChainBondViewModel.swift */; };
+		130652612EA7DBA7002CAD99 /* ChurnsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1306525D2EA7DBA7002CAD99 /* ChurnsResponse.swift */; };
+		130652622EA7DBA7002CAD99 /* NodeDetailsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1306525F2EA7DBA7002CAD99 /* NodeDetailsResponse.swift */; };
 		13095A362E3264E6009F8785 /* HapticFeedbackManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */; };
 		130ABEF92E9E28210074BF67 /* RefreshToolbarButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130ABEF82E9E281B0074BF67 /* RefreshToolbarButton.swift */; };
 		130C40DD2E71E0BE00509C61 /* VaultMainBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40DC2E71E0B800509C61 /* VaultMainBalanceView.swift */; };
@@ -1138,6 +1140,8 @@
 		130652572EA7CF82002CAD99 /* BondedNodes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondedNodes.swift; sourceTree = "<group>"; };
 		130652592EA7D1DB002CAD99 /* THORChainNodesResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainNodesResponse.swift; sourceTree = "<group>"; };
 		1306525B2EA7D7CF002CAD99 /* DefiTHORChainBondViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainBondViewModel.swift; sourceTree = "<group>"; };
+		1306525D2EA7DBA7002CAD99 /* ChurnsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChurnsResponse.swift; sourceTree = "<group>"; };
+		1306525F2EA7DBA7002CAD99 /* NodeDetailsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetailsResponse.swift; sourceTree = "<group>"; };
 		13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticFeedbackManager.swift; sourceTree = "<group>"; };
 		130ABEF82E9E281B0074BF67 /* RefreshToolbarButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshToolbarButton.swift; sourceTree = "<group>"; };
 		130C40DC2E71E0B800509C61 /* VaultMainBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainBalanceView.swift; sourceTree = "<group>"; };
@@ -2422,6 +2426,8 @@
 		130652542EA7CEB9002CAD99 /* Bonds */ = {
 			isa = PBXGroup;
 			children = (
+				1306525D2EA7DBA7002CAD99 /* ChurnsResponse.swift */,
+				1306525F2EA7DBA7002CAD99 /* NodeDetailsResponse.swift */,
 				130652592EA7D1DB002CAD99 /* THORChainNodesResponse.swift */,
 				130652572EA7CF82002CAD99 /* BondedNodes.swift */,
 				130652552EA7CEBE002CAD99 /* BondedNodesResponse.swift */,
@@ -5623,6 +5629,8 @@
 				A594EC2F2D072DDD00B74EBC /* SettingsCustomMessageView+MacOS.swift in Sources */,
 				A65324282BA51E8700DDE6EB /* QRCodeScannerView.swift in Sources */,
 				DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */,
+				130652612EA7DBA7002CAD99 /* ChurnsResponse.swift in Sources */,
+				130652622EA7DBA7002CAD99 /* NodeDetailsResponse.swift in Sources */,
 				A5F2C2352CD3FEE00086253E /* FastSignConfig.swift in Sources */,
 				A6C670C72C9D174000F59B6A /* VaultDetailQRCodeView+macOS.swift in Sources */,
 				13095A362E3264E6009F8785 /* HapticFeedbackManager.swift in Sources */,

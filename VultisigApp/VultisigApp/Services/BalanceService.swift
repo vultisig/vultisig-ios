@@ -45,8 +45,9 @@ class BalanceService {
                                 let rawBalance = try await fetchBalance(for: coin)
                                 try await updateCoin(coin, rawBalance: rawBalance)
                                 
-                                let stakedBalance = try await fetchStakedBalance(for: coin)
-                                try await updateCoin(coin, stakedBalance: stakedBalance)
+                                if let stakedBalance = try await fetchStakedBalance(for: coin) {
+                                    try await updateCoin(coin, stakedBalance: stakedBalance)
+                                }
                                 
                                 try await updateBondedIfNeeded(for: coin)
                             } catch {
@@ -74,8 +75,10 @@ class BalanceService {
             let rawBalance = try await fetchBalance(for: coin)
             try await updateCoin(coin, rawBalance: rawBalance)
             
-            let stakedBalance = try await fetchStakedBalance(for: coin)
-            try await updateCoin(coin, stakedBalance: stakedBalance)
+            if let stakedBalance = try await fetchStakedBalance(for: coin) {
+                try await updateCoin(coin, stakedBalance: stakedBalance)
+            }
+            try await updateBondedIfNeeded(for: coin)
             try await MainActor.run {
                 try Storage.shared.save()
             }
@@ -89,9 +92,14 @@ private extension BalanceService {
     
     private var enableAutoCompoundStakedBalance: Bool { false }
     
-    func fetchStakedBalance(for coin: Coin) async throws -> String {
+    func fetchStakedBalance(for coin: Coin) async throws -> String? {
         switch coin.chain {
         case .thorChain:
+            // Should be handled by `updateBondedIfNeeded`
+            guard coin.isNativeToken else {
+                return nil
+            }
+            
             // Handle TCY staked balance (includes both regular and auto-compound)
             if coin.ticker.localizedCaseInsensitiveContains("tcy") {
                 let tcyStakedBalance = await thor.fetchTcyStakedAmount(address: coin.address)

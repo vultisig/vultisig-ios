@@ -9,37 +9,53 @@ import SwiftUI
 
 struct BondNodeStateView: View {
     let state: BondNodeState
-    
+
     var body: some View {
         Text(title)
             .foregroundStyle(color)
             .font(Theme.fonts.caption12)
     }
-    
+
     var title: String {
         switch state {
+        case .whitelisted:
+            return "whitelisted".localized
+        case .standby:
+            return "standby".localized
+        case .ready:
+            return "ready".localized
         case .active:
-            "active".localized
-        case .churnedOut:
-            "churnedOut".localized
+            return "active".localized
+        case .disabled:
+            return "disabled".localized
         }
     }
-    
+
     var color: Color {
         switch state {
         case .active:
             Theme.colors.alertSuccess
-        case .churnedOut:
+        case .ready:
+            Theme.colors.alertSuccess
+        case .standby:
+            Theme.colors.alertWarning
+        case .whitelisted:
+            Theme.colors.alertWarning
+        case .disabled:
             Theme.colors.alertWarning
         }
     }
 }
 
 #Preview {
-    VStack {
+    VStack(spacing: 16) {
+        BondNodeStateView(state: .whitelisted)
+        BondNodeStateView(state: .standby)
+        BondNodeStateView(state: .ready)
         BondNodeStateView(state: .active)
-        BondNodeStateView(state: .churnedOut)
+        BondNodeStateView(state: .disabled)
     }
+    .padding()
     .frame(maxHeight: .infinity)
     .background(Theme.colors.bgPrimary)
 }

@@ -28,7 +28,7 @@ struct DefiChainListView: View {
             NavigationLink {
                 switch group.chain {
                 case .thorChain:
-                    DefiTHORChainMainScreen(vault: vault)
+                    DefiTHORChainMainScreen(vault: vault, group: group)
                 default:
                     EmptyView()
                 }

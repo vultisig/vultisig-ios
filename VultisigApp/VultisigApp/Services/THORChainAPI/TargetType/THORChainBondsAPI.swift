@@ -8,40 +8,48 @@
 import Foundation
 
 enum THORChainBondsAPI: TargetType {
-    case getNodes
     case getBondedNodes(address: String)
-    
-    
+    case getNodeDetails(nodeAddress: String)
+    case getChurns
+
+
     var baseURL: URL {
-        return URL(string: "https://midgard.ninerealms.com/v2")!
-    }
-    
-    var path: String {
         switch self {
-        case .getNodes:
-            return "/nodes"
-        case .getBondedNodes(let address):
-            return "/bonds/\(address)"
+        case .getNodeDetails:
+            return URL(string: "https://thornode.ninerealms.com")!
+        case .getBondedNodes, .getChurns:
+            return URL(string: "https://midgard.ninerealms.com/v2")!
         }
     }
-    
+
+    var path: String {
+        switch self {
+        case .getBondedNodes(let address):
+            return "/bonds/\(address)"
+        case .getNodeDetails(let nodeAddress):
+            return "/thorchain/node/\(nodeAddress)"
+        case .getChurns:
+            return "/churns"
+        }
+    }
+
     var method: HTTPMethod {
         switch self {
-        case .getNodes, .getBondedNodes:
+        case .getBondedNodes, .getNodeDetails, .getChurns:
             return .get
         }
     }
-    
+
     var task: HTTPTask {
         switch self {
-        case .getNodes, .getBondedNodes:
+        case .getBondedNodes, .getNodeDetails, .getChurns:
             return .requestPlain
         }
     }
-    
+
     var headers: [String : String]? {
         switch self {
-        case .getNodes, .getBondedNodes:
+        case .getBondedNodes, .getNodeDetails, .getChurns:
             return ["X-Client-ID": "vultisig"]
         }
     }

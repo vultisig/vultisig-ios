@@ -914,6 +914,10 @@
 "availableNodes" = "Available Nodes";
 "activeNodes" = "Active Nodes";
 "churnedOut" = "Churned Out";
+"whitelisted" = "Whitelisted";
+"standby" = "Standby";
+"ready" = "Ready";
+"disabled" = "Disabled";
 "nodeAddress" = "Node Address: %@";
 "requestToBond" = "Request to Bond";
 "bondToNode" = "Bond to Node";

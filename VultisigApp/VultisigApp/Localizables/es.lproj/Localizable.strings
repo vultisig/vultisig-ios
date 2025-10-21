@@ -915,6 +915,10 @@
 "availableNodes" = "Nodos Disponibles";
 "activeNodes" = "Nodos Activos";
 "churnedOut" = "Desvinculado";
+"whitelisted" = "En Lista Blanca";
+"standby" = "En Espera";
+"ready" = "Listo";
+"disabled" = "Deshabilitado";
 "nodeAddress" = "Dirección del Nodo: %@";
 "requestToBond" = "Solicitud de Vinculación";
 "bondToNode" = "Vincular al Nodo";
