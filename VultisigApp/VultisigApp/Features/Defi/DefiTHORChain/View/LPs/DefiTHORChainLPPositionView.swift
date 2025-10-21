@@ -79,7 +79,7 @@ struct DefiTHORChainLPPositionView: View {
     
     var lpTitle: String {
         let amount1 = AmountFormatter.formatCryptoAmount(value: position.coin1Amount, coin: position.coin1)
-        let amount2 = AmountFormatter.formatCryptoAmount(value: position.coin1Amount, coin: position.coin2)
+        let amount2 = AmountFormatter.formatCryptoAmount(value: position.coin2Amount, coin: position.coin2)
         return "\(amount1) + \(amount2)"
     }
     var lpPositionAmountView: some View {

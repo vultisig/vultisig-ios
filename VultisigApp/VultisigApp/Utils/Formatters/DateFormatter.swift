@@ -14,7 +14,7 @@ enum CustomDateFormatter {
         return formatter
     }()
     
-    static func formatMontDayYear(_ timeInterval: TimeInterval) -> String {
+    static func formatMonthDayYear(_ timeInterval: TimeInterval) -> String {
         monthDayYear.string(from: Date(timeIntervalSince1970: timeInterval))
     }
 }

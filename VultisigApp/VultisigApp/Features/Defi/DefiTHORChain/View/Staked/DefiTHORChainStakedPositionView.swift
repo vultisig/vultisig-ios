@@ -27,7 +27,7 @@ struct DefiTHORChainStakedPositionView: View {
     }
     
     var formattedPayoutDate: String {
-        CustomDateFormatter.formatMontDayYear(position.nextPayout)
+        CustomDateFormatter.formatMonthDayYear(position.nextPayout)
     }
     
     var unstakeDisabled: Bool { position.amount.isZero }
