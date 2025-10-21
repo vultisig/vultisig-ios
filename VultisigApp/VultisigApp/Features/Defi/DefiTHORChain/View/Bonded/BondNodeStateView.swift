@@ -28,6 +28,8 @@ struct BondNodeStateView: View {
             return "active".localized
         case .disabled:
             return "disabled".localized
+        case .unknown:
+            return "unknown".localized
         }
     }
 
@@ -42,6 +44,8 @@ struct BondNodeStateView: View {
         case .whitelisted:
             Theme.colors.alertWarning
         case .disabled:
+            Theme.colors.alertWarning
+        case .unknown:
             Theme.colors.alertWarning
         }
     }

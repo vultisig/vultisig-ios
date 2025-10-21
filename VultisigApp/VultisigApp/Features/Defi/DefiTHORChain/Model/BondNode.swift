@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import SwiftUI
 
 struct BondNode: Identifiable, Equatable {
     var id: String { address }
@@ -20,11 +19,12 @@ enum BondNodeState: String, Codable, CaseIterable {
     case ready
     case active
     case disabled
+    case unknown
 
     /// Whether the node can be unbonded
     var canUnbond: Bool {
         switch self {
-        case .whitelisted, .standby:
+        case .whitelisted, .standby, .unknown:
             return true
         case .ready, .active, .disabled:
             return false
@@ -36,7 +36,7 @@ enum BondNodeState: String, Codable, CaseIterable {
         switch self {
         case .whitelisted, .standby, .ready, .active:
             return true
-        case .disabled:
+        case .disabled, .unknown:
             return false
         }
     }
@@ -61,7 +61,7 @@ enum BondNodeState: String, Codable, CaseIterable {
         case "disabled":
             self = .disabled
         default:
-            return nil
+            self = .unknown
         }
     }
 }
