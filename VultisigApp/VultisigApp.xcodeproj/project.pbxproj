@@ -225,6 +225,7 @@
 		13AB0C072E5CA17100F52F24 /* ReferralCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AB0C052E5CA17100F52F24 /* ReferralCode.swift */; };
 		13AB0C082E5CA17100F52F24 /* ReferredCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AB0C062E5CA17100F52F24 /* ReferredCode.swift */; };
 		13AC28082E61E294001CB9AA /* ScreenEdgeInsets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AC28072E61E293001CB9AA /* ScreenEdgeInsets.swift */; };
+		13AC84032EA8518700C1399E /* THORChainAPICache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AC84022EA8518700C1399E /* THORChainAPICache.swift */; };
 		13AF0D182E4CE655004D4FD2 /* NavigationRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AF0D172E4CE652004D4FD2 /* NavigationRouter.swift */; };
 		13AF0D1A2E4CE672004D4FD2 /* NavigationRouter+EnvironmentKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AF0D192E4CE672004D4FD2 /* NavigationRouter+EnvironmentKey.swift */; };
 		13AF0D1D2E4CE73B004D4FD2 /* SendRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AF0D1C2E4CE738004D4FD2 /* SendRoute.swift */; };
@@ -1344,6 +1345,7 @@
 		13AB0C052E5CA17100F52F24 /* ReferralCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralCode.swift; sourceTree = "<group>"; };
 		13AB0C062E5CA17100F52F24 /* ReferredCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferredCode.swift; sourceTree = "<group>"; };
 		13AC28072E61E293001CB9AA /* ScreenEdgeInsets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenEdgeInsets.swift; sourceTree = "<group>"; };
+		13AC84022EA8518700C1399E /* THORChainAPICache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainAPICache.swift; sourceTree = "<group>"; };
 		13AF0D172E4CE652004D4FD2 /* NavigationRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationRouter.swift; sourceTree = "<group>"; };
 		13AF0D192E4CE672004D4FD2 /* NavigationRouter+EnvironmentKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NavigationRouter+EnvironmentKey.swift"; sourceTree = "<group>"; };
 		13AF0D1C2E4CE738004D4FD2 /* SendRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendRoute.swift; sourceTree = "<group>"; };
@@ -2416,6 +2418,7 @@
 		130652482EA7CCE8002CAD99 /* THORChainAPI */ = {
 			isa = PBXGroup;
 			children = (
+				13AC84022EA8518700C1399E /* THORChainAPICache.swift */,
 				130652512EA7CD1E002CAD99 /* TargetType */,
 				1306524F2EA7CCF9002CAD99 /* THORChainAPIService+Bonds.swift */,
 				130652452EA7CCE8002CAD99 /* Models */,
@@ -6000,6 +6003,7 @@
 				A65649EA2B96690400E4B329 /* KeyShare.swift in Sources */,
 				A564ED402BC34B690056FDC0 /* SwapVerifyView.swift in Sources */,
 				137B2C7D2E3A4B2D0074F648 /* BottomSheetContainer.swift in Sources */,
+				13AC84032EA8518700C1399E /* THORChainAPICache.swift in Sources */,
 				A56386842C3A2167008B848E /* ProtoSerializer.swift in Sources */,
 				A611CCCF2C7816EC00D64C9D /* UINavigationControllerExtension.swift in Sources */,
 				A633B13C2B9A6564003D1738 /* SetupQRCodeView.swift in Sources */,

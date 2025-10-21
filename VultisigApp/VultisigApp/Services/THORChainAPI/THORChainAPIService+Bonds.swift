@@ -33,13 +33,44 @@ extension THORChainAPIService {
         return response.data
     }
 
-    /// Get recent churns history
+    /// Get recent churns history (with 5-minute cache)
     func getChurns() async throws -> [ChurnEntry] {
+        // Check cache first
+        if let cached = await cache.getCachedChurns() {
+            return cached
+        }
+
+        // Fetch from network
         let response = try await httpClient.request(
             THORChainBondsAPI.getChurns,
             responseType: [ChurnEntry].self
         )
-        return response.data
+        let data = response.data
+
+        // Cache the result
+        await cache.cacheChurns(data)
+
+        return data
+    }
+
+    /// Get churn interval from mimir (with 5-minute cache)
+    func getChurnInterval() async throws -> String {
+        // Check cache first
+        if let cached = await cache.getCachedChurnInterval() {
+            return cached
+        }
+
+        // Fetch from network (returns plain text)
+        let response = try await httpClient.request(
+            THORChainBondsAPI.getChurnInterval,
+            responseType: String.self
+        )
+        let data = response.data
+
+        // Cache the result
+        await cache.cacheChurnInterval(data)
+
+        return data
     }
 
     /// Get network-wide bond information (APY and next churn date)
