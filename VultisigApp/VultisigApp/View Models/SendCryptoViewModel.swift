@@ -187,10 +187,33 @@ class SendCryptoViewModel: ObservableObject {
                     tx.coin.rawBalance = rawBalance
                     
                     if tx.coin.isNativeToken {
-                        
                         var gas = BigInt.zero
+                        
                         if percentage == 100 {
-                            gas = tx.coin.feeDefault.toBigInt()
+                            // Calculate dynamic fee for send max
+                            // Set a temporary amount to estimate the fee
+                            let originalAmount = tx.amount
+                            let maxAmount = tx.coin.rawBalance.toBigInt(decimals: tx.coin.decimals)
+                            let maxDecimal = Decimal(maxAmount) / pow(10, tx.coin.decimals)
+                            tx.amount = "\(maxDecimal.formatToDecimal(digits: tx.coin.decimals))"
+                            tx.sendMaxAmount = true
+                            
+                            do {
+                                let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
+                                
+                                // Get the dynamic gas budget
+                                if case .Sui(_, _, let gasBudget) = chainSpecific {
+                                    gas = gasBudget
+                                }
+                            } catch {
+                                print("⚠️ Sui dynamic fee calculation failed, using default: \(error.localizedDescription)")
+                                // Fallback to default with 15% margin
+                                gas = (BigInt(3000000) * 115) / 100
+                            }
+                            
+                            // Restore sendMaxAmount flag
+                            tx.sendMaxAmount = false
+                            tx.amount = originalAmount
                         }
                         
                         tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
@@ -198,13 +221,12 @@ class SendCryptoViewModel: ObservableObject {
                         
                         convertToFiat(newValue: tx.amount, tx: tx)
                     } else {
-                        
+                        // For tokens, no gas deduction from token balance
                         tx.amount = "\(tx.coin.getMaxValue(0))"
                         setPercentageAmount(tx: tx, for: percentage)
-                        
                     }
                 } catch {
-                    print("fail to load SUI balances,error:\(error.localizedDescription)")
+                    print("⚠️ Failed to load Sui balance: \(error.localizedDescription)")
                 }
                 
                 isLoading = false

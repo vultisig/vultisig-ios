@@ -11,14 +11,21 @@ struct ReceiveChainSelectionScreen: View {
     let vault: Vault
     @Binding var isPresented: Bool
     @ObservedObject var viewModel: VaultDetailViewModel
+    @Binding var addressToCopy: Coin?
     
     @State var showBottomSheet: Bool = false
     @State var selectedCoin: Coin?
     
-    init(vault: Vault, isPresented: Binding<Bool>, viewModel: VaultDetailViewModel) {
+    init(
+        vault: Vault,
+        isPresented: Binding<Bool>,
+        viewModel: VaultDetailViewModel,
+        addressToCopy: Binding<Coin?>
+    ) {
         self.vault = vault
         self._isPresented = isPresented
         self.viewModel = viewModel
+        self._addressToCopy = addressToCopy
     }
     
     var body: some View {
@@ -38,13 +45,15 @@ struct ReceiveChainSelectionScreen: View {
         .applySheetSize()
         .sheetStyle()
         .onDisappear { viewModel.searchText = "" }
-        .crossPlatformSheet(item: $selectedCoin) {
+        .crossPlatformSheet(item: $selectedCoin) { coin in
             ReceiveQRCodeBottomSheet(
-                coin: $0,
+                coin: coin,
                 isNativeCoin: true
-            ) {
-                selectedCoin = nil
+            ) { coin in
                 isPresented = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    addressToCopy = coin
+                }
             }
         }
     }
@@ -106,5 +115,10 @@ struct ReceiveChainSelectionRowView: View {
 }
 
 #Preview {
-    ReceiveChainSelectionScreen(vault: .example, isPresented: .constant(true), viewModel: .init())
+    ReceiveChainSelectionScreen(
+        vault: .example,
+        isPresented: .constant(true),
+        viewModel: .init(),
+        addressToCopy: .constant(.example)
+    )
 }

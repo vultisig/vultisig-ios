@@ -14,7 +14,6 @@ struct DefiChainCellView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
-        // TODO: - Add navigation afterwards
         GroupedChainCellView(
             group: group,
             vault: vault,

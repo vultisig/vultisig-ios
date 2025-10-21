@@ -43,82 +43,84 @@ struct SendDetailsScreen: View {
     @State var countdownTimer: Timer?
     
     var body: some View {
-        
         container
-        .disabled(sendCryptoViewModel.showLoader)
-        .overlay(sendCryptoViewModel.showLoader ? Loader() : nil)
-        .onAppear {
-            // Initialize button state immediately based on chain
-            sendCryptoViewModel.initializePendingTransactionState(for: tx.coin.chain)
-        }
-        .onLoad {
-            Task {
-                await setMainData()
-                await loadGasInfo()
-                await checkPendingTransactions()
-                
-                // Start polling for current chain if there are pending transactions
-                PendingTransactionManager.shared.startPollingForChain(tx.coin.chain)
+            .disabled(sendCryptoViewModel.showLoader)
+            .overlay(sendCryptoViewModel.showLoader ? Loader() : nil)
+            .onAppear {
+                // Initialize button state immediately based on chain
+                sendCryptoViewModel.initializePendingTransactionState(for: tx.coin.chain)
             }
-            sendDetailsViewModel.onLoad()
-            setData()
-        }
-        .onChange(of: tx.coin) { oldValue, newValue in
-            // Initialize button state immediately for new chain
-            sendCryptoViewModel.initializePendingTransactionState(for: newValue.chain)
-            
-            Task {
-                // SEMPRE para o polling da chain anterior
-                PendingTransactionManager.shared.stopPollingForChain(oldValue.chain)
+            .onLoad {
+                sendDetailsViewModel.onLoad()
+                Task {
+                    await setMainData()
+                    await loadGasInfo()
+                    await checkPendingTransactions()
+                    
+                    // Start polling for current chain if there are pending transactions
+                    PendingTransactionManager.shared.startPollingForChain(tx.coin.chain)
+                }
+                setData()
+            }
+            .onChange(of: tx.coin) { oldValue, newValue in
+                // Initialize button state immediately for new chain
+                sendCryptoViewModel.initializePendingTransactionState(for: newValue.chain)
                 
-                await loadGasInfo()
-                await checkPendingTransactions()
-                
-                // Só inicia polling se a NOVA chain suportar pending transactions
-                if newValue.chain.supportsPendingTransactions {
-                    PendingTransactionManager.shared.startPollingForChain(newValue.chain)
+                Task {
+                    // SEMPRE para o polling da chain anterior
+                    PendingTransactionManager.shared.stopPollingForChain(oldValue.chain)
+                    
+                    await loadGasInfo()
+                    await checkPendingTransactions()
+                    
+                    // Só inicia polling se a NOVA chain suportar pending transactions
+                    if newValue.chain.supportsPendingTransactions {
+                        PendingTransactionManager.shared.startPollingForChain(newValue.chain)
+                    }
                 }
             }
-        }
-        .onDisappear {
-            sendCryptoViewModel.stopMediator()
-            countdownTimer?.invalidate()
-            
-            // Stop all polling when leaving Send screen
-            PendingTransactionManager.shared.stopAllPolling()
-        }
-        .crossPlatformSheet(isPresented: $settingsPresented) {
-            SendGasSettingsView(
-                viewModel: SendGasSettingsViewModel(
-                    coin: tx.coin,
+            .onChange(of: tx.toAddress) { _, _ in
+                validateAddress()
+            }
+            .onDisappear {
+                sendCryptoViewModel.stopMediator()
+                countdownTimer?.invalidate()
+                
+                // Stop all polling when leaving Send screen
+                PendingTransactionManager.shared.stopAllPolling()
+            }
+            .crossPlatformSheet(isPresented: $settingsPresented) {
+                SendGasSettingsView(
+                    viewModel: SendGasSettingsViewModel(
+                        coin: tx.coin,
+                        vault: vault,
+                        gasLimit: tx.gasLimit,
+                        customByteFee: tx.customByteFee,
+                        selectedMode: tx.feeMode
+                    ),
+                    output: self
+                )
+            }
+            .navigationDestination(isPresented: $navigateToVerify) {
+                SendRouteBuilder().buildVerifyScreen(tx: tx, vault: vault)
+            }
+            .crossPlatformSheet(isPresented: $sendDetailsViewModel.showChainPickerSheet) {
+                SwapChainPickerView(
                     vault: vault,
-                    gasLimit: tx.gasLimit,
-                    customByteFee: tx.customByteFee,
-                    selectedMode: tx.feeMode
-                ),
-                output: self
-            )
-        }
-        .navigationDestination(isPresented: $navigateToVerify) {
-            SendRouteBuilder().buildVerifyScreen(tx: tx, vault: vault)
-        }
-        .crossPlatformSheet(isPresented: $sendDetailsViewModel.showChainPickerSheet) {
-            SwapChainPickerView(
-                vault: vault,
-                showSheet: $sendDetailsViewModel.showChainPickerSheet,
-                selectedChain: $sendDetailsViewModel.selectedChain
-            )
-            .environmentObject(coinSelectionViewModel)
-        }
-        .crossPlatformSheet(isPresented: $sendDetailsViewModel.showCoinPickerSheet) {
-            SwapCoinPickerView(
-                vault: vault,
-                showSheet: $sendDetailsViewModel.showCoinPickerSheet,
-                selectedCoin: $tx.coin,
-                selectedChain: sendDetailsViewModel.selectedChain
-            )
-            .environmentObject(coinSelectionViewModel)
-        }
+                    showSheet: $sendDetailsViewModel.showChainPickerSheet,
+                    selectedChain: $sendDetailsViewModel.selectedChain
+                )
+                .environmentObject(coinSelectionViewModel)
+            }
+            .crossPlatformSheet(isPresented: $sendDetailsViewModel.showCoinPickerSheet) {
+                SwapCoinPickerView(
+                    vault: vault,
+                    showSheet: $sendDetailsViewModel.showCoinPickerSheet,
+                    selectedCoin: $tx.coin,
+                    selectedChain: sendDetailsViewModel.selectedChain
+                )
+                .environmentObject(coinSelectionViewModel)
+            }
     }
     
     var content: some View {
@@ -285,7 +287,7 @@ struct SendDetailsScreen: View {
         .font(Theme.fonts.bodySMedium)
         .foregroundColor(Theme.colors.textPrimary)
     }
-
+    
     private func getTitle(for text: String, isExpanded: Bool = true) -> some View {
         Text(
             NSLocalizedString(text, comment: "")
@@ -342,7 +344,7 @@ struct SendDetailsScreen: View {
             coinBalance = tx.coin.balanceString
         }
     }
-
+    
     private func onRefresh() async {
         async let gas: Void = sendCryptoViewModel.loadGasInfoForSending(tx: tx)
         async let bal: Void = BalanceService.shared.updateBalance(for: tx.coin)
@@ -357,7 +359,7 @@ struct SendDetailsScreen: View {
 }
 
 extension SendDetailsScreen: SendGasSettingsOutput {
-
+    
     func didSetFeeSettings(chain: Chain, mode: FeeMode, gasLimit: BigInt?, byteFee: BigInt?) {
         switch chain.chainType {
         case .EVM:
@@ -367,9 +369,9 @@ extension SendDetailsScreen: SendGasSettingsOutput {
         default:
             return
         }
-
+        
         tx.feeMode = mode
-
+        
         Task {
             await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
         }
@@ -384,12 +386,13 @@ extension SendDetailsScreen {
             tx.coin = coin
             tx.fromAddress = coin.address
             tx.toAddress = deeplinkViewModel.address ?? ""
+            deeplinkViewModel.address = nil
             self.coin = nil
             selectedChain = coin.chain
         }
         
-        DebounceHelper.shared.debounce {
-            validateAddress(deeplinkViewModel.address ?? "")
+        if !tx.toAddress.isEmpty {
+            validateAddress()
         }
         
         await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
@@ -402,6 +405,17 @@ extension SendDetailsScreen {
     
     private func validateAddress(_ newValue: String) {
         sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
+    }
+    
+    private func validateAddress() {
+        Task {
+            guard await sendCryptoViewModel.validateToAddress(tx: tx) else {
+                sendDetailsViewModel.onSelect(tab: .address)
+                return
+            }
+            sendDetailsViewModel.addressSetupDone = true
+            sendDetailsViewModel.onSelect(tab: .amount)
+        }
     }
     
     @MainActor

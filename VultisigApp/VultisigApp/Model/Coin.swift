@@ -118,6 +118,10 @@ class Coin: ObservableObject, Codable, Hashable {
         "\(defiBalanceString) \(ticker)"
     }
     
+    func formatWithTicker(value: Decimal) -> String {
+        "\(value.formatForDisplay()) \(ticker)"
+    }
+    
     var balanceInFiat: String {
         return balanceInFiatDecimal.formatToFiat()
     }

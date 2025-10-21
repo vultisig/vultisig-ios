@@ -25,11 +25,21 @@ struct DefiChainListView: View {
     
     var chainList: some View {
         ForEach(Array(viewModel.filteredGroups.enumerated()), id: \.element.id) { index, group in
-            DefiChainCellView(group: group, vault: vault)
-                .commonListItemContainer(
-                    index: index,
-                    itemsCount: viewModel.filteredGroups.count
-                )
+            NavigationLink {
+                switch group.chain {
+                case .thorChain:
+                    DefiTHORChainMainScreen(vault: vault)
+                default:
+                    EmptyView()
+                }
+            } label: {
+                DefiChainCellView(group: group, vault: vault)
+                    .commonListItemContainer(
+                        index: index,
+                        itemsCount: viewModel.filteredGroups.count
+                    )
+            }
+            .disabled(group.chain != .thorChain)
         }
     }
 }

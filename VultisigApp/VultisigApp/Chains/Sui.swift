@@ -17,7 +17,7 @@ enum SuiHelper {
             throw HelperError.runtimeError("coin is not SUI")
         }
         
-        guard case .Sui(let referenceGasPrice, let coins) = keysignPayload.chainSpecific else {
+        guard case .Sui(let referenceGasPrice, let coins, let gasBudget) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("getPreSignedInputData fail to get SUI transaction information from RPC")
         }
         
@@ -53,9 +53,8 @@ enum SuiHelper {
                     $0.recipients = [toAddress.description]
                     $0.amounts = [UInt64(keysignPayload.toAmount)]
                 }
-                // 0.003 SUI
                 $0.signer = keysignPayload.coin.address
-                $0.gasBudget = 3000000
+                $0.gasBudget = UInt64(gasBudget)
                 $0.referenceGasPrice = UInt64(referenceGasPrice)
             }
             
@@ -105,9 +104,8 @@ enum SuiHelper {
                         $0.gas = gasObject
                     }
                 }
-                // 0.003 SUI
                 $0.signer = keysignPayload.coin.address
-                $0.gasBudget = 3000000
+                $0.gasBudget = UInt64(gasBudget)
                 $0.referenceGasPrice = UInt64(referenceGasPrice)
             }
             

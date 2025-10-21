@@ -19,7 +19,7 @@ struct VaultMainScreenBackground: View {
                     .ignoresSafeArea(edges: .top)
                 radialGradient
                     .frame(width: width, height: width)
-                    .offset(y: -width / 2)
+                    .offset(y: -width / 3)
             }
         }
     }

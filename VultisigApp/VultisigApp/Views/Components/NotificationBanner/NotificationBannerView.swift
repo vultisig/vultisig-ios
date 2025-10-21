@@ -57,7 +57,7 @@ struct NotificationBannerView: View {
                         isVisibleInternal = false
                     }
                     
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                         isVisible = false
                     }
                 }

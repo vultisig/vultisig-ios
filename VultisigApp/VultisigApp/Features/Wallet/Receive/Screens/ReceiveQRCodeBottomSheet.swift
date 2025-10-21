@@ -10,10 +10,9 @@ import SwiftUI
 struct ReceiveQRCodeBottomSheet: View {
     let coin: Coin
     let isNativeCoin: Bool
-    var onFinish: () -> Void
+    var onCopy: (Coin) -> Void
     
     @State var qrCodeImage: Image?
-    @State var addressToCopy: Coin?
     @Environment(\.displayScale) var displayScale
     @Environment(\.dismiss) var dismiss
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
@@ -40,9 +39,6 @@ struct ReceiveQRCodeBottomSheet: View {
             .padding(.top, 40)
             .padding(.horizontal, 16)
             .background(ModalBackgroundView(width: proxy.size.width))
-            .withAddressCopy(coin: $addressToCopy) {
-                onFinish()
-            }
             .presentationDetents([.height(465)])
             .presentationBackground(Theme.colors.bgSecondary)
             .presentationDragIndicator(.visible)
@@ -102,7 +98,7 @@ struct ReceiveQRCodeBottomSheet: View {
                 }
             }
             PrimaryButton(title: "copyAddress".localized) {
-                addressToCopy = coin
+                    onCopy(coin)
             }
         }
     }
@@ -115,6 +111,6 @@ struct ReceiveQRCodeBottomSheet: View {
             show = true
         }
     }
-    .overlay(show ? ReceiveQRCodeBottomSheet(coin: .example, isNativeCoin: false, onFinish: {}) : nil)
+    .overlay(show ? ReceiveQRCodeBottomSheet(coin: .example, isNativeCoin: false, onCopy: { _ in }) : nil)
     
 }

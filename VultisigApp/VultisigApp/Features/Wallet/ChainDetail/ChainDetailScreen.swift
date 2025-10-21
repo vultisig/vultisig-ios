@@ -55,13 +55,16 @@ struct ChainDetailScreen: View {
             refresh()
         }
         .background(VaultMainScreenBackground())
-        .withAddressCopy(coin: $addressToCopy) { }
+        .withAddressCopy(coin: $addressToCopy)
         .crossPlatformSheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(
                 coin: group.nativeCoin,
                 isNativeCoin: true
-            ) {
+            ) { coin in
                 showReceiveSheet = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    addressToCopy = coin
+                }
             }
         }
         .crossPlatformSheet(isPresented: $showManageTokens) {
