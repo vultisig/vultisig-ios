@@ -505,8 +505,11 @@ class Endpoint {
         "https://bscscan.com/tx/\(value)"
     }
     
-    static func resolveTNS(name: String) -> URL {
-        "https://midgard.ninerealms.com/v2/thorname/lookup/\(name)".asUrl
+    static func resolveTNS(name: String, chain: Chain = .thorChain) -> URL {
+        let baseUrl = chain == .thorChainStagenet 
+            ? "https://stagenet-midgard.ninerealms.com"
+            : "https://midgard.ninerealms.com"
+        return "\(baseUrl)/v2/thorname/lookup/\(name)".asUrl
     }
     
     static func fetchOsmosisAccountBalance(address: String) -> String{

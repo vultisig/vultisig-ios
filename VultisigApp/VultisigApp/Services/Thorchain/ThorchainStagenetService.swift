@@ -86,7 +86,7 @@ class ThorchainStagenetService: ThorchainSwapProvider {
             let entries: [Entry]
         }
         
-        let url = Endpoint.resolveTNS(name: name)
+        let url = Endpoint.resolveTNS(name: name, chain: chain)
         let (data, _) = try await URLSession.shared.data(from: url)
         let response = try JSONDecoder().decode(Response.self, from: data)
         
