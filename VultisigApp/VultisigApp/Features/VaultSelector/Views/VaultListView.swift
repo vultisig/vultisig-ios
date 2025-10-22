@@ -54,8 +54,10 @@ struct VaultListView: View {
                 }
                 .customSectionSpacing(0)
                 .listStyle(.plain)
+                .buttonStyle(.borderless)
                 .scrollContentBackground(.hidden)
                 .scrollIndicators(.hidden)
+                .background(Theme.colors.bgPrimary)
                 .safeAreaInset(edge: .bottom, content: { Spacer().frame(height: isEditing ? 100 : 0) })
                 .background(Theme.colors.bgPrimary)
             }
