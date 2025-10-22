@@ -28,7 +28,9 @@ public struct AddressService {
             if isValid {
                 return input
             } else {
-                throw Errors.invalidAddress
+                // Try TNS resolution for stagenet
+                let service = ThorchainServiceFactory.getService(for: .thorChainStagenet)
+                return try await service.resolveTNS(name: input, chain: chain)
             }
         }
 
@@ -41,7 +43,8 @@ public struct AddressService {
             return try await AddressService.resolveENSDomaninAddress(input: input, chain: chain)
 
         } else if chain == .thorChain {
-            return try await ThorchainService.shared.resolveTNS(name: input, chain: chain)
+            let service = ThorchainServiceFactory.getService(for: .thorChain)
+            return try await service.resolveTNS(name: input, chain: chain)
 
         } else {
             throw Errors.invalidAddress

@@ -20,6 +20,9 @@ protocol ThorchainServiceProtocol {
     func fetchTcyStakedAmount(address: String) async -> Decimal
     func fetchTcyAutoCompoundAmount(address: String) async -> Decimal
     func fetchMergeAccounts(address: String) async -> [MergeAccountResponse.ResponseData.Node.AccountMerge.MergeAccount]
+    func resolveTNS(name: String, chain: Chain) async throws -> String
+    func fetchYieldTokenPrice(for contract: String) async -> Double?
+    func getAssetPriceInUSD(assetName: String) async -> Double
 }
 
 extension ThorchainService: ThorchainServiceProtocol {}

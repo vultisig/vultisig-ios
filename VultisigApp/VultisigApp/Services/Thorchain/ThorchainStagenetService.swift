@@ -265,6 +265,12 @@ class ThorchainStagenetService: ThorchainSwapProvider {
 // MARK: - THORChain Stagenet Pool Prices & Token Metadata
 extension ThorchainStagenetService {
     
+    func fetchYieldTokenPrice(for contract: String) async -> Double? {
+        // Stagenet doesn't support yield tokens (yRUNE, yTCY)
+        // Return nil to indicate no price available
+        return nil
+    }
+    
     func getAssetPriceInUSD(assetName: String) async -> Double {
         let cacheKey = "\(assetName.lowercased())-stagenet-price"
         

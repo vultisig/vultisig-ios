@@ -88,8 +88,10 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     func progressLink(tx: SwapTransaction, hash: String) -> String? {
         switch tx.quote {
-        case .thorchain, .thorchainStagenet:
+        case .thorchain:
             return Endpoint.getSwapProgressURL(txid: hash)
+        case .thorchainStagenet:
+            return Endpoint.getStagenetSwapProgressURL(txid: hash)
         case .mayachain:
             return Endpoint.getMayaSwapTracker(txid: hash)
         case .lifi:

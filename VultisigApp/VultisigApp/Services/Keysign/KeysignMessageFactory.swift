@@ -25,8 +25,13 @@ struct KeysignMessageFactory {
         if let swapPayload = payload.swapPayload {
             let incrementNonce = payload.approvePayload != nil
             switch swapPayload {
-            case .thorchain(let swapPayload), .thorchainStagenet(let swapPayload):
-                let service = ThorchainServiceFactory.getService(for: payload.coin.chain)
+            case .thorchain(let swapPayload):
+                let service = ThorchainServiceFactory.getService(for: .thorChain)
+                _ = service.ensureTHORChainChainID()
+                let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, vaultHexPublicKeyEdDSA: vault.pubKeyEdDSA)
+                messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
+            case .thorchainStagenet(let swapPayload):
+                let service = ThorchainServiceFactory.getService(for: .thorChainStagenet)
                 _ = service.ensureTHORChainChainID()
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, vaultHexPublicKeyEdDSA: vault.pubKeyEdDSA)
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
