@@ -8,8 +8,17 @@
 import Foundation
 
 final class DefiTHORChainMainViewModel: ObservableObject {
+    @Published private(set) var vault: Vault
     @Published var selectedPosition: THORChainPositionType = .bond
     private(set) lazy var positions: [SegmentedControlItem<THORChainPositionType>] = THORChainPositionType.allCases.map { SegmentedControlItem(value: $0, title: $0.segmentedControlTitle) }
+    
+    init(vault: Vault) {
+        self.vault = vault
+    }
+    
+    func update(vault: Vault) {
+        self.vault = vault
+    }
     
     func moveToNextPosition() {
         let allPositions = THORChainPositionType.allCases
@@ -23,5 +32,13 @@ final class DefiTHORChainMainViewModel: ObservableObject {
         let currentIndex = allPositions.firstIndex(of: selectedPosition) ?? 0
         let previousIndex = currentIndex == 0 ? allPositions.count - 1 : currentIndex - 1
         selectedPosition = allPositions[previousIndex]
+    }
+    
+    func refresh() async {
+        guard let runeCoin = vault.coins.first(where: { $0.isRune }) else {
+            return
+        }
+
+        await BalanceService.shared.updateBalance(for: runeCoin)
     }
 }

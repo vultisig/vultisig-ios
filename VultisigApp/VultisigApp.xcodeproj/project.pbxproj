@@ -222,6 +222,10 @@
 		13A899062E44D331006F75F0 /* EditReferralViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A899052E44D32C006F75F0 /* EditReferralViewModel.swift */; };
 		13A899082E44D752006F75F0 /* ReferralExpiryDataCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A899072E44D745006F75F0 /* ReferralExpiryDataCalculator.swift */; };
 		13A8990B2E44F547006F75F0 /* RedactedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A8990A2E44F544006F75F0 /* RedactedText.swift */; };
+		13AA6CDD2EA8742100760C8D /* DefiTHORChainLPsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AA6CDB2EA8742100760C8D /* DefiTHORChainLPsViewModel.swift */; };
+		13AA6CDE2EA8742100760C8D /* THORChainLPsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AA6CDC2EA8742100760C8D /* THORChainLPsAPI.swift */; };
+		13AA6CE02EA8743F00760C8D /* THORChainPoolStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AA6CDF2EA8743F00760C8D /* THORChainPoolStats.swift */; };
+		13AA6CE32EA8746300760C8D /* THORChainAPIService+LPs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AA6CE22EA8746300760C8D /* THORChainAPIService+LPs.swift */; };
 		13AB0C072E5CA17100F52F24 /* ReferralCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AB0C052E5CA17100F52F24 /* ReferralCode.swift */; };
 		13AB0C082E5CA17100F52F24 /* ReferredCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AB0C062E5CA17100F52F24 /* ReferredCode.swift */; };
 		13AC28082E61E294001CB9AA /* ScreenEdgeInsets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AC28072E61E293001CB9AA /* ScreenEdgeInsets.swift */; };
@@ -326,6 +330,10 @@
 		13E1E7672E6DD71E00D68F5D /* FormExpandableSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1E7662E6DD71D00D68F5D /* FormExpandableSection.swift */; };
 		13E1E7692E6DD79B00D68F5D /* ServerVaultCheckInboxScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1E7682E6DD79A00D68F5D /* ServerVaultCheckInboxScreen.swift */; };
 		13EFA1CB2E31389D009838EB /* OTPCharTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EFA1CA2E31389C009838EB /* OTPCharTextField.swift */; };
+		13FB8AB62EA93B4200712A51 /* THORChainLiquidityProviderResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13FB8AB52EA93B4100712A51 /* THORChainLiquidityProviderResponse.swift */; };
+		13FB8AB82EA93B5700712A51 /* THORChainDepthHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13FB8AB72EA93B5700712A51 /* THORChainDepthHistory.swift */; };
+		13FB8ABA2EA93B6A00712A51 /* THORChainLPPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13FB8AB92EA93B6900712A51 /* THORChainLPPosition.swift */; };
+		13FB8ABC2EA93C2F00712A51 /* DefiTHORChainLPPositionSkeletonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13FB8ABB2EA93C2E00712A51 /* DefiTHORChainLPPositionSkeletonView.swift */; };
 		3438005C33774BADE4B163FD /* KyberSwapService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */; };
 		43E0C072714FC369B3B91499 /* HiddenToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCB0CAFF343CC6FF8986E07F /* HiddenToken.swift */; };
 		4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */; };
@@ -1344,6 +1352,10 @@
 		13A899052E44D32C006F75F0 /* EditReferralViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditReferralViewModel.swift; sourceTree = "<group>"; };
 		13A899072E44D745006F75F0 /* ReferralExpiryDataCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralExpiryDataCalculator.swift; sourceTree = "<group>"; };
 		13A8990A2E44F544006F75F0 /* RedactedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedactedText.swift; sourceTree = "<group>"; };
+		13AA6CDB2EA8742100760C8D /* DefiTHORChainLPsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainLPsViewModel.swift; sourceTree = "<group>"; };
+		13AA6CDC2EA8742100760C8D /* THORChainLPsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainLPsAPI.swift; sourceTree = "<group>"; };
+		13AA6CDF2EA8743F00760C8D /* THORChainPoolStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainPoolStats.swift; sourceTree = "<group>"; };
+		13AA6CE22EA8746300760C8D /* THORChainAPIService+LPs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "THORChainAPIService+LPs.swift"; sourceTree = "<group>"; };
 		13AB0C052E5CA17100F52F24 /* ReferralCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralCode.swift; sourceTree = "<group>"; };
 		13AB0C062E5CA17100F52F24 /* ReferredCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferredCode.swift; sourceTree = "<group>"; };
 		13AC28072E61E293001CB9AA /* ScreenEdgeInsets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenEdgeInsets.swift; sourceTree = "<group>"; };
@@ -1447,6 +1459,10 @@
 		13E1E7662E6DD71D00D68F5D /* FormExpandableSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormExpandableSection.swift; sourceTree = "<group>"; };
 		13E1E7682E6DD79A00D68F5D /* ServerVaultCheckInboxScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerVaultCheckInboxScreen.swift; sourceTree = "<group>"; };
 		13EFA1CA2E31389C009838EB /* OTPCharTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTPCharTextField.swift; sourceTree = "<group>"; };
+		13FB8AB52EA93B4100712A51 /* THORChainLiquidityProviderResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainLiquidityProviderResponse.swift; sourceTree = "<group>"; };
+		13FB8AB72EA93B5700712A51 /* THORChainDepthHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainDepthHistory.swift; sourceTree = "<group>"; };
+		13FB8AB92EA93B6900712A51 /* THORChainLPPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainLPPosition.swift; sourceTree = "<group>"; };
+		13FB8ABB2EA93C2E00712A51 /* DefiTHORChainLPPositionSkeletonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainLPPositionSkeletonView.swift; sourceTree = "<group>"; };
 		4600167D2B71A12D00CE17C7 /* Tss.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:G8Q5XUAJD9:Cortina Ventures PTY LTD"; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsService.swift; sourceTree = "<group>"; };
 		461AD1B62BC6706500959278 /* VaultPairDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultPairDetailView.swift; sourceTree = "<group>"; };
@@ -2408,9 +2424,10 @@
 		130652452EA7CCE8002CAD99 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				130652542EA7CEB9002CAD99 /* Bonds */,
+				13AA6CE12EA8744600760C8D /* LPs */,
 				1345D1382EA813F000FC7BFD /* THORChainNetworkInfo.swift */,
 				1345D1362EA8135500FC7BFD /* THORChainHealth.swift */,
-				130652542EA7CEB9002CAD99 /* Bonds */,
 				130652412EA7CCE8002CAD99 /* LastBlockResponse.swift */,
 				130652422EA7CCE8002CAD99 /* THORChainAPIError.swift */,
 				130652432EA7CCE8002CAD99 /* THORName.swift */,
@@ -2422,11 +2439,12 @@
 		130652482EA7CCE8002CAD99 /* THORChainAPI */ = {
 			isa = PBXGroup;
 			children = (
+				130652472EA7CCE8002CAD99 /* THORChainAPIService.swift */,
+				1306524F2EA7CCF9002CAD99 /* THORChainAPIService+Bonds.swift */,
+				13AA6CE22EA8746300760C8D /* THORChainAPIService+LPs.swift */,
 				13AC84022EA8518700C1399E /* THORChainAPICache.swift */,
 				130652512EA7CD1E002CAD99 /* TargetType */,
-				1306524F2EA7CCF9002CAD99 /* THORChainAPIService+Bonds.swift */,
 				130652452EA7CCE8002CAD99 /* Models */,
-				130652472EA7CCE8002CAD99 /* THORChainAPIService.swift */,
 				1345D13C2EA81A2D00FC7BFD /* NetworkBondInfo.swift */,
 			);
 			path = THORChainAPI;
@@ -2435,6 +2453,7 @@
 		130652512EA7CD1E002CAD99 /* TargetType */ = {
 			isa = PBXGroup;
 			children = (
+				13AA6CDC2EA8742100760C8D /* THORChainLPsAPI.swift */,
 				130652522EA7CD24002CAD99 /* THORChainBondsAPI.swift */,
 				130652462EA7CCE8002CAD99 /* THORChainAPI.swift */,
 			);
@@ -3060,6 +3079,7 @@
 		13A657A72EA283D300323E4C /* ViewModel */ = {
 			isa = PBXGroup;
 			children = (
+				13AA6CDB2EA8742100760C8D /* DefiTHORChainLPsViewModel.swift */,
 				1306525B2EA7D7CF002CAD99 /* DefiTHORChainBondViewModel.swift */,
 				13A657A82EA283DB00323E4C /* DefiTHORChainMainViewModel.swift */,
 			);
@@ -3101,6 +3121,7 @@
 		13A657B22EA28B8600323E4C /* LPs */ = {
 			isa = PBXGroup;
 			children = (
+				13FB8ABB2EA93C2E00712A51 /* DefiTHORChainLPPositionSkeletonView.swift */,
 				1363B4FF2EA6967200818DF7 /* DefiTHORChainLPPositionView.swift */,
 				13A657B52EA28BAE00323E4C /* DefiTHORChainLPsView.swift */,
 			);
@@ -3123,6 +3144,17 @@
 				13A8990A2E44F544006F75F0 /* RedactedText.swift */,
 			);
 			path = Text;
+			sourceTree = "<group>";
+		};
+		13AA6CE12EA8744600760C8D /* LPs */ = {
+			isa = PBXGroup;
+			children = (
+				13FB8AB92EA93B6900712A51 /* THORChainLPPosition.swift */,
+				13FB8AB72EA93B5700712A51 /* THORChainDepthHistory.swift */,
+				13FB8AB52EA93B4100712A51 /* THORChainLiquidityProviderResponse.swift */,
+				13AA6CDF2EA8743F00760C8D /* THORChainPoolStats.swift */,
+			);
+			path = LPs;
 			sourceTree = "<group>";
 		};
 		13AF0D162E4CE64B004D4FD2 /* Navigation */ = {
@@ -5677,6 +5709,7 @@
 				1363B5002EA6967200818DF7 /* DefiTHORChainLPPositionView.swift in Sources */,
 				A5D8A3442CF8D5B0005A20A8 /* CustomMessagePayload.swift in Sources */,
 				B52FD1D02CDDAFE50031FB71 /* terra.swift in Sources */,
+				13FB8AB82EA93B5700712A51 /* THORChainDepthHistory.swift in Sources */,
 				138C5E672E79E86B00C559C7 /* GlassEffect.swift in Sources */,
 				B5A54E022D9C5CCD001AF096 /* FunctionCallRemoveLiquidityMaya.swift in Sources */,
 				A683EDED2BCF67D100BB706E /* NetworkPromptCell.swift in Sources */,
@@ -5694,6 +5727,7 @@
 				A69069B52BCF538000F28A8B /* NetworkPrompts.swift in Sources */,
 				A6BB9BCD2DA9E1D60085E117 /* AllDevicesUpgradeView+macOS.swift in Sources */,
 				A6C556F22CE59A3F00E5E44E /* BackupNowDisclaimer+macOS.swift in Sources */,
+				13FB8AB62EA93B4200712A51 /* THORChainLiquidityProviderResponse.swift in Sources */,
 				A6D739DC2E0AFF2E0005697D /* LinearSeparator.swift in Sources */,
 				A527DD2C2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift in Sources */,
 				A6182F4B2C9294390059BFDD /* SendCryptoAmountTextField+iOS.swift in Sources */,
@@ -5756,6 +5790,7 @@
 				A58CC34B2C32FA760086D16B /* ProtoMappable.swift in Sources */,
 				A6505AE72CA670FE0002FBF4 /* StringExtension+iOS.swift in Sources */,
 				A6505AEB2CA673860002FBF4 /* MacCameraServiceViewModel+iOS.swift in Sources */,
+				13AA6CE32EA8746300760C8D /* THORChainAPIService+LPs.swift in Sources */,
 				A6E0C9232DE968AB00A01543 /* ReferralTransactionDetailsView.swift in Sources */,
 				A5BA150F2C085EEB00AA6C07 /* CachedAsyncImage.swift in Sources */,
 				13D178FC2E57544A00007B48 /* AddressBookChainSelectionViewModel.swift in Sources */,
@@ -6129,6 +6164,8 @@
 				B53D8CCA2BF7F22500B795D3 /* FunctionCallUnbond.swift in Sources */,
 				A6F7B6E52D4B046800AC8104 /* KeygenProgressContainer.swift in Sources */,
 				A6BB9BC72DA9D5B90085E117 /* AllDevicesUpgradeView.swift in Sources */,
+				13AA6CDD2EA8742100760C8D /* DefiTHORChainLPsViewModel.swift in Sources */,
+				13AA6CDE2EA8742100760C8D /* THORChainLPsAPI.swift in Sources */,
 				1334C7462E301E8800CBAA3E /* SendCryptoDoneContent.swift in Sources */,
 				A6980C282BC086BC00F452AB /* SettingsViewModel.swift in Sources */,
 				A622C8322C9BB26F00908332 /* VultisigApp+iOS.swift in Sources */,
@@ -6155,6 +6192,7 @@
 				A6BB9BBC2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift in Sources */,
 				A6ECA1A02C93FC0000456110 /* VaultSetupCard+iOS.swift in Sources */,
 				B58BE8E62CD1BD5D00FFD98F /* OsmosisService.swift in Sources */,
+				13FB8ABA2EA93B6A00712A51 /* THORChainLPPosition.swift in Sources */,
 				A670CEBF2DD7CFC600E33B09 /* NavigationBlankBackButton+iOS.swift in Sources */,
 				A6C6708C2C9CFD0100F59B6A /* KeysignView+iOS.swift in Sources */,
 				A6BB9BBF2DA9A9B60085E117 /* UpgradeYourVaultView.swift in Sources */,
@@ -6236,6 +6274,7 @@
 				A622C8482C9BBD3900908332 /* FunctionCallView+macOS.swift in Sources */,
 				A5CBA32C2BCD747C00088CC3 /* TappableTextFieldStyle.swift in Sources */,
 				1306525C2EA7D7D7002CAD99 /* DefiTHORChainBondViewModel.swift in Sources */,
+				13FB8ABC2EA93C2F00712A51 /* DefiTHORChainLPPositionSkeletonView.swift in Sources */,
 				DE1905272BD8CC4D0043577E /* KeysignVerify.swift in Sources */,
 				469ED39B2B98E8B5008D4951 /* CosmosBalance.swift in Sources */,
 				A57A03CB2BC47D4F00F6F3DF /* BlockChainService.swift in Sources */,
@@ -6576,6 +6615,7 @@
 				46C8CBBD2BA7753900E68E08 /* Blockchair.swift in Sources */,
 				13B1C2C22E65D21E00050637 /* VaultPairDetailView.swift in Sources */,
 				B524F55B2CF049F600D5B19D /* FunctionCallBondMayaChain.swift in Sources */,
+				13AA6CE02EA8743F00760C8D /* THORChainPoolStats.swift in Sources */,
 				B54E317F2BF5A1A700D4FC0A /* StyledNumberField.swift in Sources */,
 				130652492EA7CCE8002CAD99 /* THORChainAPIError.swift in Sources */,
 				1306524A2EA7CCE8002CAD99 /* THORNameLookup.swift in Sources */,

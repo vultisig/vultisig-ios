@@ -216,7 +216,7 @@ private extension BalanceService {
 
 private extension BalanceService {
     func updateBondedIfNeeded(for coin: Coin) async throws {
-        guard coin.ticker.localizedCaseInsensitiveContains("rune") else {
+        guard coin.ticker.caseInsensitiveCompare("RUNE") == .orderedSame else {
             return
         }
         

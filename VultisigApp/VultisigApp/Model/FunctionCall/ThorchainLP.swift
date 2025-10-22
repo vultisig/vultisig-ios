@@ -60,15 +60,6 @@ struct ThorchainLPPosition: Codable {
         case gLPGrowth = "glp_growth_pct"
         case assetGrowthPct = "asset_growth_pct"
     }
-    
-    // Calculate the percentage of pool ownership
-    func poolSharePercentage(totalPoolUnits: String) -> Decimal? {
-        guard let unitsDecimal = Decimal(string: poolUnits),
-              let totalUnitsDecimal = Decimal(string: totalPoolUnits) else {
-            return nil
-        }
-        return (unitsDecimal / totalUnitsDecimal) * 100
-    }
 }
 
 // Structure for LP response from individual pool endpoint
