@@ -237,7 +237,9 @@ class SendCryptoViewModel: ObservableObject {
                 
                 var gas = BigInt.zero
                 
-                if percentage == 100 {
+                // Only deduct fee for native tokens
+                // Non-native tokens on THORChain/Cosmos chains pay fees from the native token balance
+                if percentage == 100 && tx.coin.isNativeToken {
                     gas = BigInt(tx.gasDecimal.description,radix:10) ?? 0
                 }
                 
