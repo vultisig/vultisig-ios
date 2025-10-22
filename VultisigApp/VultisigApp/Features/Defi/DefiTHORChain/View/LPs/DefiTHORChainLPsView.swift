@@ -15,13 +15,20 @@ struct DefiTHORChainLPsView: View {
     
     var body: some View {
         LazyVStack(spacing: 14) {
-            ForEach(viewModel.lpPositions) { position in
-                DefiTHORChainLPPositionView(
-                    vault: vault,
-                    position: position,
-                    onRemove: { onRemove(position) },
-                    onAdd: { onAdd(position) }
-                )
+            if viewModel.isLoading {
+                // Show skeleton views while loading
+                ForEach(0..<3, id: \.self) { _ in
+                    DefiTHORChainLPPositionSkeletonView()
+                }
+            } else {
+                ForEach(viewModel.lpPositions) { position in
+                    DefiTHORChainLPPositionView(
+                        vault: vault,
+                        position: position,
+                        onRemove: { onRemove(position) },
+                        onAdd: { onAdd(position) }
+                    )
+                }
             }
         }
     }
