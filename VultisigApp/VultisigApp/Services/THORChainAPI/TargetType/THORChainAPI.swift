@@ -26,7 +26,10 @@ enum THORChainAPI: TargetType {
                 .getLastBlock,
                 .getNetworkFees:
             return URL(string: "https://thornode.ninerealms.com/thorchain")!
-        case .getThornameLookup, .getAddressLookup, .getHealth, .getNetworkInfo:
+        case .getThornameLookup, 
+             .getAddressLookup, 
+             .getHealth, 
+             .getNetworkInfo:
             return URL(string: "https://midgard.ninerealms.com")!
         }
     }
@@ -86,7 +89,10 @@ enum THORChainAPI: TargetType {
     
     var headers: [String : String]? {
         switch self {
-        case .getThornameLookup, .getAddressLookup, .getHealth, .getNetworkInfo:
+        case .getThornameLookup, 
+             .getAddressLookup, 
+             .getHealth, 
+             .getNetworkInfo:
             return ["X-Client-ID": "vultisig"]
         default:
             return nil

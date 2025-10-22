@@ -101,7 +101,7 @@ private extension BalanceService {
             }
             
             // Handle TCY staked balance (includes both regular and auto-compound)
-            if coin.ticker.localizedCaseInsensitiveContains("tcy") {
+            if coin.ticker.caseInsensitiveCompare("TCY") == .orderedSame {
                 let tcyStakedBalance = await thor.fetchTcyStakedAmount(address: coin.address)
                 
                 if enableAutoCompoundStakedBalance {
@@ -214,7 +214,7 @@ private extension BalanceService {
 
 private extension BalanceService {
     func updateBondedIfNeeded(for coin: Coin) async throws {
-        guard coin.ticker.localizedCaseInsensitiveContains("rune") else {
+        guard coin.ticker.caseInsensitiveCompare("RUNE") == .orderedSame else {
             return
         }
         

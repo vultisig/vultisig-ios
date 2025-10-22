@@ -26,6 +26,9 @@ actor THORChainAPICache {
     private var churnIntervalCache: CacheEntry<String>?
     private var networkInfoCache: CacheEntry<THORChainNetworkInfo>?
     private var healthCache: CacheEntry<THORChainHealth>?
+    private var poolStatsCache: CacheEntry<[THORChainPoolStats]>?
+    private var depthHistoryCache: [String: CacheEntry<THORChainDepthHistory>] = [:] // Key: "asset-interval-count"
+    private var manualAPRCache: [String: CacheEntry<Decimal>] = [:] // Key: "asset-days"
 
     // MARK: - Churns Cache
 
@@ -95,6 +98,73 @@ actor THORChainAPICache {
         healthCache = nil
     }
 
+    // MARK: - Pool Stats Cache
+
+    func getCachedPoolStats() -> [THORChainPoolStats]? {
+        guard let entry = poolStatsCache, !entry.isExpired(duration: Self.cacheDuration) else {
+            return nil
+        }
+        return entry.value
+    }
+
+    func cachePoolStats(_ stats: [THORChainPoolStats]) {
+        poolStatsCache = CacheEntry(value: stats, timestamp: Date())
+    }
+
+    func invalidatePoolStats() {
+        poolStatsCache = nil
+    }
+
+    // MARK: - Depth History Cache
+
+    func getCachedDepthHistory(asset: String, interval: String, count: Int) -> THORChainDepthHistory? {
+        let key = "\(asset)-\(interval)-\(count)"
+        guard let entry = depthHistoryCache[key], !entry.isExpired(duration: Self.cacheDuration) else {
+            return nil
+        }
+        return entry.value
+    }
+
+    func cacheDepthHistory(_ history: THORChainDepthHistory, asset: String, interval: String, count: Int) {
+        let key = "\(asset)-\(interval)-\(count)"
+        depthHistoryCache[key] = CacheEntry(value: history, timestamp: Date())
+    }
+
+    func invalidateDepthHistory(asset: String? = nil) {
+        if let asset = asset {
+            // Remove all entries for this asset
+            depthHistoryCache = depthHistoryCache.filter { !$0.key.starts(with: "\(asset)-") }
+        } else {
+            // Clear all depth history cache
+            depthHistoryCache.removeAll()
+        }
+    }
+
+    // MARK: - Manual APR Cache
+
+    func getCachedManualAPR(asset: String, days: Int) -> Decimal? {
+        let key = "\(asset)-\(days)"
+        guard let entry = manualAPRCache[key], !entry.isExpired(duration: Self.cacheDuration) else {
+            return nil
+        }
+        return entry.value
+    }
+
+    func cacheManualAPR(_ apr: Decimal, asset: String, days: Int) {
+        let key = "\(asset)-\(days)"
+        manualAPRCache[key] = CacheEntry(value: apr, timestamp: Date())
+    }
+
+    func invalidateManualAPR(asset: String? = nil) {
+        if let asset = asset {
+            // Remove all entries for this asset
+            manualAPRCache = manualAPRCache.filter { !$0.key.starts(with: "\(asset)-") }
+        } else {
+            // Clear all manual APR cache
+            manualAPRCache.removeAll()
+        }
+    }
+
     // MARK: - Clear All Cache
 
     func clearAll() {
@@ -102,5 +172,8 @@ actor THORChainAPICache {
         churnIntervalCache = nil
         networkInfoCache = nil
         healthCache = nil
+        poolStatsCache = nil
+        depthHistoryCache.removeAll()
+        manualAPRCache.removeAll()
     }
 }
