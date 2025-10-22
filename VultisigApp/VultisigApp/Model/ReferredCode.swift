@@ -2,7 +2,7 @@
 //  ReferredCode.swift
 //  VultisigApp
 //
-//  Created by Claude Code on 2025-08-25.
+//  Created by Gaston Mazzeo on 2025-08-25.
 //
 
 import Foundation

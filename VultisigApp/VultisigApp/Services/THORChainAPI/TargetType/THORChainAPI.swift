@@ -14,6 +14,8 @@ enum THORChainAPI: TargetType {
     case getPools
     case getPoolAsset(asset: String)
     case getLastBlock
+    case getNetworkFees
+    case getHealth
     case getNetworkInfo
     
     var baseURL: URL {
@@ -22,9 +24,9 @@ enum THORChainAPI: TargetType {
                 .getPools,
                 .getPoolAsset,
                 .getLastBlock,
-                .getNetworkInfo:
+                .getNetworkFees:
             return URL(string: "https://thornode.ninerealms.com/thorchain")!
-        case .getThornameLookup, .getAddressLookup:
+        case .getThornameLookup, .getAddressLookup, .getHealth, .getNetworkInfo:
             return URL(string: "https://midgard.ninerealms.com")!
         }
     }
@@ -39,12 +41,16 @@ enum THORChainAPI: TargetType {
             return "/pools"
         case .getPoolAsset(let asset):
             return "/pool/\(asset)"
-        case .getNetworkInfo:
+        case .getNetworkFees:
             return "/network"
         case .getThornameLookup(let name):
             return "/v2/thorname/lookup/\(name)"
         case .getAddressLookup(let thorname):
             return "/v2/thorname/rlookup/\(thorname)"
+        case .getHealth:
+            return "/v2/health"
+        case .getNetworkInfo:
+            return "/v2/network"
         }
     }
     
@@ -54,9 +60,11 @@ enum THORChainAPI: TargetType {
                 .getLastBlock,
                 .getPools,
                 .getPoolAsset,
-                .getNetworkInfo,
+                .getNetworkFees,
                 .getThornameLookup,
-                .getAddressLookup:
+                .getAddressLookup,
+                .getHealth,
+                .getNetworkInfo:
             return .get
         }
     }
@@ -67,16 +75,18 @@ enum THORChainAPI: TargetType {
                 .getLastBlock,
                 .getPools,
                 .getPoolAsset,
-                .getNetworkInfo,
+                .getNetworkFees,
                 .getThornameLookup,
-                .getAddressLookup:
+                .getAddressLookup,
+                .getHealth,
+                .getNetworkInfo:
             return .requestPlain
         }
     }
     
     var headers: [String : String]? {
         switch self {
-        case .getThornameLookup, .getAddressLookup:
+        case .getThornameLookup, .getAddressLookup, .getHealth, .getNetworkInfo:
             return ["X-Client-ID": "vultisig"]
         default:
             return nil

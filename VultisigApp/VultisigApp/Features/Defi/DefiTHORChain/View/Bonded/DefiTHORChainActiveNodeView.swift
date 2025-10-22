@@ -21,11 +21,15 @@ struct DefiTHORChainActiveNodeView: View {
     }()
     
     var formattedChurnDate: String {
-        CustomDateFormatter.formatMonthDayYear(activeNode.nextChurn)
+        guard let nextChurn = activeNode.nextChurn else {
+            return "-"
+        }
+        return CustomDateFormatter.formatMonthDayYear(nextChurn)
     }
     
-    var unbondDisabled: Bool { activeNode.node.state != .churnedOut }
-    
+    var unbondDisabled: Bool { !activeNode.node.state.canUnbond }
+    var bondDisabled: Bool { !activeNode.node.state.canBond }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
@@ -47,7 +51,7 @@ struct DefiTHORChainActiveNodeView: View {
                     .foregroundStyle(Theme.colors.textExtraLight)
                 Spacer()
                 
-                Text(activeNode.apy.formatted(.percent))
+                Text(activeNode.apy.formatted(.percent.precision(.fractionLength(2))))
                     .font(Theme.fonts.bodyMMedium)
                     .foregroundStyle(Theme.colors.alertSuccess)
             }
@@ -102,10 +106,13 @@ struct DefiTHORChainActiveNodeView: View {
         HStack(alignment: .top, spacing: 16) {
             DefiButton(title: "unbond".localized, icon: "broken-chain-3", type: .secondary) {
                 onUnbond(activeNode.node)
-            }.disabled(unbondDisabled)
+            }
+            .disabled(unbondDisabled)
+
             DefiButton(title: "bond".localized, icon: "chain-link-3") {
                 onBond(activeNode.node)
             }
+            .disabled(bondDisabled)
         }
     }
 }
@@ -119,7 +126,7 @@ struct DefiTHORChainActiveNodeView: View {
                 amount: 500,
                 apy: 0.1,
                 nextReward: 200,
-                nextChurn: Date().timeIntervalSince1970 + 300
+                nextChurn: Date().addingTimeInterval(300)
             ),
             onUnbond: { _ in },
             onBond: { _ in }
@@ -128,11 +135,11 @@ struct DefiTHORChainActiveNodeView: View {
         DefiTHORChainActiveNodeView(
             coin: .example,
             activeNode: .init(
-                node: .init(address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szstey", state: .churnedOut),
+                node: .init(address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szstey", state: .ready),
                 amount: 500,
                 apy: 0.1,
                 nextReward: 200,
-                nextChurn: Date().timeIntervalSince1970 + 300
+                nextChurn: Date().addingTimeInterval(400)
             ),
             onUnbond: { _ in },
             onBond: { _ in }

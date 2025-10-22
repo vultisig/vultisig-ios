@@ -8,40 +8,18 @@
 import SwiftUI
 
 struct DefiTHORChainBondedView: View {
+    @ObservedObject var viewModel: DefiTHORChainBondViewModel
+
     let coin: Coin
     var onBond: (BondNode?) -> Void
     var onUnbond: (BondNode) -> Void
-    
-    // TODO: - Fetch from RPC
-    let availableNodes: [BondNode] = [
-        BondNode(address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szstey", state: .active),
-        BondNode(address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szwasa", state: .churnedOut)
-    ]
-    
-    // TODO: - Fetch from RPC
-    let activeNodes: [ActiveBondedNode] = [
-        ActiveBondedNode(
-            node: BondNode(address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szstey", state: .active),
-            amount: 300,
-            apy: 0.3,
-            nextReward: 15,
-            nextChurn: Date().timeIntervalSince1970 + 3600
-        ),
-        ActiveBondedNode(
-            node: BondNode(address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szwasa", state: .churnedOut),
-            amount: 500,
-            apy: 0.22,
-            nextReward: 20,
-            nextChurn: Date().timeIntervalSince1970 + 3600
-        )
-    ]
-    
+
     var showBondButton: Bool {
-        coin.stakedBalanceDecimal == 0
+        coin.stakedBalanceDecimal > 0
     }
     
     var bondedBalance: String {
-        coin.formatWithTicker(value: coin.stakedBalanceDecimal)
+        coin.defiBalanceStringWithTicker
     }
         
     var body: some View {
@@ -68,7 +46,6 @@ struct DefiTHORChainBondedView: View {
                             .font(Theme.fonts.footnote)
                             .foregroundStyle(Theme.colors.textExtraLight)
                         
-                        // TODO: - Replace with proper value after balance fetching is done
                         HiddenBalanceText(bondedBalance)
                             .font(Theme.fonts.priceTitle1)
                             .foregroundStyle(Theme.colors.textPrimary)
@@ -92,15 +69,15 @@ struct DefiTHORChainBondedView: View {
     
     var availableNodesSection: some View {
         DefiTHORChainAvailableNodesView(
-            availableNodes: availableNodes,
+            availableNodes: viewModel.availableNodes,
             onBond: onBond
-        ) 
+        )
     }
     
     var activeNodesSection: some View {
         DefiTHORChainActiveNodesView(
             coin: coin,
-            activeNodes: activeNodes,
+            activeNodes: viewModel.activeBondedNodes,
             onBond: onBond,
             onUnbond: onUnbond
         )
@@ -109,6 +86,7 @@ struct DefiTHORChainBondedView: View {
 
 #Preview {
     DefiTHORChainBondedView(
+        viewModel: DefiTHORChainBondViewModel(vault: .example),
         coin: Coin.example,
         onBond: { _ in },
         onUnbond: { _ in }

@@ -13,6 +13,20 @@
 		13052B992E8C5744000285D2 /* MacOSToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13052B982E8C5744000285D2 /* MacOSToolbarView.swift */; };
 		13052B9B2E8C574C000285D2 /* IOSToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13052B9A2E8C574C000285D2 /* IOSToolbarView.swift */; };
 		1305A1292E988BB8005873CA /* ReadSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1305A1282E988BB4005873CA /* ReadSize.swift */; };
+		130652492EA7CCE8002CAD99 /* THORChainAPIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130652422EA7CCE8002CAD99 /* THORChainAPIError.swift */; };
+		1306524A2EA7CCE8002CAD99 /* THORNameLookup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130652442EA7CCE8002CAD99 /* THORNameLookup.swift */; };
+		1306524B2EA7CCE8002CAD99 /* THORChainAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130652462EA7CCE8002CAD99 /* THORChainAPI.swift */; };
+		1306524C2EA7CCE8002CAD99 /* THORChainAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130652472EA7CCE8002CAD99 /* THORChainAPIService.swift */; };
+		1306524D2EA7CCE8002CAD99 /* LastBlockResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130652412EA7CCE8002CAD99 /* LastBlockResponse.swift */; };
+		1306524E2EA7CCE8002CAD99 /* THORName.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130652432EA7CCE8002CAD99 /* THORName.swift */; };
+		130652502EA7CD08002CAD99 /* THORChainAPIService+Bonds.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1306524F2EA7CCF9002CAD99 /* THORChainAPIService+Bonds.swift */; };
+		130652532EA7CD2C002CAD99 /* THORChainBondsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130652522EA7CD24002CAD99 /* THORChainBondsAPI.swift */; };
+		130652562EA7CEC6002CAD99 /* BondedNodesResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130652552EA7CEBE002CAD99 /* BondedNodesResponse.swift */; };
+		130652582EA7CF87002CAD99 /* BondedNodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130652572EA7CF82002CAD99 /* BondedNodes.swift */; };
+		1306525A2EA7D1DE002CAD99 /* THORChainNodesResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130652592EA7D1DB002CAD99 /* THORChainNodesResponse.swift */; };
+		1306525C2EA7D7D7002CAD99 /* DefiTHORChainBondViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1306525B2EA7D7CF002CAD99 /* DefiTHORChainBondViewModel.swift */; };
+		130652612EA7DBA7002CAD99 /* ChurnEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1306525D2EA7DBA7002CAD99 /* ChurnEntry.swift */; };
+		130652622EA7DBA7002CAD99 /* NodeDetailsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1306525F2EA7DBA7002CAD99 /* NodeDetailsResponse.swift */; };
 		13095A362E3264E6009F8785 /* HapticFeedbackManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */; };
 		130ABEF92E9E28210074BF67 /* RefreshToolbarButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130ABEF82E9E281B0074BF67 /* RefreshToolbarButton.swift */; };
 		130C40DD2E71E0BE00509C61 /* VaultMainBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40DC2E71E0B800509C61 /* VaultMainBalanceView.swift */; };
@@ -31,17 +45,12 @@
 		131603452E609D74001ED972 /* FileExporterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603442E609D6B001ED972 /* FileExporterSheet.swift */; };
 		131603482E60A450001ED972 /* VaultBackupPasswordScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603472E60A44F001ED972 /* VaultBackupPasswordScreen.swift */; };
 		131603512E60C45D001ED972 /* VaultBackupContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603502E60C453001ED972 /* VaultBackupContainerView.swift */; };
-		13175C6F2E4BC01700646CE2 /* THORNameLookup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13175C6E2E4BC01700646CE2 /* THORNameLookup.swift */; };
 		131F96E62E7887CF0018BA7B /* Satoshi-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 131F96E22E7887CF0018BA7B /* Satoshi-Medium.otf */; };
 		1321D74A2E8F13D300ABE613 /* NativeToolbarItem+PreferenceKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321D7492E8F13BD00ABE613 /* NativeToolbarItem+PreferenceKey.swift */; };
 		132666C02E428B76007FDAC5 /* CounterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666BF2E428B72007FDAC5 /* CounterView.swift */; };
 		132666C42E42920C007FDAC5 /* ContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666C32E42920A007FDAC5 /* ContainerView.swift */; };
 		132666C62E429550007FDAC5 /* Icon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666C52E42954F007FDAC5 /* Icon.swift */; };
 		132666C82E429C91007FDAC5 /* ReferralMainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666C72E429C91007FDAC5 /* ReferralMainScreen.swift */; };
-		132666CC2E429F54007FDAC5 /* THORChainAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666CB2E429F4E007FDAC5 /* THORChainAPI.swift */; };
-		132666CE2E429FFE007FDAC5 /* THORChainAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666CD2E429FF2007FDAC5 /* THORChainAPIService.swift */; };
-		132666D12E42A054007FDAC5 /* THORName.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666D02E42A051007FDAC5 /* THORName.swift */; };
-		132666D32E42A50B007FDAC5 /* LastBlockResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666D22E42A506007FDAC5 /* LastBlockResponse.swift */; };
 		1326EBB92E4637FE008A3F8F /* SendCryptoDoneHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1326EBB82E4637F5008A3F8F /* SendCryptoDoneHeaderView.swift */; };
 		1326EBBB2E463C59008A3F8F /* ReferralCodeMemoFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1326EBBA2E463C58008A3F8F /* ReferralCodeMemoFactory.swift */; };
 		132B04372E70C4EB00745651 /* VaultMainScreenBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132B04362E70C4E500745651 /* VaultMainScreenBackground.swift */; };
@@ -76,6 +85,10 @@
 		1344CB212E4A6366006F67B4 /* CrossPlatformShareButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1344CB202E4A6365006F67B4 /* CrossPlatformShareButton.swift */; };
 		13453ACA2E4A1D4800D76629 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13453AC92E4A1D4500D76629 /* ErrorView.swift */; };
 		13453ACC2E4A433100D76629 /* Bundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13453ACB2E4A433000D76629 /* Bundle.swift */; };
+		1345D1372EA8135600FC7BFD /* THORChainHealth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1345D1362EA8135500FC7BFD /* THORChainHealth.swift */; };
+		1345D1392EA813F100FC7BFD /* THORChainNetworkInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1345D1382EA813F000FC7BFD /* THORChainNetworkInfo.swift */; };
+		1345D13B2EA8148700FC7BFD /* BondMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1345D13A2EA8148600FC7BFD /* BondMetrics.swift */; };
+		1345D13D2EA81A2D00FC7BFD /* NetworkBondInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1345D13C2EA81A2D00FC7BFD /* NetworkBondInfo.swift */; };
 		1348FA622E6894C7001551F6 /* SettingsPasswordHintScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1348FA612E6894C2001551F6 /* SettingsPasswordHintScreen.swift */; };
 		1348FA652E6895B7001551F6 /* CommonTextEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1348FA642E6895B3001551F6 /* CommonTextEditor.swift */; };
 		134A9FC32E959FB700030C56 /* CarouselBannerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FC22E959FB700030C56 /* CarouselBannerType.swift */; };
@@ -86,7 +99,6 @@
 		134A9FCF2E96B4B500030C56 /* VaultBannerCarouselIndicators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FCE2E96B4B000030C56 /* VaultBannerCarouselIndicators.swift */; };
 		134E8D7F2E451F6F0086EBC4 /* PreferredAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D7E2E451F6C0086EBC4 /* PreferredAsset.swift */; };
 		134E8D812E451F800086EBC4 /* PreferredAssetFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D802E451F7A0086EBC4 /* PreferredAssetFactory.swift */; };
-		134E8D832E45300C0086EBC4 /* THORChainAPIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D822E4530060086EBC4 /* THORChainAPIError.swift */; };
 		1352EDBD2E61218100FC0F51 /* ZipFileGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1352EDBC2E61217C00FC0F51 /* ZipFileGenerator.swift */; };
 		135677A62E391A6E002C10A2 /* SecurityScannerTransactionFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135677A52E391A68002C10A2 /* SecurityScannerTransactionFactory.swift */; };
 		135677A82E391AC9002C10A2 /* SecurityScannerModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135677A72E391AC3002C10A2 /* SecurityScannerModels.swift */; };
@@ -213,6 +225,7 @@
 		13AB0C072E5CA17100F52F24 /* ReferralCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AB0C052E5CA17100F52F24 /* ReferralCode.swift */; };
 		13AB0C082E5CA17100F52F24 /* ReferredCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AB0C062E5CA17100F52F24 /* ReferredCode.swift */; };
 		13AC28082E61E294001CB9AA /* ScreenEdgeInsets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AC28072E61E293001CB9AA /* ScreenEdgeInsets.swift */; };
+		13AC84032EA8518700C1399E /* THORChainAPICache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AC84022EA8518700C1399E /* THORChainAPICache.swift */; };
 		13AF0D182E4CE655004D4FD2 /* NavigationRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AF0D172E4CE652004D4FD2 /* NavigationRouter.swift */; };
 		13AF0D1A2E4CE672004D4FD2 /* NavigationRouter+EnvironmentKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AF0D192E4CE672004D4FD2 /* NavigationRouter+EnvironmentKey.swift */; };
 		13AF0D1D2E4CE73B004D4FD2 /* SendRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AF0D1C2E4CE738004D4FD2 /* SendRoute.swift */; };
@@ -970,7 +983,6 @@
 		B5CDB87B2DDD8714007DF355 /* MergeAccountResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CDB87A2DDD86F9007DF355 /* MergeAccountResponse.swift */; };
 		B5CDB87C2DDD8715007DF355 /* AccountRootData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CDB87D2DDD86FA007DF355 /* AccountRootData.swift */; };
 		B5D1B9FC2DF66B4400D82EFB /* CoinFactory+Cardano.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5D1B9FB2DF66B4400D82EFB /* CoinFactory+Cardano.swift */; };
-		B5D1D7812DF16D1A007A36D9 /* ThorchainService+RuneBond.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5D1D7802DF16D1A007A36D9 /* ThorchainService+RuneBond.swift */; };
 		B5E476AB2C1A13D7005DB485 /* dydx.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E476AA2C1A13D7005DB485 /* dydx.swift */; };
 		B5E476AD2C1A556D005DB485 /* DydxService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E476AC2C1A556D005DB485 /* DydxService.swift */; };
 		B5E654EB2D277CE2003A037C /* TronService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E654EA2D277CE0003A037C /* TronService.swift */; };
@@ -1121,6 +1133,20 @@
 		13052B982E8C5744000285D2 /* MacOSToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSToolbarView.swift; sourceTree = "<group>"; };
 		13052B9A2E8C574C000285D2 /* IOSToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOSToolbarView.swift; sourceTree = "<group>"; };
 		1305A1282E988BB4005873CA /* ReadSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadSize.swift; sourceTree = "<group>"; };
+		130652412EA7CCE8002CAD99 /* LastBlockResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastBlockResponse.swift; sourceTree = "<group>"; };
+		130652422EA7CCE8002CAD99 /* THORChainAPIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainAPIError.swift; sourceTree = "<group>"; };
+		130652432EA7CCE8002CAD99 /* THORName.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORName.swift; sourceTree = "<group>"; };
+		130652442EA7CCE8002CAD99 /* THORNameLookup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORNameLookup.swift; sourceTree = "<group>"; };
+		130652462EA7CCE8002CAD99 /* THORChainAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainAPI.swift; sourceTree = "<group>"; };
+		130652472EA7CCE8002CAD99 /* THORChainAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainAPIService.swift; sourceTree = "<group>"; };
+		1306524F2EA7CCF9002CAD99 /* THORChainAPIService+Bonds.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "THORChainAPIService+Bonds.swift"; sourceTree = "<group>"; };
+		130652522EA7CD24002CAD99 /* THORChainBondsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainBondsAPI.swift; sourceTree = "<group>"; };
+		130652552EA7CEBE002CAD99 /* BondedNodesResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondedNodesResponse.swift; sourceTree = "<group>"; };
+		130652572EA7CF82002CAD99 /* BondedNodes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondedNodes.swift; sourceTree = "<group>"; };
+		130652592EA7D1DB002CAD99 /* THORChainNodesResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainNodesResponse.swift; sourceTree = "<group>"; };
+		1306525B2EA7D7CF002CAD99 /* DefiTHORChainBondViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainBondViewModel.swift; sourceTree = "<group>"; };
+		1306525D2EA7DBA7002CAD99 /* ChurnEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChurnEntry.swift; sourceTree = "<group>"; };
+		1306525F2EA7DBA7002CAD99 /* NodeDetailsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetailsResponse.swift; sourceTree = "<group>"; };
 		13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticFeedbackManager.swift; sourceTree = "<group>"; };
 		130ABEF82E9E281B0074BF67 /* RefreshToolbarButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshToolbarButton.swift; sourceTree = "<group>"; };
 		130C40DC2E71E0B800509C61 /* VaultMainBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainBalanceView.swift; sourceTree = "<group>"; };
@@ -1139,17 +1165,12 @@
 		131603442E609D6B001ED972 /* FileExporterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileExporterSheet.swift; sourceTree = "<group>"; };
 		131603472E60A44F001ED972 /* VaultBackupPasswordScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBackupPasswordScreen.swift; sourceTree = "<group>"; };
 		131603502E60C453001ED972 /* VaultBackupContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBackupContainerView.swift; sourceTree = "<group>"; };
-		13175C6E2E4BC01700646CE2 /* THORNameLookup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORNameLookup.swift; sourceTree = "<group>"; };
 		131F96E22E7887CF0018BA7B /* Satoshi-Medium.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Satoshi-Medium.otf"; sourceTree = "<group>"; };
 		1321D7492E8F13BD00ABE613 /* NativeToolbarItem+PreferenceKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NativeToolbarItem+PreferenceKey.swift"; sourceTree = "<group>"; };
 		132666BF2E428B72007FDAC5 /* CounterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterView.swift; sourceTree = "<group>"; };
 		132666C32E42920A007FDAC5 /* ContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainerView.swift; sourceTree = "<group>"; };
 		132666C52E42954F007FDAC5 /* Icon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Icon.swift; sourceTree = "<group>"; };
 		132666C72E429C91007FDAC5 /* ReferralMainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralMainScreen.swift; sourceTree = "<group>"; };
-		132666CB2E429F4E007FDAC5 /* THORChainAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainAPI.swift; sourceTree = "<group>"; };
-		132666CD2E429FF2007FDAC5 /* THORChainAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainAPIService.swift; sourceTree = "<group>"; };
-		132666D02E42A051007FDAC5 /* THORName.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORName.swift; sourceTree = "<group>"; };
-		132666D22E42A506007FDAC5 /* LastBlockResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastBlockResponse.swift; sourceTree = "<group>"; };
 		1326EBB82E4637F5008A3F8F /* SendCryptoDoneHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneHeaderView.swift; sourceTree = "<group>"; };
 		1326EBBA2E463C58008A3F8F /* ReferralCodeMemoFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralCodeMemoFactory.swift; sourceTree = "<group>"; };
 		132B04362E70C4E500745651 /* VaultMainScreenBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainScreenBackground.swift; sourceTree = "<group>"; };
@@ -1184,6 +1205,10 @@
 		1344CB202E4A6365006F67B4 /* CrossPlatformShareButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossPlatformShareButton.swift; sourceTree = "<group>"; };
 		13453AC92E4A1D4500D76629 /* ErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorView.swift; sourceTree = "<group>"; };
 		13453ACB2E4A433000D76629 /* Bundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bundle.swift; sourceTree = "<group>"; };
+		1345D1362EA8135500FC7BFD /* THORChainHealth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainHealth.swift; sourceTree = "<group>"; };
+		1345D1382EA813F000FC7BFD /* THORChainNetworkInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainNetworkInfo.swift; sourceTree = "<group>"; };
+		1345D13A2EA8148600FC7BFD /* BondMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondMetrics.swift; sourceTree = "<group>"; };
+		1345D13C2EA81A2D00FC7BFD /* NetworkBondInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkBondInfo.swift; sourceTree = "<group>"; };
 		1348FA612E6894C2001551F6 /* SettingsPasswordHintScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPasswordHintScreen.swift; sourceTree = "<group>"; };
 		1348FA642E6895B3001551F6 /* CommonTextEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonTextEditor.swift; sourceTree = "<group>"; };
 		134A9FC22E959FB700030C56 /* CarouselBannerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselBannerType.swift; sourceTree = "<group>"; };
@@ -1194,7 +1219,6 @@
 		134A9FCE2E96B4B000030C56 /* VaultBannerCarouselIndicators.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBannerCarouselIndicators.swift; sourceTree = "<group>"; };
 		134E8D7E2E451F6C0086EBC4 /* PreferredAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAsset.swift; sourceTree = "<group>"; };
 		134E8D802E451F7A0086EBC4 /* PreferredAssetFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetFactory.swift; sourceTree = "<group>"; };
-		134E8D822E4530060086EBC4 /* THORChainAPIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainAPIError.swift; sourceTree = "<group>"; };
 		1352EDBC2E61217C00FC0F51 /* ZipFileGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipFileGenerator.swift; sourceTree = "<group>"; };
 		135677A52E391A68002C10A2 /* SecurityScannerTransactionFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerTransactionFactory.swift; sourceTree = "<group>"; };
 		135677A72E391AC3002C10A2 /* SecurityScannerModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerModels.swift; sourceTree = "<group>"; };
@@ -1321,6 +1345,7 @@
 		13AB0C052E5CA17100F52F24 /* ReferralCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralCode.swift; sourceTree = "<group>"; };
 		13AB0C062E5CA17100F52F24 /* ReferredCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferredCode.swift; sourceTree = "<group>"; };
 		13AC28072E61E293001CB9AA /* ScreenEdgeInsets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenEdgeInsets.swift; sourceTree = "<group>"; };
+		13AC84022EA8518700C1399E /* THORChainAPICache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainAPICache.swift; sourceTree = "<group>"; };
 		13AF0D172E4CE652004D4FD2 /* NavigationRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationRouter.swift; sourceTree = "<group>"; };
 		13AF0D192E4CE672004D4FD2 /* NavigationRouter+EnvironmentKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NavigationRouter+EnvironmentKey.swift"; sourceTree = "<group>"; };
 		13AF0D1C2E4CE738004D4FD2 /* SendRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendRoute.swift; sourceTree = "<group>"; };
@@ -2077,7 +2102,6 @@
 		B5CDB87A2DDD86F9007DF355 /* MergeAccountResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MergeAccountResponse.swift; sourceTree = "<group>"; };
 		B5CDB87D2DDD86FA007DF355 /* AccountRootData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountRootData.swift; sourceTree = "<group>"; };
 		B5D1B9FB2DF66B4400D82EFB /* CoinFactory+Cardano.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoinFactory+Cardano.swift"; sourceTree = "<group>"; };
-		B5D1D7802DF16D1A007A36D9 /* ThorchainService+RuneBond.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ThorchainService+RuneBond.swift"; sourceTree = "<group>"; };
 		B5E476AA2C1A13D7005DB485 /* dydx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = dydx.swift; sourceTree = "<group>"; };
 		B5E476AC2C1A556D005DB485 /* DydxService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DydxService.swift; sourceTree = "<group>"; };
 		B5E654EA2D277CE0003A037C /* TronService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronService.swift; sourceTree = "<group>"; };
@@ -2377,6 +2401,55 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
+		130652452EA7CCE8002CAD99 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				1345D1382EA813F000FC7BFD /* THORChainNetworkInfo.swift */,
+				1345D1362EA8135500FC7BFD /* THORChainHealth.swift */,
+				130652542EA7CEB9002CAD99 /* Bonds */,
+				130652412EA7CCE8002CAD99 /* LastBlockResponse.swift */,
+				130652422EA7CCE8002CAD99 /* THORChainAPIError.swift */,
+				130652432EA7CCE8002CAD99 /* THORName.swift */,
+				130652442EA7CCE8002CAD99 /* THORNameLookup.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		130652482EA7CCE8002CAD99 /* THORChainAPI */ = {
+			isa = PBXGroup;
+			children = (
+				13AC84022EA8518700C1399E /* THORChainAPICache.swift */,
+				130652512EA7CD1E002CAD99 /* TargetType */,
+				1306524F2EA7CCF9002CAD99 /* THORChainAPIService+Bonds.swift */,
+				130652452EA7CCE8002CAD99 /* Models */,
+				130652472EA7CCE8002CAD99 /* THORChainAPIService.swift */,
+				1345D13C2EA81A2D00FC7BFD /* NetworkBondInfo.swift */,
+			);
+			path = THORChainAPI;
+			sourceTree = "<group>";
+		};
+		130652512EA7CD1E002CAD99 /* TargetType */ = {
+			isa = PBXGroup;
+			children = (
+				130652522EA7CD24002CAD99 /* THORChainBondsAPI.swift */,
+				130652462EA7CCE8002CAD99 /* THORChainAPI.swift */,
+			);
+			path = TargetType;
+			sourceTree = "<group>";
+		};
+		130652542EA7CEB9002CAD99 /* Bonds */ = {
+			isa = PBXGroup;
+			children = (
+				1345D13A2EA8148600FC7BFD /* BondMetrics.swift */,
+				1306525D2EA7DBA7002CAD99 /* ChurnEntry.swift */,
+				1306525F2EA7DBA7002CAD99 /* NodeDetailsResponse.swift */,
+				130652592EA7D1DB002CAD99 /* THORChainNodesResponse.swift */,
+				130652572EA7CF82002CAD99 /* BondedNodes.swift */,
+				130652552EA7CEBE002CAD99 /* BondedNodesResponse.swift */,
+			);
+			path = Bonds;
+			sourceTree = "<group>";
+		};
 		13095A342E3264E1009F8785 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
@@ -2494,27 +2567,6 @@
 				A685245E2DFCD47E00FEE2E4 /* ReferralViewModel.swift */,
 			);
 			path = Referral;
-			sourceTree = "<group>";
-		};
-		132666CA2E429F45007FDAC5 /* THORChainReferralService */ = {
-			isa = PBXGroup;
-			children = (
-				132666CF2E42A04D007FDAC5 /* Models */,
-				132666CD2E429FF2007FDAC5 /* THORChainAPIService.swift */,
-				132666CB2E429F4E007FDAC5 /* THORChainAPI.swift */,
-			);
-			path = THORChainReferralService;
-			sourceTree = "<group>";
-		};
-		132666CF2E42A04D007FDAC5 /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				134E8D822E4530060086EBC4 /* THORChainAPIError.swift */,
-				132666D22E42A506007FDAC5 /* LastBlockResponse.swift */,
-				132666D02E42A051007FDAC5 /* THORName.swift */,
-				13175C6E2E4BC01700646CE2 /* THORNameLookup.swift */,
-			);
-			path = Models;
 			sourceTree = "<group>";
 		};
 		132FB6562E78705400599464 /* Platforms */ = {
@@ -3004,6 +3056,7 @@
 		13A657A72EA283D300323E4C /* ViewModel */ = {
 			isa = PBXGroup;
 			children = (
+				1306525B2EA7D7CF002CAD99 /* DefiTHORChainBondViewModel.swift */,
 				13A657A82EA283DB00323E4C /* DefiTHORChainMainViewModel.swift */,
 			);
 			path = ViewModel;
@@ -3560,9 +3613,9 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				130652482EA7CCE8002CAD99 /* THORChainAPI */,
 				B5FFB0F32E7858E90062F63C /* PendingTransactionManager.swift */,
 				138538DB2E61F576006DF7C7 /* VultiServer */,
-				132666CA2E429F45007FDAC5 /* THORChainReferralService */,
 				13D7643B2E41309D00F048DE /* TokenSearchService.swift */,
 				135677B32E39369A002C10A2 /* Network */,
 				B547A3FE2DF3F9220052164D /* Cardano */,
@@ -3648,7 +3701,6 @@
 			children = (
 				B57178B52E66F85B00BABE2E /* ThorchainService+Yield+Prices.swift */,
 				13A899012E43CEEB006F75F0 /* THORChainTokenMetadataFactory.swift */,
-				B5D1D7802DF16D1A007A36D9 /* ThorchainService+RuneBond.swift */,
 				DEA1C7032DB0CDFE00424466 /* NetworkInfo.swift */,
 				DEA1C7012DB0CD9300424466 /* THORChainTokenMetadata.swift */,
 				DEA1C6FF2DB0CC8900424466 /* InboundAddress.swift */,
@@ -5537,6 +5589,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				130652562EA7CEC6002CAD99 /* BondedNodesResponse.swift in Sources */,
 				A649AB9E2C6C54AA004710A9 /* PopupCapsule.swift in Sources */,
 				DE6EF0512D06709200A36D6A /* DKLSMessenger.swift in Sources */,
 				46AAA49D2BC3B4CF00E5BAB4 /* DecimalExtension.swift in Sources */,
@@ -5548,7 +5601,6 @@
 				A67530622CAFBDC200B1E344 /* Folder.swift in Sources */,
 				138574262E2DB9C6002532BF /* NavigationIconButton.swift in Sources */,
 				13B25BF62E82FA39002BCF55 /* AddressCopyBannerViewModifier.swift in Sources */,
-				132666D32E42A50B007FDAC5 /* LastBlockResponse.swift in Sources */,
 				138574272E2DB9C6002532BF /* IconButton.swift in Sources */,
 				A6ACAD5F2D1109EF00432CC4 /* SettingsAdvancedView.swift in Sources */,
 				A594A9ED2C6436A800A3D09E /* DBMappable.swift in Sources */,
@@ -5569,12 +5621,14 @@
 				13D179082E5787D100007B48 /* AddressBookChainType.swift in Sources */,
 				049BBB5E2B71E83D004C231F /* VultisigLogo.swift in Sources */,
 				A6E0C90F2DE4E8CE00A01543 /* ReferredCodeFormScreen.swift in Sources */,
+				1345D1372EA8135600FC7BFD /* THORChainHealth.swift in Sources */,
 				DE1572A02B70F284009BC7C5 /* KeysignView.swift in Sources */,
 				A6FB96B52BD0CE6700D56F68 /* NavigationHomeEditButton.swift in Sources */,
 				135677A82E391AC9002C10A2 /* SecurityScannerModels.swift in Sources */,
 				A6C670DF2C9E91B200F59B6A /* SendDetailsScreen+macOS.swift in Sources */,
+				1345D1392EA813F100FC7BFD /* THORChainNetworkInfo.swift in Sources */,
 				A66BFCD32C135699004DCD4F /* ShareSheetViewModel.swift in Sources */,
-				13175C6F2E4BC01700646CE2 /* THORNameLookup.swift in Sources */,
+				130652502EA7CD08002CAD99 /* THORChainAPIService+Bonds.swift in Sources */,
 				A6386D922C8C291B00DDD58E /* SwapVerifyView+macOS.swift in Sources */,
 				A6A8163E2CBCB00D009EE114 /* FileQRCodeImporterMac+iOS.swift in Sources */,
 				13E1E7672E6DD71E00D68F5D /* FormExpandableSection.swift in Sources */,
@@ -5592,6 +5646,8 @@
 				A594EC2F2D072DDD00B74EBC /* SettingsCustomMessageView+MacOS.swift in Sources */,
 				A65324282BA51E8700DDE6EB /* QRCodeScannerView.swift in Sources */,
 				DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */,
+				130652612EA7DBA7002CAD99 /* ChurnEntry.swift in Sources */,
+				130652622EA7DBA7002CAD99 /* NodeDetailsResponse.swift in Sources */,
 				A5F2C2352CD3FEE00086253E /* FastSignConfig.swift in Sources */,
 				A6C670C72C9D174000F59B6A /* VaultDetailQRCodeView+macOS.swift in Sources */,
 				13095A362E3264E6009F8785 /* HapticFeedbackManager.swift in Sources */,
@@ -5614,7 +5670,6 @@
 				DE9EB0FC2BA463F7001747D9 /* KeygenViewModel.swift in Sources */,
 				1363B5002EA6967200818DF7 /* DefiTHORChainLPPositionView.swift in Sources */,
 				A5D8A3442CF8D5B0005A20A8 /* CustomMessagePayload.swift in Sources */,
-				134E8D832E45300C0086EBC4 /* THORChainAPIError.swift in Sources */,
 				B52FD1D02CDDAFE50031FB71 /* terra.swift in Sources */,
 				138C5E672E79E86B00C559C7 /* GlassEffect.swift in Sources */,
 				B5A54E022D9C5CCD001AF096 /* FunctionCallRemoveLiquidityMaya.swift in Sources */,
@@ -5626,7 +5681,6 @@
 				46AAA4972BBF7EBA00E5BAB4 /* EvmServiceFactory.swift in Sources */,
 				A66729CB2D810CD5002308D8 /* KeysignDiscoveryDisclaimer.swift in Sources */,
 				A6505AD02CA668AF0002FBF4 /* InformationNote+iOS.swift in Sources */,
-				132666CC2E429F54007FDAC5 /* THORChainAPI.swift in Sources */,
 				A571F46C2C7E9218000F46D3 /* SendGasSettingsView.swift in Sources */,
 				DE9EB0F02BA2CFB7001747D9 /* ReshareMessage.swift in Sources */,
 				132666C42E42920C007FDAC5 /* ContainerView.swift in Sources */,
@@ -5848,6 +5902,7 @@
 				137587032E56151B0048C795 /* SettingsOptionView.swift in Sources */,
 				469ED39D2B98E8C0008D4951 /* CosmosBalancePagination.swift in Sources */,
 				A6C6711B2CA3BAD100F59B6A /* CachedAsyncImage+iOS.swift in Sources */,
+				1345D13D2EA81A2D00FC7BFD /* NetworkBondInfo.swift in Sources */,
 				A65BA98E2BAD311200B2D8AA /* Loader.swift in Sources */,
 				B5E654ED2D2788CC003A037C /* Tron.swift in Sources */,
 				A61173592BC8A10D00D616F9 /* ChainCellViewModel.swift in Sources */,
@@ -5917,7 +5972,6 @@
 				13D3AC9A2E85B76000BA4273 /* BiweeklyPasswordVerificationViewModifier.swift in Sources */,
 				A6F7B71F2D4ED2D800AC8104 /* SecureBackupVaultOverview+iOS.swift in Sources */,
 				138574142E2DA932002532BF /* PrimaryButton.swift in Sources */,
-				132666D12E42A054007FDAC5 /* THORName.swift in Sources */,
 				13DD3B1A2E3CFE7D00D46FA0 /* FlatPicker.swift in Sources */,
 				135B6BBF2EA1470F00DD7140 /* ChainNotFoundEmptyStateView.swift in Sources */,
 				135677A62E391A6E002C10A2 /* SecurityScannerTransactionFactory.swift in Sources */,
@@ -5934,6 +5988,7 @@
 				A60F29AD2DA08C5300C24765 /* SwapCryptoDoneView.swift in Sources */,
 				A6C6708A2C9CFAA800F59B6A /* KeysignDiscoveryView+macOS.swift in Sources */,
 				1343C90A2E70AF3900EA5986 /* CoinActionButton.swift in Sources */,
+				130652532EA7CD2C002CAD99 /* THORChainBondsAPI.swift in Sources */,
 				13A657BA2EA2972200323E4C /* ExpandableView.swift in Sources */,
 				469ED3A22B98F5CB008D4951 /* ThorchainAccountResult.swift in Sources */,
 				A6F9F7E72B9BB63700790258 /* VaultCell.swift in Sources */,
@@ -5948,6 +6003,7 @@
 				A65649EA2B96690400E4B329 /* KeyShare.swift in Sources */,
 				A564ED402BC34B690056FDC0 /* SwapVerifyView.swift in Sources */,
 				137B2C7D2E3A4B2D0074F648 /* BottomSheetContainer.swift in Sources */,
+				13AC84032EA8518700C1399E /* THORChainAPICache.swift in Sources */,
 				A56386842C3A2167008B848E /* ProtoSerializer.swift in Sources */,
 				A611CCCF2C7816EC00D64C9D /* UINavigationControllerExtension.swift in Sources */,
 				A633B13C2B9A6564003D1738 /* SetupQRCodeView.swift in Sources */,
@@ -6173,6 +6229,7 @@
 				A66BFCCD2C1347D5004DCD4F /* NavigationQRShareButton.swift in Sources */,
 				A622C8482C9BBD3900908332 /* FunctionCallView+macOS.swift in Sources */,
 				A5CBA32C2BCD747C00088CC3 /* TappableTextFieldStyle.swift in Sources */,
+				1306525C2EA7D7D7002CAD99 /* DefiTHORChainBondViewModel.swift in Sources */,
 				DE1905272BD8CC4D0043577E /* KeysignVerify.swift in Sources */,
 				469ED39B2B98E8B5008D4951 /* CosmosBalance.swift in Sources */,
 				A57A03CB2BC47D4F00F6F3DF /* BlockChainService.swift in Sources */,
@@ -6286,7 +6343,6 @@
 				A6B7F49C2C4963F6006D83D1 /* VaultDetailQRCodeViewModel.swift in Sources */,
 				A5BA150C2C078FA000AA6C07 /* TokenSelectionViewModel.swift in Sources */,
 				A66A0BD52BA124D00021A483 /* VaultSettingsScreen.swift in Sources */,
-				132666CE2E429FFE007FDAC5 /* THORChainAPIService.swift in Sources */,
 				DE49A19C2B67133D000F3AFB /* Vault.swift in Sources */,
 				13D1790A2E57889F00007B48 /* AddressBookChainCell.swift in Sources */,
 				A60F29E52DA5A51B00C24765 /* SwapCryptoDoneView+macOS.swift in Sources */,
@@ -6313,6 +6369,7 @@
 				135677B72E39369A002C10A2 /* HTTPClient.swift in Sources */,
 				135677B92E39369A002C10A2 /* HTTPError.swift in Sources */,
 				A5F596BF2C7FB0C5008D5339 /* SendGasSettingsViewModel.swift in Sources */,
+				1345D13B2EA8148700FC7BFD /* BondMetrics.swift in Sources */,
 				1390D8C82E394527003F3E20 /* SecurityScannerSettingsService.swift in Sources */,
 				A6BB9BD32DA9E5750085E117 /* VaultShareBackupsView+macOS.swift in Sources */,
 				A6D739DE2E0B30440005697D /* SendDetailsAssetTab.swift in Sources */,
@@ -6505,7 +6562,6 @@
 				13052B972E8C5511000285D2 /* CrossPlatformToolbarModifier.swift in Sources */,
 				A6C0D5692BB3C6D400156689 /* ErrorMessage.swift in Sources */,
 				B53D8CCC2BF7F22F00B795D3 /* FunctionCallLeave.swift in Sources */,
-				B5D1D7812DF16D1A007A36D9 /* ThorchainService+RuneBond.swift in Sources */,
 				132B04372E70C4EB00745651 /* VaultMainScreenBackground.swift in Sources */,
 				A646DFB72E179B70006E8ECC /* SendCryptoAddressBookView.swift in Sources */,
 				13E1E7692E6DD79B00D68F5D /* ServerVaultCheckInboxScreen.swift in Sources */,
@@ -6513,6 +6569,12 @@
 				13B1C2C22E65D21E00050637 /* VaultPairDetailView.swift in Sources */,
 				B524F55B2CF049F600D5B19D /* FunctionCallBondMayaChain.swift in Sources */,
 				B54E317F2BF5A1A700D4FC0A /* StyledNumberField.swift in Sources */,
+				130652492EA7CCE8002CAD99 /* THORChainAPIError.swift in Sources */,
+				1306524A2EA7CCE8002CAD99 /* THORNameLookup.swift in Sources */,
+				1306524B2EA7CCE8002CAD99 /* THORChainAPI.swift in Sources */,
+				1306524C2EA7CCE8002CAD99 /* THORChainAPIService.swift in Sources */,
+				1306524D2EA7CCE8002CAD99 /* LastBlockResponse.swift in Sources */,
+				1306524E2EA7CCE8002CAD99 /* THORName.swift in Sources */,
 				A6381D822CB71B5D003F628B /* RegisterVaultView+macOS.swift in Sources */,
 				1334C7442E301E4300CBAA3E /* SendCryptoDoneContentView.swift in Sources */,
 				A58CC34F2C32FC530086D16B /* BlockChainSpecific.swift in Sources */,
@@ -6549,10 +6611,12 @@
 				A58760542CBD3CE00070956A /* Keychain.swift in Sources */,
 				130C704B2E31791E00EF2248 /* LongPressPrimaryButton.swift in Sources */,
 				A588F2DB2BEE8090002EEC60 /* GenericSwapPayload.swift in Sources */,
+				1306525A2EA7D1DE002CAD99 /* THORChainNodesResponse.swift in Sources */,
 				CF711D753DDB0FC62425A9DA /* KyberSwapQuote.swift in Sources */,
 				132FB6582E78706500599464 /* isIPadOS.swift in Sources */,
 				3438005C33774BADE4B163FD /* KyberSwapService.swift in Sources */,
 				6F9D0331A5913F75BDE1B874 /* KyberSwapToken.swift in Sources */,
+				130652582EA7CF87002CAD99 /* BondedNodes.swift in Sources */,
 				13C7C1ED2E87040700A529FD /* LoadingOverlayViewModifier.swift in Sources */,
 				8EE0EF7FEAA0B5C09FF9C79D /* KyberSwapPayload.swift in Sources */,
 				A6725D3E2C3FB61900D47716 /* AddressBookItem.swift in Sources */,

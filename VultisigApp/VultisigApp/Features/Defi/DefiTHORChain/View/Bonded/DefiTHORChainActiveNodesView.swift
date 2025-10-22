@@ -13,7 +13,7 @@ struct DefiTHORChainActiveNodesView: View {
     var onBond: (BondNode) -> Void
     var onUnbond: (BondNode) -> Void
     
-    @State private var isExpanded = true
+    @State private var isExpanded = false
     
     var body: some View {
         ContainerView {
@@ -44,6 +44,13 @@ struct DefiTHORChainActiveNodesView: View {
                 .padding(.top, 16)
             }
         }
+        .transition(.verticalGrowAndFade)
+        .showIf(activeNodes.count > 0)
+        .onChange(of: activeNodes.count) { oldValue, newValue in
+            if oldValue == 0, newValue > 0 {
+                isExpanded = true
+            }
+        }
     }
 }
 
@@ -56,14 +63,14 @@ struct DefiTHORChainActiveNodesView: View {
             amount: 300,
             apy: 0.3,
             nextReward: 15,
-            nextChurn: Date().timeIntervalSince1970 + 3600
+            nextChurn: Date().addingTimeInterval(3600)
         ),
         ActiveBondedNode(
-            node: BondNode(address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szwasa", state: .churnedOut),
+            node: BondNode(address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szwasa", state: .ready),
             amount: 500,
             apy: 0.22,
             nextReward: 20,
-            nextChurn: Date().timeIntervalSince1970 + 3600
+            nextChurn: Date().addingTimeInterval(3600)
         )
     ]
     DefiTHORChainActiveNodesView(

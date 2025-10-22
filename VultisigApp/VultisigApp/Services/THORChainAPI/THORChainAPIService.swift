@@ -8,9 +8,10 @@
 import Foundation
 
 struct THORChainAPIService {
-    private let httpClient: HTTPClientProtocol
+    let httpClient: HTTPClientProtocol
     private let decoder = JSONDecoder()
-    
+    let cache = THORChainAPICache()
+
     init(httpClient: HTTPClientProtocol = HTTPClient()) {
         self.httpClient = httpClient
     }
@@ -84,9 +85,41 @@ struct THORChainAPIService {
         return response.data
     }
     
-    func getNetworkInfo() async throws -> ThorchainNetworkAllFees {
-        let response = try await httpClient.request(THORChainAPI.getNetworkInfo, responseType: ThorchainNetworkAllFees.self)
+    func getNetworkFees() async throws -> ThorchainNetworkAllFees {
+        let response = try await httpClient.request(THORChainAPI.getNetworkFees, responseType: ThorchainNetworkAllFees.self)
         return response.data
+    }
+    
+    func getNetworkInfo() async throws -> THORChainNetworkInfo {
+        // Check cache first
+        if let cached = await cache.getCachedNetworkInfo() {
+            return cached
+        }
+
+        // Fetch from network
+        let response = try await httpClient.request(THORChainAPI.getNetworkInfo, responseType: THORChainNetworkInfo.self)
+        let data = response.data
+
+        // Cache the result
+        await cache.cacheNetworkInfo(data)
+
+        return data
+    }
+
+    func getHealth() async throws -> THORChainHealth {
+        // Check cache first
+        if let cached = await cache.getCachedHealth() {
+            return cached
+        }
+
+        // Fetch from network
+        let response = try await httpClient.request(THORChainAPI.getHealth, responseType: THORChainHealth.self)
+        let data = response.data
+
+        // Cache the result
+        await cache.cacheHealth(data)
+
+        return data
     }
 }
 
