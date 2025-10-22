@@ -30,10 +30,11 @@ extension SecureBackupVaultOverview {
     }
     
     var prevButton: some View {
-        IconButton(icon: "chevron.left") {
+        IconButton(icon: "chevron-right") {
             prevTapped()
         }
         .frame(width: 80)
+        .rotationEffect(.radians(.pi))
     }
     
     var text: some View {

@@ -17,6 +17,9 @@ protocol ThorchainServiceProtocol {
     func getTHORChainChainID() async throws -> String
     func ensureTHORChainChainID() -> String
     func broadcastTransaction(jsonString: String) async -> Result<String,Error>
+    func fetchTcyStakedAmount(address: String) async -> Decimal
+    func fetchTcyAutoCompoundAmount(address: String) async -> Decimal
+    func fetchMergeAccounts(address: String) async -> [MergeAccountResponse.ResponseData.Node.AccountMerge.MergeAccount]
 }
 
 extension ThorchainService: ThorchainServiceProtocol {}

@@ -22,6 +22,8 @@ class BalanceService {
     private let tron = TronService.shared
     private let cardano = CardanoService.shared
     
+    private let thorchainAPIService = THORChainAPIService()
+    
     private let cryptoPriceService = CryptoPriceService.shared
     
     func updateBalances(vault: Vault) async {
@@ -42,8 +44,11 @@ class BalanceService {
                                 let rawBalance = try await fetchBalance(for: coin)
                                 try await updateCoin(coin, rawBalance: rawBalance)
                                 
-                                let stakedBalance = try await fetchStakedBalance(for: coin)
-                                try await updateCoin(coin, stakedBalance: stakedBalance)
+                                if let stakedBalance = try await fetchStakedBalance(for: coin) {
+                                    try await updateCoin(coin, stakedBalance: stakedBalance)
+                                }
+                                
+                                try await updateBondedIfNeeded(for: coin)
                             } catch {
                                 print("Fetch Balances error: \(error.localizedDescription)")
                             }
@@ -69,8 +74,10 @@ class BalanceService {
             let rawBalance = try await fetchBalance(for: coin)
             try await updateCoin(coin, rawBalance: rawBalance)
             
-            let stakedBalance = try await fetchStakedBalance(for: coin)
-            try await updateCoin(coin, stakedBalance: stakedBalance)
+            if let stakedBalance = try await fetchStakedBalance(for: coin) {
+                try await updateCoin(coin, stakedBalance: stakedBalance)
+            }
+            try await updateBondedIfNeeded(for: coin)
             try await MainActor.run {
                 try Storage.shared.save()
             }
@@ -84,55 +91,48 @@ private extension BalanceService {
     
     private var enableAutoCompoundStakedBalance: Bool { false }
     
-    func fetchThorchainStakedBalance(for coin: Coin, service: ThorchainService) async throws -> String {
-        // Handle TCY staked balance (includes both regular and auto-compound)
-        if coin.ticker.caseInsensitiveCompare("TCY") == .orderedSame {
-            let tcyStakedBalance = await service.fetchTcyStakedAmount(address: coin.address)
+    func fetchStakedBalance(for coin: Coin) async throws -> String? {
+        switch coin.chain {
+        case .thorChain:
+            // Should be handled by `updateBondedIfNeeded`
+            guard !coin.isNativeToken else {
+                return nil
+            }
             
-            if enableAutoCompoundStakedBalance {
-                let tcyAutoCompoundBalance = await service.fetchTcyAutoCompoundAmount(address: coin.address)
-                let totalStakedBalance = tcyStakedBalance + tcyAutoCompoundBalance
+            // Handle TCY staked balance (includes both regular and auto-compound)
+            if coin.ticker.localizedCaseInsensitiveContains("tcy") {
+                let service = ThorchainServiceFactory.getService(for: coin.chain)
+                let tcyStakedBalance = await service.fetchTcyStakedAmount(address: coin.address)
+                
+                if enableAutoCompoundStakedBalance {
+                    let tcyAutoCompoundBalance = await service.fetchTcyAutoCompoundAmount(address: coin.address)
+                    let totalStakedBalance = tcyStakedBalance + tcyAutoCompoundBalance
+                    return totalStakedBalance.description
+                }
+                
+                let totalStakedBalance = tcyStakedBalance
                 return totalStakedBalance.description
             }
             
-            let totalStakedBalance = tcyStakedBalance
-            return totalStakedBalance.description
-        }
-        
-        // Handle RUNE bonded balance
-        if coin.ticker.caseInsensitiveCompare("RUNE") == .orderedSame {
-            let runeBondedBalance = await service.fetchRuneBondedAmount(address: coin.address)
-            return runeBondedBalance.description
-        }
-        
-        // Handle merge account balances for non-native tokens
-        if !coin.isNativeToken {
-            let mergedAccounts = await service.fetchMergeAccounts(address: coin.address)
-            
-            if let matchedAccount = mergedAccounts.first(where: {
-                $0.pool.mergeAsset.metadata.symbol.caseInsensitiveCompare(coin.ticker) == .orderedSame
-            }) {
-                let amountInDecimal = matchedAccount.size.amount.toDecimal()
-                return amountInDecimal.description
+            // Handle merge account balances for non-native tokens
+            if !coin.isNativeToken {
+                let service = ThorchainServiceFactory.getService(for: coin.chain)
+                let mergedAccounts = await service.fetchMergeAccounts(address: coin.address)
+                
+                if let matchedAccount = mergedAccounts.first(where: {
+                    $0.pool.mergeAsset.metadata.symbol.caseInsensitiveCompare(coin.ticker) == .orderedSame
+                }) {
+                    let amountInDecimal = matchedAccount.size.amount.toDecimal()
+                    return amountInDecimal.description
+                }
             }
-        }
-        
-        // Fallback return value
-        return "0"
-    }
-    
-    func fetchStakedBalance(for coin: Coin) async throws -> String {
-        switch coin.chain {
-        case .thorChain:
-            return try await fetchThorchainStakedBalance(for: coin, service: ThorchainService.shared)
             
-        case .thorChainStagenet:
-            // Stagenet doesn't support staking features yet
+            // Fallback return value
             return "0"
             
         default:
             // All other chains currently don't support staking
-            return .zero
+            return nil
         }
     }
     
@@ -211,5 +211,17 @@ private extension BalanceService {
         }
         
         coin.stakedBalance = stakedBalance
+    }
+}
+
+private extension BalanceService {
+    func updateBondedIfNeeded(for coin: Coin) async throws {
+        guard coin.ticker.localizedCaseInsensitiveContains("rune") else {
+            return
+        }
+        
+        let bondedNodes = try await thorchainAPIService.getBondedNodes(address: coin.address)
+        coin.bondedNodes = bondedNodes.nodes
+        try await updateCoin(coin, stakedBalance: bondedNodes.totalBonded.description)
     }
 }

@@ -14,5 +14,5 @@ struct ActiveBondedNode: Identifiable, Equatable {
     let amount: Decimal
     let apy: Double
     let nextReward: Decimal
-    let nextChurn: TimeInterval
+    let nextChurn: Date?
 }

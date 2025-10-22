@@ -11,7 +11,7 @@ struct DefiTHORChainAvailableNodesView: View {
     let availableNodes: [BondNode]
     var onBond: (BondNode) -> Void
     
-    @State private var isExpanded = true
+    @State private var isExpanded = false
     
     var body: some View {
         ContainerView {
@@ -37,6 +37,12 @@ struct DefiTHORChainAvailableNodesView: View {
                 .padding(.top, 16)
             }
         }
+        .showIf(availableNodes.count > 0)
+        .onChange(of: availableNodes.count) { oldValue, newValue in
+            if oldValue == 0, newValue > 0 {
+                isExpanded = true
+            }
+        }
     }
     
     func nodeView(for node: BondNode) -> some View {
@@ -48,10 +54,11 @@ struct DefiTHORChainAvailableNodesView: View {
                 Spacer()
                 BondNodeStateView(state: node.state)
             }
-            
+
             DefiButton(title: "requestToBond".localized, icon: "arrow-up-right-1", type: .secondary) {
                 onBond(node)
             }
+            .disabled(!node.state.canBond)
         }
     }
 }
@@ -60,7 +67,8 @@ struct DefiTHORChainAvailableNodesView: View {
     DefiTHORChainAvailableNodesView(
         availableNodes: [
             BondNode(address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szstey", state: .active),
-            BondNode(address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szwasa", state: .churnedOut)
+            BondNode(address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szwasa", state: .ready),
+            BondNode(address: "thor1disabled000000000000000000000000000000", state: .disabled)
         ],
         onBond: { _ in }
     )

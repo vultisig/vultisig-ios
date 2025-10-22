@@ -587,5 +587,22 @@ extension ThorchainStagenetService {
         
         throw lastError ?? HelperError.runtimeError("Unknown error after \(maxAttempts) attempts")
     }
+    
+    // MARK: - TCY Staking Methods (Not supported on Stagenet)
+    
+    func fetchTcyStakedAmount(address: String) async -> Decimal {
+        // Stagenet doesn't support TCY staking
+        return 0
+    }
+    
+    func fetchTcyAutoCompoundAmount(address: String) async -> Decimal {
+        // Stagenet doesn't support TCY auto-compound
+        return 0
+    }
+    
+    func fetchMergeAccounts(address: String) async -> [MergeAccountResponse.ResponseData.Node.AccountMerge.MergeAccount] {
+        // Stagenet doesn't support merge accounts
+        return []
+    }
 }
 

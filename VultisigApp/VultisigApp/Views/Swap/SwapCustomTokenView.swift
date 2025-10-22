@@ -69,7 +69,7 @@ struct SwapCustomTokenView: View {
                     showAddressBookIcon: false
                 )
                 
-                IconButton(icon: "magnifyingglass", size: .mini) {
+                IconButton(icon: "magnifying-glass", size: .mini) {
                     Task {
                         await fetchTokenInfo()
                     }
