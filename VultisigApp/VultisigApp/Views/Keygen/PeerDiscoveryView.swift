@@ -34,11 +34,12 @@ struct PeerDiscoveryView: View {
     @State var animationVM: RiveViewModel? = nil
     
     let adaptiveColumns = [
-        GridItem(.adaptive(minimum: 350, maximum: 500), spacing: 16)
+        GridItem(.adaptive(minimum: 350, maximum: 500), spacing: 12),
+        GridItem(.adaptive(minimum: 350, maximum: 500), spacing: 12)
     ]
     
     let adaptiveColumnsMac = [
-        GridItem(.adaptive(minimum: 400, maximum: 800), spacing: 8)
+        GridItem(.adaptive(minimum: 400, maximum: 800), spacing: 12)
     ]
     
     var body: some View {
@@ -64,7 +65,7 @@ struct PeerDiscoveryView: View {
             .onLoad {
                 showInfo()
             }
-            .sheet(isPresented: $showInfoSheet) {
+            .crossPlatformSheet(isPresented: $showInfoSheet) {
                 PeerDiscoveryInfoBanner(isPresented: $showInfoSheet)
                     .presentationDetents([.height(450)])
             }
@@ -111,7 +112,7 @@ struct PeerDiscoveryView: View {
     }
     
     var qrCode: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 16) {
             paringBarcode
             disclaimer
         }
@@ -120,7 +121,6 @@ struct PeerDiscoveryView: View {
     var list: some View {
         scrollList
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(.horizontal, 24)
     }
     
     var lookingForDevices: some View {
@@ -188,8 +188,6 @@ struct PeerDiscoveryView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .font(Theme.fonts.title2)
         .foregroundColor(Theme.colors.textPrimary)
-        .padding(.bottom, 8)
-        .padding(.horizontal, 8)
         .animation(.easeInOut, value: viewModel.selections)
     }
     

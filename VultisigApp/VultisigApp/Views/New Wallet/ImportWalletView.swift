@@ -15,7 +15,6 @@ struct ImportWalletView: View {
     @State var isUploading: Bool = false
     
     @Query var vaults: [Vault]
-    @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
     
     var body: some View {
@@ -37,11 +36,7 @@ struct ImportWalletView: View {
                 resetData()
             }
     }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "import")
-    }
-    
+
     var view: some View {
         VStack(spacing: 15) {
             Spacer()
@@ -102,8 +97,7 @@ struct ImportWalletView: View {
     private func handleButtonTap() {
         backupViewModel.restoreVault(
             modelContext: context,
-            vaults: vaults,
-            defaultChains: settingsDefaultChainViewModel.defaultChains
+            vaults: vaults
         )
         
         if !backupViewModel.showAlert {

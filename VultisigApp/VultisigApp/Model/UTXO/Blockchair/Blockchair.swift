@@ -16,37 +16,6 @@ struct Blockchair: Codable {
 	let address: BlockchairAddress?
 	let utxo: [BlockchairUtxo]?
 	
-    func selectUTXOsForPayment(amountNeeded: Int64, coinType: CoinType) -> [BlockchairUtxo] {
-        let txrefs = self.utxo ?? []
-        
-        // Sort UTXOs: smallest first for better UTXO management (avoids fragmentation)
-        let sortedTxRefs = txrefs.sorted { $0.value ?? 0 < $1.value ?? 0 }
-        var selectedTxRefs: [BlockchairUtxo] = []
-        var total: Int64 = 0
-        let dustThreshold = Int64(coinType.getFixedDustThreshold())
-        
-        // First pass: try to select UTXOs efficiently
-        for txref in sortedTxRefs {
-            let utxoValue = Int64(txref.value ?? 0)
-            
-            // Skip dust UTXOs (too small to be economical)
-            if utxoValue < dustThreshold {
-                continue
-            }
-            
-            selectedTxRefs.append(txref)
-            total += utxoValue
-            
-            // Stop when we have enough
-            if total >= amountNeeded {
-                break
-            }
-        }
-        
-        
-        return selectedTxRefs
-    }
-	
     struct BlockchairAddress: Codable {
 		let scriptHex: String?
 		let balance: Int?

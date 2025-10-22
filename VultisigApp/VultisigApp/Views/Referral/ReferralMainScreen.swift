@@ -17,6 +17,8 @@ struct ReferralMainScreen: View {
     @State var presentEditReferredScreen = false
     @State var presentVaultSelectionScreen = false
     
+    private let referralSavePercentage: String = "10%"
+    
     init(referredViewModel: ReferredViewModel, referralViewModel: ReferralViewModel) {
         self.referredViewModel = referredViewModel
         self.referralViewModel = referralViewModel
@@ -63,8 +65,8 @@ struct ReferralMainScreen: View {
             BannerView(bgImage: "referral-banner") {
                 VStack(alignment: .leading, spacing: 2) {
                     HighlightedText(
-                        localisedKey: "saveOnSwaps",
-                        highlightedText: "10%"
+                        text: String(format: "saveOnSwaps".localized, referralSavePercentage),
+                        highlightedText: referralSavePercentage
                     ) {
                         $0.font = Theme.fonts.caption12
                         $0.foregroundColor = Theme.colors.textExtraLight

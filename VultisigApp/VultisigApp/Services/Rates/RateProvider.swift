@@ -53,12 +53,18 @@ final class RateProvider {
             fatalError(error.localizedDescription)
         }
     }
+    
+    func fiatBalance(value: Decimal, coin: Coin, rate: Rate, currency: SettingsCurrency = .current) -> Decimal {
+        let result = value * Decimal(rate.value)
+        // Don't truncate here - let the formatter handle precision
+        return result
+    }
 
     func fiatBalance(value: Decimal, coin: Coin, currency: SettingsCurrency = .current) -> Decimal {
         guard let rate = rate(for: coin, currency: currency) else {
             return .zero
         }
-        return value * Decimal(rate.value)
+        return fiatBalance(value: value, coin: coin, rate: rate, currency: currency)
     }
 
     func fiatBalance(for coin: Coin, currency: SettingsCurrency = .current) -> Decimal {
@@ -68,10 +74,21 @@ final class RateProvider {
     func fiatBalanceString(for coin: Coin, currency: SettingsCurrency = .current) -> String {
         return fiatBalanceString(value: coin.balanceDecimal, coin: coin, currency: currency)
     }
+    
+    func fiatBalanceString(value: Decimal, coin: Coin, rate: Rate, currency: SettingsCurrency = .current) -> String {
+        let balance = fiatBalance(value: value, coin: coin, rate: rate, currency: currency)
+        return balance.formatToFiat(includeCurrencySymbol: true)
+    }
 
     func fiatBalanceString(value: Decimal, coin: Coin, currency: SettingsCurrency = .current) -> String {
         let balance = fiatBalance(value: value, coin: coin, currency: currency)
         return balance.formatToFiat(includeCurrencySymbol: true)
+    }
+    
+    /// Format fiat balance for fee display with more decimal places (e.g., $0.0065 instead of $0.00)
+    func fiatFeeString(value: Decimal, coin: Coin, currency: SettingsCurrency = .current) -> String {
+        let balance = fiatBalance(value: value, coin: coin, currency: currency)
+        return balance.formatToFiatForFee(includeCurrencySymbol: true)
     }
 
     func rate(for coin: Coin, currency: SettingsCurrency = .current) -> Rate? {

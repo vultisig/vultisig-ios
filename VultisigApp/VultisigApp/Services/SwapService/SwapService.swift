@@ -11,12 +11,54 @@ struct SwapService {
 
     static let shared = SwapService()
     
-    func fetchQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool, referredCode: String) async throws -> SwapQuote {
+    func fetchQuote(
+        amount: Decimal,
+        fromCoin: Coin,
+        toCoin: Coin,
+        isAffiliate: Bool,
+        referredCode: String,
+        vultTierDiscount: Int
+    ) async throws -> SwapQuote {
 
-        guard let provider = SwapCoinsResolver.resolveProvider(fromCoin: fromCoin, toCoin: toCoin) else {
+        let providers = SwapCoinsResolver.resolveAllProviders(fromCoin: fromCoin, toCoin: toCoin)
+        
+        guard !providers.isEmpty else {
             throw SwapError.routeUnavailable
         }
 
+        var lastError: Error?
+        
+        // Try each provider in order until one succeeds
+        for provider in providers {
+            do {
+                return try await fetchQuoteForProvider(
+                    provider: provider,
+                    amount: amount,
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    isAffiliate: isAffiliate,
+                    referredCode: referredCode,
+                    vultTierDiscount: vultTierDiscount
+                )
+            } catch {
+                lastError = error
+                continue
+            }
+        }
+        
+        // If all providers failed, throw the last error
+        throw lastError ?? SwapError.routeUnavailable
+    }
+    
+    private func fetchQuoteForProvider(
+        provider: SwapProvider,
+        amount: Decimal,
+        fromCoin: Coin,
+        toCoin: Coin,
+        isAffiliate: Bool,
+        referredCode: String,
+        vultTierDiscount: Int,
+    ) async throws -> SwapQuote {
         switch provider {
         case .thorchain:
             return try await fetchCrossChainQuote(
@@ -26,7 +68,8 @@ struct SwapService {
                 fromCoin: fromCoin,
                 toCoin: toCoin,
                 isAffiliate: isAffiliate,
-                referredCode: referredCode
+                referredCode: referredCode,
+                vultTierDiscount: vultTierDiscount
             )
         case .mayachain:
             return try await fetchCrossChainQuote(
@@ -36,7 +79,8 @@ struct SwapService {
                 fromCoin: fromCoin,
                 toCoin: toCoin,
                 isAffiliate: isAffiliate,
-                referredCode: referredCode
+                referredCode: referredCode,
+                vultTierDiscount: vultTierDiscount
             )
         case .oneinch:
             guard let fromChainID = fromCoin.chain.chainID,
@@ -46,8 +90,11 @@ struct SwapService {
             return try await fetchOneInchQuote(
                 service: OneInchService.shared,
                 chain: fromChainID,
-                amount: amount, fromCoin: fromCoin,
-                toCoin: toCoin, isAffiliate: isAffiliate
+                amount: amount,
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                isAffiliate: isAffiliate,
+                vultTierDiscount: vultTierDiscount
             )
         case .kyberswap(_):
             guard let fromChainID = fromCoin.chain.chainID,
@@ -59,13 +106,17 @@ struct SwapService {
                 chain: try KyberSwapService.shared.getChainName(for: fromCoin.chain),
                 amount: amount,
                 fromCoin: fromCoin,
-                toCoin: toCoin, isAffiliate: isAffiliate
+                toCoin: toCoin,
+                isAffiliate: isAffiliate
             )
         case .lifi:
             return try await fetchLiFiQuote(
                 service: LiFiService.shared,
-                amount: amount, fromCoin: fromCoin,
-                toCoin: toCoin, isAffiliate: isAffiliate
+                amount: amount,
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                isAffiliate: isAffiliate,
+                vultTierDiscount: vultTierDiscount
             )
         }
     }
@@ -80,7 +131,8 @@ private extension SwapService {
         fromCoin: Coin,
         toCoin: Coin,
         isAffiliate: Bool,
-        referredCode: String
+        referredCode: String,
+        vultTierDiscount: Int
     ) async throws -> SwapQuote {
         do {
             /// https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
@@ -93,7 +145,8 @@ private extension SwapService {
                 amount: normalizedAmount.description,
                 interval: provider.streamingInterval,
                 isAffiliate: isAffiliate,
-                referredCode: referredCode
+                referredCode: referredCode,
+                vultTierDiscount: vultTierDiscount
             )
 
             guard let expected = Decimal(string: quote.expectedAmountOut), !expected.isZero else {
@@ -115,9 +168,15 @@ private extension SwapService {
             }
         }
         catch let error as ThorchainSwapError {
+            print("❌ [COSMOS DEBUG] THORChain error: code=\(error.code), message=\(error.message)")
             if error.code == 3 {
                 if error.message.contains("not enough asset to pay for fees") {
                     throw SwapError.swapAmountTooSmall
+                } else if error.message.localizedCaseInsensitiveContains("invalid symbol") ||
+                          error.message.localizedCaseInsensitiveContains("bad to asset") ||
+                          error.message.localizedCaseInsensitiveContains("bad from asset") {
+                    // This typically means no liquidity pool exists for this token pair
+                    throw SwapError.noLiquidityPool
                 } else {
                     throw SwapError.serverError(message: error.message)
                 }
@@ -137,7 +196,15 @@ private extension SwapService {
         }
     }
 
-    func fetchOneInchQuote(service: OneInchService, chain: Int, amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
+    func fetchOneInchQuote(
+        service: OneInchService,
+        chain: Int,
+        amount: Decimal,
+        fromCoin: Coin,
+        toCoin: Coin,
+        isAffiliate: Bool,
+        vultTierDiscount: Int
+    ) async throws -> SwapQuote {
         let rawAmount = fromCoin.raw(for: amount)
         let response = try await service.fetchQuotes(
             chain: String(chain),
@@ -145,12 +212,20 @@ private extension SwapService {
             destination: toCoin.contractAddress,
             amount: String(rawAmount),
             from: fromCoin.address,
-            isAffiliate: isAffiliate
+            isAffiliate: isAffiliate,
+            vultTierDiscount: vultTierDiscount
         )
         return .oneinch(response.quote, fee: response.fee)
     }
     
-    func fetchKyberSwapQuote(service: KyberSwapService, chain: String, amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
+    func fetchKyberSwapQuote(
+        service: KyberSwapService,
+        chain: String,
+        amount: Decimal,
+        fromCoin: Coin,
+        toCoin: Coin,
+        isAffiliate: Bool
+    ) async throws -> SwapQuote {
         let rawAmount = fromCoin.raw(for: amount)
         let (quote, fee) = try await service.fetchQuotes(
             chain: chain,
@@ -163,13 +238,21 @@ private extension SwapService {
         return .kyberswap(quote, fee: fee)
     }
     
-    func fetchLiFiQuote(service: LiFiService, amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
+    func fetchLiFiQuote(
+        service: LiFiService,
+        amount: Decimal,
+        fromCoin: Coin,
+        toCoin: Coin,
+        isAffiliate: Bool,
+        vultTierDiscount: Int
+    ) async throws -> SwapQuote {
         let fromAmount = fromCoin.raw(for: amount)
         let response = try await service.fetchQuotes(
             fromCoin: fromCoin,
             toCoin: toCoin,
-            fromAmount: fromAmount
+            fromAmount: fromAmount,
+            vultTierDiscount: vultTierDiscount
         )
-        return .lifi(response.quote, fee: response.fee)
+        return .lifi(response.quote, fee: response.fee, integratorFee: response.integratorFee)
     }
 }

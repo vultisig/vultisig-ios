@@ -46,12 +46,12 @@ struct IconButton: View {
 
 #Preview {
     VStack {
-        IconButton(icon: "chevron.right", type: .primary, size: .medium) {}
-        IconButton(icon: "chevron.right", type: .primary, size: .small) {}
-        IconButton(icon: "chevron.right", type: .primary, size: .mini) {}
+        IconButton(icon: "chevron-right", type: .primary, size: .medium) {}
+        IconButton(icon: "chevron-right", type: .primary, size: .small) {}
+        IconButton(icon: "chevron-right", type: .primary, size: .mini) {}
         
-        IconButton(icon: "chevron.right", type: .secondary, size: .medium) {}
-        IconButton(icon: "chevron.right", type: .secondary, size: .small) {}
-        IconButton(icon: "chevron.right", type: .secondary, size: .mini) {}
+        IconButton(icon: "chevron-right", type: .secondary, size: .medium) {}
+        IconButton(icon: "chevron-right", type: .secondary, size: .small) {}
+        IconButton(icon: "chevron-right", type: .secondary, size: .mini) {}
     }
 }

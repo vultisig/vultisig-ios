@@ -33,7 +33,7 @@
       "location" : "https://github.com/vultisig/commondata",
       "state" : {
         "branch" : "main",
-        "revision" : "3faba401cbce8101981fd3b9c97cd74e35273df1"
+        "revision" : "52ec73eb3df761e3060d9c53d5f879fba51a6a62"
       }
     },
     {
@@ -66,7 +66,7 @@
     {
       "identity" : "swifter",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/httpswift/swifter.git",
+      "location" : "https://github.com/httpswift/swifter",
       "state" : {
         "revision" : "9483a5d459b45c3ffd059f7b55f9638e268632fd",
         "version" : "1.5.0"

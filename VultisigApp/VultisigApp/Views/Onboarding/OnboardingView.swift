@@ -56,7 +56,7 @@ struct OnboardingView: View {
         .onDisappear {
             animationVM?.stop()
         }
-        .sheet(isPresented: $showSummary) {
+        .crossPlatformSheet(isPresented: $showSummary) {
             OnboardingSummaryView(kind: .initial, isPresented: $showSummary, onDismiss: {
                 accountViewModel.showOnboarding = false
             })
@@ -100,7 +100,7 @@ struct OnboardingView: View {
     }
     
     var nextButton: some View {
-        IconButton(icon: "chevron.right") {
+        IconButton(icon: "chevron-right") {
             nextTapped()
         }
         .frame(width: 80)

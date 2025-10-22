@@ -34,7 +34,7 @@ struct FolderCellView: View {
                             .foregroundStyle(Theme.colors.textPrimary)
                             .font(Theme.fonts.bodySMedium)
                             .multilineTextAlignment(.leading)
-                            .lineLimit(2)
+                            .lineLimit(1)
                         
                         if isSelected {
                             selectedSubtitle
@@ -46,9 +46,9 @@ struct FolderCellView: View {
                     Spacer()
                     
                     Icon(
-                        named: "chevron-right",
+                        named: "chevron-right-small",
                         color: Theme.colors.textPrimary,
-                        size: 24
+                        size: 16
                     )
                     .opacity(isEditing ? 0 : 1)
                 }

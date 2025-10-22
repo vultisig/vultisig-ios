@@ -1,0 +1,68 @@
+//
+//  VultDiscountTier.swift
+//  VultisigApp
+//
+//  Created by Gaston Mazzeo on 12/10/2025.
+//
+
+import SwiftUI
+import BigInt
+
+enum VultDiscountTier: String, Identifiable, CaseIterable {
+    case bronze
+    case silver
+    case gold
+    case platinum
+    
+    var id: String { rawValue }
+    var name: String { rawValue }
+    var icon: String { "vult-\(rawValue)" }
+    
+    var bpsDiscount: Int {
+        switch self {
+        case .bronze:
+            10
+        case .silver:
+            20
+        case .gold:
+            30
+        case .platinum:
+            35
+        }
+    }
+    
+    var balanceToUnlock: Decimal {
+        switch self {
+        case .bronze:
+            1_000
+        case .silver:
+            2_500
+        case .gold:
+            5_000
+        case .platinum:
+            10_000
+        }
+    }
+    
+    var primaryColor: Color {
+        switch self {
+        case .bronze:
+            Color(hex: "DB5727")
+        case .silver:
+            Color(hex: "C9D6E8")
+        case .gold:
+            Color(hex: "FFC25C")
+        case .platinum:
+            Color(hex: "33E6BF")
+        }
+    }
+    
+    var secondaryColor: Color {
+        switch self {
+        case .bronze, .silver, .gold:
+            Color(hex: "3377D9").opacity(0.21)
+        case .platinum:
+            Color(hex: "4879FD")
+        }
+    }
+}

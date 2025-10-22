@@ -332,8 +332,9 @@ struct JoinSwapDoneSummary: View {
             return ""
         }
         
-        let fee = nativeCoin.decimal(for: fee)
-        return RateProvider.shared.fiatBalanceString(value: fee, coin: nativeCoin)
+        let feeDecimal = nativeCoin.decimal(for: fee)
+        // Use fee-specific formatting with more decimal places (5 instead of 2)
+        return RateProvider.shared.fiatFeeString(value: feeDecimal, coin: nativeCoin)
     }
     
     private func shareLink(txid: String) {

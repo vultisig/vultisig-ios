@@ -204,7 +204,7 @@ private extension VultiTabBar {
 }
 
 #Preview {
-    let items = [HomeTab.wallet, .earn]
+    let items = [HomeTab.wallet, .defi]
     
     VultiTabBar(
         selectedItem: .constant(HomeTab.wallet),
@@ -216,10 +216,10 @@ private extension VultiTabBar {
             Color.blue.ignoresSafeArea()
                 .overlay(Text("Wallet").foregroundColor(.white))
                 .tag(HomeTab.wallet)
-        case .earn:
+        case .defi:
             Color.green.ignoresSafeArea()
                 .overlay(Text("Earn").foregroundColor(.white))
-                .tag(HomeTab.earn)
+                .tag(HomeTab.defi)
         case .camera:
             EmptyView()
         }

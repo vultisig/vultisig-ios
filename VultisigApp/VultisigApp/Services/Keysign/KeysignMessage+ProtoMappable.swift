@@ -57,12 +57,18 @@ extension CustomMessagePayload: ProtoMappable {
     init(proto: VSCustomMessagePayload) throws {
         self.method = proto.method
         self.message = proto.message
+        self.vaultLocalPartyID = proto.vaultLocalPartyID
+        self.vaultPublicKeyECDSA = proto.vaultPublicKeyEcdsa
+        self.chain = proto.chain
     }
     
     func mapToProtobuff() -> VSCustomMessagePayload {
         return VSCustomMessagePayload.with {
             $0.method = method
             $0.message = message
+            $0.vaultLocalPartyID = vaultLocalPartyID
+            $0.vaultPublicKeyEcdsa = vaultPublicKeyECDSA
+            $0.chain = chain
         }
     }
 }
@@ -313,7 +319,8 @@ extension BlockChainSpecific {
                 currentBlockNumber: BigInt(stringLiteral: value.currentBlockNumber),
                 specVersion: value.specVersion,
                 transactionVersion: value.transactionVersion,
-                genesisHash: value.genesisHash
+                genesisHash: value.genesisHash,
+                gas: value.gas == 0 ? nil : BigInt(value.gas)
             )
         case .suicheSpecific(let value):
             let coinsArray: [[String: String]] = value.coins.map { coin in
@@ -328,7 +335,8 @@ extension BlockChainSpecific {
             
             self = .Sui(
                 referenceGasPrice: BigInt(stringLiteral: value.referenceGasPrice),
-                coins: coinsArray
+                coins: coinsArray,
+                gasBudget: BigInt(stringLiteral: value.gasBudget)
             )
         case .tonSpecific(let value):
             self = .Ton(
@@ -415,7 +423,7 @@ extension BlockChainSpecific {
                 $0.toTokenAssociatedAddress = toTokenAssociatedAddress ?? .empty
                 $0.programID = tokenProgramId
             })
-        case .Sui(let referenceGasPrice, let coins):
+        case .Sui(let referenceGasPrice, let coins, let gasBudget):
             // `coins` is of type `[[String: String]]`
             let suiCoins: [VSSuiCoin] = coins.map { coinDict in
                 var suiCoin = VSSuiCoin()
@@ -429,6 +437,7 @@ extension BlockChainSpecific {
             
             return .suicheSpecific(.with {
                 $0.referenceGasPrice = String(referenceGasPrice)
+                $0.gasBudget = String(gasBudget)
                 $0.coins = suiCoins
             })
             
@@ -443,7 +452,7 @@ extension BlockChainSpecific {
             })
             
             
-        case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber, let specVersion, let transactionVersion, let genesisHash):
+        case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber, let specVersion, let transactionVersion, let genesisHash, let gas):
             return .polkadotSpecific(.with {
                 $0.recentBlockHash = recentBlockHash
                 $0.nonce = nonce
@@ -451,6 +460,7 @@ extension BlockChainSpecific {
                 $0.specVersion = specVersion
                 $0.transactionVersion = transactionVersion
                 $0.genesisHash = genesisHash
+                $0.gas = UInt64(gas ?? 0)
             })
         case .Ripple(let sequence, let gas, let lastLedgerSequence):
             return .rippleSpecific(.with {

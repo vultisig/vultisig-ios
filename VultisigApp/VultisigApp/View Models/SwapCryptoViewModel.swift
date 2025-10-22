@@ -286,7 +286,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 
                 return true
                 
-            case .oneinch(let evmQuote, _), .lifi(let evmQuote, _), .kyberswap(let evmQuote, _):
+            case .oneinch(let evmQuote, _), .lifi(let evmQuote, _, _), .kyberswap(let evmQuote, _):
                 let keysignFactory = KeysignPayloadFactory()
                 let payload = GenericSwapPayload(
                     fromCoin: tx.fromCoin,
@@ -390,7 +390,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         updateQuoteTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds delay
             guard !Task.isCancelled else { return }
-            await self?.updateQuotes(tx: tx, referredCode: referredCode)
+            await self?.updateQuotes(tx: tx, vault: vault, referredCode: referredCode)
             await self?.updateFees(tx: tx, vault: vault)
         }
     }
@@ -434,7 +434,7 @@ private extension SwapCryptoViewModel {
         }
     }
     
-    func updateQuotes(tx: SwapTransaction, referredCode: String) async {
+    func updateQuotes(tx: SwapTransaction, vault: Vault, referredCode: String) async {
         isLoadingQuotes = true
         defer { isLoadingQuotes = false }
         
@@ -449,12 +449,14 @@ private extension SwapCryptoViewModel {
                 return
             }
             
+            let vultTier = await VultTierService().fetchDiscountTier(for: vault)
             let quote = try await swapService.fetchQuote(
                 amount: tx.fromAmountDecimal,
                 fromCoin: tx.fromCoin,
                 toCoin: tx.toCoin,
-                isAffiliate: tx.isAlliliate,
-                referredCode: referredCode
+                isAffiliate: tx.isAffiliate,
+                referredCode: referredCode,
+                vultTierDiscount: vultTier?.bpsDiscount ?? 0
             )
             
             tx.quote = quote
@@ -476,6 +478,11 @@ private extension SwapCryptoViewModel {
         
         tx.gas = .zero
         tx.thorchainFee = .zero
+        
+        // Skip fee calculation if no amount is entered
+        guard !tx.fromAmount.isEmpty, !tx.fromAmountDecimal.isZero else {
+            return
+        }
         
         do {
             let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
@@ -517,7 +524,7 @@ private extension SwapCryptoViewModel {
         switch chainSpecific {
         case .Ethereum(let maxFeePerGas, let priorityFee, _, let gasLimit):
             return (maxFeePerGas + priorityFee) * gasLimit
-        case .UTXO:
+        case .UTXO, .Cardano:
             let keysignFactory = KeysignPayloadFactory()
             do {
                 let keysignPayload = try await keysignFactory.buildTransfer(
@@ -529,25 +536,38 @@ private extension SwapCryptoViewModel {
                     swapPayload: nil,
                     vault: vault
                 )
-                let utxo = UTXOChainsHelper(
-                    coin: tx.fromCoin.coinType,
-                    vaultHexPublicKey: vault.pubKeyECDSA,
-                    vaultHexChainCode: vault.hexChainCode
-                )
-                let plan = try utxo.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
-                if plan.fee <= 0 && tx.fromAmountDecimal > 0 {
+                
+                let planFee: BigInt
+                switch tx.fromCoin.chain {
+                case .cardano:
+                    guard let cardanoHelper = CardanoHelper.getHelper(vault: vault, coin: tx.fromCoin) else {
+                        throw Errors.insufficientFunds
+                    }
+                    planFee = try cardanoHelper.calculateDynamicFee(keysignPayload: keysignPayload)
+                    
+                default: // UTXO chains
+                    let utxo = UTXOChainsHelper(
+                        coin: tx.fromCoin.coinType,
+                        vaultHexPublicKey: vault.pubKeyECDSA,
+                        vaultHexChainCode: vault.hexChainCode
+                    )
+                    let plan = try utxo.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
+                    planFee = BigInt(plan.fee)
+                }
+                
+                if planFee <= 0 && tx.fromAmountDecimal > 0 {
                     throw Errors.insufficientFunds
                 }
-                return BigInt(plan.fee)
+                return planFee
             } catch {
-                // Re-throw UTXO-specific errors to provide better user feedback
+                // Re-throw specific errors to provide better user feedback
                 if error is KeysignPayloadFactory.Errors {
                     throw error
                 }
                 throw Errors.insufficientFunds
             }
             
-        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton, .Ripple, .Tron, .Cardano:
+        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton, .Ripple, .Tron:
             return chainSpecific.gas
         }
     }

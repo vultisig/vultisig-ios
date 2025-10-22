@@ -102,13 +102,13 @@ class KeygenViewModel: ObservableObject {
         }
         return hexString
     }
-    func startKeygen(context: ModelContext, defaultChains: [CoinMeta]) async {
+    func startKeygen(context: ModelContext) async {
         let vaultLibType = self.vault.libType ?? .GG20
         switch(vaultLibType){
         case .GG20:
             switch self.tssType{
             case .Keygen,.Reshare:
-                await startKeygenGG20(context: context, defaultChains: defaultChains)
+                await startKeygenGG20(context: context)
             case .Migrate:
                 var localUIECDSA: String?
                 var localUIEdDSA: String?
@@ -139,18 +139,15 @@ class KeygenViewModel: ObservableObject {
                     self.keygenError = error.localizedDescription
                     return
                 }
-                await startKeygenDKLS(context: context,
-                                      defaultChains: defaultChains,
-                                      localUIEcdsa: localUIECDSA,
-                                      localUIEddsa: localUIEdDSA)
+                await startKeygenDKLS(context: context, localUIEcdsa: localUIECDSA, localUIEddsa: localUIEdDSA)
             }
             
         case .DKLS:
-            await startKeygenDKLS(context: context, defaultChains: defaultChains)
+            await startKeygenDKLS(context: context)
         }
     }
     
-    func startKeygenDKLS(context: ModelContext, defaultChains: [CoinMeta], localUIEcdsa: String? = nil, localUIEddsa: String? = nil) async {
+    func startKeygenDKLS(context: ModelContext, localUIEcdsa: String? = nil, localUIEddsa: String? = nil) async {
         do{
             let dklsKeygen = DKLSKeygen(vault: self.vault,
                                         tssType: self.tssType,
@@ -223,7 +220,7 @@ class KeygenViewModel: ObservableObject {
             
             if self.tssType == .Keygen || !self.vaultOldCommittee.contains(self.vault.localPartyID){
                 VaultDefaultCoinService(context: context)
-                    .setDefaultCoinsOnce(vault: self.vault, defaultChains: defaultChains)
+                    .setDefaultCoinsOnce(vault: self.vault)
                 context.insert(self.vault)
             }
             
@@ -237,7 +234,7 @@ class KeygenViewModel: ObservableObject {
         }
     }
     
-    func startKeygenGG20(context: ModelContext, defaultChains: [CoinMeta]) async {
+    func startKeygenGG20(context: ModelContext) async {
         defer {
             self.messagePuller?.stop()
         }
@@ -274,14 +271,14 @@ class KeygenViewModel: ObservableObject {
             case .Keygen:
                 // make sure the newly created vault has default coins
                 VaultDefaultCoinService(context: context)
-                    .setDefaultCoinsOnce(vault: self.vault, defaultChains: defaultChains)
+                    .setDefaultCoinsOnce(vault: self.vault)
                 context.insert(self.vault)
             case .Reshare:
                 // if local party is not in the old committee , then he is the new guy , need to add the vault
                 // otherwise , they previously have the vault
                 if !self.vaultOldCommittee.contains(self.vault.localPartyID) {
                     VaultDefaultCoinService(context: context)
-                        .setDefaultCoinsOnce(vault: self.vault, defaultChains: defaultChains)
+                        .setDefaultCoinsOnce(vault: self.vault)
                     context.insert(self.vault)
                 }
             case .Migrate:

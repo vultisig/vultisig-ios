@@ -34,7 +34,7 @@ private extension IconButtonStyle {
         case .medium:
             return EdgeInsets(top: 14, leading: 32, bottom: 14, trailing: 32)
         case .small:
-            return EdgeInsets(top: 12, leading: 24, bottom: 12, trailing: 24)
+            return EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12)
         case .mini:
             return EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8)
         }
@@ -66,13 +66,12 @@ private extension IconButtonStyle {
             } else {
                 return Theme.colors.alertError
             }
-        case .primary:
+        case .primary, .primarySuccess:
             if isPressed {
                 return Theme.colors.bgButtonPrimaryPressed
             } else {
                 return Theme.colors.bgButtonPrimary
             }
-            
         case .secondary:
             if isPressed {
                 return Theme.colors.bgButtonSecondaryPressed
@@ -84,7 +83,7 @@ private extension IconButtonStyle {
     
     func foregroundColor(for type: ButtonType, isPressed: Bool, isEnabled: Bool) -> Color {
         switch type {
-        case .primary, .alert:
+        case .primary, .alert, .primarySuccess:
             if !isEnabled {
                 return Theme.colors.textButtonDisabled
             } else {
@@ -101,7 +100,7 @@ private extension IconButtonStyle {
     
     func borderColor(for type: ButtonType, isPressed: Bool, isEnabled: Bool) -> Color {
         switch type {
-        case .primary, .alert:
+        case .primary, .alert, .primarySuccess:
             return .clear
         case .secondary:
             if !isEnabled {
@@ -114,7 +113,7 @@ private extension IconButtonStyle {
     
     func borderWidth(for type: ButtonType) -> CGFloat {
         switch type {
-        case .primary, .alert: return 0
+        case .primary, .alert, .primarySuccess: return 0
         case .secondary: return 1
         }
     }

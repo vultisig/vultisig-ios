@@ -110,6 +110,22 @@ class Coin: ObservableObject, Codable, Hashable {
         "\(balanceString) \(ticker)"
     }
     
+    var defiBalanceString: String {
+        return stakedBalanceDecimal.formatForDisplay()
+    }
+    
+    var defiBalanceStringWithTicker: String {
+        "\(defiBalanceString) \(ticker)"
+    }
+    
+    func valueWithDecimals(value: Decimal) -> Decimal {
+        value / pow(10, decimals)
+    }
+    
+    func formatWithTicker(value: Decimal) -> String {
+        "\(valueWithDecimals(value: value).formatForDisplay()) \(ticker)"
+    }
+    
     var balanceInFiat: String {
         return balanceInFiatDecimal.formatToFiat()
     }
@@ -165,8 +181,10 @@ class Coin: ObservableObject, Codable, Hashable {
             }
         case .zksync:
             return "200000"
-        case .bitcoin,.bitcoinCash,.dash, .cardano:
+        case .bitcoin,.bitcoinCash,.dash:
             return "20"
+        case .cardano:
+            return "180000" // Fallback only - dynamic calculation is preferred
         case .zcash:
             return "1000" // "2000" for faster confirmation
         case .litecoin:
@@ -270,6 +288,12 @@ class Coin: ObservableObject, Codable, Hashable {
         return fiat
     }
     
+    var defiBalanceInFiatDecimal: Decimal {
+        let combined = stakedBalanceDecimal
+        let fiat = RateProvider.shared.fiatBalance(value: combined, coin: self)
+        return fiat
+    }
+    
     var blockchairKey: String {
         return "\(address)-\(chain.name.lowercased())"
     }
@@ -277,8 +301,6 @@ class Coin: ObservableObject, Codable, Hashable {
     var shouldApprove: Bool {
         return !isNativeToken && chain.chainType == .EVM
     }
-    
-    
     
     var tokenChainLogo: String? {
         guard chain.logo != logo else { return nil }

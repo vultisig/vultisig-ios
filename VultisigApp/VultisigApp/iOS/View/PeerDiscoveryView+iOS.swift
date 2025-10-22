@@ -12,29 +12,36 @@ import RiveRuntime
 extension PeerDiscoveryView {
     private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     
+    var qrCodeSize: CGFloat {
+        screenHeight / 3.5
+    }
+    
     var content: some View {
-        ZStack {
-            Background()
-            main
+        GeometryReader { proxy in
+            ZStack {
+                Background()
+                main
+            }
+            .onAppear {
+                screenHeight = proxy.size.height
+                setData()
+            }
+            .crossPlatformToolbar("scanQR".localized) {
+                CustomToolbarItem(placement: .trailing) {
+                    if isShareButtonVisible {
+                        NavigationQRShareButton(
+                            vault: vault,
+                            type: .Keygen,
+                            viewModel: shareSheetViewModel
+                        )
+                    }
+                }
+            }
         }
-        .navigationTitle("scanQR")
-        .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(hideBackButton)
         .detectOrientation($orientation)
         .onChange(of: orientation) { oldValue, newValue in
             setData()
-        }
-        .toolbar {
-            // only show the QR share button when it is in peer discovery
-            if isShareButtonVisible {
-                ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                    NavigationQRShareButton(
-                        vault: vault,
-                        type: .Keygen,
-                        viewModel: shareSheetViewModel
-                    )
-                }
-            }
         }
         .onAppear {
             UIApplication.shared.isIdleTimerDisabled = true
@@ -50,28 +57,21 @@ extension PeerDiscoveryView {
     
     var portraitContent: some View {
         ScrollView {
-            qrCode
-            list
+            VStack(spacing: 16) {
+                qrCode
+                list
+            }
         }
     }
     
     var paringBarcode: some View {
         ZStack {
             animation
-            qrCodeContent
+            qrCodeImage?
+                .resizable()
+                .frame(maxWidth: qrCodeSize, maxHeight: qrCodeSize)
+                .padding(20)
         }
-        .padding(8)
-    }
-    
-    var qrCodeContent: some View {
-        qrCodeImage?
-            .resizable()
-            .frame(maxWidth: 500, maxHeight: 500)
-            .aspectRatio(contentMode: .fill)
-            .padding(16)
-            .background(Color.clear)
-            .cornerRadius(38)
-            .padding(2)
     }
     
     var animation: some View {
@@ -79,18 +79,17 @@ extension PeerDiscoveryView {
     }
     
     var scrollList: some View {
-        VStack {
+        VStack(alignment: .leading, spacing: 24) {
             listTitle
-            
-            LazyVGrid(columns: adaptiveColumns, spacing: 18) {
+            LazyVGrid(columns: adaptiveColumns, spacing: 12) {
                 ThisDevicePeerCell(deviceName: idiom == .phone ? "iPhone" : "iPad")
                 devices
                 EmptyPeerCell(counter: participantDiscovery.peersFound.count)
             }
-            .padding(.horizontal, 12)
             .animation(.easeInOut(duration: 0.2), value: viewModel.selections)
         }
         .frame(maxWidth: .infinity)
+        .padding(.horizontal, idiom == .pad ? 24 : 16)
     }
     
     var networkPrompts: some View {
@@ -127,29 +126,25 @@ extension PeerDiscoveryView {
         ZStack {
             if viewModel.selectedNetwork == .Local {
                 LocalModeDisclaimer()
-            } else if showDisclaimer {
-                if tssType != .Migrate {
-                    PeerDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
-                } else {
-                    Spacer()
-                        .frame(height: 24)
-                }
+            } else if showDisclaimer && tssType != .Migrate {
+                PeerDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
             }
         }
-        .padding(.horizontal, idiom == .pad ? 24 : 12)
+        .padding(.horizontal, idiom == .pad ? 24 : 16)
     }
     
     var switchLink: some View {
         SwitchToLocalLink(isForKeygen: true, selectedNetwork: $viewModel.selectedNetwork)
             .disabled(viewModel.isLoading)
     }
-
+    
     var isShareButtonVisible: Bool {
         return viewModel.status == .WaitingForDevices && selectedTab.hasOtherDevices
     }
-
+    
     func setData() {
-        guard let (qrCodeString, qrCodeImage) = viewModel.getQRCodeData(size: 100) else {
+        guard self.qrCodeImage == nil, qrCodeSize > 0 else { return }
+        guard let (qrCodeString, qrCodeImage) = viewModel.getQRCodeData(size: qrCodeSize, displayScale: displayScale) else {
             return
         }
         

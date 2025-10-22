@@ -39,13 +39,23 @@ class GroupedChain: ObservableObject, Identifiable, Hashable {
     var totalBalanceInFiatString: String {
         return totalBalanceInFiatDecimal.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
     }
+    
+    var defiBalanceInFiatDecimal: Decimal {
+        // Remove duplicates by ID before calculating total
+        let uniqueCoins = Array(Set(coins))
+        return uniqueCoins.totalDefiBalanceInFiatDecimal
+    }
+
+    var defiBalanceInFiatString: String {
+        return defiBalanceInFiatDecimal.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
+    }
 
     var name: String {
         return chain.name
     }
 
     var nativeCoin: Coin {
-        return coins[0]
+        return coins.first(where: { $0.isNativeToken }) ?? coins[0]
     }
 
     init(chain: Chain, address: String, logo: String, count: Int = 0, coins: [Coin]) {

@@ -24,6 +24,7 @@ enum SettingsOption: String, Identifiable {
     var id: String { rawValue }
     
     case vaultSettings
+    case vultDiscountTiers
     case registerVaults
     case language
     case currency
@@ -36,7 +37,6 @@ enum SettingsOption: String, Identifiable {
     case twitter
     case discord
     case github
-    case vult
     case website
     case privacyPolicy
     case termsOfService
@@ -45,6 +45,8 @@ enum SettingsOption: String, Identifiable {
         switch self {
         case .vaultSettings:
             return "vaultSettings"
+        case .vultDiscountTiers:
+            return "vultDiscountTiers"
         case .registerVaults:
             return "registerYourVaults"
         case .language:
@@ -69,8 +71,6 @@ enum SettingsOption: String, Identifiable {
             return "discord"
         case .github:
             return "github"
-        case .vult:
-            return "vult"
         case .website:
             return "vultisigWebsite"
         case .privacyPolicy:
@@ -84,6 +84,8 @@ enum SettingsOption: String, Identifiable {
         switch self {
         case .vaultSettings:
             return "settings"
+        case .vultDiscountTiers:
+            return "coins"
         case .registerVaults:
             return "logo-outline"
         case .language:
@@ -108,8 +110,6 @@ enum SettingsOption: String, Identifiable {
             return "discord"
         case .github:
             return "github"
-        case .vult:
-            return "coins"
         case .website:
             return "globe"
         case .privacyPolicy:
@@ -127,8 +127,6 @@ enum SettingsOption: String, Identifiable {
             return .link(url: StaticURL.DiscordVultisigURL)
         case .website:
             return .link(url: StaticURL.VultisigWebsiteURL)
-        case .vult:
-            return .link(url: StaticURL.VultisigVultURL)
         case .github:
             return .link(url: StaticURL.GithubVultisigURL)
         case .shareApp:

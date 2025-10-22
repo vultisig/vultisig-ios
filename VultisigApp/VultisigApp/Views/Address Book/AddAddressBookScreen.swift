@@ -10,14 +10,16 @@ import SwiftData
 import WalletCore
 
 struct AddAddressBookScreen: View {
-    let count: Int
+    var onDismiss: (() -> Void)?
+    
+    @Query var savedAddresses: [AddressBookItem]
     
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     @State var title = ""
-    @State var address = ""
-    @State var selectedChain = AddressBookChainType.evm
+    @State var address: String
+    @State var selectedChain: AddressBookChainType
     
     @State var alertTitle = ""
     @State var alertMessage = ""
@@ -26,6 +28,12 @@ struct AddAddressBookScreen: View {
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
+    
+    init(address: String? = nil, chain: AddressBookChainType? = nil, onDismiss: (() -> Void)? = nil) {
+        self.address = address ?? ""
+        self.selectedChain = chain ?? .evm
+        self.onDismiss = onDismiss
+    }
     
     var body: some View {
         Screen(title: "addAddress".localized) {
@@ -39,7 +47,7 @@ struct AddAddressBookScreen: View {
         .alert(isPresented: $showAlert) {
             alert
         }
-        .platformSheet(isPresented: $presentSelector) {
+        .crossPlatformSheet(isPresented: $presentSelector) {
             let coins = coinSelectionViewModel.groupedAssets.keys
                 .compactMap { coinSelectionViewModel.groupedAssets[$0]?.first }
             AddressBookChainSelectionScreen(
@@ -131,12 +139,16 @@ struct AddAddressBookScreen: View {
             title: title,
             address: address,
             coinMeta: coin,
-            order: count
+            order: savedAddresses.count
         )
         
         DispatchQueue.main.asyncAfter(deadline: .now()) {
             modelContext.insert(data)
-            dismiss()
+            if let onDismiss {
+                onDismiss()
+            } else {
+                dismiss()
+            }
         }
     }
     
@@ -160,7 +172,7 @@ struct AddAddressBookScreen: View {
 }
 
 #Preview {
-    AddAddressBookScreen(count: 0)
+    AddAddressBookScreen()
         .environmentObject(CoinSelectionViewModel())
         .environmentObject(HomeViewModel())
 }

@@ -8,5 +8,14 @@
 import Foundation
 
 protocol ThorchainSwapProvider {
-    func fetchSwapQuotes(address: String, fromAsset: String, toAsset: String, amount: String, interval: Int, isAffiliate: Bool, referredCode: String) async throws -> ThorchainSwapQuote
+    func fetchSwapQuotes(
+        address: String,
+        fromAsset: String,
+        toAsset: String,
+        amount: String,
+        interval: Int,
+        isAffiliate: Bool,
+        referredCode: String,
+        vultTierDiscount: Int
+    ) async throws -> ThorchainSwapQuote
 }

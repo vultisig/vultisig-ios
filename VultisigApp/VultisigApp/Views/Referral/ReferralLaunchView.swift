@@ -15,6 +15,8 @@ struct ReferralLaunchView: View {
     @State var scrollViewProxy: ScrollViewProxy?
     @State var screenHeight: CGFloat = 0
     
+    private let referralSavePercentage: String = "10%"
+    private let referralSavePercentage2: String = "20%"
     private let scrollToReferenceId = "scrollTo"
     
     var isLoading: Bool {
@@ -99,8 +101,8 @@ struct ReferralLaunchView: View {
             VStack(spacing: 8) {
                 HStack(spacing: 0) {
                     HighlightedText(
-                        localisedKey: "referredSaveOnSwaps",
-                        highlightedText: "10%"
+                        text: String(format: "referredSaveOnSwaps".localized, referralSavePercentage),
+                        highlightedText: referralSavePercentage
                     ) {
                         $0.font = Theme.fonts.bodySMedium
                         $0.foregroundColor = Theme.colors.textPrimary
@@ -155,8 +157,8 @@ private extension ReferralLaunchView {
     
     var referralTitle: some View {
         HighlightedText(
-            localisedKey: "createYourCodeAndEarn",
-            highlightedText: "20%"
+            text: String(format: "createYourCodeAndEarn".localized, referralSavePercentage2),
+            highlightedText: referralSavePercentage2
         ) {
             $0.font = Theme.fonts.bodySMedium
             $0.foregroundColor = Theme.colors.textPrimary

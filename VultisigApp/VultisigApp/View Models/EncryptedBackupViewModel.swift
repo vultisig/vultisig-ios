@@ -264,7 +264,7 @@ class EncryptedBackupViewModel: ObservableObject {
         }
     }
     
-    func restoreVaultBak(modelContext: ModelContext,vaults: [Vault], vaultData: Data, defaultChains: [CoinMeta]) {
+    func restoreVaultBack(modelContext: ModelContext,vaults: [Vault], vaultData: Data) {
         do{
             let vsVault = try VSVault(serializedBytes: vaultData)
             let vault = try Vault(proto: vsVault)
@@ -279,7 +279,7 @@ class EncryptedBackupViewModel: ObservableObject {
             }
             
             VaultDefaultCoinService(context: modelContext)
-                .setDefaultCoinsOnce(vault: vault, defaultChains: defaultChains)
+                .setDefaultCoinsOnce(vault: vault)
             modelContext.insert(vault)
             selectedVault = vault
             isLinkActive = true
@@ -292,7 +292,7 @@ class EncryptedBackupViewModel: ObservableObject {
         }
     }
     
-    func restoreVault(modelContext: ModelContext, vaults: [Vault], defaultChains: [CoinMeta]) {
+    func restoreVault(modelContext: ModelContext, vaults: [Vault]) {
         guard let vaultText = decryptedContent, let vaultData = Data(hexString: vaultText) else {
             alertTitle = "invalidVaultData"
             showAlert = true
@@ -301,7 +301,7 @@ class EncryptedBackupViewModel: ObservableObject {
         }
         
         if isBakFile() {
-            restoreVaultBak(modelContext: modelContext, vaults: vaults, vaultData: vaultData, defaultChains: defaultChains)
+            restoreVaultBack(modelContext: modelContext, vaults: vaults, vaultData: vaultData)
             return
         }
         
@@ -317,7 +317,7 @@ class EncryptedBackupViewModel: ObservableObject {
                 return
             }
             VaultDefaultCoinService(context: modelContext)
-                .setDefaultCoinsOnce(vault: backupVault.vault, defaultChains: defaultChains)
+                .setDefaultCoinsOnce(vault: backupVault.vault)
             modelContext.insert(backupVault.vault)
             selectedVault = backupVault.vault
             showAlert = false
@@ -336,7 +336,7 @@ class EncryptedBackupViewModel: ObservableObject {
                     return
                 }
                 VaultDefaultCoinService(context: modelContext)
-                    .setDefaultCoinsOnce(vault: vault, defaultChains: defaultChains)
+                    .setDefaultCoinsOnce(vault: vault)
                 modelContext.insert(vault)
                 selectedVault = vault
                 showAlert = false

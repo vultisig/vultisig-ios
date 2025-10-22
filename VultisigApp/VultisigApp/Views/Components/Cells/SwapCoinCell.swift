@@ -21,6 +21,7 @@ struct SwapCoinCell: View {
         } label: {
             label
         }
+        .buttonStyle(.plain)
     }
     
     var label: some View {

@@ -33,7 +33,19 @@ import BigInt
  ✅ Send Max 5 ADA, Balance 5 ADA → WalletCore subtracts fee automatically (valid)
  */
 
-enum CardanoHelper {
+class CardanoHelper {
+    let vaultHexPublicKey: String
+    let vaultHexChainCode: String
+    
+    init(vaultHexPublicKey: String, vaultHexChainCode: String) {
+        self.vaultHexPublicKey = vaultHexPublicKey
+        self.vaultHexChainCode = vaultHexChainCode
+    }
+    
+    static func getHelper(vault: Vault, coin: Coin) -> CardanoHelper? {
+        guard coin.chain == .cardano else { return nil }
+        return CardanoHelper(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+    }
     
     /*
      Cardano minimum UTXO value requirement (Alonzo Era) - UPDATED BASED ON REAL EVIDENCE
@@ -164,6 +176,30 @@ enum CardanoHelper {
         
         return (false, nil)
     }
+    
+    /// Calculate dynamic transaction fee using WalletCore's transaction planning
+    /// Similar to how UTXO chains calculate fees dynamically
+    func getCardanoTransactionPlan(keysignPayload: KeysignPayload) throws -> CardanoTransactionPlan {
+        // Reuse existing getPreSignedInputData and deserialize it
+        let inputData = try CardanoHelper.getPreSignedInputData(keysignPayload: keysignPayload)
+        let input = try CardanoSigningInput(serializedBytes: inputData)
+        let plan: CardanoTransactionPlan = AnySigner.plan(input: input, coin: .cardano)
+        
+        // Check for transaction plan errors
+        if plan.error != .ok {
+            throw HelperError.runtimeError("Cardano transaction plan error: \(plan.error)")
+        }
+        
+        return plan
+    }
+    
+    /// Calculate dynamic fee for Cardano transaction using WalletCore planning
+    /// This replaces the fixed fee approach with actual transaction size calculation
+    func calculateDynamicFee(keysignPayload: KeysignPayload) throws -> BigInt {
+        let plan = try getCardanoTransactionPlan(keysignPayload: keysignPayload)
+        return BigInt(plan.fee)
+    }
+    
     
     // MARK: - Helper Functions
         

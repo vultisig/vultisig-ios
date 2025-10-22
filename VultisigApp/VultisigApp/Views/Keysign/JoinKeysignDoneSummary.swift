@@ -91,6 +91,7 @@ struct JoinKeysignDoneSummary: View {
                     hash: viewModel.txid,
                     explorerLink: viewModel.getTransactionExplorerURL(txid: viewModel.txid),
                     memo: viewModel.memo ?? "",
+                    isSend: true,
                     fromAddress: keysignPayload.coin.address,
                     toAddress: keysignPayload.toAddress,
                     fee: (fees.feeCrypto, fees.feeFiat)

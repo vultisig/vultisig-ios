@@ -132,6 +132,11 @@ struct SettingsCustomMessageView: View {
     }
 
     var customMessagePayload: CustomMessagePayload? {
-        return CustomMessagePayload(method: method, message: message, decodedMessage: nil)
+        return CustomMessagePayload(method: method,
+                                    message: message,
+                                    vaultPublicKeyECDSA: vault.pubKeyECDSA,
+                                    vaultLocalPartyID: vault.localPartyID,
+                                    chain: Chain.ethereum.name,
+                                    decodedMessage: nil)
     }
 }

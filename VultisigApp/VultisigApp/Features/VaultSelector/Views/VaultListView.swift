@@ -45,8 +45,9 @@ struct VaultListView: View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 0) {
                 header
+                    .padding(.bottom, 16)
                 List {
-                    sectionHeader(title: "folders".localized)
+                    sectionHeader(title: "folders".localized, paddingTop: 0)
                     foldersList
                     sectionHeader(title: "vaults".localized)
                     vaultsList
@@ -61,6 +62,7 @@ struct VaultListView: View {
             addFolderButton
         }
         .padding(.top, 24)
+        .padding(.bottom, isIPadOS ? 24 : 0)
         .padding(.horizontal, 16)
     }
     
@@ -84,7 +86,7 @@ struct VaultListView: View {
                 .font(Theme.fonts.title3)
             
             HStack {
-                BottomSheetButton(icon: "check") {
+                ToolbarButton(image: "check", type: .confirmation) {
                     withAnimation {
                         isEditing.toggle()
                     }
@@ -97,7 +99,7 @@ struct VaultListView: View {
     var defaultHeader: some View {
         HStack(spacing: 8) {
             #if os(macOS)
-            BottomSheetButton(icon: "chevron-right", type: .secondary) {
+            ToolbarButton(image: "chevron-right", type: .outline) {
                 dismiss()
             }
             .rotationEffect(.radians(.pi))
@@ -111,12 +113,12 @@ struct VaultListView: View {
                     .font(Theme.fonts.caption12)
             }
             Spacer()
-            BottomSheetButton(icon: "pencil", type: .secondary) {
+            ToolbarButton(image: "pencil", type: .outline) {
                 withAnimation {
                     isEditing.toggle()
                 }
             }
-            BottomSheetButton(icon: "plus", action: onAddVault)
+            ToolbarButton(image: "plus", type: .confirmation, action: onAddVault)
         }
         .padding(.leading, 8)
     }
@@ -167,8 +169,8 @@ struct VaultListView: View {
         .animation(.interpolatingSpring.delay(0.3), value: isEditing)
     }
     
-    func sectionHeader(title: String) -> some View {
-        CommonListHeaderView(title: title)
+    func sectionHeader(title: String, paddingTop: CGFloat? = nil) -> some View {
+        CommonListHeaderView(title: title, paddingTop: paddingTop)
             .showIf(showListHeaders)
     }
     

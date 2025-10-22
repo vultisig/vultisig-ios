@@ -24,13 +24,5 @@ extension View {
         let resign = #selector(UIResponder.resignFirstResponder)
         UIApplication.shared.sendAction(resign, to: nil, from: nil, for: nil)
     }
-    
-    func sheetStyle() -> some View {
-        self
-            .padding(.top, 8)
-            .presentationBackground(Theme.colors.bgPrimary)
-            .presentationDragIndicator(.visible)
-            .presentationDetents([.large])
-    }
 }
 #endif

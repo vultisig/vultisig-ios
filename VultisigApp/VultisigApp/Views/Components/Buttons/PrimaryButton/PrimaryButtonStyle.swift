@@ -71,10 +71,7 @@ private extension PrimaryButtonStyle {
     }
     
     func cornerRadius(for size: ButtonSize) -> CGFloat {
-        switch size {
-        case .medium, .small: return 99
-        case .mini: return 30
-        }
+        99
     }
     
     // MARK: - Type Configuration with State-Based Colors
@@ -106,20 +103,31 @@ private extension PrimaryButtonStyle {
             } else {
                 return Theme.colors.bgButtonSecondary
             }
+        case .primarySuccess:
+            if !isEnabled {
+                return Theme.colors.bgButtonDisabled
+            } else {
+                return Theme.colors.bgButtonPrimary.opacity(isPressed ? 0.7 : 1)
+            }
         }
     }
     
     func foregroundColor(for type: ButtonType, isPressed: Bool, isEnabled: Bool) -> Color {
         if !isEnabled {
             return Theme.colors.textButtonDisabled
-        } else {
+        }
+        switch type {
+        case .primarySuccess:
+            return Theme.colors.textButtonDark
+        default:
             return Theme.colors.textPrimary
         }
+
     }
     
     func borderColor(for type: ButtonType, isPressed: Bool, isEnabled: Bool) -> Color {
         switch type {
-        case .primary, .alert:
+        case .primary, .alert, .primarySuccess:
             return .clear
         case .secondary:
             if !isEnabled {
@@ -132,7 +140,7 @@ private extension PrimaryButtonStyle {
     
     func borderWidth(for type: ButtonType) -> CGFloat {
         switch type {
-        case .primary, .alert: return 0
+        case .primary, .alert, .primarySuccess: return 0
         case .secondary: return 1
         }
     }

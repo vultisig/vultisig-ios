@@ -287,6 +287,7 @@ extension VSPolkadotSpecific: @retroactive Codable {
         case specVersion = "spec_version"
         case transactionVersion = "transaction_version"
         case genesisHash = "genesis_hash"
+        case gas
     }
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -296,6 +297,7 @@ extension VSPolkadotSpecific: @retroactive Codable {
         try container.encode(specVersion, forKey: .specVersion)
         try container.encode(transactionVersion, forKey: .transactionVersion)
         try container.encode(genesisHash, forKey: .genesisHash)
+        try container.encode(gas, forKey: .gas)
     }
     
     public init(from decoder: any Decoder) throws {
@@ -307,6 +309,7 @@ extension VSPolkadotSpecific: @retroactive Codable {
         specVersion = try container.decode(UInt32.self, forKey: .specVersion)
         transactionVersion = try container.decode(UInt32.self, forKey: .transactionVersion)
         genesisHash = try container.decode(String.self, forKey: .genesisHash)
+        gas = try container.decodeIfPresent(UInt64.self, forKey: .gas) ?? 0
     }
 }
 extension VSSuiCoin: @retroactive Codable {
@@ -345,18 +348,21 @@ extension VSSuiSpecific: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case referenceGasPrice = "reference_gas_price"
         case coins = "coins"
+        case gasBudget = "gas_budget"
     }
     
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(referenceGasPrice, forKey: .referenceGasPrice)
         try container.encode(coins, forKey: .coins)
+        try container.encode(gasBudget, forKey: .gasBudget)
     }
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.init()
         referenceGasPrice = try container.decode(String.self, forKey: .referenceGasPrice)
         coins = try container.decode([VSSuiCoin].self, forKey: .coins)
+        gasBudget = try container.decode(String.self, forKey: .gasBudget)
     }
 }
 

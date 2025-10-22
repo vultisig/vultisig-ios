@@ -12,6 +12,11 @@ class VaultDetailViewModel: ObservableObject {
     @Published var selectedGroup: GroupedChain? = nil
     @Published var groups = [GroupedChain]()
     @Published var searchText: String = ""
+    @Published var vaultBanners: [VaultBannerType] = []
+    
+    private let groupedChainListBuilder = GroupedChainListBuilder()
+    
+    @AppStorage("appClosedBanners") private var appClosedBanners: [String] = []
     
     var filteredGroups: [GroupedChain] {
         guard !searchText.isEmpty else {
@@ -26,7 +31,7 @@ class VaultDetailViewModel: ObservableObject {
     private var updateBalanceTask: Task<Void, Never>?
     
     var availableActions: [CoinAction] {
-        [.send,.buy,.swap, .receive].filtered
+        [.swap,.send,.buy,.receive].filtered
     }
     
     func updateBalance(vault: Vault) {
@@ -35,9 +40,16 @@ class VaultDetailViewModel: ObservableObject {
         updateBalanceTask = Task.detached {
             await self.balanceService.updateBalances(vault: vault)
             if !Task.isCancelled {
-                await self.categorizeCoins(vault: vault)
+                let groups = self.groupedChainListBuilder.groupChains(for: vault, sortedBy: \.totalBalanceInFiatDecimal)
+                await MainActor.run {
+                    self.groups = groups
+                }
             }
         }
+    }
+    
+    func groupChains(vault: Vault) {
+        self.groups = groupedChainListBuilder.groupChains(for: vault, sortedBy: \.totalBalanceInFiatDecimal)
     }
     
     func getGroupAsync(_ viewModel: CoinSelectionViewModel) {
@@ -46,20 +58,41 @@ class VaultDetailViewModel: ObservableObject {
         }
     }
     
-    @MainActor func categorizeCoins(vault: Vault) {
-        var groups = [GroupedChain]()
-
-        for coin in vault.coins {
-            addCoin(coin, groups: &groups)
-        }
-
-        groups.sort {
-            if $0.totalBalanceInFiatDecimal == $1.totalBalanceInFiatDecimal {
-                return $0.chain.index < $1.chain.index
+    func setupBanners(for vault: Vault) {
+        vaultBanners = VaultBannerType.allCases
+            .filter { banner in
+                if banner.isAppBanner && appClosedBanners.contains(banner.rawValue) {
+                    return false
+                } else if vault.closedBanners.contains(banner.rawValue) {
+                    return false
+                }
+                
+                switch banner {
+                case .backupVault:
+                    return !vault.isBackedUp
+                case .upgradeVault:
+                    return vault.libType == .GG20
+                case .followVultisig:
+                    return true
+                }
             }
-            return $0.totalBalanceInFiatDecimal > $1.totalBalanceInFiatDecimal
+    }
+    
+    @MainActor
+    func removeBanner(for vault: Vault, banner: VaultBannerType) {
+        guard !banner.isAppBanner else {
+            appClosedBanners.append(banner.rawValue)
+            setupBanners(for: vault)
+            return
         }
-        self.groups = groups
+        
+        vault.closedBanners = Array(Set(vault.closedBanners + [banner.rawValue]))
+        do {
+            try Storage.shared.save()
+            setupBanners(for: vault)
+        } catch {
+            print("Error while saving closedBanners for vault", error.localizedDescription)
+        }
     }
 }
 
@@ -75,6 +108,33 @@ private extension VaultDetailViewModel {
             }
         }
         return groups.first
+    }
+}
+
+struct GroupedChainListBuilder {
+    func groupChains<T: Comparable>(
+        for vault: Vault,
+        sortedBy keyPath: KeyPath<GroupedChain, T>,
+        ascending: Bool = false,
+        filterBy: (GroupedChain) -> Bool = { _ in true }
+    ) -> [GroupedChain] {
+        var groups = [GroupedChain]()
+
+        for coin in vault.coins {
+            addCoin(coin, groups: &groups)
+        }
+
+        groups.sort {
+            let lhsValue = $0[keyPath: keyPath]
+            let rhsValue = $1[keyPath: keyPath]
+            
+            if lhsValue == rhsValue {
+                return $0.chain.index < $1.chain.index
+            }
+            return ascending ? lhsValue < rhsValue : lhsValue > rhsValue
+        }
+        
+        return groups.filter(filterBy)
     }
     
     func addCoin(_ coin: Coin, groups: inout [GroupedChain]) {

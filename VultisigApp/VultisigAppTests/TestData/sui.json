@@ -16,16 +16,17 @@
             "to_amount": "1000000000",
             "BlockchainSpecific": {
                 "SuicheSpecific": {
-                   "reference_gas_price": "500",
-                   "coins": [
-                       {
-                           "version":"607586916",
-                           "coin_object_id":"0xe1bbdbcf1ff73c4b0727b557cfd79d2665ad7fb2296b69e631bd939b24cb430a",
-                           "coin_type":"0x2::sui::SUI",
-                           "digest": "BRVJPPhgjYrTjYpr4zGSdb11cvtchzEy2qaPqsSmXiFh",
-                           "balance": "10000000000"
-                       }
-                   ]
+                    "reference_gas_price": "500",
+                    "gas_budget": "3000000",
+                    "coins": [
+                        {
+                            "version": "607586916",
+                            "coin_object_id": "0xe1bbdbcf1ff73c4b0727b557cfd79d2665ad7fb2296b69e631bd939b24cb430a",
+                            "coin_type": "0x2::sui::SUI",
+                            "digest": "BRVJPPhgjYrTjYpr4zGSdb11cvtchzEy2qaPqsSmXiFh",
+                            "balance": "10000000000"
+                        }
+                    ]
                 }
             },
             "utxo_info": [],
@@ -33,6 +34,8 @@
             "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
             "lib_type": "DKLS"
         },
-        "expected_image_hash": ["45cc5c8488e9b3ede3d2e2ac2b72a16b34341ef72be47c72bf491b42acaaaa08"]
+        "expected_image_hash": [
+            "45cc5c8488e9b3ede3d2e2ac2b72a16b34341ef72be47c72bf491b42acaaaa08"
+        ]
     }
 ]

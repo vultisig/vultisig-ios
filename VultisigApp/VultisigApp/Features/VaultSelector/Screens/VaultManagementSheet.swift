@@ -31,6 +31,7 @@ struct VaultManagementSheet: View {
     @State private var sheetType = VaultSheetType.main
     @State private var shouldUseMoveTransition = true
     
+    let availableHeight: CGFloat
     var onAddVault: () -> Void
     var onSelectVault: (Vault) -> Void
     
@@ -52,11 +53,12 @@ struct VaultManagementSheet: View {
             }
             .transition(.opacity)
         }
-#if os(iOS)
         .presentationDragIndicator(.visible)
         .presentationDetents(Set(detents), selection: $detentSelection)
         .presentationCompactAdaptation(.none)
         .presentationBackground { Theme.colors.bgPrimary.padding(.bottom, -1000) }
+        .applySheetSize(700, availableHeight - 32)
+        .background(Theme.colors.bgPrimary)
         .onChange(of: isEditing) { _, isEditing in
             updateDetents(isEditing: isEditing)
         }
@@ -65,11 +67,8 @@ struct VaultManagementSheet: View {
         }
         .onLoad {
             updateDetents(whileAnimation: false)
+            detentSelection = detents[safe: 0] ?? .medium
         }
-#else
-        .applySheetHeight()
-        .background(Theme.colors.bgPrimary)
-#endif
     }
     
     var mainSheetView: some View {
@@ -115,7 +114,7 @@ private extension VaultManagementSheet {
         }
     }
     func updateDetents(whileAnimation: Bool) {
-        let whileAnimationDetents: [PresentationDetent] = whileAnimation ? [.large, .medium] : []
+        let whileAnimationDetents: [PresentationDetent] = whileAnimation ? [.large, .medium] + detents : []
         let stateDetents: [PresentationDetent]
         
         if isEditing || sheetType != .main {
@@ -136,7 +135,7 @@ private extension VaultManagementSheet {
             stateDetents = [.medium] + whileAnimationDetents
             break
         default:
-            stateDetents = [.medium, .large] + whileAnimationDetents
+            stateDetents = isIPadOS ? [.large] : [.medium, .large] + whileAnimationDetents
             break
         }
         
@@ -186,8 +185,9 @@ private extension VaultManagementSheet {
                     isPresented.toggle()
                 }
             }
-            .sheet(isPresented: $isPresented) {
+            .crossPlatformSheet(isPresented: $isPresented) {
                 VaultManagementSheet(
+                    availableHeight: 300,
                     onAddVault: {},
                     onSelectVault: { _ in },
                 )

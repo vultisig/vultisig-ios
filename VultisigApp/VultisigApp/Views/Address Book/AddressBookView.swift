@@ -24,7 +24,7 @@ struct AddressBookView: View {
     var savedAddressesEmpty: Bool { savedAddresses.isEmpty }
     
     var body: some View {
-        Screen(title: "addressBook".localized, edgeInsets: ScreenEdgeInsets(bottom: savedAddressesEmpty ? nil : 0)) {
+        Screen(showNavigationBar: false, edgeInsets: ScreenEdgeInsets(bottom: savedAddressesEmpty ? nil : 0)) {
             VStack {
                 Group {
                     if savedAddressesEmpty {
@@ -33,14 +33,16 @@ struct AddressBookView: View {
                     } else {
                         list
                         addAddressButton
+                            .padding(.bottom, 12)
                     }
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .screenToolbar {
-            if !savedAddressesEmpty {
+        .crossPlatformToolbar("addressBook".localized) {
+            CustomToolbarItem(placement: .trailing) {
                 navigationButton
+                    .showIf(!savedAddressesEmpty)
             }
         }
         .onDisappear {
@@ -102,7 +104,7 @@ struct AddressBookView: View {
     
     var addAddressButton: some View {
         PrimaryNavigationButton(title: "addAddress") {
-            AddAddressBookScreen(count: savedAddresses.count)
+            AddAddressBookScreen()
         }
     }
     
@@ -114,25 +116,17 @@ struct AddressBookView: View {
         }
     }
     
+    @ViewBuilder
     var navigationButton: some View {
-        Button {
-            toggleEdit()
-        } label: {
-            navigationEditButton
-        }
-    }
-    
-    var navigationEditButton: some View {
-        VStack {
-            Group {
-                if isEditing {
-                    NavigationBarButtonView(title: "done".localized)
-                } else {
-                    NavigationEditButton()
-                }
+        if isEditing {
+            Button { toggleEdit() } label: {
+                NavigationBarButtonView(title: "done".localized)
+            }
+        } else {
+            ToolbarButton(image: "pencil") {
+                toggleEdit()
             }
         }
-        .frame(width: 60, height: 32, alignment: .trailing)
     }
     
     private func toggleEdit() {

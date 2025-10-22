@@ -9,10 +9,10 @@ import SwiftUI
 
 struct Icon: View {
     let name: String
-    let color: Color
+    let color: Color?
     let size: CGFloat
     
-    init(named: String, color: Color = Theme.colors.primaryAccent4, size: CGFloat = 20) {
+    init(named: String, color: Color? = Theme.colors.primaryAccent4, size: CGFloat = 20) {
         self.name = named
         self.color = color
         self.size = size
@@ -21,7 +21,7 @@ struct Icon: View {
     var body: some View {
         Image(name)
             .resizable()
-            .aspectRatio(1, contentMode: .fit)
+            .aspectRatio(contentMode: .fit)
             .frame(width: size, height: size)
             .foregroundColor(color)
     }

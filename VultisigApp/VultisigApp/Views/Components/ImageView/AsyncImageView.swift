@@ -41,9 +41,8 @@ struct AsyncImageView: View {
                     CachedAsyncImage(url: url, urlCache: .imageCache) { image in
                         image
                             .resizable()
-                            .aspectRatio(1, contentMode: .fit)
+                            .aspectRatio(contentMode: .fit)
                             .frame(width: size.width, height: size.height)
-                            .cornerRadius(100)
                     } placeholder: {
                         ProgressView()
                             .frame(width: size.width, height: size.height)
@@ -54,11 +53,10 @@ struct AsyncImageView: View {
             }
             
             if let chainIcon = tokenChainLogo, logo != tokenChainLogo {
-                Image(chainIcon)
-                    .resizable()
-                    .frame(width: size.width / 2, height: size.height / 2)
-                    .cornerRadius(16)
-                    .offset(x: size.width / 2.5, y: size.width / 2.5)
+                ChainIconView(
+                    icon: "chain-" + chainIcon,
+                    size: size.width / 4.5
+                ).offset(x: size.width / 2.5, y: size.width / 2.5)
             }
         }
     }

@@ -34,10 +34,20 @@ struct JoinKeysignGasViewModel {
             return ("\(gasInReadable) \(payload.coin.chain.feeUnit)", feeInReadable)
         }
 
-        let gasAmount = Decimal(payload.chainSpecific.gas) / pow(10, nativeToken.decimals)
+        // For UTXO and Cardano chains, calculate total fee using WalletCore (like first device)
+        var feeToUse = payload.chainSpecific.gas
+        if payload.coin.chainType == .UTXO {
+            feeToUse = calculateUTXOTotalFee(payload: payload) ?? payload.chainSpecific.gas
+        } else if payload.coin.chainType == .Cardano  {
+            feeToUse = calculateCardanoTotalFee(payload: payload) ?? payload.chainSpecific.gas
+        }
+
+        // Use the same fee for both crypto and fiat display for UTXO and Cardano chains
+        let gasAmountToDisplay = (payload.coin.chainType == .UTXO || payload.coin.chainType == .Cardano) ? feeToUse : payload.chainSpecific.gas
+        let gasAmount = Decimal(gasAmountToDisplay) / pow(10, nativeToken.decimals)
         let gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
 
-        var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.gas)
+        var feeInReadable = feesInReadable(coin: payload.coin, fee: feeToUse)
         feeInReadable = feeInReadable.nilIfEmpty.map { $0 } ?? ""
 
         return ("\(gasInReadable) \(payload.coin.chain.feeUnit)", feeInReadable)
@@ -49,19 +59,47 @@ struct JoinKeysignGasViewModel {
     }
     
     func feesInReadable(coin: Coin, fee: BigInt) -> String {
-        var nativeCoinAux: Coin?
-        
-        if coin.isNativeToken {
-            nativeCoinAux = coin
-        } else {
-            nativeCoinAux = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == coin.chain && $0.isNativeToken })
+        // Try to get native coin from vault first (has up-to-date price data)
+        if let vaultNativeCoin = ApplicationState.shared.currentVault?.nativeCoin(for: coin.chain) {
+            let feeDecimal = vaultNativeCoin.decimal(for: fee)
+            // Use fee-specific formatting with more decimal places (5 instead of 2)
+            let fiatString = RateProvider.shared.fiatFeeString(value: feeDecimal, coin: vaultNativeCoin)
+            if !fiatString.isEmpty {
+                return fiatString
+            }
         }
         
-        guard let nativeCoin = nativeCoinAux else {
-            return ""
+        // Fallback to the payload coin itself
+        let feeDecimal = coin.decimal(for: fee)
+        // Use fee-specific formatting with more decimal places (5 instead of 2)
+        return RateProvider.shared.fiatFeeString(value: feeDecimal, coin: coin)
+    }
+    
+    private func calculateUTXOTotalFee(payload: KeysignPayload) -> BigInt? {
+        guard let vault = ApplicationState.shared.currentVault,
+              let helper = UTXOChainsHelper.getHelper(vault: vault, coin: payload.coin) else {
+            return nil
         }
         
-        let fee = nativeCoin.decimal(for: fee)
-        return RateProvider.shared.fiatBalanceString(value: fee, coin: nativeCoin)
+        do {
+            let plan = try helper.getBitcoinTransactionPlan(keysignPayload: payload)
+            return plan.fee > 0 ? BigInt(plan.fee) : nil
+        } catch {
+            return nil
+        }
+    }
+    
+    private func calculateCardanoTotalFee(payload: KeysignPayload) -> BigInt? {
+        guard let vault = ApplicationState.shared.currentVault,
+              let helper = CardanoHelper.getHelper(vault: vault, coin: payload.coin) else {
+            return nil
+        }
+        
+        do {
+            let planFee = try helper.calculateDynamicFee(keysignPayload: payload)
+            return planFee > 0 ? planFee : nil
+        } catch {
+            return nil
+        }
     }
 }

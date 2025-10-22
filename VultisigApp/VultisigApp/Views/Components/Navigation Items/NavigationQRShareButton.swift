@@ -23,25 +23,11 @@ struct NavigationQRShareButton: View {
     var title: String = ""
         
     var body: some View {
-        shareLink
-    }
-    
-    var shareLink: some View {
-        ZStack {
-            if let image = viewModel.renderedImage {
-                CrossPlatformShareButton(image: image, caption: viewModel.qrCodeData ?? .empty) {
-                    content
-                }
-            } else {
-                ProgressView()
+        if let image = viewModel.renderedImage {
+            CrossPlatformShareButton(image: image, caption: viewModel.qrCodeData ?? .empty) { onShare in
+                ToolbarButton(image: "share", action: onShare)
             }
         }
-    }
-    
-    var content: some View {
-        Image(systemName: "arrow.up.doc")
-            .font(Theme.fonts.bodyLMedium)
-            .foregroundColor(tint)
     }
 }
 

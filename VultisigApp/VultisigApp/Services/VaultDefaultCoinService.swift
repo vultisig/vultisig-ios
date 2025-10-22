@@ -18,26 +18,22 @@ class VaultDefaultCoinService {
         self.context = context
     }
     
-    func setDefaultCoinsOnce(vault: Vault, defaultChains: [CoinMeta]) {
+    func setDefaultCoinsOnce(vault: Vault) {
         semaphore.wait()
         defer {
             semaphore.signal()
         }
-        setDefaultCoins(for: vault, defaultChains: defaultChains)
+        setDefaultCoins(for: vault)
     }
     
-    func setDefaultCoins(for vault: Vault, defaultChains: [CoinMeta]) {
+    func setDefaultCoins(for vault: Vault) {
         // Add default coins when the vault doesn't have any coins in it
         print("set default chains to vault")
         if vault.coins.count == 0 {
             let chains: [CoinMeta]
             
-            if defaultChains.count==0 {
-                chains = TokensStore.TokenSelectionAssets
+            chains = TokensStore.TokenSelectionAssets
                     .filter { asset in baseDefaultChains.contains(where: { $0 == asset.chain }) }
-            } else {
-                chains = defaultChains
-            }
             
             let coins = chains
                 .compactMap { try? CoinFactory.create(
@@ -57,6 +53,9 @@ class VaultDefaultCoinService {
                     }
                 }
             }
+            
+            // Enable default Defi chains
+            vault.defiChains = coins.map(\.chain).filter { CoinAction.memoChains.contains($0) }
         }
     }
 }

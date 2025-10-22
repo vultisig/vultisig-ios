@@ -35,7 +35,7 @@ struct SendGasSettingsView: View {
             feeModeRow
 
             switch viewModel.chain.chainType {
-            case .UTXO:
+            case .UTXO, .Cardano:
                 networkRateRow
             case .EVM:
                 baseFeeRow

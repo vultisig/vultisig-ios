@@ -179,10 +179,6 @@ class Endpoint {
         "https://thornode-mainnet-api.bryanlabs.net/cosmwasm/wasm/v1/contract/thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px/smart/eyJzdGF0dXMiOiB7fX0="
     }
     
-    static func fetchRuneBondedAmount(address: String) -> String {
-        return "https://midgard.ninerealms.com/v2/bonds/\(address)"
-    }
-    
     static func fetchThorchainMergedAssets() -> String {
         "https://api.vultisig.com/ruji/api/graphql"
     }
@@ -196,24 +192,49 @@ class Endpoint {
     
     static let fetchThorchainPools = "https://thornode.ninerealms.com/thorchain/pools"
     
-    static func fetchSwapQuoteThorchain(chain: SwapChain, address: String, fromAsset: String, toAsset: String, amount: String, interval: String, isAffiliate: Bool, referredCode: String) -> URL {
+    static func fetchSwapQuoteThorchain(
+        chain: SwapChain,
+        address: String,
+        fromAsset: String,
+        toAsset: String,
+        amount: String,
+        interval: String,
+        isAffiliate: Bool,
+        referredCode: String,
+        vultTierDiscount: Int
+    ) -> URL {
         let isAffiliateParams: String
-        
         if chain == .thorchain && !referredCode.isEmpty {
+            let affiliateFeeRateBp = bps(for: vultTierDiscount, affiliateFeeRate: THORChainSwaps.referredAffiliateFeeRateBp)
             // THORChain supports nested affiliates
-            isAffiliateParams = isAffiliate ? "&affiliate=\(referredCode)&affiliate_bps=\(THORChainSwaps.referredUserFeeRateBp)&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(THORChainSwaps.referredAffiliateFeeRateBp)"
+            isAffiliateParams = isAffiliate ? "&affiliate=\(referredCode)&affiliate_bps=\(THORChainSwaps.referredUserFeeRateBp)&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(affiliateFeeRateBp)"
                                             : "&affiliate=\(referredCode)&affiliate_bps=0&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=0"
         } else {
+            let affiliateFeeRateBp = bps(for: vultTierDiscount, affiliateFeeRate: THORChainSwaps.affiliateFeeRateBp)
             // MayaChain only supports single affiliate
             isAffiliateParams = isAffiliate
-            ? "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(THORChainSwaps.affiliateFeeRateBp)"
+            ? "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(affiliateFeeRateBp)"
             : "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=0"
         }
         
         return "\(chain.baseUrl)/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)\(isAffiliateParams)".asUrl
     }
     
-    static func fetch1InchSwapQuote(chain: String, source: String, destination: String, amount: String, from: String, slippage: String, referrer: String, fee: Double, isAffiliate: Bool) -> URL {
+    static func bps(for discount: Int, affiliateFeeRate: Int) -> Int {
+        max(0, affiliateFeeRate - discount)
+    }
+    
+    static func fetch1InchSwapQuote(
+        chain: String,
+        source: String,
+        destination: String,
+        amount: String,
+        from: String,
+        slippage: String,
+        referrer: String,
+        fee: Double,
+        isAffiliate: Bool
+    ) -> URL {
         
         let isAffiliateParams = isAffiliate
         ? "&referrer=\(referrer)&fee=\(fee)"
@@ -222,7 +243,17 @@ class Endpoint {
         return "\(vultisigApiProxy)/1inch/swap/v6.1/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)&includeGas=true&disableEstimate=true\(isAffiliateParams)".asUrl
     }
     
-    static func fetchLiFiQuote(fromChain: String, toChain: String, fromToken: String, toAddress: String, toToken: String, fromAmount: String, fromAddress: String, integrator: String?, fee: String?) -> URL {
+    static func fetchLiFiQuote(
+        fromChain: String,
+        toChain: String,
+        fromToken: String,
+        toAddress: String,
+        toToken: String,
+        fromAmount: String,
+        fromAddress: String,
+        integrator: String?,
+        fee: String?
+    ) -> URL {
         var url = "https://li.quest/v1/quote?fromChain=\(fromChain)&toChain=\(toChain)&fromToken=\(fromToken)&toToken=\(toToken)&fromAmount=\(fromAmount)&fromAddress=\(fromAddress)&toAddress=\(toAddress)"
         
         if let integrator {

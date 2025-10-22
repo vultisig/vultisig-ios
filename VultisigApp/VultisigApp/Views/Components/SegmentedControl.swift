@@ -34,6 +34,7 @@ struct SegmentedControl<T: Hashable>: View {
     init(selection: Binding<T>, items: [SegmentedControlItem<T>]) {
         self._selection = selection
         self.items = items
+        self._segmentFrames = State(initialValue: Array(repeating: .zero, count: items.count))
     }
     
     var body: some View {
@@ -66,11 +67,12 @@ struct SegmentedControl<T: Hashable>: View {
                         .background(
                             GeometryReader { geometry in
                                 Color.clear
-                                    .onAppear {
-                                        updateFrame(for: index, frame: geometry.frame(in: .named("SegmentedControlContainer")))
+                                    .onLoad {
+                                        let frame = geometry.frame(in: .named("SegmentedControlContainer"))
+                                        updateFrameIfNeeded(for: index, frame: frame)
                                     }
                                     .onChange(of: geometry.frame(in: .named("SegmentedControlContainer"))) { _, newFrame in
-                                        updateFrame(for: index, frame: newFrame)
+                                        updateFrameIfNeeded(for: index, frame: newFrame)
                                     }
                             }
                         )
@@ -93,24 +95,36 @@ struct SegmentedControl<T: Hashable>: View {
         .scaledToFit()
     }
     
-    private func updateFrame(for index: Int, frame: CGRect) {
-        if segmentFrames.count <= index {
+    private func updateFrameIfNeeded(for index: Int, frame: CGRect) {
+        // Ensure the array is properly sized
+        if segmentFrames.count != items.count {
             segmentFrames = Array(repeating: .zero, count: items.count)
         }
-        segmentFrames[index] = frame
+        
+        // Only update if the frame has actually changed to avoid unnecessary updates
+        guard index >= 0 && index < segmentFrames.count else { return }
+        
+        let currentFrame = segmentFrames[safe: index] ?? .zero
+        if !currentFrame.equalTo(frame) {
+            segmentFrames[index] = frame
+        }
     }
     
 }
 
 extension SegmentedControl {
     init(selection: Binding<T>, items: [(value: T, title: String)]) {
+        let segmentItems = items.map { SegmentedControlItem(value: $0.value, title: $0.title) }
         self._selection = selection
-        self.items = items.map { SegmentedControlItem(value: $0.value, title: $0.title) }
+        self.items = segmentItems
+        self._segmentFrames = State(initialValue: Array(repeating: .zero, count: segmentItems.count))
     }
     
     init(selection: Binding<T>, items: [(value: T, title: String, isEnabled: Bool)]) {
+        let segmentItems = items.map { SegmentedControlItem(value: $0.value, title: $0.title, isEnabled: $0.isEnabled) }
         self._selection = selection
-        self.items = items.map { SegmentedControlItem(value: $0.value, title: $0.title, isEnabled: $0.isEnabled) }
+        self.items = segmentItems
+        self._segmentFrames = State(initialValue: Array(repeating: .zero, count: segmentItems.count))
     }
 }
 

@@ -59,13 +59,62 @@ final class BlockChainService {
     /// Clear cache for a specific address to force fresh nonce fetch
     func clearCacheForAddress(_ address: String, chain: Chain) {
         localCache.clear()
-        print("Cleared cache after transaction confirmation for address: \(address) on chain: \(chain)")
+    }
+    
+    /// Refresh Solana blockhash in the chainSpecific field of a KeysignPayload
+    /// This should be called right before TSS signing to ensure the blockhash is fresh
+    func refreshSolanaBlockhash(for payload: KeysignPayload) async throws -> KeysignPayload {
+        guard payload.coin.chain == .solana else {
+            // Not a Solana transaction, return as-is
+            return payload
+        }
+        
+        guard case .Solana(_, let priorityFee, let fromAddressPubKey, let toAddressPubKey, let hasProgramId) = payload.chainSpecific else {
+            // Not a Solana chainSpecific, return as-is
+            return payload
+        }
+        
+        // Fetch fresh blockhash
+        guard let freshBlockhash = try await sol.fetchRecentBlockhash() else {
+            throw Errors.failToGetRecentBlockHash
+        }
+        
+        // Create updated chainSpecific with fresh blockhash
+        let updatedChainSpecific = BlockChainSpecific.Solana(
+            recentBlockHash: freshBlockhash,
+            priorityFee: priorityFee,
+            fromAddressPubKey: fromAddressPubKey,
+            toAddressPubKey: toAddressPubKey,
+            hasProgramId: hasProgramId
+        )
+        
+        // Create and return updated payload with fresh blockhash
+        return KeysignPayload(
+            coin: payload.coin,
+            toAddress: payload.toAddress,
+            toAmount: payload.toAmount,
+            chainSpecific: updatedChainSpecific,
+            utxos: payload.utxos,
+            memo: payload.memo,
+            swapPayload: payload.swapPayload,
+            approvePayload: payload.approvePayload,
+            vaultPubKeyECDSA: payload.vaultPubKeyECDSA,
+            vaultLocalPartyID: payload.vaultLocalPartyID,
+            libType: payload.libType,
+            wasmExecuteContractPayload: payload.wasmExecuteContractPayload,
+            skipBroadcast: payload.skipBroadcast
+        )
     }
     
     /// Check if we should use cache for the given chain and cache key
     private func shouldUseCache(for chain: Chain, cacheKey: String) -> BlockChainSpecific? {
         // Skip cache for chains that support pending transactions to ensure fresh nonce
         guard !chain.supportsPendingTransactions else {
+            return nil
+        }
+        
+        // Skip cache for Solana to ensure fresh blockhash (expires in ~60 seconds)
+        guard chain != .solana else {
             return nil
         }
         
@@ -85,6 +134,11 @@ final class BlockChainService {
     private func setCacheIfAllowed(for chain: Chain, cacheKey: String, blockSpecific: BlockChainSpecific) {
         // Only cache for chains that don't support pending transactions
         guard !chain.supportsPendingTransactions else {
+            return
+        }
+        
+        // Don't cache Solana to ensure fresh blockhash
+        guard chain != .solana else {
             return
         }
         
@@ -119,7 +173,6 @@ final class BlockChainService {
         }
         
         let gasLimit = try await estimateSwapGasLimit(tx: tx)
-        print("Estimated gas limit for swap: \(String(describing: gasLimit)) for \(tx.fromCoin.chain)")
         let specific = try await fetchSpecific(
             for: tx.fromCoin,
             action: .swap,
@@ -131,7 +184,8 @@ final class BlockChainService {
             fromAddress: tx.fromCoin.address,
             toAddress: nil,  // Swaps don't have a specific toAddress in the same way
             memo: nil,  // Swaps don't have memos
-            feeMode: .fast
+            feeMode: .fast,
+            amount: nil
         )
         // Use centralized cache setting method
         setCacheIfAllowed(for: tx.fromCoin.chain, cacheKey: cacheKey, blockSpecific: specific)
@@ -140,9 +194,21 @@ final class BlockChainService {
     
     func fetchUTXOFee(coin: Coin, action: Action, feeMode: FeeMode) async throws -> BigInt {
         let sats = try await utxo.fetchSatsPrice(coin: coin)
-        let normalized = Self.normalizeUTXOFee(sats)
-        let prioritized = Float(normalized) * feeMode.utxoMultiplier
-        return BigInt(prioritized)
+        
+        // DOGE has extremely high base fees from API, need to reduce significantly
+        let result: BigInt
+        if coin.chain == .dogecoin {
+            // For DOGE, the API returns 500k sats/byte which is too high for WalletCore
+            // Use a much lower value that WalletCore can work with: divide by 10
+            result = sats / 10 // 500k / 10 = 50k sats/byte (still high but workable)
+        } else {
+            // For other chains, use normal normalization and multipliers
+            let normalized = Self.normalizeUTXOFee(sats)
+            let prioritized = Float(normalized) * feeMode.utxoMultiplier
+            result = BigInt(prioritized)
+        }
+        
+        return result
     }
     
     func getCacheKey(for coin: Coin,
@@ -197,7 +263,8 @@ private extension BlockChainService {
             fromAddress: tx.fromAddress,
             toAddress: tx.toAddress,
             memo: tx.memo,
-            feeMode: tx.feeMode
+            feeMode: tx.feeMode,
+            amount: tx.amountInRaw
         )
         // Use centralized cache setting method
         setCacheIfAllowed(for: tx.coin.chain, cacheKey: cacheKey, blockSpecific: blockSpecific)
@@ -223,7 +290,6 @@ private extension BlockChainService {
         }
         
         let estimateGasLimit = tx.coin.isNativeToken ? try await estimateGasLimit(tx: tx):await estimateERC20GasLimit(tx: tx)
-        print("Estimated gas limit: \(estimateGasLimit) for \(tx.coin.chain)")
         let defaultGasLimit = BigInt(EVMHelper.defaultERC20TransferGasUnit)
         let gasLimit = max(defaultGasLimit, estimateGasLimit)
         
@@ -238,10 +304,10 @@ private extension BlockChainService {
             fromAddress: tx.fromAddress,
             toAddress: tx.toAddress,
             memo: tx.memo,
-            feeMode: tx.feeMode
+            feeMode: tx.feeMode,
+            amount: tx.amountInRaw
         )
         self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
-        print("Fetched specific: \(specific) for \(tx.coin.chain)")
         return specific
     }
     
@@ -255,7 +321,8 @@ private extension BlockChainService {
                        fromAddress: String?,
                        toAddress: String?,
                        memo: String?,
-                       feeMode: FeeMode) async throws -> BlockChainSpecific {
+                       feeMode: FeeMode,
+                       amount: BigInt?) async throws -> BlockChainSpecific {
         switch coin.chain {
         case .zcash:
             return .UTXO(byteFee: coin.feeDefault.toBigInt(), sendMaxAmount: sendMaxAmount)
@@ -263,8 +330,8 @@ private extension BlockChainService {
             let  byteFeeValue = try await fetchUTXOFee(coin: coin, action: action, feeMode: feeMode)
             return .UTXO(byteFee: byteFeeValue, sendMaxAmount: sendMaxAmount)
         case .cardano:
-            let estimatedFee = cardano.estimateTransactionFee()
             let ttl = try await cardano.calculateDynamicTTL()
+            let estimatedFee = cardano.estimateTransactionFee()
             return .Cardano(byteFee: BigInt(estimatedFee), sendMaxAmount: sendMaxAmount, ttl: ttl)
         case .thorChain:
             _ = try await thor.getTHORChainChainID()
@@ -358,12 +425,75 @@ private extension BlockChainService {
             
         case .sui:
             let (referenceGasPrice, allCoins) = try await sui.getGasInfo(coin: coin)
-            return .Sui(referenceGasPrice: referenceGasPrice, coins: allCoins)
+            
+            // Calculate dynamic gas budget using dry run simulation
+            let gasBudget: BigInt
+            if let amount = amount, amount > 0 {
+                // Create a temporary keysign payload for simulation
+                let tempPayload = KeysignPayload(
+                    coin: coin,
+                    toAddress: toAddress ?? coin.address, // Use same address for simulation if toAddress is nil
+                    toAmount: amount,
+                    chainSpecific: .Sui(referenceGasPrice: referenceGasPrice, coins: allCoins, gasBudget: BigInt(3000000)), // Use default for initial payload
+                    utxos: [],
+                    memo: memo,
+                    swapPayload: nil,
+                    approvePayload: nil,
+                    vaultPubKeyECDSA: "",
+                    vaultLocalPartyID: "",
+                    libType: "", // Not used for simulation
+                    wasmExecuteContractPayload: nil,
+                    skipBroadcast: false
+                )
+                
+                do {
+                    // Get zero-signed transaction for simulation
+                    let txSerialized = try SuiHelper.getZeroSignedTransaction(keysignPayload: tempPayload)
+                    
+                    // Simulate transaction to get accurate gas estimate
+                    let (computationCost, storageCost) = try await sui.dryRunTransaction(transactionBytes: txSerialized)
+                    
+                    // Calculate safe gas budget: (computation + storage) * 1.15 safety margin
+                    let totalCost = computationCost + storageCost
+                    gasBudget = (totalCost * 115) / 100
+                    
+                    // Ensure minimum gas budget of 2000 (network requirement)
+                    let finalGasBudget = max(gasBudget, BigInt(2000))
+                    
+                    return .Sui(referenceGasPrice: referenceGasPrice, coins: allCoins, gasBudget: finalGasBudget)
+                } catch {
+                    print("⚠️ Sui dry run failed, using default gas budget: \(error.localizedDescription)")
+                    // Fall back to default + 15% safety margin
+                    let defaultBudget = BigInt(3000000)
+                    gasBudget = (defaultBudget * 115) / 100
+                }
+            } else {
+                // No amount specified, use default with safety margin
+                let defaultBudget = BigInt(3000000)
+                gasBudget = (defaultBudget * 115) / 100
+            }
+            
+            return .Sui(referenceGasPrice: referenceGasPrice, coins: allCoins, gasBudget: gasBudget)
             
         case .polkadot:
             let gasInfo = try await dot.getGasInfo(fromAddress: coin.address)
-            return .Polkadot(recentBlockHash: gasInfo.recentBlockHash, nonce: UInt64(gasInfo.nonce), currentBlockNumber: gasInfo.currentBlockNumber, specVersion: gasInfo.specVersion, transactionVersion: gasInfo.transactionVersion, genesisHash: gasInfo.genesisHash)
+            let dynamicFee = try await dot.calculateDynamicFee(
+                fromAddress: coin.address,
+                toAddress: toAddress ?? "",
+                amount: amount ?? BigInt.zero,
+                memo: memo
+            )
             
+            return .Polkadot(
+                recentBlockHash: gasInfo.recentBlockHash,
+                nonce: UInt64(gasInfo.nonce),
+                currentBlockNumber: gasInfo.currentBlockNumber,
+                specVersion: gasInfo.specVersion,
+                transactionVersion: gasInfo.transactionVersion,
+                genesisHash: gasInfo.genesisHash,
+                gas: dynamicFee
+            )
+        
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain,.ethereumSepolia, .mantle:
             let gasLimit = gasLimit ?? normalizeGasLimit(coin: coin, action: action)
             let feeService = try EthereumFeeService(chain: coin.chain)
@@ -538,7 +668,7 @@ private extension BlockChainService {
             return nil
         case .thorchain(_):
             return nil
-        case .oneinch(let quote,_),.kyberswap(let quote, _),.lifi(let quote,_):
+        case .oneinch(let quote,_),.kyberswap(let quote, _),.lifi(let quote,_, _):
             if tx.fromCoin.isNativeToken {
                 return try await service.estimateGasLimitForSwap(senderAddress: tx.fromCoin.address, toAddress: quote.tx.to, value: tx.amountInCoinDecimal, data: quote.tx.data)
             }

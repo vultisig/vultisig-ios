@@ -29,7 +29,7 @@ struct FastBackupVaultOverview: View {
             animation
             container
         }
-        .sheet(isPresented: $isVerificationLinkActive) {
+        .crossPlatformSheet(isPresented: $isVerificationLinkActive) {
             ServerBackupVerificationView(
                 tssType: tssType,
                 vault: vault,
@@ -111,7 +111,7 @@ struct FastBackupVaultOverview: View {
     }
     
     var nextButton: some View {
-        IconButton(icon: "chevron.right") {
+        IconButton(icon: "chevron-right") {
             nextTapped()
         }
         .buttonStyle(PlainButtonStyle())

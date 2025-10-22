@@ -129,14 +129,15 @@ private extension SecurityScannerTransactionFactory {
     
     func createSUISecurityScanner(transaction: SendTransaction, vault: Vault) async throws -> SecurityScannerTransaction {
         var specific = try await BlockChainService.shared.fetchSpecific(tx: transaction)
-        guard case let .Sui(referenceGasPrice, specificCoins) = specific else {
+        guard case let .Sui(referenceGasPrice, specificCoins, gasBudget) = specific else {
             throw HelperError.runtimeError("Error Blockchain Specific is not SUI")
         }
         
         let coins = !specificCoins.isEmpty ? specificCoins : try await SuiService.shared.getAllCoins(coin: transaction.coin)
         specific = BlockChainSpecific.Sui(
             referenceGasPrice: referenceGasPrice,
-            coins: coins
+            coins: coins,
+            gasBudget: gasBudget
         )
         
         let keySignPayload = try await KeysignPayloadFactory().buildTransfer(
@@ -191,7 +192,7 @@ private extension SecurityScannerTransactionFactory {
 private extension SecurityScannerTransactionFactory {
     func createEVMSecurityScanner(transaction: SwapTransaction) async throws -> SecurityScannerTransaction {
         switch transaction.quote {
-        case .oneinch(let quote, _), .lifi(let quote, _):
+        case .oneinch(let quote, _), .lifi(let quote, _, _):
             try buildSwapSecurityScannerTransaction(
                 srcToken: transaction.fromCoin,
                 from: quote.tx.from,

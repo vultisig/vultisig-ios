@@ -11,7 +11,6 @@ import SwiftUI
 extension VaultShareBackupsView {
     var content: some View {
         VStack(spacing: 0) {
-            header
             Spacer()
             image
             Spacer()
@@ -19,10 +18,7 @@ extension VaultShareBackupsView {
             button
         }
         .padding(.bottom,36)
-    }
-    
-    var header: some View {
-        GeneralMacHeader(title: "")
+        .crossPlatformToolbar()
     }
 }
 #endif

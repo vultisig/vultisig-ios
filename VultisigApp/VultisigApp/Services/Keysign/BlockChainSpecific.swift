@@ -17,8 +17,8 @@ enum BlockChainSpecific: Codable, Hashable {
     case MayaChain(accountNumber: UInt64, sequence: UInt64, isDeposit: Bool)
     case Cosmos(accountNumber: UInt64, sequence: UInt64, gas: UInt64, transactionType: Int, ibcDenomTrace: CosmosIbcDenomTraceDenomTrace?)
     case Solana(recentBlockHash: String, priorityFee: BigInt, fromAddressPubKey: String?, toAddressPubKey: String?, hasProgramId: Bool) // priority fee is in microlamports
-    case Sui(referenceGasPrice: BigInt, coins: [[String:String]])
-    case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String)
+    case Sui(referenceGasPrice: BigInt, coins: [[String:String]], gasBudget: BigInt)
+    case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String, gas: BigInt? = nil)
     case Ton(sequenceNumber: UInt64, expireAt: UInt64, bounceable: Bool, sendMaxAmount: Bool, jettonAddress: String = "", isActiveDestination: Bool = false)
     case Ripple(sequence: UInt64, gas: UInt64, lastLedgerSequence: UInt64)
     
@@ -50,10 +50,13 @@ enum BlockChainSpecific: Codable, Hashable {
             return gas.description.toBigInt()
         case .Solana:
             return SolanaHelper.defaultFeeInLamports
-        case .Sui(let referenceGasPrice, _):
-            return referenceGasPrice
-        case .Polkadot:
-            return PolkadotHelper.defaultFeeInPlancks
+        case .Sui(_, _, let gasBudget):
+            return gasBudget
+        case .Polkadot(_, _, _, _, _, _, let gas):
+            guard let dynamicGas = gas else {
+                return 0 // We should throw
+            }
+            return dynamicGas
         case .Ton(_,_,_,_,_,_):
             return TonHelper.defaultFee
         case .Ripple(_, let gas, _):
@@ -67,7 +70,11 @@ enum BlockChainSpecific: Codable, Hashable {
         switch self {
         case .Ethereum(let maxFeePerGas, _, _, let gasLimit):
             return maxFeePerGas * gasLimit
-        case .UTXO, .Cardano, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot, .Ton, .Ripple, .Tron:
+        case .UTXO:
+            return gas // For UTXO, gas represents the byteFee (sats/byte rate), not the total fee
+        case .Sui(_, _, let gasBudget):
+            return gasBudget // For Sui, return the actual gas budget (total fee estimate)
+        case .Cardano, .THORChain, .MayaChain, .Cosmos, .Solana, .Polkadot, .Ton, .Ripple, .Tron:
             return gas
         }
     }

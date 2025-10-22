@@ -23,9 +23,13 @@ class HomeViewModel: ObservableObject {
         balanceText(for: selectedVault)
     }
     
+    var defiBalanceText: String {
+        defiBalanceText(for: selectedVault)
+    }
+    
     func balanceText(for vaults: [Vault]) -> String {
         guard !hideVaultBalance else {
-            return Array.init(repeating: "•", count: 8).joined(separator: " ")
+            return String.hideBalanceText
         }
         
         return vaults
@@ -36,10 +40,20 @@ class HomeViewModel: ObservableObject {
     
     func balanceText(for vault: Vault?) -> String {
         guard !hideVaultBalance else {
-            return Array.init(repeating: "•", count: 8).joined(separator: " ")
+            return String.hideBalanceText
         }
         
         return vault?.coins.totalBalanceInFiatString ?? ""
+    }
+    
+    func defiBalanceText(for vault: Vault?) -> String {
+        guard !hideVaultBalance else {
+            return String.hideBalanceText
+        }
+        
+        return vault?.coins
+            .filter { vault?.defiChains.contains($0.chain) ?? false }
+            .totalDefiBalanceInFiatString ?? ""
     }
 
     func loadSelectedVault(for vaults: [Vault]) {

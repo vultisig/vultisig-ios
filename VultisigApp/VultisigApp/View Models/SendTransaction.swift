@@ -18,6 +18,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var customGasLimit: BigInt?
     @Published var customByteFee: BigInt?
     @Published var fee: BigInt = .zero
+    @Published var isCalculatingFee: Bool = false
     @Published var feeMode: FeeMode = .default
     @Published var sendMaxAmount: Bool = false
     @Published var isFastVault: Bool = false
@@ -40,13 +41,16 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var isAmountExceeded: Bool {
-        if (sendMaxAmount && (coin.chainType == .UTXO || coin.chainType == .Cardano)) || !coin.isNativeToken {
+        if (sendMaxAmount && (coin.chainType == .UTXO || coin.chainType == .Cardano || coin.chainType == .Ton)) || !coin.isNativeToken {
             let comparison = amountInRaw > coin.rawBalance.toBigInt(decimals: coin.decimals)
             return comparison
         }
         
-        let totalTransactionCost = amountInRaw + gas
+        // For UTXO and Cardano chains, use the actual fee (plan.fee) not the gas (sats/byte rate)
+        let feeToUse = (coin.chainType == .UTXO || coin.chainType == .Cardano) ? fee : gas
+        let totalTransactionCost = amountInRaw + feeToUse
         let comparison = totalTransactionCost > coin.rawBalance.toBigInt(decimals: coin.decimals)
+        
         return comparison
     }
     
@@ -151,6 +155,11 @@ class SendTransaction: ObservableObject, Hashable {
             return "\(gasDecimal / weiPerGWeiDecimal) \(coin.chain.feeUnit)"
         }
         
+        // For UTXO and Cardano chains, use total fee amount (like Android) instead of sats/byte rate
+        let feeToDisplay = (coin.chainType == .UTXO || coin.chainType == .Cardano) ? fee : gas
+        let feeDecimal = Decimal(feeToDisplay)
+        
+        
         // If not a native token we need to get the decimals from the native token
         if !coin.isNativeToken {
             if let vault = txVault {
@@ -160,7 +169,7 @@ class SendTransaction: ObservableObject, Hashable {
             }
         }
         
-        return "\((gasDecimal / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(coin.chain.feeUnit)"
+        return "\((feeDecimal / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(coin.ticker)"
     }
     
     init() { }
