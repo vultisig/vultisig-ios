@@ -47,7 +47,6 @@ final class BlockChainService {
     private let sol = SolanaService.shared
     private let sui = SuiService.shared
     private let dot = PolkadotService.shared
-    private let thor = ThorchainService.shared
     private let maya = MayachainService.shared
     private let ton = TonService.shared
     private let tron = TronService.shared
@@ -333,10 +332,11 @@ private extension BlockChainService {
             let ttl = try await cardano.calculateDynamicTTL()
             let estimatedFee = cardano.estimateTransactionFee()
             return .Cardano(byteFee: BigInt(estimatedFee), sendMaxAmount: sendMaxAmount, ttl: ttl)
-        case .thorChain:
-            _ = try await thor.getTHORChainChainID()
-            let account = try await thor.fetchAccountNumber(coin.address)
-            let fee = try await thor.fetchFeePrice()
+        case .thorChain, .thorChainStagenet:
+            let service = ThorchainServiceFactory.getService(for: coin.chain)
+            _ = try await service.getTHORChainChainID()
+            let account = try await service.fetchAccountNumber(coin.address)
+            let fee = try await service.fetchFeePrice()
             
             guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
                 throw Errors.failToGetAccountNumber
@@ -666,7 +666,7 @@ private extension BlockChainService {
         switch(tx.quote){
         case .mayachain(_):
             return nil
-        case .thorchain(_):
+        case .thorchain(_), .thorchainStagenet(_):
             return nil
         case .oneinch(let quote,_),.kyberswap(let quote, _),.lifi(let quote,_, _):
             if tx.fromCoin.isNativeToken {

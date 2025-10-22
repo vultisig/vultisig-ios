@@ -38,7 +38,7 @@ class THORChainSwaps {
     
     func getPreSignedInputData(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> Data {
         switch swapPayload.fromCoin.chain {
-        case .thorChain:
+        case .thorChain, .thorChainStagenet:
             return try THORChainHelper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin:
             let helper = UTXOChainsHelper(coin: swapPayload.fromCoin.coinType, vaultHexPublicKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode)
@@ -63,7 +63,7 @@ class THORChainSwaps {
         let inputData = try getPreSignedInputData(swapPayload: swapPayload, keysignPayload: keysignPayload, incrementNonce: incrementNonce)
 
         switch swapPayload.fromCoin.chain {
-        case .thorChain,.ethereum, .bscChain,.avalanche,.gaiaChain, .base ,.arbitrum:
+        case .thorChain, .thorChainStagenet, .ethereum, .bscChain, .avalanche, .gaiaChain, .base, .arbitrum:
             let hashes = TransactionCompiler.preImageHashes(coinType: swapPayload.fromCoin.coinType, txInputData: inputData)
             let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
             if !preSigningOutput.errorMessage.isEmpty {
@@ -131,7 +131,7 @@ class THORChainSwaps {
         )
             
         switch swapPayload.fromCoin.chain {
-        case .thorChain:
+        case .thorChain, .thorChainStagenet:
             return try THORChainHelper.getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
         case .bitcoin:
             let utxoHelper = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode)

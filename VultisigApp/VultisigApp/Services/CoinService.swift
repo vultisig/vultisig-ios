@@ -164,7 +164,8 @@ struct CoinService {
             case .Sui:
                 tokens = try await SuiService.shared.getAllTokensWithMetadata(coin: nativeToken)
             case .THORChain:
-                tokens = try await ThorchainService.shared.fetchTokens(nativeToken.address)
+                let service = ThorchainServiceFactory.getService(for: nativeToken.chain)
+                tokens = try await service.fetchTokens(nativeToken.address)
             default:
                 tokens = []
             }
@@ -195,7 +196,7 @@ struct CoinService {
                     }
                     
                     // Skip tokens that still don't have priceProviderId after enrichment (likely spam)
-                    if enrichedToken.priceProviderId.isEmpty && enrichedToken.chain != .thorChain {
+                    if enrichedToken.priceProviderId.isEmpty && enrichedToken.chain != .thorChain && enrichedToken.chain != .thorChainStagenet {
                         continue
                     }
                     
