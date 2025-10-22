@@ -13,7 +13,6 @@ class BalanceService {
     static let shared = BalanceService()
     
     private let utxo = BlockchairService.shared
-    private let thor = ThorchainService.shared
     private let sol = SolanaService.shared
     private let sui = SuiService.shared
     private let maya = MayachainService.shared
@@ -101,11 +100,12 @@ private extension BalanceService {
             }
             
             // Handle TCY staked balance (includes both regular and auto-compound)
-            if coin.ticker.caseInsensitiveCompare("TCY") == .orderedSame {
-                let tcyStakedBalance = await thor.fetchTcyStakedAmount(address: coin.address)
+            if coin.ticker.localizedCaseInsensitiveContains("tcy") {
+                let service = ThorchainServiceFactory.getService(for: coin.chain)
+                let tcyStakedBalance = await service.fetchTcyStakedAmount(address: coin.address)
                 
                 if enableAutoCompoundStakedBalance {
-                    let tcyAutoCompoundBalance = await thor.fetchTcyAutoCompoundAmount(address: coin.address)
+                    let tcyAutoCompoundBalance = await service.fetchTcyAutoCompoundAmount(address: coin.address)
                     let totalStakedBalance = tcyStakedBalance + tcyAutoCompoundBalance
                     return totalStakedBalance.description
                 }
@@ -116,7 +116,8 @@ private extension BalanceService {
             
             // Handle merge account balances for non-native tokens
             if !coin.isNativeToken {
-                let mergedAccounts = await thor.fetchMergeAccounts(address: coin.address)
+                let service = ThorchainServiceFactory.getService(for: coin.chain)
+                let mergedAccounts = await service.fetchMergeAccounts(address: coin.address)
                 
                 if let matchedAccount = mergedAccounts.first(where: {
                     $0.pool.mergeAsset.metadata.symbol.caseInsensitiveCompare(coin.ticker) == .orderedSame
@@ -131,7 +132,7 @@ private extension BalanceService {
             
         default:
             // All other chains currently don't support staking
-            return .zero
+            return nil
         }
     }
     
@@ -144,9 +145,10 @@ private extension BalanceService {
         case .cardano:
             return try await cardano.getBalance(coin: coin)
             
-        case .thorChain:
-            let thorBalances = try await thor.fetchBalances(coin.address)
-            return thorBalances.balance(denom: Chain.thorChain.ticker.lowercased(), coin: coin)
+        case .thorChain, .thorChainStagenet:
+            let service = ThorchainServiceFactory.getService(for: coin.chain)
+            let thorBalances = try await service.fetchBalances(coin.address)
+            return thorBalances.balance(denom: coin.chain.ticker.lowercased(), coin: coin)
             
         case .solana:
             return try await sol.getSolanaBalance(coin: coin)

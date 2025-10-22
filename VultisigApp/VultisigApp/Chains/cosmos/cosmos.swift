@@ -26,7 +26,11 @@ class CosmosHelper {
         guard let swapPayload = keysignPayload.swapPayload else {
             throw HelperError.runtimeError("swap payload is nil")
         }
-        guard case .thorchain(let thorChainSwapPayload) = swapPayload else {
+        let thorChainSwapPayload: THORChainSwapPayload
+        switch swapPayload {
+        case .thorchain(let payload), .thorchainStagenet(let payload):
+            thorChainSwapPayload = payload
+        default:
             throw HelperError.runtimeError("fail to get swap payload")
         }
         guard let memo = keysignPayload.memo else {

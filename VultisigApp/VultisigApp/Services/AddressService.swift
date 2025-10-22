@@ -21,6 +21,18 @@ public struct AddressService {
                 throw Errors.invalidAddress
             }
         }
+        
+        if chain == .thorChainStagenet {
+            let isValid = AnyAddress.isValidBech32(string: input, coin: .thorchain, hrp: "sthor")
+
+            if isValid {
+                return input
+            } else {
+                // Try TNS resolution for stagenet
+                let service = ThorchainServiceFactory.getService(for: .thorChainStagenet)
+                return try await service.resolveTNS(name: input, chain: chain)
+            }
+        }
 
         let isValid = chain.coinType.validate(address: input)
 
@@ -31,7 +43,8 @@ public struct AddressService {
             return try await AddressService.resolveENSDomaninAddress(input: input, chain: chain)
 
         } else if chain == .thorChain {
-            return try await ThorchainService.shared.resolveTNS(name: input, chain: chain)
+            let service = ThorchainServiceFactory.getService(for: .thorChain)
+            return try await service.resolveTNS(name: input, chain: chain)
 
         } else {
             throw Errors.invalidAddress
@@ -42,6 +55,10 @@ public struct AddressService {
         if chain == .mayaChain {
             return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
         }
+        
+        if chain == .thorChainStagenet {
+            return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor")
+        }
 
         return chain.coinType.validate(address: address)
     }
@@ -51,6 +68,9 @@ public struct AddressService {
         if let firstCoin = firstCoinOptional {
             if firstCoin.chain == .mayaChain {
                 return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
+            }
+            if firstCoin.chain == .thorChainStagenet {
+                return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor")
             }
             return firstCoin.coinType.validate(address: address)
         }

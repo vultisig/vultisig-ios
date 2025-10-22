@@ -21,7 +21,7 @@ class ThorchainService: ThorchainSwapProvider {
     private init() {}
     
     func fetchBalances(_ address: String) async throws -> [CosmosBalance] {
-        guard let url = URL(string: Endpoint.fetchAccountBalanceThorchainNineRealms(address: address)) else        {
+        guard let url = URL(string: Endpoint.fetchAccountBalanceThorchainNineRealms(address: address)) else {
             return [CosmosBalance]()
         }
         let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
@@ -86,7 +86,7 @@ class ThorchainService: ThorchainSwapProvider {
             let entries: [Entry]
         }
         
-        let url = Endpoint.resolveTNS(name: name)
+        let url = Endpoint.resolveTNS(name: name, chain: chain)
         let (data, _) = try await URLSession.shared.data(from: url)
         let response = try JSONDecoder().decode(Response.self, from: data)
         
