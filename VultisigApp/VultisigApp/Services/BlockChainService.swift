@@ -365,8 +365,6 @@ private extension BlockChainService {
                 throw Errors.failToGetRecentBlockHash
             }
             
-            let priorityFeePrice: UInt64 = 1_000_000
-            
             if !coin.isNativeToken && fromAddress != nil {
                 let (associatedTokenAddressFrom, senderIsToken2022) = try await sol.fetchTokenAssociatedAccountByOwner(for: fromAddress!, mintAddress: coin.contractAddress)
                 
@@ -411,10 +409,10 @@ private extension BlockChainService {
                 // Empty string from RPC doesn't mean the account doesn't exist
                 let finalToAddress = associatedTokenAddressTo?.isEmpty == true ? nil : associatedTokenAddressTo
                 
-                return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(priorityFeePrice), priorityLimit: BigInt(100_000), fromAddressPubKey: associatedTokenAddressFrom, toAddressPubKey: finalToAddress, hasProgramId: isToken2022)
+                return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(SolanaHelper.priorityFeePrice), priorityLimit: SolanaHelper.priorityFeeLimit, fromAddressPubKey: associatedTokenAddressFrom, toAddressPubKey: finalToAddress, hasProgramId: isToken2022)
             }
             
-            return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(priorityFeePrice), priorityLimit: BigInt(100_000), fromAddressPubKey: nil, toAddressPubKey: nil, hasProgramId: false)
+            return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(SolanaHelper.priorityFeePrice), priorityLimit: SolanaHelper.priorityFeeLimit, fromAddressPubKey: nil, toAddressPubKey: nil, hasProgramId: false)
             
         case .sui:
             let (referenceGasPrice, allCoins) = try await sui.getGasInfo(coin: coin)
