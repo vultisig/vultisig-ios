@@ -144,6 +144,7 @@ struct FunctionCallView: View {
     
     var errorView: some View {
         SendCryptoSigningErrorView(errorString: functionCallViewModel.errorMessage)
+            .padding(.horizontal)
     }
     
     var loader: some View {
