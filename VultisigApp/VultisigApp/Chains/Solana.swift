@@ -23,8 +23,11 @@ enum SolanaHelper {
             throw HelperError.runtimeError("fail to get to address")
         }
         
-        let priorityFeePrice = 1_000_000
-        let priorityFeeLimit = UInt32(priorityLimit)
+        let priorityFeePrice: UInt64 = 1_000_000
+        guard priorityLimit <= UInt32.max else {
+            throw HelperError.runtimeError("priorityLimit exceeds UInt32 bounds: \(priorityLimit)")
+        }
+        let priorityFeeLimit = UInt32(truncatingIfNeeded: priorityLimit)
         
         if keysignPayload.coin.isNativeToken {
             let input = SolanaSigningInput.with {
