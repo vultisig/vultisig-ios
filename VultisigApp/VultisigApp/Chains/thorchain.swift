@@ -75,7 +75,10 @@ enum THORChainHelper {
     }
     
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        guard keysignPayload.coin.chain == .thorChain || keysignPayload.coin.chain == .thorChainStagenet else {
+        switch keysignPayload.coin.chain {
+        case .thorChain, .thorChainStagenet:
+            break
+        default:
             throw HelperError.runtimeError("coin is not RUNE or RUNE Stagenet")
         }
         let fromAddr = try validateThorchainAddress(keysignPayload.coin.address, chain: keysignPayload.coin.chain)
