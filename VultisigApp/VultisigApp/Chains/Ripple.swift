@@ -75,19 +75,44 @@ enum RippleHelper {
                 
                 return try input.serializedData()
             } else {
-                // Memo text not supported by current WalletCore binary: proceed without memo
-                let operation = RippleOperationPayment.with {
-                    $0.destination = keysignPayload.toAddress
-                    $0.amount = Int64(keysignPayload.toAmount.description) ?? 0
+                // It's a string, use it as memo data
+                // Create a JSON transaction with memo included
+                let txJson: [String: Any] = [
+                    "TransactionType": "Payment",
+                    "Account": keysignPayload.coin.address,
+                    "Destination": keysignPayload.toAddress,
+                    "Amount": String(keysignPayload.toAmount.description),
+                    "Fee": String(gas),
+                    "Sequence": sequence,
+                    "LastLedgerSequence": lastLedgerSequence,
+                    "Memos": [
+                        [
+                            "Memo": [
+                                "MemoData": memoValue.data(using: .utf8)?.map { String(format: "%02hhx", $0) }.joined() ?? ""
+                            ]
+                        ]
+                    ]
+                ]
+                
+                // Convert the JSON to a string
+                let jsonData = try JSONSerialization.data(withJSONObject: txJson, options: [])
+                guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+                    throw HelperError.runtimeError("Failed to create JSON string")
                 }
+                
+                // Create input with raw_json
                 let input = RippleSigningInput.with {
                     $0.fee = Int64(gas)
                     $0.sequence = UInt32(sequence)
                     $0.account = keysignPayload.coin.address
                     $0.publicKey = publicKey.data
-                    $0.opPayment = operation
                     $0.lastLedgerSequence = UInt32(lastLedgerSequence)
+                    $0.rawJson = jsonString
                 }
+                
+                print("Creating XRP transaction with memo text: \(memoValue)\njsonString: \(jsonString)")
+                print("UInt32(lastLedgerSequence) \(UInt32(lastLedgerSequence))")
+                
                 return try input.serializedData()
             }
         } else {
