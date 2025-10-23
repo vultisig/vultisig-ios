@@ -146,7 +146,19 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var gasInReadable: String {
+        // Get native coin for proper fee display (fees are always in native token)
+        var nativeCoin = coin
         var decimals = coin.decimals
+        
+        if !coin.isNativeToken {
+            if let vault = txVault {
+                if let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
+                    nativeCoin = nativeToken
+                    decimals = nativeToken.decimals
+                }
+            }
+        }
+        
         if coin.chain.chainType == .EVM {
             // convert to Gwei , show as Gwei for EVM chain only
             guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) else {
@@ -159,17 +171,7 @@ class SendTransaction: ObservableObject, Hashable {
         let feeToDisplay = (coin.chainType == .UTXO || coin.chainType == .Cardano) ? fee : gas
         let feeDecimal = Decimal(feeToDisplay)
         
-        
-        // If not a native token we need to get the decimals from the native token
-        if !coin.isNativeToken {
-            if let vault = txVault {
-                if let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
-                    decimals = nativeToken.decimals
-                }
-            }
-        }
-        
-        return "\((feeDecimal / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(coin.ticker)"
+        return "\((feeDecimal / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(nativeCoin.ticker)"
     }
     
     init() { }

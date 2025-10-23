@@ -316,7 +316,7 @@ struct JoinSwapDoneSummary: View {
         var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.gas)
         feeInReadable = feeInReadable.nilIfEmpty.map { " (~\($0))" } ?? ""
         
-        return "\(gasInReadable) \(payload.coin.chain.feeUnit)\(feeInReadable)"
+        return "\(gasInReadable) \(nativeToken.ticker)\(feeInReadable)"
     }
     
     func feesInReadable(coin: Coin, fee: BigInt) -> String {
