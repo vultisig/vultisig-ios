@@ -136,16 +136,16 @@ struct SwapCryptoView: View {
         SendCryptoSigningErrorView(errorString: swapViewModel.error?.localizedDescription ?? "Error")
     }
     
-    var backButton: some View {
-        let isDone = swapViewModel.currentIndex==5
-        
+    var showBackButton: Bool {
+        swapViewModel.currentIndex != 1 && swapViewModel.currentIndex != 5
+    }
+    
+    var backButton: some View {        
         return Button {
             swapViewModel.handleBackTap()
         } label: {
             NavigationBlankBackButton()
         }
-        .opacity(isDone ? 0 : 1)
-        .disabled(isDone)
     }
 }
 
