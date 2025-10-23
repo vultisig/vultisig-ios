@@ -41,6 +41,11 @@ struct HomeScreen: View {
     @EnvironmentObject var phoneCheckUpdateViewModel: PhoneCheckUpdateViewModel
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
     @Environment(\.modelContext) private var modelContext
+#if DEBUG
+    private let tabs: HomeTab = [.wallet, .defi]
+#else
+    private let tabs: HomeTab = [.wallet]
+#endif
     
     init(initialVault: Vault? = nil, showingVaultSelector: Bool = false) {
         self.initialVault = initialVault
@@ -83,7 +88,7 @@ struct HomeScreen: View {
             ZStack(alignment: .top) {
                 VultiTabBar(
                     selectedItem: $selectedTab,
-                    items: [HomeTab.wallet, .defi],
+                    items: tabs,
                     accessory: .camera,
                 ) { tab in
                     Group {
