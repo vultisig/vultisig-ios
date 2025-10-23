@@ -60,9 +60,7 @@ enum THORChainHelper {
                             $0.symbol = swapPayload.fromCoin.ticker.uppercased().replacingOccurrences(of: "X/", with: "")
                             $0.ticker = swapPayload.fromCoin.ticker.uppercased().replacingOccurrences(of: "X/", with: "")
                             $0.synth = false
-                            let securedAssetsTickers = ["BTC", "ETH", "BCH", "LTC", "DOGE", "AVAX", "BNB"]
-                            let isSecured = securedAssetsTickers.contains(swapPayload.fromCoin.ticker.uppercased())
-                            $0.secured = isSecured
+                            $0.secured = securedAssetsTickers.contains(swapPayload.fromCoin.ticker.uppercased())
                         }
                         $0.amount = String(swapPayload.fromAmount)
                         $0.decimals = Int64(swapPayload.fromCoin.decimals)
@@ -97,7 +95,7 @@ enum THORChainHelper {
         if chainID != service.network && !service.network.isEmpty {
             chainID = service.network
         }
-                
+        
         let transactionType = VSTransactionType(rawValue: transactionTypeRawValue) ?? .unspecified
         let message: CosmosMessage
         
@@ -121,10 +119,7 @@ enum THORChainHelper {
                 message = try buildThorchainSendMessage(keysignPayload: keysignPayload, fromAddress: fromAddr)
             }
         }
-        
-        print("message: \(message)")
-        print("\(try message.jsonString())")
-        
+                
         let input = CosmosSigningInput.with {
             $0.publicKey = pubKeyData
             $0.signingMode = .protobuf
@@ -263,15 +258,15 @@ enum THORChainHelper {
     private static func buildThorchainDepositMessage(keysignPayload: KeysignPayload, fromAddress: AnyAddress) -> CosmosMessage {
         let symbol = getTicker(coin: keysignPayload.coin)
         let assetTicker = getTicker(coin: keysignPayload.coin)
+        let chainName = getChainName(coin: keysignPayload.coin)
+        let isSecured = isSecuredAsset(coin: keysignPayload.coin)
         
         let coin = CosmosTHORChainCoin.with {
             $0.asset = TW_Cosmos_Proto_THORChainAsset.with {
-                $0.chain = "DOGE"
-                $0.symbol = "DOGE"
-                $0.ticker = "DOGE"
+                $0.chain = chainName
+                $0.symbol = symbol
+                $0.ticker = assetTicker
                 $0.synth = false
-                let securedAssetsTickers = ["BTC", "ETH", "BCH", "LTC", "DOGE", "AVAX", "BNB"]
-                let isSecured = securedAssetsTickers.contains(keysignPayload.coin.ticker.uppercased()) && !keysignPayload.coin.isNativeToken
                 $0.secured = isSecured
             }
             if keysignPayload.toAmount > 0 {
@@ -279,10 +274,6 @@ enum THORChainHelper {
                 $0.decimals = Int64(keysignPayload.coin.decimals)
             }
         }
-        
-        print("chain: \(coin.asset.chain)")
-        print("ticker: \(coin.asset.ticker)")
-        print("symbol: \(coin.asset.symbol)")
         
         return CosmosMessage.with {
             $0.thorchainDepositMessage = CosmosMessage.THORChainDeposit.with {
@@ -315,17 +306,37 @@ enum THORChainHelper {
     }
     
     private static func getNotNativeTicker(coin: Coin) -> String {
-        let securedAssetsTickers = ["BTC", "ETH", "BCH", "LTC", "DOGE", "AVAX", "BNB"]
-        
-        if securedAssetsTickers.contains(coin.ticker) {
-            
-            if coin.ticker.uppercased() == "BNB" {
-                return "BSC-BNB"
-            }
-            
-            return "\(coin.ticker.uppercased())-\(coin.ticker.uppercased())"
-        }
         return coin.ticker.uppercased().replacingOccurrences(of: "X/", with: "")
+    }
+    
+    /// Returns the list of secured asset tickers
+    private static var securedAssetsTickers: [String] {
+        return ["BTC", "ETH", "BCH", "LTC", "DOGE", "AVAX", "BNB"]
+    }
+    
+    /// Checks if a coin is a secured asset
+    private static func isSecuredAsset(coin: Coin) -> Bool {
+        return securedAssetsTickers.contains(coin.ticker.uppercased()) && !coin.isNativeToken
+    }
+    
+    /// Gets the appropriate chain name for a coin in THORChain context
+    /// - For secured assets: returns the chain ticker (e.g., "BTC", "ETH", "DOGE")
+    /// - For BNB secured assets: returns "BSC"
+    /// - For non-secured assets: returns "THOR"
+    private static func getChainName(coin: Coin) -> String {
+        guard isSecuredAsset(coin: coin) else {
+            return "THOR"
+        }
+        
+        let ticker = coin.ticker.uppercased()
+        
+        // BNB uses BSC chain
+        if ticker == "BNB" {
+            return "BSC"
+        }
+        
+        // For other secured assets, use the coin's chain ticker
+        return coin.chain.ticker.uppercased()
     }
 }
 
