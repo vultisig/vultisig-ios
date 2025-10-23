@@ -62,9 +62,7 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
         if let thorCoin = vault.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) {
             thorAddress = thorCoin.address
             thorAddressValid = true
-            print("DEBUG: THORChain address prefilled: \(thorAddress)")
         } else {
-            print("DEBUG: No THORChain coin found in vault")
         }
         
         // No additional prefilling needed for mint/swap
@@ -97,8 +95,14 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
                     
                     let destinationAddress: String
                     if self.tx.coin.shouldApprove {
-                        // ERC20 token → approval to router
-                        destinationAddress = inbound.router ?? inbound.address
+                        // ERC20 token → approval to router (router is required)
+                        guard let router = inbound.router, !router.isEmpty else {
+                            self.customErrorMessage = "Router not available for approvals on \(inbound.chain). Try again later."
+                            self.isApprovalRequired = false
+                            self.isTheFormValid = false
+                            return
+                        }
+                        destinationAddress = router
                     } else {
                         // Native token → direct to inbound address
                         destinationAddress = inbound.address
@@ -144,7 +148,6 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
                     self.customErrorMessage = "THORChain address not found in vault. Please ensure you have RUNE in your vault."
                 }
                 
-                print("DEBUG: Form validation - MINT, amountValid: \(amountValid), thorAddressValid: \(thorAddressValid), amount: \(self.amount), isValid: \(isValid)")
                 return isValid
             }
             .receive(on: DispatchQueue.main)
@@ -157,7 +160,6 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
         let isValidAmount = amount > 0 && amount <= currentBalance
         amountValid = isValidAmount
         
-        print("DEBUG: Amount validation - amount: \(amount), currentBalance: \(currentBalance), amountValid: \(amountValid)")
         
         if amount <= 0 {
             amountValid = false
