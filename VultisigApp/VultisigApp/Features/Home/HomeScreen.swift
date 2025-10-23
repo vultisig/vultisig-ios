@@ -42,9 +42,9 @@ struct HomeScreen: View {
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
     @Environment(\.modelContext) private var modelContext
 #if DEBUG
-    private let tabs: HomeTab = [.wallet, .defi]
+    private let tabs: [HomeTab] = [.wallet, .defi]
 #else
-    private let tabs: HomeTab = [.wallet]
+    private let tabs: [HomeTab] = [.wallet]
 #endif
     
     init(initialVault: Vault? = nil, showingVaultSelector: Bool = false) {
