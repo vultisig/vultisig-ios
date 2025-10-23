@@ -28,9 +28,8 @@ enum THORChainAssetFactory {
         let appChain = Chain.allCases.first { $0.swapAsset == chain }
         guard let appChain else { return nil }
         
-        print("Asset \(asset) \(appChain.name) \(symbol)")
         let coinMeta = TokensStore.TokenSelectionAssets
-            .first { $0.chain == appChain && $0.ticker.lowercased() == symbol }
+            .first { $0.chain == appChain && $0.ticker.lowercased() == symbol.lowercased() }
         if let coinMeta {
             return coinMeta
         } else {

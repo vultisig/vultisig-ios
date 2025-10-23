@@ -40,9 +40,7 @@ final class DefiTHORChainLPsViewModel: ObservableObject {
 
     func refresh() async {
         guard hasLPPositions, let runeCoin = vault.coins.first(where: { $0.isRune }) else {
-            await MainActor.run {
-                lpPositions = []
-            }
+            lpPositions = []
             return
         }
 

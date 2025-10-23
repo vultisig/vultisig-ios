@@ -94,10 +94,8 @@ struct DefiTHORChainSelectPositionsScreen: View {
 }
 
 #Preview {
-    TokenSelectionScreen(
-        vault: .example,
-        group: .example,
-        isPresented: .constant(true),
-        onCustomToken: {}
+    DefiTHORChainSelectPositionsScreen(
+        viewModel: DefiTHORChainMainViewModel(vault: .example),
+        isPresented: .constant(true)
     )
 }
