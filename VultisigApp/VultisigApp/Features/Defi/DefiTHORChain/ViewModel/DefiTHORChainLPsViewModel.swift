@@ -12,6 +12,14 @@ final class DefiTHORChainLPsViewModel: ObservableObject {
     @Published private(set) var vault: Vault
     @Published private(set) var lpPositions: [LPPosition] = []
     @Published private(set) var isLoading: Bool = false
+    
+    var hasLPPositions: Bool {
+        !vaultLPPositions.isEmpty
+    }
+    
+    var vaultLPPositions: [CoinMeta] {
+        vault.defiPositions.first { $0.chain == .thorChain }?.lps ?? []
+    }
 
     private let thorchainAPIService = THORChainAPIService()
 
@@ -31,17 +39,20 @@ final class DefiTHORChainLPsViewModel: ObservableObject {
     }
 
     func refresh() async {
-        guard let runeCoin = vault.coins.first(where: { $0.isRune }) else {
+        guard hasLPPositions, let runeCoin = vault.coins.first(where: { $0.isRune }) else {
+            await MainActor.run {
+                lpPositions = []
+            }
             return
         }
 
         isLoading = true
 
-        // TODO: - Filter pools by user selection, once selection screen gets added
         do {
             // Fetch LP positions from THORChain API using configured period for LUVI-based APR
             let apiPositions = try await thorchainAPIService.getLPPositions(
                 address: runeCoin.address,
+                userLPs: vaultLPPositions,
                 period: aprPeriod
             )
 

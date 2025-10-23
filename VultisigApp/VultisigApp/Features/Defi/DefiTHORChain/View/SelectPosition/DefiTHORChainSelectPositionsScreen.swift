@@ -36,15 +36,19 @@ struct DefiTHORChainSelectPositionsScreen: View {
     }
     
     @ViewBuilder
-    func cellBuilder(_ asset: CoinMeta, section: Int) -> some View {
+    func cellBuilder(_ asset: CoinMeta, section: THORChainPositionType) -> some View {
+        let pos = viewModel.availablePositions.firstIndex(where: { $0.type == section }) ?? 0
         TokenSelectionGridCell(
             coin: asset,
-            isSelected: selection[safe: section]?.contains(asset) ?? false
+            // Prefix for LPs
+            name: section == .liquidityPool ? "RUNE/\(asset.ticker)" : asset.ticker,
+            showChainIcon: section == .liquidityPool,
+            isSelected: selection[safe: pos]?.contains(asset) ?? false
         ) { selected in
             if selected {
-                add(asset: asset, section: section)
+                add(asset: asset, section: pos)
             } else {
-                remove(asset: asset, section: section)
+                remove(asset: asset, section: pos)
             }
         }
     }

@@ -100,6 +100,7 @@
 		134E23F22EAA61CD00952600 /* DefiPositions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E23F12EAA61C500952600 /* DefiPositions.swift */; };
 		134E23F72EAA6F5500952600 /* THORChainAssetFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E23F62EAA6F5100952600 /* THORChainAssetFactory.swift */; };
 		134E23FA2EAA70F700952600 /* DefiTHORChainSelectPositionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E23F92EAA70EE00952600 /* DefiTHORChainSelectPositionsScreen.swift */; };
+		134E23FC2EAA8BC600952600 /* DefiTHORChainStakeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E23FB2EAA8BC600952600 /* DefiTHORChainStakeViewModel.swift */; };
 		134E8D7F2E451F6F0086EBC4 /* PreferredAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D7E2E451F6C0086EBC4 /* PreferredAsset.swift */; };
 		134E8D812E451F800086EBC4 /* PreferredAssetFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D802E451F7A0086EBC4 /* PreferredAssetFactory.swift */; };
 		1352EDBD2E61218100FC0F51 /* ZipFileGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1352EDBC2E61217C00FC0F51 /* ZipFileGenerator.swift */; };
@@ -1233,6 +1234,7 @@
 		134E23F12EAA61C500952600 /* DefiPositions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiPositions.swift; sourceTree = "<group>"; };
 		134E23F62EAA6F5100952600 /* THORChainAssetFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainAssetFactory.swift; sourceTree = "<group>"; };
 		134E23F92EAA70EE00952600 /* DefiTHORChainSelectPositionsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainSelectPositionsScreen.swift; sourceTree = "<group>"; };
+		134E23FB2EAA8BC600952600 /* DefiTHORChainStakeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainStakeViewModel.swift; sourceTree = "<group>"; };
 		134E8D7E2E451F6C0086EBC4 /* PreferredAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAsset.swift; sourceTree = "<group>"; };
 		134E8D802E451F7A0086EBC4 /* PreferredAssetFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetFactory.swift; sourceTree = "<group>"; };
 		1352EDBC2E61217C00FC0F51 /* ZipFileGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipFileGenerator.swift; sourceTree = "<group>"; };
@@ -3097,6 +3099,7 @@
 			children = (
 				13AA6CDB2EA8742100760C8D /* DefiTHORChainLPsViewModel.swift */,
 				1306525B2EA7D7CF002CAD99 /* DefiTHORChainBondViewModel.swift */,
+				134E23FB2EAA8BC600952600 /* DefiTHORChainStakeViewModel.swift */,
 				13A657A82EA283DB00323E4C /* DefiTHORChainMainViewModel.swift */,
 			);
 			path = ViewModel;
@@ -5805,6 +5808,7 @@
 				A6F7B6C62D4AB86900AC8104 /* EmptyPeerCell.swift in Sources */,
 				13DB87632EA01182008E89B0 /* DefiMainBalanceView.swift in Sources */,
 				A58CC34B2C32FA760086D16B /* ProtoMappable.swift in Sources */,
+				134E23FC2EAA8BC600952600 /* DefiTHORChainStakeViewModel.swift in Sources */,
 				A6505AE72CA670FE0002FBF4 /* StringExtension+iOS.swift in Sources */,
 				A6505AEB2CA673860002FBF4 /* MacCameraServiceViewModel+iOS.swift in Sources */,
 				13AA6CE32EA8746300760C8D /* THORChainAPIService+LPs.swift in Sources */,

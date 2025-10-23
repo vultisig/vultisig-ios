@@ -7,27 +7,21 @@
 
 import Foundation
 
-struct DefiSelectionSection<T: Hashable & Identifiable>: Identifiable {
-    var id: Int { type.hashValue }
-    let type: T
-    let availablePositions: [CoinMeta]
-}
-
 final class DefiTHORChainMainViewModel: ObservableObject {
     @Published private(set) var vault: Vault
     @Published var selectedPosition: THORChainPositionType = .bond
     private(set) lazy var positions: [SegmentedControlItem<THORChainPositionType>] = THORChainPositionType.allCases.map { SegmentedControlItem(value: $0, title: $0.segmentedControlTitle) }
     
-    @Published private(set) var availablePositions: [AssetSection<CoinMeta>] = []
+    @Published private(set) var availablePositions: [AssetSection<THORChainPositionType, CoinMeta>] = []
     @Published var positionsSearchText = ""
     
-    var filteredAvailablePositions: [AssetSection<CoinMeta>] {
+    var filteredAvailablePositions: [AssetSection<THORChainPositionType, CoinMeta>] {
         guard positionsSearchText.isNotEmpty else { return availablePositions }
         return availablePositions.compactMap { section in
             let newPositions = section.assets
                 .filter { $0.ticker.localizedCaseInsensitiveContains(positionsSearchText) || $0.chain.ticker.localizedCaseInsensitiveContains(positionsSearchText) }
             guard !newPositions.isEmpty else { return nil }
-            return AssetSection(title: section.title, assets: newPositions)
+            return AssetSection(title: section.title, type: section.type, assets: newPositions)
         }
     }
     
@@ -83,9 +77,9 @@ final class DefiTHORChainMainViewModel: ObservableObject {
         
         await MainActor.run {
             availablePositions = [
-                AssetSection(title: THORChainPositionType.bond.sectionTitle, assets: bond),
-                AssetSection(title: THORChainPositionType.stake.sectionTitle, assets: staking),
-                AssetSection(title: THORChainPositionType.liquidityPool.sectionTitle, assets: lps)
+                AssetSection(title: THORChainPositionType.bond.sectionTitle, type: THORChainPositionType.bond, assets: bond),
+                AssetSection(title: THORChainPositionType.stake.sectionTitle, type: .stake, assets: staking),
+                AssetSection(title: THORChainPositionType.liquidityPool.sectionTitle, type: .liquidityPool, assets: lps)
             ]
         }
     }

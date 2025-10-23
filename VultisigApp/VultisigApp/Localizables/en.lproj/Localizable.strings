@@ -946,3 +946,6 @@
 "selectPositions" = "Select positions";
 "selectPositionsSubtitle" = "Enable at least one position to view balances and manage positions.";
 "liquidityPools" = "Liquidity Pools";
+"noPositionsSelectedTitle" = "No positions selected";
+"noPositionsSelectedSubtitle" = "You’ve disabled all positions for this chain. Enable at least one position to view balances and manage actions.";
+"managePositions" = "Manage Positions";

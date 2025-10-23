@@ -11,8 +11,18 @@ struct AssetSelectionGridCell: View {
     let name: String
     let ticker: String
     let logo: String
+    let tokenChainLogo: String?
     @Binding var isSelected: Bool
     var onSelection: () -> Void
+    
+    init(name: String, ticker: String, logo: String, tokenChainLogo: String? = nil, isSelected: Binding<Bool>, onSelection: @escaping () -> Void) {
+        self.name = name
+        self.ticker = ticker
+        self.logo = logo
+        self.tokenChainLogo = tokenChainLogo
+        self._isSelected = isSelected
+        self.onSelection = onSelection
+    }
     
     var body: some View {
         Button {
@@ -24,7 +34,7 @@ struct AssetSelectionGridCell: View {
                     logo: logo,
                     size: CGSize(width: 36, height: 36),
                     ticker: ticker,
-                    tokenChainLogo: nil
+                    tokenChainLogo: tokenChainLogo
                 )
                 .aspectRatio(contentMode: .fit)
                 .opacity(isSelected ? 1 : 0.5)

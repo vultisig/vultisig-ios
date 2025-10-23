@@ -7,24 +7,32 @@
 
 import SwiftUI
 
-struct AssetSection<Asset: Hashable> {
+struct AssetSection<SectionType: Hashable, Asset: Hashable>: Hashable {
     let title: String?
+    let type: SectionType
     let assets: [Asset]
     
-    init(title: String? = nil, assets: [Asset]) {
+    init(title: String? = nil, type: SectionType, assets: [Asset]) {
         self.title = title
+        self.type = type
+        self.assets = assets
+    }
+    
+    init(title: String? = nil, assets: [Asset]) where SectionType == Int {
+        self.title = title
+        self.type = .zero
         self.assets = assets
     }
 }
 
-struct AssetSelectionContainerScreen<Asset: Hashable, CellView: View, EmptyStateView: View>: View {
+struct AssetSelectionContainerScreen<Asset: Hashable, SectionType: Hashable, CellView: View, EmptyStateView: View>: View {
     let title: String
     let subtitle: String?
     @Binding var isPresented: Bool
     @Binding var searchText: String
-    let elements: [AssetSection<Asset>]
+    let elements: [AssetSection<SectionType, Asset>]
     var onSave: () -> Void
-    var cellBuilder: (Asset, Int) -> CellView
+    var cellBuilder: (Asset, SectionType) -> CellView
     var emptyStateBuilder: () -> EmptyStateView
     
     @State var searchBarFocused: Bool = false
@@ -34,9 +42,9 @@ struct AssetSelectionContainerScreen<Asset: Hashable, CellView: View, EmptyState
         subtitle: String? = nil,
         isPresented: Binding<Bool>,
         searchText: Binding<String>,
-        elements: [AssetSection<Asset>],
+        elements: [AssetSection<SectionType, Asset>],
         onSave: @escaping () -> Void,
-        cellBuilder: @escaping (Asset, Int) -> CellView,
+        cellBuilder: @escaping (Asset, SectionType) -> CellView,
         emptyStateBuilder: @escaping () -> EmptyStateView
     ) {
         self.title = title
@@ -63,6 +71,7 @@ struct AssetSelectionContainerScreen<Asset: Hashable, CellView: View, EmptyState
                             }
                             .safeAreaInset(edge: .bottom, content: { Spacer().frame(height: 64) })
                             .safeAreaInset(edge: .top, content: { Spacer().frame(height: 8) })
+                            .frame(maxHeight: .infinity)
                         }
                     }
                     .transition(.opacity)
@@ -141,8 +150,7 @@ struct AssetSelectionContainerScreen<Asset: Hashable, CellView: View, EmptyState
     var grid: some View {
         let spacing: CGFloat = 16
         let gridItem = GridItem(.flexible(), spacing: spacing)
-        ForEach(elements.indices, id: \.self) { index in
-            let section = elements[index]
+        ForEach(elements, id: \.self) { section in
             VStack(alignment: .leading, spacing: 8) {
                 if let title = section.title {
                     Text(title)
@@ -150,8 +158,8 @@ struct AssetSelectionContainerScreen<Asset: Hashable, CellView: View, EmptyState
                         .font(Theme.fonts.footnote)
                 }
                 LazyVGrid(columns: Array.init(repeating: gridItem, count: 4), spacing: spacing) {
-                    ForEach(elements[index].assets, id: \.self) { element in
-                        cellBuilder(element, index)
+                    ForEach(section.assets, id: \.self) { element in
+                        cellBuilder(element, section.type)
                     }
                 }
             }
@@ -165,7 +173,7 @@ struct AssetSelectionContainerScreen<Asset: Hashable, CellView: View, EmptyState
         title: "Select chains",
         isPresented: .constant(true),
         searchText: .constant(""),
-        elements: [AssetSection(title: nil, assets: [ Coin.example])],
+        elements: [AssetSection(title: nil, type: 1, assets: [ Coin.example])],
         onSave: {},
         cellBuilder: { _, _ in ChainSelectionGridCell(assets: [.example], onSelection: { _ in }) },
         emptyStateBuilder: { EmptyView() }

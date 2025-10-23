@@ -9,7 +9,7 @@ import Foundation
 
 /// Represents a complete LP position with calculated current values
 struct THORChainLPPosition {
-    let liquidityProvider: THORChainLiquidityProviderResponse
+    let liquidityProvider: THORChainLiquidityProviderResponse?
     let poolStats: THORChainPoolStats
     let manualAPR: Decimal? // Manual APR calculated from LUVI history
 
@@ -20,12 +20,12 @@ struct THORChainLPPosition {
 
     /// Current RUNE amount in the position (using redeem value from API)
     var currentRuneAmount: Decimal {
-        Decimal(liquidityProvider.runeRedeemValueBigInt)
+        Decimal(liquidityProvider?.runeRedeemValueBigInt ?? 0)
     }
 
     /// Current asset amount in the position (using redeem value from API)
     var currentAssetAmount: Decimal {
-        Decimal(liquidityProvider.assetRedeemValueBigInt)
+        Decimal(liquidityProvider?.assetRedeemValueBigInt ?? 0)
     }
     
     /// LUVI-based Annual Percentage Rate as decimal (e.g., 0.0067 for 0.67%)
