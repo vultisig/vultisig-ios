@@ -66,7 +66,7 @@
     {
       "identity" : "swifter",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/httpswift/swifter",
+      "location" : "https://github.com/httpswift/swifter.git",
       "state" : {
         "revision" : "9483a5d459b45c3ffd059f7b55f9638e268632fd",
         "version" : "1.5.0"
@@ -77,8 +77,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vultisig/walletcore-spm",
       "state" : {
-        "revision" : "96d8f08428bf3548b1fca418ad7be0a7a70cea69",
-        "version" : "4.3.6"
+        "revision" : "d15efc71eda9f29dc183931276244e504bdf5716",
+        "version" : "4.3.19"
       }
     }
   ],
