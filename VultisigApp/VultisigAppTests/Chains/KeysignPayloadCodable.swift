@@ -259,6 +259,7 @@ extension VSSolanaSpecific: @retroactive Codable {
         case fromTokenAssociatedAddress = "from_token_associated_address"
         case toTokenAssociatedAddress = "to_token_associated_address"
         case programID = "program_id"
+        case priorityLimit = "priority_limit"
     }
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -267,6 +268,9 @@ extension VSSolanaSpecific: @retroactive Codable {
         try container.encode(fromTokenAssociatedAddress, forKey: .fromTokenAssociatedAddress)
         try container.encode(toTokenAssociatedAddress, forKey: .toTokenAssociatedAddress)
         try container.encode(programID, forKey: .programID)
+        if hasComputeLimit {
+            try container.encode(computeLimit, forKey: .priorityLimit)
+        }
     }
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -276,6 +280,9 @@ extension VSSolanaSpecific: @retroactive Codable {
         fromTokenAssociatedAddress = try container.decodeIfPresent(String.self, forKey: .fromTokenAssociatedAddress) ?? String()
         toTokenAssociatedAddress = try container.decodeIfPresent(String.self, forKey: .toTokenAssociatedAddress) ?? String()
         programID = try container.decodeIfPresent(Bool.self, forKey: .programID) ?? false
+        if let priorityLimitStr = try container.decodeIfPresent(String.self, forKey: .priorityLimit) {
+            computeLimit = priorityLimitStr
+        }
     }
 }
 

@@ -87,12 +87,13 @@ private extension SecurityScannerTransactionFactory {
             type = .coinTransfer
         } else {
             type = .tokenTransfer
-            guard case let .Solana(recentBlockHash, priorityFee, fromAddressPubKey, toAddressPubKey, hasProgramId) = blockchainSpecific else {
+            guard case let .Solana(recentBlockHash, priorityFee, priorityLimit, fromAddressPubKey, toAddressPubKey, hasProgramId) = blockchainSpecific else {
                 throw SecurityScannerTransactionFactoryError.invalidBlockchainSpecific("Expected Solana specific data")
             }
             blockchainSpecific = BlockChainSpecific.Solana(
                 recentBlockHash: recentBlockHash,
                 priorityFee: priorityFee,
+                priorityLimit: priorityLimit,
                 fromAddressPubKey: fromAddressPubKey,
                 toAddressPubKey: toAddressPubKey,
                 hasProgramId: hasProgramId
@@ -160,7 +161,6 @@ private extension SecurityScannerTransactionFactory {
         )
     }
     
-    // TODO: Review as it looks like it requires PSBT, which is not supported by WC legacy API
     func createBTCSecurityScanner(transaction: SendTransaction, vault: Vault) async throws -> SecurityScannerTransaction {
         let specific = try await BlockChainService.shared.fetchSpecific(tx: transaction)
         let keySignPayload = try await KeysignPayloadFactory().buildTransfer(

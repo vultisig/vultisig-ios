@@ -68,7 +68,7 @@ final class BlockChainService {
             return payload
         }
         
-        guard case .Solana(_, let priorityFee, let fromAddressPubKey, let toAddressPubKey, let hasProgramId) = payload.chainSpecific else {
+        guard case .Solana(_, let priorityFee, let priorityLimit, let fromAddressPubKey, let toAddressPubKey, let hasProgramId) = payload.chainSpecific else {
             // Not a Solana chainSpecific, return as-is
             return payload
         }
@@ -82,6 +82,7 @@ final class BlockChainService {
         let updatedChainSpecific = BlockChainSpecific.Solana(
             recentBlockHash: freshBlockhash,
             priorityFee: priorityFee,
+            priorityLimit: priorityLimit,
             fromAddressPubKey: fromAddressPubKey,
             toAddressPubKey: toAddressPubKey,
             hasProgramId: hasProgramId
@@ -358,11 +359,7 @@ private extension BlockChainService {
             }
             return .MayaChain(accountNumber: accountNumber, sequence: sequence, isDeposit: isDeposit)
         case .solana:
-            async let recentBlockHashPromise = sol.fetchRecentBlockhash()
-            async let highPriorityFeePromise = sol.fetchHighPriorityFee(account: coin.address)
-            
-            let recentBlockHash = try await recentBlockHashPromise
-            let highPriorityFee = try await highPriorityFeePromise
+            let recentBlockHash = try await sol.fetchRecentBlockhash()
             
             guard let recentBlockHash else {
                 throw Errors.failToGetRecentBlockHash
@@ -412,16 +409,10 @@ private extension BlockChainService {
                 // Empty string from RPC doesn't mean the account doesn't exist
                 let finalToAddress = associatedTokenAddressTo?.isEmpty == true ? nil : associatedTokenAddressTo
                 
-                // TODO: Add rent exemption balance check here
-                // If finalToAddress is nil (account needs creation), verify sender has enough SOL:
-                // - 0.00203928 SOL for token account creation
-                // - Plus transaction fees
-                // - Plus maintaining sender's own rent exemption
-                
-                return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee), fromAddressPubKey: associatedTokenAddressFrom, toAddressPubKey: finalToAddress, hasProgramId: isToken2022)
+                return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(SolanaHelper.priorityFeePrice), priorityLimit: SolanaHelper.priorityFeeLimit, fromAddressPubKey: associatedTokenAddressFrom, toAddressPubKey: finalToAddress, hasProgramId: isToken2022)
             }
             
-            return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee), fromAddressPubKey: nil, toAddressPubKey: nil, hasProgramId: false)
+            return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(SolanaHelper.priorityFeePrice), priorityLimit: SolanaHelper.priorityFeeLimit, fromAddressPubKey: nil, toAddressPubKey: nil, hasProgramId: false)
             
         case .sui:
             let (referenceGasPrice, allCoins) = try await sui.getGasInfo(coin: coin)

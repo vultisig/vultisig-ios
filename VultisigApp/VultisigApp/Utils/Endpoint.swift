@@ -369,11 +369,11 @@ class Endpoint {
     static let solanaTokenInfoServiceRpc = "https://api.solana.fm/v1/tokens"
     
     static func solanaTokenInfoServiceRpc2(tokenAddress: String) -> String {
-        "https://tokens.jup.ag/token/\(tokenAddress)"
+        "https://api.vultisig.com/jup/tokens/v2/search?query=\(tokenAddress)"
     }
     
     static func solanaTokenInfoList() -> String {
-        "https://lite-api.jup.ag/tokens/v2/tag?query=verified"
+        "https://api.vultisig.com/jup/tokens/v2/tag?query=verified"
     }
     
     static func solanaTokenQuote(inputMint: String, outputMint: String, amount: String, slippageBps: String) -> String {
