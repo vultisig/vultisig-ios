@@ -90,6 +90,8 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
                     }
                     
                     if inbound.halted || inbound.global_trading_paused || inbound.chain_trading_paused || inbound.chain_lp_actions_paused {
+                        self.customErrorMessage = "Inbound actions are paused for \(inbound.chain). Try again later."
+                        self.isTheFormValid = false
                         return
                     }
                     

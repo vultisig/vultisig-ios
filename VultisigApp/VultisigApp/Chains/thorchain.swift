@@ -95,7 +95,7 @@ enum THORChainHelper {
         if chainID != service.network && !service.network.isEmpty {
             chainID = service.network
         }
-        
+                
         let transactionType = VSTransactionType(rawValue: transactionTypeRawValue) ?? .unspecified
         let message: CosmosMessage
         
@@ -119,7 +119,7 @@ enum THORChainHelper {
                 message = try buildThorchainSendMessage(keysignPayload: keysignPayload, fromAddress: fromAddr)
             }
         }
-                
+        
         let input = CosmosSigningInput.with {
             $0.publicKey = pubKeyData
             $0.signingMode = .protobuf
