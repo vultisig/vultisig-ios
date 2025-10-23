@@ -26,7 +26,7 @@ extension SwapCryptoView {
         .navigationBarTitleDisplayMode(.inline)
         .ignoresSafeArea(.keyboard)
         .toolbar {
-            if swapViewModel.currentIndex != 1 {
+            if showBackButton {
                 ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                     backButton
                 }
