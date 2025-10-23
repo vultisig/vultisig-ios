@@ -10,6 +10,21 @@ import VultisigCommonData
 
 enum THORChainHelper {
     
+    /// Validates and returns an AnyAddress for THORChain or Stagenet based on the chain type
+    private static func validateThorchainAddress(_ address: String, chain: Chain) throws -> AnyAddress {
+        if chain == .thorChainStagenet {
+            guard let addr = AnyAddress(string: address, coin: .thorchain, hrp: "sthor") else {
+                throw HelperError.runtimeError("\(address) is invalid stagenet address (expected sthor1...)")
+            }
+            return addr
+        } else {
+            guard let addr = AnyAddress(string: address, coin: .thorchain) else {
+                throw HelperError.runtimeError("\(address) is invalid mainnet address (expected thor1...)")
+            }
+            return addr
+        }
+    }
+    
     static func getSwapPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard case .THORChain(let accountNumber, let sequence, _, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number, sequence, or fee")
@@ -21,13 +36,12 @@ enum THORChainHelper {
             throw HelperError.runtimeError("swap payload is missing")
         }
         
-        guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain) else {
-            throw HelperError.runtimeError("\(keysignPayload.coin.address) is invalid")
-        }
+        let fromAddr = try validateThorchainAddress(keysignPayload.coin.address, chain: keysignPayload.coin.chain)
         
         var chainID = keysignPayload.coin.coinType.chainId
-        if chainID != ThorchainService.shared.network && !ThorchainService.shared.network.isEmpty {
-            chainID = ThorchainService.shared.network
+        let service = ThorchainServiceFactory.getService(for: keysignPayload.coin.chain)
+        if chainID != service.network && !service.network.isEmpty {
+            chainID = service.network
         }
         let input = CosmosSigningInput.with {
             $0.chainID = chainID
@@ -64,12 +78,13 @@ enum THORChainHelper {
     }
     
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        guard keysignPayload.coin.chain == .thorChain else {
-            throw HelperError.runtimeError("coin is not RUNE")
+        switch keysignPayload.coin.chain {
+        case .thorChain, .thorChainStagenet:
+            break
+        default:
+            throw HelperError.runtimeError("coin is not RUNE or RUNE Stagenet")
         }
-        guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain) else {
-            throw HelperError.runtimeError("\(keysignPayload.coin.address) is invalid")
-        }
+        let fromAddr = try validateThorchainAddress(keysignPayload.coin.address, chain: keysignPayload.coin.chain)
         guard case .THORChain(let accountNumber, let sequence, _, let isDeposit, let transactionTypeRawValue) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number, sequence, or fee")
         }
@@ -78,8 +93,9 @@ enum THORChainHelper {
         }
         let coin = CoinType.thorchain
         var chainID = coin.chainId
-        if chainID != ThorchainService.shared.network && !ThorchainService.shared.network.isEmpty {
-            chainID = ThorchainService.shared.network
+        let service = ThorchainServiceFactory.getService(for: keysignPayload.coin.chain)
+        if chainID != service.network && !service.network.isEmpty {
+            chainID = service.network
         }
                 
         let transactionType = VSTransactionType(rawValue: transactionTypeRawValue) ?? .unspecified
@@ -191,9 +207,7 @@ enum THORChainHelper {
     }
     
     private static func buildThorchainWasmGenericMessage(keysignPayload: KeysignPayload, transactionType: VSTransactionType) throws -> CosmosMessage.WasmExecuteContractGeneric {
-        guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: CoinType.thorchain) else {
-            throw HelperError.runtimeError("\(keysignPayload.coin.address) is invalid")
-        }
+        let fromAddr = try validateThorchainAddress(keysignPayload.coin.address, chain: keysignPayload.coin.chain)
         
         let wasmGenericMessage = try CosmosMessage.WasmExecuteContractGeneric.with {
             $0.senderAddress = fromAddr.description
@@ -282,9 +296,7 @@ enum THORChainHelper {
     }
     
     private static func buildThorchainSendMessage(keysignPayload: KeysignPayload, fromAddress: AnyAddress) throws -> CosmosMessage {
-        guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .thorchain) else {
-            throw HelperError.runtimeError("\(keysignPayload.toAddress) is invalid")
-        }
+        let toAddress = try validateThorchainAddress(keysignPayload.toAddress, chain: keysignPayload.coin.chain)
         
         return CosmosMessage.with {
             $0.thorchainSendMessage = CosmosMessage.THORChainSend.with {

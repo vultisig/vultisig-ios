@@ -153,6 +153,10 @@ class SolanaService {
     func fetchSolanaTokenInfoList(contractAddresses: [String]) async throws
     -> [String: SolanaFmTokenInfo]
     {
+        guard !contractAddresses.isEmpty else {
+            return [:]
+        }
+        
         do {
             let urlString = Endpoint.solanaTokenInfoServiceRpc
             let body: [String: Any] = ["tokens": contractAddresses]
@@ -177,8 +181,12 @@ class SolanaService {
                 tokenAddress: contractAddress)
             let dataResponse = try await Utils.asyncGetRequest(
                 urlString: urlString, headers: [:])
-            let tokenInfo = try JSONDecoder().decode(
-                SolanaJupiterToken.self, from: dataResponse)
+            // API returns an array, take the first element
+            let tokenInfos = try JSONDecoder().decode(
+                [SolanaJupiterToken].self, from: dataResponse)
+            guard let tokenInfo = tokenInfos.first else {
+                throw NSError(domain: "SolanaService", code: -1, userInfo: [NSLocalizedDescriptionKey: "No token info found for address: \(contractAddress)"])
+            }
             return tokenInfo
         } catch let error as NSError {
             if error.code == 429 {
@@ -365,31 +373,18 @@ class SolanaService {
     
     func fetchTokens(for walletAddress: String) async throws -> [CoinMeta] {
         do {
-            let accounts: [SolanaTokenAccount] =
-            try await fetchTokenAccountsByOwner(for: walletAddress)
+            let accounts: [SolanaTokenAccount] = try await fetchTokenAccountsByOwner(for: walletAddress)
+            
+            guard !accounts.isEmpty else {
+                return []
+            }
+            
             let tokenAddresses = accounts.map {
                 $0.account.data.parsed.info.mint
             }
             
-            var coinMetaList = [CoinMeta]()
-            for tokenAddress in tokenAddresses {
-                let jupiterTokenInfo: SolanaJupiterToken =
-                try await fetchSolanaJupiterTokenInfoList(
-                    contractAddress: tokenAddress)
-                let coinMeta = CoinMeta(
-                    chain: .solana,
-                    ticker: jupiterTokenInfo.symbol ?? "",
-                    logo: jupiterTokenInfo.logoURI?.description ?? "",
-                    decimals: jupiterTokenInfo.decimals ?? 0,
-                    priceProviderId: jupiterTokenInfo.extensions?.coingeckoId ?? "",
-                    contractAddress: tokenAddress,
-                    isNativeToken: false
-                )
-                coinMetaList.append(coinMeta)
-                
-            }
-            
-            return coinMetaList
+            let tokens = try await fetchTokensInfos(for: tokenAddresses)
+            return tokens
         } catch {
             print("Error in fetchTokens: \(error)")
             throw error
@@ -399,57 +394,47 @@ class SolanaService {
     func fetchTokensInfos(for contractAddresses: [String]) async throws
     -> [CoinMeta]
     {
-        do {
-            // Fetch token info from the first provider
-            let tokenInfos = try await fetchSolanaTokenInfoList(
-                contractAddresses: contractAddresses)
-            
-            var coinMetaList = [CoinMeta]()
-            
-            for contractAddress in contractAddresses {
+        guard !contractAddresses.isEmpty else {
+            return []
+        }
+        
+        let tokenInfos = try await fetchSolanaTokenInfoList(contractAddresses: contractAddresses)
+        
+        var coinMetaList = [CoinMeta]()
+        
+        for contractAddress in contractAddresses {
+            do {
                 if let tokenInfo = tokenInfos[contractAddress] {
                     let coinMeta = CoinMeta(
                         chain: .solana,
-                        ticker: tokenInfo.tokenMetadata.onChainInfo.symbol,
-                        logo: tokenInfo.tokenList.image.description,
-                        decimals: tokenInfo.decimals,
-                        priceProviderId: tokenInfo.tokenList.extensions?
-                            .coingeckoId ?? .empty,
+                        ticker: tokenInfo.tokenMetadata?.onChainInfo?.symbol ?? tokenInfo.tokenList?.symbol ?? "",
+                        logo: tokenInfo.tokenList?.image ?? "",
+                        decimals: tokenInfo.decimals ?? 0,
+                        priceProviderId: tokenInfo.tokenList?.extensions?.coingeckoId ?? "",
                         contractAddress: contractAddress,
                         isNativeToken: false
                     )
                     coinMetaList.append(coinMeta)
                 } else {
-                    // Fetch from second provider if not found
-                    let jupiterTokenInfo: SolanaJupiterToken =
-                    try await fetchSolanaJupiterTokenInfoList(
+                    let jupiterTokenInfo = try await fetchSolanaJupiterTokenInfoList(
                         contractAddress: contractAddress)
                     let coinMeta = CoinMeta(
                         chain: .solana,
                         ticker: jupiterTokenInfo.symbol ?? "",
-                        logo: jupiterTokenInfo.logoURI?.description ?? "",
+                        logo: jupiterTokenInfo.logoURI ?? "",
                         decimals: jupiterTokenInfo.decimals ?? 0,
-                        priceProviderId: jupiterTokenInfo.extensions?
-                            .coingeckoId ?? "",
+                        priceProviderId: jupiterTokenInfo.extensions?.coingeckoId ?? "",
                         contractAddress: contractAddress,
                         isNativeToken: false
                     )
                     coinMetaList.append(coinMeta)
                 }
+            } catch {
+                continue
             }
-            
-            return coinMetaList
-        } catch let error as NSError {
-            if error.code == 429 {
-                print("Error in fetchTokensInfos: Rate limit exceeded (429)")
-            } else {
-                print("Error in fetchTokensInfos: \(error.localizedDescription) (Code: \(error.code))")
-            }
-            throw error
-        } catch {
-            print("Error in fetchTokensInfos: \(error)")
-            throw error
         }
+        
+        return coinMetaList
     }
     
     func fetchHighPriorityFee(account: String) async throws -> UInt64 {

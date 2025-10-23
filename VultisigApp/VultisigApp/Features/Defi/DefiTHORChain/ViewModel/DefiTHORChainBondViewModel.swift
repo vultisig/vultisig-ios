@@ -15,6 +15,7 @@ final class DefiTHORChainBondViewModel: ObservableObject {
 
     private let thorchainAPIService = THORChainAPIService()
     
+    // TODO: - ADD VULTI NODES
     let vultiNodeAddresses: [String] = [
         "thor1fpyaj39rdlc5f80kulq55tqlvku4t66gq5pvqk"
     ]
@@ -31,13 +32,10 @@ final class DefiTHORChainBondViewModel: ObservableObject {
         guard let runeCoin = vault.coins.first(where: { $0.isRune }) else {
             return
         }
-
+        
         await MainActor.run {
             isLoading = true
         }
-
-        // Update balance
-        await BalanceService.shared.updateBalance(for: runeCoin)
 
         do {
             // Fetch network-wide bond info once (APY and next churn date)

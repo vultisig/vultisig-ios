@@ -71,6 +71,17 @@ struct SwapService {
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount
             )
+        case .thorchainStagenet:
+            return try await fetchCrossChainQuote(
+                service: ThorchainStagenetService.shared, 
+                provider: provider,
+                amount: amount,
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                isAffiliate: isAffiliate,
+                referredCode: referredCode,
+                vultTierDiscount: vultTierDiscount
+            )
         case .mayachain:
             return try await fetchCrossChainQuote(
                 service: MayachainService.shared,
@@ -161,6 +172,8 @@ private extension SwapService {
             switch service {
             case _ as ThorchainService:
                 return .thorchain(quote)
+            case _ as ThorchainStagenetService:
+                return .thorchainStagenet(quote)
             case _ as MayachainService:
                 return .mayachain(quote)
             default:

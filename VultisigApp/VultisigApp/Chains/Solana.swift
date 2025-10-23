@@ -11,20 +11,27 @@ import BigInt
 enum SolanaHelper {
     
     static let defaultFeeInLamports: BigInt = 1000000 //0.001
+    static let priorityFeePrice: UInt64 = 1_000_000 // Priority fee price in lamports
+    static let priorityFeeLimit: BigInt = 100_000 // Priority fee compute unit limit
     
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard keysignPayload.coin.chain.ticker == "SOL" else {
             throw HelperError.runtimeError("coin is not SOL")
         }
-        guard case .Solana(let recentBlockHash, _, let fromAddressPubKey, let toAddressPubKey, let tokenProgramId) = keysignPayload.chainSpecific else {
+        guard case .Solana(let recentBlockHash, _, let priorityLimit, let fromAddressPubKey, let toAddressPubKey, let tokenProgramId) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get to address")
         }
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .solana) else {
             throw HelperError.runtimeError("fail to get to address")
         }
         
-        let priorityFeePrice = 1_000_000; // Turbo fee in lamports, around 5 cents
-        let priorityFeeLimit = UInt32(100_000);
+        // Use default priority limit if not provided (backward compatibility)
+        let effectivePriorityLimit = priorityLimit > 0 ? priorityLimit : SolanaHelper.priorityFeeLimit
+        
+        guard effectivePriorityLimit <= UInt32.max else {
+            throw HelperError.runtimeError("priorityLimit exceeds UInt32 bounds: \(effectivePriorityLimit)")
+        }
+        let priorityFeeLimitValue = UInt32(truncatingIfNeeded: effectivePriorityLimit)
         
         if keysignPayload.coin.isNativeToken {
             let input = SolanaSigningInput.with {
@@ -36,13 +43,13 @@ enum SolanaHelper {
                         $0.memo = memo
                     }
                 }
-                $0.recentBlockhash = recentBlockHash // DKLS should fix it. Using the same, since fetching the latest block hash won't match with Win and Android
+                $0.recentBlockhash = recentBlockHash
                 $0.sender = keysignPayload.coin.address
                 $0.priorityFeePrice = SolanaPriorityFeePrice.with {
-                    $0.price = UInt64(priorityFeePrice)
+                    $0.price = SolanaHelper.priorityFeePrice
                 }
                 $0.priorityFeeLimit = SolanaPriorityFeeLimit.with {
-                    $0.limit = priorityFeeLimit
+                    $0.limit = priorityFeeLimitValue
                 }
             }
             return try input.serializedData()
@@ -67,10 +74,10 @@ enum SolanaHelper {
                     $0.recentBlockhash = recentBlockHash
                     $0.sender = keysignPayload.coin.address
                     $0.priorityFeePrice = SolanaPriorityFeePrice.with {
-                        $0.price = UInt64(priorityFeePrice)
+                        $0.price = SolanaHelper.priorityFeePrice
                     }
                     $0.priorityFeeLimit = SolanaPriorityFeeLimit.with {
-                        $0.limit = priorityFeeLimit
+                        $0.limit = priorityFeeLimitValue
                     }
                 }
                 
@@ -110,10 +117,10 @@ enum SolanaHelper {
                     $0.recentBlockhash = recentBlockHash
                     $0.sender = keysignPayload.coin.address
                     $0.priorityFeePrice = SolanaPriorityFeePrice.with {
-                        $0.price = UInt64(priorityFeePrice)
+                        $0.price = SolanaHelper.priorityFeePrice
                     }
                     $0.priorityFeeLimit = SolanaPriorityFeeLimit.with {
-                        $0.limit = priorityFeeLimit
+                        $0.limit = priorityFeeLimitValue
                     }
                 }
                 

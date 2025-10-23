@@ -90,6 +90,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         switch tx.quote {
         case .thorchain:
             return Endpoint.getSwapProgressURL(txid: hash)
+        case .thorchainStagenet:
+            return Endpoint.getStagenetSwapProgressURL(txid: hash)
         case .mayachain:
             return Endpoint.getMayaSwapTracker(txid: hash)
         case .lifi:
@@ -279,6 +281,24 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                     swapPayload: .thorchain(tx.buildThorchainSwapPayload(
                         quote: quote,
                         provider: .thorchain
+                    )),
+                    approvePayload: buildApprovePayload(tx: tx),
+                    vault: vault
+                )
+                
+                return true
+                
+            case .thorchainStagenet(let quote):
+                let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
+                keysignPayload = try await KeysignPayloadFactory().buildTransfer(
+                    coin: tx.fromCoin,
+                    toAddress: toAddress,
+                    amount: tx.amountInCoinDecimal,
+                    memo: quote.memo,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .thorchainStagenet(tx.buildThorchainSwapPayload(
+                        quote: quote,
+                        provider: .thorchainStagenet
                     )),
                     approvePayload: buildApprovePayload(tx: tx),
                     vault: vault

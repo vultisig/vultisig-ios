@@ -207,7 +207,7 @@ extension SwapPayload {
     
     func mapToProtobuff() -> VSKeysignPayload.OneOf_SwapPayload {
         switch self {
-        case .thorchain(let payload):
+        case .thorchain(let payload), .thorchainStagenet(let payload):
             return .thorchainSwapPayload(.with {
                 $0.fromAddress = payload.fromAddress
                 $0.fromCoin = ProtoCoinResolver.proto(from: payload.fromCoin)
@@ -308,6 +308,7 @@ extension BlockChainSpecific {
             self = .Solana(
                 recentBlockHash: value.recentBlockHash,
                 priorityFee: BigInt(stringLiteral: value.priorityFee),
+                priorityLimit: value.hasComputeLimit ? BigInt(stringLiteral: value.computeLimit) : BigInt(0),
                 fromAddressPubKey: value.fromTokenAssociatedAddress.isEmpty ? nil : value.fromTokenAssociatedAddress,
                 toAddressPubKey: value.toTokenAssociatedAddress.isEmpty ? nil : value.toTokenAssociatedAddress,
                 hasProgramId: value.programID
@@ -415,10 +416,11 @@ extension BlockChainSpecific {
                     $0.latestBlock = ibc?.height ?? "0"
                 }
             })
-        case .Solana(let recentBlockHash, let priorityFee, let fromTokenAssociatedAddress, let toTokenAssociatedAddress, let tokenProgramId):
+        case .Solana(let recentBlockHash, let priorityFee, let priorityLimit, let fromTokenAssociatedAddress, let toTokenAssociatedAddress, let tokenProgramId):
             return .solanaSpecific(.with {
                 $0.recentBlockHash = recentBlockHash
                 $0.priorityFee = String(priorityFee)
+                $0.computeLimit = String(priorityLimit)
                 $0.fromTokenAssociatedAddress = fromTokenAssociatedAddress ?? .empty
                 $0.toTokenAssociatedAddress = toTokenAssociatedAddress ?? .empty
                 $0.programID = tokenProgramId

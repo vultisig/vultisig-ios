@@ -45,8 +45,8 @@ class SolanaSwaps {
         keysignPayload: KeysignPayload
     ) throws -> Data {
         
-        guard case .Solana(let recentBlockHash, _, _, _, _) = keysignPayload.chainSpecific else {
-            throw HelperError.runtimeError("fail to get Solana chain specific")
+        guard case .Solana(let recentBlockHash, _, _, _, _, _) = keysignPayload.chainSpecific else {
+            throw HelperError.runtimeError("Invalid Solana chain specific data")
         }
         
         guard keysignPayload.coin.chain == .solana else {

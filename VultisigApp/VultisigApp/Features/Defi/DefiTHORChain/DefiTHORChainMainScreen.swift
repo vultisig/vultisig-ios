@@ -11,14 +11,17 @@ struct DefiTHORChainMainScreen: View {
     @ObservedObject var vault: Vault
     let group: GroupedChain
     
-    @StateObject var viewModel = DefiTHORChainMainViewModel()
+    @StateObject var viewModel: DefiTHORChainMainViewModel
     @StateObject var bondViewModel: DefiTHORChainBondViewModel
+    @StateObject var lpsViewModel: DefiTHORChainLPsViewModel
     @State private var showPositionSelection = false
     
     init(vault: Vault, group: GroupedChain) {
         self.vault = vault
         self.group = group
         self._bondViewModel = StateObject(wrappedValue: DefiTHORChainBondViewModel(vault: vault))
+        self._lpsViewModel = StateObject(wrappedValue: DefiTHORChainLPsViewModel(vault: vault))
+        self._viewModel = StateObject(wrappedValue: DefiTHORChainMainViewModel(vault: vault))
     }
     
     var body: some View {
@@ -34,9 +37,11 @@ struct DefiTHORChainMainScreen: View {
         }
         .overlay(bottomGradient, alignment: .bottom)
         .onLoad { Task { await refresh() } }
-        .refreshable(action: refresh)
+        .refreshable { await refresh() }
         .onChange(of: vault) { _, vault in
+            viewModel.update(vault: vault)
             bondViewModel.update(vault: vault)
+            lpsViewModel.update(vault: vault)
         }
     }
     
@@ -76,11 +81,16 @@ struct DefiTHORChainMainScreen: View {
                     }
                 )
             case .liquidityPool:
-                DefiTHORChainLPsView(vault: vault) { _ in
-                    // TODO: - Redirect to remove LP
-                } onAdd: { _ in
-                    // TODO: - Redirect to add LP
-                }
+                DefiTHORChainLPsView(
+                    vault: vault,
+                    viewModel: lpsViewModel,
+                    onRemove: { _ in
+                        // TODO: - Redirect to remove LP
+                    },
+                    onAdd: { _ in
+                        // TODO: - Redirect to add LP
+                    }
+                )
 
             }
         }
@@ -129,7 +139,10 @@ private extension DefiTHORChainMainScreen {
 
 private extension DefiTHORChainMainScreen {
     func refresh() async {
+        // TODO: - Refresh per tab
+        await viewModel.refresh()
         await bondViewModel.refresh()
+        await lpsViewModel.refresh()
     }
 }
 

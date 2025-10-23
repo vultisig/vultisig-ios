@@ -61,7 +61,7 @@ final class ChainHelperTests: XCTestCase {
         }
         let incrementNonce = keysignPayload.approvePayload != nil
         switch keysignPayload.swapPayload {
-        case .thorchain(let swapPayload):
+        case .thorchain(let swapPayload), .thorchainStagenet(let swapPayload):
             let swaps = THORChainSwaps(vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode, vaultHexPublicKeyEdDSA: "")
             let imageHash = try swaps.getPreSignedImageHash(swapPayload: swapPayload,
                                                             keysignPayload: keysignPayload,
