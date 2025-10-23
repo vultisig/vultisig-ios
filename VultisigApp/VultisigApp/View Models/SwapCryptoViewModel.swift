@@ -162,9 +162,9 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             return "\((Decimal(gasValue) / weiPerGWeiDecimal).formatToDecimal(digits: 0).description) \(coin.chain.feeUnit)"
         } else if coin.chain.chainType == .UTXO {
             // for UTXO chains , we use transaction plan to get the transaction fee in total
-            return "\((Decimal(gasValue) / pow(10 ,decimals)).formatToDecimal(digits: decimals).description) \(coin.chain.ticker)"
+            return "\((Decimal(gasValue) / pow(10 ,decimals)).formatToDecimal(digits: decimals).description) \(coin.ticker)"
         } else {
-            return "\((Decimal(gasValue) / pow(10 ,decimals)).formatToDecimal(digits: decimals).description) \(coin.chain.feeUnit)"
+            return "\((Decimal(gasValue) / pow(10 ,decimals)).formatToDecimal(digits: decimals).description) \(coin.ticker)"
         }
     }
     
@@ -531,13 +531,9 @@ private extension SwapCryptoViewModel {
     }
     
     func feeCoin(tx: SwapTransaction) -> Coin {
-        switch tx.fromCoin.chainType {
-        case .UTXO: // UTXO chains should only have 1 coin per chain
-            return tx.fromCoin
-        case .EVM, .Solana , .THORChain , .Cosmos,.Polkadot,.Sui,.Ton,.Cardano,.Ripple,.Tron:
-            guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
-            return tx.fromCoins.first(where: { $0.chain == tx.fromCoin.chain && $0.isNativeToken }) ?? tx.fromCoin
-        }
+        // Fees are always paid in native token
+        guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
+        return tx.fromCoins.first(where: { $0.chain == tx.fromCoin.chain && $0.isNativeToken }) ?? tx.fromCoin
     }
     
     func thorchainFee(for chainSpecific: BlockChainSpecific, tx: SwapTransaction, vault: Vault) async throws -> BigInt {

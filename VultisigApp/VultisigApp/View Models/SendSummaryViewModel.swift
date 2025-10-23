@@ -39,13 +39,9 @@ class SendSummaryViewModel: ObservableObject {
     }
     
     private func feeCoin(tx: SwapTransaction) -> Coin {
-        switch tx.fromCoin.chainType {
-        case .UTXO, .Solana, .THORChain, .Cosmos, .Polkadot, .Sui, .Ton, .Cardano, .Ripple, .Tron:
-            return tx.fromCoin
-        case .EVM:
-            guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
-            return tx.fromCoins.first(where: { $0.chain == tx.fromCoin.chain && $0.isNativeToken }) ?? tx.fromCoin
-        }
+        // Fees are always paid in native token
+        guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
+        return tx.fromCoins.first(where: { $0.chain == tx.fromCoin.chain && $0.isNativeToken }) ?? tx.fromCoin
     }
     
     func feesInReadable(tx: SendTransaction, vault: Vault) -> String {
