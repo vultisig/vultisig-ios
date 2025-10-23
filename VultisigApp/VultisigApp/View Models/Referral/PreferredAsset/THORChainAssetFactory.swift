@@ -37,7 +37,7 @@ enum THORChainAssetFactory {
                 chain: appChain,
                 ticker: symbol.uppercased(),
                 logo: symbol.lowercased(),
-                decimals: decimals ?? 6,
+                decimals: decimals ?? 8,
                 priceProviderId: "",
                 contractAddress: contractAddress,
                 isNativeToken: contractAddress.isEmpty

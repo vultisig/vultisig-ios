@@ -63,10 +63,12 @@ struct DefiTHORChainSelectPositionsScreen: View {
     }
     
     func add(asset: CoinMeta, section: Int) {
+        guard selection.indices.contains(section) else { return }
         selection[section] = selection[section] + [asset]
     }
     
     func remove(asset: CoinMeta, section: Int) {
+        guard selection.indices.contains(section) else { return }
         selection[section] = selection[section].filter { $0 != asset }
     }
     
