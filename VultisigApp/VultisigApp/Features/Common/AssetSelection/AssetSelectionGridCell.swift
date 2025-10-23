@@ -62,6 +62,7 @@ struct AssetSelectionGridCell: View {
                     )).fill(Theme.colors.border)
                 )
             RoundedRectangle(cornerRadius: 24)
+                .inset(by: 1)
                 .strokeBorder(Theme.colors.border, lineWidth: 1.5)
         }
     }

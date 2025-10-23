@@ -22,4 +22,15 @@ enum THORChainPositionType: String, CaseIterable, Hashable, Identifiable {
             "lps".localized
         }
     }
+    
+    var sectionTitle: String {
+        switch self {
+        case .bond:
+            "bond".localized
+        case .stake:
+            "stake".localized
+        case .liquidityPool:
+            "liquidityPools".localized
+        }
+    }
 }

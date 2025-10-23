@@ -34,7 +34,7 @@ struct TokenSelectionScreen: View {
             subtitle: "selectTokensSubtitle".localized,
             isPresented: $isPresented,
             searchText: $tokenViewModel.searchText,
-            elements: elements,
+            elements: [AssetSection(assets: elements)],
             onSave: onSave,
             cellBuilder: cellBuilder,
             emptyStateBuilder: { EmptyView() }
@@ -51,7 +51,7 @@ struct TokenSelectionScreen: View {
     }
     
     @ViewBuilder
-    func cellBuilder(_ asset: TokenSelectionAsset) -> some View {
+    func cellBuilder(_ asset: TokenSelectionAsset, _ index: Int) -> some View {
         switch asset {
         case .custom:
             CustomTokenGridCell(action: onCustomToken)

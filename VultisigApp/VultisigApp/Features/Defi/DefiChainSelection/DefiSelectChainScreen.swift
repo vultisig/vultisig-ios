@@ -21,9 +21,9 @@ struct DefiSelectChainScreen: View {
             title: "selectChains".localized,
             isPresented: $isPresented,
             searchText: $viewModel.searchText,
-            elements: viewModel.filteredChains,
+            elements: [AssetSection(assets: viewModel.filteredChains)],
             onSave: onSaveInternal
-        ) { asset in
+        ) { asset, _ in
             DefiChainSelectionGridCell(
                 chain: asset,
                 viewModel: viewModel,

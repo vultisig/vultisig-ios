@@ -7,14 +7,24 @@
 
 import SwiftUI
 
+struct AssetSection<Asset: Hashable> {
+    let title: String?
+    let assets: [Asset]
+    
+    init(title: String? = nil, assets: [Asset]) {
+        self.title = title
+        self.assets = assets
+    }
+}
+
 struct AssetSelectionContainerScreen<Asset: Hashable, CellView: View, EmptyStateView: View>: View {
     let title: String
     let subtitle: String?
     @Binding var isPresented: Bool
     @Binding var searchText: String
-    let elements: [Asset]
+    let elements: [AssetSection<Asset>]
     var onSave: () -> Void
-    var cellBuilder: (Asset) -> CellView
+    var cellBuilder: (Asset, Int) -> CellView
     var emptyStateBuilder: () -> EmptyStateView
     
     @State var searchBarFocused: Bool = false
@@ -24,9 +34,9 @@ struct AssetSelectionContainerScreen<Asset: Hashable, CellView: View, EmptyState
         subtitle: String? = nil,
         isPresented: Binding<Bool>,
         searchText: Binding<String>,
-        elements: [Asset],
+        elements: [AssetSection<Asset>],
         onSave: @escaping () -> Void,
-        cellBuilder: @escaping (Asset) -> CellView,
+        cellBuilder: @escaping (Asset, Int) -> CellView,
         emptyStateBuilder: @escaping () -> EmptyStateView
     ) {
         self.title = title
@@ -49,9 +59,10 @@ struct AssetSelectionContainerScreen<Asset: Hashable, CellView: View, EmptyState
                             emptyStateBuilder()
                         } else {
                             ScrollView(showsIndicators: false) {
-                                chainsGrid
+                                grid
                             }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .safeAreaInset(edge: .bottom, content: { Spacer().frame(height: 64) })
+                            .safeAreaInset(edge: .top, content: { Spacer().frame(height: 8) })
                         }
                     }
                     .transition(.opacity)
@@ -107,7 +118,7 @@ struct AssetSelectionContainerScreen<Asset: Hashable, CellView: View, EmptyState
                     .font(Theme.fonts.bodySMedium)
                     .multilineTextAlignment(.leading)
             }
-
+            
             HStack(spacing: 12) {
                 SearchTextField(value: $searchText, isFocused: $searchBarFocused)
                 Button {
@@ -127,21 +138,25 @@ struct AssetSelectionContainerScreen<Asset: Hashable, CellView: View, EmptyState
     }
     
     @ViewBuilder
-    var chainsGrid: some View {
+    var grid: some View {
         let spacing: CGFloat = 16
         let gridItem = GridItem(.flexible(), spacing: spacing)
-        LazyVGrid(
-            columns: Array.init(repeating: gridItem, count: 4),
-            spacing: spacing
-        ) {
-            ForEach(elements, id: \.self) { element in
-                cellBuilder(element)
+        ForEach(elements.indices, id: \.self) { index in
+            let section = elements[index]
+            VStack(alignment: .leading, spacing: 8) {
+                if let title = section.title {
+                    Text(title)
+                        .foregroundStyle(Theme.colors.textExtraLight)
+                        .font(Theme.fonts.footnote)
+                }
+                LazyVGrid(columns: Array.init(repeating: gridItem, count: 4), spacing: spacing) {
+                    ForEach(elements[index].assets, id: \.self) { element in
+                        cellBuilder(element, index)
+                    }
+                }
             }
+            .padding(.bottom, 16)
         }
-        .padding(.horizontal, 2)
-        .padding(.top, 8)
-        .padding(.bottom, 64)
-        .frame(maxWidth: .infinity)
     }
 }
 
@@ -150,9 +165,9 @@ struct AssetSelectionContainerScreen<Asset: Hashable, CellView: View, EmptyState
         title: "Select chains",
         isPresented: .constant(true),
         searchText: .constant(""),
-        elements: [Coin.example],
+        elements: [AssetSection(title: nil, assets: [ Coin.example])],
         onSave: {},
-        cellBuilder: { _ in ChainSelectionGridCell(assets: [.example], onSelection: { _ in }) },
+        cellBuilder: { _, _ in ChainSelectionGridCell(assets: [.example], onSelection: { _ in }) },
         emptyStateBuilder: { EmptyView() }
     )
 }

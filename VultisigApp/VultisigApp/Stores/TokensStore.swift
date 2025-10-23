@@ -1659,15 +1659,7 @@ class TokensStore {
             contractAddress: "uusd",
             isNativeToken: false
         ),
-        CoinMeta(
-            chain: .thorChain,
-            ticker: "RUNE",
-            logo: "rune",
-            decimals: 8,
-            priceProviderId: "thorchain",
-            contractAddress: "",
-            isNativeToken: true
-        ),
+        rune,
         CoinMeta(
             chain: .thorChainStagenet,
             ticker: "RUNE",
@@ -1677,33 +1669,9 @@ class TokensStore {
             contractAddress: "",
             isNativeToken: true
         ),
-        CoinMeta(
-            chain: .thorChain,
-            ticker: "TCY",
-            logo: "tcy",
-            decimals: 8,
-            priceProviderId: "tcy",
-            contractAddress: "tcy",
-            isNativeToken: false
-        ),
-        CoinMeta(
-            chain: .thorChain,
-            ticker: "sTCY",
-            logo: "sTCY", // Use same logo as TCY
-            decimals: 8,
-            priceProviderId: "tcy",
-            contractAddress: "x/staking-tcy",
-            isNativeToken: false
-        ),
-        CoinMeta(
-            chain: .thorChain,
-            ticker: "RUJI",
-            logo: "xruji",
-            decimals: 8,
-            priceProviderId: "rujira",
-            contractAddress: "x/ruji",
-            isNativeToken: false
-        ),
+        tcy,
+        stcy,
+        ruji,
         CoinMeta(
             chain: .thorChain,
             ticker: "KUJI",
@@ -1758,24 +1726,8 @@ class TokensStore {
             contractAddress: "thor.rkuji",
             isNativeToken: false
         ),
-        CoinMeta(
-            chain: .thorChain,
-            ticker: "yRUNE",
-            logo: "yRUNE",
-            decimals: 8,
-            priceProviderId: "",
-            contractAddress: "x/nami-index-nav-thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt-rcpt",
-            isNativeToken: false
-        ),
-        CoinMeta(
-            chain: .thorChain,
-            ticker: "yTCY",
-            logo: "yTCY",
-            decimals: 8,
-            priceProviderId: "",
-            contractAddress: "x/nami-index-nav-thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px-rcpt",
-            isNativeToken: false
-        ),
+        yrune,
+        ytcy,
         CoinMeta(
             chain: .ton,
             ticker: "TON",
@@ -1822,4 +1774,64 @@ class TokensStore {
             isNativeToken: true
         ),
     ]
+    
+    static let rune: CoinMeta = CoinMeta(
+        chain: .thorChain,
+        ticker: "RUNE",
+        logo: "rune",
+        decimals: 8,
+        priceProviderId: "thorchain",
+        contractAddress: "",
+        isNativeToken: true
+    )
+    
+    static let tcy: CoinMeta = CoinMeta(
+        chain: .thorChain,
+        ticker: "TCY",
+        logo: "tcy",
+        decimals: 8,
+        priceProviderId: "tcy",
+        contractAddress: "tcy",
+        isNativeToken: false
+    )
+    
+    static let ruji: CoinMeta = CoinMeta(
+        chain: .thorChain,
+        ticker: "RUJI",
+        logo: "xruji",
+        decimals: 8,
+        priceProviderId: "rujira",
+        contractAddress: "x/ruji",
+        isNativeToken: false
+    )
+    
+    static let stcy: CoinMeta = CoinMeta(
+        chain: .thorChain,
+        ticker: "sTCY",
+        logo: "sTCY", // Use same logo as TCY
+        decimals: 8,
+        priceProviderId: "tcy",
+        contractAddress: "x/staking-tcy",
+        isNativeToken: false
+    )
+    
+    static let yrune: CoinMeta = CoinMeta(
+        chain: .thorChain,
+        ticker: "yRUNE",
+        logo: "yRUNE",
+        decimals: 8,
+        priceProviderId: "",
+        contractAddress: "x/nami-index-nav-thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt-rcpt",
+        isNativeToken: false
+    )
+
+    static let ytcy: CoinMeta = CoinMeta(
+        chain: .thorChain,
+        ticker: "yTCY",
+        logo: "yTCY",
+        decimals: 8,
+        priceProviderId: "",
+        contractAddress: "x/nami-index-nav-thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px-rcpt",
+        isNativeToken: false
+    )
 }

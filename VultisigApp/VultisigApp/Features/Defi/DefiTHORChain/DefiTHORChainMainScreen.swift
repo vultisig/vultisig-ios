@@ -36,12 +36,21 @@ struct DefiTHORChainMainScreen: View {
             }
         }
         .overlay(bottomGradient, alignment: .bottom)
-        .onLoad { Task { await refresh() } }
+        .onLoad {
+            viewModel.onLoad()
+            Task { await refresh() }
+        }
         .refreshable { await refresh() }
         .onChange(of: vault) { _, vault in
             viewModel.update(vault: vault)
             bondViewModel.update(vault: vault)
             lpsViewModel.update(vault: vault)
+        }
+        .crossPlatformSheet(isPresented: $showPositionSelection) {
+            DefiTHORChainSelectPositionsScreen(
+                viewModel: viewModel,
+                isPresented: $showPositionSelection
+            )
         }
     }
     
