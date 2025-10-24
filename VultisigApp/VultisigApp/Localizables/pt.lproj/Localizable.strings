@@ -944,6 +944,8 @@
 "position" = "Posição";
 "remove" = "Remover";
 "add" = "Adicionar";
+"mint" = "Cunhar";
+"redeem" = "Resgatar";
 "selectPositions" = "Selecionar posições";
 "selectPositionsSubtitle" = "Habilite pelo menos uma posição para visualizar saldos e gerenciar posições.";
 "liquidityPools" = "Pools de liquidez";

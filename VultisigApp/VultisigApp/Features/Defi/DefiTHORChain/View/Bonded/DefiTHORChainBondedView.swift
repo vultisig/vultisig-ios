@@ -11,6 +11,7 @@ struct DefiTHORChainBondedView<EmptyStateView: View>: View {
     @ObservedObject var viewModel: DefiTHORChainBondViewModel
 
     let coin: Coin
+    @Binding var loadingBalances: Bool
     var onBond: (BondNode?) -> Void
     var onUnbond: (BondNode) -> Void
     var emptyStateView: () -> EmptyStateView
@@ -22,10 +23,16 @@ struct DefiTHORChainBondedView<EmptyStateView: View>: View {
     var bondedBalance: String {
         coin.defiBalanceStringWithTicker
     }
+    
+    var showLoading: Bool {
+        loadingBalances && !viewModel.setupDone
+    }
         
     var body: some View {
         LazyVStack(spacing: 14) {
-            if viewModel.hasBondPositions {
+            if showLoading {
+                DefiTHORChainBondedSkeletonView()
+            } else if viewModel.hasBondPositions {
                 bondedSection
                 activeNodesSection
                 availableNodesSection
@@ -93,6 +100,7 @@ struct DefiTHORChainBondedView<EmptyStateView: View>: View {
     DefiTHORChainBondedView(
         viewModel: DefiTHORChainBondViewModel(vault: .example),
         coin: Coin.example,
+        loadingBalances: .constant(false),
         onBond: { _ in },
         onUnbond: { _ in },
         emptyStateView: { EmptyView() }

@@ -944,6 +944,8 @@
 "position" = "Posizione";
 "remove" = "Rimuovi";
 "add" = "Aggiungi";
+"mint" = "Conia";
+"redeem" = "Riscatta";
 "selectPositions" = "Seleziona posizioni";
 "selectPositionsSubtitle" = "Abilita almeno una posizione per visualizzare i saldi e gestire le posizioni.";
 "liquidityPools" = "Pool di liquidità";

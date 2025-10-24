@@ -10,27 +10,29 @@ import SwiftUI
 struct DefiTHORChainLPsView<EmptyStateView: View>: View {
     @ObservedObject var vault: Vault
     @ObservedObject var viewModel: DefiTHORChainLPsViewModel
+    @Binding var loadingBalances: Bool
     var onRemove: (LPPosition) -> Void
     var onAdd: (LPPosition) -> Void
     var emptyStateView: () -> EmptyStateView
     
+    var showLoading: Bool {
+        loadingBalances && !viewModel.setupDone
+    }
+    
     var body: some View {
         LazyVStack(spacing: 14) {
-            if viewModel.hasLPPositions {
-                if viewModel.isLoading {
-                    // Show skeleton views while loading
-                    ForEach(0..<3, id: \.self) { _ in
-                        DefiTHORChainLPPositionSkeletonView()
-                    }
-                } else {
-                    ForEach(viewModel.lpPositions) { position in
-                        DefiTHORChainLPPositionView(
-                            vault: vault,
-                            position: position,
-                            onRemove: { onRemove(position) },
-                            onAdd: { onAdd(position) }
-                        )
-                    }
+            if showLoading {
+                ForEach(0..<2, id: \.self) { _ in
+                    DefiTHORChainLPPositionSkeletonView()
+                }
+            } else if viewModel.hasLPPositions {
+                ForEach(viewModel.lpPositions) { position in
+                    DefiTHORChainLPPositionView(
+                        vault: vault,
+                        position: position,
+                        onRemove: { onRemove(position) },
+                        onAdd: { onAdd(position) }
+                    )
                 }
             } else {
                 emptyStateView()
@@ -43,6 +45,7 @@ struct DefiTHORChainLPsView<EmptyStateView: View>: View {
     DefiTHORChainLPsView(
         vault: .example,
         viewModel: DefiTHORChainLPsViewModel(vault: .example),
+        loadingBalances: .constant(false),
         onRemove: { _ in },
         onAdd: { _ in },
         emptyStateView: { EmptyView() }

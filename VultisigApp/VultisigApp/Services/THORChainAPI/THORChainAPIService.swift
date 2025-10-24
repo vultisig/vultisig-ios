@@ -132,6 +132,11 @@ struct THORChainAPIService {
 
         return data
     }
+
+    func getConstants() async throws -> ThorchainConstantsResponse {
+        let response = try await httpClient.request(THORChainAPI.getConstants, responseType: ThorchainConstantsResponse.self)
+        return response.data
+    }
 }
 
 
