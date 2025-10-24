@@ -100,7 +100,7 @@ private extension BalanceService {
             }
             
             // Handle TCY staked balance (includes both regular and auto-compound)
-            if coin.ticker.localizedCaseInsensitiveContains("tcy") {
+            if coin.ticker.caseInsensitiveCompare("TCY") == .orderedSame {
                 let service = ThorchainServiceFactory.getService(for: coin.chain)
                 let tcyStakedBalance = await service.fetchTcyStakedAmount(address: coin.address)
                 
