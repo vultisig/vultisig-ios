@@ -14,6 +14,7 @@ struct DefiTHORChainMainScreen: View {
     @StateObject var viewModel: DefiTHORChainMainViewModel
     @StateObject var bondViewModel: DefiTHORChainBondViewModel
     @StateObject var lpsViewModel: DefiTHORChainLPsViewModel
+    @StateObject var stakeViewModel: DefiTHORChainStakeViewModel
     @State private var showPositionSelection = false
     
     init(vault: Vault, group: GroupedChain) {
@@ -22,6 +23,7 @@ struct DefiTHORChainMainScreen: View {
         self._bondViewModel = StateObject(wrappedValue: DefiTHORChainBondViewModel(vault: vault))
         self._lpsViewModel = StateObject(wrappedValue: DefiTHORChainLPsViewModel(vault: vault))
         self._viewModel = StateObject(wrappedValue: DefiTHORChainMainViewModel(vault: vault))
+        self._stakeViewModel = StateObject(wrappedValue: DefiTHORChainStakeViewModel(vault: vault))
     }
     
     var body: some View {
@@ -36,12 +38,22 @@ struct DefiTHORChainMainScreen: View {
             }
         }
         .overlay(bottomGradient, alignment: .bottom)
-        .onLoad { Task { await refresh() } }
+        .onLoad {
+            viewModel.onLoad()
+            Task { await refresh() }
+        }
         .refreshable { await refresh() }
         .onChange(of: vault) { _, vault in
-            viewModel.update(vault: vault)
-            bondViewModel.update(vault: vault)
-            lpsViewModel.update(vault: vault)
+            update(vault: vault)
+        }
+        .onChange(of: vault.defiPositions) { _, _ in
+            Task { await refresh() }
+        }
+        .crossPlatformSheet(isPresented: $showPositionSelection) {
+            DefiTHORChainSelectPositionsScreen(
+                viewModel: viewModel,
+                isPresented: $showPositionSelection
+            )
         }
     }
     
@@ -62,14 +74,18 @@ struct DefiTHORChainMainScreen: View {
             case .bond:
                 DefiTHORChainBondedView(
                     viewModel: bondViewModel,
-                    coin: group.nativeCoin
-                ) { _ in
-                    // TODO: - Redirect to bond
-                } onUnbond: { _ in
-                    // TODO: - Redirect to unbond
-                }
+                    coin: group.nativeCoin,
+                    onBond: { _ in
+                        // TODO: - Redirect to bond
+                    },
+                    onUnbond: { _ in
+                        // TODO: - Redirect to unbond
+                    },
+                    emptyStateView: { emptyStateView }
+                )
             case .stake:
                 DefiTHORChainStakedView(
+                    viewModel: stakeViewModel,
                     onStake: { _ in
                         // TODO: - Redirect to stake
                     },
@@ -78,7 +94,8 @@ struct DefiTHORChainMainScreen: View {
                     },
                     onWithdraw: { _ in
                         // TODO: - Redirect to withdraw
-                    }
+                    },
+                    emptyStateView: { emptyStateView }
                 )
             case .liquidityPool:
                 DefiTHORChainLPsView(
@@ -89,7 +106,8 @@ struct DefiTHORChainMainScreen: View {
                     },
                     onAdd: { _ in
                         // TODO: - Redirect to add LP
-                    }
+                    },
+                    emptyStateView: { emptyStateView }
                 )
 
             }
@@ -97,6 +115,15 @@ struct DefiTHORChainMainScreen: View {
         .transition(.opacity)
         .animation(.easeInOut, value: viewModel.selectedPosition)
         .gesture(dragGesture)
+    }
+    
+    var emptyStateView: some View {
+        ActionBannerView(
+            title: "noPositionsSelectedTitle".localized,
+            subtitle: "noPositionsSelectedSubtitle".localized,
+            buttonTitle: "managePositions".localized,
+            action: { showPositionSelection.toggle() }
+        )
     }
 }
 
@@ -143,6 +170,14 @@ private extension DefiTHORChainMainScreen {
         await viewModel.refresh()
         await bondViewModel.refresh()
         await lpsViewModel.refresh()
+        await stakeViewModel.refresh()
+    }
+    
+    func update(vault: Vault) {
+        viewModel.update(vault: vault)
+        bondViewModel.update(vault: vault)
+        lpsViewModel.update(vault: vault)
+        stakeViewModel.update(vault: vault)
     }
 }
 

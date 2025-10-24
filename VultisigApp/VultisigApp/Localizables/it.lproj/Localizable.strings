@@ -944,3 +944,9 @@
 "position" = "Posizione";
 "remove" = "Rimuovi";
 "add" = "Aggiungi";
+"selectPositions" = "Seleziona posizioni";
+"selectPositionsSubtitle" = "Abilita almeno una posizione per visualizzare i saldi e gestire le posizioni.";
+"liquidityPools" = "Pool di liquidità";
+"noPositionsSelectedTitle" = "Nessuna posizione selezionata";
+"noPositionsSelectedSubtitle" = "Hai disabilitato tutte le posizioni per questa catena. Abilita almeno una posizione per visualizzare i saldi e gestire le azioni.";
+"managePositions" = "Gestisci posizioni";

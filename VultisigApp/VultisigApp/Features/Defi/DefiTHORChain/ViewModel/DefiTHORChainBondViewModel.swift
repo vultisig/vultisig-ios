@@ -12,6 +12,10 @@ final class DefiTHORChainBondViewModel: ObservableObject {
     @Published private(set) var activeBondedNodes: [ActiveBondedNode] = []
     @Published private(set) var availableNodes: [BondNode] = []
     @Published private(set) var isLoading: Bool = false
+    
+    var hasBondPositions: Bool {
+        vault.defiPositions.contains { $0.chain == .thorChain && !$0.bonds.isEmpty }
+    }
 
     private let thorchainAPIService = THORChainAPIService()
     
@@ -29,7 +33,7 @@ final class DefiTHORChainBondViewModel: ObservableObject {
     }
 
     func refresh() async {
-        guard let runeCoin = vault.coins.first(where: { $0.isRune }) else {
+        guard hasBondPositions, let runeCoin = vault.coins.first(where: { $0.isRune }) else {
             return
         }
         

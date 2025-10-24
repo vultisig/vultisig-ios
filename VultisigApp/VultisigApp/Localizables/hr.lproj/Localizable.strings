@@ -944,3 +944,9 @@
 "position" = "Pozicija";
 "remove" = "Ukloni";
 "add" = "Dodaj";
+"selectPositions" = "Odaberi pozicije";
+"selectPositionsSubtitle" = "Omogući barem jednu poziciju za prikaz stanja i upravljanje pozicijama.";
+"liquidityPools" = "Bazeni likvidnosti";
+"noPositionsSelectedTitle" = "Nema odabranih pozicija";
+"noPositionsSelectedSubtitle" = "Onemogućili ste sve pozicije za ovaj lanac. Omogućite barem jednu poziciju za prikaz stanja i upravljanje akcijama.";
+"managePositions" = "Upravljaj pozicijama";

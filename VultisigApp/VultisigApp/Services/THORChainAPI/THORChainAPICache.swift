@@ -26,6 +26,7 @@ actor THORChainAPICache {
     private var churnIntervalCache: CacheEntry<String>?
     private var networkInfoCache: CacheEntry<THORChainNetworkInfo>?
     private var healthCache: CacheEntry<THORChainHealth>?
+    private var poolsCache: CacheEntry<[THORChainPoolResponse]>?
     private var poolStatsCache: CacheEntry<[THORChainPoolStats]>?
     private var depthHistoryCache: [String: CacheEntry<THORChainDepthHistory>] = [:] // Key: "asset-interval-count"
     private var manualAPRCache: [String: CacheEntry<Decimal>] = [:] // Key: "asset-days"
@@ -96,6 +97,23 @@ actor THORChainAPICache {
 
     func invalidateHealth() {
         healthCache = nil
+    }
+
+    // MARK: - Pools Cache
+
+    func getCachedPools() -> [THORChainPoolResponse]? {
+        guard let entry = poolsCache, !entry.isExpired(duration: Self.cacheDuration) else {
+            return nil
+        }
+        return entry.value
+    }
+
+    func cachePools(_ pools: [THORChainPoolResponse]) {
+        poolsCache = CacheEntry(value: pools, timestamp: Date())
+    }
+
+    func invalidatePools() {
+        poolsCache = nil
     }
 
     // MARK: - Pool Stats Cache
@@ -172,6 +190,7 @@ actor THORChainAPICache {
         churnIntervalCache = nil
         networkInfoCache = nil
         healthCache = nil
+        poolsCache = nil
         poolStatsCache = nil
         depthHistoryCache.removeAll()
         manualAPRCache.removeAll()

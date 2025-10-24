@@ -166,7 +166,7 @@ extension THORChainAPIService {
     ///   - period: Optional time period for APR calculation (e.g., "30d", "100d"). Defaults to "30d".
     /// - Returns: Array of complete LP positions with current values and manually calculated APR from LUVI history
     /// - Note: API calls are made sequentially to respect rate limiting
-    func getLPPositions(address: String, period: String? = nil) async throws -> [THORChainLPPosition] {
+    func getLPPositions(address: String, userLPs: [CoinMeta], period: String? = nil) async throws -> [THORChainLPPosition] {
         // First, fetch all pool stats to get the list of available pools
         let poolStats = try await getPoolStats(period: period)
 
@@ -174,18 +174,26 @@ extension THORChainAPIService {
         let days = periodToDays(period)
 
         var positions: [THORChainLPPosition] = []
+        
+        // Filter pools by user selection
+        let userPools = poolStats.filter {
+            guard let poolCoin = THORChainAssetFactory.createCoin(from: $0.asset) else {
+                return false
+            }
+            return userLPs.contains(poolCoin)
+        }
 
         // Process each pool sequentially to respect API rate limiting
-        for poolStat in poolStats where poolStat.isAvailable {
+        for poolStat in userPools where poolStat.isAvailable {
             do {
                 // Fetch LP details for this specific pool
-                let lpDetails = try await getLiquidityProviderDetails(
+                let lpDetails = try? await getLiquidityProviderDetails(
                     assetId: poolStat.asset,
                     address: address
                 )
 
                 // Calculate manual APR from LUVI history
-                let manualAPR = try await calculateManualAPR(
+                let manualAPR = try? await calculateManualAPR(
                     asset: poolStat.asset,
                     days: days
                 )
@@ -193,14 +201,10 @@ extension THORChainAPIService {
                 let position = THORChainLPPosition(
                     liquidityProvider: lpDetails,
                     poolStats: poolStat,
-                    manualAPR: manualAPR
+                    manualAPR: manualAPR ?? 0
                 )
 
                 positions.append(position)
-            } catch {
-                // If the user doesn't have a position in this pool, the API will return an error
-                // We can safely ignore these errors and continue with the next pool
-                continue
             }
         }
 

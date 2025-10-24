@@ -30,6 +30,7 @@ final class Vault: ObservableObject, Codable {
     @Relationship(deleteRule: .cascade) var hiddenTokens = [HiddenToken]()
     @Relationship(deleteRule: .cascade) var referralCode: ReferralCode?
     @Relationship(deleteRule: .cascade) var referredCode: ReferredCode?
+    @Relationship(deleteRule: .cascade) var defiPositions: [DefiPositions] = []
     
     enum CodingKeys: CodingKey {
         case name
@@ -43,6 +44,7 @@ final class Vault: ObservableObject, Codable {
         case resharePrefix
         case libType
         case defiChains
+        case defiPositions
     }
     
     required init(from decoder: Decoder) throws {
@@ -58,6 +60,7 @@ final class Vault: ObservableObject, Codable {
         resharePrefix = try container.decodeIfPresent(String.self, forKey: .resharePrefix)
         libType = try container.decodeIfPresent(LibType.self, forKey: .libType) ?? .GG20
         defiChains = try container.decodeIfPresent([Chain].self, forKey: .defiChains) ?? []
+        defiPositions = try container.decodeIfPresent([DefiPositions].self, forKey: .defiPositions) ?? []
     }
     
     init(name: String) {
@@ -65,7 +68,17 @@ final class Vault: ObservableObject, Codable {
         self.libType = GetLibType()
     }
     
-    init(name: String, signers: [String], pubKeyECDSA: String, pubKeyEdDSA: String, keyshares: [KeyShare], localPartyID: String, hexChainCode: String, resharePrefix: String?, libType: LibType?) {
+    init(
+        name: String,
+        signers: [String],
+        pubKeyECDSA: String,
+        pubKeyEdDSA: String,
+        keyshares: [KeyShare],
+        localPartyID: String,
+        hexChainCode: String,
+        resharePrefix: String?,
+        libType: LibType?
+    ) {
         self.name = name
         self.signers = signers
         self.createdAt = Date.now
@@ -91,6 +104,7 @@ final class Vault: ObservableObject, Codable {
         try container.encodeIfPresent(resharePrefix, forKey: .resharePrefix)
         try container.encodeIfPresent(libType, forKey: .libType)
         try container.encodeIfPresent(defiChains, forKey: .defiChains)
+        try container.encodeIfPresent(defiPositions, forKey: .defiPositions)
     }
     
     func setOrder(_ index: Int) {
