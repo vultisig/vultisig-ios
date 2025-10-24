@@ -34,6 +34,7 @@ struct HomeScreen: View {
     @State var walletShowPortfolioHeader: Bool = false
     @State var defiShowPortfolioHeader: Bool = false
     @State var showPortfolioHeader: Bool = false
+    @State var shouldRefresh: Bool = false
     
     @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
@@ -100,7 +101,8 @@ struct HomeScreen: View {
                                 addressToCopy: $addressToCopy,
                                 showUpgradeVaultSheet: $showUpgradeVaultSheet,
                                 showBackupNow: $showBackupNow,
-                                showBalanceInHeader: $walletShowPortfolioHeader
+                                showBalanceInHeader: $walletShowPortfolioHeader,
+                                shouldRefresh: $shouldRefresh
                             )
                         case .defi:
                             DefiMainScreen(
@@ -205,7 +207,7 @@ struct HomeScreen: View {
             showBalance: $showPortfolioHeader,
             vaultSelectorAction: { showVaultSelector.toggle() },
             settingsAction: { vaultRoute = .settings },
-            onRefresh: {}
+            onRefresh: { shouldRefresh = true }
         )
     }
 }
