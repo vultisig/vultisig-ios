@@ -43,6 +43,11 @@ final class DefiTHORChainStakeViewModel: ObservableObject {
 
     @MainActor
     private func loadStakePositions() async {
+        guard let runeCoin = vault.coins.first(where: { $0.ticker == "RUNE" && $0.chain == .thorChain }) else {
+            print("Error: RUNE coin not found in vault for price lookups")
+            return
+        }
+        
         isLoading = true
         defer { isLoading = false }
 
@@ -53,7 +58,7 @@ final class DefiTHORChainStakeViewModel: ObservableObject {
                 continue
             }
 
-            if let position = await createStakePosition(for: coin, coinMeta: coinMeta) {
+            if let position = await createStakePosition(for: coin, runeCoin: runeCoin, coinMeta: coinMeta) {
                 positions.append(position)
             }
         }
@@ -61,15 +66,14 @@ final class DefiTHORChainStakeViewModel: ObservableObject {
         stakePositions = positions.sorted { $0.amount > $1.amount }
     }
 
-    private func createStakePosition(for coin: Coin, coinMeta: CoinMeta) async -> StakePosition? {
+    private func createStakePosition(for coin: Coin, runeCoin: Coin, coinMeta: CoinMeta) async -> StakePosition? {
         let ticker = coin.ticker.uppercased()
-
         switch ticker {
         case "TCY", "RUJI":
-            // Fetch staking details from THORChainStakingService
             do {
                 let details = try await stakingService.fetchStakingDetails(
-                    coin: coinMeta,
+                    coin: coin,
+                    runeCoin: runeCoin,
                     address: coin.address
                 )
 

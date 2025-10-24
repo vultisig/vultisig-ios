@@ -12,15 +12,19 @@ enum THORChainStakingAPI: TargetType {
     case getRujiStaking(address: String)
     case getTcyStakedAmount(address: String)
     case getTcyDistributions(limit: Int)
+    case getTcyUserDistributions(address: String)  // User-specific distributions from Midgard
     case getBlockHeight
     case getTcyModuleBalance
+    case getTcyStakers  // Get all TCY stakers for calculating total staked
 
     var baseURL: URL {
         switch self {
         case .getRujiStaking:
             return URL(string: "https://api.vultisig.com/ruji/api/graphql")!
-        case .getTcyStakedAmount, .getTcyDistributions, .getBlockHeight, .getTcyModuleBalance:
+        case .getTcyStakedAmount, .getTcyDistributions, .getBlockHeight, .getTcyModuleBalance, .getTcyStakers:
             return URL(string: "https://thornode.ninerealms.com")!
+        case .getTcyUserDistributions:
+            return URL(string: "https://midgard.ninerealms.com")!
         }
     }
 
@@ -32,10 +36,14 @@ enum THORChainStakingAPI: TargetType {
             return "/thorchain/tcy_staker/\(address)"
         case .getTcyDistributions:
             return "/thorchain/tcy_distributions"
+        case .getTcyUserDistributions(let address):
+            return "/v2/tcy/distribution/\(address)"
         case .getBlockHeight:
             return "/thorchain/lastblock"
         case .getTcyModuleBalance:
             return "/thorchain/balance/module/tcy_stake"
+        case .getTcyStakers:
+            return "/thorchain/tcy_stakers"
         }
     }
 
@@ -43,7 +51,7 @@ enum THORChainStakingAPI: TargetType {
         switch self {
         case .getRujiStaking:
             return .post
-        case .getTcyStakedAmount, .getTcyDistributions, .getBlockHeight, .getTcyModuleBalance:
+        case .getTcyStakedAmount, .getTcyDistributions, .getTcyUserDistributions, .getBlockHeight, .getTcyModuleBalance, .getTcyStakers:
             return .get
         }
     }
@@ -54,7 +62,7 @@ enum THORChainStakingAPI: TargetType {
             let query = createGraphQLQuery(address: address)
             let body: [String: Any] = ["query": query]
             return .requestParameters(body, .jsonEncoding)
-        case .getTcyStakedAmount, .getBlockHeight, .getTcyModuleBalance:
+        case .getTcyStakedAmount, .getBlockHeight, .getTcyModuleBalance, .getTcyUserDistributions, .getTcyStakers:
             return .requestPlain
         case .getTcyDistributions(let limit):
             return .requestParameters(["limit": limit], .urlEncoding)
@@ -65,8 +73,10 @@ enum THORChainStakingAPI: TargetType {
         switch self {
         case .getRujiStaking:
             return ["Content-Type": "application/json"]
-        case .getTcyStakedAmount, .getTcyDistributions, .getBlockHeight, .getTcyModuleBalance:
+        case .getTcyStakedAmount, .getTcyDistributions, .getBlockHeight, .getTcyModuleBalance, .getTcyStakers:
             return ["X-Client-ID": "vultisig", "Content-Type": "application/json"]
+        case .getTcyUserDistributions:
+            return ["X-Client-ID": "vultisig"]
         }
     }
 
@@ -119,11 +129,22 @@ struct TcyStakerResponse: Codable {
     let amount: String
 }
 
-/// Response model for TCY distribution
+/// Response model for TCY distribution (global)
 struct TcyDistribution: Codable {
     let block: String
     let amount: String
     let timestamp: String?
+}
+
+/// Response model for TCY user distributions from Midgard
+struct TcyUserDistributionsResponse: Codable {
+    let distributions: [TcyUserDistribution]
+    let total: String?
+
+    struct TcyUserDistribution: Codable {
+        let date: String      // Timestamp
+        let amount: String    // RUNE amount in satoshis
+    }
 }
 
 /// Response model for TCY module balance
@@ -132,6 +153,16 @@ struct TcyModuleBalanceResponse: Codable {
 
     struct ModuleCoin: Codable {
         let denom: String
+        let amount: String
+    }
+}
+
+/// Response model for TCY stakers (all addresses)
+struct TcyStakersResponse: Codable {
+    let tcy_stakers: [TcyStaker]
+
+    struct TcyStaker: Codable {
+        let address: String
         let amount: String
     }
 }

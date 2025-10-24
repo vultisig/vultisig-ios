@@ -85,7 +85,7 @@ struct DefiTHORChainStakedPositionView: View {
     
     @ViewBuilder
     var rewardsSection: some View {
-        if hasAPR {
+        if let apr = position.apr {
             HStack(spacing: 4) {
                 Icon(named: "percent", size: 16)
                 Text("apr".localized)
@@ -93,11 +93,9 @@ struct DefiTHORChainStakedPositionView: View {
                     .foregroundStyle(Theme.colors.textExtraLight)
                 Spacer()
 
-                if let apr = position.apr {
-                    Text(apr.formatted(.percent))
-                        .font(Theme.fonts.bodyMMedium)
-                        .foregroundStyle(Theme.colors.alertSuccess)
-                }
+                Text(apr.formatted(.percent.precision(.fractionLength(2))))
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundStyle(Theme.colors.alertSuccess)
             }
         }
 
@@ -139,8 +137,8 @@ struct DefiTHORChainStakedPositionView: View {
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textExtraLight)
             }
-            if let estimatedReward = position.estimatedReward {
-                HiddenBalanceText(AmountFormatter.formatCryptoAmount(value: estimatedReward, coin: position.coin))
+            if let estimatedReward = position.estimatedReward, let rewardCoin = position.rewardCoin {
+                HiddenBalanceText(AmountFormatter.formatCryptoAmount(value: estimatedReward, coin: rewardCoin))
                     .font(Theme.fonts.bodyMMedium)
                     .foregroundStyle(Theme.colors.textLight)
             }
