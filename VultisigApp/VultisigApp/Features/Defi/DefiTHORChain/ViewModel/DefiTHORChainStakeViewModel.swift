@@ -33,9 +33,6 @@ final class DefiTHORChainStakeViewModel: ObservableObject {
 
     func update(vault: Vault) {
         self.vault = vault
-        Task {
-            await loadStakePositions()
-        }
     }
 
     func refresh() async {
@@ -46,6 +43,7 @@ final class DefiTHORChainStakeViewModel: ObservableObject {
     private func loadStakePositions() async {
         guard let runeCoin = vault.coins.first(where: { $0.ticker == "RUNE" && $0.chain == .thorChain }) else {
             print("Error: RUNE coin not found in vault for price lookups")
+            setupDone = true
             return
         }
         
