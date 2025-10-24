@@ -76,8 +76,19 @@ struct THORChainAPIService {
     }
     
     func getPools() async throws -> [THORChainPoolResponse] {
+        // Check cache first
+        if let cached = await cache.getCachedPools() {
+            return cached
+        }
+
+        // Fetch from network
         let response = try await httpClient.request(THORChainAPI.getPools, responseType: [THORChainPoolResponse].self)
-        return response.data
+        let data = response.data
+
+        // Cache the result
+        await cache.cachePools(data)
+
+        return data
     }
     
     func getPoolAsset(asset: String) async throws -> THORChainPoolResponse {

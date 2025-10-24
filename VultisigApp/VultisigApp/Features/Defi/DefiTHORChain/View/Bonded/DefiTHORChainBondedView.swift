@@ -7,12 +7,13 @@
 
 import SwiftUI
 
-struct DefiTHORChainBondedView: View {
+struct DefiTHORChainBondedView<EmptyStateView: View>: View {
     @ObservedObject var viewModel: DefiTHORChainBondViewModel
 
     let coin: Coin
     var onBond: (BondNode?) -> Void
     var onUnbond: (BondNode) -> Void
+    var emptyStateView: () -> EmptyStateView
 
     var showBondButton: Bool {
         coin.stakedBalanceDecimal > 0
@@ -24,12 +25,16 @@ struct DefiTHORChainBondedView: View {
         
     var body: some View {
         LazyVStack(spacing: 14) {
-            bondedSection
-            activeNodesSection
-            availableNodesSection
+            if viewModel.hasBondPositions {
+                bondedSection
+                activeNodesSection
+                availableNodesSection
+            } else {
+                emptyStateView()
+            }
         }
     }
-    
+
     var bondedSection: some View {
         ContainerView {
             VStack(spacing: 16) {
@@ -89,6 +94,7 @@ struct DefiTHORChainBondedView: View {
         viewModel: DefiTHORChainBondViewModel(vault: .example),
         coin: Coin.example,
         onBond: { _ in },
-        onUnbond: { _ in }
+        onUnbond: { _ in },
+        emptyStateView: { EmptyView() }
     )
 }

@@ -12,6 +12,21 @@ final class DefiTHORChainMainViewModel: ObservableObject {
     @Published var selectedPosition: THORChainPositionType = .bond
     private(set) lazy var positions: [SegmentedControlItem<THORChainPositionType>] = THORChainPositionType.allCases.map { SegmentedControlItem(value: $0, title: $0.segmentedControlTitle) }
     
+    @Published private(set) var availablePositions: [AssetSection<THORChainPositionType, CoinMeta>] = []
+    @Published var positionsSearchText = ""
+    
+    var filteredAvailablePositions: [AssetSection<THORChainPositionType, CoinMeta>] {
+        guard positionsSearchText.isNotEmpty else { return availablePositions }
+        return availablePositions.compactMap { section in
+            let newPositions = section.assets
+                .filter { $0.ticker.localizedCaseInsensitiveContains(positionsSearchText) || $0.chain.ticker.localizedCaseInsensitiveContains(positionsSearchText) }
+            guard !newPositions.isEmpty else { return nil }
+            return AssetSection(title: section.title, type: section.type, assets: newPositions)
+        }
+    }
+    
+    private let thorchainService = THORChainAPIService()
+    
     init(vault: Vault) {
         self.vault = vault
     }
@@ -34,11 +49,38 @@ final class DefiTHORChainMainViewModel: ObservableObject {
         selectedPosition = allPositions[previousIndex]
     }
     
+    func onLoad() {
+        Task {
+            await setupThorchainPositions()
+        }
+    }
+    
     func refresh() async {
         guard let runeCoin = vault.coins.first(where: { $0.isRune }) else {
             return
         }
 
         await BalanceService.shared.updateBalance(for: runeCoin)
+    }
+    
+    func setupThorchainPositions() async {
+        let bond = [TokensStore.rune]
+        let staking = [
+            TokensStore.tcy,
+            TokensStore.ruji,
+            TokensStore.stcy,
+            TokensStore.yrune,
+            TokensStore.ytcy
+        ]
+        let pools = (try? await thorchainService.getPools()) ?? []
+        let lps = pools.compactMap { THORChainAssetFactory.createCoin(from: $0.asset) }
+        
+        await MainActor.run {
+            availablePositions = [
+                AssetSection(title: THORChainPositionType.bond.sectionTitle, type: THORChainPositionType.bond, assets: bond),
+                AssetSection(title: THORChainPositionType.stake.sectionTitle, type: .stake, assets: staking),
+                AssetSection(title: THORChainPositionType.liquidityPool.sectionTitle, type: .liquidityPool, assets: lps)
+            ]
+        }
     }
 }

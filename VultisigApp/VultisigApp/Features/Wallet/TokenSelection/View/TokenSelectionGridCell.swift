@@ -9,21 +9,26 @@ import SwiftUI
 
 struct TokenSelectionGridCell: View {
     let coin: CoinMeta
+    let name: String?
+    let showChainIcon: Bool
     var onSelection: (Bool) -> Void
     
     @State var isSelected: Bool
     
-    init(coin: CoinMeta, isSelected: Bool, onSelection: @escaping (Bool) -> Void) {
+    init(coin: CoinMeta, name: String? = nil, showChainIcon: Bool = false, isSelected: Bool, onSelection: @escaping (Bool) -> Void) {
         self.coin = coin
+        self.name = name
+        self.showChainIcon = showChainIcon
         self.isSelected = isSelected
         self.onSelection = onSelection
     }
     
     var body: some View {
         AssetSelectionGridCell(
-            name: coin.ticker,
+            name: name ?? coin.ticker,
             ticker: coin.ticker,
             logo: coin.logo,
+            tokenChainLogo: showChainIcon ? coin.chain.logo : nil,
             isSelected: $isSelected
         ) { onSelection(isSelected) }
     }
