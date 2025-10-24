@@ -12,9 +12,14 @@ final class DefiTHORChainBondViewModel: ObservableObject {
     @Published private(set) var activeBondedNodes: [ActiveBondedNode] = []
     @Published private(set) var availableNodes: [BondNode] = []
     @Published private(set) var isLoading: Bool = false
+    @Published private(set) var setupDone: Bool = false
     
     var hasBondPositions: Bool {
         vault.defiPositions.contains { $0.chain == .thorChain && !$0.bonds.isEmpty }
+    }
+    
+    var bondPositionsLoaded: Bool {
+        !activeBondedNodes.isEmpty || !availableNodes.isEmpty
     }
 
     private let thorchainAPIService = THORChainAPIService()
@@ -103,10 +108,11 @@ final class DefiTHORChainBondViewModel: ObservableObject {
                 self.isLoading = false
             }
 
-        } catch {
-            await MainActor.run {
-                self.isLoading = false
-            }
+        } catch {}
+        
+        await MainActor.run {
+            self.isLoading = false
+            self.setupDone = true
         }
     }
 }

@@ -11,6 +11,7 @@ final class DefiTHORChainStakeViewModel: ObservableObject {
     @Published private(set) var vault: Vault
     @Published private(set) var stakePositions: [StakePosition] = []
     @Published private(set) var isLoading: Bool = false
+    @Published private(set) var setupDone: Bool = false
 
     var hasStakePositions: Bool {
         !stakePositions.isEmpty
@@ -49,10 +50,7 @@ final class DefiTHORChainStakeViewModel: ObservableObject {
         }
         
         isLoading = true
-        defer { isLoading = false }
-
         var positions: [StakePosition] = []
-
         for coinMeta in vaultStakePositions {
             guard let coin = vault.coins.first(where: { $0.ticker == coinMeta.ticker && $0.chain == coinMeta.chain }) else {
                 continue
@@ -64,6 +62,8 @@ final class DefiTHORChainStakeViewModel: ObservableObject {
         }
 
         stakePositions = positions.sorted { $0.amount > $1.amount }
+        isLoading = false
+        setupDone = true
     }
 
     private func createStakePosition(for coin: Coin, runeCoin: Coin, coinMeta: CoinMeta) async -> StakePosition? {
