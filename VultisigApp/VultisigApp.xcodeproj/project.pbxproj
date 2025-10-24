@@ -150,6 +150,9 @@
 		137B2C7D2E3A4B2D0074F648 /* BottomSheetContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C7C2E3A4B2C0074F648 /* BottomSheetContainer.swift */; };
 		137B2C872E3A84130074F648 /* OnChainSecurityScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C862E3A840F0074F648 /* OnChainSecurityScreen.swift */; };
 		137B2C892E3A84460074F648 /* Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C882E3A84440074F648 /* Screen.swift */; };
+		137FA58C2EABC35A00843DB1 /* StakingDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137FA58B2EABC35A00843DB1 /* StakingDetails.swift */; };
+		137FA58E2EABC37C00843DB1 /* THORChainStakingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137FA58D2EABC37C00843DB1 /* THORChainStakingService.swift */; };
+		137FA5922EABC38D00843DB1 /* THORChainStakingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137FA5902EABC38D00843DB1 /* THORChainStakingAPI.swift */; };
 		138538DD2E61F581006DF7C7 /* VultiServerAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138538DC2E61F581006DF7C7 /* VultiServerAPI.swift */; };
 		138538E02E61F5D5006DF7C7 /* ResendVaultShareRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138538DF2E61F5CF006DF7C7 /* ResendVaultShareRequest.swift */; };
 		138538E22E61F681006DF7C7 /* VultiServerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138538E12E61F67C006DF7C7 /* VultiServerService.swift */; };
@@ -1284,6 +1287,9 @@
 		137B2C7C2E3A4B2C0074F648 /* BottomSheetContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetContainer.swift; sourceTree = "<group>"; };
 		137B2C862E3A840F0074F648 /* OnChainSecurityScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnChainSecurityScreen.swift; sourceTree = "<group>"; };
 		137B2C882E3A84440074F648 /* Screen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screen.swift; sourceTree = "<group>"; };
+		137FA58B2EABC35A00843DB1 /* StakingDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StakingDetails.swift; sourceTree = "<group>"; };
+		137FA58D2EABC37C00843DB1 /* THORChainStakingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainStakingService.swift; sourceTree = "<group>"; };
+		137FA5902EABC38D00843DB1 /* THORChainStakingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainStakingAPI.swift; sourceTree = "<group>"; };
 		138538DC2E61F581006DF7C7 /* VultiServerAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultiServerAPI.swift; sourceTree = "<group>"; };
 		138538DF2E61F5CF006DF7C7 /* ResendVaultShareRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResendVaultShareRequest.swift; sourceTree = "<group>"; };
 		138538E12E61F67C006DF7C7 /* VultiServerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultiServerService.swift; sourceTree = "<group>"; };
@@ -2906,6 +2912,23 @@
 			path = OnChainSecurity;
 			sourceTree = "<group>";
 		};
+		137FA5912EABC38D00843DB1 /* TargetType */ = {
+			isa = PBXGroup;
+			children = (
+				137FA5902EABC38D00843DB1 /* THORChainStakingAPI.swift */,
+			);
+			path = TargetType;
+			sourceTree = "<group>";
+		};
+		137FA5932EABC39000843DB1 /* Staking */ = {
+			isa = PBXGroup;
+			children = (
+				137FA5912EABC38D00843DB1 /* TargetType */,
+				137FA58D2EABC37C00843DB1 /* THORChainStakingService.swift */,
+			);
+			path = Staking;
+			sourceTree = "<group>";
+		};
 		138538DB2E61F576006DF7C7 /* VultiServer */ = {
 			isa = PBXGroup;
 			children = (
@@ -3754,6 +3777,7 @@
 		469ED3952B98E782008D4951 /* Thorchain */ = {
 			isa = PBXGroup;
 			children = (
+				137FA5932EABC39000843DB1 /* Staking */,
 				B548BEDC2EA2D3B600E32308 /* ThorchainServiceFactory.swift */,
 				B548BEDD2EA2D3B600E32308 /* ThorchainStagenetService.swift */,
 				B57178B52E66F85B00BABE2E /* ThorchainService+Yield+Prices.swift */,
@@ -5098,6 +5122,7 @@
 		D9AD8ED82B6722AC0009F8D5 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				137FA58B2EABC35A00843DB1 /* StakingDetails.swift */,
 				134E23F12EAA61C500952600 /* DefiPositions.swift */,
 				B51160112E62878A00534A43 /* Ton */,
 				13AB0C052E5CA17100F52F24 /* ReferralCode.swift */,
@@ -5712,6 +5737,7 @@
 				13B1C2CB2E65FC3800050637 /* VaultServerBackupViewModel.swift in Sources */,
 				A6521C582C6ECA1A002D5C5F /* MacCameraPreview.swift in Sources */,
 				46E98FFC2BAE407300C53D97 /* DecodingErrorExtension.swift in Sources */,
+				137FA5922EABC38D00843DB1 /* THORChainStakingAPI.swift in Sources */,
 				135C7ADA2EA13824002F879A /* DefiChainListView.swift in Sources */,
 				DEFF58FA2BCF85FA005DFDF9 /* maya.swift in Sources */,
 				132666C02E428B76007FDAC5 /* CounterView.swift in Sources */,
@@ -6017,6 +6043,7 @@
 				A6F7B6BC2D4880FF00AC8104 /* SetupVaultSwitchControl.swift in Sources */,
 				A6386DA82C90244800DDD58E /* TokenSelectionCell+macOS.swift in Sources */,
 				A6182F252C9225B60059BFDD /* UpdateCheckUpToDateView.swift in Sources */,
+				137FA58E2EABC37C00843DB1 /* THORChainStakingService.swift in Sources */,
 				A6C6708E2C9CFD0A00F59B6A /* KeysignView+macOS.swift in Sources */,
 				138E1D622E9480830085EA8E /* SheetPresentedCounterManager.swift in Sources */,
 				13792A892E53B2AB0063CE99 /* isMacOS.swift in Sources */,
@@ -6133,6 +6160,7 @@
 				13C7C1EF2E87082800A529FD /* ActionBannerView.swift in Sources */,
 				A6ECA1B02C9411E200456110 /* EncryptedBackupViewModel+macOS.swift in Sources */,
 				A558D74C2C298060007222EB /* SwapCoinsResolver.swift in Sources */,
+				137FA58C2EABC35A00843DB1 /* StakingDetails.swift in Sources */,
 				135C7AC52EA12649002F879A /* DefiMainViewModel.swift in Sources */,
 				13B1C2C62E65DB2000050637 /* ChooseBackupSheetView.swift in Sources */,
 				DEFF58FC2BCFB384005DFDF9 /* MayaChainService.swift in Sources */,

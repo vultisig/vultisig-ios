@@ -37,6 +37,7 @@ public extension HTTPClientProtocol {
             let decodedData = try JSONDecoder().decode(T.self, from: response.data)
             return HTTPResponse(data: decodedData, response: response.response)
         } catch {
+            print(error)
             throw HTTPError.decodingFailed(error)
         }
     }

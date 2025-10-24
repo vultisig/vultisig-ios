@@ -692,6 +692,13 @@ private extension ThorchainService {
                 }
               }
             }
+            pool {
+              summary {
+                apr {
+                  value
+                }
+              }
+            }
           }
         }
       }

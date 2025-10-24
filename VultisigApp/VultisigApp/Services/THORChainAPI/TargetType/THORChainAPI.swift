@@ -17,6 +17,7 @@ enum THORChainAPI: TargetType {
     case getNetworkFees
     case getHealth
     case getNetworkInfo
+    case getConstants
     
     var baseURL: URL {
         switch self {
@@ -24,11 +25,12 @@ enum THORChainAPI: TargetType {
                 .getPools,
                 .getPoolAsset,
                 .getLastBlock,
-                .getNetworkFees:
+                .getNetworkFees,
+                .getConstants:
             return URL(string: "https://thornode.ninerealms.com/thorchain")!
-        case .getThornameLookup, 
-             .getAddressLookup, 
-             .getHealth, 
+        case .getThornameLookup,
+             .getAddressLookup,
+             .getHealth,
              .getNetworkInfo:
             return URL(string: "https://midgard.ninerealms.com")!
         }
@@ -46,6 +48,8 @@ enum THORChainAPI: TargetType {
             return "/pool/\(asset)"
         case .getNetworkFees:
             return "/network"
+        case .getConstants:
+            return "/constants"
         case .getThornameLookup(let name):
             return "/v2/thorname/lookup/\(name)"
         case .getAddressLookup(let thorname):
@@ -64,6 +68,7 @@ enum THORChainAPI: TargetType {
                 .getPools,
                 .getPoolAsset,
                 .getNetworkFees,
+                .getConstants,
                 .getThornameLookup,
                 .getAddressLookup,
                 .getHealth,
@@ -79,6 +84,7 @@ enum THORChainAPI: TargetType {
                 .getPools,
                 .getPoolAsset,
                 .getNetworkFees,
+                .getConstants,
                 .getThornameLookup,
                 .getAddressLookup,
                 .getHealth,
@@ -89,13 +95,28 @@ enum THORChainAPI: TargetType {
     
     var headers: [String : String]? {
         switch self {
-        case .getThornameLookup, 
-             .getAddressLookup, 
-             .getHealth, 
+        case .getThornameLookup,
+             .getAddressLookup,
+             .getHealth,
              .getNetworkInfo:
             return ["X-Client-ID": "vultisig"]
+        case .getConstants:
+            return ["X-Client-ID": "vultisig", "Content-Type": "application/json"]
         default:
             return nil
         }
+    }
+}
+
+// MARK: - Response Models
+
+/// Response model for THORChain constants
+struct ThorchainConstantsResponse: Codable {
+    let int_64_values: Int64Values
+
+    struct Int64Values: Codable {
+        let MinRuneForTCYStakeDistribution: UInt64
+        let MinTCYForTCYStakeDistribution: UInt64?
+        let TCYStakeSystemIncomeBps: UInt64?
     }
 }

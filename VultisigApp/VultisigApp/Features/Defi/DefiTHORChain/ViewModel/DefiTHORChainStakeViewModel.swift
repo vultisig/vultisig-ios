@@ -10,6 +10,7 @@ import Foundation
 final class DefiTHORChainStakeViewModel: ObservableObject {
     @Published private(set) var vault: Vault
     @Published private(set) var stakePositions: [StakePosition] = []
+    @Published private(set) var isLoading: Bool = false
 
     var hasStakePositions: Bool {
         !stakePositions.isEmpty
@@ -20,61 +21,82 @@ final class DefiTHORChainStakeViewModel: ObservableObject {
     }
 
     private let thorchainAPIService = THORChainAPIService()
+    private let stakingService = THORChainStakingService.shared
 
     init(vault: Vault) {
         self.vault = vault
-        loadStakePositions()
+        Task {
+            await loadStakePositions()
+        }
     }
 
     func update(vault: Vault) {
         self.vault = vault
-        loadStakePositions()
+        Task {
+            await loadStakePositions()
+        }
     }
 
     func refresh() async {
-        loadStakePositions()
+        await loadStakePositions()
     }
 
-    private func loadStakePositions() {
-        stakePositions = vaultStakePositions.compactMap { coinMeta -> StakePosition? in
+    @MainActor
+    private func loadStakePositions() async {
+        isLoading = true
+        defer { isLoading = false }
+
+        var positions: [StakePosition] = []
+
+        for coinMeta in vaultStakePositions {
             guard let coin = vault.coins.first(where: { $0.ticker == coinMeta.ticker && $0.chain == coinMeta.chain }) else {
-                return nil
+                continue
             }
 
-            return createStakePosition(for: coin, coinMeta: coinMeta)
+            if let position = await createStakePosition(for: coin, coinMeta: coinMeta) {
+                positions.append(position)
+            }
         }
-        .sorted { $0.amount > $1.amount }
+
+        stakePositions = positions.sorted { $0.amount > $1.amount }
     }
 
-    private func createStakePosition(for coin: Coin, coinMeta: CoinMeta) -> StakePosition {
+    private func createStakePosition(for coin: Coin, coinMeta: CoinMeta) async -> StakePosition? {
         let ticker = coin.ticker.uppercased()
 
         switch ticker {
-        case "TCY":
-            // TODO: Fetch APR from API
-            return StakePosition(
-                coin: coinMeta,
-                type: .stake,
-                amount: coin.stakedBalanceDecimal,
-                apr: nil, // TODO: Fill with actual APR
-                estimatedReward: nil, // TODO: Fill with actual estimated reward
-                nextPayout: nil, // TODO: Fill with actual next payout
-                rewards: nil, // TCY doesn't generate rewards
-                rewardCoin: nil
-            )
+        case "TCY", "RUJI":
+            // Fetch staking details from THORChainStakingService
+            do {
+                let details = try await stakingService.fetchStakingDetails(
+                    coin: coinMeta,
+                    address: coin.address
+                )
 
-        case "RUJI":
-            // TODO: Fetch APR from API
-            return StakePosition(
-                coin: coinMeta,
-                type: .stake,
-                amount: coin.stakedBalanceDecimal,
-                apr: nil, // TODO: Fill with actual APR
-                estimatedReward: nil,
-                nextPayout: nil,
-                rewards: nil, // RUJI doesn't generate rewards
-                rewardCoin: nil
-            )
+                return StakePosition(
+                    coin: coinMeta,
+                    type: .stake,
+                    amount: details.stakedAmount,
+                    apr: details.apr,
+                    estimatedReward: details.estimatedReward,
+                    nextPayout: details.nextPayoutDate,
+                    rewards: details.rewards,
+                    rewardCoin: details.rewardsCoin
+                )
+            } catch {
+                print("Error fetching \(ticker) staking details: \(error.localizedDescription)")
+                // Fallback to using local staked balance
+                return StakePosition(
+                    coin: coinMeta,
+                    type: .stake,
+                    amount: coin.stakedBalanceDecimal,
+                    apr: nil,
+                    estimatedReward: nil,
+                    nextPayout: nil,
+                    rewards: nil,
+                    rewardCoin: nil
+                )
+            }
 
         case "YRUNE", "YTCY":
             return StakePosition(

@@ -41,6 +41,19 @@ struct AccountRootData: Decodable {
                 let account: String
                 let bonded: Bonded
                 let pendingRevenue: PendingRevenue?
+                let pool: Pool?
+            }
+
+            struct Pool: Decodable {
+                let summary: Summary?
+            }
+
+            struct Summary: Decodable {
+                let apr: APR?
+            }
+
+            struct APR: Decodable {
+                let value: String
             }
 
             struct Bonded: Decodable {
