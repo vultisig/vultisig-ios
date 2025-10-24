@@ -55,7 +55,7 @@ class VaultDefaultCoinService {
             }
             
             // Enable default Defi chains
-            vault.defiChains = coins.map(\.chain).filter { CoinAction.memoChains.contains($0) }
+            vault.defiChains = coins.map(\.chain).filter { CoinAction.defiChains.contains($0) }
         }
     }
 }

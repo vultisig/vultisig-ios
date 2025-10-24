@@ -21,6 +21,10 @@ extension CoinAction {
         // THORChain LP supported chains
         .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple
     ]
+    
+    static var defiChains: [Chain] = [
+        .thorChain
+    ]
 }
 
 extension Chain {
