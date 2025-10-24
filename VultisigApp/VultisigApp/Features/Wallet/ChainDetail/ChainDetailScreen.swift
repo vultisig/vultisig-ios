@@ -76,6 +76,7 @@ struct ChainDetailScreen: View {
         }
         .onLoad {
             viewModel.refresh(group: group)
+            refresh()
         }
         .navigationDestination(isPresented: $showAction) {
             if let vaultAction {
