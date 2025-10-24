@@ -168,11 +168,12 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
         }) {
             destinationAddress = coin.address
             destinationAddressValid = true
+            customErrorMessage = nil
         } else {
-            // If the native coin doesn't exist in the vault, we cannot prefill the address
-            // User will need to manually enter the destination address for that chain
+            // If no coin exists for that chain in the vault, show error
             destinationAddress = ""
             destinationAddressValid = false
+            customErrorMessage = "To withdraw \(ticker), you need to add the \(ticker) coin to your vault first. Go to vault settings and add \(targetChain.name) to continue."
         }
     }
     
@@ -203,8 +204,12 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
         // assetName is just the ticker (e.g., "BTC", "ETH", "DOGE")
         let ticker = assetName.uppercased()
         
+        // Find the secured asset coin - it could be stored as "DOGE" or "DOGE-DOGE"
         if let securedAssetCoin = vault.coins.first(where: {
-            $0.ticker.uppercased() == ticker && $0.chain == .thorChain 
+            guard $0.chain == .thorChain else { return false }
+            let coinTicker = $0.ticker.uppercased()
+            // Check if it matches the ticker directly or in the "TICKER-TICKER" format
+            return coinTicker == ticker || coinTicker == "\(ticker)-\(ticker)"
         }) {
             selectedSecuredAssetCoin = securedAssetCoin
             
@@ -247,16 +252,25 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
     private func validateAmount() {
         guard amount > 0 else {
             amountValid = false
-            customErrorMessage = "Please enter a valid amount greater than zero."
+            // Only set amount error if there's no destination address error
+            if destinationAddressValid {
+                customErrorMessage = "Please enter a valid amount greater than zero."
+            }
             return
         }
         
         if let secured = selectedSecuredAssetCoin {
             amountValid = amount <= secured.balanceDecimal
-            customErrorMessage = amountValid ? nil : NSLocalizedString("insufficientBalanceForFunctions", comment: "")
+            // Only update error message if there's no destination address error
+            if destinationAddressValid {
+                customErrorMessage = amountValid ? nil : NSLocalizedString("insufficientBalanceForFunctions", comment: "")
+            }
         } else {
             amountValid = false
-            customErrorMessage = "Select a secured asset to see available balance."
+            // Only set this error if there's no destination address error
+            if destinationAddressValid {
+                customErrorMessage = "Select a secured asset to see available balance."
+            }
         }
     }
     
@@ -324,6 +338,15 @@ struct SecuredAssetSelectorSection: View {
                 errorView
             } else {
                 dropdownView
+                
+                // Show error if coin for selected asset is not in vault
+                if let errorMessage = model.customErrorMessage, 
+                   model.selectedSecuredAsset.value != FunctionCallWithdrawSecuredAsset.INITIAL_ITEM_FOR_DROPDOWN_TEXT {
+                    Text(errorMessage)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                        .padding(.top, 4)
+                }
             }
         }
     }
