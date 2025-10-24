@@ -943,6 +943,8 @@
 "position" = "Position";
 "remove" = "Remove";
 "add" = "Add";
+"mint" = "Mint";
+"redeem" = "Redeem";
 "selectPositions" = "Select positions";
 "selectPositionsSubtitle" = "Enable at least one position to view balances and manage positions.";
 "liquidityPools" = "Liquidity Pools";
