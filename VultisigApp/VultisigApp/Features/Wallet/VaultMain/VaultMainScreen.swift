@@ -15,6 +15,7 @@ struct VaultMainScreen: View {
     @Binding var showUpgradeVaultSheet: Bool
     @Binding var showBackupNow: Bool
     @Binding var showBalanceInHeader: Bool
+    @Binding var shouldRefresh: Bool
     
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var viewModel: VaultDetailViewModel
@@ -98,6 +99,11 @@ struct VaultMainScreen: View {
             refresh()
         }
         .onChange(of: vault) { oldValue, newValue in
+            refresh()
+        }
+        .onChange(of: shouldRefresh) { oldValue, newValue in
+            guard newValue else { return }
+            shouldRefresh = false
             refresh()
         }
     }
@@ -279,7 +285,8 @@ struct VaultMainScreen: View {
         addressToCopy: .constant(nil),
         showUpgradeVaultSheet: .constant(false),
         showBackupNow: .constant(false),
-        showBalanceInHeader: .constant(false)
+        showBalanceInHeader: .constant(false),
+        shouldRefresh: .constant(false)
     )
     .environmentObject(HomeViewModel())
     .environmentObject(VaultDetailViewModel())
