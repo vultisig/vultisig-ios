@@ -24,22 +24,23 @@ struct ReferralTransactionFlowScreen: View {
     
     var body: some View {
         ZStack {
-            Group {
-                switch functionCallViewModel.currentIndex {
-                case 1:
-                    detailsView
-                case 2:
-                    verifyView
-                case 3:
-                    pairView
-                case 4:
-                    keysign
-                case 5:
-                    doneView
-                default:
-                    errorView
-                }
-            }
+//            Group {
+//                switch functionCallViewModel.currentIndex {
+//                case 1:
+//                    detailsView
+//                case 2:
+//                    verifyView
+//                case 3:
+//                    pairView
+//                case 4:
+//                    keysign
+//                case 5:
+//                    doneView
+//                default:
+//                    errorView
+//                }
+//            }
+            EmptyView()
             .showIf(!isLoading)
         }
         .overlay(isLoading ? Loader() : nil)
@@ -84,20 +85,21 @@ struct ReferralTransactionFlowScreen: View {
     }
     
     var verifyView: some View {
-        ZStack {
-            if let vault {
-                FunctionCallVerifyView(
-                    keysignPayload: $keysignPayload,
-                    depositViewModel: functionCallViewModel,
-                    depositVerifyViewModel: functionCallVerifyViewModel,
-                    tx: sendTx,
-                    vault: vault,
-                    isForReferral: true
-                )
-            } else {
-                SendCryptoVaultErrorView()
-            }
-        }
+        EmptyView()
+//        ZStack {
+//            if let vault {
+//                FunctionCallVerifyScreen(
+//                    keysignPayload: $keysignPayload,
+//                    depositViewModel: functionCallViewModel,
+//                    depositVerifyViewModel: functionCallVerifyViewModel,
+//                    tx: sendTx,
+//                    vault: vault,
+//                    isForReferral: true
+//                )
+//            } else {
+//                SendCryptoVaultErrorView()
+//            }
+//        }
     }
     
     var pairView: some View {
@@ -152,7 +154,7 @@ struct ReferralTransactionFlowScreen: View {
     
     var backButton: some View {
         Button {
-            functionCallViewModel.currentIndex -= 1
+//            functionCallViewModel.currentIndex -= 1
         } label: {
             NavigationBlankBackButton()
         }

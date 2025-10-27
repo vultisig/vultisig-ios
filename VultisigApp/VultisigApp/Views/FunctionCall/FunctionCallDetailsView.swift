@@ -2,7 +2,7 @@ import Foundation
 import OSLog
 import SwiftUI
 
-struct FunctionCallDetailsView: View {
+struct FunctionCallDetailsScreen: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var functionCallViewModel: FunctionCallViewModel
     @ObservedObject var vault: Vault

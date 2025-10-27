@@ -9,9 +9,9 @@ import Foundation
 import SwiftUI
 
 struct FunctionCallVerifyScreen: View {
-    @Binding var keysignPayload: KeysignPayload?
-    @ObservedObject var depositViewModel: FunctionCallViewModel
-    @ObservedObject var depositVerifyViewModel: FunctionCallVerifyViewModel
+//    @Binding var keysignPayload: KeysignPayload?
+    @StateObject var depositViewModel = FunctionCallViewModel()
+    @StateObject var depositVerifyViewModel = FunctionCallVerifyViewModel()
     @ObservedObject var tx: SendTransaction
     let vault: Vault
     
@@ -19,18 +19,33 @@ struct FunctionCallVerifyScreen: View {
     
     @State var fastPasswordPresented = false
     @State var isForReferral = false
+    @State private var keysignPayload: VerifyKeysignPayload?
+    @State private var error: HelperError?
     
     var body: some View {
-        ZStack {
-            Background()
-            content
-        }
-        .gesture(DragGesture())
-        .alert(isPresented: $depositVerifyViewModel.showAlert) {
-            alert
+        Screen(title: "verify".localized) {
+            VStack(spacing: 0) {
+                if isForReferral {
+                    ReferralSendOverviewView(sendTx: tx)
+                } else {
+                    summary
+                }
+                
+                Spacer()
+                pairedSignButton
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .blur(radius: depositVerifyViewModel.isLoading ? 1 : 0)
         }
         .onDisappear {
             depositVerifyViewModel.isLoading = false
+        }
+        .alert(item: $error) { error in
+            Alert(
+                title: Text(NSLocalizedString("error", comment: "")),
+                message: Text(NSLocalizedString(error.localizedDescription, comment: "")),
+                dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+            )
         }
         .onLoad {
             depositVerifyViewModel.onLoad()
@@ -46,35 +61,14 @@ struct FunctionCallVerifyScreen: View {
                 depositVerifyViewModel.showSecurityScannerSheet = false
             }
         }
-    }
-    
-    var content: some View {
-        VStack(spacing: 0) {
-            if isForReferral {
-                ReferralSendOverviewView(
-                    sendTx: tx,
-                    functionCallViewModel: depositViewModel,
-                    functionCallVerifyViewModel: depositVerifyViewModel
-                )
-            } else {
-                summary
-            }
-            
-            Spacer()
-            pairedSignButton
-                .padding(.bottom, 40)
-                .padding(.horizontal, 16)
+        .navigationDestination(item: $keysignPayload) { payload in
+            FunctionCallRouteBuilder().buildPairScreen(
+                vault: vault,
+                tx: tx,
+                keysignPayload: payload.payload,
+                fastVaultPassword: tx.fastVaultPassword.nilIfEmpty
+            )
         }
-        .blur(radius: depositVerifyViewModel.isLoading ? 1 : 0)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-    }
-    
-    var alert: Alert {
-        Alert(
-            title: Text(NSLocalizedString("error", comment: "")),
-            message: Text(NSLocalizedString(depositVerifyViewModel.errorMessage, comment: "")),
-            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-        )
     }
     
     var summary: some View {
@@ -95,7 +89,6 @@ struct FunctionCallVerifyScreen: View {
             ),
             securityScannerState: $depositVerifyViewModel.securityScannerState
         )
-        .padding(.horizontal, 16)
     }
     
     var pairedSignButton: some View {
@@ -153,11 +146,18 @@ struct FunctionCallVerifyScreen: View {
     
     func signAndMoveToNextView() {
         Task {
-            
-            keysignPayload = await depositVerifyViewModel.createKeysignPayload(tx: tx, vault: vault)
-            
-            if keysignPayload != nil {
-                depositViewModel.moveToNextView()
+            do {
+                let result = try await depositVerifyViewModel.createKeysignPayload(
+                    tx: tx,
+                    vault: vault
+                )
+                await MainActor.run {
+                    self.keysignPayload = .init(payload: result)
+                }
+            } catch {
+                await MainActor.run {
+                    self.error = error as? HelperError
+                }
             }
         }
     }
@@ -165,7 +165,6 @@ struct FunctionCallVerifyScreen: View {
 
 #Preview {
     FunctionCallVerifyScreen(
-        keysignPayload: .constant(nil),
         depositViewModel: FunctionCallViewModel(),
         depositVerifyViewModel: FunctionCallVerifyViewModel(),
         tx: SendTransaction(),

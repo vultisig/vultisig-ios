@@ -13,10 +13,7 @@ import WalletCore
 @MainActor
 class FunctionCallVerifyViewModel: ObservableObject {
     let securityScanViewModel = SecurityScannerViewModel()
-    
-    @Published var showAlert = false
     @Published var isLoading = false
-    @Published var errorMessage = ""
     
     // General
     @Published var isAddressCorrect = false
@@ -33,10 +30,8 @@ class FunctionCallVerifyViewModel: ObservableObject {
             .assign(to: &$securityScannerState)
     }
     
-    func createKeysignPayload(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
-        
-        var keysignPayload: KeysignPayload?
-        
+    func createKeysignPayload(tx: SendTransaction, vault: Vault) async throws -> KeysignPayload {
+        await MainActor.run { isLoading = true }
         do {
             let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
             
@@ -67,10 +62,8 @@ class FunctionCallVerifyViewModel: ObservableObject {
                     let chainName = getInboundChainName(for: tx.coin.chain)
                     
                     guard let inbound = inboundAddresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
-                        self.errorMessage = "Failed to find inbound address for \(chainName)"
-                        showAlert = true
-                        isLoading = false
-                        return nil
+                        await MainActor.run { isLoading = false }
+                        throw HelperError.runtimeError("Failed to find inbound address for \(chainName)")
                     }
                     
                     if tx.coin.shouldApprove { // ERC20 tokens
@@ -108,8 +101,8 @@ class FunctionCallVerifyViewModel: ObservableObject {
                     )
                 }
             }
-            
-            keysignPayload = try await keysignPayloadFactory.buildTransfer(
+            await MainActor.run { isLoading = false }
+            return try await keysignPayloadFactory.buildTransfer(
                 coin: tx.coin,
                 toAddress: tx.toAddress,
                 amount: tx.amountInRaw,
@@ -121,29 +114,28 @@ class FunctionCallVerifyViewModel: ObservableObject {
                 wasmExecuteContractPayload: tx.wasmContractPayload
             )
         } catch {
+            let errorMessage: String
             switch error {
             case KeysignPayloadFactory.Errors.notEnoughBalanceError:
-                self.errorMessage = "notEnoughBalanceError"
+                errorMessage = "notEnoughBalanceError"
             case KeysignPayloadFactory.Errors.notEnoughUTXOError:
-                self.errorMessage = "notEnoughUTXOError"
+                errorMessage = "notEnoughUTXOError"
             case KeysignPayloadFactory.Errors.utxoTooSmallError:
-                self.errorMessage = "utxoTooSmallError"
+                errorMessage = "utxoTooSmallError"
             case KeysignPayloadFactory.Errors.utxoSelectionFailedError:
-                self.errorMessage = "utxoSelectionFailedError"
+                errorMessage = "utxoSelectionFailedError"
             case KeysignPayloadFactory.Errors.failToGetSequenceNo:
-                self.errorMessage = "failToGetSequenceNo"
+                errorMessage = "failToGetSequenceNo"
             case KeysignPayloadFactory.Errors.failToGetAccountNumber:
-                self.errorMessage = "failToGetAccountNumber"
+                errorMessage = "failToGetAccountNumber"
             case KeysignPayloadFactory.Errors.failToGetRecentBlockHash:
-                self.errorMessage = "failToGetRecentBlockHash"
+                errorMessage = "failToGetRecentBlockHash"
             default:
-                self.errorMessage = error.localizedDescription
+                errorMessage = error.localizedDescription
             }
-            showAlert = true
-            isLoading = false
-            return nil
+            await MainActor.run { isLoading = false }
+            throw HelperError.runtimeError(errorMessage)
         }
-        return keysignPayload
     }
     
     // Use THORChainUtils for chain name mapping

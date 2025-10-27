@@ -152,7 +152,8 @@ struct EditReferralDetailsView: View {
                     return
                 }
                 
-                functionCallViewModel.currentIndex = 2
+                // TODO: - Remove
+//                functionCallViewModel.currentIndex = 2
             }
         }
         .disabled(!viewModel.isValidForm)

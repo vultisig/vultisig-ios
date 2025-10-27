@@ -21,10 +21,10 @@ struct VaultActionRouteBuilder {
         case .swap(let fromCoin):
             SwapCryptoView(fromCoin: fromCoin, vault: vault)
         case .function(let coin):
-            FunctionCallView(
-                tx: sendTx,
-                vault: vault,
-                coin: coin
+            FunctionCallRouteBuilder().buildDetailsScreen(
+                defaultCoin: coin,
+                sendTx: sendTx,
+                vault: vault
             )
         case .buy(let address, let blockChainCode, let coinType):
             SendRouteBuilder().buildBuyScreen(

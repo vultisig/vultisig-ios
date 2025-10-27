@@ -9,8 +9,7 @@ import SwiftUI
 
 struct ReferralSendOverviewView: View {
     @ObservedObject var sendTx: SendTransaction
-    @ObservedObject var functionCallViewModel: FunctionCallViewModel
-    @ObservedObject var functionCallVerifyViewModel: FunctionCallVerifyViewModel
+//    @ObservedObject var functionCallViewModel: FunctionCallViewModel
     
     var body: some View {
         ZStack {
@@ -38,8 +37,10 @@ struct ReferralSendOverviewView: View {
     }
     
     var backButton: some View {
+        // TODO: - Remove
         Button {
-            functionCallViewModel.currentIndex -= 1
+//            functionCallViewModel.currentIndex -= 1
+            // TODO: - Remove
         } label: {
             NavigationBlankBackButton()
         }
@@ -176,6 +177,8 @@ struct ReferralSendOverviewView: View {
 }
 
 #Preview {
-    ReferralSendOverviewView(sendTx: SendTransaction(), functionCallViewModel: FunctionCallViewModel(), functionCallVerifyViewModel: FunctionCallVerifyViewModel())
-        .environmentObject(HomeViewModel())
+    ReferralSendOverviewView(
+        sendTx: SendTransaction(),
+    )
+    .environmentObject(HomeViewModel())
 }

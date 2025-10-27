@@ -190,7 +190,8 @@ class ReferralViewModel: ObservableObject {
     
     func createTransaction(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel) {
         setupTransaction(tx: tx)
-        functionCallViewModel.currentIndex = 2
+        // TODO: - Remove
+//        functionCallViewModel.currentIndex = 2
     }
     
     func resetAllData() {
