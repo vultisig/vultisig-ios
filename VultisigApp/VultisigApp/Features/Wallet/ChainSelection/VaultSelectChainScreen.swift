@@ -32,7 +32,6 @@ struct VaultSelectChainScreen: View {
             ChainNotFoundEmptyStateView()
         }
         .withLoading(text: "pleaseWait".localized, isLoading: $isLoading)
-        .applySheetSize()
         .onLoad {
             viewModel.setData(for: vault)
         }

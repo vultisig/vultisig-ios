@@ -58,48 +58,63 @@ struct AssetSelectionContainerScreen<Asset: Hashable, SectionType: Hashable, Cel
     }
     
     var body: some View {
+        container
+    }
+    
+    var container: some View {
+#if os(iOS)
         NavigationStack {
-            ZStack(alignment: .bottom) {
-                VStack(spacing: 24) {
-                    textfield
-                    Group {
-                        if searchText.isNotEmpty && elements.isEmpty {
-                            emptyStateBuilder()
-                        } else {
-                            ScrollView(showsIndicators: false) {
-                                grid
-                            }
-                            .safeAreaInset(edge: .bottom, content: { Spacer().frame(height: 64) })
-                            .safeAreaInset(edge: .top, content: { Spacer().frame(height: 8) })
-                            .frame(maxHeight: .infinity)
-                        }
-                    }
-                    .transition(.opacity)
-                    .animation(.easeInOut, value: searchText)
-                }
-                .padding(.top, 24)
-                .padding(.horizontal, 16)
-                
-                gradientOverlay
-            }
-            .ignoresSafeArea(.container, edges: .bottom)
-            .crossPlatformToolbar(showsBackButton: false) {
-                CustomToolbarItem(placement: .leading) {
-                    ToolbarButton(image: "x") {
-                        isPresented.toggle()
-                    }
-                }
-                
-                CustomToolbarItem(placement: .trailing) {
-                    ToolbarButton(image: "check", type: .confirmation) {
-                        onSave()
-                    }
-                }
-            }
-            .presentationDetents([.large])
-            .presentationBackground(Theme.colors.bgPrimary)
-            .presentationDragIndicator(.visible)
+            content
         }
+#else
+        content
+            .transaction { $0.animation = nil }
+            .presentationSizingFitted()
+            .applySheetSize()
+#endif
+    }
+    
+    var content: some View {
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 24) {
+                textfield
+                Group {
+                    if searchText.isNotEmpty && elements.isEmpty {
+                        emptyStateBuilder()
+                    } else {
+                        ScrollView(showsIndicators: false) {
+                            grid
+                        }
+                        .safeAreaInset(edge: .bottom, content: { Spacer().frame(height: 64) })
+                        .safeAreaInset(edge: .top, content: { Spacer().frame(height: 8) })
+                        .frame(minHeight: 300)
+                    }
+                }
+                .transition(.opacity)
+                .animation(.easeInOut, value: searchText)
+            }
+            .padding(.top, 24)
+            .padding(.horizontal, 16)
+            
+            gradientOverlay
+        }
+        .ignoresSafeArea(.container, edges: .bottom)
+        .crossPlatformToolbar(showsBackButton: false) {
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "x") {
+                    isPresented.toggle()
+                }
+            }
+            
+            CustomToolbarItem(placement: .trailing) {
+                ToolbarButton(image: "check", type: .confirmation) {
+                    onSave()
+                }
+            }
+        }
+        .presentationDetents([.large])
+        .presentationBackground(Theme.colors.bgPrimary)
+        .presentationDragIndicator(.visible)
     }
     
     var gradientOverlay: some View {
