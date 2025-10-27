@@ -993,6 +993,8 @@
 		B5A97CFC2BF4365E007574D7 /* FunctionCallInstance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CFB2BF4365E007574D7 /* FunctionCallInstance.swift */; };
 		B5B5E2782CCADD69001167C3 /* FunctionCallStake.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B5E2772CCADD69001167C3 /* FunctionCallStake.swift */; };
 		B5B5E27A2CCADE85001167C3 /* FunctionCallUnstake.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B5E2792CCADE85001167C3 /* FunctionCallUnstake.swift */; };
+		B5B974A42E7DC76100816454 /* FunctionCallSecuredAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B974A32E7DC74B00816454 /* FunctionCallSecuredAsset.swift */; };
+		B5B974A62E7DDB1200816454 /* FunctionCallWithdrawSecuredAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B974A52E7DDB1200816454 /* FunctionCallWithdrawSecuredAsset.swift */; };
 		B5BC37562CECEFFA005A1C76 /* cosmos.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BC37552CECEFF8005A1C76 /* cosmos.swift */; };
 		B5BEB1ED2E137FBA00372170 /* ThorchainMergeTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BEB1EC2E137FBA00372170 /* ThorchainMergeTokens.swift */; };
 		B5C02E542E3AAD050038938D /* FunctionCallCosmosYVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C02E532E3AAD020038938D /* FunctionCallCosmosYVault.swift */; };
@@ -2131,6 +2133,8 @@
 		B5A97CFB2BF4365E007574D7 /* FunctionCallInstance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallInstance.swift; sourceTree = "<group>"; };
 		B5B5E2772CCADD69001167C3 /* FunctionCallStake.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallStake.swift; sourceTree = "<group>"; };
 		B5B5E2792CCADE85001167C3 /* FunctionCallUnstake.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallUnstake.swift; sourceTree = "<group>"; };
+		B5B974A32E7DC74B00816454 /* FunctionCallSecuredAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallSecuredAsset.swift; sourceTree = "<group>"; };
+		B5B974A52E7DDB1200816454 /* FunctionCallWithdrawSecuredAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallWithdrawSecuredAsset.swift; sourceTree = "<group>"; };
 		B5BC37552CECEFF8005A1C76 /* cosmos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cosmos.swift; sourceTree = "<group>"; };
 		B5BEB1EC2E137FBA00372170 /* ThorchainMergeTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainMergeTokens.swift; sourceTree = "<group>"; };
 		B5C02E532E3AAD020038938D /* FunctionCallCosmosYVault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallCosmosYVault.swift; sourceTree = "<group>"; };
@@ -5020,6 +5024,8 @@
 		B5A97CFA2BF43653007574D7 /* FunctionCall */ = {
 			isa = PBXGroup;
 			children = (
+				B5B974A32E7DC74B00816454 /* FunctionCallSecuredAsset.swift */,
+				B5B974A52E7DDB1200816454 /* FunctionCallWithdrawSecuredAsset.swift */,
 				B5C02E532E3AAD020038938D /* FunctionCallCosmosYVault.swift */,
 				13417B8D2E3BB1DE00A66EE5 /* FunctionCallWithdrawRujiRewards.swift */,
 				13417B8B2E3BB1D200A66EE5 /* FunctionCallUnstakeRuji.swift */,
@@ -6212,6 +6218,7 @@
 				B5C4A42C2C62EC6500AF9B8B /* AddressService.swift in Sources */,
 				13052B992E8C5744000285D2 /* MacOSToolbarView.swift in Sources */,
 				13AF0D272E4CEA3C004D4FD2 /* SendDetailsScreen.swift in Sources */,
+				B5B974A42E7DC76100816454 /* FunctionCallSecuredAsset.swift in Sources */,
 				13417B8A2E3BB1D000A66EE5 /* FunctionCallStakeRuji.swift in Sources */,
 				BU61YTK5IM2CA6CN47V4L8BG /* FunctionCallAddThorLP.swift in Sources */,
 				GVTXGPZR8J4TTJM9OSTSZLYW /* FunctionCallRemoveThorLP.swift in Sources */,
@@ -6541,6 +6548,7 @@
 				138E1D5E2E9480500085EA8E /* SheetPresentedViewModifier.swift in Sources */,
 				A6505ACE2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift in Sources */,
 				A5D49F582BE26C63001766C8 /* CoinActionResolver.swift in Sources */,
+				B5B974A62E7DDB1200816454 /* FunctionCallWithdrawSecuredAsset.swift in Sources */,
 				13A899042E43FA4D006F75F0 /* PreferredAssetSelectionViewModel.swift in Sources */,
 				13BD8D482E3D49AD0013B67E /* FontSystemProtocol.swift in Sources */,
 				13BD8D4A2E3D49AD0013B67E /* Theme.swift in Sources */,

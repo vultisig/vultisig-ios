@@ -274,6 +274,10 @@ struct FunctionCallDetailsView: View {
                 case .withdrawRujiRewards:
                     functionCallViewModel.setRujiToken(to: tx, vault: vault)
                     fnCallInstance = .withdrawRujiRewards(FunctionCallWithdrawRujiRewards(tx: tx, functionCallViewModel: functionCallViewModel))
+                case .securedAsset:
+                    fnCallInstance = .securedAsset(FunctionCallSecuredAsset(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
+                case .withdrawSecuredAsset:
+                    fnCallInstance = .withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 }
             }
     }
