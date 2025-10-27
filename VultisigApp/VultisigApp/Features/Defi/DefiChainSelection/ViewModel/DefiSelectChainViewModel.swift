@@ -40,7 +40,7 @@ class DefiSelectChainViewModel: ObservableObject {
     }
     
     private func setupChains() {
-        chains = CoinAction.memoChains
+        chains = CoinAction.defiChains
             .sorted(by: { $0.name < $1.name })
     }
 

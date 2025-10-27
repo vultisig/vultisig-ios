@@ -13,14 +13,15 @@ struct StakePosition: Identifiable, Equatable {
     let coin: CoinMeta
     let type: StakePositionType
     let amount: Decimal
-    let apr: Double
-    let estimatedReward: Decimal
-    let nextPayout: TimeInterval
-    let rewards: Decimal
-    let rewardCoin: CoinMeta
+    let apr: Double?
+    let estimatedReward: Decimal?
+    let nextPayout: TimeInterval?
+    let rewards: Decimal?
+    let rewardCoin: CoinMeta?
 }
 
 enum StakePositionType: Equatable {
     case stake
     case compound
+    case index
 }

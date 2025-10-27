@@ -944,6 +944,8 @@
 "position" = "Position";
 "remove" = "Entfernen";
 "add" = "Hinzufügen";
+"mint" = "Prägen";
+"redeem" = "Einlösen";
 "selectPositions" = "Positionen auswählen";
 "selectPositionsSubtitle" = "Aktivieren Sie mindestens eine Position, um Guthaben anzuzeigen und Positionen zu verwalten.";
 "liquidityPools" = "Liquiditätspools";

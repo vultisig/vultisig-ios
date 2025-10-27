@@ -23,22 +23,36 @@ struct DefiTHORChainStakedPositionView: View {
             String(format: "stakedCoin".localized, position.coin.ticker)
         case .compound:
             String(format: "compoundedCoin".localized, position.coin.ticker)
+        case .index:
+            position.coin.ticker
         }
     }
-    
-    var formattedPayoutDate: String {
-        CustomDateFormatter.formatMonthDayYear(position.nextPayout)
+
+    var formattedPayoutDate: String? {
+        guard let nextPayout = position.nextPayout else { return nil }
+        return CustomDateFormatter.formatMonthDayYear(nextPayout)
     }
-    
+
     var unstakeDisabled: Bool { position.amount.isZero }
-    var canWithdraw: Bool { position.rewards > 0 }
+    var canWithdraw: Bool {
+        guard let rewards = position.rewards else { return false }
+        return rewards > 0
+    }
+
+    var hasAPR: Bool { position.apr != nil }
+    var hasEstimatedReward: Bool { position.estimatedReward != nil }
+    var hasNextPayout: Bool { position.nextPayout != nil }
     
     var body: some View {
         ContainerView {
             VStack(spacing: 16) {
                 header
-                Separator(color: Theme.colors.borderLight, opacity: 1)
-                rewardsSection
+
+                if hasAPR || hasNextPayout || hasEstimatedReward {
+                    Separator(color: Theme.colors.borderLight, opacity: 1)
+                    rewardsSection
+                }
+
                 Separator(color: Theme.colors.border, opacity: 1)
                 stakeButtonsView
             }
@@ -71,23 +85,31 @@ struct DefiTHORChainStakedPositionView: View {
     
     @ViewBuilder
     var rewardsSection: some View {
-        HStack(spacing: 4) {
-            Icon(named: "percent", size: 16)
-            Text("apr".localized)
-                .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textExtraLight)
-            Spacer()
-            
-            Text(position.apr.formatted(.percent))
-                .font(Theme.fonts.bodyMMedium)
-                .foregroundStyle(Theme.colors.alertSuccess)
+        if let apr = position.apr {
+            HStack(spacing: 4) {
+                Icon(named: "percent", size: 16)
+                Text("apr".localized)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textExtraLight)
+                Spacer()
+
+                Text(apr.formatted(.percent.precision(.fractionLength(2))))
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundStyle(Theme.colors.alertSuccess)
+            }
         }
-                
-        HStack(alignment: .top, spacing: 16) {
-            nextPayoutView
-                .frame(maxWidth: .infinity, alignment: .leading)
-            estimatedRewardView
-                .frame(maxWidth: .infinity, alignment: .leading)
+
+        if hasNextPayout || hasEstimatedReward {
+            HStack(alignment: .top, spacing: 16) {
+                if hasNextPayout {
+                    nextPayoutView
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                if hasEstimatedReward {
+                    estimatedRewardView
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
         }
     }
     
@@ -99,12 +121,14 @@ struct DefiTHORChainStakedPositionView: View {
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textExtraLight)
             }
-            Text(formattedPayoutDate)
-                .font(Theme.fonts.bodyMMedium)
-                .foregroundStyle(Theme.colors.textLight)
+            if let payoutDate = formattedPayoutDate {
+                Text(payoutDate)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundStyle(Theme.colors.textLight)
+            }
         }
     }
-    
+
     var estimatedRewardView: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
@@ -113,21 +137,28 @@ struct DefiTHORChainStakedPositionView: View {
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textExtraLight)
             }
-            HiddenBalanceText(AmountFormatter.formatCryptoAmount(value: position.estimatedReward, coin: position.coin))
-                .font(Theme.fonts.bodyMMedium)
-                .foregroundStyle(Theme.colors.textLight)
+            if let estimatedReward = position.estimatedReward, let rewardCoin = position.rewardCoin {
+                HiddenBalanceText(AmountFormatter.formatCryptoAmount(value: estimatedReward, coin: rewardCoin))
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundStyle(Theme.colors.textLight)
+            }
         }
     }
     
     @ViewBuilder
     var stakeButtonsView: some View {
-        if canWithdraw {
-            withdrawButtonsView
-        } else {
-            defaultButtonsView
+        switch position.type {
+        case .stake, .compound:
+            if canWithdraw {
+                withdrawButtonsView
+            } else {
+                defaultButtonsView
+            }
+        case .index:
+            indexButtonsView
         }
     }
-    
+
     var defaultButtonsView: some View {
         HStack(alignment: .top, spacing: 16) {
             DefiButton(title: "unstake".localized, icon: "minus-circle", type: .secondary) {
@@ -138,9 +169,24 @@ struct DefiTHORChainStakedPositionView: View {
             }
         }
     }
+
+    var indexButtonsView: some View {
+        HStack(alignment: .top, spacing: 16) {
+            DefiButton(title: "redeem".localized, icon: "minus-circle", type: .secondary) {
+                onUnstake() // Use onUnstake for redeem action
+            }.disabled(unstakeDisabled)
+            DefiButton(title: "mint".localized, icon: "plus-circle") {
+                onStake() // Use onStake for mint action
+            }
+        }
+    }
     
     var withdrawTitle: String {
-        let amount = AmountFormatter.formatCryptoAmount(value: position.rewards, coin: position.rewardCoin)
+        guard let rewards = position.rewards,
+              let rewardCoin = position.rewardCoin else {
+            return "withdraw".localized
+        }
+        let amount = AmountFormatter.formatCryptoAmount(value: rewards, coin: rewardCoin)
         return String(format: "withdrawAmount".localized, amount)
     }
     

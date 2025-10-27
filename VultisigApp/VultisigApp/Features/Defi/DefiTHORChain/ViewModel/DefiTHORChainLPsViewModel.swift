@@ -12,6 +12,7 @@ final class DefiTHORChainLPsViewModel: ObservableObject {
     @Published private(set) var vault: Vault
     @Published private(set) var lpPositions: [LPPosition] = []
     @Published private(set) var isLoading: Bool = false
+    @Published private(set) var setupDone: Bool = false
     
     var hasLPPositions: Bool {
         !vaultLPPositions.isEmpty
@@ -41,6 +42,7 @@ final class DefiTHORChainLPsViewModel: ObservableObject {
     func refresh() async {
         guard hasLPPositions, let runeCoin = vault.coins.first(where: { $0.isRune }) else {
             lpPositions = []
+            setupDone = true
             return
         }
 
@@ -64,6 +66,8 @@ final class DefiTHORChainLPsViewModel: ObservableObject {
             print("Error fetching LP positions: \(error)")
             isLoading = false
         }
+        
+        setupDone = true
     }
     
     private func convertToLPPositions(_ apiPositions: [THORChainLPPosition]) async throws -> [LPPosition] {

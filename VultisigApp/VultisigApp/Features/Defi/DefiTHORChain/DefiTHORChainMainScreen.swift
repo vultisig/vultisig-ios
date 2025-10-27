@@ -16,6 +16,7 @@ struct DefiTHORChainMainScreen: View {
     @StateObject var lpsViewModel: DefiTHORChainLPsViewModel
     @StateObject var stakeViewModel: DefiTHORChainStakeViewModel
     @State private var showPositionSelection = false
+    @State var loadingBalances: Bool = false
     
     init(vault: Vault, group: GroupedChain) {
         self.vault = vault
@@ -75,6 +76,7 @@ struct DefiTHORChainMainScreen: View {
                 DefiTHORChainBondedView(
                     viewModel: bondViewModel,
                     coin: group.nativeCoin,
+                    loadingBalances: $loadingBalances,
                     onBond: { _ in
                         // TODO: - Redirect to bond
                     },
@@ -86,6 +88,7 @@ struct DefiTHORChainMainScreen: View {
             case .stake:
                 DefiTHORChainStakedView(
                     viewModel: stakeViewModel,
+                    loadingBalances: $loadingBalances,
                     onStake: { _ in
                         // TODO: - Redirect to stake
                     },
@@ -101,6 +104,7 @@ struct DefiTHORChainMainScreen: View {
                 DefiTHORChainLPsView(
                     vault: vault,
                     viewModel: lpsViewModel,
+                    loadingBalances: $loadingBalances,
                     onRemove: { _ in
                         // TODO: - Redirect to remove LP
                     },
@@ -166,8 +170,10 @@ private extension DefiTHORChainMainScreen {
 
 private extension DefiTHORChainMainScreen {
     func refresh() async {
-        // TODO: - Refresh per tab
+        await MainActor.run { loadingBalances = true }
         await viewModel.refresh()
+        await MainActor.run { loadingBalances = false }
+        
         await bondViewModel.refresh()
         await lpsViewModel.refresh()
         await stakeViewModel.refresh()
