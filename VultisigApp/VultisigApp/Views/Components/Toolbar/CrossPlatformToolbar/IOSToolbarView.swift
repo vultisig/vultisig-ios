@@ -27,6 +27,7 @@ struct IOSToolbarView<Content: View>: View {
     
     var body: some View {
         contentContainer
+            .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {
                 ToolbarItemGroup(placement: .cancellationAction) {
                     ForEach(Array(leadingItems.enumerated()), id: \.offset) { _, item in
