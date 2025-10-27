@@ -28,16 +28,16 @@ struct DefiTHORChainMainScreen: View {
     }
     
     var body: some View {
-        Screen(edgeInsets: .init(top: .zero, bottom: .zero), backgroundType: .gradient) {
-            ScrollView(showsIndicators: false) {
-                LazyVStack(spacing: 16) {
-                    DefiTHORChainBalanceView(groupedChain: group)
-                    positionsSegmentedControlView
-                    selectedPositionView
-                }
-                .padding(.top, isMacOS ? 60 : 16)
+        ScrollView(showsIndicators: false) {
+            LazyVStack(spacing: 16) {
+                DefiTHORChainBalanceView(groupedChain: group)
+                positionsSegmentedControlView
+                selectedPositionView
             }
+            .padding(.top, isMacOS ? 60 : 16)
+            .padding(.horizontal, 16)
         }
+        .background(VaultMainScreenBackground())
         .overlay(bottomGradient, alignment: .bottom)
         .onLoad {
             viewModel.onLoad()
@@ -56,6 +56,7 @@ struct DefiTHORChainMainScreen: View {
                 isPresented: $showPositionSelection
             )
         }
+        .crossPlatformToolbar(ignoresTopEdge: true) {}
     }
     
     var positionsSegmentedControlView: some View {
@@ -113,7 +114,7 @@ struct DefiTHORChainMainScreen: View {
                     },
                     emptyStateView: { emptyStateView }
                 )
-
+                
             }
         }
         .transition(.opacity)
