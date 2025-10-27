@@ -44,10 +44,8 @@ struct PeerDiscoveryView: View {
     
     var body: some View {
         content
-            .task {
+            .onLoad {
                 viewModel.startDiscovery()
-            }
-            .onAppear {
                 animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
                 viewModel.setData(
                     vault: vault,

@@ -80,7 +80,7 @@ private struct LoadingBanner: View {
 }
 
 extension View {
-    func withLoading(text: String, isLoading: Binding<Bool>) -> some View {
+    func withLoading(text: String = "pleaseWait".localized, isLoading: Binding<Bool>) -> some View {
         modifier(LoadingOverlayViewModifier(text: text, isLoading: isLoading))
     }
 }

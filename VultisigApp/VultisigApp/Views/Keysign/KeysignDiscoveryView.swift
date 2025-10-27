@@ -74,10 +74,12 @@ struct KeysignDiscoveryView: View {
                 loader
             }
         }
-        .task {
-            qrScannedAnimation = RiveViewModel(fileName: "QRScanner", autoPlay: true)
-            await setData()
-            await viewModel.startDiscovery()
+        .onLoad {
+            Task { @MainActor in
+                qrScannedAnimation = RiveViewModel(fileName: "QRScanner", autoPlay: true)
+                await setData()
+                await viewModel.startDiscovery()
+            }
         }
         .onDisappear {
             viewModel.stopDiscovery()
