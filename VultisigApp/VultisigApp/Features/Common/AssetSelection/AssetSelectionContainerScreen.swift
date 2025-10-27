@@ -59,6 +59,7 @@ struct AssetSelectionContainerScreen<Asset: Hashable, SectionType: Hashable, Cel
     
     var body: some View {
         container
+            .transaction { $0.animation = nil }
     }
     
     var container: some View {
@@ -68,7 +69,6 @@ struct AssetSelectionContainerScreen<Asset: Hashable, SectionType: Hashable, Cel
         }
 #else
         content
-            .transaction { $0.animation = nil }
             .presentationSizingFitted()
             .applySheetSize()
 #endif
@@ -115,6 +115,7 @@ struct AssetSelectionContainerScreen<Asset: Hashable, SectionType: Hashable, Cel
         .presentationDetents([.large])
         .presentationBackground(Theme.colors.bgPrimary)
         .presentationDragIndicator(.visible)
+        .background(Theme.colors.bgPrimary)
     }
     
     var gradientOverlay: some View {
