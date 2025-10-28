@@ -847,8 +847,6 @@
 		A6E0C9382DF0A1B800A01543 /* ReferralTextFieldAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9372DF0A1B800A01543 /* ReferralTextFieldAction.swift */; };
 		A6E0C93A2DF0AC8700A01543 /* ReferralTextField+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9392DF0AC8700A01543 /* ReferralTextField+iOS.swift */; };
 		A6E0C93C2DF0AC9B00A01543 /* ReferralTextField+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C93B2DF0AC9B00A01543 /* ReferralTextField+macOS.swift */; };
-		A6E0C94D2DF49E1900A01543 /* CreateReferralDetailsView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C94C2DF49E1900A01543 /* CreateReferralDetailsView+iOS.swift */; };
-		A6E0C94F2DF49E2700A01543 /* CreateReferralDetailsView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C94E2DF49E2700A01543 /* CreateReferralDetailsView+macOS.swift */; };
 		A6E52F802BBE430600FD3785 /* TransactionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E52F7F2BBE430600FD3785 /* TransactionCell.swift */; };
 		A6E5823D2BE98C4F006DA410 /* NavigationBlankBackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E5823C2BE98C4F006DA410 /* NavigationBlankBackButton.swift */; };
 		A6ECA1882C93F4E800456110 /* SetupVaultImageManager+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1872C93F4E800456110 /* SetupVaultImageManager+iOS.swift */; };
@@ -1982,8 +1980,6 @@
 		A6E0C9372DF0A1B800A01543 /* ReferralTextFieldAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralTextFieldAction.swift; sourceTree = "<group>"; };
 		A6E0C9392DF0AC8700A01543 /* ReferralTextField+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReferralTextField+iOS.swift"; sourceTree = "<group>"; };
 		A6E0C93B2DF0AC9B00A01543 /* ReferralTextField+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReferralTextField+macOS.swift"; sourceTree = "<group>"; };
-		A6E0C94C2DF49E1900A01543 /* CreateReferralDetailsView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CreateReferralDetailsView+iOS.swift"; sourceTree = "<group>"; };
-		A6E0C94E2DF49E2700A01543 /* CreateReferralDetailsView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CreateReferralDetailsView+macOS.swift"; sourceTree = "<group>"; };
 		A6E52F7F2BBE430600FD3785 /* TransactionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionCell.swift; sourceTree = "<group>"; };
 		A6E5823C2BE98C4F006DA410 /* NavigationBlankBackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBlankBackButton.swift; sourceTree = "<group>"; };
 		A6ECA1872C93F4E800456110 /* SetupVaultImageManager+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SetupVaultImageManager+iOS.swift"; sourceTree = "<group>"; };
@@ -4645,7 +4641,6 @@
 				A6BB9BD02DA9E56A0085E117 /* VaultShareBackupsView+iOS.swift */,
 				A6BB9BD62DA9EAB10085E117 /* UpgradeYourVaultView+iOS.swift */,
 				A6E0C9392DF0AC8700A01543 /* ReferralTextField+iOS.swift */,
-				A6E0C94C2DF49E1900A01543 /* CreateReferralDetailsView+iOS.swift */,
 				A6505B002CA67B560002FBF4 /* Keygen */,
 				A6505AFF2CA67B4F0002FBF4 /* Keysign */,
 				A6505AFD2CA67ADE0002FBF4 /* FunctionCall */,
@@ -4697,7 +4692,6 @@
 				A60F29E42DA5A51B00C24765 /* SwapCryptoDoneView+macOS.swift */,
 				A6BB9BCC2DA9E1D60085E117 /* AllDevicesUpgradeView+macOS.swift */,
 				A6BB9BD42DA9EAA20085E117 /* UpgradeYourVaultView+macOS.swift */,
-				A6E0C94E2DF49E2700A01543 /* CreateReferralDetailsView+macOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -6153,7 +6147,6 @@
 				DE63AE562BBA788D001BBE5C /* GaiaService.swift in Sources */,
 				B2ADDD782E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift in Sources */,
 				A6505AE32CA6708C0002FBF4 /* ColorStyle+macOS.swift in Sources */,
-				A6E0C94D2DF49E1900A01543 /* CreateReferralDetailsView+iOS.swift in Sources */,
 				A6725D432C40C45800D47716 /* AddressBookCell.swift in Sources */,
 				A6A816402CBCB018009EE114 /* FileQRCodeImporterMac+macOS.swift in Sources */,
 				B52243432D239BC2003C734A /* akash.swift in Sources */,
@@ -6195,7 +6188,6 @@
 				BU61YTK5IM2CA6CN47V4L8BG /* FunctionCallAddThorLP.swift in Sources */,
 				GVTXGPZR8J4TTJM9OSTSZLYW /* FunctionCallRemoveThorLP.swift in Sources */,
 				F6MAHZO7QADAUEOCUKP14KWW /* ThorchainLP.swift in Sources */,
-				A6E0C94F2DF49E2700A01543 /* CreateReferralDetailsView+macOS.swift in Sources */,
 				A6C670CB2C9E8BAB00F59B6A /* VultExtensionViewModel.swift in Sources */,
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,
 				B53D8CCA2BF7F22500B795D3 /* FunctionCallUnbond.swift in Sources */,

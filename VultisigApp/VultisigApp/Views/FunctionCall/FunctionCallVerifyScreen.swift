@@ -9,7 +9,6 @@ import Foundation
 import SwiftUI
 
 struct FunctionCallVerifyScreen: View {
-//    @Binding var keysignPayload: KeysignPayload?
     @StateObject var depositViewModel = FunctionCallViewModel()
     @StateObject var depositVerifyViewModel = FunctionCallVerifyViewModel()
     @ObservedObject var tx: SendTransaction

@@ -129,20 +129,21 @@ class ReferralViewModel: ObservableObject {
         expireInCount -= 1
     }
     
-    func verifyReferralEntries(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel) async {
+    func verifyReferralEntries(tx: SendTransaction) async -> Bool {
         await verifyReferralCode()
         
         guard isReferralCodeVerified else {
             showAlert(with: "pickValidCode")
-            return
+            return false
         }
         
         guard enoughGas(tx: tx) else {
             showAlert(with: "insufficientBalance")
-            return
+            return false
         }
         
-        createTransaction(tx: tx, functionCallViewModel: functionCallViewModel)
+        setup(tx: tx)
+        return true
     }
     
     func getRegistrationFee() -> Decimal {
@@ -186,12 +187,6 @@ class ReferralViewModel: ObservableObject {
         } catch {
             print("error fetching data: \(error.localizedDescription)")
         }
-    }
-    
-    func createTransaction(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel) {
-        setupTransaction(tx: tx)
-        // TODO: - Remove
-//        functionCallViewModel.currentIndex = 2
     }
     
     func resetAllData() {

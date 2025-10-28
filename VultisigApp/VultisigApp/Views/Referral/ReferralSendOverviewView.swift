@@ -9,50 +9,8 @@ import SwiftUI
 
 struct ReferralSendOverviewView: View {
     @ObservedObject var sendTx: SendTransaction
-//    @ObservedObject var functionCallViewModel: FunctionCallViewModel
     
     var body: some View {
-        ZStack {
-            Background()
-            
-            VStack {
-                header
-                content
-            }
-            .navigationBarBackButtonHidden(true)
-        }
-    }
-    
-    var header: some View {
-        HStack {
-            backButton
-            Spacer()
-            headerTitle
-            Spacer()
-            backButton
-                .opacity(0)
-        }
-        .padding(.horizontal, 16)
-        .padding(.top, 8)
-    }
-    
-    var backButton: some View {
-        // TODO: - Remove
-        Button {
-//            functionCallViewModel.currentIndex -= 1
-            // TODO: - Remove
-        } label: {
-            NavigationBlankBackButton()
-        }
-    }
-    
-    var headerTitle: some View {
-        Text(NSLocalizedString("sendOverview", comment: ""))
-            .foregroundColor(Theme.colors.textPrimary)
-            .font(Theme.fonts.bodyLMedium)
-    }
-    
-    var content: some View {
         VStack(spacing: 16) {
             Spacer()
             summary
