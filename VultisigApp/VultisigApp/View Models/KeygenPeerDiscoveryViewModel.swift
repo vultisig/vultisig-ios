@@ -241,7 +241,6 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.mediator.stop()
     }
     
-    
     private func startSession() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
         let body = [self.localPartyID]

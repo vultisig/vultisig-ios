@@ -31,7 +31,6 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
     
     // Domain models - needed for FunctionCallInstance compatibility
     var tx: SendTransaction
-    private var functionCallViewModel: FunctionCallViewModel
     private var vault: Vault
     
     var addressFields: [String: String] {
@@ -45,9 +44,8 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
         }
     }
     
-    required init(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault) {
+    required init(tx: SendTransaction, vault: Vault) {
         self.tx = tx
-        self.functionCallViewModel = functionCallViewModel
         self.vault = vault
     }
     

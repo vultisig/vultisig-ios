@@ -448,13 +448,13 @@ enum FunctionCallInstance {
         }
     }
     
-    static func getDefault(for coin: Coin, tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault) -> FunctionCallInstance {
+    static func getDefault(for coin: Coin, tx: SendTransaction, vault: Vault) -> FunctionCallInstance {
         switch coin.chain {
         case .thorChain:
             if coin.ticker.uppercased() == "TCY" {
                 return .custom(FunctionCallCustom())
             }
-            return .bond(FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
+            return .bond(FunctionCallBond(tx: tx, vault: vault))
         case .mayaChain:
             return .bondMaya(FunctionCallBondMayaChain(assets: nil))
         case .dydx:
@@ -462,11 +462,11 @@ enum FunctionCallInstance {
         case .ton:
             return .stake(FunctionCallStake(tx: tx))
         case .gaiaChain:
-            return .theSwitch(FunctionCallCosmosSwitch(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
+            return .theSwitch(FunctionCallCosmosSwitch(tx: tx, vault: vault))
         case .kujira:
-            return .cosmosIBC(FunctionCallCosmosIBC(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
+            return .cosmosIBC(FunctionCallCosmosIBC(tx: tx, vault: vault))
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
-            return .addThorLP(FunctionCallAddThorLP(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
+            return .addThorLP(FunctionCallAddThorLP(tx: tx, vault: vault))
         default:
             return .custom(FunctionCallCustom())
         }

@@ -41,7 +41,6 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     
     // Domain models
     var tx: SendTransaction
-    private var functionCallViewModel: FunctionCallViewModel
     private var vault: Vault
     
     // MARK: Addressable conformance helpers
@@ -55,9 +54,8 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     }
     
     // MARK: Init
-    required init(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault) {
+    required init(tx: SendTransaction, vault: Vault) {
         self.tx = tx
-        self.functionCallViewModel = functionCallViewModel
         self.vault = vault
     }
     
@@ -176,7 +174,9 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
                 }
                 
                 if tx.coin.ticker.uppercased() != "RUNE" && !isInThePool {
-                    await self.functionCallViewModel.setRuneToken(to: tx, vault: vault)
+                    if let runeCoin = vault.runeCoin {
+                        tx.coin = runeCoin
+                    }
                 }
                 
                 DispatchQueue.main.async {

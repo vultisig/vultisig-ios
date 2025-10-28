@@ -142,15 +142,15 @@ struct SendVerifyScreen: View {
         }
         .disabled(sendCryptoVerifyViewModel.signButtonDisabled)
     }
+}
+
+struct VerifyKeysignPayload: Identifiable, Hashable {
+    let id: String
+    let payload: KeysignPayload
     
-    private struct VerifyKeysignPayload: Identifiable, Hashable {
-        let id: String
-        let payload: KeysignPayload
-        
-        init(id: String = UUID().uuidString, payload: KeysignPayload) {
-            self.id = id
-            self.payload = payload
-        }
+    init(id: String = UUID().uuidString, payload: KeysignPayload) {
+        self.id = id
+        self.payload = payload
     }
 }
 

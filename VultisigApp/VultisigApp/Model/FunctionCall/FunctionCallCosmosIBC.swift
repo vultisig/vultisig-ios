@@ -60,9 +60,7 @@ class FunctionCallCosmosIBC: FunctionCallAddressable, ObservableObject {
     
     private var cancellables = Set<AnyCancellable>()
     
-    required init(
-        tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault
-    ) {
+    required init(tx: SendTransaction, vault: Vault) {
         self.tx = tx
         self.vault = vault
         self.amount = tx.coin.balanceDecimal

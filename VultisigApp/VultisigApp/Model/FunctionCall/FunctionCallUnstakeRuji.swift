@@ -22,7 +22,7 @@ class FunctionCallUnstakeRuji: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private var tx: SendTransaction
     
-    required init(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel) {
+    required init(tx: SendTransaction) {
         self.tx = tx
         setupValidation()
     }
