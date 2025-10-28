@@ -10,11 +10,45 @@ import SwiftUI
 
 extension SwapPercentageButtons {
     var container: some View {
-        content
+        VStack(spacing: 8) {
+            buttons
+            separator
+        }
+        .frame(maxWidth: .infinity)
     }
     
-    var content: some View {
-        buttons
+    var separator: some View {
+        Rectangle()
+            .frame(height: 1)
+            .foregroundColor(Theme.colors.bgTertiary)
+    }
+    
+    var buttons: some View {
+        HStack(spacing: 8) {
+            ForEach(buttonOptions, id: \.self) { option in
+                getPercentageButton(for: option)
+            }
+        }
+    }
+    
+    func getPercentageButton(for option: Int) -> some View {
+        Button(action: {
+            self.selectedPercentage = option
+            onTap(option)
+        }) {
+            getPercentageCell(for: "\(option)", isSelected: self.selectedPercentage == option && !self.showAllPercentageButtons)
+        }
+        .disabled(self.selectedPercentage == option && !self.showAllPercentageButtons)
+    }
+    
+    func getPercentageCell(for text: String, isSelected: Bool) -> some View {
+        Text(text + "%")
+            .font(Theme.fonts.caption12)
+            .foregroundColor(isSelected ? Color.white : Theme.colors.textPrimary)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity)
+            .background(isSelected ? Theme.colors.bgPrimary : Theme.colors.bgSecondary)
+            .cornerRadius(32)
     }
 }
 #endif

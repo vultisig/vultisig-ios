@@ -27,4 +27,17 @@ extension View {
         self
         #endif
     }
+    
+    @ViewBuilder
+    func presentationSizingFitted() -> some View {
+        #if os(macOS)
+        if #available(macOS 15.0, *) {
+            self.presentationSizing(.fitted)
+        } else {
+            self
+        }
+        #else
+        self
+        #endif
+    }
 }

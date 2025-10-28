@@ -17,6 +17,8 @@ extension SwapCryptoDetailsView {
                 }
                 
                 ToolbarItemGroup(placement: .keyboard) {
+                    percentageButtons
+                    
                     Spacer()
                     
                     Button {
@@ -36,7 +38,6 @@ extension SwapCryptoDetailsView {
             handlePercentageSelection(percentage)
         }
         .opacity(keyboardObserver.keyboardHeight == 0 ? 0 : 1)
-        .offset(y: -0.9 * CGFloat(keyboardObserver.keyboardHeight))
         .animation(.easeInOut, value: keyboardObserver.keyboardHeight)
     }
     
