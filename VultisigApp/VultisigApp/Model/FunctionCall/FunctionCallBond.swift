@@ -21,7 +21,11 @@ class FunctionCallBond: FunctionCallAddressable, ObservableObject {
     @Published var providerValid: Bool = true
     @Published var feeValid: Bool = true
     
-    @Published var isTheFormValid: Bool = false
+    @Published var isTheFormValid: Bool = false {
+        didSet {
+            print("is the form valid", isTheFormValid)
+        }
+    }
     @Published var customErrorMessage: String? = nil
     
     private var tx: SendTransaction
@@ -70,7 +74,10 @@ class FunctionCallBond: FunctionCallAddressable, ObservableObject {
     
     private func setupValidation() {
         Publishers.CombineLatest4($amountValid, $nodeAddressValid, $providerValid, $feeValid)
-            .map { $0 && $1 && $2 && $3 && (!self.provider.isEmpty ? self.fee != .zero : true) }
+            .map { amountValid, nodeAddressValid, providerValid, feeValid in
+                print("Valid form ", amountValid, nodeAddressValid, providerValid, feeValid)
+                return amountValid && nodeAddressValid && providerValid && feeValid && (!self.provider.isEmpty ? self.fee != .zero : true)
+            }
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }

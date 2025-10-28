@@ -11,6 +11,7 @@ struct FunctionCallDetailsScreen: View {
     @State private var selectedContractMemoType: FunctionCallContractType = .thorChainMessageDeposit
     @State private var showInvalidFormAlert = false
     @State private var navigateToVerify = false
+    @State private var hasCompletedInitialSetup = false
     
     @State var fnCallInstance: FunctionCallInstance?
     let defaultCoin: Coin
@@ -69,6 +70,7 @@ struct FunctionCallDetailsScreen: View {
             }
         }
         .onChange(of: selectedFunctionMemoType) {
+            guard hasCompletedInitialSetup else { return }
             guard let fnInstance = fnCallInstance else { return }
             let currentNodeAddress = extractNodeAddress(from: fnInstance)
             switch selectedFunctionMemoType {
@@ -328,8 +330,12 @@ private extension FunctionCallDetailsScreen {
         tx.coin = defaultCoin
     }
     
-    @MainActor
     func setupForm() {
+        var selectedFunctionMemoType: FunctionCallType?
+        var selectedContractMemoType: FunctionCallContractType?
+        var fnCallInstance: FunctionCallInstance?
+        
+        // Temporarily disable onChange handler during setup
         let dict = tx.memoFunctionDictionary
         if let nodeAddress = dict.get("nodeAddress"), !nodeAddress.isEmpty {
             if let actionStr = dict.get("action") {
@@ -338,8 +344,8 @@ private extension FunctionCallDetailsScreen {
                 switch actionStr.lowercased() {
                 case "bond":
                     functionType = .bond
-                    self.selectedFunctionMemoType = functionType
-                    self.selectedContractMemoType = FunctionCallContractType.getDefault(for: defaultCoin)
+                    selectedFunctionMemoType = functionType
+                    selectedContractMemoType = FunctionCallContractType.getDefault(for: defaultCoin)
                     
                     let bondInstance = FunctionCallBond(tx: tx, vault: vault)
                     bondInstance.nodeAddress = nodeAddress
@@ -348,13 +354,11 @@ private extension FunctionCallDetailsScreen {
                         bondInstance.fee = feeInt
                         bondInstance.feeValid = true
                     }
-                    self.fnCallInstance = .bond(bondInstance)
-                    return
-                    
+                    fnCallInstance = .bond(bondInstance)
                 case "unbond":
                     functionType = .unbond
-                    self.selectedFunctionMemoType = functionType
-                    self.selectedContractMemoType = FunctionCallContractType.getDefault(for: defaultCoin)
+                    selectedFunctionMemoType = functionType
+                    selectedContractMemoType = FunctionCallContractType.getDefault(for: defaultCoin)
                     
                     let unbondInstance = FunctionCallUnbond(tx: tx, vault: vault)
                     unbondInstance.nodeAddress = nodeAddress
@@ -363,13 +367,11 @@ private extension FunctionCallDetailsScreen {
                         unbondInstance.amount = amountDecimal
                         unbondInstance.amountValid = true
                     }
-                    self.fnCallInstance = .unbond(unbondInstance)
-                    return
-                    
+                    fnCallInstance = .unbond(unbondInstance)
                 case "rebond":
                     functionType = .rebond
-                    self.selectedFunctionMemoType = functionType
-                    self.selectedContractMemoType = FunctionCallContractType.getDefault(for: defaultCoin)
+                    selectedFunctionMemoType = functionType
+                    selectedContractMemoType = FunctionCallContractType.getDefault(for: defaultCoin)
                     
                     let rebondInstance = FunctionCallReBond(tx: tx, vault: vault)
                     rebondInstance.nodeAddress = nodeAddress
@@ -382,17 +384,19 @@ private extension FunctionCallDetailsScreen {
                         rebondInstance.rebondAmount = amountDecimal
                         rebondInstance.rebondAmountValid = true
                     }
-                    self.fnCallInstance = .rebond(rebondInstance)
-                    return
+                    fnCallInstance = .rebond(rebondInstance)
                 default:
                     break
                 }
             }
         }
-        self.selectedFunctionMemoType = FunctionCallType.getDefault(for: defaultCoin)
-        self.selectedContractMemoType = FunctionCallContractType.getDefault(
-                for: defaultCoin)
-        self.fnCallInstance = FunctionCallInstance.getDefault(for: defaultCoin, tx: tx, vault: vault)
+        
+        self.selectedFunctionMemoType = selectedFunctionMemoType ?? FunctionCallType.getDefault(for: defaultCoin)
+        self.selectedContractMemoType = selectedContractMemoType ?? FunctionCallContractType.getDefault(for: defaultCoin)
+        self.fnCallInstance = fnCallInstance ?? FunctionCallInstance.getDefault(for: defaultCoin, tx: tx, vault: vault)
+        DispatchQueue.main.async {
+            self.hasCompletedInitialSetup = true
+        }
     }
     
     func loadGasInfo() async {
