@@ -110,20 +110,18 @@ class DydxHelper {
                               signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
-        let signedTransaction = try getSignedTransaction(vaultHexPubKey: vaultHexPubKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
+        let signedTransaction = try getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
         return signedTransaction
     }
     
-    func getSignedTransaction(vaultHexPubKey: String,
-                              vaultHexChainCode: String,
+    func getSignedTransaction(coinHexPublicKey: String,
                               inputData: Data,
                               signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
-        let cosmosPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode, derivePath: self.coinType.derivationPath())
-        guard let pubkeyData = Data(hexString: cosmosPublicKey),
+        guard let pubkeyData = Data(hexString: coinHexPublicKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {
-            throw HelperError.runtimeError("public key \(cosmosPublicKey) is invalid")
+            throw HelperError.runtimeError("public key \(coinHexPublicKey) is invalid")
         }
         
         do {

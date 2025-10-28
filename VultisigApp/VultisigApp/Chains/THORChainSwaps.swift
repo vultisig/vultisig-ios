@@ -23,9 +23,9 @@ class THORChainSwaps {
     static var referredUserFeeRateBp: String {
         return "10"
     }
-
+    
     static let affiliateFeeAddress = "vi"
-
+    
     let vaultHexPublicKey: String
     let vaultHexChainCode: String
     let vaultHexPublicKeyEdDSA: String
@@ -41,7 +41,7 @@ class THORChainSwaps {
         case .thorChain, .thorChainStagenet:
             return try THORChainHelper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin:
-            let helper = UTXOChainsHelper(coin: swapPayload.fromCoin.coinType, vaultHexPublicKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode)
+            let helper = UTXOChainsHelper(coin: swapPayload.fromCoin.coinType)
             let swapInput =  try helper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
             return try helper.getSigningInputData(keysignPayload: keysignPayload, signingInput: swapInput)
         case .ethereum, .bscChain, .avalanche,.base,.arbitrum:
@@ -61,7 +61,7 @@ class THORChainSwaps {
     
     func getPreSignedImageHash(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> [String] {
         let inputData = try getPreSignedInputData(swapPayload: swapPayload, keysignPayload: keysignPayload, incrementNonce: incrementNonce)
-
+        
         switch swapPayload.fromCoin.chain {
         case .thorChain, .thorChainStagenet, .ethereum, .bscChain, .avalanche, .gaiaChain, .base, .arbitrum:
             let hashes = TransactionCompiler.preImageHashes(coinType: swapPayload.fromCoin.coinType, txInputData: inputData)
@@ -85,7 +85,7 @@ class THORChainSwaps {
             throw HelperError.runtimeError("not support yet")
         }
     }
-
+    
     func getPreSignedApproveInputData(approvePayload: ERC20ApprovePayload, keysignPayload: KeysignPayload) throws -> Data {
         let approveInput = EthereumSigningInput.with {
             $0.transaction = .with {
@@ -102,7 +102,7 @@ class THORChainSwaps {
         )
         return inputData
     }
-
+    
     func getPreSignedApproveImageHash(approvePayload: ERC20ApprovePayload, keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedApproveInputData(
             approvePayload: approvePayload,
@@ -112,49 +112,49 @@ class THORChainSwaps {
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         return [preSigningOutput.dataHash.hexString]
     }
-
+    
     func getSignedApproveTransaction(approvePayload: ERC20ApprovePayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         let inputData = try getPreSignedApproveInputData(
             approvePayload: approvePayload,
             keysignPayload: keysignPayload
         )
-        let signedEvmTx = try EVMHelper.getHelper(coin: keysignPayload.coin).getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
+        let signedEvmTx = try EVMHelper.getHelper(coin: keysignPayload.coin).getSignedTransaction(ethPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
         return signedEvmTx
     }
-
+    
     func getSignedTransaction(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse], incrementNonce: Bool) throws -> SignedTransactionResult {
-
+        
         let inputData = try getPreSignedInputData(
             swapPayload: swapPayload,
             keysignPayload: keysignPayload,
             incrementNonce: incrementNonce
         )
-            
+        
         switch swapPayload.fromCoin.chain {
         case .thorChain, .thorChainStagenet:
-            return try THORChainHelper.getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
+            return try THORChainHelper.getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
         case .bitcoin:
-            let utxoHelper = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode)
-            return try utxoHelper.getSignedTransaction(inputData: inputData, signatures: signatures)
+            let utxoHelper = UTXOChainsHelper(coin: .bitcoin)
+            return try utxoHelper.getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey,inputData: inputData, signatures: signatures)
         case .bitcoinCash:
-            let utxoHelper = UTXOChainsHelper(coin: .bitcoinCash, vaultHexPublicKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode)
-            return try utxoHelper.getSignedTransaction(inputData: inputData, signatures: signatures)
+            let utxoHelper = UTXOChainsHelper(coin: .bitcoinCash)
+            return try utxoHelper.getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey,inputData: inputData, signatures: signatures)
         case .litecoin:
-            let utxoHelper = UTXOChainsHelper(coin: .litecoin, vaultHexPublicKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode)
-            return try utxoHelper.getSignedTransaction(inputData: inputData, signatures: signatures)
+            let utxoHelper = UTXOChainsHelper(coin: .litecoin)
+            return try utxoHelper.getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey,inputData: inputData, signatures: signatures)
         case .dogecoin:
-            let utxoHelper = UTXOChainsHelper(coin: .dogecoin, vaultHexPublicKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode)
-            return try utxoHelper.getSignedTransaction(inputData: inputData, signatures: signatures)
+            let utxoHelper = UTXOChainsHelper(coin: .dogecoin)
+            return try utxoHelper.getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey,inputData: inputData, signatures: signatures)
         case .ethereum,.bscChain, .avalanche , .base,.arbitrum:
-            let signedEvmTx = try EVMHelper.getHelper(coin: keysignPayload.coin).getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
+            let signedEvmTx = try EVMHelper.getHelper(coin: keysignPayload.coin).getSignedTransaction(ethPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
             return signedEvmTx
         case .gaiaChain:
-            return try ATOMHelper().getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
+            return try ATOMHelper().getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
         case .ripple:
             return try RippleHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
         case .tron:
             return try TronHelper.getSignedTransaction(
-                keysignPayload: keysignPayload, 
+                keysignPayload: keysignPayload,
                 signatures: signatures,
                 publicKeyECDSA: vaultHexPublicKey,
                 publicKeyEdDSA: vaultHexPublicKeyEdDSA,

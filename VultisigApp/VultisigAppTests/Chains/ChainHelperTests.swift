@@ -108,7 +108,7 @@ final class ChainHelperTests: XCTestCase {
         var result: [String] = []
         switch chain {
         case .bitcoin,.bitcoinCash,.dogecoin,.litecoin,.zcash:
-            let utxoHelper = UTXOChainsHelper(coin: chain.coinType, vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode)
+            let utxoHelper = UTXOChainsHelper(coin: chain.coinType)
             let imageHash = try utxoHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
             result += imageHash
         case .ethereum,.arbitrum,.optimism,.polygon,.base,.bscChain,.avalanche,.mantle:

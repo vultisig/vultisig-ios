@@ -77,7 +77,7 @@ struct JoinKeysignGasViewModel {
     
     private func calculateUTXOTotalFee(payload: KeysignPayload) -> BigInt? {
         guard let vault = ApplicationState.shared.currentVault,
-              let helper = UTXOChainsHelper.getHelper(vault: vault, coin: payload.coin) else {
+              let helper = UTXOChainsHelper.getHelper(coin: payload.coin) else {
             return nil
         }
         

@@ -61,7 +61,7 @@ struct KeysignMessageFactory {
 
         switch payload.coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
-            let utxoHelper = UTXOChainsHelper(coin: payload.coin.chain.coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+            let utxoHelper = UTXOChainsHelper(coin: payload.coin.chain.coinType)
             return try utxoHelper.getPreSignedImageHash(keysignPayload: payload)
         case .cardano:
             return try CardanoHelper.getPreSignedImageHash(keysignPayload: payload)

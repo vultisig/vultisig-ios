@@ -107,7 +107,7 @@ struct KeysignPayloadFactory {
         if usableUTXOs.isEmpty {
             throw Errors.utxoTooSmallError
         }
-        let helper = UTXOChainsHelper.getHelper(vault: vault, coin: keysignPayload.coin)
+        let helper = UTXOChainsHelper.getHelper(coin: keysignPayload.coin)
         guard let utxoHelper = helper else {
             throw Errors.utxoSelectionFailedError
         }

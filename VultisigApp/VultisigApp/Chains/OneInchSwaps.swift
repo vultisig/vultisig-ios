@@ -36,9 +36,7 @@ struct OneInchSwaps {
             incrementNonce: incrementNonce
         )
         let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
-        let transaction = try helper.getSignedTransaction(
-            vaultHexPubKey: vaultHexPublicKey,
-            vaultHexChainCode: vaultHexChainCode,
+        let transaction = try helper.getSignedTransaction(ethPublicKey: keysignPayload.coin.hexPublicKey,
             inputData: inputData,
             signatures: signatures
         )

@@ -271,22 +271,18 @@ class EVMHelper {
         return [preSigningOutput.dataHash.hexString]
     }
     
-    func getSignedTransaction(vaultHexPubKey: String,
-                              vaultHexChainCode: String,
-                              keysignPayload: KeysignPayload,
+    func getSignedTransaction(keysignPayload: KeysignPayload,
                               signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
-        let signedTransaction = try getSignedTransaction(vaultHexPubKey: vaultHexPubKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
+        let signedTransaction = try getSignedTransaction(ethPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
         return signedTransaction
     }
     
-    func getSignedTransaction(vaultHexPubKey: String,
-                              vaultHexChainCode: String,
+    func getSignedTransaction(ethPublicKey: String,
                               inputData: Data,
                               signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
-        let ethPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode, derivePath: self.coinType.derivationPath())
         guard let pubkeyData = Data(hexString: ethPublicKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {

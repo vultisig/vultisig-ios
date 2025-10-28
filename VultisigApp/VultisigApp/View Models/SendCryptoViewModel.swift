@@ -695,7 +695,7 @@ class SendCryptoViewModel: ObservableObject {
             planFee = try cardanoHelper.calculateDynamicFee(keysignPayload: keysignPayload)
             
         default: // UTXO chains
-            guard let utxoHelper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) else {
+            guard let utxoHelper = UTXOChainsHelper.getHelper(coin: tx.coin) else {
                 throw HelperError.runtimeError("UTXO helper not available for \(tx.coin.chain.name)")
             }
             let plan = try utxoHelper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)

@@ -49,7 +49,7 @@ final class UTXOChainsHelperTest: XCTestCase {
     }
     
     func testGetPreSignedImageHash() throws {
-        let utxoHelper = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode)
+        let utxoHelper = UTXOChainsHelper(coin: .bitcoin)
         let vaultForTest = Vault(name: "TestVault")
         vaultForTest.pubKeyECDSA = hexPublicKey
         vaultForTest.hexChainCode = hexChainCode
@@ -79,7 +79,7 @@ final class UTXOChainsHelperTest: XCTestCase {
     }
     
     func testGetBitcoinCashPreSignedImageHash() throws {
-        let utxoHelper = UTXOChainsHelper(coin: .bitcoinCash, vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode)
+        let utxoHelper = UTXOChainsHelper(coin: .bitcoinCash)
         let vaultForTest = Vault(name: "TestVault")
         vaultForTest.pubKeyECDSA = hexPublicKey
         vaultForTest.hexChainCode = hexChainCode

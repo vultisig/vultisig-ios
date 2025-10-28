@@ -562,11 +562,7 @@ private extension SwapCryptoViewModel {
                     planFee = try cardanoHelper.calculateDynamicFee(keysignPayload: keysignPayload)
                     
                 default: // UTXO chains
-                    let utxo = UTXOChainsHelper(
-                        coin: tx.fromCoin.coinType,
-                        vaultHexPublicKey: vault.pubKeyECDSA,
-                        vaultHexChainCode: vault.hexChainCode
-                    )
+                    let utxo = UTXOChainsHelper(coin: tx.fromCoin.coinType)
                     let plan = try utxo.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
                     planFee = BigInt(plan.fee)
                 }
