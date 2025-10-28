@@ -301,27 +301,25 @@ struct FunctionCallDetailsScreen: View {
     var button: some View {
         PrimaryButton(title: "continue") {
             Task {
-//                if fnCallInstance.isTheFormValid {
-//                    tx.amount = fnCallInstance.amount.formatToDecimal(digits: tx.coin.decimals)
-//                    tx.memo = fnCallInstance.description
-//                    tx.memoFunctionDictionary = fnCallInstance.toDictionary()
-//                    tx.transactionType = fnCallInstance.getTransactionType()
-//                    tx.wasmContractPayload = fnCallInstance.wasmContractPayload
-//                    
-//                    if let toAddress = fnCallInstance.toAddress {
-//                        tx.toAddress = toAddress
-//                    }
-//                    
-//                    navigateToVerify = true
-//                    
-//                } else {
-//                    showInvalidFormAlert = true
-//                }
+                if let fnCallInstance, fnCallInstance.isTheFormValid {
+                    tx.amount = fnCallInstance.amount.formatToDecimal(digits: tx.coin.decimals)
+                    tx.memo = fnCallInstance.description
+                    tx.memoFunctionDictionary = fnCallInstance.toDictionary()
+                    tx.transactionType = fnCallInstance.getTransactionType()
+                    tx.wasmContractPayload = fnCallInstance.wasmContractPayload
+                    
+                    if let toAddress = fnCallInstance.toAddress {
+                        tx.toAddress = toAddress
+                    }
+                    
+                    navigateToVerify = true
+                    
+                } else {
+                    showInvalidFormAlert = true
+                }
             }
         }
     }
-    
- 
 }
 
 private extension FunctionCallDetailsScreen {
@@ -394,7 +392,7 @@ private extension FunctionCallDetailsScreen {
         self.selectedFunctionMemoType = FunctionCallType.getDefault(for: defaultCoin)
         self.selectedContractMemoType = FunctionCallContractType.getDefault(
                 for: defaultCoin)
-        self.fnCallInstance = FunctionCallInstance.getDefault(for: defaultCoin, tx: SendTransaction(), vault: vault)
+        self.fnCallInstance = FunctionCallInstance.getDefault(for: defaultCoin, tx: tx, vault: vault)
     }
     
     func loadGasInfo() async {
