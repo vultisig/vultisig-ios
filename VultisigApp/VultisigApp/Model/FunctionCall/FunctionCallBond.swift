@@ -54,12 +54,12 @@ class FunctionCallBond: FunctionCallAddressable, ObservableObject {
     
     func initialize() {
         // Ensure RUNE token is selected for BOND operations on THORChain
-//        DispatchQueue.main.async {
-//            if let runeCoin = self.vault.runeCoin {
-//                self.tx.coin = runeCoin
-//            }
-//        }
-//        setupValidation()
+        DispatchQueue.main.async {
+            if let runeCoin = self.vault.runeCoin {
+                self.tx.coin = runeCoin
+            }
+        }
+        setupValidation()
     }
     
     var balance: String {

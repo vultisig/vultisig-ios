@@ -13,7 +13,7 @@ import WalletCore
 import Mediator
 
 @MainActor
-class FunctionCallViewModel: ObservableObject, TransferViewModel {
+class FunctionCallViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var isValidAddress = false
     @Published var isValidForm = true
@@ -96,9 +96,5 @@ class FunctionCallViewModel: ObservableObject, TransferViewModel {
         let tcyToken = vault.coins.first(where: { $0.chain == .thorChain && $0.ticker.uppercased() == "TCY" })
         guard let tcyToken else { return }
         tx.coin = tcyToken
-    }
-    
-    func moveToNextView() {
-        fatalError("moveToNextView shouldn't be used for FunctionCallViewModel anymore")
     }
 }

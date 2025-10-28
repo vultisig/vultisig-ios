@@ -164,8 +164,6 @@ struct FunctionCallVerifyScreen: View {
 
 #Preview {
     FunctionCallVerifyScreen(
-        depositViewModel: FunctionCallViewModel(),
-        depositVerifyViewModel: FunctionCallVerifyViewModel(),
         tx: SendTransaction(),
         vault: Vault.example
     )

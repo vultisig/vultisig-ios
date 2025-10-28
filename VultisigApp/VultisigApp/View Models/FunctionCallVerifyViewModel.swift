@@ -62,7 +62,6 @@ class FunctionCallVerifyViewModel: ObservableObject {
                     let chainName = getInboundChainName(for: tx.coin.chain)
                     
                     guard let inbound = inboundAddresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
-                        await MainActor.run { isLoading = false }
                         throw HelperError.runtimeError("Failed to find inbound address for \(chainName)")
                     }
                     

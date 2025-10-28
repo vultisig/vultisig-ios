@@ -32,7 +32,7 @@ struct CreateReferralDetailsView: View {
         .alert(isPresented: $referralViewModel.showReferralAlert) {
             alert
         }
-        .onChange(of: referralViewModel.expireInCount) { oldValue, newValue in
+        .onChange(of: referralViewModel.expireInCount) { _, _ in
             calculateFees()
         }
         .crossPlatformToolbar("createReferral".localized) {
