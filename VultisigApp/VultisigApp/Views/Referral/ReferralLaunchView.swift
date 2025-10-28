@@ -147,11 +147,11 @@ private extension ReferralLaunchView {
     var referralContent: some View {
         VStack(spacing: 16) {
             referralTitle
-//            if referralViewModel.hasReferralCode {
-//                editReferralButton
-//            } else {
+            if referralViewModel.hasReferralCode {
+                editReferralButton
+            } else {
                 createReferralButton
-//            }
+            }
         }
     }
     

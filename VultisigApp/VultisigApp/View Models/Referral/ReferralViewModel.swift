@@ -142,7 +142,7 @@ class ReferralViewModel: ObservableObject {
             return false
         }
         
-        setup(tx: tx)
+        setupTransaction(tx: tx)
         return true
     }
     
