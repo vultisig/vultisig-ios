@@ -155,11 +155,7 @@ class THORChainSwaps {
         case .tron:
             return try TronHelper.getSignedTransaction(
                 keysignPayload: keysignPayload,
-                signatures: signatures,
-                publicKeyECDSA: vaultHexPublicKey,
-                publicKeyEdDSA: vaultHexPublicKeyEdDSA,
-                hexChainCode: vaultHexChainCode
-            )
+                signatures: signatures)
         default:
             throw HelperError.runtimeError("not support")
         }

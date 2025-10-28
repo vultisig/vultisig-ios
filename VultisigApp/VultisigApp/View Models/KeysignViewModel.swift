@@ -424,28 +424,28 @@ class KeysignViewModel: ObservableObject {
         case .Cosmos:
             switch keysignPayload.coin.chain {
             case .gaiaChain:
-                let transaction = try ATOMHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
+                let transaction = try ATOMHelper().getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
             case .kujira:
-                let transaction = try KujiraHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
+                let transaction = try KujiraHelper().getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
             case .dydx:
-                let transaction = try DydxHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
+                let transaction = try DydxHelper().getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
             case .osmosis:
-                let transaction = try OsmoHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
+                let transaction = try OsmoHelper().getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
             case .terra:
-                let transaction = try TerraHelper(coinType: .terraV2, denom: "uluna").getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
+                let transaction = try TerraHelper(coinType: .terraV2, denom: "uluna").getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
             case .terraClassic:
-                let transaction = try TerraHelper(coinType: .terra, denom: "uluna").getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
+                let transaction = try TerraHelper(coinType: .terra, denom: "uluna").getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
             case .noble:
-                let transaction = try NobleHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
+                let transaction = try NobleHelper().getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
             case .akash:
-                let transaction = try AkashHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
+                let transaction = try AkashHelper().getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
             default:
                 throw HelperError.runtimeError("Unsupported Cosmos chain: \(keysignPayload.coin.chain)")
@@ -460,12 +460,8 @@ class KeysignViewModel: ObservableObject {
             return .regular(transaction)
         case .Tron:
             let transaction = try TronHelper.getSignedTransaction(
-                keysignPayload: keysignPayload, 
-                signatures: signatures,
-                publicKeyECDSA: vault.pubKeyECDSA,
-                publicKeyEdDSA: vault.pubKeyEdDSA,
-                hexChainCode: vault.hexChainCode
-            )
+                keysignPayload: keysignPayload,
+                signatures: signatures            )
             return .regular(transaction)
         }
         

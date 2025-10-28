@@ -193,9 +193,7 @@ class CosmosHelper {
         return [preSigningOutput.dataHash.hexString]
     }
     
-    func getSignedTransaction(vaultHexPubKey: String,
-                              vaultHexChainCode: String,
-                              keysignPayload: KeysignPayload,
+    func getSignedTransaction(keysignPayload: KeysignPayload,
                               signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
