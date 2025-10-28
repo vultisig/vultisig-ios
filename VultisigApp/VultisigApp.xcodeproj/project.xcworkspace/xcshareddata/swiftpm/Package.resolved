@@ -66,7 +66,7 @@
     {
       "identity" : "swifter",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/httpswift/swifter.git",
+      "location" : "https://github.com/httpswift/swifter",
       "state" : {
         "revision" : "9483a5d459b45c3ffd059f7b55f9638e268632fd",
         "version" : "1.5.0"
@@ -79,6 +79,15 @@
       "state" : {
         "revision" : "d15efc71eda9f29dc183931276244e504bdf5716",
         "version" : "4.3.19"
+      }
+    },
+    {
+      "identity" : "zipfoundation",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/weichsel/ZIPFoundation",
+      "state" : {
+        "revision" : "22787ffb59de99e5dc1fbfe80b19c97a904ad48d",
+        "version" : "0.9.20"
       }
     }
   ],

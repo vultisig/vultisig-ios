@@ -28,6 +28,12 @@ class EncryptedBackupViewModel: ObservableObject {
     @Published var importedFileName: String?
     @Published var selectedVault: Vault?
     
+    // New properties for multiple vault imports
+    @Published var multipleVaultsToImport: [Vault] = []
+    @Published var isMultipleVaultImport: Bool = false
+    @Published var extractedFilesDirectory: URL?
+    @Published var pendingEncryptedVaults: [(fileName: String, data: Data)] = []
+    
     private let logger = Logger(subsystem: "import-wallet", category: "communication")
     private let keychain = DefaultKeychainService.shared
     
@@ -43,6 +49,16 @@ class EncryptedBackupViewModel: ObservableObject {
         decryptedContent = ""
         decryptionPassword = ""
         showAlert = false
+        cleanupExtractedFiles()
+        multipleVaultsToImport = []
+        isMultipleVaultImport = false
+    }
+    
+    /// Cleanup extracted files from zip import
+    private func cleanupExtractedFiles() {
+        guard let extractionDir = extractedFilesDirectory else { return }
+        try? FileManager.default.removeItem(at: extractionDir)
+        extractedFilesDirectory = nil
     }
     
     func exportFileWithoutPassword(_ backupType: VaultBackupType) async -> FileExporterModel<EncryptedDataFile>? {
@@ -179,6 +195,13 @@ class EncryptedBackupViewModel: ObservableObject {
         do {
             
             let data = try Data(contentsOf: url)
+            
+            // Check if it's a zip file with multiple vaults
+            if isZipFile() {
+                try importMultipleVaultsFromZip(zipURL: url)
+                return
+            }
+            
             // read the file content
             if isBakFile() {
                 try importBakFile(data: data)
@@ -200,6 +223,10 @@ class EncryptedBackupViewModel: ObservableObject {
         return self.importedFileName?.hasSuffix(".bak") ?? false || self.importedFileName?.hasSuffix(".vult") ?? false
     }
     
+    func isZipFile() -> Bool {
+        return self.importedFileName?.hasSuffix(".zip") ?? false
+    }
+    
     func importBakFile(data: Data) throws {
         guard let vsVaultContainer = Data(base64Encoded: data) else {
             throw ProtoMappableError.base64EncodedDataNotFound
@@ -214,6 +241,394 @@ class EncryptedBackupViewModel: ObservableObject {
             decryptedContent = vaultData.hexString
             isFileUploaded = true
         }
+    }
+    
+    /// Import multiple vaults from a zip file
+    func importMultipleVaultsFromZip(zipURL: URL) throws {
+        print("🔍 DEBUG: Starting import from ZIP: \(zipURL.path)")
+        var importedVaults: [Vault] = []
+        
+        // Create a temporary directory for extraction
+        let fileManager = FileManager.default
+        let tempDir = fileManager.temporaryDirectory.appendingPathComponent("VultisigZipExtract_\(UUID().uuidString)")
+        
+        do {
+            // Create temp directory
+            try fileManager.createDirectory(at: tempDir, withIntermediateDirectories: true, attributes: nil)
+            self.extractedFilesDirectory = tempDir
+            print("📦 DEBUG: Created temp directory: \(tempDir.path)")
+            
+            // Try to extract using FileManager's built-in unzip (iOS 15+)
+            var extractedSuccessfully = false
+            
+            // Try to extract on all platforms using ZIPFoundation via FileManagerExtension
+            do {
+                // Create a subdirectory for extraction
+                let extractDir = tempDir.appendingPathComponent("extracted")
+                try fileManager.createDirectory(at: extractDir, withIntermediateDirectories: true, attributes: nil)
+                
+                try fileManager.unzipItem(at: zipURL, to: extractDir)
+                print("📦 DEBUG: Successfully extracted to: \(extractDir.path)")
+                
+                self.extractedFilesDirectory = extractDir
+                extractedSuccessfully = true
+                
+                let vaultFiles = findVaultFilesRecursively(in: extractDir)
+                print("📁 DEBUG: Found \(vaultFiles.count) vault files")
+                for (index, file) in vaultFiles.enumerated() {
+                    print("  File \(index + 1): \(file.lastPathComponent)")
+                }
+                
+                importedVaults = processVaultFiles(vaultFiles)
+                print("✅ DEBUG: Processed \(importedVaults.count) vaults successfully")
+            } catch {
+                print("⚠️ DEBUG: unzipItem failed: \(error)")
+                extractedSuccessfully = false
+            }
+            
+            // Fallback: Use NSFileCoordinator
+            if !extractedSuccessfully {
+                var coordinatorError: NSError?
+                let coordinator = NSFileCoordinator(filePresenter: nil)
+                
+                coordinator.coordinate(readingItemAt: zipURL, options: [.forUploading], error: &coordinatorError) { (extractedURL) in
+                    print("📦 DEBUG: NSFileCoordinator result: \(extractedURL.path)")
+                    
+                    // Check if it's a directory
+                    var isDirectory: ObjCBool = false
+                    if fileManager.fileExists(atPath: extractedURL.path, isDirectory: &isDirectory) {
+                        print("📦 DEBUG: Is directory: \(isDirectory.boolValue)")
+                        
+                        if isDirectory.boolValue {
+                            // Find vault files recursively in the extracted directory
+                            let vaultFiles = self.findVaultFilesRecursively(in: extractedURL)
+                            print("📁 DEBUG: Found \(vaultFiles.count) vault files in coordinator result")
+                            for (index, file) in vaultFiles.enumerated() {
+                                print("  File \(index + 1): \(file.lastPathComponent)")
+                            }
+                            
+                            // Process vault files
+                            importedVaults = self.processVaultFiles(vaultFiles)
+                            print("✅ DEBUG: Processed \(importedVaults.count) vaults successfully")
+                        } else {
+                            print("❌ DEBUG: Coordinator didn't extract the ZIP")
+                        }
+                    }
+                }
+                
+                if let error = coordinatorError {
+                    print("❌ DEBUG: Coordinator error: \(error)")
+                    throw ZipFileError.failedToExtractZIP(error.localizedDescription)
+                }
+            }
+            
+        } catch {
+            print("❌ DEBUG: Error during extraction: \(error)")
+            cleanupExtractedFiles()
+            throw error
+        }
+        
+        guard !importedVaults.isEmpty else {
+            print("⚠️ DEBUG: No vaults imported from ZIP")
+            cleanupExtractedFiles()
+            showError("noVaultsFoundInZip")
+            return
+        }
+        
+        print("🎉 DEBUG: Setting up \(importedVaults.count) vaults for import")
+        multipleVaultsToImport = importedVaults
+        isMultipleVaultImport = true
+        isFileUploaded = true
+    }
+    
+    /// Recursively find vault files in a directory
+    private func findVaultFilesRecursively(in directory: URL) -> [URL] {
+        print("🔎 DEBUG: Searching recursively in: \(directory.path)")
+        var vaultFiles: [URL] = []
+        let fileManager = FileManager.default
+        
+        guard let enumerator = fileManager.enumerator(
+            at: directory,
+            includingPropertiesForKeys: [.isRegularFileKey, .isDirectoryKey],
+            options: [.skipsHiddenFiles]
+        ) else {
+            print("❌ DEBUG: Failed to create enumerator for: \(directory.path)")
+            return []
+        }
+        
+        for case let fileURL as URL in enumerator {
+            do {
+                let resourceValues = try fileURL.resourceValues(forKeys: [.isRegularFileKey, .isDirectoryKey])
+                
+                if resourceValues.isRegularFile == true {
+                    let fileName = fileURL.lastPathComponent
+                    
+                    // Check if it's a vault file
+                    let isVaultFile = fileName.hasSuffix(".bak") || 
+                                     fileName.hasSuffix(".vult") || 
+                                     fileName.hasSuffix(".dat")
+                    
+                    // Skip hidden files and macOS metadata
+                    let isNotMetadata = !fileName.hasPrefix(".") && 
+                                       !fileURL.path.contains("__MACOSX") &&
+                                       !fileName.hasPrefix("._")
+                    
+                    if isVaultFile && isNotMetadata {
+                        print("  ✅ Found vault file: \(fileName)")
+                        vaultFiles.append(fileURL)
+                    }
+                }
+            } catch {
+                print("  ⚠️ Error checking file: \(fileURL.lastPathComponent) - \(error)")
+            }
+        }
+        
+        print("📊 DEBUG: Total vault files found: \(vaultFiles.count)")
+        return vaultFiles
+    }
+    
+    private func findVaultFiles(in extractedURL: URL) -> [URL] {
+        print("🔎 DEBUG: findVaultFiles called with: \(extractedURL.path)")
+        print("🔎 DEBUG: Is directory check: \(extractedURL.isDirectory)")
+        
+        guard extractedURL.isDirectory else { 
+            print("🔎 DEBUG: Not a directory, returning single file")
+            return [extractedURL] 
+        }
+        
+        let fileManager = FileManager.default
+        guard let enumerator = fileManager.enumerator(at: extractedURL, includingPropertiesForKeys: [.isDirectoryKey]) else {
+            print("❌ DEBUG: Failed to create enumerator")
+            return []
+        }
+        
+        var allFiles: [URL] = []
+        var vaultFiles: [URL] = []
+        
+        for item in enumerator {
+            guard let fileURL = item as? URL else { continue }
+            allFiles.append(fileURL)
+            
+            guard let resourceValues = try? fileURL.resourceValues(forKeys: [.isDirectoryKey]),
+                  !resourceValues.isDirectory! else { 
+                print("  📂 Skipping directory: \(fileURL.lastPathComponent)")
+                continue 
+            }
+            
+            let fileName = fileURL.lastPathComponent
+            print("  📄 Checking file: \(fileName)")
+            
+            let hasBak = fileName.hasSuffix(".bak")
+            let hasVult = fileName.hasSuffix(".vult")
+            let hasDat = fileName.hasSuffix(".dat")
+            let isVaultFile = hasBak || hasVult || hasDat
+            
+            let startsWithDot = fileName.hasPrefix(".")
+            let hasMacOSX = fileName.contains("__MACOSX")
+            let isNotMetadata = !startsWithDot && !hasMacOSX
+            
+            print("    - .bak: \(hasBak), .vult: \(hasVult), .dat: \(hasDat)")
+            print("    - Is vault file: \(isVaultFile)")
+            print("    - Is not metadata: \(isNotMetadata)")
+            
+            if isVaultFile && isNotMetadata {
+                print("    ✅ Added as vault file")
+                vaultFiles.append(fileURL)
+            } else {
+                print("    ❌ Skipped")
+            }
+        }
+        
+        print("📊 DEBUG: Total files enumerated: \(allFiles.count)")
+        print("📊 DEBUG: Vault files found: \(vaultFiles.count)")
+        return vaultFiles
+    }
+    
+    private func processVaultFiles(_ fileURLs: [URL]) -> [Vault] {
+        print("🔄 DEBUG: Processing \(fileURLs.count) vault files")
+        var processedVaults: [Vault] = []
+        var encryptedVaultData: [(fileName: String, data: Data)] = []
+        
+        // First pass: collect all vaults, identify encrypted ones
+        for fileURL in fileURLs {
+            print("  📝 Processing: \(fileURL.lastPathComponent)")
+            do {
+                let fileData = try Data(contentsOf: fileURL)
+                print("    📊 File size: \(fileData.count) bytes")
+                
+                // Check if it's an encrypted protobuf vault
+                if let decodedContainer = Data(base64Encoded: fileData),
+                   let vaultContainer = try? VSVaultContainer(serializedBytes: decodedContainer),
+                   vaultContainer.isEncrypted {
+                    print("    🔐 Found encrypted vault, will prompt for password")
+                    if let vaultData = Data(base64Encoded: vaultContainer.vault) {
+                        encryptedVaultData.append((fileName: fileURL.lastPathComponent, data: vaultData))
+                    }
+                } else if let vault = try decodeVaultFromData(fileData) {
+                    print("    ✅ Successfully decoded unencrypted vault")
+                    processedVaults.append(vault)
+                } else {
+                    print("    ⚠️ Vault decoded but returned nil")
+                }
+            } catch {
+                print("    ❌ Failed: \(error.localizedDescription)")
+                logger.warning("Failed to import vault from \(fileURL.lastPathComponent): \(error.localizedDescription)")
+            }
+        }
+        
+        // Handle encrypted vaults separately
+        if !encryptedVaultData.isEmpty {
+            print("📱 Found \(encryptedVaultData.count) encrypted vault(s)")
+            promptForPasswordAndImportMultiple(encryptedVaultData: encryptedVaultData, processedVaults: processedVaults)
+            // Return empty for now, the password prompt will handle the import
+            return []
+        }
+        
+        return processedVaults
+    }
+    
+    /// Decode a vault from file data
+    private func decodeVaultFromData(_ data: Data) throws -> Vault? {
+        print("    🔐 Attempting to decode vault data...")
+        
+        // Try protobuf format first
+        if let vault = tryDecodeProtobuf(data) { 
+            print("    ✅ Successfully decoded as protobuf")
+            return vault 
+        }
+        print("    ❌ Not a protobuf format")
+        
+        // Try JSON formats
+        let decoder = JSONDecoder()
+        if let backupVault = try? decoder.decode(BackupVault.self, from: data) {
+            print("    ✅ Successfully decoded as BackupVault JSON")
+            return backupVault.vault
+        }
+        print("    ❌ Not a BackupVault JSON format")
+        
+        if let vault = try? decoder.decode(Vault.self, from: data) {
+            print("    ✅ Successfully decoded as Vault JSON")
+            return vault
+        }
+        print("    ❌ Not a Vault JSON format")
+        
+        print("    ❌ Failed to decode in any known format")
+        return nil
+    }
+    
+    private func tryDecodeProtobuf(_ data: Data) -> Vault? {
+        guard let decodedContainer = Data(base64Encoded: data),
+              let vaultContainer = try? VSVaultContainer(serializedBytes: decodedContainer),
+              let vaultData = Data(base64Encoded: vaultContainer.vault) else {
+            return nil
+        }
+        
+        if vaultContainer.isEncrypted {
+            // For single file imports, prompt for password
+            if !isMultipleVaultImport {
+                promptForPasswordAndImport(from: vaultData)
+            }
+            return nil
+        }
+        
+        guard let vsVault = try? VSVault(serializedBytes: vaultData) else { return nil }
+        return try? Vault(proto: vsVault)
+    }
+    
+    
+    func processEncryptedVaults(encryptedVaultData: [(fileName: String, data: Data)], processedVaults: [Vault], password: String) {
+        var allVaults = processedVaults
+        var failedVaults: [String] = []
+        
+        for (fileName, vaultData) in encryptedVaultData {
+            print("🔓 Attempting to decrypt: \(fileName)")
+            
+            // Try to decrypt the vault data
+            if let decryptedString = decryptOrReadData(data: vaultData, password: password) {
+                // Parse the decrypted vault
+                do {
+                    let hexData = Data(hexString: decryptedString) ?? Data()
+                    if let vsVault = try? VSVault(serializedBytes: hexData),
+                       let vault = try? Vault(proto: vsVault) {
+                        print("  ✅ Successfully decrypted and parsed: \(fileName)")
+                        allVaults.append(vault)
+                    } else {
+                        print("  ❌ Failed to parse decrypted data: \(fileName)")
+                        failedVaults.append(fileName)
+                    }
+                } catch {
+                    print("  ❌ Error parsing vault: \(error)")
+                    failedVaults.append(fileName)
+                }
+            } else {
+                print("  ❌ Failed to decrypt: \(fileName)")
+                failedVaults.append(fileName)
+            }
+        }
+        
+        // Update the vaults to import
+        self.multipleVaultsToImport = allVaults
+        self.isMultipleVaultImport = true
+        self.isFileUploaded = true
+        
+        // Show warning if some vaults failed
+        if !failedVaults.isEmpty {
+            let failedList = failedVaults.joined(separator: ", ")
+            self.showAlert = true
+            self.alertTitle = "Failed to decrypt: \(failedList). Successfully imported \(allVaults.count) vault(s)."
+        }
+    }
+    
+    /// Restore multiple vaults to the database
+    func restoreMultipleVaults(modelContext: ModelContext, vaults: [Vault]) {
+        let results = importVaults(multipleVaultsToImport, to: modelContext, existing: vaults)
+        
+        selectedVault = results.imported.first
+        showImportResults(results)
+        cleanup()
+    }
+    
+    private func importVaults(_ vaultsToImport: [Vault], to modelContext: ModelContext, existing: [Vault]) -> (imported: [Vault], duplicates: Int) {
+        var imported: [Vault] = []
+        var duplicates = 0
+        
+        for vault in vaultsToImport {
+            if isVaultUnique(backupVault: vault, vaults: existing + imported) {
+                VaultDefaultCoinService(context: modelContext).setDefaultCoinsOnce(vault: vault)
+                modelContext.insert(vault)
+                imported.append(vault)
+            } else {
+                duplicates += 1
+            }
+        }
+        
+        return (imported, duplicates)
+    }
+    
+    private func showImportResults(_ results: (imported: [Vault], duplicates: Int)) {
+        let successCount = results.imported.count
+        
+        if successCount > 0 {
+            alertTitle = successCount == 1 ? "vaultImportedSuccessfully" : "vaultsImportedSuccessfully"
+            showAlert = false
+            isLinkActive = true
+        } else if results.duplicates > 0 {
+            showError("vaultAlreadyExists")
+        } else {
+            showError("vaultRestoreFailed")
+        }
+    }
+    
+    private func cleanup() {
+        cleanupExtractedFiles()
+        multipleVaultsToImport = []
+        isMultipleVaultImport = false
+    }
+    
+    func showError(_ message: String) {
+        alertTitle = message
+        showAlert = true
+        isLinkActive = false
     }
     
     func importFileWithPassword(from data: Data, password: String) {
@@ -364,7 +779,7 @@ class EncryptedBackupViewModel: ObservableObject {
     private func isValidFormat(_ url: URL) -> Bool {
         let fileExtension = url.pathExtension.lowercased()
         
-        if fileExtension == "dat" || fileExtension == "bak" || fileExtension == "vult" || fileExtension == "txt" {
+        if fileExtension == "dat" || fileExtension == "bak" || fileExtension == "vult" || fileExtension == "txt" || fileExtension == "zip" {
             return true
         } else {
             return false
@@ -435,3 +850,4 @@ class EncryptedBackupViewModel: ObservableObject {
         }
     }
 }
+
