@@ -24,7 +24,6 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
     
     private var tx: SendTransaction
     private var vault: Vault
-    private var functionCallViewModel: FunctionCallViewModel
     
     var addressFields: [String: String] {
         get {
@@ -45,19 +44,16 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
     
     private var cancellables = Set<AnyCancellable>()
     
-    required init(
-        tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault
-    ) {
+    required init(tx: SendTransaction, vault: Vault) {
         self.tx = tx
         self.vault = vault
-        self.functionCallViewModel = functionCallViewModel
     }
     
     func initialize() {
         // Ensure RUNE token is selected for REBOND operations on THORChain
-        if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
-            DispatchQueue.main.async {
-                self.functionCallViewModel.setRuneToken(to: self.tx, vault: self.vault)
+        DispatchQueue.main.async {
+            if let runeCoin = self.vault.runeCoin {
+                self.tx.coin = runeCoin
             }
         }
         setupValidation()

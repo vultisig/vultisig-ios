@@ -37,7 +37,6 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
     
     // Domain models
     var tx: SendTransaction
-    private var functionCallViewModel: FunctionCallViewModel
     private var vault: Vault
     
     var addressFields: [String: String] {
@@ -51,9 +50,8 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
         }
     }
     
-    required init(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault) {
+    required init(tx: SendTransaction, vault: Vault) {
         self.tx = tx
-        self.functionCallViewModel = functionCallViewModel
         self.vault = vault
         
         // For withdraw, tx.coin will be set to the selected secured asset

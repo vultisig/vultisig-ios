@@ -199,3 +199,15 @@ extension Vault {
         return String(format: partText, index + 1, signers.count)
     }
 }
+
+// MARK: - Coin shortcut extensions
+
+extension Vault {
+    var runeCoin: Coin? {
+        coins.first(where: { $0.isRune })
+    }
+    
+    var tcyCoin: Coin? {
+        coins.first(where: { $0.chain == .thorChain && $0.ticker.uppercased() == "TCY" })
+    }
+}
