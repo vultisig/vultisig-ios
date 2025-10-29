@@ -18,27 +18,15 @@ extension SendDetailsScreen {
     var view: some View {
         VStack {
             tabs
-            buttonContainer
+            button
                 .padding(.horizontal, 8)
-                .padding(.vertical, -12)
         }
-    }
-    
-    var buttonContainer: some View {
-        button
-            .padding(.horizontal, 40)
-            .padding(.bottom, 40)
     }
     
     func setData() {
         Task {
             await getBalance()
         }
-    }
-    
-    var overlay: some View {
-        MacOSOverlay()
-            .onTapGesture(perform: closeSheets)
     }
     
     func closeSheets() {

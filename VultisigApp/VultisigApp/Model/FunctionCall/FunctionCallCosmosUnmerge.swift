@@ -49,7 +49,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     required init(
-        tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault
+        tx: SendTransaction, vault: Vault
     ) {
         self.tx = tx
         self.vault = vault

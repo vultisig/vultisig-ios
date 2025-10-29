@@ -26,8 +26,7 @@ class FunctionCallStakeRuji: ObservableObject {
     
     required init(
         tx: SendTransaction,
-        vault: Vault,
-        functionCallViewModel: FunctionCallViewModel
+        vault: Vault
     ) {
         self.tx = tx
         self.vault = vault

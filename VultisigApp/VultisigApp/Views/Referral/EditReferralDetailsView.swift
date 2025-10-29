@@ -10,7 +10,7 @@ import SwiftUI
 struct EditReferralDetailsView: View {
     @StateObject var viewModel: EditReferralViewModel
     @ObservedObject var sendTx: SendTransaction
-    @ObservedObject var functionCallViewModel: FunctionCallViewModel
+    var onNext: () -> Void
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
@@ -19,11 +19,11 @@ struct EditReferralDetailsView: View {
     init(
         viewModel: EditReferralViewModel,
         sendTx: SendTransaction,
-        functionCallViewModel: FunctionCallViewModel
+        onNext: @escaping () -> Void
     ) {
         self._viewModel = StateObject(wrappedValue: viewModel)
         self.sendTx = sendTx
-        self.functionCallViewModel = functionCallViewModel
+        self.onNext = onNext
     }
     
     var body: some View {
@@ -152,7 +152,7 @@ struct EditReferralDetailsView: View {
                     return
                 }
                 
-                functionCallViewModel.currentIndex = 2
+                onNext()
             }
         }
         .disabled(!viewModel.isValidForm)
@@ -224,6 +224,6 @@ struct EditReferralDetailsView: View {
             currentBlockHeight: 0
         ),
         sendTx: SendTransaction(),
-        functionCallViewModel: FunctionCallViewModel()
+        onNext: {}
     )
 }

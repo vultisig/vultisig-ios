@@ -20,7 +20,6 @@ class FunctionCallRemoveThorLP: FunctionCallAddressable, ObservableObject {
     @Published var customErrorMessage: String? = nil
     
     var tx: SendTransaction
-    private var functionCallViewModel: FunctionCallViewModel
     private var vault: Vault
     
     var addressFields: [String: String] {
@@ -30,12 +29,10 @@ class FunctionCallRemoveThorLP: FunctionCallAddressable, ObservableObject {
     
     private var cancellables = Set<AnyCancellable>()
     
-    required init(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault) {
+    required init(tx: SendTransaction, vault: Vault) {
         self.tx = tx
-        self.functionCallViewModel = functionCallViewModel
         self.vault = vault
         self.tx.amount = "0.02"
-        
     }
     
     func initialize() {

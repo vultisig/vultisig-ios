@@ -21,24 +21,22 @@ class FunctionCallUnstakeTCY: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private var tx: SendTransaction
     private let vault: Vault
-    private var functionCallViewModel: FunctionCallViewModel
     private var stakedAmount: Decimal = .zero
     private var autoCompoundAmount: Decimal = .zero
     
     required init(
-        tx: SendTransaction, vault: Vault, functionCallViewModel: FunctionCallViewModel, stakedAmount: Decimal
+        tx: SendTransaction, vault: Vault, stakedAmount: Decimal
     ) {
         self.stakedAmount = stakedAmount
         self.tx = tx
         self.vault = vault
-        self.functionCallViewModel = functionCallViewModel
     }
     
     func initialize() {
         // Ensure TCY token is selected for TCY unstaking operations on THORChain
-        if tx.coin.chain == .thorChain && tx.coin.ticker.uppercased() != "TCY" {
-            DispatchQueue.main.async {
-                self.functionCallViewModel.setTcyToken(to: self.tx, vault: self.vault)
+        DispatchQueue.main.async {
+            if let tcyCoin = self.vault.tcyCoin {
+                self.tx.coin = tcyCoin
             }
         }
         setupValidation()

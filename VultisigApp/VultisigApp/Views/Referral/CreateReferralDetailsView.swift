@@ -10,35 +10,36 @@ import SwiftUI
 struct CreateReferralDetailsView: View {
     @ObservedObject var sendTx: SendTransaction
     @ObservedObject var referralViewModel: ReferralViewModel
-    @ObservedObject var functionCallViewModel: FunctionCallViewModel
+    var onNext: () -> Void
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     @State var showTooltip = false
     
     var body: some View {
-        container
-            .onAppear {
-                setData()
-            }
-            .alert(isPresented: $referralViewModel.showReferralAlert) {
-                alert
-            }
-            .onChange(of: referralViewModel.expireInCount) { oldValue, newValue in
-                calculateFees()
-            }
-    }
-    
-    var content: some View {
-        ZStack {
-            Background()
-            
+        Screen(showNavigationBar: false) {
             VStack {
                 if showTooltip {
                     tooltip
                 }
                 main
                 button
+            }
+        }
+        .onLoad {
+            setData()
+        }
+        .alert(isPresented: $referralViewModel.showReferralAlert) {
+            alert
+        }
+        .onChange(of: referralViewModel.expireInCount) { _, _ in
+            calculateFees()
+        }
+        .crossPlatformToolbar("createReferral".localized) {
+            CustomToolbarItem(placement: .trailing) {
+                ToolbarButton(image: "circle-info") {
+                    showTooltip.toggle()
+                }
             }
         }
     }
@@ -52,7 +53,6 @@ struct CreateReferralDetailsView: View {
                 separator
                 summary
             }
-            .padding(24)
         }
     }
     
@@ -109,10 +109,13 @@ struct CreateReferralDetailsView: View {
     var button: some View {
         PrimaryButton(title: "createReferralCode") {
             Task {
-                await referralViewModel.verifyReferralEntries(tx: sendTx, functionCallViewModel: functionCallViewModel)
+                guard await referralViewModel.verifyReferralEntries(tx: sendTx) else {
+                    return
+                }
+                
+                onNext()
             }
         }
-        .padding(24)
         .disabled(!referralViewModel.createReferralButtonEnabled)
     }
     
@@ -214,5 +217,9 @@ struct CreateReferralDetailsView: View {
 }
 
 #Preview {
-    CreateReferralDetailsView(sendTx: SendTransaction(), referralViewModel: ReferralViewModel(), functionCallViewModel: FunctionCallViewModel())
+    CreateReferralDetailsView(
+        sendTx: SendTransaction(),
+        referralViewModel: ReferralViewModel(),
+        onNext: {}
+    )
 }
