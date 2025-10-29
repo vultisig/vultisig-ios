@@ -52,6 +52,7 @@ class EncryptedBackupViewModel: ObservableObject {
         cleanupExtractedFiles()
         multipleVaultsToImport = []
         isMultipleVaultImport = false
+        pendingEncryptedVaults = []
     }
     
     /// Cleanup extracted files from zip import
@@ -572,6 +573,7 @@ class EncryptedBackupViewModel: ObservableObject {
         cleanupExtractedFiles()
         multipleVaultsToImport = []
         isMultipleVaultImport = false
+        pendingEncryptedVaults = []
     }
     
     func showError(_ message: String) {

@@ -43,6 +43,9 @@ extension EncryptedBackupViewModel {
             }
         }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+            // Clear pending encrypted vaults on cancel
+            self.pendingEncryptedVaults = []
+            
             // If user cancels, still import the non-encrypted vaults
             if !processedVaults.isEmpty {
                 self.multipleVaultsToImport = processedVaults

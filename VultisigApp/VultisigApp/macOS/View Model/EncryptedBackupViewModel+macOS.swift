@@ -69,6 +69,9 @@ extension EncryptedBackupViewModel {
                 self.decryptionPassword = password
                 self.processEncryptedVaults(encryptedVaultData: encryptedVaultData, processedVaults: processedVaults, password: password)
             } else if response == .alertSecondButtonReturn {
+                // Clear pending encrypted vaults on cancel
+                self.pendingEncryptedVaults = []
+                
                 // If user cancels, still import the non-encrypted vaults
                 if !processedVaults.isEmpty {
                     self.multipleVaultsToImport = processedVaults
