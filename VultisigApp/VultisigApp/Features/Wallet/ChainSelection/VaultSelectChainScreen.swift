@@ -16,12 +16,16 @@ struct VaultSelectChainScreen: View {
     
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
+    var sections: [AssetSection<Int, Chain>] {
+        !viewModel.filteredChains.isEmpty ? [AssetSection(assets: viewModel.filteredChains)] : []
+    }
+    
     var body: some View {
         AssetSelectionContainerScreen(
             title: "selectChains".localized,
             isPresented: $isPresented,
             searchText: $viewModel.searchText,
-            elements: [AssetSection(assets: viewModel.filteredChains)],
+            elements: sections,
             onSave: onSaveInternal
         ) { asset, _ in
             ChainSelectionGridCell(

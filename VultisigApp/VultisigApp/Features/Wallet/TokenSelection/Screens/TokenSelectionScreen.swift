@@ -28,13 +28,17 @@ struct TokenSelectionScreen: View {
         return [.custom] + assets.map { .token($0) }
     }
     
+    var sections: [AssetSection<Int, TokenSelectionAsset>] {
+        !elements.isEmpty ? [AssetSection(assets: elements)] : []
+    }
+    
     var body: some View {
         AssetSelectionContainerScreen(
             title: "selectTokensTitle".localized,
             subtitle: "selectTokensSubtitle".localized,
             isPresented: $isPresented,
             searchText: $tokenViewModel.searchText,
-            elements: [AssetSection(assets: elements)],
+            elements: sections,
             onSave: onSave,
             cellBuilder: cellBuilder,
             emptyStateBuilder: { EmptyView() }
