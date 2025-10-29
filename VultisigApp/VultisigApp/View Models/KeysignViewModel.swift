@@ -339,7 +339,7 @@ class KeysignViewModel: ObservableObject {
         var signedTransactions: [SignedTransactionResult] = []
         
         if let approvePayload = keysignPayload.approvePayload {
-            let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, vaultHexPublicKeyEdDSA: vault.pubKeyEdDSA)
+            let swaps = THORChainSwaps()
             let transaction = try swaps.getSignedApproveTransaction(approvePayload: approvePayload, keysignPayload: keysignPayload, signatures: signatures)
             signedTransactions.append(transaction)
         }
@@ -348,7 +348,7 @@ class KeysignViewModel: ObservableObject {
             let incrementNonce = keysignPayload.approvePayload != nil
             switch swapPayload {
             case .thorchain(let payload), .thorchainStagenet(let payload):
-                let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, vaultHexPublicKeyEdDSA: vault.pubKeyEdDSA)
+                let swaps = THORChainSwaps()
                 let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                 signedTransactions.append(transaction)
                 
@@ -359,7 +359,7 @@ class KeysignViewModel: ObservableObject {
                     let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures)
                     signedTransactions.append(transaction)
                 default:
-                    let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                    let swaps = OneInchSwaps()
                     let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                     signedTransactions.append(transaction)
                 }
@@ -367,7 +367,7 @@ class KeysignViewModel: ObservableObject {
                 if keysignPayload.coin.chainType != .EVM || keysignPayload.coin.isNativeToken{
                     break
                 }
-                let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, vaultHexPublicKeyEdDSA: vault.pubKeyEdDSA)
+                let swaps = THORChainSwaps()
                 let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                 signedTransactions.append(transaction)
             }
@@ -453,7 +453,7 @@ class KeysignViewModel: ObservableObject {
             
             
         case .Ton:
-            let transaction = try TonHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, keysignPayload: keysignPayload, signatures: signatures)
+            let transaction = try TonHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
             return .regular(transaction)
         case .Ripple:
             let transaction = try RippleHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)

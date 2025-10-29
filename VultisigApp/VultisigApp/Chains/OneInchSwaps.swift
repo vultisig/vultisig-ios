@@ -12,9 +12,6 @@ import Tss
 
 struct OneInchSwaps {
 
-    let vaultHexPublicKey: String
-    let vaultHexChainCode: String
-
     func getPreSignedImageHash(payload: GenericSwapPayload, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> [String] {
         let inputData = try getPreSignedInputData(
             quote: payload.quote,

@@ -76,8 +76,7 @@ struct JoinKeysignGasViewModel {
     }
     
     private func calculateUTXOTotalFee(payload: KeysignPayload) -> BigInt? {
-        guard let vault = ApplicationState.shared.currentVault,
-              let helper = UTXOChainsHelper.getHelper(coin: payload.coin) else {
+        guard let helper = UTXOChainsHelper.getHelper(coin: payload.coin) else {
             return nil
         }
         
@@ -90,11 +89,7 @@ struct JoinKeysignGasViewModel {
     }
     
     private func calculateCardanoTotalFee(payload: KeysignPayload) -> BigInt? {
-        guard let vault = ApplicationState.shared.currentVault,
-              let helper = CardanoHelper.getHelper(vault: vault, coin: payload.coin) else {
-            return nil
-        }
-        
+        let helper = CardanoHelper()
         do {
             let planFee = try helper.calculateDynamicFee(keysignPayload: payload)
             return planFee > 0 ? planFee : nil

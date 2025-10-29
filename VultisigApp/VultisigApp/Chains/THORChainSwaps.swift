@@ -26,15 +26,7 @@ class THORChainSwaps {
     
     static let affiliateFeeAddress = "vi"
     
-    let vaultHexPublicKey: String
-    let vaultHexChainCode: String
-    let vaultHexPublicKeyEdDSA: String
-    
-    init(vaultHexPublicKey: String, vaultHexChainCode: String, vaultHexPublicKeyEdDSA: String = "") {
-        self.vaultHexPublicKey = vaultHexPublicKey
-        self.vaultHexChainCode = vaultHexChainCode
-        self.vaultHexPublicKeyEdDSA = vaultHexPublicKeyEdDSA
-    }
+    init() {}
     
     func getPreSignedInputData(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> Data {
         switch swapPayload.fromCoin.chain {

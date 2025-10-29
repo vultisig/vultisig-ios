@@ -19,7 +19,7 @@ struct KeysignMessageFactory {
         var messages: [String] = []
         
         if let approvePayload =  payload.approvePayload {
-            let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, vaultHexPublicKeyEdDSA: vault.pubKeyEdDSA)
+            let swaps = THORChainSwaps()
             messages += try swaps.getPreSignedApproveImageHash(approvePayload: approvePayload, keysignPayload: payload)
         }
         if let swapPayload = payload.swapPayload {
@@ -28,12 +28,12 @@ struct KeysignMessageFactory {
             case .thorchain(let swapPayload):
                 let service = ThorchainServiceFactory.getService(for: .thorChain)
                 _ = service.ensureTHORChainChainID()
-                let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, vaultHexPublicKeyEdDSA: vault.pubKeyEdDSA)
+                let swaps = THORChainSwaps()
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
             case .thorchainStagenet(let swapPayload):
                 let service = ThorchainServiceFactory.getService(for: .thorChainStagenet)
                 _ = service.ensureTHORChainChainID()
-                let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, vaultHexPublicKeyEdDSA: vault.pubKeyEdDSA)
+                let swaps = THORChainSwaps()
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
             case .generic(let swapPayload):
                 switch payload.coin.chain {
@@ -41,7 +41,7 @@ struct KeysignMessageFactory {
                     let swaps = SolanaSwaps(vaultHexPubKey: vault.pubKeyEdDSA)
                     messages = try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload)
                 default:
-                    let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                    let swaps = OneInchSwaps()
                     messages += try swaps.getPreSignedImageHash(payload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
                 }
             case .mayachain(let swapPayload):
@@ -50,7 +50,7 @@ struct KeysignMessageFactory {
                 if payload.coin.chain.chainType != .EVM  || payload.coin.isNativeToken {
                     break
                 }
-                let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, vaultHexPublicKeyEdDSA: vault.pubKeyEdDSA)
+                let swaps = THORChainSwaps()
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
             }
         }
