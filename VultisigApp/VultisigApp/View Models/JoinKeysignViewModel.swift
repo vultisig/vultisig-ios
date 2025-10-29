@@ -198,8 +198,10 @@ class JoinKeysignViewModel: ObservableObject {
                 if err.code == 404 {
                     self.logger.info("Waiting for keysign to start. Please stand by.")
                 } else {
-                    self.errorMsg = "Failed to verify keysign start. Error: \(error.localizedDescription)"
-                    self.status = .FailedToStart
+                    DispatchQueue.main.async {
+                        self.errorMsg = "Failed to verify keysign start. Error: \(error.localizedDescription)"
+                        self.status = .FailedToStart
+                    }
                 }
             }
         })
