@@ -28,10 +28,14 @@ class EVMHelper {
     }
     
     func getChainId(chain: Chain) -> String {
-        if chain == Chain.ethereumSepolia {
+        switch chain {
+        case .ethereumSepolia:
             return "11155111"
+        case .hyperliquid:
+            return "999"
+        default:
+            return self.coinType.chainId
         }
-        return self.coinType.chainId
     }
     
     private func setGasParameters(
