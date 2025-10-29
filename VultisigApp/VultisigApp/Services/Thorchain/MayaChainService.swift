@@ -26,6 +26,53 @@ class MayachainService: ThorchainSwapProvider {
             CosmosBalanceResponse.self, from: data)
         return balanceResponse.balances
     }
+    
+    func fetchTokens(_ address: String) async throws -> [CoinMeta] {
+        do {
+            let balances: [CosmosBalance] = try await fetchBalances(address)
+            var coinMetaList = [CoinMeta]()
+            for balance in balances {
+                // Check if token exists in TokensStore first
+                let localAsset = TokensStore.TokenSelectionAssets.first(where: { 
+                    $0.chain == .mayaChain && ($0.contractAddress == balance.denom || $0.ticker.uppercased() == balance.denom.uppercased())
+                })
+                
+                let ticker: String
+                let decimals: Int
+                let logo: String
+                let priceProviderId: String
+                
+                if let localAsset = localAsset {
+                    // Use data from TokensStore
+                    ticker = localAsset.ticker
+                    decimals = localAsset.decimals
+                    logo = localAsset.logo
+                    priceProviderId = localAsset.priceProviderId
+                } else {
+                    // Fallback to basic metadata
+                    ticker = balance.denom.uppercased()
+                    decimals = 10 // MayaChain default decimals (CACAO uses 10)
+                    logo = balance.denom.replacingOccurrences(of: "/", with: "").lowercased()
+                    priceProviderId = ""
+                }
+                
+                let coinMeta = CoinMeta(
+                    chain: .mayaChain,
+                    ticker: ticker,
+                    logo: logo,
+                    decimals: decimals,
+                    priceProviderId: priceProviderId,
+                    contractAddress: balance.denom,
+                    isNativeToken: false
+                )
+                coinMetaList.append(coinMeta)
+            }
+            return coinMetaList
+        } catch {
+            print("Error in fetchTokens: \(error)")
+            throw error
+        }
+    }
 
     func fetchAccountNumber(_ address: String) async throws
         -> THORChainAccountValue?
