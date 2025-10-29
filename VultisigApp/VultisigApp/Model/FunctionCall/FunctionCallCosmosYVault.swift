@@ -62,7 +62,7 @@ class FunctionCallCosmosYVault: ObservableObject {
     
     private var amountMicro: UInt64 = 0
     private var cancellables = Set<AnyCancellable>()
-    init(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault, action: YVaultAction, functionType: FunctionCallType? = nil) {
+    init(tx: SendTransaction, vault: Vault, action: YVaultAction, functionType: FunctionCallType? = nil) {
         self.vault = vault
         
         // Determine the correct coin based on function type

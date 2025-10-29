@@ -56,7 +56,7 @@ final class DefiTHORChainMainViewModel: ObservableObject {
     }
     
     func refresh() async {
-        guard let runeCoin = vault.coins.first(where: { $0.isRune }) else {
+        guard let runeCoin = vault.runeCoin else {
             return
         }
 

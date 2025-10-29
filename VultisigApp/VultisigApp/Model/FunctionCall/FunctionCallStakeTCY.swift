@@ -20,24 +20,22 @@ class FunctionCallStakeTCY: ObservableObject {
     
     private var tx: SendTransaction
     private let vault: Vault
-    private var functionCallViewModel: FunctionCallViewModel
     
     let destinationAddress = TCYAutoCompoundConstants.contract
     
     required init(
-        tx: SendTransaction, vault: Vault, functionCallViewModel: FunctionCallViewModel
+        tx: SendTransaction, vault: Vault
     ) {
         self.tx = tx
         self.vault = vault
-        self.functionCallViewModel = functionCallViewModel
         self.amount = tx.coin.balanceDecimal
     }
     
     func initialize() {
         // Ensure TCY token is selected for TCY staking operations on THORChain
-        if tx.coin.chain == .thorChain && tx.coin.ticker.uppercased() != "TCY" {
-            DispatchQueue.main.async {
-                self.functionCallViewModel.setTcyToken(to: self.tx, vault: self.vault)
+        DispatchQueue.main.async {
+            if let tcyCoin = self.vault.tcyCoin {
+                self.tx.coin = tcyCoin
             }
         }
         setupValidation()

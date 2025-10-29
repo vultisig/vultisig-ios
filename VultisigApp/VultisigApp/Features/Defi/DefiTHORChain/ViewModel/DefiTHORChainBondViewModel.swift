@@ -39,7 +39,7 @@ final class DefiTHORChainBondViewModel: ObservableObject {
     
     @MainActor
     func refresh() async {
-        guard hasBondPositions, let runeCoin = vault.coins.first(where: { $0.isRune }) else {
+        guard hasBondPositions, let runeCoin = vault.runeCoin else {
             setupDone = true
             return
         }

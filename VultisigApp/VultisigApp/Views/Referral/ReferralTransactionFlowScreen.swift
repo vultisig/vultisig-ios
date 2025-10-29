@@ -19,42 +19,30 @@ struct ReferralTransactionFlowScreen: View {
     @State var keysignPayload: KeysignPayload? = nil
     @State var keysignView: KeysignView? = nil
     @State var isLoading = false
+    @State var navigateToVerify = false
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
-        ZStack {
-            Group {
-                switch functionCallViewModel.currentIndex {
-                case 1:
-                    detailsView
-                case 2:
-                    verifyView
-                case 3:
-                    pairView
-                case 4:
-                    keysign
-                case 5:
-                    doneView
-                default:
-                    errorView
+        detailsView
+            .withLoading(isLoading: $isLoading)
+            .frame(maxHeight: .infinity)
+            .onLoad {
+                isLoading = true
+                referralViewModel.setup(tx: sendTx)
+                isLoading = false
+                
+                Task {
+                    if let vault {
+                        await functionCallViewModel.loadFastVault(tx: sendTx, vault: vault)
+                    }
                 }
             }
-            .showIf(!isLoading)
-        }
-        .overlay(isLoading ? Loader() : nil)
-        .frame(maxHeight: .infinity)
-        .onLoad {
-            isLoading = true
-            referralViewModel.setup(tx: sendTx)
-            isLoading = false
-            
-            Task {
+            .navigationDestination(isPresented: $navigateToVerify) {
                 if let vault {
-                    await functionCallViewModel.loadFastVault(tx: sendTx, vault: vault)
+                    FunctionCallRouteBuilder().buildVerifyScreen(tx: sendTx, vault: vault)
                 }
             }
-        }
     }
     
     var vault: Vault? {
@@ -76,144 +64,19 @@ struct ReferralTransactionFlowScreen: View {
                     currentBlockHeight: referralViewModel.currentBlockheight
                 ),
                 sendTx: sendTx,
-                functionCallViewModel: functionCallViewModel
+                onNext: moveToNext
             )
         } else {
-            CreateReferralDetailsView(sendTx: sendTx, referralViewModel: referralViewModel, functionCallViewModel: functionCallViewModel)
+            CreateReferralDetailsView(
+                sendTx: sendTx,
+                referralViewModel: referralViewModel,
+                onNext: moveToNext
+            )
         }
     }
     
-    var verifyView: some View {
-        ZStack {
-            if let vault {
-                FunctionCallVerifyView(
-                    keysignPayload: $keysignPayload,
-                    depositViewModel: functionCallViewModel,
-                    depositVerifyViewModel: functionCallVerifyViewModel,
-                    tx: sendTx,
-                    vault: vault,
-                    isForReferral: true
-                )
-            } else {
-                SendCryptoVaultErrorView()
-            }
-        }
-    }
-    
-    var pairView: some View {
-        VStack(spacing: 0) {
-            pairViewHeader
-            
-            ZStack {
-                if let keysignPayload = keysignPayload, let vault {
-                    KeysignDiscoveryView(
-                        vault: vault,
-                        keysignPayload: keysignPayload,
-                        customMessagePayload: nil,
-                        fastVaultPassword: sendTx.fastVaultPassword.nilIfEmpty,
-                        shareSheetViewModel: shareSheetViewModel
-                    ){ input in
-                        self.keysignView = KeysignView(
-                            vault: input.vault,
-                            keysignCommittee: input.keysignCommittee,
-                            mediatorURL: input.mediatorURL,
-                            sessionID: input.sessionID,
-                            keysignType: input.keysignType,
-                            messsageToSign: input.messsageToSign,
-                            keysignPayload: input.keysignPayload,
-                            customMessagePayload: input.customMessagePayload,
-                            transferViewModel: functionCallViewModel,
-                            encryptionKeyHex: input.encryptionKeyHex,
-                            isInitiateDevice: input.isInitiateDevice
-                        )
-                        functionCallViewModel.moveToNextView()
-                    }
-                } else {
-                    SendCryptoVaultErrorView()
-                }
-            }
-        }
-        .navigationBarBackButtonHidden(true)
-        .background(Background())
-    }
-    
-    var pairViewHeader: some View {
-        HStack {
-            backButton
-            Spacer()
-            headerTitle
-            Spacer()
-            backButton
-                .opacity(0)
-        }
-        .padding(.horizontal, 16)
-        .padding(.top, 8)
-    }
-    
-    var backButton: some View {
-        Button {
-            functionCallViewModel.currentIndex -= 1
-        } label: {
-            NavigationBlankBackButton()
-        }
-    }
-    
-    var headerTitle: some View {
-        getNavigationTitle("scanQrCode")
-    }
-    
-    var keysign: some View {
-        VStack {
-            getNavigationTitle("signing")
-            
-            ZStack {
-                Background()
-                
-                if let keysignView = keysignView {
-                    keysignView
-                } else {
-                    errorView
-                }
-            }
-        }
-        .navigationBarBackButtonHidden(true)
-    }
-    
-    var doneView: some View {
-        ZStack {
-            if let hash = functionCallViewModel.hash  {
-                ReferralTransactionOverviewView(
-                    hash: hash,
-                    sendTx: sendTx,
-                    isEdit: isEdit,
-                    referralViewModel: referralViewModel
-                )
-            } else {
-                errorView
-            }
-        }
-        .onAppear() {
-            Task{
-                try await Task.sleep(for: .seconds(5)) // Back off 5s
-                self.functionCallViewModel.stopMediator()
-            }
-        }
-        .navigationBarBackButtonHidden()
-    }
-    
-    var errorView: some View {
-        SendCryptoSigningErrorView(errorString: functionCallViewModel.errorMessage)
-    }
-    
-    private func getNavigationTitle(_ title: String) -> some View {
-        Text(NSLocalizedString(title, comment: ""))
-            .foregroundColor(Theme.colors.textPrimary)
-            .font(Theme.fonts.bodyLMedium)
-            .padding(.horizontal, 16)
-            .padding(.top, 8)
-            .frame(maxWidth: .infinity)
-            .padding(.bottom, 8)
-            .background(Background())
+    func moveToNext() {
+        navigateToVerify = true
     }
 }
 
