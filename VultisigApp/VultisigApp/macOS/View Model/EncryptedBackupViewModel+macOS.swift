@@ -75,7 +75,7 @@ extension EncryptedBackupViewModel {
                     self.isMultipleVaultImport = true
                     self.isFileUploaded = true
                 } else {
-                    self.showError("No unencrypted vaults to import")
+                    self.showError(NSLocalizedString("noUnencryptedVaultsToImport", comment: "Shown when there are no unencrypted vaults available to import"))
                 }
             }
         }

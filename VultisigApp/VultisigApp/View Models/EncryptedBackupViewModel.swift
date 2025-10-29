@@ -313,15 +313,20 @@ class EncryptedBackupViewModel: ObservableObject {
             throw error
         }
         
-        guard !importedVaults.isEmpty else {
+        // Only show error if no vaults found AND no encrypted vaults pending password
+        if importedVaults.isEmpty && pendingEncryptedVaults.isEmpty {
             cleanupExtractedFiles()
             showError("noVaultsFoundInZip")
             return
         }
         
-        multipleVaultsToImport = importedVaults
-        isMultipleVaultImport = true
-        isFileUploaded = true
+        // If we have unencrypted vaults, set them up for import
+        if !importedVaults.isEmpty {
+            multipleVaultsToImport = importedVaults
+            isMultipleVaultImport = true
+            isFileUploaded = true
+        }
+        // If only encrypted vaults, the password prompt will handle the rest
     }
     
     /// Recursively find vault files in a directory
@@ -437,9 +442,10 @@ class EncryptedBackupViewModel: ObservableObject {
         
         // Handle encrypted vaults separately
         if !encryptedVaultData.isEmpty {
+            self.pendingEncryptedVaults = encryptedVaultData
             promptForPasswordAndImportMultiple(encryptedVaultData: encryptedVaultData, processedVaults: processedVaults)
-            // Return empty for now, the password prompt will handle the import
-            return []
+            // Return the unencrypted ones now; the password prompt will handle the encrypted ones
+            return processedVaults
         }
         
         return processedVaults
@@ -489,21 +495,15 @@ class EncryptedBackupViewModel: ObservableObject {
         var failedVaults: [String] = []
         
         for (fileName, vaultData) in encryptedVaultData {
-            
-            // Try to decrypt the vault data
-            if let decryptedString = decryptOrReadData(data: vaultData, password: password) {
-                // Parse the decrypted vault
+            // Decrypt the vault data (returns raw protobuf bytes, not text)
+            if let decryptedData = decrypt(data: vaultData, password: password) {
+                // Parse the decrypted protobuf bytes directly
                 do {
-                    let hexData = Data(hexString: decryptedString) ?? Data()
-                    if let vsVault = try? VSVault(serializedBytes: hexData),
-                       let vault = try? Vault(proto: vsVault) {
-                        allVaults.append(vault)
-                    } else {
-                        print("  ❌ Failed to parse decrypted data: \(fileName)")
-                        failedVaults.append(fileName)
-                    }
+                    let vsVault = try VSVault(serializedBytes: decryptedData)
+                    let vault = try Vault(proto: vsVault)
+                    allVaults.append(vault)
                 } catch {
-                    print("  ❌ Error parsing vault: \(error)")
+                    print("  ❌ Failed to parse decrypted data (\(fileName)): \(error.localizedDescription)")
                     failedVaults.append(fileName)
                 }
             } else {
@@ -516,6 +516,9 @@ class EncryptedBackupViewModel: ObservableObject {
         self.multipleVaultsToImport = allVaults
         self.isMultipleVaultImport = true
         self.isFileUploaded = true
+        
+        // Clear pending encrypted vaults after processing
+        self.pendingEncryptedVaults = []
         
         // Show warning if some vaults failed
         if !failedVaults.isEmpty {
