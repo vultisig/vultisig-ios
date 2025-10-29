@@ -148,21 +148,21 @@ enum SolanaHelper {
         return [preSigningOutput.data.hexString]
     }
     
-    static func getSignedTransaction(vaultHexPubKey: String,
-                                     keysignPayload: KeysignPayload,
+    static func getSignedTransaction(keysignPayload: KeysignPayload,
                                      signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
-        guard let pubkeyData = Data(hexString: vaultHexPubKey) else {
-            throw HelperError.runtimeError("public key \(vaultHexPubKey) is invalid")
+        let coinHexPublicKey = keysignPayload.coin.hexPublicKey
+        guard let pubkeyData = Data(hexString: coinHexPublicKey) else {
+            throw HelperError.runtimeError("public key \(coinHexPublicKey) is invalid")
         }
         guard let _ = PublicKey(data: pubkeyData, type: .ed25519) else {
-            throw HelperError.runtimeError("public key \(vaultHexPubKey) is invalid")
+            throw HelperError.runtimeError("public key \(coinHexPublicKey) is invalid")
         }
         
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
 
         let result = try SolanaHelper.getSignedTransaction(
-            vaultHexPubKey: vaultHexPubKey,
+            coinHexPubKey: coinHexPublicKey,
             inputData: inputData,
             signatures: signatures
         )
@@ -170,13 +170,13 @@ enum SolanaHelper {
         return result
     }
 
-    static func getSignedTransaction(vaultHexPubKey: String, inputData: Data, signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
+    static func getSignedTransaction(coinHexPubKey: String, inputData: Data, signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
 
-        guard let pubkeyData = Data(hexString: vaultHexPubKey) else {
-            throw HelperError.runtimeError("public key \(vaultHexPubKey) is invalid")
+        guard let pubkeyData = Data(hexString: coinHexPubKey) else {
+            throw HelperError.runtimeError("public key \(coinHexPubKey) is invalid")
         }
         guard let publicKey = PublicKey(data: pubkeyData, type: .ed25519) else {
-            throw HelperError.runtimeError("public key \(vaultHexPubKey) is invalid")
+            throw HelperError.runtimeError("public key \(coinHexPubKey) is invalid")
         }
 
         let hashes = TransactionCompiler.preImageHashes(coinType: .solana, txInputData: inputData)
@@ -211,8 +211,9 @@ enum SolanaHelper {
         return sig.base64EncodedString()
     }
     
-    static func getZeroSignedTransaction(vaultHexPublicKey: String, keysignPayload: KeysignPayload) throws -> String {
-        guard let publicKey = PublicKey(data: Data(hex: vaultHexPublicKey), type: PublicKeyType.ed25519) else {
+    static func getZeroSignedTransaction(keysignPayload: KeysignPayload) throws -> String {
+        let coinHexPublicKey = keysignPayload.coin.hexPublicKey
+        guard let publicKey = PublicKey(data: Data(hex: coinHexPublicKey), type: PublicKeyType.ed25519) else {
             throw HelperError.runtimeError("Not a valid public key")
         }
         let input = try getPreSignedInputData(keysignPayload: keysignPayload)

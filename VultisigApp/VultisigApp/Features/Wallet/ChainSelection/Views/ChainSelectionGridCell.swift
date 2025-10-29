@@ -11,11 +11,17 @@ struct ChainSelectionGridCell: View {
     let assets: [CoinMeta]
     var onSelection: (ChainSelection) -> Void
     
-    @State var isSelected = false
     @EnvironmentObject var viewModel: CoinSelectionViewModel
+    @State var isSelected: Bool
     
     var nativeAsset: CoinMeta {
         assets[0]
+    }
+    
+    init(assets: [CoinMeta], isSelected: Bool, onSelection: @escaping (ChainSelection) -> Void) {
+        self.assets = assets
+        self.onSelection = onSelection
+        self.isSelected = isSelected
     }
     
     var body: some View {
@@ -27,26 +33,11 @@ struct ChainSelectionGridCell: View {
         ) {
             onSelection(ChainSelection(selected: isSelected, asset: nativeAsset))
         }
-        .onAppear(perform: onAppear)
-    }
-    
-    func onAppear() {
-        guard let nativeAsset = assets.first else {
-            return
-        }
-        
-        if viewModel.selection.contains(where: { cm in
-            cm.chain == nativeAsset.chain && cm.ticker.lowercased() == nativeAsset.ticker.lowercased()
-        }) {
-            isSelected = true
-        } else {
-            isSelected = false
-        }
     }
 }
 
 #Preview {
-    ChainSelectionGridCell(assets: [.example]) { _ in }
+    ChainSelectionGridCell(assets: [.example], isSelected: false) { _ in }
         .environmentObject(CoinSelectionViewModel())
     
 }

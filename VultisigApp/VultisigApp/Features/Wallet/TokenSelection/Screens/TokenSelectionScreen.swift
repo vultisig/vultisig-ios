@@ -28,13 +28,17 @@ struct TokenSelectionScreen: View {
         return [.custom] + assets.map { .token($0) }
     }
     
+    var sections: [AssetSection<Int, TokenSelectionAsset>] {
+        !elements.isEmpty ? [AssetSection(assets: elements)] : []
+    }
+    
     var body: some View {
         AssetSelectionContainerScreen(
             title: "selectTokensTitle".localized,
             subtitle: "selectTokensSubtitle".localized,
             isPresented: $isPresented,
             searchText: $tokenViewModel.searchText,
-            elements: [AssetSection(assets: elements)],
+            elements: sections,
             onSave: onSave,
             cellBuilder: cellBuilder,
             emptyStateBuilder: { EmptyView() }
@@ -62,14 +66,6 @@ struct TokenSelectionScreen: View {
             ) {
                 coinViewModel.handleSelection(isSelected: $0, asset: coin)
             }
-        }
-    }
-    
-    func isTokenSelected(asset: CoinMeta) -> Binding<Bool> {
-        return Binding(get: {
-            return coinViewModel.isSelected(asset: asset)
-        }) { newValue in
-            coinViewModel.handleSelection(isSelected: newValue, asset: asset)
         }
     }
     

@@ -164,8 +164,15 @@ struct CoinService {
             case .Sui:
                 tokens = try await SuiService.shared.getAllTokensWithMetadata(coin: nativeToken)
             case .THORChain:
-                let service = ThorchainServiceFactory.getService(for: nativeToken.chain)
-                tokens = try await service.fetchTokens(nativeToken.address)
+                switch nativeToken.chain {
+                case .thorChain, .thorChainStagenet:
+                    let service = ThorchainServiceFactory.getService(for: nativeToken.chain)
+                    tokens = try await service.fetchTokens(nativeToken.address)
+                case .mayaChain:
+                    tokens = try await MayachainService.shared.fetchTokens(nativeToken.address)
+                default:
+                    tokens = []
+                }
             default:
                 tokens = []
             }

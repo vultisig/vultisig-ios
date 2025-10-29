@@ -12,9 +12,6 @@ import Tss
 
 struct OneInchSwaps {
 
-    let vaultHexPublicKey: String
-    let vaultHexChainCode: String
-
     func getPreSignedImageHash(payload: GenericSwapPayload, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> [String] {
         let inputData = try getPreSignedInputData(
             quote: payload.quote,
@@ -36,9 +33,7 @@ struct OneInchSwaps {
             incrementNonce: incrementNonce
         )
         let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
-        let transaction = try helper.getSignedTransaction(
-            vaultHexPubKey: vaultHexPublicKey,
-            vaultHexChainCode: vaultHexChainCode,
+        let transaction = try helper.getSignedTransaction(ethPublicKey: keysignPayload.coin.hexPublicKey,
             inputData: inputData,
             signatures: signatures
         )

@@ -34,18 +34,6 @@ import BigInt
  */
 
 class CardanoHelper {
-    let vaultHexPublicKey: String
-    let vaultHexChainCode: String
-    
-    init(vaultHexPublicKey: String, vaultHexChainCode: String) {
-        self.vaultHexPublicKey = vaultHexPublicKey
-        self.vaultHexChainCode = vaultHexChainCode
-    }
-    
-    static func getHelper(vault: Vault, coin: Coin) -> CardanoHelper? {
-        guard coin.chain == .cardano else { return nil }
-        return CardanoHelper(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-    }
     
     /*
      Cardano minimum UTXO value requirement (Alonzo Era) - UPDATED BASED ON REAL EVIDENCE

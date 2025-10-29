@@ -15,28 +15,21 @@ struct UtxoInfo: Codable, Hashable {
 
 class UTXOChainsHelper {
     let coin: CoinType
-    let vaultHexPublicKey: String
-    let vaultHexChainCode: String
-    init(coin: CoinType, vaultHexPublicKey: String, vaultHexChainCode: String) {
+    
+    init(coin: CoinType) {
         self.coin = coin
-        self.vaultHexPublicKey = vaultHexPublicKey
-        self.vaultHexChainCode = vaultHexChainCode
     }
     
-    static func getHelper(vault: Vault, coin: Coin) -> UTXOChainsHelper? {
+    static func getHelper(coin: Coin) -> UTXOChainsHelper? {
         switch coin.chainType {
         case .UTXO:
             guard let coinType = CoinType.from(string: coin.chain.name) else {
                 return nil
             }
-            return UTXOChainsHelper(coin: coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+            return UTXOChainsHelper(coin: coinType)
         default:
             return nil
         }
-    }
-    
-    func getDerivedPubKey() -> String {
-        return PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPublicKey, hexChainCode: vaultHexChainCode, derivePath: coin.derivationPath())
     }
     
     // before keysign , we need to get the preSignedImageHash , so it can be signed with TSS
@@ -223,15 +216,14 @@ class UTXOChainsHelper {
     
     func getSignedTransaction(keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         let inputData = try getBitcoinPreSigningInputData(keysignPayload: keysignPayload)
-        return try getSignedTransaction(inputData: inputData, signatures: signatures)
+        return try getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey,inputData: inputData, signatures: signatures)
     }
     
-    func getSignedTransaction(inputData: Data, signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
-        let bitcoinPubKey = getDerivedPubKey()
-        guard let pubkeyData = Data(hexString: bitcoinPubKey),
+    func getSignedTransaction(coinHexPublicKey:String,inputData: Data, signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
+        guard let pubkeyData = Data(hexString: coinHexPublicKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {
-            throw HelperError.runtimeError("public key \(bitcoinPubKey) is invalid")
+            throw HelperError.runtimeError("public key \(coinHexPublicKey) is invalid")
         }
         
         do {
