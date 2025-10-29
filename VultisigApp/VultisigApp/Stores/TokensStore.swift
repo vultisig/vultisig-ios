@@ -13,6 +13,15 @@ class TokensStore {
             isNativeToken: true
         ),
         CoinMeta(
+            chain: .hyperliquid,
+            ticker: "HYPE",
+            logo: "hyperliquid",
+            decimals: 18,
+            priceProviderId: "hyperliquid",
+            contractAddress: "",
+            isNativeToken: true
+        ),
+        CoinMeta(
             chain: .arbitrum,
             ticker: "ARB",
             logo: "arbitrum",

@@ -160,33 +160,24 @@ struct SwapCryptoDetailsView: View {
         } label: {
             swapLabel
         }
-        .background(Theme.colors.bgPrimary)
-        .cornerRadius(60)
-        .overlay(
-            Circle()
-                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
-        )
+        .background(Circle().fill(Theme.colors.bgPrimary))
+        .overlay(Circle().stroke(Theme.colors.bgTertiary))
     }
     
     var swapLabel: some View {
-        Group {
+        ZStack {
             if swapViewModel.isLoadingQuotes {
                 // Show loader instead of swap icon when loading
-                CircularProgressIndicator(size: 24)
-                    .padding(8)
+                CircularProgressIndicator(size: 20)
             } else {
                 // Show swap icon when not loading
-                Image(systemName: "arrow.up.arrow.down")
-                    .font(Theme.fonts.bodyMMedium)
-                    .foregroundColor(Theme.colors.textPrimary)
-                    .frame(width: 38, height: 38)
+                Icon(named: "arrow-bottom-top", color: Theme.colors.textPrimary, size: 18)
             }
         }
-        .background(Theme.colors.bgButtonTertiary)
-        .cornerRadius(50)
+        .frame(width: 34, height: 34)
+        .background(Circle().fill(Theme.colors.bgButtonTertiary))
         .padding(2)
-        .background(Color.black.opacity(0.2))
-        .cornerRadius(50)
+        .background(Circle().fill(Theme.colors.bgPrimary))
         .rotationEffect(.degrees(buttonRotated ? 180 : 0))
         .animation(.spring, value: buttonRotated)
     }

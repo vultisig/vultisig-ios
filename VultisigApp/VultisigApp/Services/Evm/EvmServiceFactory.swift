@@ -35,6 +35,8 @@ class EvmServiceFactory {
             return ZksyncService.shared
         case .mantle:
             return MantleService.shared
+        case .hyperliquid:
+            return HyperliquidService.shared
         case .tron:
             return TronEvmService.shared
         default:
