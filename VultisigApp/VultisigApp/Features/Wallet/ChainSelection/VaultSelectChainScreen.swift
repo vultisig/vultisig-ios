@@ -13,19 +13,24 @@ struct VaultSelectChainScreen: View {
     var onSave: () -> Void
     @State var searchBarFocused: Bool = false
     @State var isLoading: Bool = false
-        
+    
     @EnvironmentObject var viewModel: CoinSelectionViewModel
+    
+    var sections: [AssetSection<Int, Chain>] {
+        !viewModel.filteredChains.isEmpty ? [AssetSection(assets: viewModel.filteredChains)] : []
+    }
     
     var body: some View {
         AssetSelectionContainerScreen(
             title: "selectChains".localized,
             isPresented: $isPresented,
             searchText: $viewModel.searchText,
-            elements: [AssetSection(assets: viewModel.filteredChains)],
+            elements: sections,
             onSave: onSaveInternal
         ) { asset, _ in
             ChainSelectionGridCell(
                 assets: viewModel.groupedAssets[asset] ?? [],
+                isSelected: isSelected(chain: asset),
                 onSelection: onSelection
             )
         } emptyStateBuilder: {
@@ -35,6 +40,10 @@ struct VaultSelectChainScreen: View {
         .onLoad {
             viewModel.setData(for: vault)
         }
+    }
+    
+    func isSelected(chain: Chain) -> Bool {
+        viewModel.selection.contains { $0.chain == chain }
     }
 }
 

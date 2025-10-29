@@ -59,7 +59,6 @@ struct AssetSelectionContainerScreen<Asset: Hashable, SectionType: Hashable, Cel
     
     var body: some View {
         container
-            .transaction { $0.animation = nil }
     }
     
     var container: some View {
@@ -71,27 +70,28 @@ struct AssetSelectionContainerScreen<Asset: Hashable, SectionType: Hashable, Cel
         content
             .presentationSizingFitted()
             .applySheetSize()
+            .transaction { $0.disablesAnimations = true }
 #endif
+    }
+    
+    var showEmptyState: Bool {
+        searchText.isNotEmpty && elements.isEmpty
     }
     
     var content: some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 24) {
                 textfield
-                Group {
-                    if searchText.isNotEmpty && elements.isEmpty {
-                        emptyStateBuilder()
-                    } else {
-                        ScrollView(showsIndicators: false) {
-                            grid
-                        }
-                        .safeAreaInset(edge: .bottom, content: { Spacer().frame(height: 64) })
-                        .safeAreaInset(edge: .top, content: { Spacer().frame(height: 8) })
-                        .frame(minHeight: 300)
+                if showEmptyState {
+                    emptyStateBuilder()
+                } else {
+                    ScrollView(showsIndicators: false) {
+                        grid
                     }
+                    .safeAreaInset(edge: .bottom, content: { Spacer().frame(height: 64) })
+                    .safeAreaInset(edge: .top, content: { Spacer().frame(height: 8) })
+                    .frame(minHeight: 300)
                 }
-                .transition(.opacity)
-                .animation(.easeInOut, value: searchText)
             }
             .padding(.top, 24)
             .padding(.horizontal, 16)
@@ -191,7 +191,7 @@ struct AssetSelectionContainerScreen<Asset: Hashable, SectionType: Hashable, Cel
         searchText: .constant(""),
         elements: [AssetSection(title: nil, type: 1, assets: [ Coin.example])],
         onSave: {},
-        cellBuilder: { _, _ in ChainSelectionGridCell(assets: [.example], onSelection: { _ in }) },
+        cellBuilder: { _, _ in ChainSelectionGridCell(assets: [.example], isSelected: true, onSelection: { _ in }) },
         emptyStateBuilder: { EmptyView() }
     )
 }
