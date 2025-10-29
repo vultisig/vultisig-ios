@@ -59,7 +59,6 @@ struct AssetSelectionContainerScreen<Asset: Hashable, SectionType: Hashable, Cel
     
     var body: some View {
         container
-            .transaction { $0.animation = nil }
     }
     
     var container: some View {
@@ -71,6 +70,7 @@ struct AssetSelectionContainerScreen<Asset: Hashable, SectionType: Hashable, Cel
         content
             .presentationSizingFitted()
             .applySheetSize()
+            .transaction { $0.disablesAnimations = true }
 #endif
     }
     
@@ -191,7 +191,7 @@ struct AssetSelectionContainerScreen<Asset: Hashable, SectionType: Hashable, Cel
         searchText: .constant(""),
         elements: [AssetSection(title: nil, type: 1, assets: [ Coin.example])],
         onSave: {},
-        cellBuilder: { _, _ in ChainSelectionGridCell(assets: [.example], onSelection: { _ in }) },
+        cellBuilder: { _, _ in ChainSelectionGridCell(assets: [.example], isSelected: true, onSelection: { _ in }) },
         emptyStateBuilder: { EmptyView() }
     )
 }

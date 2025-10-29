@@ -65,14 +65,6 @@ struct TokenSelectionScreen: View {
         }
     }
     
-    func isTokenSelected(asset: CoinMeta) -> Binding<Bool> {
-        return Binding(get: {
-            return coinViewModel.isSelected(asset: asset)
-        }) { newValue in
-            coinViewModel.handleSelection(isSelected: newValue, asset: asset)
-        }
-    }
-    
     func onSave() {
         Task {
             await CoinService.saveAssets(for: vault, selection: coinViewModel.selection)

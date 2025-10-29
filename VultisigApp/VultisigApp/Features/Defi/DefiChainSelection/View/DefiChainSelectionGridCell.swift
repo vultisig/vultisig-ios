@@ -32,7 +32,10 @@ struct DefiChainSelectionGridCell: View {
 }
 
 #Preview {
-    ChainSelectionGridCell(assets: [.example]) { _ in }
-        .environmentObject(CoinSelectionViewModel())
+    DefiChainSelectionGridCell(
+        chain: .thorChain,
+        viewModel: DefiSelectChainViewModel()
+    ) { _ in }
+    .environmentObject(CoinSelectionViewModel())
     
 }

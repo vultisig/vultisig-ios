@@ -13,7 +13,7 @@ struct VaultSelectChainScreen: View {
     var onSave: () -> Void
     @State var searchBarFocused: Bool = false
     @State var isLoading: Bool = false
-        
+    
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
     var body: some View {
@@ -26,6 +26,7 @@ struct VaultSelectChainScreen: View {
         ) { asset, _ in
             ChainSelectionGridCell(
                 assets: viewModel.groupedAssets[asset] ?? [],
+                isSelected: isSelected(chain: asset),
                 onSelection: onSelection
             )
         } emptyStateBuilder: {
@@ -35,6 +36,10 @@ struct VaultSelectChainScreen: View {
         .onLoad {
             viewModel.setData(for: vault)
         }
+    }
+    
+    func isSelected(chain: Chain) -> Bool {
+        viewModel.selection.contains { $0.chain == chain }
     }
 }
 
