@@ -245,7 +245,6 @@ class EncryptedBackupViewModel: ObservableObject {
     
     /// Import multiple vaults from a zip file
     func importMultipleVaultsFromZip(zipURL: URL) throws {
-        print("🔍 DEBUG: Starting import from ZIP: \(zipURL.path)")
         var importedVaults: [Vault] = []
         
         // Create a temporary directory for extraction
@@ -256,7 +255,6 @@ class EncryptedBackupViewModel: ObservableObject {
             // Create temp directory
             try fileManager.createDirectory(at: tempDir, withIntermediateDirectories: true, attributes: nil)
             self.extractedFilesDirectory = tempDir
-            print("📦 DEBUG: Created temp directory: \(tempDir.path)")
             
             // Try to extract using FileManager's built-in unzip (iOS 15+)
             var extractedSuccessfully = false
@@ -268,19 +266,13 @@ class EncryptedBackupViewModel: ObservableObject {
                 try fileManager.createDirectory(at: extractDir, withIntermediateDirectories: true, attributes: nil)
                 
                 try fileManager.unzipItem(at: zipURL, to: extractDir)
-                print("📦 DEBUG: Successfully extracted to: \(extractDir.path)")
                 
                 self.extractedFilesDirectory = extractDir
                 extractedSuccessfully = true
                 
                 let vaultFiles = findVaultFilesRecursively(in: extractDir)
-                print("📁 DEBUG: Found \(vaultFiles.count) vault files")
-                for (index, file) in vaultFiles.enumerated() {
-                    print("  File \(index + 1): \(file.lastPathComponent)")
-                }
                 
                 importedVaults = processVaultFiles(vaultFiles)
-                print("✅ DEBUG: Processed \(importedVaults.count) vaults successfully")
             } catch {
                 print("⚠️ DEBUG: unzipItem failed: \(error)")
                 extractedSuccessfully = false
@@ -292,24 +284,17 @@ class EncryptedBackupViewModel: ObservableObject {
                 let coordinator = NSFileCoordinator(filePresenter: nil)
                 
                 coordinator.coordinate(readingItemAt: zipURL, options: [.forUploading], error: &coordinatorError) { (extractedURL) in
-                    print("📦 DEBUG: NSFileCoordinator result: \(extractedURL.path)")
                     
                     // Check if it's a directory
                     var isDirectory: ObjCBool = false
                     if fileManager.fileExists(atPath: extractedURL.path, isDirectory: &isDirectory) {
-                        print("📦 DEBUG: Is directory: \(isDirectory.boolValue)")
                         
                         if isDirectory.boolValue {
                             // Find vault files recursively in the extracted directory
                             let vaultFiles = self.findVaultFilesRecursively(in: extractedURL)
-                            print("📁 DEBUG: Found \(vaultFiles.count) vault files in coordinator result")
-                            for (index, file) in vaultFiles.enumerated() {
-                                print("  File \(index + 1): \(file.lastPathComponent)")
-                            }
                             
                             // Process vault files
                             importedVaults = self.processVaultFiles(vaultFiles)
-                            print("✅ DEBUG: Processed \(importedVaults.count) vaults successfully")
                         } else {
                             print("❌ DEBUG: Coordinator didn't extract the ZIP")
                         }
@@ -329,13 +314,11 @@ class EncryptedBackupViewModel: ObservableObject {
         }
         
         guard !importedVaults.isEmpty else {
-            print("⚠️ DEBUG: No vaults imported from ZIP")
             cleanupExtractedFiles()
             showError("noVaultsFoundInZip")
             return
         }
         
-        print("🎉 DEBUG: Setting up \(importedVaults.count) vaults for import")
         multipleVaultsToImport = importedVaults
         isMultipleVaultImport = true
         isFileUploaded = true
@@ -343,7 +326,6 @@ class EncryptedBackupViewModel: ObservableObject {
     
     /// Recursively find vault files in a directory
     private func findVaultFilesRecursively(in directory: URL) -> [URL] {
-        print("🔎 DEBUG: Searching recursively in: \(directory.path)")
         var vaultFiles: [URL] = []
         let fileManager = FileManager.default
         
@@ -374,7 +356,6 @@ class EncryptedBackupViewModel: ObservableObject {
                                        !fileName.hasPrefix("._")
                     
                     if isVaultFile && isNotMetadata {
-                        print("  ✅ Found vault file: \(fileName)")
                         vaultFiles.append(fileURL)
                     }
                 }
@@ -383,16 +364,12 @@ class EncryptedBackupViewModel: ObservableObject {
             }
         }
         
-        print("📊 DEBUG: Total vault files found: \(vaultFiles.count)")
         return vaultFiles
     }
     
     private func findVaultFiles(in extractedURL: URL) -> [URL] {
-        print("🔎 DEBUG: findVaultFiles called with: \(extractedURL.path)")
-        print("🔎 DEBUG: Is directory check: \(extractedURL.isDirectory)")
         
         guard extractedURL.isDirectory else { 
-            print("🔎 DEBUG: Not a directory, returning single file")
             return [extractedURL] 
         }
         
@@ -411,12 +388,10 @@ class EncryptedBackupViewModel: ObservableObject {
             
             guard let resourceValues = try? fileURL.resourceValues(forKeys: [.isDirectoryKey]),
                   !resourceValues.isDirectory! else { 
-                print("  📂 Skipping directory: \(fileURL.lastPathComponent)")
                 continue 
             }
             
             let fileName = fileURL.lastPathComponent
-            print("  📄 Checking file: \(fileName)")
             
             let hasBak = fileName.hasSuffix(".bak")
             let hasVult = fileName.hasSuffix(".vult")
@@ -427,48 +402,32 @@ class EncryptedBackupViewModel: ObservableObject {
             let hasMacOSX = fileName.contains("__MACOSX")
             let isNotMetadata = !startsWithDot && !hasMacOSX
             
-            print("    - .bak: \(hasBak), .vult: \(hasVult), .dat: \(hasDat)")
-            print("    - Is vault file: \(isVaultFile)")
-            print("    - Is not metadata: \(isNotMetadata)")
-            
             if isVaultFile && isNotMetadata {
-                print("    ✅ Added as vault file")
                 vaultFiles.append(fileURL)
-            } else {
-                print("    ❌ Skipped")
             }
         }
         
-        print("📊 DEBUG: Total files enumerated: \(allFiles.count)")
-        print("📊 DEBUG: Vault files found: \(vaultFiles.count)")
         return vaultFiles
     }
     
     private func processVaultFiles(_ fileURLs: [URL]) -> [Vault] {
-        print("🔄 DEBUG: Processing \(fileURLs.count) vault files")
         var processedVaults: [Vault] = []
         var encryptedVaultData: [(fileName: String, data: Data)] = []
         
         // First pass: collect all vaults, identify encrypted ones
         for fileURL in fileURLs {
-            print("  📝 Processing: \(fileURL.lastPathComponent)")
             do {
                 let fileData = try Data(contentsOf: fileURL)
-                print("    📊 File size: \(fileData.count) bytes")
                 
                 // Check if it's an encrypted protobuf vault
                 if let decodedContainer = Data(base64Encoded: fileData),
                    let vaultContainer = try? VSVaultContainer(serializedBytes: decodedContainer),
                    vaultContainer.isEncrypted {
-                    print("    🔐 Found encrypted vault, will prompt for password")
                     if let vaultData = Data(base64Encoded: vaultContainer.vault) {
                         encryptedVaultData.append((fileName: fileURL.lastPathComponent, data: vaultData))
                     }
                 } else if let vault = try decodeVaultFromData(fileData) {
-                    print("    ✅ Successfully decoded unencrypted vault")
                     processedVaults.append(vault)
-                } else {
-                    print("    ⚠️ Vault decoded but returned nil")
                 }
             } catch {
                 print("    ❌ Failed: \(error.localizedDescription)")
@@ -478,7 +437,6 @@ class EncryptedBackupViewModel: ObservableObject {
         
         // Handle encrypted vaults separately
         if !encryptedVaultData.isEmpty {
-            print("📱 Found \(encryptedVaultData.count) encrypted vault(s)")
             promptForPasswordAndImportMultiple(encryptedVaultData: encryptedVaultData, processedVaults: processedVaults)
             // Return empty for now, the password prompt will handle the import
             return []
@@ -489,30 +447,20 @@ class EncryptedBackupViewModel: ObservableObject {
     
     /// Decode a vault from file data
     private func decodeVaultFromData(_ data: Data) throws -> Vault? {
-        print("    🔐 Attempting to decode vault data...")
-        
         // Try protobuf format first
         if let vault = tryDecodeProtobuf(data) { 
-            print("    ✅ Successfully decoded as protobuf")
             return vault 
         }
-        print("    ❌ Not a protobuf format")
         
         // Try JSON formats
         let decoder = JSONDecoder()
         if let backupVault = try? decoder.decode(BackupVault.self, from: data) {
-            print("    ✅ Successfully decoded as BackupVault JSON")
             return backupVault.vault
         }
-        print("    ❌ Not a BackupVault JSON format")
         
         if let vault = try? decoder.decode(Vault.self, from: data) {
-            print("    ✅ Successfully decoded as Vault JSON")
             return vault
         }
-        print("    ❌ Not a Vault JSON format")
-        
-        print("    ❌ Failed to decode in any known format")
         return nil
     }
     
@@ -541,7 +489,6 @@ class EncryptedBackupViewModel: ObservableObject {
         var failedVaults: [String] = []
         
         for (fileName, vaultData) in encryptedVaultData {
-            print("🔓 Attempting to decrypt: \(fileName)")
             
             // Try to decrypt the vault data
             if let decryptedString = decryptOrReadData(data: vaultData, password: password) {
@@ -550,7 +497,6 @@ class EncryptedBackupViewModel: ObservableObject {
                     let hexData = Data(hexString: decryptedString) ?? Data()
                     if let vsVault = try? VSVault(serializedBytes: hexData),
                        let vault = try? Vault(proto: vsVault) {
-                        print("  ✅ Successfully decrypted and parsed: \(fileName)")
                         allVaults.append(vault)
                     } else {
                         print("  ❌ Failed to parse decrypted data: \(fileName)")
