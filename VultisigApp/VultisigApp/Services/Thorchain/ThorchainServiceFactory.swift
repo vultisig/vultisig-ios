@@ -32,12 +32,14 @@ enum ThorchainServiceFactory {
     
     static func getService(for chain: Chain) -> ThorchainServiceProtocol {
         switch chain {
-        case .thorChain:
-            return ThorchainService.shared
         case .thorChainStagenet:
             return ThorchainStagenetService.shared
         default:
-            fatalError("Chain \(chain) is not a THORChain variant")
+            guard chain.chainType == .THORChain else {
+                fatalError("Chain \(chain) is not a THORChain variant")
+            }
+            
+            return ThorchainService.shared
         }
     }
 }
