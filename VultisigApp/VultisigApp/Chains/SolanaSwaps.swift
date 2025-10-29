@@ -10,12 +10,7 @@ import WalletCore
 import Tss
 
 class SolanaSwaps {
-    
-    let vaultHexPubKey: String
-    
-    init(vaultHexPubKey: String) {
-        self.vaultHexPubKey = vaultHexPubKey
-    }
+    init() {}
     
     func getPreSignedImageHash(
         swapPayload: GenericSwapPayload,
@@ -33,7 +28,7 @@ class SolanaSwaps {
     ) throws -> SignedTransactionResult {
         let inputData = try getPreSignedInputData(quote: swapPayload.quote, keysignPayload: keysignPayload)
         let result = try SolanaHelper.getSignedTransaction(
-            vaultHexPubKey: vaultHexPubKey,
+            coinHexPubKey: keysignPayload.coin.hexPublicKey,
             inputData: inputData,
             signatures: signatures
         )

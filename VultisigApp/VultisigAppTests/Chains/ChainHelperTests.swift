@@ -77,7 +77,7 @@ final class ChainHelperTests: XCTestCase {
         case .generic(let oneInchSwapPayload):
             switch keysignPayload.coin.chain {
             case .solana:
-                let swaps = SolanaSwaps(vaultHexPubKey: hexPublicKey)
+                let swaps = SolanaSwaps()
                 result += try swaps.getPreSignedImageHash(swapPayload: oneInchSwapPayload, keysignPayload: keysignPayload)
             default:
                 let swaps = OneInchSwaps()

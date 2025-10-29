@@ -94,9 +94,7 @@ enum MayaChainHelper {
         return [preSigningOutput.dataHash.hexString]
     }
     
-    static func getSignedTransaction(vaultHexPubKey: String,
-                                     vaultHexChainCode: String,
-                                     keysignPayload: KeysignPayload,
+    static func getSignedTransaction(keysignPayload: KeysignPayload,
                                      signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
