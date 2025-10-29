@@ -364,6 +364,8 @@ class Endpoint {
     
     static let mantleServiceRpcService = "https://api.vultisig.com/mantle/"
     
+    static let hyperliquidServiceRpcService = "https://rpc.hyperliquid.xyz/evm"
+    
     static let solanaServiceRpc = "https://api.vultisig.com/solana/"
     
     static let solanaTokenInfoServiceRpc = "https://api.solana.fm/v1/tokens"
@@ -782,6 +784,8 @@ class Endpoint {
             return "https://cardanoscan.io/transaction/\(txid)"
         case .mantle:
             return "https://mantlescan.xyz/tx/\(txid)"
+        case .hyperliquid:
+            return "https://liquidscan.io/tx/\(txid)"
         }
     }
     
@@ -859,6 +863,8 @@ class Endpoint {
             return "https://cardanoscan.io/address/\(address)"
         case .mantle:
             return "https://mantlescan.xyz/address/\(address)"
+        case .hyperliquid:
+            return "https://liquidscan.io/address/\(address)"
         }
     }
     
@@ -936,6 +942,8 @@ class Endpoint {
             return "https://cardanoscan.io/address/\(address)"
         case .mantle:
             return "https://mantlescan.xyz/address/\(address)"
+        case .hyperliquid:
+            return "https://liquidscan.io/address/\(address)"
         case .none:
             return nil
         }
