@@ -137,10 +137,10 @@ enum TronHelper {
     {
         guard
             let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey),
-            let publicKey = PublicKey(data: pubKeyData, type: .secp256k1) else {
+            let secp256k1PubKey = PublicKey(data: pubKeyData, type: .secp256k1) else {
             throw CoinFactory.Errors.invalidPublicKey(pubKey: keysignPayload.coin.hexPublicKey)
         }
-        
+        let publicKey = secp256k1PubKey.uncompressed
         let inputData = try getPreSignedInputData(
             keysignPayload: keysignPayload
         )

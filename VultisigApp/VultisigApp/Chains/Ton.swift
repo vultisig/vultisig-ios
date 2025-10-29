@@ -172,12 +172,12 @@ enum TonHelper {
     static func getSignedTransaction(keysignPayload: KeysignPayload,
                                      signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
-        let vaultHexPubKey = keysignPayload.coin.hexPublicKey
-        guard let pubkeyData = Data(hexString: vaultHexPubKey) else {
-            throw HelperError.runtimeError("public key \(vaultHexPubKey) is invalid")
+        let coinHexPublicKey = keysignPayload.coin.hexPublicKey
+        guard let pubkeyData = Data(hexString: coinHexPublicKey) else {
+            throw HelperError.runtimeError("public key \(coinHexPublicKey) is invalid")
         }
         guard let publicKey = PublicKey(data: pubkeyData, type: .ed25519) else {
-            throw HelperError.runtimeError("public key \(vaultHexPubKey) is invalid")
+            throw HelperError.runtimeError("public key \(coinHexPublicKey) is invalid")
         }
         
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
