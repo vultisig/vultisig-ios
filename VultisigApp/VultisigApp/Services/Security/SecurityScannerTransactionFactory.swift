@@ -116,7 +116,7 @@ private extension SecurityScannerTransactionFactory {
             skipBroadcast: false
         )
         
-        let transactionZeroX = try SolanaHelper.getZeroSignedTransaction(vaultHexPublicKey: vaultHexPubKey, keysignPayload: keysignPayload)
+        let transactionZeroX = try SolanaHelper.getZeroSignedTransaction(keysignPayload: keysignPayload)
         
         return SecurityScannerTransaction(
             chain: transaction.coin.chain,
@@ -173,8 +173,7 @@ private extension SecurityScannerTransactionFactory {
         )
         
         
-        let inputData = try UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA,
-                                             vaultHexChainCode: vault.hexChainCode).getUnsignedTransactionHex(keysignPayload: keySignPayload)
+        let inputData = try UTXOChainsHelper(coin: .bitcoin).getUnsignedTransactionHex(keysignPayload: keySignPayload)
         
         return SecurityScannerTransaction(
             chain: transaction.coin.chain,

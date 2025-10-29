@@ -55,20 +55,20 @@ final class ChainHelperTests: XCTestCase {
     private func runTestCaseWithSwap(_ testCase: ChainHelperTestCase, keysignPayload: KeysignPayload) throws {
         var result: [String] = []
         if keysignPayload.approvePayload != nil {
-            let swaps = THORChainSwaps(vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode, vaultHexPublicKeyEdDSA: "")
+            let swaps = THORChainSwaps()
             let approvalImageHash = try swaps.getPreSignedApproveImageHash(approvePayload: keysignPayload.approvePayload!, keysignPayload: keysignPayload)
             result += approvalImageHash
         }
         let incrementNonce = keysignPayload.approvePayload != nil
         switch keysignPayload.swapPayload {
         case .thorchain(let swapPayload), .thorchainStagenet(let swapPayload):
-            let swaps = THORChainSwaps(vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode, vaultHexPublicKeyEdDSA: "")
+            let swaps = THORChainSwaps()
             let imageHash = try swaps.getPreSignedImageHash(swapPayload: swapPayload,
                                                             keysignPayload: keysignPayload,
                                                             incrementNonce: incrementNonce)
             result += imageHash
         case .mayachain(let swapPayload):
-            let swaps = THORChainSwaps(vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode, vaultHexPublicKeyEdDSA: "")
+            let swaps = THORChainSwaps()
             let imageHash = try swaps.getPreSignedImageHash(swapPayload: swapPayload,
                                                             keysignPayload: keysignPayload,
                                                             incrementNonce: incrementNonce)
@@ -77,10 +77,10 @@ final class ChainHelperTests: XCTestCase {
         case .generic(let oneInchSwapPayload):
             switch keysignPayload.coin.chain {
             case .solana:
-                let swaps = SolanaSwaps(vaultHexPubKey: hexPublicKey)
+                let swaps = SolanaSwaps()
                 result += try swaps.getPreSignedImageHash(swapPayload: oneInchSwapPayload, keysignPayload: keysignPayload)
             default:
-                let swaps = OneInchSwaps(vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode)
+                let swaps = OneInchSwaps()
                 result += try swaps.getPreSignedImageHash(payload: oneInchSwapPayload, keysignPayload: keysignPayload, incrementNonce: incrementNonce)
             }
         case .none:
@@ -108,7 +108,7 @@ final class ChainHelperTests: XCTestCase {
         var result: [String] = []
         switch chain {
         case .bitcoin,.bitcoinCash,.dogecoin,.litecoin,.zcash:
-            let utxoHelper = UTXOChainsHelper(coin: chain.coinType, vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode)
+            let utxoHelper = UTXOChainsHelper(coin: chain.coinType)
             let imageHash = try utxoHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
             result += imageHash
         case .ethereum,.arbitrum,.optimism,.polygon,.base,.bscChain,.avalanche,.mantle:

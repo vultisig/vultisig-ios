@@ -107,7 +107,7 @@ struct KeysignPayloadFactory {
         if usableUTXOs.isEmpty {
             throw Errors.utxoTooSmallError
         }
-        let helper = UTXOChainsHelper.getHelper(vault: vault, coin: keysignPayload.coin)
+        let helper = UTXOChainsHelper.getHelper(coin: keysignPayload.coin)
         guard let utxoHelper = helper else {
             throw Errors.utxoSelectionFailedError
         }
@@ -166,9 +166,7 @@ struct KeysignPayloadFactory {
         )
         
         // Use WalletCore's Cardano transaction planning to select optimal UTXOs
-        guard let cardanoHelper = CardanoHelper.getHelper(vault: vault, coin: keysignPayload.coin) else {
-            throw Errors.utxoSelectionFailedError
-        }
+        let cardanoHelper = CardanoHelper()
         
         let plan = try cardanoHelper.getCardanoTransactionPlan(keysignPayload: tmpKeysignPayload)
         if plan.utxos.isEmpty {

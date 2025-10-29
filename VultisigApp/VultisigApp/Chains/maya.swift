@@ -94,26 +94,22 @@ enum MayaChainHelper {
         return [preSigningOutput.dataHash.hexString]
     }
     
-    static func getSignedTransaction(vaultHexPubKey: String,
-                                     vaultHexChainCode: String,
-                                     keysignPayload: KeysignPayload,
+    static func getSignedTransaction(keysignPayload: KeysignPayload,
                                      signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
-        let signedTransaction = try getSignedTransaction(vaultHexPubKey: vaultHexPubKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
+        let signedTransaction = try getSignedTransaction(coinHexPubKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
         return signedTransaction
     }
     
-    static func getSignedTransaction(vaultHexPubKey: String,
-                                     vaultHexChainCode: String,
+    static func getSignedTransaction(coinHexPubKey: String,
                                      inputData: Data,
                                      signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
-        let thorPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode, derivePath: CoinType.thorchain.derivationPath())
-        guard let pubkeyData = Data(hexString: thorPublicKey),
+        guard let pubkeyData = Data(hexString: coinHexPubKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {
-            throw HelperError.runtimeError("public key \(thorPublicKey) is invalid")
+            throw HelperError.runtimeError("public key \(coinHexPubKey) is invalid")
         }
         
         do {

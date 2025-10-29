@@ -18,6 +18,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/httpswift/swifter", from: "1.5.0"),
+        .package(url: "https://github.com/krzyzanowskim/CryptoSwift",from: "1.8.4"),
         .package(url: "https://github.com/hyperoslo/Cache", from: "6.1.0"),
     ],
     targets: [
@@ -26,7 +27,8 @@ let package = Package(
         .target(
             name: "Mediator",
             dependencies: [.product(name: "Swifter", package: "swifter"),
-                           .product(name: "Cache", package: "Cache")]),
+                           .product(name: "Cache", package: "Cache"),
+                           .product(name: "CryptoSwift", package: "CryptoSwift")]),
         .testTarget(
             name: "MediatorTests",
             dependencies: ["Mediator"]),
