@@ -98,6 +98,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             self.localPartyID = Utils.getLocalDeviceIdentity()
             self.vault.localPartyID = self.localPartyID
         }
+        print("setData localPartyID:\(self.localPartyID)")
         self.restartSelections()
         // ensure when active / fast vault , user is always using internet option
         switch state {
