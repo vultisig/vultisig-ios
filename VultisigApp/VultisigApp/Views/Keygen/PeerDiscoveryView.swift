@@ -45,7 +45,6 @@ struct PeerDiscoveryView: View {
     var body: some View {
         content
             .onLoad {
-                viewModel.startDiscovery()
                 animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
                 viewModel.setData(
                     vault: vault,
@@ -55,6 +54,7 @@ struct PeerDiscoveryView: View {
                     fastSignConfig: fastSignConfig
                 )
                 setData()
+                viewModel.startDiscovery()
             }
             .onDisappear {
                 viewModel.stopMediator()

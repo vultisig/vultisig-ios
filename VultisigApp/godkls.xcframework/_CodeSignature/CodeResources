@@ -4,13 +4,9 @@
 <dict>
 	<key>files</key>
 	<dict>
-		<key>.DS_Store</key>
-		<data>
-		zLWjoVdkQHq/8/ZpF3FYE6ZhJ48=
-		</data>
 		<key>ios-arm64/godkls.framework/Headers/godkls.h</key>
 		<data>
-		3ZzYSFf352E5AGw6qg0eZosAb4E=
+		ktW17UVrRxHmRnCYcCuPhvBO+vw=
 		</data>
 		<key>ios-arm64/godkls.framework/Info.plist</key>
 		<data>
@@ -22,11 +18,11 @@
 		</data>
 		<key>ios-arm64/godkls.framework/godkls</key>
 		<data>
-		475u5b/irs71uIuD9bwbiID9PXg=
+		hD4oE8H1NWKCERg1nppL3f+ItVU=
 		</data>
 		<key>ios-arm64_x86_64-simulator/godkls.framework/Headers/godkls.h</key>
 		<data>
-		3ZzYSFf352E5AGw6qg0eZosAb4E=
+		ktW17UVrRxHmRnCYcCuPhvBO+vw=
 		</data>
 		<key>ios-arm64_x86_64-simulator/godkls.framework/Info.plist</key>
 		<data>
@@ -38,7 +34,7 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/godkls.framework/godkls</key>
 		<data>
-		DRYlDeuH6XLDueE/vbb0f5a5Dx0=
+		/UN+S3pfCWX4zbuX8F6TkK/Xj8k=
 		</data>
 		<key>macos-arm64_x86_64/godkls.framework/Modules/module.modulemap</key>
 		<data>
@@ -46,7 +42,7 @@
 		</data>
 		<key>macos-arm64_x86_64/godkls.framework/Versions/A/Headers/godkls.h</key>
 		<data>
-		3ZzYSFf352E5AGw6qg0eZosAb4E=
+		ktW17UVrRxHmRnCYcCuPhvBO+vw=
 		</data>
 		<key>macos-arm64_x86_64/godkls.framework/Versions/A/Resources/Info.plist</key>
 		<data>
@@ -54,28 +50,20 @@
 		</data>
 		<key>macos-arm64_x86_64/godkls.framework/Versions/A/godkls</key>
 		<data>
-		D5eEaqU25iQkTGETiJ++3btcSWc=
+		OK9jSHQOytCFPUQaJ5itmJ7gFpc=
 		</data>
 	</dict>
 	<key>files2</key>
 	<dict>
 		<key>ios-arm64/godkls.framework/Headers/godkls.h</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			3ZzYSFf352E5AGw6qg0eZosAb4E=
-			</data>
 			<key>hash2</key>
 			<data>
-			9x32no1Ojr2elG555R8fWEh5w8+HBzIsPIb+R79zpN4=
+			siXysLh607U6vhx62+AyzaN5Gi3HvHmSp5jXMta05j4=
 			</data>
 		</dict>
 		<key>ios-arm64/godkls.framework/Info.plist</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			vPLu7ZAinhaWOykUKH7x5qvWVnU=
-			</data>
 			<key>hash2</key>
 			<data>
 			kRZc2AS7nkwQ1RikMrk1KgQhjfy2uGkV7n4iCXa53EM=
@@ -83,10 +71,6 @@
 		</dict>
 		<key>ios-arm64/godkls.framework/Modules/module.modulemap</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			y+xXjOPf84QSWtWv0fDHF+x43J0=
-			</data>
 			<key>hash2</key>
 			<data>
 			JAdrBIjcVu43bbIyaImsweV9iZlzgM9Xiu+NXL4CXmw=
@@ -94,32 +78,20 @@
 		</dict>
 		<key>ios-arm64/godkls.framework/godkls</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			475u5b/irs71uIuD9bwbiID9PXg=
-			</data>
 			<key>hash2</key>
 			<data>
-			VGaLzLoxlugwCUwF+Jjl/jW05QALWJ68e16u6yf25Ok=
+			hh2sfOWWlS2Fc4yd2EGNFUhY0rl99COdiKx0zZzvZwg=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/godkls.framework/Headers/godkls.h</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			3ZzYSFf352E5AGw6qg0eZosAb4E=
-			</data>
 			<key>hash2</key>
 			<data>
-			9x32no1Ojr2elG555R8fWEh5w8+HBzIsPIb+R79zpN4=
+			siXysLh607U6vhx62+AyzaN5Gi3HvHmSp5jXMta05j4=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/godkls.framework/Info.plist</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			PUO/jX9gMfEvUIqq+S3WD1Hjlp0=
-			</data>
 			<key>hash2</key>
 			<data>
 			z1eVZniA9dm84o97ELufen0OQSqyN0KHichAHBj3phM=
@@ -127,10 +99,6 @@
 		</dict>
 		<key>ios-arm64_x86_64-simulator/godkls.framework/Modules/module.modulemap</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			y+xXjOPf84QSWtWv0fDHF+x43J0=
-			</data>
 			<key>hash2</key>
 			<data>
 			JAdrBIjcVu43bbIyaImsweV9iZlzgM9Xiu+NXL4CXmw=
@@ -138,13 +106,9 @@
 		</dict>
 		<key>ios-arm64_x86_64-simulator/godkls.framework/godkls</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			DRYlDeuH6XLDueE/vbb0f5a5Dx0=
-			</data>
 			<key>hash2</key>
 			<data>
-			eF0u20rbymX15fBJREmt0bpBoWNvUn8vbK9A1pz24IY=
+			zUV+RWyXRdFYsl0fD4jMolj2AfRSgRZJdPkq9zNRiCc=
 			</data>
 		</dict>
 		<key>macos-arm64_x86_64/godkls.framework/Headers</key>
@@ -154,10 +118,6 @@
 		</dict>
 		<key>macos-arm64_x86_64/godkls.framework/Modules/module.modulemap</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			y+xXjOPf84QSWtWv0fDHF+x43J0=
-			</data>
 			<key>hash2</key>
 			<data>
 			JAdrBIjcVu43bbIyaImsweV9iZlzgM9Xiu+NXL4CXmw=
@@ -170,21 +130,13 @@
 		</dict>
 		<key>macos-arm64_x86_64/godkls.framework/Versions/A/Headers/godkls.h</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			3ZzYSFf352E5AGw6qg0eZosAb4E=
-			</data>
 			<key>hash2</key>
 			<data>
-			9x32no1Ojr2elG555R8fWEh5w8+HBzIsPIb+R79zpN4=
+			siXysLh607U6vhx62+AyzaN5Gi3HvHmSp5jXMta05j4=
 			</data>
 		</dict>
 		<key>macos-arm64_x86_64/godkls.framework/Versions/A/Resources/Info.plist</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			jatwEuPzKpUi4NAq8NST6mEg4+w=
-			</data>
 			<key>hash2</key>
 			<data>
 			XIs9NEXr/OsuJJmvjZx6A/mJq0U6YhF3OhwXxiSTUwM=
@@ -192,13 +144,9 @@
 		</dict>
 		<key>macos-arm64_x86_64/godkls.framework/Versions/A/godkls</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			D5eEaqU25iQkTGETiJ++3btcSWc=
-			</data>
 			<key>hash2</key>
 			<data>
-			tLJa9/3WF1RNxD2khL03zcPGDJTJqVLr/8Ns8NEBwF8=
+			FNGy9U+lf+5ZpyQxCZipkkFyhfJsPcYpI1Xl6Dmfql4=
 			</data>
 		</dict>
 		<key>macos-arm64_x86_64/godkls.framework/Versions/Current</key>

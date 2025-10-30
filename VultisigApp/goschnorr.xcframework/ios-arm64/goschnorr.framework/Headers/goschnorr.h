@@ -9,8 +9,6 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#define DEFAULT_TTL (60 * 10)
-
 typedef enum schnorr_lib_error {
   LIB_OK,
   LIB_INVALID_PUBLIC_KEY,
