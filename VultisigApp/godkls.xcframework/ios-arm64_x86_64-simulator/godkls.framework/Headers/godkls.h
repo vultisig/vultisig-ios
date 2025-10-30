@@ -278,6 +278,67 @@ enum lib_error dkls_presign_to_bytes(struct Handle share, struct tss_buffer *buf
 enum lib_error dkls_presign_session_id(struct Handle share, struct tss_buffer *buf);
 
 /*
+ Generate new HD setup message.
+ */
+enum lib_error dkls_hd_setupmsg_new(const struct go_slice *key_id,
+                                    const struct go_slice *chain_path,
+                                    const struct go_slice *ids,
+                                    struct tss_buffer *setup_msg);
+
+enum lib_error dkls_hd_session_from_setup(const struct go_slice *setup,
+                                          const struct go_slice *id,
+                                          struct Handle share,
+                                          struct Handle *hnd);
+
+/*
+ Process an input message
+ */
+enum lib_error dkls_hd_session_input_message(struct Handle session,
+                                             const struct go_slice *message,
+                                             uint32_t *finished);
+
+/*
+ Receive an output message.
+
+ # Arguments
+
+ * session: session handler
+
+ * message: mutable reference to an empty `tss_buffer`.
+
+ # Errors
+
+ * LIB_NULL_PTR: passed `message` is null pointer
+
+ * LIB_NON_EMPTY_OUTPUT_BUFFER: passed `message is not empty buffer
+
+ */
+enum lib_error dkls_hd_session_output_message(struct Handle session, struct tss_buffer *message);
+
+enum lib_error dkls_hd_session_message_receiver(struct Handle session,
+                                                const struct go_slice *message,
+                                                uint32_t index,
+                                                struct tss_buffer *receiver);
+
+/*
+ Deallocate session handle and associated memory.
+
+ # Arguments:
+
+ * `session`: signature generation session handle
+
+ # Errors:
+
+ * `LIB_NULL_PTR`: passed null pointer
+
+ * `LIB_INVALID_HANDLE`: passed an invalid session handle
+
+ */
+enum lib_error dkls_hd_session_free(const struct Handle *session);
+
+enum lib_error dkls_hd_session_finish(struct Handle session, struct Handle *output);
+
+/*
  Creates a key export receiver session and generate setup message for
  key exporters.
 
