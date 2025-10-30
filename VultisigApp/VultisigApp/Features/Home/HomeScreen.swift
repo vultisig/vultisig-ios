@@ -150,7 +150,7 @@ struct HomeScreen: View {
 #else
             .crossPlatformSheet(isPresented: $showScanner) {
                 if ProcessInfo.processInfo.isiOSAppOnMac {
-                    GeneralQRImportMacView(type: .SignTransaction, sendTx: sendTx, selectedVault: selectedVault)
+                    GeneralQRImportMacView(type: .SignTransaction, selectedVault: selectedVault) { _ in }
                 } else {
                     GeneralCodeScannerView(
                         showSheet: $showScanner,

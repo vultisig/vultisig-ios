@@ -9,8 +9,9 @@ import SwiftUI
 import SwiftData
 
 struct SendCryptoAddressBookView: View {
-    @ObservedObject var tx: SendTransaction
+    let coin: Coin
     @Binding var showSheet: Bool
+    var onSelectAddress: (String) -> Void
     
     @State var isSavedAddressesSelected: Bool = true
     @State var myAddresses: [(id: UUID, title: String, description: String)] = []
@@ -20,7 +21,7 @@ struct SendCryptoAddressBookView: View {
     
     var filteredSavedAddresses: [AddressBookItem] {
         savedAddresses
-            .filter { (AddressBookChainType(coinMeta: $0.coinMeta) == AddressBookChainType(coinMeta: tx.coin.toCoinMeta()) || $0.coinMeta.chain == tx.coin.chain) }
+            .filter { (AddressBookChainType(coinMeta: $0.coinMeta) == AddressBookChainType(coinMeta: coin.toCoinMeta()) || $0.coinMeta.chain == coin.chain) }
     }
     
     var body: some View {
@@ -89,10 +90,11 @@ struct SendCryptoAddressBookView: View {
                 SendCryptoAddressBookCell(
                     title: address.title,
                     description: address.address,
-                    icon: logo(for: address),
-                    tx: tx,
-                    showSheet: $showSheet
-                )
+                    icon: logo(for: address)
+                ) {
+                    onSelectAddress($0)
+                    showSheet = false
+                }
             }
         }
     }
@@ -100,7 +102,7 @@ struct SendCryptoAddressBookView: View {
     func logo(for address: AddressBookItem) -> String {
         switch address.coinMeta.chain.type {
         case .EVM:
-            return tx.coin.chain.logo
+            return coin.chain.logo
         default:
             return address.coinMeta.logo
         }
@@ -112,10 +114,11 @@ struct SendCryptoAddressBookView: View {
                 SendCryptoAddressBookCell(
                     title: address.title,
                     description: address.description,
-                    icon: nil,
-                    tx: tx,
-                    showSheet: $showSheet
-                )
+                    icon: nil
+                ) {
+                    onSelectAddress($0)
+                    showSheet = false
+                }
             }
         }
         .onAppear {
@@ -145,7 +148,7 @@ struct SendCryptoAddressBookView: View {
         
         for vault in vaults {
             for coin in vault.coins {
-                if coin.chain == tx.coin.chain {
+                if coin.chain == coin.chain {
                     let title = vault.name
                     let description = coin.address
                     let vaultTitles = myAddresses.map { address in
@@ -169,5 +172,5 @@ struct SendCryptoAddressBookView: View {
 }
 
 #Preview {
-    SendCryptoAddressBookView(tx: SendTransaction(), showSheet: .constant(true))
+    SendCryptoAddressBookView(coin: .example, showSheet: .constant(true)) { _ in }
 }

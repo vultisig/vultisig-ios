@@ -7,7 +7,6 @@
 
 #if os(iOS)
 import SwiftUI
-import CodeScanner
 
 extension SendCryptoAddressTextField {
     var container: some View {
@@ -18,12 +17,6 @@ extension SendCryptoAddressTextField {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Theme.colors.bgSecondary)
             .cornerRadius(10)
-            .crossPlatformSheet(isPresented: $showScanner) {
-                codeScanner
-            }
-            .sheet(isPresented: $showImagePicker, onDismiss: processImage) {
-                ImagePicker(selectedImage: $selectedImage)
-            }
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(sendCryptoViewModel.showAddressAlert ? Theme.colors.alertWarning : Theme.colors.bgTertiary, lineWidth: 1)
@@ -68,64 +61,6 @@ extension SendCryptoAddressTextField {
             .frame(height: 48)
         }
         .padding(.horizontal, 12)
-    }
-    
-    var scanButton: some View {
-        Button {
-            showScanner.toggle()
-        } label: {
-            getButton("camera")
-        }
-    }
-    
-    var codeScanner: some View {
-        AddressQRCodeScannerView(showScanner: $showScanner, address: $tx.toAddress, handleScan: handleScan)
-    }
-    
-    func processImage() {
-        guard let selectedImage = selectedImage else { return }
-        handleImageQrCode(image: selectedImage)
-    }
-    
-    func pasteAddress() {
-        if let clipboardContent = UIPasteboard.general.string {
-            tx.toAddress = clipboardContent
-            
-            DebounceHelper.shared.debounce {
-                validateAddress(clipboardContent)
-            }
-        }
-    }
-    
-    private func handleScan(result: Result<ScanResult, ScanError>) {
-        switch result {
-        case .success(let result):
-            let qrCodeResult = result.string
-            tx.parseCryptoURI(qrCodeResult)
-            validateAddress(tx.toAddress)
-            showScanner = false
-        case .failure(let err):
-            sendCryptoViewModel.logger.error("fail to scan QR code,error:\(err.localizedDescription)")
-        }
-    }
-    
-    private func handleImageQrCode(image: UIImage) {
-        let qrCodeFromImage = Utils.handleQrCodeFromImage(image: image)
-        let (address, amount, message) = Utils.parseCryptoURI(String(data: qrCodeFromImage, encoding: .utf8) ?? .empty)
-        
-        tx.toAddress = address
-        tx.amount = amount
-        tx.memo = message
-        
-        DebounceHelper.shared.debounce {
-            validateAddress(address)
-        }
-        
-        
-        if !amount.isEmpty {
-            sendCryptoViewModel.convertToFiat(newValue: amount, tx: tx)
-        }
-        
     }
 }
 #endif
