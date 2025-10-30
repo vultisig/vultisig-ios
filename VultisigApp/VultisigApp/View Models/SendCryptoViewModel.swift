@@ -22,7 +22,7 @@ class SendCryptoViewModel: ObservableObject {
     @Published var currentIndex = 1
     @Published var currentTitle = "send"
     @Published var errorTitle = ""
-    @Published var errorMessage = ""
+    @Published var errorMessage: String?
     @Published var hash: String? = nil
     @Published var approveHash: String? = nil
     
