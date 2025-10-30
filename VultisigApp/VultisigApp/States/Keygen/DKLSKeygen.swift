@@ -85,6 +85,24 @@ final class DKLSKeygen {
         return self.setupMessage
     }
     
+    private func getDklsKeyImportSetupMessage() throws -> [UInt8]  {
+        var buf = godkls.tss_buffer()
+        defer {
+            godkls.tss_buffer_free(&buf)
+        }
+        let threshold = DKLSHelper.getThreshod(input: self.keygenCommittee.count)
+        // create setup message and upload it to relay server
+        let byteArray = DKLSHelper.arrayToBytes(parties: self.keygenCommittee)
+        var ids = byteArray.to_dkls_goslice()
+        dkls_key_import_initiator_new(<#T##private_key: UnsafePointer<go_slice>!##UnsafePointer<go_slice>!#>, <#T##root_chain: UnsafePointer<go_slice>!##UnsafePointer<go_slice>!#>, <#T##threshold: UInt8##UInt8#>, <#T##ids: UnsafePointer<go_slice>!##UnsafePointer<go_slice>!#>, <#T##setup_msg: UnsafeMutablePointer<tss_buffer>!##UnsafeMutablePointer<tss_buffer>!#>, <#T##session: UnsafeMutablePointer<Handle>!##UnsafeMutablePointer<Handle>!#>)
+        let err = dkls_keygen_setupmsg_new(threshold, nil, &ids, &buf)
+        if err != DKLS_LIB_OK {
+            throw HelperError.runtimeError("fail to setup keygen message, dkls error:\(err)")
+        }
+        self.setupMessage = Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
+        return self.setupMessage
+    }
+    
     func GetDKLSOutboundMessage(handle: godkls.Handle) -> (godkls.lib_error,[UInt8]) {
         var buf = godkls.tss_buffer()
         defer {
@@ -92,7 +110,7 @@ final class DKLSKeygen {
         }
         var result: godkls.lib_error
         switch self.tssType {
-        case .Keygen,.Migrate:
+        case .Keygen,.Migrate,.KeyImport:
             result = dkls_keygen_session_output_message(handle,&buf)
         case .Reshare:
             result = dkls_qc_session_output_message(handle,&buf)
@@ -130,7 +148,7 @@ final class DKLSKeygen {
         var mutableMessage = message
         var receiverResult: godkls.lib_error
         switch self.tssType {
-        case .Keygen,.Migrate:
+        case .Keygen,.Migrate,.KeyImport:
             receiverResult = dkls_keygen_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
         case .Reshare:
             receiverResult = dkls_qc_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
@@ -247,7 +265,7 @@ final class DKLSKeygen {
             var isFinished:UInt32 = 0
             var result: godkls.lib_error
             switch self.tssType {
-            case .Keygen,.Migrate:
+            case .Keygen,.Migrate,.KeyImport:
                 result = dkls_keygen_session_input_message(handle, &decryptedBodySlice, &isFinished)
             case .Reshare:
                 result = dkls_qc_session_input_message(handle, &decryptedBodySlice, &isFinished)

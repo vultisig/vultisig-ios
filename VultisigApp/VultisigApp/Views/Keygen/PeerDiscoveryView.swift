@@ -144,6 +144,8 @@ struct PeerDiscoveryView: View {
             return viewModel.selections.count < requiredCount
         case .Migrate:
             return Set(viewModel.selections) != Set(viewModel.vault.signers)
+        case .KeyImport:
+            return viewModel.selections.count != 3
         }
     }
     
@@ -201,6 +203,8 @@ struct PeerDiscoveryView: View {
         case .Reshare:
             showInfoSheet = false
         case .Migrate:
+            showInfoSheet = false
+        case .KeyImport:
             showInfoSheet = false
         }
     }

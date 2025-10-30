@@ -140,8 +140,9 @@ class KeygenViewModel: ObservableObject {
                     return
                 }
                 await startKeygenDKLS(context: context, localUIEcdsa: localUIECDSA, localUIEddsa: localUIEdDSA)
+            case .KeyImport:
+                self.logger.error("Key Import not supported yet")
             }
-            
         case .DKLS:
             await startKeygenDKLS(context: context)
         }
@@ -165,6 +166,8 @@ class KeygenViewModel: ObservableObject {
             case .Reshare:
                 self.status = .ReshareECDSA
                 try await dklsKeygen.DKLSReshareWithRetry(attempt: 0)
+            case .KeyImport:
+                self.logger.error("Key Import not supported yet")
             }
             
             
@@ -185,6 +188,8 @@ class KeygenViewModel: ObservableObject {
             case .Reshare:
                 self.status = .ReshareEdDSA
                 try await schnorrKeygen.SchnorrReshareWithRetry(attempt: 0)
+            case .KeyImport:
+                self.logger.error("Key Import not supported yet")
             }
             
             self.vault.signers = self.keygenCommittee
@@ -286,6 +291,11 @@ class KeygenViewModel: ObservableObject {
                 self.logger.error("Failed to migration vault")
                 self.status = .KeygenFailed
                 return
+            case .KeyImport:
+                // this should not happen
+                self.logger.error("Failed to key import vault")
+                self.status = .KeygenFailed
+                return
             }
             try context.save()
         } catch {
@@ -343,6 +353,8 @@ class KeygenViewModel: ObservableObject {
                 self.vault.resharePrefix = ecdsaResp.resharePrefix
             case .Migrate:
                 throw HelperError.runtimeError("Migrate not supported yet")
+            case .KeyImport:
+                throw HelperError.runtimeError("Key Import not supported yet")
             }
             // start an additional step to make sure all parties involved in the keygen committee complete successfully
             // avoid to create a partial vault, meaning some parties finished create the vault successfully, and one still in failed state
