@@ -9,6 +9,7 @@ import SwiftData
 import Tss
 import WalletCore
 import CryptoKit
+import BigInt
 
 enum KeygenStatus {
     case CreatingInstance
@@ -156,7 +157,9 @@ class KeygenViewModel: ObservableObject {
                 return
             }
             let btcKey = hdWallet.getKeyForCoin(coin: .bitcoin)
-            let solana =  hdWallet.getMasterKey(curve: .ed25519) //hdWallet.getKeyForCoin(coin: .solana)
+            let solana =  hdWallet.getKeyForCoin(coin: .solana)
+            print(solana.data.hexString)
+            let solanaSeed = clampThenUniformScalar(from: solana.data)
             
             let rootChainCode = rootChainCodeHex(wallet: hdWallet)
             guard let rootChainCode else {
@@ -164,34 +167,43 @@ class KeygenViewModel: ObservableObject {
                 return
             }
             self.vault.hexChainCode = rootChainCode
-            await startKeygenDKLS(context: context,localUIEcdsa: btcKey.data.hexString,localUIEddsa: ed25519Scalar(fromSeed: solana.data))
+            
+            await startKeygenDKLS(context: context,localUIEcdsa: btcKey.data.hexString,localUIEddsa: solanaSeed?.hexString ?? "")
         }
     }
-    func ed25519Scalar(fromSeed seed: Data) -> String {
-        // ensure we have a 32\-byte seed; if WalletCore returns 64, take first 32
-        let seed32: Data
-        if seed.count == 32 {
-            seed32 = seed
-        } else if seed.count >= 32 {
-            seed32 = seed.subdata(in: 0..<32)
-        } else {
-            return ""
-        }
-
-        // SHA512(seed)
-        let digest = SHA512.hash(data: seed32)
-        let h = Data(digest) // 64 bytes
-
-        // take left 32 bytes
-        var a = h.subdata(in: 0..<32)
-
-        // clamp: little\-endian
-        a[0] &= 0b1111_1000       // a[0] &= 248
-        a[31] &= 0b0111_1111      // a[31] &= 127
-        a[31] |= 0b0100_0000      // a[31] |= 64
-
-        return a.hexString
+    
+    func clampThenUniformScalar(from seed: Data) -> Data? {
+        guard let clamped = ed25519ClampedScalar(from: seed) else { return nil }
+        return ed25519UniformFromLittleEndianScalar(clamped)
     }
+    
+    func ed25519UniformFromLittleEndianScalar(_ littleEndianScalar: Data) -> Data? {
+        guard littleEndianScalar.count == 32 else { return nil }
+        // ed25519 group order L (big-endian hex)
+        let Lhex = "1000000000000000000000000000000014DEF9DEA2F79CD65812631A5CF5D3ED"
+        guard let L = BigUInt(Lhex, radix: 16) else { return nil }
+
+        // BigUInt initializer expects big-endian bytes, so reverse
+        let be = Data(littleEndianScalar.reversed())
+        let x = BigUInt(be)               // value of scalar
+        let r = x % L                     // reduce mod L
+
+        // serialize r as 32-byte big-endian, pad if needed, then return little-endian
+        let rBE = r.serialize()
+        let paddedBE = (Data(repeating: 0, count: max(0, 32 - rBE.count)) + rBE)
+        return Data(paddedBE.reversed())
+    }
+
+    func ed25519ClampedScalar(from seed: Data) -> Data? {
+        guard seed.count == 32 else { return nil }
+        let digest = SHA512.hash(data: seed)
+        var scalar = Data(digest.prefix(32)) // little-endian per spec
+        scalar[0] &= 0xF8
+        scalar[31] &= 0x3F
+        scalar[31] |= 0x40
+        return scalar
+    }
+    
     /// Return BIP32 master chain code (hex) for a mnemonic via WalletCore's HDWallet seed.
     func rootChainCodeHex(wallet: HDWallet) -> String? {
         let seed = wallet.seed // 64 bytes BIP39 seed

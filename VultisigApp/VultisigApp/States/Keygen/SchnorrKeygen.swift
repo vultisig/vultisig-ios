@@ -72,6 +72,8 @@ final class SchnorrKeygen {
         // create setup message and upload it to relay server
         let byteArray = DKLSHelper.arrayToBytes(parties: self.keygenCommittee)
         var ids = byteArray.to_dkls_goslice()
+        print("keygen committee: \(self.keygenCommittee)")
+        print("hex private key: \(hexPrivateKey)")
         let decodedPrivateKeyData = Data(hexString: hexPrivateKey)
         guard let decodedPrivateKeyData else {
             throw HelperError.runtimeError("fail to decode private key from hex string")
