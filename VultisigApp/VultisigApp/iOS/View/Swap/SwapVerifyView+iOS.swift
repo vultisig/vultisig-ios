@@ -12,7 +12,7 @@ extension SwapVerifyView {
     var container: some View {
         content
             .toolbar {
-                ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                toolbarItemWithHiddenBackground(placement: Placement.topBarTrailing.getPlacement()) {
                     refreshCounter
                 }
             }
