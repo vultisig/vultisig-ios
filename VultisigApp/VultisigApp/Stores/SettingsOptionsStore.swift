@@ -14,6 +14,7 @@ enum SettingsLanguage: String, CaseIterable {
     case Italiano
     case Hrvatski
     case Portuguese
+    case Chinese
     
     func description() -> String {
         switch self {
@@ -29,6 +30,8 @@ enum SettingsLanguage: String, CaseIterable {
             return NSLocalizedString("Croatian", comment: "Croatian")
         case .Portuguese:
             return NSLocalizedString("Portuguese", comment: "Portuguese")
+        case .Chinese:
+            return NSLocalizedString("Chinese", comment: "Chinese")
         }
     }
     
@@ -46,6 +49,8 @@ enum SettingsLanguage: String, CaseIterable {
             return "hr"
         case .Portuguese:
             return "pt"
+        case .Chinese:
+            return "zh-Hans"
         }
     }
         
