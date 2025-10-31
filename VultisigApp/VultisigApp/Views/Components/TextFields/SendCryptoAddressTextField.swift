@@ -10,23 +10,9 @@ import OSLog
 import UniformTypeIdentifiers
 
 struct SendCryptoAddressTextField: View {
-    
-    
     @ObservedObject var tx: SendTransaction
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
-    
-    @State var showScanner = false
-    @State var showImagePicker = false
-    @State var isUploading: Bool = false
-    @State var showCameraScanView = false
-    @State var showAddressBookSheet: Bool = false
-    
-#if os(iOS)
-    @State var selectedImage: UIImage?
-#elseif os(macOS)
-    @State var selectedImage: NSImage?
-#endif
-    
+
     var body: some View {
         VStack(spacing: 16) {
             container
@@ -35,22 +21,15 @@ struct SendCryptoAddressTextField: View {
                 errorText
             }
             
-            buttons
-        }
-        .crossPlatformSheet(isPresented: $showAddressBookSheet) {
-            SendCryptoAddressBookView(tx: tx, showSheet: $showAddressBookSheet)
+            AddressFieldAccessoryStack(
+                coin: tx.coin,
+                onResult: { handle(addressResult: $0) }
+            )
         }
     }
     
     var content: some View {
         field
-            .overlay {
-                ZStack {
-                    if isUploading {
-                        overlay
-                    }
-                }
-            }
     }
     
     var overlay: some View {
@@ -70,38 +49,23 @@ struct SendCryptoAddressTextField: View {
         }
     }
     
-    var buttons: some View {
-        HStack(spacing: 8) {
-            pasteButton
-            scanButton
-            addressBookButton
+    func handle(addressResult: AddressResult?) {
+        guard let addressResult else { return }
+        tx.toAddress = addressResult.address
+        
+        if let amount = addressResult.amount, amount.isNotEmpty {
+            tx.amount = amount
+            sendCryptoViewModel.convertToFiat(newValue: amount, tx: tx)
         }
-    }
-    
-    var pasteButton: some View {
-        Button {
-            pasteAddress()
-        } label: {
-            getButton("square.on.square")
+        
+        if let memo = addressResult.memo, memo.isNotEmpty {
+            tx.memo = memo
         }
-    }
-    
-   
-    
-    var fileButton: some View {
-        Button {
-            showImagePicker.toggle()
-        } label: {
-            getButton("photo.badge.plus")
+
+        DebounceHelper.shared.debounce {
+            validateAddress(addressResult.address)
         }
-    }
-    
-    var addressBookButton: some View {
-        Button {
-            showAddressBookSheet.toggle()
-        } label: {
-            getButton("text.book.closed")
-        }
+
     }
     
     var errorText: some View {

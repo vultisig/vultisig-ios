@@ -11,12 +11,11 @@ struct SendCryptoAddressBookCell: View {
     let title: String
     let description: String
     let icon: String?
-    @ObservedObject var tx: SendTransaction
-    @Binding var showSheet: Bool
+    var onSelect: (String) -> Void
     
     var body: some View {
         Button {
-            handleButtonTap()
+            onSelect(description)
         } label: {
             label
         }
@@ -76,10 +75,5 @@ struct SendCryptoAddressBookCell: View {
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(color)
         }
-    }
-    
-    private func handleButtonTap() {
-        tx.toAddress = description
-        showSheet = false
     }
 }

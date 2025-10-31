@@ -62,7 +62,11 @@ extension FunctionCallAddressTextField {
     }
     
     var codeScanner: some View {
-        AddressQRCodeScannerView(showScanner: $showScanner, address: binding(for: addressKey), handleScan: handleScan)
+        AddressQRCodeScannerView(
+            showScanner: $showScanner,
+            onAddress: { self.memo.addressFields[addressKey] = $0 },
+            handleScan: handleScan
+        )
     }
     
     private func binding(for key: String) -> Binding<String> {

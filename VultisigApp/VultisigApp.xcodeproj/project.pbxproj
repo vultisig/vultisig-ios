@@ -274,6 +274,8 @@
 		13B25BF32E82E321002BCF55 /* PlatformImageExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B25BF22E82E321002BCF55 /* PlatformImageExtension.swift */; };
 		13B25BF62E82FA39002BCF55 /* AddressCopyBannerViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B25BF52E82FA2B002BCF55 /* AddressCopyBannerViewModifier.swift */; };
 		13B26D3F2E32B506000D3B3A /* SendFormExpandableSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B26D3E2E32B501000D3B3A /* SendFormExpandableSection.swift */; };
+		13B41AAB2EB3AA040049503D /* AddressFieldAccessoryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B41AAA2EB3AA040049503D /* AddressFieldAccessoryButton.swift */; };
+		13B41AAD2EB3AA360049503D /* AddressFieldAccessoryStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B41AAC2EB3AA350049503D /* AddressFieldAccessoryStack.swift */; };
 		13B676442E37C9B0002F016C /* SendCryptoTransactionHashRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B676432E37C99B002F016C /* SendCryptoTransactionHashRowView.swift */; };
 		13B676462E37CA5F002F016C /* SendCryptoTransactionDetailsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B676452E37CA56002F016C /* SendCryptoTransactionDetailsRow.swift */; };
 		13B6764E2E37D0E7002F016C /* ClipboardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B6764D2E37D0DB002F016C /* ClipboardManager.swift */; };
@@ -1406,6 +1408,8 @@
 		13B25BF22E82E321002BCF55 /* PlatformImageExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformImageExtension.swift; sourceTree = "<group>"; };
 		13B25BF52E82FA2B002BCF55 /* AddressCopyBannerViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressCopyBannerViewModifier.swift; sourceTree = "<group>"; };
 		13B26D3E2E32B501000D3B3A /* SendFormExpandableSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendFormExpandableSection.swift; sourceTree = "<group>"; };
+		13B41AAA2EB3AA040049503D /* AddressFieldAccessoryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressFieldAccessoryButton.swift; sourceTree = "<group>"; };
+		13B41AAC2EB3AA350049503D /* AddressFieldAccessoryStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressFieldAccessoryStack.swift; sourceTree = "<group>"; };
 		13B676432E37C99B002F016C /* SendCryptoTransactionHashRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoTransactionHashRowView.swift; sourceTree = "<group>"; };
 		13B676452E37CA56002F016C /* SendCryptoTransactionDetailsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoTransactionDetailsRow.swift; sourceTree = "<group>"; };
 		13B6764D2E37D0DB002F016C /* ClipboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardManager.swift; sourceTree = "<group>"; };
@@ -2341,6 +2345,7 @@
 		049BBB4E2B71E37B004C231F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				13B41AAE2EB3CCD00049503D /* Forms */,
 				135C7ADF2EA14124002F879A /* ActionBanner */,
 				13D9EBFC2E84579F0089B2A7 /* Sheet */,
 				135B9FD52E7C8DBC0087D85D /* List */,
@@ -3321,6 +3326,23 @@
 				130C40F42E73583100509C61 /* NotificationBannerView.swift */,
 			);
 			path = NotificationBanner;
+			sourceTree = "<group>";
+		};
+		13B41AAE2EB3CCD00049503D /* Forms */ = {
+			isa = PBXGroup;
+			children = (
+				13B41AB02EB3CCDB0049503D /* AddressFieldAccessoryStack */,
+			);
+			path = Forms;
+			sourceTree = "<group>";
+		};
+		13B41AB02EB3CCDB0049503D /* AddressFieldAccessoryStack */ = {
+			isa = PBXGroup;
+			children = (
+				13B41AAC2EB3AA350049503D /* AddressFieldAccessoryStack.swift */,
+				13B41AAA2EB3AA040049503D /* AddressFieldAccessoryButton.swift */,
+			);
+			path = AddressFieldAccessoryStack;
 			sourceTree = "<group>";
 		};
 		13BD8D262E3D49600013B67E /* DesignSystem */ = {
@@ -5950,6 +5972,7 @@
 				46F8F7212B99FDB70099454E /* TransactionBroadcastResponse.swift in Sources */,
 				13A657B12EA28B8200323E4C /* DefiTHORChainBondedView.swift in Sources */,
 				131603452E609D74001ED972 /* FileExporterSheet.swift in Sources */,
+				13B41AAB2EB3AA040049503D /* AddressFieldAccessoryButton.swift in Sources */,
 				B57138502CC5713E000E925B /* TonService.swift in Sources */,
 				DEFF58F22BCBACDA005DFDF9 /* VultisigRelay.swift in Sources */,
 				A506B59F2D3AD1DB00490BEB /* SolanaSwaps.swift in Sources */,
@@ -6445,6 +6468,7 @@
 				A5F596BF2C7FB0C5008D5339 /* SendGasSettingsViewModel.swift in Sources */,
 				1345D13B2EA8148700FC7BFD /* BondMetrics.swift in Sources */,
 				1390D8C82E394527003F3E20 /* SecurityScannerSettingsService.swift in Sources */,
+				13B41AAD2EB3AA360049503D /* AddressFieldAccessoryStack.swift in Sources */,
 				A6BB9BD32DA9E5750085E117 /* VaultShareBackupsView+macOS.swift in Sources */,
 				A6D739DE2E0B30440005697D /* SendDetailsAssetTab.swift in Sources */,
 				1364A0942E9587C60023E869 /* BannersCarousel.swift in Sources */,
