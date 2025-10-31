@@ -100,38 +100,14 @@ struct SendDetailsAmountTab: View {
             }
     }
     
+    @ViewBuilder
     var percentageButtons: some View {
         let isDisabled = sendCryptoViewModel.isLoading || tx.isCalculatingFee
-        
-        return HStack(spacing: 12) {
-            Button {
-                sendCryptoViewModel.setMaxValues(tx: tx, percentage: 25)
-            } label: {
-                getPercentageButtons(for: "25%")
-            }
-            .disabled(isDisabled)
-            
-            Button {
-                sendCryptoViewModel.setMaxValues(tx: tx, percentage: 50)
-            } label: {
-                getPercentageButtons(for: "50%")
-            }
-            .disabled(isDisabled)
-            
-            Button {
-                sendCryptoViewModel.setMaxValues(tx: tx, percentage: 75)
-            } label: {
-                getPercentageButtons(for: "75%")
-            }
-            .disabled(isDisabled)
-            
-            Button {
-                sendCryptoViewModel.setMaxValues(tx: tx)
-            } label: {
-                getPercentageButtons(for: "Max")
-            }
-            .disabled(isDisabled)
+        PercentageButtonsStack {
+            sendCryptoViewModel.setMaxValues(tx: tx, percentage: Double($0))
         }
+        .opacity(isDisabled ? 0.5 : 1.0)
+        .disabled(isDisabled)
     }
     
     var balanceSection: some View {
@@ -157,19 +133,5 @@ struct SendDetailsAmountTab: View {
             .font(Theme.fonts.caption12)
             .foregroundColor(Theme.colors.alertWarning)
             .frame(maxWidth: .infinity, alignment: .leading)
-    }
-    
-    private func getPercentageButtons(for value: String) -> some View {
-        let isDisabled = sendCryptoViewModel.isLoading || tx.isCalculatingFee
-        
-        return Text(value)
-            .foregroundColor(isDisabled ? Theme.colors.textExtraLight : Theme.colors.textPrimary)
-            .padding(4)
-            .frame(maxWidth: .infinity)
-            .overlay(
-                RoundedRectangle(cornerRadius: 32)
-                    .stroke(isDisabled ? Theme.colors.bgTertiary.opacity(0.5) : Theme.colors.bgTertiary, lineWidth: 1)
-            )
-            .opacity(isDisabled ? 0.5 : 1.0)
     }
 }

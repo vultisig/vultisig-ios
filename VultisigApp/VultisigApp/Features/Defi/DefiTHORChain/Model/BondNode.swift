@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct BondNode: Identifiable, Equatable {
+struct BondNode: Identifiable, Equatable, Hashable {
     var id: String { address }
     let address: String
     let state: BondNodeState

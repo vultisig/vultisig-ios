@@ -12,7 +12,7 @@ struct BondedNodes {
     let nodes: [RuneBondNode]
 }
 
-struct RuneBondNode: Identifiable, Codable {
+struct RuneBondNode: Identifiable, Hashable, Codable {
     var id: String { address }
     let status: String
     let address: String
