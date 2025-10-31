@@ -295,10 +295,26 @@ class EVMHelper {
 
         let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
+        
+        // Validate preSigningOutput before using it to prevent null pointer crashes
+        guard preSigningOutput.error == .ok else {
+            throw HelperError.runtimeError("preSigningOutput error: \(preSigningOutput.errorMessage)")
+        }
+        
+        guard !preSigningOutput.dataHash.isEmpty else {
+            throw HelperError.runtimeError("preSigningOutput.dataHash is empty")
+        }
+        
         let allSignatures = DataVector()
         let publicKeys = DataVector()
         let signatureProvider = SignatureProvider(signatures: signatures)
         let signature = signatureProvider.getSignatureWithRecoveryID(preHash: preSigningOutput.dataHash)
+        
+        // Validate signature before passing to WalletCore
+        guard !signature.isEmpty else {
+            throw HelperError.runtimeError("signature is empty after recovery ID calculation")
+        }
+        
         guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
             throw HelperError.runtimeError("fail to verify signature")
         }
