@@ -167,7 +167,8 @@ class KeygenViewModel: ObservableObject {
                 self.status = .ReshareECDSA
                 try await dklsKeygen.DKLSReshareWithRetry(attempt: 0)
             case .KeyImport:
-                self.logger.error("Key Import not supported yet")
+                self.status = .KeygenECDSA
+                try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0)
             }
             
             
@@ -189,7 +190,8 @@ class KeygenViewModel: ObservableObject {
                 self.status = .ReshareEdDSA
                 try await schnorrKeygen.SchnorrReshareWithRetry(attempt: 0)
             case .KeyImport:
-                self.logger.error("Key Import not supported yet")
+                self.status = .KeygenEdDSA
+                try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0)
             }
             
             self.vault.signers = self.keygenCommittee

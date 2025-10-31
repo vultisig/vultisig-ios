@@ -32,7 +32,7 @@ final class DKLSKeygen {
     var setupMessage:[UInt8] = []
     var keyshare: DKLSKeyshare?
     let publicKeyECDSA: String
-    let localUI: String?
+    let localPrivateSecret: String?
     let hexChainCode: String
     let DKLS_LIB_OK: godkls.lib_error = .init(0)
     init(vault: Vault,
@@ -56,7 +56,7 @@ final class DKLSKeygen {
         self.messenger = DKLSMessenger(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil, encryptionKeyHex: self.encryptionKeyHex)
         self.localPartyID = vault.localPartyID
         self.publicKeyECDSA = vault.pubKeyECDSA
-        self.localUI = localUI
+        self.localPrivateSecret = localUI
         self.hexChainCode = vault.hexChainCode
     }
     
@@ -85,7 +85,7 @@ final class DKLSKeygen {
         return self.setupMessage
     }
     
-    private func getDklsKeyImportSetupMessage() throws -> [UInt8]  {
+    private func getDklsKeyImportSetupMessage(hexPrivateKey: String, hexRootChainCode: String) throws -> ([UInt8],godkls.Handle)  {
         var buf = godkls.tss_buffer()
         defer {
             godkls.tss_buffer_free(&buf)
@@ -94,13 +94,23 @@ final class DKLSKeygen {
         // create setup message and upload it to relay server
         let byteArray = DKLSHelper.arrayToBytes(parties: self.keygenCommittee)
         var ids = byteArray.to_dkls_goslice()
-        dkls_key_import_initiator_new(<#T##private_key: UnsafePointer<go_slice>!##UnsafePointer<go_slice>!#>, <#T##root_chain: UnsafePointer<go_slice>!##UnsafePointer<go_slice>!#>, <#T##threshold: UInt8##UInt8#>, <#T##ids: UnsafePointer<go_slice>!##UnsafePointer<go_slice>!#>, <#T##setup_msg: UnsafeMutablePointer<tss_buffer>!##UnsafeMutablePointer<tss_buffer>!#>, <#T##session: UnsafeMutablePointer<Handle>!##UnsafeMutablePointer<Handle>!#>)
-        let err = dkls_keygen_setupmsg_new(threshold, nil, &ids, &buf)
+        let decodedPrivateKey = Data(hexString: hexPrivateKey)
+        guard let decodedPrivateKey else {
+            throw HelperError.runtimeError("fail to decode private key from hex string")
+        }
+        let decodedChainCode = Data(hexString: hexRootChainCode)
+        guard let decodedChainCode else {
+            throw HelperError.runtimeError("fail to decode root chain code from hex string")
+        }
+        var privateKeySlice = [UInt8](decodedPrivateKey).to_dkls_goslice()
+        var rootChainSlice = [UInt8](decodedChainCode).to_dkls_goslice()
+        var handler = godkls.Handle()
+        let err = dkls_key_import_initiator_new(&privateKeySlice, &rootChainSlice, UInt8(threshold), &ids,&buf, &handler)
         if err != DKLS_LIB_OK {
             throw HelperError.runtimeError("fail to setup keygen message, dkls error:\(err)")
         }
         self.setupMessage = Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
-        return self.setupMessage
+        return (self.setupMessage,handler)
     }
     
     func GetDKLSOutboundMessage(handle: godkls.Handle) -> (godkls.lib_error,[UInt8]) {
@@ -300,10 +310,20 @@ final class DKLSKeygen {
         var task: Task<(), any Error>? = nil
         do {
             var keygenSetupMsg:[UInt8]
+            var handler = godkls.Handle()
             if self.isInitiateDevice && attempt == 0 {
-                // only for the first time , and on the initiating device , we create the setup message
-                // for retry , let's just use the existing setup message
-                keygenSetupMsg = try getDklsSetupMessage()
+                switch self.tssType {
+                case .Keygen,.Migrate,.Reshare:
+                    // only for the first time , and on the initiating device , we create the setup message
+                    // for retry , let's just use the existing setup message
+                    keygenSetupMsg = try getDklsSetupMessage()
+                case .KeyImport:
+                    guard let localPrivateSecret = self.localPrivateSecret else {
+                        throw HelperError.runtimeError("can't import , local private key is empty")
+                    }
+                    (keygenSetupMsg,handler) = try getDklsKeyImportSetupMessage(hexPrivateKey: localPrivateSecret, hexRootChainCode: self.hexChainCode)
+                }
+                
                 try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString(),nil)
             } else {
                 // download the setup message from relay server
@@ -312,16 +332,24 @@ final class DKLSKeygen {
                 self.setupMessage = keygenSetupMsg
             }
             var decodedSetupMsg = keygenSetupMsg.to_dkls_goslice()
-            var handler = godkls.Handle()
+            
             let localPartyIDArr = self.localPartyID.toArray()
             var localPartySlice = localPartyIDArr.to_dkls_goslice()
-            if self.tssType == .Keygen {
+            switch self.tssType {
+            case .Keygen:
                 let result = dkls_keygen_session_from_setup(&decodedSetupMsg,&localPartySlice, &handler)
                 if result != DKLS_LIB_OK {
                     throw HelperError.runtimeError("fail to create session from setup message,error:\(result)")
                 }
-            } else {
-                guard let localUI = self.localUI else {
+            case .KeyImport:
+                if !self.isInitiateDevice {
+                    let result = dkls_key_importer_new(&decodedSetupMsg,&localPartySlice,&handler)
+                    if result != DKLS_LIB_OK {
+                        throw HelperError.runtimeError("fail to create key import session from setup message,error:\(result)")
+                    }
+                }
+            case .Migrate:
+                guard let localUI = self.localPrivateSecret else {
                     throw HelperError.runtimeError("can't migrate , local UI is empty")
                 }
                 let publicKeyArray = Array(hex: self.publicKeyECDSA)
@@ -339,6 +367,9 @@ final class DKLSKeygen {
                 if result != DKLS_LIB_OK {
                     throw HelperError.runtimeError("fail to create migration session from setup message,error:\(result)")
                 }
+            case .Reshare:
+                // it should not get here for reshare
+                throw HelperError.runtimeError("invalid tss type for keygen:\(self.tssType)")
             }
             // free the handler
             defer {
