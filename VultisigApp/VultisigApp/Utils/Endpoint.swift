@@ -366,6 +366,8 @@ class Endpoint {
     
     static let hyperliquidServiceRpcService = "https://rpc.hyperliquid.xyz/evm"
     
+    static let seiServiceRpcService = "https://evm-rpc.sei-apis.com"
+    
     static let solanaServiceRpc = "https://api.vultisig.com/solana/"
     
     static let solanaTokenInfoServiceRpc = "https://api.solana.fm/v1/tokens"
@@ -786,6 +788,8 @@ class Endpoint {
             return "https://mantlescan.xyz/tx/\(txid)"
         case .hyperliquid:
             return "https://liquidscan.io/tx/\(txid)"
+        case .sei:
+            return "https://seiscan.io/tx/\(txid)"
         }
     }
     
@@ -865,6 +869,8 @@ class Endpoint {
             return "https://mantlescan.xyz/address/\(address)"
         case .hyperliquid:
             return "https://liquidscan.io/address/\(address)"
+        case .sei:
+            return "https://seiscan.io/address/\(address)"
         }
     }
     
@@ -944,6 +950,8 @@ class Endpoint {
             return "https://mantlescan.xyz/address/\(address)"
         case .hyperliquid:
             return "https://liquidscan.io/address/\(address)"
+        case .sei:
+            return "https://seiscan.io/address/\(address)"
         case .none:
             return nil
         }

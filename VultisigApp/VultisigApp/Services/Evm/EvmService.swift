@@ -136,3 +136,12 @@ class HyperliquidService: RpcEvmService, EvmTokenServiceProtocol {
         return await super.getTokens(nativeToken: nativeToken)
     }
 }
+
+class SeiService: RpcEvmService, EvmTokenServiceProtocol {
+    static let rpcEndpoint = Endpoint.seiServiceRpcService
+    static let shared = SeiService(rpcEndpoint)
+    
+    override func getTokens(nativeToken: Coin) async -> [CoinMeta] {
+        return await super.getTokens(nativeToken: nativeToken)
+    }
+}
