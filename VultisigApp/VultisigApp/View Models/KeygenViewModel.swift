@@ -7,6 +7,9 @@ import Foundation
 import OSLog
 import SwiftData
 import Tss
+import WalletCore
+import CryptoKit
+import BigInt
 
 enum KeygenStatus {
     case CreatingInstance
@@ -140,11 +143,78 @@ class KeygenViewModel: ObservableObject {
                     return
                 }
                 await startKeygenDKLS(context: context, localUIEcdsa: localUIECDSA, localUIEddsa: localUIEdDSA)
+            case .KeyImport:
+                self.logger.error("it should not get to here")
             }
-            
         case .DKLS:
             await startKeygenDKLS(context: context)
+        case .KeyImport:
+            return
+//            // TODO: this is for test only right now , need to remove it later
+//            let mnemonic = "north soft excuse tribe only crystal attract october glue jacket sweet club"
+//            let wallet = HDWallet(mnemonic: mnemonic, passphrase: "")
+//            guard let hdWallet = wallet else {
+//                self.logger.error("Failed to create HDWallet for key import")
+//                return
+//            }
+//            let btcKey = hdWallet.getKeyForCoin(coin: .bitcoin)
+//            print("bitcoin:\(btcKey.getPublicKey(coinType: .bitcoin).data.hexString)")
+//            let solana =  hdWallet.getKeyForCoin(coin: .solana)
+//            print(solana.data.hexString)
+//            print("solana public key:\(solana.getPublicKey(coinType: .solana).data.hexString)")
+//            let solanaSeed = clampThenUniformScalar(from: solana.data)
+//            
+//            let rootChainCode = rootChainCodeHex(wallet: hdWallet)
+//            guard let rootChainCode else {
+//                self.logger.error("Failed to get root chain code for key import")
+//                return
+//            }
+//            self.vault.hexChainCode = rootChainCode
+//            
+//            await startKeygenDKLS(context: context,localUIEcdsa: btcKey.data.hexString,localUIEddsa: solanaSeed?.hexString ?? "")
         }
+    }
+    
+    func clampThenUniformScalar(from seed: Data) -> Data? {
+        guard let clamped = ed25519ClampedScalar(from: seed) else { return nil }
+        return ed25519UniformFromLittleEndianScalar(clamped)
+    }
+    
+    func ed25519UniformFromLittleEndianScalar(_ littleEndianScalar: Data) -> Data? {
+        guard littleEndianScalar.count == 32 else { return nil }
+        // ed25519 group order L (big-endian hex)
+        let Lhex = "1000000000000000000000000000000014DEF9DEA2F79CD65812631A5CF5D3ED"
+        guard let L = BigUInt(Lhex, radix: 16) else { return nil }
+
+        // BigUInt initializer expects big-endian bytes, so reverse
+        let be = Data(littleEndianScalar.reversed())
+        let x = BigUInt(be)               // value of scalar
+        let r = x % L                     // reduce mod L
+
+        // serialize r as 32-byte big-endian, pad if needed, then return little-endian
+        let rBE = r.serialize()
+        let paddedBE = (Data(repeating: 0, count: max(0, 32 - rBE.count)) + rBE)
+        return Data(paddedBE.reversed())
+    }
+
+    func ed25519ClampedScalar(from seed: Data) -> Data? {
+        guard seed.count == 32 else { return nil }
+        let digest = SHA512.hash(data: seed)
+        var scalar = Data(digest.prefix(32)) // little-endian per spec
+        scalar[0] &= 0xF8
+        scalar[31] &= 0x3F
+        scalar[31] |= 0x40
+        return scalar
+    }
+    
+    /// Return BIP32 master chain code (hex) for a mnemonic via WalletCore's HDWallet seed.
+    func rootChainCodeHex(wallet: HDWallet) -> String? {
+        let seed = wallet.seed // 64 bytes BIP39 seed
+        let key = SymmetricKey(data: "Bitcoin seed".data(using: .utf8)!)
+        let mac = HMAC<SHA512>.authenticationCode(for: seed, using: key)
+        let master = Data(mac) // 64 bytes: [master key (32) | chain code (32)]
+        let chainCode = master.subdata(in: 32..<64)
+        return chainCode.hexString
     }
     
     func startKeygenDKLS(context: ModelContext, localUIEcdsa: String? = nil, localUIEddsa: String? = nil) async {
@@ -165,6 +235,9 @@ class KeygenViewModel: ObservableObject {
             case .Reshare:
                 self.status = .ReshareECDSA
                 try await dklsKeygen.DKLSReshareWithRetry(attempt: 0)
+            case .KeyImport:
+                self.status = .KeygenECDSA
+                try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0)
             }
             
             
@@ -185,6 +258,9 @@ class KeygenViewModel: ObservableObject {
             case .Reshare:
                 self.status = .ReshareEdDSA
                 try await schnorrKeygen.SchnorrReshareWithRetry(attempt: 0)
+            case .KeyImport:
+                self.status = .KeygenEdDSA
+                try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0)
             }
             
             self.vault.signers = self.keygenCommittee
@@ -286,6 +362,11 @@ class KeygenViewModel: ObservableObject {
                 self.logger.error("Failed to migration vault")
                 self.status = .KeygenFailed
                 return
+            case .KeyImport:
+                // this should not happen
+                self.logger.error("Failed to key import vault")
+                self.status = .KeygenFailed
+                return
             }
             try context.save()
         } catch {
@@ -341,8 +422,10 @@ class KeygenViewModel: ObservableObject {
                 self.vault.pubKeyEdDSA = eddsaResp.pubKey
                 self.vault.pubKeyECDSA = ecdsaResp.pubKey
                 self.vault.resharePrefix = ecdsaResp.resharePrefix
-            case .Migrate:
+            case .Migrate: // GG20 migrate to DKLS should be
                 throw HelperError.runtimeError("Migrate not supported yet")
+            case .KeyImport: // Vultisig will not support import private key to GG20 vault
+                throw HelperError.runtimeError("Key Import not supported yet")
             }
             // start an additional step to make sure all parties involved in the keygen committee complete successfully
             // avoid to create a partial vault, meaning some parties finished create the vault successfully, and one still in failed state

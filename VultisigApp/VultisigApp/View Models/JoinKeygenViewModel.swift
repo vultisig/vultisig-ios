@@ -193,7 +193,7 @@ class JoinKeygenViewModel: ObservableObject {
         var useVultisigRelay = false
         do {
             switch tssType {
-            case .Keygen:
+            case .Keygen,.KeyImport:
                 let keygenMsg: KeygenMessage = try ProtoSerializer.deserialize(
                     base64EncodedString: scanData)
                 sessionID = keygenMsg.sessionID

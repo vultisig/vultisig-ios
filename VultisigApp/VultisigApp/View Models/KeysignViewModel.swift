@@ -148,25 +148,30 @@ class KeysignViewModel: ObservableObject {
         switch vault.libType {
         case .GG20,.none:
             await startKeysignGG20()
-        case .DKLS:
+        case .DKLS,.KeyImport:
             await startKeysignDKLS()
         }
     }
     
-    func startKeysignDKLS() async {
-        let derivePath = TokensStore.Token.ethereum.coinType.derivationPath()
-        
+    func startKeysignDKLS(isImport: Bool = false) async {
         do {
+            guard let keysignPayload = keysignPayload else {
+                throw HelperError.runtimeError("keysign payload is nil")
+            }
             switch self.keysignType {
             case .ECDSA:
                 status = .KeysignECDSA
+                var chainPath = keysignPayload.coin.coinType.derivationPath()
+                if isImport {
+                    chainPath = ""
+                }
                 let dklsKeysign = DKLSKeysign(keysignCommittee: self.keysignCommittee,
                                               mediatorURL: self.mediatorURL,
                                               sessionID: self.sessionID,
                                               messsageToSign: self.messsageToSign,
                                               vault: self.vault,
                                               encryptionKeyHex: self.encryptionKeyHex,
-                                              chainPath: keysignPayload?.coin.coinType.derivationPath() ?? derivePath,
+                                              chainPath: chainPath,
                                               isInitiateDevice: self.isInitiateDevice)
                 try await dklsKeysign.DKLSKeysignWithRetry()
                 self.signatures = dklsKeysign.getSignatures()

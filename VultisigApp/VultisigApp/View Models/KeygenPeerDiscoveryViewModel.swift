@@ -134,6 +134,9 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                          lib_type: vault.libType == .DKLS ? 1 : 0)
             case .Migrate:
                 fastVaultService.migrate(publicKeyECDSA:vault.pubKeyECDSA, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, encryptionPassword: config.password, email: config.email)
+            case .KeyImport:
+                // TODO: send request to fast vault service for key import
+                break
             }
         }
         self.isLoading = false
@@ -284,7 +287,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         do {
             guard let encryptionKeyHex else { return nil }
             switch tssType {
-            case .Keygen:
+            case .Keygen, .KeyImport:
                 let keygenMsg = KeygenMessage(
                     sessionID: sessionID,
                     hexChainCode: vault.hexChainCode,

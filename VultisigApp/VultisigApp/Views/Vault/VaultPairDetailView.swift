@@ -156,6 +156,8 @@ struct VaultPairDetailView: View {
             return "DKLS"
         case .GG20:
             return "GG20"
+        case .KeyImport:
+            return "DKLS-Imported"
         }
         
     }
