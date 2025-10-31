@@ -15,6 +15,7 @@ struct CommonTextField<TrailingView: View>: View {
     @Binding var isSecure: Bool
     @Binding var error: String?
     let isScrollable: Bool
+    let labelStyle: TextFieldLabelStyle
     
     let trailingView: () -> TrailingView
     
@@ -25,6 +26,7 @@ struct CommonTextField<TrailingView: View>: View {
         isSecure: Binding<Bool> = .constant(false),
         error: Binding<String?> = .constant(nil),
         isScrollable: Bool = false,
+        labelStyle: TextFieldLabelStyle = .primary,
         @ViewBuilder trailingView: @escaping () -> TrailingView
     ) {
         self._text = text
@@ -34,6 +36,7 @@ struct CommonTextField<TrailingView: View>: View {
         self._error = error
         self.isScrollable = isScrollable
         self.trailingView = trailingView
+        self.labelStyle = labelStyle
     }
     
     init(
@@ -41,7 +44,9 @@ struct CommonTextField<TrailingView: View>: View {
         label: String? = nil,
         placeholder: String,
         isSecure: Binding<Bool> = .constant(false),
-        error: Binding<String?> = .constant(nil)
+        error: Binding<String?> = .constant(nil),
+        isScrollable: Bool = false,
+        labelStyle: TextFieldLabelStyle = .primary,
     ) where TrailingView == EmptyView {
         self.init(
             text: text,
@@ -49,6 +54,8 @@ struct CommonTextField<TrailingView: View>: View {
             placeholder: placeholder,
             isSecure: isSecure,
             error: error,
+            isScrollable: isScrollable,
+            labelStyle: labelStyle,
             trailingView: { EmptyView() }
         )
     }
@@ -57,8 +64,8 @@ struct CommonTextField<TrailingView: View>: View {
         VStack(alignment: .leading, spacing: 8) {
             if let label {
                 Text(label)
-                    .foregroundColor(Theme.colors.textPrimary)
-                    .font(Theme.fonts.bodySMedium)
+                    .foregroundColor(labelColor)
+                    .font(labelFont)
             }
             
             VStack(alignment: .leading, spacing: 4) {
@@ -88,7 +95,7 @@ struct CommonTextField<TrailingView: View>: View {
                 .padding(1)
                 
                 if let error {
-                    Text(error)
+                    Text(error.localized)
                         .foregroundColor(Theme.colors.alertError)
                         .font(Theme.fonts.footnote)
                         .multilineTextAlignment(.leading)
@@ -114,7 +121,7 @@ struct CommonTextField<TrailingView: View>: View {
     }
     
     var borderColor: Color {
-        error != nil ? Theme.colors.alertError : Theme.colors.border
+        (error != nil && error != .empty) ? Theme.colors.alertError : Theme.colors.border
     }
     
     @ViewBuilder
@@ -139,5 +146,28 @@ struct CommonTextField<TrailingView: View>: View {
             }
         }
         .frame(height: 56)
+    }
+    
+    var labelFont: Font {
+        switch labelStyle {
+        case .primary:
+            Theme.fonts.bodySMedium
+        case .secondary:
+            Theme.fonts.footnote
+        }
+    }
+    
+    var labelColor: Color {
+        switch labelStyle {
+        case .primary:
+            Theme.colors.textPrimary
+        case .secondary:
+            Theme.colors.textExtraLight
+        }
+    }
+    
+    enum TextFieldLabelStyle {
+        case primary
+        case secondary
     }
 }
