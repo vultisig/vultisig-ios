@@ -5491,6 +5491,7 @@
 				A6D44A5A2D51950600C66726 /* RiveRuntime */,
 				B2482ADF2E6E47D900B29B6F /* WalletCore */,
 				B2482AE12E6E47D900B29B6F /* WalletCoreSwiftProtobuf */,
+				ZPZIPPROD0000000000000001 /* ZIPFoundation */,
 			);
 			productName = voltixApp;
 			productReference = DE49A1632B65F6D9000F3AFB /* VultisigApp.app */;
@@ -5576,6 +5577,7 @@
 				A58CC3412C32C4EE0086D16B /* XCRemoteSwiftPackageReference "commondata" */,
 				A6D44A592D51950600C66726 /* XCRemoteSwiftPackageReference "rive-ios" */,
 				B2347F722E6E4AA300AA655D /* XCRemoteSwiftPackageReference "walletcore-spm" */,
+				ZPZIPPKG00000000000000001 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 			);
 			preferredProjectObjectVersion = 56;
 			productRefGroup = DE49A1642B65F6D9000F3AFB /* Products */;
@@ -7209,6 +7211,14 @@
 				minimumVersion = 1.8.2;
 			};
 		};
+		ZPZIPPKG00000000000000001 /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/weichsel/ZIPFoundation";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -7252,6 +7262,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DEEDAEE62B8B50A4005170E8 /* XCRemoteSwiftPackageReference "BigInt" */;
 			productName = BigInt;
+		};
+		ZPZIPPROD0000000000000001 /* ZIPFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = ZPZIPPKG00000000000000001 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
+			productName = ZIPFoundation;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

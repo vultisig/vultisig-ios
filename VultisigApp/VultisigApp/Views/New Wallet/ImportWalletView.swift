@@ -95,10 +95,19 @@ struct ImportWalletView: View {
     }
     
     private func handleButtonTap() {
-        backupViewModel.restoreVault(
-            modelContext: context,
-            vaults: vaults
-        )
+        // Check if this is a multiple vault import from zip
+        if backupViewModel.isMultipleVaultImport {
+            backupViewModel.restoreMultipleVaults(
+                modelContext: context,
+                vaults: vaults
+            )
+        } else {
+            // Single vault import
+            backupViewModel.restoreVault(
+                modelContext: context,
+                vaults: vaults
+            )
+        }
         
         if !backupViewModel.showAlert {
             vultExtensionViewModel.showImportView = false
