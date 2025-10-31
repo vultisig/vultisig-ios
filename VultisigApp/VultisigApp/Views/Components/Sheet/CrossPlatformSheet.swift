@@ -38,14 +38,17 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
                     .environment(\.isSheetPresented, true)
             }
             .onChange(of: isPresented) { _, newValue in
-                if newValue {
-                    counterManager.increment()
-                    counter = counterManager.counter
-                } else {
-                    if counter == 1 {
-                        counterManager.resetCounter()
+                // Defer state updates to avoid interfering with sheet animation on macOS 15.5
+                Task { @MainActor in
+                    if newValue {
+                        counterManager.increment()
+                        counter = counterManager.counter
                     } else {
-                        counterManager.decrement()
+                        if counter == 1 {
+                            counterManager.resetCounter()
+                        } else {
+                            counterManager.decrement()
+                        }
                     }
                 }
             }
@@ -74,14 +77,17 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
                     .environment(\.isSheetPresented, true)
             }
             .onChange(of: item) { _, newValue in
-                if newValue != nil {
-                    counterManager.increment()
-                    counter = counterManager.counter
-                } else {
-                    if counter == 1 {
-                        counterManager.resetCounter()
+                // Defer state updates to avoid interfering with sheet animation on macOS 15.5
+                Task { @MainActor in
+                    if newValue != nil {
+                        counterManager.increment()
+                        counter = counterManager.counter
                     } else {
-                        counterManager.decrement()
+                        if counter == 1 {
+                            counterManager.resetCounter()
+                        } else {
+                            counterManager.decrement()
+                        }
                     }
                 }
             }
