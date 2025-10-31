@@ -57,9 +57,7 @@ func GetLibType() -> LibType {
     }
     let useDKLS = UserDefaults.standard.bool(forKey: "isDKLSEnabled")
     if useDKLS {
-        // TODO: return DKLS when ready
-        return .KeyImport
-        //return .DKLS
+        return .DKLS
     }
     return .GG20
 }

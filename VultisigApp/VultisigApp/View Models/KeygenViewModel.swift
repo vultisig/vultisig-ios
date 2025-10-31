@@ -68,7 +68,7 @@ class KeygenViewModel: ObservableObject {
                  oldResharePrefix:String,
                  initiateDevice: Bool) async {
         self.vault = vault
-        self.tssType = .KeyImport
+        self.tssType = tssType
         self.keygenCommittee = keygenCommittee
         self.vaultOldCommittee = vaultOldCommittee
         self.mediatorURL = mediatorURL
@@ -149,28 +149,29 @@ class KeygenViewModel: ObservableObject {
         case .DKLS:
             await startKeygenDKLS(context: context)
         case .KeyImport:
-            // TODO: this is for test only right now , need to remove it later
-            let mnemonic = "north soft excuse tribe only crystal attract october glue jacket sweet club"
-            let wallet = HDWallet(mnemonic: mnemonic, passphrase: "")
-            guard let hdWallet = wallet else {
-                self.logger.error("Failed to create HDWallet for key import")
-                return
-            }
-            let btcKey = hdWallet.getKeyForCoin(coin: .bitcoin)
-            print("bitcoin:\(btcKey.getPublicKey(coinType: .bitcoin).data.hexString)")
-            let solana =  hdWallet.getKeyForCoin(coin: .solana)
-            print(solana.data.hexString)
-            print("solana public key:\(solana.getPublicKey(coinType: .solana).data.hexString)")
-            let solanaSeed = clampThenUniformScalar(from: solana.data)
-            
-            let rootChainCode = rootChainCodeHex(wallet: hdWallet)
-            guard let rootChainCode else {
-                self.logger.error("Failed to get root chain code for key import")
-                return
-            }
-            self.vault.hexChainCode = rootChainCode
-            
-            await startKeygenDKLS(context: context,localUIEcdsa: btcKey.data.hexString,localUIEddsa: solanaSeed?.hexString ?? "")
+            return
+//            // TODO: this is for test only right now , need to remove it later
+//            let mnemonic = "north soft excuse tribe only crystal attract october glue jacket sweet club"
+//            let wallet = HDWallet(mnemonic: mnemonic, passphrase: "")
+//            guard let hdWallet = wallet else {
+//                self.logger.error("Failed to create HDWallet for key import")
+//                return
+//            }
+//            let btcKey = hdWallet.getKeyForCoin(coin: .bitcoin)
+//            print("bitcoin:\(btcKey.getPublicKey(coinType: .bitcoin).data.hexString)")
+//            let solana =  hdWallet.getKeyForCoin(coin: .solana)
+//            print(solana.data.hexString)
+//            print("solana public key:\(solana.getPublicKey(coinType: .solana).data.hexString)")
+//            let solanaSeed = clampThenUniformScalar(from: solana.data)
+//            
+//            let rootChainCode = rootChainCodeHex(wallet: hdWallet)
+//            guard let rootChainCode else {
+//                self.logger.error("Failed to get root chain code for key import")
+//                return
+//            }
+//            self.vault.hexChainCode = rootChainCode
+//            
+//            await startKeygenDKLS(context: context,localUIEcdsa: btcKey.data.hexString,localUIEddsa: solanaSeed?.hexString ?? "")
         }
     }
     
@@ -215,6 +216,7 @@ class KeygenViewModel: ObservableObject {
         let chainCode = master.subdata(in: 32..<64)
         return chainCode.hexString
     }
+    
     func startKeygenDKLS(context: ModelContext, localUIEcdsa: String? = nil, localUIEddsa: String? = nil) async {
         do{
             let dklsKeygen = DKLSKeygen(vault: self.vault,
@@ -420,9 +422,9 @@ class KeygenViewModel: ObservableObject {
                 self.vault.pubKeyEdDSA = eddsaResp.pubKey
                 self.vault.pubKeyECDSA = ecdsaResp.pubKey
                 self.vault.resharePrefix = ecdsaResp.resharePrefix
-            case .Migrate:
+            case .Migrate: // GG20 migrate to DKLS should be
                 throw HelperError.runtimeError("Migrate not supported yet")
-            case .KeyImport:
+            case .KeyImport: // Vultisig will not support import private key to GG20 vault
                 throw HelperError.runtimeError("Key Import not supported yet")
             }
             // start an additional step to make sure all parties involved in the keygen committee complete successfully

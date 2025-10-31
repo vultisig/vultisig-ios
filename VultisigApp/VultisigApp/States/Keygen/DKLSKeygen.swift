@@ -131,10 +131,6 @@ final class DKLSKeygen {
         if result != DKLS_LIB_OK {
             print("fail to get outbound message: \(result)")
             return (result,[])
-        } else {
-            if buf.len > 0 {
-                print("successfully get outbound message. \(buf.len)")
-            }
         }
         return (result,Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len))))
         
@@ -289,8 +285,6 @@ final class DKLSKeygen {
             
             if result != DKLS_LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
-            } else {
-                print("successfully applied inbound message. isFinished:\(isFinished)")
             }
             self.cache.setObject(NSObject(), forKey: key)
             try await deleteMessageFromServer(hash: msg.hash)
