@@ -277,11 +277,22 @@ final class SchnorrKeysign {
             
             let descryptedBodyArr = [UInt8](decodedMsg)
             
+            // Validate message data before passing to Rust to prevent panic
+            guard !descryptedBodyArr.isEmpty else {
+                throw HelperError.runtimeError("Empty decrypted message body")
+            }
+            
             var decryptedBodySlice = descryptedBodyArr.to_dkls_goslice()
+            
+            // Validate the slice is properly constructed
+            guard decryptedBodySlice.len > 0 else {
+                throw HelperError.runtimeError("Invalid message slice: length is 0")
+            }
+            
             var isFinished:UInt32 = 0
             let result = schnorr_sign_session_input_message(handle, &decryptedBodySlice, &isFinished)
             if result != LIB_OK {
-                throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
+                throw HelperError.runtimeError("fail to apply message to schnorr session, error code: \(result)")
             }
             self.cache.setObject(NSObject(), forKey: key)
             try await deleteMessageFromServer(hash: msg.hash,messageID:messageID)
