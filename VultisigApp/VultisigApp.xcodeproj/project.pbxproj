@@ -148,6 +148,7 @@
 		1377C8DE2E5F9855006DC969 /* VaultBackupSelectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1377C8DD2E5F984C006DC969 /* VaultBackupSelectionScreen.swift */; };
 		1378B04B2E462ADB005CC32D /* CircularProgressIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1378B04A2E462AD6005CC32D /* CircularProgressIndicator.swift */; };
 		13792A892E53B2AB0063CE99 /* isMacOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13792A882E53B2A80063CE99 /* isMacOS.swift */; };
+		1379F1AE2EB3F69A00260C50 /* PercentageButtonsStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1379F1AD2EB3F69500260C50 /* PercentageButtonsStack.swift */; };
 		137B2C782E3A4A490074F648 /* BottomSheetModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C772E3A4A450074F648 /* BottomSheetModifier.swift */; };
 		137B2C7B2E3A4AA50074F648 /* InnerHeightPreferenceKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C7A2E3A4AA00074F648 /* InnerHeightPreferenceKey.swift */; };
 		137B2C7D2E3A4B2D0074F648 /* BottomSheetContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C7C2E3A4B2C0074F648 /* BottomSheetContainer.swift */; };
@@ -1277,6 +1278,7 @@
 		1377C8DD2E5F984C006DC969 /* VaultBackupSelectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBackupSelectionScreen.swift; sourceTree = "<group>"; };
 		1378B04A2E462AD6005CC32D /* CircularProgressIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularProgressIndicator.swift; sourceTree = "<group>"; };
 		13792A882E53B2A80063CE99 /* isMacOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = isMacOS.swift; sourceTree = "<group>"; };
+		1379F1AD2EB3F69500260C50 /* PercentageButtonsStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PercentageButtonsStack.swift; sourceTree = "<group>"; };
 		137B2C772E3A4A450074F648 /* BottomSheetModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetModifier.swift; sourceTree = "<group>"; };
 		137B2C7A2E3A4AA00074F648 /* InnerHeightPreferenceKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InnerHeightPreferenceKey.swift; sourceTree = "<group>"; };
 		137B2C7C2E3A4B2C0074F648 /* BottomSheetContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetContainer.swift; sourceTree = "<group>"; };
@@ -3319,6 +3321,7 @@
 		13B41AAE2EB3CCD00049503D /* Forms */ = {
 			isa = PBXGroup;
 			children = (
+				1379F1AD2EB3F69500260C50 /* PercentageButtonsStack.swift */,
 				13555F3E2EB3DF3300281A7D /* AddressTextField.swift */,
 				13B41AB02EB3CCDB0049503D /* AddressFieldAccessoryStack */,
 			);
@@ -6540,6 +6543,7 @@
 				A66DFF3B2D141A2300312F71 /* GlobalStateViewModel.swift in Sources */,
 				B585A1FE2DA9779900ED0D5B /* FunctionCallCosmosIBC.swift in Sources */,
 				139DE1262E4CF7F200BC2FD3 /* SendPairScreen.swift in Sources */,
+				1379F1AE2EB3F69A00260C50 /* PercentageButtonsStack.swift in Sources */,
 				A6C670E12C9E93A600F59B6A /* SendGasSettingsView+iOS.swift in Sources */,
 				B52243412D2398D5003C734A /* AkashService.swift in Sources */,
 				A6E0C91F2DE7FD8600A01543 /* ReferralTransactionOverviewView.swift in Sources */,
