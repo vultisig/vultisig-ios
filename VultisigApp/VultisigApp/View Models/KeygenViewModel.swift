@@ -157,8 +157,10 @@ class KeygenViewModel: ObservableObject {
                 return
             }
             let btcKey = hdWallet.getKeyForCoin(coin: .bitcoin)
+            print("bitcoin:\(btcKey.getPublicKey(coinType: .bitcoin).data.hexString)")
             let solana =  hdWallet.getKeyForCoin(coin: .solana)
             print(solana.data.hexString)
+            print("solana public key:\(solana.getPublicKey(coinType: .solana).data.hexString)")
             let solanaSeed = clampThenUniformScalar(from: solana.data)
             
             let rootChainCode = rootChainCodeHex(wallet: hdWallet)
