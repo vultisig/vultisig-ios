@@ -7,6 +7,8 @@ import Foundation
 import OSLog
 import SwiftData
 import Tss
+import WalletCore
+import CryptoKit
 
 enum KeygenStatus {
     case CreatingInstance
@@ -65,7 +67,7 @@ class KeygenViewModel: ObservableObject {
                  oldResharePrefix:String,
                  initiateDevice: Bool) async {
         self.vault = vault
-        self.tssType = tssType
+        self.tssType = .KeyImport
         self.keygenCommittee = keygenCommittee
         self.vaultOldCommittee = vaultOldCommittee
         self.mediatorURL = mediatorURL
@@ -141,13 +143,64 @@ class KeygenViewModel: ObservableObject {
                 }
                 await startKeygenDKLS(context: context, localUIEcdsa: localUIECDSA, localUIEddsa: localUIEdDSA)
             case .KeyImport:
-                self.logger.error("Key Import not supported yet")
+                self.logger.error("it should not get to here")
             }
         case .DKLS:
             await startKeygenDKLS(context: context)
+        case .KeyImport:
+            // TODO: this is for test only right now , need to remove it later
+            let mnemonic = "north soft excuse tribe only crystal attract october glue jacket sweet club"
+            let wallet = HDWallet(mnemonic: mnemonic, passphrase: "")
+            guard let hdWallet = wallet else {
+                self.logger.error("Failed to create HDWallet for key import")
+                return
+            }
+            let btcKey = hdWallet.getKeyForCoin(coin: .bitcoin)
+            let solana =  hdWallet.getMasterKey(curve: .ed25519) //hdWallet.getKeyForCoin(coin: .solana)
+            
+            let rootChainCode = rootChainCodeHex(wallet: hdWallet)
+            guard let rootChainCode else {
+                self.logger.error("Failed to get root chain code for key import")
+                return
+            }
+            self.vault.hexChainCode = rootChainCode
+            await startKeygenDKLS(context: context,localUIEcdsa: btcKey.data.hexString,localUIEddsa: ed25519Scalar(fromSeed: solana.data))
         }
     }
-    
+    func ed25519Scalar(fromSeed seed: Data) -> String {
+        // ensure we have a 32\-byte seed; if WalletCore returns 64, take first 32
+        let seed32: Data
+        if seed.count == 32 {
+            seed32 = seed
+        } else if seed.count >= 32 {
+            seed32 = seed.subdata(in: 0..<32)
+        } else {
+            return ""
+        }
+
+        // SHA512(seed)
+        let digest = SHA512.hash(data: seed32)
+        let h = Data(digest) // 64 bytes
+
+        // take left 32 bytes
+        var a = h.subdata(in: 0..<32)
+
+        // clamp: little\-endian
+        a[0] &= 0b1111_1000       // a[0] &= 248
+        a[31] &= 0b0111_1111      // a[31] &= 127
+        a[31] |= 0b0100_0000      // a[31] |= 64
+
+        return a.hexString
+    }
+    /// Return BIP32 master chain code (hex) for a mnemonic via WalletCore's HDWallet seed.
+    func rootChainCodeHex(wallet: HDWallet) -> String? {
+        let seed = wallet.seed // 64 bytes BIP39 seed
+        let key = SymmetricKey(data: "Bitcoin seed".data(using: .utf8)!)
+        let mac = HMAC<SHA512>.authenticationCode(for: seed, using: key)
+        let master = Data(mac) // 64 bytes: [master key (32) | chain code (32)]
+        let chainCode = master.subdata(in: 32..<64)
+        return chainCode.hexString
+    }
     func startKeygenDKLS(context: ModelContext, localUIEcdsa: String? = nil, localUIEddsa: String? = nil) async {
         do{
             let dklsKeygen = DKLSKeygen(vault: self.vault,

@@ -127,9 +127,6 @@ final class DKLSKeysign {
         let byteArray = DKLSHelper.arrayToBytes(parties: self.keysignCommittee)
         var ids = byteArray.to_dkls_goslice()
         
-        let chainPathArr = [UInt8](self.chainPath.replacingOccurrences(of: "'", with: "").data(using: .utf8)!)
-        var chainPathSlice = chainPathArr.to_dkls_goslice()
-        
         let decodedMsgData = Data(hexString: message)
         guard let decodedMsgData else {
             throw HelperError.runtimeError("fail to hex decoded the message to sign")
@@ -137,9 +134,18 @@ final class DKLSKeysign {
         let msgArr = [UInt8](decodedMsgData)
         var msgSlice = msgArr.to_dkls_goslice()
         
-        let err = dkls_sign_setupmsg_new(&keyIdSlice,&chainPathSlice,&msgSlice,&ids,&buf)
-        if err != DKLS_LIB_OK {
-            throw HelperError.runtimeError("fail to setup keysign message, dkls error:\(err)")
+        if !self.chainPath.isEmpty {
+            let chainPathArr = [UInt8](self.chainPath.replacingOccurrences(of: "'", with: "").data(using: .utf8)!)
+            var chainPathSlice = chainPathArr.to_dkls_goslice()
+            let err = dkls_sign_setupmsg_new(&keyIdSlice,&chainPathSlice,&msgSlice,&ids,&buf)
+            if err != DKLS_LIB_OK {
+                throw HelperError.runtimeError("fail to setup keysign message, dkls error:\(err)")
+            }
+        } else {
+            let err = dkls_sign_setupmsg_new(&keyIdSlice,nil,&msgSlice,&ids,&buf)
+            if err != DKLS_LIB_OK {
+                throw HelperError.runtimeError("fail to setup keysign message, dkls error:\(err)")
+            }
         }
         
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))

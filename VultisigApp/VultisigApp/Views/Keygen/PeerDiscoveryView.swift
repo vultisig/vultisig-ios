@@ -153,7 +153,7 @@ struct PeerDiscoveryView: View {
         KeygenView(
             vault: viewModel.vault,
             tssType: tssType,
-            keygenCommittee: viewModel.selections.map { $0 },
+            keygenCommittee: viewModel.selections.map { $0 }.sorted(),
             vaultOldCommittee: viewModel.vault.signers.filter { viewModel.selections.contains($0)},
             mediatorURL: viewModel.serverAddr,
             sessionID: viewModel.sessionID,

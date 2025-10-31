@@ -72,20 +72,22 @@ final class SchnorrKeygen {
         // create setup message and upload it to relay server
         let byteArray = DKLSHelper.arrayToBytes(parties: self.keygenCommittee)
         var ids = byteArray.to_dkls_goslice()
-        let decodedPrivateKey = Data(hexString: hexPrivateKey)
-        guard let decodedPrivateKey else {
+        let decodedPrivateKeyData = Data(hexString: hexPrivateKey)
+        guard let decodedPrivateKeyData else {
             throw HelperError.runtimeError("fail to decode private key from hex string")
         }
-        let decodedChainCode = Data(hexString: hexRootChainCode)
-        guard let decodedChainCode else {
+        let decodedChainCodeData = Data(hexString: hexRootChainCode)
+        guard let decodedChainCodeData else {
             throw HelperError.runtimeError("fail to decode root chain code from hex string")
         }
-        var privateKeySlice = [UInt8](decodedPrivateKey).to_dkls_goslice()
-        var rootChainSlice = [UInt8](decodedChainCode).to_dkls_goslice()
+        let decodedPrivateKey = [UInt8](decodedPrivateKeyData)
+        let decodedChainCode = [UInt8](decodedChainCodeData)
+        var privateKeySlice = decodedPrivateKey.to_dkls_goslice()
+        var rootChainSlice = decodedChainCode.to_dkls_goslice()
         var handler = goschnorr.Handle()
         let err = schnorr_key_import_initiator_new(&privateKeySlice, &rootChainSlice, UInt8(threshold), &ids,&buf, &handler)
         if err != LIB_OK {
-            throw HelperError.runtimeError("fail to setup keygen message, dkls error:\(err)")
+            throw HelperError.runtimeError("fail to setup keygen message, schnorr error:\(err)")
         }
         self.setupMessage = Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
         return (self.setupMessage,handler)

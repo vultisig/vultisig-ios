@@ -94,16 +94,18 @@ final class DKLSKeygen {
         // create setup message and upload it to relay server
         let byteArray = DKLSHelper.arrayToBytes(parties: self.keygenCommittee)
         var ids = byteArray.to_dkls_goslice()
-        let decodedPrivateKey = Data(hexString: hexPrivateKey)
-        guard let decodedPrivateKey else {
+        let decodedPrivateKeyData = Data(hexString: hexPrivateKey)
+        guard let decodedPrivateKeyData else {
             throw HelperError.runtimeError("fail to decode private key from hex string")
         }
-        let decodedChainCode = Data(hexString: hexRootChainCode)
-        guard let decodedChainCode else {
+        let decodedChainCodeData = Data(hexString: hexRootChainCode)
+        guard let decodedChainCodeData else {
             throw HelperError.runtimeError("fail to decode root chain code from hex string")
         }
-        var privateKeySlice = [UInt8](decodedPrivateKey).to_dkls_goslice()
-        var rootChainSlice = [UInt8](decodedChainCode).to_dkls_goslice()
+        let decodedPrivateKey = [UInt8](decodedPrivateKeyData)
+        let decodedChainCode = [UInt8](decodedChainCodeData)
+        var privateKeySlice = decodedPrivateKey.to_dkls_goslice()
+        var rootChainSlice = decodedChainCode.to_dkls_goslice()
         var handler = godkls.Handle()
         let err = dkls_key_import_initiator_new(&privateKeySlice, &rootChainSlice, UInt8(threshold), &ids,&buf, &handler)
         if err != DKLS_LIB_OK {
@@ -129,6 +131,10 @@ final class DKLSKeygen {
         if result != DKLS_LIB_OK {
             print("fail to get outbound message: \(result)")
             return (result,[])
+        } else {
+            if buf.len > 0 {
+                print("successfully get outbound message. \(buf.len)")
+            }
         }
         return (result,Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len))))
         
@@ -283,6 +289,8 @@ final class DKLSKeygen {
             
             if result != DKLS_LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
+            } else {
+                print("successfully applied inbound message. isFinished:\(isFinished)")
             }
             self.cache.setObject(NSObject(), forKey: key)
             try await deleteMessageFromServer(hash: msg.hash)
@@ -323,7 +331,7 @@ final class DKLSKeygen {
                     }
                     (keygenSetupMsg,handler) = try getDklsKeyImportSetupMessage(hexPrivateKey: localPrivateSecret, hexRootChainCode: self.hexChainCode)
                 }
-                
+                self.setupMessage = keygenSetupMsg
                 try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString(),nil)
             } else {
                 // download the setup message from relay server
