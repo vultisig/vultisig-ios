@@ -101,6 +101,7 @@ struct VaultDeletionConfirmView: View {
                 _ = targetToBeDeleted.signers
                 _ = targetToBeDeleted.keyshares
                 _ = targetToBeDeleted.libType
+                _ = targetToBeDeleted.closedBanners
                 modelContext.delete(targetToBeDeleted)
             }
             try modelContext.save()
