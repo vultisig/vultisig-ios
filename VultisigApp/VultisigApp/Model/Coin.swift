@@ -98,8 +98,9 @@ class Coin: ObservableObject, Codable, Hashable {
         return value
     }
     var combinedBalanceDecimal: Decimal {
-        let combined = balanceDecimal + stakedBalanceDecimal
-        return combined
+        // Only return the available balance, excluding staked/bonded amounts
+        // Staked/bonded amounts are shown separately in the DeFi tab
+        return balanceDecimal
     }
     
     var balanceString: String {
