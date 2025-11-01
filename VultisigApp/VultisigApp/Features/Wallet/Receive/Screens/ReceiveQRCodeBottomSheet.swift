@@ -26,24 +26,28 @@ struct ReceiveQRCodeBottomSheet: View {
     }
     
     var body: some View {
-        GeometryReader { proxy in
-            VStack(spacing: 24) {
-                topSection
-                Text(coin.address)
-                    .font(Theme.fonts.footnote)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                    .frame(maxWidth: 216)
-                    .multilineTextAlignment(.center)
-                bottomSection
-            }
-            .padding(.top, 40)
-            .padding(.horizontal, 16)
-            .background(ModalBackgroundView(width: proxy.size.width))
-            .presentationDetents([.height(465)])
-            .presentationBackground(Theme.colors.bgSecondary)
-            .presentationDragIndicator(.visible)
+        VStack(spacing: 24) {
+            topSection
+            Text(coin.address)
+                .font(Theme.fonts.footnote)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .frame(maxWidth: 216)
+                .multilineTextAlignment(.center)
+            bottomSection
         }
+        .padding(.top, 40)
+        .padding(.horizontal, 16)
+        .frame(maxWidth: .infinity) // Use maxWidth instead of GeometryReader
         .frame(height: 465)
+        .background(
+            // Capture width using overlay instead of GeometryReader
+            GeometryReader { proxy in
+                ModalBackgroundView(width: proxy.size.width)
+            }
+        )
+        .presentationDetents([.height(465)])
+        .presentationBackground(Theme.colors.bgSecondary)
+        .presentationDragIndicator(.visible)
         .onLoad {
             let qrCodeImage = QRCodeGenerator().generateImage(
                 qrStringData: coin.address,
