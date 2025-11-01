@@ -37,6 +37,8 @@ class EvmServiceFactory {
             return MantleService.shared
         case .hyperliquid:
             return HyperliquidService.shared
+        case .sei:
+            return SeiService.shared
         case .tron:
             return TronEvmService.shared
         default:
