@@ -33,6 +33,8 @@ class EVMHelper {
             return "11155111"
         case .hyperliquid:
             return "999"
+        case .sei:
+            return "1329"
         default:
             return self.coinType.chainId
         }

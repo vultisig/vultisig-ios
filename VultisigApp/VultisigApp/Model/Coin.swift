@@ -152,7 +152,7 @@ class Coin: ObservableObject, Codable, Hashable {
             return "2000000000"
         case .solana:
             return SolanaHelper.defaultFeeInLamports.description
-        case .ethereum,.avalanche, .bscChain,.ethereumSepolia, .hyperliquid:
+        case .ethereum,.avalanche, .bscChain,.ethereumSepolia, .hyperliquid, .sei:
             if self.isNativeToken {
                 return "23000"
             } else {
