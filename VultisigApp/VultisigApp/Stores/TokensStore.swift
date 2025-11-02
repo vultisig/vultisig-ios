@@ -22,6 +22,15 @@ class TokensStore {
             isNativeToken: true
         ),
         CoinMeta(
+            chain: .sei,
+            ticker: "SEI",
+            logo: "sei",
+            decimals: 18,
+            priceProviderId: "sei-network",
+            contractAddress: "",
+            isNativeToken: true
+        ),
+        CoinMeta(
             chain: .arbitrum,
             ticker: "ARB",
             logo: "arbitrum",

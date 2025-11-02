@@ -65,7 +65,7 @@ struct KeysignMessageFactory {
             return try utxoHelper.getPreSignedImageHash(keysignPayload: payload)
         case .cardano:
             return try CardanoHelper.getPreSignedImageHash(keysignPayload: payload)
-        case .ethereum, .arbitrum, .base, .optimism, .polygon, .polygonV2, .avalanche, .bscChain, .blast, .cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid:
+        case .ethereum, .arbitrum, .base, .optimism, .polygon, .polygonV2, .avalanche, .bscChain, .blast, .cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid, .sei:
             if payload.coin.isNativeToken {
                 return try EVMHelper.getHelper(coin: payload.coin).getPreSignedImageHash(keysignPayload: payload)
             } else {
