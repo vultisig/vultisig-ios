@@ -237,22 +237,21 @@ class Endpoint {
         toAsset: String,
         amount: String,
         interval: String,
-        isAffiliate: Bool,
         referredCode: String,
         vultTierDiscount: Int
     ) -> URL {
-        let isAffiliateParams: String
+        var isAffiliateParams: String = ""
         if (chain == .thorchain || chain == .thorchainStagenet) && !referredCode.isEmpty {
             let affiliateFeeRateBp = bps(for: vultTierDiscount, affiliateFeeRate: THORChainSwaps.referredAffiliateFeeRateBp)
+            isAffiliateParams += "&affiliate=\(referredCode)&affiliate_bps=\(THORChainSwaps.referredUserFeeRateBp)"
             // THORChain supports nested affiliates
-            isAffiliateParams = isAffiliate ? "&affiliate=\(referredCode)&affiliate_bps=\(THORChainSwaps.referredUserFeeRateBp)&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(affiliateFeeRateBp)"
-                                            : "&affiliate=\(referredCode)&affiliate_bps=0&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=0"
+            if affiliateFeeRateBp > 0 {
+                isAffiliateParams += "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(affiliateFeeRateBp)"                
+            }
         } else {
             let affiliateFeeRateBp = bps(for: vultTierDiscount, affiliateFeeRate: THORChainSwaps.affiliateFeeRateBp)
             // MayaChain only supports single affiliate
-            isAffiliateParams = isAffiliate
-            ? "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(affiliateFeeRateBp)"
-            : "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=0"
+            isAffiliateParams = "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(affiliateFeeRateBp)"
         }
         
         return "\(chain.baseUrl)/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)\(isAffiliateParams)".asUrl
