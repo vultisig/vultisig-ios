@@ -116,7 +116,7 @@ private extension EditReferralViewModel {
         
         tx.amount = totalFeeAmount.formatDecimalToLocale()
         
-        let fnCallInstance = FunctionCallInstance.custom(FunctionCallCustom())
+        let fnCallInstance = FunctionCallInstance.custom(FunctionCallCustom(tx: tx, vault: vault))
         tx.memoFunctionDictionary = fnCallInstance.toDictionary()
         tx.transactionType = fnCallInstance.getTransactionType()
         
