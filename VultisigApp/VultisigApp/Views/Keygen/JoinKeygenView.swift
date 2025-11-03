@@ -83,7 +83,7 @@ struct JoinKeygenView: View {
         KeygenView(
             vault: self.viewModel.vault,
             tssType: self.viewModel.tssType,
-            keygenCommittee: self.viewModel.keygenCommittee,
+            keygenCommittee: self.viewModel.keygenCommittee.sorted(),
             vaultOldCommittee: self.viewModel.oldCommittee.filter { self.viewModel.keygenCommittee.contains($0) },
             mediatorURL: viewModel.serverAddress!,
             sessionID: self.viewModel.sessionID!,

@@ -246,7 +246,7 @@ struct KeygenView: View {
     var keygenFailedView: some View {
         ZStack {
             switch tssType {
-            case .Keygen:
+            case .Keygen,.KeyImport:
                 keygenFailedText
             case .Reshare:
                 keygenReshareFailedText
