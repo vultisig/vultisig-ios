@@ -60,7 +60,7 @@ struct ChainDetailScreen: View {
             ReceiveQRCodeBottomSheet(
                 coin: group.nativeCoin,
                 isNativeCoin: true,
-                isPresented: $showReceiveSheet
+                onClose: { showReceiveSheet = false }
             ) { coin in
                 showReceiveSheet = false
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {

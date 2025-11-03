@@ -54,7 +54,7 @@ struct ReceiveChainSelectionScreen: View {
             ReceiveQRCodeBottomSheet(
                 coin: coin,
                 isNativeCoin: true,
-                isPresented: Binding(get: { selectedCoin == nil }, set: { _ in selectedCoin = nil })
+                onClose: { selectedCoin = nil }
             ) { coin in
                 isPresented = false
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {

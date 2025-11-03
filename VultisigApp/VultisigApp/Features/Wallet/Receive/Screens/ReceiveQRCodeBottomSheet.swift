@@ -10,7 +10,7 @@ import SwiftUI
 struct ReceiveQRCodeBottomSheet: View {
     let coin: Coin
     let isNativeCoin: Bool
-    @Binding var isPresented: Bool
+    var onClose: () -> Void
     var onCopy: (Coin) -> Void
     
     @State var qrCodeImage: Image?
@@ -49,7 +49,7 @@ struct ReceiveQRCodeBottomSheet: View {
         .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
             CustomToolbarItem(placement: .leading) {
                 ToolbarButton(image: "x") {
-                    isPresented.toggle()
+                    onClose()
                 }
             }
         }
@@ -123,7 +123,7 @@ struct ReceiveQRCodeBottomSheet: View {
         show ? ReceiveQRCodeBottomSheet(
             coin: .example,
             isNativeCoin: false,
-            isPresented: $show,
+            onClose: { show.toggle() },
             onCopy: { _ in
             }) : nil
     )

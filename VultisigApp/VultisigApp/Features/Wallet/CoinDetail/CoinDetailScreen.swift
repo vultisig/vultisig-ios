@@ -67,7 +67,7 @@ struct CoinDetailScreen: View {
             ReceiveQRCodeBottomSheet(
                 coin: coin,
                 isNativeCoin: false,
-                isPresented: $showReceiveSheet
+                onClose: { showReceiveSheet = false }
             ) { coin in
                 showReceiveSheet = false
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
