@@ -39,8 +39,15 @@ struct SwapCoinPickerView: View {
     }
     
     var body: some View {
-        Screen(title: "selectAsset".localized) {
+        Screen(showNavigationBar: false) {
             content
+        }
+        .crossPlatformToolbar("selectAsset".localized, showsBackButton: false) {
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "x") {
+                    showSheet.toggle()
+                }
+            }
         }
         .applySheetSize()
         .sheetStyle()

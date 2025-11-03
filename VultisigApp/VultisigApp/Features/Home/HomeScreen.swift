@@ -199,7 +199,7 @@ struct HomeScreen: View {
                 }
             }
             .crossPlatformSheet(isPresented: $showVaultSelector) {
-                VaultManagementSheet(availableHeight: capturedGeometryHeight) {
+                VaultManagementSheet(isPresented: $showVaultSelector, availableHeight: capturedGeometryHeight) {
                     showVaultSelector.toggle()
                     vaultRoute = .createVault
                 } onSelectVault: { vault in
