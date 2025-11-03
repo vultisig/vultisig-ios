@@ -259,8 +259,8 @@ class Endpoint {
         
         guard !affiliateParams.isEmpty else { return .empty }
         
-        let affilates = affiliateParams.keys.joined(separator: ",")
-        let affiliateBps = affiliateParams.values.joined(separator: ",")
+        let affilates = affiliateParams.keys.joined(separator: "/")
+        let affiliateBps = affiliateParams.values.joined(separator: "/")
         
         return "&affiliate=\(affilates)&affiliate_bps=\(affiliateBps)"
     }
