@@ -121,6 +121,9 @@ struct SendDetailsScreen: View {
                 )
                 .environmentObject(coinSelectionViewModel)
             }
+            .alert(isPresented: $sendDetailsViewModel.showAddChainAlert) {
+                addChainAlert
+            }
     }
     
     var content: some View {
@@ -147,6 +150,25 @@ struct SendDetailsScreen: View {
             title: Text(NSLocalizedString(sendCryptoViewModel.errorTitle, comment: "")),
             message: Text(NSLocalizedString(sendCryptoViewModel.errorMessage, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
+    }
+    
+    var addChainAlert: Alert {
+        let chainName = sendDetailsViewModel.detectedChain?.name ?? ""
+        let message = NSLocalizedString("addNewChainToVault1", comment: "") + chainName + NSLocalizedString("addNewChainToVault2", comment: "")
+        
+        return Alert(
+            title: Text(NSLocalizedString("newChainDetected", comment: "")),
+            message: Text(message),
+            primaryButton: .default(
+                Text(NSLocalizedString("addChain", comment: "")),
+                action: {
+                    addDetectedChain()
+                }
+            ),
+            secondaryButton: .cancel(
+                Text(NSLocalizedString("cancel", comment: ""))
+            )
         )
     }
     
@@ -489,6 +511,32 @@ extension SendDetailsScreen {
             sendCryptoViewModel.pendingTransactionCountdown = 0
             stopCountdownTimer()
             
+        }
+    }
+    
+    private func addDetectedChain() {
+        guard let chain = sendDetailsViewModel.detectedChain else { return }
+        
+        // Find the native token CoinMeta for this chain from TokensStore
+        guard let chainMeta = TokensStore.TokenSelectionAssets.first(where: { 
+            $0.chain == chain && $0.isNativeToken 
+        }) else {
+            print("Native token not found for chain: \(chain.name)")
+            return
+        }
+        
+        // Add to selection and save
+        var selection = coinSelectionViewModel.selection
+        selection.insert(chainMeta)
+        
+        Task {
+            await CoinService.saveAssets(for: vault, selection: selection)
+            
+            // After adding, switch to the new chain
+            await MainActor.run {
+                sendDetailsViewModel.selectedChain = chain
+                sendDetailsViewModel.showAddChainAlert = false
+            }
         }
     }
 }

@@ -37,9 +37,7 @@ extension SendCryptoAddressTextField {
                 get: { tx.toAddress },
                 set: { newValue in
                     tx.toAddress = newValue
-                    DebounceHelper.shared.debounce {
-                        validateAddress(newValue)
-                    }
+                    handleAddressChange(newValue)
                 }
             ))
             .onChange(of: tx.toAddress) { oldValue, newValue in
@@ -56,9 +54,7 @@ extension SendCryptoAddressTextField {
                 get: { tx.toAddress },
                 set: { newValue in
                     tx.toAddress = newValue
-                    DebounceHelper.shared.debounce {
-                        validateAddress(newValue)
-                    }
+                    handleAddressChange(newValue)
                 }
             ))
             .keyboardType(.default)
@@ -90,9 +86,27 @@ extension SendCryptoAddressTextField {
     func pasteAddress() {
         if let clipboardContent = UIPasteboard.general.string {
             tx.toAddress = clipboardContent
+            handleAddressChange(clipboardContent)
+        }
+    }
+    
+    private func handleAddressChange(_ address: String) {
+        // Attempt to detect and switch chain if address belongs to different chain
+        if let viewModel = sendDetailsViewModel, let vault = vault, !address.isEmpty {
+            let detectedCoin = viewModel.detectAndSwitchChain(from: address, vault: vault, currentChain: tx.coin.chain, tx: tx)
             
+            if detectedCoin != nil {
+                // Chain was detected and switched, validate immediately
+                validateAddress(address)
+            } else {
+                // No chain change needed, validate with debounce
+                DebounceHelper.shared.debounce {
+                    self.validateAddress(address)
+                }
+            }
+        } else {
             DebounceHelper.shared.debounce {
-                validateAddress(clipboardContent)
+                validateAddress(address)
             }
         }
     }
@@ -100,11 +114,40 @@ extension SendCryptoAddressTextField {
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
         case .success(let result):
+            print("📱 QR Scan successful!")
             let qrCodeResult = result.string
+            print("📱 QR Content: \(qrCodeResult)")
             tx.parseCryptoURI(qrCodeResult)
-            validateAddress(tx.toAddress)
+            print("📱 Parsed address: \(tx.toAddress)")
+            print("📱 sendDetailsViewModel exists: \(sendDetailsViewModel != nil)")
+            print("📱 vault exists: \(vault != nil)")
+            print("📱 address not empty: \(!tx.toAddress.isEmpty)")
+            
+            // Attempt to detect and switch chain if address belongs to different chain
+            if let viewModel = sendDetailsViewModel, let vault = vault, !tx.toAddress.isEmpty {
+                print("✅ All conditions met - calling detectAndSwitchChain")
+                let detectedCoin = viewModel.detectAndSwitchChain(from: tx.toAddress, vault: vault, currentChain: tx.coin.chain, tx: tx)
+                
+                if detectedCoin != nil {
+                    print("✅ Chain detected and switched!")
+                    // Chain was detected and switched, validate immediately
+                    validateAddress(tx.toAddress)
+                } else {
+                    print("⚠️ No chain detected")
+                    // No chain change needed, validate immediately
+                    validateAddress(tx.toAddress)
+                }
+            } else {
+                print("❌ Conditions NOT met - skipping chain detection")
+                print("   - sendDetailsViewModel: \(sendDetailsViewModel != nil)")
+                print("   - vault: \(vault != nil)")
+                print("   - address not empty: \(!tx.toAddress.isEmpty)")
+                validateAddress(tx.toAddress)
+            }
+            
             showScanner = false
         case .failure(let err):
+            print("❌ QR Scan failed: \(err.localizedDescription)")
             sendCryptoViewModel.logger.error("fail to scan QR code,error:\(err.localizedDescription)")
         }
     }
@@ -117,10 +160,24 @@ extension SendCryptoAddressTextField {
         tx.amount = amount
         tx.memo = message
         
-        DebounceHelper.shared.debounce {
-            validateAddress(address)
+        // Attempt to detect and switch chain if address belongs to different chain
+        if let viewModel = sendDetailsViewModel, let vault = vault, !address.isEmpty {
+            let detectedCoin = viewModel.detectAndSwitchChain(from: address, vault: vault, currentChain: tx.coin.chain, tx: tx)
+            
+            if detectedCoin != nil {
+                // Chain was detected and switched, validate immediately
+                validateAddress(address)
+            } else {
+                // No chain change needed, validate with debounce
+                DebounceHelper.shared.debounce {
+                    self.validateAddress(address)
+                }
+            }
+        } else {
+            DebounceHelper.shared.debounce {
+                validateAddress(address)
+            }
         }
-        
         
         if !amount.isEmpty {
             sendCryptoViewModel.convertToFiat(newValue: amount, tx: tx)

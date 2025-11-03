@@ -38,7 +38,8 @@ extension SendCryptoAddressTextField {
                     tx: tx,
                     sendCryptoViewModel: sendCryptoViewModel,
                     showCameraScanView: $showCameraScanView,
-                    selectedVault: nil
+                    selectedVault: vault,
+                    sendDetailsViewModel: sendDetailsViewModel
                 )
             }
             .overlay(
@@ -54,9 +55,7 @@ extension SendCryptoAddressTextField {
                 get: { tx.toAddress },
                 set: { newValue in
                     tx.toAddress = newValue
-                    DebounceHelper.shared.debounce {
-                        validateAddress(newValue)
-                    }
+                    handleAddressChange(newValue)
                 }
             ))
             .onChange(of: tx.toAddress) { oldValue, newValue in
@@ -73,9 +72,7 @@ extension SendCryptoAddressTextField {
                 get: { tx.toAddress },
                 set: { newValue in
                     tx.toAddress = newValue
-                    DebounceHelper.shared.debounce {
-                        validateAddress(newValue)
-                    }
+                    handleAddressChange(newValue)
                 }
             ))
         }
@@ -93,24 +90,50 @@ extension SendCryptoAddressTextField {
         let pasteboard = NSPasteboard.general
         if let clipboardContent = pasteboard.string(forType: .string) {
             tx.toAddress = clipboardContent
+            handleAddressChange(clipboardContent)
+        }
+    }
+    
+    private func handleAddressChange(_ address: String) {
+        print("🖥️ macOS - Address changed: \(address)")
+        // Attempt to detect and switch chain if address belongs to different chain
+        if let viewModel = sendDetailsViewModel, let vault = vault, !address.isEmpty {
+            print("🖥️ Calling detectAndSwitchChain from macOS")
+            let detectedCoin = viewModel.detectAndSwitchChain(from: address, vault: vault, currentChain: tx.coin.chain, tx: tx)
             
+            if detectedCoin != nil {
+                print("✅ Chain detected and switched!")
+                // Chain was detected and switched, validate immediately
+                validateAddress(address)
+            } else {
+                print("⚠️ No chain detected")
+                // No chain change needed, validate with debounce
+                DebounceHelper.shared.debounce {
+                    self.validateAddress(address)
+                }
+            }
+        } else {
+            print("❌ macOS - Conditions NOT met")
+            print("   - sendDetailsViewModel: \(sendDetailsViewModel != nil)")
+            print("   - vault: \(vault != nil)")
+            print("   - address not empty: \(!address.isEmpty)")
             DebounceHelper.shared.debounce {
-                validateAddress(clipboardContent)
+                validateAddress(address)
             }
         }
     }
     
     private func handleImageQrCode(data: Data) {
+        print("🖥️ macOS - handleImageQrCode called")
         let (address, amount, message) = Utils.parseCryptoURI(String(data: data, encoding: .utf8) ?? .empty)
         
+        print("🖥️ Parsed address from QR: \(address)")
         tx.toAddress = address
         tx.amount = amount
         tx.memo = message
         
-        DebounceHelper.shared.debounce {
-            validateAddress(address)
-        }
-        
+        // Use the same handler
+        handleAddressChange(address)
         
         if !amount.isEmpty {
             sendCryptoViewModel.convertToFiat(newValue: amount, tx: tx)

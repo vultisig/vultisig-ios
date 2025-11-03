@@ -56,7 +56,12 @@ struct SendDetailsAddressFields: View {
     var toField: some View {
         VStack(spacing: 8) {
             getTitle(for: "sendTo")
-            SendCryptoAddressTextField(tx: tx, sendCryptoViewModel: sendCryptoViewModel)
+            SendCryptoAddressTextField(
+                tx: tx, 
+                sendCryptoViewModel: sendCryptoViewModel,
+                sendDetailsViewModel: viewModel,
+                vault: homeViewModel.selectedVault
+            )
                 .focused($focusedField, equals: .toAddress)
                 .id(Field.toAddress)
                 .onSubmit {

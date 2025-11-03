@@ -15,6 +15,7 @@ struct MacAddressScannerView: View {
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @Binding var showCameraScanView: Bool
     let selectedVault: Vault?
+    var sendDetailsViewModel: SendDetailsViewModel? = nil
     
     @State var showImportOptions: Bool = false
     
@@ -140,7 +141,27 @@ struct MacAddressScannerView: View {
             return
         }
         
+        print("🖥️📷 MacAddressScannerView - QR detected: \(detectedQRCode)")
         tx.parseCryptoURI(detectedQRCode)
+        print("🖥️📷 Parsed address: \(tx.toAddress)")
+        
+        // Attempt to detect and switch chain if address belongs to different chain
+        if let viewModel = sendDetailsViewModel, let vault = selectedVault, !tx.toAddress.isEmpty {
+            print("🖥️📷 Calling detectAndSwitchChain from MacAddressScannerView")
+            let detectedCoin = viewModel.detectAndSwitchChain(from: tx.toAddress, vault: vault, currentChain: tx.coin.chain, tx: tx)
+            
+            if detectedCoin != nil {
+                print("✅ Chain detected and switched in MacAddressScannerView!")
+            } else {
+                print("⚠️ No chain detected in MacAddressScannerView")
+            }
+        } else {
+            print("❌ MacAddressScannerView - Conditions NOT met")
+            print("   - sendDetailsViewModel: \(sendDetailsViewModel != nil)")
+            print("   - vault: \(selectedVault != nil)")
+            print("   - address not empty: \(!tx.toAddress.isEmpty)")
+        }
+        
         validateAddress(tx.toAddress)
         goBack()
     }
