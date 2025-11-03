@@ -120,6 +120,14 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                         encryptionPassword: config.password,
                                         email: config.email,
                                         lib_type: vault.libType == .DKLS ? 1 : 0)
+            case .KeyImport:
+                fastVaultService.keyImport(name: vault.name,
+                                        sessionID: sessionID,
+                                        hexEncryptionKey: encryptionKeyHex!,
+                                        hexChainCode: vault.hexChainCode,
+                                        encryptionPassword: config.password,
+                                        email: config.email,
+                                        lib_type: 2)
             case .Reshare:
                 let pubKeyECDSA = config.isExist ? vault.pubKeyECDSA : .empty
                 fastVaultService.reshare(name: vault.name,
@@ -134,9 +142,6 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                          lib_type: vault.libType == .DKLS ? 1 : 0)
             case .Migrate:
                 fastVaultService.migrate(publicKeyECDSA:vault.pubKeyECDSA, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, encryptionPassword: config.password, email: config.email)
-            case .KeyImport:
-                // TODO: send request to fast vault service for key import
-                break
             }
         }
         self.isLoading = false

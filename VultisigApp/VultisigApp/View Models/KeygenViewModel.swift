@@ -150,28 +150,6 @@ class KeygenViewModel: ObservableObject {
             await startKeygenDKLS(context: context)
         case .KeyImport:
             return
-//            // TODO: this is for test only right now , need to remove it later
-//            let mnemonic = "north soft excuse tribe only crystal attract october glue jacket sweet club"
-//            let wallet = HDWallet(mnemonic: mnemonic, passphrase: "")
-//            guard let hdWallet = wallet else {
-//                self.logger.error("Failed to create HDWallet for key import")
-//                return
-//            }
-//            let btcKey = hdWallet.getKeyForCoin(coin: .bitcoin)
-//            print("bitcoin:\(btcKey.getPublicKey(coinType: .bitcoin).data.hexString)")
-//            let solana =  hdWallet.getKeyForCoin(coin: .solana)
-//            print(solana.data.hexString)
-//            print("solana public key:\(solana.getPublicKey(coinType: .solana).data.hexString)")
-//            let solanaSeed = clampThenUniformScalar(from: solana.data)
-//            
-//            let rootChainCode = rootChainCodeHex(wallet: hdWallet)
-//            guard let rootChainCode else {
-//                self.logger.error("Failed to get root chain code for key import")
-//                return
-//            }
-//            self.vault.hexChainCode = rootChainCode
-//            
-//            await startKeygenDKLS(context: context,localUIEcdsa: btcKey.data.hexString,localUIEddsa: solanaSeed?.hexString ?? "")
         }
     }
     
