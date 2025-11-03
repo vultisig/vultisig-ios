@@ -12,26 +12,32 @@ final class BondTransactionViewModel: ObservableObject, Form {
     let coin: Coin
     let vault: Vault
     let initialBondAddress: String?
-    @Published private var sendTx = SendTransaction()
+    @Published var sendTx = SendTransaction()
     
     @Published var validForm: Bool = false
     
     @Published var addressField = FormField(
         label: "address".localized,
         placeholder: "enterAddress".localized,
-        validators: [AddressValidator(chain: .thorChain)]
+        validators: [
+            RequiredValidator(errorMessage: "emptyAddressField".localized),
+            AddressValidator(chain: .thorChain)
+        ]
     )
     @Published var providerField = FormField(
-        label: "Provider (optional)".localized,
+        label: "providerLabel".localized,
         placeholder: "provider".localized,
         validators: [AddressValidator(chain: .thorChain)]
     )
     @Published var amountField = FormField(
         label: "amount".localized,
-        placeholder: "0 RUNE"
+        placeholder: "0 RUNE",
+        validators: [
+            RequiredValidator(errorMessage: "emptyAmountField".localized)
+        ]
     )
     @Published var operatorFee = FormField(
-        label: "Operator-fees (Basis Points)".localized,
+        label: "operatorFeesLabel".localized,
         placeholder: "0"
     )
     
@@ -53,6 +59,19 @@ final class BondTransactionViewModel: ObservableObject, Form {
     
     func onLoad() {
         setupForm()
+        operatorFee.validators = [
+            ClosureValidator { value in
+                if value.isEmpty && self.providerField.valid {
+                    throw HelperError.runtimeError("operatorFeesError".localized)
+                }
+            }
+        ]
+        
+        amountField.validators.append(AmountBalanceValidator(balance: coin.balanceDecimal))
+        
+        if let initialBondAddress {
+            addressField.value = initialBondAddress
+        }
     }
     
     func handle(addressResult: AddressResult?, isProvider: Bool) {
@@ -67,12 +86,15 @@ final class BondTransactionViewModel: ObservableObject, Form {
     func buildTransaction() -> SendTransaction? {
         guard validForm else { return nil }
         
-        if operatorFee.value != .empty && (providerField.value == .empty || !providerField.valid) {
-            return nil
-        }
-        
-        // TODO: - Set max amount
+        sendTx.coin = coin
         sendTx.sendMaxAmount = sendTx.amountDecimal == coin.balanceDecimal
+        sendTx.amount = amountField.value.formatToDecimal(digits: coin.decimals)
+        sendTx.memo = buildMemo()
+        sendTx.memoFunctionDictionary = buildDictionary()
+        sendTx.transactionType = .unspecified
+        sendTx.wasmContractPayload = nil
+        sendTx.toAddress = ""
+                
         return sendTx
     }
     
@@ -82,5 +104,30 @@ final class BondTransactionViewModel: ObservableObject, Form {
         let amountDecimal = max * multiplier
         sendTx.amount = amountDecimal.formatToDecimal(digits: coin.decimals)
         amountField.value = sendTx.amount
+    }
+    
+    func buildMemo() -> String {
+        var memo = "BOND:\(addressField.value)"
+        if !providerField.value.isEmpty {
+            memo += ":\(providerField.value)"
+        }
+        let operatorFeeInt = Int64(operatorFee.value)
+        if let operatorFeeInt, operatorFeeInt != .zero {
+            if providerField.value.isEmpty {
+                memo += "::\(operatorFeeInt)"
+            } else {
+                memo += ":\(operatorFeeInt)"
+            }
+        }
+        return memo
+    }
+    
+    func buildDictionary() -> ThreadSafeDictionary<String, String> {
+        let dict = ThreadSafeDictionary<String, String>()
+        dict.set("nodeAddress", addressField.value)
+        dict.set("provider", providerField.value)
+        dict.set("fee", "\(Int64(operatorFee.value) ?? 0)")
+        dict.set("memo", buildMemo())
+        return dict
     }
 }

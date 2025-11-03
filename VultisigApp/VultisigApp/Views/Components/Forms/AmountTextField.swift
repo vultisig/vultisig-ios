@@ -13,6 +13,7 @@ struct AmountTextField: View {
     }
     
     @Binding var amount: String
+    @Binding var error: String?
     let ticker: String
     let type: PercentageFieldType
     var onPercentage: (Int) -> Void
@@ -47,7 +48,16 @@ struct AmountTextField: View {
                     }
                 }
                 Spacer()
-                percentageView
+                VStack(spacing: 8) {
+                    if let error {
+                        Text(error.localized)
+                            .foregroundColor(Theme.colors.alertError)
+                            .font(Theme.fonts.footnote)
+                            .multilineTextAlignment(.leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    percentageView
+                }
             }
         }
     }
@@ -74,12 +84,14 @@ struct AmountTextField: View {
     VStack {
         AmountTextField(
             amount: $amount,
+            error: .constant(nil),
             ticker: "RUNE",
             type: .button
         ) { _ in }
         
         AmountTextField(
             amount: $amount,
+            error: .constant(nil),
             ticker: "RUNE",
             type: .slider
         ) { _ in }

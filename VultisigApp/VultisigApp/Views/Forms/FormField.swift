@@ -21,11 +21,7 @@ public class FormField: ObservableObject {
             if value.isNotEmpty {
                 touched = true
             }
-            if !validatesOnBlur {
-                validateErrors()
-            } else {
-                error = nil
-            }
+
             // Keep rawValue in sync if formatter is present
             rawValue = formatter?.unformat(value) ?? value
         }
@@ -66,7 +62,7 @@ public class FormField: ObservableObject {
         }
     }
 
-    public func validateErrors() {
+    public func validateErrors() throws {
         guard touched || value.isNotEmpty else { return }
 
         do {
@@ -76,6 +72,7 @@ public class FormField: ObservableObject {
         } catch {
             self.error = error.localizedDescription
             self.valid = false
+            throw error
         }
     }
 
@@ -83,10 +80,5 @@ public class FormField: ObservableObject {
         for validator in validators {
             try validator.validate(value: rawValue)
         }
-    }
-
-    public func onBlur() {
-        guard validatesOnBlur else { return }
-        validateErrors()
     }
 }

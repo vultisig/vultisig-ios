@@ -256,6 +256,9 @@
 		13AA6CE32EA8746300760C8D /* THORChainAPIService+LPs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AA6CE22EA8746300760C8D /* THORChainAPIService+LPs.swift */; };
 		13AB0C072E5CA17100F52F24 /* ReferralCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AB0C052E5CA17100F52F24 /* ReferralCode.swift */; };
 		13AB0C082E5CA17100F52F24 /* ReferredCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AB0C062E5CA17100F52F24 /* ReferredCode.swift */; };
+		13AB73722EB923CD00DA106B /* RequiredValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AB73712EB923CA00DA106B /* RequiredValidator.swift */; };
+		13AB73742EB9240300DA106B /* ClosureValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AB73732EB923FD00DA106B /* ClosureValidator.swift */; };
+		13AB73762EB925A100DA106B /* AmountBalanceValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AB73752EB9259A00DA106B /* AmountBalanceValidator.swift */; };
 		13AC28082E61E294001CB9AA /* ScreenEdgeInsets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AC28072E61E293001CB9AA /* ScreenEdgeInsets.swift */; };
 		13AC84032EA8518700C1399E /* THORChainAPICache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AC84022EA8518700C1399E /* THORChainAPICache.swift */; };
 		13AF0D182E4CE655004D4FD2 /* NavigationRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AF0D172E4CE652004D4FD2 /* NavigationRouter.swift */; };
@@ -1401,6 +1404,9 @@
 		13AA6CE22EA8746300760C8D /* THORChainAPIService+LPs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "THORChainAPIService+LPs.swift"; sourceTree = "<group>"; };
 		13AB0C052E5CA17100F52F24 /* ReferralCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralCode.swift; sourceTree = "<group>"; };
 		13AB0C062E5CA17100F52F24 /* ReferredCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferredCode.swift; sourceTree = "<group>"; };
+		13AB73712EB923CA00DA106B /* RequiredValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequiredValidator.swift; sourceTree = "<group>"; };
+		13AB73732EB923FD00DA106B /* ClosureValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClosureValidator.swift; sourceTree = "<group>"; };
+		13AB73752EB9259A00DA106B /* AmountBalanceValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountBalanceValidator.swift; sourceTree = "<group>"; };
 		13AC28072E61E293001CB9AA /* ScreenEdgeInsets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenEdgeInsets.swift; sourceTree = "<group>"; };
 		13AC84022EA8518700C1399E /* THORChainAPICache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainAPICache.swift; sourceTree = "<group>"; };
 		13AF0D172E4CE652004D4FD2 /* NavigationRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationRouter.swift; sourceTree = "<group>"; };
@@ -2781,6 +2787,9 @@
 		1348563C2EB529E0003D10BE /* Validators */ = {
 			isa = PBXGroup;
 			children = (
+				13AB73752EB9259A00DA106B /* AmountBalanceValidator.swift */,
+				13AB73732EB923FD00DA106B /* ClosureValidator.swift */,
+				13AB73712EB923CA00DA106B /* RequiredValidator.swift */,
 				1348563D2EB529E4003D10BE /* AddressValidator.swift */,
 			);
 			path = Validators;
@@ -5760,6 +5769,7 @@
 				A6ACAD5F2D1109EF00432CC4 /* SettingsAdvancedView.swift in Sources */,
 				A594A9ED2C6436A800A3D09E /* DBMappable.swift in Sources */,
 				463408662BA9C1D200246248 /* CoinTypeExtension.swift in Sources */,
+				13AB73742EB9240300DA106B /* ClosureValidator.swift in Sources */,
 				135C7ADC2EA1387F002F879A /* DefiChainCellView.swift in Sources */,
 				132666C62E429550007FDAC5 /* Icon.swift in Sources */,
 				1334C73C2E2FE57600CBAA3E /* SendCryptoVerifySummaryView.swift in Sources */,
@@ -6015,11 +6025,13 @@
 				A6F7B6E72D4B07B500AC8104 /* KeygenProgressBar.swift in Sources */,
 				130C40DF2E72FD7100509C61 /* CoinActionsView.swift in Sources */,
 				A6A96C942DB0B12D00864353 /* UpgradingVaultView.swift in Sources */,
+				13AB73722EB923CD00DA106B /* RequiredValidator.swift in Sources */,
 				A672643F2D02B9200002E97E /* JoinKeysignSummaryViewModel.swift in Sources */,
 				A6ECA19C2C93FB7200456110 /* Search+iOS.swift in Sources */,
 				13A657C92EA2BCC400323E4C /* HiddenBalanceText.swift in Sources */,
 				A6951E882C52DB9D007292E7 /* Search.swift in Sources */,
 				137FA5972EABE39700843DB1 /* DefiTHORChainBondedSkeletonView.swift in Sources */,
+				13AB73762EB925A100DA106B /* AmountBalanceValidator.swift in Sources */,
 				B53D8CC82BF7F21500B795D3 /* FunctionCallBond.swift in Sources */,
 				B57178B62E66F86900BABE2E /* ThorchainService+Yield+Prices.swift in Sources */,
 				A625D9C02C59F2FC0078FBF4 /* GradientSeparator.swift in Sources */,

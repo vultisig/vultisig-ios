@@ -20,10 +20,11 @@ public extension Form {
         formCancellable = form
             .map { field in
                 field.$value
-                    .receive(on: DispatchQueue.main)
+                    .removeDuplicates()
+                    .receive(on: RunLoop.main)
                     .map { _ in
                         do {
-                            try field.validate()
+                            try field.validateErrors()
                             return true
                         } catch {
                             return false
