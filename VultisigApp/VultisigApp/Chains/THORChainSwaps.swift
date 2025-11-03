@@ -9,11 +9,11 @@ import WalletCore
 
 class THORChainSwaps {
     static var affiliateFeeRateBp: Int {
-//#if DEBUG
-//        return 0
-//#else
+#if DEBUG
+        return 0
+#else
         return 50
-//#endif
+#endif
     }
     
     static var referredAffiliateFeeRateBp: Int {

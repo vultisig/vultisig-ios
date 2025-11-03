@@ -240,21 +240,29 @@ class Endpoint {
         referredCode: String,
         vultTierDiscount: Int
     ) -> URL {
-        var isAffiliateParams: String = ""
+        let affiliateParams = buildAffiliateParams(chain: chain, referredCode: referredCode, discountBps: vultTierDiscount)
+        return "\(chain.baseUrl)/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)\(affiliateParams)".asUrl
+    }
+    
+    static func buildAffiliateParams(chain: SwapChain, referredCode: String, discountBps: Int) -> String {
+        var affiliateParams = [String: String]()
         if (chain == .thorchain || chain == .thorchainStagenet) && !referredCode.isEmpty {
-            let affiliateFeeRateBp = bps(for: vultTierDiscount, affiliateFeeRate: THORChainSwaps.referredAffiliateFeeRateBp)
-            isAffiliateParams += "&affiliate=\(referredCode)&affiliate_bps=\(THORChainSwaps.referredUserFeeRateBp)"
             // THORChain supports nested affiliates
-            if affiliateFeeRateBp > 0 {
-                isAffiliateParams += "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(affiliateFeeRateBp)"                
-            }
+            let affiliateFeeRateBp = bps(for: discountBps, affiliateFeeRate: THORChainSwaps.referredAffiliateFeeRateBp)
+            affiliateParams[referredCode] = THORChainSwaps.referredUserFeeRateBp
+            affiliateParams[THORChainSwaps.affiliateFeeAddress] = "\(affiliateFeeRateBp)"
         } else {
-            let affiliateFeeRateBp = bps(for: vultTierDiscount, affiliateFeeRate: THORChainSwaps.affiliateFeeRateBp)
             // MayaChain only supports single affiliate
-            isAffiliateParams = "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(affiliateFeeRateBp)"
+            let affiliateFeeRateBp = bps(for: discountBps, affiliateFeeRate: THORChainSwaps.affiliateFeeRateBp)
+            affiliateParams[THORChainSwaps.affiliateFeeAddress] = "\(affiliateFeeRateBp)"
         }
         
-        return "\(chain.baseUrl)/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)\(isAffiliateParams)".asUrl
+        guard !affiliateParams.isEmpty else { return .empty }
+        
+        let affilates = affiliateParams.keys.joined(separator: ",")
+        let affiliateBps = affiliateParams.values.joined(separator: ",")
+        
+        return "&affiliate=\(affilates)&affiliate_bps=\(affiliateBps)"
     }
     
     static func bps(for discount: Int, affiliateFeeRate: Int) -> Int {
