@@ -31,6 +31,7 @@ struct VaultManagementSheet: View {
     @State private var sheetType = VaultSheetType.main
     @State private var shouldUseMoveTransition = true
     
+    @Binding var isPresented: Bool
     let availableHeight: CGFloat
     var onAddVault: () -> Void
     var onSelectVault: (Vault) -> Void
@@ -84,6 +85,7 @@ struct VaultManagementSheet: View {
                     .transition(.move(edge: .trailing))
                 } else {
                     VaultListView(
+                        isPresented: $isPresented,
                         isEditing: $isEditing,
                         onAddVault: onAddVault,
                         onSelectVault: onSelectVault
@@ -187,6 +189,7 @@ private extension VaultManagementSheet {
             }
             .crossPlatformSheet(isPresented: $isPresented) {
                 VaultManagementSheet(
+                    isPresented: $isPresented,
                     availableHeight: 300,
                     onAddVault: {},
                     onSelectVault: { _ in },

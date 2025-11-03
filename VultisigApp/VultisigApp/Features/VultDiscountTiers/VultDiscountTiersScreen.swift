@@ -66,7 +66,10 @@ struct VultDiscountTiersScreen: View {
             }
         }
         .crossPlatformSheet(item: $showTierSheet) { tier in
-            VultDiscountTierBottomSheet(tier: tier) {
+            VultDiscountTierBottomSheet(
+                tier: tier,
+                isPresented: Binding(get: { showTierSheet != nil }, set: { _ in showTierSheet = nil })
+            ) {
                 showTierSheet = nil
                 showSwapScreen = true
             }
