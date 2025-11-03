@@ -209,7 +209,11 @@ class ReferralViewModel: ObservableObject {
     private func setupTransaction(tx: SendTransaction) {
         tx.amount = totalFee.formatDecimalToLocale()
         
-        let fnCallInstance = FunctionCallInstance.custom(FunctionCallCustom())
+        guard let currentVault else {
+            return
+        }
+        
+        let fnCallInstance = FunctionCallInstance.custom(FunctionCallCustom(tx: tx, vault: currentVault))
         tx.memoFunctionDictionary = fnCallInstance.toDictionary()
         tx.transactionType = fnCallInstance.getTransactionType()
         
