@@ -9,6 +9,7 @@ import SwiftUI
 
 struct VultDiscountTierBottomSheet: View {
     let tier: VultDiscountTier
+    @Binding var isPresented: Bool
     var onUnlock: () -> Void
     
     @State var width: CGFloat = 0
@@ -75,7 +76,13 @@ struct VultDiscountTierBottomSheet: View {
         .readSize {
             width = $0.width
         }
-        .crossPlatformToolbar(ignoresTopEdge: true)
+        .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "x") {
+                    isPresented.toggle()
+                }
+            }
+        }
     }
 }
 
@@ -89,6 +96,6 @@ struct VultDiscountTierBottomSheet: View {
         }
     }
     .crossPlatformSheet(item: $showSheet) { tier in
-        VultDiscountTierBottomSheet(tier: tier) {}
+        VultDiscountTierBottomSheet(tier: tier, isPresented: .constant(true)) {}
     }
 }

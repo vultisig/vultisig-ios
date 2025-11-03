@@ -59,7 +59,8 @@ struct ChainDetailScreen: View {
         .crossPlatformSheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(
                 coin: group.nativeCoin,
-                isNativeCoin: true
+                isNativeCoin: true,
+                isPresented: $showReceiveSheet
             ) { coin in
                 showReceiveSheet = false
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
@@ -93,6 +94,7 @@ struct ChainDetailScreen: View {
                 vault: vault,
                 group: group,
                 sendTx: sendTx,
+                isPresented: Binding(get: { coinToShow != nil}, set: { _ in coinToShow = nil }),
                 onCoinAction: onCoinAction
             )
         }

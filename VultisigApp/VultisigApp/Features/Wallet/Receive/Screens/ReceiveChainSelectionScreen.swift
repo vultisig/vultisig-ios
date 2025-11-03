@@ -29,7 +29,7 @@ struct ReceiveChainSelectionScreen: View {
     }
     
     var body: some View {
-        Screen(title: "selectChain".localized) {
+        Screen(showNavigationBar: false) {
             VStack(spacing: 12) {
                 SearchTextField(value: $viewModel.searchText)
                 ScrollView {
@@ -42,13 +42,19 @@ struct ReceiveChainSelectionScreen: View {
                 .cornerRadius(12)
             }
         }
-        .applySheetSize()
-        .sheetStyle()
         .onDisappear { viewModel.searchText = "" }
+        .crossPlatformToolbar("selectChain".localized, showsBackButton: false) {
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "x") {
+                    isPresented.toggle()
+                }
+            }
+        }
         .crossPlatformSheet(item: $selectedCoin) { coin in
             ReceiveQRCodeBottomSheet(
                 coin: coin,
-                isNativeCoin: true
+                isNativeCoin: true,
+                isPresented: Binding(get: { selectedCoin == nil }, set: { _ in selectedCoin = nil })
             ) { coin in
                 isPresented = false
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
@@ -56,6 +62,8 @@ struct ReceiveChainSelectionScreen: View {
                 }
             }
         }
+        .applySheetSize()
+        .sheetStyle() 
     }
     
     var list: some View {
