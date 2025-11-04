@@ -15,6 +15,8 @@ struct DefiButton: View {
     
     @Environment(\.isEnabled) var isEnabled
     
+    let iconSize: CGFloat = 12
+    let iconPadding: CGFloat = 4
     init(title: String, icon: String, type: ButtonType = .primary, action: @escaping () -> Void) {
         self.title = title
         self.icon = icon
@@ -29,17 +31,17 @@ struct DefiButton: View {
             #endif
             action()
         } label: {
-            PrimaryButtonView(title: title, paddingLeading: 14)
+            PrimaryButtonView(title: title, paddingLeading: (iconSize * 2 + iconPadding) / 2)
         }
         .buttonStyle(PrimaryButtonStyle(type: type,size: .small))
         .overlay(iconView, alignment: .leading)
     }
     
     var iconView: some View {
-        Icon(named: icon, color: Theme.colors.textPrimary, size: 12)
-            .padding(12)
+        Icon(named: icon, color: Theme.colors.textPrimary, size: iconSize)
+            .padding(iconSize)
             .background(Circle().fill(.white.opacity(0.12)))
-            .padding(.leading, 4)
+            .padding(.leading, iconPadding)
             .opacity(isEnabled ? 1 : 0.5)
     }
 }
