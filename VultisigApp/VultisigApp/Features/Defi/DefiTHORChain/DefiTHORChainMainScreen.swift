@@ -18,6 +18,8 @@ struct DefiTHORChainMainScreen: View {
     @State private var showPositionSelection = false
     @State var loadingBalances: Bool = false
     
+    @State private var transactionToPresent: FunctionTransactionType?
+    
     init(vault: Vault, group: GroupedChain) {
         self.vault = vault
         self.group = group
@@ -57,6 +59,9 @@ struct DefiTHORChainMainScreen: View {
             )
         }
         .crossPlatformToolbar(ignoresTopEdge: true) {}
+        .navigationDestination(item: $transactionToPresent) { transaction in
+            FunctionTransactionScreen(vault: vault, transactionType: transaction)
+        }
     }
     
     var positionsSegmentedControlView: some View {
@@ -78,12 +83,8 @@ struct DefiTHORChainMainScreen: View {
                     viewModel: bondViewModel,
                     coin: group.nativeCoin,
                     loadingBalances: $loadingBalances,
-                    onBond: { _ in
-                        // TODO: - Redirect to bond
-                    },
-                    onUnbond: { _ in
-                        // TODO: - Redirect to unbond
-                    },
+                    onBond: { transactionToPresent = .bond(node: $0?.address) },
+                    onUnbond: { transactionToPresent = .unbond(node: $0) },
                     emptyStateView: { emptyStateView }
                 )
             case .stake:
