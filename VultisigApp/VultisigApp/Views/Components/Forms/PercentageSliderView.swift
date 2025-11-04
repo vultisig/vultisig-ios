@@ -22,7 +22,7 @@ struct PercentageSliderView: View {
                 // Background track
                 RoundedRectangle(cornerRadius: 4)
                     .fill(Color.gray.opacity(0.3))
-                    .frame(height: 8)
+                    .frame(height: 4)
                 
                 HStack(spacing: 0) {
                     ForEach(0..<5) { index in
@@ -44,13 +44,9 @@ struct PercentageSliderView: View {
                     }
             }
             
-            Text(1.formatted(.percent))
+            Text(100.formatted(.percent))
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textExtraLight)
-        }
-        .onChange(of: percentage) { _, newValue in
-            guard let newValue else { return }
-            sliderValue = Double(min(0, max(100, newValue)))
         }
     }
 }

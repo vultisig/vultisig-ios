@@ -122,6 +122,10 @@ class Coin: ObservableObject, Codable, Hashable {
         value / pow(10, decimals)
     }
     
+    func decimalToCrypto(value: Decimal) -> Decimal {
+        value * pow(10, decimals)
+    }
+    
     func formatWithTicker(value: Decimal) -> String {
         "\(valueWithDecimals(value: value).formatForDisplay()) \(ticker)"
     }

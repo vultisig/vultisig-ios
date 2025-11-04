@@ -20,18 +20,23 @@ struct FunctionTransactionScreen: View {
         ZStack {
             switch transactionType {
             case .bond(let node):
-                if let runeCoin = vault.runeCoin {
-                    BondTransactionScreen(
-                        viewModel: BondTransactionViewModel(
-                            coin: runeCoin,
-                            vault: vault,
-                            initialBondAddress: node
-                        ),
-                        onVerify: onVerify
-                    )
-                }
-            case .unbond:
-                EmptyView()
+                BondTransactionScreen(
+                    viewModel: BondTransactionViewModel(
+                        coin: vault.runeCoin ?? vault.coins[0],
+                        vault: vault,
+                        initialBondAddress: node
+                    ),
+                    onVerify: onVerify
+                )
+            case .unbond(let node):
+                UnbondTransactionScreen(
+                    viewModel: UnbondTransactionViewModel(
+                        coin: vault.runeCoin ?? vault.coins[0],
+                        vault: vault,
+                        bondAddress: node.address
+                    ),
+                    onVerify: onVerify
+                )
             }
         }
         .withLoading(isLoading: $isLoading)

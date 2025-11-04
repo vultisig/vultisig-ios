@@ -15,19 +15,8 @@ final class BondTransactionViewModel: ObservableObject, Form {
     
     @Published var validForm: Bool = false
     
-    @Published var addressField = FormField(
-        label: "address".localized,
-        placeholder: "enterAddress".localized,
-        validators: [
-            RequiredValidator(errorMessage: "emptyAddressField".localized),
-            AddressValidator(chain: .thorChain)
-        ]
-    )
-    @Published var providerField = FormField(
-        label: "providerLabel".localized,
-        placeholder: "provider".localized,
-        validators: [AddressValidator(chain: .thorChain)]
-    )
+    @Published var addressViewModel: AddressViewModel
+    @Published var providerViewModel: AddressViewModel
     @Published var amountField = FormField(
         label: "amount".localized,
         placeholder: "0 RUNE",
@@ -42,8 +31,8 @@ final class BondTransactionViewModel: ObservableObject, Form {
     
     private(set) var isMaxAmount: Bool = false
     private(set) lazy var form: [FormField] = [
-        addressField,
-        providerField,
+        addressViewModel.field,
+        providerViewModel.field,
         amountField,
         operatorFeeField
     ]
@@ -55,13 +44,18 @@ final class BondTransactionViewModel: ObservableObject, Form {
         self.coin = coin
         self.vault = vault
         self.initialBondAddress = initialBondAddress
+        self.addressViewModel = AddressViewModel(
+            coin: coin,
+            additionalValidators: [RequiredValidator(errorMessage: "emptyAddressField".localized)]
+        )
+        self.providerViewModel = AddressViewModel(label: "providerLabel".localized, coin: coin)
     }
     
     func onLoad() {
         setupForm()
         operatorFeeField.validators = [
             ClosureValidator { value in
-                if value.isEmpty && self.providerField.valid {
+                if value.isEmpty && self.providerViewModel.field.valid {
                     throw HelperError.runtimeError("operatorFeesError".localized)
                 }
             }
@@ -70,16 +64,7 @@ final class BondTransactionViewModel: ObservableObject, Form {
         amountField.validators.append(AmountBalanceValidator(balance: coin.balanceDecimal))
         
         if let initialBondAddress {
-            addressField.value = initialBondAddress
-        }
-    }
-    
-    func handle(addressResult: AddressResult?, isProvider: Bool) {
-        guard let addressResult else { return }
-        if isProvider {
-            providerField.value = addressResult.address
-        } else {
-            addressField.value = addressResult.address
+            addressViewModel.field.value = initialBondAddress
         }
     }
     
@@ -90,8 +75,8 @@ final class BondTransactionViewModel: ObservableObject, Form {
             coin: coin,
             amount: amountField.value.formatToDecimal(digits: coin.decimals),
             sendMaxAmount: isMaxAmount,
-            nodeAddress: addressField.value,
-            providerAddress: providerField.value,
+            nodeAddress: addressViewModel.field.value,
+            providerAddress: providerViewModel.field.value,
             operatorFee: Int64(operatorFeeField.value)
         )
     }

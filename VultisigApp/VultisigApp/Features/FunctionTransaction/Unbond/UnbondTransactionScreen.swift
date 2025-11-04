@@ -1,5 +1,5 @@
 //
-//  BondTransactionScreen.swift
+//  UnbondTransactionScreen.swift
 //  VultisigApp
 //
 //  Created by Gaston Mazzeo on 31/10/2025.
@@ -7,12 +7,12 @@
 
 import SwiftUI
 
-struct BondTransactionScreen: View {
+struct UnbondTransactionScreen: View {
     enum FocusedField {
         case address, amount
     }
     
-    @StateObject var viewModel: BondTransactionViewModel
+    @StateObject var viewModel: UnbondTransactionViewModel
     var onVerify: (TransactionBuilder) -> Void
     
     @State var focusedFieldBinding: FocusedField? = .none
@@ -38,6 +38,7 @@ struct BondTransactionScreen: View {
                 FunctionAddressField(viewModel: viewModel.addressViewModel)
                     .focused($focusedField, equals: .address)
                 FunctionAddressField(viewModel: viewModel.providerViewModel)
+                    .focused($focusedField, equals: .address)
             }
             
             FormExpandableSection(
@@ -53,21 +54,12 @@ struct BondTransactionScreen: View {
                 AmountTextField(
                     amount: $viewModel.amountField.value,
                     error: $viewModel.amountField.error,
-                    ticker: Chain.thorChain.ticker,
-                    type: .button,
-                    availableAmount: viewModel.coin.balanceDecimal,
+                    ticker: viewModel.coin.chain.ticker,
+                    type: .slider,
+                    availableAmount: viewModel.bondNodeFormattedAmount,
                     decimals: viewModel.coin.decimals,
                     percentage: $percentageSelected,
                 ).focused($focusedField, equals: .amount)
-                
-                CommonTextField(
-                    text: $viewModel.operatorFeeField.value,
-                    label: viewModel.operatorFeeField.label,
-                    placeholder: viewModel.operatorFeeField.placeholder ?? .empty,
-                    error: $viewModel.operatorFeeField.error,
-                    labelStyle: .secondary
-                )
-                .keyboardType(.decimalPad)
             }
         }
         .onLoad {
@@ -80,9 +72,6 @@ struct BondTransactionScreen: View {
         }
         .onChange(of: viewModel.addressViewModel.field.valid) { _, isValid in
             onAddressFill()
-        }
-        .onChange(of: viewModel.operatorFeeField.valid) { _, isValid in
-            try? viewModel.operatorFeeField.validateErrors()
         }
         .onChange(of: focusedFieldBinding) { oldValue, newValue in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -112,11 +101,11 @@ struct BondTransactionScreen: View {
 }
 
 #Preview {
-    BondTransactionScreen(
-        viewModel: BondTransactionViewModel(
+    UnbondTransactionScreen(
+        viewModel: UnbondTransactionViewModel(
             coin: .example,
             vault: .example,
-            initialBondAddress: nil
+            bondAddress: "thor1pe0pspu4ep85gxr5h9l6k49g024vemtr80hg4c"
         )
     ) { _ in }
 }

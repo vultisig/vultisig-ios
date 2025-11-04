@@ -8,6 +8,13 @@
 import Foundation
 
 struct AmountBalanceValidator: FormFieldValidator {
+    static let formatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale.current
+        return formatter
+    }()
+    
     let balance: Decimal
     
     enum ValidationError: LocalizedError {
@@ -25,7 +32,11 @@ struct AmountBalanceValidator: FormFieldValidator {
     }
     
     func validate(value: String) throws {
-        guard let amount = Decimal(string: value) else {
+        let amount: Decimal
+        
+        if let number = Self.formatter.number(from: value) {
+            amount = Decimal(string: number.stringValue) ?? 0
+        } else {
             throw ValidationError.invalidAmount
         }
         
