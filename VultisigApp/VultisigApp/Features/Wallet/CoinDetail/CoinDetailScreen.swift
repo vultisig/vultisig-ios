@@ -12,19 +12,27 @@ struct CoinDetailScreen: View {
     let vault: Vault
     @ObservedObject var group: GroupedChain
     @ObservedObject var sendTx: SendTransaction
+    @Binding var isPresented: Bool
     var onCoinAction: (VaultAction) -> Void
 
     @State var showReceiveSheet: Bool = false
     @State var addressToCopy: Coin?
     
     @StateObject var viewModel: CoinDetailViewModel
-    @Environment(\.dismiss) var dismiss
     
-    init(coin: Coin, vault: Vault, group: GroupedChain, sendTx: SendTransaction, onCoinAction: @escaping (VaultAction) -> Void) {
+    init(
+        coin: Coin,
+        vault: Vault,
+        group: GroupedChain,
+        sendTx: SendTransaction,
+        isPresented: Binding<Bool>,
+        onCoinAction: @escaping (VaultAction) -> Void
+    ) {
         self.coin = coin
         self.vault = vault
         self.group = group
         self.sendTx = sendTx
+        self._isPresented = isPresented
         self._viewModel = StateObject(wrappedValue: .init(coin: coin))
         self.onCoinAction = onCoinAction
     }
@@ -53,11 +61,13 @@ struct CoinDetailScreen: View {
         .presentationDetents([isIPadOS ? .large : .medium])
         .presentationBackground(Theme.colors.bgSecondary)
         .presentationDragIndicator(.visible)
-        .applySheetSize()
+        .background(Theme.colors.bgSecondary)
+        .applySheetSize(700, 450)
         .crossPlatformSheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(
                 coin: coin,
-                isNativeCoin: false
+                isNativeCoin: false,
+                onClose: { showReceiveSheet = false }
             ) { coin in
                 showReceiveSheet = false
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
@@ -65,7 +75,13 @@ struct CoinDetailScreen: View {
                 }
             }
         }
-        .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: true)
+        .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "x") {
+                    isPresented.toggle()
+                }
+            }
+        }
     }
 }
 
@@ -111,6 +127,7 @@ private extension CoinDetailScreen {
         vault: .example,
         group: .example,
         sendTx: .init(),
+        isPresented: .constant(true),
         onCoinAction: { _ in}
     )
 }

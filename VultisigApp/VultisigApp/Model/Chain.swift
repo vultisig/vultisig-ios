@@ -45,6 +45,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case zcash
     case mantle
     case hyperliquid
+    case sei
     
     
     enum MigrationKeys: String, CodingKey {
@@ -91,13 +92,14 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .zcash: return "Zcash"
         case .mantle: return "Mantle"
         case .hyperliquid: return "Hyperliquid"
+        case .sei: return "Sei"
         }
     }
     var feeUnit: String{
         switch self {
         case .thorChain, .thorChainStagenet: return "RUNE"
         case .solana: return "SOL"
-        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon, .polygonV2,.optimism,.bscChain,.cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid: return "Gwei"
+        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon, .polygonV2,.optimism,.bscChain,.cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid, .sei: return "Gwei"
         case .bitcoin: return "BTC/vbyte"
         case .bitcoinCash: return "BCH/vbyte"
         case .litecoin: return "LTC/vbyte"
@@ -160,6 +162,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .zcash: return "ZEC"
         case .mantle: return "MNT"
         case .hyperliquid: return "HYPE"
+        case .sei: return "SEI"
         }
     }
     
@@ -202,6 +205,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .zcash: return "ZEC"
         case .mantle: return "MANTLE"
         case .hyperliquid: return "HYPE"
+        case .sei: return "SEI"
         }
     }
     
@@ -216,7 +220,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     
     var chainType: ChainType {
         switch self {
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync,.ethereumSepolia, .mantle, .hyperliquid:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync,.ethereumSepolia, .mantle, .hyperliquid, .sei:
             return .EVM
         case .thorChain, .thorChainStagenet, .mayaChain:
             return .THORChain
@@ -315,6 +319,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return "mantle"
         case .hyperliquid:
             return "hyperliquid"
+        case .sei:
+            return "sei"
         }
     }
     
@@ -350,6 +356,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return 5000
         case .hyperliquid:
             return 999
+        case .sei:
+            return 1329
         case .thorChain, .thorChainStagenet, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron, .zcash, .cardano:
             return nil
         }
@@ -428,6 +436,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return CoinType.mantle
         case .hyperliquid:
             return CoinType.ethereum
+        case .sei:
+            return CoinType.ethereum
         }
     }
    
@@ -481,7 +491,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             .noble,
             .akash,
             .ethereumSepolia,
-            .hyperliquid:
+            .hyperliquid,
+            .sei:
             return false
         }
     }
@@ -492,7 +503,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return .THORChain
         case .solana:
             return .Solana
-        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon, .polygonV2,.optimism,.bscChain,.cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid:
+        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon, .polygonV2,.optimism,.bscChain,.cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid, .sei:
             return .EVM
         case .bitcoin,.bitcoinCash,.litecoin,.dogecoin,.dash, .zcash:
             return .UTXO
@@ -519,7 +530,7 @@ extension Chain {
         switch self {
         case .bscChain:
             return false
-        case .ethereum, .avalanche, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .ethereumSepolia, .mantle, .hyperliquid:
+        case .ethereum, .avalanche, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .ethereumSepolia, .mantle, .hyperliquid, .sei:
             return true
         default:
             return true

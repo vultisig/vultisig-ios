@@ -98,8 +98,9 @@ class Coin: ObservableObject, Codable, Hashable {
         return value
     }
     var combinedBalanceDecimal: Decimal {
-        let combined = balanceDecimal + stakedBalanceDecimal
-        return combined
+        // Only return the available balance, excluding staked/bonded amounts
+        // Staked/bonded amounts are shown separately in the DeFi tab
+        return balanceDecimal
     }
     
     var balanceString: String {
@@ -155,7 +156,7 @@ class Coin: ObservableObject, Codable, Hashable {
             return "2000000000"
         case .solana:
             return SolanaHelper.defaultFeeInLamports.description
-        case .ethereum,.avalanche, .bscChain,.ethereumSepolia, .hyperliquid:
+        case .ethereum,.avalanche, .bscChain,.ethereumSepolia, .hyperliquid, .sei:
             if self.isNativeToken {
                 return "23000"
             } else {

@@ -36,6 +36,9 @@ struct HomeScreen: View {
     @State var showPortfolioHeader: Bool = false
     @State var shouldRefresh: Bool = false
     
+    // Capture geometry height to avoid circular layout dependency during sheet presentation
+    @State private var capturedGeometryHeight: CGFloat = 600
+    
     @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
@@ -122,6 +125,16 @@ struct HomeScreen: View {
                 
                 header(vault: selectedVault)
             }
+            .onAppear {
+                // Capture geometry height to avoid circular layout dependency
+                capturedGeometryHeight = geo.size.height
+            }
+            .onChange(of: geo.size.height) { _, newHeight in
+                // Update captured height when geometry changes (but not during sheet presentation)
+                if !showVaultSelector {
+                    capturedGeometryHeight = newHeight
+                }
+            }
             .sensoryFeedback(homeViewModel.showAlert ? .stop : .impact, trigger: homeViewModel.showAlert)
             .customNavigationBarHidden(true)
             .withAddressCopy(coin: $addressToCopy)
@@ -150,7 +163,11 @@ struct HomeScreen: View {
 #else
             .crossPlatformSheet(isPresented: $showScanner) {
                 if ProcessInfo.processInfo.isiOSAppOnMac {
-                    GeneralQRImportMacView(type: .SignTransaction, selectedVault: selectedVault) { _ in }
+                    GeneralQRImportMacView(type: .SignTransaction, selectedVault: selectedVault) {
+                        guard let url = URL(string: $0) else { return }
+                        deeplinkViewModel.extractParameters(url, vaults: vaults)
+                        presetValuesForDeeplink()
+                    }
                 } else {
                     GeneralCodeScannerView(
                         showSheet: $showScanner,
@@ -186,7 +203,7 @@ struct HomeScreen: View {
                 }
             }
             .crossPlatformSheet(isPresented: $showVaultSelector) {
-                VaultManagementSheet(availableHeight: geo.size.height) {
+                VaultManagementSheet(isPresented: $showVaultSelector, availableHeight: capturedGeometryHeight) {
                     showVaultSelector.toggle()
                     vaultRoute = .createVault
                 } onSelectVault: { vault in

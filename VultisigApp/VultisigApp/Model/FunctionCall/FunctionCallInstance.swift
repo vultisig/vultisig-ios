@@ -452,7 +452,7 @@ enum FunctionCallInstance {
         switch coin.chain {
         case .thorChain:
             if coin.ticker.uppercased() == "TCY" {
-                return .custom(FunctionCallCustom())
+                return .custom(FunctionCallCustom(tx: tx, vault: vault))
             }
             return .bond(FunctionCallBond(tx: tx, vault: vault))
         case .mayaChain:
@@ -468,7 +468,7 @@ enum FunctionCallInstance {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
             return .addThorLP(FunctionCallAddThorLP(tx: tx, vault: vault))
         default:
-            return .custom(FunctionCallCustom())
+            return .custom(FunctionCallCustom(tx: tx, vault: vault))
         }
     }
     

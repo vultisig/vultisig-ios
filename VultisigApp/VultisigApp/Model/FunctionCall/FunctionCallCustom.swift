@@ -16,9 +16,18 @@ class FunctionCallCustom: FunctionCallAddressable, ObservableObject {
     @Published var amount: Decimal = 0.0
     @Published var custom: String = ""
     
+    // Token selection
+    @Published var tokens: [IdentifiableString] = []
+    @Published var tokenValid: Bool = false
+    @Published var selectedToken: IdentifiableString = .init(value: "Select Token")
+    @Published var balanceLabel: String = "( Select a token )"
+    
     // Internal
     @Published var amountValid: Bool = false
     @Published var customValid: Bool = false
+    
+    @ObservedObject var tx: SendTransaction
+    private var vault: Vault
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -27,20 +36,75 @@ class FunctionCallCustom: FunctionCallAddressable, ObservableObject {
         set { }
     }
     
-    required init() {
+    required init(tx: SendTransaction, vault: Vault) {
+        self.tx = tx
+        self.vault = vault
     }
     
-    init(custom: String) {
+    init(custom: String, tx: SendTransaction, vault: Vault) {
         self.custom = custom
+        self.tx = tx
+        self.vault = vault
     }
     
     func initialize() {
         setupValidation()
+        loadTokens()
+        preSelectToken()
+    }
+    
+    private func loadTokens() {
+        // Load THORChain tokens from vault: RUNE, RUJI, TCY
+        let thorchainCoins = vault.coins.filter { $0.chain == .thorChain }
+        
+        for coin in thorchainCoins {
+            let ticker = coin.ticker.uppercased()
+            // Add RUNE (native), RUJI, and TCY
+            if ticker == "RUNE" || ticker == "RUJI" || ticker == "TCY" {
+                tokens.append(.init(value: ticker))
+            }
+        }
+        
+        // If no tokens found, at least add RUNE if we're on THORChain
+        if tokens.isEmpty && tx.coin.chain == .thorChain {
+            tokens.append(.init(value: "RUNE"))
+        }
+    }
+    
+    private func preSelectToken() {
+        // Pre-select the current transaction coin if it's in the list
+        let currentTicker = tx.coin.ticker.uppercased()
+        if let match = tokens.first(where: { $0.value == currentTicker }) {
+            selectedToken = match
+            tokenValid = true
+            updateBalanceLabel()
+        }
+    }
+    
+    var selectedVaultCoin: Coin? {
+        let ticker = selectedToken.value.lowercased()
+        
+        for coin in vault.coins {
+            if coin.chain == .thorChain && coin.ticker.lowercased() == ticker {
+                return coin
+            }
+        }
+        
+        return nil
+    }
+    
+    func updateBalanceLabel() {
+        if let coin = selectedVaultCoin {
+            let balance = coin.balanceDecimal.formatForDisplay()
+            balanceLabel = "Amount ( Balance: \(balance) \(coin.ticker.uppercased()) )"
+        } else {
+            balanceLabel = "Amount ( Select a token )"
+        }
     }
     
     private func setupValidation() {
-        Publishers.CombineLatest($amountValid, $customValid)
-            .map { $0 && $1 }
+        Publishers.CombineLatest3($amountValid, $customValid, $tokenValid)
+            .map { $0 && $1 && $2 }
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }
@@ -60,34 +124,81 @@ class FunctionCallCustom: FunctionCallAddressable, ObservableObject {
     }
     
     func getView() -> AnyView {
-        AnyView(VStack {
+        AnyView(FunctionCallCustomView(viewModel: self).onAppear {
+            self.initialize()
+        })
+    }
+}
+
+private struct FunctionCallCustomView: View {
+    @ObservedObject var viewModel: FunctionCallCustom
+    
+    var body: some View {
+        VStack {
+            // Token selection dropdown
+            GenericSelectorDropDown(
+                items: Binding(
+                    get: { viewModel.tokens },
+                    set: { viewModel.tokens = $0 }
+                ),
+                selected: Binding(
+                    get: { viewModel.selectedToken },
+                    set: { viewModel.selectedToken = $0 }
+                ),
+                mandatoryMessage: "*",
+                descriptionProvider: { $0.value },
+                onSelect: { token in
+                    viewModel.selectedToken = token
+                    viewModel.tokenValid = token.value.lowercased() != "select token"
+                    
+                    if let coin = viewModel.selectedVaultCoin {
+                        withAnimation {
+                            viewModel.updateBalanceLabel()
+                            
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                viewModel.tx.coin = coin
+                                viewModel.objectWillChange.send()
+                            }
+                        }
+                    } else {
+                        viewModel.balanceLabel = "Amount ( Select a token )"
+                        viewModel.objectWillChange.send()
+                    }
+                }
+            )
+            
             StyledFloatingPointField(
-                label: NSLocalizedString("amount", comment: ""),
-                placeholder: NSLocalizedString("enterAmount", comment: ""),
+                label: viewModel.balanceLabel,
+                placeholder: viewModel.balanceLabel,
                 value: Binding(
-                    get: { self.amount },
-                    set: { self.amount = $0 }
+                    get: { viewModel.amount },
+                    set: {
+                        viewModel.amount = $0
+                        DispatchQueue.main.async {
+                            viewModel.objectWillChange.send()
+                        }
+                    }
                 ),
                 isValid: Binding(
-                    get: { self.amountValid },
-                    set: { self.amountValid = $0 }
+                    get: { viewModel.amountValid },
+                    set: { viewModel.amountValid = $0 }
                 ),
                 isOptional: true
             )
+            .id("field-\(viewModel.balanceLabel)-\(viewModel.amount)")
+            
             StyledTextField(
                 placeholder: "Custom Memo",
                 text: Binding(
-                    get: { self.custom },
-                    set: { self.custom = $0 }
+                    get: { viewModel.custom },
+                    set: { viewModel.custom = $0 }
                 ),
                 maxLengthSize: Int.max,
                 isValid: Binding(
-                    get: { self.customValid },
-                    set: { self.customValid = $0 }
+                    get: { viewModel.customValid },
+                    set: { viewModel.customValid = $0 }
                 )
             )
-        }.onAppear {
-            self.initialize()
-        })
+        }
     }
 }

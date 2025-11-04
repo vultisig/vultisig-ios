@@ -10,6 +10,7 @@ import Foundation
 enum ZipFileError: Error {
     case urlNotADirectory(URL)
     case failedToCreateZIP(Swift.Error)
+    case failedToExtractZIP(String)
 }
 
 struct ZipFileGenerator {
