@@ -163,7 +163,11 @@ struct HomeScreen: View {
 #else
             .crossPlatformSheet(isPresented: $showScanner) {
                 if ProcessInfo.processInfo.isiOSAppOnMac {
-                    GeneralQRImportMacView(type: .SignTransaction, selectedVault: selectedVault) { _ in }
+                    GeneralQRImportMacView(type: .SignTransaction, selectedVault: selectedVault) {
+                        guard let url = URL(string: $0) else { return }
+                        deeplinkViewModel.extractParameters(url, vaults: vaults)
+                        presetValuesForDeeplink()
+                    }
                 } else {
                     GeneralCodeScannerView(
                         showSheet: $showScanner,

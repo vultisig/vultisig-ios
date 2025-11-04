@@ -60,6 +60,8 @@ struct SendCryptoAddressTextField: View {
         
         if let memo = addressResult.memo, memo.isNotEmpty {
             tx.memo = memo
+        } else {
+            tx.memo = .empty
         }
 
         DebounceHelper.shared.debounce {
