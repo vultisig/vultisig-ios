@@ -15,6 +15,7 @@ struct SendDetailsAmountTab: View {
     let validateForm: () async -> ()
     @FocusState.Binding var focusedField: Field?
     @Binding var settingsPresented: Bool
+    @State var percentage: Int?
     
     var body: some View {
         content
@@ -103,11 +104,13 @@ struct SendDetailsAmountTab: View {
     @ViewBuilder
     var percentageButtons: some View {
         let isDisabled = sendCryptoViewModel.isLoading || tx.isCalculatingFee
-        PercentageButtonsStack {
-            sendCryptoViewModel.setMaxValues(tx: tx, percentage: Double($0))
-        }
+        PercentageButtonsStack(selectedPercentage: $percentage)
         .opacity(isDisabled ? 0.5 : 1.0)
         .disabled(isDisabled)
+        .onChange(of: percentage) { _, newValue in
+            guard let newValue else { return }
+            sendCryptoViewModel.setMaxValues(tx: tx, percentage: Double(newValue))
+        }
     }
     
     var balanceSection: some View {

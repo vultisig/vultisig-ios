@@ -36,7 +36,7 @@ final class BondTransactionViewModel: ObservableObject, Form {
             RequiredValidator(errorMessage: "emptyAmountField".localized)
         ]
     )
-    @Published var operatorFee = FormField(
+    @Published var operatorFeeField = FormField(
         label: "operatorFeesLabel".localized,
         placeholder: "0"
     )
@@ -45,7 +45,7 @@ final class BondTransactionViewModel: ObservableObject, Form {
         addressField,
         providerField,
         amountField,
-        operatorFee
+        operatorFeeField
     ]
     
     var formCancellable: AnyCancellable?
@@ -59,7 +59,7 @@ final class BondTransactionViewModel: ObservableObject, Form {
     
     func onLoad() {
         setupForm()
-        operatorFee.validators = [
+        operatorFeeField.validators = [
             ClosureValidator { value in
                 if value.isEmpty && self.providerField.valid {
                     throw HelperError.runtimeError("operatorFeesError".localized)
@@ -99,11 +99,7 @@ final class BondTransactionViewModel: ObservableObject, Form {
     }
     
     func onPercentage(_ percentage: Int) {
-        let max = coin.balanceDecimal
-        let multiplier = (Decimal(percentage) / 100)
-        let amountDecimal = max * multiplier
-        sendTx.amount = amountDecimal.formatToDecimal(digits: coin.decimals)
-        amountField.value = sendTx.amount
+        sendTx.sendMaxAmount = percentage == 100
     }
     
     func buildMemo() -> String {
@@ -111,7 +107,7 @@ final class BondTransactionViewModel: ObservableObject, Form {
         if !providerField.value.isEmpty {
             memo += ":\(providerField.value)"
         }
-        let operatorFeeInt = Int64(operatorFee.value)
+        let operatorFeeInt = Int64(operatorFeeField.value)
         if let operatorFeeInt, operatorFeeInt != .zero {
             if providerField.value.isEmpty {
                 memo += "::\(operatorFeeInt)"
@@ -126,7 +122,7 @@ final class BondTransactionViewModel: ObservableObject, Form {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("nodeAddress", addressField.value)
         dict.set("provider", providerField.value)
-        dict.set("fee", "\(Int64(operatorFee.value) ?? 0)")
+        dict.set("fee", "\(Int64(operatorFeeField.value) ?? 0)")
         dict.set("memo", buildMemo())
         return dict
     }

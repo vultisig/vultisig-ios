@@ -18,6 +18,7 @@ struct BondTransactionScreen: View {
     
     @State var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?
+    @State var percentageSelected: Int?
     
     var body: some View {
         TransactionFormScreen(
@@ -67,16 +68,18 @@ struct BondTransactionScreen: View {
                     amount: $viewModel.amountField.value,
                     error: $viewModel.amountField.error,
                     ticker: Chain.thorChain.ticker,
-                    type: .button
-                ) {
-                    viewModel.onPercentage($0)
-                }.focused($focusedField, equals: .amount)
+                    type: .button,
+                    availableAmount: viewModel.coin.balanceDecimal,
+                    decimals: viewModel.coin.decimals,
+                    percentage: $percentageSelected,
+                ).focused($focusedField, equals: .amount)
+                
                 
                 CommonTextField(
-                    text: $viewModel.operatorFee.value,
-                    label: viewModel.operatorFee.label,
-                    placeholder: viewModel.operatorFee.placeholder ?? .empty,
-                    error: $viewModel.operatorFee.error,
+                    text: $viewModel.operatorFeeField.value,
+                    label: viewModel.operatorFeeField.label,
+                    placeholder: viewModel.operatorFeeField.placeholder ?? .empty,
+                    error: $viewModel.operatorFeeField.error,
                     labelStyle: .secondary
                 )
                 .keyboardType(.decimalPad)
@@ -89,11 +92,15 @@ struct BondTransactionScreen: View {
             viewModel.onLoad()
             onAddressFill()
         }
+        .onChange(of: percentageSelected) { _, newValue in
+            guard let newValue else { return }
+            viewModel.onPercentage(newValue)
+        }
         .onChange(of: viewModel.addressField.valid) { _, isValid in
             onAddressFill()
         }
-        .onChange(of: viewModel.operatorFee.valid) { _, isValid in
-            try? viewModel.operatorFee.validateErrors()
+        .onChange(of: viewModel.operatorFeeField.valid) { _, isValid in
+            try? viewModel.operatorFeeField.validateErrors()
         }
         .onChange(of: focusedFieldBinding) { oldValue, newValue in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {

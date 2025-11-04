@@ -16,35 +16,36 @@ struct AmountTextField: View {
     @Binding var error: String?
     let ticker: String
     let type: PercentageFieldType
-    var onPercentage: (Int) -> Void
+    let availableAmount: Decimal
+    let decimals: Int
+    @Binding var percentage: Int?
     
-    @State var percentage: Int?
+    @State var amountInternal: String = ""
     
     var body: some View {
         GeometryReader { geo in
             VStack(spacing: 0) {
                 Spacer()
-                ZStack(alignment: .bottom) {
+                VStack(spacing: 4) {
                     HStack(spacing: 4) {
-                        TextField("0", text: $amount)
+                        TextField("0", text: $amountInternal)
                             .autocorrectionDisabled(true)
                             .multilineTextAlignment(.trailing)
                             .font(Theme.fonts.largeTitle)
                             .foregroundStyle(Theme.colors.textPrimary)
                             .keyboardType(.decimalPad)
                             .fixedSize()
-                        
                         Text(ticker)
                             .font(Theme.fonts.largeTitle)
                             .foregroundStyle(Theme.colors.textPrimary)
+                            .fixedSize()
                     }
                     .frame(maxWidth: geo.size.width)
 
                     if let percentage {
-                        Text("\(percentage)%")
+                        Text((Double(percentage) / 100).formatted(.percent))
                             .font(Theme.fonts.subtitle)
                             .foregroundStyle(Theme.colors.textExtraLight)
-                            .offset(y: 16)
                     }
                 }
                 Spacer()
@@ -57,8 +58,23 @@ struct AmountTextField: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     percentageView
+                    availableBalanceView
                 }
             }
+        }
+        .onChange(of: amountInternal) { _, newValue in
+            guard amount != newValue else { return }
+            amount = newValue
+            percentage = nil
+        }
+        .onChange(of: amount) { _, newValue in
+            amountInternal = newValue
+        }
+        .onChange(of: percentage) { _, percentage in
+            guard let percentage else { return }
+            let multiplier = (Decimal(percentage) / 100)
+            let amountDecimal = availableAmount * multiplier
+            amount = amountDecimal.formatToDecimal(digits: decimals)
         }
     }
     
@@ -66,15 +82,22 @@ struct AmountTextField: View {
     var percentageView: some View {
         switch type {
         case .button:
-            PercentageButtonsStack {
-                onPercentage($0)
-            }
+            PercentageButtonsStack(selectedPercentage: $percentage)
         case .slider:
-            PercentageSliderView {
-                percentage = $0
-                onPercentage($0)
-            }
+            PercentageSliderView(percentage: $percentage)
         }
+    }
+    
+    var availableBalanceView: some View {
+        HStack {
+            Text("balanceAvailable".localized)
+                .foregroundStyle(Theme.colors.textPrimary)
+            Spacer()
+            Text("\(availableAmount.formatted(.number.precision(.fractionLength(4)))) \(ticker)")
+                .foregroundStyle(Theme.colors.textLight)
+        }
+        .font(Theme.fonts.bodySMedium)
+        .padding(.top, 4)
     }
 }
 
@@ -86,15 +109,21 @@ struct AmountTextField: View {
             amount: $amount,
             error: .constant(nil),
             ticker: "RUNE",
-            type: .button
-        ) { _ in }
+            type: .button,
+            availableAmount: 100,
+            decimals: 6,
+            percentage: .constant(nil)
+        )
         
         AmountTextField(
             amount: $amount,
             error: .constant(nil),
             ticker: "RUNE",
-            type: .slider
-        ) { _ in }
+            type: .slider,
+            availableAmount: 100,
+            decimals: 6,
+            percentage: .constant(nil)
+        )
     }
     .padding()
     .background(Theme.colors.bgPrimary)
