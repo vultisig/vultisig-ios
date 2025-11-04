@@ -76,7 +76,7 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
                 }
                 .scrollTargetBehavior(.viewAligned)
                 .scrollPosition(id: $scrollPosition, anchor: .center)
-                .scrollIndicators(.hidden)
+                .scrollIndicators(.never)
                 
                 VaultBannerCarouselIndicators(
                     currentIndex: $currentIndex,
