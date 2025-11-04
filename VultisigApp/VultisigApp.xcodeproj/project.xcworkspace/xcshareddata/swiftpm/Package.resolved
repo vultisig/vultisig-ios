@@ -33,7 +33,7 @@
       "location" : "https://github.com/vultisig/commondata",
       "state" : {
         "branch" : "main",
-        "revision" : "52ec73eb3df761e3060d9c53d5f879fba51a6a62"
+        "revision" : "bf1be8a9e3ede89a903c50c44dce684ff4a933dd"
       }
     },
     {
@@ -66,7 +66,7 @@
     {
       "identity" : "swifter",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/httpswift/swifter",
+      "location" : "https://github.com/httpswift/swifter.git",
       "state" : {
         "revision" : "9483a5d459b45c3ffd059f7b55f9638e268632fd",
         "version" : "1.5.0"
@@ -79,6 +79,15 @@
       "state" : {
         "revision" : "d15efc71eda9f29dc183931276244e504bdf5716",
         "version" : "4.3.19"
+      }
+    },
+    {
+      "identity" : "zipfoundation",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/weichsel/ZIPFoundation",
+      "state" : {
+        "revision" : "22787ffb59de99e5dc1fbfe80b19c97a904ad48d",
+        "version" : "0.9.20"
       }
     }
   ],

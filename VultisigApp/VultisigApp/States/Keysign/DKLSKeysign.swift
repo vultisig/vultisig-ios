@@ -127,21 +127,29 @@ final class DKLSKeysign {
         let byteArray = DKLSHelper.arrayToBytes(parties: self.keysignCommittee)
         var ids = byteArray.to_dkls_goslice()
         
-        let chainPathArr = [UInt8](self.chainPath.replacingOccurrences(of: "'", with: "").data(using: .utf8)!)
-        var chainPathSlice = chainPathArr.to_dkls_goslice()
-        
         let decodedMsgData = Data(hexString: message)
         guard let decodedMsgData else {
             throw HelperError.runtimeError("fail to hex decoded the message to sign")
         }
         let msgArr = [UInt8](decodedMsgData)
         var msgSlice = msgArr.to_dkls_goslice()
-        
-        let err = dkls_sign_setupmsg_new(&keyIdSlice,&chainPathSlice,&msgSlice,&ids,&buf)
+        let err: godkls.lib_error
+        // For multi-chain vaults using DKLS keys, only unhardened HD derivation is supported.
+        // For vaults imported from a seed phrase/private key, only a single chain is supported (no derivation path).
+        if !self.chainPath.isEmpty {
+            guard let chainPathData = self.chainPath.replacingOccurrences(of: "'", with: "").data(using: .utf8) else {
+                throw HelperError.runtimeError("fail to encode chainPath to UTF-8")
+            }
+            let chainPathArr = [UInt8](chainPathData)
+            var chainPathSlice = chainPathArr.to_dkls_goslice()
+            err = dkls_sign_setupmsg_new(&keyIdSlice,&chainPathSlice,&msgSlice,&ids,&buf)
+            
+        } else {
+            err = dkls_sign_setupmsg_new(&keyIdSlice,nil,&msgSlice,&ids,&buf)
+        }
         if err != DKLS_LIB_OK {
             throw HelperError.runtimeError("fail to setup keysign message, dkls error:\(err)")
         }
-        
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
     
@@ -361,7 +369,7 @@ final class DKLSKeysign {
             if result != DKLS_LIB_OK {
                 throw HelperError.runtimeError("fail to create keyshare handle from bytes, \(result)")
             }
-
+            
             defer {
                 dkls_keyshare_free(&keyshareHandle)
             }
@@ -428,3 +436,4 @@ final class DKLSKeysign {
     }
     
 }
+

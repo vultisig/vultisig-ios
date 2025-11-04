@@ -120,6 +120,14 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                         encryptionPassword: config.password,
                                         email: config.email,
                                         lib_type: vault.libType == .DKLS ? 1 : 0)
+            case .KeyImport:
+                fastVaultService.keyImport(name: vault.name,
+                                        sessionID: sessionID,
+                                        hexEncryptionKey: encryptionKeyHex!,
+                                        hexChainCode: vault.hexChainCode,
+                                        encryptionPassword: config.password,
+                                        email: config.email,
+                                        lib_type: 2)
             case .Reshare:
                 let pubKeyECDSA = config.isExist ? vault.pubKeyECDSA : .empty
                 fastVaultService.reshare(name: vault.name,
@@ -284,7 +292,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         do {
             guard let encryptionKeyHex else { return nil }
             switch tssType {
-            case .Keygen:
+            case .Keygen, .KeyImport:
                 let keygenMsg = KeygenMessage(
                     sessionID: sessionID,
                     hexChainCode: vault.hexChainCode,

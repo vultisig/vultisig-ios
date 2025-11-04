@@ -32,6 +32,9 @@ struct VaultMainScreen: View {
     @State var scrollProxy: ScrollViewProxy?
     @State var frameHeight: CGFloat = 0
     
+    // Capture geometry width to avoid circular layout dependency during sheet presentation
+    @State private var capturedGeometryWidth: CGFloat = 400
+    
     private let scrollReferenceId = "vaultMainScreenBottomContentId"
     private let contentInset: CGFloat = 78
     private let horizontalPadding: CGFloat = 16
@@ -46,7 +49,7 @@ struct VaultMainScreen: View {
                         scrollOffset: $scrollOffset
                     ) {
                         LazyVStack(spacing: 20) {
-                            topContentSection(width: geo.size.width)
+                            topContentSection(width: capturedGeometryWidth)
                             Group {
                                 Separator(color: Theme.colors.borderLight, opacity: 1)
                                 bottomContentSection
@@ -61,6 +64,16 @@ struct VaultMainScreen: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .background(VaultMainScreenBackground())
+                .onAppear {
+                    // Capture geometry width to avoid circular layout dependency
+                    capturedGeometryWidth = geo.size.width
+                }
+                .onChange(of: geo.size.width) { _, newWidth in
+                    // Update captured width when geometry changes (but not during sheet presentation)
+                    if !showChainSelection && !showReceiveList {
+                        capturedGeometryWidth = newWidth
+                    }
+                }
                 .onChange(of: scrollOffset) { _, newValue in
                     onScrollOffsetChange(newValue)
                 }
