@@ -12,17 +12,20 @@ struct PrimaryButtonView: View {
     let leadingIcon: String?
     let trailingIcon: String?
     let isLoading: Bool
+    let paddingLeading: CGFloat
     
     init(
         title: String,
         leadingIcon: String? = nil,
         trailingIcon: String? = nil,
-        isLoading: Bool = false
+        isLoading: Bool = false,
+        paddingLeading: CGFloat = 0
     ) {
         self.title = title
         self.leadingIcon = leadingIcon
         self.trailingIcon = trailingIcon
         self.isLoading = isLoading
+        self.paddingLeading = paddingLeading
     }
     
     var body: some View {
@@ -30,14 +33,16 @@ struct PrimaryButtonView: View {
             if let leadingIcon {
                 Icon(named: leadingIcon, color: Theme.colors.textPrimary, size: 15)
             }
+            Spacer()
             
             Text(NSLocalizedString(title, comment: "Button Text"))
                 .fixedSize(horizontal: true, vertical: false)
+                .padding(.leading, paddingLeading)
             
             if let trailingIcon {
                 Icon(named: trailingIcon, color: Theme.colors.textPrimary, size: 15)
             }
-            
+            Spacer()
             if isLoading {
                 ProgressView()
                     .scaleEffect(0.7)
