@@ -121,8 +121,11 @@ struct SendDetailsScreen: View {
                 )
                 .environmentObject(coinSelectionViewModel)
             }
-            .alert(isPresented: $sendDetailsViewModel.showAddChainAlert) {
-                addChainAlert
+            .onChange(of: sendDetailsViewModel.needsToAddChain) { oldValue, newValue in
+                if newValue {
+                    // Automatically add the detected chain without asking
+                    addDetectedChainAutomatically()
+                }
             }
     }
     
@@ -150,25 +153,6 @@ struct SendDetailsScreen: View {
             title: Text(NSLocalizedString(sendCryptoViewModel.errorTitle, comment: "")),
             message: Text(NSLocalizedString(sendCryptoViewModel.errorMessage, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-        )
-    }
-    
-    var addChainAlert: Alert {
-        let chainName = sendDetailsViewModel.detectedChain?.name ?? ""
-        let message = NSLocalizedString("addNewChainToVault1", comment: "") + chainName + NSLocalizedString("addNewChainToVault2", comment: "")
-        
-        return Alert(
-            title: Text(NSLocalizedString("newChainDetected", comment: "")),
-            message: Text(message),
-            primaryButton: .default(
-                Text(NSLocalizedString("addChain", comment: "")),
-                action: {
-                    addDetectedChain()
-                }
-            ),
-            secondaryButton: .cancel(
-                Text(NSLocalizedString("cancel", comment: ""))
-            )
         )
     }
     
@@ -514,16 +498,24 @@ extension SendDetailsScreen {
         }
     }
     
-    private func addDetectedChain() {
+    private func addDetectedChainAutomatically() {
         guard let chain = sendDetailsViewModel.detectedChain else { return }
+        
+        print("➕ Adding detected chain automatically: \(chain.name)")
+        
+        // Reset flag immediately
+        sendDetailsViewModel.needsToAddChain = false
         
         // Find the native token CoinMeta for this chain from TokensStore
         guard let chainMeta = TokensStore.TokenSelectionAssets.first(where: { 
             $0.chain == chain && $0.isNativeToken 
         }) else {
-            print("Native token not found for chain: \(chain.name)")
+            print("❌ Native token not found for chain: \(chain.name)")
             return
         }
+        
+        // Show loader while adding
+        sendCryptoViewModel.isValidatingForm = true
         
         // Add to selection and save
         var selection = coinSelectionViewModel.selection
@@ -532,10 +524,48 @@ extension SendDetailsScreen {
         Task {
             await CoinService.saveAssets(for: vault, selection: selection)
             
-            // After adding, switch to the new chain
+            print("✅ Chain added successfully: \(chain.name)")
+            
+            // After adding, find the newly created coin and switch to it
             await MainActor.run {
-                sendDetailsViewModel.selectedChain = chain
-                sendDetailsViewModel.showAddChainAlert = false
+                // Find the newly added coin in the vault
+                if let newCoin = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken }) {
+                    print("🔄 Switching to newly added coin: \(newCoin.chain.name) - \(newCoin.ticker)")
+                    print("🔄 isNativeToken: \(newCoin.isNativeToken)")
+                    
+                    // Update transaction with the new coin
+                    tx.coin = newCoin
+                    tx.fromAddress = newCoin.address
+                    
+                    // Update UI
+                    sendDetailsViewModel.selectedChain = chain
+                    
+                    print("✅ Switch complete - tx.coin is now: \(tx.coin.chain.name) (\(tx.coin.ticker))")
+                    
+                    // Hide loader first
+                    sendCryptoViewModel.isValidatingForm = false
+                    
+                    // FORCE clear ALL error states
+                    sendCryptoViewModel.showAddressAlert = false
+                    sendCryptoViewModel.errorMessage = ""
+                    sendCryptoViewModel.errorTitle = ""
+                    sendCryptoViewModel.isValidAddress = true
+                    
+                    print("🧹 Cleared all validation errors")
+                    
+                    // Mark address as done and move to amount automatically
+                    sendDetailsViewModel.addressSetupDone = true
+                    sendDetailsViewModel.onSelect(tab: .amount)
+                    print("✅ Moving to Amount tab")
+                    
+                    // Load gas info for the new chain
+                    Task {
+                        await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+                    }
+                } else {
+                    print("❌ Could not find newly added coin in vault")
+                    sendCryptoViewModel.isValidatingForm = false
+                }
             }
         }
     }

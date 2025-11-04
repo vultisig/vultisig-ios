@@ -239,8 +239,13 @@ extension MacCameraServiceViewModel {
             let isValid = asset.coinType.validate(address: address)
             
             if isValid {
+                print("🎯 MacCameraServiceViewModel - Chain detected: \(asset.chain.name)")
                 newCoinMeta = asset
-                showAlert = true
+                selectedChain = asset.chain
+                
+                // Just move to send - the chain will be added automatically by our new detection system
+                self.stopSession()
+                shouldSendCrypto = true
                 return
             }
         }

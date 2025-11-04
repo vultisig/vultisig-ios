@@ -25,7 +25,6 @@ class SendDetailsViewModel: ObservableObject {
     @Published var amountSetupDone: Bool = false
     @Published var showCoinPickerSheet: Bool = false
     @Published var showChainPickerSheet: Bool = false
-    @Published var showAddChainAlert: Bool = false
     @Published var detectedChain: Chain? = nil
     
     init(hasPreselectedCoin: Bool = false) {
@@ -167,33 +166,58 @@ class SendDetailsViewModel: ObservableObject {
         return nil
     }
     
-    /// Handles a detected chain - switches to it if in vault, or shows alert to add it
-    /// Returns the coin if found in vault, or nil if chain needs to be added
+    /// Handles a detected chain - switches to it if in vault, or adds it automatically
+    /// Returns the coin if found in vault, or nil if chain was added
     private func handleDetectedChain(_ chain: Chain, vault: Vault, tx: SendTransaction) -> Coin? {
         print("🔄 HandleDetectedChain called for: \(chain.name)")
         
-        // Find a coin with this chain in the vault (prefer native token)
-        let coinInVault = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken }) 
-                       ?? vault.coins.first(where: { $0.chain == chain })
+        // Debug: Show all coins for this chain
+        let allCoinsForChain = vault.coins.filter { $0.chain == chain }
+        print("📊 All coins for \(chain.name):")
+        for coin in allCoinsForChain {
+            print("   - \(coin.ticker) (isNative: \(coin.isNativeToken))")
+        }
         
-        if let coin = coinInVault {
-            print("✅ Chain found in vault: \(chain.name)")
-            print("🔄 Switching from \(tx.coin.chain.name) to \(coin.chain.name)")
+        // FILTER to get ONLY native tokens for this chain
+        let nativeCoins = vault.coins.filter { coin in
+            coin.chain == chain && coin.isNativeToken == true
+        }
+        
+        print("🔍 Native tokens found: \(nativeCoins.count)")
+        for coin in nativeCoins {
+            print("   - Native: \(coin.ticker)")
+        }
+        
+        // Get the first (and should be only) native token
+        guard let coin = nativeCoins.first else {
+            print("❌ NO NATIVE TOKEN found for chain: \(chain.name) - will add automatically")
             
-            // Chain exists in vault, switch to it immediately
-            selectedChain = chain
-            tx.coin = coin
-            tx.fromAddress = coin.address
-            
-            print("✅ Switch complete - tx.coin is now: \(tx.coin.chain.name)")
-            return coin
-        } else {
-            print("⚠️ Chain NOT in vault: \(chain.name) - showing alert")
-            
-            // Chain not in vault, show alert to add it
+            // Native token not in vault, save it to add later
             detectedChain = chain
-            showAddChainAlert = true
+            needsToAddChain = true
             return nil
         }
+        
+        // Double check it's actually native
+        guard coin.isNativeToken == true else {
+            print("❌ ERROR: Selected coin \(coin.ticker) is NOT native! isNativeToken=\(coin.isNativeToken)")
+            return nil
+        }
+        
+        print("✅ Native token CONFIRMED: \(chain.name) - \(coin.ticker)")
+        print("🔄 Switching from \(tx.coin.chain.name)(\(tx.coin.ticker)) to \(coin.chain.name)(\(coin.ticker))")
+        
+        // Chain exists in vault, switch to native token immediately
+        selectedChain = chain
+        tx.coin = coin
+        tx.fromAddress = coin.address
+        
+        print("✅ Switch complete - tx.coin is now: \(tx.coin.chain.name) (\(tx.coin.ticker))")
+        print("✅ isNativeToken: \(tx.coin.isNativeToken)")
+        
+        return coin
     }
+    
+    // Flag to indicate chain needs to be added automatically (no alert)
+    @Published var needsToAddChain: Bool = false
 }

@@ -152,6 +152,9 @@ struct MacAddressScannerView: View {
             
             if detectedCoin != nil {
                 print("✅ Chain detected and switched in MacAddressScannerView!")
+                // Clear previous error
+                sendCryptoViewModel.showAddressAlert = false
+                sendCryptoViewModel.errorMessage = ""
             } else {
                 print("⚠️ No chain detected in MacAddressScannerView")
             }
@@ -162,6 +165,7 @@ struct MacAddressScannerView: View {
             print("   - address not empty: \(!tx.toAddress.isEmpty)")
         }
         
+        // Always validate after potential chain switch
         validateAddress(tx.toAddress)
         goBack()
     }

@@ -102,9 +102,19 @@ extension SendCryptoAddressTextField {
             let detectedCoin = viewModel.detectAndSwitchChain(from: address, vault: vault, currentChain: tx.coin.chain, tx: tx)
             
             if detectedCoin != nil {
-                print("✅ Chain detected and switched!")
-                // Chain was detected and switched, validate immediately
-                validateAddress(address)
+                print("✅ Chain was switched (macOS image QR), re-validating address")
+                // Chain was detected and switched
+                // Clear previous error first
+                sendCryptoViewModel.showAddressAlert = false
+                sendCryptoViewModel.errorMessage = ""
+                sendCryptoViewModel.isValidAddress = true
+                
+                // Mark address as done and move to amount
+                if let detailsVM = sendDetailsViewModel {
+                    detailsVM.addressSetupDone = true
+                    detailsVM.onSelect(tab: .amount)
+                    print("✅ Moving to Amount tab")
+                }
             } else {
                 print("⚠️ No chain detected")
                 // No chain change needed, validate with debounce
