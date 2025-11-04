@@ -12,7 +12,6 @@ final class BondTransactionViewModel: ObservableObject, Form {
     let coin: Coin
     let vault: Vault
     let initialBondAddress: String?
-    @Published var sendTx = SendTransaction()
     
     @Published var validForm: Bool = false
     
@@ -41,6 +40,7 @@ final class BondTransactionViewModel: ObservableObject, Form {
         placeholder: "0"
     )
     
+    private(set) var isMaxAmount: Bool = false
     private(set) lazy var form: [FormField] = [
         addressField,
         providerField,
@@ -83,47 +83,20 @@ final class BondTransactionViewModel: ObservableObject, Form {
         }
     }
     
-    func buildTransaction() -> SendTransaction? {
+    var transactionBuilder: TransactionBuilder? {
         guard validForm else { return nil }
         
-        sendTx.coin = coin
-        sendTx.sendMaxAmount = sendTx.amountDecimal == coin.balanceDecimal
-        sendTx.amount = amountField.value.formatToDecimal(digits: coin.decimals)
-        sendTx.memo = buildMemo()
-        sendTx.memoFunctionDictionary = buildDictionary()
-        sendTx.transactionType = .unspecified
-        sendTx.wasmContractPayload = nil
-        sendTx.toAddress = ""
-                
-        return sendTx
+        return BondTransactionBuilder(
+            coin: coin,
+            amount: amountField.value.formatToDecimal(digits: coin.decimals),
+            sendMaxAmount: isMaxAmount,
+            nodeAddress: addressField.value,
+            providerAddress: providerField.value,
+            operatorFee: Int64(operatorFeeField.value)
+        )
     }
     
     func onPercentage(_ percentage: Int) {
-        sendTx.sendMaxAmount = percentage == 100
-    }
-    
-    func buildMemo() -> String {
-        var memo = "BOND:\(addressField.value)"
-        if !providerField.value.isEmpty {
-            memo += ":\(providerField.value)"
-        }
-        let operatorFeeInt = Int64(operatorFeeField.value)
-        if let operatorFeeInt, operatorFeeInt != .zero {
-            if providerField.value.isEmpty {
-                memo += "::\(operatorFeeInt)"
-            } else {
-                memo += ":\(operatorFeeInt)"
-            }
-        }
-        return memo
-    }
-    
-    func buildDictionary() -> ThreadSafeDictionary<String, String> {
-        let dict = ThreadSafeDictionary<String, String>()
-        dict.set("nodeAddress", addressField.value)
-        dict.set("provider", providerField.value)
-        dict.set("fee", "\(Int64(operatorFeeField.value) ?? 0)")
-        dict.set("memo", buildMemo())
-        return dict
+        isMaxAmount = percentage == 100
     }
 }

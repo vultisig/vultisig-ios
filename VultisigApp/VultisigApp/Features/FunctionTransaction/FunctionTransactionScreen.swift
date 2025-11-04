@@ -11,8 +11,10 @@ struct FunctionTransactionScreen: View {
     let vault: Vault
     let transactionType: FunctionTransactionType
     
+    @StateObject private var functionCallViewModel = FunctionCallViewModel()
     @State private var sendTx: SendTransaction?
     @State private var navigateToVerify: Bool = false
+    @State var isLoading: Bool = false
     
     var body: some View {
         ZStack {
@@ -32,6 +34,7 @@ struct FunctionTransactionScreen: View {
                 EmptyView()
             }
         }
+        .withLoading(isLoading: $isLoading)
         .navigationDestination(isPresented: $navigateToVerify) {
             if let sendTx {
                 FunctionCallRouteBuilder().buildVerifyScreen(tx: sendTx, vault: vault)
@@ -39,9 +42,18 @@ struct FunctionTransactionScreen: View {
         }
     }
     
-    func onVerify(_ tx: SendTransaction) {
-        sendTx = tx
-        navigateToVerify = true
+    func onVerify(_ transactionBuilder: TransactionBuilder) {
+        Task { @MainActor in
+            isLoading = true
+            let tx = transactionBuilder.buildTransaction()
+            
+            await functionCallViewModel.loadGasInfoForSending(tx: tx)
+            await functionCallViewModel.loadFastVault(tx: tx, vault: vault)
+            
+            sendTx = tx
+            isLoading = false
+            navigateToVerify = true
+        }
     }
 }
 

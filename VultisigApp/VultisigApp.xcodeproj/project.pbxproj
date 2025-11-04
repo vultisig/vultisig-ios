@@ -120,6 +120,8 @@
 		134E23FC2EAA8BC600952600 /* DefiTHORChainStakeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E23FB2EAA8BC600952600 /* DefiTHORChainStakeViewModel.swift */; };
 		134E8D7F2E451F6F0086EBC4 /* PreferredAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D7E2E451F6C0086EBC4 /* PreferredAsset.swift */; };
 		134E8D812E451F800086EBC4 /* PreferredAssetFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D802E451F7A0086EBC4 /* PreferredAssetFactory.swift */; };
+		134FF3662EBA48C000683169 /* TransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134FF3652EBA48B600683169 /* TransactionBuilder.swift */; };
+		134FF3682EBA499F00683169 /* BondTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134FF3672EBA499600683169 /* BondTransactionBuilder.swift */; };
 		1352EDBD2E61218100FC0F51 /* ZipFileGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1352EDBC2E61217C00FC0F51 /* ZipFileGenerator.swift */; };
 		13555F3F2EB3DF3800281A7D /* AddressTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13555F3E2EB3DF3300281A7D /* AddressTextField.swift */; };
 		135677A62E391A6E002C10A2 /* SecurityScannerTransactionFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135677A52E391A68002C10A2 /* SecurityScannerTransactionFactory.swift */; };
@@ -1268,6 +1270,8 @@
 		134E23FB2EAA8BC600952600 /* DefiTHORChainStakeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainStakeViewModel.swift; sourceTree = "<group>"; };
 		134E8D7E2E451F6C0086EBC4 /* PreferredAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAsset.swift; sourceTree = "<group>"; };
 		134E8D802E451F7A0086EBC4 /* PreferredAssetFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetFactory.swift; sourceTree = "<group>"; };
+		134FF3652EBA48B600683169 /* TransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionBuilder.swift; sourceTree = "<group>"; };
+		134FF3672EBA499600683169 /* BondTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondTransactionBuilder.swift; sourceTree = "<group>"; };
 		1352EDBC2E61217C00FC0F51 /* ZipFileGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipFileGenerator.swift; sourceTree = "<group>"; };
 		13555F3E2EB3DF3300281A7D /* AddressTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressTextField.swift; sourceTree = "<group>"; };
 		135677A52E391A68002C10A2 /* SecurityScannerTransactionFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerTransactionFactory.swift; sourceTree = "<group>"; };
@@ -2767,6 +2771,7 @@
 		1348561C2EB511C8003D10BE /* FunctionTransaction */ = {
 			isa = PBXGroup;
 			children = (
+				134FF3642EBA48B000683169 /* TransactionBuilder */,
 				1348563A2EB52891003D10BE /* TransactionFormScreen.swift */,
 				134856202EB511D7003D10BE /* FunctionTransactionScreen.swift */,
 				134856192EB511C8003D10BE /* Bond */,
@@ -2819,6 +2824,15 @@
 				134E8D7E2E451F6C0086EBC4 /* PreferredAsset.swift */,
 			);
 			path = PreferredAsset;
+			sourceTree = "<group>";
+		};
+		134FF3642EBA48B000683169 /* TransactionBuilder */ = {
+			isa = PBXGroup;
+			children = (
+				134FF3672EBA499600683169 /* BondTransactionBuilder.swift */,
+				134FF3652EBA48B600683169 /* TransactionBuilder.swift */,
+			);
+			path = TransactionBuilder;
 			sourceTree = "<group>";
 		};
 		135677AA2E393357002C10A2 /* EVM */ = {
@@ -6137,6 +6151,7 @@
 				A6C6708E2C9CFD0A00F59B6A /* KeysignView+macOS.swift in Sources */,
 				138E1D622E9480830085EA8E /* SheetPresentedCounterManager.swift in Sources */,
 				13792A892E53B2AB0063CE99 /* isMacOS.swift in Sources */,
+				134FF3662EBA48C000683169 /* TransactionBuilder.swift in Sources */,
 				A6ACAD632D110A1E00432CC4 /* SettingsAdvancedView+iOS.swift in Sources */,
 				B5E95E092BED84D9003778F0 /* ImagePicker.swift in Sources */,
 				B53DCB7D2C0D7327008388D4 /* EvmTokenServiceProtocol.swift in Sources */,
@@ -6461,6 +6476,7 @@
 				13B25BEC2E82C93D002BCF55 /* QRCodeStyle.swift in Sources */,
 				13B25BED2E82C93D002BCF55 /* QRCodeShape.swift in Sources */,
 				13B25BEF2E82C93D002BCF55 /* QRCodePixelShapePixel.swift in Sources */,
+				134FF3682EBA499F00683169 /* BondTransactionBuilder.swift in Sources */,
 				A646DFA72E12F187006E8ECC /* SendDetailsAddressFields.swift in Sources */,
 				A533E6402CEC814F00FCBAEB /* MonthlyBackupView.swift in Sources */,
 				DE63AE532BBA627B001BBE5C /* atom.swift in Sources */,

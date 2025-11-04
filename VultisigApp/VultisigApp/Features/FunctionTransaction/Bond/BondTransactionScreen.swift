@@ -13,8 +13,7 @@ struct BondTransactionScreen: View {
     }
     
     @StateObject var viewModel: BondTransactionViewModel
-    @StateObject private var functionCallViewModel = FunctionCallViewModel()
-    var onVerify: (SendTransaction) -> Void
+    var onVerify: (TransactionBuilder) -> Void
     
     @State var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?
@@ -86,9 +85,6 @@ struct BondTransactionScreen: View {
             }
         }
         .onLoad {
-            Task {
-                await loadGasInfo()
-            }
             viewModel.onLoad()
             onAddressFill()
         }
@@ -119,18 +115,13 @@ struct BondTransactionScreen: View {
                 return
             }
             
-            guard let tx = viewModel.buildTransaction() else { return }
-            onVerify(tx)
+            guard let transactionBuilder = viewModel.transactionBuilder else { return }
+            onVerify(transactionBuilder)
         }
     }
     
     func onAddressFill() {
         focusedFieldBinding = viewModel.addressField.valid ? .amount : .address
-    }
-    
-    func loadGasInfo() async {
-        await functionCallViewModel.loadGasInfoForSending(tx: viewModel.sendTx)
-        await functionCallViewModel.loadFastVault(tx: viewModel.sendTx, vault: viewModel.vault)
     }
 }
 
