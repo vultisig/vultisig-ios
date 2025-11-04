@@ -23,8 +23,16 @@ struct DefiButton: View {
     }
     
     var body: some View {
-        PrimaryButton(title: title, type: type, size: .small, action: action)
-            .overlay(iconView, alignment: .leading)
+        Button {
+            #if os(iOS)
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            #endif
+            action()
+        } label: {
+            PrimaryButtonView(title: title, paddingLeading: 14)
+        }
+        .buttonStyle(PrimaryButtonStyle(type: type,size: .small))
+        .overlay(iconView, alignment: .leading)
     }
     
     var iconView: some View {
