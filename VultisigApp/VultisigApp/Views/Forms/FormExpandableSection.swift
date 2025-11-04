@@ -58,6 +58,8 @@ struct FormExpandableSection<Content: View, T: Hashable>: View {
                                 .font(Theme.fonts.caption12)
                                 .foregroundStyle(Theme.colors.textExtraLight)
                                 .showIf(showValue)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
                             Spacer()
                             HStack {
                                 Image(systemName: "checkmark.circle")
