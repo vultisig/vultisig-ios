@@ -21,7 +21,7 @@ struct UnbondTransactionScreen: View {
     
     var body: some View {
         TransactionFormScreen(
-            title: "bondRune".localized,
+            title: "unbondRune".localized,
             validForm: $viewModel.validForm,
             onContinue: onContinue
         ) {

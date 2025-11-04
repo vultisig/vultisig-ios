@@ -33,8 +33,11 @@ struct AmountTextField: View {
                             .multilineTextAlignment(.trailing)
                             .font(Theme.fonts.largeTitle)
                             .foregroundStyle(Theme.colors.textPrimary)
-                            .keyboardType(.decimalPad)
+                            .borderlessTextFieldStyle()
                             .fixedSize()
+                            #if os(iOS)
+                            .keyboardType(.decimalPad)
+                            #endif
                         Text(ticker)
                             .font(Theme.fonts.largeTitle)
                             .foregroundStyle(Theme.colors.textPrimary)

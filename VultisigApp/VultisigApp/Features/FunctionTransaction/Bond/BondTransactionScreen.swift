@@ -67,7 +67,9 @@ struct BondTransactionScreen: View {
                     error: $viewModel.operatorFeeField.error,
                     labelStyle: .secondary
                 )
+                #if os(iOS)
                 .keyboardType(.decimalPad)
+                #endif
             }
         }
         .onLoad {

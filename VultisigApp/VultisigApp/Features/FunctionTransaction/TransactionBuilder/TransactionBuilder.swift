@@ -20,7 +20,7 @@ protocol TransactionBuilder {
 
 extension TransactionBuilder {
     func buildTransaction() -> SendTransaction {
-        var sendTx = SendTransaction()
+        let sendTx = SendTransaction()
         sendTx.coin = coin
         sendTx.amount = amount
         sendTx.memo = memo
