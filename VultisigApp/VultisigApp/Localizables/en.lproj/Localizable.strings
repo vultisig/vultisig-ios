@@ -951,3 +951,11 @@
 "noPositionsSelectedTitle" = "No positions selected";
 "noPositionsSelectedSubtitle" = "You’ve disabled all positions for this chain. Enable at least one position to view balances and manage actions.";
 "managePositions" = "Manage Positions";
+"bondRune" = "Bond RUNE";
+"unbondRune" = "Unbond RUNE";
+"invalidAmount" = "Invalid amount";
+"amountExceeded" = "Amount cannot exceed balance";
+"emptyAmountField" = "Empty amount field";
+"providerLabel" = "Provider (optional)";
+"operatorFeesLabel" = "Operator-fees (Basis Points)";
+"operatorFeesError" = "Operator-fee cannot be empty if provider is filled";
