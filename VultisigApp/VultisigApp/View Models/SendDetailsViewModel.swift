@@ -99,45 +99,19 @@ class SendDetailsViewModel: ObservableObject {
     }
     
     /// Handles EVM address detection - all EVM chains share the same address format
+    /// To avoid selecting the wrong chain and causing loss of funds, we only keep the current
+    /// chain if it's already EVM. We don't auto-switch between EVM chains.
     private func handleEVMAddress(address: String, vault: Vault, currentChain: Chain, tx: SendTransaction) -> Coin? {
         // If current chain is already EVM, keep it (user already on correct chain type)
         if currentChain.type == .EVM {
             return nil
         }
         
-        // Find EVM chains in the vault, prioritized order
-        let evmPriority: [Chain] = [
-            .ethereum,      // Most common
-            .base,
-            .arbitrum,
-            .optimism,
-            .polygon,
-            .avalanche,
-            .bscChain,
-            .blast,
-            .cronosChain,
-            .zksync,
-            .mantle,
-            .hyperliquid,
-            .sei,
-            .ethereumSepolia,
-            .polygonV2
-        ]
-        
-        // Try to find a prioritized EVM chain that exists in vault
-        for chain in evmPriority {
-            if vault.coins.contains(where: { $0.chain == chain }) {
-                return handleDetectedChain(chain, vault: vault, tx: tx)
-            }
-        }
-        
-        // If no prioritized chain found, try any EVM chain in vault
-        if let evmChain = vault.coins.first(where: { $0.chain.type == .EVM })?.chain {
-            return handleDetectedChain(evmChain, vault: vault, tx: tx)
-        }
-        
-        // No EVM chains in vault, suggest Ethereum as default
-        return handleDetectedChain(.ethereum, vault: vault, tx: tx)
+        // Don't auto-switch to an EVM chain for safety reasons
+        // All EVM addresses (0x...) are valid on ALL EVM chains (Ethereum, Polygon, Arbitrum, etc.)
+        // We can't know which one the user intends, so we don't switch automatically
+        // The user will see an error and must select the correct EVM chain manually
+        return nil
     }
     
     /// Maps a WalletCore CoinType to a Vultisig Chain
