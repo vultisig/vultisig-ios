@@ -40,7 +40,11 @@ struct AmountBalanceValidator: FormFieldValidator {
             throw ValidationError.invalidAmount
         }
         
-        guard amount > 0, amount <= balance else {
+        guard amount >= 0 else {
+            throw ValidationError.invalidAmount
+        }
+        
+        guard amount <= balance else {
             throw ValidationError.exceedsBalance
         }
     }

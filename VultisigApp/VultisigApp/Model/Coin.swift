@@ -97,6 +97,7 @@ class Coin: ObservableObject, Codable, Hashable {
         let value = stakedBalance.toDecimal() / pow(10, decimals)
         return value
     }
+    
     var combinedBalanceDecimal: Decimal {
         // Only return the available balance, excluding staked/bonded amounts
         // Staked/bonded amounts are shown separately in the DeFi tab

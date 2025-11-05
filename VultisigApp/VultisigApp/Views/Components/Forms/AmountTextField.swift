@@ -118,11 +118,12 @@ struct AmountTextField<CustomView: View>: View {
         .onChange(of: amount) { _, newValue in
             amountInternal = newValue
         }
-        .onChange(of: percentage) { _, percentage in
-            guard let percentage else { return }
-            let multiplier = (Decimal(percentage) / 100)
-            let amountDecimal = availableAmount * multiplier
-            amount = amountDecimal.formatToDecimal(digits: decimals)
+        .onChange(of: percentage) { _, _ in
+            setupAmount()
+        }
+        .onLoad { setupAmount() }
+        .onChange(of: availableAmount) { _, _ in
+            setupAmount()
         }
     }
     
@@ -145,6 +146,13 @@ struct AmountTextField<CustomView: View>: View {
                 .foregroundStyle(Theme.colors.textLight)
         }
         .font(Theme.fonts.bodySMedium)
+    }
+    
+    func setupAmount() {
+        guard let percentage else { return }
+        let multiplier = (Decimal(percentage) / 100)
+        let amountDecimal = availableAmount * multiplier
+        amount = amountDecimal.formatToDecimal(digits: decimals)
     }
 }
 

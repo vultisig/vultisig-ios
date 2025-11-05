@@ -17,11 +17,10 @@ struct UnstakeTransactionScreen: View {
     
     @State var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?
-    @State var percentageSelected: Int?
     
     var body: some View {
         TransactionFormScreen(
-            title: "unbondRune".localized,
+            title: String(format: "unstakeCoin".localized, viewModel.coin.ticker),
             validForm: $viewModel.validForm,
             onContinue: onContinue
         ) {
@@ -38,18 +37,20 @@ struct UnstakeTransactionScreen: View {
                 AmountTextField(
                     amount: $viewModel.amountField.value,
                     error: $viewModel.amountField.error,
-                    ticker: viewModel.coin.chain.ticker,
+                    ticker: viewModel.coin.ticker,
                     type: .slider,
-                    availableAmount: viewModel.stakedAmount,
+                    availableAmount: viewModel.availableAmount,
                     decimals: viewModel.coin.decimals,
-                    percentage: $percentageSelected,
+                    percentage: $viewModel.percentageSelected,
+                    customView: { autocompoundToggle }
                 ).focused($focusedField, equals: .amount)
             }
         }
         .onLoad {
             viewModel.onLoad()
+            focusedFieldBinding = .amount
         }
-        .onChange(of: percentageSelected) { _, newValue in
+        .onChange(of: viewModel.percentageSelected) { _, newValue in
             guard let newValue else { return }
             viewModel.onPercentage(newValue)
         }
@@ -65,6 +66,30 @@ struct UnstakeTransactionScreen: View {
         case .amount, nil:
             guard let transactionBuilder = viewModel.transactionBuilder else { return }
             onVerify(transactionBuilder)
+        }
+    }
+    
+    @ViewBuilder
+    var autocompoundToggle: some View {
+        if viewModel.supportsAutocompound {
+            AutocompoundToggle(isEnabled: $viewModel.isAutocompound)
+        }
+    }
+}
+
+struct AutocompoundToggle: View {
+    @Binding var isEnabled: Bool
+    var body: some View {
+        HStack {
+            Text("enableAutoCompounding".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+            Spacer()
+            Toggle("", isOn: $isEnabled)
+                .scaleEffect(0.8)
+                .tint(Theme.colors.primaryAccent4)
+                .toggleStyle(.switch)
+                .labelsHidden()
         }
     }
 }

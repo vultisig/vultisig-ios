@@ -12,12 +12,16 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
     let coin: Coin
     let vault: Vault
     
+    var supportsAutocompound: Bool {
+        coin.supportsAutocompound
+    }
+    
+    @Published var percentageSelected: Int? = 100
+    @Published var availableAmount: Decimal = 0
+    var autocompoundBalance: Decimal = 0
+    @Published var isAutocompound: Bool = false
     @Published var validForm: Bool = false
-    @Published private(set) var stakedAmount: Decimal = 0
-    @Published var amountField = FormField(
-        label: "amount".localized,
-        placeholder: "0 RUNE"
-    )
+    @Published var amountField = FormField(label: "amount".localized)
     
     private(set) var isMaxAmount: Bool = false
     private(set) lazy var form: [FormField] = [
@@ -34,33 +38,75 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
     
     func onLoad() {
         setupForm()
-//        amountField.value = bondNodeFormattedAmount.formatForDisplay(maxDecimals: coin.decimals)
+        availableAmount = coin.stakedBalanceDecimal
+        setupAmountField()
+        
+        $isAutocompound
+            .receive(on: DispatchQueue.main)
+            .sink(weak: self) { viewModel, isAutoCompound in
+                viewModel.updateAvailableBalance()
+            }
+            .store(in: &cancellables)
     }
     
     var transactionBuilder: TransactionBuilder? {
         guard validForm else { return nil }
-        return nil
-//        return UnbondTransactionBuilder(
-//            coin: coin,
-//            unbondAmount: amountField.value.formatToDecimal(digits: coin.decimals),
-//            sendMaxAmount: isMaxAmount,
-//            nodeAddress: addressViewModel.field.value,
-//            providerAddress: providerViewModel.field.value
-//        )
+        
+        switch coin.ticker.uppercased() {
+        case "TCY":
+            return TCYUnstakeTransactionBuilder(
+                coin: coin,
+                percentage: percentageSelected ?? percentageFromAmount,
+                autoCompoundAmount: autocompoundBalance,
+                sendMaxAmount: isMaxAmount,
+                isAutoCompound: isAutocompound
+            )
+        case "RUJI":
+            return RUJIUnstakeTransactionBuilder(
+                coin: coin,
+                amount: amountField.value,
+                sendMaxAmount: isMaxAmount
+            )
+        default:
+            return nil
+        }
+    }
+    
+    var percentageFromAmount: Int {
+        let decimal = (amountField.value.toDecimal() / availableAmount) * 100.0
+        let intValue = Int((decimal as NSDecimalNumber).doubleValue)
+        return intValue
     }
     
     func onPercentage(_ percentage: Int) {
         isMaxAmount = percentage == 100
     }
     
-//    func updateAmountValidation() {
-//        var validators: [FormFieldValidator] = [RequiredValidator(errorMessage: "emptyAmountField".localized)]
-//        if let bondNode {
-//            bondNodeFormattedAmount = coin.valueWithDecimals(value: bondNode.bond)
-//            validators.append(AmountBalanceValidator(balance: bondNodeFormattedAmount))
-//        } else {
-//            bondNodeFormattedAmount = 0
-//        }
-//        amountField.validators = validators
-//    }
+    func updateAvailableBalance() {
+        Task { @MainActor in
+            if autocompoundBalance == .zero {
+                await fetchAutocompoundBalance()
+            }
+            
+            self.availableAmount = isAutocompound ? autocompoundBalance : coin.stakedBalanceDecimal
+            self.setupAmountField()
+        }
+    }
+    
+    func setupAmountField() {
+        self.amountField.validators = [
+            AmountBalanceValidator(balance: self.availableAmount)
+        ]
+        self.percentageSelected = 100
+    }
+    
+    func fetchAutocompoundBalance() async {
+        switch coin.ticker.uppercased() {
+        case "TCY":
+            let amount = await ThorchainService.shared.fetchTcyAutoCompoundAmount(address: coin.address)
+            self.autocompoundBalance = coin.valueWithDecimals(value: amount)
+        default:
+            break
+        }
+    }
 }

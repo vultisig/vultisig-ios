@@ -66,14 +66,7 @@ struct StakeTransactionScreen: View {
     @ViewBuilder
     var autocompoundToggle: some View {
         if viewModel.supportsAutocompound {
-            Toggle(isOn: $viewModel.isAutocompound) {
-                Text("enableAutoCompounding".localized)
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textPrimary)
-            }
-            .scaleEffect(0.8)
-            .tint(Theme.colors.primaryAccent4)
-            .toggleStyle(.switch)
+            AutocompoundToggle(isEnabled: $viewModel.isAutocompound)
         }
     }
     
