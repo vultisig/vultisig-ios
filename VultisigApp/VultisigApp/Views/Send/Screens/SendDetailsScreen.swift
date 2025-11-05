@@ -501,8 +501,6 @@ extension SendDetailsScreen {
     private func addDetectedChainAutomatically() {
         guard let chain = sendDetailsViewModel.detectedChain else { return }
         
-        print("➕ Adding detected chain automatically: \(chain.name)")
-        
         // Reset flag immediately
         sendDetailsViewModel.needsToAddChain = false
         
@@ -524,23 +522,16 @@ extension SendDetailsScreen {
         Task {
             await CoinService.saveAssets(for: vault, selection: selection)
             
-            print("✅ Chain added successfully: \(chain.name)")
-            
             // After adding, find the newly created coin and switch to it
             await MainActor.run {
                 // Find the newly added coin in the vault
                 if let newCoin = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken }) {
-                    print("🔄 Switching to newly added coin: \(newCoin.chain.name) - \(newCoin.ticker)")
-                    print("🔄 isNativeToken: \(newCoin.isNativeToken)")
-                    
                     // Update transaction with the new coin
                     tx.coin = newCoin
                     tx.fromAddress = newCoin.address
                     
                     // Update UI
                     sendDetailsViewModel.selectedChain = chain
-                    
-                    print("✅ Switch complete - tx.coin is now: \(tx.coin.chain.name) (\(tx.coin.ticker))")
                     
                     // Hide loader first
                     sendCryptoViewModel.isValidatingForm = false
@@ -551,12 +542,9 @@ extension SendDetailsScreen {
                     sendCryptoViewModel.errorTitle = ""
                     sendCryptoViewModel.isValidAddress = true
                     
-                    print("🧹 Cleared all validation errors")
-                    
                     // Mark address as done and move to amount automatically
                     sendDetailsViewModel.addressSetupDone = true
                     sendDetailsViewModel.onSelect(tab: .amount)
-                    print("✅ Moving to Amount tab")
                     
                     // Load gas info for the new chain
                     Task {

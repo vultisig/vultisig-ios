@@ -239,7 +239,6 @@ extension MacCameraServiceViewModel {
             let isValid = asset.coinType.validate(address: address)
             
             if isValid {
-                print("🎯 MacCameraServiceViewModel - Chain detected: \(asset.chain.name)")
                 newCoinMeta = asset
                 selectedChain = asset.chain
                 

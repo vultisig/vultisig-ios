@@ -95,14 +95,11 @@ extension SendCryptoAddressTextField {
     }
     
     private func handleAddressChange(_ address: String) {
-        print("🖥️ macOS - Address changed: \(address)")
         // Attempt to detect and switch chain if address belongs to different chain
         if let viewModel = sendDetailsViewModel, let vault = vault, !address.isEmpty {
-            print("🖥️ Calling detectAndSwitchChain from macOS")
             let detectedCoin = viewModel.detectAndSwitchChain(from: address, vault: vault, currentChain: tx.coin.chain, tx: tx)
             
             if detectedCoin != nil {
-                print("✅ Chain was switched (macOS image QR), re-validating address")
                 // Chain was detected and switched
                 // Clear previous error first
                 sendCryptoViewModel.showAddressAlert = false
@@ -113,20 +110,14 @@ extension SendCryptoAddressTextField {
                 if let detailsVM = sendDetailsViewModel {
                     detailsVM.addressSetupDone = true
                     detailsVM.onSelect(tab: .amount)
-                    print("✅ Moving to Amount tab")
                 }
             } else {
-                print("⚠️ No chain detected")
                 // No chain change needed, validate with debounce
                 DebounceHelper.shared.debounce {
                     self.validateAddress(address)
                 }
             }
         } else {
-            print("❌ macOS - Conditions NOT met")
-            print("   - sendDetailsViewModel: \(sendDetailsViewModel != nil)")
-            print("   - vault: \(vault != nil)")
-            print("   - address not empty: \(!address.isEmpty)")
             DebounceHelper.shared.debounce {
                 validateAddress(address)
             }
@@ -134,10 +125,8 @@ extension SendCryptoAddressTextField {
     }
     
     private func handleImageQrCode(data: Data) {
-        print("🖥️ macOS - handleImageQrCode called")
         let (address, amount, message) = Utils.parseCryptoURI(String(data: data, encoding: .utf8) ?? .empty)
         
-        print("🖥️ Parsed address from QR: \(address)")
         tx.toAddress = address
         tx.amount = amount
         tx.memo = message

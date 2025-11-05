@@ -96,7 +96,6 @@ extension SendCryptoAddressTextField {
             let detectedCoin = viewModel.detectAndSwitchChain(from: address, vault: vault, currentChain: tx.coin.chain, tx: tx)
             
             if detectedCoin != nil {
-                print("✅ Chain was switched (typed/pasted), re-validating address")
                 // Chain was detected and switched
                 // Clear previous error first
                 sendCryptoViewModel.showAddressAlert = false
@@ -107,7 +106,6 @@ extension SendCryptoAddressTextField {
                 if let detailsVM = sendDetailsViewModel {
                     detailsVM.addressSetupDone = true
                     detailsVM.onSelect(tab: .amount)
-                    print("✅ Moving to Amount tab")
                 }
             } else {
                 // No chain change needed, validate with debounce
@@ -125,22 +123,14 @@ extension SendCryptoAddressTextField {
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
         case .success(let result):
-            print("📱 QR Scan successful!")
             let qrCodeResult = result.string
-            print("📱 QR Content: \(qrCodeResult)")
             tx.parseCryptoURI(qrCodeResult)
-            print("📱 Parsed address: \(tx.toAddress)")
-            print("📱 sendDetailsViewModel exists: \(sendDetailsViewModel != nil)")
-            print("📱 vault exists: \(vault != nil)")
-            print("📱 address not empty: \(!tx.toAddress.isEmpty)")
             
             // Attempt to detect and switch chain if address belongs to different chain
             if let viewModel = sendDetailsViewModel, let vault = vault, !tx.toAddress.isEmpty {
-                print("✅ All conditions met - calling detectAndSwitchChain")
                 let detectedCoin = viewModel.detectAndSwitchChain(from: tx.toAddress, vault: vault, currentChain: tx.coin.chain, tx: tx)
                 
                 if detectedCoin != nil {
-                    print("✅ Chain detected and switched (scan)!")
                     // Chain was detected and switched
                     // Clear previous error immediately
                     sendCryptoViewModel.showAddressAlert = false
@@ -151,24 +141,17 @@ extension SendCryptoAddressTextField {
                     if let detailsVM = sendDetailsViewModel {
                         detailsVM.addressSetupDone = true
                         detailsVM.onSelect(tab: .amount)
-                        print("✅ Moving to Amount tab")
                     }
                 } else {
-                    print("⚠️ No chain detected")
                     // No chain change needed, validate immediately
                     validateAddress(tx.toAddress)
                 }
             } else {
-                print("❌ Conditions NOT met - skipping chain detection")
-                print("   - sendDetailsViewModel: \(sendDetailsViewModel != nil)")
-                print("   - vault: \(vault != nil)")
-                print("   - address not empty: \(!tx.toAddress.isEmpty)")
                 validateAddress(tx.toAddress)
             }
             
             showScanner = false
         case .failure(let err):
-            print("❌ QR Scan failed: \(err.localizedDescription)")
             sendCryptoViewModel.logger.error("fail to scan QR code,error:\(err.localizedDescription)")
         }
     }
@@ -186,7 +169,6 @@ extension SendCryptoAddressTextField {
             let detectedCoin = viewModel.detectAndSwitchChain(from: address, vault: vault, currentChain: tx.coin.chain, tx: tx)
             
             if detectedCoin != nil {
-                print("✅ Chain was switched (image QR)!")
                 // Chain was detected and switched
                 // Clear previous error first
                 sendCryptoViewModel.showAddressAlert = false
@@ -196,7 +178,6 @@ extension SendCryptoAddressTextField {
                 // Mark address as done and move to amount immediately
                 viewModel.addressSetupDone = true
                 viewModel.onSelect(tab: .amount)
-                print("✅ Moving to Amount tab")
             } else {
                 // No chain change needed, validate with debounce
                 DebounceHelper.shared.debounce {

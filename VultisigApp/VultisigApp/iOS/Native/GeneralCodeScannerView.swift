@@ -146,11 +146,7 @@ struct GeneralCodeScannerView: View {
             let isValid = asset.coinType.validate(address: address)
             
             if isValid {
-                print("🎯 GeneralCodeScannerView - Chain detected: \(asset.chain.name)")
                 newCoinMeta = asset
-                
-                // DON'T show alert - add automatically
-                // showAlert = true
                 
                 // Add the chain automatically
                 addNewChain()
