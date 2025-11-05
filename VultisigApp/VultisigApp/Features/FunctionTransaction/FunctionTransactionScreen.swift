@@ -20,23 +20,43 @@ struct FunctionTransactionScreen: View {
         ZStack {
             switch transactionType {
             case .bond(let node):
-                BondTransactionScreen(
-                    viewModel: BondTransactionViewModel(
-                        coin: vault.runeCoin ?? vault.coins[0],
-                        vault: vault,
-                        initialBondAddress: node
-                    ),
-                    onVerify: onVerify
-                )
+                resolvingCoin(coin: vault.runeCoin) {
+                    BondTransactionScreen(
+                        viewModel: BondTransactionViewModel(
+                            coin: $0,
+                            vault: vault,
+                            initialBondAddress: node
+                        ),
+                        onVerify: onVerify
+                    )
+                }
             case .unbond(let node):
-                UnbondTransactionScreen(
-                    viewModel: UnbondTransactionViewModel(
-                        coin: vault.runeCoin ?? vault.coins[0],
-                        vault: vault,
-                        bondAddress: node.address
-                    ),
-                    onVerify: onVerify
-                )
+                resolvingCoin(coin: vault.runeCoin) {
+                    UnbondTransactionScreen(
+                        viewModel: UnbondTransactionViewModel(
+                            coin: $0,
+                            vault: vault,
+                            bondAddress: node.address
+                        ),
+                        onVerify: onVerify
+                    )
+                }
+            case .stake(let coin):
+                resolvingCoin(coinMeta: coin) {
+                    StakeTransactionScreen(
+                        viewModel: StakeTransactionViewModel(coin: $0, vault: vault),
+                        onVerify: onVerify
+                    )
+                }
+            case .unstake(let coin):
+                resolvingCoin(coinMeta: coin) {
+                    UnstakeTransactionScreen(
+                        viewModel: UnstakeTransactionViewModel(coin: $0, vault: vault),
+                        onVerify: onVerify
+                    )
+                }
+            case .withdrawRewards(let coin):
+                EmptyView()
             }
         }
         .withLoading(isLoading: $isLoading)
@@ -58,6 +78,22 @@ struct FunctionTransactionScreen: View {
             sendTx = tx
             isLoading = false
             navigateToVerify = true
+        }
+    }
+    
+    @ViewBuilder
+    func resolvingCoin<Content: View>(coinMeta: CoinMeta, content: (Coin) -> Content) -> some View {
+        let coin = vault.coins.first(where: { $0.toCoinMeta() == coinMeta })
+        resolvingCoin(coin: coin, content: content)
+    }
+    
+    @ViewBuilder
+    func resolvingCoin<Content: View>(coin: Coin?, content: (Coin) -> Content) -> some View {
+        if let coin {
+            content(coin)
+        } else {
+            // TODO: - Show error state
+            EmptyView()
         }
     }
 }

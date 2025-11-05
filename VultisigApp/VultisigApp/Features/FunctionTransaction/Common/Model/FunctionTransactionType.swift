@@ -8,4 +8,7 @@
 enum FunctionTransactionType: Hashable {
     case bond(node: String?)
     case unbond(node: BondNode)
+    case stake(coin: CoinMeta)
+    case unstake(coin: CoinMeta)
+    case withdrawRewards(coin: CoinMeta)
 }
