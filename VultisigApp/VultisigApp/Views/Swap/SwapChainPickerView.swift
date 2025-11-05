@@ -19,7 +19,6 @@ struct SwapChainPickerView: View {
     @Binding var selectedChain: Chain?
     
     @EnvironmentObject var viewModel: CoinSelectionViewModel
-    @Environment(\.dismiss) var dismiss
     
     init(
         filterType: ChainFilterType = .send,
@@ -34,8 +33,15 @@ struct SwapChainPickerView: View {
     }
     
     var body: some View {
-        Screen(title: "selectChain".localized) {
+        Screen(showNavigationBar: false) {
             view
+        }
+        .crossPlatformToolbar("selectChain".localized, showsBackButton: false) {
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "x") {
+                    showSheet.toggle()
+                }
+            }
         }
         .applySheetSize()
         .sheetStyle()

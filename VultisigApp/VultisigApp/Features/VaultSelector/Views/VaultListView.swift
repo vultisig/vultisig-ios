@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct VaultListView: View {
+    @Binding var isPresented: Bool
     @Binding var isEditing: Bool
     var onAddVault: () -> Void
     var onSelectVault: (Vault) -> Void
@@ -18,7 +19,6 @@ struct VaultListView: View {
     @Query(sort: \Vault.order, order: .forward) var vaults: [Vault]
     @Query(sort: \Folder.order, order: .forward) var folders: [Folder]
     
-    @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var homeViewModel: HomeViewModel
     
@@ -102,7 +102,7 @@ struct VaultListView: View {
         HStack(spacing: 8) {
             #if os(macOS)
             ToolbarButton(image: "chevron-right", type: .outline) {
-                dismiss()
+                isPresented.toggle()
             }
             .rotationEffect(.radians(.pi))
             #endif
@@ -196,6 +196,7 @@ struct VaultListView: View {
 
 #Preview {
     VaultListView(
+        isPresented: .constant(true),
         isEditing: .constant(false),
         onAddVault: {
         },

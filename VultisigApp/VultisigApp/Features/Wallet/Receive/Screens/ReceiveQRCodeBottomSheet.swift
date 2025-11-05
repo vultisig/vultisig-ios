@@ -10,11 +10,11 @@ import SwiftUI
 struct ReceiveQRCodeBottomSheet: View {
     let coin: Coin
     let isNativeCoin: Bool
+    var onClose: () -> Void
     var onCopy: (Coin) -> Void
     
     @State var qrCodeImage: Image?
     @Environment(\.displayScale) var displayScale
-    @Environment(\.dismiss) var dismiss
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
     
     var coinLogo: String {
@@ -26,28 +26,33 @@ struct ReceiveQRCodeBottomSheet: View {
     }
     
     var body: some View {
-        VStack(spacing: 24) {
-            topSection
-            Text(coin.address)
-                .font(Theme.fonts.footnote)
-                .foregroundStyle(Theme.colors.textPrimary)
-                .frame(maxWidth: 216)
-                .multilineTextAlignment(.center)
-            bottomSection
-        }
-        .padding(.top, 40)
-        .padding(.horizontal, 16)
-        .frame(maxWidth: .infinity) // Use maxWidth instead of GeometryReader
-        .frame(height: 465)
-        .background(
-            // Capture width using overlay instead of GeometryReader
-            GeometryReader { proxy in
-                ModalBackgroundView(width: proxy.size.width)
+        GeometryReader { proxy in
+            VStack(spacing: 24) {
+                topSection
+                Text(coin.address)
+                    .font(Theme.fonts.footnote)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .frame(maxWidth: 216)
+                    .multilineTextAlignment(.center)
+                bottomSection
             }
-        )
+            .padding(.top, 40)
+            .padding(.horizontal, 16)
+            .frame(maxWidth: .infinity) // Use maxWidth instead of GeometryReader
+            .background(ModalBackgroundView(width: proxy.size.width))
+        }
         .presentationDetents([.height(465)])
         .presentationBackground(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSecondary)
         .presentationDragIndicator(.visible)
+        .applySheetSize(700, 450)
+        .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "x") {
+                    onClose()
+                }
+            }
+        }
         .onLoad {
             let qrCodeImage = QRCodeGenerator().generateImage(
                 qrStringData: coin.address,
@@ -69,7 +74,6 @@ struct ReceiveQRCodeBottomSheet: View {
                 addressData: coin.address
             )
         }
-        .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: true)
     }
 
     var topSection: some View {
@@ -115,6 +119,13 @@ struct ReceiveQRCodeBottomSheet: View {
             show = true
         }
     }
-    .overlay(show ? ReceiveQRCodeBottomSheet(coin: .example, isNativeCoin: false, onCopy: { _ in }) : nil)
+    .overlay(
+        show ? ReceiveQRCodeBottomSheet(
+            coin: .example,
+            isNativeCoin: false,
+            onClose: { show.toggle() },
+            onCopy: { _ in
+            }) : nil
+    )
     
 }
