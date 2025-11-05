@@ -329,6 +329,15 @@ class Coin: ObservableObject, Codable, Hashable {
     func toCoinMeta() -> CoinMeta {
         return CoinMeta(chain: chain, ticker: ticker, logo: logo, decimals: decimals, priceProviderId: priceProviderId, contractAddress: contractAddress, isNativeToken: isNativeToken)
     }
+    
+    var supportsAutocompound: Bool {
+        switch ticker.uppercased() {
+        case "TCY":
+            return true
+        default:
+            return false
+        }
+    }
 }
 
 extension Coin: Comparable {

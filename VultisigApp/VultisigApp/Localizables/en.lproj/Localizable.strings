@@ -178,7 +178,7 @@
 "emptyEmailPleaseCheck" = "Empty email, please check.";
 "emptyField" = "Empty Field";
 "enable" = "Enable";
-"enableAutoCompounding" = "Enable Auto-Compounding";
+"enableAutoCompounding" = "Enable Auto-Compound";
 "enableBiometrics" = "Enable Biometrics";
 "enableBiometricsFastSigning" = "Enable Biometrics Fast Signing";
 "enableDKLS" = "Enable DKLS";

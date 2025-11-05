@@ -21,7 +21,7 @@ struct StakeTransactionScreen: View {
     
     var body: some View {
         TransactionFormScreen(
-            title: "unbondRune".localized,
+            title: String(format: "stakeCoin".localized, viewModel.coin.ticker),
             validForm: $viewModel.validForm,
             onContinue: onContinue
         ) {
@@ -38,16 +38,19 @@ struct StakeTransactionScreen: View {
                 AmountTextField(
                     amount: $viewModel.amountField.value,
                     error: $viewModel.amountField.error,
-                    ticker: viewModel.coin.chain.ticker,
-                    type: .slider,
-                    availableAmount: viewModel.stakedAmount,
+                    ticker: viewModel.coin.ticker,
+                    type: .button,
+                    availableAmount: viewModel.coin.balanceDecimal,
                     decimals: viewModel.coin.decimals,
                     percentage: $percentageSelected,
+                    customView: { autocompoundToggle }
+                    
                 ).focused($focusedField, equals: .amount)
             }
         }
         .onLoad {
             viewModel.onLoad()
+            focusedFieldBinding = .amount
         }
         .onChange(of: percentageSelected) { _, newValue in
             guard let newValue else { return }
@@ -57,6 +60,20 @@ struct StakeTransactionScreen: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 focusedField = newValue
             }
+        }
+    }
+    
+    @ViewBuilder
+    var autocompoundToggle: some View {
+        if viewModel.supportsAutocompound {
+            Toggle(isOn: $viewModel.isAutocompound) {
+                Text("enableAutoCompounding".localized)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
+            }
+            .scaleEffect(0.8)
+            .tint(Theme.colors.primaryAccent4)
+            .toggleStyle(.switch)
         }
     }
     

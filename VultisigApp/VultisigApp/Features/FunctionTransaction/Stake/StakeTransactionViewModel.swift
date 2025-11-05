@@ -12,11 +12,17 @@ final class StakeTransactionViewModel: ObservableObject, Form {
     let coin: Coin
     let vault: Vault
     
+    var supportsAutocompound: Bool {
+        coin.supportsAutocompound
+    }
+    
+    @Published var isAutocompound: Bool = false
     @Published var validForm: Bool = false
     @Published private(set) var stakedAmount: Decimal = 0
     @Published var amountField = FormField(
         label: "amount".localized,
-        placeholder: "0 RUNE"
+        placeholder: "0",
+        validators: [RequiredValidator(errorMessage: "emptyAmountField".localized)]
     )
     
     private(set) var isMaxAmount: Bool = false
@@ -34,33 +40,32 @@ final class StakeTransactionViewModel: ObservableObject, Form {
     
     func onLoad() {
         setupForm()
-//        amountField.value = bondNodeFormattedAmount.formatForDisplay(maxDecimals: coin.decimals)
+        amountField.validators.append(AmountBalanceValidator(balance: coin.balanceDecimal))
     }
     
     var transactionBuilder: TransactionBuilder? {
         guard validForm else { return nil }
-        return nil
-//        return UnbondTransactionBuilder(
-//            coin: coin,
-//            unbondAmount: amountField.value.formatToDecimal(digits: coin.decimals),
-//            sendMaxAmount: isMaxAmount,
-//            nodeAddress: addressViewModel.field.value,
-//            providerAddress: providerViewModel.field.value
-//        )
+        
+        switch coin.ticker.uppercased() {
+        case "TCY":
+            return TCYStakeTransactionBuilder(
+                coin: coin,
+                amount: amountField.value,
+                sendMaxAmount: isMaxAmount,
+                isAutoCompound: isAutocompound
+            )
+        case "RUJI":
+            return RUJIStakeTransactionBuilder(
+                coin: coin,
+                amount: amountField.value,
+                sendMaxAmount: isMaxAmount
+            )
+        default:
+            return nil
+        }
     }
     
     func onPercentage(_ percentage: Int) {
         isMaxAmount = percentage == 100
     }
-    
-//    func updateAmountValidation() {
-//        var validators: [FormFieldValidator] = [RequiredValidator(errorMessage: "emptyAmountField".localized)]
-//        if let bondNode {
-//            bondNodeFormattedAmount = coin.valueWithDecimals(value: bondNode.bond)
-//            validators.append(AmountBalanceValidator(balance: bondNodeFormattedAmount))
-//        } else {
-//            bondNodeFormattedAmount = 0
-//        }
-//        amountField.validators = validators
-//    }
 }
