@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import WalletCore
 
 enum SendDetailsFocusedTab: String {
     case asset
@@ -51,102 +50,21 @@ class SendDetailsViewModel: ObservableObject {
         }
     }
     
-    /// Detects the chain from the scanned address by checking against all WalletCore CoinTypes
+    /// Detects the chain from the scanned address and switches if found in vault
     /// Returns the detected coin if found, or nil if no match
     func detectAndSwitchChain(from address: String, vault: Vault, currentChain: Chain, tx: SendTransaction) -> Coin? {
-        // First check if address is valid for current chain
-        if AddressService.validateAddress(address: address, chain: currentChain) {
+        // Use AddressService to detect the chain
+        guard let detectedChain = AddressService.detectChain(from: address, vault: vault, currentChain: currentChain) else {
             return nil
         }
         
-        // Special handling for MayaChain (check first as it's a special case)
-        let isMayaAddress = AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
-        if isMayaAddress {
-            return handleDetectedChain(.mayaChain, vault: vault, tx: tx)
-        }
-        
-        // Special handling for ThorChain Stagenet
-        let isStagenetAddress = AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor")
-        if isStagenetAddress {
-            return handleDetectedChain(.thorChainStagenet, vault: vault, tx: tx)
-        }
-        
-        // Check if it's an EVM address (0x followed by 40 hex characters)
-        if isEVMAddress(address) {
-            return handleEVMAddress(address: address, vault: vault, currentChain: currentChain, tx: tx)
-        }
-        
-        // Iterate through all WalletCore CoinTypes to find matching address
-        for coinType in CoinType.allCases {
-            let isValid = coinType.validate(address: address)
-            if isValid {
-                // Map CoinType back to Vultisig Chain
-                if let chain = findChainForCoinType(coinType) {
-                    return handleDetectedChain(chain, vault: vault, tx: tx)
-                }
-            }
-        }
-        
-        return nil
-    }
-    
-    /// Checks if an address is an EVM address (0x followed by 40 hex characters)
-    private func isEVMAddress(_ address: String) -> Bool {
-        let pattern = "^0x[a-fA-F0-9]{40}$"
-        let regex = try? NSRegularExpression(pattern: pattern)
-        let range = NSRange(address.startIndex..., in: address)
-        return regex?.firstMatch(in: address, range: range) != nil
-    }
-    
-    /// Handles EVM address detection - all EVM chains share the same address format
-    /// To avoid selecting the wrong chain and causing loss of funds, we only keep the current
-    /// chain if it's already EVM. We don't auto-switch between EVM chains.
-    private func handleEVMAddress(address: String, vault: Vault, currentChain: Chain, tx: SendTransaction) -> Coin? {
-        // If current chain is already EVM, keep it (user already on correct chain type)
-        if currentChain.type == .EVM {
+        // Find the native token for the detected chain
+        guard let coin = vault.coins.first(where: { $0.chain == detectedChain && $0.isNativeToken == true }) else {
             return nil
         }
         
-        // Don't auto-switch to an EVM chain for safety reasons
-        // All EVM addresses (0x...) are valid on ALL EVM chains (Ethereum, Polygon, Arbitrum, etc.)
-        // We can't know which one the user intends, so we don't switch automatically
-        // The user will see an error and must select the correct EVM chain manually
-        return nil
-    }
-    
-    /// Maps a WalletCore CoinType to a Vultisig Chain
-    private func findChainForCoinType(_ coinType: CoinType) -> Chain? {
-        // Check all Vultisig chains to find the one with matching coinType
-        for chain in Chain.allCases {
-            if chain.coinType == coinType {
-                return chain
-            }
-        }
-        return nil
-    }
-    
-    /// Handles a detected chain - switches to it if in vault
-    /// Returns the coin if found in vault, or nil if chain is missing
-    private func handleDetectedChain(_ chain: Chain, vault: Vault, tx: SendTransaction) -> Coin? {
-        // FILTER to get ONLY native tokens for this chain
-        let nativeCoins = vault.coins.filter { coin in
-            coin.chain == chain && coin.isNativeToken == true
-        }
-        
-        // Get the first (and should be only) native token
-        guard let coin = nativeCoins.first else {
-            // Native token not in vault
-            return nil
-        }
-        
-        // Double check it's actually native
-        guard coin.isNativeToken == true else {
-            print("❌ ERROR: Selected coin \(coin.ticker) is NOT native! isNativeToken=\(coin.isNativeToken)")
-            return nil
-        }
-        
-        // Chain exists in vault, switch to native token immediately
-        selectedChain = chain
+        // Switch to the detected chain's native token
+        selectedChain = detectedChain
         tx.coin = coin
         tx.fromAddress = coin.address
         
