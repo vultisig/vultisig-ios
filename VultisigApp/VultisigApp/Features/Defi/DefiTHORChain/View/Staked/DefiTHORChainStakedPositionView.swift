@@ -149,9 +149,9 @@ struct DefiTHORChainStakedPositionView: View {
     var stakeButtonsView: some View {
         switch position.type {
         case .stake, .compound:
-            if canWithdraw {
-                withdrawButtonsView
-            } else {
+            VStack(spacing: 16) {
+                PrimaryButton(title: withdrawTitle, action: onWithdraw)
+                    .showIf(canWithdraw)
                 defaultButtonsView
             }
         case .index:
@@ -188,31 +188,6 @@ struct DefiTHORChainStakedPositionView: View {
         }
         let amount = AmountFormatter.formatCryptoAmount(value: rewards, coin: rewardCoin)
         return String(format: "withdrawAmount".localized, amount)
-    }
-    
-    var withdrawButtonsView: some View {
-        HStack(spacing: 8) {
-            PrimaryButton(title: withdrawTitle, action: onWithdraw)
-            
-            Menu {
-                Section("actions".localized) {
-                    Button(role: .destructive) {
-                        onUnstake()
-                    } label: {
-                        Label(String(format: "unstakeCoin".localized, position.coin.ticker), systemImage: "minus")
-                    }
-                    .disabled(unstakeDisabled)
-                    
-                    Button {
-                        onStake()
-                    } label: {
-                        Label(String(format: "stakeCoin".localized, position.coin.ticker), systemImage: "plus")
-                    }
-                }
-            } label: {
-                IconButton(icon: "dot-grid-1x3-vertical", type: .secondary, size: .small, action: {})
-            }
-        }
     }
 }
 

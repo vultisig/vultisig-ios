@@ -91,14 +91,17 @@ struct DefiTHORChainMainScreen: View {
                 DefiTHORChainStakedView(
                     viewModel: stakeViewModel,
                     loadingBalances: $loadingBalances,
-                    onStake: { _ in
-                        // TODO: - Redirect to stake
-                    },
-                    onUnstake: { _ in
-                        // TODO: - Redirect to unstake
-                    },
-                    onWithdraw: { _ in
-                        // TODO: - Redirect to withdraw
+                    onStake: { transactionToPresent = .stake(coin: $0.coin) },
+                    onUnstake: { transactionToPresent = .unstake(coin: $0.coin) },
+                    onWithdraw: { position in
+                        guard let rewards = position.rewards, let rewardsCoin = position.rewardCoin else {
+                            return
+                        }
+                        transactionToPresent = .withdrawRewards(
+                            coin: position.coin,
+                            rewards: rewards,
+                            rewardsCoin: rewardsCoin
+                        )
                     },
                     emptyStateView: { emptyStateView }
                 )

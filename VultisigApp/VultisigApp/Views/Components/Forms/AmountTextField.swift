@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct AmountTextField: View {
+struct AmountTextField<CustomView: View>: View {
     enum PercentageFieldType {
         case button, slider
     }
@@ -19,8 +19,50 @@ struct AmountTextField: View {
     let availableAmount: Decimal
     let decimals: Int
     @Binding var percentage: Int?
+    let customView: CustomView
     
     @State var amountInternal: String = ""
+    
+    init(
+        amount: Binding<String>,
+        error: Binding<String?>,
+        ticker: String,
+        type: PercentageFieldType,
+        availableAmount: Decimal,
+        decimals: Int,
+        percentage: Binding<Int?>,
+        customView: () -> CustomView
+    ) {
+        self._amount = amount
+        self._error = error
+        self.ticker = ticker
+        self.type = type
+        self.availableAmount = availableAmount
+        self.decimals = decimals
+        self._percentage = percentage
+        self.customView = customView()
+    }
+    
+    init(
+        amount: Binding<String>,
+        error: Binding<String?>,
+        ticker: String,
+        type: PercentageFieldType,
+        availableAmount: Decimal,
+        decimals: Int,
+        percentage: Binding<Int?>
+    ) where CustomView == EmptyView {
+        self.init(
+            amount: amount,
+            error: error,
+            ticker: ticker,
+            type: type,
+            availableAmount: availableAmount,
+            decimals: decimals,
+            percentage: percentage,
+            customView: { EmptyView() }
+        )
+    }
     
     var body: some View {
         GeometryReader { geo in
@@ -35,16 +77,16 @@ struct AmountTextField: View {
                             .foregroundStyle(Theme.colors.textPrimary)
                             .borderlessTextFieldStyle()
                             .fixedSize()
-                            #if os(iOS)
+#if os(iOS)
                             .keyboardType(.decimalPad)
-                            #endif
+#endif
                         Text(ticker)
                             .font(Theme.fonts.largeTitle)
                             .foregroundStyle(Theme.colors.textPrimary)
                             .fixedSize()
                     }
                     .frame(maxWidth: geo.size.width)
-
+                    
                     if let percentage {
                         Text((Double(percentage) / 100).formatted(.percent))
                             .font(Theme.fonts.subtitle)
@@ -52,7 +94,7 @@ struct AmountTextField: View {
                     }
                 }
                 Spacer()
-                VStack(spacing: 8) {
+                VStack(spacing: 12) {
                     if let error {
                         Text(error.localized)
                             .foregroundColor(Theme.colors.alertError)
@@ -61,6 +103,9 @@ struct AmountTextField: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     percentageView
+                    if !(customView is EmptyView) {
+                        customView
+                    }
                     availableBalanceView
                 }
             }
@@ -73,11 +118,12 @@ struct AmountTextField: View {
         .onChange(of: amount) { _, newValue in
             amountInternal = newValue
         }
-        .onChange(of: percentage) { _, percentage in
-            guard let percentage else { return }
-            let multiplier = (Decimal(percentage) / 100)
-            let amountDecimal = availableAmount * multiplier
-            amount = amountDecimal.formatToDecimal(digits: decimals)
+        .onChange(of: percentage) { _, _ in
+            setupAmount()
+        }
+        .onLoad { setupAmount() }
+        .onChange(of: availableAmount) { _, _ in
+            setupAmount()
         }
     }
     
@@ -100,7 +146,13 @@ struct AmountTextField: View {
                 .foregroundStyle(Theme.colors.textLight)
         }
         .font(Theme.fonts.bodySMedium)
-        .padding(.top, 4)
+    }
+    
+    func setupAmount() {
+        guard let percentage else { return }
+        let multiplier = (Decimal(percentage) / 100)
+        let amountDecimal = availableAmount * multiplier
+        amount = amountDecimal.formatToDecimal(digits: decimals)
     }
 }
 

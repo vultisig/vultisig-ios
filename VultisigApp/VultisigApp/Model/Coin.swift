@@ -97,6 +97,7 @@ class Coin: ObservableObject, Codable, Hashable {
         let value = stakedBalance.toDecimal() / pow(10, decimals)
         return value
     }
+    
     var combinedBalanceDecimal: Decimal {
         // Only return the available balance, excluding staked/bonded amounts
         // Staked/bonded amounts are shown separately in the DeFi tab
@@ -328,6 +329,15 @@ class Coin: ObservableObject, Codable, Hashable {
     
     func toCoinMeta() -> CoinMeta {
         return CoinMeta(chain: chain, ticker: ticker, logo: logo, decimals: decimals, priceProviderId: priceProviderId, contractAddress: contractAddress, isNativeToken: isNativeToken)
+    }
+    
+    var supportsAutocompound: Bool {
+        switch ticker.uppercased() {
+        case "TCY":
+            return true
+        default:
+            return false
+        }
     }
 }
 

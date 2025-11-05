@@ -178,7 +178,7 @@
 "emptyEmailPleaseCheck" = "Empty email, please check.";
 "emptyField" = "Empty Field";
 "enable" = "Enable";
-"enableAutoCompounding" = "Enable Auto-Compounding";
+"enableAutoCompounding" = "Enable Auto-Compound";
 "enableBiometrics" = "Enable Biometrics";
 "enableBiometricsFastSigning" = "Enable Biometrics Fast Signing";
 "enableDKLS" = "Enable DKLS";
@@ -774,7 +774,7 @@
 "unableToStartKeysignProcess" = "Unable to start the keysign process due to missing information.";
 "unableToVerifyGasTokenError" = "Unable to verify gas token balance. Please try again.";
 "unavailableBalanceError" = "Wallet balance is not available.";
-"unknown" = "Unknown";
+"unknown" = "";
 "unstakeAutoCompoundTCY" = "Unstake Auto-Compound TCY";
 "unstakeFromAutoCompoundingTCYDeposits" = "Unstake from auto-compounding TCY deposits";
 "unsupportedFileTypeError" = "Unsupported file type, please try again";
@@ -936,6 +936,7 @@
 "estimatedReward" = "Estimated reward";
 "stake" = "Stake";
 "unstake" = "Unstake";
+"withdraw" = "Withdraw";
 "withdrawAmount" = "Withdraw %@";
 "actions" = "Actions";
 "unstakeCoin" = "Unstake %@";

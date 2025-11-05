@@ -5,7 +5,12 @@
 //  Created by Gaston Mazzeo on 31/10/2025.
 //
 
+import Foundation
+
 enum FunctionTransactionType: Hashable {
     case bond(node: String?)
     case unbond(node: BondNode)
+    case stake(coin: CoinMeta)
+    case unstake(coin: CoinMeta)
+    case withdrawRewards(coin: CoinMeta, rewards: Decimal, rewardsCoin: CoinMeta)
 }
