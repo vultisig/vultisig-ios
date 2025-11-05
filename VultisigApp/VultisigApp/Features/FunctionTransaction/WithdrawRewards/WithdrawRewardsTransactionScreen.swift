@@ -17,11 +17,10 @@ struct WithdrawRewardsTransactionScreen: View {
     
     @State var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?
-    @State var percentageSelected: Int?
     
     var body: some View {
         TransactionFormScreen(
-            title: "unbondRune".localized,
+            title: String(format: "withdrawRewards".localized, viewModel.coin.ticker),
             validForm: $viewModel.validForm,
             onContinue: onContinue
         ) {
@@ -38,18 +37,19 @@ struct WithdrawRewardsTransactionScreen: View {
                 AmountTextField(
                     amount: $viewModel.amountField.value,
                     error: $viewModel.amountField.error,
-                    ticker: viewModel.coin.chain.ticker,
+                    ticker: viewModel.rewardsCoin.ticker,
                     type: .slider,
-                    availableAmount: viewModel.stakedAmount,
-                    decimals: viewModel.coin.decimals,
-                    percentage: $percentageSelected,
+                    availableAmount: viewModel.rewards,
+                    decimals: viewModel.rewardsCoin.decimals,
+                    percentage: $viewModel.percentageSelected
                 ).focused($focusedField, equals: .amount)
             }
         }
         .onLoad {
             viewModel.onLoad()
+            focusedFieldBinding = .amount
         }
-        .onChange(of: percentageSelected) { _, newValue in
+        .onChange(of: viewModel.percentageSelected) { _, newValue in
             guard let newValue else { return }
             viewModel.onPercentage(newValue)
         }
@@ -73,7 +73,9 @@ struct WithdrawRewardsTransactionScreen: View {
     WithdrawRewardsTransactionScreen(
         viewModel: WithdrawRewardsTransactionViewModel(
             coin: .example,
-            vault: .example
+            vault: .example,
+            rewards: .zero,
+            rewardsCoin: .example
         )
     ) { _ in }
 }

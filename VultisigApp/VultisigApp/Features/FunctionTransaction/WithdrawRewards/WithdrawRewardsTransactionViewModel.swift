@@ -11,12 +11,14 @@ import Combine
 final class WithdrawRewardsTransactionViewModel: ObservableObject, Form {
     let coin: Coin
     let vault: Vault
+    let rewards: Decimal
+    let rewardsCoin: CoinMeta
     
+    @Published var percentageSelected: Int? = 100
     @Published var validForm: Bool = false
-    @Published private(set) var stakedAmount: Decimal = 0
     @Published var amountField = FormField(
         label: "amount".localized,
-        placeholder: "0 RUNE"
+        placeholder: "0"
     )
     
     private(set) var isMaxAmount: Bool = false
@@ -27,40 +29,37 @@ final class WithdrawRewardsTransactionViewModel: ObservableObject, Form {
     var formCancellable: AnyCancellable?
     var cancellables = Set<AnyCancellable>()
     
-    init(coin: Coin, vault: Vault) {
+    init(
+        coin: Coin,
+        vault: Vault,
+        rewards: Decimal,
+        rewardsCoin: CoinMeta
+    ) {
         self.coin = coin
         self.vault = vault
+        self.rewards = rewards
+        self.rewardsCoin = rewardsCoin
     }
     
     func onLoad() {
         setupForm()
-//        amountField.value = bondNodeFormattedAmount.formatForDisplay(maxDecimals: coin.decimals)
+        amountField.validators = [
+            AmountBalanceValidator(balance: rewards)
+        ]
+        amountField.value = rewards.formatForDisplay(maxDecimals: rewardsCoin.decimals)
+        percentageSelected = 100
     }
     
     var transactionBuilder: TransactionBuilder? {
         guard validForm else { return nil }
-        return nil
-//        return UnbondTransactionBuilder(
-//            coin: coin,
-//            unbondAmount: amountField.value.formatToDecimal(digits: coin.decimals),
-//            sendMaxAmount: isMaxAmount,
-//            nodeAddress: addressViewModel.field.value,
-//            providerAddress: providerViewModel.field.value
-//        )
+        return RUJIWithdrawRewardsTransactionBuilder(
+            coin: coin,
+            withdrawAmount: amountField.value,
+            sendMaxAmount: isMaxAmount
+        )
     }
     
     func onPercentage(_ percentage: Int) {
         isMaxAmount = percentage == 100
     }
-    
-//    func updateAmountValidation() {
-//        var validators: [FormFieldValidator] = [RequiredValidator(errorMessage: "emptyAmountField".localized)]
-//        if let bondNode {
-//            bondNodeFormattedAmount = coin.valueWithDecimals(value: bondNode.bond)
-//            validators.append(AmountBalanceValidator(balance: bondNodeFormattedAmount))
-//        } else {
-//            bondNodeFormattedAmount = 0
-//        }
-//        amountField.validators = validators
-//    }
 }

@@ -267,6 +267,7 @@
 		13A964132EBB9FA90025FB7A /* RUJIStakeTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A964122EBB9FA50025FB7A /* RUJIStakeTransactionBuilder.swift */; };
 		13A964182EBBD8F60025FB7A /* TCYUnstakeTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A964172EBBD8F60025FB7A /* TCYUnstakeTransactionBuilder.swift */; };
 		13A9641A2EBBDA090025FB7A /* RUJIUnstakeTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A964192EBBDA090025FB7A /* RUJIUnstakeTransactionBuilder.swift */; };
+		13A9641C2EBBEB020025FB7A /* RUJIWithdrawRewardsTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A9641B2EBBEAF90025FB7A /* RUJIWithdrawRewardsTransactionBuilder.swift */; };
 		13AA6CDD2EA8742100760C8D /* DefiTHORChainLPsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AA6CDB2EA8742100760C8D /* DefiTHORChainLPsViewModel.swift */; };
 		13AA6CDE2EA8742100760C8D /* THORChainLPsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AA6CDC2EA8742100760C8D /* THORChainLPsAPI.swift */; };
 		13AA6CE02EA8743F00760C8D /* THORChainPoolStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AA6CDF2EA8743F00760C8D /* THORChainPoolStats.swift */; };
@@ -1433,6 +1434,7 @@
 		13A964122EBB9FA50025FB7A /* RUJIStakeTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUJIStakeTransactionBuilder.swift; sourceTree = "<group>"; };
 		13A964172EBBD8F60025FB7A /* TCYUnstakeTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TCYUnstakeTransactionBuilder.swift; sourceTree = "<group>"; };
 		13A964192EBBDA090025FB7A /* RUJIUnstakeTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUJIUnstakeTransactionBuilder.swift; sourceTree = "<group>"; };
+		13A9641B2EBBEAF90025FB7A /* RUJIWithdrawRewardsTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUJIWithdrawRewardsTransactionBuilder.swift; sourceTree = "<group>"; };
 		13AA6CDB2EA8742100760C8D /* DefiTHORChainLPsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainLPsViewModel.swift; sourceTree = "<group>"; };
 		13AA6CDC2EA8742100760C8D /* THORChainLPsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainLPsAPI.swift; sourceTree = "<group>"; };
 		13AA6CDF2EA8743F00760C8D /* THORChainPoolStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainPoolStats.swift; sourceTree = "<group>"; };
@@ -3379,6 +3381,7 @@
 		13A964142EBBD8DA0025FB7A /* RUJI */ = {
 			isa = PBXGroup;
 			children = (
+				13A9641B2EBBEAF90025FB7A /* RUJIWithdrawRewardsTransactionBuilder.swift */,
 				13A964122EBB9FA50025FB7A /* RUJIStakeTransactionBuilder.swift */,
 				13A964192EBBDA090025FB7A /* RUJIUnstakeTransactionBuilder.swift */,
 			);
@@ -6199,6 +6202,7 @@
 				DE3D44AF2BD2487900BD64CD /* CosmosSignature.swift in Sources */,
 				1390D8CC2E394778003F3E20 /* SecurityScannerServiceFactory.swift in Sources */,
 				A623A09F2BF09FEE00AA2F8D /* NewWalletNameView.swift in Sources */,
+				13A9641C2EBBEB020025FB7A /* RUJIWithdrawRewardsTransactionBuilder.swift in Sources */,
 				A6C0D5652BB3BD0F00156689 /* UTXOTransactionCell.swift in Sources */,
 				A65649F82B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift in Sources */,
 				13AC28082E61E294001CB9AA /* ScreenEdgeInsets.swift in Sources */,

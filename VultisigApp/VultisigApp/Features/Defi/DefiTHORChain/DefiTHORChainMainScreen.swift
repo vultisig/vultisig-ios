@@ -93,7 +93,16 @@ struct DefiTHORChainMainScreen: View {
                     loadingBalances: $loadingBalances,
                     onStake: { transactionToPresent = .stake(coin: $0.coin) },
                     onUnstake: { transactionToPresent = .unstake(coin: $0.coin) },
-                    onWithdraw: { transactionToPresent = .withdrawRewards(coin: $0.coin) },
+                    onWithdraw: { position in
+                        guard let rewards = position.rewards, let rewardsCoin = position.rewardCoin else {
+                            return
+                        }
+                        transactionToPresent = .withdrawRewards(
+                            coin: position.coin,
+                            rewards: rewards,
+                            rewardsCoin: rewardsCoin
+                        )
+                    },
                     emptyStateView: { emptyStateView }
                 )
             case .liquidityPool:

@@ -55,8 +55,18 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
-            case .withdrawRewards(let coin):
-                EmptyView()
+            case .withdrawRewards(let coin, let rewards, let rewardsCoin):
+                resolvingCoin(coinMeta: coin) {
+                    WithdrawRewardsTransactionScreen(
+                        viewModel: WithdrawRewardsTransactionViewModel(
+                            coin: $0,
+                            vault: vault,
+                            rewards: rewards,
+                            rewardsCoin: rewardsCoin
+                        ),
+                        onVerify: onVerify
+                    )
+                }
             }
         }
         .withLoading(isLoading: $isLoading)
