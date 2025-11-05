@@ -41,7 +41,6 @@ struct SendDetailsScreen: View {
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @State var navigateToVerify: Bool = false
     @State var countdownTimer: Timer?
-    @State var isAddingChainAutomatically: Bool = false
     
     var body: some View {
         container
@@ -81,8 +80,6 @@ struct SendDetailsScreen: View {
                 }
             }
             .onChange(of: tx.toAddress) { _, _ in
-                // Don't validate if we're automatically adding a chain
-                guard !isAddingChainAutomatically else { return }
                 validateAddress()
             }
             .onDisappear {
@@ -123,12 +120,6 @@ struct SendDetailsScreen: View {
                     selectedChain: sendDetailsViewModel.selectedChain
                 )
                 .environmentObject(coinSelectionViewModel)
-            }
-            .onChange(of: sendDetailsViewModel.needsToAddChain) { oldValue, newValue in
-                if newValue {
-                    // Automatically add the detected chain without asking
-                    addDetectedChainAutomatically()
-                }
             }
     }
     
@@ -498,84 +489,6 @@ extension SendDetailsScreen {
             sendCryptoViewModel.pendingTransactionCountdown = 0
             stopCountdownTimer()
             
-        }
-    }
-    
-    private func addDetectedChainAutomatically() {
-        guard let chain = sendDetailsViewModel.detectedChain else { return }
-        
-        // Find the native token CoinMeta for this chain from TokensStore
-        guard let chainMeta = TokensStore.TokenSelectionAssets.first(where: { 
-            $0.chain == chain && $0.isNativeToken 
-        }) else {
-            print("❌ Native token not found in TokensStore for chain: \(chain.name)")
-            
-            // Reset flags
-            sendDetailsViewModel.needsToAddChain = false
-            sendDetailsViewModel.detectedChain = nil
-            
-            // Show error to user
-            sendCryptoViewModel.errorTitle = "error"
-            sendCryptoViewModel.errorMessage = "Chain \(chain.name) is not supported. Please select manually."
-            sendCryptoViewModel.showAlert = true
-            return
-        }
-        
-        // Only reset flag after successfully finding the chain meta
-        sendDetailsViewModel.needsToAddChain = false
-        
-        // Set flag to prevent automatic validation during chain addition
-        isAddingChainAutomatically = true
-        
-        // Show loader while adding
-        sendCryptoViewModel.isValidatingForm = true
-        
-        // Add to selection and save
-        var selection = coinSelectionViewModel.selection
-        selection.insert(chainMeta)
-        
-        Task {
-            await CoinService.saveAssets(for: vault, selection: selection)
-            
-            // After adding, find the newly created coin and switch to it
-            await MainActor.run {
-                // Find the newly added coin in the vault
-                if let newCoin = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken }) {
-                    // Update transaction with the new coin
-                    tx.coin = newCoin
-                    tx.fromAddress = newCoin.address
-                    
-                    // Update UI
-                    sendDetailsViewModel.selectedChain = chain
-                    
-                    // Hide loader first
-                    sendCryptoViewModel.isValidatingForm = false
-                    
-                    // FORCE clear ALL error states
-                    sendCryptoViewModel.showAddressAlert = false
-                    sendCryptoViewModel.errorMessage = ""
-                    sendCryptoViewModel.errorTitle = ""
-                    
-                    // Mark as valid - we already know it's valid because WalletCore detected it
-                    sendCryptoViewModel.isValidAddress = true
-                    
-                    // Mark address as done and move to amount automatically
-                    sendDetailsViewModel.addressSetupDone = true
-                    sendDetailsViewModel.onSelect(tab: .amount)
-                    
-                    // Reset flag AFTER everything is done
-                    isAddingChainAutomatically = false
-                    
-                    // Load gas info for the new chain
-                    Task {
-                        await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
-                    }
-                } else {
-                    print("❌ Could not find newly added coin in vault")
-                    sendCryptoViewModel.isValidatingForm = false
-                    isAddingChainAutomatically = false
-                }
-            }
         }
     }
 }

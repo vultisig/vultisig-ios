@@ -147,14 +147,6 @@ struct MacAddressScannerView: View {
         if let viewModel = sendDetailsViewModel, let vault = selectedVault, !tx.toAddress.isEmpty {
             let detectedCoin = viewModel.detectAndSwitchChain(from: tx.toAddress, vault: vault, currentChain: tx.coin.chain, tx: tx)
             
-            // If chain needs to be added, don't validate yet - wait for chain to be added
-            if viewModel.needsToAddChain {
-                sendCryptoViewModel.showAddressAlert = false
-                sendCryptoViewModel.errorMessage = ""
-                goBack()
-                return
-            }
-            
             if detectedCoin != nil {
                 // Clear previous error
                 sendCryptoViewModel.showAddressAlert = false

@@ -99,13 +99,6 @@ extension SendCryptoAddressTextField {
         if let viewModel = sendDetailsViewModel, let vault = vault, !address.isEmpty {
             let detectedCoin = viewModel.detectAndSwitchChain(from: address, vault: vault, currentChain: tx.coin.chain, tx: tx)
             
-            // If chain needs to be added, don't validate yet - wait for chain to be added
-            if viewModel.needsToAddChain {
-                sendCryptoViewModel.showAddressAlert = false
-                sendCryptoViewModel.errorMessage = ""
-                return
-            }
-            
             if detectedCoin != nil {
                 // Chain was detected and switched
                 // Clear previous error first
@@ -119,7 +112,7 @@ extension SendCryptoAddressTextField {
                     detailsVM.onSelect(tab: .amount)
                 }
             } else {
-                // No chain change needed, validate with debounce
+                // Chain not detected or not in vault - validate and show error
                 DebounceHelper.shared.debounce {
                     self.validateAddress(address)
                 }

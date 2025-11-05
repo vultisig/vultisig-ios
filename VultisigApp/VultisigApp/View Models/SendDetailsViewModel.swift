@@ -25,7 +25,6 @@ class SendDetailsViewModel: ObservableObject {
     @Published var amountSetupDone: Bool = false
     @Published var showCoinPickerSheet: Bool = false
     @Published var showChainPickerSheet: Bool = false
-    @Published var detectedChain: Chain? = nil
     
     init(hasPreselectedCoin: Bool = false) {
         self.hasPreselectedCoin = hasPreselectedCoin
@@ -152,13 +151,9 @@ class SendDetailsViewModel: ObservableObject {
         return nil
     }
     
-    /// Handles a detected chain - switches to it if in vault, or adds it automatically
-    /// Returns the coin if found in vault, or nil if chain was added
+    /// Handles a detected chain - switches to it if in vault
+    /// Returns the coin if found in vault, or nil if chain is missing
     private func handleDetectedChain(_ chain: Chain, vault: Vault, tx: SendTransaction) -> Coin? {
-        // Reset state at the start to avoid stale published values
-        detectedChain = nil
-        needsToAddChain = false
-        
         // FILTER to get ONLY native tokens for this chain
         let nativeCoins = vault.coins.filter { coin in
             coin.chain == chain && coin.isNativeToken == true
@@ -166,9 +161,7 @@ class SendDetailsViewModel: ObservableObject {
         
         // Get the first (and should be only) native token
         guard let coin = nativeCoins.first else {
-            // Native token not in vault, save it to add later
-            detectedChain = chain
-            needsToAddChain = true
+            // Native token not in vault
             return nil
         }
         
@@ -185,7 +178,4 @@ class SendDetailsViewModel: ObservableObject {
         
         return coin
     }
-    
-    // Flag to indicate chain needs to be added automatically (no alert)
-    @Published var needsToAddChain: Bool = false
 }
