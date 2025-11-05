@@ -155,6 +155,10 @@ class SendDetailsViewModel: ObservableObject {
     /// Handles a detected chain - switches to it if in vault, or adds it automatically
     /// Returns the coin if found in vault, or nil if chain was added
     private func handleDetectedChain(_ chain: Chain, vault: Vault, tx: SendTransaction) -> Coin? {
+        // Reset state at the start to avoid stale published values
+        detectedChain = nil
+        needsToAddChain = false
+        
         // FILTER to get ONLY native tokens for this chain
         let nativeCoins = vault.coins.filter { coin in
             coin.chain == chain && coin.isNativeToken == true

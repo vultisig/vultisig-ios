@@ -99,6 +99,13 @@ extension SendCryptoAddressTextField {
         if let viewModel = sendDetailsViewModel, let vault = vault, !address.isEmpty {
             let detectedCoin = viewModel.detectAndSwitchChain(from: address, vault: vault, currentChain: tx.coin.chain, tx: tx)
             
+            // If chain needs to be added, don't validate yet - wait for chain to be added
+            if viewModel.needsToAddChain {
+                sendCryptoViewModel.showAddressAlert = false
+                sendCryptoViewModel.errorMessage = ""
+                return
+            }
+            
             if detectedCoin != nil {
                 // Chain was detected and switched
                 // Clear previous error first

@@ -501,16 +501,25 @@ extension SendDetailsScreen {
     private func addDetectedChainAutomatically() {
         guard let chain = sendDetailsViewModel.detectedChain else { return }
         
-        // Reset flag immediately
-        sendDetailsViewModel.needsToAddChain = false
-        
         // Find the native token CoinMeta for this chain from TokensStore
         guard let chainMeta = TokensStore.TokenSelectionAssets.first(where: { 
             $0.chain == chain && $0.isNativeToken 
         }) else {
-            print("❌ Native token not found for chain: \(chain.name)")
+            print("❌ Native token not found in TokensStore for chain: \(chain.name)")
+            
+            // Reset flags
+            sendDetailsViewModel.needsToAddChain = false
+            sendDetailsViewModel.detectedChain = nil
+            
+            // Show error to user
+            sendCryptoViewModel.errorTitle = "error"
+            sendCryptoViewModel.errorMessage = "Chain \(chain.name) is not supported. Please select manually."
+            sendCryptoViewModel.showAlert = true
             return
         }
+        
+        // Only reset flag after successfully finding the chain meta
+        sendDetailsViewModel.needsToAddChain = false
         
         // Show loader while adding
         sendCryptoViewModel.isValidatingForm = true
