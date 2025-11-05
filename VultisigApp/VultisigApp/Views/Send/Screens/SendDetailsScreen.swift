@@ -41,6 +41,7 @@ struct SendDetailsScreen: View {
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @State var navigateToVerify: Bool = false
     @State var countdownTimer: Timer?
+    @State var isAddingChainAutomatically: Bool = false
     
     var body: some View {
         container
@@ -80,6 +81,8 @@ struct SendDetailsScreen: View {
                 }
             }
             .onChange(of: tx.toAddress) { _, _ in
+                // Don't validate if we're automatically adding a chain
+                guard !isAddingChainAutomatically else { return }
                 validateAddress()
             }
             .onDisappear {
@@ -521,6 +524,9 @@ extension SendDetailsScreen {
         // Only reset flag after successfully finding the chain meta
         sendDetailsViewModel.needsToAddChain = false
         
+        // Set flag to prevent automatic validation during chain addition
+        isAddingChainAutomatically = true
+        
         // Show loader while adding
         sendCryptoViewModel.isValidatingForm = true
         
@@ -549,11 +555,16 @@ extension SendDetailsScreen {
                     sendCryptoViewModel.showAddressAlert = false
                     sendCryptoViewModel.errorMessage = ""
                     sendCryptoViewModel.errorTitle = ""
+                    
+                    // Mark as valid - we already know it's valid because WalletCore detected it
                     sendCryptoViewModel.isValidAddress = true
                     
                     // Mark address as done and move to amount automatically
                     sendDetailsViewModel.addressSetupDone = true
                     sendDetailsViewModel.onSelect(tab: .amount)
+                    
+                    // Reset flag AFTER everything is done
+                    isAddingChainAutomatically = false
                     
                     // Load gas info for the new chain
                     Task {
@@ -562,6 +573,7 @@ extension SendDetailsScreen {
                 } else {
                     print("❌ Could not find newly added coin in vault")
                     sendCryptoViewModel.isValidatingForm = false
+                    isAddingChainAutomatically = false
                 }
             }
         }
