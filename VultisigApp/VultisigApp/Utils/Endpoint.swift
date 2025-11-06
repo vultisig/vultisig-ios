@@ -245,22 +245,22 @@ class Endpoint {
     }
     
     static func buildAffiliateParams(chain: SwapChain, referredCode: String, discountBps: Int) -> String {
-        var affiliateParams = [String: String]()
+        var affiliateParams: [(affiliate: String, bps: String)] = []
         if (chain == .thorchain || chain == .thorchainStagenet) && !referredCode.isEmpty {
             // THORChain supports nested affiliates
             let affiliateFeeRateBp = bps(for: discountBps, affiliateFeeRate: THORChainSwaps.referredAffiliateFeeRateBp)
-            affiliateParams[referredCode] = THORChainSwaps.referredUserFeeRateBp
-            affiliateParams[THORChainSwaps.affiliateFeeAddress] = "\(affiliateFeeRateBp)"
+            affiliateParams.append((referredCode, THORChainSwaps.referredUserFeeRateBp))
+            affiliateParams.append((THORChainSwaps.affiliateFeeAddress, "\(affiliateFeeRateBp)"))
         } else {
             // MayaChain only supports single affiliate
             let affiliateFeeRateBp = bps(for: discountBps, affiliateFeeRate: THORChainSwaps.affiliateFeeRateBp)
-            affiliateParams[THORChainSwaps.affiliateFeeAddress] = "\(affiliateFeeRateBp)"
+            affiliateParams.append((THORChainSwaps.affiliateFeeAddress, "\(affiliateFeeRateBp)"))
         }
         
         guard !affiliateParams.isEmpty else { return .empty }
         
-        let affilates = affiliateParams.keys.joined(separator: "/")
-        let affiliateBps = affiliateParams.values.joined(separator: "/")
+        let affilates = affiliateParams.map(\.affiliate).joined(separator: "/")
+        let affiliateBps = affiliateParams.map(\.bps).joined(separator: "/")
         
         return "&affiliate=\(affilates)&affiliate_bps=\(affiliateBps)"
     }
