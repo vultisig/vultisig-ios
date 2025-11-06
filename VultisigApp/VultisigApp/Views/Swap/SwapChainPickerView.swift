@@ -74,6 +74,7 @@ struct SwapChainPickerView: View {
                 }
             }
         }
+        .background(Theme.colors.bgPrimary)
         .applySheetSize()
         .sheetStyle()
         .onDisappear { viewModel.searchText = "" }
