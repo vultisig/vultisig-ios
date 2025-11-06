@@ -280,7 +280,7 @@
 "fastVaultSummaryText1" = "通过邮件收到的保险库份额 1";
 "fastVaultSummaryText2" = "由您存储的保险库份额 2";
 "fastVaultSummaryText3" = "将保险库份额保存在不同位置";
-"fastVaultSummaryText4" = "所有保险库份额确保安全访问您的资金";
+"fastVaultSummaryText4" = "访问所有保险库份额可确保您的资金获得最大安全保障";
 "fees" = "费用";
 "fetchingVaultDetails" = "正在获取保险库详情";
 "findCustomTokens" = "查找自定义代币";

@@ -30,7 +30,7 @@ struct SecureBackupGuideAnimation: View {
             rectangle
             content
         }
-        .padding(24)
+        .padding(.vertical, 24)
     }
 
     var rectangle: some View {
@@ -103,10 +103,10 @@ struct SecureBackupGuideAnimation: View {
         let secureVaultSummaryText1 = "Your vault has \(vault?.signers.count ?? 0) Vault Shares"
 
         return VStack(spacing: 16) {
-            getCell(icon: "info.circle", text: secureVaultSummaryText1, showCell: showCell1)
-            getCell(icon: "checkmark.icloud", text: "secureVaultSummaryText2", showCell: showCell2)
-            getCell(icon: "arrow.trianglehead.branch", text: "secureVaultSummaryText3", showCell: showCell3)
-            getCell(icon: "square.3.layers.3d", text: "secureVaultSummaryText4", showCell: showCell4)
+            getCell(icon: "email-2", text: secureVaultSummaryText1, showCell: showCell1)
+            getCell(icon: "cloud-check", text: "secureVaultSummaryText2", showCell: showCell2)
+            getCell(icon: "arrow-split", text: "secureVaultSummaryText3", showCell: showCell3)
+            getCell(icon: "cloud-check-2", text: "secureVaultSummaryText4", showCell: showCell4)
                 .background(
                     GeometryReader { geometry in
                         Color.clear
@@ -125,8 +125,11 @@ struct SecureBackupGuideAnimation: View {
                 .foregroundColor(Theme.colors.bgSecondary)
 
             HStack(spacing: 12) {
-                Image(systemName: icon)
-                    .foregroundColor(Theme.colors.primaryAccent4)
+                Icon(
+                    named: icon,
+                    color: Theme.colors.primaryAccent4,
+                    size: 24
+                )
 
                 Text(NSLocalizedString(text, comment: ""))
                     .foregroundColor(Theme.colors.textPrimary)
