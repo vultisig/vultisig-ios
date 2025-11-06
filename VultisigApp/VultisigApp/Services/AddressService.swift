@@ -31,8 +31,8 @@ public struct AddressService {
         
         // Check if it's an EVM address - don't auto-switch for safety
         if isEVMAddress(address) {
-            // Only keep current chain if it's already EVM
-            return currentChain.type == .EVM ? nil : nil
+            // Don't auto-switch between EVM chains for safety
+            return nil
         }
         
         // Iterate through all WalletCore CoinTypes to find matching address
