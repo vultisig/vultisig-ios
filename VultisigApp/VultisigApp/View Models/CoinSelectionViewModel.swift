@@ -44,9 +44,13 @@ class CoinSelectionViewModel: ObservableObject {
         await balanceService.updateBalance(for: coin)
     }
     
-    func setData(for vault: Vault) {
+    func setData(for vault: Vault, checkForSelected: Bool = true) {
+        if checkForSelected {
+            checkSelected(for: vault)
+        } else {
+            selection = []
+        }
         groupAssets()
-        checkSelected(for: vault)
     }
     
     func hasTokens(chain: Chain) -> Bool {
@@ -55,7 +59,7 @@ class CoinSelectionViewModel: ObservableObject {
     }
     
     private func checkSelected(for vault: Vault) {
-        selection = Set(vault.coins.map{$0.toCoinMeta()})
+        selection = Set(vault.coins.map { $0.toCoinMeta() })
     }
     
     private func groupAssets() {

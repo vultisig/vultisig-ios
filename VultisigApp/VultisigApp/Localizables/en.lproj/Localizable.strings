@@ -278,7 +278,7 @@
 "fastVaultSummaryText1" = "Vault Share 1 received via mail";
 "fastVaultSummaryText2" = "Vault Share 2 stored by you";
 "fastVaultSummaryText3" = "Keep vault shares in different locations";
-"fastVaultSummaryText4" = "All vault shares ensure secure access to your funds";
+"fastVaultSummaryText4" = "Access to all vault shares ensures maximum security for your funds";
 "fees" = "Fees";
 "fetchingVaultDetails" = "Fetching Vault Details";
 "findCustomTokens" = "Find custom token";
@@ -952,3 +952,4 @@
 "noPositionsSelectedTitle" = "No positions selected";
 "noPositionsSelectedSubtitle" = "You’ve disabled all positions for this chain. Enable at least one position to view balances and manage actions.";
 "managePositions" = "Manage Positions";
+"chooseYourChains" = "Choose your chains";
