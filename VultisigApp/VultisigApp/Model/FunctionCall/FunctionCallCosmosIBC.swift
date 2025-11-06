@@ -124,7 +124,6 @@ class FunctionCallCosmosIBC: FunctionCallAddressable, ObservableObject {
         dict.set("destinationChain", self.selectedChainObject?.name ?? "")
         dict.set("destinationChannel", self.tx.coin.chain.ibcChannel(to: selectedChainObject) ?? "")
         dict.set("destinationAddress", self.destinationAddress)
-        dict.set("transferMemo", self.fnCall)
         dict.set("memo", self.toString())
         return dict
     }
