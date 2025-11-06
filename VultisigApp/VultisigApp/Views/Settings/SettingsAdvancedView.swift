@@ -38,6 +38,12 @@ struct SettingsAdvancedView: View {
             )
             
             SettingToggleCell(
+                title: "THORChain Stagenet",
+                icon: "timelapse",
+                isEnabled: $settingsViewModel.enableThorchainStagenet
+            )
+            
+            SettingToggleCell(
                 title: "Buy",
                 icon: "creditcard",
                 isEnabled: $settingsViewModel.buyEnabled

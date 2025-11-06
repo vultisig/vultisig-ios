@@ -38,6 +38,9 @@ extension TokensStore {
         static var ethSepolia: CoinMeta {
             CoinMeta(chain: Chain.ethereumSepolia, ticker: "ETH", logo: "eth", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
         }
+        static var runeStagenet: CoinMeta {
+            CoinMeta(chain: Chain.thorChainStagenet, ticker: "RUNE", logo: "rune", decimals: 8, priceProviderId: "thorchain", contractAddress: "", isNativeToken: true)
+        }
         static var mantle: CoinMeta {
             CoinMeta(chain: Chain.mantle, ticker: "MNT", logo: "mantle", decimals: 18, priceProviderId: "mantle", contractAddress: "", isNativeToken: true)
         }
