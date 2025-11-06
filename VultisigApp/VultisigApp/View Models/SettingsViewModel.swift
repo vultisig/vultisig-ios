@@ -25,6 +25,7 @@ class SettingsViewModel: ObservableObject {
     @AppStorage("allowSwap") var allowSwap: Bool = false
     @AppStorage("BuyEnabled") var buyEnabled: Bool = false
     @AppStorage("sepolia") var enableSepolia: Bool = false
+    @AppStorage("thorchainStagenet") var enableThorchainStagenet: Bool = false
     @AppStorage("SellEnabled") var sellEnabled: Bool = false
     
     init() {
