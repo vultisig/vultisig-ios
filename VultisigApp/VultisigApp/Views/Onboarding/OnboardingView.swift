@@ -58,7 +58,7 @@ struct OnboardingView: View {
         }
         .crossPlatformSheet(isPresented: $showSummary) {
             OnboardingSummaryView(kind: .initial, isPresented: $showSummary, onDismiss: {
-                accountViewModel.showOnboarding = false
+                accountViewModel.showOnboarding = true
             })
         }
     }

@@ -85,7 +85,6 @@ struct CoinService {
         
         // Add them with auto-discovery for native tokens
         try await addToChain(assets: newCoins, to: vault)
-        vault.defiChains.append(contentsOf: Array(Set(newCoins.map(\.chain))))
     }
     
     private static func findAllCoinsToRemove(vault: Vault, selection: Set<CoinMeta>) -> [Coin] {
