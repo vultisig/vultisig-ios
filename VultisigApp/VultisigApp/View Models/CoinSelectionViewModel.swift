@@ -75,7 +75,7 @@ class CoinSelectionViewModel: ObservableObject {
             return true
         }
         
-        groupedAssets = Dictionary(grouping: filteredAssets.sorted(by: { first, second in
+        groupedAssets = Dictionary(grouping: filteredAssets.sorted(by: { first, _ in
             if first.isNativeToken {
                 return true
             }
