@@ -18,6 +18,7 @@ struct SwapChainPickerView: View {
     @Binding var showSheet: Bool
     @Binding var selectedChain: Chain?
     
+    @State var searchBarFocused: Bool = false
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
     init(
@@ -33,10 +34,40 @@ struct SwapChainPickerView: View {
     }
     
     var body: some View {
-        Screen(showNavigationBar: false) {
-            view
+        container
+    }
+    
+    var container: some View {
+#if os(iOS)
+        NavigationStack {
+            content
         }
-        .crossPlatformToolbar("selectChain".localized, showsBackButton: false) {
+#else
+        content
+            .presentationSizingFitted()
+            .applySheetSize()
+            .transaction { $0.disablesAnimations = true }
+#endif
+    }
+    
+    var content: some View {
+        VStack(spacing: 12) {
+            searchBar
+            ScrollView {
+                VStack(spacing: 12) {
+                    if viewModel.filteredChains.count > 0 {
+                        listHeader
+                        list
+                    } else {
+                        emptyMessage
+                    }
+                }
+                .padding(.bottom, 50)
+            }
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 16)
+        .crossPlatformToolbar(showsBackButton: false) {
             CustomToolbarItem(placement: .leading) {
                 ToolbarButton(image: "x") {
                     showSheet.toggle()
@@ -46,23 +77,6 @@ struct SwapChainPickerView: View {
         .applySheetSize()
         .sheetStyle()
         .onDisappear { viewModel.searchText = "" }
-    }
-    
-    var view: some View {
-        ScrollView {
-            VStack(spacing: 12) {
-                searchBar
-                
-                if viewModel.filteredChains.count > 0 {
-                    listHeader
-                    list
-                } else {
-                    emptyMessage
-                }
-            }
-            .padding(.vertical, 8)
-            .padding(.bottom, 50)
-        }
     }
     
     var listHeader: some View {
@@ -101,10 +115,28 @@ struct SwapChainPickerView: View {
     }
     
     var searchBar: some View {
-        SearchTextField(value: $viewModel.searchText)
-            .padding(.bottom, 12)
-            .listRowInsets(EdgeInsets())
-            .listRowSeparator(.hidden)
+        VStack(alignment: .leading, spacing: 16) {
+            Text("selectChain".localized)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .font(Theme.fonts.title2)
+                .multilineTextAlignment(.leading)
+            
+            HStack(spacing: 12) {
+                SearchTextField(value: $viewModel.searchText, isFocused: $searchBarFocused)
+                Button {
+                    viewModel.searchText = ""
+                    searchBarFocused.toggle()
+                } label: {
+                    Text("cancel".localized)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                        .font(Theme.fonts.bodySMedium)
+                }
+                .buttonStyle(.plain)
+                .transition(.opacity)
+                .showIf(searchBarFocused)
+            }
+            .animation(.easeInOut, value: searchBarFocused)
+        }
     }
     
     var sortedChains: [(chain: Chain, balance: String)] {
