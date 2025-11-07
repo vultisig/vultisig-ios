@@ -13,4 +13,6 @@ enum FunctionTransactionType: Hashable {
     case stake(coin: CoinMeta)
     case unstake(coin: CoinMeta)
     case withdrawRewards(coin: CoinMeta, rewards: Decimal, rewardsCoin: CoinMeta)
+    case mint(coin: CoinMeta, yCoin: CoinMeta)
+    case redeem(coin: CoinMeta, yCoin: CoinMeta)
 }

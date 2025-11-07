@@ -7,11 +7,11 @@
 
 import SwiftUI
 
-struct AmountTextField<CustomView: View>: View {
-    enum PercentageFieldType {
-        case button, slider
-    }
-    
+enum PercentageFieldType {
+    case button, slider
+}
+
+struct AmountTextField<CustomBalanceView: View>: View {
     @Binding var amount: String
     @Binding var error: String?
     let ticker: String
@@ -19,7 +19,7 @@ struct AmountTextField<CustomView: View>: View {
     let availableAmount: Decimal
     let decimals: Int
     @Binding var percentage: Int?
-    let customView: CustomView
+    let customBalanceView: CustomBalanceView
     
     @State var amountInternal: String = ""
     
@@ -31,7 +31,7 @@ struct AmountTextField<CustomView: View>: View {
         availableAmount: Decimal,
         decimals: Int,
         percentage: Binding<Int?>,
-        customView: () -> CustomView
+        customBalanceView: () -> CustomBalanceView
     ) {
         self._amount = amount
         self._error = error
@@ -40,7 +40,7 @@ struct AmountTextField<CustomView: View>: View {
         self.availableAmount = availableAmount
         self.decimals = decimals
         self._percentage = percentage
-        self.customView = customView()
+        self.customBalanceView = customBalanceView()
     }
     
     init(
@@ -51,7 +51,7 @@ struct AmountTextField<CustomView: View>: View {
         availableAmount: Decimal,
         decimals: Int,
         percentage: Binding<Int?>
-    ) where CustomView == EmptyView {
+    ) where CustomBalanceView == EmptyView {
         self.init(
             amount: amount,
             error: error,
@@ -60,7 +60,7 @@ struct AmountTextField<CustomView: View>: View {
             availableAmount: availableAmount,
             decimals: decimals,
             percentage: percentage,
-            customView: { EmptyView() }
+            customBalanceView: { EmptyView() }
         )
     }
     
@@ -103,8 +103,8 @@ struct AmountTextField<CustomView: View>: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     percentageView
-                    if !(customView is EmptyView) {
-                        customView
+                    if !(customBalanceView is EmptyView) {
+                        customBalanceView
                     }
                     availableBalanceView
                 }

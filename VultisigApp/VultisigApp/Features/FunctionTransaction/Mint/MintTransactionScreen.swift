@@ -1,5 +1,5 @@
 //
-//  WithdrawRewardsTransactionScreen.swift
+//  MintTransactionScreen.swift
 //  VultisigApp
 //
 //  Created by Gaston Mazzeo on 31/10/2025.
@@ -7,17 +7,17 @@
 
 import SwiftUI
 
-struct WithdrawRewardsTransactionScreen: View {
-    @StateObject var viewModel: WithdrawRewardsTransactionViewModel
+struct MintTransactionScreen: View {
+    @StateObject var viewModel: MintTransactionViewModel
     var onVerify: (TransactionBuilder) -> Void
     
     var body: some View {
         AmountFunctionTransactionScreen(
-            title: String(format: "withdrawRewards".localized, viewModel.coin.ticker),
-            coin: viewModel.rewardsCoin,
-            availableAmount: viewModel.rewards,
+            title: String(format: "mintCoin".localized, viewModel.yCoin.ticker),
+            coin: viewModel.coin.toCoinMeta(),
+            availableAmount: viewModel.coin.balanceDecimal,
             percentageSelected: $viewModel.percentageSelected,
-            percentageFieldType: .slider,
+            percentageFieldType: .button,
             amountField: viewModel.amountField,
             validForm: $viewModel.validForm
         ) {
@@ -35,12 +35,11 @@ struct WithdrawRewardsTransactionScreen: View {
 }
 
 #Preview {
-    WithdrawRewardsTransactionScreen(
-        viewModel: WithdrawRewardsTransactionViewModel(
+    MintTransactionScreen(
+        viewModel: MintTransactionViewModel(
             coin: .example,
-            vault: .example,
-            rewards: .zero,
-            rewardsCoin: .example
+            yCoin: .example,
+            vault: .example
         )
     ) { _ in }
 }
