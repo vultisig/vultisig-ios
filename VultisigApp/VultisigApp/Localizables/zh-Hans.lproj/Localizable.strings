@@ -777,6 +777,7 @@
 "unableToVerifyGasTokenError" = "无法验证燃料代币余额。请重试";
 "unavailableBalanceError" = "钱包余额不可用";
 "unknown" = "未知";
+"unstakeAutoCompoundTCY" = "取消质押自动复利 TCY";
 "unstakeAutoCompoundTCYRewards" = "取消质押自动复利 TCY";
 "unstakeFromAutoCompoundingTCYDeposits" = "从自动复利 TCY 存款中取消质押";
 "unsupportedFileTypeError" = "不支持的文件类型，请重试";
