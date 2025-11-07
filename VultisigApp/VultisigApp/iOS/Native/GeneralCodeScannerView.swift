@@ -147,9 +147,7 @@ struct GeneralCodeScannerView: View {
             
             if isValid {
                 newCoinMeta = asset
-                
-                // Add the chain automatically
-                addNewChain()
+                showAlert = true
                 return
             }
         }

@@ -91,6 +91,10 @@ extension SendCryptoAddressTextField {
     }
     
     private func handleAddressChange(_ address: String) {
+        processAddressChange(address)
+    }
+    
+    private func processAddressChange(_ address: String) {
         // Attempt to detect and switch chain if address belongs to different chain
         if let viewModel = sendDetailsViewModel, let vault = vault, !address.isEmpty {
             let detectedCoin = viewModel.detectAndSwitchChain(from: address, vault: vault, currentChain: tx.coin.chain, tx: tx)
@@ -126,29 +130,7 @@ extension SendCryptoAddressTextField {
             let qrCodeResult = result.string
             tx.parseCryptoURI(qrCodeResult)
             
-            // Attempt to detect and switch chain if address belongs to different chain
-            if let viewModel = sendDetailsViewModel, let vault = vault, !tx.toAddress.isEmpty {
-                let detectedCoin = viewModel.detectAndSwitchChain(from: tx.toAddress, vault: vault, currentChain: tx.coin.chain, tx: tx)
-                
-                if detectedCoin != nil {
-                    // Chain was detected and switched
-                    // Clear previous error immediately
-                    sendCryptoViewModel.showAddressAlert = false
-                    sendCryptoViewModel.errorMessage = ""
-                    sendCryptoViewModel.isValidAddress = true
-                    
-                    // Mark address as done and move to amount immediately
-                    if let detailsVM = sendDetailsViewModel {
-                        detailsVM.addressSetupDone = true
-                        detailsVM.onSelect(tab: .amount)
-                    }
-                } else {
-                    // Chain not detected or not in vault - validate and show error
-                    validateAddress(tx.toAddress)
-                }
-            } else {
-                validateAddress(tx.toAddress)
-            }
+            processAddressChange(tx.toAddress)
             
             showScanner = false
         case .failure(let err):
@@ -164,31 +146,7 @@ extension SendCryptoAddressTextField {
         tx.amount = amount
         tx.memo = message
         
-        // Attempt to detect and switch chain if address belongs to different chain
-        if let viewModel = sendDetailsViewModel, let vault = vault, !address.isEmpty {
-            let detectedCoin = viewModel.detectAndSwitchChain(from: address, vault: vault, currentChain: tx.coin.chain, tx: tx)
-            
-            if detectedCoin != nil {
-                // Chain was detected and switched
-                // Clear previous error first
-                sendCryptoViewModel.showAddressAlert = false
-                sendCryptoViewModel.errorMessage = ""
-                sendCryptoViewModel.isValidAddress = true
-                
-                // Mark address as done and move to amount immediately
-                viewModel.addressSetupDone = true
-                viewModel.onSelect(tab: .amount)
-            } else {
-                // Chain not detected or not in vault - validate and show error
-                DebounceHelper.shared.debounce {
-                    self.validateAddress(address)
-                }
-            }
-        } else {
-            DebounceHelper.shared.debounce {
-                validateAddress(address)
-            }
-        }
+        processAddressChange(address)
         
         if !amount.isEmpty {
             sendCryptoViewModel.convertToFiat(newValue: amount, tx: tx)
