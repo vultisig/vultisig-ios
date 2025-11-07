@@ -965,3 +965,4 @@
 "redeemCoin" = "Redeem %@";
 "receiveCoin" = "Receive %@";
 "sellCoin" = "Sell %@";
+"slippage" = "Slippage";

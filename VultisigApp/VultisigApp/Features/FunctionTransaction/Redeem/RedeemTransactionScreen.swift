@@ -19,12 +19,13 @@ struct RedeemTransactionScreen: View {
             percentageSelected: $viewModel.percentageSelected,
             percentageFieldType: .slider,
             amountField: viewModel.amountField,
-            validForm: $viewModel.validForm
+            validForm: $viewModel.validForm,
+            customViewPosition: .bottom
         ) {
             guard let transactionBuilder = viewModel.transactionBuilder else { return }
             onVerify(transactionBuilder)
         } customView: {
-            EmptyView()
+            slippageView
         }
         .onLoad { viewModel.onLoad() }
         .onChange(of: viewModel.percentageSelected) { _, newValue in
@@ -34,8 +35,8 @@ struct RedeemTransactionScreen: View {
     }
     
     var slippageView: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("slippage".localized)
+        VStack(alignment: .leading, spacing: 8) {
+            Text("\("slippage".localized):")
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.bodySMedium)
             PercentageButtonsStack(percentages: [1, 2, 5, 7.5], selectedPercentage: $viewModel.slippage)
