@@ -809,7 +809,7 @@
 "utxoSuggestionMessage" = "Para criptomoedas baseadas em UTXO como o DogEcoin: \ n \ n • Tente enviar uma quantidade menor \ n • Aguarde as transações pendentes para confirmar \ n • Considere consolidar pequenos utxos primeiro \ n • Verifique se você tem saldo suficiente para taxas";
 "utxoSuggestionTitle" = "Dicas de transação UTXO";
 "utxoTooSmallError" = "UTXOs disponíveis são muito pequenos para esta transação. As saídas de transação individuais em sua carteira não atendem aos requisitos mínimos. Considere consolidar valores menores primeiro.";
-"validAddressDomainError" = "Por favor, insira um endereço válido para o blockchain selecionado.";
+"validAddressDomainError" = "Endereço incorreto para o blockchain selecionado. Tente adicionar a rede ao seu cofre.";
 "validAddressError" = "Por favor, insira um endereço válido.";
 "value" = "Valor";
 "vault" = "Cofre";

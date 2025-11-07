@@ -811,7 +811,7 @@
 "utxoSuggestionMessage" = "对于基于 UTXO 的加密货币，如狗狗币：\n\n• 尝试发送较小的金额\n• 等待待处理的交易确认\n• 考虑先合并小的 UTXO\n• 检查您是否有足够的余额来支付费用";
 "utxoSuggestionTitle" = "UTXO 交易提示";
 "utxoTooSmallError" = "可用的 UTXO 对于此交易来说太小。您钱包中的单个交易输出不符合最低要求。考虑先合并较小的金额";
-"validAddressDomainError" = "所选区块链的地址错误";
+"validAddressDomainError" = "所选区块链的地址错误。尝试将链添加到您的保险库。";
 "validAddressError" = "请输入有效地址";
 "value" = "价值";
 "vault" = "保险库";
