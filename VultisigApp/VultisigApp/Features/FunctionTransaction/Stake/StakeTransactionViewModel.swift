@@ -65,7 +65,7 @@ final class StakeTransactionViewModel: ObservableObject, Form {
         }
     }
     
-    func onPercentage(_ percentage: Int) {
+    func onPercentage(_ percentage: Double) {
         isMaxAmount = percentage == 100
     }
 }

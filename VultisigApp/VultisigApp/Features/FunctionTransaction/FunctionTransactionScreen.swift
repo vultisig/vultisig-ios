@@ -75,8 +75,15 @@ struct FunctionTransactionScreen: View {
                     )
                 }
             case .redeem(let coin, let yCoin):
-                resolvingCoin(coinMeta: yCoin) { _ in
-                    EmptyView()
+                resolvingCoin(coinMeta: yCoin) { yCoin in
+                    RedeemTransactionScreen(
+                        viewModel: RedeemTransactionViewModel(
+                            yCoin: yCoin,
+                            coin: coin,
+                            vault: vault
+                        ),
+                        onVerify: onVerify
+                    )
                 }
             }
         }

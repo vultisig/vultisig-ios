@@ -8,70 +8,45 @@
 import SwiftUI
 
 struct RedeemTransactionScreen: View {
-    enum FocusedField {
-        case amount
-    }
-    
-    @StateObject var viewModel: UnstakeTransactionViewModel
+    @StateObject var viewModel: RedeemTransactionViewModel
     var onVerify: (TransactionBuilder) -> Void
     
-    @State var focusedFieldBinding: FocusedField? = .none
-    @FocusState private var focusedField: FocusedField?
-    
     var body: some View {
-        TransactionFormScreen(
-            title: String(format: "unstakeCoin".localized, viewModel.coin.ticker),
-            validForm: $viewModel.validForm,
-            onContinue: onContinue
+        AmountFunctionTransactionScreen(
+            title: String(format: "redeemCoin".localized, viewModel.coin.ticker),
+            coin: viewModel.yCoin.toCoinMeta(),
+            availableAmount: viewModel.yCoin.balanceDecimal,
+            percentageSelected: $viewModel.percentageSelected,
+            percentageFieldType: .slider,
+            amountField: viewModel.amountField,
+            validForm: $viewModel.validForm
         ) {
-            FormExpandableSection(
-                title: viewModel.amountField.label ?? .empty,
-                isValid: viewModel.amountField.valid,
-                value: .empty,
-                showValue: false,
-                focusedField: $focusedFieldBinding,
-                focusedFieldEquals: .amount
-            ) { _ in
-                focusedFieldBinding = .amount
-            } content: {
-                AmountTextField(
-                    amount: $viewModel.amountField.value,
-                    error: $viewModel.amountField.error,
-                    ticker: viewModel.coin.ticker,
-                    type: .slider,
-                    availableAmount: viewModel.availableAmount,
-                    decimals: viewModel.coin.decimals,
-                    percentage: $viewModel.percentageSelected,
-                ).focused($focusedField, equals: .amount)
-            }
+            guard let transactionBuilder = viewModel.transactionBuilder else { return }
+            onVerify(transactionBuilder)
+        } customView: {
+            EmptyView()
         }
-        .onLoad {
-            viewModel.onLoad()
-            focusedFieldBinding = .amount
-        }
+        .onLoad { viewModel.onLoad() }
         .onChange(of: viewModel.percentageSelected) { _, newValue in
             guard let newValue else { return }
             viewModel.onPercentage(newValue)
         }
-        .onChange(of: focusedFieldBinding) { oldValue, newValue in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                focusedField = newValue
-            }
-        }
     }
     
-    func onContinue() {
-        switch focusedFieldBinding {
-        case .amount, nil:
-            guard let transactionBuilder = viewModel.transactionBuilder else { return }
-            onVerify(transactionBuilder)
+    var slippageView: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("slippage".localized)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .font(Theme.fonts.bodySMedium)
+            PercentageButtonsStack(percentages: [1, 2, 5, 7.5], selectedPercentage: $viewModel.slippage)
         }
     }
 }
 
 #Preview {
     RedeemTransactionScreen(
-        viewModel: UnstakeTransactionViewModel(
+        viewModel: RedeemTransactionViewModel(
+            yCoin: .example,
             coin: .example,
             vault: .example
         )

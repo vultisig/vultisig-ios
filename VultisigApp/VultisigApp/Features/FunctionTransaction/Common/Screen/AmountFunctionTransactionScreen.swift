@@ -15,15 +15,40 @@ struct AmountFunctionTransactionScreen<CustomView: View>: View {
     let title: String
     let coin: CoinMeta
     let availableAmount: Decimal
-    @Binding var percentageSelected: Int?
+    @Binding var percentageSelected: Double?
     let percentageFieldType: PercentageFieldType
     @StateObject var amountField: FormField
     @Binding var validForm: Bool
     var onVerify: () -> Void
-    var customBalanceView: () -> CustomView
+    var customViewPosition: AmountTextField<CustomView>.CustomViewPosition
+    var customView: () -> CustomView
     
     @State var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?
+    
+    init(
+        title: String,
+        coin: CoinMeta,
+        availableAmount: Decimal,
+        percentageSelected: Binding<Double?>,
+        percentageFieldType: PercentageFieldType,
+        amountField: FormField,
+        validForm: Binding<Bool>,
+        customViewPosition: AmountTextField<CustomView>.CustomViewPosition = .balance,
+        onVerify: @escaping () -> Void,
+        @ViewBuilder customView: @escaping () -> CustomView
+    ) {
+        self.title = title
+        self.coin = coin
+        self.availableAmount = availableAmount
+        self._percentageSelected = percentageSelected
+        self.percentageFieldType = percentageFieldType
+        self._amountField = StateObject(wrappedValue: amountField)
+        self._validForm = validForm
+        self.onVerify = onVerify
+        self.customViewPosition = customViewPosition
+        self.customView = customView
+    }
     
     var body: some View {
         TransactionFormScreen(
@@ -49,7 +74,8 @@ struct AmountFunctionTransactionScreen<CustomView: View>: View {
                     availableAmount: availableAmount,
                     decimals: coin.decimals,
                     percentage: $percentageSelected,
-                    customBalanceView: { customBalanceView() }
+                    customViewPosition: customViewPosition,
+                    customView: { customView() }
                 ).focused($focusedField, equals: .amount)
             }
         }

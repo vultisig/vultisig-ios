@@ -17,7 +17,7 @@ struct UnbondTransactionScreen: View {
     
     @State var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?
-    @State var percentageSelected: Int?
+    @State var percentageSelected: Double?
     
     var body: some View {
         TransactionFormScreen(

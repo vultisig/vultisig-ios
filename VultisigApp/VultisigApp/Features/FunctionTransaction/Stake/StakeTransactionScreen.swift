@@ -11,7 +11,7 @@ struct StakeTransactionScreen: View {
     @StateObject var viewModel: StakeTransactionViewModel
     var onVerify: (TransactionBuilder) -> Void
     
-    @State var percentageSelected: Int?
+    @State var percentageSelected: Double?
     
     var body: some View {
         AmountFunctionTransactionScreen(
@@ -25,7 +25,7 @@ struct StakeTransactionScreen: View {
         ) {
             guard let transactionBuilder = viewModel.transactionBuilder else { return }
             onVerify(transactionBuilder)
-        } customBalanceView: {
+        } customView: {
             autocompoundToggle
         }
         .onLoad { viewModel.onLoad() }

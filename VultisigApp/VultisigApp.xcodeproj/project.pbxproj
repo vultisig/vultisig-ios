@@ -182,6 +182,7 @@
 		137B2C872E3A84130074F648 /* OnChainSecurityScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C862E3A840F0074F648 /* OnChainSecurityScreen.swift */; };
 		137B2C892E3A84460074F648 /* Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C882E3A84440074F648 /* Screen.swift */; };
 		137DB52D2EBE3FEB0081C6BC /* MintTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137DB52C2EBE3FDE0081C6BC /* MintTransactionBuilder.swift */; };
+		137DB52F2EBE452B0081C6BC /* RedeemTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137DB52E2EBE452B0081C6BC /* RedeemTransactionBuilder.swift */; };
 		137FA58C2EABC35A00843DB1 /* StakingDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137FA58B2EABC35A00843DB1 /* StakingDetails.swift */; };
 		137FA58E2EABC37C00843DB1 /* THORChainStakingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137FA58D2EABC37C00843DB1 /* THORChainStakingService.swift */; };
 		137FA5922EABC38D00843DB1 /* THORChainStakingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137FA5902EABC38D00843DB1 /* THORChainStakingAPI.swift */; };
@@ -1355,6 +1356,7 @@
 		137B2C862E3A840F0074F648 /* OnChainSecurityScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnChainSecurityScreen.swift; sourceTree = "<group>"; };
 		137B2C882E3A84440074F648 /* Screen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screen.swift; sourceTree = "<group>"; };
 		137DB52C2EBE3FDE0081C6BC /* MintTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MintTransactionBuilder.swift; sourceTree = "<group>"; };
+		137DB52E2EBE452B0081C6BC /* RedeemTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedeemTransactionBuilder.swift; sourceTree = "<group>"; };
 		137FA58B2EABC35A00843DB1 /* StakingDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StakingDetails.swift; sourceTree = "<group>"; };
 		137FA58D2EABC37C00843DB1 /* THORChainStakingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainStakingService.swift; sourceTree = "<group>"; };
 		137FA5902EABC38D00843DB1 /* THORChainStakingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainStakingAPI.swift; sourceTree = "<group>"; };
@@ -3127,6 +3129,7 @@
 			isa = PBXGroup;
 			children = (
 				137DB52C2EBE3FDE0081C6BC /* MintTransactionBuilder.swift */,
+				137DB52E2EBE452B0081C6BC /* RedeemTransactionBuilder.swift */,
 			);
 			path = Mint;
 			sourceTree = "<group>";
@@ -6939,6 +6942,7 @@
 				B54E317B2BF57D9300D4FC0A /* FunctionCallContractSelectorDropDown.swift in Sources */,
 				B5F758182BD8E65D0097B5B9 /* Sui.swift in Sources */,
 				13B1C2C82E65E40000050637 /* VaultServerBackupScreen.swift in Sources */,
+				137DB52F2EBE452B0081C6BC /* RedeemTransactionBuilder.swift in Sources */,
 				B5F758192BD8E65D0097B5BB /* SuiConstants.swift in Sources */,
 				139DE1282E4D095000BC2FD3 /* SendKeysignScreen.swift in Sources */,
 				A633B1362B997D57003D1738 /* NavigationBackButton.swift in Sources */,

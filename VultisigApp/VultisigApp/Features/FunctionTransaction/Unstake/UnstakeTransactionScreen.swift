@@ -30,7 +30,7 @@ struct UnstakeTransactionScreen: View {
         ) {
             guard let transactionBuilder = viewModel.transactionBuilder else { return }
             onVerify(transactionBuilder)
-        } customBalanceView: {
+        } customView: {
             autocompoundToggle
         }
         .onLoad { viewModel.onLoad() }

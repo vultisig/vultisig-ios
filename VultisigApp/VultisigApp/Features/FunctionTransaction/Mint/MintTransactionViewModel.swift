@@ -13,7 +13,7 @@ final class MintTransactionViewModel: ObservableObject, Form {
     let yCoin: CoinMeta
     let vault: Vault
 
-    @Published var percentageSelected: Int? = 100
+    @Published var percentageSelected: Double? = 100
     @Published var validForm: Bool = false
     @Published var amountField = FormField(label: "amount".localized)
     
@@ -43,7 +43,7 @@ final class MintTransactionViewModel: ObservableObject, Form {
         )
     }
     
-    func onPercentage(_ percentage: Int) {
+    func onPercentage(_ percentage: Double) {
         isMaxAmount = percentage == 100
     }
     

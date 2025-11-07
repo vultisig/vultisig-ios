@@ -8,8 +8,13 @@
 import SwiftUI
 
 struct PercentageButtonsStack: View {
-    let percentages: [Int] = [25, 50, 75, 100]
-    @Binding var selectedPercentage: Int?
+    let percentages: [Double]
+    @Binding var selectedPercentage: Double?
+    
+    init(percentages: [Double] = [25, 50, 75, 100], selectedPercentage: Binding<Double?>) {
+        self.percentages = percentages
+        self._selectedPercentage = selectedPercentage
+    }
     
     var body: some View {
         HStack(spacing: 12) {
@@ -24,7 +29,7 @@ struct PercentageButtonsStack: View {
     }
     
     @ViewBuilder
-    private func buttonContent(for percentage: Int) -> some View {
+    private func buttonContent(for percentage: Double) -> some View {
         let isSelected = selectedPercentage == percentage
         let buttonText = percentage == 100 ? "MAX" : (Double(percentage) / 100).formatted(.percent)
         
@@ -47,6 +52,6 @@ struct PercentageButtonsStack: View {
 }
 
 #Preview {
-    @Previewable @State var percentage: Int? = nil
+    @Previewable @State var percentage: Double? = nil
     PercentageButtonsStack(selectedPercentage: $percentage)
 }
