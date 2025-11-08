@@ -170,7 +170,7 @@ class TokensStore {
             ticker: "WBTC",
             logo: "wbtc",
             decimals: 8,
-            priceProviderId: "WBTC",
+            priceProviderId: "wrapped-bitcoin",
             contractAddress: "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f",
             isNativeToken: false
         ),
@@ -206,7 +206,7 @@ class TokensStore {
             ticker: "BTC.b",
             logo: "btc",
             decimals: 8,
-            priceProviderId: "",
+            priceProviderId: "wrapped-bitcoin",
             contractAddress: "0x152b9d0FdC40C096757F570A51E494bd4b943E50",
             isNativeToken: false
         ),
@@ -215,7 +215,7 @@ class TokensStore {
             ticker: "COQ",
             logo: "coq",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "coq-inu",
             contractAddress: "0x420FcA0121DC28039145009570975747295f2329",
             isNativeToken: false
         ),
@@ -251,7 +251,7 @@ class TokensStore {
             ticker: "USDT",
             logo: "usdt",
             decimals: 6,
-            priceProviderId: "",
+            priceProviderId: "tether",
             contractAddress: "0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7",
             isNativeToken: false
         ),
@@ -260,7 +260,7 @@ class TokensStore {
             ticker: "WAVAX",
             logo: "avax",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "avalanche-2",
             contractAddress: "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
             isNativeToken: false
         ),
@@ -269,7 +269,7 @@ class TokensStore {
             ticker: "aAvaUSDC",
             logo: "aave",
             decimals: 6,
-            priceProviderId: "",
+            priceProviderId: "usd-coin",
             contractAddress: "0x625E7708f30cA75bfd92586e17077590C60eb4cD",
             isNativeToken: false
         ),
@@ -521,7 +521,7 @@ class TokensStore {
             ticker: "WBTC",
             logo: "wbtc",
             decimals: 8,
-            priceProviderId: "",
+            priceProviderId: "wrapped-bitcoin",
             contractAddress: "0xF7bc58b8D8f97ADC129cfC4c9f45Ce3C0E1D2692",
             isNativeToken: false
         ),
@@ -557,7 +557,7 @@ class TokensStore {
             ticker: "AAVE",
             logo: "aave",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "aave",
             contractAddress: "0xfb6115445bff7b52feb98650c87f44907e58f802",
             isNativeToken: false
         ),
@@ -575,7 +575,7 @@ class TokensStore {
             ticker: "COMP",
             logo: "comp",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "compound-governance-token",
             contractAddress: "0x52ce071bd9b1c4b00a0b92d298c512478cad67e8",
             isNativeToken: false
         ),
@@ -584,7 +584,7 @@ class TokensStore {
             ticker: "DAI",
             logo: "dai",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "dai",
             contractAddress: "0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3",
             isNativeToken: false
         ),
@@ -593,7 +593,7 @@ class TokensStore {
             ticker: "ETH",
             logo: "eth",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "ethereum",
             contractAddress: "0x2170ed0880ac9a755fd29b2688956bd959f933f8",
             isNativeToken: false
         ),
@@ -602,7 +602,7 @@ class TokensStore {
             ticker: "KNC",
             logo: "knc",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "kyber-network-crystal",
             contractAddress: "0xfe56d5892bdffc7bf58f2e84be1b2c32d21c308b",
             isNativeToken: false
         ),
@@ -611,7 +611,7 @@ class TokensStore {
             ticker: "PEPE",
             logo: "pepe",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "pepe",
             contractAddress: "0x25d887ce7a35172c62febfd67a1856f20faebb00",
             isNativeToken: false
         ),
@@ -620,7 +620,7 @@ class TokensStore {
             ticker: "SUSHI",
             logo: "sushi",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "sushi",
             contractAddress: "0x947950bcc74888a40ffa2593c5798f11fc9124c4",
             isNativeToken: false
         ),
@@ -1151,7 +1151,7 @@ class TokensStore {
             ticker: "DAI",
             logo: "dai",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "dai",
             contractAddress: "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1",
             isNativeToken: false
         ),
@@ -1178,7 +1178,7 @@ class TokensStore {
             ticker: "LDO",
             logo: "ldo",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "LDO",
             contractAddress: "0xFdb794692724153d1488CcdBE0C56c252596735F",
             isNativeToken: false
         ),
@@ -1214,7 +1214,7 @@ class TokensStore {
             ticker: "USDC",
             logo: "usdc",
             decimals: 6,
-            priceProviderId: "",
+            priceProviderId: "usd-coin",
             contractAddress: "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
             isNativeToken: false
         ),
@@ -1223,7 +1223,7 @@ class TokensStore {
             ticker: "USDC.e",
             logo: "USDC.e",
             decimals: 6,
-            priceProviderId: "",
+            priceProviderId: "usd-coin-ethereum-bridged",
             contractAddress: "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",
             isNativeToken: false
         ),
@@ -1232,7 +1232,7 @@ class TokensStore {
             ticker: "USDT",
             logo: "usdt",
             decimals: 6,
-            priceProviderId: "",
+            priceProviderId: "tether",
             contractAddress: "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
             isNativeToken: false
         ),
@@ -1241,7 +1241,7 @@ class TokensStore {
             ticker: "WBTC",
             logo: "wbtc",
             decimals: 8,
-            priceProviderId: "",
+            priceProviderId: "wrapped-bitcoin",
             contractAddress: "0x68f180fcCe6836688e9084f035309E29Bf0A2095",
             isNativeToken: false
         ),
@@ -1250,7 +1250,7 @@ class TokensStore {
             ticker: "ezETH",
             logo: "ezeth",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "ezETH",
             contractAddress: "0x2416092f143378750bb29b79eD961ab195CcEea5",
             isNativeToken: false
         ),
@@ -1322,7 +1322,7 @@ class TokensStore {
             ticker: "AVAX",
             logo: "avax",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "avalanche-2",
             contractAddress: "0x2C89bbc92BD86F8075d1DEcc58C7F4E0107f286b",
             isNativeToken: false
         ),
@@ -1331,7 +1331,7 @@ class TokensStore {
             ticker: "BNB",
             logo: "bsc",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "binancecoin",
             contractAddress: "0x3BA4c387f786bFEE076A58914F5Bd38d668B42c3",
             isNativeToken: false
         ),
@@ -1340,7 +1340,7 @@ class TokensStore {
             ticker: "BUSD",
             logo: "busd",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "binance-peg-busd",
             contractAddress: "0xdAb529f40E671A1D4bF91361c21bf9f0C9712ab7",
             isNativeToken: false
         ),
@@ -1385,7 +1385,7 @@ class TokensStore {
             ticker: "SOL",
             logo: "sol",
             decimals: 9,
-            priceProviderId: "",
+            priceProviderId: "solana",
             contractAddress: "0xd93f7E271cB87c23AaA73edC008A79646d1F9912",
             isNativeToken: false
         ),
@@ -1394,7 +1394,7 @@ class TokensStore {
             ticker: "USDC",
             logo: "usdc",
             decimals: 6,
-            priceProviderId: "",
+            priceProviderId: "usd-coin",
             contractAddress: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
             isNativeToken: false
         ),
@@ -1403,7 +1403,7 @@ class TokensStore {
             ticker: "USDC.e",
             logo: "USDC.e",
             decimals: 6,
-            priceProviderId: "",
+            priceProviderId: "usd-coin-ethereum-bridged",
             contractAddress: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
             isNativeToken: false
         ),
@@ -1412,7 +1412,7 @@ class TokensStore {
             ticker: "USDT",
             logo: "usdt",
             decimals: 6,
-            priceProviderId: "",
+            priceProviderId: "tether",
             contractAddress: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
             isNativeToken: false
         ),
@@ -1421,7 +1421,7 @@ class TokensStore {
             ticker: "WBTC",
             logo: "wbtc",
             decimals: 8,
-            priceProviderId: "",
+            priceProviderId: "wrapped-bitcoin",
             contractAddress: "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
             isNativeToken: false
         ),
