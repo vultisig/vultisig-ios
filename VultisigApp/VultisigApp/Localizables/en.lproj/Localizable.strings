@@ -808,7 +808,7 @@
 "utxoSuggestionMessage" = "For UTXO-based cryptocurrencies like Dogecoin:\n\n• Try sending a smaller amount\n• Wait for pending transactions to confirm\n• Consider consolidating small UTXOs first\n• Check if you have enough balance for fees";
 "utxoSuggestionTitle" = "UTXO Transaction Tips";
 "utxoTooSmallError" = "Available UTXOs are too small for this transaction. The individual transaction outputs in your wallet don't meet the minimum requirements. Consider consolidating smaller amounts first.";
-"validAddressDomainError" = "Wrong address for selected blockchain.";
+"validAddressDomainError" = "Wrong address for selected blockchain. Try adding the chain to your vault.";
 "validAddressError" = "Please enter a valid address.";
 "value" = "Value";
 "vault" = "Vault";

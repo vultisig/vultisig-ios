@@ -40,9 +40,6 @@ struct MacScannerView: View {
                 JoinKeysignView(vault: vault)
             }
         }
-        .alert(isPresented: $cameraViewModel.showAlert) {
-            alert
-        }
         .navigationDestination(isPresented: $cameraViewModel.shouldSendCrypto) {
             if let vault = homeViewModel.selectedVault {
                 let coin = vault.coins.first(where: { $0.isNativeToken && $0.chain == cameraViewModel.selectedChain })
@@ -134,30 +131,6 @@ struct MacScannerView: View {
         PrimaryButton(title: "tryAgain", type: .secondary) {
             cameraViewModel.setupSession()
         }
-    }
-    
-    var alert: Alert {
-        let message = NSLocalizedString("addNewChainToVault1", comment: "") + (cameraViewModel.newCoinMeta?.chain.name ?? "") + NSLocalizedString("addNewChainToVault2", comment: "")
-        
-        return Alert(
-            title: Text(NSLocalizedString("newChainDetected", comment: "")),
-            message: Text(message),
-            primaryButton: Alert.Button.default(
-                Text(NSLocalizedString("addChain", comment: "")),
-                action: {
-                    cameraViewModel.addNewChain(
-                        coinSelectionViewModel: coinSelectionViewModel,
-                        homeViewModel: homeViewModel
-                    )
-                }
-            ),
-            secondaryButton: Alert.Button.default(
-                Text(NSLocalizedString("cancel", comment: "")),
-                action: {
-                    cameraViewModel.handleCancel()
-                }
-            )
-        )
     }
     
     var overlay: some View {

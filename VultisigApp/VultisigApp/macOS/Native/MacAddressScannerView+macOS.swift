@@ -15,6 +15,7 @@ struct MacAddressScannerView: View {
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @Binding var showCameraScanView: Bool
     let selectedVault: Vault?
+    var sendDetailsViewModel: SendDetailsViewModel? = nil
     
     @State var showImportOptions: Bool = false
     
@@ -141,6 +142,24 @@ struct MacAddressScannerView: View {
         }
         
         tx.parseCryptoURI(detectedQRCode)
+        
+        // Attempt to detect and switch chain if address belongs to different chain
+        if let viewModel = sendDetailsViewModel, let vault = selectedVault, !tx.toAddress.isEmpty {
+            let detectedCoin = viewModel.detectAndSwitchChain(from: tx.toAddress, vault: vault, currentChain: tx.coin.chain, tx: tx)
+            
+            if detectedCoin != nil {
+                // Clear previous error
+                sendCryptoViewModel.showAddressAlert = false
+                sendCryptoViewModel.errorMessage = ""
+                sendCryptoViewModel.isValidAddress = true
+                
+                // Mark address as done and move to amount
+                viewModel.addressSetupDone = true
+                viewModel.onSelect(tab: .amount)
+            }
+        }
+        
+        // Always validate after potential chain switch
         validateAddress(tx.toAddress)
         goBack()
     }
