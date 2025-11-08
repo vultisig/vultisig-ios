@@ -31,11 +31,15 @@ struct SendDetailsAssetTab: View {
             }
             .onChange(of: viewModel.selectedChain) { oldValue, newValue in
                 guard let vault = homeViewModel.selectedVault else { return }
-                let coin = vault.coins.first(where: { $0.chain == newValue })
-                tx.fromAddress = coin?.address ?? ""
-                // Update coin when chain changes
-                if let coin {
-                    tx.coin = coin
+                
+                // ALWAYS select the NATIVE token for the chain, NEVER a regular token
+                let nativeCoin = vault.coins.first(where: { 
+                    $0.chain == newValue && $0.isNativeToken == true 
+                })
+                
+                if let nativeCoin {
+                    tx.fromAddress = nativeCoin.address
+                    tx.coin = nativeCoin
                 }
             }
             .clipped()

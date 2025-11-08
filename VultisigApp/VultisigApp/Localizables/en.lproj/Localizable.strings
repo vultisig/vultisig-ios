@@ -278,7 +278,7 @@
 "fastVaultSummaryText1" = "Vault Share 1 received via mail";
 "fastVaultSummaryText2" = "Vault Share 2 stored by you";
 "fastVaultSummaryText3" = "Keep vault shares in different locations";
-"fastVaultSummaryText4" = "All vault shares ensure secure access to your funds";
+"fastVaultSummaryText4" = "Access to all vault shares ensures maximum security for your funds";
 "fees" = "Fees";
 "fetchingVaultDetails" = "Fetching Vault Details";
 "findCustomTokens" = "Find custom token";
@@ -808,7 +808,7 @@
 "utxoSuggestionMessage" = "For UTXO-based cryptocurrencies like Dogecoin:\n\n• Try sending a smaller amount\n• Wait for pending transactions to confirm\n• Consider consolidating small UTXOs first\n• Check if you have enough balance for fees";
 "utxoSuggestionTitle" = "UTXO Transaction Tips";
 "utxoTooSmallError" = "Available UTXOs are too small for this transaction. The individual transaction outputs in your wallet don't meet the minimum requirements. Consider consolidating smaller amounts first.";
-"validAddressDomainError" = "Wrong address for selected blockchain.";
+"validAddressDomainError" = "Wrong address for selected blockchain. Try adding the chain to your vault.";
 "validAddressError" = "Please enter a valid address.";
 "value" = "Value";
 "vault" = "Vault";
@@ -952,3 +952,4 @@
 "noPositionsSelectedTitle" = "No positions selected";
 "noPositionsSelectedSubtitle" = "You’ve disabled all positions for this chain. Enable at least one position to view balances and manage actions.";
 "managePositions" = "Manage Positions";
+"chooseYourChains" = "Choose your chains";

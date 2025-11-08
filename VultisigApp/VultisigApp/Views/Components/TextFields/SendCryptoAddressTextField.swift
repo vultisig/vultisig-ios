@@ -14,6 +14,8 @@ struct SendCryptoAddressTextField: View {
     
     @ObservedObject var tx: SendTransaction
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
+    var sendDetailsViewModel: SendDetailsViewModel? = nil
+    var vault: Vault? = nil
     
     @State var showScanner = false
     @State var showImagePicker = false
