@@ -1340,7 +1340,7 @@ class TokensStore {
             ticker: "BUSD",
             logo: "busd",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "binance-peg-busd",
             contractAddress: "0xdAb529f40E671A1D4bF91361c21bf9f0C9712ab7",
             isNativeToken: false
         ),
