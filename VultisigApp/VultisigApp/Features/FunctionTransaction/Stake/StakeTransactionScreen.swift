@@ -8,58 +8,30 @@
 import SwiftUI
 
 struct StakeTransactionScreen: View {
-    enum FocusedField {
-        case amount
-    }
-    
     @StateObject var viewModel: StakeTransactionViewModel
     var onVerify: (TransactionBuilder) -> Void
     
-    @State var focusedFieldBinding: FocusedField? = .none
-    @FocusState private var focusedField: FocusedField?
-    @State var percentageSelected: Int?
+    @State var percentageSelected: Double?
     
     var body: some View {
-        TransactionFormScreen(
+        AmountFunctionTransactionScreen(
             title: String(format: "stakeCoin".localized, viewModel.coin.ticker),
-            validForm: $viewModel.validForm,
-            onContinue: onContinue
+            coin: viewModel.coin.toCoinMeta(),
+            availableAmount: viewModel.coin.balanceDecimal,
+            percentageSelected: $percentageSelected,
+            percentageFieldType: .button,
+            amountField: viewModel.amountField,
+            validForm: $viewModel.validForm
         ) {
-            FormExpandableSection(
-                title: viewModel.amountField.label ?? .empty,
-                isValid: viewModel.amountField.valid,
-                value: .empty,
-                showValue: false,
-                focusedField: $focusedFieldBinding,
-                focusedFieldEquals: .amount
-            ) { _ in
-                focusedFieldBinding = .amount
-            } content: {
-                AmountTextField(
-                    amount: $viewModel.amountField.value,
-                    error: $viewModel.amountField.error,
-                    ticker: viewModel.coin.ticker,
-                    type: .button,
-                    availableAmount: viewModel.coin.balanceDecimal,
-                    decimals: viewModel.coin.decimals,
-                    percentage: $percentageSelected,
-                    customView: { autocompoundToggle }
-                    
-                ).focused($focusedField, equals: .amount)
-            }
+            guard let transactionBuilder = viewModel.transactionBuilder else { return }
+            onVerify(transactionBuilder)
+        } customView: {
+            autocompoundToggle
         }
-        .onLoad {
-            viewModel.onLoad()
-            focusedFieldBinding = .amount
-        }
+        .onLoad { viewModel.onLoad() }
         .onChange(of: percentageSelected) { _, newValue in
             guard let newValue else { return }
             viewModel.onPercentage(newValue)
-        }
-        .onChange(of: focusedFieldBinding) { oldValue, newValue in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                focusedField = newValue
-            }
         }
     }
     
@@ -67,14 +39,6 @@ struct StakeTransactionScreen: View {
     var autocompoundToggle: some View {
         if viewModel.supportsAutocompound {
             AutocompoundToggle(isEnabled: $viewModel.isAutocompound)
-        }
-    }
-    
-    func onContinue() {
-        switch focusedFieldBinding {
-        case .amount, nil:
-            guard let transactionBuilder = viewModel.transactionBuilder else { return }
-            onVerify(transactionBuilder)
         }
     }
 }

@@ -19,53 +19,24 @@ struct UnstakeTransactionScreen: View {
     @FocusState private var focusedField: FocusedField?
     
     var body: some View {
-        TransactionFormScreen(
+        AmountFunctionTransactionScreen(
             title: String(format: "unstakeCoin".localized, viewModel.coin.ticker),
-            validForm: $viewModel.validForm,
-            onContinue: onContinue
+            coin: viewModel.coin.toCoinMeta(),
+            availableAmount: viewModel.availableAmount,
+            percentageSelected: $viewModel.percentageSelected,
+            percentageFieldType: .slider,
+            amountField: viewModel.amountField,
+            validForm: $viewModel.validForm
         ) {
-            FormExpandableSection(
-                title: viewModel.amountField.label ?? .empty,
-                isValid: viewModel.amountField.valid,
-                value: .empty,
-                showValue: false,
-                focusedField: $focusedFieldBinding,
-                focusedFieldEquals: .amount
-            ) { _ in
-                focusedFieldBinding = .amount
-            } content: {
-                AmountTextField(
-                    amount: $viewModel.amountField.value,
-                    error: $viewModel.amountField.error,
-                    ticker: viewModel.coin.ticker,
-                    type: .slider,
-                    availableAmount: viewModel.availableAmount,
-                    decimals: viewModel.coin.decimals,
-                    percentage: $viewModel.percentageSelected,
-                    customView: { autocompoundToggle }
-                ).focused($focusedField, equals: .amount)
-            }
+            guard let transactionBuilder = viewModel.transactionBuilder else { return }
+            onVerify(transactionBuilder)
+        } customView: {
+            autocompoundToggle
         }
-        .onLoad {
-            viewModel.onLoad()
-            focusedFieldBinding = .amount
-        }
+        .onLoad { viewModel.onLoad() }
         .onChange(of: viewModel.percentageSelected) { _, newValue in
             guard let newValue else { return }
             viewModel.onPercentage(newValue)
-        }
-        .onChange(of: focusedFieldBinding) { oldValue, newValue in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                focusedField = newValue
-            }
-        }
-    }
-    
-    func onContinue() {
-        switch focusedFieldBinding {
-        case .amount, nil:
-            guard let transactionBuilder = viewModel.transactionBuilder else { return }
-            onVerify(transactionBuilder)
         }
     }
     

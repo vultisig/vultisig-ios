@@ -961,3 +961,8 @@
 "providerLabel" = "Provider (optional)";
 "operatorFeesLabel" = "Operator-fees (Basis Points)";
 "operatorFeesError" = "Operator-fee cannot be empty if provider is filled";
+"mintCoin" = "Mint %@";
+"redeemCoin" = "Redeem %@";
+"receiveCoin" = "Receive %@";
+"sellCoin" = "Sell %@";
+"slippage" = "Slippage";

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct PercentageSliderView: View {
-    @Binding var percentage: Int?
+    @Binding var percentage: Double?
     
     @State private var sliderValue: Double = 100
     
@@ -40,7 +40,7 @@ struct PercentageSliderView: View {
                 Slider(value: $sliderValue, in: 0...100, step: 1)
                     .tint(Theme.colors.primaryAccent3)
                     .onChange(of: sliderValue) { oldValue, newValue in
-                        percentage = Int(newValue)
+                        percentage = newValue
                     }
             }
             
@@ -52,6 +52,6 @@ struct PercentageSliderView: View {
 }
 
 #Preview {
-    @Previewable @State var percentage: Int? = nil
+    @Previewable @State var percentage: Double? = nil
     PercentageSliderView(percentage: $percentage)
 }

@@ -7,9 +7,14 @@
 
 import SwiftUI
 
+enum PercentageFieldType {
+    case button, slider
+}
+
 struct AmountTextField<CustomView: View>: View {
-    enum PercentageFieldType {
-        case button, slider
+    enum CustomViewPosition {
+        case balance
+        case bottom
     }
     
     @Binding var amount: String
@@ -18,9 +23,9 @@ struct AmountTextField<CustomView: View>: View {
     let type: PercentageFieldType
     let availableAmount: Decimal
     let decimals: Int
-    @Binding var percentage: Int?
+    @Binding var percentage: Double?
     let customView: CustomView
-    
+    let customViewPosition: CustomViewPosition
     @State var amountInternal: String = ""
     
     init(
@@ -30,7 +35,8 @@ struct AmountTextField<CustomView: View>: View {
         type: PercentageFieldType,
         availableAmount: Decimal,
         decimals: Int,
-        percentage: Binding<Int?>,
+        percentage: Binding<Double?>,
+        customViewPosition: CustomViewPosition = .balance,
         customView: () -> CustomView
     ) {
         self._amount = amount
@@ -40,6 +46,7 @@ struct AmountTextField<CustomView: View>: View {
         self.availableAmount = availableAmount
         self.decimals = decimals
         self._percentage = percentage
+        self.customViewPosition = customViewPosition
         self.customView = customView()
     }
     
@@ -50,7 +57,7 @@ struct AmountTextField<CustomView: View>: View {
         type: PercentageFieldType,
         availableAmount: Decimal,
         decimals: Int,
-        percentage: Binding<Int?>
+        percentage: Binding<Double?>
     ) where CustomView == EmptyView {
         self.init(
             amount: amount,
@@ -60,6 +67,7 @@ struct AmountTextField<CustomView: View>: View {
             availableAmount: availableAmount,
             decimals: decimals,
             percentage: percentage,
+            customViewPosition: .balance,
             customView: { EmptyView() }
         )
     }
@@ -103,10 +111,16 @@ struct AmountTextField<CustomView: View>: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     percentageView
-                    if !(customView is EmptyView) {
-                        customView
+                    
+                    if customViewPosition == .balance {
+                        unwrappedCustomView
                     }
+                    
                     availableBalanceView
+                    
+                    if customViewPosition == .bottom {
+                        unwrappedCustomView
+                    }
                 }
             }
         }
@@ -153,6 +167,13 @@ struct AmountTextField<CustomView: View>: View {
         let multiplier = (Decimal(percentage) / 100)
         let amountDecimal = availableAmount * multiplier
         amount = amountDecimal.formatToDecimal(digits: decimals)
+    }
+    
+    @ViewBuilder
+    var unwrappedCustomView: some View {
+        if !(customView is EmptyView) {
+            customView
+        }
     }
 }
 

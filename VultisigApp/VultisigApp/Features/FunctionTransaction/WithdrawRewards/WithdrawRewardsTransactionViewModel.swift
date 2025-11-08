@@ -14,7 +14,7 @@ final class WithdrawRewardsTransactionViewModel: ObservableObject, Form {
     let rewards: Decimal
     let rewardsCoin: CoinMeta
     
-    @Published var percentageSelected: Int? = 100
+    @Published var percentageSelected: Double? = 100
     @Published var validForm: Bool = false
     @Published var amountField = FormField(
         label: "amount".localized,
@@ -59,7 +59,7 @@ final class WithdrawRewardsTransactionViewModel: ObservableObject, Form {
         )
     }
     
-    func onPercentage(_ percentage: Int) {
+    func onPercentage(_ percentage: Double) {
         isMaxAmount = percentage == 100
     }
 }

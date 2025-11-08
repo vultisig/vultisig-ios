@@ -16,7 +16,7 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
         coin.supportsAutocompound
     }
     
-    @Published var percentageSelected: Int? = 100
+    @Published var percentageSelected: Double? = 100
     @Published var availableAmount: Decimal = 0
     var autocompoundBalance: Decimal = 0
     @Published var isAutocompound: Bool = false
@@ -56,7 +56,7 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
         case "TCY":
             return TCYUnstakeTransactionBuilder(
                 coin: coin,
-                percentage: percentageSelected ?? percentageFromAmount,
+                percentage: Int(percentageSelected ?? percentageFromAmount),
                 autoCompoundAmount: autocompoundBalance,
                 sendMaxAmount: isMaxAmount,
                 isAutoCompound: isAutocompound
@@ -72,13 +72,12 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
         }
     }
     
-    var percentageFromAmount: Int {
+    var percentageFromAmount: Double {
         let decimal = (amountField.value.toDecimal() / availableAmount) * 100.0
-        let intValue = Int((decimal as NSDecimalNumber).doubleValue)
-        return intValue
+        return (decimal as NSDecimalNumber).doubleValue
     }
     
-    func onPercentage(_ percentage: Int) {
+    func onPercentage(_ percentage: Double) {
         isMaxAmount = percentage == 100
     }
     

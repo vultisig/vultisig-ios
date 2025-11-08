@@ -91,8 +91,8 @@ struct DefiTHORChainMainScreen: View {
                 DefiTHORChainStakedView(
                     viewModel: stakeViewModel,
                     loadingBalances: $loadingBalances,
-                    onStake: { transactionToPresent = .stake(coin: $0.coin) },
-                    onUnstake: { transactionToPresent = .unstake(coin: $0.coin) },
+                    onStake: { onStake(position: $0) },
+                    onUnstake: { onUnstake(position: $0) },
                     onWithdraw: { position in
                         guard let rewards = position.rewards, let rewardsCoin = position.rewardCoin else {
                             return
@@ -133,6 +133,37 @@ struct DefiTHORChainMainScreen: View {
             buttonTitle: "managePositions".localized,
             action: { showPositionSelection.toggle() }
         )
+    }
+    
+    func onStake(position: StakePosition) {
+        switch position.type {
+        case .stake, .compound:
+            transactionToPresent = .stake(coin: position.coin)
+        case .index:
+            transactionToPresent = .mint(coin: coin(for: position.coin), yCoin: position.coin)
+        }
+    }
+    
+    func onUnstake(position: StakePosition) {
+        switch position.type {
+        case .stake, .compound:
+            transactionToPresent = .stake(coin: position.coin)
+        case .index:
+            transactionToPresent = .redeem(coin: coin(for: position.coin), yCoin: position.coin)
+        }
+    }
+    
+    func coin(for yCoin: CoinMeta) -> CoinMeta {
+        let coin: CoinMeta
+        switch yCoin {
+        case TokensStore.yrune:
+            coin = TokensStore.rune
+        case TokensStore.ytcy:
+            coin = TokensStore.tcy
+        default:
+            coin = TokensStore.rune
+        }
+        return coin
     }
 }
 

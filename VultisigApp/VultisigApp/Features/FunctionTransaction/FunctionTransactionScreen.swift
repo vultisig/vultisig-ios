@@ -67,6 +67,24 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
+            case .mint(let coin, let yCoin):
+                resolvingCoin(coinMeta: coin) { coin in
+                    MintTransactionScreen(
+                        viewModel: MintTransactionViewModel(coin: coin, yCoin: yCoin, vault: vault),
+                        onVerify: onVerify
+                    )
+                }
+            case .redeem(let coin, let yCoin):
+                resolvingCoin(coinMeta: yCoin) { yCoin in
+                    RedeemTransactionScreen(
+                        viewModel: RedeemTransactionViewModel(
+                            yCoin: yCoin,
+                            coin: coin,
+                            vault: vault
+                        ),
+                        onVerify: onVerify
+                    )
+                }
             }
         }
         .withLoading(isLoading: $isLoading)
