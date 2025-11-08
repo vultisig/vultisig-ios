@@ -170,7 +170,7 @@ class TokensStore {
             ticker: "WBTC",
             logo: "wbtc",
             decimals: 8,
-            priceProviderId: "WBTC",
+            priceProviderId: "wrapped-bitcoin",
             contractAddress: "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f",
             isNativeToken: false
         ),
@@ -521,7 +521,7 @@ class TokensStore {
             ticker: "WBTC",
             logo: "wbtc",
             decimals: 8,
-            priceProviderId: "",
+            priceProviderId: "wrapped-bitcoin",
             contractAddress: "0xF7bc58b8D8f97ADC129cfC4c9f45Ce3C0E1D2692",
             isNativeToken: false
         ),
@@ -1241,7 +1241,7 @@ class TokensStore {
             ticker: "WBTC",
             logo: "wbtc",
             decimals: 8,
-            priceProviderId: "",
+            priceProviderId: "wrapped-bitcoin",
             contractAddress: "0x68f180fcCe6836688e9084f035309E29Bf0A2095",
             isNativeToken: false
         ),
@@ -1421,7 +1421,7 @@ class TokensStore {
             ticker: "WBTC",
             logo: "wbtc",
             decimals: 8,
-            priceProviderId: "",
+            priceProviderId: "wrapped-bitcoin",
             contractAddress: "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
             isNativeToken: false
         ),
