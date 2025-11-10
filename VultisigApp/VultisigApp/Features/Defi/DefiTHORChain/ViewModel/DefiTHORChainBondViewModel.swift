@@ -113,8 +113,7 @@ private extension DefiTHORChainBondViewModel {
     @MainActor
     func savePositions(positions: [BondPosition]) {
         do {
-            Storage.shared.insert(positions)
-            try Storage.shared.save()
+            try DefiPositionsStorageService().upsert(positions)
         } catch {
             print("An error occured while saving staked positions: \(error)")
         }

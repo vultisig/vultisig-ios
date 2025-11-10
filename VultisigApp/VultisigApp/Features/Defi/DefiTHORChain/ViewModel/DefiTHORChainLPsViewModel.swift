@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftData
 
 @MainActor
 final class DefiTHORChainLPsViewModel: ObservableObject {
@@ -45,7 +46,9 @@ final class DefiTHORChainLPsViewModel: ObservableObject {
             return
         }
 
-        lpPositions = vault.lpPositions
+        lpPositions = vault.lpPositions.filter {
+            vaultLPPositions.contains($0.coin2)
+        }
         if !lpPositions.isEmpty {
             initialLoadingDone = true
         }
@@ -134,8 +137,7 @@ private extension DefiTHORChainLPsViewModel {
     @MainActor
     func savePositions(positions: [LPPosition]) {
         do {
-            Storage.shared.insert(positions)
-            try Storage.shared.save()
+            try DefiPositionsStorageService().upsert(positions)
         } catch {
             print("An error occured while saving LPs positions: \(error)")
         }

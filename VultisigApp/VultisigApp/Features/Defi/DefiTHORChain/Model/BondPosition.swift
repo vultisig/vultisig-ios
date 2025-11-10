@@ -34,6 +34,6 @@ final class BondPosition {
         self.nextReward = nextReward
         self.nextChurn = nextChurn
         self.vault = vault
-        self.id = "\(node.coin.chain.name)_\(node.coin.contractAddress)_\(node.address)_\(vault.id)"
+        self.id = "\(node.coin.chain.ticker)_\(node.coin.contractAddress)_\(node.address)_\(vault.id)"
     }
 }

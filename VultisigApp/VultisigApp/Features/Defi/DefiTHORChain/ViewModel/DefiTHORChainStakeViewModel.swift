@@ -48,7 +48,9 @@ private extension DefiTHORChainStakeViewModel {
             return
         }
         
-        stakePositions = vault.stakePositions
+        stakePositions = vault.stakePositions.filter {
+            vaultStakePositions.contains($0.coin)
+        }
         if !stakePositions.isEmpty {
             initialLoadingDone = true
         }
@@ -152,8 +154,7 @@ private extension DefiTHORChainStakeViewModel {
     @MainActor
     func savePositions(positions: [StakePosition]) {
         do {
-            Storage.shared.insert(positions)
-            try Storage.shared.save()
+            try DefiPositionsStorageService().upsert(positions)
         } catch {
             print("An error occured while saving staked positions: \(error)")
         }

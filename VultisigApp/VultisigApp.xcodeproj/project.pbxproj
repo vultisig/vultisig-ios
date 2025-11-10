@@ -201,6 +201,7 @@
 		138574232E2DB765002532BF /* IconButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574222E2DB765002532BF /* IconButtonStyle.swift */; };
 		138574262E2DB9C6002532BF /* NavigationIconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574242E2DB9C6002532BF /* NavigationIconButton.swift */; };
 		138574272E2DB9C6002532BF /* IconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574252E2DB9C6002532BF /* IconButton.swift */; };
+		1385E63D2EC271F200CE634F /* DefiPositionsStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1385E63C2EC271F100CE634F /* DefiPositionsStorageService.swift */; };
 		1387E24B2E565A540033F92C /* BlurredBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1387E24A2E565A4F0033F92C /* BlurredBackground.swift */; };
 		1387FDA82E32C2CC007ECDB4 /* QRScanner.riv in Resources */ = {isa = PBXBuildFile; fileRef = 1387FDA72E32C2CC007ECDB4 /* QRScanner.riv */; };
 		138C5E642E79DE3300C559C7 /* VaultSelectChainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138C5E632E79DE2E00C559C7 /* VaultSelectChainScreen.swift */; };
@@ -1375,6 +1376,7 @@
 		138574222E2DB765002532BF /* IconButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconButtonStyle.swift; sourceTree = "<group>"; };
 		138574242E2DB9C6002532BF /* NavigationIconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationIconButton.swift; sourceTree = "<group>"; };
 		138574252E2DB9C6002532BF /* IconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconButton.swift; sourceTree = "<group>"; };
+		1385E63C2EC271F100CE634F /* DefiPositionsStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiPositionsStorageService.swift; sourceTree = "<group>"; };
 		1387E24A2E565A4F0033F92C /* BlurredBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurredBackground.swift; sourceTree = "<group>"; };
 		1387FDA72E32C2CC007ECDB4 /* QRScanner.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = QRScanner.riv; sourceTree = "<group>"; };
 		138C5E632E79DE2E00C559C7 /* VaultSelectChainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultSelectChainScreen.swift; sourceTree = "<group>"; };
@@ -3042,6 +3044,7 @@
 		1368D2D02EA27386009A91CA /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				1385E63B2EC271E500CE634F /* Service */,
 				1368D2D12EA2738B009A91CA /* View */,
 			);
 			path = Common;
@@ -3192,6 +3195,14 @@
 				138574202E2DB6D2002532BF /* IconButtonView.swift */,
 			);
 			path = IconButton;
+			sourceTree = "<group>";
+		};
+		1385E63B2EC271E500CE634F /* Service */ = {
+			isa = PBXGroup;
+			children = (
+				1385E63C2EC271F100CE634F /* DefiPositionsStorageService.swift */,
+			);
+			path = Service;
 			sourceTree = "<group>";
 		};
 		138C5E622E79DE2300C559C7 /* ChainSelection */ = {
@@ -6455,6 +6466,7 @@
 				13DD547C2E561598007335DA /* SettingsOption.swift in Sources */,
 				DEEADCF72B916676007978DE /* Solana.swift in Sources */,
 				D7620B1D2DF6BFD700294396 /* FunctionCallNodeMaintenance.swift in Sources */,
+				1385E63D2EC271F200CE634F /* DefiPositionsStorageService.swift in Sources */,
 				B57DD59A2C3DA5EA00934CBB /* SolanaFmTokenInfo.swift in Sources */,
 				A6966D312BA4048800903CA4 /* SwapCryptoDetailsView.swift in Sources */,
 				13A657AC2EA283FA00323E4C /* THORChainPositionType.swift in Sources */,

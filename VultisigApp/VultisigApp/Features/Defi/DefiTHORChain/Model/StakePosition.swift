@@ -43,7 +43,7 @@ final class StakePosition {
         self.rewards = rewards
         self.rewardCoin = rewardCoin
         self.vault = vault
-        self.id = "\(coin.chain.name)_\(coin.contractAddress)_\(vault.id)"
+        self.id = "\(coin.chain.ticker)_\(coin.contractAddress)_\(vault.id)"
     }
 }
 
