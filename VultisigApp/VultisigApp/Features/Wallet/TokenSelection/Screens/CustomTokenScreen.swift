@@ -157,7 +157,7 @@ struct CustomTokenScreen: View {
         do {
             if ChainType.EVM == group.chain.chainType {
                 
-                let service = try EvmServiceFactory.getService(forChain: group.chain)
+                let service = try EvmService.getService(forChain: group.chain)
                 let (name, symbol, decimals) = try await service.getTokenInfo(contractAddress: contractAddress)
                 
                 if !name.isEmpty, !symbol.isEmpty, decimals > 0 {

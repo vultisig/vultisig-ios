@@ -80,7 +80,7 @@ final class SendGasSettingsViewModel: ObservableObject {
 private extension SendGasSettingsViewModel {
 
     func fetchEVM() async throws {
-        let service = try EvmServiceFactory.getService(forChain: chain)
+        let service = try EvmService.getService(forChain: chain)
         async let baseFeeWeiTask = service.getBaseFee()
         async let tmpFeeMapTask =  service.fetchMaxPriorityFeesPerGas()
         let (baseFeeWei, tmpFeeMap) = try await (baseFeeWeiTask, tmpFeeMapTask)

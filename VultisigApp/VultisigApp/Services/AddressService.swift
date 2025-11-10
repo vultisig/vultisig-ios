@@ -133,7 +133,7 @@ private extension AddressService {
 
     static func resolveENSDomaninAddress(input: String, chain: Chain) async throws -> String {
         let ensName = input
-        let factory = try EvmServiceFactory.getService(forChain: chain)
+        let factory = try EvmService.getService(forChain: chain)
         let address = try await factory.resolveENS(ensName: ensName)
         return address
     }

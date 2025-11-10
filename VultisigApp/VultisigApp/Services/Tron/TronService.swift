@@ -369,7 +369,7 @@ class TronService: RpcService {
             }
             
             let hexContractAddress = hexContractAddressData.hexString
-            let evmService = try EvmServiceFactory.getService(forChain: coin.chain)
+            let evmService = try EvmService.getService(forChain: coin.chain)
             let balance = try await evmService.fetchTRC20TokenBalance(
                 contractAddress: "0x" + hexContractAddress,
                 walletAddress: "0x" + hexAddress

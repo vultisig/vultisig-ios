@@ -154,7 +154,7 @@ struct CoinService {
             var tokens: [CoinMeta] = []
             switch nativeToken.chain.chainType {
             case .EVM :
-                let service = try EvmServiceFactory.getService(forChain: nativeToken.chain)
+                let service = try EvmService.getService(forChain: nativeToken.chain)
                 tokens = await service.getTokens(nativeToken: nativeToken)
             case .Solana:
                 tokens = try await SolanaService.shared.fetchTokens(for: nativeToken.address)

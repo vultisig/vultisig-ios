@@ -151,7 +151,7 @@ struct SwapCustomTokenView: View {
         
         do {
             if chain.chainType == .EVM {
-                let service = try EvmServiceFactory.getService(forChain: chain)
+                let service = try EvmService.getService(forChain: chain)
                 let (name, symbol, decimals) = try await service.getTokenInfo(contractAddress: contractAddress)
                 
                 if !name.isEmpty, !symbol.isEmpty, decimals > 0 {

@@ -503,7 +503,7 @@ private extension BlockChainService {
             }
             
         case .zksync:
-            let service = try EvmServiceFactory.getService(forChain: coin.chain)
+            let service = try EvmService.getService(forChain: coin.chain)
             let (gasLimit, _, maxFeePerGas, maxPriorityFeePerGas, nonce) = try await service.getGasInfoZk(fromAddress: coin.address, toAddress: .zeroAddress)
             // Ensure priority fee does not exceed max fee
             let adjustedPriority = maxPriorityFeePerGas > maxFeePerGas ? maxFeePerGas : maxPriorityFeePerGas
@@ -616,7 +616,7 @@ private extension BlockChainService {
         case .swap:
             // For Mantle, use the coin's default gas limit for swaps
             if coin.chain == .mantle {
-                return MantleService.defaultMantleSwapLimit
+                return EvmService.defaultMantleSwapLimit
             }
             return BigInt(EVMHelper.defaultETHSwapGasUnit)
         }
@@ -624,7 +624,7 @@ private extension BlockChainService {
     
     func estimateERC20GasLimit(tx: SendTransaction) async  -> BigInt {
         do{
-            let service = try EvmServiceFactory.getService(forChain: tx.coin.chain)
+            let service = try EvmService.getService(forChain: tx.coin.chain)
             let gas = try await service.estimateGasForERC20Transfer(
                 senderAddress: tx.coin.address,
                 contractAddress: tx.coin.contractAddress,
@@ -639,7 +639,7 @@ private extension BlockChainService {
     }
     
     func estimateGasLimit(tx: SendTransaction) async throws -> BigInt {
-        let service = try EvmServiceFactory.getService(forChain: tx.coin.chain)
+        let service = try EvmService.getService(forChain: tx.coin.chain)
         let gas = try await service.estimateGasForEthTransaction(
             senderAddress: tx.coin.address,
             recipientAddress: .anyAddress,
@@ -653,7 +653,7 @@ private extension BlockChainService {
         if tx.fromCoin.chainType != .EVM {
             return nil
         }
-        let service = try EvmServiceFactory.getService(forChain: tx.fromCoin.chain)
+        let service = try EvmService.getService(forChain: tx.fromCoin.chain)
         switch(tx.quote){
         case .mayachain(_):
             return nil

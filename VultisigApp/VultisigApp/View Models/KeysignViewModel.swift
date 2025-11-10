@@ -535,7 +535,7 @@ class KeysignViewModel: ObservableObject {
                         throw error
                     }
                 case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid, .sei:
-                    let service = try EvmServiceFactory.getService(forChain: keysignPayload.coin.chain)
+                    let service = try EvmService.getService(forChain: keysignPayload.coin.chain)
                     self.txid = try await service.broadcastTransaction(hex: tx.rawTransaction)
                 case .bitcoin:
                     UTXOTransactionsService.broadcastBitcoinTransaction(signedTransaction: tx.rawTransaction) { result in
@@ -630,7 +630,7 @@ class KeysignViewModel: ObservableObject {
                 }
                 
             case .regularWithApprove(let approve, let transaction):
-                let service = try EvmServiceFactory.getService(forChain: keysignPayload.coin.chain)
+                let service = try EvmService.getService(forChain: keysignPayload.coin.chain)
                 let approveTxHash = try await service.broadcastTransaction(hex: approve.rawTransaction)
                 let regularTxHash = try await service.broadcastTransaction(hex: transaction.rawTransaction)
                 self.approveTxid = approveTxHash
