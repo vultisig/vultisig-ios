@@ -39,24 +39,29 @@ struct CoinDetailScreen: View {
     
     var body: some View {
         GeometryReader { proxy in
-            VStack(spacing: 32) {
-                CoinDetailHeaderView(coin: coin)
-                CoinActionsView(
-                    actions: viewModel.availableActions,
-                    onAction: onAction
-                )
-                .padding(.bottom, 8)
-                CoinPriceNetworkView(
-                    chainName: group.name,
-                    price: Decimal(coin.price).formatToFiat()
-                )
+            ScrollView {
+                VStack(spacing: 32) {
+                    CoinDetailHeaderView(coin: coin)
+                    CoinActionsView(
+                        actions: viewModel.availableActions,
+                        onAction: onAction
+                    )
+                    .padding(.bottom, 8)
+                    CoinPriceNetworkView(
+                        chainName: group.name,
+                        price: Decimal(coin.price).formatToFiat()
+                    )
+                }
+                .padding(.top, 45)
+                .padding(.horizontal, 24)
             }
-            .padding(.top, 45)
-            .padding(.horizontal, 24)
             .background(ModalBackgroundView(width: proxy.size.width))
             .onLoad(perform: viewModel.setup)
             .onAppear(perform: onAppear)
             .withAddressCopy(coin: $addressToCopy)
+            .refreshable {
+                await refresh()
+            }
         }
         .presentationDetents([isIPadOS ? .large : .medium])
         .presentationBackground(Theme.colors.bgSecondary)
@@ -81,6 +86,11 @@ struct CoinDetailScreen: View {
                     isPresented.toggle()
                 }
             }
+            #if os(macOS)
+            CustomToolbarItem(placement: .trailing) {
+                RefreshToolbarButton(onRefresh: onRefreshButton)
+            }
+            #endif
         }
     }
 }
@@ -88,8 +98,18 @@ struct CoinDetailScreen: View {
 private extension CoinDetailScreen {
     func onAppear() {
         Task {
-            await BalanceService.shared.updateBalance(for: coin)
+            await refresh()
         }
+    }
+    
+    func onRefreshButton() {
+        Task {
+            await refresh()
+        }
+    }
+    
+    func refresh() async {
+        await BalanceService.shared.updateBalance(for: coin)
     }
     
     func onAction(_ action: CoinAction) {

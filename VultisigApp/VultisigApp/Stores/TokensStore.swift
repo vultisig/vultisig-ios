@@ -872,7 +872,7 @@ class TokensStore {
             ticker: "VULT",
             logo: "vult",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "vultisig",
             contractAddress: "0xb788144DF611029C60b859DF47e79B7726C4DEBa",
             isNativeToken: false
         ),
