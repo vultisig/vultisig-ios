@@ -278,7 +278,7 @@
 "fastVaultSummaryText1" = "CAVALT SHARE 1 Ricevuto tramite posta";
 "fastVaultSummaryText2" = "Vault share 2 memorizzato da te";
 "fastVaultSummaryText3" = "Conservare le azioni Vault in diverse posizioni";
-"fastVaultSummaryText4" = "Tutte le azioni Vault assicurano un accesso sicuro ai tuoi fondi";
+"fastVaultSummaryText4" = "L'accesso a tutte le parti del vault garantisce la massima sicurezza per i tuoi fondi";
 "fees" = "Commissioni";
 "fetchingVaultDetails" = "Recupero dei dettagli del caveau";
 "findCustomTokens" = "Trova Il Tuo Token Personalizzato";
@@ -809,7 +809,7 @@
 "utxoSuggestionMessage" = "Per le criptovalute basate su UTXO come Dogecoin: \ n \ n • Prova a inviare un importo inferiore \ n • Attendere le transazioni in sospeso per confermare \ n • Considera il consolidamento di piccoli utxos prima \ n • Verifica se si dispone di un saldo sufficiente per le commissioni";
 "utxoSuggestionTitle" = "Suggerimenti per le transazioni UTXO";
 "utxoTooSmallError" = "Gli UTXO disponibili sono troppo piccoli per questa transazione. Gli output di transazione individuali nel tuo portafoglio non soddisfano i requisiti minimi. Considera di consolidare prima gli importi più piccoli.";
-"validAddressDomainError" = "Inserisci un indirizzo valido per la blockchain selezionata.";
+"validAddressDomainError" = "Indirizzo errato per la blockchain selezionata. Prova ad aggiungere la catena al tuo caveau.";
 "validAddressError" = "Per favore, inserisci un indirizzo valido.";
 "value" = "Valore";
 "vault" = "Cassaforte";

@@ -120,7 +120,6 @@ class ThorchainService: ThorchainSwapProvider {
         toAsset: String,
         amount: String,
         interval: Int,
-        isAffiliate: Bool,
         referredCode: String,
         vultTierDiscount: Int
     ) async throws -> ThorchainSwapQuote {
@@ -132,7 +131,6 @@ class ThorchainService: ThorchainSwapProvider {
             toAsset: toAsset,
             amount: amount,
             interval: String(interval),
-            isAffiliate: isAffiliate,
             referredCode: referredCode,
             vultTierDiscount: vultTierDiscount
         )

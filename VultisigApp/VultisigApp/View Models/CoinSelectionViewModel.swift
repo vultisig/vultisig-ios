@@ -44,9 +44,13 @@ class CoinSelectionViewModel: ObservableObject {
         await balanceService.updateBalance(for: coin)
     }
     
-    func setData(for vault: Vault) {
+    func setData(for vault: Vault, checkForSelected: Bool = true) {
+        if checkForSelected {
+            checkSelected(for: vault)
+        } else {
+            selection = []
+        }
         groupAssets()
-        checkSelected(for: vault)
     }
     
     func hasTokens(chain: Chain) -> Bool {
@@ -55,19 +59,34 @@ class CoinSelectionViewModel: ObservableObject {
     }
     
     private func checkSelected(for vault: Vault) {
-        selection = Set(vault.coins.map{$0.toCoinMeta()})
+        selection = Set(vault.coins.map { $0.toCoinMeta() })
     }
     
     private func groupAssets() {
         groupedAssets = [:]
-        groupedAssets = Dictionary(grouping: TokensStore.TokenSelectionAssets.sorted(by: { first, second in
+        
+        // Filter out Sepolia and Thorchain Stagenet based on settings
+        let enableETHSepolia = UserDefaults.standard.bool(forKey: "sepolia")
+        let enableThorchainStagenet = UserDefaults.standard.bool(forKey: "thorchainStagenet")
+        
+        let filteredAssets = TokensStore.TokenSelectionAssets.filter { asset in
+            if asset.chain == .ethereumSepolia {
+                return enableETHSepolia
+            }
+            if asset.chain == .thorChainStagenet {
+                return enableThorchainStagenet
+            }
+            return true
+        }
+        
+        groupedAssets = Dictionary(grouping: filteredAssets.sorted(by: { first, _ in
             if first.isNativeToken {
                 return true
             }
             return false
         })) { $0.chain }
         
-        let enableETHSepolia = UserDefaults.standard.bool(forKey: "sepolia")
+        // Add Sepolia if enabled (it's not in TokenSelectionAssets)
         if enableETHSepolia {
             groupedAssets[TokensStore.Token.ethSepolia.chain] = [TokensStore.Token.ethSepolia]
         }
@@ -90,6 +109,7 @@ class CoinSelectionViewModel: ObservableObject {
         case .swap:
             return filteredChains
                 .filter(\.isSwapAvailable)
+                .filter { vault.chains.contains($0) }
         case .send:
             return filteredChains
                 .filter { vault.chains.contains($0) }

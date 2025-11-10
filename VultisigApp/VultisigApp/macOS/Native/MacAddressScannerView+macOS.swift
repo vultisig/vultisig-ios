@@ -163,7 +163,7 @@ struct MacAddressScannerView: View {
         guard let detectedQRCode = scannerViewModel.detectedQRCode else {
             return
         }
-        
+
         goBack()
         onParsedResult(AddressResult.fromURI(detectedQRCode))
     }

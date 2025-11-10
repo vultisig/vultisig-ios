@@ -278,7 +278,7 @@
 "fastVaultSummaryText1" = "Udjel trezora 1 primljen putem pošte";
 "fastVaultSummaryText2" = "SAVJET SAVJET 2";
 "fastVaultSummaryText3" = "Držite udjele trezora na različitim mjestima";
-"fastVaultSummaryText4" = "Sve dionice trezora osiguravaju siguran pristup vašim sredstvima";
+"fastVaultSummaryText4" = "Pristup svim dijelovima trezora osigurava maksimalnu sigurnost za vaša sredstva";
 "fees" = "Naknade";
 "fetchingVaultDetails" = "Dohvaćanje pojedinosti o spremištu";
 "findCustomTokens" = "Pronađite Svoj Prilagođeni Token";
@@ -809,7 +809,7 @@
 "utxoSuggestionMessage" = "Za kripto valute sa sjedištem u UTXO-u poput dogecoin: \ n \ n • Pokušajte poslati manji iznos \ n • Pričekajte da transakcije u tijeku potvrde \ n • Razmislite o konsolidaciji malih UTXOS-a prvo \ n • Provjerite imate li dovoljno salda za naknade za naknade";
 "utxoSuggestionTitle" = "UTXO savjeti za transakciju";
 "utxoTooSmallError" = "Dostupni UTXO-i su premali za ovu transakciju. Pojedinačni izlazi transakcije u vašem novčaniku ne zadovoljavaju minimalne zahtjeve. Razmislite o konsolidaciji manjih iznosa prvo.";
-"validAddressDomainError" = "Unesite valjanu adresu za odabrani blockchain.";
+"validAddressDomainError" = "Pogrešna adresa za odabrani blockchain. Pokušajte dodati lanac u svoj trezor.";
 "validAddressError" = "Molimo unesite valjanu adresu.";
 "value" = "Vrijednost";
 "vault" = "Sefovi";

@@ -39,37 +39,41 @@ struct SwapCoinPickerView: View {
     }
     
     var body: some View {
-        Screen(showNavigationBar: false) {
+        container
+    }
+    
+    var container: some View {
+#if os(iOS)
+        NavigationStack {
             content
         }
-        .crossPlatformToolbar("selectAsset".localized, showsBackButton: false) {
-            CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "x") {
-                    showSheet.toggle()
-                }
-            }
-        }
-        .applySheetSize()
-        .sheetStyle()
+#else
+        content
+            .presentationSizingFitted()
+            .applySheetSize()
+            .transaction { $0.disablesAnimations = true }
+#endif
     }
     
     var content: some View {
         ZStack(alignment: .bottom) {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 12) {
-                    searchBar
-                    
-                    if viewModel.isLoading {
-                        loadingView
-                    } else if !viewModel.filteredTokens.isEmpty {
-                        list
-                    } else {
-                        emptyMessage
+            VStack(spacing: 12) {
+                searchBar
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 12) {
+                        if viewModel.isLoading {
+                            loadingView
+                        } else if !viewModel.filteredTokens.isEmpty {
+                            list
+                        } else {
+                            emptyMessage
+                        }
                     }
+                    .padding(.bottom, 80)
                 }
-                .padding(.vertical, 8)
-                .padding(.bottom, 80)
             }
+            .padding(.vertical, 8)
+            .padding(.horizontal, 16)
             
             VStack(spacing: 12) {
                 GradientListSeparator()
@@ -80,7 +84,7 @@ struct SwapCoinPickerView: View {
                     .animation(.easeInOut.delay(0.4), value: showSelectChainHeader)
                 chainCarousel
             }
-            .padding(.top, 4)
+            .padding(.vertical, 4)
             .background(Theme.colors.bgPrimary)
             .shadow(color: Theme.colors.bgPrimary, radius: 15)
         }
@@ -91,6 +95,16 @@ struct SwapCoinPickerView: View {
         .onChange(of: selectedChain) { _, _ in
             reloadCoins()
         }
+        .crossPlatformToolbar(showsBackButton: false) {
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "x") {
+                    showSheet.toggle()
+                }
+            }
+        }
+        .background(Theme.colors.bgPrimary)
+        .applySheetSize()
+        .sheetStyle()
     }
     
     var loadingView: some View {
@@ -130,10 +144,28 @@ struct SwapCoinPickerView: View {
     }
     
     var searchBar: some View {
-        SearchTextField(value: $viewModel.searchText, isFocused: $searchBarFocused)
-            .padding(.bottom, 12)
-            .listRowInsets(EdgeInsets())
-            .listRowSeparator(.hidden)
+        VStack(alignment: .leading, spacing: 16) {
+            Text("selectAsset".localized)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .font(Theme.fonts.title2)
+                .multilineTextAlignment(.leading)
+            
+            HStack(spacing: 12) {
+                SearchTextField(value: $viewModel.searchText, isFocused: $searchBarFocused)
+                Button {
+                    viewModel.searchText = ""
+                    searchBarFocused.toggle()
+                } label: {
+                    Text("cancel".localized)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                        .font(Theme.fonts.bodySMedium)
+                }
+                .buttonStyle(.plain)
+                .transition(.opacity)
+                .showIf(searchBarFocused)
+            }
+            .animation(.easeInOut, value: searchBarFocused)
+        }
     }
     
     let itemSize: CGFloat = 120
@@ -187,7 +219,9 @@ struct SwapCoinPickerView: View {
     }
     
     private var availableChains: [Chain] {
-        return coinSelectionViewModel.chains.filter(\.isSwapAvailable)
+        return coinSelectionViewModel.chains
+            .filter(\.isSwapAvailable)
+            .filter { vault.chains.contains($0) }
     }
     
     private func reloadCoins() {
@@ -203,11 +237,11 @@ struct SwapCoinPickerView: View {
     }
     
     private func onSelect(coin: CoinMeta) {
-            guard let newCoin =  viewModel.onSelect(coin: coin) else {
-                return
-            }
-            selectedCoin = newCoin
-            showSheet = false
+        guard let newCoin = viewModel.onSelect(coin: coin) else {
+            return
+        }
+        selectedCoin = newCoin
+        showSheet = false
     }
 }
 

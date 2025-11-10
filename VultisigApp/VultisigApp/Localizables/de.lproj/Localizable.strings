@@ -278,7 +278,7 @@
 "fastVaultSummaryText1" = "Vault Share 1 per Post erhalten";
 "fastVaultSummaryText2" = "Vault Share 2 von Ihnen gespeichert";
 "fastVaultSummaryText3" = "Halten Sie Vault Shares an verschiedenen Orten";
-"fastVaultSummaryText4" = "Alle Vault -Freigaben gewährleisten sicheren Zugriff auf Ihre Mittel";
+"fastVaultSummaryText4" = "Zugriff auf alle Vault-Shares gewährleistet maximale Sicherheit für Ihre Gelder";
 "fees" = "Gebühren";
 "fetchingVaultDetails" = "Tresordetails werden abgerufen";
 "findCustomTokens" = "Finde Deinen Benutzerdefinierten Token";
@@ -809,7 +809,7 @@
 "utxoSuggestionMessage" = "Für UTXO-basierte Kryptowährungen wie Dogecoin: \ n \ n • Versuchen Sie, einen geringeren Betrag zu senden.";
 "utxoSuggestionTitle" = "UTXO -Transaktionstipps";
 "utxoTooSmallError" = "Verfügbare UTXOs sind zu klein für diese Transaktion. Die einzelnen Transaktionsausgaben in deiner Brieftasche erfüllen nicht die Mindestanforderungen. Erwäge zuerst kleinere Beträge zu konsolidieren.";
-"validAddressDomainError" = "Bitte gib eine gültige Adresse für die ausgewählte Blockchain ein.";
+"validAddressDomainError" = "Falsche Adresse für die ausgewählte Blockchain. Versuchen Sie, die Chain zu Ihrem Tresor hinzuzufügen.";
 "validAddressError" = "Bitte gebe eine gültige Adresse ein.";
 "value" = "Wert";
 "vault" = "Tresore";
