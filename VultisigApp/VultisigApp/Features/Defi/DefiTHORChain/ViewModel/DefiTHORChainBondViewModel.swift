@@ -11,23 +11,16 @@ final class DefiTHORChainBondViewModel: ObservableObject {
     @Published private(set) var vault: Vault
     @Published private(set) var activeBondedNodes: [BondPosition] = []
     @Published private(set) var availableNodes: [BondNode] = []
-    @Published private(set) var isLoading: Bool = false
-    @Published private(set) var setupDone: Bool = false
+    @Published private(set) var initialLoadingDone: Bool = false
     
     var hasBondPositions: Bool {
         vault.defiPositions.contains { $0.chain == .thorChain && !$0.bonds.isEmpty }
     }
     
-    var bondPositionsLoaded: Bool {
-        !activeBondedNodes.isEmpty || !availableNodes.isEmpty
-    }
-    
     private let thorchainAPIService = THORChainAPIService()
     
     // TODO: - ADD VULTI NODES
-    let vultiNodeAddresses: [String] = [
-        "thor1fpyaj39rdlc5f80kulq55tqlvku4t66gq5pvqk"
-    ]
+    let vultiNodeAddresses: [String] = []
     
     init(vault: Vault) {
         self.vault = vault
@@ -40,12 +33,15 @@ final class DefiTHORChainBondViewModel: ObservableObject {
     @MainActor
     func refresh() async {
         guard hasBondPositions, let runeCoin = vault.runeCoin else {
-            setupDone = true
+            initialLoadingDone = true
             return
         }
         
-        isLoading = true
-        
+        activeBondedNodes = vault.bondPositions
+        if !activeBondedNodes.isEmpty {
+            initialLoadingDone = true
+        }
+                
         do {
             // Fetch network-wide bond info once (APY and next churn date)
             let networkInfo = try await thorchainAPIService.getNetworkBondInfo()
@@ -104,11 +100,23 @@ final class DefiTHORChainBondViewModel: ObservableObject {
             let finalActiveNodes = activeNodes
             let finalAvailableNodes = Array(availableNodesList)
             
+            savePositions(positions: finalActiveNodes)
             self.activeBondedNodes = finalActiveNodes
             self.availableNodes = finalAvailableNodes            
         } catch {}
         
-        self.isLoading = false
-        self.setupDone = true
+        self.initialLoadingDone = true
+    }
+}
+
+private extension DefiTHORChainBondViewModel {
+    @MainActor
+    func savePositions(positions: [BondPosition]) {
+        do {
+            Storage.shared.insert(positions)
+            try Storage.shared.save()
+        } catch {
+            print("An error occured while saving staked positions: \(error)")
+        }
     }
 }

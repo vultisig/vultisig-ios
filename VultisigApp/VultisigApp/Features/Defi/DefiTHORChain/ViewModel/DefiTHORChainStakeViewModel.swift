@@ -10,8 +10,7 @@ import Foundation
 final class DefiTHORChainStakeViewModel: ObservableObject {
     @Published private(set) var vault: Vault
     @Published private(set) var stakePositions: [StakePosition] = []
-    @Published private(set) var isLoading: Bool = false
-    @Published private(set) var setupDone: Bool = false
+    @Published private(set) var initialLoadingDone: Bool = false
 
     var hasStakePositions: Bool {
         !stakePositions.isEmpty
@@ -38,16 +37,22 @@ final class DefiTHORChainStakeViewModel: ObservableObject {
     func refresh() async {
         await loadStakePositions()
     }
+}
 
+private extension DefiTHORChainStakeViewModel {
     @MainActor
-    private func loadStakePositions() async {
-        guard let runeCoin = vault.coins.first(where: { $0.ticker == "RUNE" && $0.chain == .thorChain }) else {
+    func loadStakePositions() async {
+        guard let runeCoin = vault.runeCoin else {
             print("Error: RUNE coin not found in vault for price lookups")
-            setupDone = true
+            initialLoadingDone = true
             return
         }
         
-        isLoading = true
+        stakePositions = vault.stakePositions
+        if !stakePositions.isEmpty {
+            initialLoadingDone = true
+        }
+        
         var positions: [StakePosition] = []
         for coinMeta in vaultStakePositions {
             guard let coin = vault.coins.first(where: { $0.ticker == coinMeta.ticker && $0.chain == coinMeta.chain }) else {
@@ -60,11 +65,11 @@ final class DefiTHORChainStakeViewModel: ObservableObject {
         }
 
         stakePositions = positions.sorted { $0.amount > $1.amount }
-        isLoading = false
-        setupDone = true
+        savePositions(positions: stakePositions)
+        initialLoadingDone = true
     }
 
-    private func createStakePosition(for coin: Coin, runeCoin: Coin, coinMeta: CoinMeta) async -> StakePosition? {
+    func createStakePosition(for coin: Coin, runeCoin: Coin, coinMeta: CoinMeta) async -> StakePosition? {
         let ticker = coin.ticker.uppercased()
         switch ticker {
         case "TCY", "RUJI":
@@ -141,6 +146,16 @@ final class DefiTHORChainStakeViewModel: ObservableObject {
                 rewardCoin: nil,
                 vault: vault
             )
+        }
+    }
+    
+    @MainActor
+    func savePositions(positions: [StakePosition]) {
+        do {
+            Storage.shared.insert(positions)
+            try Storage.shared.save()
+        } catch {
+            print("An error occured while saving staked positions: \(error)")
         }
     }
 }

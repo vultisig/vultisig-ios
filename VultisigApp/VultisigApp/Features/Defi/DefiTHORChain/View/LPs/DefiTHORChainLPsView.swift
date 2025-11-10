@@ -10,22 +10,24 @@ import SwiftUI
 struct DefiTHORChainLPsView<EmptyStateView: View>: View {
     @ObservedObject var vault: Vault
     @ObservedObject var viewModel: DefiTHORChainLPsViewModel
-    @Binding var loadingBalances: Bool
     var onRemove: (LPPosition) -> Void
     var onAdd: (LPPosition) -> Void
     var emptyStateView: () -> EmptyStateView
     
     var showLoading: Bool {
-        loadingBalances && !viewModel.setupDone
+        !viewModel.initialLoadingDone
     }
     
     var body: some View {
         LazyVStack(spacing: 14) {
-            if showLoading {
+            if !viewModel.hasLPPositions {
+                emptyStateView()
+            } else if showLoading {
+                Text("this")
                 ForEach(0..<2, id: \.self) { _ in
                     DefiTHORChainLPPositionSkeletonView()
                 }
-            } else if viewModel.hasLPPositions {
+            } else {
                 ForEach(viewModel.lpPositions) { position in
                     DefiTHORChainLPPositionView(
                         vault: vault,
@@ -34,8 +36,6 @@ struct DefiTHORChainLPsView<EmptyStateView: View>: View {
                         onAdd: { onAdd(position) }
                     )
                 }
-            } else {
-                emptyStateView()
             }
         }
     }
@@ -45,7 +45,6 @@ struct DefiTHORChainLPsView<EmptyStateView: View>: View {
     DefiTHORChainLPsView(
         vault: .example,
         viewModel: DefiTHORChainLPsViewModel(vault: .example),
-        loadingBalances: .constant(false),
         onRemove: { _ in },
         onAdd: { _ in },
         emptyStateView: { EmptyView() }
