@@ -201,6 +201,7 @@
 		138574232E2DB765002532BF /* IconButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574222E2DB765002532BF /* IconButtonStyle.swift */; };
 		138574262E2DB9C6002532BF /* NavigationIconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574242E2DB9C6002532BF /* NavigationIconButton.swift */; };
 		138574272E2DB9C6002532BF /* IconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574252E2DB9C6002532BF /* IconButton.swift */; };
+		1385E63D2EC271F200CE634F /* DefiPositionsStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1385E63C2EC271F100CE634F /* DefiPositionsStorageService.swift */; };
 		1387E24B2E565A540033F92C /* BlurredBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1387E24A2E565A4F0033F92C /* BlurredBackground.swift */; };
 		1387FDA82E32C2CC007ECDB4 /* QRScanner.riv in Resources */ = {isa = PBXBuildFile; fileRef = 1387FDA72E32C2CC007ECDB4 /* QRScanner.riv */; };
 		138C5E642E79DE3300C559C7 /* VaultSelectChainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138C5E632E79DE2E00C559C7 /* VaultSelectChainScreen.swift */; };
@@ -262,7 +263,7 @@
 		13A657BE2EA2994D00323E4C /* BondNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657BD2EA2994900323E4C /* BondNode.swift */; };
 		13A657C02EA29A9300323E4C /* BondNodeStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657BF2EA29A8F00323E4C /* BondNodeStateView.swift */; };
 		13A657C22EA2A0FC00323E4C /* DefiTHORChainActiveNodesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657C12EA2A0FC00323E4C /* DefiTHORChainActiveNodesView.swift */; };
-		13A657C52EA2A22800323E4C /* ActiveBondedNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657C42EA2A22200323E4C /* ActiveBondedNode.swift */; };
+		13A657C52EA2A22800323E4C /* BondPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657C42EA2A22200323E4C /* BondPosition.swift */; };
 		13A657C72EA2AC5B00323E4C /* DefiTHORChainActiveNodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657C62EA2AC5900323E4C /* DefiTHORChainActiveNodeView.swift */; };
 		13A657C92EA2BCC400323E4C /* HiddenBalanceText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657C82EA2BCBE00323E4C /* HiddenBalanceText.swift */; };
 		13A899002E43C0FE006F75F0 /* PreferredAssetSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A898FF2E43C0EE006F75F0 /* PreferredAssetSelectionView.swift */; };
@@ -1376,6 +1377,7 @@
 		138574222E2DB765002532BF /* IconButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconButtonStyle.swift; sourceTree = "<group>"; };
 		138574242E2DB9C6002532BF /* NavigationIconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationIconButton.swift; sourceTree = "<group>"; };
 		138574252E2DB9C6002532BF /* IconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconButton.swift; sourceTree = "<group>"; };
+		1385E63C2EC271F100CE634F /* DefiPositionsStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiPositionsStorageService.swift; sourceTree = "<group>"; };
 		1387E24A2E565A4F0033F92C /* BlurredBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurredBackground.swift; sourceTree = "<group>"; };
 		1387FDA72E32C2CC007ECDB4 /* QRScanner.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = QRScanner.riv; sourceTree = "<group>"; };
 		138C5E632E79DE2E00C559C7 /* VaultSelectChainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultSelectChainScreen.swift; sourceTree = "<group>"; };
@@ -1437,7 +1439,7 @@
 		13A657BD2EA2994900323E4C /* BondNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondNode.swift; sourceTree = "<group>"; };
 		13A657BF2EA29A8F00323E4C /* BondNodeStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondNodeStateView.swift; sourceTree = "<group>"; };
 		13A657C12EA2A0FC00323E4C /* DefiTHORChainActiveNodesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainActiveNodesView.swift; sourceTree = "<group>"; };
-		13A657C42EA2A22200323E4C /* ActiveBondedNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveBondedNode.swift; sourceTree = "<group>"; };
+		13A657C42EA2A22200323E4C /* BondPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondPosition.swift; sourceTree = "<group>"; };
 		13A657C62EA2AC5900323E4C /* DefiTHORChainActiveNodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainActiveNodeView.swift; sourceTree = "<group>"; };
 		13A657C82EA2BCBE00323E4C /* HiddenBalanceText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HiddenBalanceText.swift; sourceTree = "<group>"; };
 		13A898FF2E43C0EE006F75F0 /* PreferredAssetSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetSelectionView.swift; sourceTree = "<group>"; };
@@ -3044,6 +3046,7 @@
 		1368D2D02EA27386009A91CA /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				1385E63B2EC271E500CE634F /* Service */,
 				1368D2D12EA2738B009A91CA /* View */,
 			);
 			path = Common;
@@ -3194,6 +3197,14 @@
 				138574202E2DB6D2002532BF /* IconButtonView.swift */,
 			);
 			path = IconButton;
+			sourceTree = "<group>";
+		};
+		1385E63B2EC271E500CE634F /* Service */ = {
+			isa = PBXGroup;
+			children = (
+				1385E63C2EC271F100CE634F /* DefiPositionsStorageService.swift */,
+			);
+			path = Service;
 			sourceTree = "<group>";
 		};
 		138C5E622E79DE2300C559C7 /* ChainSelection */ = {
@@ -3384,7 +3395,7 @@
 			children = (
 				1363B4FD2EA6955200818DF7 /* LPPosition.swift */,
 				13C02C5E2EA667D600C12071 /* StakePosition.swift */,
-				13A657C42EA2A22200323E4C /* ActiveBondedNode.swift */,
+				13A657C42EA2A22200323E4C /* BondPosition.swift */,
 				13A657BD2EA2994900323E4C /* BondNode.swift */,
 				13A657AB2EA283F500323E4C /* THORChainPositionType.swift */,
 			);
@@ -6458,6 +6469,7 @@
 				13DD547C2E561598007335DA /* SettingsOption.swift in Sources */,
 				DEEADCF72B916676007978DE /* Solana.swift in Sources */,
 				D7620B1D2DF6BFD700294396 /* FunctionCallNodeMaintenance.swift in Sources */,
+				1385E63D2EC271F200CE634F /* DefiPositionsStorageService.swift in Sources */,
 				B57DD59A2C3DA5EA00934CBB /* SolanaFmTokenInfo.swift in Sources */,
 				A6966D312BA4048800903CA4 /* SwapCryptoDetailsView.swift in Sources */,
 				13A657AC2EA283FA00323E4C /* THORChainPositionType.swift in Sources */,
@@ -6851,7 +6863,7 @@
 				DE49A1A02B67143B000F3AFB /* Chain.swift in Sources */,
 				133EEA192E68787900E18280 /* SettingsCommonOptionView.swift in Sources */,
 				13C320032E61F8DB00255138 /* ReferralVaultSelectionScreen.swift in Sources */,
-				13A657C52EA2A22800323E4C /* ActiveBondedNode.swift in Sources */,
+				13A657C52EA2A22800323E4C /* BondPosition.swift in Sources */,
 				B5F7581A2BD8E7230097B5B9 /* SuiService.swift in Sources */,
 				135C7AE12EA14130002F879A /* CustomizeChainsActionBanner.swift in Sources */,
 				138E1D5E2E9480500085EA8E /* SheetPresentedViewModifier.swift in Sources */,

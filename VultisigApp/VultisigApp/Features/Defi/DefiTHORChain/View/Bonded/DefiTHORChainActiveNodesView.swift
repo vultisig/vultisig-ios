@@ -9,7 +9,7 @@ import SwiftUI
 
 struct DefiTHORChainActiveNodesView: View {
     let coin: Coin
-    let activeNodes: [ActiveBondedNode]
+    let activeNodes: [BondPosition]
     var onBond: (BondNode) -> Void
     var onUnbond: (BondNode) -> Void
     
@@ -57,20 +57,22 @@ struct DefiTHORChainActiveNodesView: View {
 #Preview {
     let asset = CoinMeta(chain: .thorChain, ticker: "RUNE", logo: "thorchain", decimals: 8, priceProviderId: "thorchain", contractAddress: "", isNativeToken: true)
     let coin = Coin(asset: asset, address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szstey", hexPublicKey: "HexPublicKeyExample")
-    let activeNodes: [ActiveBondedNode] = [
-        ActiveBondedNode(
-            node: BondNode(address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szstey", state: .active),
+    let activeNodes: [BondPosition] = [
+        BondPosition(
+            node: BondNode(coin: .example, address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szstey", state: .active),
             amount: 300,
             apy: 0.3,
             nextReward: 15,
-            nextChurn: Date().addingTimeInterval(3600)
+            nextChurn: Date().addingTimeInterval(3600),
+            vault: .example
         ),
-        ActiveBondedNode(
-            node: BondNode(address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szwasa", state: .ready),
+        BondPosition(
+            node: BondNode(coin: .example, address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szwasa", state: .ready),
             amount: 500,
             apy: 0.22,
             nextReward: 20,
-            nextChurn: Date().addingTimeInterval(3600)
+            nextChurn: Date().addingTimeInterval(3600),
+            vault: .example
         )
     ]
     DefiTHORChainActiveNodesView(

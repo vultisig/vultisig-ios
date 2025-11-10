@@ -31,6 +31,9 @@ final class Vault: ObservableObject, Codable {
     @Relationship(deleteRule: .cascade) var referralCode: ReferralCode?
     @Relationship(deleteRule: .cascade) var referredCode: ReferredCode?
     @Relationship(deleteRule: .cascade) var defiPositions: [DefiPositions] = []
+    @Relationship(deleteRule: .cascade) var bondPositions: [BondPosition] = []
+    @Relationship(deleteRule: .cascade) var stakePositions: [StakePosition] = []
+    @Relationship(deleteRule: .cascade) var lpPositions: [LPPosition] = []
     
     enum CodingKeys: CodingKey {
         case name
@@ -45,6 +48,9 @@ final class Vault: ObservableObject, Codable {
         case libType
         case defiChains
         case defiPositions
+        case activeBondedNodes
+        case stakePositions
+        case lpPositions
     }
     
     required init(from decoder: Decoder) throws {

@@ -202,7 +202,8 @@ struct DefiTHORChainStakedPositionView: View {
                 estimatedReward: 200,
                 nextPayout: Date().timeIntervalSince1970 + 300,
                 rewards: 0,
-                rewardCoin: .example
+                rewardCoin: .example,
+                vault: .example
             ),
             onStake: {},
             onUnstake: {},
@@ -218,7 +219,8 @@ struct DefiTHORChainStakedPositionView: View {
                 estimatedReward: 200,
                 nextPayout: Date().timeIntervalSince1970 + 300,
                 rewards: 300,
-                rewardCoin: .example
+                rewardCoin: .example,
+                vault: .example
             ),
             onStake: {},
             onUnstake: {},

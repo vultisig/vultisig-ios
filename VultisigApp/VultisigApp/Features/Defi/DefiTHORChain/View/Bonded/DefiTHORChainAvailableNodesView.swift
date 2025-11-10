@@ -66,9 +66,9 @@ struct DefiTHORChainAvailableNodesView: View {
 #Preview {
     DefiTHORChainAvailableNodesView(
         availableNodes: [
-            BondNode(address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szstey", state: .active),
-            BondNode(address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szwasa", state: .ready),
-            BondNode(address: "thor1disabled000000000000000000000000000000", state: .disabled)
+            BondNode(coin: .example, address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szstey", state: .active),
+            BondNode(coin: .example, address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szwasa", state: .ready),
+            BondNode(coin: .example, address: "thor1disabled000000000000000000000000000000", state: .disabled)
         ],
         onBond: { _ in }
     )

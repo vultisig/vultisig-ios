@@ -6,13 +6,13 @@
 //
 
 import Foundation
+import SwiftData
 
 @MainActor
 final class DefiTHORChainLPsViewModel: ObservableObject {
     @Published private(set) var vault: Vault
     @Published private(set) var lpPositions: [LPPosition] = []
-    @Published private(set) var isLoading: Bool = false
-    @Published private(set) var setupDone: Bool = false
+    @Published private(set) var initialLoadingDone: Bool = false
     
     var hasLPPositions: Bool {
         !vaultLPPositions.isEmpty
@@ -42,11 +42,16 @@ final class DefiTHORChainLPsViewModel: ObservableObject {
     func refresh() async {
         guard hasLPPositions, let runeCoin = vault.runeCoin else {
             lpPositions = []
-            setupDone = true
+            initialLoadingDone = true
             return
         }
 
-        isLoading = true
+        lpPositions = vault.lpPositions.filter {
+            vaultLPPositions.contains($0.coin2)
+        }
+        if !lpPositions.isEmpty {
+            initialLoadingDone = true
+        }
 
         do {
             // Fetch LP positions from THORChain API using configured period for LUVI-based APR
@@ -58,19 +63,19 @@ final class DefiTHORChainLPsViewModel: ObservableObject {
 
             // Convert THORChainLPPosition to LPPosition
             let positions = try await convertToLPPositions(apiPositions)
-
+            
             lpPositions = positions
-            isLoading = false
-
+            savePositions(positions: positions)
         } catch {
             print("Error fetching LP positions: \(error)")
-            isLoading = false
         }
         
-        setupDone = true
+        initialLoadingDone = true
     }
-    
-    private func convertToLPPositions(_ apiPositions: [THORChainLPPosition]) async throws -> [LPPosition] {
+}
+
+private extension DefiTHORChainLPsViewModel {
+    func convertToLPPositions(_ apiPositions: [THORChainLPPosition]) async throws -> [LPPosition] {
         var result: [LPPosition] = []
         
         for apiPosition in apiPositions {
@@ -85,46 +90,56 @@ final class DefiTHORChainLPsViewModel: ObservableObject {
             }
             
             // Find the matching chain
-            guard let assetChain = Chain.allCases.first(where: { 
+            guard let assetChain = Chain.allCases.first(where: {
                 $0.swapAsset.localizedCaseInsensitiveContains(assetChainName)
             }) else {
                 print("Could not find chain for: \(assetChainName)")
-                continue 
+                continue
             }
             
             // Find RUNE coin (always coin1)
-            guard let runeCoin = TokensStore.TokenSelectionAssets.first(where: { 
+            guard let runeCoin = TokensStore.TokenSelectionAssets.first(where: {
                 $0.ticker == "RUNE" && $0.isNativeToken
             }) else {
                 print("Could not find RUNE coin")
-                continue 
+                continue
             }
             
             // Find the asset coin (coin2)
-            guard let assetCoin = TokensStore.TokenSelectionAssets.first(where: { 
+            guard let assetCoin = TokensStore.TokenSelectionAssets.first(where: {
                 $0.ticker == assetTicker &&
                 $0.chain == assetChain
-            }) else { 
+            }) else {
                 print("Could not find asset coin for: \(assetTicker) on \(assetChain.name)")
-                continue 
+                continue
             }
             
             // Convert amounts from base units to decimal
             // Note: THORChain uses 8 decimals for RUNE
             let runeAmount = apiPosition.currentRuneAmount / pow(10, runeCoin.decimals)
-            let assetAmount = apiPosition.currentAssetAmount / pow(10, assetCoin.decimals)
+            let assetAmount = apiPosition.currentAssetAmount / pow(10, runeCoin.decimals)
             
             let lpPosition = LPPosition(
                 coin1: runeCoin,
                 coin1Amount: runeAmount,
                 coin2: assetCoin,
                 coin2Amount: assetAmount,
-                apr: apiPosition.apr // Already in decimal format (e.g., 0.0067 for 0.67%)
+                apr: apiPosition.apr, // Already in decimal format (e.g., 0.0067 for 0.67%),
+                vault: vault
             )
             
             result.append(lpPosition)
         }
         
         return result
+    }
+    
+    @MainActor
+    func savePositions(positions: [LPPosition]) {
+        do {
+            try DefiPositionsStorageService().upsert(positions)
+        } catch {
+            print("An error occured while saving LPs positions: \(error)")
+        }
     }
 }

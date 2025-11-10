@@ -16,7 +16,6 @@ struct DefiTHORChainMainScreen: View {
     @StateObject var lpsViewModel: DefiTHORChainLPsViewModel
     @StateObject var stakeViewModel: DefiTHORChainStakeViewModel
     @State private var showPositionSelection = false
-    @State var loadingBalances: Bool = false
     
     @State private var transactionToPresent: FunctionTransactionType?
     
@@ -43,13 +42,19 @@ struct DefiTHORChainMainScreen: View {
         .overlay(bottomGradient, alignment: .bottom)
         .onLoad {
             viewModel.onLoad()
-            Task { await refresh() }
+            Task {
+                await viewModel.refresh()
+                await refresh()
+            }
         }
         .refreshable { await refresh() }
         .onChange(of: vault) { _, vault in
             update(vault: vault)
         }
         .onChange(of: vault.defiPositions) { _, _ in
+            Task { await refresh() }
+        }
+        .onChange(of: viewModel.selectedPosition) { _, _ in
             Task { await refresh() }
         }
         .crossPlatformSheet(isPresented: $showPositionSelection) {
@@ -82,7 +87,6 @@ struct DefiTHORChainMainScreen: View {
                 DefiTHORChainBondedView(
                     viewModel: bondViewModel,
                     coin: group.nativeCoin,
-                    loadingBalances: $loadingBalances,
                     onBond: { transactionToPresent = .bond(node: $0?.address) },
                     onUnbond: { transactionToPresent = .unbond(node: $0) },
                     emptyStateView: { emptyStateView }
@@ -90,7 +94,6 @@ struct DefiTHORChainMainScreen: View {
             case .stake:
                 DefiTHORChainStakedView(
                     viewModel: stakeViewModel,
-                    loadingBalances: $loadingBalances,
                     onStake: { onStake(position: $0) },
                     onUnstake: { onUnstake(position: $0) },
                     onWithdraw: { position in
@@ -109,7 +112,6 @@ struct DefiTHORChainMainScreen: View {
                 DefiTHORChainLPsView(
                     vault: vault,
                     viewModel: lpsViewModel,
-                    loadingBalances: $loadingBalances,
                     onRemove: { _ in
                         // TODO: - Redirect to remove LP
                     },
@@ -206,13 +208,14 @@ private extension DefiTHORChainMainScreen {
 
 private extension DefiTHORChainMainScreen {
     func refresh() async {
-        await MainActor.run { loadingBalances = true }
-        await viewModel.refresh()
-        await MainActor.run { loadingBalances = false }
-        
-        await bondViewModel.refresh()
-        await lpsViewModel.refresh()
-        await stakeViewModel.refresh()
+        switch viewModel.selectedPosition {
+        case .bond:
+            await bondViewModel.refresh()
+        case .stake:
+            await stakeViewModel.refresh()
+        case .liquidityPool:
+            await lpsViewModel.refresh()
+        }
     }
     
     func update(vault: Vault) {
