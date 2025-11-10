@@ -202,6 +202,9 @@ private extension ChainDetailScreen {
             await updateBalances()
             await MainActor.run {
                 coinSelectionViewModel.setData(for: vault)
+                // Notify viewModel and group to update the tokens list
+                viewModel.objectWillChange.send()
+                group.objectWillChange.send()
             }
         }
     }
