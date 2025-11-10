@@ -36,6 +36,6 @@ final class LPPosition {
         self.apr = apr
         self.lastUpdated = Date.now
         self.vault = vault
-        self.id = "\(coin1.chain.ticker)_\(coin1.contractAddress)_\(coin2.chain.ticker)_\(coin2.contractAddress)_\(vault.id)"
+        self.id = "\(coin1.chain.ticker)_\(coin1.contractAddress)_\(coin2.chain.ticker)_\(coin2.contractAddress)_\(vault.pubKeyECDSA)"
     }
 }
