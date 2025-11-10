@@ -9,12 +9,25 @@ import SwiftUI
 
 struct VaultSelectChainScreen: View {
     @ObservedObject var vault: Vault
+    let preselectChains: Bool
     @Binding var isPresented: Bool
     var onSave: () -> Void
     @State var searchBarFocused: Bool = false
     @State var isLoading: Bool = false
     
-    @EnvironmentObject var viewModel: CoinSelectionViewModel
+    @StateObject var viewModel = CoinSelectionViewModel()
+    
+    init(
+        vault: Vault,
+        preselectChains: Bool = true,
+        isPresented: Binding<Bool>,
+        onSave: @escaping () -> Void
+    ) {
+        self.vault = vault
+        self.preselectChains = preselectChains
+        self._isPresented = isPresented
+        self.onSave = onSave
+    }
     
     var sections: [AssetSection<Int, Chain>] {
         !viewModel.filteredChains.isEmpty ? [AssetSection(assets: viewModel.filteredChains)] : []
@@ -38,12 +51,12 @@ struct VaultSelectChainScreen: View {
         }
         .withLoading(text: "pleaseWait".localized, isLoading: $isLoading)
         .onLoad {
-            viewModel.setData(for: vault)
+            viewModel.setData(for: vault, checkForSelected: preselectChains)
         }
     }
     
     func isSelected(chain: Chain) -> Bool {
-        viewModel.selection.contains { $0.chain == chain }
+        return viewModel.selection.contains { $0.chain == chain }
     }
 }
 
@@ -65,6 +78,11 @@ private extension VaultSelectChainScreen {
     }
     
     func saveAssets() async {
+        /// When it comes from onboarding, if the selection is empty we keep default chains
+        if !preselectChains, viewModel.selection.isEmpty {
+            return
+        }
+        
         await CoinService.saveAssets(for: vault, selection: viewModel.selection)
     }
 }

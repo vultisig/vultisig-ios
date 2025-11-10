@@ -67,7 +67,6 @@ struct SwapService {
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
-                isAffiliate: isAffiliate,
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount
             )
@@ -78,7 +77,6 @@ struct SwapService {
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
-                isAffiliate: isAffiliate,
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount
             )
@@ -89,7 +87,6 @@ struct SwapService {
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
-                isAffiliate: isAffiliate,
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount
             )
@@ -141,7 +138,6 @@ private extension SwapService {
         amount: Decimal,
         fromCoin: Coin,
         toCoin: Coin,
-        isAffiliate: Bool,
         referredCode: String,
         vultTierDiscount: Int
     ) async throws -> SwapQuote {
@@ -155,7 +151,6 @@ private extension SwapService {
                 toAsset: toCoin.swapAsset,
                 amount: normalizedAmount.description,
                 interval: provider.streamingInterval,
-                isAffiliate: isAffiliate,
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount
             )

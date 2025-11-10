@@ -235,6 +235,7 @@
 		139642382E79951E00CFEFAF /* VaultManagementSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139642372E79951900CFEFAF /* VaultManagementSheet.swift */; };
 		1396423E2E79A78A00CFEFAF /* VaultCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1396423D2E79A78400CFEFAF /* VaultCellView.swift */; };
 		139880502E39007C00EC5D3F /* CosmosCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1398804F2E39007900EC5D3F /* CosmosCoin.swift */; };
+		139B2ACC2EC284ED00A12466 /* SendCryptoAmountTextField+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139B2ACB2EC284ED00A12466 /* SendCryptoAmountTextField+macOS.swift */; };
 		139B400C2E42466F00238C2C /* MacOSOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139B400B2E42466800238C2C /* MacOSOverlay.swift */; };
 		139D15A82E9C7461006F671C /* VultDiscountTiersScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139D15A72E9C7459006F671C /* VultDiscountTiersScreen.swift */; };
 		139D15AE2E9C78FD006F671C /* VultDiscountTier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139D15AD2E9C78F6006F671C /* VultDiscountTier.swift */; };
@@ -1410,6 +1411,7 @@
 		139642372E79951900CFEFAF /* VaultManagementSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultManagementSheet.swift; sourceTree = "<group>"; };
 		1396423D2E79A78400CFEFAF /* VaultCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultCellView.swift; sourceTree = "<group>"; };
 		1398804F2E39007900EC5D3F /* CosmosCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosCoin.swift; sourceTree = "<group>"; };
+		139B2ACB2EC284ED00A12466 /* SendCryptoAmountTextField+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SendCryptoAmountTextField+macOS.swift"; sourceTree = "<group>"; };
 		139B400B2E42466800238C2C /* MacOSOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSOverlay.swift; sourceTree = "<group>"; };
 		139D15A72E9C7459006F671C /* VultDiscountTiersScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultDiscountTiersScreen.swift; sourceTree = "<group>"; };
 		139D15AD2E9C78F6006F671C /* VultDiscountTier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultDiscountTier.swift; sourceTree = "<group>"; };
@@ -4538,6 +4540,7 @@
 		A6386DA22C90235600DDD58E /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				139B2ACB2EC284ED00A12466 /* SendCryptoAmountTextField+macOS.swift */,
 				A6386DA32C90236100DDD58E /* CoinSelectionCell+macOS.swift */,
 				A6386DA72C90244800DDD58E /* TokenSelectionCell+macOS.swift */,
 				A6182F302C922B750059BFDD /* AsyncImageView+macOS.swift */,
@@ -7061,6 +7064,7 @@
 				13C7C1E72E86EEBE00A529FD /* CustomTokenGridCell.swift in Sources */,
 				A6C671272CA3C0FF00F59B6A /* FunctionCallAddressTextField+iOS.swift in Sources */,
 				A6F9E7A52BED6BC800BA36E1 /* SetupVaultTabView.swift in Sources */,
+				139B2ACC2EC284ED00A12466 /* SendCryptoAmountTextField+macOS.swift in Sources */,
 				A6BB9BC92DA9D7F70085E117 /* VaultShareBackupsView.swift in Sources */,
 				A670CEC32DD7E09000E33B09 /* BackspaceDetectingTextField.swift in Sources */,
 				DE8B69992CD4603500F53E14 /* PayloadService.swift in Sources */,

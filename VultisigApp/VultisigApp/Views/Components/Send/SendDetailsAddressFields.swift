@@ -90,10 +90,30 @@ struct SendDetailsAddressFields: View {
         if let memo = addressResult.memo, memo.isNotEmpty {
             tx.memo = memo
         }
-        
-        DebounceHelper.shared.debounce {
-            validateAddress(addressResult.address)
+                
+        // Attempt to detect and switch chain if address belongs to different chain
+        if !tx.toAddress.isEmpty, let vault = homeViewModel.selectedVault {
+            let detectedCoin = viewModel.detectAndSwitchChain(
+                from: tx.toAddress,
+                vault: vault,
+                currentChain: tx.coin.chain,
+                tx: tx
+            )
+            
+            if detectedCoin != nil {
+                // Clear previous error
+                sendCryptoViewModel.showAddressAlert = false
+                sendCryptoViewModel.errorMessage = ""
+                sendCryptoViewModel.isValidAddress = true
+                
+                // Mark address as done and move to amount
+                viewModel.addressSetupDone = true
+                viewModel.onSelect(tab: .amount)
+            }
         }
+        
+        // Always validate after potential chain switch
+        validateAddress(tx.toAddress)
     }
     
     func validateAddress(_ newValue: String) {

@@ -34,7 +34,8 @@ struct OnboardingSummaryView: View {
 
     @State var didAgree: Bool = false
     @State var animationVM: RiveViewModel? = nil
-
+    @State var presentChainSelection: Bool = false
+    
     init(kind: Kind, isPresented: Binding<Bool>, onDismiss: (() -> Void)?, vault: Vault? = nil) {
         self.kind = kind
         self._isPresented = isPresented
@@ -43,23 +44,36 @@ struct OnboardingSummaryView: View {
     }
 
     var body: some View {
-        ZStack {
-            Background()
-            view
+        Screen {
+            VStack(spacing: 16) {
+                Spacer()
+                animation
+                Spacer()
+                disclaimer
+                VStack(spacing: 8) {
+                    startUsingVaultButton
+                    orSeparator
+                    chooseYourChainButton
+                }
+                .disabled(!didAgree)
+                
+            }
+            .background(BlurredBackground().opacity(0.5))
+            .onAppear {
+                setData()
+            }
         }
-    }
-
-    var view: some View {
-        VStack(spacing: 16) {
-            Spacer()
-            animation
-            Spacer()
-            disclaimer
-            button
-        }
-        .padding(24)
-        .onAppear {
-            setData()
+        .crossPlatformSheet(isPresented: $presentChainSelection) {
+            if let vault {
+                VaultSelectChainScreen(
+                    vault: vault,
+                    preselectChains: false,
+                    isPresented: $presentChainSelection
+                ) {
+                    isPresented = false
+                    onDismiss?()
+                }
+            }
         }
     }
 
@@ -87,13 +101,31 @@ struct OnboardingSummaryView: View {
         .padding(.horizontal, 12)
     }
 
-    var button: some View {
+    var startUsingVaultButton: some View {
         PrimaryButton(title: "startUsingVault") {
             isPresented = false
             onDismiss?()
         }
-        .disabled(!didAgree)
         .buttonStyle(.plain)
+    }
+    
+    var chooseYourChainButton: some View {
+        PrimaryButton(title: "chooseYourChains", type: .secondary) {
+            presentChainSelection = true
+        }
+        .buttonStyle(.plain)
+    }
+    
+    var orSeparator: some View {
+        HStack(spacing: 16) {
+            Separator(opacity: 0.2)
+            
+            Text(NSLocalizedString("or", comment: "").uppercased())
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textPrimary)
+            
+            Separator(opacity: 0.2)
+        }
     }
     
     private func setData() {
