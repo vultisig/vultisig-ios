@@ -117,7 +117,7 @@ private extension DefiTHORChainLPsViewModel {
             // Convert amounts from base units to decimal
             // Note: THORChain uses 8 decimals for RUNE
             let runeAmount = apiPosition.currentRuneAmount / pow(10, runeCoin.decimals)
-            let assetAmount = apiPosition.currentAssetAmount / pow(10, assetCoin.decimals)
+            let assetAmount = apiPosition.currentAssetAmount / pow(10, runeCoin.decimals)
             
             let lpPosition = LPPosition(
                 coin1: runeCoin,
