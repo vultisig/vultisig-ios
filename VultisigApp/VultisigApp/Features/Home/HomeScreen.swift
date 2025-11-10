@@ -272,7 +272,16 @@ private extension HomeScreen {
     
     func fetchVaults() {
         var fetchVaultDescriptor = FetchDescriptor<Vault>()
-        fetchVaultDescriptor.relationshipKeyPathsForPrefetching = [\.coins, \.hiddenTokens, \.referralCode, \.referredCode, \.defiPositions]
+        fetchVaultDescriptor.relationshipKeyPathsForPrefetching = [
+            \.coins,
+             \.hiddenTokens,
+             \.referralCode,
+             \.referredCode,
+             \.defiPositions,
+             \.bondPositions,
+             \.stakePositions,
+             \.lpPositions
+        ]
         do {
             vaults = try modelContext.fetch(fetchVaultDescriptor)
         } catch {

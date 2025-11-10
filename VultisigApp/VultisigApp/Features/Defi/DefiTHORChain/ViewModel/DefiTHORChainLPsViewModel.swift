@@ -119,7 +119,8 @@ final class DefiTHORChainLPsViewModel: ObservableObject {
                 coin1Amount: runeAmount,
                 coin2: assetCoin,
                 coin2Amount: assetAmount,
-                apr: apiPosition.apr // Already in decimal format (e.g., 0.0067 for 0.67%)
+                apr: apiPosition.apr, // Already in decimal format (e.g., 0.0067 for 0.67%),
+                vault: vault
             )
             
             result.append(lpPosition)

@@ -6,21 +6,48 @@
 //
 
 import Foundation
+import SwiftData
 
-struct StakePosition: Identifiable, Equatable {
-    var id: String { coin.ticker + coin.contractAddress }
+@Model
+final class StakePosition {
+    @Attribute(.unique) var id: String
     
-    let coin: CoinMeta
-    let type: StakePositionType
-    let amount: Decimal
-    let apr: Double?
-    let estimatedReward: Decimal?
-    let nextPayout: TimeInterval?
-    let rewards: Decimal?
-    let rewardCoin: CoinMeta?
+    var coin: CoinMeta
+    var type: StakePositionType
+    var amount: Decimal
+    var apr: Double?
+    var estimatedReward: Decimal?
+    var nextPayout: TimeInterval?
+    var rewards: Decimal?
+    var rewardCoin: CoinMeta?
+    
+    @Relationship(inverse: \Vault.stakePositions) var vault: Vault?
+    
+    init(
+        coin: CoinMeta,
+        type: StakePositionType,
+        amount: Decimal,
+        apr: Double? = nil,
+        estimatedReward: Decimal? = nil,
+        nextPayout: TimeInterval? = nil,
+        rewards: Decimal? = nil,
+        rewardCoin: CoinMeta? = nil,
+        vault: Vault
+    ) {
+        self.coin = coin
+        self.type = type
+        self.amount = amount
+        self.apr = apr
+        self.estimatedReward = estimatedReward
+        self.nextPayout = nextPayout
+        self.rewards = rewards
+        self.rewardCoin = rewardCoin
+        self.vault = vault
+        self.id = "\(coin.chain.name)_\(coin.contractAddress)_\(vault.id)"
+    }
 }
 
-enum StakePositionType: Equatable {
+enum StakePositionType: String, Codable, Equatable {
     case stake
     case compound
     case index

@@ -63,7 +63,11 @@ struct VultisigApp: App {
             Folder.self,
             HiddenToken.self,
             ReferralCode.self,
-            ReferredCode.self
+            ReferredCode.self,
+            DefiPositions.self,
+            BondPosition.self,
+            StakePosition.self,
+            LPPosition.self
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,

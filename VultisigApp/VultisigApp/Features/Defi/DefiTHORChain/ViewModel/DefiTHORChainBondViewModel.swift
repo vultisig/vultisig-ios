@@ -9,7 +9,7 @@ import Foundation
 
 final class DefiTHORChainBondViewModel: ObservableObject {
     @Published private(set) var vault: Vault
-    @Published private(set) var activeBondedNodes: [ActiveBondedNode] = []
+    @Published private(set) var activeBondedNodes: [BondPosition] = []
     @Published private(set) var availableNodes: [BondNode] = []
     @Published private(set) var isLoading: Bool = false
     @Published private(set) var setupDone: Bool = false
@@ -54,7 +54,7 @@ final class DefiTHORChainBondViewModel: ObservableObject {
             let bondedNodes = try await thorchainAPIService.getBondedNodes(address: runeCoin.address)
             
             // Map each bonded node to ActiveBondedNode with metrics
-            var activeNodes: [ActiveBondedNode] = []
+            var activeNodes: [BondPosition] = []
             var bondedNodeAddresses: Set<String> = []
             
             for node in bondedNodes.nodes {
@@ -72,18 +72,20 @@ final class DefiTHORChainBondViewModel: ObservableObject {
                     
                     // Create BondNode
                     let bondNode = BondNode(
+                        coin: runeCoin.toCoinMeta(),
                         address: node.address,
                         state: nodeState
                     )
                     
                     // Create ActiveBondedNode with calculated metrics
                     // Use per-node APY calculated from actual rewards (matching JS implementation)
-                    let activeNode = ActiveBondedNode(
+                    let activeNode = BondPosition(
                         node: bondNode,
                         amount: myBondMetrics.myBond,
                         apy: myBondMetrics.apy,
                         nextReward: myBondMetrics.myAward,
-                        nextChurn: networkInfo.nextChurnDate
+                        nextChurn: networkInfo.nextChurnDate,
+                        vault: vault
                     )
                     
                     activeNodes.append(activeNode)
@@ -96,7 +98,7 @@ final class DefiTHORChainBondViewModel: ObservableObject {
             // Filter available nodes to exclude already bonded nodes
             let availableNodesList = vultiNodeAddresses
                 .filter { !bondedNodeAddresses.contains($0) }
-                .map { BondNode(address: $0, state: .active) }
+                .map { BondNode(coin: runeCoin.toCoinMeta(), address: $0, state: .active) }
             
             // Create local copies to safely pass to MainActor
             let finalActiveNodes = activeNodes

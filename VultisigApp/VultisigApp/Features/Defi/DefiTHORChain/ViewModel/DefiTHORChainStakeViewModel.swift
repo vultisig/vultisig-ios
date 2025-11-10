@@ -83,7 +83,8 @@ final class DefiTHORChainStakeViewModel: ObservableObject {
                     estimatedReward: details.estimatedReward,
                     nextPayout: details.nextPayoutDate,
                     rewards: details.rewards,
-                    rewardCoin: details.rewardsCoin
+                    rewardCoin: details.rewardsCoin,
+                    vault: vault
                 )
             } catch {
                 print("Error fetching \(ticker) staking details: \(error.localizedDescription)")
@@ -96,7 +97,8 @@ final class DefiTHORChainStakeViewModel: ObservableObject {
                     estimatedReward: nil,
                     nextPayout: nil,
                     rewards: nil,
-                    rewardCoin: nil
+                    rewardCoin: nil,
+                    vault: vault
                 )
             }
 
@@ -109,7 +111,8 @@ final class DefiTHORChainStakeViewModel: ObservableObject {
                 estimatedReward: nil,
                 nextPayout: nil,
                 rewards: nil,
-                rewardCoin: nil
+                rewardCoin: nil,
+                vault: vault
             )
 
         case "STCY":
@@ -121,7 +124,8 @@ final class DefiTHORChainStakeViewModel: ObservableObject {
                 estimatedReward: nil,
                 nextPayout: nil,
                 rewards: nil,
-                rewardCoin: nil
+                rewardCoin: nil,
+                vault: vault
             )
 
         default:
@@ -134,7 +138,8 @@ final class DefiTHORChainStakeViewModel: ObservableObject {
                 estimatedReward: nil,
                 nextPayout: nil,
                 rewards: nil,
-                rewardCoin: nil
+                rewardCoin: nil,
+                vault: vault
             )
         }
     }
