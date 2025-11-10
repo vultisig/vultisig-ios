@@ -219,7 +219,9 @@ struct SwapCoinPickerView: View {
     }
     
     private var availableChains: [Chain] {
-        return coinSelectionViewModel.chains.filter(\.isSwapAvailable)
+        return coinSelectionViewModel.chains
+            .filter(\.isSwapAvailable)
+            .filter { vault.chains.contains($0) }
     }
     
     private func reloadCoins() {
@@ -235,11 +237,11 @@ struct SwapCoinPickerView: View {
     }
     
     private func onSelect(coin: CoinMeta) {
-            guard let newCoin =  viewModel.onSelect(coin: coin) else {
-                return
-            }
-            selectedCoin = newCoin
-            showSheet = false
+        guard let newCoin = viewModel.onSelect(coin: coin) else {
+            return
+        }
+        selectedCoin = newCoin
+        showSheet = false
     }
 }
 
