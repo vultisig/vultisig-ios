@@ -23,7 +23,6 @@ struct DefiTHORChainLPsView<EmptyStateView: View>: View {
             if !viewModel.hasLPPositions {
                 emptyStateView()
             } else if showLoading {
-                Text("this")
                 ForEach(0..<2, id: \.self) { _ in
                     DefiTHORChainLPPositionSkeletonView()
                 }
