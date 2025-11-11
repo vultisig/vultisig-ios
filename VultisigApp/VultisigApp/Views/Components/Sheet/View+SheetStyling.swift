@@ -25,6 +25,7 @@ extension View {
             .presentationDetents([.large])
         #else
         self
+            .background(Theme.colors.bgPrimary)
         #endif
     }
     
