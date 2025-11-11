@@ -165,8 +165,8 @@ class KeysignViewModel: ObservableObject {
             if let keysignPayload = self.keysignPayload {
                 chainPath = keysignPayload.coin.coinType.derivationPath()
             } else if let customMessagePayload = self.customMessagePayload {
-                // Get chain from customMessagePayload and use its coinType
-                if let chain = Chain(name: customMessagePayload.chain) {
+                // Get chain from customMessagePayload and use its coinType (case-insensitive match)
+                if let chain = Chain.allCases.first(where: { $0.name.caseInsensitiveCompare(customMessagePayload.chain) == .orderedSame }) {
                     chainPath = chain.coinType.derivationPath()
                 } else {
                     // Fallback to Ethereum if chain name cannot be parsed
