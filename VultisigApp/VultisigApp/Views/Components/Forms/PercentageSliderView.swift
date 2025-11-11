@@ -48,7 +48,7 @@ struct PercentageSliderView: View {
                 .padding(.horizontal, 16)
                 .offset(y: 12)
                 
-                Slider(value: $sliderValue, in: minimumValue...100, step: 1)
+                Slider(value: sliderBinding, in: minimumValue...100, step: 1)
                     .tint(Theme.colors.primaryAccent3)
             }
             
