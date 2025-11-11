@@ -16,6 +16,8 @@ struct FunctionTransactionScreen: View {
     @State private var navigateToVerify: Bool = false
     @State var isLoading: Bool = false
     
+    @Environment(\.dismiss) var dismiss
+    
     var body: some View {
         ZStack {
             switch transactionType {
@@ -85,6 +87,29 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
+            case .addLP(let position):
+                resolvingCoins(coin: position.coin1, coin2: position.coin2) { coin1, coin2 in
+                    AddLPTransactionScreen(
+                        viewModel: AddLPTransactionViewModel(
+                            coin: coin1,
+                            coin2: coin2,
+                            vault: vault,
+                            position: position
+                        ),
+                        onVerify: onVerify
+                    )
+                }
+            case .removeLP(let position):
+                resolvingCoin(coinMeta: position.coin1) { coin1 in
+                    RemoveLPTransactionScreen(
+                        viewModel: RemoveLPTransactionViewModel(
+                            coin: coin1,
+                            vault: vault,
+                            position: position
+                        ),
+                        onVerify: onVerify
+                    )
+                }
             }
         }
         .withLoading(isLoading: $isLoading)
@@ -120,8 +145,23 @@ struct FunctionTransactionScreen: View {
         if let coin {
             content(coin)
         } else {
-            // TODO: - Show error state
-            EmptyView()
+            ErrorView(
+                type: .alert,
+                title: "functionTransactionScreenErrorTitle".localized,
+                description: "functionTransactionScreenErrorSubtitle".localized,
+                buttonTitle: "tryAgain".localized
+            ) {
+                dismiss()
+            }
+        }
+    }
+    
+    @ViewBuilder
+    func resolvingCoins<Content: View>(coin: CoinMeta, coin2: CoinMeta, content: (Coin, Coin) -> Content) -> some View {
+        resolvingCoin(coinMeta: coin) { coin1 in
+            resolvingCoin(coinMeta: coin2) { resolvedCoin2 in
+                content(coin1, resolvedCoin2)
+            }
         }
     }
 }

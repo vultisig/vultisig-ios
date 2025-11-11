@@ -89,14 +89,6 @@ private extension DefiTHORChainLPsViewModel {
                 assetTicker = String(assetTicker.split(separator: "-")[0])
             }
             
-            // Find the matching chain
-            guard let assetChain = Chain.allCases.first(where: {
-                $0.swapAsset.localizedCaseInsensitiveContains(assetChainName)
-            }) else {
-                print("Could not find chain for: \(assetChainName)")
-                continue
-            }
-            
             // Find RUNE coin (always coin1)
             guard let runeCoin = TokensStore.TokenSelectionAssets.first(where: {
                 $0.ticker == "RUNE" && $0.isNativeToken
@@ -108,9 +100,9 @@ private extension DefiTHORChainLPsViewModel {
             // Find the asset coin (coin2)
             guard let assetCoin = TokensStore.TokenSelectionAssets.first(where: {
                 $0.ticker == assetTicker &&
-                $0.chain == assetChain
+                $0.chain.swapAsset.uppercased() == assetChainName
             }) else {
-                print("Could not find asset coin for: \(assetTicker) on \(assetChain.name)")
+                print("Could not find asset coin for: \(assetTicker) on \(assetChainName)")
                 continue
             }
             
@@ -124,6 +116,8 @@ private extension DefiTHORChainLPsViewModel {
                 coin1Amount: runeAmount,
                 coin2: assetCoin,
                 coin2Amount: assetAmount,
+                poolName: apiPosition.asset,
+                poolUnits: apiPosition.poolStats.units,
                 apr: apiPosition.apr, // Already in decimal format (e.g., 0.0067 for 0.67%),
                 vault: vault
             )

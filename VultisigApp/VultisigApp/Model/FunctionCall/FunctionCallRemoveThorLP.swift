@@ -118,7 +118,7 @@ class FunctionCallRemoveThorLP: FunctionCallAddressable, ObservableObject {
     }
     
     func getView() -> AnyView {
-        AnyView(FunctionCallRemoveThorLPView(model: self).onAppear{
+        AnyView(FunctionCallRemoveThorLPView(model: self).onAppear {
             self.initialize()
         })
     }

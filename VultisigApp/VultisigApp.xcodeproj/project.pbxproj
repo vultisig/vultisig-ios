@@ -232,6 +232,9 @@
 		139450162EBB8A3000A72AE9 /* UnstakeTransactionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139450122EBB8A3000A72AE9 /* UnstakeTransactionViewModel.swift */; };
 		1394501A2EBB8EA500A72AE9 /* WithdrawRewardsTransactionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139450172EBB8EA500A72AE9 /* WithdrawRewardsTransactionViewModel.swift */; };
 		1394501B2EBB8EA500A72AE9 /* WithdrawRewardsTransactionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139450182EBB8EA500A72AE9 /* WithdrawRewardsTransactionScreen.swift */; };
+		1394505D2EC3753A006AEE94 /* RemoveLPTransactionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1394505C2EC3753A006AEE94 /* RemoveLPTransactionScreen.swift */; };
+		1394505E2EC3753A006AEE94 /* RemoveLPTransactionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1394505B2EC3753A006AEE94 /* RemoveLPTransactionViewModel.swift */; };
+		139450602EC37BAE006AEE94 /* RemoveLPTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1394505F2EC37BAE006AEE94 /* RemoveLPTransactionBuilder.swift */; };
 		139642382E79951E00CFEFAF /* VaultManagementSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139642372E79951900CFEFAF /* VaultManagementSheet.swift */; };
 		1396423E2E79A78A00CFEFAF /* VaultCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1396423D2E79A78400CFEFAF /* VaultCellView.swift */; };
 		139880502E39007C00EC5D3F /* CosmosCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1398804F2E39007900EC5D3F /* CosmosCoin.swift */; };
@@ -389,6 +392,9 @@
 		13E1E7642E6DD6DB00D68F5D /* VerticalGrowAndFade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1E7632E6DD6D800D68F5D /* VerticalGrowAndFade.swift */; };
 		13E1E7672E6DD71E00D68F5D /* FormExpandableSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1E7662E6DD71D00D68F5D /* FormExpandableSection.swift */; };
 		13E1E7692E6DD79B00D68F5D /* ServerVaultCheckInboxScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1E7682E6DD79A00D68F5D /* ServerVaultCheckInboxScreen.swift */; };
+		13EF20B72EC3675E00CEB7DA /* AddLPTransactionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EF20B52EC3675E00CEB7DA /* AddLPTransactionViewModel.swift */; };
+		13EF20B82EC3675E00CEB7DA /* AddLPTransactionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EF20B62EC3675E00CEB7DA /* AddLPTransactionScreen.swift */; };
+		13EF20BB2EC3692200CEB7DA /* AddLPTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EF20BA2EC3692200CEB7DA /* AddLPTransactionBuilder.swift */; };
 		13EFA1CB2E31389D009838EB /* OTPCharTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EFA1CA2E31389C009838EB /* OTPCharTextField.swift */; };
 		13FB8AB62EA93B4200712A51 /* THORChainLiquidityProviderResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13FB8AB52EA93B4100712A51 /* THORChainLiquidityProviderResponse.swift */; };
 		13FB8AB82EA93B5700712A51 /* THORChainDepthHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13FB8AB72EA93B5700712A51 /* THORChainDepthHistory.swift */; };
@@ -1408,6 +1414,9 @@
 		139450132EBB8A3000A72AE9 /* UnstakeTransactionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnstakeTransactionScreen.swift; sourceTree = "<group>"; };
 		139450172EBB8EA500A72AE9 /* WithdrawRewardsTransactionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawRewardsTransactionViewModel.swift; sourceTree = "<group>"; };
 		139450182EBB8EA500A72AE9 /* WithdrawRewardsTransactionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawRewardsTransactionScreen.swift; sourceTree = "<group>"; };
+		1394505B2EC3753A006AEE94 /* RemoveLPTransactionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoveLPTransactionViewModel.swift; sourceTree = "<group>"; };
+		1394505C2EC3753A006AEE94 /* RemoveLPTransactionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoveLPTransactionScreen.swift; sourceTree = "<group>"; };
+		1394505F2EC37BAE006AEE94 /* RemoveLPTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoveLPTransactionBuilder.swift; sourceTree = "<group>"; };
 		139642372E79951900CFEFAF /* VaultManagementSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultManagementSheet.swift; sourceTree = "<group>"; };
 		1396423D2E79A78400CFEFAF /* VaultCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultCellView.swift; sourceTree = "<group>"; };
 		1398804F2E39007900EC5D3F /* CosmosCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosCoin.swift; sourceTree = "<group>"; };
@@ -1564,6 +1573,9 @@
 		13E1E7632E6DD6D800D68F5D /* VerticalGrowAndFade.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerticalGrowAndFade.swift; sourceTree = "<group>"; };
 		13E1E7662E6DD71D00D68F5D /* FormExpandableSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormExpandableSection.swift; sourceTree = "<group>"; };
 		13E1E7682E6DD79A00D68F5D /* ServerVaultCheckInboxScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerVaultCheckInboxScreen.swift; sourceTree = "<group>"; };
+		13EF20B52EC3675E00CEB7DA /* AddLPTransactionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddLPTransactionViewModel.swift; sourceTree = "<group>"; };
+		13EF20B62EC3675E00CEB7DA /* AddLPTransactionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddLPTransactionScreen.swift; sourceTree = "<group>"; };
+		13EF20BA2EC3692200CEB7DA /* AddLPTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddLPTransactionBuilder.swift; sourceTree = "<group>"; };
 		13EFA1CA2E31389C009838EB /* OTPCharTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTPCharTextField.swift; sourceTree = "<group>"; };
 		13FB8AB52EA93B4100712A51 /* THORChainLiquidityProviderResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainLiquidityProviderResponse.swift; sourceTree = "<group>"; };
 		13FB8AB72EA93B5700712A51 /* THORChainDepthHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainDepthHistory.swift; sourceTree = "<group>"; };
@@ -2824,6 +2836,8 @@
 		1348561C2EB511C8003D10BE /* FunctionTransaction */ = {
 			isa = PBXGroup;
 			children = (
+				13EF20B42EC3675400CEB7DA /* RemoveLP */,
+				13EF20B22EC3674A00CEB7DA /* AddLP */,
 				134FF3642EBA48B000683169 /* TransactionBuilder */,
 				134FF36E2EBA64CA00683169 /* Common */,
 				1348563A2EB52891003D10BE /* TransactionFormScreen.swift */,
@@ -2888,6 +2902,7 @@
 		134FF3642EBA48B000683169 /* TransactionBuilder */ = {
 			isa = PBXGroup;
 			children = (
+				13EF20B92EC3691600CEB7DA /* LP */,
 				137DB52B2EBE3FD90081C6BC /* Mint */,
 				137DB52A2EBE3FCE0081C6BC /* Staking */,
 				13A964162EBBD8EB0025FB7A /* Bond */,
@@ -3997,6 +4012,33 @@
 				134856262EB51642003D10BE /* FormValidationError.swift */,
 			);
 			path = Forms;
+			sourceTree = "<group>";
+		};
+		13EF20B22EC3674A00CEB7DA /* AddLP */ = {
+			isa = PBXGroup;
+			children = (
+				13EF20B52EC3675E00CEB7DA /* AddLPTransactionViewModel.swift */,
+				13EF20B62EC3675E00CEB7DA /* AddLPTransactionScreen.swift */,
+			);
+			path = AddLP;
+			sourceTree = "<group>";
+		};
+		13EF20B42EC3675400CEB7DA /* RemoveLP */ = {
+			isa = PBXGroup;
+			children = (
+				1394505B2EC3753A006AEE94 /* RemoveLPTransactionViewModel.swift */,
+				1394505C2EC3753A006AEE94 /* RemoveLPTransactionScreen.swift */,
+			);
+			path = RemoveLP;
+			sourceTree = "<group>";
+		};
+		13EF20B92EC3691600CEB7DA /* LP */ = {
+			isa = PBXGroup;
+			children = (
+				13EF20BA2EC3692200CEB7DA /* AddLPTransactionBuilder.swift */,
+				1394505F2EC37BAE006AEE94 /* RemoveLPTransactionBuilder.swift */,
+			);
+			path = LP;
 			sourceTree = "<group>";
 		};
 		13EFA1C92E313886009838EB /* Components */ = {
@@ -6144,11 +6186,14 @@
 				134856212EB511DB003D10BE /* FunctionTransactionScreen.swift in Sources */,
 				A6F7B6C62D4AB86900AC8104 /* EmptyPeerCell.swift in Sources */,
 				13DB87632EA01182008E89B0 /* DefiMainBalanceView.swift in Sources */,
+				13EF20BB2EC3692200CEB7DA /* AddLPTransactionBuilder.swift in Sources */,
 				A58CC34B2C32FA760086D16B /* ProtoMappable.swift in Sources */,
 				134E23FC2EAA8BC600952600 /* DefiTHORChainStakeViewModel.swift in Sources */,
 				A6505AE72CA670FE0002FBF4 /* StringExtension+iOS.swift in Sources */,
 				A6505AEB2CA673860002FBF4 /* MacCameraServiceViewModel+iOS.swift in Sources */,
 				13AA6CE32EA8746300760C8D /* THORChainAPIService+LPs.swift in Sources */,
+				13EF20B72EC3675E00CEB7DA /* AddLPTransactionViewModel.swift in Sources */,
+				13EF20B82EC3675E00CEB7DA /* AddLPTransactionScreen.swift in Sources */,
 				A6E0C9232DE968AB00A01543 /* ReferralTransactionDetailsView.swift in Sources */,
 				A5BA150F2C085EEB00AA6C07 /* CachedAsyncImage.swift in Sources */,
 				13D178FC2E57544A00007B48 /* AddressBookChainSelectionViewModel.swift in Sources */,
@@ -6473,6 +6518,7 @@
 				B57DD59A2C3DA5EA00934CBB /* SolanaFmTokenInfo.swift in Sources */,
 				A6966D312BA4048800903CA4 /* SwapCryptoDetailsView.swift in Sources */,
 				13A657AC2EA283FA00323E4C /* THORChainPositionType.swift in Sources */,
+				139450602EC37BAE006AEE94 /* RemoveLPTransactionBuilder.swift in Sources */,
 				A5F97C8E2BBF0BCF000C30DF /* BalanceService.swift in Sources */,
 				137B2C872E3A84130074F648 /* OnChainSecurityScreen.swift in Sources */,
 				DEEDAEE12B8AF7EF005170E8 /* evm.swift in Sources */,
@@ -6484,6 +6530,8 @@
 				130C40FB2E7381E700509C61 /* HomeTab.swift in Sources */,
 				A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */,
 				A6505ACC2CA6683A0002FBF4 /* OutlinedDisclaimer+iOS.swift in Sources */,
+				1394505D2EC3753A006AEE94 /* RemoveLPTransactionScreen.swift in Sources */,
+				1394505E2EC3753A006AEE94 /* RemoveLPTransactionViewModel.swift in Sources */,
 				13C7C1EF2E87082800A529FD /* ActionBannerView.swift in Sources */,
 				A6ECA1B02C9411E200456110 /* EncryptedBackupViewModel+macOS.swift in Sources */,
 				A558D74C2C298060007222EB /* SwapCoinsResolver.swift in Sources */,
