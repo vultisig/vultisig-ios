@@ -112,15 +112,10 @@ struct DefiTHORChainMainScreen: View {
                 DefiTHORChainLPsView(
                     vault: vault,
                     viewModel: lpsViewModel,
-                    onRemove: { _ in
-                        // TODO: - Redirect to remove LP
-                    },
-                    onAdd: { _ in
-                        // TODO: - Redirect to add LP
-                    },
+                    onRemove: { transactionToPresent = .removeLP(position: $0) },
+                    onAdd: { transactionToPresent = .addLP(position: $0) },
                     emptyStateView: { emptyStateView }
                 )
-                
             }
         }
         .transition(.opacity)

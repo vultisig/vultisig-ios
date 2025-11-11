@@ -967,3 +967,6 @@
 "sellCoin" = "Sell %@";
 "slippage" = "Slippage";
 "chooseYourChains" = "Choose your chains";
+"addCoinLP" = "Add %@ LP";
+"functionTransactionScreenErrorTitle" = "Function Error";
+"functionTransactionScreenErrorSubtitle" = "An error ocurred while redirecting to function";

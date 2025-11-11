@@ -15,4 +15,6 @@ enum FunctionTransactionType: Hashable {
     case withdrawRewards(coin: CoinMeta, rewards: Decimal, rewardsCoin: CoinMeta)
     case mint(coin: CoinMeta, yCoin: CoinMeta)
     case redeem(coin: CoinMeta, yCoin: CoinMeta)
+    case addLP(position: LPPosition)
+    case removeLP(position: LPPosition)
 }

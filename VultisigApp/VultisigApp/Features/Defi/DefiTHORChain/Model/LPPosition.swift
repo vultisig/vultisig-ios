@@ -16,6 +16,7 @@ final class LPPosition {
     var coin1Amount: Decimal
     var coin2: CoinMeta
     var coin2Amount: Decimal
+    var poolName: String
     var apr: Double
     var lastUpdated: Date = Date.now
     
@@ -26,6 +27,7 @@ final class LPPosition {
         coin1Amount: Decimal,
         coin2: CoinMeta,
         coin2Amount: Decimal,
+        poolName: String,
         apr: Double,
         vault: Vault
     ) {
@@ -34,8 +36,9 @@ final class LPPosition {
         self.coin2 = coin2
         self.coin2Amount = coin2Amount
         self.apr = apr
+        self.poolName = poolName
         self.lastUpdated = Date.now
         self.vault = vault
-        self.id = "\(coin1.chain.ticker)_\(coin1.contractAddress)_\(coin2.chain.ticker)_\(coin2.contractAddress)_\(vault.pubKeyECDSA)"
+        self.id = "\(coin1.chain.ticker)_\(coin1.contractAddress)_\(poolName)_\(vault.pubKeyECDSA)"
     }
 }
