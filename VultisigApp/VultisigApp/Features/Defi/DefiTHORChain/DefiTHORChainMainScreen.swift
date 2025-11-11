@@ -144,7 +144,7 @@ struct DefiTHORChainMainScreen: View {
     func onUnstake(position: StakePosition) {
         switch position.type {
         case .stake, .compound:
-            transactionToPresent = .stake(coin: position.coin)
+            transactionToPresent = .unstake(coin: position.coin)
         case .index:
             transactionToPresent = .redeem(coin: coin(for: position.coin), yCoin: position.coin)
         }

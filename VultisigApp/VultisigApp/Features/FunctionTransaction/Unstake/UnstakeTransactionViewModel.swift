@@ -73,6 +73,7 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
     }
     
     var percentageFromAmount: Double {
+        guard availableAmount != .zero else { return 0 }
         let decimal = (amountField.value.toDecimal() / availableAmount) * 100.0
         return (decimal as NSDecimalNumber).doubleValue
     }

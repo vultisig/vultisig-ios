@@ -27,7 +27,7 @@ extension TransactionBuilder {
         sendTx.memoFunctionDictionary = memoFunctionDictionary
         sendTx.transactionType = transactionType
         sendTx.wasmContractPayload = wasmContractPayload
-        sendTx.toAddress = ""
+        sendTx.toAddress = toAddress
         
         return sendTx
     }

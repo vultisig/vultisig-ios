@@ -957,7 +957,7 @@
 "unbondRune" = "Unbond RUNE";
 "invalidAmount" = "Invalid amount";
 "amountExceeded" = "Amount cannot exceed balance";
-"emptyAmountField" = "Empty amount field";
+"emptyAmountField" = "Empty amount field.";
 "providerLabel" = "Provider (optional)";
 "operatorFeesLabel" = "Operator-fees (Basis Points)";
 "operatorFeesError" = "Operator-fee cannot be empty if provider is filled";
@@ -972,3 +972,4 @@
 "functionTransactionScreenErrorTitle" = "Function Error";
 "functionTransactionScreenErrorSubtitle" = "An error ocurred while redirecting to function";
 "removeLPDustAmountError" = "You need at least %@ to cover fees";
+"invalidOperatorFee" = "Invalid operator fee";

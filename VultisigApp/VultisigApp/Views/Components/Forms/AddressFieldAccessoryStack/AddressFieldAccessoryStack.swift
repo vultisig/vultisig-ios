@@ -33,7 +33,11 @@ struct AddressFieldAccessoryStack: View {
                 pasteAddress()
             }
             AddressFieldAccessoryButton(icon: "camera") {
+#if os(iOS)
+                showScanner.toggle()
+#else
                 showImagePicker.toggle()
+#endif
             }
             AddressFieldAccessoryButton(icon: "book") {
                 showAddressBookSheet.toggle()

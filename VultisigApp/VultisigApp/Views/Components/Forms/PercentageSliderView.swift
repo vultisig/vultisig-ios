@@ -11,7 +11,12 @@ struct PercentageSliderView: View {
     @Binding var percentage: Double?
     let minimumValue: Double
     
-    @State private var sliderValue: Double = 100
+    private var sliderBinding: Binding<Double> {
+        Binding(
+            get: { percentage ?? 100 },
+            set: { percentage = $0 }
+        )
+    }
     
     init(percentage: Binding<Double?>, minimumValue: Double = 0) {
         self._percentage = percentage
@@ -45,9 +50,6 @@ struct PercentageSliderView: View {
                 
                 Slider(value: $sliderValue, in: minimumValue...100, step: 1)
                     .tint(Theme.colors.primaryAccent3)
-                    .onChange(of: sliderValue) { oldValue, newValue in
-                        percentage = newValue
-                    }
             }
             
             Text(100.formatted(.percent))

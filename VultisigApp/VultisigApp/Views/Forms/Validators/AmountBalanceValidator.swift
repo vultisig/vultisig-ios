@@ -32,13 +32,13 @@ struct AmountBalanceValidator: FormFieldValidator {
     }
     
     func validate(value: String) throws {
-        let amount: Decimal
-        
-        if let number = Self.formatter.number(from: value) {
-            amount = Decimal(string: number.stringValue) ?? 0
-        } else {
+        guard
+            let number = Self.formatter.number(from: value),
+            let amount = Decimal(string: number.stringValue)
+        else {
             throw ValidationError.invalidAmount
         }
+        
         
         guard amount >= 0 else {
             throw ValidationError.invalidAmount
