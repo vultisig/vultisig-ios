@@ -100,11 +100,10 @@ struct FunctionTransactionScreen: View {
                     )
                 }
             case .removeLP(let position):
-                resolvingCoins(coin: position.coin1, coin2: position.coin2) { coin1, coin2 in
-                    AddLPTransactionScreen(
-                        viewModel: AddLPTransactionViewModel(
+                resolvingCoin(coinMeta: position.coin1) { coin1 in
+                    RemoveLPTransactionScreen(
+                        viewModel: RemoveLPTransactionViewModel(
                             coin: coin1,
-                            coin2: coin2,
                             vault: vault,
                             position: position
                         ),

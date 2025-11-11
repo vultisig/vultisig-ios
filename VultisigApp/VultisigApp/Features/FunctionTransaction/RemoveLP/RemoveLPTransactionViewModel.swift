@@ -8,55 +8,48 @@
 import Foundation
 import Combine
 
-final class RemoveLPTransactionViewModel: ObservableObject, Form {
+final class RemoveLPTransactionViewModel: ObservableObject {
     let coin: Coin
-    let coin2: Coin
     let vault: Vault
     let position: LPPosition
+    
+    var dustAmount: Decimal { 0.02 }
 
     @Published var percentageSelected: Double? = 100
-    @Published var slippage: Double? = 1
-    @Published var validForm: Bool = false
-    @Published var amountField = FormField(label: "amount".localized)
+    @Published var feeError: String? = nil
+    @Published var validForm = false
     
-    private(set) var isMaxAmount: Bool = false
-    private(set) lazy var form: [FormField] = [amountField]
-    
-    var formCancellable: AnyCancellable?
-    var cancellables = Set<AnyCancellable>()
-    
-    init(coin: Coin, coin2: Coin, vault: Vault, position: LPPosition) {
+    init(
+        coin: Coin,
+        vault: Vault,
+        position: LPPosition
+    ) {
         self.coin = coin
-        self.coin2 = coin2
         self.vault = vault
         self.position = position
     }
     
-    func onLoad() {
-        setupForm()
-        setupAmountField()
-    }
-    
     var transactionBuilder: TransactionBuilder? {
-        guard validForm else { return nil }
-
-        return AddLPTransactionBuilder(
+        guard validForm, let poolName = position.poolName else { return nil }
+        return RemoveLPTransactionBuilder(
             coin: coin,
-            amount: amountField.value.formatToDecimal(digits: coin.decimals),
-            poolName: position.poolName,
-            pairedAddress: coin2.address,
-            sendMaxAmount: isMaxAmount
+            amount: dustAmount.formatToDecimal(digits: coin.decimals),
+            poolName: poolName,
+            poolUnits: position.poolUnits ?? .empty,
+            percentage: percentageSelected ?? 100,
+            sendMaxAmount: false
         )
     }
     
-    func onPercentage(_ percentage: Double) {
-        isMaxAmount = percentage == 100
-    }
-    
-    func setupAmountField() {
-        self.amountField.validators = [
-            AmountBalanceValidator(balance: coin.balanceDecimal)
-        ]
-        self.percentageSelected = 100
+    func onLoad() {
+        if coin.balanceDecimal < dustAmount {
+            feeError = String(
+                format: "removeLPDustAmountError".localized,
+                AmountFormatter.formatCryptoAmount(value: dustAmount, coin: coin.toCoinMeta())
+            )
+            validForm = false
+        } else {
+            validForm = true
+        }
     }
 }

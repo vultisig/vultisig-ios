@@ -38,12 +38,11 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
     }
     
     var transactionBuilder: TransactionBuilder? {
-        guard validForm else { return nil }
-
+        guard validForm, let poolName = position.poolName else { return nil }
         return AddLPTransactionBuilder(
             coin: coin,
             amount: amountField.value.formatToDecimal(digits: coin.decimals),
-            poolName: position.poolName,
+            poolName: poolName,
             pairedAddress: coin2.address,
             sendMaxAmount: isMaxAmount
         )

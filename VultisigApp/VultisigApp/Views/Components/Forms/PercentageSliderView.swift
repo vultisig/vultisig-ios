@@ -9,12 +9,18 @@ import SwiftUI
 
 struct PercentageSliderView: View {
     @Binding var percentage: Double?
+    let minimumValue: Double
     
     @State private var sliderValue: Double = 100
     
+    init(percentage: Binding<Double?>, minimumValue: Double = 0) {
+        self._percentage = percentage
+        self.minimumValue = minimumValue
+    }
+    
     var body: some View {
         HStack(spacing: 12) {
-            Text(0.formatted(.percent))
+            Text((minimumValue / 100).formatted(.percent))
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textExtraLight)
             
@@ -37,7 +43,7 @@ struct PercentageSliderView: View {
                 .padding(.horizontal, 16)
                 .offset(y: 12)
                 
-                Slider(value: $sliderValue, in: 0...100, step: 1)
+                Slider(value: $sliderValue, in: minimumValue...100, step: 1)
                     .tint(Theme.colors.primaryAccent3)
                     .onChange(of: sliderValue) { oldValue, newValue in
                         percentage = newValue

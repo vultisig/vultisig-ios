@@ -234,6 +234,7 @@
 		1394501B2EBB8EA500A72AE9 /* WithdrawRewardsTransactionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139450182EBB8EA500A72AE9 /* WithdrawRewardsTransactionScreen.swift */; };
 		1394505D2EC3753A006AEE94 /* RemoveLPTransactionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1394505C2EC3753A006AEE94 /* RemoveLPTransactionScreen.swift */; };
 		1394505E2EC3753A006AEE94 /* RemoveLPTransactionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1394505B2EC3753A006AEE94 /* RemoveLPTransactionViewModel.swift */; };
+		139450602EC37BAE006AEE94 /* RemoveLPTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1394505F2EC37BAE006AEE94 /* RemoveLPTransactionBuilder.swift */; };
 		139642382E79951E00CFEFAF /* VaultManagementSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139642372E79951900CFEFAF /* VaultManagementSheet.swift */; };
 		1396423E2E79A78A00CFEFAF /* VaultCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1396423D2E79A78400CFEFAF /* VaultCellView.swift */; };
 		139880502E39007C00EC5D3F /* CosmosCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1398804F2E39007900EC5D3F /* CosmosCoin.swift */; };
@@ -1415,6 +1416,7 @@
 		139450182EBB8EA500A72AE9 /* WithdrawRewardsTransactionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawRewardsTransactionScreen.swift; sourceTree = "<group>"; };
 		1394505B2EC3753A006AEE94 /* RemoveLPTransactionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoveLPTransactionViewModel.swift; sourceTree = "<group>"; };
 		1394505C2EC3753A006AEE94 /* RemoveLPTransactionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoveLPTransactionScreen.swift; sourceTree = "<group>"; };
+		1394505F2EC37BAE006AEE94 /* RemoveLPTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoveLPTransactionBuilder.swift; sourceTree = "<group>"; };
 		139642372E79951900CFEFAF /* VaultManagementSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultManagementSheet.swift; sourceTree = "<group>"; };
 		1396423D2E79A78400CFEFAF /* VaultCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultCellView.swift; sourceTree = "<group>"; };
 		1398804F2E39007900EC5D3F /* CosmosCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosCoin.swift; sourceTree = "<group>"; };
@@ -4034,6 +4036,7 @@
 			isa = PBXGroup;
 			children = (
 				13EF20BA2EC3692200CEB7DA /* AddLPTransactionBuilder.swift */,
+				1394505F2EC37BAE006AEE94 /* RemoveLPTransactionBuilder.swift */,
 			);
 			path = LP;
 			sourceTree = "<group>";
@@ -6515,6 +6518,7 @@
 				B57DD59A2C3DA5EA00934CBB /* SolanaFmTokenInfo.swift in Sources */,
 				A6966D312BA4048800903CA4 /* SwapCryptoDetailsView.swift in Sources */,
 				13A657AC2EA283FA00323E4C /* THORChainPositionType.swift in Sources */,
+				139450602EC37BAE006AEE94 /* RemoveLPTransactionBuilder.swift in Sources */,
 				A5F97C8E2BBF0BCF000C30DF /* BalanceService.swift in Sources */,
 				137B2C872E3A84130074F648 /* OnChainSecurityScreen.swift in Sources */,
 				DEEDAEE12B8AF7EF005170E8 /* evm.swift in Sources */,

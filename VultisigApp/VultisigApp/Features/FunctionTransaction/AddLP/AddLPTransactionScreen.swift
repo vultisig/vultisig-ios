@@ -47,6 +47,7 @@ struct AddLPTransactionScreen: View {
                 coin2: .example,
                 coin2Amount: .zero,
                 poolName: "AVAX.AVAX",
+                poolUnits: "123",
                 apr: .zero,
                 vault: .example
             )

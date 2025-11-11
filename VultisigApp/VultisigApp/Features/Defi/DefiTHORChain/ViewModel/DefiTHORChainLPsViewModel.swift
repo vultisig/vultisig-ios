@@ -117,6 +117,7 @@ private extension DefiTHORChainLPsViewModel {
                 coin2: assetCoin,
                 coin2Amount: assetAmount,
                 poolName: apiPosition.asset,
+                poolUnits: apiPosition.poolStats.units,
                 apr: apiPosition.apr, // Already in decimal format (e.g., 0.0067 for 0.67%),
                 vault: vault
             )
