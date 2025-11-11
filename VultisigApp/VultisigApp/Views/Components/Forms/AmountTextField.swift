@@ -48,6 +48,7 @@ struct AmountTextField<CustomView: View>: View {
         self._percentage = percentage
         self.customViewPosition = customViewPosition
         self.customView = customView()
+        self._amountInternal = State(initialValue: amount.wrappedValue)
     }
     
     init(

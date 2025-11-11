@@ -957,7 +957,7 @@
 "unbondRune" = "Unbond RUNE";
 "invalidAmount" = "Invalid amount";
 "amountExceeded" = "Amount cannot exceed balance";
-"emptyAmountField" = "Empty amount field";
+"emptyAmountField" = "Empty amount field.";
 "providerLabel" = "Provider (optional)";
 "operatorFeesLabel" = "Operator-fees (Basis Points)";
 "operatorFeesError" = "Operator-fee cannot be empty if provider is filled";
@@ -967,3 +967,4 @@
 "sellCoin" = "Sell %@";
 "slippage" = "Slippage";
 "chooseYourChains" = "Choose your chains";
+"invalidOperatorFee" = "Invalid operator fee";

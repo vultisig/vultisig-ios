@@ -54,5 +54,6 @@ final class RedeemTransactionViewModel: ObservableObject, Form {
             AmountBalanceValidator(balance: yCoin.balanceDecimal)
         ]
         self.percentageSelected = 100
+        self.isMaxAmount = true
     }
 }
