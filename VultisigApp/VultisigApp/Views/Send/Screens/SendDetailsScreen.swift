@@ -91,6 +91,7 @@ struct SendDetailsScreen: View {
             }
             .crossPlatformSheet(isPresented: $settingsPresented) {
                 SendGasSettingsView(
+                    isPresented: $settingsPresented,
                     viewModel: SendGasSettingsViewModel(
                         coin: tx.coin,
                         vault: vault,

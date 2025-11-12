@@ -14,8 +14,7 @@ protocol SendGasSettingsOutput {
 
 struct SendGasSettingsView: View {
 
-    @Environment(\.presentationMode) var presentationMode
-
+    @Binding var isPresented: Bool
     @StateObject var viewModel: SendGasSettingsViewModel
 
     let output: SendGasSettingsOutput
@@ -133,7 +132,7 @@ struct SendGasSettingsView: View {
 
     var backButton: some View {
         Button(action: {
-            presentationMode.wrappedValue.dismiss()
+            isPresented = false
         }) {
             Image("x")
                 .font(Theme.fonts.bodyLMedium)
@@ -144,7 +143,7 @@ struct SendGasSettingsView: View {
     var saveButton: some View {
         Button("Save", action: {
             save()
-            presentationMode.wrappedValue.dismiss()
+            isPresented = false
         })
     }
 
@@ -172,5 +171,9 @@ struct SendGasSettingsView: View {
         func didSetFeeSettings(chain: Chain, mode: FeeMode, gasLimit: BigInt?, byteFee: BigInt?) { }
     }
     let viewModel = SendGasSettingsViewModel(coin: .example, vault: .example, gasLimit: "21000", byteFee: "2", baseFee: "6.559000", selectedMode: .default)
-    return SendGasSettingsView(viewModel: viewModel, output: Output())
+    return SendGasSettingsView(
+        isPresented: .constant(true),
+        viewModel: viewModel,
+        output: Output()
+    )
 }

@@ -10,16 +10,19 @@ import SwiftUI
 
 extension SendGasSettingsView {
     var content: some View {
-        ZStack {
-            Background()
-                .frame(width: 500)
-            
-            VStack {
-                view
-                buttons
+        VStack {
+            view
+            buttons
+        }
+        .crossPlatformToolbar("advanced".localized, showsBackButton: false) {
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "x") {
+                    isPresented.toggle()
+                }
             }
         }
-        .crossPlatformToolbar("advanced".localized)
+        .applySheetSize()
+        .sheetStyle()
     }
     
     func textField(title: String, text: Binding<String>, label: String? = nil, disabled: Bool = false) -> some View {
@@ -63,7 +66,7 @@ extension SendGasSettingsView {
     var continueButton: some View {
         PrimaryButton(title: "save") {
             save()
-            presentationMode.wrappedValue.dismiss()
+            isPresented = false
         }
         .buttonStyle(.plain)
     }
