@@ -423,7 +423,7 @@ class Endpoint {
     
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"
     
-    static let polkadotServiceRpc = "https://polkadot-rpc.publicnode.com"
+    static let polkadotServiceRpc = "https://api.vultisig.com/dot/" //"https://polkadot-rpc.publicnode.com"
     
     static let polkadotServiceBalance = "https://assethub-polkadot.api.subscan.io/api/v2/scan/search"
     
