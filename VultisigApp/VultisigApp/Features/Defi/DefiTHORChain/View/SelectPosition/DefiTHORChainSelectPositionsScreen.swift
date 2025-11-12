@@ -76,13 +76,11 @@ struct DefiTHORChainSelectPositionsScreen: View {
     
     func onSave() {
         Task {
-            await MainActor.run { isLoading = true }
+            isLoading = true
             updateVaultDefiPositions()
             await CoinService.saveAssets(for: viewModel.vault, selection: Set(selection.flatMap { $0 }))
-            await MainActor.run {
-                isLoading = false
-                isPresented = false
-            }
+            isLoading = false
+            isPresented = false
         }
     }
     

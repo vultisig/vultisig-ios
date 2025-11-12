@@ -74,14 +74,14 @@ public final class HTTPClient: HTTPClientProtocol {
                     httpError = HTTPError.timeout
                 case .cancelled:
                     // Re-throw the cancellation error directly so it can be handled upstream
-                    logger.warning("⚠️ Request cancelled - \(duration)ms")
+                    logger.warning("⚠️ Request cancelled - \(Int(duration * 1000))ms")
                     throw CancellationError()
                 default:
                     httpError = HTTPError.networkError(error)
                 }
             } else if error is CancellationError {
                 // Handle Swift Concurrency cancellation
-                logger.warning("⚠️ Request cancelled - \(duration)ms")
+                logger.warning("⚠️ Request cancelled - \(Int(duration * 1000))ms")
                 throw error
             } else {
                 httpError = HTTPError.networkError(error)

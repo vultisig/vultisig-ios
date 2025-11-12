@@ -98,6 +98,7 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
             AmountBalanceValidator(balance: self.availableAmount)
         ]
         self.percentageSelected = 100
+        self.isMaxAmount = true
     }
     
     func fetchAutocompoundBalance() async {

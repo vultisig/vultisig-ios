@@ -970,6 +970,6 @@
 "addCoinLP" = "Add %@ LP";
 "removeCoinLP" = "Remove %@ LP";
 "functionTransactionScreenErrorTitle" = "Function Error";
-"functionTransactionScreenErrorSubtitle" = "An error ocurred while redirecting to function";
+"functionTransactionScreenErrorSubtitle" = "An error occurred while redirecting to function";
 "removeLPDustAmountError" = "You need at least %@ to cover fees";
 "invalidOperatorFee" = "Invalid operator fee";
