@@ -26,7 +26,14 @@ struct CustomMessagePayload: Codable, Hashable {
             data = Data(message.utf8)
         }
 
-        let hash = data.sha3(.keccak256)
-        return [hash.hexString]
+        // For Ethereum personal_sign, use keccak256 hash
+        // For Solana sign_message, use the message directly without hashing
+        if method == "personal_sign" || (method != "sign_message" && chain.lowercased() != "solana") {
+            let hash = data.sha3(.keccak256)
+            return [hash.hexString]
+        } else {
+            // For Solana and other chains that don't use keccak256, use the message directly
+            return [data.hexString]
+        }
     }
 }

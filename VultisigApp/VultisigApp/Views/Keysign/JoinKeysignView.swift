@@ -73,12 +73,22 @@ struct JoinKeysignView: View {
     }
     
     var keysignView: some View {
-        KeysignView(
+        let keysignType: KeyType
+        if let keysignPayload = viewModel.keysignPayload {
+            keysignType = keysignPayload.coin.chain.signingKeyType
+        } else if let customMessagePayload = viewModel.customMessagePayload,
+                  let chain = Chain.allCases.first(where: { $0.name.caseInsensitiveCompare(customMessagePayload.chain) == .orderedSame }) {
+            keysignType = chain.signingKeyType
+        } else {
+            keysignType = .ECDSA
+        }
+        
+        return KeysignView(
             vault: viewModel.vault,
             keysignCommittee: viewModel.keysignCommittee,
             mediatorURL: viewModel.serverAddress ?? "",
             sessionID: viewModel.sessionID,
-            keysignType: viewModel.keysignPayload?.coin.chain.signingKeyType ?? .ECDSA,
+            keysignType: keysignType,
             messsageToSign: viewModel.keysignMessages,
             keysignPayload: viewModel.keysignPayload, 
             customMessagePayload: viewModel.customMessagePayload,
