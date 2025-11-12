@@ -96,7 +96,8 @@ struct JoinKeysignDoneSummary: View {
                     toAddress: keysignPayload.toAddress,
                     fee: (fees.feeCrypto, fees.feeFiat)
                 ),
-                showAlert: $showAlert
+                showAlert: $showAlert,
+                navigateToTransactionDetails: .constant(false)
             )
         }
     }

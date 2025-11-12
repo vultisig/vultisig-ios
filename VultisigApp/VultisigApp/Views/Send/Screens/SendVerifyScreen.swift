@@ -11,13 +11,13 @@ struct SendVerifyScreen: View {
     @StateObject var sendCryptoVerifyViewModel = SendCryptoVerifyViewModel()
     @ObservedObject var tx: SendTransaction
     let vault: Vault
+    @Binding var keysignPayload: VerifyKeysignPayload?
     
     @State var fastPasswordPresented = false
     
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @Environment(\.router) var router
     
-    @State private var keysignPayload: VerifyKeysignPayload?
     @State private var error: HelperError?
     
     var body: some View {
@@ -43,14 +43,6 @@ struct SendVerifyScreen: View {
         }
         .onDisappear {
             sendCryptoVerifyViewModel.isLoading = false
-        }
-        .navigationDestination(item: $keysignPayload) { payload in
-            SendRouteBuilder().buildPairScreen(
-                vault: vault,
-                tx: tx,
-                keysignPayload: payload.payload,
-                fastVaultPassword: tx.fastVaultPassword.nilIfEmpty
-            )
         }
     }
     
@@ -153,11 +145,11 @@ struct VerifyKeysignPayload: Identifiable, Hashable {
         self.payload = payload
     }
 }
-
-#Preview {
-    SendVerifyScreen(
-        tx: SendTransaction(),
-        vault: Vault.example
-    )
-    .environmentObject(SettingsViewModel())
-}
+//
+//#Preview {
+//    SendVerifyScreen(
+//        tx: SendTransaction(),
+//        vault: Vault.example
+//    )
+//    .environmentObject(SettingsViewModel())
+//}

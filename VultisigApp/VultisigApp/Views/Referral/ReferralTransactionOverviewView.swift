@@ -29,7 +29,8 @@ struct ReferralTransactionOverviewView: View {
                     toAddress: sendTx.toAddress,
                     fee: (sendTx.gasInReadable, referralViewModel.totalFeeFiat)
                 ),
-                showAlert: .constant(false)
+                showAlert: .constant(false),
+                navigateToTransactionDetails: .constant(false)
             )
         }
         .onLoad {

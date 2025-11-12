@@ -11,9 +11,9 @@ import RiveRuntime
 struct SendCryptoDoneContentView: View {
     let input: SendCryptoContent
     @Binding var showAlert: Bool
+    @Binding var navigateToTransactionDetails: Bool
     var onDone: () -> Void = {}
     
-    @State var navigateToTransactionDetails = false
     @State var navigateToHome = false
     @State var animationVM: RiveViewModel? = nil
     @EnvironmentObject var homeViewModel: HomeViewModel
@@ -60,19 +60,17 @@ struct SendCryptoDoneContentView: View {
                 onDoneButtonPressed()
             }
         }
-        .navigationDestination(isPresented: $navigateToTransactionDetails) {
-            SendCryptoSecondaryDoneView(
-                input: input,
-                onDone: onDoneButtonPressed
-            )
-        }
         .navigationDestination(isPresented: $navigateToHome) {
             if let vault = homeViewModel.selectedVault {
                 HomeScreen(initialVault: vault)
             }
         }
-        .onLoad {
+        .onAppear {
             animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
+        }
+        .onDisappear {
+            animationVM?.stop()
+            animationVM = nil
         }
     }
     

@@ -42,6 +42,8 @@ struct SendDetailsScreen: View {
     @State var navigateToVerify: Bool = false
     @State var countdownTimer: Timer?
     
+    @State var keysignPayload: VerifyKeysignPayload?
+    
     var body: some View {
         container
             .disabled(sendCryptoViewModel.showLoader)
@@ -103,7 +105,15 @@ struct SendDetailsScreen: View {
                 )
             }
             .navigationDestination(isPresented: $navigateToVerify) {
-                SendRouteBuilder().buildVerifyScreen(tx: tx, vault: vault)
+                SendRouteBuilder().buildVerifyScreen(tx: tx, vault: vault, keysignPayload: $keysignPayload)
+            }
+            .navigationDestination(item: $keysignPayload) { payload in
+                SendRouteBuilder().buildPairScreen(
+                    vault: vault,
+                    tx: tx,
+                    keysignPayload: payload.payload,
+                    fastVaultPassword: tx.fastVaultPassword.nilIfEmpty
+                )
             }
             .crossPlatformSheet(isPresented: $sendDetailsViewModel.showChainPickerSheet) {
                 SwapChainPickerView(

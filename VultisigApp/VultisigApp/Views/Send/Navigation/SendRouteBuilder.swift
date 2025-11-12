@@ -25,8 +25,8 @@ struct SendRouteBuilder {
     }
     
     @ViewBuilder
-    func buildVerifyScreen(tx: SendTransaction, vault: Vault) -> some View {
-        SendVerifyScreen(tx: tx, vault: vault)
+    func buildVerifyScreen(tx: SendTransaction, vault: Vault, keysignPayload: Binding<VerifyKeysignPayload?>) -> some View {
+        SendVerifyScreen(tx: tx, vault: vault, keysignPayload: keysignPayload)
     }
     
     @ViewBuilder

@@ -13,8 +13,8 @@ struct SendCryptoDoneSummary: View {
     let vault: Vault
     let hash: String
     let approveHash: String?
-    let sendSummaryViewModel: SendSummaryViewModel
-    let swapSummaryViewModel: SwapCryptoViewModel
+    let sendSummaryViewModel = SendSummaryViewModel()
+    let swapSummaryViewModel = SwapCryptoViewModel()
     
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     
@@ -188,9 +188,7 @@ struct SendCryptoDoneSummary: View {
             swapTransaction: SwapTransaction(),
             vault: Vault.example,
             hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
-            approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
-            sendSummaryViewModel: SendSummaryViewModel(),
-            swapSummaryViewModel: SwapCryptoViewModel()
+            approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7"
         )
     }
     .environmentObject(SettingsViewModel())

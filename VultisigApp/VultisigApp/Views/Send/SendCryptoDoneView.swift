@@ -20,12 +20,13 @@ struct SendCryptoDoneView: View {
     let swapTransaction: SwapTransaction?
     let contentPadding: CGFloat
     
-    @StateObject private var sendSummaryViewModel = SendSummaryViewModel()
-    @StateObject private var swapSummaryViewModel = SwapCryptoViewModel()
+    let sendSummaryViewModel = SendSummaryViewModel()
+    let swapSummaryViewModel = SwapCryptoViewModel()
 
     @State var showAlert = false
     @State var alertTitle = "hashCopied"
     @State var navigateToHome = false
+    @Binding var navigateToTransactionDetails: Bool
     
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
@@ -39,7 +40,8 @@ struct SendCryptoDoneView: View {
         sendTransaction: SendTransaction?,
         swapTransaction: SwapTransaction?,
         isSend: Bool,
-        contentPadding: CGFloat = 16
+        contentPadding: CGFloat = 16,
+        navigateToTransactionDetails: Binding<Bool> = .constant(false)
     ) {
         self.vault = vault
         self.hash = hash
@@ -50,17 +52,18 @@ struct SendCryptoDoneView: View {
         self.swapTransaction = swapTransaction
         self.isSend = isSend
         self.contentPadding = contentPadding
+        self._navigateToTransactionDetails = navigateToTransactionDetails
     }
     
     var body: some View {
-        ZStack {
-            Background()
+//        ZStack {
+//            Background()
             view
-            PopupCapsule(text: alertTitle, showPopup: $showAlert)
-        }
-        .navigationDestination(isPresented: $navigateToHome) {
-            HomeScreen(initialVault: vault)
-        }
+//            PopupCapsule(text: alertTitle, showPopup: $showAlert)
+//        }
+//        .navigationDestination(isPresented: $navigateToHome) {
+//            HomeScreen(initialVault: vault)
+//        }
     }
     
     func sendView(tx: SendTransaction) -> some View {
@@ -82,7 +85,8 @@ struct SendCryptoDoneView: View {
                 toAddress: tx.toAddress,
                 fee: (tx.gasInReadable, sendSummaryViewModel.feesInReadable(tx: tx, vault: vault))
             ),
-            showAlert: $showAlert
+            showAlert: $showAlert,
+            navigateToTransactionDetails: $navigateToTransactionDetails
         ) {
             if let send = sendTransaction {
                 send.reset(coin: send.coin)
@@ -96,17 +100,13 @@ struct SendCryptoDoneView: View {
             swapTransaction: swapTransaction,
             vault: vault,
             hash: hash,
-            approveHash: approveHash,
-            sendSummaryViewModel: sendSummaryViewModel,
-            swapSummaryViewModel: swapSummaryViewModel
+            approveHash: approveHash
         )
     }
     
     var view: some View {
         ZStack {
-            if let tx = swapTransaction {
-                getSwapDoneView(tx)
-            } else if let sendTransaction {
+            if let sendTransaction {
                 sendView(tx: sendTransaction)
             }
         }

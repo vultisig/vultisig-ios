@@ -32,7 +32,7 @@ struct SwapCryptoDoneView: View {
             buttons
         }
         .buttonStyle(BorderlessButtonStyle())
-        .onAppear {
+        .onLoad {
             animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
         }
     }
