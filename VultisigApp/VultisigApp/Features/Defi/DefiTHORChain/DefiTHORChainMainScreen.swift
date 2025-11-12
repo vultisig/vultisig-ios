@@ -16,7 +16,8 @@ struct DefiTHORChainMainScreen: View {
     @StateObject var lpsViewModel: DefiTHORChainLPsViewModel
     @StateObject var stakeViewModel: DefiTHORChainStakeViewModel
     @State private var showPositionSelection = false
-    @State var loadingBalances: Bool = false
+    
+    @State private var transactionToPresent: FunctionTransactionType?
     
     init(vault: Vault, group: GroupedChain) {
         self.vault = vault
@@ -41,13 +42,19 @@ struct DefiTHORChainMainScreen: View {
         .overlay(bottomGradient, alignment: .bottom)
         .onLoad {
             viewModel.onLoad()
-            Task { await refresh() }
+            Task {
+                await viewModel.refresh()
+                await refresh()
+            }
         }
         .refreshable { await refresh() }
         .onChange(of: vault) { _, vault in
             update(vault: vault)
         }
         .onChange(of: vault.defiPositions) { _, _ in
+            Task { await refresh() }
+        }
+        .onChange(of: viewModel.selectedPosition) { _, _ in
             Task { await refresh() }
         }
         .crossPlatformSheet(isPresented: $showPositionSelection) {
@@ -57,6 +64,9 @@ struct DefiTHORChainMainScreen: View {
             )
         }
         .crossPlatformToolbar(ignoresTopEdge: true) {}
+        .navigationDestination(item: $transactionToPresent) { transaction in
+            FunctionTransactionScreen(vault: vault, transactionType: transaction)
+        }
     }
     
     var positionsSegmentedControlView: some View {
@@ -77,27 +87,24 @@ struct DefiTHORChainMainScreen: View {
                 DefiTHORChainBondedView(
                     viewModel: bondViewModel,
                     coin: group.nativeCoin,
-                    loadingBalances: $loadingBalances,
-                    onBond: { _ in
-                        // TODO: - Redirect to bond
-                    },
-                    onUnbond: { _ in
-                        // TODO: - Redirect to unbond
-                    },
+                    onBond: { transactionToPresent = .bond(node: $0?.address) },
+                    onUnbond: { transactionToPresent = .unbond(node: $0) },
                     emptyStateView: { emptyStateView }
                 )
             case .stake:
                 DefiTHORChainStakedView(
                     viewModel: stakeViewModel,
-                    loadingBalances: $loadingBalances,
-                    onStake: { _ in
-                        // TODO: - Redirect to stake
-                    },
-                    onUnstake: { _ in
-                        // TODO: - Redirect to unstake
-                    },
-                    onWithdraw: { _ in
-                        // TODO: - Redirect to withdraw
+                    onStake: { onStake(position: $0) },
+                    onUnstake: { onUnstake(position: $0) },
+                    onWithdraw: { position in
+                        guard let rewards = position.rewards, let rewardsCoin = position.rewardCoin else {
+                            return
+                        }
+                        transactionToPresent = .withdrawRewards(
+                            coin: position.coin,
+                            rewards: rewards,
+                            rewardsCoin: rewardsCoin
+                        )
                     },
                     emptyStateView: { emptyStateView }
                 )
@@ -105,16 +112,10 @@ struct DefiTHORChainMainScreen: View {
                 DefiTHORChainLPsView(
                     vault: vault,
                     viewModel: lpsViewModel,
-                    loadingBalances: $loadingBalances,
-                    onRemove: { _ in
-                        // TODO: - Redirect to remove LP
-                    },
-                    onAdd: { _ in
-                        // TODO: - Redirect to add LP
-                    },
+                    onRemove: { transactionToPresent = .removeLP(position: $0) },
+                    onAdd: { transactionToPresent = .addLP(position: $0) },
                     emptyStateView: { emptyStateView }
                 )
-                
             }
         }
         .transition(.opacity)
@@ -129,6 +130,37 @@ struct DefiTHORChainMainScreen: View {
             buttonTitle: "managePositions".localized,
             action: { showPositionSelection.toggle() }
         )
+    }
+    
+    func onStake(position: StakePosition) {
+        switch position.type {
+        case .stake, .compound:
+            transactionToPresent = .stake(coin: position.coin)
+        case .index:
+            transactionToPresent = .mint(coin: coin(for: position.coin), yCoin: position.coin)
+        }
+    }
+    
+    func onUnstake(position: StakePosition) {
+        switch position.type {
+        case .stake, .compound:
+            transactionToPresent = .unstake(coin: position.coin)
+        case .index:
+            transactionToPresent = .redeem(coin: coin(for: position.coin), yCoin: position.coin)
+        }
+    }
+    
+    func coin(for yCoin: CoinMeta) -> CoinMeta {
+        let coin: CoinMeta
+        switch yCoin {
+        case TokensStore.yrune:
+            coin = TokensStore.rune
+        case TokensStore.ytcy:
+            coin = TokensStore.tcy
+        default:
+            coin = TokensStore.rune
+        }
+        return coin
     }
 }
 
@@ -171,13 +203,14 @@ private extension DefiTHORChainMainScreen {
 
 private extension DefiTHORChainMainScreen {
     func refresh() async {
-        await MainActor.run { loadingBalances = true }
-        await viewModel.refresh()
-        await MainActor.run { loadingBalances = false }
-        
-        await bondViewModel.refresh()
-        await lpsViewModel.refresh()
-        await stakeViewModel.refresh()
+        switch viewModel.selectedPosition {
+        case .bond:
+            await bondViewModel.refresh()
+        case .stake:
+            await stakeViewModel.refresh()
+        case .liquidityPool:
+            await lpsViewModel.refresh()
+        }
     }
     
     func update(vault: Vault) {

@@ -5,17 +5,40 @@
 //  Created by Amol Kumar on 2025-01-16.
 //
 
+import Foundation
+
+struct AddressResult {
+    let address: String
+    let memo: String?
+    let amount: String?
+    
+    init(address: String, memo: String? = nil, amount: String? = nil) {
+        self.address = address
+        self.memo = memo
+        self.amount = amount
+    }
+    
+    static func fromURI(_ uri: String) -> AddressResult? {
+        guard URLComponents(string: uri) != nil else {
+            print("Invalid URI")
+            return nil
+        }
+        
+        let (address, amount, message) = Utils.parseCryptoURI(uri)
+        
+        return AddressResult(address: address, memo: message, amount: amount)
+    }
+}
+
 #if os(macOS)
 import SwiftUI
 import SwiftData
 import AVFoundation
 
 struct MacAddressScannerView: View {
-    @ObservedObject var tx: SendTransaction
-    @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @Binding var showCameraScanView: Bool
     let selectedVault: Vault?
-    var sendDetailsViewModel: SendDetailsViewModel? = nil
+    var onParsedResult: (AddressResult?) -> Void
     
     @State var showImportOptions: Bool = false
     
@@ -32,9 +55,6 @@ struct MacAddressScannerView: View {
         .onChange(of: scannerViewModel.detectedQRCode) { oldValue, newValue in
             handleScan()
         }
-        .onChange(of: tx.toAddress) { oldValue, newValue in
-            goBack()
-        }
     }
     
     var content: some View {
@@ -48,7 +68,10 @@ struct MacAddressScannerView: View {
     }
     
     var importOption: some View {
-        GeneralQRImportMacView(type: .Unknown, sendTx: tx, selectedVault: selectedVault)
+        GeneralQRImportMacView(type: .Unknown, selectedVault: selectedVault) { address in
+            goBack()
+            onParsedResult(AddressResult(address: address))
+        }
     }
     
     var camera: some View {
@@ -140,28 +163,9 @@ struct MacAddressScannerView: View {
         guard let detectedQRCode = scannerViewModel.detectedQRCode else {
             return
         }
-        
-        tx.parseCryptoURI(detectedQRCode)
-        
-        // Attempt to detect and switch chain if address belongs to different chain
-        if let viewModel = sendDetailsViewModel, let vault = selectedVault, !tx.toAddress.isEmpty {
-            let detectedCoin = viewModel.detectAndSwitchChain(from: tx.toAddress, vault: vault, currentChain: tx.coin.chain, tx: tx)
-            
-            if detectedCoin != nil {
-                // Clear previous error
-                sendCryptoViewModel.showAddressAlert = false
-                sendCryptoViewModel.errorMessage = ""
-                sendCryptoViewModel.isValidAddress = true
-                
-                // Mark address as done and move to amount
-                viewModel.addressSetupDone = true
-                viewModel.onSelect(tab: .amount)
-            }
-        }
-        
-        // Always validate after potential chain switch
-        validateAddress(tx.toAddress)
+
         goBack()
+        onParsedResult(AddressResult.fromURI(detectedQRCode))
     }
     
     private func goBack() {
@@ -170,18 +174,12 @@ struct MacAddressScannerView: View {
         showCameraScanView = false
         dismiss()
     }
-    
-    func validateAddress(_ newValue: String) {
-        sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
-    }
 }
 
 #Preview {
     MacAddressScannerView(
-        tx: SendTransaction(),
-        sendCryptoViewModel: SendCryptoViewModel(),
         showCameraScanView: .constant(true),
         selectedVault: Vault.example
-    )
+    ) { _ in }
 }
 #endif

@@ -163,7 +163,11 @@ struct HomeScreen: View {
 #else
             .crossPlatformSheet(isPresented: $showScanner) {
                 if ProcessInfo.processInfo.isiOSAppOnMac {
-                    GeneralQRImportMacView(type: .SignTransaction, sendTx: sendTx, selectedVault: selectedVault)
+                    GeneralQRImportMacView(type: .SignTransaction, selectedVault: selectedVault) {
+                        guard let url = URL(string: $0) else { return }
+                        deeplinkViewModel.extractParameters(url, vaults: vaults)
+                        presetValuesForDeeplink()
+                    }
                 } else {
                     GeneralCodeScannerView(
                         showSheet: $showScanner,
@@ -268,7 +272,16 @@ private extension HomeScreen {
     
     func fetchVaults() {
         var fetchVaultDescriptor = FetchDescriptor<Vault>()
-        fetchVaultDescriptor.relationshipKeyPathsForPrefetching = [\.coins, \.hiddenTokens, \.referralCode, \.referredCode, \.defiPositions]
+        fetchVaultDescriptor.relationshipKeyPathsForPrefetching = [
+            \.coins,
+             \.hiddenTokens,
+             \.referralCode,
+             \.referredCode,
+             \.defiPositions,
+             \.bondPositions,
+             \.stakePositions,
+             \.lpPositions
+        ]
         do {
             vaults = try modelContext.fetch(fetchVaultDescriptor)
         } catch {

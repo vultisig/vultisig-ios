@@ -9,7 +9,7 @@ import SwiftUI
 
 struct DefiTHORChainActiveNodeView: View {
     let coin: Coin
-    let activeNode: ActiveBondedNode
+    let activeNode: BondPosition
     
     var onUnbond: (BondNode) -> Void
     var onBond: (BondNode) -> Void
@@ -122,11 +122,12 @@ struct DefiTHORChainActiveNodeView: View {
         DefiTHORChainActiveNodeView(
             coin: .example,
             activeNode: .init(
-                node: .init(address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szstey", state: .active),
+                node: .init(coin: .example, address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szstey", state: .active),
                 amount: 500,
                 apy: 0.1,
                 nextReward: 200,
-                nextChurn: Date().addingTimeInterval(300)
+                nextChurn: Date().addingTimeInterval(300),
+                vault: .example
             ),
             onUnbond: { _ in },
             onBond: { _ in }
@@ -135,11 +136,12 @@ struct DefiTHORChainActiveNodeView: View {
         DefiTHORChainActiveNodeView(
             coin: .example,
             activeNode: .init(
-                node: .init(address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szstey", state: .ready),
+                node: .init(coin: .example, address: "thor1rxrvvw4xgscce7sfvc6wdpherra77932szstey", state: .ready),
                 amount: 500,
                 apy: 0.1,
                 nextReward: 200,
-                nextChurn: Date().addingTimeInterval(400)
+                nextChurn: Date().addingTimeInterval(400),
+                vault: .example
             ),
             onUnbond: { _ in },
             onBond: { _ in }

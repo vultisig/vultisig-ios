@@ -118,7 +118,7 @@ class FunctionCallRemoveThorLP: FunctionCallAddressable, ObservableObject {
     }
     
     func getView() -> AnyView {
-        AnyView(FunctionCallRemoveThorLPView(model: self).onAppear{
+        AnyView(FunctionCallRemoveThorLPView(model: self).onAppear {
             self.initialize()
         })
     }
@@ -265,9 +265,7 @@ private struct PositionRowView: View {
     let position: ThorchainLPPosition
     let isSelected: Bool
     let onTap: () -> Void
-    
-    
-    
+        
     private func getAssetTicker(from poolName: String) -> String {
         let cleanName = ThorchainService.cleanPoolName(poolName)
         let components = cleanName.split(separator: ".")

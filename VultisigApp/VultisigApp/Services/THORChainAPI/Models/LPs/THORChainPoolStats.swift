@@ -25,6 +25,7 @@ struct THORChainPoolStats: Codable {
     let earningsAnnualAsPercentOfDepth: String?  // Alternative earnings-based APR
     let lpLuvi: String?  // LP LUVI value (may be "NaN" for some pools)
     let saversAPR: String?  // Savers APR (if applicable)
+    let units: String
 
     /// Convenience computed properties
     var assetDepthBigInt: UInt64 {

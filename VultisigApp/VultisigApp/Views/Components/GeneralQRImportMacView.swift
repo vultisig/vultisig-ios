@@ -10,8 +10,8 @@ import SwiftData
 
 struct GeneralQRImportMacView: View {
     let type: DeeplinkFlowType
-    let sendTx: SendTransaction
     let selectedVault: Vault?
+    var onParsedAddress: (String) -> Void
     
     @State var fileName: String? = nil
     @State var alertDescription = ""
@@ -198,12 +198,12 @@ struct GeneralQRImportMacView: View {
     }
     
     private func parseAddress(_ result: String) {
-        sendTx.toAddress = result
+        onParsedAddress(result)
     }
 }
 
 #Preview {
-    GeneralQRImportMacView(type: .NewVault, sendTx: SendTransaction(), selectedVault: Vault.example)
+    GeneralQRImportMacView(type: .NewVault, selectedVault: Vault.example) { _ in }
         .environmentObject(HomeViewModel())
         .environmentObject(DeeplinkViewModel())
 }
