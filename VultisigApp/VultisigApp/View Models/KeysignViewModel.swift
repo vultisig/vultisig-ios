@@ -155,16 +155,34 @@ class KeysignViewModel: ObservableObject {
     
     func startKeysignDKLS(isImport: Bool = false) async {
         do {
-            guard let keysignPayload = keysignPayload else {
+            // Check if we have either keysignPayload or customMessagePayload
+            guard self.keysignPayload != nil || self.customMessagePayload != nil else {
                 throw HelperError.runtimeError("keysign payload is nil")
             }
+            
+            // Determine chainPath - use keysignPayload if available, otherwise determine from customMessagePayload
+            var chainPath: String
+            if let keysignPayload = self.keysignPayload {
+                chainPath = keysignPayload.coin.coinType.derivationPath()
+            } else if let customMessagePayload = self.customMessagePayload {
+                // Get chain from customMessagePayload and use its coinType (case-insensitive match)
+                if let chain = Chain.allCases.first(where: { $0.name.caseInsensitiveCompare(customMessagePayload.chain) == .orderedSame }) {
+                    chainPath = chain.coinType.derivationPath()
+                } else {
+                    // Fallback to Ethereum if chain name cannot be parsed
+                    chainPath = TokensStore.Token.ethereum.coinType.derivationPath()
+                }
+            } else {
+                throw HelperError.runtimeError("keysign payload is nil")
+            }
+            
+            if isImport {
+                chainPath = ""
+            }
+            
             switch self.keysignType {
             case .ECDSA:
                 status = .KeysignECDSA
-                var chainPath = keysignPayload.coin.coinType.derivationPath()
-                if isImport {
-                    chainPath = ""
-                }
                 let dklsKeysign = DKLSKeysign(keysignCommittee: self.keysignCommittee,
                                               mediatorURL: self.mediatorURL,
                                               sessionID: self.sessionID,

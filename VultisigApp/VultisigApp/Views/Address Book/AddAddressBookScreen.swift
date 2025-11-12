@@ -10,9 +10,8 @@ import SwiftData
 import WalletCore
 
 struct AddAddressBookScreen: View {
-    var onDismiss: (() -> Void)?
-    
-    @Query var savedAddresses: [AddressBookItem]
+    @Binding var addressAdded: Bool
+    let shouldDismiss: Bool
     
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
@@ -29,10 +28,11 @@ struct AddAddressBookScreen: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
     
-    init(address: String? = nil, chain: AddressBookChainType? = nil, onDismiss: (() -> Void)? = nil) {
+    init(address: String? = nil, chain: AddressBookChainType? = nil, addressAdded: Binding<Bool> = .constant(false), shouldDismiss: Bool = true) {
         self.address = address ?? ""
         self.selectedChain = chain ?? .evm
-        self.onDismiss = onDismiss
+        self._addressAdded = addressAdded
+        self.shouldDismiss = shouldDismiss
     }
     
     var body: some View {
@@ -119,9 +119,9 @@ struct AddAddressBookScreen: View {
             return
         }
         
-        // Check for duplicates
+//         Check for duplicates
         let fetchDescriptor = FetchDescriptor<AddressBookItem>(
-            predicate: #Predicate { $0.address == address}
+            predicate: #Predicate { $0.address == address }
         )
         let existingItems = try? modelContext.fetch(fetchDescriptor)
         let filteredItems = existingItems?.filter { item in
@@ -135,19 +135,22 @@ struct AddAddressBookScreen: View {
             return
         }
         
+        let allItemsDescriptor = FetchDescriptor<AddressBookItem>()
+        let allItems = try? modelContext.fetch(allItemsDescriptor)
+        
         let data = AddressBookItem(
             title: title,
             address: address,
             coinMeta: coin,
-            order: savedAddresses.count
+            order: allItems?.count ?? 0
         )
         
         DispatchQueue.main.asyncAfter(deadline: .now()) {
             modelContext.insert(data)
-            if let onDismiss {
-                onDismiss()
-            } else {
+            if shouldDismiss {
                 dismiss()
+            } else {
+                addressAdded = true
             }
         }
     }
@@ -172,7 +175,7 @@ struct AddAddressBookScreen: View {
 }
 
 #Preview {
-    AddAddressBookScreen()
+    AddAddressBookScreen(addressAdded: .constant(false))
         .environmentObject(CoinSelectionViewModel())
         .environmentObject(HomeViewModel())
 }
