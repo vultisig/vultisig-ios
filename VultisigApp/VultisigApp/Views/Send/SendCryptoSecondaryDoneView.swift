@@ -10,7 +10,7 @@ import SwiftData
 
 struct SendCryptoSecondaryDoneView: View {
     let input: SendCryptoContent
-    let onDone: () -> Void
+    @Binding var navigateToHome: Bool
     
     @State var addressAdded: Bool = false
     @State var navigateToAddressBook = false
@@ -45,8 +45,7 @@ struct SendCryptoSecondaryDoneView: View {
             )
             let addressItems = try? modelContext.fetch(addressItemsDescriptor)
             
-            canShowAddressBook = addressItems?.isEmpty ?? false
-//            && !(homeViewModel.selectedVault?.coins.map(\.address).contains(input.toAddress) ?? true)
+            canShowAddressBook = addressItems?.isEmpty ?? false && !(homeViewModel.selectedVault?.coins.map(\.address).contains(input.toAddress) ?? true)
         }
         .navigationDestination(isPresented: $navigateToAddressBook) {
             AddAddressBookScreen(
@@ -58,7 +57,7 @@ struct SendCryptoSecondaryDoneView: View {
         }
         .onChange(of: addressAdded) { oldValue, newValue in
             guard newValue else { return }
-            onDone()
+            navigateToHome = true
         }
     }
     
@@ -143,7 +142,7 @@ struct SendCryptoSecondaryDoneView: View {
     
     var continueButton: some View {
         PrimaryButton(title: "done") {
-            onDone()
+            navigateToHome = true
         }
     }
     
@@ -185,6 +184,7 @@ struct SendCryptoSecondaryDoneView: View {
             fromAddress: "thor1kkmnmgvd85puk8zsvqfxx36cqy9mxqret39t8z",
             toAddress: "thor1kkmnmgvd85puk8zsvqfxx36cqy9mxqret39t8z",
             fee: ("0.001 RUNE", "US$ 0.00")
-        )
-    ) {}
+        ),
+        navigateToHome: .constant(false)
+    )
 }
