@@ -52,6 +52,9 @@ struct ReferralLaunchView: View {
             referralViewModel.currentVault = ApplicationState.shared.currentVault
             referredViewModel.setData()
         }
+        .onDisappear {
+            referredViewModel.clearFormMessages()
+        }
         .onChange(of: referralViewModel.currentVault) { _, _ in
             // TODO: - Remove after release
             referredViewModel.migrateCodeIfNeeded()
