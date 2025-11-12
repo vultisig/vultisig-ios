@@ -175,7 +175,12 @@ class PolkadotService: RpcService {
         )
         
         let serializedTransaction = try PolkadotHelper.getZeroSignedTransaction(keysignPayload: keysignPayload)
-        let partialFee = try await getPartialFee(serializedTransaction: serializedTransaction)
+        var partialFee = BigInt(250000000)
+        do{
+            partialFee = try await getPartialFee(serializedTransaction: serializedTransaction)
+        } catch {
+            print("PolkadotService > calculateDynamicFee > Error fetching partial fee: \(error)")
+        }
         
         return partialFee
     }
