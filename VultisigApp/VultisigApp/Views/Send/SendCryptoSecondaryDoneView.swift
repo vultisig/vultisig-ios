@@ -12,13 +12,16 @@ struct SendCryptoSecondaryDoneView: View {
     let input: SendCryptoContent
     let onDone: () -> Void
     
+    @State var addressAdded: Bool = false
     @State var navigateToAddressBook = false
     @Environment(\.openURL) var openURL
     @EnvironmentObject var homeViewModel: HomeViewModel
-    @Query var savedAddresses: [AddressBookItem]
-
+    @State var canShowAddressBook: Bool = false
+    
+    @Environment(\.modelContext) var modelContext
+    
     var showAddressBookButton: Bool {
-        input.isSend && !savedAddresses.map(\.address).contains(input.toAddress)
+        input.isSend && canShowAddressBook
     }
     
     var body: some View {
@@ -35,13 +38,27 @@ struct SendCryptoSecondaryDoneView: View {
                 continueButton
             }
         }
+        .onLoad {
+            let address = input.toAddress
+            let addressItemsDescriptor = FetchDescriptor<AddressBookItem>(
+                predicate: #Predicate { $0.address == address }
+            )
+            let addressItems = try? modelContext.fetch(addressItemsDescriptor)
+            
+            canShowAddressBook = addressItems?.isEmpty ?? false
+//            && !(homeViewModel.selectedVault?.coins.map(\.address).contains(input.toAddress) ?? true)
+        }
         .navigationDestination(isPresented: $navigateToAddressBook) {
             AddAddressBookScreen(
                 address: input.toAddress,
-                chain: .init(coinMeta: input.coin.toCoinMeta())
-            ) {
-                onDone()
-            }
+                chain: .init(coinMeta: input.coin.toCoinMeta()),
+                addressAdded: $addressAdded,
+                shouldDismiss: false
+            )
+        }
+        .onChange(of: addressAdded) { oldValue, newValue in
+            guard newValue else { return }
+            onDone()
         }
     }
     
@@ -146,7 +163,6 @@ struct SendCryptoSecondaryDoneView: View {
             .overlay(RoundedRectangle(cornerRadius: 99).stroke(Theme.colors.alertSuccess, lineWidth: 0.5))
             .fixedSize()
         }
-        .buttonStyle(.plain)
     }
     
     func openLink() {
