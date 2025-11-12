@@ -425,7 +425,7 @@ class Endpoint {
     
     static let polkadotServiceRpc = "https://polkadot-rpc.publicnode.com"
     
-    static let polkadotServiceBalance = "https://polkadot.api.subscan.io/api/v2/scan/search"
+    static let polkadotServiceBalance = "https://assethub-polkadot.api.subscan.io/api/v2/scan/search"
     
     static let tonServiceRpc = "https://api.vultisig.com/ton/v2/jsonRPC"
     
@@ -768,7 +768,7 @@ class Endpoint {
         case .sui:
             return "https://suiscan.xyz/mainnet/tx/\(txid)"
         case .polkadot:
-            return "https://polkadot.subscan.io/extrinsic/\(txid)"
+            return "https://assethub-polkadot.subscan.io/extrinsic/\(txid)"
         case .zksync:
             return "https://explorer.zksync.io/tx/\(txid)"
         case .ton:
@@ -851,7 +851,7 @@ class Endpoint {
         case .sui:
             return "https://suiscan.xyz/mainnet/address/\(address)"
         case .polkadot:
-            return "https://polkadot.subscan.io/account/\(address)"
+            return "https://assethub-polkadot.subscan.io/account/\(address)"
         case .zksync:
             return "https://explorer.zksync.io/address/\(address)"
         case .ton:
@@ -932,7 +932,7 @@ class Endpoint {
         case .sui:
             return "https://suiscan.xyz/mainnet/address/\(address)"
         case .polkadot:
-            return "https://polkadot.subscan.io/account/\(address)"
+            return "https://assethub-polkadot.subscan.io/account/\(address)"
         case .zksync:
             return "https://explorer.zksync.io/address/\(address)"
         case .ton:
