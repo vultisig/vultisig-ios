@@ -333,8 +333,8 @@ struct EvmServiceStruct {
     // MARK: - Static Helper for Standard Token Fetching
     
     static func getTokensStandard(nativeToken: Coin, rpcActor: RpcServiceActor) async -> [CoinMeta] {
+        // Try alchemy_getTokenBalances first (for chains that support it)
         do {
-            // First RPC call to get token balances
             let tokenBalances: [[String: Any]] = try await rpcActor.sendRPCRequest(
                 method: "alchemy_getTokenBalances",
                 params: [nativeToken.address]
@@ -349,15 +349,11 @@ struct EvmServiceStruct {
                 return tokenBalances
             }
             
-            // Now we have our token balances array synchronously.
+            // Process tokens from Alchemy
             var tokenMetadata: [CoinMeta] = []
             
-            // For each token, we need to fetch metadata
             for tokenBalance in tokenBalances {
-                guard
-                    let contractAddress = tokenBalance["contractAddress"] as? String
-                else {
-                    // Skip invalid entries if needed
+                guard let contractAddress = tokenBalance["contractAddress"] as? String else {
                     continue
                 }
                 
@@ -374,7 +370,6 @@ struct EvmServiceStruct {
                         return nil
                     }
                     
-                    // Handle decimals - can be Int, Int64, or null
                     let decimals: Int
                     if let decimalsInt = response["decimals"] as? Int {
                         decimals = decimalsInt
@@ -384,14 +379,12 @@ struct EvmServiceStruct {
                         return nil
                     }
                     
-                    // Try to find priceProviderId from TokensStore
                     let tokenFromTokenStore = TokensStore.TokenSelectionAssets.first(where: { token in
                         token.chain == nativeToken.chain &&
                         token.ticker == symbol &&
                         token.contractAddress.lowercased() == contractAddress.lowercased()
                     })
                     
-                    // Handle logo - can be String or null
                     let logo = tokenFromTokenStore?.logo ?? response["logo"] as? String ?? ""
                     
                     return CoinMeta(
@@ -413,8 +406,57 @@ struct EvmServiceStruct {
             return tokenMetadata
             
         } catch {
+            // Fallback: Check known tokens from TokensStore using standard RPC methods
+            return await getTokensFallback(nativeToken: nativeToken, rpcActor: rpcActor)
+        }
+    }
+    
+    // Fallback method: Check balance of known tokens from TokensStore
+    private static func getTokensFallback(nativeToken: Coin, rpcActor: RpcServiceActor) async -> [CoinMeta] {
+        // Get all known tokens for this chain from TokensStore
+        let knownTokens = TokensStore.TokenSelectionAssets.filter { token in
+            token.chain == nativeToken.chain && !token.isNativeToken && !token.contractAddress.isEmpty
+        }
+        
+        guard !knownTokens.isEmpty else {
             return []
         }
+        
+        var tokensWithBalance: [CoinMeta] = []
+        
+        // Check balance for each known token in parallel
+        await withTaskGroup(of: (CoinMeta, BigInt?).self) { group in
+            for token in knownTokens {
+                group.addTask {
+                    do {
+                        // Function signature for balanceOf(address) is 0x70a08231
+                        let paddedAddress = String(nativeToken.address.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")
+                        let data = "0x70a08231" + paddedAddress
+                        
+                        let params: [Any] = [
+                            ["to": token.contractAddress, "data": data],
+                            "latest"
+                        ]
+                        
+                        let balance = try await rpcActor.intRpcCall(method: "eth_call", params: params)
+                        
+                        return (token, balance)
+                    } catch {
+                        // If balance check fails, assume zero balance
+                        return (token, nil)
+                    }
+                }
+            }
+            
+            for await (token, balance) in group {
+                // Only include tokens with non-zero balance
+                if let balance = balance, balance > 0 {
+                    tokensWithBalance.append(token)
+                }
+            }
+        }
+        
+        return tokensWithBalance
     }
     
     // MARK: - ENS Resolution

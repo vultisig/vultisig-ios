@@ -42,7 +42,11 @@ actor RpcServiceActor {
                 throw RpcServiceError.rpcError(code: 500, message: "Error to decode the JSON response")
             }
             
-            if let error = response["error"] as? [String: Any], let message = error["message"] as? String {
+            if let error = response["error"] as? [String: Any] {
+                let code = error["code"] as? Int ?? -1
+                let message = error["message"] as? String ?? "Unknown RPC error"
+                
+                // Special handling for transaction broadcast errors
                 if message.lowercased().contains("known".lowercased())
                     || message.lowercased().contains("already known".lowercased())
                     || message.lowercased().contains("Transaction is temporarily banned".lowercased())
@@ -56,7 +60,8 @@ actor RpcServiceActor {
                     return try decode("Transaction already broadcasted.")
                 }
                 
-                return try decode(message)
+                // For other errors, throw an exception instead of trying to decode the error message
+                throw RpcServiceError.rpcError(code: code, message: message)
                 
             } else if let result = response["result"] {
                 return try decode(result)
@@ -64,8 +69,6 @@ actor RpcServiceActor {
                 throw RpcServiceError.rpcError(code: 500, message: "Unknown error")
             }
         } catch {
-            print(payload)
-            print(error.localizedDescription)
             throw error
         }
     }

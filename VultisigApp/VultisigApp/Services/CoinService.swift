@@ -183,7 +183,7 @@ struct CoinService {
                         continue
                     }
                     
-                    let existingCoin =  vault.coin(for: token)
+                    let existingCoin = vault.coin(for: token)
                     if existingCoin != nil {
                         continue
                     }
