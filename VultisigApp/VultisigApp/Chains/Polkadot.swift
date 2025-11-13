@@ -26,7 +26,15 @@ enum PolkadotHelper {
             throw HelperError.runtimeError("coin is not DOT")
         }
         
-        guard case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber, let specVersion, let transactionVersion, let genesisHash, _) = keysignPayload.chainSpecific else {
+        guard case .Polkadot(
+            let recentBlockHash,
+            let nonce,
+            let currentBlockNumber,
+            let specVersion,
+            let transactionVersion,
+            let genesisHash,
+            _
+        ) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("getPreSignedInputData fail to get DOT transaction information from RPC")
         }
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .polkadot) else {
@@ -45,12 +53,14 @@ enum PolkadotHelper {
                 $0.blockNumber = UInt64(currentBlockNumber)
                 $0.period = 64
             }
-            $0.balanceCall.transfer = PolkadotBalance.Transfer.with {
+            
+            // 🔁 Novo caminho: usar AssetTransfer (Assets pallet / Asset Hub)
+            $0.balanceCall.assetTransfer = PolkadotBalance.AssetTransfer.with {
+                // DOT no Asset Hub normalmente é o asset 0
+                $0.assetID = 0          // ou assetId, se o gerado vier assim
+                $0.feeAssetID = 0       // pagar taxa em DOT (mesmo asset)
                 $0.toAddress = toAddress.description
                 $0.value = keysignPayload.toAmount.magnitude.serialize()
-                if let memo = keysignPayload.memo {
-                    $0.memo = memo
-                }
             }
         }
 
