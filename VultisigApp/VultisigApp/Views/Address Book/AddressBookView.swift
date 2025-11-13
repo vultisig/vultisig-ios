@@ -14,6 +14,7 @@ struct AddressBookView: View {
     
     @Query var savedAddresses: [AddressBookItem]
     
+    @State var showAddAddress = false
     @State var title: String = ""
     @State var address: String = ""
     @State var isEditing = false
@@ -44,6 +45,9 @@ struct AddressBookView: View {
                 navigationButton
                     .showIf(!savedAddressesEmpty)
             }
+        }
+        .navigationDestination(isPresented: $showAddAddress) {
+            AddAddressBookScreen()
         }
         .onDisappear {
             withAnimation {
@@ -103,8 +107,8 @@ struct AddressBookView: View {
     }
     
     var addAddressButton: some View {
-        PrimaryNavigationButton(title: "addAddress") {
-            AddAddressBookScreen()
+        PrimaryButton(title: "addAddress".localized) {
+            showAddAddress = true
         }
     }
     

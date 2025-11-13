@@ -63,7 +63,7 @@ struct SendCryptoDoneContentView: View {
         .navigationDestination(isPresented: $navigateToTransactionDetails) {
             SendCryptoSecondaryDoneView(
                 input: input,
-                onDone: onDoneButtonPressed
+                navigateToHome: $navigateToHome
             )
         }
         .navigationDestination(isPresented: $navigateToHome) {

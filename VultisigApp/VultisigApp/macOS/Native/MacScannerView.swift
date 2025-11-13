@@ -123,7 +123,9 @@ struct MacScannerView: View {
     
     var uploadQRCodeButton: some View {
         PrimaryNavigationButton(title: "uploadQRCodeImage") {
-            GeneralQRImportMacView(type: type, sendTx: sendTx, selectedVault: selectedVault)
+            GeneralQRImportMacView(type: type, selectedVault: selectedVault) {
+                sendTx.toAddress = $0
+            }
         }
     }
     

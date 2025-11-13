@@ -7,13 +7,14 @@
 
 import Foundation
 
-struct BondNode: Identifiable, Equatable {
+struct BondNode: Identifiable, Equatable, Hashable, Codable {
     var id: String { address }
+    let coin: CoinMeta
     let address: String
     let state: BondNodeState
 }
 
-enum BondNodeState: String, Codable, CaseIterable {
+enum BondNodeState: String, CaseIterable, Codable {
     case whitelisted
     case standby
     case ready

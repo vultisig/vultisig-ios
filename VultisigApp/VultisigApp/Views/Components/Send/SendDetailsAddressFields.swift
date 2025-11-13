@@ -24,7 +24,10 @@ struct SendDetailsAddressFields: View {
     
     var fromField: some View {
         VStack(spacing: 12) {
-            getTitle(for: "from")
+            Text("from".localized)
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.textExtraLight)
+                .frame(maxWidth: .infinity, alignment: .leading)
             fromDetailsField
         }
     }
@@ -54,26 +57,66 @@ struct SendDetailsAddressFields: View {
     }
     
     var toField: some View {
-        VStack(spacing: 8) {
-            getTitle(for: "sendTo")
-            SendCryptoAddressTextField(
-                tx: tx, 
-                sendCryptoViewModel: sendCryptoViewModel,
-                sendDetailsViewModel: viewModel,
-                vault: homeViewModel.selectedVault
+        AddressTextField(
+            address: $tx.toAddress,
+            label: "sendTo".localized,
+            coin: tx.coin,
+            error: Binding(
+                get: { sendCryptoViewModel.showAddressAlert ? sendCryptoViewModel.errorMessage : nil },
+                set: { _ in }
             )
-                .focused($focusedField, equals: .toAddress)
-                .id(Field.toAddress)
-                .onSubmit {
-                    viewModel.onSelect(tab: .amount)
-                }
+        ) {
+            handle(addressResult: $0)
+        }
+        .onChange(of: tx.toAddress) { _, newValue in
+            DebounceHelper.shared.debounce {
+                validateAddress(newValue)
+            }
+            Task {
+                await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+            }
         }
     }
     
-    private func getTitle(for title: String) -> some View {
-        Text(NSLocalizedString(title, comment: ""))
-            .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textExtraLight)
-            .frame(maxWidth: .infinity, alignment: .leading)
+    func handle(addressResult: AddressResult?) {
+        guard let addressResult else { return }
+        tx.toAddress = addressResult.address
+        
+        if let amount = addressResult.amount, amount.isNotEmpty {
+            tx.amount = amount
+            sendCryptoViewModel.convertToFiat(newValue: amount, tx: tx)
+        }
+        
+        if let memo = addressResult.memo, memo.isNotEmpty {
+            tx.memo = memo
+        }
+                
+        // Attempt to detect and switch chain if address belongs to different chain
+        if !tx.toAddress.isEmpty, let vault = homeViewModel.selectedVault {
+            let detectedCoin = viewModel.detectAndSwitchChain(
+                from: tx.toAddress,
+                vault: vault,
+                currentChain: tx.coin.chain,
+                tx: tx
+            )
+            
+            if detectedCoin != nil {
+                // Clear previous error
+                sendCryptoViewModel.showAddressAlert = false
+                sendCryptoViewModel.errorMessage = ""
+                sendCryptoViewModel.isValidAddress = true
+                
+                // Mark address as done and move to amount
+                viewModel.addressSetupDone = true
+                viewModel.onSelect(tab: .amount)
+            }
+        }
+        
+        // Always validate after potential chain switch
+        validateAddress(tx.toAddress)
+    }
+    
+    func validateAddress(_ newValue: String) {
+        sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
     }
 }

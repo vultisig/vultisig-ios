@@ -115,7 +115,10 @@ struct DefiTHORChainLPPositionView: View {
                 coin1Amount: 800,
                 coin2: TokensStore.TokenSelectionAssets.first(where: { $0.ticker == "ETH" && $0.isNativeToken && $0.chain == .ethereum }) ?? .example,
                 coin2Amount: 2,
-                apr: 0.024
+                poolName: "AVAX.AVAX",
+                poolUnits: "1234",
+                apr: 0.024,
+                vault: .example
             ),
             onRemove: {},
             onAdd: {}
@@ -128,7 +131,10 @@ struct DefiTHORChainLPPositionView: View {
                 coin1Amount: 800,
                 coin2: TokensStore.TokenSelectionAssets.first(where: { $0.ticker == "USDC" && $0.chain == .ethereum }) ?? .example,
                 coin2Amount: 2,
-                apr: 0.2
+                poolName: "AVAX.AVAX",
+                poolUnits: "1234",
+                apr: 0.2,
+                vault: .example
             ),
             onRemove: {},
             onAdd: {}

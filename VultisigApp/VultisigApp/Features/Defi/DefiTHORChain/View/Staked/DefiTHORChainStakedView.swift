@@ -9,14 +9,13 @@ import SwiftUI
 
 struct DefiTHORChainStakedView<EmptyStateView: View>: View {
     @ObservedObject var viewModel: DefiTHORChainStakeViewModel
-    @Binding var loadingBalances: Bool
     var onStake: (StakePosition) -> Void
     var onUnstake: (StakePosition) -> Void
     var onWithdraw: (StakePosition) -> Void
     var emptyStateView: () -> EmptyStateView
     
     var showLoading: Bool {
-        loadingBalances && !viewModel.setupDone
+        !viewModel.initialLoadingDone
     }
     
     var body: some View {
@@ -44,7 +43,6 @@ struct DefiTHORChainStakedView<EmptyStateView: View>: View {
 #Preview {
     DefiTHORChainStakedView(
         viewModel: DefiTHORChainStakeViewModel(vault: .example),
-        loadingBalances: .constant(false),
         onStake: { _ in },
         onUnstake: { _ in },
         onWithdraw: { _ in },

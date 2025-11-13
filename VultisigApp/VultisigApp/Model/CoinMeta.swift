@@ -8,7 +8,7 @@
 import Foundation
 import WalletCore
 
-struct CoinMeta : Hashable, Codable {
+struct CoinMeta: Hashable, Codable {
     let chain: Chain
     let ticker: String
     var logo: String

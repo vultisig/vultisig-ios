@@ -11,7 +11,6 @@ struct DefiTHORChainBondedView<EmptyStateView: View>: View {
     @ObservedObject var viewModel: DefiTHORChainBondViewModel
 
     let coin: Coin
-    @Binding var loadingBalances: Bool
     var onBond: (BondNode?) -> Void
     var onUnbond: (BondNode) -> Void
     var emptyStateView: () -> EmptyStateView
@@ -25,19 +24,19 @@ struct DefiTHORChainBondedView<EmptyStateView: View>: View {
     }
     
     var showLoading: Bool {
-        loadingBalances && !viewModel.setupDone
+        !viewModel.initialLoadingDone
     }
         
     var body: some View {
         LazyVStack(spacing: 14) {
-            if showLoading {
+            if !viewModel.hasBondPositions {
+                emptyStateView()
+            } else if showLoading {
                 DefiTHORChainBondedSkeletonView()
-            } else if viewModel.hasBondPositions {
+            } else {
                 bondedSection
                 activeNodesSection
                 availableNodesSection
-            } else {
-                emptyStateView()
             }
         }
     }
@@ -67,14 +66,10 @@ struct DefiTHORChainBondedView<EmptyStateView: View>: View {
                     Spacer()
                 }
                 
-                Group {
-                    Separator(color: Theme.colors.border, opacity: 1)
-                    PrimaryButton(title: "bondToNode") {
-                        onBond(nil)
-                    }
+                Separator(color: Theme.colors.border, opacity: 1)
+                PrimaryButton(title: "bondToNode") {
+                    onBond(nil)
                 }
-                .transition(.verticalGrowAndFade)
-                .showIf(showBondButton)
             }
         }
     }
@@ -100,7 +95,6 @@ struct DefiTHORChainBondedView<EmptyStateView: View>: View {
     DefiTHORChainBondedView(
         viewModel: DefiTHORChainBondViewModel(vault: .example),
         coin: Coin.example,
-        loadingBalances: .constant(false),
         onBond: { _ in },
         onUnbond: { _ in },
         emptyStateView: { EmptyView() }
