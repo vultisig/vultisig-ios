@@ -18,10 +18,10 @@ struct EvmServiceConfig {
         case custom([CoinMeta])
         case sepolia
         
-        func getTokens(nativeToken: Coin, rpcActor: RpcServiceActor) async -> [CoinMeta] {
+        func getTokens(nativeToken: Coin, rpcService: RpcServiceStruct) async -> [CoinMeta] {
             switch self {
             case .standard:
-                return await EvmServiceStruct.getTokensStandard(nativeToken: nativeToken, rpcActor: rpcActor)
+                return await EvmServiceStruct.getTokensStandard(nativeToken: nativeToken, rpcService: rpcService)
             case .custom(let tokens):
                 return tokens
             case .sepolia:

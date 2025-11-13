@@ -2,13 +2,13 @@
 //  RpcServiceActor.swift
 //  VultisigApp
 //
-//  Refactored to use Actor for thread-safety
+//  Stateless RPC service - no shared mutable state, so struct is sufficient
 //
 
 import Foundation
 import BigInt
 
-actor RpcServiceActor {
+struct RpcServiceStruct {
     private let rpcEndpoint: String
     
     init(_ rpcEndpoint: String) {

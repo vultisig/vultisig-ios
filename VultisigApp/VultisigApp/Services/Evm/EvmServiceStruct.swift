@@ -2,7 +2,7 @@
 //  EvmServiceStruct.swift
 //  VultisigApp
 //
-//  Refactored to use struct and actor instead of classes
+//  Refactored to use struct instead of classes
 //
 
 import Foundation
@@ -10,11 +10,11 @@ import BigInt
 
 struct EvmServiceStruct {
     let config: EvmServiceConfig
-    private let rpcActor: RpcServiceActor
+    private let rpcService: RpcServiceStruct
     
     init(config: EvmServiceConfig) {
         self.config = config
-        self.rpcActor = RpcServiceActor(config.rpcEndpoint)
+        self.rpcService = RpcServiceStruct(config.rpcEndpoint)
     }
     
     // MARK: - Balance Operations
@@ -72,7 +72,7 @@ struct EvmServiceStruct {
     }
     
     func getFeeHistory() async throws -> [BigInt] {
-        return try await rpcActor.sendRPCRequest(method: "eth_feeHistory", params: [10, "latest", [5]]) { result in
+        return try await rpcService.sendRPCRequest(method: "eth_feeHistory", params: [10, "latest", [5]]) { result in
             guard
                 let result = result as? [String: Any],
                 let rewards = result["reward"] as? [[String]] else {
@@ -89,7 +89,7 @@ struct EvmServiceStruct {
     }
     
     func getBaseFee() async throws -> BigInt {
-        return try await rpcActor.sendRPCRequest(method: "eth_getBlockByNumber", params: ["latest", true]) { result in
+        return try await rpcService.sendRPCRequest(method: "eth_getBlockByNumber", params: ["latest", true]) { result in
             guard
                 let result = result as? [String: Any],
                 let baseFeeString = result["baseFeePerGas"] as? String,
@@ -117,7 +117,7 @@ struct EvmServiceStruct {
     
     func broadcastTransaction(hex: String) async throws -> String {
         let hexWithPrefix = hex.hasPrefix("0x") ? hex : "0x\(hex)"
-        return try await rpcActor.strRpcCall(method: "eth_sendRawTransaction", params: [hexWithPrefix])
+        return try await rpcService.strRpcCall(method: "eth_sendRawTransaction", params: [hexWithPrefix])
     }
     
     func estimateGasForEthTransaction(senderAddress: String, recipientAddress: String, value: BigInt, memo: String?) async throws -> BigInt {
@@ -131,7 +131,7 @@ struct EvmServiceStruct {
             "data": "0x" + memoDataHex // Include the memo in the data field, if present
         ]
         
-        return try await rpcActor.intRpcCall(method: "eth_estimateGas", params: [transactionObject])
+        return try await rpcService.intRpcCall(method: "eth_estimateGas", params: [transactionObject])
     }
     
     func estimateGasForERC20Transfer(senderAddress: String, contractAddress: String, recipientAddress: String, value: BigInt) async throws -> BigInt {
@@ -144,7 +144,7 @@ struct EvmServiceStruct {
             "data": data,
         ]
         
-        return try await rpcActor.intRpcCall(method: "eth_estimateGas", params: [transactionObject])
+        return try await rpcService.intRpcCall(method: "eth_estimateGas", params: [transactionObject])
     }
     
     func estimateGasLimitForSwap(senderAddress: String, toAddress: String, value: BigInt, data: String) async throws -> BigInt {
@@ -155,7 +155,7 @@ struct EvmServiceStruct {
             "data": data
         ]
         
-        return try await rpcActor.intRpcCall(method: "eth_estimateGas", params: [transactionObject])
+        return try await rpcService.intRpcCall(method: "eth_estimateGas", params: [transactionObject])
     }
     
     // MARK: - Token Operations
@@ -171,7 +171,7 @@ struct EvmServiceStruct {
             "latest"
         ]
         
-        return try await rpcActor.intRpcCall(method: "eth_call", params: params)
+        return try await rpcService.intRpcCall(method: "eth_call", params: params)
     }
     
     func fetchTRC20TokenBalance(contractAddress: String, walletAddress: String) async throws -> BigInt {
@@ -198,7 +198,7 @@ struct EvmServiceStruct {
         ]
         
         // Call the RPC method
-        return try await rpcActor.intRpcCall(method: "eth_call", params: params)
+        return try await rpcService.intRpcCall(method: "eth_call", params: params)
     }
     
     func fetchAllowance(contractAddress: String, owner: String, spender: String) async throws -> BigInt {
@@ -208,7 +208,7 @@ struct EvmServiceStruct {
         let data = "0xdd62ed3e" + paddedOwner + paddedSpender
         let params: [Any] = [["to": contractAddress, "data": data], "latest"]
         
-        return try await rpcActor.intRpcCall(method: "eth_call", params: params)
+        return try await rpcService.intRpcCall(method: "eth_call", params: params)
     }
     
     func getTokenInfo(contractAddress: String) async throws -> (name: String, symbol: String, decimals: Int) {
@@ -242,7 +242,7 @@ struct EvmServiceStruct {
     }
     
     func getTokens(nativeToken: Coin) async -> [CoinMeta] {
-        return await config.tokenProvider.getTokens(nativeToken: nativeToken, rpcActor: rpcActor)
+        return await config.tokenProvider.getTokens(nativeToken: nativeToken, rpcService: rpcService)
     }
     
     // MARK: - Private Helpers
@@ -252,7 +252,7 @@ struct EvmServiceStruct {
             ["to": contractAddress, "data": methodId],
             "latest"
         ]
-        return try await rpcActor.strRpcCall(method: "eth_call", params: params)
+        return try await rpcService.strRpcCall(method: "eth_call", params: params)
     }
     
     private func decodeAbiString(from hex: String) throws -> String {
@@ -278,19 +278,19 @@ struct EvmServiceStruct {
     }
     
     private func fetchBalance(address: String) async throws -> BigInt {
-        return try await rpcActor.intRpcCall(method: "eth_getBalance", params: [address, "latest"])
+        return try await rpcService.intRpcCall(method: "eth_getBalance", params: [address, "latest"])
     }
     
     func fetchMaxPriorityFeePerGas() async throws -> BigInt {
-        return try await rpcActor.intRpcCall(method: "eth_maxPriorityFeePerGas", params: []) //WEI
+        return try await rpcService.intRpcCall(method: "eth_maxPriorityFeePerGas", params: []) //WEI
     }
     
     private func fetchNonce(address: String) async throws -> BigInt {
-        return try await rpcActor.intRpcCall(method: "eth_getTransactionCount", params: [address, "latest"])
+        return try await rpcService.intRpcCall(method: "eth_getTransactionCount", params: [address, "latest"])
     }
     
     private func fetchGasPrice() async throws -> BigInt {
-        return try await rpcActor.intRpcCall(method: "eth_gasPrice", params: [])
+        return try await rpcService.intRpcCall(method: "eth_gasPrice", params: [])
     }
     
     private func constructERC20TransferData(recipientAddress: String, value: BigInt) -> String {
@@ -311,7 +311,7 @@ struct EvmServiceStruct {
     }
     
     private func zksEstimateFee(fromAddress: String, toAddress: String, data: String) async throws -> (gasLimit: BigInt, gasPerPubdataLimit: BigInt, maxFeePerGas: BigInt, maxPriorityFeePerGas: BigInt) {
-        return try await rpcActor.sendRPCRequest(method: "zks_estimateFee", params: [["from": fromAddress, "to": toAddress, "data": data]]) { result in
+        return try await rpcService.sendRPCRequest(method: "zks_estimateFee", params: [["from": fromAddress, "to": toAddress, "data": data]]) { result in
             guard let response = result as? [String: Any],
                   let gasLimitHex = response["gas_limit"] as? String,
                   let gasPerPubdataLimitHex = response["gas_per_pubdata_limit"] as? String,
@@ -332,10 +332,10 @@ struct EvmServiceStruct {
     
     // MARK: - Static Helper for Standard Token Fetching
     
-    static func getTokensStandard(nativeToken: Coin, rpcActor: RpcServiceActor) async -> [CoinMeta] {
+    static func getTokensStandard(nativeToken: Coin, rpcService: RpcServiceStruct) async -> [CoinMeta] {
         // Try alchemy_getTokenBalances first (for chains that support it)
         do {
-            let tokenBalances: [[String: Any]] = try await rpcActor.sendRPCRequest(
+            let tokenBalances: [[String: Any]] = try await rpcService.sendRPCRequest(
                 method: "alchemy_getTokenBalances",
                 params: [nativeToken.address]
             ) { result in
@@ -358,7 +358,7 @@ struct EvmServiceStruct {
                 }
                 
                 // Fetch metadata for each token
-                let meta: CoinMeta? = try await rpcActor.sendRPCRequest(
+                let meta: CoinMeta? = try await rpcService.sendRPCRequest(
                     method: "alchemy_getTokenMetadata",
                     params: [contractAddress]
                 ) { result in
@@ -407,12 +407,12 @@ struct EvmServiceStruct {
             
         } catch {
             // Fallback: Check known tokens from TokensStore using standard RPC methods
-            return await getTokensFallback(nativeToken: nativeToken, rpcActor: rpcActor)
+            return await getTokensFallback(nativeToken: nativeToken, rpcService: rpcService)
         }
     }
     
     // Fallback method: Check balance of known tokens from TokensStore
-    private static func getTokensFallback(nativeToken: Coin, rpcActor: RpcServiceActor) async -> [CoinMeta] {
+    private static func getTokensFallback(nativeToken: Coin, rpcService: RpcServiceStruct) async -> [CoinMeta] {
         // Get all known tokens for this chain from TokensStore
         let knownTokens = TokensStore.TokenSelectionAssets.filter { token in
             token.chain == nativeToken.chain && !token.isNativeToken && !token.contractAddress.isEmpty
@@ -438,7 +438,7 @@ struct EvmServiceStruct {
                             "latest"
                         ]
                         
-                        let balance = try await rpcActor.intRpcCall(method: "eth_call", params: params)
+                        let balance = try await rpcService.intRpcCall(method: "eth_call", params: params)
                         
                         return (token, balance)
                     } catch {
@@ -480,7 +480,7 @@ struct EvmServiceStruct {
             "latest"
         ]
         
-        let result = try await rpcActor.strRpcCall(method: "eth_call", params: params)
+        let result = try await rpcService.strRpcCall(method: "eth_call", params: params)
         
         // Convert the result to a Data object
         let cleanedHex = result.stripHexPrefix()
@@ -519,7 +519,7 @@ struct EvmServiceStruct {
             "latest"
         ]
         
-        let result = try await rpcActor.strRpcCall(method: "eth_call", params: params)
+        let result = try await rpcService.strRpcCall(method: "eth_call", params: params)
         
         // Convert the result to a Data object
         let cleanedHex = result.stripHexPrefix()

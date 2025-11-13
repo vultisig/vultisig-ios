@@ -1038,7 +1038,7 @@
 		B5BC37562CECEFFA005A1C76 /* cosmos.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BC37552CECEFF8005A1C76 /* cosmos.swift */; };
 		B5BCC2602EC26D79007B5A2F /* EvmServiceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BCC25E2EC26D79007B5A2F /* EvmServiceConfig.swift */; };
 		B5BCC2612EC26D79007B5A2F /* EvmServiceStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BCC25F2EC26D79007B5A2F /* EvmServiceStruct.swift */; };
-		B5BCC2632EC26DA7007B5A2F /* RpcServiceActor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BCC2622EC26DA7007B5A2F /* RpcServiceActor.swift */; };
+		B5BCC2632EC26DA7007B5A2F /* RpcServiceStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BCC2622EC26DA7007B5A2F /* RpcServiceStruct.swift */; };
 		B5BEB1ED2E137FBA00372170 /* ThorchainMergeTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BEB1EC2E137FBA00372170 /* ThorchainMergeTokens.swift */; };
 		B5C02E542E3AAD050038938D /* FunctionCallCosmosYVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C02E532E3AAD020038938D /* FunctionCallCosmosYVault.swift */; };
 		B5C4A42C2C62EC6500AF9B8B /* AddressService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C4A42B2C62EC6500AF9B8B /* AddressService.swift */; };
@@ -2221,7 +2221,7 @@
 		B5BC37552CECEFF8005A1C76 /* cosmos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cosmos.swift; sourceTree = "<group>"; };
 		B5BCC25E2EC26D79007B5A2F /* EvmServiceConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvmServiceConfig.swift; sourceTree = "<group>"; };
 		B5BCC25F2EC26D79007B5A2F /* EvmServiceStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvmServiceStruct.swift; sourceTree = "<group>"; };
-		B5BCC2622EC26DA7007B5A2F /* RpcServiceActor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RpcServiceActor.swift; sourceTree = "<group>"; };
+		B5BCC2622EC26DA7007B5A2F /* RpcServiceStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RpcServiceStruct.swift; sourceTree = "<group>"; };
 		B5BEB1EC2E137FBA00372170 /* ThorchainMergeTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainMergeTokens.swift; sourceTree = "<group>"; };
 		B5C02E532E3AAD020038938D /* FunctionCallCosmosYVault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallCosmosYVault.swift; sourceTree = "<group>"; };
 		B5C4A42B2C62EC6500AF9B8B /* AddressService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressService.swift; sourceTree = "<group>"; };
@@ -4057,7 +4057,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				B5BCC2622EC26DA7007B5A2F /* RpcServiceActor.swift */,
+				B5BCC2622EC26DA7007B5A2F /* RpcServiceStruct.swift */,
 				130652482EA7CCE8002CAD99 /* THORChainAPI */,
 				B5FFB0F32E7858E90062F63C /* PendingTransactionManager.swift */,
 				138538DB2E61F576006DF7C7 /* VultiServer */,
@@ -6961,7 +6961,7 @@
 				46AAA49F2BC3B4D000E5BAB4 /* CosmosServiceFactory.swift in Sources */,
 				A52B0D052CA59E8200507966 /* ReshareViewModel.swift in Sources */,
 				A506B59D2D3AB77A00490BEB /* LifiQuoteResponse.swift in Sources */,
-				B5BCC2632EC26DA7007B5A2F /* RpcServiceActor.swift in Sources */,
+				B5BCC2632EC26DA7007B5A2F /* RpcServiceStruct.swift in Sources */,
 				134A9FCF2E96B4B500030C56 /* VaultBannerCarouselIndicators.swift in Sources */,
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
 				134E8D812E451F800086EBC4 /* PreferredAssetFactory.swift in Sources */,
