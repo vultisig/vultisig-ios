@@ -30,7 +30,9 @@ final class Vault: ObservableObject, Codable {
     @Relationship(deleteRule: .cascade) var hiddenTokens = [HiddenToken]()
     @Relationship(deleteRule: .cascade) var referralCode: ReferralCode?
     @Relationship(deleteRule: .cascade) var referredCode: ReferredCode?
+    // Visible Defi Positions
     @Relationship(deleteRule: .cascade) var defiPositions: [DefiPositions] = []
+    // Defi Positions Data for caching
     @Relationship(deleteRule: .cascade) var bondPositions: [BondPosition] = []
     @Relationship(deleteRule: .cascade) var stakePositions: [StakePosition] = []
     @Relationship(deleteRule: .cascade) var lpPositions: [LPPosition] = []
@@ -128,7 +130,7 @@ final class Vault: ObservableObject, Codable {
     }
 
     func nativeCoin(for coin: Coin) -> Coin? {
-        return coins.first(where: { $0.chain == coin.chain && $0.isNativeToken })
+        nativeCoin(for: coin.chain)
     }
     
     func nativeCoin(for chain: Chain) -> Coin? {

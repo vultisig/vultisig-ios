@@ -8,9 +8,15 @@
 import SwiftUI
 
 struct DefiTHORChainBalanceView: View {
+    @ObservedObject var vault: Vault
     let groupedChain: GroupedChain
     
     @EnvironmentObject var homeViewModel: HomeViewModel
+    
+    let service = DefiBalanceService()
+    var balance: String {
+        service.totalBalanceInFiatString(for: .thorChain, vault: vault)
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -23,7 +29,7 @@ struct DefiTHORChainBalanceView: View {
                 .font(Theme.fonts.caption12)
                 .padding(.top, 12)
             
-            HiddenBalanceText(groupedChain.defiBalanceInFiatString)
+            HiddenBalanceText(balance)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.priceTitle1)
                 .contentTransition(.numericText())
@@ -69,6 +75,6 @@ struct DefiTHORChainBalanceView: View {
         count: 3,
         coins: [Coin.example]
     )
-    DefiTHORChainBalanceView(groupedChain: groupedChain)
+    DefiTHORChainBalanceView(vault: .example, groupedChain: groupedChain)
         .environmentObject(HomeViewModel())
 }
