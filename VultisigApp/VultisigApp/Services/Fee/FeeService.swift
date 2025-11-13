@@ -32,15 +32,15 @@ protocol FeeService {
 
 class EthereumFeeService: FeeService {
     private let chain: Chain
-    private let rpcEvmService: RpcEvmService
+    private let evmService: EvmService
     
     init(chain: Chain) throws {
         self.chain = chain
-        self.rpcEvmService = try EvmServiceFactory.getService(forChain: chain)
+        self.evmService = try EvmService.getService(forChain: chain)
     }
     
     func calculateFees(chain: Chain, limit: BigInt, isSwap: Bool, fromAddress:String,feeMode: FeeMode) async throws -> FeeEnum {
-        let (gasPrice, priorityFee, nonce) = try await self.rpcEvmService.getGasInfo(fromAddress: fromAddress, mode: feeMode)
+        let (gasPrice, priorityFee, nonce) = try await self.evmService.getGasInfo(fromAddress: fromAddress, mode: feeMode)
         var newLimit = limit
         if isSwap {
             newLimit = inflatedGasLimit(limit)
@@ -53,7 +53,7 @@ class EthereumFeeService: FeeService {
     }
     
     private func calculateEip1559Fees(limit: BigInt, isSwap: Bool, priorityFee: BigInt, chain: Chain,nonce: Int64) async throws -> FeeEnum {
-        let baseFee = try await rpcEvmService.getBaseFee()
+        let baseFee = try await evmService.getBaseFee()
         
         let calculatedPriorityFee = calculateMaxPriorityFeePerGas(
             originalPriorityFee: priorityFee,

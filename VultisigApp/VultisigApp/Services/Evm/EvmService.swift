@@ -1,147 +1,241 @@
 //
-//  BaseService.swift
+//  EvmService.swift
 //  VultisigApp
 //
-//  Created by Enrique Souza Soares on 18/04/2024.
+//  Enum-based EVM service - value types only, no classes
 //
 
 import Foundation
 import BigInt
 
-class BSCService: RpcEvmService, EvmTokenServiceProtocol {
-    static let bscRpcEndpoint = Endpoint.bscServiceRpcService
-    static let shared = BSCService(bscRpcEndpoint)
+enum EvmService {
+    case ethereum
+    case ethereumSepolia
+    case bscChain
+    case avalanche
+    case base
+    case arbitrum
+    case polygon
+    case polygonV2
+    case optimism
+    case blast
+    case cronosChain
+    case zksync
+    case mantle
+    case hyperliquid
+    case sei
+    case tron
     
-    override func getTokens(nativeToken: Coin) async -> [CoinMeta] {
-        return await super.getTokens(nativeToken: nativeToken)
-    }
-}
-
-class EthService: RpcEvmService, EvmTokenServiceProtocol {
-    static let ethRpcEndpoint = Endpoint.ethServiceRpcService
-    static let shared = EthService(ethRpcEndpoint)
+    // MARK: - Constants
     
-    override func getTokens(nativeToken: Coin) async -> [CoinMeta] {
-        return await super.getTokens(nativeToken: nativeToken)
-    }
-}
-
-class EthSepoliaService: RpcEvmService, EvmTokenServiceProtocol {
-    static let ethRpcEndpoint = Endpoint.ethSepoliaServiceRpcService
-    static let shared = EthSepoliaService(ethRpcEndpoint)
-    
-    override func getTokens(nativeToken: Coin) async -> [CoinMeta] {
-        return [TokensStore.Token.ethSepolia]
-    }
-}
-
-class AvalancheService: RpcEvmService, EvmTokenServiceProtocol {
-    static let avaxRpcEndpoint = Endpoint.avalancheServiceRpcService
-    static let shared = AvalancheService(avaxRpcEndpoint)
-    
-    override func getTokens(nativeToken: Coin) async -> [CoinMeta] {
-        return await super.getTokens(nativeToken: nativeToken)
-    }
-}
-
-// L2s
-
-class BaseService: RpcEvmService, EvmTokenServiceProtocol {
-    static let rpcEndpoint = Endpoint.baseServiceRpcService
-    static let shared = BaseService(rpcEndpoint)
-    
-    override func getTokens(nativeToken: Coin) async -> [CoinMeta] {
-        return await super.getTokens(nativeToken: nativeToken)
-    }
-}
-
-class ArbitrumService: RpcEvmService, EvmTokenServiceProtocol {
-    static let rpcEndpoint = Endpoint.arbitrumOneServiceRpcService
-    static let shared = ArbitrumService(rpcEndpoint)
-    
-    override func getTokens(nativeToken: Coin) async -> [CoinMeta] {
-        return await super.getTokens(nativeToken: nativeToken)
-    }
-}
-
-class PolygonService: RpcEvmService, EvmTokenServiceProtocol {
-    static let rpcEndpoint = Endpoint.polygonServiceRpcService
-    static let shared = PolygonService(rpcEndpoint)
-    
-    override func getTokens(nativeToken: Coin) async -> [CoinMeta] {
-        return await super.getTokens(nativeToken: nativeToken)
-    }
-}
-
-class OptimismService: RpcEvmService, EvmTokenServiceProtocol {
-    static let rpcEndpoint = Endpoint.optimismServiceRpcService
-    static let shared = OptimismService(rpcEndpoint)
-    
-    override func getTokens(nativeToken: Coin) async -> [CoinMeta] {
-        return await super.getTokens(nativeToken: nativeToken)
-    }
-}
-
-class CronosService: RpcEvmService, EvmTokenServiceProtocol {
-    static let rpcEndpoint = Endpoint.cronosServiceRpcService
-    static let shared = CronosService(rpcEndpoint)
-    
-    override func getTokens(nativeToken: Coin) async -> [CoinMeta] {
-        return await super.getTokens(nativeToken: nativeToken)
-    }
-}
-
-class ZksyncService: RpcEvmService, EvmTokenServiceProtocol {
-    static let rpcEndpoint = Endpoint.zksyncServiceRpcService
-    static let shared = ZksyncService(rpcEndpoint)
-    
-    override func getTokens(nativeToken: Coin) async -> [CoinMeta] {
-        return await super.getTokens(nativeToken: nativeToken)
-    }
-}
-
-class BlastService: RpcEvmService, EvmTokenServiceProtocol {
-    static let rpcEndpoint = Endpoint.blastServiceRpcService
-    static let shared = BlastService(rpcEndpoint)
-    
-    override func getTokens(nativeToken: Coin) async -> [CoinMeta] {
-        return await super.getTokens(nativeToken: nativeToken)
-    }
-}
-
-class MantleService: RpcEvmService, EvmTokenServiceProtocol {
     static let defaultMantleSwapLimit = BigInt("3000000000")
-    static let rpcEndpoint = Endpoint.mantleServiceRpcService
-    static let shared = MantleService(rpcEndpoint)
     
-    override func getTokens(nativeToken: Coin) async -> [CoinMeta] {
-        return await super.getTokens(nativeToken: nativeToken)
+    // MARK: - Factory Methods
+    
+    /// Get EVM service for a chain - returns enum (value type)
+    static func getService(forChain chain: Chain) throws -> EvmService {
+        return try forChain(chain)
     }
-}
-
-class TronEvmService: RpcEvmService, EvmTokenServiceProtocol {
-    static let rpcEndpoint = Endpoint.tronEvmServiceRpc
-    static let shared = TronEvmService(rpcEndpoint)
     
-    override func getTokens(nativeToken: Coin) async -> [CoinMeta] {
-        return await super.getTokens(nativeToken: nativeToken)
+    /// Alternative factory method
+    static func forChain(_ chain: Chain) throws -> EvmService {
+        switch chain {
+        case .ethereum:
+            return .ethereum
+        case .ethereumSepolia:
+            return .ethereumSepolia
+        case .bscChain:
+            return .bscChain
+        case .avalanche:
+            return .avalanche
+        case .base:
+            return .base
+        case .arbitrum:
+            return .arbitrum
+        case .polygon:
+            return .polygon
+        case .polygonV2:
+            return .polygonV2
+        case .optimism:
+            return .optimism
+        case .blast:
+            return .blast
+        case .cronosChain:
+            return .cronosChain
+        case .zksync:
+            return .zksync
+        case .mantle:
+            return .mantle
+        case .hyperliquid:
+            return .hyperliquid
+        case .sei:
+            return .sei
+        case .tron:
+            return .tron
+        default:
+            throw RpcEvmServiceError.rpcError(code: 500, message: "EVM service not found")
+        }
     }
-}
-
-class HyperliquidService: RpcEvmService, EvmTokenServiceProtocol {
-    static let rpcEndpoint = Endpoint.hyperliquidServiceRpcService
-    static let shared = HyperliquidService(rpcEndpoint)
     
-    override func getTokens(nativeToken: Coin) async -> [CoinMeta] {
-        return await super.getTokens(nativeToken: nativeToken)
+    // MARK: - Configuration
+    
+    var rpcEndpoint: String {
+        switch self {
+        case .ethereum:
+            return Endpoint.ethServiceRpcService
+        case .ethereumSepolia:
+            return Endpoint.ethSepoliaServiceRpcService
+        case .bscChain:
+            return Endpoint.bscServiceRpcService
+        case .avalanche:
+            return Endpoint.avalancheServiceRpcService
+        case .base:
+            return Endpoint.baseServiceRpcService
+        case .arbitrum:
+            return Endpoint.arbitrumOneServiceRpcService
+        case .polygon, .polygonV2:
+            return Endpoint.polygonServiceRpcService
+        case .optimism:
+            return Endpoint.optimismServiceRpcService
+        case .blast:
+            return Endpoint.blastServiceRpcService
+        case .cronosChain:
+            return Endpoint.cronosServiceRpcService
+        case .zksync:
+            return Endpoint.zksyncServiceRpcService
+        case .mantle:
+            return Endpoint.mantleServiceRpcService
+        case .hyperliquid:
+            return Endpoint.hyperliquidServiceRpcService
+        case .sei:
+            return Endpoint.seiServiceRpcService
+        case .tron:
+            return Endpoint.tronEvmServiceRpc
+        }
     }
-}
-
-class SeiService: RpcEvmService, EvmTokenServiceProtocol {
-    static let rpcEndpoint = Endpoint.seiServiceRpcService
-    static let shared = SeiService(rpcEndpoint)
     
-    override func getTokens(nativeToken: Coin) async -> [CoinMeta] {
-        return await super.getTokens(nativeToken: nativeToken)
+    var tokenProvider: EvmServiceConfig.TokenProvider {
+        switch self {
+        case .ethereumSepolia:
+            return .sepolia
+        default:
+            return .standard
+        }
+    }
+    
+    // MARK: - Service Implementation
+    
+    private var service: EvmServiceStruct {
+        get throws {
+            let config = EvmServiceConfig(
+                chain: chain,
+                rpcEndpoint: rpcEndpoint,
+                tokenProvider: tokenProvider
+            )
+            return try EvmServiceStruct(config: config)
+        }
+    }
+    
+    var chain: Chain {
+        switch self {
+        case .ethereum:
+            return .ethereum
+        case .ethereumSepolia:
+            return .ethereumSepolia
+        case .bscChain:
+            return .bscChain
+        case .avalanche:
+            return .avalanche
+        case .base:
+            return .base
+        case .arbitrum:
+            return .arbitrum
+        case .polygon:
+            return .polygon
+        case .polygonV2:
+            return .polygonV2
+        case .optimism:
+            return .optimism
+        case .blast:
+            return .blast
+        case .cronosChain:
+            return .cronosChain
+        case .zksync:
+            return .zksync
+        case .mantle:
+            return .mantle
+        case .hyperliquid:
+            return .hyperliquid
+        case .sei:
+            return .sei
+        case .tron:
+            return .tron
+        }
+    }
+    
+    // MARK: - Protocol Methods
+    
+    func getBalance(coin: Coin) async throws -> String {
+        return try await (try service).getBalance(coin: coin)
+    }
+    
+    func getGasInfo(fromAddress: String, mode: FeeMode) async throws -> (gasPrice: BigInt, priorityFee: BigInt, nonce: Int64) {
+        return try await (try service).getGasInfo(fromAddress: fromAddress, mode: mode)
+    }
+    
+    func fetchMaxPriorityFeesPerGas() async throws -> [FeeMode: BigInt] {
+        return try await (try service).fetchMaxPriorityFeesPerGas()
+    }
+    
+    func getFeeHistory() async throws -> [BigInt] {
+        return try await (try service).getFeeHistory()
+    }
+    
+    func getBaseFee() async throws -> BigInt {
+        return try await (try service).getBaseFee()
+    }
+    
+    func getGasInfoZk(fromAddress: String, toAddress: String, memo: String = "0xffffffff") async throws -> (gasLimit: BigInt, gasPerPubdataLimit: BigInt, maxFeePerGas: BigInt, maxPriorityFeePerGas: BigInt, nonce: Int64) {
+        return try await (try service).getGasInfoZk(fromAddress: fromAddress, toAddress: toAddress, memo: memo)
+    }
+    
+    func broadcastTransaction(hex: String) async throws -> String {
+        return try await (try service).broadcastTransaction(hex: hex)
+    }
+    
+    func estimateGasForEthTransaction(senderAddress: String, recipientAddress: String, value: BigInt, memo: String?) async throws -> BigInt {
+        return try await (try service).estimateGasForEthTransaction(senderAddress: senderAddress, recipientAddress: recipientAddress, value: value, memo: memo)
+    }
+    
+    func estimateGasForERC20Transfer(senderAddress: String, contractAddress: String, recipientAddress: String, value: BigInt) async throws -> BigInt {
+        return try await (try service).estimateGasForERC20Transfer(senderAddress: senderAddress, contractAddress: contractAddress, recipientAddress: recipientAddress, value: value)
+    }
+    
+    func estimateGasLimitForSwap(senderAddress: String, toAddress: String, value: BigInt, data: String) async throws -> BigInt {
+        return try await (try service).estimateGasLimitForSwap(senderAddress: senderAddress, toAddress: toAddress, value: value, data: data)
+    }
+    
+    func fetchERC20TokenBalance(contractAddress: String, walletAddress: String) async throws -> BigInt {
+        return try await (try service).fetchERC20TokenBalance(contractAddress: contractAddress, walletAddress: walletAddress)
+    }
+    
+    func fetchTRC20TokenBalance(contractAddress: String, walletAddress: String) async throws -> BigInt {
+        return try await (try service).fetchTRC20TokenBalance(contractAddress: contractAddress, walletAddress: walletAddress)
+    }
+    
+    func fetchAllowance(contractAddress: String, owner: String, spender: String) async throws -> BigInt {
+        return try await (try service).fetchAllowance(contractAddress: contractAddress, owner: owner, spender: spender)
+    }
+    
+    func getTokenInfo(contractAddress: String) async throws -> (name: String, symbol: String, decimals: Int) {
+        return try await (try service).getTokenInfo(contractAddress: contractAddress)
+    }
+    
+    func getTokens(nativeToken: Coin) async throws -> [CoinMeta] {
+        return await (try service).getTokens(nativeToken: nativeToken)
+    }
+    
+    func resolveENS(ensName: String) async throws -> String {
+        return try await (try service).resolveENS(ensName: ensName)
     }
 }

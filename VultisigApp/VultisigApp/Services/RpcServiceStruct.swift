@@ -1,31 +1,21 @@
+//
+//  RpcServiceStruct.swift
+//  VultisigApp
+//
+//  Stateless RPC service - no shared mutable state, so struct is sufficient
+//
+
 import Foundation
 import BigInt
 
-enum RpcServiceError: Error {
-    case rpcError(code: Int, message: String)
-    case invalidURL(String)
+struct RpcServiceStruct {
+    private let url: URL
     
-    var localizedDescription: String {
-        switch self {
-        case let .rpcError(code, message):
-            return "RPC Error \(code): \(message)"
-        case let .invalidURL(url):
-            return "Invalid RPC endpoint URL: \(url)"
+    init(_ rpcEndpoint: String) throws {
+        guard let url = URL(string: rpcEndpoint) else {
+            throw RpcServiceError.invalidURL(rpcEndpoint)
         }
-    }
-}
-
-class RpcService {
-    
-    private let session = URLSession.shared
-
-    internal let rpcEndpoint: String // Modificado para `internal` para permitir acesso pela subclass
-    
-    init(_ rpcEndpoint: String) {
-        self.rpcEndpoint = rpcEndpoint
-        guard URL(string: rpcEndpoint) != nil else {
-            fatalError("Invalid RPC endpoint URL")
-        }
+        self.url = url
     }
     
     func sendRPCRequest<T>(method: String, params: [Any], decode: (Any) throws -> T) async throws -> T {
@@ -36,24 +26,23 @@ class RpcService {
             "id": 1
         ]
         
-        guard let url = URL(string: rpcEndpoint) else {
-            throw RpcServiceError.rpcError(code: 404, message: "We didn't find the URL \(rpcEndpoint)")
-        }
-        
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONSerialization.data(withJSONObject: payload, options: [])
         
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
+            let (data, _) = try await URLSession.shared.data(for: request)
             
             guard let response = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-                let responsePreview = String(data: data.prefix(200), encoding: .utf8) ?? "Unable to decode as string"
-                throw RpcServiceError.rpcError(code: 500, message: "Error to decode the JSON response. Preview: \(responsePreview)")
+                throw RpcServiceError.rpcError(code: 500, message: "Error to decode the JSON response")
             }
             
-            if let error = response["error"] as? [String: Any], let message = error["message"] as? String {
+            if let error = response["error"] as? [String: Any] {
+                let code = error["code"] as? Int ?? -1
+                let message = error["message"] as? String ?? "Unknown RPC error"
+                
+                // Special handling for transaction broadcast errors
                 if message.lowercased().contains("known".lowercased())
                     || message.lowercased().contains("already known".lowercased())
                     || message.lowercased().contains("Transaction is temporarily banned".lowercased())
@@ -67,7 +56,8 @@ class RpcService {
                     return try decode("Transaction already broadcasted.")
                 }
                 
-                return try decode(message)
+                // For other errors, throw an exception instead of trying to decode the error message
+                throw RpcServiceError.rpcError(code: code, message: message)
                 
             } else if let result = response["result"] {
                 return try decode(result)
@@ -75,16 +65,12 @@ class RpcService {
                 throw RpcServiceError.rpcError(code: 500, message: "Unknown error")
             }
         } catch {
-            print(payload)
-            print(error.localizedDescription)
             throw error
         }
-        
     }
     
     func intRpcCall(method: String, params: [Any]) async throws -> BigInt {
         return try await sendRPCRequest(method: method, params: params) { result in
-            
             if let intValue = result as? Int64 {
                 return BigInt(intValue)
             }
@@ -98,17 +84,13 @@ class RpcService {
         }
     }
     
-    
     func strRpcCall(method: String, params: [Any]) async throws -> String {
         return try await sendRPCRequest(method: method, params: params) { result in
-            
-            print(result)
-            
             guard let resultString = result as? String else {
                 throw RpcServiceError.rpcError(code: 500, message: "Error to convert the RPC result to String")
             }
             return resultString
         }
-        
     }
 }
+
