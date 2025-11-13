@@ -37,6 +37,7 @@ enum PolkadotHelper {
         ) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("getPreSignedInputData fail to get DOT transaction information from RPC")
         }
+        
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .polkadot) else {
             throw HelperError.runtimeError("fail to get to address")
         }
@@ -54,16 +55,30 @@ enum PolkadotHelper {
                 $0.period = 64
             }
             
+            // After Asset Hub update, even native DOT transfers use assetTransfer
+            // with assetID 0 and feeAssetID 0 for native DOT
+            // When asset_id is 0, WalletCore encodes it as TransferAllowDeath (Balances.transfer)
+            // So we need Balances pallet call indices, not Assets pallet
+            // For Asset Hub, Balances pallet is typically module 10, method 0 (transfer_allow_death)
             $0.balanceCall.assetTransfer = PolkadotBalance.AssetTransfer.with {
-                // ZERO ASSET ID AND FEE ASSET ID ARE FOR DOT
+                // ZERO ASSET ID AND FEE ASSET ID ARE FOR DOT (native token)
                 $0.assetID = 0
                 $0.feeAssetID = 0
                 $0.toAddress = toAddress.description
                 $0.value = keysignPayload.toAmount.magnitude.serialize()
+                // Set call indices for Asset Hub Balances.transfer_allow_death
+                // Module 10 (Balances), Method 0 (transfer_allow_death)
+                $0.callIndices = PolkadotCallIndices.with {
+                    $0.custom = PolkadotCustomCallIndices.with {
+                        $0.moduleIndex = 10  // Balances pallet on Asset Hub
+                        $0.methodIndex = 0   // transfer_allow_death method
+                    }
+                }
             }
         }
-
-        return try input.serializedData()
+        
+        let serializedData = try input.serializedData()
+        return serializedData
     }
     
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
@@ -77,17 +92,24 @@ enum PolkadotHelper {
     }
     
     static func getZeroSignedTransaction(keysignPayload: KeysignPayload) throws -> String {
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        
+        let hashes = TransactionCompiler.preImageHashes(coinType: .polkadot, txInputData: inputData)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
+        if !preSigningOutput.errorMessage.isEmpty {
+            throw HelperError.runtimeError(preSigningOutput.errorMessage)
+        }
+        
         let dummyPrivateKey = PrivateKey()
         let dummyPublicKey = dummyPrivateKey.getPublicKeyEd25519()
-        
-        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        let publicKeyData = dummyPublicKey.data
+        print("[Polkadot] getZeroSignedTransaction: Using DUMMY public key for fee calculation: \(publicKeyData.hexString.prefix(16))...")
         
         let allSignatures = DataVector()
         let publicKeys = DataVector()
-        
-        let dummySignature = Data(repeating: 0, count: 64)
-        allSignatures.add(data: dummySignature)
-        publicKeys.add(data: dummyPublicKey.data)
+        let zeroSignature = Data(repeating: 0, count: 64)
+        allSignatures.add(data: zeroSignature)
+        publicKeys.add(data: publicKeyData)
         
         let compiledWithSignature = TransactionCompiler.compileWithSignatures(
             coinType: .polkadot,
