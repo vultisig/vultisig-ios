@@ -91,7 +91,8 @@ struct ToolbarButton<IconContent: View>: View {
                 Button(action: action) {
                     transformedIconView
                         .padding(12)
-                        .overlay(Circle().inset(by: 0.5).strokeBorder(.white.opacity(0.1), lineWidth: 1))
+                        .overlay(Circle()
+                            .stroke(LinearGradient(colors: [.white, .clear, .clear, .white], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1))
                         .background(Circle().fill(tintColor))
                 }
                 .glassEffect(.clear.interactive())
@@ -117,27 +118,24 @@ struct ToolbarButton<IconContent: View>: View {
                 .padding(12)
                 .background(
                     Circle()
-                        .fill(tintColor.opacity(isHovered ? 0.2 : 1))
-                        .overlay(
-                            type == .outline ?
-                            EllipticalGradient(
-                                stops: [
-                                    Gradient.Stop(color: Color(red: 0.16, green: 0.59, blue: 0.95), location: 0.00),
-                                    Gradient.Stop(color: Color(red: 0.24, green: 0.11, blue: 0.98).opacity(0), location: 1.00),
-                                ],
-                                center: UnitPoint(x: 0.5, y: 0.5)
-                            )
-                            .offset(y: 25)
-                            .opacity(0.2)
-                            : nil
-                        )
-                        .animation(.easeInOut(duration: 0.15), value: isHovered)
+                        .stroke(LinearGradient(colors: [.white, .clear, .clear, .white], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1)
                 )
-                .overlay(
+                .background(
                     Circle()
-                        .inset(by: 0.5)
-                        .stroke(.white.opacity(0.2), lineWidth: 1)
+                        .fill(
+                            RadialGradient(
+                                colors: [.white, .clear],
+                                center: .center,
+                                startRadius: 0,
+                                endRadius: 20
+                            )
+                            .blendMode(.screen)
+                        )
+                        .opacity(0.1)
+                        .offset(.init(width: 10, height: 10))
+                        .blur(radius: 5)
                 )
+  
         }
         .buttonStyle(.plain)
         .clipShape(Circle())
