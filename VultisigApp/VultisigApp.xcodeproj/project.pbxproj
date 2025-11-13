@@ -340,6 +340,8 @@
 		13C02C5D2EA667AC00C12071 /* DefiTHORChainStakedPositionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C02C5C2EA6679C00C12071 /* DefiTHORChainStakedPositionView.swift */; };
 		13C02C5F2EA667DB00C12071 /* StakePosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C02C5E2EA667D600C12071 /* StakePosition.swift */; };
 		13C02C612EA6699C00C12071 /* AmountFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C02C602EA6699900C12071 /* AmountFormatter.swift */; };
+		13C0F79A2EC60C3A00C2A3B8 /* DefiBalanceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C0F7992EC60C3700C2A3B8 /* DefiBalanceService.swift */; };
+		13C0F79F2EC60FE500C2A3B8 /* DefiPositionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C0F79E2EC60FDA00C2A3B8 /* DefiPositionsService.swift */; };
 		13C232692E68A95900DB42D0 /* AddressQRCodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C232682E68A95100DB42D0 /* AddressQRCodeScannerView.swift */; };
 		13C320032E61F8DB00255138 /* ReferralVaultSelectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C320022E61F8D500255138 /* ReferralVaultSelectionScreen.swift */; };
 		13C7C1DC2E86DD8F00A529FD /* TokenSelectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C7C1DB2E86DD8900A529FD /* TokenSelectionScreen.swift */; };
@@ -1521,6 +1523,8 @@
 		13C02C5C2EA6679C00C12071 /* DefiTHORChainStakedPositionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainStakedPositionView.swift; sourceTree = "<group>"; };
 		13C02C5E2EA667D600C12071 /* StakePosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StakePosition.swift; sourceTree = "<group>"; };
 		13C02C602EA6699900C12071 /* AmountFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountFormatter.swift; sourceTree = "<group>"; };
+		13C0F7992EC60C3700C2A3B8 /* DefiBalanceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiBalanceService.swift; sourceTree = "<group>"; };
+		13C0F79E2EC60FDA00C2A3B8 /* DefiPositionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiPositionsService.swift; sourceTree = "<group>"; };
 		13C232682E68A95100DB42D0 /* AddressQRCodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressQRCodeScannerView.swift; sourceTree = "<group>"; };
 		13C320022E61F8D500255138 /* ReferralVaultSelectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralVaultSelectionScreen.swift; sourceTree = "<group>"; };
 		13C7C1DB2E86DD8900A529FD /* TokenSelectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionScreen.swift; sourceTree = "<group>"; };
@@ -3217,6 +3221,8 @@
 		1385E63B2EC271E500CE634F /* Service */ = {
 			isa = PBXGroup;
 			children = (
+				13C0F79E2EC60FDA00C2A3B8 /* DefiPositionsService.swift */,
+				13C0F7992EC60C3700C2A3B8 /* DefiBalanceService.swift */,
 				1385E63C2EC271F100CE634F /* DefiPositionsStorageService.swift */,
 			);
 			path = Service;
@@ -6328,6 +6334,7 @@
 				A623A09F2BF09FEE00AA2F8D /* NewWalletNameView.swift in Sources */,
 				13A9641C2EBBEB020025FB7A /* RUJIWithdrawRewardsTransactionBuilder.swift in Sources */,
 				A6C0D5652BB3BD0F00156689 /* UTXOTransactionCell.swift in Sources */,
+				13C0F79A2EC60C3A00C2A3B8 /* DefiBalanceService.swift in Sources */,
 				A65649F82B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift in Sources */,
 				13AC28082E61E294001CB9AA /* ScreenEdgeInsets.swift in Sources */,
 				137B2C892E3A84460074F648 /* Screen.swift in Sources */,
@@ -6519,6 +6526,7 @@
 				A6966D312BA4048800903CA4 /* SwapCryptoDetailsView.swift in Sources */,
 				13A657AC2EA283FA00323E4C /* THORChainPositionType.swift in Sources */,
 				139450602EC37BAE006AEE94 /* RemoveLPTransactionBuilder.swift in Sources */,
+				13C0F79F2EC60FE500C2A3B8 /* DefiPositionsService.swift in Sources */,
 				A5F97C8E2BBF0BCF000C30DF /* BalanceService.swift in Sources */,
 				137B2C872E3A84130074F648 /* OnChainSecurityScreen.swift in Sources */,
 				DEEDAEE12B8AF7EF005170E8 /* evm.swift in Sources */,

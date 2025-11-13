@@ -881,6 +881,90 @@ class Endpoint {
         }
     }
     
+    static func getExplorerByCoinURL(coin: Coin) -> String? {
+        // For native tokens, show the address page
+        guard !coin.isNativeToken else {
+            return getExplorerByAddressURL(chain: coin.chain, address: coin.address)
+        }
+
+        // For tokens, show the token/contract page
+        let contractAddress = coin.contractAddress
+
+        switch coin.chain {
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
+            // UTXO chains don't have tokens, return address
+            return getExplorerByAddressURL(chain: coin.chain, address: coin.address)
+        case .thorChain:
+            // For THORChain tokens, show the address with the token
+            return "https://runescan.io/address/\(coin.address)"
+        case .thorChainStagenet:
+            return "https://runescan.io/address/\(coin.address)?network=stagenet"
+        case .solana:
+            return "https://solscan.io/token/\(contractAddress)"
+        case .ethereum:
+            return "https://etherscan.io/token/\(contractAddress)"
+        case .ethereumSepolia:
+            return "https://sepolia.etherscan.io/token/\(contractAddress)"
+        case .gaiaChain:
+            // Cosmos tokens use IBC denoms, show address page
+            return "https://www.mintscan.io/cosmos/address/\(coin.address)"
+        case .dydx:
+            return "https://www.mintscan.io/dydx/address/\(coin.address)"
+        case .kujira:
+            return "https://finder.kujira.network/kaiyo-1/address/\(coin.address)"
+        case .avalanche:
+            return "https://snowtrace.io/token/\(contractAddress)"
+        case .bscChain:
+            return "https://bscscan.com/token/\(contractAddress)"
+        case .mayaChain:
+            return "https://www.mayascan.org/address/\(coin.address)"
+        case .arbitrum:
+            return "https://arbiscan.io/token/\(contractAddress)"
+        case .base:
+            return "https://basescan.org/token/\(contractAddress)"
+        case .optimism:
+            return "https://optimistic.etherscan.io/token/\(contractAddress)"
+        case .polygon, .polygonV2:
+            return "https://polygonscan.com/token/\(contractAddress)"
+        case .blast:
+            return "https://blastscan.io/token/\(contractAddress)"
+        case .cronosChain:
+            return "https://cronoscan.com/token/\(contractAddress)"
+        case .sui:
+            return "https://suiscan.xyz/mainnet/coin/\(contractAddress)"
+        case .polkadot:
+            return "https://assethub-polkadot.subscan.io/account/\(coin.address)"
+        case .zksync:
+            return "https://explorer.zksync.io/token/\(contractAddress)"
+        case .ton:
+            return "https://tonviewer.com/\(contractAddress)"
+        case .osmosis:
+            return "https://www.mintscan.io/osmosis/address/\(coin.address)"
+        case .terra:
+            return "https://www.mintscan.io/terra/address/\(coin.address)"
+        case .terraClassic:
+            return "https://finder.terra.money/classic/address/\(coin.address)"
+        case .noble:
+            return "https://www.mintscan.io/noble/address/\(coin.address)"
+        case .ripple:
+            // XRP doesn't have traditional tokens in the same way
+            return "https://xrpscan.com/account/\(coin.address)"
+        case .akash:
+            return "https://www.mintscan.io/akash/address/\(coin.address)"
+        case .tron:
+            return "https://tronscan.org/#/token20/\(contractAddress)"
+        case .cardano:
+            // Cardano native assets
+            return "https://cardanoscan.io/token/\(contractAddress)"
+        case .mantle:
+            return "https://mantlescan.xyz/token/\(contractAddress)"
+        case .hyperliquid:
+            return "https://liquidscan.io/token/\(contractAddress)"
+        case .sei:
+            return "https://seiscan.io/token/\(contractAddress)"
+        }
+    }
+
     static func getExplorerByAddressURLByGroup(chain: Chain?, address: String) -> String? {
         switch chain {
         case .thorChain:

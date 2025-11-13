@@ -13,11 +13,17 @@ struct DefiChainCellView: View {
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
+    private let service = DefiBalanceService()
+    
+    var balanceFiat: String {
+        service.totalBalanceInFiatString(for: group.chain, vault: vault)
+    }
+    
     var body: some View {
         GroupedChainCellView(
             group: group,
             vault: vault,
-            fiatBalance: { group.defiBalanceInFiatString },
+            fiatBalance: { balanceFiat },
             cryptoBalance: { group.nativeCoin.defiBalanceStringWithTicker }
         )
         .buttonStyle(.plain)

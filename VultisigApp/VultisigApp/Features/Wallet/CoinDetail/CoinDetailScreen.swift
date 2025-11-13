@@ -17,8 +17,10 @@ struct CoinDetailScreen: View {
 
     @State var showReceiveSheet: Bool = false
     @State var addressToCopy: Coin?
-    
+
     @StateObject var viewModel: CoinDetailViewModel
+
+    @Environment(\.openURL) var openURL
     
     init(
         coin: Coin,
@@ -38,6 +40,23 @@ struct CoinDetailScreen: View {
     }
     
     var body: some View {
+        container
+    }
+    
+    var container: some View {
+#if os(iOS)
+        NavigationStack {
+            content
+        }
+#else
+        content
+            .presentationSizingFitted()
+            .applySheetSize()
+            .transaction { $0.disablesAnimations = true }
+#endif
+    }
+    
+    var content: some View {
         GeometryReader { proxy in
             ScrollView {
                 VStack(spacing: 32) {
@@ -52,7 +71,6 @@ struct CoinDetailScreen: View {
                         price: Decimal(coin.price).formatToFiat()
                     )
                 }
-                .padding(.top, 45)
                 .padding(.horizontal, 24)
             }
             .background(ModalBackgroundView(width: proxy.size.width))
@@ -81,16 +99,15 @@ struct CoinDetailScreen: View {
             }
         }
         .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
-            CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "x") {
-                    isPresented.toggle()
-                }
-            }
             #if os(macOS)
             CustomToolbarItem(placement: .trailing) {
                 RefreshToolbarButton(onRefresh: onRefreshButton)
             }
             #endif
+
+            CustomToolbarItem(placement: .trailing) {
+                ToolbarButton(image: "square-3d", action: onExplorer)
+            }
         }
     }
 }
@@ -101,15 +118,24 @@ private extension CoinDetailScreen {
             await refresh()
         }
     }
-    
+
     func onRefreshButton() {
         Task {
             await refresh()
         }
     }
-    
+
     func refresh() async {
         await BalanceService.shared.updateBalance(for: coin)
+    }
+
+    func onExplorer() {
+        if
+            let url = Endpoint.getExplorerByCoinURL(coin: coin),
+            let linkURL = URL(string: url)
+        {
+            openURL(linkURL)
+        }
     }
     
     func onAction(_ action: CoinAction) {
