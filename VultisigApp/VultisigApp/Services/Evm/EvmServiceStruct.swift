@@ -281,7 +281,7 @@ struct EvmServiceStruct {
         return try await rpcService.intRpcCall(method: "eth_getBalance", params: [address, "latest"])
     }
     
-    func fetchMaxPriorityFeePerGas() async throws -> BigInt {
+    private func fetchMaxPriorityFeePerGas() async throws -> BigInt {
         return try await rpcService.intRpcCall(method: "eth_maxPriorityFeePerGas", params: []) //WEI
     }
     
