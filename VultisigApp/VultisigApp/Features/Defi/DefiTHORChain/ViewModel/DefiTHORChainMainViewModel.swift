@@ -64,14 +64,9 @@ final class DefiTHORChainMainViewModel: ObservableObject {
     }
     
     func setupThorchainPositions() async {
-        let bond = [TokensStore.rune]
-        let staking = [
-            TokensStore.tcy,
-            TokensStore.ruji,
-            TokensStore.stcy,
-            TokensStore.yrune,
-            TokensStore.ytcy
-        ]
+        let positionsService = DefiPositionsService()
+        let bond = positionsService.bondCoins(for: .thorChain)
+        let staking = positionsService.stakeCoins(for: .thorChain)
         let pools = (try? await thorchainService.getPools()) ?? []
         let lps = pools.compactMap { THORChainAssetFactory.createCoin(from: $0.asset) }
         
