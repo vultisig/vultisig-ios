@@ -71,7 +71,7 @@ struct DefiTHORChainLPPositionView: View {
                 .foregroundStyle(Theme.colors.textExtraLight)
             Spacer()
             
-            Text(position.apr.formatted(.percent))
+            Text(position.apr.formatted(.percent.precision(.fractionLength(2))))
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.alertSuccess)
         }

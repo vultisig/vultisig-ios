@@ -113,7 +113,7 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     var defiBalanceString: String {
-        return stakedBalanceDecimal.formatForDisplay()
+        return defiBalanceDecimal.formatForDisplay()
     }
     
     var defiBalanceStringWithTicker: String {
@@ -295,8 +295,7 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     var defiBalanceInFiatDecimal: Decimal {
-        let combined = stakedBalanceDecimal
-        let fiat = RateProvider.shared.fiatBalance(value: combined, coin: self)
+        let fiat = RateProvider.shared.fiatBalance(value: defiBalanceDecimal, coin: self)
         return fiat
     }
     
@@ -373,5 +372,27 @@ private extension Coin {
         case isNativeToken
         case hexPublicKey
         case address
+    }
+}
+
+// MARK: - Defi
+
+extension Coin {
+    var defiBalanceDecimal: Decimal {
+        switch chain {
+        case .thorChain:
+            return thorchainDefiBalanceDecimal
+        default:
+            return stakedBalanceDecimal
+        }
+    }
+    
+    var thorchainDefiBalanceDecimal: Decimal {
+        switch ticker.uppercased() {
+        case "STCY", "YRUNE", "YTCY":
+            return balanceDecimal
+        default:
+            return stakedBalanceDecimal
+        }
     }
 }
