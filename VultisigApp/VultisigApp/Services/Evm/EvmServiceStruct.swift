@@ -473,6 +473,47 @@ struct EvmServiceStruct {
     
     private static let ENS_REGISTRY_ADDRESS = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e"
     
+    // Helper method to parse hex string to Data
+    private func parseHexToData(_ hex: String, expectedLength: Int) throws -> Data {
+        let cleanedHex = hex.stripHexPrefix()
+        let expectedHexLength = expectedLength * 2
+        
+        guard cleanedHex.count == expectedHexLength else {
+            throw RpcEvmServiceError.rpcError(
+                code: -1,
+                message: "Invalid hex length: expected \(expectedHexLength) characters, got \(cleanedHex.count)"
+            )
+        }
+        
+        var data = Data()
+        var index = cleanedHex.startIndex
+        
+        while index < cleanedHex.endIndex {
+            let nextIndex = cleanedHex.index(index, offsetBy: 2)
+            guard nextIndex <= cleanedHex.endIndex else { break }
+            
+            let byteString = String(cleanedHex[index..<nextIndex])
+            guard let byte = UInt8(byteString, radix: 16) else {
+                throw RpcEvmServiceError.rpcError(
+                    code: -1,
+                    message: "Invalid hex character in byte string: \(byteString)"
+                )
+            }
+            
+            data.append(byte)
+            index = nextIndex
+        }
+        
+        guard data.count == expectedLength else {
+            throw RpcEvmServiceError.rpcError(
+                code: -1,
+                message: "Invalid data length: expected \(expectedLength) bytes, got \(data.count)"
+            )
+        }
+        
+        return data
+    }
+    
     // Helper method to fetch resolver address for a node
     private func fetchResolver(node: String) async throws -> String {
         let params: [Any] = [
@@ -482,28 +523,8 @@ struct EvmServiceStruct {
         
         let result = try await rpcService.strRpcCall(method: "eth_call", params: params)
         
-        // Convert the result to a Data object
-        let cleanedHex = result.stripHexPrefix()
-        guard cleanedHex.count == 64 else {
-            throw RpcEvmServiceError.rpcError(code: -1, message: "Invalid resolver address data")
-        }
-        
-        var data = Data()
-        var index = cleanedHex.startIndex
-        while index < cleanedHex.endIndex {
-            let nextIndex = cleanedHex.index(index, offsetBy: 2)
-            guard nextIndex <= cleanedHex.endIndex else { break }
-            let byteString = String(cleanedHex[index..<nextIndex])
-            guard let byte = UInt8(byteString, radix: 16) else {
-                throw RpcEvmServiceError.rpcError(code: -1, message: "Invalid resolver address data")
-            }
-            data.append(byte)
-            index = nextIndex
-        }
-        
-        guard data.count == 32 else {
-            throw RpcEvmServiceError.rpcError(code: -1, message: "Invalid resolver address data")
-        }
+        // Parse hex to Data (32 bytes)
+        let data = try parseHexToData(result, expectedLength: 32)
         
         // Extract the last 20 bytes, which represent the resolver address
         let resolverAddressData = data.suffix(20)
@@ -521,28 +542,8 @@ struct EvmServiceStruct {
         
         let result = try await rpcService.strRpcCall(method: "eth_call", params: params)
         
-        // Convert the result to a Data object
-        let cleanedHex = result.stripHexPrefix()
-        guard cleanedHex.count == 64 else {
-            throw RpcEvmServiceError.rpcError(code: -1, message: "Invalid address data")
-        }
-        
-        var data = Data()
-        var index = cleanedHex.startIndex
-        while index < cleanedHex.endIndex {
-            let nextIndex = cleanedHex.index(index, offsetBy: 2)
-            guard nextIndex <= cleanedHex.endIndex else { break }
-            let byteString = String(cleanedHex[index..<nextIndex])
-            guard let byte = UInt8(byteString, radix: 16) else {
-                throw RpcEvmServiceError.rpcError(code: -1, message: "Invalid address data")
-            }
-            data.append(byte)
-            index = nextIndex
-        }
-        
-        guard data.count == 32 else {
-            throw RpcEvmServiceError.rpcError(code: -1, message: "Invalid address data")
-        }
+        // Parse hex to Data (32 bytes)
+        let data = try parseHexToData(result, expectedLength: 32)
         
         // Extract the last 20 bytes, which represent the Ethereum address
         let addressData = data.suffix(20)
