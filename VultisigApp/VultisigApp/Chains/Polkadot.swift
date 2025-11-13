@@ -54,11 +54,10 @@ enum PolkadotHelper {
                 $0.period = 64
             }
             
-            // 🔁 Novo caminho: usar AssetTransfer (Assets pallet / Asset Hub)
             $0.balanceCall.assetTransfer = PolkadotBalance.AssetTransfer.with {
-                // DOT no Asset Hub normalmente é o asset 0
-                $0.assetID = 0          // ou assetId, se o gerado vier assim
-                $0.feeAssetID = 0       // pagar taxa em DOT (mesmo asset)
+                // ZERO ASSET ID AND FEE ASSET ID ARE FOR DOT
+                $0.assetID = 0
+                $0.feeAssetID = 0
                 $0.toAddress = toAddress.description
                 $0.value = keysignPayload.toAmount.magnitude.serialize()
             }
