@@ -90,8 +90,6 @@ struct RpcServiceStruct {
     
     func strRpcCall(method: String, params: [Any]) async throws -> String {
         return try await sendRPCRequest(method: method, params: params) { result in
-            print(result)
-            
             guard let resultString = result as? String else {
                 throw RpcServiceError.rpcError(code: 500, message: "Error to convert the RPC result to String")
             }
