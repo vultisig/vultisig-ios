@@ -155,7 +155,7 @@ struct CoinService {
             switch nativeToken.chain.chainType {
             case .EVM :
                 let service = try EvmService.getService(forChain: nativeToken.chain)
-                tokens = await service.getTokens(nativeToken: nativeToken)
+                tokens = try await service.getTokens(nativeToken: nativeToken)
             case .Solana:
                 tokens = try await SolanaService.shared.fetchTokens(for: nativeToken.address)
                 // Filter out spam tokens by checking for valid price provider ID

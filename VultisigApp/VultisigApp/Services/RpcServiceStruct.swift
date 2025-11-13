@@ -11,11 +11,11 @@ import BigInt
 struct RpcServiceStruct {
     private let rpcEndpoint: String
     
-    init(_ rpcEndpoint: String) {
-        self.rpcEndpoint = rpcEndpoint
+    init(_ rpcEndpoint: String) throws {
         guard URL(string: rpcEndpoint) != nil else {
-            fatalError("Invalid RPC endpoint URL")
+            throw RpcServiceError.invalidURL(rpcEndpoint)
         }
+        self.rpcEndpoint = rpcEndpoint
     }
     
     func sendRPCRequest<T>(method: String, params: [Any], decode: (Any) throws -> T) async throws -> T {

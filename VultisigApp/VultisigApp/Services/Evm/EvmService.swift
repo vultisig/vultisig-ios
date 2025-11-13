@@ -126,12 +126,14 @@ enum EvmService {
     // MARK: - Service Implementation
     
     private var service: EvmServiceStruct {
-        let config = EvmServiceConfig(
-            chain: chain,
-            rpcEndpoint: rpcEndpoint,
-            tokenProvider: tokenProvider
-        )
-        return EvmServiceStruct(config: config)
+        get throws {
+            let config = EvmServiceConfig(
+                chain: chain,
+                rpcEndpoint: rpcEndpoint,
+                tokenProvider: tokenProvider
+            )
+            return try EvmServiceStruct(config: config)
+        }
     }
     
     var chain: Chain {
@@ -174,66 +176,66 @@ enum EvmService {
     // MARK: - Protocol Methods
     
     func getBalance(coin: Coin) async throws -> String {
-        return try await service.getBalance(coin: coin)
+        return try await (try service).getBalance(coin: coin)
     }
     
     func getGasInfo(fromAddress: String, mode: FeeMode) async throws -> (gasPrice: BigInt, priorityFee: BigInt, nonce: Int64) {
-        return try await service.getGasInfo(fromAddress: fromAddress, mode: mode)
+        return try await (try service).getGasInfo(fromAddress: fromAddress, mode: mode)
     }
     
     func fetchMaxPriorityFeesPerGas() async throws -> [FeeMode: BigInt] {
-        return try await service.fetchMaxPriorityFeesPerGas()
+        return try await (try service).fetchMaxPriorityFeesPerGas()
     }
     
     func getFeeHistory() async throws -> [BigInt] {
-        return try await service.getFeeHistory()
+        return try await (try service).getFeeHistory()
     }
     
     func getBaseFee() async throws -> BigInt {
-        return try await service.getBaseFee()
+        return try await (try service).getBaseFee()
     }
     
     func getGasInfoZk(fromAddress: String, toAddress: String, memo: String = "0xffffffff") async throws -> (gasLimit: BigInt, gasPerPubdataLimit: BigInt, maxFeePerGas: BigInt, maxPriorityFeePerGas: BigInt, nonce: Int64) {
-        return try await service.getGasInfoZk(fromAddress: fromAddress, toAddress: toAddress, memo: memo)
+        return try await (try service).getGasInfoZk(fromAddress: fromAddress, toAddress: toAddress, memo: memo)
     }
     
     func broadcastTransaction(hex: String) async throws -> String {
-        return try await service.broadcastTransaction(hex: hex)
+        return try await (try service).broadcastTransaction(hex: hex)
     }
     
     func estimateGasForEthTransaction(senderAddress: String, recipientAddress: String, value: BigInt, memo: String?) async throws -> BigInt {
-        return try await service.estimateGasForEthTransaction(senderAddress: senderAddress, recipientAddress: recipientAddress, value: value, memo: memo)
+        return try await (try service).estimateGasForEthTransaction(senderAddress: senderAddress, recipientAddress: recipientAddress, value: value, memo: memo)
     }
     
     func estimateGasForERC20Transfer(senderAddress: String, contractAddress: String, recipientAddress: String, value: BigInt) async throws -> BigInt {
-        return try await service.estimateGasForERC20Transfer(senderAddress: senderAddress, contractAddress: contractAddress, recipientAddress: recipientAddress, value: value)
+        return try await (try service).estimateGasForERC20Transfer(senderAddress: senderAddress, contractAddress: contractAddress, recipientAddress: recipientAddress, value: value)
     }
     
     func estimateGasLimitForSwap(senderAddress: String, toAddress: String, value: BigInt, data: String) async throws -> BigInt {
-        return try await service.estimateGasLimitForSwap(senderAddress: senderAddress, toAddress: toAddress, value: value, data: data)
+        return try await (try service).estimateGasLimitForSwap(senderAddress: senderAddress, toAddress: toAddress, value: value, data: data)
     }
     
     func fetchERC20TokenBalance(contractAddress: String, walletAddress: String) async throws -> BigInt {
-        return try await service.fetchERC20TokenBalance(contractAddress: contractAddress, walletAddress: walletAddress)
+        return try await (try service).fetchERC20TokenBalance(contractAddress: contractAddress, walletAddress: walletAddress)
     }
     
     func fetchTRC20TokenBalance(contractAddress: String, walletAddress: String) async throws -> BigInt {
-        return try await service.fetchTRC20TokenBalance(contractAddress: contractAddress, walletAddress: walletAddress)
+        return try await (try service).fetchTRC20TokenBalance(contractAddress: contractAddress, walletAddress: walletAddress)
     }
     
     func fetchAllowance(contractAddress: String, owner: String, spender: String) async throws -> BigInt {
-        return try await service.fetchAllowance(contractAddress: contractAddress, owner: owner, spender: spender)
+        return try await (try service).fetchAllowance(contractAddress: contractAddress, owner: owner, spender: spender)
     }
     
     func getTokenInfo(contractAddress: String) async throws -> (name: String, symbol: String, decimals: Int) {
-        return try await service.getTokenInfo(contractAddress: contractAddress)
+        return try await (try service).getTokenInfo(contractAddress: contractAddress)
     }
     
-    func getTokens(nativeToken: Coin) async -> [CoinMeta] {
-        return await service.getTokens(nativeToken: nativeToken)
+    func getTokens(nativeToken: Coin) async throws -> [CoinMeta] {
+        return await (try service).getTokens(nativeToken: nativeToken)
     }
     
     func resolveENS(ensName: String) async throws -> String {
-        return try await service.resolveENS(ensName: ensName)
+        return try await (try service).resolveENS(ensName: ensName)
     }
 }

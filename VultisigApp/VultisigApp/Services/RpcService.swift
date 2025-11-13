@@ -3,11 +3,14 @@ import BigInt
 
 enum RpcServiceError: Error {
     case rpcError(code: Int, message: String)
+    case invalidURL(String)
     
     var localizedDescription: String {
         switch self {
         case let .rpcError(code, message):
             return "RPC Error \(code): \(message)"
+        case let .invalidURL(url):
+            return "Invalid RPC endpoint URL: \(url)"
         }
     }
 }

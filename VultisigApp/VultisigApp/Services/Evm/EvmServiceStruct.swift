@@ -12,9 +12,9 @@ struct EvmServiceStruct {
     let config: EvmServiceConfig
     private let rpcService: RpcServiceStruct
     
-    init(config: EvmServiceConfig) {
+    init(config: EvmServiceConfig) throws {
         self.config = config
-        self.rpcService = RpcServiceStruct(config.rpcEndpoint)
+        self.rpcService = try RpcServiceStruct(config.rpcEndpoint)
     }
     
     // MARK: - Balance Operations
