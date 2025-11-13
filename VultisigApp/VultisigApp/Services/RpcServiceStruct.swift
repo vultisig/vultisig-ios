@@ -1,5 +1,5 @@
 //
-//  RpcServiceActor.swift
+//  RpcServiceStruct.swift
 //  VultisigApp
 //
 //  Stateless RPC service - no shared mutable state, so struct is sufficient
@@ -9,13 +9,13 @@ import Foundation
 import BigInt
 
 struct RpcServiceStruct {
-    private let rpcEndpoint: String
+    private let url: URL
     
     init(_ rpcEndpoint: String) throws {
-        guard URL(string: rpcEndpoint) != nil else {
+        guard let url = URL(string: rpcEndpoint) else {
             throw RpcServiceError.invalidURL(rpcEndpoint)
         }
-        self.rpcEndpoint = rpcEndpoint
+        self.url = url
     }
     
     func sendRPCRequest<T>(method: String, params: [Any], decode: (Any) throws -> T) async throws -> T {
@@ -25,10 +25,6 @@ struct RpcServiceStruct {
             "params": params,
             "id": 1
         ]
-        
-        guard let url = URL(string: rpcEndpoint) else {
-            throw RpcServiceError.rpcError(code: 404, message: "We didn't find the URL \(rpcEndpoint)")
-        }
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
