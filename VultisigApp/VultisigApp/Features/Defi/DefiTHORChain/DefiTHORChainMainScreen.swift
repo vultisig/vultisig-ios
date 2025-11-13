@@ -31,7 +31,7 @@ struct DefiTHORChainMainScreen: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 16) {
-                DefiTHORChainBalanceView(groupedChain: group)
+                DefiTHORChainBalanceView(vault: vault, groupedChain: group)
                 positionsSegmentedControlView
                 selectedPositionView
             }
@@ -161,6 +161,15 @@ struct DefiTHORChainMainScreen: View {
             coin = TokensStore.rune
         }
         return coin
+    }
+    
+    func stakeCoin(for coin: CoinMeta) -> CoinMeta {
+        switch coin {
+        case TokensStore.stcy:
+            return TokensStore.tcy
+        default:
+            return coin
+        }
     }
 }
 
