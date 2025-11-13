@@ -8,7 +8,7 @@ import Foundation
 import Combine
 import VultisigCommonData
 
-struct YVaultConstants {
+enum YVaultConstants {
     private static let yRuneContract = "thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt"
     private static let yTcyContract = "thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px"
     

@@ -12,6 +12,7 @@ struct DefiTHORChainSelectPositionsScreen: View {
     @Binding var isPresented: Bool
     
     @State var selection: [[CoinMeta]] = []
+    @State var isLoading: Bool = false
     
     var body: some View {
         ZStack {
@@ -26,6 +27,7 @@ struct DefiTHORChainSelectPositionsScreen: View {
                 emptyStateBuilder: { EmptyView() }
             )
             .showIf(!selection.isEmpty)
+            .withLoading(isLoading: $isLoading)
         }
         .onAppear {
             setupSelection()
@@ -74,8 +76,11 @@ struct DefiTHORChainSelectPositionsScreen: View {
     
     func onSave() {
         Task {
+            isLoading = true
             updateVaultDefiPositions()
-            await MainActor.run { isPresented = false }
+            await CoinService.saveAssets(for: viewModel.vault, selection: Set(selection.flatMap { $0 }))
+            isLoading = false
+            isPresented = false
         }
     }
     

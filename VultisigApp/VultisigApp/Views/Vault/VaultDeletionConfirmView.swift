@@ -45,7 +45,7 @@ struct VaultDeletionConfirmView: View {
             CreateVaultView(selectedVault: nil, showBackButton: false)
         }
         .navigationDestination(isPresented: $navigateBackToHome) {
-            HomeScreen(initialVault: nextSelectedVault, showingVaultSelector: true)
+            HomeScreen(initialVault: nextSelectedVault, showingVaultSelector: false)
         }
     }
     
@@ -88,9 +88,6 @@ struct VaultDeletionConfirmView: View {
     }
     
     func delete() {
-        homeViewModel.selectedVault = nil
-        ApplicationState.shared.currentVault = nil
-        
         do {
             // fetch the vault before deleting it , so we can make sure we have all the relationships loaded
             let publicKeyECDSA = vault.pubKeyECDSA
@@ -112,7 +109,7 @@ struct VaultDeletionConfirmView: View {
             print("Error: \(error)")
         }
         
-        if nextSelectedVault != nil {
+        if let nextSelectedVault {
             navigateBackToHome = true
         } else {
             navigateToCreateVault = true

@@ -36,6 +36,9 @@ public final class HTTPClient: HTTPClientProtocol {
     
     /// Performs a network request and returns raw data
     public func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
+        // Check for cancellation before starting
+        try Task.checkCancellation()
+        
         let urlRequest = try buildURLRequest(from: target)
         
         // Log the request
@@ -65,8 +68,21 @@ public final class HTTPClient: HTTPClientProtocol {
         } catch {
             let duration = CFAbsoluteTimeGetCurrent() - startTime
             let httpError: HTTPError
-            if let urlError = error as? URLError, urlError.code == .timedOut {
-                httpError = HTTPError.timeout
+            if let urlError = error as? URLError {
+                switch urlError.code {
+                case .timedOut:
+                    httpError = HTTPError.timeout
+                case .cancelled:
+                    // Re-throw the cancellation error directly so it can be handled upstream
+                    logger.warning("⚠️ Request cancelled - \(Int(duration * 1000))ms")
+                    throw CancellationError()
+                default:
+                    httpError = HTTPError.networkError(error)
+                }
+            } else if error is CancellationError {
+                // Handle Swift Concurrency cancellation
+                logger.warning("⚠️ Request cancelled - \(Int(duration * 1000))ms")
+                throw error
             } else {
                 httpError = HTTPError.networkError(error)
             }

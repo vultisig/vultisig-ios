@@ -8,6 +8,7 @@
 import Foundation
 import BigInt
 import VultisigCommonData
+import WalletCore
 
 class PolkadotService: RpcService {
     static let rpcEndpoint = Endpoint.polkadotServiceRpc
@@ -105,7 +106,8 @@ class PolkadotService: RpcService {
     
     func broadcastTransaction(hex: String) async throws -> String {
         let hexWithPrefix = hex.hasPrefix("0x") ? hex : "0x\(hex)"
-        return try await strRpcCall(method: "author_submitExtrinsic", params: [hexWithPrefix])
+        let result = try await strRpcCall(method: "author_submitExtrinsic", params: [hexWithPrefix])
+        return result
     }
     
     func getBalance(coin: Coin) async throws -> String {
@@ -126,16 +128,28 @@ class PolkadotService: RpcService {
         let hexWithPrefix = serializedTransaction.hasPrefix("0x") ? serializedTransaction : "0x\(serializedTransaction)"
         
         return try await sendRPCRequest(method: "payment_queryInfo", params: [hexWithPrefix]) { result in
+            // Handle error message string (from sendRPCRequest error handling)
+            if let errorMessage = result as? String {
+                throw RpcServiceError.rpcError(code: 500, message: "RPC error: \(errorMessage)")
+            }
+            
             guard let resultDict = result as? [String: Any] else {
-                throw RpcServiceError.rpcError(code: 500, message: "Error to convert the RPC result to Dictionary")
+                throw RpcServiceError.rpcError(code: 500, message: "Error to convert the RPC result to Dictionary. Got type: \(type(of: result))")
+            }
+            
+            // Check for error in result
+            if let error = resultDict["error"] as? [String: Any] {
+                let errorMessage = error["message"] as? String ?? "Unknown error"
+                let errorCode = error["code"] as? Int ?? -1
+                throw RpcServiceError.rpcError(code: errorCode, message: errorMessage)
             }
             
             guard let partialFeeString = resultDict["partialFee"] as? String else {
-                throw RpcServiceError.rpcError(code: 404, message: "partialFee not found in the response")
+                throw RpcServiceError.rpcError(code: 404, message: "partialFee not found in the response. Available keys: \(resultDict.keys)")
             }
             
             guard let partialFee = BigInt(partialFeeString) else {
-                throw RpcServiceError.rpcError(code: 500, message: "Error to convert partialFee to BigInt")
+                throw RpcServiceError.rpcError(code: 500, message: "Error to convert partialFee to BigInt: '\(partialFeeString)'")
             }
             
             return partialFee
@@ -143,6 +157,19 @@ class PolkadotService: RpcService {
     }
     
     func calculateDynamicFee(fromAddress: String, toAddress: String, amount: BigInt, memo: String? = nil) async throws -> BigInt {
+        // Validate and use a default address if toAddress is empty or invalid
+        let validToAddress: String
+        if toAddress.isEmpty {
+            validToAddress = fromAddress
+        } else {
+            // Try to validate the address format
+            if let _ = AnyAddress(string: toAddress, coin: .polkadot) {
+                validToAddress = toAddress
+            } else {
+                validToAddress = fromAddress
+            }
+        }
+        
         let gasInfo = try await getGasInfo(fromAddress: fromAddress)
         
         guard let polkadotCoin = TokensStore.TokenSelectionAssets.first(where: { $0.chain == .polkadot && $0.isNativeToken }) else {
@@ -153,7 +180,7 @@ class PolkadotService: RpcService {
         
         let keysignPayload = KeysignPayload(
             coin: coin,
-            toAddress: toAddress,
+            toAddress: validToAddress,
             toAmount: amount,
             chainSpecific: .Polkadot(
                 recentBlockHash: gasInfo.recentBlockHash,
@@ -174,8 +201,19 @@ class PolkadotService: RpcService {
             skipBroadcast: false
         )
         
-        let serializedTransaction = try PolkadotHelper.getZeroSignedTransaction(keysignPayload: keysignPayload)
-        let partialFee = try await getPartialFee(serializedTransaction: serializedTransaction)
+        let serializedTransaction: String
+        do {
+            serializedTransaction = try PolkadotHelper.getZeroSignedTransaction(keysignPayload: keysignPayload)
+        } catch {
+            throw error
+        }
+        
+        var partialFee = BigInt(250000000)
+        do{
+            partialFee = try await getPartialFee(serializedTransaction: serializedTransaction)
+        } catch {
+            print("PolkadotService > calculateDynamicFee > Error fetching partial fee: \(error)")
+        }
         
         return partialFee
     }

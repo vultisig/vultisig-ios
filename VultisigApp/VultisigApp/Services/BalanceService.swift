@@ -99,8 +99,8 @@ private extension BalanceService {
                 return nil
             }
             
-            // Handle TCY staked balance (includes both regular and auto-compound)
-            if coin.ticker.caseInsensitiveCompare("TCY") == .orderedSame {
+            switch coin.ticker.uppercased() {
+            case "TCY":
                 let service = ThorchainServiceFactory.getService(for: coin.chain)
                 let tcyStakedBalance = await service.fetchTcyStakedAmount(address: coin.address)
                 
@@ -112,6 +112,10 @@ private extension BalanceService {
                 
                 let totalStakedBalance = tcyStakedBalance
                 return totalStakedBalance.description
+            case "RUJI":
+                return (try? await ThorchainService.shared.fetchRujiStakeBalance(thorAddr: coin.address, tokenSymbol: "RUJI"))?.stakeAmount.description ?? "0"
+            default:
+                break
             }
             
             // Handle merge account balances for non-native tokens

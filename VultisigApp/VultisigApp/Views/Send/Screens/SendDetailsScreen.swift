@@ -146,7 +146,7 @@ struct SendDetailsScreen: View {
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString(sendCryptoViewModel.errorTitle, comment: "")),
-            message: Text(NSLocalizedString(sendCryptoViewModel.errorMessage, comment: "")),
+            message: Text(NSLocalizedString(sendCryptoViewModel.errorMessage ?? .empty, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }

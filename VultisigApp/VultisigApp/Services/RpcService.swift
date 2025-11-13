@@ -43,10 +43,11 @@ class RpcService {
         request.httpBody = try JSONSerialization.data(withJSONObject: payload, options: [])
         
         do {
-            let (data, _) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await URLSession.shared.data(for: request)
             
             guard let response = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-                throw RpcServiceError.rpcError(code: 500, message: "Error to decode the JSON response")
+                let responsePreview = String(data: data.prefix(200), encoding: .utf8) ?? "Unable to decode as string"
+                throw RpcServiceError.rpcError(code: 500, message: "Error to decode the JSON response. Preview: \(responsePreview)")
             }
             
             if let error = response["error"] as? [String: Any], let message = error["message"] as? String {
