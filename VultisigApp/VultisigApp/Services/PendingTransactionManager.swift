@@ -288,7 +288,7 @@ class PendingTransactionManager {
         print("PendingTransactionManager: Expected sequence > \(transaction.sequence)")
         
         // Fetch current account info to get latest sequence number
-        let service = try CosmosServiceFactory.getService(forChain: chain)
+        let service = try CosmosService.getService(forChain: chain)
         let account = try await service.fetchAccountNumber(transaction.address)
         
         guard let currentSequenceString = account?.sequence,

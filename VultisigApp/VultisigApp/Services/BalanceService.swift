@@ -165,7 +165,7 @@ private extension BalanceService {
             return try await service.getBalance(coin: coin)
             
         case .gaiaChain, .dydx, .kujira, .osmosis, .terra, .terraClassic, .noble, .akash:
-            let cosmosService = try CosmosServiceFactory.getService(forChain: coin.chain)
+            let cosmosService = try CosmosService.getService(forChain: coin.chain)
             let balances = try await cosmosService.fetchBalances(coin: coin)
             
             // Determine the correct denom for each chain

@@ -600,7 +600,7 @@ class KeysignViewModel: ObservableObject {
                         }
                     }
                 case .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash:
-                    let service = try CosmosServiceFactory.getService(forChain: keysignPayload.coin.chain)
+                    let service = try CosmosService.getService(forChain: keysignPayload.coin.chain)
                     let broadcastResult = await service.broadcastTransaction(jsonString: tx.rawTransaction)
                     switch broadcastResult {
                     case .success(let hash):
