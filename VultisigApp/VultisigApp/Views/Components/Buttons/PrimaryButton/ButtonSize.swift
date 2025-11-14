@@ -9,4 +9,5 @@ enum ButtonSize {
     case medium
     case small
     case mini
+    case squared
 }

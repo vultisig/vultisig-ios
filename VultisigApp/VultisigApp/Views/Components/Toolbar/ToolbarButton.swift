@@ -118,6 +118,7 @@ struct ToolbarButton<IconContent: View>: View {
                 .padding(12)
                 .background(
                     Circle()
+                        .fill(tintColor.opacity(isHovered ? 0.2 : 1))
                         .stroke(LinearGradient(colors: [.white, .clear, .clear, .white], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1)
                 )
                 .background(
