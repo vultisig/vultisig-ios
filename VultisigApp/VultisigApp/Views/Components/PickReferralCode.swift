@@ -14,10 +14,9 @@ struct PickReferralCode: View {
         return VStack(spacing: 8) {
             pickReferralTitle
             
-            HStack(alignment: .top, spacing: 8) {
+            HStack(alignment: .center, spacing: 8) {
                 pickReferralTextfield
                 searchButton
-                    .padding(.top, 4)
             }
             
             status
@@ -40,18 +39,20 @@ struct PickReferralCode: View {
             errorMessage: $referralViewModel.referralAvailabilityErrorMessage,
             showSuccess: referralViewModel.availabilityStatus == .available
         )
+        .layoutPriority(1)
+        .frame(maxWidth: .infinity)
         .onChange(of: referralViewModel.referralCode) { oldValue, newValue in
             referralViewModel.resetReferralData()
         }
     }
     
     var searchButton: some View {
-        PrimaryButton(title: "search".localized, size: .small) {
+        PrimaryButton(title: "search".localized, size: .squared) {
             Task {
                 await referralViewModel.verifyReferralCode()
             }
         }
-        .frame(maxWidth: 100, maxHeight: 46)
+        .scaledToFit()
         .disabled(referralViewModel.isLoading)
     }
     

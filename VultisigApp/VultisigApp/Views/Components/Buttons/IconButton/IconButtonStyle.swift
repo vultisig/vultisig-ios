@@ -35,14 +35,14 @@ private extension IconButtonStyle {
             return EdgeInsets(top: 14, leading: 32, bottom: 14, trailing: 32)
         case .small:
             return EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12)
-        case .mini:
+        case .mini, .squared:
             return EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8)
         }
     }
     
     func font(for size: ButtonSize) -> Font {
         switch size {
-        case .medium, .small: return Theme.fonts.buttonRegularSemibold
+        case .medium, .small, .squared: return Theme.fonts.buttonRegularSemibold
         case .mini: return Theme.fonts.bodyMMedium
         }
     }
@@ -50,7 +50,7 @@ private extension IconButtonStyle {
     func cornerRadius(for size: ButtonSize) -> CGFloat {
         switch size {
         case .medium, .small: return 99
-        case .mini: return 30
+        case .mini, .squared: return 30
         }
     }
     

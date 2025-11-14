@@ -30,10 +30,10 @@ struct PrimaryButtonView: View {
     
     var body: some View {
         HStack(spacing: 8) {
+            Spacer()
             if let leadingIcon {
                 Icon(named: leadingIcon, color: Theme.colors.textPrimary, size: 15)
             }
-            Spacer()
             
             Text(NSLocalizedString(title, comment: "Button Text"))
                 .fixedSize(horizontal: true, vertical: false)
@@ -42,11 +42,11 @@ struct PrimaryButtonView: View {
             if let trailingIcon {
                 Icon(named: trailingIcon, color: Theme.colors.textPrimary, size: 15)
             }
-            Spacer()
             if isLoading {
                 ProgressView()
                     .scaleEffect(0.7)
             }
+            Spacer()
         }
         .frame(maxWidth: .infinity)
     }

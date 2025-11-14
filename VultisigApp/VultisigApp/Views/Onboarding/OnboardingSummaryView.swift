@@ -52,8 +52,11 @@ struct OnboardingSummaryView: View {
                 disclaimer
                 VStack(spacing: 8) {
                     startUsingVaultButton
-                    orSeparator
-                    chooseYourChainButton
+                    Group {
+                        orSeparator
+                        chooseYourChainButton
+                    }
+                    .showIf(vault != nil)
                 }
                 .disabled(!didAgree)
                 
