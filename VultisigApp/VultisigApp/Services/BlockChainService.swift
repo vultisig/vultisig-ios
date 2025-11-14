@@ -510,7 +510,7 @@ private extension BlockChainService {
             return .Ethereum(maxFeePerGasWei: maxFeePerGas, priorityFeeWei: adjustedPriority, nonce: nonce, gasLimit: gasLimit)
             
         case .gaiaChain, .kujira, .osmosis, .terra, .terraClassic, .dydx, .noble, .akash:
-            let service = try CosmosServiceFactory.getService(forChain: coin.chain)
+            let service = try CosmosService.getService(forChain: coin.chain)
             let account = try await service.fetchAccountNumber(coin.address)
             
             guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
@@ -564,6 +564,8 @@ private extension BlockChainService {
                 gas = 20000
             case .akash:
                 gas = 3000
+            case .osmosis:
+                gas = 25000 // Increased from 7500 to prevent "insufficient fee" errors
             default:
                 gas = 7500
             }
