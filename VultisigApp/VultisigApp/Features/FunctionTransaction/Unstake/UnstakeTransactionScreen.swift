@@ -69,7 +69,8 @@ struct AutocompoundToggle: View {
     UnstakeTransactionScreen(
         viewModel: UnstakeTransactionViewModel(
             coin: .example,
-            vault: .example
+            vault: .example,
+            defaultAutocompound: false
         )
     ) { _ in }
 }

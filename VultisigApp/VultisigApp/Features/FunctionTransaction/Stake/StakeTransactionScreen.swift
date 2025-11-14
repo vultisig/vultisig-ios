@@ -47,7 +47,8 @@ struct StakeTransactionScreen: View {
     StakeTransactionScreen(
         viewModel: StakeTransactionViewModel(
             coin: .example,
-            vault: .example
+            vault: .example,
+            defaultAutocompound: false
         )
     ) { _ in }
 }
