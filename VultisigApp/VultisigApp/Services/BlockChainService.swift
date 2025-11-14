@@ -564,6 +564,8 @@ private extension BlockChainService {
                 gas = 20000
             case .akash:
                 gas = 3000
+            case .osmosis:
+                gas = 25000 // Increased from 7500 to prevent "insufficient fee" errors
             default:
                 gas = 7500
             }
