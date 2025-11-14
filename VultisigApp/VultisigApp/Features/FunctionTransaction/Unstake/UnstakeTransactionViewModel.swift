@@ -11,6 +11,7 @@ import Combine
 final class UnstakeTransactionViewModel: ObservableObject, Form {
     let coin: Coin
     let vault: Vault
+    let defaultAutocompound: Bool
     
     var supportsAutocompound: Bool {
         coin.supportsAutocompound
@@ -31,10 +32,12 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
     var formCancellable: AnyCancellable?
     var cancellables = Set<AnyCancellable>()
     
-    init(coin: Coin, vault: Vault) {
+    init(coin: Coin, vault: Vault, defaultAutocompound: Bool) {
         self.coin = coin
         self.vault = vault
+        self.defaultAutocompound = defaultAutocompound
     }
+    
     
     func onLoad() {
         setupForm()
@@ -47,6 +50,7 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
                 viewModel.updateAvailableBalance()
             }
             .store(in: &cancellables)
+        isAutocompound = defaultAutocompound
     }
     
     var transactionBuilder: TransactionBuilder? {

@@ -11,6 +11,7 @@ import Combine
 final class StakeTransactionViewModel: ObservableObject, Form {
     let coin: Coin
     let vault: Vault
+    let defaultAutocompound: Bool
     
     var supportsAutocompound: Bool {
         coin.supportsAutocompound
@@ -33,14 +34,16 @@ final class StakeTransactionViewModel: ObservableObject, Form {
     var formCancellable: AnyCancellable?
     var cancellables = Set<AnyCancellable>()
     
-    init(coin: Coin, vault: Vault) {
+    init(coin: Coin, vault: Vault, defaultAutocompound: Bool) {
         self.coin = coin
         self.vault = vault
+        self.defaultAutocompound = defaultAutocompound
     }
     
     func onLoad() {
         setupForm()
         amountField.validators.append(AmountBalanceValidator(balance: coin.balanceDecimal))
+        isAutocompound = defaultAutocompound
     }
     
     var transactionBuilder: TransactionBuilder? {

@@ -43,17 +43,17 @@ struct FunctionTransactionScreen: View {
                         onVerify: onVerify
                     )
                 }
-            case .stake(let coin):
+            case .stake(let coin, let defaultAutocompound):
                 resolvingCoin(coinMeta: coin) {
                     StakeTransactionScreen(
-                        viewModel: StakeTransactionViewModel(coin: $0, vault: vault),
+                        viewModel: StakeTransactionViewModel(coin: $0, vault: vault, defaultAutocompound: defaultAutocompound),
                         onVerify: onVerify
                     )
                 }
-            case .unstake(let coin):
+            case .unstake(let coin, let defaultAutocompound):
                 resolvingCoin(coinMeta: coin) {
                     UnstakeTransactionScreen(
-                        viewModel: UnstakeTransactionViewModel(coin: $0, vault: vault),
+                        viewModel: UnstakeTransactionViewModel(coin: $0, vault: vault, defaultAutocompound: defaultAutocompound),
                         onVerify: onVerify
                     )
                 }
