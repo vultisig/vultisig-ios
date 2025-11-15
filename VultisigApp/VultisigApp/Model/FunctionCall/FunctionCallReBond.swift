@@ -165,8 +165,8 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
             // Rebond Amount field (optional - if empty, transfers all bonded RUNE)
             // Note: This amount goes in the memo only, not in the transaction
             StyledFloatingPointField(
-                label: "Rebond Amount (Optional - leave empty to transfer all bonded RUNE)",
-                placeholder: "Amount to rebond (memo only)",
+                label: "rebondAmount".localized,
+                placeholder: "rebondAmountPlaceholder".localized,
                 value: Binding(
                     get: { self.rebondAmount },
                     set: { newValue in
@@ -182,7 +182,7 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
             )
             
             // Info message about transaction amount
-            Text("Note: REBOND transactions must send 0 RUNE. The amount above only goes in the memo.")
+            Text("rebondNote".localized)
                 .font(.caption)
                 .foregroundColor(.orange)
                 .padding(.horizontal)
