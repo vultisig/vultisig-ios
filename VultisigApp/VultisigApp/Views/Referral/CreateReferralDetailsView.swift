@@ -133,7 +133,7 @@ struct CreateReferralDetailsView: View {
                 .resizable()
                 .frame(width: 32, height: 32)
             
-            Text("RUNE")
+            Text("rune".localized)
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(Theme.colors.textPrimary)
         }
