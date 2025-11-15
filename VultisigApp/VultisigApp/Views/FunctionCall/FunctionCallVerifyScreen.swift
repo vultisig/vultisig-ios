@@ -133,7 +133,7 @@ struct FunctionCallVerifyScreen: View {
         }
         
         // Default display for non-LP operations
-        return tx.amountDecimal.formatForDisplay() + " " + tx.coin.ticker
+        return tx.amountDecimal.formatForDisplay()
     }
     
     private func onSignPress() {
