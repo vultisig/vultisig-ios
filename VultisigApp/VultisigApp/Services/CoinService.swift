@@ -158,8 +158,6 @@ struct CoinService {
                 tokens = try await service.getTokens(nativeToken: nativeToken)
             case .Solana:
                 tokens = try await SolanaService.shared.fetchTokens(for: nativeToken.address)
-                // Filter out spam tokens by checking for valid price provider ID
-                tokens = tokens.filter { !$0.priceProviderId.isEmpty }
             case .Sui:
                 tokens = try await SuiService.shared.getAllTokensWithMetadata(coin: nativeToken)
             case .THORChain:
@@ -188,30 +186,12 @@ struct CoinService {
                         continue
                     }
                     
-                    // If the token doesn't have a priceProviderId, try to find it in TokensStore
-                    var enrichedToken = token
-                    if token.priceProviderId.isEmpty {
-                        if let storeToken = TokensStore.TokenSelectionAssets.first(where: { storeAsset in
-                            storeAsset.chain == token.chain &&
-                            storeAsset.ticker == token.ticker &&
-                            storeAsset.contractAddress.lowercased() == token.contractAddress.lowercased()
-                        }) {
-                            enrichedToken.priceProviderId = storeToken.priceProviderId
-                            enrichedToken.logo = storeToken.logo // Also use the logo from store
-                        }
-                    }
-                    
-                    // Skip tokens that still don't have priceProviderId after enrichment (likely spam)
-                    if enrichedToken.priceProviderId.isEmpty && enrichedToken.chain != .thorChain && enrichedToken.chain != .thorChainStagenet {
-                        continue
-                    }
-                    
                     // Check for spam tokens
-                    if isSpamToken(enrichedToken) {
+                    if isSpamToken(token) {
                         continue
                     }
                     
-                    _ = try addToChain(asset: enrichedToken, to: vault, priceProviderId: enrichedToken.priceProviderId)
+                    _ = try addToChain(asset: token, to: vault, priceProviderId: token.priceProviderId)
                 } catch {
                     print("Error adding the token \(token.ticker) service: \(error.localizedDescription)")
                 }
