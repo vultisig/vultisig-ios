@@ -974,10 +974,6 @@
 "functionTransactionScreenErrorSubtitle" = "An error occurred while redirecting to function";
 "removeLPDustAmountError" = "You need at least %@ to cover fees";
 "invalidOperatorFee" = "Invalid operator fee";
-"bondRune" = "Bond RUNE";
-"unbondRune" = "Unbond RUNE";
-"invalidAmount" = "Invalid amount";
-"withdraw" = "Withdraw";
 "noLPPositionsFound" = "No LP positions found";
 "selectLPPosition" = "Select LP Position";
 "withdrawPercentage" = "Withdraw Percentage";
@@ -994,5 +990,4 @@
 "rebondAmountPlaceholder" = "Amount to rebond (memo only)";
 "fee" = "Fee";
 "rune" = "RUNE";
-"asset" = "Asset";
 "rebondNote" = "Note: REBOND transactions must send 0 RUNE. The amount above only goes in the memo.";

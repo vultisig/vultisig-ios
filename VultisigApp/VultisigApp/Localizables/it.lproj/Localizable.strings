@@ -970,7 +970,6 @@
 "rebondAmountPlaceholder" = "Importo da rebond (solo memo)";
 "fee" = "Commissione";
 "rune" = "RUNE";
-"asset" = "Attività";
 "rebondNote" = "Nota: Le transazioni REBOND devono inviare 0 RUNE. L'importo sopra va solo nel memo.";
 "bondRune" = "Vincola RUNE";
 "unbondRune" = "Scollega RUNE";
@@ -992,7 +991,4 @@
 "functionTransactionScreenErrorSubtitle" = "Si è verificato un errore durante il reindirizzamento alla funzione";
 "removeLPDustAmountError" = "Hai bisogno di almeno %@ per coprire le commissioni";
 "invalidOperatorFee" = "Commissione operatore non valida";
-"bondRune" = "Vincola RUNE";
-"unbondRune" = "Scollega RUNE";
-"invalidAmount" = "Importo non valido";
 "withdraw" = "Preleva";

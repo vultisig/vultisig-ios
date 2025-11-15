@@ -970,7 +970,6 @@
 "rebondAmountPlaceholder" = "Cantidad a rebond (solo memo)";
 "fee" = "Tarifa";
 "rune" = "RUNE";
-"asset" = "Activo";
 "rebondNote" = "Nota: Las transacciones REBOND deben enviar 0 RUNE. La cantidad anterior solo va en el memo.";
 "bondRune" = "Vincular RUNE";
 "unbondRune" = "Desvincular RUNE";
@@ -992,7 +991,4 @@
 "functionTransactionScreenErrorSubtitle" = "Ocurrió un error al redirigir a la función";
 "removeLPDustAmountError" = "Necesitas al menos %@ para cubrir las tarifas";
 "invalidOperatorFee" = "Tarifa de operador inválida";
-"bondRune" = "Vincular RUNE";
-"unbondRune" = "Desvincular RUNE";
-"invalidAmount" = "Cantidad inválida";
 "withdraw" = "Retirar";

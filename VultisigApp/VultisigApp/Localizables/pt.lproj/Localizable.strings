@@ -970,7 +970,6 @@
 "rebondAmountPlaceholder" = "Quantidade para rebond (apenas memo)";
 "fee" = "Taxa";
 "rune" = "RUNE";
-"asset" = "Ativo";
 "rebondNote" = "Nota: As transações REBOND devem enviar 0 RUNE. A quantidade acima vai apenas no memo.";
 "bondRune" = "Vincular RUNE";
 "unbondRune" = "Desvincular RUNE";
@@ -992,7 +991,4 @@
 "functionTransactionScreenErrorSubtitle" = "Ocorreu um erro ao redirecionar para a função";
 "removeLPDustAmountError" = "Você precisa de pelo menos %@ para cobrir as taxas";
 "invalidOperatorFee" = "Taxa de operador inválida";
-"bondRune" = "Vincular RUNE";
-"unbondRune" = "Desvincular RUNE";
-"invalidAmount" = "Quantidade inválida";
 "withdraw" = "Sacar";

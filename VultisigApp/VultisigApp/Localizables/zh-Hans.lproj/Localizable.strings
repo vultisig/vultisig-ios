@@ -993,5 +993,4 @@
 "rebondAmountPlaceholder" = "要重新绑定的金额（仅备忘录）";
 "fee" = "费用";
 "rune" = "RUNE";
-"asset" = "资产";
 "rebondNote" = "注意：REBOND 交易必须发送 0 RUNE。上述金额仅用于备忘录。";

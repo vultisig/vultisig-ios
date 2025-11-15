@@ -970,7 +970,6 @@
 "rebondAmountPlaceholder" = "Iznos za rebond (samo memo)";
 "fee" = "Naknada";
 "rune" = "RUNE";
-"asset" = "Imovina";
 "rebondNote" = "Napomena: REBOND transakcije moraju poslati 0 RUNE. Iznos gore ide samo u memo.";
 "bondRune" = "Poveži RUNE";
 "unbondRune" = "Odveži RUNE";
@@ -992,7 +991,4 @@
 "functionTransactionScreenErrorSubtitle" = "Došlo je do greške prilikom preusmjeravanja na funkciju";
 "removeLPDustAmountError" = "Trebate najmanje %@ za pokrivanje naknada";
 "invalidOperatorFee" = "Nevažeća naknada operatora";
-"bondRune" = "Poveži RUNE";
-"unbondRune" = "Odveži RUNE";
-"invalidAmount" = "Nevažeći iznos";
 "withdraw" = "Povuci";
