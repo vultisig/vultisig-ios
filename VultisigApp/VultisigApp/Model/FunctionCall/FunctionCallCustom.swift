@@ -54,20 +54,38 @@ class FunctionCallCustom: FunctionCallAddressable, ObservableObject {
     }
     
     private func loadTokens() {
-        // Load THORChain tokens from vault: RUNE, RUJI, TCY
-        let thorchainCoins = vault.coins.filter { $0.chain == .thorChain }
-        
-        for coin in thorchainCoins {
-            let ticker = coin.ticker.uppercased()
-            // Add RUNE (native), RUJI, and TCY
-            if ticker == "RUNE" || ticker == "RUJI" || ticker == "TCY" {
-                tokens.append(.init(value: ticker))
+        // Load tokens based on the transaction's chain
+        switch tx.coin.chain {
+        case .thorChain:
+            // Load THORChain tokens from vault: RUNE, RUJI, TCY
+            let thorchainCoins = vault.coins.filter { $0.chain == .thorChain }
+            
+            for coin in thorchainCoins {
+                let ticker = coin.ticker.uppercased()
+                // Add RUNE (native), RUJI, and TCY
+                if ticker == "RUNE" || ticker == "RUJI" || ticker == "TCY" {
+                    tokens.append(.init(value: ticker))
+                }
             }
-        }
-        
-        // If no tokens found, at least add RUNE if we're on THORChain
-        if tokens.isEmpty && tx.coin.chain == .thorChain {
-            tokens.append(.init(value: "RUNE"))
+            
+            // If no tokens found, at least add RUNE
+            if tokens.isEmpty {
+                tokens.append(.init(value: "RUNE"))
+            }
+            
+        case .mayaChain:
+            // Load CACAO from TokensStore filtered by MayaChain
+            let mayaChainTokens = TokensStore.TokenSelectionAssets.filter { $0.chain == .mayaChain }
+            for token in mayaChainTokens {
+                let ticker = token.ticker.uppercased()
+                // Add CACAO (native token) and MAYA
+                if ticker == "CACAO" || ticker == "MAYA" {
+                    tokens.append(.init(value: ticker))
+                }
+            }
+            
+        default:
+            break
         }
     }
     
@@ -85,7 +103,12 @@ class FunctionCallCustom: FunctionCallAddressable, ObservableObject {
         let ticker = selectedToken.value.lowercased()
         
         for coin in vault.coins {
+            // Check THORChain for RUNE, RUJI, TCY
             if coin.chain == .thorChain && coin.ticker.lowercased() == ticker {
+                return coin
+            }
+            // Check MayaChain for MAYA
+            if coin.chain == .mayaChain && coin.ticker.lowercased() == ticker {
                 return coin
             }
         }
