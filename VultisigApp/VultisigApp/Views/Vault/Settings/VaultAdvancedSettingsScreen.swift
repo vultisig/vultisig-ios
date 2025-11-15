@@ -40,7 +40,7 @@ struct VaultAdvancedSettingsScreen: View {
         NavigationLink {
             SettingsCustomMessageView(vault: vault)
         } label: {
-            SettingsCommonOptionView(icon: "file-pen-line", title: "Sign", subtitle: "Sign custom message")
+            SettingsCommonOptionView(icon: "file-pen-line", title: "sign".localized, subtitle: "signCustomMessage".localized)
         }
     }
     
