@@ -738,7 +738,7 @@ class Endpoint {
         case .thorChainStagenet:
             return "https://runescan.io/tx/\(txid.stripHexPrefix())?network=stagenet"
         case .solana:
-            return "https://solscan.io/tx/\(txid)"
+            return "https://orb.helius.dev/tx/\(txid)"
         case .ethereum:
             return "https://etherscan.io/tx/\(txid)"
         case .gaiaChain:
@@ -819,7 +819,7 @@ class Endpoint {
         case .thorChainStagenet:
             return "https://runescan.io/address/\(address)?network=stagenet"
         case .solana:
-            return "https://solscan.io/account/\(address)"
+            return "https://orb.helius.dev/address/\(address)"
         case .ethereum:
             return "https://etherscan.io/address/\(address)"
         case .ethereumSepolia:
@@ -900,7 +900,7 @@ class Endpoint {
         case .thorChainStagenet:
             return "https://runescan.io/address/\(coin.address)?network=stagenet"
         case .solana:
-            return "https://solscan.io/token/\(contractAddress)"
+            return "https://orb.helius.dev/address/\(contractAddress)"
         case .ethereum:
             return "https://etherscan.io/token/\(contractAddress)"
         case .ethereumSepolia:
@@ -972,7 +972,7 @@ class Endpoint {
         case .thorChainStagenet:
             return "https://runescan.io/address/\(address)?network=stagenet"
         case .solana:
-            return "https://solscan.io/account/\(address)"
+            return "https://orb.helius.dev/address/\(address)"
         case .ethereum:
             return "https://etherscan.io/address/\(address)"
         case .ethereumSepolia:
