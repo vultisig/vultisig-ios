@@ -445,34 +445,9 @@ class KeysignViewModel: ObservableObject {
             return .regular(transaction)
             
         case .Cosmos:
-            switch keysignPayload.coin.chain {
-            case .gaiaChain:
-                let transaction = try ATOMHelper().getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
-                return .regular(transaction)
-            case .kujira:
-                let transaction = try KujiraHelper().getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
-                return .regular(transaction)
-            case .dydx:
-                let transaction = try DydxHelper().getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
-                return .regular(transaction)
-            case .osmosis:
-                let transaction = try OsmoHelper().getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
-                return .regular(transaction)
-            case .terra:
-                let transaction = try TerraHelper(coinType: .terraV2, denom: "uluna").getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
-                return .regular(transaction)
-            case .terraClassic:
-                let transaction = try TerraHelper(coinType: .terra, denom: "uluna").getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
-                return .regular(transaction)
-            case .noble:
-                let transaction = try NobleHelper().getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
-                return .regular(transaction)
-            case .akash:
-                let transaction = try AkashHelper().getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
-                return .regular(transaction)
-            default:
-                throw HelperError.runtimeError("Unsupported Cosmos chain: \(keysignPayload.coin.chain)")
-            }
+            let helper = try CosmosHelper.getHelper(forChain: keysignPayload.coin.chain)
+            let transaction = try helper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
+            return .regular(transaction)
             
             
         case .Ton:

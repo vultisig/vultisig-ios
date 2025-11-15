@@ -1,33 +1,26 @@
 //
-//  dydx.swift
+//  DydxHelperStruct.swift
 //  VultisigApp
 //
-//  Created by Enrique Souza Soares on 12/06/24.
+//  Refactored to use struct (value type) instead of classes
 //
 
 import Foundation
 import WalletCore
 import Tss
-import CryptoSwift
 import VultisigCommonData
 
-class DydxHelper {
-    let coinType: CoinType
+struct DydxHelperStruct {
+    static let DydxGasLimit: UInt64 = 2500000000000000
     
-    init(){
-        self.coinType = CoinType.dydx
-    }
-    
-    static let DydxGasLimit:UInt64 = 2500000000000000
-    
-    func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
+    static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard case .Cosmos(let accountNumber, let sequence , let gas, let transactionTypeRawValue, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
             throw HelperError.runtimeError("invalid hex public key")
         }
-        let coin = self.coinType
+        let coin = CoinType.dydx
         
         var message = [CosmosMessage()]
         
@@ -94,9 +87,9 @@ class DydxHelper {
         return try input.serializedData()
     }
     
-    func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
+    static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
-        let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
+        let hashes = TransactionCompiler.preImageHashes(coinType: .dydx, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
@@ -104,7 +97,7 @@ class DydxHelper {
         return [preSigningOutput.dataHash.hexString]
     }
     
-    func getSignedTransaction(keysignPayload: KeysignPayload,
+    static func getSignedTransaction(keysignPayload: KeysignPayload,
                               signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
@@ -112,7 +105,7 @@ class DydxHelper {
         return signedTransaction
     }
     
-    func getSignedTransaction(coinHexPublicKey: String,
+    static func getSignedTransaction(coinHexPublicKey: String,
                               inputData: Data,
                               signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
@@ -123,7 +116,7 @@ class DydxHelper {
         }
         
         do {
-            let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
+            let hashes = TransactionCompiler.preImageHashes(coinType: .dydx, txInputData: inputData)
             let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
             let allSignatures = DataVector()
             let publicKeys = DataVector()
@@ -135,7 +128,7 @@ class DydxHelper {
             
             allSignatures.add(data: signature)
             publicKeys.add(data: pubkeyData)
-            let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: self.coinType,
+            let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .dydx,
                                                                                  txInputData: inputData,
                                                                                  signatures: allSignatures,
                                                                                  publicKeys: publicKeys)

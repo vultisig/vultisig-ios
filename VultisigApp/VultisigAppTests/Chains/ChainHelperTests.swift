@@ -131,16 +131,9 @@ final class ChainHelperTests: XCTestCase {
             result +=  try SolanaHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         case .ripple:
             result += try RippleHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
-        case .terra:
-            let terraHelper = TerraHelper(coinType: .terraV2, denom: "uluna")
-            result += try terraHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
-        case .terraClassic:
-            let terraHelper = TerraHelper(coinType: .terra, denom: "uluna")
-            result += try terraHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
-        case .gaiaChain:
-            result += try ATOMHelper().getPreSignedImageHash(keysignPayload: keysignPayload)
-        case .kujira:
-            result += try KujiraHelper().getPreSignedImageHash(keysignPayload: keysignPayload)
+        case .terra, .terraClassic, .gaiaChain, .kujira:
+            let helper = try CosmosHelper.getHelper(forChain: chain)
+            result += try helper.getPreSignedImageHash(keysignPayload: keysignPayload)
         case .ton:
             result += try TonHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         case .tron:
