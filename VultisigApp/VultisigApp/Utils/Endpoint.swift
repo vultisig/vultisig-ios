@@ -732,7 +732,7 @@ class Endpoint {
         case .dash:
             return "https://blockchair.com/dash/transaction/\(txid)"
         case .zcash:
-            return "https://blockchair.com/zcash/transaction/\(txid)"
+            return "https://blockexplorer.one/zcash/mainnet/tx/\(txid)"
         case .thorChain:
             return "https://runescan.io/tx/\(txid.stripHexPrefix())"
         case .thorChainStagenet:
@@ -813,7 +813,7 @@ class Endpoint {
         case .dash:
             return "https://blockchair.com/dash/address/\(address)"
         case .zcash:
-            return "https://blockchair.com/zcash/address/\(address)"
+            return "https://blockexplorer.one/zcash/mainnet/address/\(address)"
         case .thorChain:
             return "https://runescan.io/address/\(address)"
         case .thorChainStagenet:
@@ -998,7 +998,7 @@ class Endpoint {
         case .dash:
             return "https://blockchair.com/dash/address/\(address)"
         case .zcash:
-            return "https://blockchair.com/zcash/address/\(address)"
+            return "https://blockexplorer.one/zcash/mainnet/address/\(address)"
         case .mayaChain:
             return "https://www.mayascan.org/address/\(address)"
         case .arbitrum:
