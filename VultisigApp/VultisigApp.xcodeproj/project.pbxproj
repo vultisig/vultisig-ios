@@ -1035,13 +1035,13 @@
 		B5BCC2602EC26D79007B5A2F /* EvmServiceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BCC25E2EC26D79007B5A2F /* EvmServiceConfig.swift */; };
 		B5BCC2612EC26D79007B5A2F /* EvmServiceStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BCC25F2EC26D79007B5A2F /* EvmServiceStruct.swift */; };
 		B5BCC2632EC26DA7007B5A2F /* RpcServiceStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BCC2622EC26DA7007B5A2F /* RpcServiceStruct.swift */; };
+		B5BCC2662EC26DAA007B5A2F /* CosmosServiceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BCC2642EC26DA8007B5A2F /* CosmosServiceConfig.swift */; };
+		B5BCC2672EC26DAB007B5A2F /* CosmosServiceStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BCC2652EC26DA9007B5A2F /* CosmosServiceStruct.swift */; };
 		B5BEB1ED2E137FBA00372170 /* ThorchainMergeTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BEB1EC2E137FBA00372170 /* ThorchainMergeTokens.swift */; };
 		B5C02E542E3AAD050038938D /* FunctionCallCosmosYVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C02E532E3AAD020038938D /* FunctionCallCosmosYVault.swift */; };
 		B5C4A42C2C62EC6500AF9B8B /* AddressService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C4A42B2C62EC6500AF9B8B /* AddressService.swift */; };
 		B5C5B4AC2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C5B4AB2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift */; };
 		B5CA1A062C16C39700789B11 /* AsyncImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CA1A052C16C39700789B11 /* AsyncImageView.swift */; };
-		B5BCC2662EC26DAA007B5A2F /* CosmosServiceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BCC2642EC26DA8007B5A2F /* CosmosServiceConfig.swift */; };
-		B5BCC2672EC26DAB007B5A2F /* CosmosServiceStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BCC2652EC26DA9007B5A2F /* CosmosServiceStruct.swift */; };
 		B5CDB87B2DDD8714007DF355 /* MergeAccountResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CDB87A2DDD86F9007DF355 /* MergeAccountResponse.swift */; };
 		B5CDB87C2DDD8715007DF355 /* AccountRootData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CDB87D2DDD86FA007DF355 /* AccountRootData.swift */; };
 		B5D1B9FC2DF66B4400D82EFB /* CoinFactory+Cardano.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5D1B9FB2DF66B4400D82EFB /* CoinFactory+Cardano.swift */; };
@@ -1605,8 +1605,6 @@
 		469ED3A12B98F5CB008D4951 /* ThorchainAccountResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountResult.swift; sourceTree = "<group>"; };
 		469ED3A32B98F5DE008D4951 /* CosmosAccountValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosAccountValue.swift; sourceTree = "<group>"; };
 		46AAA49C2BC3B4CF00E5BAB4 /* DecimalExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecimalExtension.swift; sourceTree = "<group>"; };
-		B5BCC2642EC26DA8007B5A2F /* CosmosServiceConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosServiceConfig.swift; sourceTree = "<group>"; };
-		B5BCC2652EC26DA9007B5A2F /* CosmosServiceStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosServiceStruct.swift; sourceTree = "<group>"; };
 		46B106502BA7CAFE00564023 /* ChainType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainType.swift; sourceTree = "<group>"; };
 		46B60BBF2BBB20130043EBBA /* RpcEvmService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RpcEvmService.swift; sourceTree = "<group>"; };
 		46C8CBBC2BA7753900E68E08 /* Blockchair.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Blockchair.swift; sourceTree = "<group>"; };
@@ -2216,6 +2214,8 @@
 		B5BCC25E2EC26D79007B5A2F /* EvmServiceConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvmServiceConfig.swift; sourceTree = "<group>"; };
 		B5BCC25F2EC26D79007B5A2F /* EvmServiceStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvmServiceStruct.swift; sourceTree = "<group>"; };
 		B5BCC2622EC26DA7007B5A2F /* RpcServiceStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RpcServiceStruct.swift; sourceTree = "<group>"; };
+		B5BCC2642EC26DA8007B5A2F /* CosmosServiceConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosServiceConfig.swift; sourceTree = "<group>"; };
+		B5BCC2652EC26DA9007B5A2F /* CosmosServiceStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosServiceStruct.swift; sourceTree = "<group>"; };
 		B5BEB1EC2E137FBA00372170 /* ThorchainMergeTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainMergeTokens.swift; sourceTree = "<group>"; };
 		B5C02E532E3AAD020038938D /* FunctionCallCosmosYVault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallCosmosYVault.swift; sourceTree = "<group>"; };
 		B5C4A42B2C62EC6500AF9B8B /* AddressService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressService.swift; sourceTree = "<group>"; };
@@ -7308,7 +7308,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
@@ -7371,7 +7371,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
@@ -7429,7 +7429,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -7455,7 +7455,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
 				ENABLE_TESTABILITY = NO;
@@ -7481,7 +7481,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
@@ -7502,7 +7502,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;

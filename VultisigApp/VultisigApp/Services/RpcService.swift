@@ -46,7 +46,7 @@ class RpcService {
         request.httpBody = try JSONSerialization.data(withJSONObject: payload, options: [])
         
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
+            let (data, _) = try await URLSession.shared.data(for: request)
             
             guard let response = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
                 let responsePreview = String(data: data.prefix(200), encoding: .utf8) ?? "Unable to decode as string"
