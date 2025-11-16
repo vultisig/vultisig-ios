@@ -79,6 +79,7 @@ struct DefiTHORChainBondedView<EmptyStateView: View>: View {
         DefiTHORChainActiveNodesView(
             coin: coin,
             activeNodes: viewModel.activeBondedNodes,
+            canUnbond: viewModel.canUnbond,
             onBond: onBond,
             onUnbond: onUnbond
         )

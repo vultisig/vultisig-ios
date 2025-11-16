@@ -11,6 +11,7 @@ final class DefiTHORChainBondViewModel: ObservableObject {
     @Published private(set) var vault: Vault
     @Published private(set) var activeBondedNodes: [BondPosition] = []
     @Published private(set) var availableNodes: [BondNode] = []
+    @Published private(set) var canUnbond: Bool = false
     
     var hasBondPositions: Bool {
         vault.defiPositions.contains { $0.chain == .thorChain && !$0.bonds.isEmpty }
@@ -43,6 +44,9 @@ final class DefiTHORChainBondViewModel: ObservableObject {
             
             // Fetch bonded nodes for this address
             let bondedNodes = try await thorchainAPIService.getBondedNodes(address: runeCoin.address)
+            
+            // Keep unbond button enabled if something fails on network call
+            let canUnbond = !((try? await thorchainAPIService.getNetwork().vaults_migrating) ?? false)
             
             // Map each bonded node to ActiveBondedNode with metrics
             var activeNodes: [BondPosition] = []
@@ -83,6 +87,7 @@ final class DefiTHORChainBondViewModel: ObservableObject {
                 } catch {
                     print("Error calculating metrics for node \(node.address): \(error)")
                     // Continue with other nodes even if one fails
+                    self.canUnbond = true
                 }
             }
             

@@ -618,7 +618,7 @@
 		A63953B02BA7BEDA000802EC /* Checkbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63953AF2BA7BEDA000802EC /* Checkbox.swift */; };
 		A63953B22BA7CB8E000802EC /* SendCryptoKeysignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63953B12BA7CB8E000802EC /* SendCryptoKeysignView.swift */; };
 		A63953B42BA7F120000802EC /* SendCryptoDoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63953B32BA7F120000802EC /* SendCryptoDoneView.swift */; };
-		A6404F772E03346600069BD1 /* ThorchainNetworkAllFees.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6404F762E03346600069BD1 /* ThorchainNetworkAllFees.swift */; };
+		A6404F772E03346600069BD1 /* ThorchainNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6404F762E03346600069BD1 /* ThorchainNetwork.swift */; };
 		A646DFA32E0CFF53006E8ECC /* ReferralMemoParameter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A646DFA22E0CFF53006E8ECC /* ReferralMemoParameter.swift */; };
 		A646DFA52E12EEA6006E8ECC /* SendDetailsAddressTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A646DFA42E12EEA6006E8ECC /* SendDetailsAddressTab.swift */; };
 		A646DFA72E12F187006E8ECC /* SendDetailsAddressFields.swift in Sources */ = {isa = PBXBuildFile; fileRef = A646DFA62E12F187006E8ECC /* SendDetailsAddressFields.swift */; };
@@ -1800,7 +1800,7 @@
 		A63953AF2BA7BEDA000802EC /* Checkbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checkbox.swift; sourceTree = "<group>"; };
 		A63953B12BA7CB8E000802EC /* SendCryptoKeysignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoKeysignView.swift; sourceTree = "<group>"; };
 		A63953B32BA7F120000802EC /* SendCryptoDoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneView.swift; sourceTree = "<group>"; };
-		A6404F762E03346600069BD1 /* ThorchainNetworkAllFees.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainNetworkAllFees.swift; sourceTree = "<group>"; };
+		A6404F762E03346600069BD1 /* ThorchainNetwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainNetwork.swift; sourceTree = "<group>"; };
 		A646DFA22E0CFF53006E8ECC /* ReferralMemoParameter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralMemoParameter.swift; sourceTree = "<group>"; };
 		A646DFA42E12EEA6006E8ECC /* SendDetailsAddressTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDetailsAddressTab.swift; sourceTree = "<group>"; };
 		A646DFA62E12F187006E8ECC /* SendDetailsAddressFields.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDetailsAddressFields.swift; sourceTree = "<group>"; };
@@ -5500,7 +5500,7 @@
 				DE320E6D2C846C610068D0E1 /* ReshareRequest.swift */,
 				DE5F7E202C816AC70022030F /* KeysignRequest.swift */,
 				A67530612CAFBDC200B1E344 /* Folder.swift */,
-				A6404F762E03346600069BD1 /* ThorchainNetworkAllFees.swift */,
+				A6404F762E03346600069BD1 /* ThorchainNetwork.swift */,
 				A646DFA22E0CFF53006E8ECC /* ReferralMemoParameter.swift */,
 				FCB0CAFF343CC6FF8986E07F /* HiddenToken.swift */,
 			);
@@ -6621,7 +6621,7 @@
 				DE9EB0F42BA309AB001747D9 /* MessagePuller.swift in Sources */,
 				A608E3772C01BD7A00E40B85 /* SwapDetailsSummary.swift in Sources */,
 				DE63AE0E2BAD2408001BBE5C /* THORBalanceExtension.swift in Sources */,
-				A6404F772E03346600069BD1 /* ThorchainNetworkAllFees.swift in Sources */,
+				A6404F772E03346600069BD1 /* ThorchainNetwork.swift in Sources */,
 				B505BF8F2E686D1700A5698B /* FeeService.swift in Sources */,
 				13C7C1E52E86EE2A00A529FD /* AssetSelectionGridCell.swift in Sources */,
 				A6BFE1B12D93A55E000B73C0 /* SwapPercentageButtons.swift in Sources */,

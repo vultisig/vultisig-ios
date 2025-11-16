@@ -24,11 +24,11 @@ enum FunctionTransactionType: Hashable {
             return [coin]
         case .unbond(let node):
             return [node.coin]
-        case .stake(let coin, let defaultAutocompound):
+        case .stake(let coin, _):
             return [coin]
-        case .unstake(let coin, let defaultAutocompound):
+        case .unstake(let coin, _):
             return [coin]
-        case .withdrawRewards(let coin, let rewards, let rewardsCoin):
+        case .withdrawRewards(let coin, _, let rewardsCoin):
             return [coin, rewardsCoin]
         case .mint(let coin, let yCoin):
             return [coin, yCoin]
