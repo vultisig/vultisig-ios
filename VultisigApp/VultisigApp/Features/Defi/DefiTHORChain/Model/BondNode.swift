@@ -25,9 +25,9 @@ enum BondNodeState: String, CaseIterable, Codable {
     /// Whether the node can be unbonded
     var canUnbond: Bool {
         switch self {
-        case .whitelisted, .standby, .unknown:
+        case .standby:
             return true
-        case .ready, .active, .disabled:
+        case .ready, .active, .disabled, .whitelisted, .unknown:
             return false
         }
     }
