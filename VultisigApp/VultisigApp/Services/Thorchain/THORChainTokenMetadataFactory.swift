@@ -30,6 +30,15 @@ enum THORChainTokenMetadataFactory {
             } else if asset == "x/nami-index-nav-thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px-rcpt" {
                 symbol = "yTCY"
                 ticker = "yTCY"
+            } else if asset == "x/ruji" {
+                symbol = "RUJI"
+                ticker = "ruji"
+            } else if asset == "x/staking-ruji" {
+                symbol = "sRUJI"
+                ticker = "sruji"
+            } else if asset == "x/staking-tcy" {
+                symbol = "sTCY"
+                ticker = "stcy"
             } else {
                 symbol = asset
                 ticker = asset
