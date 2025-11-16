@@ -11,6 +11,11 @@ struct DefiMainBalanceView: View {
     @ObservedObject var vault: Vault
     @EnvironmentObject var homeViewModel: HomeViewModel
     
+    private let defiBalanceService = DefiBalanceService()
+    var balance: String {
+        defiBalanceService.totalBalanceInFiatString(for: vault.defiChains, vault: vault)
+    }
+    
     var body: some View {
         ZStack {
             coinImages
@@ -21,7 +26,7 @@ struct DefiMainBalanceView: View {
                 
                 VaultMainBalanceView(
                     vault: vault,
-                    balanceToShow: homeViewModel.defiBalanceText,
+                    balanceToShow: balance,
                     style: .defi
                 )
             }
