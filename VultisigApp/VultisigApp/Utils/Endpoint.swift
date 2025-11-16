@@ -669,7 +669,7 @@ class Endpoint {
     }
     
     static func getMayaSwapTracker(txid: String) -> String {
-        return "https://www.mayascan.org/tx/\(txid.stripHexPrefix())"
+        return "https://www.explorer.mayachain.info/tx/\(txid.stripHexPrefix())"
     }
     
     static func getLifiSwapTracker(txid: String) -> String {
@@ -752,7 +752,7 @@ class Endpoint {
         case .bscChain:
             return "https://bscscan.com/tx/\(txid)"
         case .mayaChain:
-            return "https://www.mayascan.org/tx/\(txid)"
+            return "https://www.explorer.mayachain.info/tx/\(txid)"
         case .arbitrum:
             return "https://arbiscan.io/tx/\(txid)"
         case .base:
@@ -835,7 +835,7 @@ class Endpoint {
         case .bscChain:
             return "https://bscscan.com/address/\(address)"
         case .mayaChain:
-            return "https://www.mayascan.org/address/\(address)"
+            return "https://www.explorer.mayachain.info/address/\(address)"
         case .arbitrum:
             return "https://arbiscan.io/address/\(address)"
         case .base:
@@ -917,7 +917,7 @@ class Endpoint {
         case .bscChain:
             return "https://bscscan.com/token/\(contractAddress)"
         case .mayaChain:
-            return "https://www.mayascan.org/address/\(coin.address)"
+            return "https://www.explorer.mayachain.info/address/\(coin.address)"
         case .arbitrum:
             return "https://arbiscan.io/token/\(contractAddress)"
         case .base:
@@ -1000,7 +1000,7 @@ class Endpoint {
         case .zcash:
             return "https://blockexplorer.one/zcash/mainnet/address/\(address)"
         case .mayaChain:
-            return "https://www.mayascan.org/address/\(address)"
+            return "https://www.explorer.mayachain.info/address/\(address)"
         case .arbitrum:
             return "https://arbiscan.io/address/\(address)"
         case .base:
