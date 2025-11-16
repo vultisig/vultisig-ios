@@ -30,7 +30,7 @@ struct SearchTextField: View {
                 color: Theme.colors.textLight,
                 size: 16
             )            
-            TextField(NSLocalizedString("Search", comment: "Search"), text: $value)
+            TextField(NSLocalizedString("search", comment: "Search"), text: $value)
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(Theme.colors.textPrimary)
                 .disableAutocorrection(true)
