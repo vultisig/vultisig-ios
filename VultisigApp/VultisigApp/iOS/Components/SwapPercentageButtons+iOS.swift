@@ -11,12 +11,12 @@ import SwiftUI
 extension SwapPercentageButtons {
     var container: some View {
         buttons
-            .padding(.horizontal, 12)
+            .padding(.horizontal, 8)
             .padding(.vertical, 8)
     }
     
     var buttons: some View {
-        HStack(spacing: 6) {
+        HStack{
             ForEach(buttonOptions, id: \.self) { option in
                 getPercentageButton(for: option)
             }
@@ -37,11 +37,10 @@ extension SwapPercentageButtons {
         Text(text + "%")
             .font(Theme.fonts.caption12)
             .foregroundColor(isSelected ? Color.white : Theme.colors.textPrimary)
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 8)
             .padding(.vertical, 10)
-            .frame(minWidth: 60)
             .background(isSelected ? Theme.colors.bgPrimary : Theme.colors.bgSecondary)
-            .cornerRadius(20)
+            .cornerRadius(16)
     }
 }
 #endif
