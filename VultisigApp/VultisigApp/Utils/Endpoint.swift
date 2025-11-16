@@ -669,7 +669,7 @@ class Endpoint {
     }
     
     static func getMayaSwapTracker(txid: String) -> String {
-        return "https://www.mayascan.org/tx/\(txid.stripHexPrefix())"
+        return "https://www.explorer.mayachain.info/tx/\(txid.stripHexPrefix())"
     }
     
     static func getLifiSwapTracker(txid: String) -> String {
@@ -738,7 +738,7 @@ class Endpoint {
         case .thorChainStagenet:
             return "https://runescan.io/tx/\(txid.stripHexPrefix())?network=stagenet"
         case .solana:
-            return "https://solscan.io/tx/\(txid)"
+            return "https://orb.helius.dev/tx/\(txid)"
         case .ethereum:
             return "https://etherscan.io/tx/\(txid)"
         case .gaiaChain:
@@ -752,7 +752,7 @@ class Endpoint {
         case .bscChain:
             return "https://bscscan.com/tx/\(txid)"
         case .mayaChain:
-            return "https://www.mayascan.org/tx/\(txid)"
+            return "https://www.explorer.mayachain.info/tx/\(txid)"
         case .arbitrum:
             return "https://arbiscan.io/tx/\(txid)"
         case .base:
@@ -819,7 +819,7 @@ class Endpoint {
         case .thorChainStagenet:
             return "https://runescan.io/address/\(address)?network=stagenet"
         case .solana:
-            return "https://solscan.io/account/\(address)"
+            return "https://orb.helius.dev/address/\(address)"
         case .ethereum:
             return "https://etherscan.io/address/\(address)"
         case .ethereumSepolia:
@@ -835,7 +835,7 @@ class Endpoint {
         case .bscChain:
             return "https://bscscan.com/address/\(address)"
         case .mayaChain:
-            return "https://www.mayascan.org/address/\(address)"
+            return "https://www.explorer.mayachain.info/address/\(address)"
         case .arbitrum:
             return "https://arbiscan.io/address/\(address)"
         case .base:
@@ -900,7 +900,7 @@ class Endpoint {
         case .thorChainStagenet:
             return "https://runescan.io/address/\(coin.address)?network=stagenet"
         case .solana:
-            return "https://solscan.io/token/\(contractAddress)"
+            return "https://orb.helius.dev/address/\(contractAddress)"
         case .ethereum:
             return "https://etherscan.io/token/\(contractAddress)"
         case .ethereumSepolia:
@@ -917,7 +917,7 @@ class Endpoint {
         case .bscChain:
             return "https://bscscan.com/token/\(contractAddress)"
         case .mayaChain:
-            return "https://www.mayascan.org/address/\(coin.address)"
+            return "https://www.explorer.mayachain.info/address/\(coin.address)"
         case .arbitrum:
             return "https://arbiscan.io/token/\(contractAddress)"
         case .base:
@@ -972,7 +972,7 @@ class Endpoint {
         case .thorChainStagenet:
             return "https://runescan.io/address/\(address)?network=stagenet"
         case .solana:
-            return "https://solscan.io/account/\(address)"
+            return "https://orb.helius.dev/address/\(address)"
         case .ethereum:
             return "https://etherscan.io/address/\(address)"
         case .ethereumSepolia:
@@ -1000,7 +1000,7 @@ class Endpoint {
         case .zcash:
             return "https://blockexplorer.one/zcash/mainnet/address/\(address)"
         case .mayaChain:
-            return "https://www.mayascan.org/address/\(address)"
+            return "https://www.explorer.mayachain.info/address/\(address)"
         case .arbitrum:
             return "https://arbiscan.io/address/\(address)"
         case .base:
