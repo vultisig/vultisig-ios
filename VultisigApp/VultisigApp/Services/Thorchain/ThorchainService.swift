@@ -50,19 +50,24 @@ class ThorchainService: ThorchainSwapProvider {
                     logo = info.logo
                 }
                 
+                // Find local asset to get correct logo and metadata
                 let localAsset = TokensStore.TokenSelectionAssets.first(where: { $0.ticker.uppercased() == ticker.uppercased() })
                 
                 if ticker.range(of: "yrune", options: [.caseInsensitive, .anchored]) == nil &&
                     ticker.range(of: "ytcy", options: [.caseInsensitive, .anchored]) == nil &&
-                    ticker.range(of: "stcy", options: [.caseInsensitive, .anchored]) == nil
+                    ticker.range(of: "stcy", options: [.caseInsensitive, .anchored]) == nil &&
+                    ticker.range(of: "sruji", options: [.caseInsensitive, .anchored]) == nil
                 {
                     ticker = ticker.uppercased()
                 }
                 
+                // Use localAsset logo if available, otherwise use factory-generated logo
+                let finalLogo = localAsset?.logo ?? logo
+                
                 let coinMeta = CoinMeta(
                     chain: .thorChain,
                     ticker: ticker,
-                    logo: logo,
+                    logo: finalLogo,
                     decimals: decimals,
                     priceProviderId: localAsset?.priceProviderId ?? "",
                     contractAddress: balance.denom,
