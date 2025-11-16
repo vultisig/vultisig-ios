@@ -187,7 +187,6 @@
 		137FA58E2EABC37C00843DB1 /* THORChainStakingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137FA58D2EABC37C00843DB1 /* THORChainStakingService.swift */; };
 		137FA5922EABC38D00843DB1 /* THORChainStakingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137FA5902EABC38D00843DB1 /* THORChainStakingAPI.swift */; };
 		137FA5952EABE38A00843DB1 /* DefiTHORChainStakedPositionSkeletonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137FA5942EABE38A00843DB1 /* DefiTHORChainStakedPositionSkeletonView.swift */; };
-		137FA5972EABE39700843DB1 /* DefiTHORChainBondedSkeletonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137FA5962EABE39700843DB1 /* DefiTHORChainBondedSkeletonView.swift */; };
 		138538DD2E61F581006DF7C7 /* VultiServerAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138538DC2E61F581006DF7C7 /* VultiServerAPI.swift */; };
 		138538E02E61F5D5006DF7C7 /* ResendVaultShareRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138538DF2E61F5CF006DF7C7 /* ResendVaultShareRequest.swift */; };
 		138538E22E61F681006DF7C7 /* VultiServerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138538E12E61F67C006DF7C7 /* VultiServerService.swift */; };
@@ -1367,7 +1366,6 @@
 		137FA58D2EABC37C00843DB1 /* THORChainStakingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainStakingService.swift; sourceTree = "<group>"; };
 		137FA5902EABC38D00843DB1 /* THORChainStakingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainStakingAPI.swift; sourceTree = "<group>"; };
 		137FA5942EABE38A00843DB1 /* DefiTHORChainStakedPositionSkeletonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainStakedPositionSkeletonView.swift; sourceTree = "<group>"; };
-		137FA5962EABE39700843DB1 /* DefiTHORChainBondedSkeletonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainBondedSkeletonView.swift; sourceTree = "<group>"; };
 		138538DC2E61F581006DF7C7 /* VultiServerAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultiServerAPI.swift; sourceTree = "<group>"; };
 		138538DF2E61F5CF006DF7C7 /* ResendVaultShareRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResendVaultShareRequest.swift; sourceTree = "<group>"; };
 		138538E12E61F67C006DF7C7 /* VultiServerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultiServerService.swift; sourceTree = "<group>"; };
@@ -3426,7 +3424,6 @@
 		13A657AF2EA28B7100323E4C /* Bonded */ = {
 			isa = PBXGroup;
 			children = (
-				137FA5962EABE39700843DB1 /* DefiTHORChainBondedSkeletonView.swift */,
 				13A657C62EA2AC5900323E4C /* DefiTHORChainActiveNodeView.swift */,
 				13A657BF2EA29A8F00323E4C /* BondNodeStateView.swift */,
 				13A657BB2EA2976800323E4C /* DefiTHORChainAvailableNodesView.swift */,
@@ -6300,7 +6297,6 @@
 				A6ECA19C2C93FB7200456110 /* Search+iOS.swift in Sources */,
 				13A657C92EA2BCC400323E4C /* HiddenBalanceText.swift in Sources */,
 				A6951E882C52DB9D007292E7 /* Search.swift in Sources */,
-				137FA5972EABE39700843DB1 /* DefiTHORChainBondedSkeletonView.swift in Sources */,
 				13AB73762EB925A100DA106B /* AmountBalanceValidator.swift in Sources */,
 				B53D8CC82BF7F21500B795D3 /* FunctionCallBond.swift in Sources */,
 				B57178B62E66F86900BABE2E /* ThorchainService+Yield+Prices.swift in Sources */,

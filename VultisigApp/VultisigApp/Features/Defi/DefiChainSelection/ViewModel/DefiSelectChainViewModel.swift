@@ -59,7 +59,7 @@ class DefiSelectChainViewModel: ObservableObject {
     func save(for vault: Vault) async {
         do {
             let coinsMeta = TokensStore.TokenSelectionAssets
-                .filter { $0.isNativeToken && selection.contains($0.chain ) }
+                .filter { $0.isNativeToken && selection.contains($0.chain) }
             
             let vaultCoinsMeta = vault.coins.map { $0.toCoinMeta() }
             // Enable chains that are not included in vault yet
