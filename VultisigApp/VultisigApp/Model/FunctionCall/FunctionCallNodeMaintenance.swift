@@ -116,8 +116,8 @@ class FunctionCallNodeMaintenance: FunctionCallAddressable, ObservableObject {
                 )
             )
             StyledFloatingPointField(
-                label: "Fee",
-                placeholder: "Fee",
+                label: "fee".localized,
+                placeholder: "fee".localized,
                 value: Binding<Decimal>(
                     get: { self.fee },
                     set: { self.fee = $0 }

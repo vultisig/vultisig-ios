@@ -259,7 +259,7 @@ struct FunctionCallCosmosYVaultView: View {
             .padding(.bottom, 8)
             
             StyledFloatingPointField(
-                label: "Amount \(viewModel.balanceLabel)",
+                label: "\(NSLocalizedString("amount", comment: "")) \(viewModel.balanceLabel)",
                 placeholder: NSLocalizedString("enterAmount", comment: ""),
                 value: Binding(
                     get: { viewModel.amount },
@@ -274,7 +274,7 @@ struct FunctionCallCosmosYVaultView: View {
             
             if case .withdraw = viewModel.action {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Slippage")
+                    Text("slippage".localized)
                         .font(Theme.fonts.bodySMedium)
                         .foregroundColor(Theme.colors.textPrimary)
                     

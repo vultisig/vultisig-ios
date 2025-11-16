@@ -144,12 +144,12 @@ struct FunctionCallRemoveThorLPView: View {
                 }
                 .padding()
             } else if model.lpPositions.isEmpty {
-                Text("No LP positions found")
+                Text("noLPPositionsFound".localized)
                     .foregroundColor(.secondary)
                     .padding()
             } else {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Select LP Position")
+                    Text("selectLPPosition".localized)
                         .font(.caption)
                         .foregroundColor(.secondary)
                     
@@ -168,7 +168,7 @@ struct FunctionCallRemoveThorLPView: View {
                 
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
-                        Text("Withdraw Percentage")
+                        Text("withdrawPercentage".localized)
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Spacer()
@@ -200,20 +200,20 @@ struct FunctionCallRemoveThorLPView: View {
                 .padding(.horizontal)
                 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Transaction Details")
+                    Text("transactionDetails".localized)
                         .font(.caption)
                         .foregroundColor(.secondary)
                     
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Chain: THORChain")
+                            Text("chainTHORChain".localized)
                                 .font(.caption)
                                 .foregroundColor(Theme.colors.textPrimary)
                             Text(model.transactionAmountInfo)
                                 .font(.caption)
                                 .foregroundColor(Theme.colors.primaryAccent1)
                                 .fontWeight(.semibold)
-                            Text("Withdrawal initiated on THORChain")
+                            Text("withdrawalInitiatedOnTHORChain".localized)
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
                         }
@@ -225,7 +225,7 @@ struct FunctionCallRemoveThorLPView: View {
                     .background(Theme.colors.bgSecondary.opacity(0.1))
                     .cornerRadius(8)
                     
-                    Text("LP withdrawals are always initiated on THORChain using RUNE. Ensure your LP position value exceeds the outbound fees for successful withdrawal.")
+                    Text("lpWithdrawalsInfo".localized)
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
@@ -233,19 +233,19 @@ struct FunctionCallRemoveThorLPView: View {
                 
                 if let position = model.selectedPosition {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Withdrawal Details")
+                        Text("withdrawalDetails".localized)
                             .font(.caption)
                             .foregroundColor(.secondary)
                         
                         HStack {
-                            Text("Pool:")
+                            Text("pool".localized)
                             Text(ThorchainService.cleanPoolName(position.asset))
                                 .foregroundColor(.secondary)
                             Spacer()
                         }
                         
                         HStack {
-                            Text("Your LP Units:")
+                            Text("yourLPUnits".localized)
                             Text(position.poolUnits)
                                 .foregroundColor(.secondary)
                             Spacer()
@@ -269,7 +269,7 @@ private struct PositionRowView: View {
     private func getAssetTicker(from poolName: String) -> String {
         let cleanName = ThorchainService.cleanPoolName(poolName)
         let components = cleanName.split(separator: ".")
-        return components.count >= 2 ? String(components[1]) : "Asset"
+        return components.count >= 2 ? String(components[1]) : "asset".localized
     }
     
     var body: some View {
@@ -282,7 +282,7 @@ private struct PositionRowView: View {
                     
                     HStack(spacing: 16) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("LP Units")
+                            Text("lpUnits".localized)
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
                             Text(position.poolUnits)
@@ -291,7 +291,7 @@ private struct PositionRowView: View {
                         }
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("RUNE Deposited")
+                            Text("runeDeposited".localized)
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
                             Text((position.runeDepositValue.toDecimal() / 100_000_000).formatToDecimal(digits: 8))
@@ -300,7 +300,7 @@ private struct PositionRowView: View {
                         }
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("\(getAssetTicker(from: position.asset)) Deposited")
+                            Text("\(getAssetTicker(from: position.asset)) \("deposited".localized)")
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
                             Text((position.assetDepositValue.toDecimal() / 100_000_000).formatToDecimal(digits: 8))
