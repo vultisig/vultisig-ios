@@ -33,7 +33,7 @@ struct DefiTHORChainBalanceView: View {
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.priceTitle1)
                 .contentTransition(.numericText())
-                .animation(.interpolatingSpring, value: groupedChain.defiBalanceInFiatString)
+                .animation(.interpolatingSpring, value: balance)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
