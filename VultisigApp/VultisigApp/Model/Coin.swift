@@ -210,7 +210,7 @@ class Coin: ObservableObject, Codable, Hashable {
         case .gaiaChain:
             return "7500"
         case .dydx:
-            return DydxHelper.DydxGasLimit.description
+            return DydxHelperStruct.DydxGasLimit.description
         case .sui:
             return "3000000"
         case .polkadot:

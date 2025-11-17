@@ -40,7 +40,9 @@ final class ChainDetailViewModel: ObservableObject {
                 if $0.isNativeToken != $1.isNativeToken {
                     return $0.isNativeToken
                 }
-                return $0.balanceDecimal > $1.balanceDecimal
+                // Sort by fiat value (descending), not balance
+                // Tokens with missing prices default to 0 and go last
+                return ($0.balanceInFiatDecimal) > ($1.balanceInFiatDecimal)
             }
     }
     

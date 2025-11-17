@@ -1365,7 +1365,7 @@ class TokensStore {
         CoinMeta(
             chain: .polygon,
             ticker: "POL",
-            logo: "matic",
+            logo: "pol",
             decimals: 18,
             priceProviderId: "matic-network",
             contractAddress: "",
@@ -1690,6 +1690,7 @@ class TokensStore {
         tcy,
         stcy,
         ruji,
+        sruji,
         CoinMeta(
             chain: .thorChain,
             ticker: "KUJI",
@@ -1820,6 +1821,16 @@ class TokensStore {
         decimals: 8,
         priceProviderId: "rujira",
         contractAddress: "x/ruji",
+        isNativeToken: false
+    )
+    
+    static let sruji: CoinMeta = CoinMeta(
+        chain: .thorChain,
+        ticker: "sRUJI",
+        logo: "xruji", // Use same logo as RUJI
+        decimals: 8,
+        priceProviderId: "rujira",
+        contractAddress: "x/staking-ruji",
         isNativeToken: false
     )
     
