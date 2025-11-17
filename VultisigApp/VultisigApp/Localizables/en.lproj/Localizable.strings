@@ -958,6 +958,7 @@
 "unbondRune" = "Unbond RUNE";
 "invalidAmount" = "Invalid amount";
 "amountExceeded" = "Amount cannot exceed balance";
+"amountCannotBeZero" = "Amount cannot be zero";
 "emptyAmountField" = "Empty amount field.";
 "providerLabel" = "Provider (optional)";
 "operatorFeesLabel" = "Operator-fees (Basis Points)";

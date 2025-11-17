@@ -975,6 +975,7 @@
 "unbondRune" = "RUNE entbinden";
 "invalidAmount" = "Ungültiger Betrag";
 "amountExceeded" = "Betrag darf das Guthaben nicht überschreiten";
+"amountCannotBeZero" = "Betrag darf nicht null sein";
 "emptyAmountField" = "Betragsfeld ist leer.";
 "providerLabel" = "Anbieter (optional)";
 "operatorFeesLabel" = "Betreibergebühren (Basis Punkte)";

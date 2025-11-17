@@ -30,7 +30,7 @@ final class DefiMainViewModel: ObservableObject {
             .groupChains(
                 for: vault,
                 sortedBy: \.totalBalanceInFiatDecimal
-            ) { vault.defiChains.contains($0.nativeCoin.chain) }
+            ) { vault.defiChains.contains($0.nativeCoin.chain) && CoinAction.defiChains.contains($0.nativeCoin.chain) }
         self.groups = groups
     }
 }
