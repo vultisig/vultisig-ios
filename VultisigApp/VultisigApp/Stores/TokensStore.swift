@@ -1365,7 +1365,7 @@ class TokensStore {
         CoinMeta(
             chain: .polygon,
             ticker: "POL",
-            logo: "matic",
+            logo: "pol",
             decimals: 18,
             priceProviderId: "matic-network",
             contractAddress: "",
