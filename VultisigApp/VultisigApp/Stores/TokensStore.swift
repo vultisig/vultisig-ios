@@ -1883,7 +1883,7 @@ class TokensStore {
         ticker: "SOL",
         logo: "solana",
         decimals: 9,
-        priceProviderId: "",
+        priceProviderId: "solana",
         contractAddress: "0xFE6B19286885a4F7F55AdAD09C3Cd1f906D2478F",
         isNativeToken: false
     )
@@ -1893,7 +1893,7 @@ class TokensStore {
         ticker: "cbBTC",
         logo: "btc",
         decimals: 8,
-        priceProviderId: "",
+        priceProviderId: "coinbase-wrapped-btc",
         contractAddress: "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
         isNativeToken: false
     )
@@ -1903,7 +1903,7 @@ class TokensStore {
         ticker: "VVV",
         logo: "vvv",
         decimals: 18,
-        priceProviderId: "",
+        priceProviderId: "venice-token",
         contractAddress: "0xacfE6019Ed1A7Dc6f7B508C02d1b04ec88cC21bf",
         isNativeToken: false
     )
@@ -1913,7 +1913,7 @@ class TokensStore {
         ticker: "BTCB",
         logo: "btc",
         decimals: 18,
-        priceProviderId: "",
+        priceProviderId: "bitcoin-on-base",
         contractAddress: "0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c",
         isNativeToken: false
     )
@@ -1923,7 +1923,7 @@ class TokensStore {
         ticker: "TWT",
         logo: "twt",
         decimals: 18,
-        priceProviderId: "",
+        priceProviderId: "trust-wallet-token",
         contractAddress: "0x4B0F1812e5Df2A09796481Ff14017e6005508003",
         isNativeToken: false
     )
@@ -1933,7 +1933,7 @@ class TokensStore {
         ticker: "DPI",
         logo: "dpi",
         decimals: 18,
-        priceProviderId: "",
+        priceProviderId: "defipulse-index",
         contractAddress: "0x1494CA1F11D487c2bBe4543E90080AeBa4BA3C2b",
         isNativeToken: false
     )
@@ -1943,7 +1943,7 @@ class TokensStore {
         ticker: "GUSD",
         logo: "gusd",
         decimals: 2,
-        priceProviderId: "",
+        priceProviderId: "gusd",
         contractAddress: "0x056Fd409E1d7A124BD7017459dFEa2F387b6d5Cd",
         isNativeToken: false
     )
@@ -1953,7 +1953,7 @@ class TokensStore {
         ticker: "LUSD",
         logo: "lusd",
         decimals: 18,
-        priceProviderId: "",
+        priceProviderId: "liquity-usd",
         contractAddress: "0x5f98805A4E8be255a32880FDeC7F6728C6568bA0",
         isNativeToken: false
     )
@@ -1973,7 +1973,7 @@ class TokensStore {
         ticker: "THOR",
         logo: "rune",
         decimals: 18,
-        priceProviderId: "",
+        priceProviderId: "thor",
         contractAddress: "0xa5f2211B9b8170F694421f2046281775E8468044",
         isNativeToken: false
     )
@@ -1983,7 +1983,7 @@ class TokensStore {
         ticker: "USDP",
         logo: "usdp",
         decimals: 18,
-        priceProviderId: "",
+        priceProviderId: "paxos-standard",
         contractAddress: "0x8E870D67F660D95d5be530380D0eC0bd388289E1",
         isNativeToken: false
     )
@@ -2003,7 +2003,7 @@ class TokensStore {
         ticker: "XDEFI",
         logo: "xdefi",
         decimals: 18,
-        priceProviderId: "",
+        priceProviderId: "xdefi",
         contractAddress: "0x72B886d09C117654aB7dA13A14d603001dE0B777",
         isNativeToken: false
     )
@@ -2013,7 +2013,7 @@ class TokensStore {
         ticker: "XRUNE",
         logo: "xrune",
         decimals: 18,
-        priceProviderId: "",
+        priceProviderId: "thorstarter",
         contractAddress: "0x69fa0feE221AD11012BAb0FdB45d444D3D2Ce71c",
         isNativeToken: false
     )
