@@ -975,6 +975,7 @@
 "unbondRune" = "Scollega RUNE";
 "invalidAmount" = "Importo non valido";
 "amountExceeded" = "L'importo non può superare il saldo";
+"amountCannotBeZero" = "L'importo non può essere zero";
 "emptyAmountField" = "Campo importo vuoto.";
 "providerLabel" = "Fornitore (opzionale)";
 "operatorFeesLabel" = "Commissioni operatore (Punti Base)";
