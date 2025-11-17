@@ -9,14 +9,14 @@ import SwiftUI
 
 // Enables Defi chains for the first time for vaults that were created before Defi features where released
 struct VaultDefiChainsService {
-    @AppStorage("enabled_vaults_1") private var enabledVaults: [String] = []
+    @AppStorage("enabled_vaults_2") private var enabledVaults: [String] = []
     
     func enableDefiChainsIfNeeded(for vault: Vault) async {
         guard !enabledVaults.contains(vault.pubKeyECDSA) else {
             return
         }
         
-        let allDefiChains = vault.chains.filter { CoinAction.defiChains.contains($0) } + vault.defiChains
+        let allDefiChains = (vault.chains + vault.defiChains).filter { CoinAction.defiChains.contains($0) }
         vault.defiChains = Array(Set(allDefiChains))
         do {
             try await Storage.shared.save()
