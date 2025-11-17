@@ -136,7 +136,7 @@ struct TerraHelperStruct {
                 }
                 
                 let input = CosmosSigningInput.with {
-                    $0.signingMode = .protobuf;
+                    $0.signingMode = .protobuf
                     $0.accountNumber = accountNumber
                     $0.chainID = coinType.chainId
                     if let memo = keysignPayload.memo {
