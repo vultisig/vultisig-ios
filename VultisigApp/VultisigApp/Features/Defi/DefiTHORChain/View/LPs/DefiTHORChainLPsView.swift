@@ -33,13 +33,11 @@ struct DefiTHORChainLPsView<EmptyStateView: View>: View {
     
     var body: some View {
         LazyVStack(spacing: 14) {
-            if !viewModel.hasLPPositions {
-                emptyStateView()
-            } else if showLoading {
+            if showLoading {
                 ForEach(0..<2, id: \.self) { _ in
                     DefiTHORChainLPPositionSkeletonView()
                 }
-            } else {
+            } else if viewModel.hasLPPositions {
                 ForEach(formattedLPs, id: \.position) { position, fiatAmount in
                     DefiTHORChainLPPositionView(
                         vault: vault,
@@ -48,7 +46,9 @@ struct DefiTHORChainLPsView<EmptyStateView: View>: View {
                         onRemove: { onRemove(position) },
                         onAdd: { onAdd(position) }
                     )
-                }
+                }                
+            } else {
+                emptyStateView()
             }
         }
     }
