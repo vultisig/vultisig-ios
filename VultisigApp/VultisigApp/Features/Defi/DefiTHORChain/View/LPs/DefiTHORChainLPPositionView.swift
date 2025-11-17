@@ -10,16 +10,9 @@ import SwiftUI
 struct DefiTHORChainLPPositionView: View {
     @ObservedObject var vault: Vault
     let position: LPPosition
+    let fiatAmount: String
     var onRemove: () -> Void
     var onAdd: () -> Void
-    
-    var fiatAmount: String {
-        guard let coin = vault.coins.first(where: { $0.toCoinMeta() == position.coin1 }) else {
-            return .empty
-        }
-        
-        return coin.fiat(decimal: position.coin1Amount).formatToFiat(includeCurrencySymbol: true)
-    }
     
     var title: String {
         String(format: "coinPool".localized, "\(position.coin1.ticker)/\(position.coin2.ticker)")
@@ -45,7 +38,7 @@ struct DefiTHORChainLPPositionView: View {
                 logo: position.coin2.logo,
                 size: CGSize(width: 40, height: 40),
                 ticker: position.coin2.ticker,
-                tokenChainLogo: nil
+                tokenChainLogo: position.coin2.chain.logo
             )
             
             VStack(alignment: .leading, spacing: .zero) {
@@ -120,6 +113,7 @@ struct DefiTHORChainLPPositionView: View {
                 apr: 0.024,
                 vault: .example
             ),
+            fiatAmount: "$100",
             onRemove: {},
             onAdd: {}
         )
@@ -136,6 +130,7 @@ struct DefiTHORChainLPPositionView: View {
                 apr: 0.2,
                 vault: .example
             ),
+            fiatAmount: "$100",
             onRemove: {},
             onAdd: {}
         )

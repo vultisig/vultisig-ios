@@ -298,7 +298,7 @@ class ReferralViewModel: ObservableObject {
         isFeesLoading = true
         
         do {
-            let info = try await thorchainReferralService.getNetworkFees()
+            let info = try await thorchainReferralService.getNetwork()
             registrationFee = info.tns_register_fee_rune.toDecimal()
             feePerBlock = info.tns_fee_per_block_rune.toDecimal()
             isFeesLoading = false

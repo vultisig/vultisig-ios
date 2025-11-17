@@ -78,7 +78,13 @@ struct DefiTHORChainSelectPositionsScreen: View {
         Task {
             isLoading = true
             updateVaultDefiPositions()
-            await CoinService.saveAssets(for: viewModel.vault, selection: Set(selection.flatMap { $0 }))
+            
+            let vaultCoins = viewModel.vault.coins.map { $0.toCoinMeta() }
+            let filteredDefiCoins = Set(selection.flatMap { $0 }).filter {
+                !vaultCoins.contains($0)
+            }
+            
+            try? await CoinService.addToChain(assets: Array(filteredDefiCoins), to: viewModel.vault)
             isLoading = false
             isPresented = false
         }

@@ -10,6 +10,7 @@ import SwiftUI
 struct DefiTHORChainActiveNodesView: View {
     let coin: Coin
     let activeNodes: [BondPosition]
+    let canUnbond: Bool
     var onBond: (BondNode) -> Void
     var onUnbond: (BondNode) -> Void
     
@@ -34,6 +35,7 @@ struct DefiTHORChainActiveNodesView: View {
                         DefiTHORChainActiveNodeView(
                             coin: coin,
                             activeNode: node,
+                            canUnbond: canUnbond,
                             onUnbond: onUnbond,
                             onBond: onBond
                         )
@@ -78,6 +80,7 @@ struct DefiTHORChainActiveNodesView: View {
     DefiTHORChainActiveNodesView(
         coin: coin,
         activeNodes: activeNodes,
+        canUnbond: true,
         onBond: { _ in },
         onUnbond: { _ in }
     )
