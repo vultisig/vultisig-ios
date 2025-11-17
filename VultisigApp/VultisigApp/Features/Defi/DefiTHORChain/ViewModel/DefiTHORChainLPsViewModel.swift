@@ -29,7 +29,7 @@ final class DefiTHORChainLPsViewModel: ObservableObject {
     /// - "30d": Monthly average, balanced view (DEFAULT, matches thorchain.org)
     /// - "100d": Longer-term average, more stable
     /// Default is 30d to match thorchain.org and the API default
-    var aprPeriod: String = "all"
+    var aprPeriod: String = "100d"
 
     init(vault: Vault) {
         self.vault = vault

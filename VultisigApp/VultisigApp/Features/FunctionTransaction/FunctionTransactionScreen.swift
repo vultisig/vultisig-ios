@@ -21,8 +21,8 @@ struct FunctionTransactionScreen: View {
     var body: some View {
         ZStack {
             switch transactionType {
-            case .bond(let node):
-                resolvingCoin(coin: vault.runeCoin) {
+            case .bond(let coin, let node):
+                resolvingCoin(coinMeta: coin) {
                     BondTransactionScreen(
                         viewModel: BondTransactionViewModel(
                             coin: $0,
@@ -169,6 +169,6 @@ struct FunctionTransactionScreen: View {
 #Preview {
     FunctionTransactionScreen(
         vault: .example,
-        transactionType: .bond(node: "test")
+        transactionType: .bond(coin: .example, node: "test")
     )
 }

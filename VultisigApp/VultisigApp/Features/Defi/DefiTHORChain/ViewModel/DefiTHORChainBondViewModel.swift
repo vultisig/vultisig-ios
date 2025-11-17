@@ -11,7 +11,7 @@ final class DefiTHORChainBondViewModel: ObservableObject {
     @Published private(set) var vault: Vault
     @Published private(set) var activeBondedNodes: [BondPosition] = []
     @Published private(set) var availableNodes: [BondNode] = []
-    @Published private(set) var initialLoadingDone: Bool = false
+    @Published private(set) var canUnbond: Bool = false
     
     var hasBondPositions: Bool {
         vault.defiPositions.contains { $0.chain == .thorChain && !$0.bonds.isEmpty }
@@ -33,14 +33,10 @@ final class DefiTHORChainBondViewModel: ObservableObject {
     @MainActor
     func refresh() async {
         guard hasBondPositions, let runeCoin = vault.runeCoin else {
-            initialLoadingDone = true
             return
         }
         
         activeBondedNodes = vault.bondPositions
-        if !activeBondedNodes.isEmpty {
-            initialLoadingDone = true
-        }
                 
         do {
             // Fetch network-wide bond info once (APY and next churn date)
@@ -48,6 +44,10 @@ final class DefiTHORChainBondViewModel: ObservableObject {
             
             // Fetch bonded nodes for this address
             let bondedNodes = try await thorchainAPIService.getBondedNodes(address: runeCoin.address)
+            
+            // Keep unbond button enabled if something fails on network call
+            let vaultsMigrating = (try? await thorchainAPIService.getNetwork().vaults_migrating) ?? false
+            canUnbond = !vaultsMigrating
             
             // Map each bonded node to ActiveBondedNode with metrics
             var activeNodes: [BondPosition] = []
@@ -103,9 +103,10 @@ final class DefiTHORChainBondViewModel: ObservableObject {
             savePositions(positions: finalActiveNodes)
             self.activeBondedNodes = finalActiveNodes
             self.availableNodes = finalAvailableNodes            
-        } catch {}
-        
-        self.initialLoadingDone = true
+        } catch {
+            // Enable unbond button if something fails
+            self.canUnbond = true
+        }
     }
 }
 

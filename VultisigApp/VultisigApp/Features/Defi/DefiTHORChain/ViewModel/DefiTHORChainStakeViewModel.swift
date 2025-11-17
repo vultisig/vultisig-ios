@@ -48,9 +48,10 @@ private extension DefiTHORChainStakeViewModel {
             return
         }
         
-        stakePositions = vault.stakePositions.filter {
-            vaultStakePositions.contains($0.coin)
-        }
+        stakePositions = vault.stakePositions
+            .filter { vaultStakePositions.contains($0.coin) }
+            .sorted { $0.amount > $1.amount }
+        
         if !stakePositions.isEmpty {
             initialLoadingDone = true
         }

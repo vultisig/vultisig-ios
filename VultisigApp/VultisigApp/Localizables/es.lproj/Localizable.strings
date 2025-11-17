@@ -975,6 +975,7 @@
 "unbondRune" = "Desvincular RUNE";
 "invalidAmount" = "Cantidad inválida";
 "amountExceeded" = "La cantidad no puede exceder el saldo";
+"amountCannotBeZero" = "La cantidad no puede ser cero";
 "emptyAmountField" = "Campo de cantidad vacío.";
 "providerLabel" = "Proveedor (opcional)";
 "operatorFeesLabel" = "Tarifas del operador (Puntos Base)";
