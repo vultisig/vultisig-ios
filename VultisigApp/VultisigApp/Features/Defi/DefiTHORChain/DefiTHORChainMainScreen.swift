@@ -253,6 +253,7 @@ private extension DefiTHORChainMainScreen {
 
 private extension DefiTHORChainMainScreen {
     func refresh() async {
+        Task { await viewModel.refresh() }
         switch viewModel.selectedPosition {
         case .bond:
             await bondViewModel.refresh()
