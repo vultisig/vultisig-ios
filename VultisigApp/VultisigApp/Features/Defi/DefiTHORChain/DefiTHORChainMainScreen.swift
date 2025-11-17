@@ -44,10 +44,7 @@ struct DefiTHORChainMainScreen: View {
         .overlay(bottomGradient, alignment: .bottom)
         .onLoad {
             viewModel.onLoad()
-            Task {
-                await viewModel.refresh()
-                await refresh()
-            }
+            Task { await refresh() }
         }
         .refreshable { await refresh() }
         .onChange(of: vault) { _, vault in
