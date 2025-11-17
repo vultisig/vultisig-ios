@@ -23,7 +23,7 @@ struct TerraHelperStruct {
         }
         
         let coinType = chain.coinType
-        let denom = chain == .terra ? "uluna" : "uluna"
+        let denom = "uluna"
         
         if keysignPayload.coin.isNativeToken
             || keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/")

@@ -47,8 +47,8 @@ enum CosmosHelper {
     
     // MARK: - Service Implementation
     
-    private var helperStruct: CosmosHelperStruct {
-        let config = try! CosmosHelperConfig.getConfig(forChain: chain)
+    private func makeHelperStruct() throws -> CosmosHelperStruct {
+        let config = try CosmosHelperConfig.getConfig(forChain: chain)
         return CosmosHelperStruct(config: config)
     }
     
@@ -76,7 +76,8 @@ enum CosmosHelper {
     // MARK: - Public API
     
     func getSwapPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        return try helperStruct.getSwapPreSignedInputData(keysignPayload: keysignPayload)
+        let helper = try makeHelperStruct()
+        return try helper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
     }
     
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
@@ -87,7 +88,8 @@ enum CosmosHelper {
         case .dydx:
             return try DydxHelperStruct.getPreSignedInputData(keysignPayload: keysignPayload)
         default:
-            return try helperStruct.getPreSignedInputData(keysignPayload: keysignPayload)
+            let helper = try makeHelperStruct()
+            return try helper.getPreSignedInputData(keysignPayload: keysignPayload)
         }
     }
     
@@ -98,7 +100,8 @@ enum CosmosHelper {
         case .dydx:
             return try DydxHelperStruct.getPreSignedImageHash(keysignPayload: keysignPayload)
         default:
-            return try helperStruct.getPreSignedImageHash(keysignPayload: keysignPayload)
+            let helper = try makeHelperStruct()
+            return try helper.getPreSignedImageHash(keysignPayload: keysignPayload)
         }
     }
     
@@ -110,7 +113,8 @@ enum CosmosHelper {
         case .dydx:
             return try DydxHelperStruct.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
         default:
-            return try helperStruct.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
+            let helper = try makeHelperStruct()
+            return try helper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
         }
     }
     
@@ -123,7 +127,8 @@ enum CosmosHelper {
         case .dydx:
             return try DydxHelperStruct.getSignedTransaction(coinHexPublicKey: coinHexPublicKey, inputData: inputData, signatures: signatures)
         default:
-            return try helperStruct.getSignedTransaction(coinHexPublicKey: coinHexPublicKey, inputData: inputData, signatures: signatures)
+            let helper = try makeHelperStruct()
+            return try helper.getSignedTransaction(coinHexPublicKey: coinHexPublicKey, inputData: inputData, signatures: signatures)
         }
     }
 }
