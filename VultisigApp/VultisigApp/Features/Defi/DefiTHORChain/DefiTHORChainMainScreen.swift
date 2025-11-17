@@ -205,6 +205,8 @@ struct DefiTHORChainMainScreen: View {
                     try await CoinService.addToChain(assets: type.coins, to: vault)
                 } catch {
                     self.error = HelperError.runtimeError("Failed to add coins")
+                    isLoading = false
+                    return
                 }
                 isLoading = false
             }

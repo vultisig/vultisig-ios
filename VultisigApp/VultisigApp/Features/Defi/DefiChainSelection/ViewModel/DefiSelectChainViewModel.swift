@@ -69,6 +69,7 @@ class DefiSelectChainViewModel: ObservableObject {
             try await CoinService.addNewlySelectedCoins(vault: vault, selection: Set(vaultChainsToEnable))
             
             vault.defiChains = Array(selection)
+                .filter { CoinAction.defiChains.contains($0) }
             
             try Storage.shared.save()
         } catch  {
