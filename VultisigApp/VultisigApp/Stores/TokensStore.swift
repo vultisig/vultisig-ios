@@ -809,7 +809,7 @@ class TokensStore {
             ticker: "POL",
             logo: "pol",
             decimals: 18,
-            priceProviderId: "matic-network",
+            priceProviderId: "polygon-ecosystem-token",
             contractAddress: "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0",
             isNativeToken: false
         ),
@@ -1367,7 +1367,7 @@ class TokensStore {
             ticker: "POL",
             logo: "pol",
             decimals: 18,
-            priceProviderId: "matic-network",
+            priceProviderId: "polygon-ecosystem-token",
             contractAddress: "",
             isNativeToken: true
         ),
