@@ -81,28 +81,15 @@ struct KeysignMessageFactory {
             return try SolanaHelper.getPreSignedImageHash(keysignPayload: payload)
         case .sui:
             return try SuiHelper.getPreSignedImageHash(keysignPayload: payload)
-        case .gaiaChain:
-            return try ATOMHelper().getPreSignedImageHash(keysignPayload: payload)
-        case .kujira:
-            return try KujiraHelper().getPreSignedImageHash(keysignPayload: payload)
-        case .osmosis:
-            return try OsmoHelper().getPreSignedImageHash(keysignPayload: payload)
-        case .terra:
-            return try TerraHelper(coinType: .terraV2, denom: "uluna").getPreSignedImageHash(keysignPayload: payload)
-        case .terraClassic:
-            return try TerraHelper(coinType: .terra, denom: "uluna").getPreSignedImageHash(keysignPayload: payload)
-        case .noble:
-            return try NobleHelper().getPreSignedImageHash(keysignPayload: payload)
+        case .gaiaChain, .kujira, .osmosis, .terra, .terraClassic, .noble, .dydx, .akash:
+            let helper = try CosmosHelper.getHelper(forChain: payload.coin.chain)
+            return try helper.getPreSignedImageHash(keysignPayload: payload)
         case .polkadot:
             return try PolkadotHelper.getPreSignedImageHash(keysignPayload: payload)
-        case .dydx:
-            return try DydxHelper().getPreSignedImageHash(keysignPayload: payload)
         case .ton:
             return try TonHelper.getPreSignedImageHash(keysignPayload: payload)
         case .ripple:
             return try RippleHelper.getPreSignedImageHash(keysignPayload: payload)
-        case .akash:
-            return try AkashHelper().getPreSignedImageHash(keysignPayload: payload)
         case .tron:
             return try TronHelper.getPreSignedImageHash(keysignPayload: payload)
         }

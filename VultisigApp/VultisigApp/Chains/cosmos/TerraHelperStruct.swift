@@ -1,28 +1,19 @@
 //
-//  Osmosis.swift
+//  TerraHelperStruct.swift
 //  VultisigApp
 //
-//  Created by Enrique Souza 07/11/2024
+//  Refactored to use struct (value type) instead of classes
 //
 
 import Foundation
 import WalletCore
 import Tss
-import CryptoSwift
+import VultisigCommonData
 
-class TerraHelper {
-    let coinType: CoinType
-    let denom: String
+struct TerraHelperStruct {
+    static let GasLimit: UInt64 = 300000
     
-    init(coinType:CoinType, denom: String){
-        self.coinType = coinType
-        self.denom = denom
-    }
-    
-    static let GasLimit:UInt64 = 300000
-    
-    func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        
+    static func getPreSignedInputData(keysignPayload: KeysignPayload, chain: Chain) throws -> Data {
         guard case .Cosmos(let accountNumber, let sequence , let gas, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")
         }
@@ -30,6 +21,9 @@ class TerraHelper {
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
             throw HelperError.runtimeError("invalid hex public key")
         }
+        
+        let coinType = chain.coinType
+        let denom = "uluna"
         
         if keysignPayload.coin.isNativeToken
             || keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/")
@@ -39,7 +33,7 @@ class TerraHelper {
             let input = CosmosSigningInput.with {
                 $0.publicKey = pubKeyData
                 $0.signingMode = .protobuf
-                $0.chainID = self.coinType.chainId
+                $0.chainID = coinType.chainId
                 $0.accountNumber = accountNumber
                 $0.sequence = sequence
                 $0.mode = .sync
@@ -50,7 +44,7 @@ class TerraHelper {
                     $0.sendCoinsMessage = CosmosMessage.Send.with{
                         $0.fromAddress = keysignPayload.coin.address
                         $0.amounts = [CosmosAmount.with {
-                            $0.denom = keysignPayload.coin.isNativeToken ? self.denom : keysignPayload.coin.contractAddress
+                            $0.denom = keysignPayload.coin.isNativeToken ? denom : keysignPayload.coin.contractAddress
                             $0.amount = String(keysignPayload.toAmount)
                         }]
                         $0.toAddress = keysignPayload.toAddress
@@ -58,9 +52,9 @@ class TerraHelper {
                 }]
                 
                 $0.fee = CosmosFee.with {
-                    $0.gas = TerraHelper.GasLimit
+                    $0.gas = GasLimit
                     $0.amounts = [CosmosAmount.with {
-                        $0.denom = self.denom
+                        $0.denom = denom
                         $0.amount = String(gas)
                     }]
                 }
@@ -75,7 +69,7 @@ class TerraHelper {
                 let input = CosmosSigningInput.with {
                     $0.publicKey = pubKeyData
                     $0.signingMode = .protobuf
-                    $0.chainID = self.coinType.chainId
+                    $0.chainID = coinType.chainId
                     $0.accountNumber = accountNumber
                     $0.sequence = sequence
                     $0.mode = .sync
@@ -134,17 +128,17 @@ class TerraHelper {
                 }
                                
                 let fee = CosmosFee.with {
-                    $0.gas = TerraHelper.GasLimit
+                    $0.gas = GasLimit
                     $0.amounts = [CosmosAmount.with {
                         $0.amount = String(gas)
-                        $0.denom = self.denom
+                        $0.denom = denom
                     }]
                 }
                 
                 let input = CosmosSigningInput.with {
-                    $0.signingMode = .protobuf;
+                    $0.signingMode = .protobuf
                     $0.accountNumber = accountNumber
-                    $0.chainID = self.coinType.chainId
+                    $0.chainID = coinType.chainId
                     if let memo = keysignPayload.memo {
                         $0.memo = memo
                     }
@@ -162,9 +156,10 @@ class TerraHelper {
         }
     }
     
-    func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
-        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
-        let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
+    static func getPreSignedImageHash(keysignPayload: KeysignPayload, chain: Chain) throws -> [String] {
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload, chain: chain)
+        let coinType = chain.coinType
+        let hashes = TransactionCompiler.preImageHashes(coinType: coinType, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
@@ -172,18 +167,21 @@ class TerraHelper {
         return [preSigningOutput.dataHash.hexString]
     }
     
-    func getSignedTransaction(keysignPayload: KeysignPayload,
-                              signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
+    static func getSignedTransaction(keysignPayload: KeysignPayload,
+                              signatures: [String: TssKeysignResponse],
+                              chain: Chain) throws -> SignedTransactionResult
     {
-        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
-        let signedTransaction = try getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload, chain: chain)
+        let signedTransaction = try getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures, chain: chain)
         return signedTransaction
     }
     
-    func getSignedTransaction(coinHexPublicKey: String,
+    static func getSignedTransaction(coinHexPublicKey: String,
                               inputData: Data,
-                              signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
+                              signatures: [String: TssKeysignResponse],
+                              chain: Chain) throws -> SignedTransactionResult
     {
+        let coinType = chain.coinType
         guard let pubkeyData = Data(hexString: coinHexPublicKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {
@@ -191,7 +189,7 @@ class TerraHelper {
         }
         
         do {
-            let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
+            let hashes = TransactionCompiler.preImageHashes(coinType: coinType, txInputData: inputData)
             let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
             let allSignatures = DataVector()
             let publicKeys = DataVector()
@@ -203,7 +201,7 @@ class TerraHelper {
             
             allSignatures.add(data: signature)
             publicKeys.add(data: pubkeyData)
-            let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: self.coinType,
+            let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: coinType,
                                                                                  txInputData: inputData,
                                                                                  signatures: allSignatures,
                                                                                  publicKeys: publicKeys)
@@ -217,3 +215,4 @@ class TerraHelper {
         }
     }
 }
+

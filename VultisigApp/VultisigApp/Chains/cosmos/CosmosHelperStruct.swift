@@ -1,8 +1,8 @@
 //
-//  cosmos.swift
+//  CosmosHelperStruct.swift
 //  VultisigApp
 //
-//  Created by Enrique Souza Soares on 19/11/24.
+//  Refactored to use struct (value type) instead of classes
 //
 
 import Foundation
@@ -11,16 +11,8 @@ import Tss
 import CryptoSwift
 import VultisigCommonData
 
-class CosmosHelper {
-    var coinType: CoinType
-    var denom: String
-    var gasLimit: UInt64
-    
-    init(coinType:CoinType, denom: String, gasLimit: UInt64){
-        self.coinType = coinType
-        self.denom = denom
-        self.gasLimit = gasLimit
-    }
+struct CosmosHelperStruct {
+    let config: CosmosHelperConfig
     
     func getSwapPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard let swapPayload = keysignPayload.swapPayload else {
@@ -50,7 +42,7 @@ class CosmosHelper {
             $0.mode = .sync
             $0.fee = buildCosmosFee(gas: gas)
             $0.signingMode = .protobuf
-            $0.chainID = coinType.chainId
+            $0.chainID = config.coinType.chainId
             $0.memo = memo
             $0.messages = [CosmosMessage.with {
                 $0.sendCoinsMessage = CosmosMessage.Send.with {
@@ -74,8 +66,7 @@ class CosmosHelper {
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
             throw HelperError.runtimeError("getPreSignedInputData: invalid hex public key")
         }
-        let coin = self.coinType
-        
+        let coin = config.coinType
         
         var transactionType: VSTransactionType = .unspecified
         if let vsTransactionType = VSTransactionType(rawValue: transactionTypeRawValue) {
@@ -103,7 +94,7 @@ class CosmosHelper {
                 $0.sender = keysignPayload.coin.address
                 $0.receiver = String(keysignPayload.toAddress)
                 $0.token = CosmosAmount.with {
-                    $0.denom = keysignPayload.coin.isNativeToken ? self.denom : keysignPayload.coin.contractAddress
+                    $0.denom = keysignPayload.coin.isNativeToken ? config.denom : keysignPayload.coin.contractAddress
                     $0.amount = String(keysignPayload.toAmount)
                 }
                 $0.timeoutHeight = CosmosHeight.with {
@@ -164,7 +155,7 @@ class CosmosHelper {
                     $0.sendCoinsMessage = CosmosMessage.Send.with{
                         $0.fromAddress = keysignPayload.coin.address
                         $0.amounts = [CosmosAmount.with {
-                            $0.denom = keysignPayload.coin.isNativeToken ? self.denom : keysignPayload.coin.contractAddress
+                            $0.denom = keysignPayload.coin.isNativeToken ? config.denom : keysignPayload.coin.contractAddress
                             $0.amount = String(keysignPayload.toAmount)
                         }]
                         $0.toAddress = keysignPayload.toAddress
@@ -183,7 +174,7 @@ class CosmosHelper {
     
     func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
-        let hashes = TransactionCompiler.preImageHashes(coinType: coinType, txInputData: inputData)
+        let hashes = TransactionCompiler.preImageHashes(coinType: config.coinType, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
             print("Error getPreSignedImageHash: \(preSigningOutput.errorMessage)")
@@ -212,7 +203,7 @@ class CosmosHelper {
         }
         
         do {
-            let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
+            let hashes = TransactionCompiler.preImageHashes(coinType: config.coinType, txInputData: inputData)
             let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
             let allSignatures = DataVector()
             let publicKeys = DataVector()
@@ -225,7 +216,7 @@ class CosmosHelper {
             
             allSignatures.add(data: signature)
             publicKeys.add(data: pubkeyData)
-            let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: self.coinType,
+            let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: config.coinType,
                                                                                  txInputData: inputData,
                                                                                  signatures: allSignatures,
                                                                                  publicKeys: publicKeys)
@@ -246,9 +237,9 @@ class CosmosHelper {
     
     private func buildCosmosFee(gas: UInt64) -> CosmosFee {
         return CosmosFee.with {
-            $0.gas = gasLimit
+            $0.gas = config.gasLimit
             $0.amounts = [CosmosAmount.with {
-                $0.denom = denom
+                $0.denom = config.denom
                 $0.amount = String(gas)
             }]
         }
@@ -282,3 +273,4 @@ class CosmosHelper {
         }
     }
 }
+

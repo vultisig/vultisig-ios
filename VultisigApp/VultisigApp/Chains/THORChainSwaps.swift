@@ -41,7 +41,8 @@ class THORChainSwaps {
             let signedEvmTx = try helper.getSwapPreSignedInputData(keysignPayload: keysignPayload, incrementNonce: incrementNonce)
             return signedEvmTx
         case .gaiaChain:
-            return try ATOMHelper().getSwapPreSignedInputData(keysignPayload:keysignPayload)
+            let helper = try CosmosHelper.getHelper(forChain: .gaiaChain)
+            return try helper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
         case .ripple:
             return try RippleHelper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
         case .tron:
@@ -141,7 +142,8 @@ class THORChainSwaps {
             let signedEvmTx = try EVMHelper.getHelper(coin: keysignPayload.coin).getSignedTransaction(ethPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
             return signedEvmTx
         case .gaiaChain:
-            return try ATOMHelper().getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
+            let helper = try CosmosHelper.getHelper(forChain: .gaiaChain)
+            return try helper.getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
         case .ripple:
             return try RippleHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
         case .tron:
