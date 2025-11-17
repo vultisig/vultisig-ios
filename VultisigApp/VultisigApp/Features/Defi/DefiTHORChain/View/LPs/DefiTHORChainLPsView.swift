@@ -18,6 +18,19 @@ struct DefiTHORChainLPsView<EmptyStateView: View>: View {
         !viewModel.initialLoadingDone
     }
     
+    var formattedLPs: [(position: LPPosition, fiatAmount: String)] {
+        viewModel.lpPositions.compactMap { position -> (position: LPPosition, fiatAmount: Decimal)? in
+            guard let coin = vault.coins.first(where: { $0.toCoinMeta() == position.coin1 }) else {
+                return nil
+            }
+            
+            let fiatAmount = coin.fiat(decimal: position.coin1Amount)
+            return (position, fiatAmount)
+        }
+        .sorted { $0.fiatAmount > $1.fiatAmount }
+        .map { ($0.position, $0.fiatAmount.formatToFiat(includeCurrencySymbol: true))}
+    }
+    
     var body: some View {
         LazyVStack(spacing: 14) {
             if !viewModel.hasLPPositions {
@@ -27,10 +40,11 @@ struct DefiTHORChainLPsView<EmptyStateView: View>: View {
                     DefiTHORChainLPPositionSkeletonView()
                 }
             } else {
-                ForEach(viewModel.lpPositions) { position in
+                ForEach(formattedLPs, id: \.position) { position, fiatAmount in
                     DefiTHORChainLPPositionView(
                         vault: vault,
                         position: position,
+                        fiatAmount: fiatAmount,
                         onRemove: { onRemove(position) },
                         onAdd: { onAdd(position) }
                     )
