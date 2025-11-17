@@ -101,7 +101,7 @@ struct VaultMainScreen: View {
                         addressToCopy: $addressToCopy
                     )
                 }
-                .onAppear(perform: refresh)
+                .throttledOnAppear(interval: 15.0, action: refresh)
                 .refreshable { refresh() }
                 .onChange(of: settingsViewModel.selectedCurrency) {
                     refresh()

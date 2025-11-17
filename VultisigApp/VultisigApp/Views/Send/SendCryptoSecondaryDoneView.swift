@@ -10,15 +10,16 @@ import SwiftData
 
 struct SendCryptoSecondaryDoneView: View {
     let input: SendCryptoContent
-    @Binding var navigateToHome: Bool
     
     @State var addressAdded: Bool = false
     @State var navigateToAddressBook = false
     @Environment(\.openURL) var openURL
     @EnvironmentObject var homeViewModel: HomeViewModel
     @State var canShowAddressBook: Bool = false
+    @State var navigateToHome: Bool = false
     
     @Environment(\.modelContext) var modelContext
+    @EnvironmentObject var accountViewModel: AccountViewModel
     
     var showAddressBookButton: Bool {
         input.isSend && canShowAddressBook
@@ -58,6 +59,10 @@ struct SendCryptoSecondaryDoneView: View {
         .onChange(of: addressAdded) { oldValue, newValue in
             guard newValue else { return }
             navigateToHome = true
+        }
+        .onChange(of: navigateToHome) { _, newValue in
+            guard newValue else { return }
+            accountViewModel.referenceID = UUID()
         }
     }
     
@@ -184,7 +189,6 @@ struct SendCryptoSecondaryDoneView: View {
             fromAddress: "thor1kkmnmgvd85puk8zsvqfxx36cqy9mxqret39t8z",
             toAddress: "thor1kkmnmgvd85puk8zsvqfxx36cqy9mxqret39t8z",
             fee: ("0.001 RUNE", "US$ 0.00")
-        ),
-        navigateToHome: .constant(false)
+        )
     )
 }
