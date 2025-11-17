@@ -146,4 +146,5 @@ struct SendCryptoDoneView: View {
         isSend: true
     )
     .environmentObject(SettingsViewModel())
+    .environmentObject(AccountViewModel())
 }

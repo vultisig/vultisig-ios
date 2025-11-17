@@ -16,7 +16,6 @@ struct SendCryptoDoneContentView: View {
     @State var navigateToTransactionDetails = false
     @State var navigateToHome = false
     @State var animationVM: RiveViewModel? = nil
-    @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var accountViewModel: AccountViewModel
     
     var body: some View {
@@ -118,4 +117,5 @@ struct SendCryptoDoneContentView: View {
         swapTransaction: nil,
         isSend: true
     )
+    .environmentObject(AccountViewModel())
 }
