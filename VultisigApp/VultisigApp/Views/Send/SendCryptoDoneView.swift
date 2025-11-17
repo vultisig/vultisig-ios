@@ -29,6 +29,7 @@ struct SendCryptoDoneView: View {
     
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var accountViewModel: AccountViewModel
     
     init(
         vault: Vault,
@@ -58,8 +59,9 @@ struct SendCryptoDoneView: View {
             view
             PopupCapsule(text: alertTitle, showPopup: $showAlert)
         }
-        .navigationDestination(isPresented: $navigateToHome) {
-            HomeScreen(initialVault: vault)
+        .onChange(of: navigateToHome) { _, newValue in
+            guard newValue else { return }
+            accountViewModel.referenceID = UUID()
         }
     }
     

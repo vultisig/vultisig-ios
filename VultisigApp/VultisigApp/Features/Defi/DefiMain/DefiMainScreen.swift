@@ -66,7 +66,6 @@ struct DefiMainScreen: View {
                     isPresented: $showChainSelection
                 ) { refresh() }
             }
-            .onAppear(perform: refresh)
             .refreshable { refresh() }
             .onChange(of: settingsViewModel.selectedCurrency) {
                 refresh()
@@ -75,9 +74,7 @@ struct DefiMainScreen: View {
                 onScrollOffsetChange(newValue)
             }
         }
-        .onLoad {
-            refresh()
-        }
+        .throttledOnAppear(interval: 15.0, action: refresh)
         .onChange(of: vault) { oldValue, newValue in
             refresh()
         }
