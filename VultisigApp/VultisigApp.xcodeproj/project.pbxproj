@@ -49,6 +49,7 @@
 		1321D74A2E8F13D300ABE613 /* NativeToolbarItem+PreferenceKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321D7492E8F13BD00ABE613 /* NativeToolbarItem+PreferenceKey.swift */; };
 		132309FA2EAFFD7B00CD60F9 /* FunctionCallRouteBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132309F92EAFFD7B00CD60F9 /* FunctionCallRouteBuilder.swift */; };
 		132309FC2EAFFFD100CD60F9 /* FunctionCallPairScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132309FB2EAFFFD100CD60F9 /* FunctionCallPairScreen.swift */; };
+		132354552ECB5C9500BAFE7C /* ThrottledOnAppearModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132354542ECB5C9500BAFE7C /* ThrottledOnAppearModifier.swift */; };
 		132666C02E428B76007FDAC5 /* CounterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666BF2E428B72007FDAC5 /* CounterView.swift */; };
 		132666C42E42920C007FDAC5 /* ContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666C32E42920A007FDAC5 /* ContainerView.swift */; };
 		132666C62E429550007FDAC5 /* Icon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666C52E42954F007FDAC5 /* Icon.swift */; };
@@ -1225,6 +1226,7 @@
 		1321D7492E8F13BD00ABE613 /* NativeToolbarItem+PreferenceKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NativeToolbarItem+PreferenceKey.swift"; sourceTree = "<group>"; };
 		132309F92EAFFD7B00CD60F9 /* FunctionCallRouteBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallRouteBuilder.swift; sourceTree = "<group>"; };
 		132309FB2EAFFFD100CD60F9 /* FunctionCallPairScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallPairScreen.swift; sourceTree = "<group>"; };
+		132354542ECB5C9500BAFE7C /* ThrottledOnAppearModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThrottledOnAppearModifier.swift; sourceTree = "<group>"; };
 		132666BF2E428B72007FDAC5 /* CounterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterView.swift; sourceTree = "<group>"; };
 		132666C32E42920A007FDAC5 /* ContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainerView.swift; sourceTree = "<group>"; };
 		132666C52E42954F007FDAC5 /* Icon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Icon.swift; sourceTree = "<group>"; };
@@ -2707,6 +2709,7 @@
 		1334C73D2E30079000CBAA3E /* ViewModifiers */ = {
 			isa = PBXGroup;
 			children = (
+				132354542ECB5C9500BAFE7C /* ThrottledOnAppearModifier.swift */,
 				1305A1282E988BB4005873CA /* ReadSize.swift */,
 				138C5E662E79E85A00C559C7 /* GlassEffect.swift */,
 				1334C73E2E30079F00CBAA3E /* OnLoad.swift */,
@@ -6632,6 +6635,7 @@
 				A675305E2CAFB2CE00B1E344 /* FolderVaultCell.swift in Sources */,
 				13A078702E8484280093496F /* ListBottomSection.swift in Sources */,
 				A6505AF72CA678B30002FBF4 /* OnDropQRUtils.swift in Sources */,
+				132354552ECB5C9500BAFE7C /* ThrottledOnAppearModifier.swift in Sources */,
 				DED05FE42BBB824D00E0496C /* ThorchainAccountValue.swift in Sources */,
 				A6386DA42C90236100DDD58E /* CoinSelectionCell+macOS.swift in Sources */,
 				A60CA7E52BB0D37D00FDEB5C /* ContentView.swift in Sources */,
