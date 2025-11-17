@@ -8,6 +8,14 @@
 import Foundation
 
 struct DefiBalanceService {
+    func totalBalanceInFiatString(for chains: [Chain], vault: Vault) -> String {
+        let totalBalance = chains
+            .filter { CoinAction.defiChains.contains($0) }
+            .map { totalBalanceInFiat(for: $0, vault: vault) }
+            .reduce(Decimal.zero, +)
+        return totalBalance.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
+    }
+    
     func totalBalanceInFiatString(for chain: Chain, vault: Vault) -> String {
         let balanceDecimal = totalBalanceInFiat(for: chain, vault: vault)
         return balanceDecimal.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)

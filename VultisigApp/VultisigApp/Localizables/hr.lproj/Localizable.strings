@@ -975,6 +975,7 @@
 "unbondRune" = "Odveži RUNE";
 "invalidAmount" = "Nevažeći iznos";
 "amountExceeded" = "Iznos ne može premašiti saldo";
+"amountCannotBeZero" = "Iznos ne može biti nula";
 "emptyAmountField" = "Polje iznosa je prazno.";
 "providerLabel" = "Pružatelj (opcionalno)";
 "operatorFeesLabel" = "Naknade operatora (Bazne točke)";
