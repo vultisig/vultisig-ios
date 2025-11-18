@@ -15,7 +15,12 @@ struct TransactionFormScreen<Content: View>: View {
     
     @State var scrollViewProxy: ScrollViewProxy?
     
-    init(title: String, validForm: Binding<Bool>, onContinue: @escaping () -> Void, @ViewBuilder content: @escaping () -> Content) {
+    init(
+        title: String,
+        validForm: Binding<Bool>,
+        onContinue: @escaping () -> Void,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
         self.title = title
         self._validForm = validForm
         self.onContinue = onContinue
@@ -24,15 +29,14 @@ struct TransactionFormScreen<Content: View>: View {
     
     var body: some View {
         Screen(title: title) {
-            VStack(spacing: .zero) {
+            VStack(spacing: 12) {
                 GeometryReader { geo in
                     ScrollViewReader { proxy in
                         ScrollView(showsIndicators: false) {
                             VStack(spacing: 12) {
                                 content()
-                                Spacer()
                             }
-                            .frame(height: geo.size.height)
+                            .frame(height: geo.size.height, alignment: .top)
                         }
                         .onLoad {
                             scrollViewProxy = proxy

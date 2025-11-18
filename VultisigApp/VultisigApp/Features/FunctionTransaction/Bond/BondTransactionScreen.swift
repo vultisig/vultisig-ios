@@ -35,9 +35,11 @@ struct BondTransactionScreen: View {
             ) {
                 focusedFieldBinding = $0 ? .address : .amount
             } content: {
-                FunctionAddressField(viewModel: viewModel.addressViewModel)
-                    .focused($focusedField, equals: .address)
-                FunctionAddressField(viewModel: viewModel.providerViewModel)
+                VStack(spacing: 12) {
+                    FunctionAddressField(viewModel: viewModel.addressViewModel)
+                        .focused($focusedField, equals: .address)
+                    FunctionAddressField(viewModel: viewModel.providerViewModel)
+                }
             }
             
             FormExpandableSection(
@@ -50,26 +52,28 @@ struct BondTransactionScreen: View {
             ) {
                 focusedFieldBinding = $0 ? .amount : .address
             } content: {
-                AmountTextField(
-                    amount: $viewModel.amountField.value,
-                    error: $viewModel.amountField.error,
-                    ticker: Chain.thorChain.ticker,
-                    type: .button,
-                    availableAmount: viewModel.coin.balanceDecimal,
-                    decimals: viewModel.coin.decimals,
-                    percentage: $percentageSelected,
-                ).focused($focusedField, equals: .amount)
-                
-                CommonTextField(
-                    text: $viewModel.operatorFeeField.value,
-                    label: viewModel.operatorFeeField.label,
-                    placeholder: viewModel.operatorFeeField.placeholder ?? .empty,
-                    error: $viewModel.operatorFeeField.error,
-                    labelStyle: .secondary
-                )
-                #if os(iOS)
-                .keyboardType(.decimalPad)
-                #endif
+                VStack(spacing: 12) {
+                    AmountTextField(
+                        amount: $viewModel.amountField.value,
+                        error: $viewModel.amountField.error,
+                        ticker: Chain.thorChain.ticker,
+                        type: .button,
+                        availableAmount: viewModel.coin.balanceDecimal,
+                        decimals: viewModel.coin.decimals,
+                        percentage: $percentageSelected,
+                    ).focused($focusedField, equals: .amount)
+                    
+                    CommonTextField(
+                        text: $viewModel.operatorFeeField.value,
+                        label: viewModel.operatorFeeField.label,
+                        placeholder: viewModel.operatorFeeField.placeholder ?? .empty,
+                        error: $viewModel.operatorFeeField.error,
+                        labelStyle: .secondary
+                    )
+#if os(iOS)
+                    .keyboardType(.decimalPad)
+#endif
+                }
             }
         }
         .onLoad {
