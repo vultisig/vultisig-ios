@@ -477,6 +477,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
                 .zksync,
                 .zcash,
                 .mantle,
+                .hyperliquid,
                 .tron:
             return true
         case .polygonV2,
@@ -491,7 +492,6 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             .noble,
             .akash,
             .ethereumSepolia,
-            .hyperliquid,
             .sei:
             return false
         }
