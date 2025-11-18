@@ -84,6 +84,8 @@ extension Coin {
             return [.thorchain, .thorchainStagenet]
         case .solana:
             return [.lifi]
+        case .hyperliquid:
+            return [.lifi]
         case .cronosChain:
             return [.lifi]
         case .zcash:
@@ -92,7 +94,7 @@ extension Coin {
             return [.thorchain, .thorchainStagenet]
         case .tron:
             return [.thorchain, .thorchainStagenet]
-        case .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .akash, .ethereumSepolia, .cardano, .hyperliquid, .sei:
+        case .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .akash, .ethereumSepolia, .cardano, .sei:
             return []
         }
     }
