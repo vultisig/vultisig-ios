@@ -125,10 +125,13 @@ extension MacCameraServiceViewModel {
     func getTitle(_ type: DeeplinkFlowType) -> String {
         let text: String
         
-        if type == .NewVault {
+        switch type {
+        case .NewVault:
             text = "pair"
-        } else {
+        case .SignTransaction:
             text = "keysign"
+        case .Send, .Unknown:
+            text = "scanQRCode"
         }
         return NSLocalizedString(text, comment: "")
     }
@@ -160,7 +163,7 @@ extension MacCameraServiceViewModel {
             moveToCreateVaultView()
         case .SignTransaction:
             moveToVaultsView()
-        case .Unknown:
+        case .Send, .Unknown:
             moveToSendView(sendTx: sendTx, deeplinkViewModel: deeplinkViewModel, vaultDetailViewModel: vaultDetailViewModel, coinSelectionViewModel: coinSelectionViewModel)
         }
         

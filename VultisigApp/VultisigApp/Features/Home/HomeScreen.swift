@@ -204,8 +204,12 @@ struct HomeScreen: View {
                     vaultRoute = .createVault
                 } onSelectVault: { vault in
                     showVaultSelector.toggle()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        homeViewModel.setSelectedVault(vault)
+                    if deeplinkViewModel.pendingSendDeeplink {
+                        handleSendDeeplinkAfterVaultSelection(vault: vault)
+                    } else {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            homeViewModel.setSelectedVault(vault)
+                        }
                     }
                 }
             }
@@ -318,9 +322,25 @@ private extension HomeScreen {
             moveToCreateVaultView()
         case .SignTransaction:
             moveToVaultsView()
+        case .Send:
+            handleSendDeeplink()
         case .Unknown:
             return
         }
+    }
+    
+    private func handleSendDeeplink() {
+        // Validate minimum parameters (assetChain, assetTicker, toAddress)
+        // Even if some are missing, we'll still proceed with what we have
+        guard deeplinkViewModel.assetChain != nil || 
+              deeplinkViewModel.assetTicker != nil ||
+              deeplinkViewModel.address != nil else {
+            // If no parameters at all, don't proceed
+            return
+        }
+        
+        deeplinkViewModel.pendingSendDeeplink = true
+        showVaultSelector = true
     }
     
     func onVaultLoaded(vault: Vault) {
@@ -328,6 +348,48 @@ private extension HomeScreen {
         Task { @MainActor in
             await VaultDefiChainsService().enableDefiChainsIfNeeded(for: vault)
         }
+    }
+    
+    private func handleSendDeeplinkAfterVaultSelection(vault: Vault) {
+        deeplinkViewModel.pendingSendDeeplink = false
+        
+        // Set the selected vault
+        homeViewModel.setSelectedVault(vault)
+        
+        // Find the coin using the helper from DeeplinkViewModel
+        let coin = deeplinkViewModel.findCoin(in: vault)
+        
+        // Reset SendTransaction appropriately
+        if let coin = coin {
+            sendTx.reset(coin: coin)
+        } else {
+            // If coin not found, reset with a default coin from vault (or keep current state)
+            // The Send screen will handle missing coin gracefully
+            if let defaultCoin = vault.coins.first {
+                sendTx.reset(coin: defaultCoin)
+            }
+        }
+        
+        // Pre-fill fields if present
+        if let address = deeplinkViewModel.address {
+            sendTx.toAddress = address
+        }
+        
+        if let amount = deeplinkViewModel.sendAmount {
+            sendTx.amount = amount
+        }
+        
+        if let memo = deeplinkViewModel.sendMemo {
+            sendTx.memo = memo
+        }
+        
+        // Navigate to Send screen
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            vaultRoute = .mainAction(.send(coin: coin, hasPreselectedCoin: coin != nil))
+        }
+        
+        // Clear deeplink state after use
+        deeplinkViewModel.resetData()
     }
 }
 

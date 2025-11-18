@@ -105,6 +105,8 @@ struct GeneralQRImportMacView: View {
             text = "pair"
         case .SignTransaction:
             text = "keysign"
+        case .Send:
+            text = "scanQRCode"
         case .Unknown:
             text = "scanQRCode"
         }
@@ -120,6 +122,8 @@ struct GeneralQRImportMacView: View {
             text = "uploadQRCodeImageKeygen"
         case .SignTransaction:
             text = "uploadQRCodeImageKeysign"
+        case .Send:
+            text = "uploadFileWithQRCode"
         case .Unknown:
             text = "uploadFileWithQRCode"
         }
@@ -182,6 +186,8 @@ struct GeneralQRImportMacView: View {
             moveToCreateVaultView()
         case .SignTransaction:
             moveToVaultsView()
+        case .Send:
+            parseAddress(result)
         case .Unknown:
             parseAddress(result)
         }

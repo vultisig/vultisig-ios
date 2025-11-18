@@ -76,6 +76,8 @@ struct GeneralCodeScannerView: View {
             moveToCreateVaultView()
         case .SignTransaction:
             moveToVaultsView()
+        case .Send:
+            moveToSendView()
         case .Unknown:
             moveToSendView()
         }
