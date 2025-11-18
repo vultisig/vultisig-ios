@@ -35,6 +35,7 @@ final class MintTransactionViewModel: ObservableObject, Form {
     }
     
     var transactionBuilder: TransactionBuilder? {
+        validateErrors()
         guard validForm else { return nil }
         return MintTransactionBuilder(
             coin: coin,
