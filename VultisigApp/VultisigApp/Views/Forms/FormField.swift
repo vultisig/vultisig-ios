@@ -29,7 +29,6 @@ public class FormField: ObservableObject {
     @Published public var rawValue: String
 
     public var formatter: FormFieldFormatter?
-    public var validatesOnBlur: Bool
     public var validators: [FormFieldValidator]
 
     public init(
@@ -37,7 +36,6 @@ public class FormField: ObservableObject {
         label: String? = nil,
         placeholder: String? = nil,
         disabled: Bool = false,
-        validatesOnBlur: Bool = false,
         validators: [FormFieldValidator] = [],
         formatter: FormFieldFormatter? = nil
     ) {
@@ -45,7 +43,6 @@ public class FormField: ObservableObject {
         self.formatter = formatter
         self.placeholder = placeholder
         self.disabled = disabled
-        self.validatesOnBlur = validatesOnBlur
         self.validators = validators
         self.touched = false
         self.rawValue = initialValue
@@ -62,15 +59,15 @@ public class FormField: ObservableObject {
         }
     }
 
-    public func validateErrors() throws {
-        guard touched || value.isNotEmpty else { return }
+    public func validateErrors(showing: Bool = false) throws {
+        let showError = touched || value.isNotEmpty
 
         do {
             try validate()
             self.error = nil
             self.valid = true
         } catch {
-            self.error = error.localizedDescription
+            self.error = (showError || showing) ? error.localizedDescription : nil
             self.valid = false
             throw error
         }

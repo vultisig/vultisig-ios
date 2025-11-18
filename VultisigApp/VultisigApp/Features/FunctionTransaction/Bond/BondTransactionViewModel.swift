@@ -55,11 +55,12 @@ final class BondTransactionViewModel: ObservableObject, Form {
         setupForm()
         operatorFeeField.validators = [
             ClosureValidator { value in
+                if value.isEmpty && self.providerViewModel.field.value.isNotEmpty {
+                    throw HelperError.runtimeError("operatorFeesError".localized)
+                }
+                
                 if !value.isEmpty && Int64(value) == nil {
                     throw HelperError.runtimeError("invalidOperatorFee".localized)
-                }
-                if value.isEmpty && self.providerViewModel.field.valid {
-                    throw HelperError.runtimeError("operatorFeesError".localized)
                 }
             }
         ]
@@ -72,6 +73,7 @@ final class BondTransactionViewModel: ObservableObject, Form {
     }
     
     var transactionBuilder: TransactionBuilder? {
+        validateErrors()
         guard validForm else { return nil }
         
         return BondTransactionBuilder(
