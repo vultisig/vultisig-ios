@@ -54,6 +54,7 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
     }
     
     var transactionBuilder: TransactionBuilder? {
+        validateErrors()
         guard validForm else { return nil }
         
         switch coin.ticker.uppercased() {

@@ -52,6 +52,7 @@ final class UnbondTransactionViewModel: ObservableObject, Form {
     }
     
     var transactionBuilder: TransactionBuilder? {
+        validateErrors()
         guard validForm else { return nil }
         return UnbondTransactionBuilder(
             coin: coin,
