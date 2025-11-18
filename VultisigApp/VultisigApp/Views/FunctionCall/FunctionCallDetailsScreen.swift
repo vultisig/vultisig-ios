@@ -74,27 +74,6 @@ struct FunctionCallDetailsScreen: View {
             guard let fnInstance = fnCallInstance else { return }
             let currentNodeAddress = extractNodeAddress(from: fnInstance)
             switch selectedFunctionMemoType {
-            case .bond:
-                ensureRuneCoin()
-                let bondInstance = FunctionCallBond(tx: tx, vault: vault)
-                
-                if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
-                    bondInstance.nodeAddress = nodeAddress
-                    bondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
-                }
-                fnCallInstance = .bond(bondInstance)
-            case .unbond:
-                // Ensure RUNE token is selected for UNBOND operations on THORChain
-                ensureRuneCoin()
-                let unbondInstance = FunctionCallUnbond(tx: tx, vault: vault)
-                
-                if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
-                    unbondInstance.nodeAddress = nodeAddress
-                    unbondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
-                }
-                
-                fnCallInstance = .unbond(unbondInstance)
-                
             case .rebond:
                 // Ensure RUNE token is selected for REBOND operations on THORChain
                 ensureRuneCoin()
@@ -157,23 +136,6 @@ struct FunctionCallDetailsScreen: View {
                 fnCallInstance = .vote(FunctionCallVote())
             case .stake:
                 fnCallInstance = .stake(FunctionCallStake(tx: tx))
-            case .stakeTcy:
-                // Ensure TCY token is selected for TCY staking operations on THORChain
-                ensureTCYCoin()
-                fnCallInstance = .stakeTcy(FunctionCallStakeTCY(tx: tx, vault: vault))
-            case .unstakeTcy:
-                // Ensure TCY token is selected for TCY unstaking operations on THORChain
-                ensureTCYCoin()
-                
-                DispatchQueue.main.async {
-                    ThorchainService.shared.fetchTcyStakedAmount(address: tx.coin.address) {
-                        stakedAmount in
-                        
-                        DispatchQueue.main.async {
-                            fnCallInstance = .unstakeTcy(FunctionCallUnstakeTCY(tx: tx, vault: vault, stakedAmount: stakedAmount))
-                        }
-                    }
-                }
                 
             case .unstake:
                 fnCallInstance = .unstake(FunctionCallUnstake())
@@ -196,29 +158,8 @@ struct FunctionCallDetailsScreen: View {
                 fnCallInstance = .unmerge(FunctionCallCosmosUnmerge(tx: tx, vault: vault))
             case .theSwitch:
                 fnCallInstance = .theSwitch(FunctionCallCosmosSwitch(tx: tx, vault: vault))
-            case .mintYRune:
-                fnCallInstance = .mintYRune(FunctionCallCosmosYVault(tx: tx, vault: vault, action: .deposit, functionType: .mintYRune))
-            case .mintYTCY:
-                fnCallInstance = .mintYTCY(FunctionCallCosmosYVault(tx: tx, vault: vault, action: .deposit, functionType: .mintYTCY))
-            case .redeemRune:
-                fnCallInstance = .redeemRune(FunctionCallCosmosYVault(tx: tx, vault: vault, action: .withdraw(slippage: YVaultConstants.slippageOptions.first!), functionType: .redeemRune))
-            case .redeemTCY:
-                fnCallInstance = .redeemTCY(FunctionCallCosmosYVault(tx: tx, vault: vault, action: .withdraw(slippage: YVaultConstants.slippageOptions.first!), functionType: .redeemTCY))
             case .addThorLP:
                 fnCallInstance = .addThorLP(FunctionCallAddThorLP(tx: tx, vault: vault))
-            case .removeThorLP:
-                // Ensure RUNE token is selected for REMOVE THORCHAIN LP operations on THORChain
-                ensureRuneCoin()
-                fnCallInstance = .removeThorLP(FunctionCallRemoveThorLP(tx: tx, vault: vault))
-            case .stakeRuji:
-                functionCallViewModel.setRujiToken(to: tx, vault: vault)
-                fnCallInstance = .stakeRuji(FunctionCallStakeRuji(tx: tx, vault: vault))
-            case .unstakeRuji:
-                functionCallViewModel.setRujiToken(to: tx, vault: vault)
-                fnCallInstance = .unstakeRuji(FunctionCallUnstakeRuji(tx: tx))
-            case .withdrawRujiRewards:
-                functionCallViewModel.setRujiToken(to: tx, vault: vault)
-                fnCallInstance = .withdrawRujiRewards(FunctionCallWithdrawRujiRewards(tx: tx))
             case .securedAsset:
                 fnCallInstance = .securedAsset(FunctionCallSecuredAsset(tx: tx, vault: vault))
             case .withdrawSecuredAsset:
@@ -274,12 +215,8 @@ struct FunctionCallDetailsScreen: View {
     
     private func extractNodeAddress(from instance: FunctionCallInstance) -> String? {
         switch instance {
-        case .bond(let bond):
-            return bond.nodeAddress
         case .rebond(let rebond):
             return rebond.nodeAddress
-        case .unbond(let unbond):
-            return unbond.nodeAddress
         case .leave(let leave):
             return leave.nodeAddress
         default:
@@ -342,32 +279,6 @@ private extension FunctionCallDetailsScreen {
                 let functionType: FunctionCallType
                 
                 switch actionStr.lowercased() {
-                case "bond":
-                    functionType = .bond
-                    selectedFunctionMemoType = functionType
-                    selectedContractMemoType = FunctionCallContractType.getDefault(for: defaultCoin)
-                    
-                    let bondInstance = FunctionCallBond(tx: tx, vault: vault)
-                    bondInstance.nodeAddress = nodeAddress
-                    bondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
-                    if let feeStr = dict.get("fee"), let feeInt = Int64(feeStr) {
-                        bondInstance.fee = feeInt
-                        bondInstance.feeValid = true
-                    }
-                    fnCallInstance = .bond(bondInstance)
-                case "unbond":
-                    functionType = .unbond
-                    selectedFunctionMemoType = functionType
-                    selectedContractMemoType = FunctionCallContractType.getDefault(for: defaultCoin)
-                    
-                    let unbondInstance = FunctionCallUnbond(tx: tx, vault: vault)
-                    unbondInstance.nodeAddress = nodeAddress
-                    unbondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
-                    if let amountStr = dict.get("amount"), let amountDecimal = Decimal(string: amountStr) {
-                        unbondInstance.amount = amountDecimal
-                        unbondInstance.amountValid = true
-                    }
-                    fnCallInstance = .unbond(unbondInstance)
                 case "rebond":
                     functionType = .rebond
                     selectedFunctionMemoType = functionType
