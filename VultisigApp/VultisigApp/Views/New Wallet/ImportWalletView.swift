@@ -16,6 +16,8 @@ struct ImportWalletView: View {
     
     @Query var vaults: [Vault]
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
+    @EnvironmentObject var accountViewModel: AccountViewModel
+    @State private var navigateToHome = false
     
     var body: some View {
         content
@@ -26,7 +28,12 @@ struct ImportWalletView: View {
             ) { result in
                 backupViewModel.handleFileImporter(result)
             }
-            .navigationDestination(isPresented: $backupViewModel.isLinkActive) {
+            .onChange(of: backupViewModel.isVaultImported) { _, isVaultImported in
+                guard isVaultImported else { return }
+                accountViewModel.showOnboarding = false
+                navigateToHome = true
+            }
+            .navigationDestination(isPresented: $navigateToHome) {
                 HomeScreen(initialVault: backupViewModel.selectedVault)
             }
             .onAppear {
@@ -118,4 +125,5 @@ struct ImportWalletView: View {
 #Preview {
     ImportWalletView()
         .environmentObject(VultExtensionViewModel())
+        .environmentObject(AccountViewModel())
 }
