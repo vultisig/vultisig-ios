@@ -386,10 +386,20 @@ extension SendDetailsScreen {
         if let coin = coin {
             tx.coin = coin
             tx.fromAddress = coin.address
-            tx.toAddress = deeplinkViewModel.address ?? ""
+            // Only set toAddress from deeplinkViewModel if tx.toAddress is empty
+            // This preserves the address that was already set before navigation
+            if tx.toAddress.isEmpty {
+                tx.toAddress = deeplinkViewModel.address ?? ""
+            }
             deeplinkViewModel.address = nil
             self.coin = nil
             selectedChain = coin.chain
+        } else {
+            // Even if coin is nil, try to get address from deeplinkViewModel if tx.toAddress is empty
+            if tx.toAddress.isEmpty, let deeplinkAddress = deeplinkViewModel.address {
+                tx.toAddress = deeplinkAddress
+                deeplinkViewModel.address = nil
+            }
         }
         
         if !tx.toAddress.isEmpty {

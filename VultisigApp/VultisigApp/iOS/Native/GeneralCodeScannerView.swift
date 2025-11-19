@@ -56,6 +56,12 @@ struct GeneralCodeScannerView: View {
                 return
             }
             deeplinkViewModel.extractParameters(url, vaults: vaults)
+            
+            // Send notification if type is .Send (extractParameters already sends it, but ensure it's sent)
+            if deeplinkViewModel.type == .Send {
+                NotificationCenter.default.post(name: NSNotification.Name("ProcessDeeplink"), object: nil)
+            }
+            
             presetValuesForDeeplink()
         case .failure(_):
             return

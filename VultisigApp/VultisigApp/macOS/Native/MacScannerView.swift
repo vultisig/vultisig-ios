@@ -32,15 +32,40 @@ struct MacScannerView: View {
             main
         }
         .crossPlatformToolbar(cameraViewModel.getTitle(type))
+        .onAppear {
+            #if DEBUG
+            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            print("📱 MacScannerView: onAppear - Scanner apareceu na tela")
+            print("   type: \(type)")
+            print("   selectedVault: \(selectedVault?.name ?? "nil")")
+            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            #endif
+        }
+        .onDisappear {
+            #if DEBUG
+            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            print("📱 MacScannerView: onDisappear - Scanner desapareceu da tela")
+            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            #endif
+        }
         .navigationDestination(isPresented: $cameraViewModel.shouldJoinKeygen) {
+            #if DEBUG
+            let _ = print("📱 MacScannerView: Navegando para JoinKeygenView")
+            #endif
             JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: selectedVault)
         }
         .navigationDestination(isPresented: $cameraViewModel.shouldKeysignTransaction) {
+            #if DEBUG
+            let _ = print("📱 MacScannerView: Navegando para JoinKeysignView")
+            #endif
             if let vault = homeViewModel.selectedVault {
                 JoinKeysignView(vault: vault)
             }
         }
         .navigationDestination(isPresented: $cameraViewModel.shouldSendCrypto) {
+            #if DEBUG
+            let _ = print("📱 MacScannerView: Navegando para SendDetailsScreen")
+            #endif
             if let vault = homeViewModel.selectedVault {
                 let coin = vault.coins.first(where: { $0.isNativeToken && $0.chain == cameraViewModel.selectedChain })
                 SendRouteBuilder().buildDetailsScreen(coin: coin, hasPreselectedCoin: false, tx: sendTx, vault: vault)
@@ -52,14 +77,42 @@ struct MacScannerView: View {
         VStack(spacing: 0) {
             view
         }
+        .onAppear {
+            #if DEBUG
+            print("🔍 MacScannerView: onAppear - Iniciando sessão da câmera")
+            #endif
+            // Reinicializar a sessão quando a view aparece
+            cameraViewModel.setupSession()
+            cameraViewModel.startSession()
+        }
+        .onDisappear {
+            #if DEBUG
+            print("🔍 MacScannerView: onDisappear - Parando sessão da câmera")
+            #endif
+            // Parar a sessão quando a view desaparece
+            cameraViewModel.stopSession()
+        }
         .onChange(of: cameraViewModel.detectedQRCode) { oldValue, newValue in
-            cameraViewModel.handleScan(
-                vaults: vaults,
-                sendTx: sendTx,
-                deeplinkViewModel: deeplinkViewModel,
-                vaultDetailViewModel: vaultDetailViewModel,
-                coinSelectionViewModel: coinSelectionViewModel
-            )
+            #if DEBUG
+            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            print("📱 MacScannerView: detectedQRCode mudou")
+            print("   oldValue: \(oldValue ?? "nil")")
+            print("   newValue: \(newValue ?? "nil")")
+            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            #endif
+            
+            if let newValue = newValue, !newValue.isEmpty {
+                #if DEBUG
+                print("   ✅ QR Code detectado! Chamando handleScan...")
+                #endif
+                cameraViewModel.handleScan(
+                    vaults: vaults,
+                    sendTx: sendTx,
+                    deeplinkViewModel: deeplinkViewModel,
+                    vaultDetailViewModel: vaultDetailViewModel,
+                    coinSelectionViewModel: coinSelectionViewModel
+                )
+            }
         }
     }
     
