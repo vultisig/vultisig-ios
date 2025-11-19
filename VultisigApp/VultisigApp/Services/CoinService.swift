@@ -13,7 +13,7 @@ struct CoinService {
     
     static func removeCoins(coins: [Coin], vault: Vault)  throws {
         for coin in coins {
-            if let idx = vault.coins.firstIndex(where: { $0.ticker == coin.ticker && $0.chain == coin.chain }) {
+            if let idx = vault.coins.firstIndex(where: { $0.ticker == coin.ticker && $0.chain == coin.chain && $0.contractAddress == coin.contractAddress }) {
                 vault.coins.remove(at: idx)
             }
             Storage.shared.delete(coin)
@@ -343,9 +343,7 @@ struct CoinService {
     
     private static func findRemovedCoins(vault: Vault, selection: Set<CoinMeta>) -> [Coin] {
         let removed = vault.coins.filter { coin in
-            let isInSelection = selection.contains(where: { meta in
-                meta.chain == coin.chain && meta.ticker == coin.ticker
-            })
+            let isInSelection = selection.contains(coin.toCoinMeta())
             return !isInSelection
         }
         return removed
@@ -372,9 +370,7 @@ struct CoinService {
             // Don't add coins from chains that were removed
             !excludedChains.contains(asset.chain) &&
             // Don't add coins that already exist
-            !vault.coins.contains(where: { coin in
-                coin.chain == asset.chain && coin.ticker == asset.ticker
-            })
+            !vault.coins.map { $0.toCoinMeta() }.contains(asset)
         }
     }
     
