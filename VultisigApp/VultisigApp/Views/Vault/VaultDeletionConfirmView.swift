@@ -60,7 +60,7 @@ struct VaultDeletionConfirmView: View {
             Text("deleteVaultTitle".localized)
                 .font(Theme.fonts.title2)
                 .foregroundStyle(Theme.colors.alertError)
-        
+            
             Text("youArePermanentlyDeletingVault".localized)
                 .font(Theme.fonts.footnote)
                 .foregroundColor(Theme.colors.textExtraLight)
@@ -88,31 +88,41 @@ struct VaultDeletionConfirmView: View {
     }
     
     func delete() {
-        do {
-            // fetch the vault before deleting it , so we can make sure we have all the relationships loaded
-            let publicKeyECDSA = vault.pubKeyECDSA
-            let fetchRequest = FetchDescriptor<Vault>(predicate: #Predicate { $0.pubKeyECDSA == publicKeyECDSA })
-            let vaultsToDelete = try modelContext.fetch(fetchRequest)
-            if let targetToBeDeleted = vaultsToDelete.first {
-                // the following few lines are used to ensure that all relationships are loaded before deletion
-                _ = targetToBeDeleted.signers
-                _ = targetToBeDeleted.keyshares
-                _ = targetToBeDeleted.libType
-                _ = targetToBeDeleted.closedBanners
-                modelContext.delete(targetToBeDeleted)
-            }
-            try modelContext.save()
-            let fetchNextVaultRequest = FetchDescriptor<Vault>(predicate: #Predicate { $0.pubKeyECDSA != publicKeyECDSA })
-            let vaultsNext = try modelContext.fetch(fetchNextVaultRequest)
-            nextSelectedVault = vaultsNext.first
-        } catch {
-            print("Error: \(error)")
-        }
+        // fetch the vault before deleting it , so we can make sure we have all the relationships loaded
+        let publicKeyECDSA = vault.pubKeyECDSA
+        let fetchNextVaultRequest = FetchDescriptor<Vault>(predicate: #Predicate { $0.pubKeyECDSA != publicKeyECDSA })
+        let vaultsNext = try? modelContext.fetch(fetchNextVaultRequest)
+        nextSelectedVault = vaultsNext?.first
         
-        if let nextSelectedVault {
+        if nextSelectedVault != nil {
             navigateBackToHome = true
         } else {
             navigateToCreateVault = true
+        }
+        
+        // Add delay on deletion to prevent accesing deleted vault during navigation
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            do {
+                let fetchRequest = FetchDescriptor<Vault>(predicate: #Predicate { $0.pubKeyECDSA == publicKeyECDSA })
+                let vaultsToDelete = try modelContext.fetch(fetchRequest)
+                if let targetToBeDeleted = vaultsToDelete.first {
+                    // the following few lines are used to ensure that all relationships are loaded before deletion
+                    _ = targetToBeDeleted.signers
+                    _ = targetToBeDeleted.keyshares
+                    _ = targetToBeDeleted.libType
+                    _ = targetToBeDeleted.closedBanners
+                    _ = targetToBeDeleted.defiChains
+                    _ = targetToBeDeleted.defiPositions
+                    _ = targetToBeDeleted.bondPositions
+                    _ = targetToBeDeleted.stakePositions
+                    _ = targetToBeDeleted.lpPositions
+                    
+                    modelContext.delete(targetToBeDeleted)
+                }
+                try modelContext.save()
+            } catch {
+                print("Error: \(error)")
+            }
         }
     }
     
