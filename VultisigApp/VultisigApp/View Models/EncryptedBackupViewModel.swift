@@ -21,7 +21,7 @@ class EncryptedBackupViewModel: ObservableObject {
     @Published var decryptionPassword: String = ""
     
     @Published var showPopup: Bool = false
-    @Published var isLinkActive: Bool = false
+    @Published var isVaultImported: Bool = false
     @Published var showAlert: Bool = false
     @Published var alertTitle: String = ""
     @Published var isFileUploaded = false
@@ -561,7 +561,7 @@ class EncryptedBackupViewModel: ObservableObject {
         if successCount > 0 {
             alertTitle = successCount == 1 ? "vaultImportedSuccessfully" : "vaultsImportedSuccessfully"
             showAlert = false
-            isLinkActive = true
+            isVaultImported = true
         } else if results.duplicates > 0 {
             showError("vaultAlreadyExists")
         } else {
@@ -579,7 +579,7 @@ class EncryptedBackupViewModel: ObservableObject {
     func showError(_ message: String) {
         alertTitle = message
         showAlert = true
-        isLinkActive = false
+        isVaultImported = false
     }
     
     func importFileWithPassword(from data: Data, password: String) {
@@ -637,7 +637,7 @@ class EncryptedBackupViewModel: ObservableObject {
             if !isVaultUnique(backupVault: vault,vaults:vaults){
                 alertTitle = "vaultAlreadyExists"
                 showAlert = true
-                isLinkActive = false
+                isVaultImported = false
                 return
             }
             if isDKLS(filename: self.importedFileName ?? ""), vault.libType != LibType.GG20 {
@@ -648,13 +648,13 @@ class EncryptedBackupViewModel: ObservableObject {
                 .setDefaultCoinsOnce(vault: vault)
             modelContext.insert(vault)
             selectedVault = vault
-            isLinkActive = true
+            isVaultImported = true
         }
         catch {
             logger.error("fail to restore vault: \(error.localizedDescription)")
             alertTitle = "vaultRestoreFailed"
             showAlert = true
-            isLinkActive = false
+            isVaultImported = false
         }
     }
     
@@ -662,7 +662,7 @@ class EncryptedBackupViewModel: ObservableObject {
         guard let vaultText = decryptedContent, let vaultData = Data(hexString: vaultText) else {
             alertTitle = "invalidVaultData"
             showAlert = true
-            isLinkActive = false
+            isVaultImported = false
             return
         }
         
@@ -679,7 +679,7 @@ class EncryptedBackupViewModel: ObservableObject {
             if !isVaultUnique(backupVault: backupVault.vault,vaults:vaults){
                 alertTitle = "vaultAlreadyExists"
                 showAlert = true
-                isLinkActive = false
+                isVaultImported = false
                 return
             }
             VaultDefaultCoinService(context: modelContext)
@@ -687,7 +687,7 @@ class EncryptedBackupViewModel: ObservableObject {
             modelContext.insert(backupVault.vault)
             selectedVault = backupVault.vault
             showAlert = false
-            isLinkActive = true
+            isVaultImported = true
         }  catch {
             print("failed to import with new format , fallback to the old format instead. \(error.localizedDescription)")
             
@@ -698,7 +698,7 @@ class EncryptedBackupViewModel: ObservableObject {
                 if !isVaultUnique(backupVault: vault,vaults:vaults){
                     alertTitle = "vaultAlreadyExists"
                     showAlert = true
-                    isLinkActive = false
+                    isVaultImported = false
                     return
                 }
                 VaultDefaultCoinService(context: modelContext)
@@ -706,12 +706,12 @@ class EncryptedBackupViewModel: ObservableObject {
                 modelContext.insert(vault)
                 selectedVault = vault
                 showAlert = false
-                isLinkActive = true
+                isVaultImported = true
             } catch {
                 logger.error("fail to restore vault: \(error.localizedDescription)")
                 alertTitle = "vaultRestoreFailed"
                 showAlert = true
-                isLinkActive = false
+                isVaultImported = false
             }
         }
     }
