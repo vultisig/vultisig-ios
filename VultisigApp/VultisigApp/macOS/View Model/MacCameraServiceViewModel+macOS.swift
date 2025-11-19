@@ -16,13 +16,8 @@ class MacCameraServiceViewModel: NSObject, ObservableObject {
     @Published var isCameraUnavailable = false
     @Published var showPlaceholderError = false
     
-    @Published var selectedChain: Chain? = nil
-    @Published var shouldSendCrypto = false
     @Published var shouldJoinKeygen = false
     @Published var shouldKeysignTransaction = false
-    
-    @Published var showAlert: Bool = false
-    @Published var newCoinMeta: CoinMeta? = nil
     
     private var session: AVCaptureSession?
     private var videoOutput: AVCaptureVideoDataOutput?

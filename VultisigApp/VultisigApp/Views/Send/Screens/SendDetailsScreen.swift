@@ -403,6 +403,7 @@ extension SendDetailsScreen {
         }
         
         if !tx.toAddress.isEmpty {
+            sendCryptoViewModel.validateAddress(tx: tx, address: tx.toAddress)
             validateAddress()
         }
         

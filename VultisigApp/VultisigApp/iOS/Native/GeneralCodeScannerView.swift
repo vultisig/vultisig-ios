@@ -20,9 +20,6 @@ struct GeneralCodeScannerView: View {
     
     let sendTX: SendTransaction
     
-    @State var isGalleryPresented = false
-    @State var isFilePresented = false
-    
     @Query var vaults: [Vault]
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
