@@ -119,6 +119,30 @@ struct ContentView: View {
     
     var homeView: some View {
         HomeScreen()
+            .onAppear {
+                #if DEBUG
+                print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                print("📱 ContentView: homeView apareceu")
+                print("   deeplinkViewModel.type: \(String(describing: deeplinkViewModel.type))")
+                print("   vaults.count: \(vaults.count)")
+                print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                #endif
+                
+                // CRITICAL: Process pending deeplink when HomeScreen appears
+                // This handles the case when app is closed and opened via QR code
+                if deeplinkViewModel.type != nil {
+                    #if DEBUG
+                    print("   🔔 Deeplink pendente detectado no ContentView, HomeScreen vai processar")
+                    #endif
+                    // HomeScreen.onAppear will handle it, but we can also send notification here as backup
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                        #if DEBUG
+                        print("   📢 Enviando notificação ProcessDeeplink como backup")
+                        #endif
+                        NotificationCenter.default.post(name: NSNotification.Name("ProcessDeeplink"), object: nil)
+                    }
+                }
+            }
     }
     
     var createVaultView: some View {

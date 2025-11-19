@@ -68,17 +68,99 @@ struct HomeScreen: View {
             print("   selectedVault: \(homeViewModel.selectedVault?.name ?? "nil")")
             print("   showVaultSelector: \(showVaultSelector)")
             print("   showScanner: \(showScanner)")
+            print("   deeplinkViewModel.type: \(String(describing: deeplinkViewModel.type))")
+            print("   vaults.count: \(vaults.count)")
             print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
             #endif
+            
+            // CRITICAL: Process pending deeplink if app was opened via deeplink
+            // This handles the case when app is closed and opened via QR code
+            // The deeplink may have been processed before HomeScreen was in view hierarchy
+            if deeplinkViewModel.type != nil {
+                #if DEBUG
+                print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                print("🔔 HomeScreen.onAppear: Deeplink pendente detectado!")
+                print("   type: \(String(describing: deeplinkViewModel.type))")
+                print("   vaults.count: \(vaults.count)")
+                print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                #endif
+                
+                // Wait for vaults to be loaded (setData is called in onLoad)
+                // Use a longer delay to ensure setData has completed
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    #if DEBUG
+                    print("   ✅ Delay concluído, verificando se pode processar deeplink")
+                    print("   vaults.count agora: \(vaults.count)")
+                    print("   deeplinkViewModel.type ainda: \(String(describing: deeplinkViewModel.type))")
+                    #endif
+                    
+                    // Only process if type is still set and vaults are loaded
+                    if deeplinkViewModel.type != nil {
+                        #if DEBUG
+                        print("   ✅ Processando deeplink agora")
+                        #endif
+                        presetValuesForDeeplink()
+                    } else {
+                        #if DEBUG
+                        print("   ⚠️ type foi resetado, não processando")
+                        #endif
+                    }
+                }
+            }
         }
         .onLoad {
             #if DEBUG
             print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
             print("📱 HomeScreen: onLoad - Carregando dados iniciais")
+            print("   deeplinkViewModel.type: \(String(describing: deeplinkViewModel.type))")
             print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
             #endif
-            setData()
+            
+            // FIXED: Set initial state BEFORE loading data to avoid overwriting changes made by setData()
             showVaultSelector = showingVaultSelector
+            
+            setData()
+            
+            #if DEBUG
+            print("   showVaultSelector após setData: \(showVaultSelector)")
+            #endif
+            
+            // CRITICAL: Process pending deeplink if app was opened via deeplink
+            // This handles the case when app is closed and opened via QR code
+            // The deeplink may have been processed before HomeScreen was in view hierarchy
+            // NOTE: setData() already calls presetValuesForDeeplink() at the end,
+            // but we add this as a backup in case setData doesn't process it
+            if deeplinkViewModel.type != nil {
+                #if DEBUG
+                print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                print("🔔 HomeScreen.onLoad: Deeplink pendente detectado!")
+                print("   type: \(String(describing: deeplinkViewModel.type))")
+                print("   vaults.count: \(vaults.count)")
+                print("   setData() já foi chamado, mas vamos garantir processamento...")
+                print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+                #endif
+                
+                // Wait for setData to complete and vaults to be loaded
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    #if DEBUG
+                    print("   ✅ Delay concluído após onLoad, verificando se pode processar deeplink")
+                    print("   vaults.count agora: \(vaults.count)")
+                    print("   deeplinkViewModel.type ainda: \(String(describing: deeplinkViewModel.type))")
+                    #endif
+                    
+                    // Only process if type is still set (setData might have already processed it)
+                    if deeplinkViewModel.type != nil {
+                        #if DEBUG
+                        print("   ✅ Type ainda está setado, processando deeplink agora")
+                        #endif
+                        presetValuesForDeeplink()
+                    } else {
+                        #if DEBUG
+                        print("   ℹ️ Type já foi processado por setData(), não processando novamente")
+                        #endif
+                    }
+                }
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ProcessDeeplink"))) { _ in
             #if DEBUG
@@ -428,7 +510,13 @@ private extension HomeScreen {
         ]
         do {
             vaults = try modelContext.fetch(fetchVaultDescriptor)
+            #if DEBUG
+            print("   ✅ fetchVaults concluído: \(vaults.count) vaults carregados")
+            #endif
         } catch {
+            #if DEBUG
+            print("   ❌ Erro ao buscar vaults: \(error)")
+            #endif
             print(error)
         }
     }
@@ -466,8 +554,51 @@ private extension HomeScreen {
         
         #if DEBUG
         print("   Chamando presetValuesForDeeplink() de setData()")
+        print("   vaults.count: \(vaults.count)")
+        print("   deeplinkViewModel.type: \(String(describing: deeplinkViewModel.type))")
         #endif
-        presetValuesForDeeplink()
+        
+        // CRITICAL: Only process deeplink if vaults are loaded
+        // This ensures we have vaults available for Send flow
+        // For NewVault, we don't need vaults, so process immediately
+        if deeplinkViewModel.type == .NewVault {
+            #if DEBUG
+            print("   ✅ Type é .NewVault, processando imediatamente (não precisa de vaults)")
+            #endif
+            presetValuesForDeeplink()
+        } else if !vaults.isEmpty {
+            #if DEBUG
+            print("   ✅ Vaults carregados (\(vaults.count)), processando deeplink")
+            #endif
+            presetValuesForDeeplink()
+        } else if deeplinkViewModel.type != nil {
+            #if DEBUG
+            print("   ⚠️ Deeplink pendente mas vaults ainda não carregados (vaults.count=\(vaults.count)), aguardando...")
+            print("   type: \(String(describing: deeplinkViewModel.type))")
+            #endif
+            // Retry after a short delay if vaults are not loaded yet
+            // This can happen when app is opened via deeplink
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                #if DEBUG
+                print("   🔄 Verificando novamente após delay...")
+                print("   vaults.count agora: \(vaults.count)")
+                print("   deeplinkViewModel.type ainda: \(String(describing: deeplinkViewModel.type))")
+                #endif
+                if !vaults.isEmpty && deeplinkViewModel.type != nil {
+                    #if DEBUG
+                    print("   ✅ Vaults carregados agora, processando deeplink")
+                    #endif
+                    presetValuesForDeeplink()
+                } else if deeplinkViewModel.type != nil {
+                    #if DEBUG
+                    print("   ⚠️ Vaults ainda não carregados, mas type ainda está setado")
+                    print("   Tentando processar mesmo assim (pode ser que vaults estejam vazios)")
+                    #endif
+                    // Try processing anyway - maybe there are no vaults yet
+                    presetValuesForDeeplink()
+                }
+            }
+        }
         
         #if DEBUG
         print("📱 HomeScreen.setData CONCLUÍDO")
@@ -554,6 +685,29 @@ private extension HomeScreen {
         print("   vaults.count: \(vaults.count)")
         print("   showVaultSelector ANTES: \(showVaultSelector)")
         #endif
+        
+        // CRITICAL: If no vaults, we can't proceed
+        guard !vaults.isEmpty else {
+            #if DEBUG
+            print("   ❌ Nenhum vault disponível! Não é possível processar Send deeplink")
+            print("   Aguardando vaults serem carregados...")
+            #endif
+            // Wait a bit more and retry
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                #if DEBUG
+                print("   🔄 Retentando handleSendDeeplink após delay...")
+                print("   vaults.count agora: \(vaults.count)")
+                #endif
+                if !vaults.isEmpty {
+                    handleSendDeeplink()
+                } else {
+                    #if DEBUG
+                    print("   ❌ Ainda sem vaults, não é possível processar")
+                    #endif
+                }
+            }
+            return
+        }
         
         // If only 1 vault, go directly to Send without showing selector
         if vaults.count == 1, let singleVault = vaults.first {
