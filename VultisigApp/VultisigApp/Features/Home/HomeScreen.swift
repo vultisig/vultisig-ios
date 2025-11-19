@@ -81,7 +81,7 @@ struct HomeScreen: View {
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ProcessDeeplink"))) { _ in
-            if showScanner && deeplinkViewModel.type == .Send {
+            if showScanner {
                 showScanner = false
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     presetValuesForDeeplink()

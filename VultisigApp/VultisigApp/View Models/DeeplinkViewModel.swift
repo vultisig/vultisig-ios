@@ -108,28 +108,25 @@ class DeeplinkViewModel: ObservableObject {
             type = .Unknown
         } else {
             // Existing flows (NewVault, SignTransaction)
-        //Flow Type
-        let typeData = queryItems?.first(where: { $0.name == "type" })?.value
-        type = getFlowType(typeData)
-        
-        //Tss Type
-        let tssData = queryItems?.first(where: { $0.name == "tssType" })?.value
-        tssType = getTssType(tssData)
-        
-        //Vault
-        let vaultPubKey = queryItems?.first(where: { $0.name == "vault" })?.value
-        selectedVault = getVault(for: vaultPubKey, vaults: vaults)
-        
-        //JsonData
-        jsonData = queryItems?.first(where: { $0.name == "jsonData" })?.value
+            //Flow Type
+            let typeData = queryItems?.first(where: { $0.name == "type" })?.value
+            type = parseFlowType(typeData)
+            
+            //Tss Type
+            let tssData = queryItems?.first(where: { $0.name == "tssType" })?.value
+            tssType = parseTssType(tssData)
+            
+            //Vault
+            let vaultPubKey = queryItems?.first(where: { $0.name == "vault" })?.value
+            selectedVault = getVault(for: vaultPubKey, vaults: vaults)
+            
+            //JsonData
+            jsonData = queryItems?.first(where: { $0.name == "jsonData" })?.value
         }
         
-            // Send notification if type is set (for Send and Unknown flows, this ensures processing happens)
-            // This is needed because the scanner calls extractParameters directly, not through ContentView
-            
-            if type == .Send || type == .Unknown {
-                NotificationCenter.default.post(name: NSNotification.Name("ProcessDeeplink"), object: nil)
-            }
+        if type != nil {
+            NotificationCenter.default.post(name: NSNotification.Name("ProcessDeeplink"), object: nil)
+        }
     }
     
     
@@ -168,7 +165,7 @@ class DeeplinkViewModel: ObservableObject {
         pendingSendDeeplink = false
     }
     
-    private func getFlowType(_ type: String?) -> DeeplinkFlowType {
+    private func parseFlowType(_ type: String?) -> DeeplinkFlowType {
         switch type {
         case "NewVault":
             return .NewVault
@@ -181,7 +178,7 @@ class DeeplinkViewModel: ObservableObject {
         }
     }
     
-    private func getTssType(_ type: String?) -> TssType {
+    private func parseTssType(_ type: String?) -> TssType {
         switch type {
         case "Reshare":
             return .Reshare
