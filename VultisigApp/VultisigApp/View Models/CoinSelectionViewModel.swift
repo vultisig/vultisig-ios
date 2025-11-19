@@ -93,7 +93,7 @@ class CoinSelectionViewModel: ObservableObject {
     }
 
     func isSelected(asset: CoinMeta) -> Bool {
-        return selection.contains(where: { $0.chain == asset.chain && $0.ticker.lowercased() == asset.ticker.lowercased() })
+        return selection.contains(asset)
     }
 
     func handleSelection(isSelected: Bool, asset: CoinMeta) {

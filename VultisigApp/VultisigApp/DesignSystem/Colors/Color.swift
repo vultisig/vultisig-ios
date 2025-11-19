@@ -21,7 +21,7 @@ extension Color {
     
     init(light: String, dark: String?) {
         let lightColor = PlatformColor(hex: light) ?? .clear
-        let darkColor = PlatformColor(hex: dark ?? light)
+        let darkColor = PlatformColor(hex: dark ?? light) ?? .clear
         self.init(light: lightColor, dark: darkColor)
     }
     
@@ -69,13 +69,17 @@ extension PlatformColor {
     convenience init?(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         
+        // Return nil for empty strings
+        guard !hex.isEmpty else { return nil }
+        
         if let cachedColor = Self.hexColorCache[hex] {
             self.init(cgColor: cachedColor)
             return
         }
         
         var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
+        guard Scanner(string: hex).scanHexInt64(&int) else { return nil }
+        
         let a, r, g, b: UInt64
         switch hex.count {
         case 3: // RGB (12-bit)
@@ -85,7 +89,8 @@ extension PlatformColor {
         case 8: // ARGB (32-bit)
             (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
         default:
-            (a, r, g, b) = (1, 1, 1, 0)
+            // Invalid hex format - return nil instead of creating invalid color
+            return nil
         }
         
         defer { Self.hexColorCache[hex] = self.cgColor }

@@ -13,6 +13,7 @@ class AccountViewModel: ObservableObject {
     @AppStorage("showOnboarding") var showOnboarding: Bool = true
     @AppStorage("showCover") var showCover: Bool = true
     @AppStorage("isAuthenticationEnabled") var isAuthenticationEnabled: Bool = true
+    @AppStorage("didAskForAuthentication") var didAskForAuthentication: Bool = false
     @AppStorage("lastRecordedTime") var lastRecordedTime: String = ""
     
     @Published var isAuthenticated = false
@@ -35,10 +36,17 @@ class AccountViewModel: ObservableObject {
             isAuthenticated = false
             showSplashView = false
             didUserCancelAuthentication = false
+            didAskForAuthentication = true
         }
     }
     
+    func authenticateUserIfNeeded() {
+        guard !didAskForAuthentication else { return }
+        authenticateUser()
+    }
+    
     private func authenticate(_ context: LAContext) {
+        self.didAskForAuthentication = true
         if (context.biometryType == .faceID || context.biometryType == .touchID || context.biometryType == .opticID) && isRunningOnPhysicalDevice() {
             context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Authenticate to check Face ID") { success, error in
                 DispatchQueue.main.async {
