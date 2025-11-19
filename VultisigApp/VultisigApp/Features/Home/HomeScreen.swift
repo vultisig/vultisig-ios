@@ -62,68 +62,25 @@ struct HomeScreen: View {
             }
         }
         .onAppear {
-            #if DEBUG
-            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-            print("📱 HomeScreen: onAppear - Tela apareceu")
-            print("   selectedVault: \(homeViewModel.selectedVault?.name ?? "nil")")
-            print("   showVaultSelector: \(showVaultSelector)")
-            print("   showScanner: \(showScanner)")
-            print("   deeplinkViewModel.type: \(String(describing: deeplinkViewModel.type))")
-            print("   vaults.count: \(vaults.count)")
-            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-            #endif
-            
             // CRITICAL: Process pending deeplink if app was opened via deeplink
             // This handles the case when app is closed and opened via QR code
             // The deeplink may have been processed before HomeScreen was in view hierarchy
             if deeplinkViewModel.type != nil {
-                #if DEBUG
-                print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-                print("🔔 HomeScreen.onAppear: Deeplink pendente detectado!")
-                print("   type: \(String(describing: deeplinkViewModel.type))")
-                print("   vaults.count: \(vaults.count)")
-                print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-                #endif
-                
                 // Wait for vaults to be loaded (setData is called in onLoad)
                 // Use a longer delay to ensure setData has completed
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                    #if DEBUG
-                    print("   ✅ Delay concluído, verificando se pode processar deeplink")
-                    print("   vaults.count agora: \(vaults.count)")
-                    print("   deeplinkViewModel.type ainda: \(String(describing: deeplinkViewModel.type))")
-                    #endif
-                    
                     // Only process if type is still set and vaults are loaded
                     if deeplinkViewModel.type != nil {
-                        #if DEBUG
-                        print("   ✅ Processando deeplink agora")
-                        #endif
                         presetValuesForDeeplink()
-                    } else {
-                        #if DEBUG
-                        print("   ⚠️ type foi resetado, não processando")
-                        #endif
                     }
                 }
             }
         }
         .onLoad {
-            #if DEBUG
-            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-            print("📱 HomeScreen: onLoad - Carregando dados iniciais")
-            print("   deeplinkViewModel.type: \(String(describing: deeplinkViewModel.type))")
-            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-            #endif
-            
             // FIXED: Set initial state BEFORE loading data to avoid overwriting changes made by setData()
             showVaultSelector = showingVaultSelector
             
             setData()
-            
-            #if DEBUG
-            print("   showVaultSelector após setData: \(showVaultSelector)")
-            #endif
             
             // CRITICAL: Process pending deeplink if app was opened via deeplink
             // This handles the case when app is closed and opened via QR code
@@ -131,58 +88,25 @@ struct HomeScreen: View {
             // NOTE: setData() already calls presetValuesForDeeplink() at the end,
             // but we add this as a backup in case setData doesn't process it
             if deeplinkViewModel.type != nil {
-                #if DEBUG
-                print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-                print("🔔 HomeScreen.onLoad: Deeplink pendente detectado!")
-                print("   type: \(String(describing: deeplinkViewModel.type))")
-                print("   vaults.count: \(vaults.count)")
-                print("   setData() já foi chamado, mas vamos garantir processamento...")
-                print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-                #endif
                 
                 // Wait for setData to complete and vaults to be loaded
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                    #if DEBUG
-                    print("   ✅ Delay concluído após onLoad, verificando se pode processar deeplink")
-                    print("   vaults.count agora: \(vaults.count)")
-                    print("   deeplinkViewModel.type ainda: \(String(describing: deeplinkViewModel.type))")
-                    #endif
                     
                     // Only process if type is still set (setData might have already processed it)
                     if deeplinkViewModel.type != nil {
-                        #if DEBUG
-                        print("   ✅ Type ainda está setado, processando deeplink agora")
-                        #endif
                         presetValuesForDeeplink()
-                    } else {
-                        #if DEBUG
-                        print("   ℹ️ Type já foi processado por setData(), não processando novamente")
-                        #endif
                     }
                 }
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ProcessDeeplink"))) { _ in
-            #if DEBUG
-            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-            print("🔔 NOTIFICAÇÃO ProcessDeeplink recebida")
-            print("   type atual: \(String(describing: deeplinkViewModel.type))")
-            print("   showScanner atual: \(showScanner)")
-            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-            #endif
             
             // If scanner is open and this is a Send deeplink, close scanner first
             if showScanner && deeplinkViewModel.type == .Send {
-                #if DEBUG
-                print("   ⚠️ Scanner está aberto e type é .Send, fechando scanner primeiro...")
-                #endif
                 showScanner = false
                 
                 // Wait for scanner to close, then process deeplink
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    #if DEBUG
-                    print("   ✅ Scanner fechado, processando deeplink agora")
-                    #endif
                     presetValuesForDeeplink()
                 }
             } else {
@@ -190,24 +114,9 @@ struct HomeScreen: View {
             }
         }
         .onChange(of: deeplinkViewModel.type) { oldValue, newValue in
-            #if DEBUG
-            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-            print("🔥 ONCHANGE DISPARADO - deeplinkViewModel.type")
-            print("   oldValue: \(String(describing: oldValue))")
-            print("   newValue: \(String(describing: newValue))")
-            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-            #endif
-            
             // Process deeplink when type changes (e.g., when app is already open and QR code is scanned)
             if newValue != nil {
-                #if DEBUG
-                print("   ✅ newValue não é nil, chamando presetValuesForDeeplink()")
-                #endif
                 presetValuesForDeeplink()
-            } else {
-                #if DEBUG
-                print("   ⚠️ newValue é nil, não fazendo nada")
-                #endif
             }
         }
         .alert(
@@ -269,9 +178,6 @@ struct HomeScreen: View {
                 .navigationBarBackButtonHidden()
 #endif
             } onAccessory: {
-                #if DEBUG
-                print("📱 HomeScreen: Botão QR Scanner CLICADO - showScanner: \(showScanner), tab: \(selectedTab)")
-                #endif
                 onCamera()
             }
             
@@ -284,9 +190,6 @@ struct HomeScreen: View {
         let withBasicModifiers = view
             .onAppear {
                 // Capture geometry height to avoid circular layout dependency
-                #if DEBUG
-                print("📱 HomeScreen.content: onAppear - Vault: \(selectedVault.name), height: \(geo.size.height)")
-                #endif
                 capturedGeometryHeight = geo.size.height
             }
             .onChange(of: geo.size.height) { _, newHeight in
@@ -307,23 +210,13 @@ struct HomeScreen: View {
             .onChange(of: walletShowPortfolioHeader) { _,_ in updateHeader() }
             .onChange(of: defiShowPortfolioHeader) { _,_ in updateHeader() }
             .onChange(of: selectedTab) { oldValue, newValue in
-                #if DEBUG
-                print("📱 HomeScreen: selectedTab mudou: \(oldValue) -> \(newValue)")
-                #endif
-                
                 updateHeader()
                 if newValue == .camera {
-                    #if DEBUG
-                    print("   ⚠️ Tab mudou para .camera, resetando e chamando onCamera()")
-                    #endif
                     selectedTab = oldValue
                     onCamera()
                 }
             }
             .navigationDestination(item: $vaultRoute) { route in
-                #if DEBUG
-                let _ = print("📱 HomeScreen: navigationDestination vaultRoute: \(route)")
-                #endif
                 buildVaultRoute(route: route, vault: selectedVault)
             }
         
@@ -335,9 +228,6 @@ struct HomeScreen: View {
         view
 #if os(macOS)
             .navigationDestination(isPresented: $showScanner) {
-                #if DEBUG
-                let _ = print("📱 HomeScreen: navigationDestination para showScanner: \(showScanner) - Criando MacScannerView")
-                #endif
                 MacScannerView(type: .SignTransaction, sendTx: sendTx, selectedVault: selectedVault)
             }
 #else
@@ -384,20 +274,9 @@ struct HomeScreen: View {
             }
             .crossPlatformSheet(isPresented: $showVaultSelector) {
                 VaultManagementSheet(isPresented: $showVaultSelector, availableHeight: capturedGeometryHeight) {
-                    #if DEBUG
-                    print("🔍 VaultManagementSheet: onCreate ação")
-                    #endif
                     showVaultSelector.toggle()
                     vaultRoute = .createVault
                 } onSelectVault: { vault in
-                    #if DEBUG
-                    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-                    print("🔥 VAULT SELECIONADO: \(vault.name)")
-                    print("   pendingSendDeeplink: \(deeplinkViewModel.pendingSendDeeplink)")
-                    print("   address: \(deeplinkViewModel.address ?? "nil")")
-                    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-                    #endif
-                    
                     showVaultSelector.toggle()
                     if deeplinkViewModel.pendingSendDeeplink {
                         // Check if this is address-only (has address but no assetChain/assetTicker)
@@ -406,22 +285,13 @@ struct HomeScreen: View {
                                           deeplinkViewModel.assetTicker == nil
                         
                         if isAddressOnly {
-                            #if DEBUG
-                            print("   ✅ Fluxo Address-only deeplink detectado")
-                            #endif
                             if let address = deeplinkViewModel.address {
                                 processAddressOnlyDeeplink(address: address, vault: vault)
                             }
                         } else {
-                            #if DEBUG
-                            print("   ✅ Fluxo Send deeplink detectado")
-                            #endif
                             handleSendDeeplinkAfterVaultSelection(vault: vault)
                         }
                     } else {
-                        #if DEBUG
-                        print("   ℹ️ Fluxo normal de seleção de vault")
-                        #endif
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                             homeViewModel.setSelectedVault(vault)
                         }
@@ -481,19 +351,7 @@ private extension HomeScreen {
     }
     
     func onCamera() {
-        #if DEBUG
-        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        print("🔍 HomeScreen.onCamera chamado")
-        print("   showScanner ANTES: \(showScanner)")
-        #endif
-        
         showScanner = true
-        
-        #if DEBUG
-        print("   showScanner DEPOIS: \(showScanner)")
-        print("   ✅ Scanner deve abrir agora")
-        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        #endif
     }
     
     func fetchVaults() {
@@ -510,27 +368,12 @@ private extension HomeScreen {
         ]
         do {
             vaults = try modelContext.fetch(fetchVaultDescriptor)
-            #if DEBUG
-            print("   ✅ fetchVaults concluído: \(vaults.count) vaults carregados")
-            #endif
         } catch {
-            #if DEBUG
-            print("   ❌ Erro ao buscar vaults: \(error)")
-            #endif
             print(error)
         }
     }
     
     func setData() {
-        #if DEBUG
-        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        print("📱 HomeScreen.setData INICIADO")
-        print("   initialVault: \(initialVault?.name ?? "nil")")
-        print("   showingVaultSelector: \(showingVaultSelector)")
-        print("   vaults.count: \(vaults.count)")
-        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        #endif
-        
         fetchVaults()
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
@@ -538,72 +381,32 @@ private extension HomeScreen {
         checkUpdate()
         
         if let vault = initialVault {
-            #if DEBUG
-            print("   ✅ initialVault presente: \(vault.name)")
-            print("   Setando como selectedVault e retornando")
-            #endif
             homeViewModel.setSelectedVault(vault)
             selectedVault = nil
             return
         } else {
-            #if DEBUG
-            print("   initialVault é nil, carregando vault selecionado...")
-            #endif
             homeViewModel.loadSelectedVault(for: vaults)
         }
-        
-        #if DEBUG
-        print("   Chamando presetValuesForDeeplink() de setData()")
-        print("   vaults.count: \(vaults.count)")
-        print("   deeplinkViewModel.type: \(String(describing: deeplinkViewModel.type))")
-        #endif
         
         // CRITICAL: Only process deeplink if vaults are loaded
         // This ensures we have vaults available for Send flow
         // For NewVault, we don't need vaults, so process immediately
         if deeplinkViewModel.type == .NewVault {
-            #if DEBUG
-            print("   ✅ Type é .NewVault, processando imediatamente (não precisa de vaults)")
-            #endif
             presetValuesForDeeplink()
         } else if !vaults.isEmpty {
-            #if DEBUG
-            print("   ✅ Vaults carregados (\(vaults.count)), processando deeplink")
-            #endif
             presetValuesForDeeplink()
         } else if deeplinkViewModel.type != nil {
-            #if DEBUG
-            print("   ⚠️ Deeplink pendente mas vaults ainda não carregados (vaults.count=\(vaults.count)), aguardando...")
-            print("   type: \(String(describing: deeplinkViewModel.type))")
-            #endif
             // Retry after a short delay if vaults are not loaded yet
             // This can happen when app is opened via deeplink
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                #if DEBUG
-                print("   🔄 Verificando novamente após delay...")
-                print("   vaults.count agora: \(vaults.count)")
-                print("   deeplinkViewModel.type ainda: \(String(describing: deeplinkViewModel.type))")
-                #endif
                 if !vaults.isEmpty && deeplinkViewModel.type != nil {
-                    #if DEBUG
-                    print("   ✅ Vaults carregados agora, processando deeplink")
-                    #endif
                     presetValuesForDeeplink()
                 } else if deeplinkViewModel.type != nil {
-                    #if DEBUG
-                    print("   ⚠️ Vaults ainda não carregados, mas type ainda está setado")
-                    print("   Tentando processar mesmo assim (pode ser que vaults estejam vazios)")
-                    #endif
                     // Try processing anyway - maybe there are no vaults yet
                     presetValuesForDeeplink()
                 }
             }
         }
-        
-        #if DEBUG
-        print("📱 HomeScreen.setData CONCLUÍDO")
-        print("")
-        #endif
     }
     
     func presetValuesForDeeplink() {
@@ -611,99 +414,41 @@ private extension HomeScreen {
             shouldImportBackup = true
         }
         
-        #if DEBUG
-        print("🔍 presetValuesForDeeplink chamado")
-        print("   deeplinkViewModel.type: \(String(describing: deeplinkViewModel.type))")
-        #endif
-        
         guard let type = deeplinkViewModel.type else {
-            #if DEBUG
-            print("   ⚠️ type é nil, abortando")
-            #endif
             return
         }
-        
-        #if DEBUG
-        print("   ✅ type encontrado: \(type)")
-        print("   → Setando type para nil ANTES de processar")
-        #endif
         
         // Reset type before processing to avoid re-triggering onChange
         deeplinkViewModel.type = nil
         
         switch type {
         case .NewVault:
-            #if DEBUG
-            print("   → Chamando moveToCreateVaultView()")
-            #endif
             moveToCreateVaultView()
         case .SignTransaction:
-            #if DEBUG
-            print("   → Chamando moveToVaultsView()")
-            #endif
             moveToVaultsView()
         case .Send:
-            #if DEBUG
-            print("   → Chamando handleSendDeeplink()")
-            #endif
             handleSendDeeplink()
         case .Unknown:
-            #if DEBUG
-            print("   → Type é Unknown, processando como address-only deeplink")
-            #endif
             handleAddressOnlyDeeplink()
         }
     }
     
     private func handleSendDeeplink() {
-        #if DEBUG
-        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        print("🔥 handleSendDeeplink INICIADO")
-        print("   assetChain: \(deeplinkViewModel.assetChain ?? "nil")")
-        print("   assetTicker: \(deeplinkViewModel.assetTicker ?? "nil")")
-        print("   address: \(deeplinkViewModel.address ?? "nil")")
-        print("   sendAmount: \(deeplinkViewModel.sendAmount ?? "nil")")
-        print("   sendMemo: \(deeplinkViewModel.sendMemo ?? "nil")")
-        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        #endif
-        
         // Validate minimum parameters (assetChain, assetTicker, toAddress)
         // Even if some are missing, we'll still proceed with what we have
         guard deeplinkViewModel.assetChain != nil || 
               deeplinkViewModel.assetTicker != nil ||
               deeplinkViewModel.address != nil else {
             // If no parameters at all, don't proceed
-            #if DEBUG
-            print("⚠️ handleSendDeeplink: Nenhum parâmetro encontrado, abortando")
-            #endif
             return
         }
         
-        #if DEBUG
-        print("✅ handleSendDeeplink: Validação passou")
-        print("   showScanner atual: \(showScanner)")
-        print("   vaults.count: \(vaults.count)")
-        print("   showVaultSelector ANTES: \(showVaultSelector)")
-        #endif
-        
         // CRITICAL: If no vaults, we can't proceed
         guard !vaults.isEmpty else {
-            #if DEBUG
-            print("   ❌ Nenhum vault disponível! Não é possível processar Send deeplink")
-            print("   Aguardando vaults serem carregados...")
-            #endif
             // Wait a bit more and retry
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                #if DEBUG
-                print("   🔄 Retentando handleSendDeeplink após delay...")
-                print("   vaults.count agora: \(vaults.count)")
-                #endif
                 if !vaults.isEmpty {
                     handleSendDeeplink()
-                } else {
-                    #if DEBUG
-                    print("   ❌ Ainda sem vaults, não é possível processar")
-                    #endif
                 }
             }
             return
@@ -711,11 +456,6 @@ private extension HomeScreen {
         
         // If only 1 vault, go directly to Send without showing selector
         if vaults.count == 1, let singleVault = vaults.first {
-            #if DEBUG
-            print("   ✅ Apenas 1 vault encontrado, indo direto para Send")
-            print("   Vault: \(singleVault.name)")
-            #endif
-            
             // Close scanner if open
             if showScanner {
                 showScanner = false
@@ -729,39 +469,21 @@ private extension HomeScreen {
         }
         
         // Multiple vaults: show selector
-        #if DEBUG
-        print("   ℹ️ Múltiplos vaults (\(vaults.count)), mostrando seletor")
-        #endif
         
         // CRITICAL: Close scanner first if it's open, then show vault selector
         // SwiftUI doesn't allow multiple sheets to be presented simultaneously
         if showScanner {
-            #if DEBUG
-            print("   ⚠️ Scanner está aberto, fechando primeiro...")
-            #endif
             showScanner = false
             
             // Wait for scanner to close, then show vault selector
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                #if DEBUG
-                print("   ✅ Scanner fechado, agora mostrando vault selector")
-                #endif
                 deeplinkViewModel.pendingSendDeeplink = true
                 showVaultSelector = true
             }
         } else {
-            #if DEBUG
-            print("   ✅ Scanner não está aberto, mostrando vault selector imediatamente")
-            #endif
             deeplinkViewModel.pendingSendDeeplink = true
             showVaultSelector = true
         }
-        
-        #if DEBUG
-        print("   showVaultSelector DEPOIS: \(showVaultSelector)")
-        print("   ✅ Vault selector deve aparecer agora")
-        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        #endif
     }
     
     func onVaultLoaded(vault: Vault) {
@@ -772,35 +494,13 @@ private extension HomeScreen {
     }
     
     private func handleSendDeeplinkAfterVaultSelection(vault: Vault) {
-        #if DEBUG
-        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        print("🔥 handleSendDeeplinkAfterVaultSelection INICIADO")
-        print("   Vault: \(vault.name)")
-        print("   Vault tem \(vault.coins.count) coins")
-        print("   assetChain no deeplink: \(deeplinkViewModel.assetChain ?? "nil")")
-        print("   assetTicker no deeplink: \(deeplinkViewModel.assetTicker ?? "nil")")
-        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        #endif
-        
         deeplinkViewModel.pendingSendDeeplink = false
         
         // Set the selected vault
         homeViewModel.setSelectedVault(vault)
         
         // Find the coin using the helper from DeeplinkViewModel
-        #if DEBUG
-        print("   🔍 Buscando coin no vault...")
-        #endif
         let coin = deeplinkViewModel.findCoin(in: vault)
-        
-        #if DEBUG
-        if let coin = coin {
-            print("   ✅ Coin encontrada: \(coin.ticker) na chain \(coin.chain.rawValue)")
-        } else {
-            print("   ⚠️ Coin NÃO encontrada!")
-            print("   Vou usar a primeira coin do vault como fallback")
-        }
-        #endif
         
         // Reset SendTransaction appropriately
         // IMPORTANT: Save deeplink values BEFORE reset (reset clears all fields)
@@ -812,134 +512,48 @@ private extension HomeScreen {
         if let coin = coin {
             coinToUse = coin
             sendTx.reset(coin: coin)
-            #if DEBUG
-            print("   ✅ sendTx.reset(coin: \(coin.ticker)) executado")
-            #endif
         } else {
             // If coin not found, reset with a default coin from vault (or keep current state)
             // The Send screen will handle missing coin gracefully
             if let defaultCoin = vault.coins.first {
                 coinToUse = defaultCoin
                 sendTx.reset(coin: defaultCoin)
-                #if DEBUG
-                print("   ✅ sendTx.reset(coin: \(defaultCoin.ticker)) executado (fallback)")
-                #endif
             } else {
                 coinToUse = nil
-                #if DEBUG
-                print("   ⚠️ Vault não tem coins! sendTx não foi resetado")
-                #endif
             }
         }
         
         // Pre-fill fields AFTER reset (reset clears all fields, so we need to set them again)
-        #if DEBUG
-        print("   📝 Preenchendo campos do sendTx APÓS reset...")
-        #endif
         
         if let address = savedAddress {
             sendTx.toAddress = address
-            #if DEBUG
-            print("   ✅ toAddress definido: \(address)")
-            #endif
-        } else {
-            #if DEBUG
-            print("   ⚠️ address é nil, não preenchendo toAddress")
-            #endif
         }
         
         if let amount = savedAmount {
             sendTx.amount = amount
-            #if DEBUG
-            print("   ✅ amount definido: \(amount)")
-            #endif
-        } else {
-            #if DEBUG
-            print("   ⚠️ sendAmount é nil, não preenchendo amount")
-            #endif
         }
         
         if let memo = savedMemo {
             sendTx.memo = memo
-            #if DEBUG
-            print("   ✅ memo definido: \(memo)")
-            #endif
-        } else {
-            #if DEBUG
-            print("   ⚠️ sendMemo é nil, não preenchendo memo")
-            #endif
         }
-        
-        #if DEBUG
-        print("   📊 Estado final do sendTx:")
-        print("      coin: \(sendTx.coin.ticker)")
-        print("      toAddress: \(sendTx.toAddress)")
-        print("      amount: \(sendTx.amount)")
-        print("      memo: \(sendTx.memo)")
-        print("   ✅ Todos os campos preenchidos")
-        print("   🚀 Preparando navegação para Send screen...")
-        #endif
         
         // Navigate to Send screen
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            #if DEBUG
-            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-            print("🚀 EXECUTANDO NAVEGAÇÃO PARA SEND")
-            print("   coin: \(coinToUse?.ticker ?? "nil")")
-            print("   hasPreselectedCoin: \(coinToUse != nil)")
-            print("   vaultRoute ANTES: \(String(describing: vaultRoute))")
-            #endif
-            
             vaultRoute = .mainAction(.send(coin: coinToUse, hasPreselectedCoin: coinToUse != nil))
-            
-            #if DEBUG
-            print("   vaultRoute DEPOIS: \(String(describing: vaultRoute))")
-            print("   ✅ Navegação executada!")
-            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-            #endif
         }
         
         // Don't clear deeplink state yet - SendDetailsScreen needs it in onLoad
         // It will clear it after reading the address
-        #if DEBUG
-        print("   ℹ️ Mantendo deeplinkViewModel.address para SendDetailsScreen ler")
-        #endif
-        
-        #if DEBUG
-        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        print("")
-        #endif
     }
     
     private func handleAddressOnlyDeeplink() {
-        #if DEBUG
-        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        print("🔥 handleAddressOnlyDeeplink INICIADO")
-        print("   address: \(deeplinkViewModel.address ?? "nil")")
-        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        #endif
-        
         // Validate that we have an address
         guard let address = deeplinkViewModel.address, !address.isEmpty else {
-            #if DEBUG
-            print("   ⚠️ Nenhum endereço encontrado, abortando")
-            #endif
             return
         }
         
-        #if DEBUG
-        print("   ✅ Endereço encontrado: \(address)")
-        print("   showScanner atual: \(showScanner)")
-        print("   vaults.count: \(vaults.count)")
-        #endif
-        
         // If only 1 vault, go directly to Send without showing selector
         if vaults.count == 1, let singleVault = vaults.first {
-            #if DEBUG
-            print("   ✅ Apenas 1 vault encontrado, indo direto para Send (address-only)")
-            print("   Vault: \(singleVault.name)")
-            #endif
-            
             // Close scanner if open
             if showScanner {
                 showScanner = false
@@ -953,9 +567,6 @@ private extension HomeScreen {
         }
         
         // Multiple vaults: show selector for address-only too
-        #if DEBUG
-        print("   ℹ️ Múltiplos vaults (\(vaults.count)), mostrando seletor para address-only")
-        #endif
         
         // Set flag to indicate this is address-only deeplink
         deeplinkViewModel.pendingSendDeeplink = true
@@ -963,58 +574,29 @@ private extension HomeScreen {
         // CRITICAL: Close scanner first if it's open
         // SwiftUI doesn't allow multiple sheets to be presented simultaneously
         if showScanner {
-            #if DEBUG
-            print("   ⚠️ Scanner está aberto, fechando primeiro...")
-            #endif
             showScanner = false
             
             // Wait for scanner to close, then show vault selector
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                #if DEBUG
-                print("   ✅ Scanner fechado, mostrando vault selector para address-only")
-                #endif
                 showVaultSelector = true
             }
         } else {
-            #if DEBUG
-            print("   ✅ Scanner não está aberto, mostrando vault selector imediatamente")
-            #endif
             showVaultSelector = true
         }
     }
     
     private func processAddressOnlyDeeplink(address: String, vault: Vault) {
-        #if DEBUG
-        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        print("📝 processAddressOnlyDeeplink")
-        print("   address: \(address)")
-        print("   vault: \(vault.name)")
-        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        #endif
-        
         // Set the selected vault
         homeViewModel.setSelectedVault(vault)
-        
-        #if DEBUG
-        print("   📋 Vault tem \(vault.coins.count) coins")
-        #endif
         
         // Detect chain from address format (similar to QR scanner logic)
         var coinToUse: Coin?
         
         // First, try to detect chain by validating address against vault coins
-        #if DEBUG
-        print("   🔍 Detectando chain pelo formato do endereço...")
-        #endif
         
         // Check MayaChain first (special case)
         if address.lowercased().contains("maya") {
             coinToUse = vault.coins.first(where: { $0.chain == .mayaChain && $0.isNativeToken })
-            if coinToUse != nil {
-                #if DEBUG
-                print("   ✅ Detectado MayaChain pelo prefixo 'maya'")
-                #endif
-            }
         }
         
         // If not MayaChain, iterate through vault coins to find matching chain
@@ -1024,17 +606,11 @@ private extension HomeScreen {
                 if coin.chain == .mayaChain {
                     if AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya") {
                         coinToUse = coin
-                        #if DEBUG
-                        print("   ✅ Detectado MayaChain pela validação Bech32")
-                        #endif
                         break
                     }
                 } else if coin.chain == .thorChainStagenet {
                     if AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor") {
                         coinToUse = coin
-                        #if DEBUG
-                        print("   ✅ Detectado ThorChain Stagenet pela validação Bech32")
-                        #endif
                         break
                     }
                 } else {
@@ -1042,9 +618,6 @@ private extension HomeScreen {
                     let isValid = coin.chain.coinType.validate(address: address)
                     if isValid {
                         coinToUse = coin
-                        #if DEBUG
-                        print("   ✅ Detectado \(coin.chain.rawValue) pela validação do endereço")
-                        #endif
                         break
                     }
                 }
@@ -1054,55 +627,23 @@ private extension HomeScreen {
         // Fallback: use first native token if no chain detected
         if coinToUse == nil {
             coinToUse = vault.coins.first(where: { $0.isNativeToken }) ?? vault.coins.first
-            #if DEBUG
-            if let fallback = coinToUse {
-                print("   ⚠️ Chain não detectada, usando fallback: \(fallback.chain.rawValue) - \(fallback.ticker)")
-            } else {
-                print("   ❌ Nenhuma coin disponível no vault!")
-            }
-            #endif
         }
         
         if let coin = coinToUse {
             sendTx.reset(coin: coin)
-            #if DEBUG
-            print("   ✅ sendTx.reset(coin: \(coin.ticker)) executado")
-            #endif
-        } else {
-            #if DEBUG
-            print("   ⚠️ Vault não tem coins! sendTx não foi resetado")
-            #endif
         }
         
         // Pre-fill address in both sendTx and deeplinkViewModel
         // SendDetailsScreen reads from deeplinkViewModel.address in onLoad
         sendTx.toAddress = address
         deeplinkViewModel.address = address
-        #if DEBUG
-        print("   ✅ toAddress definido em sendTx e deeplinkViewModel: \(address)")
-        #endif
         
         // Don't clear deeplink state yet - SendDetailsScreen needs it in onLoad
         // It will clear it after reading the address
         
         // Navigate to Send screen directly (no vault selector)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            #if DEBUG
-            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-            print("🚀 EXECUTANDO NAVEGAÇÃO PARA SEND (address-only)")
-            print("   coin: \(coinToUse?.ticker ?? "nil")")
-            print("   hasPreselectedCoin: \(coinToUse != nil)")
-            print("   vaultRoute ANTES: \(String(describing: self.vaultRoute))")
-            #endif
-            
             self.vaultRoute = .mainAction(.send(coin: coinToUse, hasPreselectedCoin: coinToUse != nil))
-            
-            #if DEBUG
-            print("   vaultRoute DEPOIS: \(String(describing: self.vaultRoute))")
-            print("   ✅ Navegação executada!")
-            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-            print("")
-            #endif
         }
     }
 }

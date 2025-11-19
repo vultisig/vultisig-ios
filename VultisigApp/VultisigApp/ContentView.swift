@@ -31,36 +31,14 @@ struct ContentView: View {
             .environment(\.router, router.navigationRouter)
             .accentColor(.white)
             .onOpenURL { incomingURL in
-                #if DEBUG
-                print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-                print("📱 ContentView: onOpenURL chamado")
-                print("   URL: \(incomingURL.absoluteString)")
-                print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-                #endif
                 handleDeeplink(incomingURL)
             }
             .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
-                #if DEBUG
-                print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-                print("📱 ContentView: onContinueUserActivity chamado")
-                #endif
                 if let incomingURL = userActivity.webpageURL {
-                    #if DEBUG
-                    print("   URL: \(incomingURL.absoluteString)")
-                    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-                    #endif
                     handleDeeplink(incomingURL)
                 }
             }
             .onAppear {
-                #if DEBUG
-                print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-                print("📱 ContentView: onAppear - App apareceu na tela")
-                print("   vaults.count: \(vaults.count)")
-                print("   showSplashView: \(accountViewModel.showSplashView)")
-                print("   showCover: \(accountViewModel.showCover)")
-                print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-                #endif
             }
             
             if accountViewModel.showCover {
@@ -74,20 +52,6 @@ struct ContentView: View {
     }
     
     var content: some View {
-        let _ = {
-            #if DEBUG
-            if accountViewModel.showSplashView {
-                print("📱 ContentView.content: Mostrando splashView")
-            } else if accountViewModel.showCover {
-                print("📱 ContentView.content: Mostrando coverView")
-            } else if vaults.count>0 {
-                print("📱 ContentView.content: Mostrando homeView (vaults.count = \(vaults.count))")
-            } else {
-                print("📱 ContentView.content: Mostrando createVaultView (sem vaults)")
-            }
-            #endif
-        }()
-        
         return ZStack {
             if accountViewModel.showSplashView {
                 splashView
@@ -120,25 +84,11 @@ struct ContentView: View {
     var homeView: some View {
         HomeScreen()
             .onAppear {
-                #if DEBUG
-                print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-                print("📱 ContentView: homeView apareceu")
-                print("   deeplinkViewModel.type: \(String(describing: deeplinkViewModel.type))")
-                print("   vaults.count: \(vaults.count)")
-                print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-                #endif
-                
                 // CRITICAL: Process pending deeplink when HomeScreen appears
                 // This handles the case when app is closed and opened via QR code
                 if deeplinkViewModel.type != nil {
-                    #if DEBUG
-                    print("   🔔 Deeplink pendente detectado no ContentView, HomeScreen vai processar")
-                    #endif
                     // HomeScreen.onAppear will handle it, but we can also send notification here as backup
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                        #if DEBUG
-                        print("   📢 Enviando notificação ProcessDeeplink como backup")
-                        #endif
                         NotificationCenter.default.post(name: NSNotification.Name("ProcessDeeplink"), object: nil)
                     }
                 }
@@ -169,13 +119,6 @@ struct ContentView: View {
     }
     
     private func handleDeeplink(_ incomingURL: URL) {
-        #if DEBUG
-        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        print("🔍 ContentView.handleDeeplink chamado")
-        print("   URL: \(incomingURL.absoluteString)")
-        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        #endif
-        
         guard let deeplinkType = incomingURL.absoluteString.split(separator: ":").first else {
             return
         }
@@ -195,12 +138,6 @@ struct ContentView: View {
             deeplinkViewModel.extractParameters(incomingURL, vaults: vaults)
         }
         
-        #if DEBUG
-        print("   ✅ extractParameters chamado")
-        print("   type agora é: \(String(describing: deeplinkViewModel.type))")
-        print("   📢 Enviando notificação ProcessDeeplink IMEDIATAMENTE")
-        #endif
-        
         // Send notification immediately to process deeplink
         // onChange might not fire if HomeScreen is not in view hierarchy
         NotificationCenter.default.post(name: NSNotification.Name("ProcessDeeplink"), object: nil)
@@ -209,15 +146,8 @@ struct ContentView: View {
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
             
-            #if DEBUG
-            print("   🔄 Verificando type após 0.1s: \(String(describing: deeplinkViewModel.type))")
-            #endif
-            
             // If type is still set, send notification again
             if deeplinkViewModel.type != nil {
-                #if DEBUG
-                print("   ⚠️ Type ainda está setado, enviando notificação novamente")
-                #endif
                 NotificationCenter.default.post(name: NSNotification.Name("ProcessDeeplink"), object: nil)
             }
         }
