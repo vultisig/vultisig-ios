@@ -31,7 +31,7 @@ struct VaultMainBalanceView: View {
     }
     
     var balanceLabel: some View {
-        Text(balanceToShow)
+        HiddenBalanceText(balanceToShow)
             .font(font)
             .foregroundStyle(Theme.colors.textPrimary)
             .contentTransition(.numericText())
