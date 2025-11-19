@@ -59,10 +59,11 @@ class Coin: ObservableObject, Codable, Hashable {
         self.logo = try container.decode(String.self, forKey: .logo)
         self.strDecimals = String(try container.decode(Int.self, forKey: .decimals))
         self.priceProviderId = try container.decode(String.self, forKey: .priceProviderId)
-        self.contractAddress = try container.decode(String.self, forKey: .contractAddress)
+        let contractAddress = try container.decode(String.self, forKey: .contractAddress)
+        self.contractAddress = contractAddress
         self.isNativeToken = try container.decode(Bool.self, forKey: .isNativeToken)
         self.hexPublicKey = try container.decodeIfPresent(String.self, forKey: .hexPublicKey) ?? ""
-        self.id = try container.decodeIfPresent(String.self, forKey: .id) ?? "\(chain.rawValue)-\(ticker)-\(address)"
+        self.id = try container.decodeIfPresent(String.self, forKey: .id) ?? "\(chain.rawValue)-\(ticker)-\(address)-\(contractAddress)"
         
     }
     
@@ -389,7 +390,7 @@ extension Coin {
     
     var thorchainDefiBalanceDecimal: Decimal {
         switch ticker.uppercased() {
-        case "STCY", "YRUNE", "YTCY":
+        case "YRUNE", "YTCY":
             return balanceDecimal
         default:
             return stakedBalanceDecimal
