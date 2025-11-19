@@ -501,11 +501,6 @@ private extension HomeScreen {
                         coinToUse = coin
                         break
                     }
-                } else if coin.chain == .thorChainStagenet {
-                    if AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor") {
-                        coinToUse = coin
-                        break
-                    }
                 } else {
                     let isValid = coin.chain.coinType.validate(address: address)
                     if isValid {
