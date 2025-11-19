@@ -27,6 +27,7 @@ struct AmountTextField<CustomView: View>: View {
     let customView: CustomView
     let customViewPosition: CustomViewPosition
     @State var amountInternal: String = ""
+    @State var size: CGSize?
     
     init(
         amount: Binding<String>,
@@ -74,54 +75,52 @@ struct AmountTextField<CustomView: View>: View {
     }
     
     var body: some View {
-        GeometryReader { geo in
-            VStack(spacing: 0) {
-                Spacer()
-                VStack(spacing: 4) {
-                    HStack(spacing: 4) {
-                        TextField("0", text: $amountInternal)
-                            .autocorrectionDisabled(true)
-                            .multilineTextAlignment(.trailing)
-                            .font(Theme.fonts.largeTitle)
-                            .foregroundStyle(Theme.colors.textPrimary)
-                            .borderlessTextFieldStyle()
-                            .fixedSize()
+        VStack(spacing: 0) {
+            Spacer()
+            VStack(spacing: 4) {
+                HStack(spacing: 4) {
+                    TextField("0", text: $amountInternal)
+                        .autocorrectionDisabled(true)
+                        .multilineTextAlignment(.trailing)
+                        .font(Theme.fonts.largeTitle)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                        .borderlessTextFieldStyle()
+                        .fixedSize()
 #if os(iOS)
-                            .keyboardType(.decimalPad)
+                        .keyboardType(.decimalPad)
 #endif
-                        Text(ticker)
-                            .font(Theme.fonts.largeTitle)
-                            .foregroundStyle(Theme.colors.textPrimary)
-                            .fixedSize()
-                    }
-                    .frame(maxWidth: geo.size.width)
-                    
-                    if let percentage {
-                        Text((Double(percentage) / 100).formatted(.percent))
-                            .font(Theme.fonts.subtitle)
-                            .foregroundStyle(Theme.colors.textExtraLight)
-                    }
+                    Text(ticker)
+                        .font(Theme.fonts.largeTitle)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                        .fixedSize()
                 }
-                Spacer()
-                VStack(spacing: 12) {
-                    if let error {
-                        Text(error.localized)
-                            .foregroundColor(Theme.colors.alertError)
-                            .font(Theme.fonts.footnote)
-                            .multilineTextAlignment(.leading)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    percentageView
-                    
-                    if customViewPosition == .balance {
-                        unwrappedCustomView
-                    }
-                    
-                    availableBalanceView
-                    
-                    if customViewPosition == .bottom {
-                        unwrappedCustomView
-                    }
+                .frame(maxWidth: size?.width)
+                
+                if let percentage {
+                    Text((Double(percentage) / 100).formatted(.percent))
+                        .font(Theme.fonts.subtitle)
+                        .foregroundStyle(Theme.colors.textExtraLight)
+                }
+            }
+            Spacer()
+            VStack(spacing: 12) {
+                if let error {
+                    Text(error.localized)
+                        .foregroundColor(Theme.colors.alertError)
+                        .font(Theme.fonts.footnote)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                percentageView
+                
+                if customViewPosition == .balance {
+                    unwrappedCustomView
+                }
+                
+                availableBalanceView
+                
+                if customViewPosition == .bottom {
+                    unwrappedCustomView
                 }
             }
         }
@@ -140,6 +139,7 @@ struct AmountTextField<CustomView: View>: View {
         .onChange(of: availableAmount) { _, _ in
             setupAmount()
         }
+        .readSize(onChange: { size = $0 })
     }
     
     @ViewBuilder

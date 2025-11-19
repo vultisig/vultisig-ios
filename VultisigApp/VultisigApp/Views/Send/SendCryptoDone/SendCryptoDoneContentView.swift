@@ -16,7 +16,7 @@ struct SendCryptoDoneContentView: View {
     @State var navigateToTransactionDetails = false
     @State var navigateToHome = false
     @State var animationVM: RiveViewModel? = nil
-    @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var accountViewModel: AccountViewModel
     
     var body: some View {
         VStack {
@@ -61,17 +61,12 @@ struct SendCryptoDoneContentView: View {
             }
         }
         .navigationDestination(isPresented: $navigateToTransactionDetails) {
-            SendCryptoSecondaryDoneView(
-                input: input,
-                navigateToHome: $navigateToHome
-            )
+            SendCryptoSecondaryDoneView(input: input)
         }
-        .navigationDestination(isPresented: $navigateToHome) {
-            if let vault = homeViewModel.selectedVault {
-                HomeScreen(initialVault: vault)
-            }
-        }
-        .onLoad {
+        .onChange(of: navigateToHome) { _, newValue in
+            guard newValue else { return }
+            accountViewModel.referenceID = UUID()
+        }.onLoad {
             animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
         }
     }
@@ -122,4 +117,5 @@ struct SendCryptoDoneContentView: View {
         swapTransaction: nil,
         isSend: true
     )
+    .environmentObject(AccountViewModel())
 }

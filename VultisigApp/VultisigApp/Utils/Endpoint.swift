@@ -371,7 +371,7 @@ class Endpoint {
     
     static let mantleServiceRpcService = "https://api.vultisig.com/mantle/"
     
-    static let hyperliquidServiceRpcService = "https://rpc.hyperliquid.xyz/evm"
+    static let hyperliquidServiceRpcService = "https://api.vultisig.com/hyperevm/"
     
     static let seiServiceRpcService = "https://evm-rpc.sei-apis.com"
     

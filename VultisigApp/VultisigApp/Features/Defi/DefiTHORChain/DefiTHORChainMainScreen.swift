@@ -16,6 +16,8 @@ struct DefiTHORChainMainScreen: View {
     @StateObject var lpsViewModel: DefiTHORChainLPsViewModel
     @StateObject var stakeViewModel: DefiTHORChainStakeViewModel
     @State private var showPositionSelection = false
+    @State private var isLoading = false
+    @State private var error: HelperError?
     
     @State private var transactionToPresent: FunctionTransactionType?
     
@@ -42,10 +44,7 @@ struct DefiTHORChainMainScreen: View {
         .overlay(bottomGradient, alignment: .bottom)
         .onLoad {
             viewModel.onLoad()
-            Task {
-                await viewModel.refresh()
-                await refresh()
-            }
+            Task { await refresh() }
         }
         .refreshable { await refresh() }
         .onChange(of: vault) { _, vault in
@@ -67,6 +66,14 @@ struct DefiTHORChainMainScreen: View {
         .navigationDestination(item: $transactionToPresent) { transaction in
             FunctionTransactionScreen(vault: vault, transactionType: transaction)
         }
+        .withLoading(isLoading: $isLoading)
+        .alert(item: $error) { error in
+            Alert(
+                title: Text(NSLocalizedString("error", comment: "")),
+                message: Text(NSLocalizedString(error.localizedDescription, comment: "")),
+                dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+            )
+        }
     }
     
     var positionsSegmentedControlView: some View {
@@ -87,8 +94,8 @@ struct DefiTHORChainMainScreen: View {
                 DefiTHORChainBondedView(
                     viewModel: bondViewModel,
                     coin: group.nativeCoin,
-                    onBond: { transactionToPresent = .bond(node: $0?.address) },
-                    onUnbond: { transactionToPresent = .unbond(node: $0) },
+                    onBond: { onTransactionToPresent(.bond(coin: group.nativeCoin.toCoinMeta(), node: $0?.address)) },
+                    onUnbond: { onTransactionToPresent(.unbond(node: $0)) },
                     emptyStateView: { emptyStateView }
                 )
             case .stake:
@@ -100,11 +107,11 @@ struct DefiTHORChainMainScreen: View {
                         guard let rewards = position.rewards, let rewardsCoin = position.rewardCoin else {
                             return
                         }
-                        transactionToPresent = .withdrawRewards(
+                        onTransactionToPresent(.withdrawRewards(
                             coin: position.coin,
                             rewards: rewards,
                             rewardsCoin: rewardsCoin
-                        )
+                        ))
                     },
                     emptyStateView: { emptyStateView }
                 )
@@ -112,8 +119,12 @@ struct DefiTHORChainMainScreen: View {
                 DefiTHORChainLPsView(
                     vault: vault,
                     viewModel: lpsViewModel,
-                    onRemove: { transactionToPresent = .removeLP(position: $0) },
-                    onAdd: { transactionToPresent = .addLP(position: $0) },
+                    onRemove: {
+                        onTransactionToPresent(.removeLP(position: $0))
+                    },
+                    onAdd: {
+                        onTransactionToPresent(.addLP(position: $0))
+                    },
                     emptyStateView: { emptyStateView }
                 )
             }
@@ -135,18 +146,20 @@ struct DefiTHORChainMainScreen: View {
     func onStake(position: StakePosition) {
         switch position.type {
         case .stake, .compound:
-            transactionToPresent = .stake(coin: stakeCoin(for: position.coin), defaultAutocompound: defaultAutocompound(for: position.coin))
+            onTransactionToPresent(.stake(coin: stakeCoin(for: position.coin), defaultAutocompound: defaultAutocompound(for: position.coin)))
         case .index:
-            transactionToPresent = .mint(coin: coin(for: position.coin), yCoin: position.coin)
+            onTransactionToPresent(.mint(coin: coin(for: position.coin), yCoin: position.coin))
         }
     }
     
     func onUnstake(position: StakePosition) {
         switch position.type {
         case .stake, .compound:
-            transactionToPresent = .unstake(coin: stakeCoin(for: position.coin), defaultAutocompound: defaultAutocompound(for: position.coin))
+            onTransactionToPresent(
+                .unstake(coin: stakeCoin(for: position.coin), defaultAutocompound: defaultAutocompound(for: position.coin))
+            )
         case .index:
-            transactionToPresent = .redeem(coin: coin(for: position.coin), yCoin: position.coin)
+            onTransactionToPresent(.redeem(coin: coin(for: position.coin), yCoin: position.coin))
         }
     }
     
@@ -178,6 +191,27 @@ struct DefiTHORChainMainScreen: View {
             return true
         default:
             return false
+        }
+    }
+    
+    func onTransactionToPresent(_ type: FunctionTransactionType) {
+        Task { @MainActor in
+            let vaultCoins = vault.coins.map { $0.toCoinMeta() }
+            let shouldAdd = type.coins.contains { !vaultCoins.contains($0) }
+            
+            if shouldAdd {
+                isLoading = true
+                do {
+                    try await CoinService.addToChain(assets: type.coins, to: vault)
+                } catch {
+                    self.error = HelperError.runtimeError("Failed to add coins")
+                    isLoading = false
+                    return
+                }
+                isLoading = false
+            }
+            
+            transactionToPresent = type
         }
     }
 }
@@ -221,6 +255,7 @@ private extension DefiTHORChainMainScreen {
 
 private extension DefiTHORChainMainScreen {
     func refresh() async {
+        Task { await viewModel.refresh() }
         switch viewModel.selectedPosition {
         case .bond:
             await bondViewModel.refresh()

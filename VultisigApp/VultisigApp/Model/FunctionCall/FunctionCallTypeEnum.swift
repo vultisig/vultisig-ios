@@ -10,33 +10,22 @@ import Foundation
 import Combine
 
 enum FunctionCallType: String, CaseIterable, Identifiable {
-    case bond,
+    case
          rebond,
-         unbond,
          bondMaya,
          unbondMaya,
          leave,
          custom,
          vote,
          stake,
-         stakeTcy,
          unstake,
-         unstakeTcy,
          addPool,
          removePool,
          cosmosIBC,
          merge,
          unmerge,
          theSwitch,
-         mintYRune,
-         mintYTCY,
-         redeemRune,
-         redeemTCY,
          addThorLP,
-         removeThorLP,
-         stakeRuji,
-         unstakeRuji,
-         withdrawRujiRewards,
          securedAsset,
          withdrawSecuredAsset
     
@@ -44,18 +33,8 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
     
     func display(coin: Coin) -> String {
         switch self {
-        case .bond:
-            if coin.chain == .mayaChain {
-                return "Add Bondprovider to WL"
-            }
-            return "Bond"
         case .rebond:
             return "Rebond"
-        case .unbond:
-            if coin.chain == .mayaChain {
-                return "Remove Bondprovider from WL"
-            }
-            return "Unbond"
         case .bondMaya:
             return "Bond"
         case .unbondMaya:
@@ -72,10 +51,6 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return "Vote"
         case .stake:
             return "Stake"
-        case .stakeTcy:
-            return "Stake TCY"
-        case .unstakeTcy:
-            return "Unstake TCY"
         case .unstake:
             return "Unstake"
         case .cosmosIBC:
@@ -86,24 +61,8 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return "Withdraw RUJI"
         case .theSwitch:
             return "Switch"
-        case .mintYRune:
-            return "Mint yRUNE"
-        case .mintYTCY:
-            return "Mint yTCY"
-        case .redeemRune:
-            return "Redeem RUNE"
-        case .redeemTCY:
-            return "Redeem TCY"
         case .addThorLP:
             return "Add THORChain LP"
-        case .removeThorLP:
-            return "Remove THORChain LP"
-        case .stakeRuji:
-            return "Stake RUJI"
-        case .unstakeRuji:
-            return "Unstake RUJI"
-        case .withdrawRujiRewards:
-            return "Withdraw RUJI Rewards"
         case .securedAsset:
             return "Secured Assets"
         case .withdrawSecuredAsset:
@@ -115,23 +74,20 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
         switch coin.chain {
         case .thorChain:
             return [
-                FunctionCallType.bond,
                 .rebond,
-                .unbond,
                 .leave,
                 .merge,
                 .unmerge,
                 .custom,
-                .addThorLP,
-                .removeThorLP,
-                .stakeRuji,
-                .unstakeRuji,
-                .withdrawRujiRewards,
-                .mintYRune, .redeemRune, .mintYTCY, .redeemTCY, .stakeTcy, .unstakeTcy,
-                .securedAsset, .withdrawSecuredAsset]
+                .securedAsset,
+                .withdrawSecuredAsset
+            ]
             
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
-            return [.addThorLP, .securedAsset]
+            return [
+                .addThorLP,
+                .securedAsset
+            ]
         case .mayaChain:
             return [.bondMaya,
                     .unbondMaya,
@@ -142,11 +98,15 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
         case .dydx:
             return [.vote]
         case .ton:
-            return [.stake,
-                    .unstake]
+            return [
+                .stake,
+                .unstake
+            ]
         case .gaiaChain:
-            return [.cosmosIBC,
-                    .theSwitch]
+            return [
+                .cosmosIBC,
+                .theSwitch
+            ]
         case .kujira:
             return [.cosmosIBC]
         case .osmosis:
@@ -167,7 +127,7 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             if coin.ticker.contains("TCY") {
                 return .custom
             }
-            return .bond
+            return .rebond
         case .mayaChain:
             return .bondMaya
         case .dydx:

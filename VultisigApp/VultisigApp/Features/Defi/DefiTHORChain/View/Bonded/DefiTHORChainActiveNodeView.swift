@@ -10,7 +10,7 @@ import SwiftUI
 struct DefiTHORChainActiveNodeView: View {
     let coin: Coin
     let activeNode: BondPosition
-    
+    let canUnbond: Bool
     var onUnbond: (BondNode) -> Void
     var onBond: (BondNode) -> Void
     
@@ -27,7 +27,7 @@ struct DefiTHORChainActiveNodeView: View {
         return CustomDateFormatter.formatMonthDayYear(nextChurn)
     }
     
-    var unbondDisabled: Bool { !activeNode.node.state.canUnbond }
+    var unbondDisabled: Bool { !activeNode.node.state.canUnbond || !canUnbond }
     var bondDisabled: Bool { !activeNode.node.state.canBond }
 
     var body: some View {
@@ -129,6 +129,7 @@ struct DefiTHORChainActiveNodeView: View {
                 nextChurn: Date().addingTimeInterval(300),
                 vault: .example
             ),
+            canUnbond: false,
             onUnbond: { _ in },
             onBond: { _ in }
         )
@@ -143,6 +144,7 @@ struct DefiTHORChainActiveNodeView: View {
                 nextChurn: Date().addingTimeInterval(400),
                 vault: .example
             ),
+            canUnbond: true,
             onUnbond: { _ in },
             onBond: { _ in }
         )

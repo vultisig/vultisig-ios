@@ -96,8 +96,8 @@ struct THORChainAPIService {
         return response.data
     }
     
-    func getNetworkFees() async throws -> ThorchainNetworkAllFees {
-        let response = try await httpClient.request(THORChainAPI.getNetworkFees, responseType: ThorchainNetworkAllFees.self)
+    func getNetwork() async throws -> ThorchainNetwork {
+        let response = try await httpClient.request(THORChainAPI.getNetworkFees, responseType: ThorchainNetwork.self)
         return response.data
     }
     

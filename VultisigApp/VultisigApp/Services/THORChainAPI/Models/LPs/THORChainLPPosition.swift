@@ -11,7 +11,6 @@ import Foundation
 struct THORChainLPPosition {
     let liquidityProvider: THORChainLiquidityProviderResponse?
     let poolStats: THORChainPoolStats
-    let manualAPR: Decimal? // Manual APR calculated from LUVI history
 
     /// Pool asset identifier (e.g., "BTC.BTC")
     var asset: String {
@@ -34,9 +33,6 @@ struct THORChainLPPosition {
     /// Use this for display with .formatted(.percent)
     /// Prefers manual APR from LUVI history if available, falls back to pool stats APR
     var apr: Double {
-        if let manual = manualAPR {
-            return Double(truncating: manual as NSDecimalNumber)
-        }
         return poolStats.aprDecimal
     }
 }

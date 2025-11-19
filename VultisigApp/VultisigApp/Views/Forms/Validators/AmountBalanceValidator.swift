@@ -19,6 +19,7 @@ struct AmountBalanceValidator: FormFieldValidator {
     
     enum ValidationError: LocalizedError {
         case invalidAmount
+        case zeroAmount
         case exceedsBalance
         
         var errorDescription: String? {
@@ -27,6 +28,8 @@ struct AmountBalanceValidator: FormFieldValidator {
                 return "invalidAmount".localized
             case .exceedsBalance:
                 return "amountExceeded".localized
+            case .zeroAmount:
+                return "amountCannotBeZero".localized    
             }
         }
     }
@@ -39,9 +42,12 @@ struct AmountBalanceValidator: FormFieldValidator {
             throw ValidationError.invalidAmount
         }
         
-        
-        guard amount >= 0 else {
+        if amount < 0 {
             throw ValidationError.invalidAmount
+        }
+        
+        if amount == 0 {
+            throw ValidationError.zeroAmount
         }
         
         guard amount <= balance else {

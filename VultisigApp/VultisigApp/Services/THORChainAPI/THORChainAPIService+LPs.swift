@@ -125,28 +125,6 @@ extension THORChainAPIService {
         return data
     }
 
-    /// Calculate manual APR from LUVI history for a specific pool
-    /// - Parameters:
-    ///   - asset: The pool asset identifier (e.g., "BTC.BTC")
-    ///   - days: Number of days to calculate APR over (default: 30)
-    /// - Returns: Manual APR as decimal (e.g., 0.2433 for 24.33%)
-    /// - Note: Results are cached for 5 minutes to improve performance
-    func calculateManualAPR(asset: String, days: Int = 30) async throws -> Decimal {
-        // Check cache first
-        if let cached = await cache.getCachedManualAPR(asset: asset, days: days) {
-            return cached
-        }
-
-        // Fetch depth history (which is also cached)
-        let history = try await getDepthHistory(asset: asset, interval: "day", count: days)
-        let apr = history.calculateAPR(days: days)
-
-        // Cache the calculated APR
-        await cache.cacheManualAPR(apr, asset: asset, days: days)
-
-        return apr
-    }
-    
     /// Fetches liquidity provider details for a specific pool and address
     /// - Parameters:
     ///   - assetId: The pool asset identifier (e.g., "BTC.BTC")
@@ -170,9 +148,6 @@ extension THORChainAPIService {
         // First, fetch all pool stats to get the list of available pools
         let poolStats = try await getPoolStats(period: period)
 
-        // Convert period string to days (default to 30)
-        let days = periodToDays(period)
-
         var positions: [THORChainLPPosition] = []
         
         // Filter pools by user selection
@@ -192,16 +167,9 @@ extension THORChainAPIService {
                     address: address
                 )
 
-                // Calculate manual APR from LUVI history
-                let manualAPR = try? await calculateManualAPR(
-                    asset: poolStat.asset,
-                    days: days
-                )
-
                 let position = THORChainLPPosition(
                     liquidityProvider: lpDetails,
-                    poolStats: poolStat,
-                    manualAPR: manualAPR ?? 0
+                    poolStats: poolStat
                 )
 
                 positions.append(position)
@@ -240,14 +208,11 @@ extension THORChainAPIService {
     /// - Returns: LP position for the specified pool with manually calculated APR, or nil if not found
     func getLPPosition(address: String, poolAsset: String, period: String? = nil) async throws -> THORChainLPPosition? {
         do {
-            let days = periodToDays(period)
-
             // Fetch pool stats, LP details, and manual APR in parallel
             async let poolStatsArray = getPoolStats(period: period)
             async let lpDetails = getLiquidityProviderDetails(assetId: poolAsset, address: address)
-            async let manualAPR = calculateManualAPR(asset: poolAsset, days: days)
 
-            let (stats, details, apr) = try await (poolStatsArray, lpDetails, manualAPR)
+            let (stats, details) = try await (poolStatsArray, lpDetails)
 
             // Find the matching pool stats
             guard let poolStat = stats.first(where: { $0.asset == poolAsset }) else {
@@ -256,8 +221,7 @@ extension THORChainAPIService {
 
             return THORChainLPPosition(
                 liquidityProvider: details,
-                poolStats: poolStat,
-                manualAPR: apr
+                poolStats: poolStat
             )
         } catch {
             // User doesn't have a position in this pool
