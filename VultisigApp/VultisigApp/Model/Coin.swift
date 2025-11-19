@@ -389,7 +389,7 @@ extension Coin {
     
     var thorchainDefiBalanceDecimal: Decimal {
         switch ticker.uppercased() {
-        case "STCY", "YRUNE", "YTCY":
+        case "YRUNE", "YTCY":
             return balanceDecimal
         default:
             return stakedBalanceDecimal

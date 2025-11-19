@@ -122,20 +122,6 @@ private extension DefiTHORChainStakeViewModel {
                 rewardCoin: nil,
                 vault: vault
             )
-
-        case "STCY":
-            return StakePosition(
-                coin: coinMeta,
-                type: .compound,
-                amount: coin.balanceDecimal,
-                apr: nil,
-                estimatedReward: nil,
-                nextPayout: nil,
-                rewards: nil,
-                rewardCoin: nil,
-                vault: vault
-            )
-
         default:
             // Default case for other stake positions
             return StakePosition(
