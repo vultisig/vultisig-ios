@@ -38,8 +38,6 @@ struct ContentView: View {
                     handleDeeplink(incomingURL)
                 }
             }
-            .onAppear {
-            }
             
             if accountViewModel.showCover {
                 CoverView()
@@ -84,10 +82,7 @@ struct ContentView: View {
     var homeView: some View {
         HomeScreen()
             .onAppear {
-                // CRITICAL: Process pending deeplink when HomeScreen appears
-                // This handles the case when app is closed and opened via QR code
                 if deeplinkViewModel.type != nil {
-                    // HomeScreen.onAppear will handle it, but we can also send notification here as backup
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                         NotificationCenter.default.post(name: NSNotification.Name("ProcessDeeplink"), object: nil)
                     }
@@ -138,15 +133,11 @@ struct ContentView: View {
             deeplinkViewModel.extractParameters(incomingURL, vaults: vaults)
         }
         
-        // Send notification immediately to process deeplink
-        // onChange might not fire if HomeScreen is not in view hierarchy
         NotificationCenter.default.post(name: NSNotification.Name("ProcessDeeplink"), object: nil)
         
-        // Also try with a small delay as fallback
         Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+            try? await Task.sleep(nanoseconds: 100_000_000)
             
-            // If type is still set, send notification again
             if deeplinkViewModel.type != nil {
                 NotificationCenter.default.post(name: NSNotification.Name("ProcessDeeplink"), object: nil)
             }

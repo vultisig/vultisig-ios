@@ -32,10 +32,6 @@ struct MacScannerView: View {
             main
         }
         .crossPlatformToolbar(cameraViewModel.getTitle(type))
-        .onAppear {
-        }
-        .onDisappear {
-        }
         .navigationDestination(isPresented: $cameraViewModel.shouldJoinKeygen) {
             JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: selectedVault)
         }
