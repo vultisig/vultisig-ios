@@ -809,7 +809,7 @@ class TokensStore {
             ticker: "POL",
             logo: "pol",
             decimals: 18,
-            priceProviderId: "matic-network",
+            priceProviderId: "polygon-ecosystem-token",
             contractAddress: "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0",
             isNativeToken: false
         ),
@@ -1367,7 +1367,7 @@ class TokensStore {
             ticker: "POL",
             logo: "pol",
             decimals: 18,
-            priceProviderId: "matic-network",
+            priceProviderId: "polygon-ecosystem-token",
             contractAddress: "",
             isNativeToken: true
         ),
@@ -1792,6 +1792,20 @@ class TokensStore {
             contractAddress: "",
             isNativeToken: true
         ),
+        avaxSol,
+        baseCBBTC,
+        baseVVV,
+        bscBTCB,
+        bscTWT,
+        ethDPI,
+        ethGUSD,
+        ethLUSD,
+        ethRAZE,
+        ethTHOR,
+        ethUSDP,
+        ethVTHOR,
+        ethXDEFI,
+        ethXRUNE
     ]
     
     static let rune: CoinMeta = CoinMeta(
@@ -1861,6 +1875,146 @@ class TokensStore {
         decimals: 8,
         priceProviderId: "",
         contractAddress: "x/nami-index-nav-thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px-rcpt",
+        isNativeToken: false
+    )
+    
+    static let avaxSol: CoinMeta = CoinMeta(
+        chain: .avalanche,
+        ticker: "SOL",
+        logo: "solana",
+        decimals: 9,
+        priceProviderId: "solana",
+        contractAddress: "0xFE6B19286885a4F7F55AdAD09C3Cd1f906D2478F",
+        isNativeToken: false
+    )
+    
+    static let baseCBBTC: CoinMeta = CoinMeta(
+        chain: .base,
+        ticker: "cbBTC",
+        logo: "btc",
+        decimals: 8,
+        priceProviderId: "coinbase-wrapped-btc",
+        contractAddress: "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+        isNativeToken: false
+    )
+    
+    static let baseVVV: CoinMeta = CoinMeta(
+        chain: .base,
+        ticker: "VVV",
+        logo: "vvv",
+        decimals: 18,
+        priceProviderId: "venice-token",
+        contractAddress: "0xacfE6019Ed1A7Dc6f7B508C02d1b04ec88cC21bf",
+        isNativeToken: false
+    )
+    
+    static let bscBTCB: CoinMeta = CoinMeta(
+        chain: .bscChain,
+        ticker: "BTCB",
+        logo: "btc",
+        decimals: 18,
+        priceProviderId: "bitcoin-on-base",
+        contractAddress: "0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c",
+        isNativeToken: false
+    )
+    
+    static let bscTWT: CoinMeta = CoinMeta(
+        chain: .bscChain,
+        ticker: "TWT",
+        logo: "twt",
+        decimals: 18,
+        priceProviderId: "trust-wallet-token",
+        contractAddress: "0x4B0F1812e5Df2A09796481Ff14017e6005508003",
+        isNativeToken: false
+    )
+    
+    static let ethDPI: CoinMeta = CoinMeta(
+        chain: .ethereum,
+        ticker: "DPI",
+        logo: "dpi",
+        decimals: 18,
+        priceProviderId: "defipulse-index",
+        contractAddress: "0x1494CA1F11D487c2bBe4543E90080AeBa4BA3C2b",
+        isNativeToken: false
+    )
+    
+    static let ethGUSD: CoinMeta = CoinMeta(
+        chain: .ethereum,
+        ticker: "GUSD",
+        logo: "gusd",
+        decimals: 2,
+        priceProviderId: "gusd",
+        contractAddress: "0x056Fd409E1d7A124BD7017459dFEa2F387b6d5Cd",
+        isNativeToken: false
+    )
+    
+    static let ethLUSD: CoinMeta = CoinMeta(
+        chain: .ethereum,
+        ticker: "LUSD",
+        logo: "lusd",
+        decimals: 18,
+        priceProviderId: "liquity-usd",
+        contractAddress: "0x5f98805A4E8be255a32880FDeC7F6728C6568bA0",
+        isNativeToken: false
+    )
+    
+    static let ethRAZE: CoinMeta = CoinMeta(
+        chain: .ethereum,
+        ticker: "RAZE",
+        logo: "raze",
+        decimals: 18,
+        priceProviderId: "",
+        contractAddress: "0x5Eaa69B29f99C84Fe5dE8200340b4e9b4Ab38EaC",
+        isNativeToken: false
+    )
+    
+    static let ethTHOR: CoinMeta = CoinMeta(
+        chain: .ethereum,
+        ticker: "THOR",
+        logo: "rune",
+        decimals: 18,
+        priceProviderId: "thor",
+        contractAddress: "0xa5f2211B9b8170F694421f2046281775E8468044",
+        isNativeToken: false
+    )
+    
+    static let ethUSDP: CoinMeta = CoinMeta(
+        chain: .ethereum,
+        ticker: "USDP",
+        logo: "usdp",
+        decimals: 18,
+        priceProviderId: "paxos-standard",
+        contractAddress: "0x8E870D67F660D95d5be530380D0eC0bd388289E1",
+        isNativeToken: false
+    )
+    
+    static let ethVTHOR: CoinMeta = CoinMeta(
+        chain: .ethereum,
+        ticker: "vTHOR",
+        logo: "vthor",
+        decimals: 18,
+        priceProviderId: "",
+        contractAddress: "0x815C23eCA83261b6Ec689b60Cc4a58b54BC24D8D",
+        isNativeToken: false
+    )
+    
+    static let ethXDEFI: CoinMeta = CoinMeta(
+        chain: .ethereum,
+        ticker: "XDEFI",
+        logo: "xdefi",
+        decimals: 18,
+        priceProviderId: "xdefi",
+        contractAddress: "0x72B886d09C117654aB7dA13A14d603001dE0B777",
+        isNativeToken: false
+    )
+
+    static let ethXRUNE: CoinMeta = CoinMeta(
+        chain: .ethereum,
+        ticker: "XRUNE",
+        logo: "xrune",
+        decimals: 18,
+        priceProviderId: "thorstarter",
+        contractAddress: "0x69fa0feE221AD11012BAb0FdB45d444D3D2Ce71c",
         isNativeToken: false
     )
 }

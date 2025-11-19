@@ -36,6 +36,7 @@ final class RedeemTransactionViewModel: ObservableObject, Form {
     }
     
     var transactionBuilder: TransactionBuilder? {
+        validateErrors()
         guard validForm else { return nil }
         return RedeemTransactionBuilder(
             coin: yCoin,

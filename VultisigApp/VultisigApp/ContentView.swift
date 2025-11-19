@@ -93,7 +93,7 @@ struct ContentView: View {
                 splashView
             } else if accountViewModel.showCover {
                 coverView
-            } else if vaults.count>0 {
+            } else if vaults.count > 0 {
                 homeView
             } else {
                 createVaultView

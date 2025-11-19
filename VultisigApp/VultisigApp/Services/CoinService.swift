@@ -187,7 +187,7 @@ struct CoinService {
                     }
                     
                     // Check for spam tokens
-                    if isSpamToken(token) {
+                    if await isSpamToken(token) {
                         continue
                     }
                     
@@ -204,7 +204,7 @@ struct CoinService {
     // MARK: - Helper Functions
     
     /// Check if a token appears to be spam based on its name and characteristics
-    private static func isSpamToken(_ token: CoinMeta) -> Bool {
+    private static func isSpamToken(_ token: CoinMeta) async -> Bool {
         // Additional spam filtering patterns
         let suspiciousPatterns = [
             "t.me/",           // Telegram links
@@ -212,7 +212,21 @@ struct CoinService {
             "airdrop",         // Airdrop scams
             "visit",           // Visit scams
             "*",               // Wildcards
-            "|"                // Pipe characters often used in scam names
+            "|",               // Pipe characters often used in scam names
+            "www",             // WWW prefix (often used in scam URLs)
+            "http://",         // HTTP URLs
+            "https://",        // HTTPS URLs
+            ".com",            // .com domain
+            ".net",            // .net domain
+            ".org",            // .org domain
+            ".io",             // .io domain
+            ".xyz",            // .xyz domain
+            ".app",            // .app domain
+            ".co",             // .co domain
+            ".site",           // .site domain
+            ".online",         // .online domain
+            ".tech",           // .tech domain
+            ".dev"             // .dev domain
         ]
         
         let tickerLower = token.ticker.lowercased()
@@ -224,13 +238,93 @@ struct CoinService {
             return true
         }
         
+        // Check for URL-like patterns (e.g., "example.com", "subdomain.domain")
+        // This catches URLs without protocol prefixes anywhere in the string
+        let urlPattern = #"[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,}"#
+        if let regex = try? NSRegularExpression(pattern: urlPattern, options: .caseInsensitive) {
+            let range = NSRange(location: 0, length: tickerLower.utf16.count)
+            if regex.firstMatch(in: tickerLower, options: [], range: range) != nil {
+                return true
+            }
+        }
+        
         // Check for non-ASCII characters (common in scam tokens using lookalike characters)
         let asciiOnly = token.ticker.allSatisfy { $0.isASCII }
         if !asciiOnly {
             return true
         }
         
+        // Check if logo is empty (spam tokens often have empty logos)
+        if token.logo.isEmpty {
+            return true
+        }
+        
+        // Check if logo URL is valid (not 404 or invalid)
+        if await isInvalidLogoURL(token.logo) {
+            return true
+        }
+        
         return false
+    }
+    
+    /// Check if a logo URL is invalid (404, unreachable, or not a valid URL)
+    private static func isInvalidLogoURL(_ logo: String) async -> Bool {
+        // Skip local asset names (not URLs) - these are fine
+        guard logo.contains("http://") || logo.contains("https://") || logo.contains("://") else {
+            return false // Not a URL, so we can't validate it - assume it's fine (local asset name)
+        }
+        
+        // Validate URL format
+        guard let url = URL(string: logo) else {
+            return true // Invalid URL format
+        }
+        
+        // Check if URL is reachable and not returning 404
+        do {
+            // Try HEAD first to avoid downloading the full image
+            var request = URLRequest(url: url)
+            request.httpMethod = "HEAD"
+            request.timeoutInterval = 5.0 // 5 second timeout
+            
+            let (_, response) = try await URLSession.shared.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                return true // Invalid response
+            }
+            
+            // If HEAD is not supported (405), try GET with range request
+            if httpResponse.statusCode == 405 {
+                var getRequest = URLRequest(url: url)
+                getRequest.httpMethod = "GET"
+                getRequest.setValue("bytes=0-1023", forHTTPHeaderField: "Range") // Only request first 1KB
+                getRequest.timeoutInterval = 5.0
+                
+                let (_, getResponse) = try await URLSession.shared.data(for: getRequest)
+                guard let httpGetResponse = getResponse as? HTTPURLResponse else {
+                    return true
+                }
+                
+                // Check status code from GET request
+                if httpGetResponse.statusCode == 404 || httpGetResponse.statusCode >= 500 {
+                    return true // Logo URL is invalid
+                }
+                
+                // 200-299 and 206 (partial content) and 300-399 (redirects) are considered valid
+                return false
+            }
+            
+            // Consider 404 and server errors as invalid
+            if httpResponse.statusCode == 404 || httpResponse.statusCode >= 500 {
+                return true // Logo URL is invalid
+            }
+            
+            // 200-299 and 300-399 (redirects) are considered valid
+            return false
+            
+        } catch {
+            // If we can't reach the URL, consider it invalid (likely spam)
+            return true
+        }
     }
     
     private static func findChainsBeingRemoved(selection: Set<CoinMeta>) -> Set<Chain> {

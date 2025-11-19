@@ -36,6 +36,7 @@ struct AsyncImageView: View {
             switch source {
             case .resource(let logoName):
                 imageContainer(logoName)
+                    .clipShape(Circle())
             case .remote(let url):
                 if let url = url {
                     CachedAsyncImage(url: url, urlCache: .imageCache) { image in

@@ -961,6 +961,7 @@
 "unbondRune" = "解除绑定 RUNE";
 "invalidAmount" = "无效金额";
 "amountExceeded" = "金额不能超过余额";
+"amountCannotBeZero" = "金额不能为零";
 "emptyAmountField" = "金额字段为空";
 "providerLabel" = "提供商（可选）";
 "operatorFeesLabel" = "运营商费用（基点）";

@@ -11,7 +11,7 @@ extension CoinAction {
     
     static var swapChains: [Chain] = [
         .solana,.bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash,
-        .thorChain, .thorChainStagenet, .mayaChain, .ethereum, .avalanche, .base, .arbitrum,.blast,.mantle,
+        .thorChain, .thorChainStagenet, .mayaChain, .ethereum, .avalanche, .base, .arbitrum,.blast,.mantle,.hyperliquid,
         .polygon, .polygonV2, .optimism, .bscChain, .gaiaChain, .kujira, .zksync, .zcash, .ripple,
         .cronosChain, .tron
     ]
