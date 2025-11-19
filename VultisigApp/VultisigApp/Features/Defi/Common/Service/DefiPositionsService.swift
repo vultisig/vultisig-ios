@@ -25,7 +25,6 @@ struct DefiPositionsService {
             [
                 TokensStore.tcy,
                 TokensStore.ruji,
-                TokensStore.stcy,
                 TokensStore.yrune,
                 TokensStore.ytcy
             ]
