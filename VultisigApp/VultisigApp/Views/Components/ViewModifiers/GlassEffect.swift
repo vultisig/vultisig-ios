@@ -18,8 +18,14 @@ private struct GlassEffectModifier<GlassShape: Shape>: ViewModifier {
 
     func body(content: Content) -> some View {
         if #available(iOS 26.0, macOS 26.0, *) {
-            content
-                .glassEffect(.regular.tint(tint).interactive(), in: shape)
+            // Only apply glass effect if tint is valid or nil
+            if let tint = tint {
+                content
+                    .glassEffect(.regular.tint(tint).interactive(), in: shape)
+            } else {
+                content
+                    .glassEffect(.regular.interactive(), in: shape)
+            }
         } else {
             content
         }

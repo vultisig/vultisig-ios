@@ -146,7 +146,7 @@ struct DefiTHORChainMainScreen: View {
     func onStake(position: StakePosition) {
         switch position.type {
         case .stake, .compound:
-            onTransactionToPresent(.stake(coin: stakeCoin(for: position.coin), defaultAutocompound: defaultAutocompound(for: position.coin)))
+            onTransactionToPresent(.stake(coin: position.coin, defaultAutocompound: false))
         case .index:
             onTransactionToPresent(.mint(coin: coin(for: position.coin), yCoin: position.coin))
         }
@@ -156,7 +156,7 @@ struct DefiTHORChainMainScreen: View {
         switch position.type {
         case .stake, .compound:
             onTransactionToPresent(
-                .unstake(coin: stakeCoin(for: position.coin), defaultAutocompound: defaultAutocompound(for: position.coin))
+                .unstake(coin: position.coin, defaultAutocompound: false)
             )
         case .index:
             onTransactionToPresent(.redeem(coin: coin(for: position.coin), yCoin: position.coin))
@@ -174,24 +174,6 @@ struct DefiTHORChainMainScreen: View {
             coin = TokensStore.rune
         }
         return coin
-    }
-    
-    func stakeCoin(for coin: CoinMeta) -> CoinMeta {
-        switch coin {
-        case TokensStore.stcy:
-            return TokensStore.tcy
-        default:
-            return coin
-        }
-    }
-    
-    func defaultAutocompound(for coin: CoinMeta) -> Bool {
-        switch coin {
-        case TokensStore.stcy:
-            return true
-        default:
-            return false
-        }
     }
     
     func onTransactionToPresent(_ type: FunctionTransactionType) {

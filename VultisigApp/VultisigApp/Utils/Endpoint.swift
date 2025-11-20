@@ -32,7 +32,7 @@ class Endpoint {
     }
     
     static let vultisigApiProxy = "https://api.vultisig.com"
-    static let supportDocumentLink = "https://docs.vultisig.com/user-actions/creating-a-vault"
+    static let supportDocumentLink = "https://docs.vultisig.com/vultisig-app-actions/managing-your-vault/vault-backup#recovering-a-lost-device"
     static let vultisigRelay = "https://api.vultisig.com/router"
     static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
     static let broadcastTransactionMayachain = "https://mayanode.mayachain.info/cosmos/tx/v1beta1/txs"
