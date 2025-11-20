@@ -40,17 +40,43 @@ final class RateProvider {
         }
     }
 
-    /// Should be updated manually
-    private var rates = Set<Rate>()
+    /// Should be updated manually - thread-safe backing storage
+    private var _rates = Set<Rate>()
+    private var ratesLock = os_unfair_lock()
+    private let initQueue = DispatchQueue(label: "com.vultisig.rateprovider.init")
+    
+    /// Thread-safe access to rates
+    private var rates: Set<Rate> {
+        get {
+            os_unfair_lock_lock(&ratesLock)
+            defer { os_unfair_lock_unlock(&ratesLock) }
+            return _rates
+        }
+        set {
+            os_unfair_lock_lock(&ratesLock)
+            defer { os_unfair_lock_unlock(&ratesLock) }
+            _rates = newValue
+        }
+    }
 
     private init() {
-        let descriptor = FetchDescriptor<DatabaseRate>()
-
-        do {
-            let objects = try Storage.shared.modelContext.fetch(descriptor)
-            self.rates = Set(objects.map { Rate(object: $0) })
-        } catch {
-            fatalError(error.localizedDescription)
+        // Defer the database fetch to avoid re-entrant calls during SwiftData operations
+        // This prevents the crash caused by calling fetch() while SwiftData is already
+        // processing another fetch/register operation
+        initQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            let descriptor = FetchDescriptor<DatabaseRate>()
+            
+            do {
+                let objects = try Storage.shared.modelContext.fetch(descriptor)
+                let loadedRates = Set(objects.map { Rate(object: $0) })
+                
+                // Thread-safe assignment via computed property
+                self.rates = loadedRates
+            } catch {
+                print("Failed to load rates: \(error.localizedDescription)")
+            }
         }
     }
     
