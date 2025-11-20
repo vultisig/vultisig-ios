@@ -389,7 +389,7 @@ extension SendDetailsScreen {
             // Only set toAddress from deeplinkViewModel if tx.toAddress is empty
             // This preserves the address that was already set before navigation
             if tx.toAddress.isEmpty {
-                tx.toAddress = deeplinkViewModel.address ?? ""
+            tx.toAddress = deeplinkViewModel.address ?? ""
             }
             deeplinkViewModel.address = nil
             self.coin = nil

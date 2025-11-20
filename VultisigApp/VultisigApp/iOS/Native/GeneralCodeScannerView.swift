@@ -33,7 +33,7 @@ struct GeneralCodeScannerView: View {
             guard let url = URL(string: result) else {
                 return
             }
-            deeplinkViewModel.extractParameters(url, vaults: vaults)
+            deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
         } handleScan: { result in
             handleScan(result: result)
         }
@@ -45,7 +45,7 @@ struct GeneralCodeScannerView: View {
             guard let url = URL(string: result.string) else {
                 return
             }
-            deeplinkViewModel.extractParameters(url, vaults: vaults)
+            deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
         case .failure(_):
             return
         }

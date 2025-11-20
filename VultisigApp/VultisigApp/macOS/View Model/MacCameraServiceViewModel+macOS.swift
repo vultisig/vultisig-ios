@@ -152,7 +152,7 @@ extension MacCameraServiceViewModel {
             return
         }
         
-        deeplinkViewModel.extractParameters(url, vaults: vaults)
+        deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
     }
 }
 #endif

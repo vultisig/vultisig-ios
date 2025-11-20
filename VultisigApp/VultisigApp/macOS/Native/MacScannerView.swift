@@ -64,13 +64,13 @@ struct MacScannerView: View {
         .onChange(of: cameraViewModel.detectedQRCode) { oldValue, newValue in
             
             if let newValue = newValue, !newValue.isEmpty {
-                cameraViewModel.handleScan(
-                    vaults: vaults,
-                    sendTx: sendTx,
-                    deeplinkViewModel: deeplinkViewModel,
-                    vaultDetailViewModel: vaultDetailViewModel,
-                    coinSelectionViewModel: coinSelectionViewModel
-                )
+            cameraViewModel.handleScan(
+                vaults: vaults,
+                sendTx: sendTx,
+                deeplinkViewModel: deeplinkViewModel,
+                vaultDetailViewModel: vaultDetailViewModel,
+                coinSelectionViewModel: coinSelectionViewModel
+            )
             }
         }
     }

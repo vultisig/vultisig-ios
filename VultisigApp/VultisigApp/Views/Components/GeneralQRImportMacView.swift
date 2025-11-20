@@ -19,8 +19,6 @@ struct GeneralQRImportMacView: View {
     
     @State var showAlert = false
     @State var isButtonEnabled = false
-    @State var shouldJoinKeygen = false
-    @State var shouldKeysignTransaction = false
     
 #if os(iOS)
     @State var selectedImage: UIImage?
@@ -54,14 +52,6 @@ struct GeneralQRImportMacView: View {
             button
         }
         .padding(40)
-        .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: selectedVault)
-        }
-        .navigationDestination(isPresented: $shouldKeysignTransaction) {
-            if let vault = homeViewModel.selectedVault {
-                JoinKeysignView(vault: vault)
-            }
-        }
     }
     
     var title: some View {
@@ -161,8 +151,7 @@ struct GeneralQRImportMacView: View {
                 return
             }
             
-            deeplinkViewModel.extractParameters(url, vaults: vaults)
-            presetValuesForDeeplink(result)
+            deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
         } catch {
             if let description = error as? UtilsQrCodeFromImageError {
                 alertDescription = description.localizedDescription
@@ -170,41 +159,6 @@ struct GeneralQRImportMacView: View {
             }
             print(error)
         }
-    }
-    
-    private func presetValuesForDeeplink(_ result: String) {
-        shouldJoinKeygen = false
-        shouldKeysignTransaction = false
-        
-        guard let type = deeplinkViewModel.type else {
-            return
-        }
-        deeplinkViewModel.type = nil
-        
-        switch type {
-        case .NewVault:
-            moveToCreateVaultView()
-        case .SignTransaction:
-            moveToVaultsView()
-        case .Send:
-            parseAddress(result)
-        case .Unknown:
-            parseAddress(result)
-        }
-    }
-    
-    private func moveToCreateVaultView() {
-        shouldJoinKeygen = true
-    }
-    
-    private func moveToVaultsView() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            shouldKeysignTransaction = true
-        }
-    }
-    
-    private func parseAddress(_ result: String) {
-        onParsedAddress(result)
     }
 }
 

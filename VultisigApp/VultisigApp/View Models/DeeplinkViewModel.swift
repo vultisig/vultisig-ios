@@ -30,8 +30,9 @@ class DeeplinkViewModel: ObservableObject {
     @Published var sendAmount: String? = nil
     @Published var sendMemo: String? = nil
     @Published var pendingSendDeeplink: Bool = false
+    @Published var isInternalDeeplink: Bool = false
     
-    func extractParameters(_ url: URL, vaults: [Vault]) {
+    func extractParameters(_ url: URL, vaults: [Vault], isInternal: Bool = false) {
         // Don't reset type immediately - it needs to persist for onChange to trigger
         // Only reset other fields
         selectedVault = nil
@@ -44,6 +45,7 @@ class DeeplinkViewModel: ObservableObject {
         sendAmount = nil
         sendMemo = nil
         pendingSendDeeplink = false
+        isInternalDeeplink = isInternal
         
         viewID = UUID()
         receivedUrl = url
@@ -108,20 +110,20 @@ class DeeplinkViewModel: ObservableObject {
             type = .Unknown
         } else {
             // Existing flows (NewVault, SignTransaction)
-            //Flow Type
-            let typeData = queryItems?.first(where: { $0.name == "type" })?.value
+        //Flow Type
+        let typeData = queryItems?.first(where: { $0.name == "type" })?.value
             type = parseFlowType(typeData)
-            
-            //Tss Type
-            let tssData = queryItems?.first(where: { $0.name == "tssType" })?.value
+        
+        //Tss Type
+        let tssData = queryItems?.first(where: { $0.name == "tssType" })?.value
             tssType = parseTssType(tssData)
-            
-            //Vault
-            let vaultPubKey = queryItems?.first(where: { $0.name == "vault" })?.value
-            selectedVault = getVault(for: vaultPubKey, vaults: vaults)
-            
-            //JsonData
-            jsonData = queryItems?.first(where: { $0.name == "jsonData" })?.value
+        
+        //Vault
+        let vaultPubKey = queryItems?.first(where: { $0.name == "vault" })?.value
+        selectedVault = getVault(for: vaultPubKey, vaults: vaults)
+        
+        //JsonData
+        jsonData = queryItems?.first(where: { $0.name == "jsonData" })?.value
         }
         
         if type != nil {
@@ -163,6 +165,7 @@ class DeeplinkViewModel: ObservableObject {
         sendAmount = nil
         sendMemo = nil
         pendingSendDeeplink = false
+        isInternalDeeplink = false
     }
     
     private func parseFlowType(_ type: String?) -> DeeplinkFlowType {
