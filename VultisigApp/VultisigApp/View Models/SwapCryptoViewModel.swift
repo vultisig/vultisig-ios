@@ -605,8 +605,7 @@ extension SwapCryptoViewModel {
     
     func getDefaultCoin(for chain: Chain, vault: Vault) -> Coin? {
         let firstVaultCoin = vault.coins
-            .filter { $0.chain == chain }
-            .sorted { $0.balanceInFiatDecimal > $1.balanceInFiatDecimal }
+            .filter { $0.chain == chain && $0.isNativeToken}
             .first
 
         if let firstVaultCoin {
