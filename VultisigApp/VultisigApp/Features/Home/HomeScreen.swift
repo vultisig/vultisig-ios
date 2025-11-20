@@ -12,16 +12,16 @@ import WalletCore
 struct HomeScreen: View {
     let initialVault: Vault?
     let showingVaultSelector: Bool
-
+    
     @State var selectedVault: Vault? = nil
     @State var showVaultSelector: Bool = false
     @State var addressToCopy: Coin?
     @State var showUpgradeVaultSheet: Bool = false
-
+    
     @State var vaults: [Vault] = []
     @State private var selectedTab: HomeTab = .wallet
     @State var vaultRoute: VaultMainRoute?
-
+    
     @State var showScanner: Bool = false
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
@@ -30,16 +30,16 @@ struct HomeScreen: View {
     @State var showBackupNow = false
     @StateObject var sendTx = SendTransaction()
     @State var selectedChain: Chain? = nil
-
+    
     @State var walletShowPortfolioHeader: Bool = false
     @State var defiShowPortfolioHeader: Bool = false
     @State var showPortfolioHeader: Bool = false
     @State var shouldRefresh: Bool = false
     @State var showChainMissingAlert: Bool = false
     @State var missingChainName: String = ""
-
+    
     @State private var capturedGeometryHeight: CGFloat = 600
-
+    
     @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
@@ -53,7 +53,7 @@ struct HomeScreen: View {
         self.initialVault = initialVault
         self.showingVaultSelector = showingVaultSelector
     }
-
+    
     var body: some View {
         ZStack {
             if let selectedVault = homeViewModel.selectedVault {
@@ -118,18 +118,18 @@ struct HomeScreen: View {
             Link(destination: StaticURL.AppStoreVultisigURL) {
                 Text(NSLocalizedString("updateNow", comment: ""))
             }
-
+            
             Button(NSLocalizedString("dismiss", comment: ""), role: .cancel) {}
         } message: {
             Text(phoneCheckUpdateViewModel.latestVersionString)
         }
     }
-
+    
     var initialView: some View {
         VaultMainScreenBackground()
             .ignoresSafeArea()
     }
-
+    
     func content(selectedVault: Vault) -> some View {
         GeometryReader { geo in
             let mainContent = buildMainContent(selectedVault: selectedVault)
@@ -139,42 +139,42 @@ struct HomeScreen: View {
 
     @ViewBuilder
     private func buildMainContent(selectedVault: Vault) -> some View {
-        ZStack(alignment: .top) {
-            VultiTabBar(
-                selectedItem: $selectedTab,
-                items: tabs,
-                accessory: .camera,
-            ) { tab in
-                Group {
-                    switch tab {
-                    case .wallet:
-                        VaultMainScreen(
-                            vault: selectedVault,
-                            routeToPresent: $vaultRoute,
-                            addressToCopy: $addressToCopy,
-                            showUpgradeVaultSheet: $showUpgradeVaultSheet,
-                            showBackupNow: $showBackupNow,
-                            showBalanceInHeader: $walletShowPortfolioHeader,
-                            shouldRefresh: $shouldRefresh
-                        )
-                    case .defi:
-                        DefiMainScreen(
-                            vault: selectedVault,
-                            showBalanceInHeader: $defiShowPortfolioHeader
-                        )
-                    case .camera:
-                        EmptyView()
+            ZStack(alignment: .top) {
+                VultiTabBar(
+                    selectedItem: $selectedTab,
+                    items: tabs,
+                    accessory: .camera,
+                ) { tab in
+                    Group {
+                        switch tab {
+                        case .wallet:
+                            VaultMainScreen(
+                                vault: selectedVault,
+                                routeToPresent: $vaultRoute,
+                                addressToCopy: $addressToCopy,
+                                showUpgradeVaultSheet: $showUpgradeVaultSheet,
+                                showBackupNow: $showBackupNow,
+                                showBalanceInHeader: $walletShowPortfolioHeader,
+                                shouldRefresh: $shouldRefresh
+                            )
+                        case .defi:
+                            DefiMainScreen(
+                                vault: selectedVault,
+                                showBalanceInHeader: $defiShowPortfolioHeader
+                            )
+                        case .camera:
+                            EmptyView()
+                        }
                     }
-                }
-                #if os(macOS)
+#if os(macOS)
                     .navigationBarBackButtonHidden()
-                #endif
-            } onAccessory: {
-                onCamera()
+#endif
+                } onAccessory: {
+                    onCamera()
+                }
+                
+                header(vault: selectedVault)
             }
-
-            header(vault: selectedVault)
-        }
     }
 
     @ViewBuilder
@@ -221,32 +221,32 @@ struct HomeScreen: View {
     @ViewBuilder
     private func applyNavigationModifiers<V: View>(to view: V, selectedVault: Vault) -> some View {
         view
-            #if os(macOS)
-                .navigationDestination(isPresented: $showScanner) {
+#if os(macOS)
+            .navigationDestination(isPresented: $showScanner) {
                     MacScannerView(
                         type: .SignTransaction, sendTx: sendTx, selectedVault: selectedVault)
-                }
-            #else
-                .crossPlatformSheet(isPresented: $showScanner) {
-                    if ProcessInfo.processInfo.isiOSAppOnMac {
-                        GeneralQRImportMacView(type: .SignTransaction, selectedVault: selectedVault)
-                        {
-                            guard let url = URL(string: $0) else { return }
-                            deeplinkViewModel.extractParameters(url, vaults: vaults)
-                            presetValuesForDeeplink()
-                        }
-                    } else {
-                        GeneralCodeScannerView(
-                            showSheet: $showScanner,
-                            shouldJoinKeygen: $shouldJoinKeygen,
-                            shouldKeysignTransaction: $shouldKeysignTransaction,
-                            shouldSendCrypto: $shouldSendCrypto,
-                            selectedChain: $selectedChain,
-                            sendTX: sendTx
-                        )
+            }
+#else
+            .crossPlatformSheet(isPresented: $showScanner) {
+                if ProcessInfo.processInfo.isiOSAppOnMac {
+                    GeneralQRImportMacView(type: .SignTransaction, selectedVault: selectedVault)
+                    {
+                        guard let url = URL(string: $0) else { return }
+                        deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
+                        presetValuesForDeeplink()
                     }
+                } else {
+                    GeneralCodeScannerView(
+                        showSheet: $showScanner,
+                        shouldJoinKeygen: $shouldJoinKeygen,
+                        shouldKeysignTransaction: $shouldKeysignTransaction,
+                        shouldSendCrypto: $shouldSendCrypto,
+                        selectedChain: $selectedChain,
+                        sendTX: sendTx
+                    )
                 }
-            #endif
+            }
+#endif
             .navigationDestination(isPresented: $shouldJoinKeygen) {
                 JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: selectedVault)
             }
@@ -293,14 +293,14 @@ struct HomeScreen: View {
                             handleSendDeeplinkAfterVaultSelection(vault: vault)
                         }
                     } else {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            homeViewModel.setSelectedVault(vault)
-                        }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        homeViewModel.setSelectedVault(vault)
                     }
                 }
             }
+        }
     }
-
+    
     @ViewBuilder
     func header(vault: Vault) -> some View {
         HomeMainHeaderView(
@@ -325,46 +325,46 @@ extension HomeScreen {
         case .camera:
             return
         }
-
+        
         self.showPortfolioHeader = showOpaqueHeader
     }
-
+    
     fileprivate func moveToVaultsView() {
         guard let vault = deeplinkViewModel.selectedVault else {
             return
         }
-
+        
         homeViewModel.setSelectedVault(vault)
         showVaultSelector = false
-
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             shouldKeysignTransaction = true
         }
     }
-
+    
     fileprivate func checkUpdate() {
         phoneCheckUpdateViewModel.checkForUpdates(isAutoCheck: true)
     }
-
+    
     fileprivate func moveToCreateVaultView() {
         showVaultSelector = false
         shouldJoinKeygen = true
     }
-
+    
     fileprivate func onCamera() {
         showScanner = true
     }
-
+    
     fileprivate func fetchVaults() {
         var fetchVaultDescriptor = FetchDescriptor<Vault>()
         fetchVaultDescriptor.relationshipKeyPathsForPrefetching = [
             \.coins,
-            \.hiddenTokens,
-            \.referralCode,
-            \.referredCode,
-            \.defiPositions,
-            \.bondPositions,
-            \.stakePositions,
+             \.hiddenTokens,
+             \.referralCode,
+             \.referredCode,
+             \.defiPositions,
+             \.bondPositions,
+             \.stakePositions,
             \.lpPositions,
         ]
         do {
@@ -373,7 +373,7 @@ extension HomeScreen {
             print(error)
         }
     }
-
+    
     fileprivate func setData() {
         accountViewModel.authenticateUserIfNeeded()
         fetchVaults()
@@ -381,7 +381,7 @@ extension HomeScreen {
         shouldKeysignTransaction = false
         homeViewModel.selectedVault = nil
         checkUpdate()
-
+        
         if let vault = initialVault {
             homeViewModel.setSelectedVault(vault)
             selectedVault = nil
@@ -389,7 +389,7 @@ extension HomeScreen {
         } else {
             homeViewModel.loadSelectedVault(for: vaults)
         }
-
+        
         if deeplinkViewModel.type == .NewVault {
             presetValuesForDeeplink()
         } else if !vaults.isEmpty {
@@ -399,23 +399,23 @@ extension HomeScreen {
                 if !vaults.isEmpty && deeplinkViewModel.type != nil {
                     presetValuesForDeeplink()
                 } else if deeplinkViewModel.type != nil {
-                    presetValuesForDeeplink()
+        presetValuesForDeeplink()
                 }
             }
         }
     }
-
+    
     fileprivate func presetValuesForDeeplink() {
         if vultExtensionViewModel.documentData != nil {
             shouldImportBackup = true
         }
-
+        
         guard let type = deeplinkViewModel.type else {
             return
         }
 
         deeplinkViewModel.type = nil
-
+        
         switch type {
         case .NewVault:
             moveToCreateVaultView()
@@ -464,7 +464,7 @@ extension HomeScreen {
             self.showVaultSelector = true
         }
     }
-
+    
     fileprivate func onVaultLoaded(vault: Vault) {
         Task { @MainActor in
             await VaultDefiChainsService().enableDefiChainsIfNeeded(for: vault)

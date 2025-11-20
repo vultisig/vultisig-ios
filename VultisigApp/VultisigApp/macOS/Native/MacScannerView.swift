@@ -46,17 +46,7 @@ struct MacScannerView: View {
         VStack(spacing: 0) {
             view
         }
-        .onAppear {
-            // Reinicializar a sessão quando a view aparece
-            cameraViewModel.setupSession()
-            cameraViewModel.startSession()
-        }
-        .onDisappear {
-            // Parar a sessão quando a view desaparece
-            cameraViewModel.stopSession()
-        }
-        .onChange(of: cameraViewModel.detectedQRCode) { oldValue, newValue in
-            
+        .onChange(of: cameraViewModel.detectedQRCode) { _, newValue in
             if let newValue = newValue, !newValue.isEmpty {
             cameraViewModel.handleScan(
                 vaults: vaults,

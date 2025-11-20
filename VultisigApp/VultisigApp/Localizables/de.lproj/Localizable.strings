@@ -993,5 +993,5 @@
 "removeLPDustAmountError" = "Sie benötigen mindestens %@, um Gebühren zu decken";
 "invalidOperatorFee" = "Ungültige Betreibergebühr";
 "withdraw" = "Abheben";
-"chainNotAdded" = "Kette Nicht Hinzugefügt";
-"chainNotAddedMessage" = "Die Blockchain %@ ist nicht zu diesem Tresor hinzugefügt. Bitte fügen Sie sie manuell in den Tresoreinstellungen hinzu.";
+"chainNotAdded" = "Blockchain nicht hinzugefügt";
+"chainNotAddedMessage" = "Die Blockchain %@ ist diesem Tresor nicht hinzugefügt. Bitte fügen Sie sie manuell in den Tresoreinstellungen hinzu.";
