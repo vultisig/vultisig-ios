@@ -50,7 +50,7 @@ struct ContentView: View {
     }
     
     var content: some View {
-        return ZStack {
+        ZStack {
             if accountViewModel.showSplashView {
                 splashView
             } else if accountViewModel.showCover {
@@ -81,13 +81,6 @@ struct ContentView: View {
     
     var homeView: some View {
         HomeScreen()
-            .onAppear {
-                if deeplinkViewModel.type != nil {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                        NotificationCenter.default.post(name: NSNotification.Name("ProcessDeeplink"), object: nil)
-                    }
-                }
-            }
     }
     
     var createVaultView: some View {

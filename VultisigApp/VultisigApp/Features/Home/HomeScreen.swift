@@ -62,26 +62,12 @@ struct HomeScreen: View {
                 initialView
             }
         }
-        .onAppear {
-            if deeplinkViewModel.type != nil {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                    if deeplinkViewModel.type != nil {
-                        presetValuesForDeeplink()
-                    }
-                }
-            }
-        }
+
         .onLoad {
             showVaultSelector = showingVaultSelector
             setData()
 
-            if deeplinkViewModel.type != nil {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                    if deeplinkViewModel.type != nil {
-                        presetValuesForDeeplink()
-                    }
-                }
-            }
+
         }
         .onReceive(
             NotificationCenter.default.publisher(for: NSNotification.Name("ProcessDeeplink"))
@@ -215,7 +201,7 @@ struct HomeScreen: View {
                 buildVaultRoute(route: route, vault: selectedVault)
             }
 
-        return applyNavigationModifiers(to: withBasicModifiers, selectedVault: selectedVault)
+        applyNavigationModifiers(to: withBasicModifiers, selectedVault: selectedVault)
     }
 
     @ViewBuilder
