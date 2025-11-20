@@ -570,9 +570,12 @@ extension HomeScreen {
         }
 
         if coinToUse == nil {
-            coinToUse = vault.coins.first(where: { $0.isNativeToken }) ?? vault.coins.first
+            missingChainName = "Unknown"
+            showChainMissingAlert = true
+            deeplinkViewModel.resetData()
+            return
         }
-
+        
         if let coin = coinToUse {
             sendTx.reset(coin: coin)
         }
