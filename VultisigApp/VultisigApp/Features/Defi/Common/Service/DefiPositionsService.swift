@@ -6,6 +6,8 @@
 //
 
 struct DefiPositionsService {
+    private let thorchainService = THORChainAPIService()
+
     func positionCoins(for chain: Chain) -> [CoinMeta] {
         bondCoins(for: chain) + stakeCoins(for: chain)
     }
@@ -30,6 +32,17 @@ struct DefiPositionsService {
             ]
         default:
             []
+        }
+    }
+    
+    func lpCoins(for chain: Chain) async -> [CoinMeta] {
+        switch chain {
+        case .thorChain:
+            let pools = (try? await thorchainService.getPools()) ?? []
+            let lps = pools.compactMap { THORChainAssetFactory.createCoin(from: $0.asset) }
+            return lps
+        default:
+            return []
         }
     }
 }
