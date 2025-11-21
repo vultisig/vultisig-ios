@@ -638,7 +638,7 @@ struct SwapCryptoLogic {
         }
     }
     
-    func buildApprovePayload(tx: SwapTransaction) async throws -> ERC20ApprovePayload? {
+    func buildApprovePayload(tx: SwapTransaction) -> ERC20ApprovePayload? {
         guard tx.isApproveRequired, let spender = tx.router else {
             return nil
         }

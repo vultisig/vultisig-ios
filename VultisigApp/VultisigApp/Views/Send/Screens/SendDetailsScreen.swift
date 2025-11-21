@@ -513,4 +513,5 @@ extension SendDetailsScreen {
         vault: Vault.example
     )
     .environmentObject(CoinSelectionViewModel())
+    .environmentObject(DeeplinkViewModel())
 }

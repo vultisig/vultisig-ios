@@ -56,7 +56,7 @@ struct VaultCellLogic {
     }
     
     private func checkForFastSign(localPartyID: String, devicesInfo: [DeviceInfo]) -> Bool {
-        if localPartyID.lowercased().contains("server-") {
+        if localPartyID.lowercased().hasPrefix("server-") {
             return false
         } else {
             for index in 0..<devicesInfo.count {
