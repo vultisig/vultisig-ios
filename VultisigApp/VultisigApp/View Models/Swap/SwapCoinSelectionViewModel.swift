@@ -17,12 +17,13 @@ class SwapCoinSelectionViewModel: ObservableObject {
     let vault: Vault
     let selectedCoin: Coin
     
-    private let service = TokenSearchService()
+    private let logic: SwapCoinSelectionLogic
     private var cancellable: AnyCancellable?
     
     init(vault: Vault, selectedCoin: Coin) {
         self.vault = vault
         self.selectedCoin = selectedCoin
+        self.logic = SwapCoinSelectionLogic(vault: vault, selectedCoin: selectedCoin)
     }
     
     func setup() {
@@ -30,20 +31,18 @@ class SwapCoinSelectionViewModel: ObservableObject {
             .debounce(for: 0.3, scheduler: DispatchQueue.main)
             .sink { [weak self] searchText in
                 guard let self else { return }
-                self.filterTokens(searchText: searchText)
+                self.filteredTokens = self.logic.filterTokens(searchText: searchText, tokens: self.tokens)
             }
     }
     
     func fetchCoins(chain: Chain) async {
         await MainActor.run { isLoading = true }
-        let nativeToken = TokensStore.TokenSelectionAssets.first { $0.chain == chain && $0.isNativeToken }
-        // Add native token
-        let tokens = ([nativeToken] + ((try? await service.loadTokens(for: chain)) ?? [])).compactMap { $0 }
-        let uniqueTokens = tokens.uniqueBy { $0.ticker.lowercased() }
+        
+        let result = await logic.fetchCoins(chain: chain)
+        
         await MainActor.run {
-            let sorted = sort(tokens: uniqueTokens)
-            self.tokens = sorted
-            self.filteredTokens = sorted
+            self.tokens = result
+            self.filteredTokens = result
             isLoading = false
         }
     }
@@ -57,7 +56,27 @@ class SwapCoinSelectionViewModel: ObservableObject {
     }
 }
 
-private extension SwapCoinSelectionViewModel {
+// MARK: - SwapCoinSelectionLogic
+
+struct SwapCoinSelectionLogic {
+    private let vault: Vault
+    private let selectedCoin: Coin
+    private let service = TokenSearchService()
+    
+    init(vault: Vault, selectedCoin: Coin) {
+        self.vault = vault
+        self.selectedCoin = selectedCoin
+    }
+    
+    func fetchCoins(chain: Chain) async -> [CoinMeta] {
+        let nativeToken = TokensStore.TokenSelectionAssets.first { $0.chain == chain && $0.isNativeToken }
+        // Add native token
+        let tokens = ([nativeToken] + ((try? await service.loadTokens(for: chain)) ?? [])).compactMap { $0 }
+        let uniqueTokens = tokens.uniqueBy { $0.ticker.lowercased() }
+        return sort(tokens: uniqueTokens)
+    }
+    
+    
     func sort(tokens: [CoinMeta]) -> [CoinMeta] {
         // Sort coins: native token first, then by USD balance in descending order
         var sortedCoins = tokens.sorted { first, second in
@@ -85,15 +104,14 @@ private extension SwapCoinSelectionViewModel {
         return sortedCoins
     }
     
-    func filterTokens(searchText: String) {
+    func filterTokens(searchText: String, tokens: [CoinMeta]) -> [CoinMeta] {
         guard searchText.isNotEmpty else {
-            self.filteredTokens = self.tokens
-            return
+            return tokens
         }
         
         let filtered = tokens
             .filter { $0.ticker.lowercased().contains(searchText.lowercased()) }
             .prefix(20)
-        self.filteredTokens = Array(filtered)
+        return Array(filtered)
     }
 }
