@@ -8,7 +8,11 @@
 import Foundation
 
 struct TokenSearchService {
+    static let shared = TokenSearchService()
+    
     private let oneInchservice = OneInchService.shared
+    
+    private init() {}
     
     func loadTokens(for chain: Chain) async throws -> [CoinMeta] {
         guard !Task.isCancelled else { throw TokenSearchServiceError.cancelled }

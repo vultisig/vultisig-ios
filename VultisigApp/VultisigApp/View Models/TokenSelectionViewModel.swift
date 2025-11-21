@@ -17,7 +17,7 @@ class TokenSelectionViewModel: ObservableObject {
     @Published var error: Error?
     private var loadingTask: Task<Void, Never>?
     
-    private let logic = TokenSelectionLogic()
+    private let logic = TokenSelectionLogic.shared
     
     var showRetry: Bool {
         return logic.showRetry(error: error)
@@ -70,7 +70,11 @@ class TokenSelectionViewModel: ObservableObject {
 // MARK: - TokenSelectionLogic
 
 struct TokenSelectionLogic {
-    private let searchService = TokenSearchService()
+    static let shared = TokenSelectionLogic()
+    
+    private let searchService = TokenSearchService.shared
+    
+    private init() {}
     
     func selectedTokens(groupedChain: GroupedChain, tokens: [CoinMeta]) -> [CoinMeta] {
         let tickers = groupedChain.coins

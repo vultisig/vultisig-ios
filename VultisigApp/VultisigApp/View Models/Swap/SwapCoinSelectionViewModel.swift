@@ -61,7 +61,7 @@ class SwapCoinSelectionViewModel: ObservableObject {
 struct SwapCoinSelectionLogic {
     private let vault: Vault
     private let selectedCoin: Coin
-    private let service = TokenSearchService()
+    private let service = TokenSearchService.shared
     
     init(vault: Vault, selectedCoin: Coin) {
         self.vault = vault
