@@ -13,42 +13,67 @@ class VaultCellViewModel: ObservableObject {
     @Published var isFastVault: Bool = false
     @Published var devicesInfo: [DeviceInfo] = []
     
+    private let logic = VaultCellLogic()
+    
     func setupCell(_ vault: Vault) {
-        assignSigners(vault)
-        setupLabel(vault)
+        let result = logic.setupCell(vault)
+        devicesInfo = result.devicesInfo
+        totalSigners = result.totalSigners
+        isFastVault = result.isFastVault
+        order = result.order
+    }
+}
+
+// MARK: - VaultCellLogic
+
+struct VaultCellLogic {
+    
+    struct SetupResult {
+        let devicesInfo: [DeviceInfo]
+        let totalSigners: Int
+        let isFastVault: Bool
+        let order: Int
     }
     
-    private func assignSigners(_ vault: Vault) {
-        devicesInfo = vault.signers.enumerated().map { index, signer in
+    func setupCell(_ vault: Vault) -> SetupResult {
+        let devicesInfo = assignSigners(vault)
+        let totalSigners = devicesInfo.count
+        let isFastVault = checkForFastSign(localPartyID: vault.localPartyID, devicesInfo: devicesInfo)
+        let order = checkForAssignedPart(vault, devicesInfo: devicesInfo)
+        
+        return SetupResult(
+            devicesInfo: devicesInfo,
+            totalSigners: totalSigners,
+            isFastVault: isFastVault,
+            order: order
+        )
+    }
+    
+    private func assignSigners(_ vault: Vault) -> [DeviceInfo] {
+        return vault.signers.enumerated().map { index, signer in
             DeviceInfo(Index: index, Signer: signer)
         }
     }
     
-    private func setupLabel(_ vault: Vault) {
-        totalSigners = devicesInfo.count
-        checkForFastSign(localPartyID: vault.localPartyID)
-        checkForAssignedPart(vault)
-    }
-    
-    private func checkForFastSign(localPartyID: String) {
+    private func checkForFastSign(localPartyID: String, devicesInfo: [DeviceInfo]) -> Bool {
         if localPartyID.lowercased().contains("server-") {
-            isFastVault = false
+            return false
         } else {
             for index in 0..<devicesInfo.count {
                 if devicesInfo[index].Signer.lowercased().hasPrefix("server-") {
-                    isFastVault = true
-                    return
+                    return true
                 }
             }
+            return false
         }
     }
     
-    private func checkForAssignedPart(_ vault: Vault) {
+    private func checkForAssignedPart(_ vault: Vault, devicesInfo: [DeviceInfo]) -> Int {
         for index in 0..<devicesInfo.count {
             if devicesInfo[index].Signer == vault.localPartyID {
-                order = index+1
-                return
+                return index+1
             }
         }
+        return 0
     }
 }

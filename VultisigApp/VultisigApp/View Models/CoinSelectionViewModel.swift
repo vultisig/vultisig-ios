@@ -7,8 +7,8 @@
 
 import Foundation
 import WalletCore
+import SwiftUI
 
-@MainActor
 class CoinSelectionViewModel: ObservableObject {
     
     @Published var groupedAssets: [Chain: [CoinMeta]] = [:]

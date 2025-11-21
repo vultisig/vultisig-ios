@@ -603,7 +603,6 @@ extension HomeScreen {
 
 #Preview {
     HomeScreen(initialVault: .example, showingVaultSelector: false)
-        .environmentObject(HomeViewModel())
         .environmentObject(VaultDetailViewModel())
         .environmentObject(AccountViewModel())
 }

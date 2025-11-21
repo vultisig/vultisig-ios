@@ -14,7 +14,6 @@ enum DeeplinkFlowType {
     case Unknown
 }
 
-@MainActor
 class DeeplinkViewModel: ObservableObject {
     @Published var type: DeeplinkFlowType? = nil
     @Published var selectedVault: Vault? = nil
@@ -65,90 +64,96 @@ class DeeplinkViewModel: ObservableObject {
         let queryItems = urlComponents.queryItems
         
         // Check if path or host contains "send" for Send flow
-        // For URLs like vultisig://send?param=value, "send" might be in host or path
-        // Also check the raw URL string as fallback
-        let path = urlComponents.path.lowercased()
-        let host = urlComponents.host?.lowercased() ?? ""
-        let urlString = url.absoluteString.lowercased()
+        let pathComponents = url.pathComponents.filter { $0 != "/" }
+        let isSendFlow = urlComponents.host == "send" || pathComponents.contains("send")
         
-        // Split path by "/" to check path components
-        let pathComponents = path.split(separator: "/").map { String($0) }
-        
-        // Multiple ways to detect "send" path:
-        // 1. In path
-        // 2. In host
-        // 3. In URL string pattern (vultisig://send)
-        let isSendPath = path.contains("send") || 
-                         pathComponents.contains("send") ||
-                         host == "send" ||
-                         host.contains("send") ||
-                         urlString.contains("://send") ||
-                         urlString.hasPrefix("vultisig://send")
-        
-        if isSendPath {
-            // Send deeplink flow
-            type = .Send
-            
-            // Parse Send-specific parameters
-            assetChain = queryItems?.first(where: { $0.name == "assetChain" })?.value?.removingPercentEncoding
-            assetTicker = queryItems?.first(where: { $0.name == "assetTicker" })?.value?.removingPercentEncoding
-            address = queryItems?.first(where: { $0.name == "toAddress" })?.value?.removingPercentEncoding
-            sendAmount = queryItems?.first(where: { $0.name == "amount" })?.value?.removingPercentEncoding
-            sendMemo = queryItems?.first(where: { $0.name == "memo" })?.value?.removingPercentEncoding
-        } else if queryItems == nil {
-            // Address-only deeplink (no query params)
-            // Extract address from host or path (remove vultisig:// scheme)
-            let extractedAddress = urlComponents.host ?? (urlComponents.path.isEmpty ? nil : urlComponents.path)
-            // Remove leading "/" if present in path
-            let cleanAddress: String?
-            if let extracted = extractedAddress {
-                cleanAddress = extracted.hasPrefix("/") ? String(extracted.dropFirst()) : extracted
-            } else {
-                cleanAddress = nil
-            }
-            address = Utils.sanitizeAddress(address: cleanAddress ?? url.absoluteString.replacingOccurrences(of: "vultisig://", with: ""))
-            type = .Unknown
+        if isSendFlow {
+            processSendDeeplink(url: url, queryItems: queryItems, vaults: vaults)
         } else {
-            // Existing flows (NewVault, SignTransaction)
-        //Flow Type
-        let typeData = queryItems?.first(where: { $0.name == "type" })?.value
-            type = parseFlowType(typeData)
-        
-        //Tss Type
-        let tssData = queryItems?.first(where: { $0.name == "tssType" })?.value
-            tssType = parseTssType(tssData)
-        
-        //Vault
-        let vaultPubKey = queryItems?.first(where: { $0.name == "vault" })?.value
-        selectedVault = getVault(for: vaultPubKey, vaults: vaults)
-        
-        //JsonData
-        jsonData = queryItems?.first(where: { $0.name == "jsonData" })?.value
-        }
-        
-        if type != nil {
-            NotificationCenter.default.post(name: NSNotification.Name("ProcessDeeplink"), object: nil)
+            processKeysignOrKeygenDeeplink(url: url, queryItems: queryItems, vaults: vaults)
         }
     }
     
-    
-    
-    static func getJsonData(_ url: URL?) -> String? {
-        guard let url else {
-            return nil
+    private func processSendDeeplink(url: URL, queryItems: [URLQueryItem]?, vaults: [Vault]) {
+        type = .Send
+        
+        // Extract address (required)
+        if let addressQuery = queryItems?.first(where: { $0.name == "address" })?.value {
+            address = Utils.sanitizeAddress(address: addressQuery)
         }
         
-        let queryItems = URLComponents(string: url.absoluteString)?.queryItems
-        return queryItems?.first(where: { $0.name == "jsonData" })?.value
+        // Extract chain (optional)
+        assetChain = queryItems?.first(where: { $0.name == "chain" })?.value
+        
+        // Extract asset/ticker (optional)
+        assetTicker = queryItems?.first(where: { $0.name == "asset" })?.value
+        
+        // Extract amount (optional)
+        sendAmount = queryItems?.first(where: { $0.name == "amount" })?.value
+        
+        // Extract memo (optional)
+        sendMemo = queryItems?.first(where: { $0.name == "memo" })?.value
+        
+        // Set flag to indicate there's a pending send deeplink to be processed
+        pendingSendDeeplink = true
+        
+        // Validate extracted parameters
+        if address == nil || address?.isEmpty == true {
+            print("⚠️ Send deeplink missing required address parameter")
+            type = .Unknown
+            return
+        }
+        
+        // Try to match vault by chain if provided
+        if let chainName = assetChain {
+            selectedVault = vaults.first { vault in
+                vault.coins.contains { $0.chain.name.lowercased() == chainName.lowercased() }
+            }
+        }
+        
+        // If no vault matched or no chain specified, use first vault with any coin
+        if selectedVault == nil && !vaults.isEmpty {
+            selectedVault = vaults.first
+        }
     }
     
-    static func getTssType(_ url: URL?) -> String? {
-        guard let url else {
-            return nil
+    private func processKeysignOrKeygenDeeplink(url: URL, queryItems: [URLQueryItem]?, vaults: [Vault]) {
+        guard let tssTypeString = queryItems?.first(where: { $0.name == "type" })?.value,
+              let tssType = TssType(rawValue: tssTypeString) else {
+            return
         }
         
-        let queryItems = URLComponents(string: url.absoluteString)?.queryItems
-        return queryItems?.first(where: { $0.name == "tssType" })?.value
+        self.tssType = tssType
+        
+        switch tssType {
+        case .Keygen:
+            type = .NewVault
+        case .Reshare, .Migrate, .KeyImport:
+            type = .SignTransaction
+        }
+        
+        if let hexString = queryItems?.first(where: { $0.name == "jsonData" })?.value {
+            jsonData = hexString
+        }
+        
+        if let vaultHex = queryItems?.first(where: { $0.name == "vault" })?.value {
+            selectedVault = vaults.first(where: { $0.pubKeyECDSA == vaultHex })
+        }
+    }
+    
+    // Static helper methods for direct URL parsing
+    static func getJsonData(_ url: URL) -> String? {
+        guard let urlComponents = URLComponents(string: url.absoluteString) else {
+            return nil
+        }
+        return urlComponents.queryItems?.first(where: { $0.name == "jsonData" })?.value
+    }
+    
+    static func getTssType(_ url: URL) -> String? {
+        guard let urlComponents = URLComponents(string: url.absoluteString) else {
+            return nil
+        }
+        return urlComponents.queryItems?.first(where: { $0.name == "type" })?.value
     }
     
     func resetData() {
@@ -158,68 +163,39 @@ class DeeplinkViewModel: ObservableObject {
         jsonData = nil
         receivedUrl = nil
         address = nil
-        
-        // Reset Send deeplink properties
         assetChain = nil
         assetTicker = nil
         sendAmount = nil
         sendMemo = nil
         pendingSendDeeplink = false
         isInternalDeeplink = false
+        viewID = UUID()
     }
     
-    private func parseFlowType(_ type: String?) -> DeeplinkFlowType {
-        switch type {
-        case "NewVault":
-            return .NewVault
-        case "SignTransaction":
-            return .SignTransaction
-        case "Send":
-            return .Send
-        default:
-            return .Unknown
-        }
-    }
-    
-    private func parseTssType(_ type: String?) -> TssType {
-        switch type {
-        case "Reshare":
-            return .Reshare
-        default:
-            return .Keygen
-        }
-    }
-    
-    private func getVault(for vaultPubKey: String?, vaults: [Vault]) -> Vault? {
-        for vault in vaults {
-            if vault.pubKeyECDSA == vaultPubKey {
-                return vault
+    func findCoin(in vault: Vault) -> Coin? {
+        // Try to find by both chain and ticker if available
+        if let chainName = assetChain, let ticker = assetTicker {
+            return vault.coins.first { coin in
+                coin.chain.name.lowercased() == chainName.lowercased() &&
+                coin.ticker.lowercased() == ticker.lowercased()
             }
         }
+        
+        // Try to find by chain only
+        if let chainName = assetChain {
+            return vault.coins.first { coin in
+                coin.chain.name.lowercased() == chainName.lowercased() &&
+                coin.isNativeToken
+            }
+        }
+        
+        // Try to find by ticker only
+        if let ticker = assetTicker {
+            return vault.coins.first { coin in
+                coin.ticker.lowercased() == ticker.lowercased()
+            }
+        }
+        
         return nil
-    }
-    
-    /// Finds a coin in a vault by chain and ticker (case-insensitive)
-    func findCoin(in vault: Vault) -> Coin? {
-        guard let assetChain = assetChain,
-              let assetTicker = assetTicker else {
-            return nil
-        }
-        
-        // Convert assetChain string to Chain enum (case-insensitive)
-        let chainString = assetChain.lowercased()
-        
-        guard let chain = Chain.allCases.first(where: { $0.rawValue.lowercased() == chainString }) else {
-            return nil
-        }
-        
-        // Find coin matching chain and ticker (case-insensitive)
-        let tickerUpper = assetTicker.uppercased()
-        let foundCoin = vault.coins.first(where: { coin in
-            let matches = coin.chain == chain && coin.ticker.uppercased() == tickerUpper
-            return matches
-        })
-        
-        return foundCoin
     }
 }

@@ -23,6 +23,8 @@ class AccountViewModel: ObservableObject {
     @Published var referenceID = UUID()
     @Published var authenticationType: AuthenticationType = .None
     
+    private let logic = AccountLogic()
+    
     func authenticateUser() {
         let context = LAContext()
         var error: NSError?
@@ -47,7 +49,7 @@ class AccountViewModel: ObservableObject {
     
     private func authenticate(_ context: LAContext) {
         self.didAskForAuthentication = true
-        if (context.biometryType == .faceID || context.biometryType == .touchID || context.biometryType == .opticID) && isRunningOnPhysicalDevice() {
+        if (context.biometryType == .faceID || context.biometryType == .touchID || context.biometryType == .opticID) && logic.isRunningOnPhysicalDevice() {
             context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Authenticate to check Face ID") { success, error in
                 DispatchQueue.main.async {
                     if success {
@@ -141,8 +143,12 @@ class AccountViewModel: ObservableObject {
         didUserCancelAuthentication = false
         showSplashView = true
     }
-    
-    private func isRunningOnPhysicalDevice() -> Bool {
+}
+
+// MARK: - AccountLogic
+
+struct AccountLogic {
+    func isRunningOnPhysicalDevice() -> Bool {
         #if targetEnvironment(simulator)
         return false
         #elseif DEBUG

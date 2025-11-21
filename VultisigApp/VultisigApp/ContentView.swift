@@ -13,9 +13,11 @@ struct ContentView: View {
     
     @ObservedObject var navigationRouter: NavigationRouter
     @StateObject var router: VultisigRouter
-    @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var accountViewModel: AccountViewModel
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
+    @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     
     init(navigationRouter: NavigationRouter) {
         self.navigationRouter = navigationRouter
@@ -141,6 +143,8 @@ struct ContentView: View {
 #Preview {
     ContentView(navigationRouter: .init())
         .environmentObject(AccountViewModel())
-        .environmentObject(DeeplinkViewModel())
         .environmentObject(ApplicationState())
+        .environmentObject(HomeViewModel())
+        .environmentObject(CoinSelectionViewModel())
+        .environmentObject(DeeplinkViewModel())
 }

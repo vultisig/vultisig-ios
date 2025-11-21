@@ -7,12 +7,15 @@
 
 import Foundation
 import SwiftData
+import BigInt
 
 @MainActor
 final class DefiTHORChainLPsViewModel: ObservableObject {
     @Published private(set) var vault: Vault
     @Published private(set) var lpPositions: [LPPosition] = []
     @Published private(set) var initialLoadingDone: Bool = false
+    
+    private let logic = DefiTHORChainLPsLogic()
     
     var hasLPPositions: Bool {
         !vaultLPPositions.isEmpty
@@ -21,15 +24,6 @@ final class DefiTHORChainLPsViewModel: ObservableObject {
     var vaultLPPositions: [CoinMeta] {
         vault.defiPositions.first { $0.chain == .thorChain }?.lps ?? []
     }
-
-    private let thorchainAPIService = THORChainAPIService()
-
-    /// Period for LUVI-based APR calculation. Options: "1h", "24h", "7d", "14d", "30d", "90d", "100d", "180d", "365d", "all"
-    /// - "7d": Weekly performance, higher volatility
-    /// - "30d": Monthly average, balanced view (DEFAULT, matches thorchain.org)
-    /// - "100d": Longer-term average, more stable
-    /// Default is 30d to match thorchain.org and the API default
-    var aprPeriod: String = "100d"
 
     init(vault: Vault) {
         self.vault = vault
@@ -54,18 +48,14 @@ final class DefiTHORChainLPsViewModel: ObservableObject {
         }
 
         do {
-            // Fetch LP positions from THORChain API using configured period for LUVI-based APR
-            let apiPositions = try await thorchainAPIService.getLPPositions(
-                address: runeCoin.address,
-                userLPs: vaultLPPositions,
-                period: aprPeriod
+            let positions = try await logic.fetchAndConvertLPPositions(
+                vault: vault,
+                vaultLPPositions: vaultLPPositions,
+                runeCoin: runeCoin
             )
-
-            // Convert THORChainLPPosition to LPPosition
-            let positions = try await convertToLPPositions(apiPositions)
             
             lpPositions = positions
-            savePositions(positions: positions)
+            await logic.savePositions(positions)
         } catch {
             print("Error fetching LP positions: \(error)")
         }
@@ -74,8 +64,36 @@ final class DefiTHORChainLPsViewModel: ObservableObject {
     }
 }
 
-private extension DefiTHORChainLPsViewModel {
-    func convertToLPPositions(_ apiPositions: [THORChainLPPosition]) async throws -> [LPPosition] {
+struct DefiTHORChainLPsLogic {
+    
+    private let thorchainAPIService = THORChainAPIService()
+    private let positionsStorageService = DefiPositionsStorageService()
+    
+    /// Period for LUVI-based APR calculation. Options: "1h", "24h", "7d", "14d", "30d", "90d", "100d", "180d", "365d", "all"
+    var aprPeriod: String = "100d"
+    
+    func fetchAndConvertLPPositions(vault: Vault, vaultLPPositions: [CoinMeta], runeCoin: Coin) async throws -> [LPPosition] {
+        // Fetch LP positions from THORChain API using configured period for LUVI-based APR
+        let apiPositions = try await thorchainAPIService.getLPPositions(
+            address: runeCoin.address,
+            userLPs: vaultLPPositions,
+            period: aprPeriod
+        )
+        
+        // Convert THORChainLPPosition to LPPosition
+        return await convertToLPPositions(apiPositions, vault: vault)
+    }
+    
+    @MainActor
+    func savePositions(_ positions: [LPPosition]) async {
+        do {
+            try positionsStorageService.upsert(positions)
+        } catch {
+            print("An error occured while saving LPs positions: \(error)")
+        }
+    }
+    
+    private func convertToLPPositions(_ apiPositions: [THORChainLPPosition], vault: Vault) async -> [LPPosition] {
         var result: [LPPosition] = []
         
         for apiPosition in apiPositions {
@@ -126,14 +144,5 @@ private extension DefiTHORChainLPsViewModel {
         }
         
         return result
-    }
-    
-    @MainActor
-    func savePositions(positions: [LPPosition]) {
-        do {
-            try DefiPositionsStorageService().upsert(positions)
-        } catch {
-            print("An error occured while saving LPs positions: \(error)")
-        }
     }
 }

@@ -22,8 +22,8 @@ class SendCryptoVerifyViewModel: ObservableObject {
     @Published var showSecurityScannerSheet: Bool = false
     @Published var securityScannerState: SecurityScannerState = .idle
     
-    @Published var utxo = BlockchairService.shared
-    let blockChainService = BlockChainService.shared
+    private let utxo = BlockchairService.shared
+    private let blockChainService = BlockChainService.shared
     
     func onLoad() {
         securityScanViewModel.$state
