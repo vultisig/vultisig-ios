@@ -25,6 +25,11 @@ struct SendDetailsAdditionalSection: View {
                 networkFeeField
             }
         }
+        .onAppear {
+            if !tx.memo.isEmpty {
+                isMemoExpanded = true
+            }
+        }
     }
     
     var addMemoTitle: some View {

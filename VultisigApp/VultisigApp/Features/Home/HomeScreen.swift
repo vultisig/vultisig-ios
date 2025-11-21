@@ -5,8 +5,9 @@
 //  Created by Gaston Mazzeo on 11/09/2025.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
+import WalletCore
 
 struct HomeScreen: View {
     let initialVault: Vault?
@@ -21,7 +22,6 @@ struct HomeScreen: View {
     @State private var selectedTab: HomeTab = .wallet
     @State var vaultRoute: VaultMainRoute?
     
-    // Properties for QR Code scanner
     @State var showScanner: Bool = false
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
@@ -35,8 +35,9 @@ struct HomeScreen: View {
     @State var defiShowPortfolioHeader: Bool = false
     @State var showPortfolioHeader: Bool = false
     @State var shouldRefresh: Bool = false
+    @State var showChainMissingAlert: Bool = false
+    @State var missingChainName: String = ""
     
-    // Capture geometry height to avoid circular layout dependency during sheet presentation
     @State private var capturedGeometryHeight: CGFloat = 600
     
     @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
@@ -61,9 +62,40 @@ struct HomeScreen: View {
                 initialView
             }
         }
+
         .onLoad {
-            setData()
             showVaultSelector = showingVaultSelector
+            setData()
+
+
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(for: NSNotification.Name("ProcessDeeplink"))
+        ) { _ in
+            if showScanner {
+                showScanner = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    presetValuesForDeeplink()
+                }
+            } else {
+                presetValuesForDeeplink()
+            }
+        }
+        .onChange(of: deeplinkViewModel.type) { _, newValue in
+            if newValue != nil {
+                presetValuesForDeeplink()
+            }
+        }
+        .alert(
+            NSLocalizedString("chainNotAdded", comment: ""),
+            isPresented: $showChainMissingAlert
+        ) {
+            Button(NSLocalizedString("ok", comment: ""), role: .cancel) {}
+        } message: {
+            Text(
+                String(
+                    format: NSLocalizedString("chainNotAddedMessage", comment: ""), missingChainName
+                ))
         }
         .alert(
             NSLocalizedString("newUpdateAvailable", comment: ""),
@@ -86,6 +118,13 @@ struct HomeScreen: View {
     
     func content(selectedVault: Vault) -> some View {
         GeometryReader { geo in
+            let mainContent = buildMainContent(selectedVault: selectedVault)
+            return applyModifiers(to: mainContent, selectedVault: selectedVault, geo: geo)
+        }
+    }
+
+    @ViewBuilder
+    private func buildMainContent(selectedVault: Vault) -> some View {
             ZStack(alignment: .top) {
                 VultiTabBar(
                     selectedItem: $selectedTab,
@@ -122,17 +161,25 @@ struct HomeScreen: View {
                 
                 header(vault: selectedVault)
             }
+    }
+
+    @ViewBuilder
+    private func applyModifiers<V: View>(to view: V, selectedVault: Vault, geo: GeometryProxy)
+        -> some View
+    {
+        let withBasicModifiers =
+            view
             .onAppear {
-                // Capture geometry height to avoid circular layout dependency
                 capturedGeometryHeight = geo.size.height
             }
             .onChange(of: geo.size.height) { _, newHeight in
-                // Update captured height when geometry changes (but not during sheet presentation)
                 if !showVaultSelector {
                     capturedGeometryHeight = newHeight
                 }
             }
-            .sensoryFeedback(homeViewModel.showAlert ? .stop : .impact, trigger: homeViewModel.showAlert)
+            .sensoryFeedback(
+                homeViewModel.showAlert ? .stop : .impact, trigger: homeViewModel.showAlert
+            )
             .customNavigationBarHidden(true)
             .withAddressCopy(coin: $addressToCopy)
             .withUpgradeVault(vault: selectedVault, shouldShow: $showUpgradeVaultSheet)
@@ -141,8 +188,8 @@ struct HomeScreen: View {
             .onLoad {
                 onVaultLoaded(vault: selectedVault)
             }
-            .onChange(of: walletShowPortfolioHeader) { _,_ in updateHeader() }
-            .onChange(of: defiShowPortfolioHeader) { _,_ in updateHeader() }
+            .onChange(of: walletShowPortfolioHeader) { _, _ in updateHeader() }
+            .onChange(of: defiShowPortfolioHeader) { _, _ in updateHeader() }
             .onChange(of: selectedTab) { oldValue, newValue in
                 updateHeader()
                 if newValue == .camera {
@@ -150,19 +197,28 @@ struct HomeScreen: View {
                     onCamera()
                 }
             }
-            .navigationDestination(item: $vaultRoute) {
-                buildVaultRoute(route: $0, vault: selectedVault)
+            .navigationDestination(item: $vaultRoute) { route in
+                buildVaultRoute(route: route, vault: selectedVault)
             }
+
+        applyNavigationModifiers(to: withBasicModifiers, selectedVault: selectedVault)
+    }
+
+    @ViewBuilder
+    private func applyNavigationModifiers<V: View>(to view: V, selectedVault: Vault) -> some View {
+        view
 #if os(macOS)
             .navigationDestination(isPresented: $showScanner) {
-                MacScannerView(type: .SignTransaction, sendTx: sendTx, selectedVault: selectedVault)
+                    MacScannerView(
+                        type: .SignTransaction, sendTx: sendTx, selectedVault: selectedVault)
             }
 #else
             .crossPlatformSheet(isPresented: $showScanner) {
                 if ProcessInfo.processInfo.isiOSAppOnMac {
-                    GeneralQRImportMacView(type: .SignTransaction, selectedVault: selectedVault) {
+                    GeneralQRImportMacView(type: .SignTransaction, selectedVault: selectedVault)
+                    {
                         guard let url = URL(string: $0) else { return }
-                        deeplinkViewModel.extractParameters(url, vaults: vaults)
+                        deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
                         presetValuesForDeeplink()
                     }
                 } else {
@@ -183,8 +239,13 @@ struct HomeScreen: View {
             .onChange(of: shouldSendCrypto) { _, newValue in
                 guard newValue else { return }
                 shouldSendCrypto = false
-                let deeplinkChain = selectedVault.coins.first(where: { $0.isNativeToken && selectedChain == $0.chain })
-                vaultRoute = .mainAction(.send(coin: deeplinkChain ?? vaultDetailViewModel.selectedGroup?.nativeCoin, hasPreselectedCoin: true))
+                let deeplinkChain = selectedVault.coins.first(where: {
+                    $0.isNativeToken && selectedChain == $0.chain
+                })
+                vaultRoute = .mainAction(
+                    .send(
+                        coin: deeplinkChain ?? vaultDetailViewModel.selectedGroup?.nativeCoin,
+                        hasPreselectedCoin: true))
             }
             .navigationDestination(isPresented: $shouldKeysignTransaction) {
                 if let vault = homeViewModel.selectedVault {
@@ -200,11 +261,24 @@ struct HomeScreen: View {
                 }
             }
             .crossPlatformSheet(isPresented: $showVaultSelector) {
-                VaultManagementSheet(isPresented: $showVaultSelector, availableHeight: capturedGeometryHeight) {
+                VaultManagementSheet(
+                    isPresented: $showVaultSelector, availableHeight: capturedGeometryHeight
+                ) {
                     showVaultSelector.toggle()
                     vaultRoute = .createVault
                 } onSelectVault: { vault in
                     showVaultSelector.toggle()
+                    if deeplinkViewModel.pendingSendDeeplink {
+                        let isAddressOnly =
+                            deeplinkViewModel.address != nil && deeplinkViewModel.assetChain == nil
+                            && deeplinkViewModel.assetTicker == nil
+
+                        if isAddressOnly, let address = deeplinkViewModel.address {
+                            processAddressOnlyDeeplink(address: address, vault: vault)
+                        } else {
+                            handleSendDeeplinkAfterVaultSelection(vault: vault)
+                        }
+                    } else {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                         homeViewModel.setSelectedVault(vault)
                     }
@@ -226,8 +300,8 @@ struct HomeScreen: View {
     }
 }
 
-private extension HomeScreen {
-    func updateHeader() {
+extension HomeScreen {
+    fileprivate func updateHeader() {
         let showOpaqueHeader: Bool
         switch selectedTab {
         case .defi:
@@ -241,7 +315,7 @@ private extension HomeScreen {
         self.showPortfolioHeader = showOpaqueHeader
     }
     
-    func moveToVaultsView() {
+    fileprivate func moveToVaultsView() {
         guard let vault = deeplinkViewModel.selectedVault else {
             return
         }
@@ -254,20 +328,20 @@ private extension HomeScreen {
         }
     }
     
-    func checkUpdate() {
+    fileprivate func checkUpdate() {
         phoneCheckUpdateViewModel.checkForUpdates(isAutoCheck: true)
     }
     
-    func moveToCreateVaultView() {
+    fileprivate func moveToCreateVaultView() {
         showVaultSelector = false
         shouldJoinKeygen = true
     }
     
-    func onCamera() {
+    fileprivate func onCamera() {
         showScanner = true
     }
     
-    func fetchVaults() {
+    fileprivate func fetchVaults() {
         var fetchVaultDescriptor = FetchDescriptor<Vault>()
         fetchVaultDescriptor.relationshipKeyPathsForPrefetching = [
             \.coins,
@@ -277,7 +351,7 @@ private extension HomeScreen {
              \.defiPositions,
              \.bondPositions,
              \.stakePositions,
-             \.lpPositions
+            \.lpPositions,
         ]
         do {
             vaults = try modelContext.fetch(fetchVaultDescriptor)
@@ -286,7 +360,7 @@ private extension HomeScreen {
         }
     }
     
-    func setData() {
+    fileprivate func setData() {
         accountViewModel.authenticateUserIfNeeded()
         fetchVaults()
         shouldJoinKeygen = false
@@ -302,17 +376,30 @@ private extension HomeScreen {
             homeViewModel.loadSelectedVault(for: vaults)
         }
         
+        if deeplinkViewModel.type == .NewVault {
+            presetValuesForDeeplink()
+        } else if !vaults.isEmpty {
+            presetValuesForDeeplink()
+        } else if deeplinkViewModel.type != nil {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                if !vaults.isEmpty && deeplinkViewModel.type != nil {
+                    presetValuesForDeeplink()
+                } else if deeplinkViewModel.type != nil {
         presetValuesForDeeplink()
+                }
+            }
+        }
     }
     
-    func presetValuesForDeeplink() {
-        if let _ = vultExtensionViewModel.documentData {
+    fileprivate func presetValuesForDeeplink() {
+        if vultExtensionViewModel.documentData != nil {
             shouldImportBackup = true
         }
         
         guard let type = deeplinkViewModel.type else {
             return
         }
+
         deeplinkViewModel.type = nil
         
         switch type {
@@ -320,15 +407,182 @@ private extension HomeScreen {
             moveToCreateVaultView()
         case .SignTransaction:
             moveToVaultsView()
+        case .Send:
+            handleSendDeeplink()
         case .Unknown:
+            handleAddressOnlyDeeplink()
+        }
+    }
+
+    private func handleSendDeeplink() {
+        guard
+            deeplinkViewModel.assetChain != nil || deeplinkViewModel.assetTicker != nil
+                || deeplinkViewModel.address != nil
+        else {
             return
+        }
+
+        guard !vaults.isEmpty else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                if !vaults.isEmpty {
+                    handleSendDeeplink()
+                }
+            }
+            return
+        }
+
+        if deeplinkViewModel.isInternalDeeplink, let selectedVault = homeViewModel.selectedVault {
+            closeScannerIfNeeded {
+                self.handleSendDeeplinkAfterVaultSelection(vault: selectedVault)
+            }
+            return
+        }
+
+        if vaults.count == 1, let singleVault = vaults.first {
+            closeScannerIfNeeded {
+                self.handleSendDeeplinkAfterVaultSelection(vault: singleVault)
+            }
+            return
+        }
+
+        closeScannerIfNeeded {
+            self.deeplinkViewModel.pendingSendDeeplink = true
+            self.showVaultSelector = true
         }
     }
     
-    func onVaultLoaded(vault: Vault) {
-        // Enable chains for Defi tab if needed, only once per vault lifecycle
+    fileprivate func onVaultLoaded(vault: Vault) {
         Task { @MainActor in
             await VaultDefiChainsService().enableDefiChainsIfNeeded(for: vault)
+        }
+    }
+
+    private func handleSendDeeplinkAfterVaultSelection(vault: Vault) {
+        deeplinkViewModel.pendingSendDeeplink = false
+        homeViewModel.setSelectedVault(vault)
+
+        let coin = deeplinkViewModel.findCoin(in: vault)
+
+        // Check if user specified a chain/token but it wasn't found in vault
+        if coin == nil && deeplinkViewModel.assetChain != nil {
+            // Chain/token missing in vault - alert user
+            missingChainName = deeplinkViewModel.assetChain?.capitalized ?? "Unknown"
+            showChainMissingAlert = true
+
+            // Reset deeplink data to prevent stuck state
+            deeplinkViewModel.resetData()
+            return
+        }
+
+        let savedAddress = deeplinkViewModel.address
+        let savedAmount = deeplinkViewModel.sendAmount
+        let savedMemo = deeplinkViewModel.sendMemo
+
+        let coinToUse: Coin?
+        if let coin = coin {
+            coinToUse = coin
+            sendTx.reset(coin: coin)
+        } else if let defaultCoin = vault.coins.first {
+            coinToUse = defaultCoin
+            sendTx.reset(coin: defaultCoin)
+        } else {
+            coinToUse = nil
+        }
+
+        if let address = savedAddress {
+            sendTx.toAddress = address
+        }
+        if let amount = savedAmount {
+            sendTx.amount = amount
+        }
+        if let memo = savedMemo {
+            sendTx.memo = memo
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            vaultRoute = .mainAction(.send(coin: coinToUse, hasPreselectedCoin: coinToUse != nil))
+        }
+    }
+
+    private func handleAddressOnlyDeeplink() {
+        guard let address = deeplinkViewModel.address, !address.isEmpty else {
+            return
+        }
+
+        if deeplinkViewModel.isInternalDeeplink, let selectedVault = homeViewModel.selectedVault {
+            closeScannerIfNeeded {
+                self.processAddressOnlyDeeplink(address: address, vault: selectedVault)
+            }
+            return
+        }
+
+        if vaults.count == 1, let singleVault = vaults.first {
+            closeScannerIfNeeded {
+                self.processAddressOnlyDeeplink(address: address, vault: singleVault)
+            }
+            return
+        }
+
+        deeplinkViewModel.pendingSendDeeplink = true
+        closeScannerIfNeeded {
+            self.showVaultSelector = true
+        }
+    }
+
+    private func processAddressOnlyDeeplink(address: String, vault: Vault) {
+        homeViewModel.setSelectedVault(vault)
+
+        var coinToUse: Coin?
+
+        if address.lowercased().contains("maya") {
+            coinToUse = vault.coins.first(where: { $0.chain == .mayaChain && $0.isNativeToken })
+        }
+
+        if coinToUse == nil {
+            for coin in vault.coins where coin.isNativeToken {
+                if coin.chain == .mayaChain {
+                    if AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya") {
+                        coinToUse = coin
+                        break
+                    }
+                } else {
+                    let isValid = coin.chain.coinType.validate(address: address)
+                    if isValid {
+                        coinToUse = coin
+                        break
+                    }
+                }
+            }
+        }
+
+        if coinToUse == nil {
+            missingChainName = "Unknown"
+            showChainMissingAlert = true
+            deeplinkViewModel.resetData()
+            return
+        }
+        
+        if let coin = coinToUse {
+            sendTx.reset(coin: coin)
+        }
+
+        sendTx.toAddress = address
+        deeplinkViewModel.address = address
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            self.vaultRoute = .mainAction(
+                .send(coin: coinToUse, hasPreselectedCoin: coinToUse != nil))
+        }
+    }
+
+    private func closeScannerIfNeeded(completion: @escaping () -> Void) {
+        if showScanner {
+            showScanner = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                completion()
+            }
+        } else {
+            completion()
         }
     }
 }

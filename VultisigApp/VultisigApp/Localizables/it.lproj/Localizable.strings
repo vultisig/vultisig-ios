@@ -993,3 +993,5 @@
 "removeLPDustAmountError" = "Hai bisogno di almeno %@ per coprire le commissioni";
 "invalidOperatorFee" = "Commissione operatore non valida";
 "withdraw" = "Preleva";
+"chainNotAdded" = "Catena Non Aggiunta";
+"chainNotAddedMessage" = "La blockchain %@ non è aggiunta a questo caveau. Per favore, aggiungila manualmente dalle impostazioni del caveau.";
