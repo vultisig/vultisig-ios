@@ -125,6 +125,16 @@ struct ContentView: View {
         } else {
             deeplinkViewModel.extractParameters(incomingURL, vaults: vaults)
         }
+        
+        NotificationCenter.default.post(name: NSNotification.Name("ProcessDeeplink"), object: nil)
+        
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 100_000_000)
+            
+            if deeplinkViewModel.type != nil {
+                NotificationCenter.default.post(name: NSNotification.Name("ProcessDeeplink"), object: nil)
+            }
+        }
     }
 }
 

@@ -993,3 +993,5 @@
 "removeLPDustAmountError" = "Necesitas al menos %@ para cubrir las tarifas";
 "invalidOperatorFee" = "Tarifa de operador inválida";
 "withdraw" = "Retirar";
+"chainNotAdded" = "Cadena No Añadida";
+"chainNotAddedMessage" = "La blockchain %@ no está añadida a esta bóveda. Por favor, añádela manualmente desde la configuración de la bóveda.";

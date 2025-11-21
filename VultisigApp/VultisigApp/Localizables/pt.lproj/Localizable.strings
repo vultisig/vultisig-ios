@@ -993,3 +993,5 @@
 "removeLPDustAmountError" = "Você precisa de pelo menos %@ para cobrir as taxas";
 "invalidOperatorFee" = "Taxa de operador inválida";
 "withdraw" = "Sacar";
+"chainNotAdded" = "Cadeia Não Adicionada";
+"chainNotAddedMessage" = "A blockchain %@ não está adicionada neste cofre. Por favor, adicione-a manualmente nas configurações do cofre.";

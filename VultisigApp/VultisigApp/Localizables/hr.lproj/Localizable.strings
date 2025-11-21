@@ -993,3 +993,5 @@
 "removeLPDustAmountError" = "Trebate najmanje %@ za pokrivanje naknada";
 "invalidOperatorFee" = "Nevažeća naknada operatora";
 "withdraw" = "Povuci";
+"chainNotAdded" = "Lanac Nije Dodan";
+"chainNotAddedMessage" = "Blockchain %@ nije dodan u ovaj trezor. Molimo dodajte ga ručno iz postavki trezora.";

@@ -40,19 +40,14 @@ struct MacScannerView: View {
                 JoinKeysignView(vault: vault)
             }
         }
-        .navigationDestination(isPresented: $cameraViewModel.shouldSendCrypto) {
-            if let vault = homeViewModel.selectedVault {
-                let coin = vault.coins.first(where: { $0.isNativeToken && $0.chain == cameraViewModel.selectedChain })
-                SendRouteBuilder().buildDetailsScreen(coin: coin, hasPreselectedCoin: false, tx: sendTx, vault: vault)
-            }
-        }
     }
     
     var main: some View {
         VStack(spacing: 0) {
             view
         }
-        .onChange(of: cameraViewModel.detectedQRCode) { oldValue, newValue in
+        .onChange(of: cameraViewModel.detectedQRCode) { _, newValue in
+            if let newValue = newValue, !newValue.isEmpty {
             cameraViewModel.handleScan(
                 vaults: vaults,
                 sendTx: sendTx,
@@ -60,6 +55,7 @@ struct MacScannerView: View {
                 vaultDetailViewModel: vaultDetailViewModel,
                 coinSelectionViewModel: coinSelectionViewModel
             )
+            }
         }
     }
     
