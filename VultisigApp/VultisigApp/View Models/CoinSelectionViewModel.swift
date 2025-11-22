@@ -6,8 +6,6 @@
 //
 
 import Foundation
-import WalletCore
-import SwiftUI
 
 class CoinSelectionViewModel: ObservableObject {
     
