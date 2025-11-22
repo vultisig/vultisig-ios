@@ -54,13 +54,19 @@ class TokenSelectionViewModel: ObservableObject {
         guard !Task.isCancelled else { return }
         
         isLoading = true
+        error = nil
         
-        let result = await logic.loadExternalTokens(groupedChain: groupedChain, currentTokens: tokens)
-        
-        if !Task.isCancelled {
-            tokens.append(contentsOf: result.newTokens)
-            selectedTokens = result.updatedSelectedTokens
-            preExistTokens = result.updatedPreExistTokens
+        do {
+            let result = try await logic.loadExternalTokens(groupedChain: groupedChain, currentTokens: tokens)
+            
+            if !Task.isCancelled {
+                tokens.append(contentsOf: result.newTokens)
+                selectedTokens = result.updatedSelectedTokens
+                preExistTokens = result.updatedPreExistTokens
+            }
+        } catch {
+            // Capture the error for UI display
+            self.error = error
         }
         
         isLoading = false
@@ -124,7 +130,7 @@ struct TokenSelectionLogic {
     func showRetry(error: Error?) -> Bool {
         switch error {
         case let error as TokenSearchServiceError:
-            return error == .networkError
+            return error == .networkError || error == .rateLimitExceeded
         default:
             return false
         }
@@ -136,9 +142,11 @@ struct TokenSelectionLogic {
         let updatedPreExistTokens: [CoinMeta]
     }
     
-    func loadExternalTokens(groupedChain: GroupedChain, currentTokens: [CoinMeta]) async -> LoadResult {
+    func loadExternalTokens(groupedChain: GroupedChain, currentTokens: [CoinMeta]) async throws -> LoadResult {
         let currentTokenIdentifiers = Set(currentTokens.map { "\($0.chain.rawValue):\($0.ticker)" })
-        let newTokens = (try? await searchService.loadTokens(for: groupedChain.chain)) ?? []
+        
+        // Propagate errors instead of swallowing them with try?
+        let newTokens = try await searchService.loadTokens(for: groupedChain.chain)
         let uniqueTokens = newTokens.filter { !currentTokenIdentifiers.contains("\($0.chain.rawValue):\($0.ticker)") }
         
         let allTokens = currentTokens + uniqueTokens
