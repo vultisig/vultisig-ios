@@ -13,6 +13,7 @@ class SwapCoinSelectionViewModel: ObservableObject {
     @Published var tokens: [CoinMeta] = []
     @Published var filteredTokens: [CoinMeta] = []
     @Published var searchText: String = ""
+    @Published var error: Error?
     
     let vault: Vault
     let selectedCoin: Coin
@@ -36,14 +37,23 @@ class SwapCoinSelectionViewModel: ObservableObject {
     }
     
     func fetchCoins(chain: Chain) async {
-        await MainActor.run { isLoading = true }
+        await MainActor.run { 
+            isLoading = true
+            error = nil
+        }
         
-        let result = await logic.fetchCoins(chain: chain)
-        
-        await MainActor.run {
-            self.tokens = result
-            self.filteredTokens = result
-            isLoading = false
+        do {
+            let result = try await logic.fetchCoins(chain: chain)
+            await MainActor.run {
+                self.tokens = result
+                self.filteredTokens = result
+                isLoading = false
+            }
+        } catch {
+            await MainActor.run {
+                self.error = error
+                isLoading = false
+            }
         }
     }
     
@@ -68,14 +78,15 @@ struct SwapCoinSelectionLogic {
         self.selectedCoin = selectedCoin
     }
     
-    func fetchCoins(chain: Chain) async -> [CoinMeta] {
+    func fetchCoins(chain: Chain) async throws -> [CoinMeta] {
         let nativeToken = TokensStore.TokenSelectionAssets.first { $0.chain == chain && $0.isNativeToken }
-        // Add native token
-        let tokens = ([nativeToken] + ((try? await service.loadTokens(for: chain)) ?? [])).compactMap { $0 }
+        
+        // Propagate errors instead of swallowing with try?
+        let externalTokens = try await service.loadTokens(for: chain)
+        let tokens = ([nativeToken] + externalTokens).compactMap { $0 }
         let uniqueTokens = tokens.uniqueBy { $0.ticker.lowercased() }
         return sort(tokens: uniqueTokens)
     }
-    
     
     func sort(tokens: [CoinMeta]) -> [CoinMeta] {
         // Sort coins: native token first, then by USD balance in descending order
