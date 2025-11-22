@@ -61,6 +61,5 @@ struct GeneralCodeScannerView: View {
         selectedChain: .constant(nil), 
         sendTX: SendTransaction()
     )
-    .environmentObject(DeeplinkViewModel())
 }
 #endif

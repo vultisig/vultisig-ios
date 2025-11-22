@@ -17,9 +17,72 @@ class TokenSelectionViewModel: ObservableObject {
     @Published var error: Error?
     private var loadingTask: Task<Void, Never>?
     
-    private let searchService = TokenSearchService()
+    private let logic = TokenSelectionLogic.shared
     
-    func selectedTokens(groupedChain: GroupedChain) -> [CoinMeta] {
+    var showRetry: Bool {
+        return logic.showRetry(error: error)
+    }
+    
+    func loadData(groupedChain: GroupedChain) {
+        // Cancel any existing loading task
+        loadingTask?.cancel()
+        
+        // Reset error state
+        error = nil
+        
+        // Load basic tokens immediately (synchronous)
+        selectedTokens = logic.selectedTokens(groupedChain: groupedChain, tokens: tokens)
+        preExistTokens = logic.preExistingTokens(groupedChain: groupedChain)
+        
+        // Start async loading of external tokens
+        loadingTask = Task { [weak self] in
+            guard let self else { return }
+            await self.loadExternalTokens(groupedChain: groupedChain)
+        }
+    }
+    
+    func cancelLoading() {
+        loadingTask?.cancel()
+        isLoading = false
+    }
+    
+    func updateSearchedTokens(groupedChain: GroupedChain) {
+        searchedTokens = logic.filteredTokens(groupedChain: groupedChain, searchText: searchText, tokens: tokens)
+    }
+    
+    private func loadExternalTokens(groupedChain: GroupedChain) async {
+        guard !Task.isCancelled else { return }
+        
+        isLoading = true
+        error = nil
+        
+        do {
+            let result = try await logic.loadExternalTokens(groupedChain: groupedChain, currentTokens: tokens)
+            
+            if !Task.isCancelled {
+                tokens.append(contentsOf: result.newTokens)
+                selectedTokens = result.updatedSelectedTokens
+                preExistTokens = result.updatedPreExistTokens
+            }
+        } catch {
+            // Capture the error for UI display
+            self.error = error
+        }
+        
+        isLoading = false
+    }
+}
+
+// MARK: - TokenSelectionLogic
+
+struct TokenSelectionLogic {
+    static let shared = TokenSelectionLogic()
+    
+    private let searchService = TokenSearchService.shared
+    
+    private init() {}
+    
+    func selectedTokens(groupedChain: GroupedChain, tokens: [CoinMeta]) -> [CoinMeta] {
         let tickers = groupedChain.coins
             .filter { !$0.isNativeToken }
             .map { $0.ticker.lowercased() }
@@ -47,11 +110,7 @@ class TokenSelectionViewModel: ObservableObject {
             .filter { $0.chain == groupedChain.chain && !$0.isNativeToken && !tickers.contains($0.ticker.lowercased())}
     }
     
-    func updateSearchedTokens(groupedChain: GroupedChain) {
-        searchedTokens = filteredTokens(groupedChain: groupedChain)
-    }
-    
-    func filteredTokens(groupedChain: GroupedChain) -> [CoinMeta] {
+    func filteredTokens(groupedChain: GroupedChain, searchText: String, tokens: [CoinMeta]) -> [CoinMeta] {
         guard !searchText.isEmpty else {
             return []
         }
@@ -68,53 +127,36 @@ class TokenSelectionViewModel: ObservableObject {
         return Array(filtered)
     }
     
-    var showRetry: Bool {
+    func showRetry(error: Error?) -> Bool {
         switch error {
         case let error as TokenSearchServiceError:
-            return error == .networkError
+            return error == .networkError || error == .rateLimitExceeded
         default:
             return false
         }
     }
     
-    func loadData(groupedChain: GroupedChain) {
-        // Cancel any existing loading task
-        loadingTask?.cancel()
-        
-        // Reset error state
-        error = nil
-        
-        // Load basic tokens immediately (synchronous)
-        selectedTokens = selectedTokens(groupedChain: groupedChain)
-        preExistTokens = preExistingTokens(groupedChain: groupedChain)
-        
-        // Start async loading of external tokens
-        loadingTask = Task {
-            await loadExternalTokens(groupedChain: groupedChain)
-        }
+    struct LoadResult {
+        let newTokens: [CoinMeta]
+        let updatedSelectedTokens: [CoinMeta]
+        let updatedPreExistTokens: [CoinMeta]
     }
     
-    func cancelLoading() {
-        loadingTask?.cancel()
-        isLoading = false
-    }
-    
-    private func loadExternalTokens(groupedChain: GroupedChain) async {
-        guard !Task.isCancelled else { return }
+    func loadExternalTokens(groupedChain: GroupedChain, currentTokens: [CoinMeta]) async throws -> LoadResult {
+        let currentTokenIdentifiers = Set(currentTokens.map { "\($0.chain.rawValue):\($0.ticker)" })
         
-        isLoading = true
-        
-        let currentTokenIdentifiers = Set(tokens.map { "\($0.chain.rawValue):\($0.ticker)" })
-        let newTokens = (try? await searchService.loadTokens(for: groupedChain.chain)) ?? []
+        // Propagate errors instead of swallowing them with try?
+        let newTokens = try await searchService.loadTokens(for: groupedChain.chain)
         let uniqueTokens = newTokens.filter { !currentTokenIdentifiers.contains("\($0.chain.rawValue):\($0.ticker)") }
-        tokens.append(contentsOf: uniqueTokens)
         
-        // Update selected and preExist tokens after loading external tokens
-        if !Task.isCancelled {
-            selectedTokens = selectedTokens(groupedChain: groupedChain)
-            preExistTokens = preExistingTokens(groupedChain: groupedChain)
-        }
+        let allTokens = currentTokens + uniqueTokens
+        let updatedSelectedTokens = selectedTokens(groupedChain: groupedChain, tokens: allTokens)
+        let updatedPreExistTokens = preExistingTokens(groupedChain: groupedChain)
         
-        isLoading = false
+        return LoadResult(
+            newTokens: uniqueTokens,
+            updatedSelectedTokens: updatedSelectedTokens,
+            updatedPreExistTokens: updatedPreExistTokens
+        )
     }
 }

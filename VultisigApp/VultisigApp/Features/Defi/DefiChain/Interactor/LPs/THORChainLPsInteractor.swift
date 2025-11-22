@@ -96,7 +96,7 @@ private extension THORChainLPsInteractor {
     }
     
     @MainActor
-    func savePositions(positions: [LPPosition]) {
+    func savePositions(positions: [LPPosition]) async {
         do {
             try DefiPositionsStorageService().upsert(positions)
         } catch {
