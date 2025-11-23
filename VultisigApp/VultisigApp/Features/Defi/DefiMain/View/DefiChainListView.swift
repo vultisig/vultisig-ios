@@ -27,7 +27,7 @@ struct DefiChainListView: View {
         ForEach(Array(viewModel.filteredGroups.enumerated()), id: \.element.id) { index, group in
             NavigationLink {
                 switch group.chain {
-                case .thorChain:
+                case .thorChain, .mayaChain:
                     DefiChainMainScreen(vault: vault, group: group)
                 default:
                     EmptyView()
@@ -39,7 +39,6 @@ struct DefiChainListView: View {
                         itemsCount: viewModel.filteredGroups.count
                     )
             }
-            .disabled(group.chain != .thorChain)
         }
     }
 }

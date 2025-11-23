@@ -88,6 +88,8 @@ final class DefiChainMainViewModel: ObservableObject {
         switch chain {
         case .thorChain:
             [.bond, .stake, .liquidityPool]
+        case .mayaChain:
+            [.bond, .stake]
         default:
             []
         }
