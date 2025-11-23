@@ -21,7 +21,7 @@ jobs:
           path: |
             VultisigApp/.build
             VultisigApp/SourcePackages
-          key: ${{ runner.os }}-spm-${{ hashFiles('VultisigApp/VultisigApp.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
+          key: ${{ runner.os }}-spm-
           restore-keys: |
             ${{ runner.os }}-spm-   
       - name: Set Default Scheme
