@@ -323,7 +323,7 @@ extension HomeScreen {
         showVaultSelector = false
         // Reset first to ensure SwiftUI detects the change
         shouldKeysignTransaction = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             shouldKeysignTransaction = true
         }
     }
