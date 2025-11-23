@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import SwiftUI
 
 final class DefiChainMainViewModel: ObservableObject {
     @Published private(set) var vault: Vault
