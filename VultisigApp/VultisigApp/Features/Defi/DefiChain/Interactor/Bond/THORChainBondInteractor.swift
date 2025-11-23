@@ -87,7 +87,7 @@ struct THORChainBondInteractor: BondInteractor {
 
 private extension THORChainBondInteractor {
     @MainActor
-    func savePositions(positions: [BondPosition]) {
+    func savePositions(positions: [BondPosition]) async {
         do {
             try DefiPositionsStorageService().upsert(positions)
         } catch {

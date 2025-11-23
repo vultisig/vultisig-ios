@@ -10,19 +10,20 @@ import SwiftUI
 
 extension GeneralQRImportMacView {
     func setValues(_ urls: [URL]) {
-        do {
-            if let url = urls.first {
-                let _ = url.startAccessingSecurityScopedResource()
-                fileName = url.lastPathComponent
-                
-                let imageData = try Data(contentsOf: url)
-                if let nsImage = NSImage(data: imageData) {
-                    selectedImage = nsImage
-                }
-                isButtonEnabled = true
-            }
-        } catch {
-            print(error)
+        guard let url = urls.first else { return }
+        
+        // Start accessing security-scoped resource
+        guard url.startAccessingSecurityScopedResource() else { return }
+        
+        defer {
+            url.stopAccessingSecurityScopedResource()
+        }
+        
+        fileName = url.lastPathComponent
+        isButtonEnabled = true
+        
+        if let image = NSImage(contentsOf: url) {
+            selectedImage = image
         }
     }
 }

@@ -14,12 +14,11 @@ import Mediator
 class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     private let titles = ["swap", "swapOverview", "pair", "keysign", "done"]
     
-    private let swapService = SwapService.shared
-    private let blockchainService = BlockChainService.shared
-    private let fastVaultService = FastVaultService.shared
-    
     private var updateQuoteTask: Task<Void, Never>?
     private var updateFeesTask: Task<Void, Never>?
+    
+    // Logic delegation
+    private let logic = SwapCryptoLogic()
     
     var keysignPayload: KeysignPayload?
     
@@ -49,190 +48,81 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func load(initialFromCoin: Coin?, initialToCoin: Coin?, vault: Vault, tx: SwapTransaction) {
-        let allCoins = vault.coins
-        
-        guard !dataLoaded, !allCoins.isEmpty else { return }
-        
-        let (fromCoins, fromCoin) = SwapCoinsResolver.resolveFromCoins(
-            allCoins: allCoins
-        )
-        
-        let resolvedFromCoin = initialFromCoin ?? fromCoin
-        
-        let (toCoins, toCoin) = SwapCoinsResolver.resolveToCoins(
-            fromCoin: resolvedFromCoin,
-            allCoins: allCoins,
-            selectedToCoin: initialToCoin ?? .example
-        )
-        
-        tx.load(fromCoin: resolvedFromCoin, toCoin: toCoin, fromCoins: fromCoins, toCoins: toCoins)
-        
+        guard !dataLoaded else { return }
+        logic.load(initialFromCoin: initialFromCoin, initialToCoin: initialToCoin, vault: vault, tx: tx)
         dataLoaded = true
     }
     
     func loadFastVault(tx: SwapTransaction, vault: Vault) async {
-        let isExist = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
-        let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
-        tx.isFastVault = isExist && !isLocalBackup
+        tx.isFastVault = await logic.loadFastVault(tx: tx, vault: vault)
     }
     
     func updateCoinLists(tx: SwapTransaction) {
-        let (toCoins, toCoin) = SwapCoinsResolver.resolveToCoins(
-            fromCoin: tx.fromCoin,
-            allCoins: tx.fromCoins,
-            selectedToCoin: tx.toCoin
-        )
-        tx.toCoin = toCoin
-        tx.toCoins = toCoins
+        logic.updateCoinLists(tx: tx)
     }
     
     func progressLink(tx: SwapTransaction, hash: String) -> String? {
-        switch tx.quote {
-        case .thorchain:
-            return Endpoint.getSwapProgressURL(txid: hash)
-        case .thorchainStagenet:
-            return Endpoint.getStagenetSwapProgressURL(txid: hash)
-        case .mayachain:
-            return Endpoint.getMayaSwapTracker(txid: hash)
-        case .lifi:
-            return Endpoint.getLifiSwapTracker(txid: hash)
-        case .oneinch, .kyberswap, .none:
-            return Endpoint.getExplorerURL(chain: tx.fromCoin.chain, txid: hash)
-        }
+        return logic.progressLink(tx: tx, hash: hash)
     }
     
     func fromFiatAmount(tx: SwapTransaction) -> String {
-        let fiatDecimal = tx.fromCoin.fiat(decimal: tx.fromAmountDecimal)
-        return fiatDecimal.formatForDisplay()
+        return logic.fromFiatAmount(tx: tx)
     }
     
     func toFiatAmount(tx: SwapTransaction) -> String {
-        let fiatDecimal = tx.toCoin.fiat(decimal: tx.toAmountDecimal)
-        return fiatDecimal.formatForDisplay()
+        return logic.toFiatAmount(tx: tx)
     }
     
     func showGas(tx: SwapTransaction) -> Bool {
-        return !tx.gas.isZero
+        return logic.showGas(tx: tx)
     }
     
     func showFees(tx: SwapTransaction) -> Bool {
-        let fee = swapFeeString(tx: tx)
-        return !fee.isEmpty && !fee.isZero
+        return logic.showFees(tx: tx)
     }
     
     func showTotalFees(tx: SwapTransaction) -> Bool {
-        let fee = totalFeeString(tx: tx)
-        return !fee.isEmpty && !fee.isZero
+        return logic.showTotalFees(tx: tx)
     }
     
     func showDuration(tx: SwapTransaction) -> Bool {
-        return showFees(tx: tx)
+        return logic.showDuration(tx: tx)
     }
     
     func showAllowance(tx: SwapTransaction) -> Bool {
-        return tx.isApproveRequired
+        return logic.showAllowance(tx: tx)
     }
     
     func showToAmount(tx: SwapTransaction) -> Bool {
-        return tx.toAmountDecimal != 0
+        return logic.showToAmount(tx: tx)
     }
     
     func swapFeeString(tx: SwapTransaction) -> String {
-        guard let inboundFeeDecimal = tx.inboundFeeDecimal else { return .empty }
-        
-        let fromCoin = feeCoin(tx: tx)
-        let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
-        let fee = tx.toCoin.fiat(value: inboundFee) + fromCoin.fiat(value: tx.fee)
-        return fee.formatToFiat(includeCurrencySymbol: true)
+        return logic.swapFeeString(tx: tx)
     }
     
     func swapGasString(tx: SwapTransaction) -> String {
-        let coin = feeCoin(tx: tx)
-        
-        let decimals = coin.decimals
-        
-        // Use tx.fee for swap quotes (which includes corrected gas price calculations)
-        // Fall back to tx.gas for other transaction types
-        let gasValue = tx.quote != nil ? tx.fee : tx.gas
-        
-        if coin.chain.chainType == .EVM {
-            guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) else {
-                return .empty
-            }
-            return "\((Decimal(gasValue) / weiPerGWeiDecimal).formatToDecimal(digits: 0).description) \(coin.chain.feeUnit)"
-        } else if coin.chain.chainType == .UTXO {
-            // for UTXO chains , we use transaction plan to get the transaction fee in total
-            return "\((Decimal(gasValue) / pow(10 ,decimals)).formatToDecimal(digits: decimals).description) \(coin.ticker)"
-        } else {
-            return "\((Decimal(gasValue) / pow(10 ,decimals)).formatToDecimal(digits: decimals).description) \(coin.ticker)"
-        }
+        return logic.swapGasString(tx: tx)
     }
     
     func approveFeeString(tx: SwapTransaction) -> String {
-        let fromCoin = feeCoin(tx: tx)
-        let fee = fromCoin.fiat(gas: tx.fee)
-        return fee.formatToFiat(includeCurrencySymbol: true)
+        return logic.approveFeeString(tx: tx)
     }
     
     func totalFeeString(tx: SwapTransaction) -> String {
-        guard let inboundFeeDecimal = tx.inboundFeeDecimal else { return .empty }
-        
-        let fromCoin = feeCoin(tx: tx)
-        let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
-        let providerFee = tx.toCoin.fiat(value: inboundFee)
-        let networkFee = fromCoin.fiat(gas: tx.fee)
-        let totalFee = providerFee + networkFee
-        return totalFee.formatToFiat(includeCurrencySymbol: true)
+        return logic.totalFeeString(tx: tx)
     }
     
     func isSufficientBalance(tx: SwapTransaction) -> Bool {
-        let feeCoin = feeCoin(tx: tx)
-        let fromFee = feeCoin.decimal(for: tx.fee)
-        
-        let fromBalance = tx.fromCoin.balanceDecimal
-        let feeCoinBalance = feeCoin.balanceDecimal
-        
-        let amount = tx.fromAmount.toDecimal()
-        
-        if feeCoin == tx.fromCoin {
-            return fromFee + amount <= fromBalance
-        } else {
-            return fromFee <= feeCoinBalance && amount <= fromBalance
-        }
-    }
-    
-    func buildApprovePayload(tx: SwapTransaction) async throws -> ERC20ApprovePayload? {
-        guard tx.isApproveRequired, let spender = tx.router else {
-            return nil
-        }
-        // Approve exact amount - no buffer needed for KyberSwap precision
-        let payload = ERC20ApprovePayload(amount: tx.amountInCoinDecimal, spender: spender)
-        return payload
+        return logic.isSufficientBalance(tx: tx)
     }
     
     func durationString(tx: SwapTransaction) -> String {
-        guard let duration = tx.quote?.totalSwapSeconds else { return "Instant" }
-        let formatter = DateComponentsFormatter()
-        formatter.unitsStyle = .full
-        formatter.includesApproximationPhrase = false
-        formatter.includesTimeRemainingPhrase = false
-        formatter.allowedUnits = [.day, .hour, .minute, .second]
-        formatter.maximumUnitCount = 1
-        let fromDate = Date(timeIntervalSince1970: 0)
-        let toDate = Date(timeIntervalSince1970: TimeInterval(duration))
-        return formatter.string(from: fromDate, to: toDate) ?? .empty
+        return logic.durationString(tx: tx)
     }
     
     func validateForm(tx: SwapTransaction) -> Bool {
-        return tx.fromCoin != tx.toCoin
-        && tx.fromCoin != .example
-        && tx.toCoin != .example
-        && !tx.fromAmount.isEmpty
-        && !tx.toAmountDecimal.isZero
-        && tx.quote != nil
-        && tx.gas != .zero
-        && isSufficientBalance(tx: tx)
-        && !isLoading
+        return logic.validateForm(tx: tx, isLoading: isLoading)
     }
     
     func moveToNextView() {
@@ -245,92 +135,9 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         defer { isLoadingTransaction = false }
         
         do {
-            guard let quote = tx.quote else {
-                throw Errors.unexpectedError
-            }
-            
-            let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
-            
-            switch quote {
-            case .mayachain(let quote):
-                let toAddress = tx.fromCoin.isNativeToken ? quote.inboundAddress : quote.router
-                keysignPayload = try await KeysignPayloadFactory().buildTransfer(
-                    coin: tx.fromCoin,
-                    toAddress: toAddress ?? tx.fromCoin.address,
-                    amount: tx.amountInCoinDecimal,
-                    memo: tx.quote?.memo,
-                    chainSpecific: chainSpecific,
-                    swapPayload: .mayachain(tx.buildThorchainSwapPayload(
-                        quote: quote,
-                        provider: .mayachain
-                    )),
-                    approvePayload: buildApprovePayload(tx: tx),
-                    vault: vault
-                )
-                
-                return true
-                
-            case .thorchain(let quote):
-                let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
-                keysignPayload = try await KeysignPayloadFactory().buildTransfer(
-                    coin: tx.fromCoin,
-                    toAddress: toAddress,
-                    amount: tx.amountInCoinDecimal,
-                    memo: quote.memo,
-                    chainSpecific: chainSpecific,
-                    swapPayload: .thorchain(tx.buildThorchainSwapPayload(
-                        quote: quote,
-                        provider: .thorchain
-                    )),
-                    approvePayload: buildApprovePayload(tx: tx),
-                    vault: vault
-                )
-                
-                return true
-                
-            case .thorchainStagenet(let quote):
-                let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
-                keysignPayload = try await KeysignPayloadFactory().buildTransfer(
-                    coin: tx.fromCoin,
-                    toAddress: toAddress,
-                    amount: tx.amountInCoinDecimal,
-                    memo: quote.memo,
-                    chainSpecific: chainSpecific,
-                    swapPayload: .thorchainStagenet(tx.buildThorchainSwapPayload(
-                        quote: quote,
-                        provider: .thorchainStagenet
-                    )),
-                    approvePayload: buildApprovePayload(tx: tx),
-                    vault: vault
-                )
-                
-                return true
-                
-            case .oneinch(let evmQuote, _), .lifi(let evmQuote, _, _), .kyberswap(let evmQuote, _):
-                let keysignFactory = KeysignPayloadFactory()
-                let payload = GenericSwapPayload(
-                    fromCoin: tx.fromCoin,
-                    toCoin: tx.toCoin,
-                    fromAmount: tx.amountInCoinDecimal,
-                    toAmountDecimal: tx.toAmountDecimal,
-                    quote: evmQuote,
-                    provider: quote.swapProviderId ?? .oneInch
-                )
-                keysignPayload = try await keysignFactory.buildTransfer(
-                    coin: tx.fromCoin,
-                    toAddress: evmQuote.tx.to,
-                    amount: tx.amountInCoinDecimal,
-                    memo: nil,
-                    chainSpecific: chainSpecific,
-                    swapPayload: .generic(payload),
-                    approvePayload: buildApprovePayload(tx: tx),
-                    vault: vault
-                )
-                
-                return true
-            }
-        }
-        catch {
+            keysignPayload = try await logic.buildSwapKeysignPayload(tx: tx, vault: vault)
+            return true
+        } catch {
             self.error = error
             return false
         }
@@ -416,72 +223,37 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func pickerFromCoins(tx: SwapTransaction) -> [Coin] {
-        return tx.fromCoins.filter({ coin in
-            coin.chain == fromChain
-        }).sorted(by: {
-            Int($0.chain == tx.fromCoin.chain) > Int($1.chain == tx.fromCoin.chain)
-        })
+        return logic.pickerFromCoins(tx: tx, fromChain: fromChain)
     }
     
     func pickerToCoins(tx: SwapTransaction) -> [Coin] {
-        return tx.toCoins.filter({ coin in
-            coin.chain == toChain
-        }).sorted(by: {
-            Int($0.chain == tx.toCoin.chain) > Int($1.chain == tx.toCoin.chain)
-        })
+        return logic.pickerToCoins(tx: tx, toChain: toChain)
+    }
+    
+    // Helper to get fee coin needed for view display
+    func feeCoin(tx: SwapTransaction) -> Coin {
+        return logic.feeCoin(tx: tx)
     }
 }
 
 private extension SwapCryptoViewModel {
     
-    enum Errors: String, Error, LocalizedError {
-        case unexpectedError
-        case insufficientFunds
-        case swapAmountTooSmall
-        case inboundAddress
-        
-        var errorDescription: String? {
-            switch self {
-            case .unexpectedError:
-                return "Unexpected swap error"
-            case .insufficientFunds:
-                return "Insufficient funds"
-            case .swapAmountTooSmall:
-                return "Swap amount too small"
-            case .inboundAddress:
-                return "Inbound address is invalid"
-            }
-        }
-    }
-    
     func updateQuotes(tx: SwapTransaction, vault: Vault, referredCode: String) async {
         isLoadingQuotes = true
         defer { isLoadingQuotes = false }
         
-        clearQuote(tx: tx)
+        tx.quote = nil
         
         error = nil
         
         guard !tx.fromAmount.isEmpty else { return }
         
         do {
-            guard !tx.fromAmountDecimal.isZero, tx.fromCoin != tx.toCoin else {
-                return
-            }
-            
-            let vultTier = await VultTierService().fetchDiscountTier(for: vault)
-            let quote = try await swapService.fetchQuote(
-                amount: tx.fromAmountDecimal,
-                fromCoin: tx.fromCoin,
-                toCoin: tx.toCoin,
-                isAffiliate: tx.isAffiliate,
-                referredCode: referredCode,
-                vultTierDiscount: vultTier?.bpsDiscount ?? 0
-            )
-            
+            let quote = try await logic.fetchQuote(tx: tx, vault: vault, referredCode: referredCode)
             tx.quote = quote
-            if !isSufficientBalance(tx: tx) {
-                throw Errors.insufficientFunds
+            
+            if !logic.isSufficientBalance(tx: tx) {
+                throw SwapCryptoLogic.Errors.insufficientFunds
             }
         } catch {
             if let error = error as? URLError, error.code == .cancelled {
@@ -505,10 +277,10 @@ private extension SwapCryptoViewModel {
         }
         
         do {
-            let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
+            let chainSpecific = try await logic.fetchChainSpecific(tx: tx)
             print("Fetched chain specific: \(chainSpecific)")
             tx.gas = chainSpecific.gas
-            tx.thorchainFee = try await thorchainFee(for: chainSpecific, tx: tx, vault: vault)
+            tx.thorchainFee = try await logic.thorchainFee(for: chainSpecific, tx: tx, vault: vault)
 
         } catch {
             print("Update fees error: \(error.localizedDescription)")
@@ -521,19 +293,304 @@ private extension SwapCryptoViewModel {
                 // These are UTXO-specific errors that should be shown directly
                 self.error = error
             default:
-                self.error = Errors.insufficientFunds
+                self.error = SwapCryptoLogic.Errors.insufficientFunds
+            }
+        }
+    }
+}
+
+// MARK: - Asset Selection
+
+extension SwapCryptoViewModel {
+    func handleFromChainUpdate(tx: SwapTransaction, vault: Vault) {
+        guard
+            let fromChain,
+            fromChain != tx.fromCoin.chain,
+            let coin = logic.getDefaultCoin(for: fromChain, vault: vault)
+        else { return }
+        tx.fromCoin = coin
+    }
+    
+    func handleToChainUpdate(tx: SwapTransaction, vault: Vault) {
+        guard
+            let toChain,
+            toChain != tx.toCoin.chain,
+            let coin = logic.getDefaultCoin(for: toChain, vault: vault) else { return }
+        tx.toCoin = coin
+    }
+}
+
+// MARK: - Logic
+
+struct SwapCryptoLogic {
+    
+    private let swapService = SwapService.shared
+    private let blockchainService = BlockChainService.shared
+    private let fastVaultService = FastVaultService.shared
+    
+    // MARK: - Errors
+    enum Errors: String, Error, LocalizedError {
+        case unexpectedError
+        case insufficientFunds
+        case swapAmountTooSmall
+        case inboundAddress
+        
+        var errorDescription: String? {
+            switch self {
+            case .unexpectedError:
+                return "Unexpected swap error"
+            case .insufficientFunds:
+                return "Insufficient funds"
+            case .swapAmountTooSmall:
+                return "Swap amount too small"
+            case .inboundAddress:
+                return "Inbound address is invalid"
             }
         }
     }
     
-    func clearQuote(tx: SwapTransaction) {
-        tx.quote = nil
+    // MARK: - Loaders
+    
+    func load(initialFromCoin: Coin?, initialToCoin: Coin?, vault: Vault, tx: SwapTransaction) {
+        let allCoins = vault.coins
+        guard !allCoins.isEmpty else { return }
+        
+        let (fromCoins, fromCoin) = SwapCoinsResolver.resolveFromCoins(allCoins: allCoins)
+        let resolvedFromCoin = initialFromCoin ?? fromCoin
+        
+        let (toCoins, toCoin) = SwapCoinsResolver.resolveToCoins(
+            fromCoin: resolvedFromCoin,
+            allCoins: allCoins,
+            selectedToCoin: initialToCoin ?? .example
+        )
+        
+        tx.load(fromCoin: resolvedFromCoin, toCoin: toCoin, fromCoins: fromCoins, toCoins: toCoins)
     }
+    
+    func loadFastVault(tx: SwapTransaction, vault: Vault) async -> Bool {
+        let isExist = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
+        let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
+        return isExist && !isLocalBackup
+    }
+    
+    func updateCoinLists(tx: SwapTransaction) {
+        let (toCoins, toCoin) = SwapCoinsResolver.resolveToCoins(
+            fromCoin: tx.fromCoin,
+            allCoins: tx.fromCoins,
+            selectedToCoin: tx.toCoin
+        )
+        tx.toCoin = toCoin
+        tx.toCoins = toCoins
+    }
+    
+    // MARK: - Formatters & Presentation
+    
+    func progressLink(tx: SwapTransaction, hash: String) -> String? {
+        switch tx.quote {
+        case .thorchain:
+            return Endpoint.getSwapProgressURL(txid: hash)
+        case .thorchainStagenet:
+            return Endpoint.getStagenetSwapProgressURL(txid: hash)
+        case .mayachain:
+            return Endpoint.getMayaSwapTracker(txid: hash)
+        case .lifi:
+            return Endpoint.getLifiSwapTracker(txid: hash)
+        case .oneinch, .kyberswap, .none:
+            return Endpoint.getExplorerURL(chain: tx.fromCoin.chain, txid: hash)
+        }
+    }
+    
+    func fromFiatAmount(tx: SwapTransaction) -> String {
+        let fiatDecimal = tx.fromCoin.fiat(decimal: tx.fromAmountDecimal)
+        return fiatDecimal.formatForDisplay()
+    }
+    
+    func toFiatAmount(tx: SwapTransaction) -> String {
+        let fiatDecimal = tx.toCoin.fiat(decimal: tx.toAmountDecimal)
+        return fiatDecimal.formatForDisplay()
+    }
+    
+    func showGas(tx: SwapTransaction) -> Bool {
+        return !tx.gas.isZero
+    }
+    
+    func showFees(tx: SwapTransaction) -> Bool {
+        let fee = swapFeeString(tx: tx)
+        return !fee.isEmpty && !fee.isZero
+    }
+    
+    func showTotalFees(tx: SwapTransaction) -> Bool {
+        let fee = totalFeeString(tx: tx)
+        return !fee.isEmpty && !fee.isZero
+    }
+    
+    func showDuration(tx: SwapTransaction) -> Bool {
+        return showFees(tx: tx)
+    }
+    
+    func showAllowance(tx: SwapTransaction) -> Bool {
+        return tx.isApproveRequired
+    }
+    
+    func showToAmount(tx: SwapTransaction) -> Bool {
+        return tx.toAmountDecimal != 0
+    }
+    
+    func swapFeeString(tx: SwapTransaction) -> String {
+        guard let inboundFeeDecimal = tx.inboundFeeDecimal else { return .empty }
+        
+        let fromCoin = feeCoin(tx: tx)
+        let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
+        let fee = tx.toCoin.fiat(value: inboundFee) + fromCoin.fiat(value: tx.fee)
+        return fee.formatToFiat(includeCurrencySymbol: true)
+    }
+    
+    func swapGasString(tx: SwapTransaction) -> String {
+        let coin = feeCoin(tx: tx)
+        let decimals = coin.decimals
+        
+        // Use tx.fee for swap quotes (which includes corrected gas price calculations)
+        // Fall back to tx.gas for other transaction types
+        let gasValue = tx.quote != nil ? tx.fee : tx.gas
+        
+        if coin.chain.chainType == .EVM {
+            guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) else {
+                return .empty
+            }
+            return "\((Decimal(gasValue) / weiPerGWeiDecimal).formatToDecimal(digits: 0).description) \(coin.chain.feeUnit)"
+        } else {
+            return "\((Decimal(gasValue) / pow(10 ,decimals)).formatToDecimal(digits: decimals).description) \(coin.ticker)"
+        }
+    }
+    
+    func approveFeeString(tx: SwapTransaction) -> String {
+        let fromCoin = feeCoin(tx: tx)
+        let fee = fromCoin.fiat(gas: tx.fee)
+        return fee.formatToFiat(includeCurrencySymbol: true)
+    }
+    
+    func totalFeeString(tx: SwapTransaction) -> String {
+        guard let inboundFeeDecimal = tx.inboundFeeDecimal else { return .empty }
+        
+        let fromCoin = feeCoin(tx: tx)
+        let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
+        let providerFee = tx.toCoin.fiat(value: inboundFee)
+        let networkFee = fromCoin.fiat(gas: tx.fee)
+        let totalFee = providerFee + networkFee
+        return totalFee.formatToFiat(includeCurrencySymbol: true)
+    }
+    
+    func durationString(tx: SwapTransaction) -> String {
+        guard let duration = tx.quote?.totalSwapSeconds else { return "Instant" }
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .full
+        formatter.includesApproximationPhrase = false
+        formatter.includesTimeRemainingPhrase = false
+        formatter.allowedUnits = [.day, .hour, .minute, .second]
+        formatter.maximumUnitCount = 1
+        let fromDate = Date(timeIntervalSince1970: 0)
+        let toDate = Date(timeIntervalSince1970: TimeInterval(duration))
+        return formatter.string(from: fromDate, to: toDate) ?? .empty
+    }
+    
+    // MARK: - Helper Logic
     
     func feeCoin(tx: SwapTransaction) -> Coin {
         // Fees are always paid in native token
         guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
         return tx.fromCoins.first(where: { $0.chain == tx.fromCoin.chain && $0.isNativeToken }) ?? tx.fromCoin
+    }
+    
+    func getDefaultCoin(for chain: Chain, vault: Vault) -> Coin? {
+        let firstVaultCoin = vault.coins
+            .filter { $0.chain == chain && $0.isNativeToken}
+            .first
+
+        if let firstVaultCoin {
+            return firstVaultCoin
+        } else {
+            let coinMeta = TokensStore.TokenSelectionAssets
+                .filter { $0.chain == chain }
+                .sorted { $0.isNativeToken && !$1.isNativeToken }
+                .first
+            guard let coinMeta, let coin = try? CoinFactory.create(asset: coinMeta,
+                                                                   publicKeyECDSA: vault.pubKeyECDSA,
+                                                                   publicKeyEdDSA: vault.pubKeyEdDSA,
+                                                                   hexChainCode: vault.hexChainCode) else {
+                return nil
+            }
+            return coin
+        }
+    }
+    
+    func pickerFromCoins(tx: SwapTransaction, fromChain: Chain?) -> [Coin] {
+        return tx.fromCoins.filter({ coin in
+            coin.chain == fromChain
+        }).sorted(by: {
+            Int($0.chain == tx.fromCoin.chain) > Int($1.chain == tx.fromCoin.chain)
+        })
+    }
+    
+    func pickerToCoins(tx: SwapTransaction, toChain: Chain?) -> [Coin] {
+        return tx.toCoins.filter({ coin in
+            coin.chain == toChain
+        }).sorted(by: {
+            Int($0.chain == tx.toCoin.chain) > Int($1.chain == tx.toCoin.chain)
+        })
+    }
+
+    // MARK: - Validation
+    
+    func isSufficientBalance(tx: SwapTransaction) -> Bool {
+        let feeCoin = feeCoin(tx: tx)
+        let fromFee = feeCoin.decimal(for: tx.fee)
+        
+        let fromBalance = tx.fromCoin.balanceDecimal
+        let feeCoinBalance = feeCoin.balanceDecimal
+        
+        let amount = tx.fromAmount.toDecimal()
+        
+        if feeCoin == tx.fromCoin {
+            return fromFee + amount <= fromBalance
+        } else {
+            return fromFee <= feeCoinBalance && amount <= fromBalance
+        }
+    }
+    
+    func validateForm(tx: SwapTransaction, isLoading: Bool) -> Bool {
+        return tx.fromCoin != tx.toCoin
+        && tx.fromCoin != .example
+        && tx.toCoin != .example
+        && !tx.fromAmount.isEmpty
+        && !tx.toAmountDecimal.isZero
+        && tx.quote != nil
+        && tx.gas != .zero
+        && isSufficientBalance(tx: tx)
+        && !isLoading
+    }
+    
+    // MARK: - Core Operations (Quotes & Fees)
+    
+    func fetchQuote(tx: SwapTransaction, vault: Vault, referredCode: String) async throws -> SwapQuote {
+        guard !tx.fromAmountDecimal.isZero, tx.fromCoin != tx.toCoin else {
+            throw Errors.unexpectedError // Or just return? Logic upstream handles this check usually
+        }
+        
+        let vultTier = await VultTierService().fetchDiscountTier(for: vault)
+        let quote = try await swapService.fetchQuote(
+            amount: tx.fromAmountDecimal,
+            fromCoin: tx.fromCoin,
+            toCoin: tx.toCoin,
+            isAffiliate: tx.isAffiliate,
+            referredCode: referredCode,
+            vultTierDiscount: vultTier?.bpsDiscount ?? 0
+        )
+        
+        return quote
+    }
+    
+    func fetchChainSpecific(tx: SwapTransaction) async throws -> BlockChainSpecific {
+        return try await blockchainService.fetchSpecific(tx: tx)
     }
     
     func thorchainFee(for chainSpecific: BlockChainSpecific, tx: SwapTransaction, vault: Vault) async throws -> BigInt {
@@ -570,7 +627,6 @@ private extension SwapCryptoViewModel {
                 }
                 return planFee
             } catch {
-                // Re-throw specific errors to provide better user feedback
                 if error is KeysignPayloadFactory.Errors {
                     throw error
                 }
@@ -581,47 +637,92 @@ private extension SwapCryptoViewModel {
             return chainSpecific.gas
         }
     }
-}
-
-// MARK: - Asset Selection
-
-extension SwapCryptoViewModel {
-    func handleFromChainUpdate(tx: SwapTransaction, vault: Vault) {
-        guard
-            let fromChain,
-            fromChain != tx.fromCoin.chain,
-            let coin = getDefaultCoin(for: fromChain, vault: vault)
-        else { return }
-        tx.fromCoin = coin
+    
+    func buildApprovePayload(tx: SwapTransaction) -> ERC20ApprovePayload? {
+        guard tx.isApproveRequired, let spender = tx.router else {
+            return nil
+        }
+        // Approve exact amount - no buffer needed for KyberSwap precision
+        let payload = ERC20ApprovePayload(amount: tx.amountInCoinDecimal, spender: spender)
+        return payload
     }
     
-    func handleToChainUpdate(tx: SwapTransaction, vault: Vault) {
-        guard
-            let toChain,
-            toChain != tx.toCoin.chain,
-            let coin = getDefaultCoin(for: toChain, vault: vault) else { return }
-        tx.toCoin = coin
-    }
-    
-    func getDefaultCoin(for chain: Chain, vault: Vault) -> Coin? {
-        let firstVaultCoin = vault.coins
-            .filter { $0.chain == chain && $0.isNativeToken}
-            .first
-
-        if let firstVaultCoin {
-            return firstVaultCoin
-        } else {
-            let coinMeta = TokensStore.TokenSelectionAssets
-                .filter { $0.chain == chain }
-                .sorted { $0.isNativeToken && !$1.isNativeToken }
-                .first
-            guard let coinMeta, let coin = try? CoinFactory.create(asset: coinMeta,
-                                                                   publicKeyECDSA: vault.pubKeyECDSA,
-                                                                   publicKeyEdDSA: vault.pubKeyEdDSA,
-                                                                   hexChainCode: vault.hexChainCode) else {
-                return nil
-            }
-            return coin
+    func buildSwapKeysignPayload(tx: SwapTransaction, vault: Vault) async throws -> KeysignPayload {
+        guard let quote = tx.quote else {
+            throw Errors.unexpectedError
+        }
+        
+        let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
+        let keysignFactory = KeysignPayloadFactory()
+        
+        switch quote {
+        case .mayachain(let quote):
+            let toAddress = tx.fromCoin.isNativeToken ? quote.inboundAddress : quote.router
+            return try await keysignFactory.buildTransfer(
+                coin: tx.fromCoin,
+                toAddress: toAddress ?? tx.fromCoin.address,
+                amount: tx.amountInCoinDecimal,
+                memo: tx.quote?.memo,
+                chainSpecific: chainSpecific,
+                swapPayload: .mayachain(tx.buildThorchainSwapPayload(
+                    quote: quote,
+                    provider: .mayachain
+                )),
+                approvePayload: buildApprovePayload(tx: tx),
+                vault: vault
+            )
+            
+        case .thorchain(let quote):
+            let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
+            return try await keysignFactory.buildTransfer(
+                coin: tx.fromCoin,
+                toAddress: toAddress,
+                amount: tx.amountInCoinDecimal,
+                memo: quote.memo,
+                chainSpecific: chainSpecific,
+                swapPayload: .thorchain(tx.buildThorchainSwapPayload(
+                    quote: quote,
+                    provider: .thorchain
+                )),
+                approvePayload: buildApprovePayload(tx: tx),
+                vault: vault
+            )
+            
+        case .thorchainStagenet(let quote):
+            let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
+            return try await keysignFactory.buildTransfer(
+                coin: tx.fromCoin,
+                toAddress: toAddress,
+                amount: tx.amountInCoinDecimal,
+                memo: quote.memo,
+                chainSpecific: chainSpecific,
+                swapPayload: .thorchainStagenet(tx.buildThorchainSwapPayload(
+                    quote: quote,
+                    provider: .thorchainStagenet
+                )),
+                approvePayload: buildApprovePayload(tx: tx),
+                vault: vault
+            )
+            
+        case .oneinch(let evmQuote, _), .lifi(let evmQuote, _, _), .kyberswap(let evmQuote, _):
+            let payload = GenericSwapPayload(
+                fromCoin: tx.fromCoin,
+                toCoin: tx.toCoin,
+                fromAmount: tx.amountInCoinDecimal,
+                toAmountDecimal: tx.toAmountDecimal,
+                quote: evmQuote,
+                provider: quote.swapProviderId ?? .oneInch
+            )
+            return try await keysignFactory.buildTransfer(
+                coin: tx.fromCoin,
+                toAddress: evmQuote.tx.to,
+                amount: tx.amountInCoinDecimal,
+                memo: nil,
+                chainSpecific: chainSpecific,
+                swapPayload: .generic(payload),
+                approvePayload: buildApprovePayload(tx: tx),
+                vault: vault
+            )
         }
     }
 }

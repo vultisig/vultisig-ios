@@ -66,12 +66,11 @@ struct HomeScreen: View {
         .onLoad {
             showVaultSelector = showingVaultSelector
             setData()
-
-
         }
         .onReceive(
             NotificationCenter.default.publisher(for: NSNotification.Name("ProcessDeeplink"))
         ) { _ in
+            
             if showScanner {
                 showScanner = false
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -322,8 +321,9 @@ extension HomeScreen {
         
         homeViewModel.setSelectedVault(vault)
         showVaultSelector = false
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+        // Reset first to ensure SwiftUI detects the change
+        shouldKeysignTransaction = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             shouldKeysignTransaction = true
         }
     }
@@ -334,7 +334,11 @@ extension HomeScreen {
     
     fileprivate func moveToCreateVaultView() {
         showVaultSelector = false
-        shouldJoinKeygen = true
+        // Reset first to ensure SwiftUI detects the change
+        shouldJoinKeygen = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            shouldJoinKeygen = true
+        }
     }
     
     fileprivate func onCamera() {
@@ -603,7 +607,6 @@ extension HomeScreen {
 
 #Preview {
     HomeScreen(initialVault: .example, showingVaultSelector: false)
-        .environmentObject(HomeViewModel())
         .environmentObject(VaultDetailViewModel())
         .environmentObject(AccountViewModel())
 }

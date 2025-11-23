@@ -354,7 +354,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
         return dict
     }
     
-    func buildApprovePayload() async throws -> ERC20ApprovePayload? {
+    func buildApprovePayload() -> ERC20ApprovePayload? {
         guard isApprovalRequired, !tx.toAddress.isEmpty else {
             return nil
         }

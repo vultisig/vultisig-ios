@@ -98,12 +98,11 @@ private extension THORChainStakeInteractor {
     }
     
     @MainActor
-    func savePositions(positions: [StakePosition]) {
+    private func savePositions(positions: [StakePosition]) async {
         do {
             try DefiPositionsStorageService().upsert(positions)
         } catch {
             print("An error occured while saving staked positions: \(error)")
         }
     }
-
 }

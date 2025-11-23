@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-@MainActor
 class HomeViewModel: ObservableObject {
     @AppStorage("vaultName") var vaultName: String = ""
     @AppStorage("selectedPubKeyECDSA") var selectedPubKeyECDSA: String = ""
