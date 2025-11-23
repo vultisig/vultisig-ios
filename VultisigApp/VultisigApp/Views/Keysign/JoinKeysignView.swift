@@ -19,10 +19,6 @@ struct JoinKeysignView: View {
             .onLoad {
                 setData()
             }
-            .onDisappear {
-                // Reset navigation flag to allow re-navigation
-                NotificationCenter.default.post(name: NSNotification.Name("ResetJoinKeysignFlag"), object: nil)
-            }
             .task {
                 do{
                     _ = try await ThorchainService.shared.getTHORChainChainID()

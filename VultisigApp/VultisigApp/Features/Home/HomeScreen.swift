@@ -81,16 +81,6 @@ struct HomeScreen: View {
                 presetValuesForDeeplink()
             }
         }
-        .onReceive(
-            NotificationCenter.default.publisher(for: NSNotification.Name("ResetJoinKeygenFlag"))
-        ) { _ in
-            shouldJoinKeygen = false
-        }
-        .onReceive(
-            NotificationCenter.default.publisher(for: NSNotification.Name("ResetJoinKeysignFlag"))
-        ) { _ in
-            shouldKeysignTransaction = false
-        }
         .onChange(of: deeplinkViewModel.type) { _, newValue in
             if newValue != nil {
                 presetValuesForDeeplink()
@@ -333,6 +323,8 @@ extension HomeScreen {
         homeViewModel.setSelectedVault(vault)
         showVaultSelector = false
         
+        // Reset first to ensure SwiftUI detects the change
+        shouldKeysignTransaction = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             shouldKeysignTransaction = true
         }
@@ -344,7 +336,11 @@ extension HomeScreen {
     
     fileprivate func moveToCreateVaultView() {
         showVaultSelector = false
-        shouldJoinKeygen = true
+        // Reset first to ensure SwiftUI detects the change
+        shouldJoinKeygen = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            shouldJoinKeygen = true
+        }
     }
     
     fileprivate func onCamera() {
