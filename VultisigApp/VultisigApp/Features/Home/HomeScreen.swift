@@ -39,6 +39,7 @@ struct HomeScreen: View {
     @State var missingChainName: String = ""
     
     @State private var capturedGeometryHeight: CGFloat = 600
+    @State var isActive = true
     
     @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
@@ -66,12 +67,16 @@ struct HomeScreen: View {
         .onLoad {
             showVaultSelector = showingVaultSelector
             setData()
-
-
+        }
+        .onDisappear() {
+            isActive = false
         }
         .onReceive(
             NotificationCenter.default.publisher(for: NSNotification.Name("ProcessDeeplink"))
         ) { _ in
+            if !isActive {
+                return
+            }
             if showScanner {
                 showScanner = false
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -322,12 +327,7 @@ extension HomeScreen {
         
         homeViewModel.setSelectedVault(vault)
         showVaultSelector = false
-        
-        // Reset first to ensure SwiftUI detects the change
-        shouldKeysignTransaction = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            shouldKeysignTransaction = true
-        }
+        shouldKeysignTransaction = true
     }
     
     fileprivate func checkUpdate() {
@@ -336,11 +336,7 @@ extension HomeScreen {
     
     fileprivate func moveToCreateVaultView() {
         showVaultSelector = false
-        // Reset first to ensure SwiftUI detects the change
-        shouldJoinKeygen = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            shouldJoinKeygen = true
-        }
+        shouldJoinKeygen = true
     }
     
     fileprivate func onCamera() {
