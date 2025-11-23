@@ -81,6 +81,16 @@ struct HomeScreen: View {
                 presetValuesForDeeplink()
             }
         }
+        .onReceive(
+            NotificationCenter.default.publisher(for: NSNotification.Name("ResetJoinKeygenFlag"))
+        ) { _ in
+            shouldJoinKeygen = false
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(for: NSNotification.Name("ResetJoinKeysignFlag"))
+        ) { _ in
+            shouldKeysignTransaction = false
+        }
         .onChange(of: deeplinkViewModel.type) { _, newValue in
             if newValue != nil {
                 presetValuesForDeeplink()

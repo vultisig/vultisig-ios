@@ -35,6 +35,8 @@ struct JoinKeygenView: View {
             }
             .onDisappear {
                 viewModel.stopJoinKeygen()
+                // Reset navigation flag to allow re-navigation
+                NotificationCenter.default.post(name: NSNotification.Name("ResetJoinKeygenFlag"), object: nil)
             }
             .fileImporter(
                 isPresented: $showFileImporter,
