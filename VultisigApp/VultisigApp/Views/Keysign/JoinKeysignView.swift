@@ -162,6 +162,7 @@ struct JoinKeysignView: View {
 
 #Preview {
     JoinKeysignView(vault: Vault.example)
+        .environmentObject(DeeplinkViewModel())
         .environmentObject(ApplicationState())
         .environmentObject(GlobalStateViewModel())
 }

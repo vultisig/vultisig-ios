@@ -160,6 +160,8 @@ struct MacScannerView: View {
 
 #Preview {
     MacScannerView(type: .NewVault, sendTx: SendTransaction(), selectedVault: nil)
+        .environmentObject(HomeViewModel())
+        .environmentObject(DeeplinkViewModel())
         .environmentObject(VaultDetailViewModel())
         .environmentObject(CoinSelectionViewModel())
 }

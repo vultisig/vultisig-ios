@@ -287,5 +287,6 @@ struct JoinKeygenView: View {
 
 #Preview {
     JoinKeygenView(vault: Vault.example, selectedVault: Vault.example)
+        .environmentObject(DeeplinkViewModel())
         .environmentObject(ApplicationState())
 }
