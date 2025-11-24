@@ -15,7 +15,7 @@ struct DefiChainBalanceView: View {
     
     let service = DefiBalanceService()
     var balance: String {
-        service.totalBalanceInFiatString(for: .thorChain, vault: vault)
+        service.totalBalanceInFiatString(for: groupedChain.chain, vault: vault)
     }
     
     var body: some View {

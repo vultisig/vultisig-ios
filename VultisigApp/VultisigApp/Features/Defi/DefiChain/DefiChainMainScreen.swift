@@ -24,7 +24,6 @@ struct DefiChainMainScreen: View {
     init(vault: Vault, group: GroupedChain) {
         self.vault = vault
         self.group = group
-        print("Group is \(group.chain.name)")
         self._bondViewModel = StateObject(wrappedValue: DefiChainBondViewModel(vault: vault, chain: group.chain))
         self._lpsViewModel = StateObject(wrappedValue: DefiChainLPsViewModel(vault: vault, chain: group.chain))
         self._viewModel = StateObject(wrappedValue: DefiChainMainViewModel(vault: vault, chain: group.chain))
