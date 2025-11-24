@@ -76,7 +76,7 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
         case "CACAO":
             return CacaoUnstakeTransactionBuilder(
                 coin: coin,
-                percentage: Int(percentageSelected ?? percentageFromAmount),
+                bps: Int(percentageSelected ?? percentageFromAmount) * 100,
             )
         default:
             return nil
