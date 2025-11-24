@@ -10,6 +10,7 @@ import VultisigCommonData
 struct BondMayaTransactionBuilder: TransactionBuilder {
     let coin: Coin
 
+    let isBond: Bool
     let nodeAddress: String
     let selectedAsset: String
     let lpUnits: UInt64
@@ -17,8 +18,12 @@ struct BondMayaTransactionBuilder: TransactionBuilder {
     let amount: String = "1"
     let sendMaxAmount: Bool = false
     
+    var prefix: String {
+        isBond ? "BOND" : "UNBOND"
+    }
+    
     var memo: String {
-        "BOND:\(selectedAsset):\(lpUnits):\(nodeAddress)"
+        "\(prefix):\(selectedAsset):\(lpUnits):\(nodeAddress)"
     }
     
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {

@@ -995,3 +995,4 @@
 "chainNotAdded" = "Chain Not Added";
 "chainNotAddedMessage" = "The blockchain %@ is not added to this vault. Please add it manually from the vault settings.";
 "native" = "Native";
+"assetSelection" = "Asset selection";

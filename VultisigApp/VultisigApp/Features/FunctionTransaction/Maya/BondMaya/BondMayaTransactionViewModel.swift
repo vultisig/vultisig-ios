@@ -71,6 +71,7 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
         
         return BondMayaTransactionBuilder(
             coin: coin,
+            isBond: true,
             nodeAddress: addressViewModel.field.value,
             selectedAsset: selectedAsset.thorchainAsset,
             lpUnits: UInt64(lpUnitsField.value) ?? 0

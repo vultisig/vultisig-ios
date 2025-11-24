@@ -17,11 +17,12 @@ struct UnbondMayaTransactionScreen: View {
     
     @State var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?
-    @State var percentageSelected: Double?
+    
+    @State var showAssetSelection: Bool = false
     
     var body: some View {
         TransactionFormScreen(
-            title: "bondRune".localized,
+            title: "unbond".localized,
             validForm: $viewModel.validForm,
             onContinue: onContinue
         ) {
@@ -35,16 +36,13 @@ struct UnbondMayaTransactionScreen: View {
             ) {
                 focusedFieldBinding = $0 ? .address : .amount
             } content: {
-                VStack(spacing: 12) {
-                    FunctionAddressField(viewModel: viewModel.addressViewModel)
-                        .focused($focusedField, equals: .address)
-                    FunctionAddressField(viewModel: viewModel.providerViewModel)
-                }
+                FunctionAddressField(viewModel: viewModel.addressViewModel)
+                    .focused($focusedField, equals: .address)
             }
             
             FormExpandableSection(
-                title: viewModel.amountField.label ?? .empty,
-                isValid: viewModel.amountField.valid,
+                title: "assetSelection".localized,
+                isValid: viewModel.lpUnitsField.valid,
                 value: .empty,
                 showValue: false,
                 focusedField: $focusedFieldBinding,
@@ -52,24 +50,23 @@ struct UnbondMayaTransactionScreen: View {
             ) {
                 focusedFieldBinding = $0 ? .amount : .address
             } content: {
-                VStack(spacing: 12) {
-                    AmountTextField(
-                        amount: $viewModel.amountField.value,
-                        error: $viewModel.amountField.error,
-                        ticker: Chain.thorChain.ticker,
-                        type: .button,
-                        availableAmount: viewModel.coin.balanceDecimal,
-                        decimals: viewModel.coin.decimals,
-                        percentage: $percentageSelected,
-                    ).focused($focusedField, equals: .amount)
+                VStack(alignment: .leading, spacing: 12) {
+                    Button {
+                        showAssetSelection = true
+                    } label: {
+                        AssetSelectionFormCell(coin: viewModel.selectedAsset?.asset)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
                     
                     CommonTextField(
-                        text: $viewModel.operatorFeeField.value,
-                        label: viewModel.operatorFeeField.label,
-                        placeholder: viewModel.operatorFeeField.placeholder ?? .empty,
-                        error: $viewModel.operatorFeeField.error,
+                        text: $viewModel.lpUnitsField.value,
+                        label: viewModel.lpUnitsField.label,
+                        placeholder: viewModel.lpUnitsField.placeholder ?? .empty,
+                        error: $viewModel.lpUnitsField.error,
                         labelStyle: .secondary
                     )
+                    .focused($focusedField, equals: .amount)
 #if os(iOS)
                     .keyboardType(.decimalPad)
 #endif
@@ -80,20 +77,21 @@ struct UnbondMayaTransactionScreen: View {
             viewModel.onLoad()
             onAddressFill()
         }
-        .onChange(of: percentageSelected) { _, newValue in
-            guard let newValue else { return }
-            viewModel.onPercentage(newValue)
-        }
         .onChange(of: viewModel.addressViewModel.field.valid) { _, isValid in
             onAddressFill()
-        }
-        .onChange(of: viewModel.operatorFeeField.valid) { _, isValid in
-            try? viewModel.operatorFeeField.validateErrors()
         }
         .onChange(of: focusedFieldBinding) { oldValue, newValue in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 focusedField = newValue
             }
+        }
+        .withLoading(isLoading: $viewModel.isLoading)
+        .crossPlatformSheet(isPresented: $showAssetSelection) {
+            AssetSelectionListScreen(
+                isPresented: $showAssetSelection,
+                selectedAsset: $viewModel.selectedAsset,
+                dataSource: viewModel.assetsDataSource
+            ) { showAssetSelection = false }
         }
     }
     
@@ -102,7 +100,7 @@ struct UnbondMayaTransactionScreen: View {
         case .address:
             focusedFieldBinding =  .amount
         case .amount, nil:
-            if viewModel.amountField.valid, !viewModel.addressViewModel.field.valid {
+            if viewModel.lpUnitsField.valid, !viewModel.addressViewModel.field.valid {
                 focusedField = .address
                 return
             }

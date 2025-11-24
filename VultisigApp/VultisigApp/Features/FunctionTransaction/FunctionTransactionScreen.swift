@@ -45,15 +45,27 @@ struct FunctionTransactionScreen: View {
                     }
                 }
             case .unbond(let node):
-                resolvingCoin(coin: vault.runeCoin) {
-                    UnbondTransactionScreen(
-                        viewModel: UnbondTransactionViewModel(
-                            coin: $0,
-                            vault: vault,
-                            bondAddress: node.address
-                        ),
-                        onVerify: onVerify
-                    )
+                resolvingCoin(coinMeta: node.coin) { coin in
+                    switch coin.chain {
+                    case .mayaChain:
+                        UnbondMayaTransactionScreen(
+                            viewModel: UnbondMayaTransactionViewModel(
+                                coin: coin,
+                                vault: vault,
+                                initialBondAddress: node.address
+                            ),
+                            onVerify: onVerify
+                        )
+                    default:
+                        UnbondTransactionScreen(
+                            viewModel: UnbondTransactionViewModel(
+                                coin: coin,
+                                vault: vault,
+                                bondAddress: node.address
+                            ),
+                            onVerify: onVerify
+                        )
+                    }
                 }
             case .stake(let coin, let defaultAutocompound):
                 resolvingCoin(coinMeta: coin) {

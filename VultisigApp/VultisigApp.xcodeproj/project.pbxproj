@@ -2985,6 +2985,7 @@
 		1348563C2EB529E0003D10BE /* Validators */ = {
 			isa = PBXGroup;
 			children = (
+				13E428252ED4A2A80097AD11 /* IntValidator.swift */,
 				13AB73752EB9259A00DA106B /* AmountBalanceValidator.swift */,
 				13AB73732EB923FD00DA106B /* ClosureValidator.swift */,
 				13AB73712EB923CA00DA106B /* RequiredValidator.swift */,
@@ -4137,7 +4138,6 @@
 			children = (
 				13E4280F2ED494830097AD11 /* BondMayaTransactionScreen.swift */,
 				13E4280B2ED4946A0097AD11 /* BondMayaTransactionViewModel.swift */,
-				13E428252ED4A2A80097AD11 /* IntValidator.swift */,
 			);
 			path = BondMaya;
 			sourceTree = "<group>";

@@ -16,29 +16,22 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
     @Published var validForm: Bool = false
     
     @Published var addressViewModel: AddressViewModel
-    @Published var providerViewModel: AddressViewModel
-    @Published var amountField = FormField(
-        label: "amount".localized,
-        placeholder: "0 RUNE",
-        validators: [
-            RequiredValidator(errorMessage: "emptyAmountField".localized)
-        ]
-    )
-    @Published var operatorFeeField = FormField(
-        label: "operatorFeesLabel".localized,
+    @Published var lpUnitsField = FormField(
+        label: "lpUnits".localized,
         placeholder: "0"
     )
+    @Published var selectedAsset: THORChainAsset?
+    @Published var isLoading: Bool = false
     
-    private(set) var isMaxAmount: Bool = false
     private(set) lazy var form: [FormField] = [
         addressViewModel.field,
-        providerViewModel.field,
-        amountField,
-        operatorFeeField
+        lpUnitsField
     ]
     
     var formCancellable: AnyCancellable?
     var cancellables = Set<AnyCancellable>()
+    
+    let assetsDataSource = MayaAssetsDataSource()
     
     init(coin: Coin, vault: Vault, initialBondAddress: String?) {
         self.coin = coin
@@ -48,45 +41,40 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
             coin: coin,
             additionalValidators: [RequiredValidator(errorMessage: "emptyAddressField".localized)]
         )
-        self.providerViewModel = AddressViewModel(label: "providerLabel".localized, coin: coin)
     }
     
     func onLoad() {
+        isLoading = true
         setupForm()
-        operatorFeeField.validators = [
-            ClosureValidator { value in
-                if value.isEmpty && self.providerViewModel.field.value.isNotEmpty {
-                    throw HelperError.runtimeError("operatorFeesError".localized)
-                }
-                
-                if !value.isEmpty && Int64(value) == nil {
-                    throw HelperError.runtimeError("invalidOperatorFee".localized)
-                }
-            }
-        ]
-        
-        amountField.validators.append(AmountBalanceValidator(balance: coin.balanceDecimal))
+        lpUnitsField.validators.append(IntValidator())
+        lpUnitsField.validators.append(AmountBalanceValidator(balance: coin.balanceDecimal))
         
         if let initialBondAddress {
             addressViewModel.field.value = initialBondAddress
+        }
+        
+        Task {
+            let assets = await assetsDataSource.fetchAssets()
+            await MainActor.run { isLoading = false }
+                   
+            if let firstAsset = assets.first {
+                await MainActor.run {
+                    selectedAsset = firstAsset
+                }
+            }
         }
     }
     
     var transactionBuilder: TransactionBuilder? {
         validateErrors()
-        guard validForm else { return nil }
+        guard validForm, let selectedAsset else { return nil }
         
-        return BondTransactionBuilder(
+        return BondMayaTransactionBuilder(
             coin: coin,
-            amount: amountField.value.formatToDecimal(digits: coin.decimals),
-            sendMaxAmount: isMaxAmount,
+            isBond: false,
             nodeAddress: addressViewModel.field.value,
-            providerAddress: providerViewModel.field.value,
-            operatorFee: Int64(operatorFeeField.value)
+            selectedAsset: selectedAsset.thorchainAsset,
+            lpUnits: UInt64(lpUnitsField.value) ?? 0
         )
-    }
-    
-    func onPercentage(_ percentage: Double) {
-        isMaxAmount = percentage == 100
     }
 }
