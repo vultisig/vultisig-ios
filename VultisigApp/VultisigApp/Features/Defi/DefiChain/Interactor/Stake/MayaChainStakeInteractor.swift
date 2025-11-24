@@ -5,6 +5,8 @@
 //  Created by Gaston Mazzeo on 23/11/2025.
 //
 
+import Foundation
+
 struct MayaChainStakeInteractor: StakeInteractor {
     private let mayaChainAPIService = MayaChainAPIService()
 
@@ -31,6 +33,7 @@ struct MayaChainStakeInteractor: StakeInteractor {
                 return []
             }
 
+            let stakedAmount = position.stakedAmount / pow(10, cacaoCoin.decimals)
             // Fetch APR/APY
             let aprData = try await mayaChainAPIService.getCacaoPoolAPR()
 
@@ -38,12 +41,12 @@ struct MayaChainStakeInteractor: StakeInteractor {
             let stakePosition = StakePosition(
                 coin: cacaoCoin.toCoinMeta(),
                 type: .stake,  // CACAO pool is simple staking
-                amount: position.stakedAmount,
+                amount: stakedAmount,
                 apr: aprData.apr,
                 estimatedReward: nil,  // CACAO pool doesn't show estimated rewards separately
                 nextPayout: nil,  // CACAO pool rewards are continuously accrued
-                rewards: position.pnl > 0 ? position.pnl : nil,  // Show positive PnL as rewards
-                rewardCoin: cacaoCoin.toCoinMeta(),  // Rewards in CACAO
+                rewards: nil,
+                rewardCoin: nil,  // Rewards in CACAO
                 vault: vault
             )
 

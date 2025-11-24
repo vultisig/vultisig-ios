@@ -11,10 +11,14 @@ import Foundation
 struct MayaNetworkInfo: Decodable {
     let bondingAPY: String?
     let nextChurnHeight: String?
+    let totalPooledRune: String?  // Total CACAO in the pool (in atomic units)
+    let liquidityAPY: String?     // CACAO pool APY
 
     enum CodingKeys: String, CodingKey {
         case bondingAPY = "bondingAPY"
         case nextChurnHeight = "nextChurnHeight"
+        case totalPooledRune = "totalPooledRune"
+        case liquidityAPY = "liquidityAPY"
     }
 }
 

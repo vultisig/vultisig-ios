@@ -72,29 +72,48 @@ struct MayaCacaoPoolMemberResponse: Codable {
     let liquidityUnits: String
 
     enum CodingKeys: String, CodingKey {
-        case cacaoAddress = "cacao_address"
-        case cacaoDeposit = "cacao_deposit"
-        case cacaoWithdrawn = "cacao_withdrawn"
-        case liquidityUnits = "liquidity_units"
+        case cacaoAddress = "cacaoAddress"
+        case cacaoDeposit = "cacaoDeposit"
+        case cacaoWithdrawn = "cacaoWithdrawn"
+        case liquidityUnits = "units"
     }
 }
 
 /// Response model for CACAO pool history
 struct MayaCacaoPoolHistoryResponse: Codable {
     let intervals: [CacaoPoolInterval]
+    let meta: CacaoPoolMeta
 }
 
 struct CacaoPoolInterval: Codable {
-    let startTime: String
+    let count: String
     let endTime: String
-    let cacaoDepth: String
-    let cacaoPoolUnits: String
+    let startTime: String
+    let units: String
 
     enum CodingKeys: String, CodingKey {
-        case startTime = "start_time"
-        case endTime = "end_time"
-        case cacaoDepth = "cacao_depth"
-        case cacaoPoolUnits = "cacao_pool_units"
+        case count
+        case endTime
+        case startTime
+        case units
+    }
+}
+
+struct CacaoPoolMeta: Codable {
+    let endCount: String
+    let endTime: String
+    let endUnits: String
+    let startCount: String
+    let startTime: String
+    let startUnits: String
+
+    enum CodingKeys: String, CodingKey {
+        case endCount
+        case endTime
+        case endUnits
+        case startCount
+        case startTime
+        case startUnits
     }
 }
 

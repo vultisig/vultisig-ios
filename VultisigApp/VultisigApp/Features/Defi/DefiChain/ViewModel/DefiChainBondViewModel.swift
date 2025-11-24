@@ -13,6 +13,13 @@ final class DefiChainBondViewModel: ObservableObject {
     @Published private(set) var availableNodes: [BondNode] = []
     @Published private(set) var canUnbond: Bool = false
     
+    var totalBondedBalance: String {
+        guard let nativeCoin = vault.nativeCoin(for: chain) else { return "" }
+        let totalAmount = activeBondedNodes.map(\.amount).reduce(.zero, +)
+        
+        return nativeCoin.formatWithTicker(value: totalAmount)
+    }
+
     var hasBondPositions: Bool {
         vault.defiPositions.contains { $0.chain == chain && !$0.bonds.isEmpty }
     }

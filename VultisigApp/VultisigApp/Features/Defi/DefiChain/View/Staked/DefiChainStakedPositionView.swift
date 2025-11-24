@@ -20,7 +20,12 @@ struct DefiChainStakedPositionView: View {
     var title: String {
         switch position.type {
         case .stake:
-            String(format: "stakedCoin".localized, position.coin.ticker)
+            switch position.coin.chain {
+            case .mayaChain:
+                "cacaoPool".localized
+            default:
+                String(format: "stakedCoin".localized, position.coin.ticker)
+            }
         case .compound:
             String(format: "compoundedCoin".localized, position.coin.ticker)
         case .index:
@@ -161,12 +166,30 @@ struct DefiChainStakedPositionView: View {
 
     var defaultButtonsView: some View {
         HStack(alignment: .top, spacing: 16) {
-            DefiButton(title: "unstake".localized, icon: "minus-circle", type: .secondary) {
+            DefiButton(title: removeButonTitle, icon: "minus-circle", type: .secondary) {
                 onUnstake()
             }.disabled(unstakeDisabled)
-            DefiButton(title: "stake".localized, icon: "plus-circle") {
+            DefiButton(title: addButonTitle, icon: "plus-circle") {
                 onStake()
             }
+        }
+    }
+    
+    var addButonTitle: String {
+        switch position.coin.chain {
+        case .mayaChain:
+            "add".localized
+        default:
+            "stake".localized
+        }
+    }
+    
+    var removeButonTitle: String {
+        switch position.coin.chain {
+        case .mayaChain:
+            "remove".localized
+        default:
+            "unstake".localized
         }
     }
 

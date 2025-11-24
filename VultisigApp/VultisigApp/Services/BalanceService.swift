@@ -146,8 +146,7 @@ private extension BalanceService {
                 let position = try await mayaChainAPIService.getCacaoPoolPosition(address: coin.address)
 
                 // Return staked amount (current value in CACAO)
-                // Convert from Decimal to atomic units (10 decimals for CACAO), then to BigInt
-                let stakedAmountInAtomicUnits = position.stakedAmount * pow(10, 10)
+                let stakedAmountInAtomicUnits = position.stakedAmount
                 let stakedAmountBigInt = stakedAmountInAtomicUnits.description.toBigInt()
                 return stakedAmountBigInt.description
             } catch {
