@@ -249,7 +249,9 @@ class Endpoint {
         if (chain == .thorchain || chain == .thorchainStagenet) && !referredCode.isEmpty {
             // THORChain supports nested affiliates
             let affiliateFeeRateBp = bps(for: discountBps, affiliateFeeRate: THORChainSwaps.referredAffiliateFeeRateBp)
-            affiliateParams.append((referredCode, THORChainSwaps.referredUserFeeRateBp))
+            if discountBps != .max {
+                affiliateParams.append((referredCode, THORChainSwaps.referredUserFeeRateBp))
+            }
             affiliateParams.append((THORChainSwaps.affiliateFeeAddress, "\(affiliateFeeRateBp)"))
         } else {
             // MayaChain only supports single affiliate

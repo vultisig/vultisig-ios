@@ -19,10 +19,7 @@ struct VultDiscountTierView: View {
     @State var isActiveInternal: Bool = false
     
     var holdAmountText: String {
-        let stringValue = "\(tier.balanceToUnlock.formatForDisplay()) $VULT"
-    
-        // No price for now
-        // return [stringValue, fiatText].compactMap { $0 }.joined(separator: " ")
+        let stringValue = "\(tier.balanceToUnlock.formatForDisplay(skipAbbreviation: true)) $VULT"
         return stringValue
     }
     
@@ -30,7 +27,7 @@ struct VultDiscountTierView: View {
         VStack(spacing: 14) {
             HStack(spacing: 0) {
                 HStack(spacing: 12) {
-                    VultDiscountTierIcon(tier: tier, size: 40)
+                    VultDiscountTierIcon(tier: tier, size: .small)
                     Text(tier.name.localized)
                         .font(Theme.fonts.title1)
                         .foregroundStyle(Theme.colors.textPrimary)
@@ -112,8 +109,17 @@ struct VultDiscountTierView: View {
                 .stroke(lineWidth: 1))
     }
     
+    var discountBadgeText: String {
+        switch tier {
+        case .ultimate:
+            "noFee".localized
+        default:
+            String(format: "vultDiscount".localized, tier.bpsDiscount)
+        }
+    }
+    
     var discountBadge: some View {
-        Text(String(format: "vultDiscount".localized, tier.bpsDiscount))
+        Text(discountBadgeText)
             .font(Theme.fonts.footnote)
             .foregroundStyle(Theme.colors.textPrimary)
             .padding(.horizontal, 10)
@@ -136,14 +142,20 @@ struct VultDiscountTierView: View {
     
     @ViewBuilder
     var gradientView: some View {
-        LinearGradient(
-            colors: [
-                tier.primaryColor,
-                tier.secondaryColor
-            ],
-            startPoint: .top,
-            endPoint: .bottom
-        )
+        switch tier {
+        case .ultimate:
+            Image("vult-ultimate-box-overlay")
+                .resizable()
+        default:
+            LinearGradient(
+                colors: [
+                    tier.primaryColor,
+                    tier.secondaryColor
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        }
     }
     
     func animate(isActive: Bool) {

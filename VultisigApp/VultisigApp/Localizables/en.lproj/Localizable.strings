@@ -902,11 +902,16 @@
 "silver" = "Silver";
 "gold" = "Gold";
 "platinum" = "Platinum";
+"diamond" = "Diamond";
+"ultimate" = "Ultimate";
 "unlockTier" = "Unlock Tier";
 "unlockXTier" = "Unlock %@ Tier";
 "unlockXTierDescription" = "By holding %@ $VULT, you’ll unlock the %@ Tier and receive a %@ bps trading fee discount on all swaps.";
 "unlockXTierDescriptionHighlighted" = "%@ bps trading fee discount";
+"unlockUltimateTierDescription" = "By holding %@ $VULT, you’ll unlock the Ultimate Tier and receive a complete Vultisig fee waiver on all swaps.";
+"unlockUltimateTierDescriptionHighlighted" = "complete Vultisig fee waiver on all swaps.";
 "vultDiscount" = "Discount: %dbps";
+"noFee" = "No Fee";
 "hold" = "Hold";
 "defiPortfolio" = "DeFi Portfolio";
 "bonded" = "Bonded";

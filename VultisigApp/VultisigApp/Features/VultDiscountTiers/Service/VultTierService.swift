@@ -11,15 +11,26 @@ import SwiftUI
 
 struct VultTierService {
     let vultTicker = "VULT"
-    
+    let thorguardContractAddress = "0xa98b29a8f5a247802149c268ecf860b8308b7291"
+
     @AppStorage("vult_balance_cache") private var cacheEntries: [CacheEntry] = []
     private static let cacheValidityDuration: TimeInterval = 3 * 60 // 3 minutes
-    
+
     func fetchDiscountTier(for vault: Vault, cached: Bool = false) async -> VultDiscountTier? {
         let balance = cached ? (getVultToken(for: vault)?.balanceDecimal ?? 0) : await fetchVultBalance(for: vault)
-        return VultDiscountTier.allCases
+        var tier = VultDiscountTier.allCases
             .sorted { $0.balanceToUnlock > $1.balanceToUnlock }
             .first { balance >= $0.balanceToUnlock }
+
+        // Check for Thorguard boost (upgrade tier by one, up to Platinum)
+        if let currentTier = tier, canUpgrade(currentTier) {
+            let hasThorguard = await checkThorguardBalance(for: vault)
+            if hasThorguard {
+                tier = upgradeTier(currentTier)
+            }
+        }
+
+        return tier
     }
     
     func getVultToken(for vault: Vault) -> Coin? {
@@ -35,7 +46,7 @@ struct VultTierService {
     func clearAllCache() {
         cacheEntries.removeAll()
     }
-    
+
     /// Checks if we recently fetched the balance (within cache validity duration)
     func shouldFetchBalance(for vault: Vault) -> Bool {
         guard let cacheEntry = cacheEntries.first(where: { $0.vaultId == vault.pubKeyEdDSA }) else {
@@ -45,6 +56,46 @@ struct VultTierService {
         let shouldFetch = Date().timeIntervalSince(cacheEntry.lastFetchDate) >= Self.cacheValidityDuration
         print("Getting $VULT balance from cache:", shouldFetch)
         return shouldFetch
+    }
+
+    /// Upgrades a tier to the next level (capped at Platinum for Thorguard boost)
+    private func upgradeTier(_ tier: VultDiscountTier) -> VultDiscountTier {
+        let tiers = VultDiscountTier.allCases
+        let index = tiers.firstIndex(of: tier)
+        if let index {
+            return tiers[safe: index + 1] ?? tier
+        } else {
+            return tier
+        }
+    }
+    
+    private func canUpgrade(_ tier: VultDiscountTier) -> Bool {
+        switch tier {
+        case .bronze, .silver, .gold:
+            return true
+        case .platinum, .diamond, .ultimate:
+            return false
+        }
+    }
+
+    /// Checks if the vault holds at least one Thorguard NFT
+    private func checkThorguardBalance(for vault: Vault) async -> Bool {
+        // Find Ethereum address in the vault
+        guard let ethCoin = vault.coins.first(where: { $0.chain == .ethereum }) else {
+            return false
+        }
+
+        do {
+            let evmService = try EvmService.getService(forChain: .ethereum)
+            let balance = try await evmService.fetchERC20TokenBalance(
+                contractAddress: thorguardContractAddress,
+                walletAddress: ethCoin.address
+            )
+            return balance > 0
+        } catch {
+            print("Error fetching Thorguard balance: \(error.localizedDescription)")
+            return false
+        }
     }
 }
 
