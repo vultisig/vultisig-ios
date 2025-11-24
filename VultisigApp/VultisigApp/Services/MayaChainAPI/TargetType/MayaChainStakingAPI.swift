@@ -2,7 +2,7 @@
 //  MayaChainStakingAPI.swift
 //  VultisigApp
 //
-//  Created by AI Assistant on 23/11/2025.
+//  Created by Gaston Mazzeo on 23/11/2025.
 //
 
 import Foundation
