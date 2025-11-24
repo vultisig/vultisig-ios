@@ -9,6 +9,7 @@ import SwiftUI
 
 struct DefiChainStakedPositionView: View {
     let position: StakePosition
+    let fiatAmount: String
     var onStake: () -> Void
     var onUnstake: () -> Void
     var onWithdraw: () -> Void
@@ -83,6 +84,12 @@ struct DefiChainStakedPositionView: View {
                     .foregroundStyle(Theme.colors.textPrimary)
                     .contentTransition(.numericText())
                     .animation(.interpolatingSpring, value: stakedAmount)
+                
+                HiddenBalanceText(fiatAmount)
+                    .font(Theme.fonts.priceCaption)
+                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .contentTransition(.numericText())
+                    .animation(.interpolatingSpring, value: fiatAmount)
             }
             Spacer()
         }
@@ -228,6 +235,7 @@ struct DefiChainStakedPositionView: View {
                 rewardCoin: .example,
                 vault: .example
             ),
+            fiatAmount: "",
             onStake: {},
             onUnstake: {},
             onWithdraw: {}
@@ -245,6 +253,7 @@ struct DefiChainStakedPositionView: View {
                 rewardCoin: .example,
                 vault: .example
             ),
+            fiatAmount: "",
             onStake: {},
             onUnstake: {},
             onWithdraw: {}

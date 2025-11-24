@@ -913,7 +913,7 @@
 "bonded" = "Vincolato";
 "staked" = "In Staking";
 "lps" = "LPs";
-"bondedCoin" = "%@ Vincolato";
+"bondedCoin" = "Totale Vincolato %@";
 "availableNodes" = "Nodi Disponibili";
 "activeNodes" = "Nodi Attivi";
 "churnedOut" = "Escluso";

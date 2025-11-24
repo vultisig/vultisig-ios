@@ -913,7 +913,7 @@
 "bonded" = "Vezano";
 "staked" = "Uloženo";
 "lps" = "LPs";
-"bondedCoin" = "Vezani %@";
+"bondedCoin" = "Ukupno Vezani %@";
 "availableNodes" = "Dostupni Čvorovi";
 "activeNodes" = "Aktivni Čvorovi";
 "churnedOut" = "Isključen";

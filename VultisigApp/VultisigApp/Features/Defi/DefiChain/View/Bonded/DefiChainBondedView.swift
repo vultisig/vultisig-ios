@@ -48,6 +48,10 @@ struct DefiChainBondedView<EmptyStateView: View>: View {
                             .foregroundStyle(Theme.colors.textPrimary)
                             .contentTransition(.numericText())
                             .animation(.interpolatingSpring, value: viewModel.totalBondedBalance)
+                        
+                        HiddenBalanceText(viewModel.totalBondedBalanceFiat)
+                            .font(Theme.fonts.priceCaption)
+                            .foregroundStyle(Theme.colors.textExtraLight)
                     }
                     Spacer()
                 }

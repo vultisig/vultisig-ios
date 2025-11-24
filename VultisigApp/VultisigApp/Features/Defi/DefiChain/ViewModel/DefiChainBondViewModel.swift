@@ -13,11 +13,18 @@ final class DefiChainBondViewModel: ObservableObject {
     @Published private(set) var availableNodes: [BondNode] = []
     @Published private(set) var canUnbond: Bool = false
     
+    private var totalBondedDecimal: Decimal {
+        activeBondedNodes.map(\.amount).reduce(.zero, +)
+    }
+    
     var totalBondedBalance: String {
         guard let nativeCoin = vault.nativeCoin(for: chain) else { return "" }
-        let totalAmount = activeBondedNodes.map(\.amount).reduce(.zero, +)
-        
-        return nativeCoin.formatWithTicker(value: totalAmount)
+        return nativeCoin.formatWithTicker(value: totalBondedDecimal)
+    }
+    
+    var totalBondedBalanceFiat: String {
+        guard let nativeCoin = vault.nativeCoin(for: chain) else { return "" }
+        return nativeCoin.valueWithDecimals(value: totalBondedDecimal).formatToFiat()
     }
 
     var hasBondPositions: Bool {
