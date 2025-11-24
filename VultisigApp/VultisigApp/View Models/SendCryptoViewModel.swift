@@ -26,25 +26,17 @@ class SendCryptoViewModel: ObservableObject {
     @Published var hash: String? = nil
     @Published var approveHash: String? = nil
     
-    @Published var sol: SolanaService = SolanaService.shared
-    @Published var sui: SuiService = SuiService.shared
-    @Published var ton: TonService = TonService.shared
+    // Logic delegation
+    private let logic = SendCryptoLogic()
     
-    @Published var utxo = BlockchairService.shared
-    @Published var ripple: RippleService = RippleService.shared
-    
-    @Published var tron: TronService = TronService.shared
-    
+    // State for alerts
     @Published var showAddressAlert: Bool = false
     @Published var showAmountAlert: Bool = false
+    
+    // State for pending transactions
     @Published var hasPendingTransaction: Bool = false
     @Published var pendingTransactionCountdown: Int = 0
     @Published var isCheckingPendingTransactions: Bool = false
-    
-    let blockchainService = BlockChainService.shared
-    
-    private let mediator = Mediator.shared
-    private let fastVaultService = FastVaultService.shared
     
     let logger = Logger(subsystem: "send-input-details", category: "transaction")
     
@@ -75,314 +67,42 @@ class SendCryptoViewModel: ObservableObject {
         defer {
             isLoading = false
         }
-        do {
-            let specific = try await blockchainService.fetchSpecific(tx: tx)
-            tx.gas = specific.gas
-            
-            // For UTXO and Cardano chains, calculate actual total fee using WalletCore plan.fee (like Android)
-            if tx.coin.chainType == .UTXO || tx.coin.chainType == .Cardano {
-                if tx.amountInRaw > 0 {
-                    // Only calculate accurate fee when user has entered an amount
-                    tx.fee = try await calculateUTXOPlanFee(tx: tx, chainSpecific: specific)
-                } else {
-                    // Initial state - no amount yet, use 0 to indicate fee not calculated yet
-                    tx.fee = BigInt.zero
-                }
-            } else {
-                tx.fee = specific.fee
-            }
-            
-            tx.estematedGasLimit = specific.gasLimit
-        } catch {
-            print("error fetching data: \(error.localizedDescription)")
-        }
         
+        if let info = await logic.loadGasInfoForSending(tx: tx) {
+            tx.gas = info.gas
+            tx.fee = info.fee
+            if let gasLimit = info.gasLimit {
+                tx.estematedGasLimit = gasLimit
+            }
+        }
     }
     
     func loadFastVault(tx: SendTransaction, vault: Vault) async {
-        let isExist = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
-        let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
-        
-        tx.isFastVault = isExist && !isLocalBackup
+        tx.isFastVault = await logic.loadFastVault(tx: tx, vault: vault)
     }
     
-    // TODO: Refactor to remove duplication
     func setMaxValues(tx: SendTransaction, percentage: Double = 100) {
         errorMessage = ""
-        let coinName = tx.coin.chain.name.lowercased()
-        let key: String = "\(tx.fromAddress)-\(coinName)"
         isLoading = true
-        switch tx.coin.chain {
-        case .bitcoin,.dogecoin,.litecoin,.bitcoinCash,.dash, .zcash:
-            Task {
-                tx.sendMaxAmount = percentage == 100 // Never set this to true if the percentage is not 100, otherwise it will wipe your wallet.
-                tx.amount = await utxo.getByKey(key: key)?.address?.balanceInBTC ?? "0.0"
-                setPercentageAmount(tx: tx, for: percentage)
-                convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
-                isLoading = false
-            }
-        case .cardano:
-            tx.sendMaxAmount = percentage == 100 // Never set this to true if the percentage is not 100, otherwise it will wipe your wallet.
-            Task {
-                await BalanceService.shared.updateBalance(for: tx.coin)
-                
-                let gas = BigInt.zero
-                // For Cardano, use decimals - 1 to match getMaxValue truncation
-                let maxDecimals = tx.coin.decimals > 0 ? tx.coin.decimals - 1 : tx.coin.decimals
-                tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: maxDecimals))"
-                setPercentageAmount(tx: tx, for: percentage)
-                
-                convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
-                
-                isLoading = false
-            }
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync,.ethereumSepolia, .mantle, .hyperliquid, .sei:
-            Task {
-                do {
-                    if tx.coin.isNativeToken {
-                        let evm = try await blockchainService.fetchSpecific(tx: tx)
-                        let totalFeeWei = evm.fee
-                        tx.amount = "\(tx.coin.getMaxValue(totalFeeWei).formatToDecimal(digits: tx.coin.decimals))" // the decimals must be truncaded otherwise the give us precisions errors
-                        setPercentageAmount(tx: tx, for: percentage)
-                    } else {
-                        tx.amount = "\(tx.coin.getMaxValue(0))"
-                        setPercentageAmount(tx: tx, for: percentage)
-                    }
-                } catch {
-                    tx.amount = "\(tx.coin.getMaxValue(0))"
-                    setPercentageAmount(tx: tx, for: percentage)
-                    print("Failed to get EVM balance, error: \(error.localizedDescription)")
-                }
-                
-                convertToFiat(newValue: tx.amount, tx: tx)
-                isLoading = false
-            }
-            
-        case .solana:
-            Task {
-                do{
-                    if tx.coin.isNativeToken {
-                        let rawBalance = try await sol.getSolanaBalance(coin: tx.coin)
-                        tx.coin.rawBalance = rawBalance
-                        tx.amount = "\(tx.coin.getMaxValue(SolanaHelper.defaultFeeInLamports).formatToDecimal(digits: tx.coin.decimals))"
-                        setPercentageAmount(tx: tx, for: percentage)
-                    } else {
-                        
-                        tx.amount = "\(tx.coin.getMaxValue(0))"
-                        setPercentageAmount(tx: tx, for: percentage)
-                    }
-                } catch {
-                    tx.amount = "\(tx.coin.getMaxValue(0))"
-                    setPercentageAmount(tx: tx, for: percentage)
-                    print("Failed to get SOLANA balance, error: \(error.localizedDescription)")
-                }
-                
-                convertToFiat(newValue: tx.amount, tx: tx)
-                isLoading = false
-            }
-        case .sui:
-            Task {
-                do {
-                    let rawBalance = try await sui.getBalance(coin: tx.coin)
-                    tx.coin.rawBalance = rawBalance
-                    
-                    if tx.coin.isNativeToken {
-                        var gas = BigInt.zero
-                        
-                        if percentage == 100 {
-                            // Calculate dynamic fee for send max
-                            // Set a temporary amount to estimate the fee
-                            let originalAmount = tx.amount
-                            let maxAmount = tx.coin.rawBalance.toBigInt(decimals: tx.coin.decimals)
-                            let maxDecimal = Decimal(maxAmount) / pow(10, tx.coin.decimals)
-                            tx.amount = "\(maxDecimal.formatToDecimal(digits: tx.coin.decimals))"
-                            tx.sendMaxAmount = true
-                            
-                            do {
-                                let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
-                                
-                                // Get the dynamic gas budget
-                                if case .Sui(_, _, let gasBudget) = chainSpecific {
-                                    gas = gasBudget
-                                }
-                            } catch {
-                                print("⚠️ Sui dynamic fee calculation failed, using default: \(error.localizedDescription)")
-                                // Fallback to default with 15% margin
-                                gas = (BigInt(3000000) * 115) / 100
-                            }
-                            
-                            // Restore sendMaxAmount flag
-                            tx.sendMaxAmount = false
-                            tx.amount = originalAmount
-                        }
-                        
-                        tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
-                        setPercentageAmount(tx: tx, for: percentage)
-                        
-                        convertToFiat(newValue: tx.amount, tx: tx)
-                    } else {
-                        // For tokens, no gas deduction from token balance
-                        tx.amount = "\(tx.coin.getMaxValue(0))"
-                        setPercentageAmount(tx: tx, for: percentage)
-                    }
-                } catch {
-                    print("⚠️ Failed to load Sui balance: \(error.localizedDescription)")
-                }
-                
-                isLoading = false
-            }
-        case .kujira, .gaiaChain, .mayaChain, .thorChain, .thorChainStagenet, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash:
-            Task {
-                await BalanceService.shared.updateBalance(for: tx.coin)
-                
-                var gas = BigInt.zero
-                
-                // Only deduct fee for native tokens
-                // Non-native tokens on THORChain/Cosmos chains pay fees from the native token balance
-                if percentage == 100 && tx.coin.isNativeToken {
-                    gas = BigInt(tx.gasDecimal.description,radix:10) ?? 0
-                }
-                
-                tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
-                setPercentageAmount(tx: tx, for: percentage)
-                
-                convertToFiat(newValue: tx.amount, tx: tx)
-                
-                isLoading = false
-            }
-        case .polkadot:
-            Task {
-                do {
-                    tx.sendMaxAmount = percentage == 100 // Set sendMaxAmount flag for max sends
-                    await BalanceService.shared.updateBalance(for: tx.coin)
-                    
-                    var gas = BigInt.zero
-                    let dot = try await blockchainService.fetchSpecific(tx: tx)
-                    gas = dot.gas
-                    
-                    tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
-                    setPercentageAmount(tx: tx, for: percentage)
-                    
-                    convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
-                } catch {
-                    tx.amount = "\(tx.coin.getMaxValue(0))"
-                    setPercentageAmount(tx: tx, for: percentage)
-                    convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
-                    print("Failed to get Polkadot dynamic fee, error: \(error.localizedDescription)")
-                }
-                
-                isLoading = false
-            }
-        case .ton:
-            Task {
-                do {
-                    tx.sendMaxAmount = percentage == 100 // Never set this to true if the percentage is not 100, otherwise it will wipe your wallet.
-                    let rawBalance: String
-                    if tx.coin.isNativeToken {
-                        rawBalance = try await ton.getBalance(tx.coin)
-                    } else {
-                        rawBalance = try await ton.getJettonBalance(tx.coin)
-                    }
-
-                    tx.coin.rawBalance = rawBalance
-
-                    let gasForMax: BigInt = tx.coin.isNativeToken && percentage != 100 ? TonHelper.defaultFee : 0
-
-                    tx.amount = "\(tx.coin.getMaxValue(gasForMax).formatToDecimal(digits: tx.coin.decimals))"
-                    
-                    setPercentageAmount(tx: tx, for: percentage)
-
-                    convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
-                } catch {
-                    print("fail to load ton balances,error:\(error.localizedDescription)")
-                }
-
-                isLoading = false
-            }
-        case .ripple:
-            Task {
-                do {
-                    let rawBalance = try await ripple.getBalance(tx.coin)
-                    tx.coin.rawBalance = rawBalance
-                    
-                    var gas = BigInt.zero
-                    if percentage == 100 {
-                        gas = tx.coin.feeDefault.toBigInt()
-                    }
-                    
-                    tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
-                    setPercentageAmount(tx: tx, for: percentage)
-                    
-                    convertToFiat(newValue: tx.amount, tx: tx)
-                } catch {
-                    print("fail to load ripple balances,error:\(error.localizedDescription)")
-                }
-                
-                isLoading = false
-            }
-            
-        case .tron:
-            Task {
-                do {
-                    let rawBalance = try await tron.getBalance(coin: tx.coin)
-                    tx.coin.rawBalance = rawBalance
-                    
-                    var gas = BigInt.zero
-                    if percentage == 100 {
-                        gas = tx.coin.feeDefault.toBigInt()
-                    }
-                    
-                    tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
-                    setPercentageAmount(tx: tx, for: percentage)
-                    
-                    convertToFiat(newValue: tx.amount, tx: tx)
-                } catch {
-                    print("fail to load TRON balances,error:\(error.localizedDescription)")
-                }
-                
-                isLoading = false
-            }
-            
+        
+        Task {
+            await logic.setMaxValues(tx: tx, percentage: percentage)
+            isLoading = false
         }
-    }
-    
-    private func setPercentageAmount(tx: SendTransaction, for percentage: Double) {
-        let max = tx.amount
-        let multiplier = (Decimal(percentage) / 100)
-        let amountDecimal = max.toDecimal() * multiplier
-        tx.amount = amountDecimal.formatToDecimal(digits: tx.coin.decimals)
     }
     
     func convertFiatToCoin(newValue: String, tx: SendTransaction) {
-        let newValueDecimal = newValue.toDecimal()
-        if newValueDecimal > 0 {
-            let newValueCoin = newValueDecimal / Decimal(tx.coin.price)
-            let truncatedValueCoin = newValueCoin.truncated(toPlaces: tx.coin.decimals)
-            tx.amount = truncatedValueCoin.formatToDecimal(digits: tx.coin.decimals)
-            tx.sendMaxAmount = false
-        } else {
-            tx.amount = ""
-        }
+        logic.convertFiatToCoin(newValue: newValue, tx: tx)
     }
     
     func convertToFiat(newValue: String, tx: SendTransaction, setMaxValue: Bool = false) {
-        let newValueDecimal = newValue.toDecimal()
-        if newValueDecimal > 0 {
-            let newValueFiat = newValueDecimal * Decimal(tx.coin.price)
-            let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2) // Assuming 2 decimal places for fiat
-            tx.amountInFiat = truncatedValueFiat.formatToDecimal(digits: tx.coin.decimals)
-            tx.sendMaxAmount = setMaxValue
-            
-            // Recalculate UTXO-based fees when amount changes (UTXO and Cardano chains)
-            recalculateUTXOFeesIfNeeded(tx: tx)
-        } else {
-            tx.amountInFiat = ""
-        }
+        logic.convertToFiat(newValue: newValue, tx: tx, setMaxValue: setMaxValue)
     }
     
     func validateAddress(tx: SendTransaction, address: String) {
         guard !isNamespaceResolved else {
-            return isValidAddress = true
+            isValidAddress = true
+            return
         }
         isValidAddress = AddressService.validateAddress(address: address, chain: tx.coin.chain)
     }
@@ -402,143 +122,16 @@ class SendCryptoViewModel: ObservableObject {
     }
     
     func validateForm(tx: SendTransaction) async -> Bool {
-        // Reset validation state at the beginning
         resetStates()
         
-        // Check for pending Cosmos transactions that could cause nonce conflicts
-        if await hasPendingCosmosTransactions(tx: tx) {
-            return false
-        }
+        let result = await logic.validateForm(tx: tx, hasPendingTransaction: hasPendingTransaction)
         
-        let amount = tx.amountDecimal
-        let gasFee = tx.gasDecimal
-        
-        if amount <= 0 {
-            errorTitle = "error"
-            errorMessage = "positiveAmountError"
-            showAmountAlert = true
-            logger.log("Invalid or non-positive amount.")
-            isValidForm = false
-            isLoading = false
-            return isValidForm
-        }
-        
-        if gasFee == 0 && !tx.coin.allowZeroGas() {
-            errorTitle = "error"
-            errorMessage = "noGasEstimation"
-            showAmountAlert = true
-            logger.log("No gas estimation.")
-            isValidForm = false
-            isLoading = false
-            return isValidForm
-        }
-        
-        if gasFee < 0 {
-            errorTitle = "error"
-            errorMessage = "nonNegativeFeeError"
-            showAmountAlert = true
-            logger.log("Invalid or negative fee.")
-            isValidForm = false
-            isLoading = false
-            return isValidForm
-        }
-        
-        if tx.isAmountExceeded {
-            errorTitle = "error"
-            errorMessage = "walletBalanceExceededError"
-            showAmountAlert = true
-            logger.log("Total transaction cost exceeds wallet balance.")
-            isValidForm = false
-            isLoading = false
-            return isValidForm
-        }
-        // check UTXO minimum amount and fee validation
-        if tx.coin.chainType == .UTXO {
-            let dustThreshold = tx.coin.coinType.getFixedDustThreshold()
-            if tx.amountInRaw < dustThreshold {
-                errorTitle = "error"
-                errorMessage = "amount is below the dust threshold."
-                showAmountAlert = true
-                isValidForm = false
-                isLoading = false
-                return isValidForm
-            }
-            
-            // Check if WalletCore returned 0 fee (insufficient balance for UTXO transaction)
-            if tx.fee == 0 && tx.amountInRaw > 0 {
-                errorTitle = "error"
-                errorMessage = "walletBalanceExceededError"
-                showAmountAlert = true
-                logger.log("Insufficient UTXO balance to cover transaction and fees.")
-                isValidForm = false
-                isLoading = false
-                return isValidForm
-            }
-        }
-        let validToAddress =  await validateToAddress(tx: tx)
-        if !validToAddress {
-            isValidForm = false
-            return isValidForm
-        }
-        if !tx.coin.isNativeToken {
-            do {
-                let evmToken = try await blockchainService.fetchSpecific(tx: tx)
-                let (hasEnoughFees, feeErrorMsg) = await tx.hasEnoughNativeTokensToPayTheFees(specific: evmToken)
-                if !hasEnoughFees {
-                    errorTitle = "error"
-                    errorMessage = feeErrorMsg
-                    showAlert = true
-                    logger.log("\(feeErrorMsg)")
-                    isValidForm = false
-                }
-            } catch {
-                let fetchErrorMsg = "Failed to fetch specific token data: \(tx.coin.ticker)"
-                logger.log("\(fetchErrorMsg)")
-                errorTitle = "error"
-                errorMessage = fetchErrorMsg
-                showAlert = true
-                isValidForm = false
-            }
-        }
-        
-        // Cardano-specific validation: Check minimum UTXO value for amount and remaining balance
-        if tx.coin.chain == .cardano && !tx.sendMaxAmount {
-            let amountInLovelaces = tx.amountInRaw
-            let totalBalance = tx.coin.rawBalance
-            let estimatedFee = tx.fee
-            
-            let validation = CardanoHelper.validateUTXORequirements(
-                sendAmount: amountInLovelaces,
-                totalBalance: totalBalance.toBigInt(),
-                estimatedFee: estimatedFee
-            )
-            
-            if !validation.isValid {
-                errorTitle = "error"
-                errorMessage = validation.errorMessage ?? "Cardano UTXO validation failed"
-                showAlert = true
-                logger.log("Cardano UTXO validation failed: \(validation.errorMessage ?? "Unknown error")")
-                isValidForm = false
-            }
-        }
-        
-        // DOT-specific validation: Check existential deposit (1 DOT minimum balance)
-        if tx.coin.chain == .polkadot {
-            let totalBalance = BigInt(tx.coin.rawBalance) ?? BigInt.zero
-            let totalTransactionCost = tx.amountInRaw + tx.gas
-            let remainingBalance = totalBalance - totalTransactionCost
-            
-            // Allow transaction only if:
-            // 1. Remaining balance stays above 1 DOT, OR
-            // 2. It's a complete MAX send (sendMaxAmount = true) that drains the entire balance
-            if !tx.sendMaxAmount && remainingBalance < PolkadotHelper.defaultExistentialDeposit && remainingBalance > 0 {
-                errorTitle = "error"
-                errorMessage = "Keep account balance above 1 DOT. The remaining funds will be lost if balance is below 1 DOT"
-                showAlert = true
-                logger.log("DOT transaction would leave balance below existential deposit")
-                isValidForm = false
-            }
-        }
+        isValidForm = result.isValid
+        errorTitle = result.errorTitle
+        errorMessage = result.errorMessage
+        showAlert = result.showAlert
+        showAmountAlert = result.showAmountAlert
+        showAddressAlert = result.showAddressAlert
         
         isLoading = false
         return isValidForm
@@ -547,42 +140,19 @@ class SendCryptoViewModel: ObservableObject {
     func validateToAddress(tx: SendTransaction) async -> Bool {
         resetStates()
         
-        guard !tx.toAddress.isEmpty else {
-            errorTitle = "invalidAddress"
-            errorMessage = "emptyAddressField"
-            showAddressAlert = true
-            logger.log("Empty address field.")
-            isValidForm = false
-            isLoading = false
-            return false
-        }
+        let result = await logic.validateToAddress(tx: tx)
         
-        do {
-            tx.toAddress = try await AddressService.resolveInput(tx.toAddress, chain: tx.coin.chain)
+        if result.isValid {
             isNamespaceResolved = true
-        } catch {
-            errorTitle = "error"
-            errorMessage = "validAddressDomainError"
-            showAddressAlert = true
-            logger.log("Please enter a valid address for the selected blockchain.")
-            
-            isValidForm = false
-            isLoading = false
-            return false
-        }
-        
-        // Validate the "To" address
-        if !isValidAddress && !isNamespaceResolved {
-            errorTitle = "error"
-            errorMessage = "validAddressError"
-            showAddressAlert = true
-            logger.log("Invalid address.")
-            isValidForm = false
-            return false
+        } else {
+             errorTitle = result.errorTitle
+             errorMessage = result.errorMessage
+             showAddressAlert = result.showAddressAlert
+             isValidForm = false
         }
         
         isLoading = false
-        return true
+        return result.isValid
     }
     
     func setHash(_ hash: String) {
@@ -590,14 +160,13 @@ class SendCryptoViewModel: ObservableObject {
     }
     
     func stopMediator() {
-        self.mediator.stop()
+        Mediator.shared.stop()
         logger.info("mediator server stopped.")
     }
     
     func feesInReadable(tx: SendTransaction, vault: Vault) -> String {
         guard let nativeCoin = vault.nativeCoin(for: tx.coin) else { return .empty }
         let fee = nativeCoin.decimal(for: tx.fee)
-        // Use fee-specific formatting with more decimal places (5 instead of 2)
         return RateProvider.shared.fiatFeeString(value: fee, coin: nativeCoin)
     }
     
@@ -617,46 +186,67 @@ class SendCryptoViewModel: ObservableObject {
         showAmountAlert = false
         showAlert = false
     }
+}
+
+// MARK: - SendCryptoLogic (Business Logic Struct)
+
+struct SendCryptoLogic {
     
-    /// Check if there are pending Cosmos transactions that could cause nonce conflicts
-    private func hasPendingCosmosTransactions(tx: SendTransaction) async -> Bool {
-        // Only check for chains that support pending transaction tracking
-        guard tx.coin.chain.supportsPendingTransactions else {
-            // For non-Cosmos chains, immediately enable button
-            hasPendingTransaction = false
-            pendingTransactionCountdown = 0
-            isCheckingPendingTransactions = false
-            return false
-        }
-        
-        // Set checking state to prevent button flickering
-        isCheckingPendingTransactions = true
-        
-        let pendingTxManager = PendingTransactionManager.shared
-        
-        // Check for pending transactions (polling takes care of status updates)
-        if pendingTxManager.hasPendingTransactions(for: tx.coin.address, chain: tx.coin.chain) {
-            // Get the oldest pending transaction for user feedback
-            if let oldestPending = pendingTxManager.getOldestPendingTransaction(for: tx.coin.address, chain: tx.coin.chain) {
-                let elapsedSeconds = pendingTxManager.getElapsedSeconds(for: oldestPending)
-                hasPendingTransaction = true
-                pendingTransactionCountdown = elapsedSeconds
-                isCheckingPendingTransactions = false
-                isValidForm = false
-                isLoading = false
-                return true
-            }
-        }
-        
-        // No pending transactions
-        hasPendingTransaction = false
-        pendingTransactionCountdown = 0
-        isCheckingPendingTransactions = false
-        
-        return false
+    private let logger = Logger(subsystem: "send-crypto-logic", category: "transaction")
+    private let blockchainService = BlockChainService.shared
+    private let mediator = Mediator.shared
+    private let fastVaultService = FastVaultService.shared
+    
+    // Services
+    private let sol = SolanaService.shared
+    private let sui = SuiService.shared
+    private let ton = TonService.shared
+    private let utxo = BlockchairService.shared
+    private let ripple = RippleService.shared
+    private let tron = TronService.shared
+    private let balanceService = BalanceService.shared
+    
+    struct ValidationResult {
+        var isValid: Bool
+        var errorTitle: String = ""
+        var errorMessage: String? = nil
+        var showAlert: Bool = false
+        var showAmountAlert: Bool = false
+        var showAddressAlert: Bool = false
     }
     
-    private func calculateUTXOPlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
+    func loadGasInfoForSending(tx: SendTransaction) async -> (gas: BigInt, fee: BigInt, gasLimit: BigInt?)? {
+        do {
+            let specific = try await blockchainService.fetchSpecific(tx: tx)
+            let gas = specific.gas
+            var fee = specific.fee
+            
+            // For UTXO and Cardano chains, calculate actual total fee using WalletCore plan.fee (like Android)
+            if tx.coin.chainType == .UTXO || tx.coin.chainType == .Cardano {
+                if tx.amountInRaw > 0 {
+                    // Only calculate accurate fee when user has entered an amount
+                    fee = try await calculateUTXOPlanFee(tx: tx, chainSpecific: specific)
+                } else {
+                    // Initial state - no amount yet, use 0 to indicate fee not calculated yet
+                    fee = BigInt.zero
+                }
+            }
+            
+            return (gas: gas, fee: fee, gasLimit: specific.gasLimit)
+        } catch {
+            print("error fetching data: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    func loadFastVault(tx: SendTransaction, vault: Vault) async -> Bool {
+        let isExist = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
+        let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
+        
+        return isExist && !isLocalBackup
+    }
+    
+    func calculateUTXOPlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
         guard let vault = ApplicationState.shared.currentVault else {
             throw HelperError.runtimeError("No vault available for UTXO fee calculation")
         }
@@ -666,7 +256,6 @@ class SendCryptoViewModel: ObservableObject {
         if actualAmount == 0 {
             throw HelperError.runtimeError("Enter an amount to calculate accurate UTXO fees")
         }
-        
         
         // Force fresh UTXO fetch for fee calculation to avoid stale cache
         await BlockchairService.shared.clearUTXOCache(for: tx.coin)
@@ -704,13 +293,219 @@ class SendCryptoViewModel: ObservableObject {
         if planFee > 0 {
             return planFee
         }
-                
+        
         // If WalletCore returns 0, it means insufficient balance
         // Return 0 and let the form validation handle it via tx.isAmountExceeded
         return BigInt.zero
     }
     
-    /// Recalculate UTXO-based fees when amount changes (UTXO and Cardano chains)
+    func validateForm(tx: SendTransaction, hasPendingTransaction: Bool) async -> ValidationResult {
+        var result = ValidationResult(isValid: true)
+        
+        // Check for pending Cosmos transactions that could cause nonce conflicts
+        if hasPendingTransaction && tx.coin.chain.supportsPendingTransactions {
+             result.isValid = false
+             return result
+        }
+        
+        let amount = tx.amountDecimal
+        let gasFee = tx.gasDecimal
+        
+        if amount <= 0 {
+            result.errorTitle = "error"
+            result.errorMessage = "positiveAmountError"
+            result.showAmountAlert = true
+            logger.log("Invalid or non-positive amount.")
+            result.isValid = false
+            return result
+        }
+        
+        if gasFee == 0 && !tx.coin.allowZeroGas() {
+            result.errorTitle = "error"
+            result.errorMessage = "noGasEstimation"
+            result.showAmountAlert = true
+            logger.log("No gas estimation.")
+            result.isValid = false
+            return result
+        }
+        
+        if gasFee < 0 {
+            result.errorTitle = "error"
+            result.errorMessage = "nonNegativeFeeError"
+            result.showAmountAlert = true
+            logger.log("Invalid or negative fee.")
+            result.isValid = false
+            return result
+        }
+        
+        if tx.isAmountExceeded {
+            result.errorTitle = "error"
+            result.errorMessage = "walletBalanceExceededError"
+            result.showAmountAlert = true
+            logger.log("Total transaction cost exceeds wallet balance.")
+            result.isValid = false
+            return result
+        }
+        
+        // check UTXO minimum amount and fee validation
+        if tx.coin.chainType == .UTXO {
+            let dustThreshold = tx.coin.coinType.getFixedDustThreshold()
+            if tx.amountInRaw < dustThreshold {
+                result.errorTitle = "error"
+                result.errorMessage = "amount is below the dust threshold."
+                result.showAmountAlert = true
+                result.isValid = false
+                return result
+            }
+            
+            // Check if WalletCore returned 0 fee (insufficient balance for UTXO transaction)
+            if tx.fee == 0 && tx.amountInRaw > 0 {
+                result.errorTitle = "error"
+                result.errorMessage = "walletBalanceExceededError"
+                result.showAmountAlert = true
+                logger.log("Insufficient UTXO balance to cover transaction and fees.")
+                result.isValid = false
+                return result
+            }
+        }
+        
+        // Validate To Address
+        let validToAddress = await validateToAddress(tx: tx)
+        if !validToAddress.isValid {
+            result.errorTitle = validToAddress.errorTitle
+            result.errorMessage = validToAddress.errorMessage
+            result.showAddressAlert = validToAddress.showAddressAlert
+            result.isValid = false
+            return result
+        }
+        
+        if !tx.coin.isNativeToken {
+            do {
+                let evmToken = try await blockchainService.fetchSpecific(tx: tx)
+                let (hasEnoughFees, feeErrorMsg) = await tx.hasEnoughNativeTokensToPayTheFees(specific: evmToken)
+                if !hasEnoughFees {
+                    result.errorTitle = "error"
+                    result.errorMessage = feeErrorMsg
+                    result.showAlert = true
+                    logger.log("\(feeErrorMsg)")
+                    result.isValid = false
+                }
+            } catch {
+                let fetchErrorMsg = "Failed to fetch specific token data: \(tx.coin.ticker)"
+                logger.log("\(fetchErrorMsg)")
+                result.errorTitle = "error"
+                result.errorMessage = fetchErrorMsg
+                result.showAlert = true
+                result.isValid = false
+            }
+        }
+        
+        // Cardano-specific validation
+        if tx.coin.chain == .cardano && !tx.sendMaxAmount {
+            let amountInLovelaces = tx.amountInRaw
+            let totalBalance = tx.coin.rawBalance
+            let estimatedFee = tx.fee
+            
+            let validation = CardanoHelper.validateUTXORequirements(
+                sendAmount: amountInLovelaces,
+                totalBalance: totalBalance.toBigInt(),
+                estimatedFee: estimatedFee
+            )
+            
+            if !validation.isValid {
+                result.errorTitle = "error"
+                result.errorMessage = validation.errorMessage ?? "Cardano UTXO validation failed"
+                result.showAlert = true
+                logger.log("Cardano UTXO validation failed: \(validation.errorMessage ?? "Unknown error")")
+                result.isValid = false
+            }
+        }
+        
+        // DOT-specific validation
+        if tx.coin.chain == .polkadot {
+            let totalBalance = BigInt(tx.coin.rawBalance) ?? BigInt.zero
+            let totalTransactionCost = tx.amountInRaw + tx.gas
+            let remainingBalance = totalBalance - totalTransactionCost
+            
+            if !tx.sendMaxAmount && remainingBalance < PolkadotHelper.defaultExistentialDeposit && remainingBalance > 0 {
+                result.errorTitle = "error"
+                result.errorMessage = "Keep account balance above 1 DOT. The remaining funds will be lost if balance is below 1 DOT"
+                result.showAlert = true
+                logger.log("DOT transaction would leave balance below existential deposit")
+                result.isValid = false
+            }
+        }
+        
+        return result
+    }
+    
+    func validateToAddress(tx: SendTransaction) async -> ValidationResult {
+        var result = ValidationResult(isValid: true)
+        
+        guard !tx.toAddress.isEmpty else {
+            result.errorTitle = "invalidAddress"
+            result.errorMessage = "emptyAddressField"
+            result.showAddressAlert = true
+            logger.log("Empty address field.")
+            result.isValid = false
+            return result
+        }
+        
+        do {
+            let resolvedAddress = try await AddressService.resolveInput(tx.toAddress, chain: tx.coin.chain)
+            // Mutate tx address on MainActor
+            await MainActor.run {
+                tx.toAddress = resolvedAddress
+            }
+        } catch {
+            result.errorTitle = "error"
+            result.errorMessage = "validAddressDomainError"
+            result.showAddressAlert = true
+            logger.log("Please enter a valid address for the selected blockchain.")
+            result.isValid = false
+            return result
+        }
+        
+        let isValid = AddressService.validateAddress(address: tx.toAddress, chain: tx.coin.chain)
+        if !isValid {
+             result.errorTitle = "error"
+             result.errorMessage = "validAddressError"
+             result.showAddressAlert = true
+             logger.log("Invalid address.")
+             result.isValid = false
+             return result
+        }
+        
+        return result
+    }
+    
+    func convertFiatToCoin(newValue: String, tx: SendTransaction) {
+        let newValueDecimal = newValue.toDecimal()
+        if newValueDecimal > 0 {
+            let newValueCoin = newValueDecimal / Decimal(tx.coin.price)
+            let truncatedValueCoin = newValueCoin.truncated(toPlaces: tx.coin.decimals)
+            tx.amount = truncatedValueCoin.formatToDecimal(digits: tx.coin.decimals)
+            tx.sendMaxAmount = false
+        } else {
+            tx.amount = ""
+        }
+    }
+    
+    func convertToFiat(newValue: String, tx: SendTransaction, setMaxValue: Bool = false) {
+        let newValueDecimal = newValue.toDecimal()
+        if newValueDecimal > 0 {
+            let newValueFiat = newValueDecimal * Decimal(tx.coin.price)
+            let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2)
+            tx.amountInFiat = truncatedValueFiat.formatToDecimal(digits: tx.coin.decimals)
+            tx.sendMaxAmount = setMaxValue
+            
+            // Recalculate UTXO-based fees when amount changes
+            recalculateUTXOFeesIfNeeded(tx: tx)
+        } else {
+            tx.amountInFiat = ""
+        }
+    }
+    
     func recalculateUTXOFeesIfNeeded(tx: SendTransaction) {
         guard (tx.coin.chainType == .UTXO || tx.coin.chainType == .Cardano) && tx.amountInRaw > 0 else { 
             return 
@@ -736,5 +531,225 @@ class SendCryptoViewModel: ObservableObject {
                 print("Failed to recalculate UTXO fee: \(error.localizedDescription)")
             }
         }
+    }
+    
+    func setMaxValues(tx: SendTransaction, percentage: Double = 100) async {
+        let coinName = tx.coin.chain.name.lowercased()
+        let key: String = "\(tx.fromAddress)-\(coinName)"
+        
+        switch tx.coin.chain {
+        case .bitcoin,.dogecoin,.litecoin,.bitcoinCash,.dash, .zcash:
+            await MainActor.run { tx.sendMaxAmount = percentage == 100 }
+            let amount = await utxo.getByKey(key: key)?.address?.balanceInBTC ?? "0.0"
+            await MainActor.run { tx.amount = amount }
+            await MainActor.run { setPercentageAmount(tx: tx, for: percentage) }
+            await MainActor.run { convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount) }
+            
+        case .cardano:
+            await MainActor.run { tx.sendMaxAmount = percentage == 100 }
+            await balanceService.updateBalance(for: tx.coin)
+            
+            let gas = BigInt.zero
+            let maxDecimals = tx.coin.decimals > 0 ? tx.coin.decimals - 1 : tx.coin.decimals
+            let amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: maxDecimals))"
+            await MainActor.run { tx.amount = amount }
+            await MainActor.run { setPercentageAmount(tx: tx, for: percentage) }
+            await MainActor.run { convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount) }
+            
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync,.ethereumSepolia, .mantle, .hyperliquid, .sei:
+            do {
+                if tx.coin.isNativeToken {
+                    let evm = try await blockchainService.fetchSpecific(tx: tx)
+                    let totalFeeWei = evm.fee
+                    await MainActor.run {
+                        tx.amount = "\(tx.coin.getMaxValue(totalFeeWei).formatToDecimal(digits: tx.coin.decimals))"
+                        setPercentageAmount(tx: tx, for: percentage)
+                    }
+                } else {
+                    await MainActor.run {
+                        tx.amount = "\(tx.coin.getMaxValue(0))"
+                        setPercentageAmount(tx: tx, for: percentage)
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    tx.amount = "\(tx.coin.getMaxValue(0))"
+                    setPercentageAmount(tx: tx, for: percentage)
+                }
+                print("Failed to get EVM balance, error: \(error.localizedDescription)")
+            }
+            await MainActor.run { convertToFiat(newValue: tx.amount, tx: tx) }
+            
+        case .solana:
+            do{
+                if tx.coin.isNativeToken {
+                    let rawBalance = try await sol.getSolanaBalance(coin: tx.coin)
+                    await MainActor.run {
+                        tx.coin.rawBalance = rawBalance
+                        tx.amount = "\(tx.coin.getMaxValue(SolanaHelper.defaultFeeInLamports).formatToDecimal(digits: tx.coin.decimals))"
+                        setPercentageAmount(tx: tx, for: percentage)
+                    }
+                } else {
+                    await MainActor.run {
+                        tx.amount = "\(tx.coin.getMaxValue(0))"
+                        setPercentageAmount(tx: tx, for: percentage)
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    tx.amount = "\(tx.coin.getMaxValue(0))"
+                    setPercentageAmount(tx: tx, for: percentage)
+                }
+                print("Failed to get SOLANA balance, error: \(error.localizedDescription)")
+            }
+            await MainActor.run { convertToFiat(newValue: tx.amount, tx: tx) }
+            
+        case .sui:
+            do {
+                let rawBalance = try await sui.getBalance(coin: tx.coin)
+                await MainActor.run { tx.coin.rawBalance = rawBalance }
+                
+                if tx.coin.isNativeToken {
+                    var gas = BigInt.zero
+                    
+                    if percentage == 100 {
+                        let originalAmount = tx.amount
+                        let maxAmount = tx.coin.rawBalance.toBigInt(decimals: tx.coin.decimals)
+                        let maxDecimal = Decimal(maxAmount) / pow(10, tx.coin.decimals)
+                        await MainActor.run {
+                            tx.amount = "\(maxDecimal.formatToDecimal(digits: tx.coin.decimals))"
+                            tx.sendMaxAmount = true
+                        }
+                        
+                        do {
+                            let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
+                            if case .Sui(_, _, let gasBudget) = chainSpecific {
+                                gas = gasBudget
+                            }
+                        } catch {
+                            print("⚠️ Sui dynamic fee calculation failed, using default: \(error.localizedDescription)")
+                            gas = (BigInt(3000000) * 115) / 100
+                        }
+                        
+                        await MainActor.run {
+                            tx.sendMaxAmount = false
+                            tx.amount = originalAmount
+                        }
+                    }
+                    
+                    await MainActor.run {
+                        tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
+                        setPercentageAmount(tx: tx, for: percentage)
+                        convertToFiat(newValue: tx.amount, tx: tx)
+                    }
+                } else {
+                    await MainActor.run {
+                        tx.amount = "\(tx.coin.getMaxValue(0))"
+                        setPercentageAmount(tx: tx, for: percentage)
+                    }
+                }
+            } catch {
+                print("⚠️ Failed to load Sui balance: \(error.localizedDescription)")
+            }
+            
+        case .kujira, .gaiaChain, .mayaChain, .thorChain, .thorChainStagenet, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash:
+            await balanceService.updateBalance(for: tx.coin)
+            
+            var gas = BigInt.zero
+            if percentage == 100 && tx.coin.isNativeToken {
+                gas = BigInt(tx.gasDecimal.description,radix:10) ?? 0
+            }
+            
+            await MainActor.run {
+                tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
+                setPercentageAmount(tx: tx, for: percentage)
+                convertToFiat(newValue: tx.amount, tx: tx)
+            }
+            
+        case .polkadot:
+            do {
+                await MainActor.run { tx.sendMaxAmount = percentage == 100 }
+                await balanceService.updateBalance(for: tx.coin)
+                
+                var gas = BigInt.zero
+                let dot = try await blockchainService.fetchSpecific(tx: tx)
+                gas = dot.gas
+                
+                await MainActor.run {
+                    tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
+                    setPercentageAmount(tx: tx, for: percentage)
+                    convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
+                }
+            } catch {
+                await MainActor.run {
+                    tx.amount = "\(tx.coin.getMaxValue(0))"
+                    setPercentageAmount(tx: tx, for: percentage)
+                    convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
+                }
+                print("Failed to get Polkadot dynamic fee, error: \(error.localizedDescription)")
+            }
+            
+        case .ton:
+            do {
+                await MainActor.run { tx.sendMaxAmount = percentage == 100 }
+                let rawBalance: String
+                if tx.coin.isNativeToken {
+                    rawBalance = try await ton.getBalance(tx.coin)
+                } else {
+                    rawBalance = try await ton.getJettonBalance(tx.coin)
+                }
+
+                await MainActor.run {
+                    tx.coin.rawBalance = rawBalance
+                    let gasForMax: BigInt = tx.coin.isNativeToken && percentage != 100 ? TonHelper.defaultFee : 0
+                    tx.amount = "\(tx.coin.getMaxValue(gasForMax).formatToDecimal(digits: tx.coin.decimals))"
+                    setPercentageAmount(tx: tx, for: percentage)
+                    convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
+                }
+            } catch {
+                print("fail to load ton balances,error:\(error.localizedDescription)")
+            }
+
+        case .ripple:
+            do {
+                let rawBalance = try await ripple.getBalance(tx.coin)
+                await MainActor.run {
+                    tx.coin.rawBalance = rawBalance
+                    var gas = BigInt.zero
+                    if percentage == 100 {
+                        gas = tx.coin.feeDefault.toBigInt()
+                    }
+                    tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
+                    setPercentageAmount(tx: tx, for: percentage)
+                    convertToFiat(newValue: tx.amount, tx: tx)
+                }
+            } catch {
+                print("fail to load ripple balances,error:\(error.localizedDescription)")
+            }
+            
+        case .tron:
+            do {
+                let rawBalance = try await tron.getBalance(coin: tx.coin)
+                await MainActor.run {
+                    tx.coin.rawBalance = rawBalance
+                    var gas = BigInt.zero
+                    if percentage == 100 {
+                        gas = tx.coin.feeDefault.toBigInt()
+                    }
+                    tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
+                    setPercentageAmount(tx: tx, for: percentage)
+                    convertToFiat(newValue: tx.amount, tx: tx)
+                }
+            } catch {
+                print("fail to load TRON balances,error:\(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private func setPercentageAmount(tx: SendTransaction, for percentage: Double) {
+        let max = tx.amount
+        let multiplier = (Decimal(percentage) / 100)
+        let amountDecimal = max.toDecimal() * multiplier
+        tx.amount = amountDecimal.formatToDecimal(digits: tx.coin.decimals)
     }
 }

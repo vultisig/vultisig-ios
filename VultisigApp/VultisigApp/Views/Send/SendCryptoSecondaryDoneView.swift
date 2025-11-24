@@ -190,5 +190,5 @@ struct SendCryptoSecondaryDoneView: View {
             toAddress: "thor1kkmnmgvd85puk8zsvqfxx36cqy9mxqret39t8z",
             fee: ("0.001 RUNE", "US$ 0.00")
         )
-    )
+    ).environmentObject(HomeViewModel())
 }

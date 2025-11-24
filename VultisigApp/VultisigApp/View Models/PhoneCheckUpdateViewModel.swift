@@ -16,11 +16,14 @@ class PhoneCheckUpdateViewModel: ObservableObject {
     @Published var latestVersionString: String = ""
     @Published var currentVersionString: String = ""
     
+    private let logic = PhoneCheckUpdateLogic()
+    
     func checkForUpdates(isAutoCheck: Bool = false) {
-        var currentVersion = currentAppVersion()
+        let currentVersion = logic.currentAppVersion()
         let bundleID = Bundle.main.bundleIdentifier ?? ""
         
-        fetchLatestAppStoreVersion(bundleID: bundleID) { latestVersion in
+        logic.fetchLatestAppStoreVersion(bundleID: bundleID) { [weak self] latestVersion in
+            guard let self else { return }
             guard let latestVersion = latestVersion else {
                 self.showErrorMessage()
                 print("Could not fetch the latest version from the App Store.")
@@ -28,9 +31,9 @@ class PhoneCheckUpdateViewModel: ObservableObject {
             }
             
             let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0"
-            currentVersion += "." + build
+            let fullCurrentVersion = currentVersion + "." + build
             
-            let comparisonResult = self.compareVersions(currentVersion, latestVersion)
+            let comparisonResult = self.logic.compareVersions(fullCurrentVersion, latestVersion)
             DispatchQueue.main.async {
                 switch comparisonResult {
                 case .orderedAscending:
@@ -49,7 +52,7 @@ class PhoneCheckUpdateViewModel: ObservableObject {
                     self.showDetails = true
                 }
                 
-                self.updateTextValues(currentVersion, latestVersion)
+                self.updateTextValues(fullCurrentVersion, latestVersion)
             }
         }
     }
@@ -58,6 +61,17 @@ class PhoneCheckUpdateViewModel: ObservableObject {
         currentVersionString = "Version " + currentVersion
         latestVersionString = "Version " + latestVersion
     }
+    
+    func showErrorMessage() {
+        DispatchQueue.main.async {
+            self.showError = true
+        }
+    }
+}
+
+// MARK: - PhoneCheckUpdateLogic
+
+struct PhoneCheckUpdateLogic {
     
     func currentAppVersion() -> String {
         if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
@@ -75,7 +89,6 @@ class PhoneCheckUpdateViewModel: ObservableObject {
         
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
-                self.showErrorMessage()
                 print("Error fetching data from App Store: \(error.localizedDescription)")
                 completion(nil)
                 return
@@ -94,7 +107,6 @@ class PhoneCheckUpdateViewModel: ObservableObject {
                     completion(nil)
                 }
             } catch {
-                self.showErrorMessage()
                 print("Error parsing App Store data: \(error.localizedDescription)")
                 completion(nil)
             }
@@ -122,11 +134,5 @@ class PhoneCheckUpdateViewModel: ObservableObject {
         }
         
         return .orderedSame
-    }
-    
-    func showErrorMessage() {
-        DispatchQueue.main.async {
-            self.showError = true
-        }
     }
 }

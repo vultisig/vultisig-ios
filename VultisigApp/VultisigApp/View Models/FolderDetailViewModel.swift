@@ -16,26 +16,14 @@ class FolderDetailViewModel: ObservableObject {
     @Published var alertTitle = ""
     @Published var alertDescription = ""
     
+    private let logic = FolderDetailLogic()
+    
     func setData(vaults: [Vault], vaultFolder: Folder, filteredVaults: [Vault]) {
         allVaults = vaults
-        selectedVaults = getContainedVaults(vaults: vaults, vaultFolder: vaultFolder)
+        selectedVaults = logic.getContainedVaults(vaults: vaults, vaultFolder: vaultFolder)
         remainingVaults = filteredVaults.filter({ vault in
             !selectedVaults.contains(vault)
         })
-    }
-    
-    func getContainedVaults(vaults: [Vault], vaultFolder: Folder) -> [Vault] {
-        var containedVaults: [Vault] = []
-        
-        for containedVaultName in vaultFolder.containedVaultNames {
-            for vault in vaults {
-                if vault.name == containedVaultName {
-                    containedVaults.append(vault)
-                }
-            }
-        }
-        
-        return containedVaults
     }
     
     func toggleAlert() {
@@ -52,5 +40,23 @@ class FolderDetailViewModel: ObservableObject {
     func addVault(vault: Vault) {
         selectedVaults.append(vault)
         remainingVaults.removeAll(where: { $0 == vault })
+    }
+}
+
+// MARK: - FolderDetailLogic
+
+struct FolderDetailLogic {
+    func getContainedVaults(vaults: [Vault], vaultFolder: Folder) -> [Vault] {
+        var containedVaults: [Vault] = []
+        
+        for containedVaultName in vaultFolder.containedVaultNames {
+            for vault in vaults {
+                if vault.name == containedVaultName {
+                    containedVaults.append(vault)
+                }
+            }
+        }
+        
+        return containedVaults
     }
 }

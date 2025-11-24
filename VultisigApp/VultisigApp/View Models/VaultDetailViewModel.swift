@@ -14,22 +14,15 @@ class VaultDetailViewModel: ObservableObject {
     @Published var searchText: String = ""
     @Published var vaultBanners: [VaultBannerType] = []
     
-    private let groupedChainListBuilder = GroupedChainListBuilder()
+    private let logic = VaultDetailLogic()
+    private var updateBalanceTask: Task<Void, Never>?
     
     @AppStorage("appClosedBanners") private var appClosedBanners: [String] = []
     
     var filteredGroups: [GroupedChain] {
-        guard !searchText.isEmpty else {
-            return groups
-        }
-        return groups.filter {
-            $0.name.localizedCaseInsensitiveContains(searchText) || $0.nativeCoin.ticker.localizedCaseInsensitiveContains(searchText)
-        }
+        return logic.filteredGroups(searchText: searchText, groups: groups)
     }
 
-    private let balanceService = BalanceService.shared
-    private var updateBalanceTask: Task<Void, Never>?
-    
     var availableActions: [CoinAction] {
         [.swap,.send,.buy,.receive].filtered
     }
@@ -37,45 +30,29 @@ class VaultDetailViewModel: ObservableObject {
     func updateBalance(vault: Vault) {
         print("Updating balance for vault: \(vault.name)")
         updateBalanceTask?.cancel()
-        updateBalanceTask = Task.detached {
-            await self.balanceService.updateBalances(vault: vault)
+        updateBalanceTask = Task.detached { [weak self] in
+            guard let self else { return }
+            let updatedGroups = await self.logic.updateBalance(vault: vault)
             if !Task.isCancelled {
-                let groups = self.groupedChainListBuilder.groupChains(for: vault, sortedBy: \.totalBalanceInFiatDecimal)
                 await MainActor.run {
-                    self.groups = groups
+                    self.groups = updatedGroups
                 }
             }
         }
     }
     
     func groupChains(vault: Vault) {
-        self.groups = groupedChainListBuilder.groupChains(for: vault, sortedBy: \.totalBalanceInFiatDecimal)
+        self.groups = logic.groupChains(vault: vault)
     }
     
     func getGroupAsync(_ viewModel: CoinSelectionViewModel) {
         Task {@MainActor in
-            selectedGroup = await getGroup(viewModel)
+            selectedGroup = await logic.getGroup(groups: groups, viewModel: viewModel)
         }
     }
     
     func setupBanners(for vault: Vault) {
-        vaultBanners = VaultBannerType.allCases
-            .filter { banner in
-                if banner.isAppBanner && appClosedBanners.contains(banner.rawValue) {
-                    return false
-                } else if vault.closedBanners.contains(banner.rawValue) {
-                    return false
-                }
-                
-                switch banner {
-                case .backupVault:
-                    return !vault.isBackedUp
-                case .upgradeVault:
-                    return vault.libType == .GG20
-                case .followVultisig:
-                    return true
-                }
-            }
+        vaultBanners = logic.setupBanners(for: vault, appClosedBanners: appClosedBanners)
     }
     
     @MainActor
@@ -96,8 +73,31 @@ class VaultDetailViewModel: ObservableObject {
     }
 }
 
-private extension VaultDetailViewModel {
-    func getGroup(_ viewModel: CoinSelectionViewModel) async -> GroupedChain? {
+// MARK: - VaultDetailLogic
+
+struct VaultDetailLogic {
+    private let groupedChainListBuilder = GroupedChainListBuilder()
+    private let balanceService = BalanceService.shared
+    
+    func filteredGroups(searchText: String, groups: [GroupedChain]) -> [GroupedChain] {
+        guard !searchText.isEmpty else {
+            return groups
+        }
+        return groups.filter {
+            $0.name.localizedCaseInsensitiveContains(searchText) || $0.nativeCoin.ticker.localizedCaseInsensitiveContains(searchText)
+        }
+    }
+    
+    func updateBalance(vault: Vault) async -> [GroupedChain] {
+        await balanceService.updateBalances(vault: vault)
+        return groupedChainListBuilder.groupChains(for: vault, sortedBy: \.totalBalanceInFiatDecimal)
+    }
+    
+    func groupChains(vault: Vault) -> [GroupedChain] {
+        return groupedChainListBuilder.groupChains(for: vault, sortedBy: \.totalBalanceInFiatDecimal)
+    }
+    
+    func getGroup(groups: [GroupedChain], viewModel: CoinSelectionViewModel) async -> GroupedChain? {
         for group in groups {
             let actions = await viewModel.actionResolver.resolveActions(for: group.chain)
             
@@ -108,6 +108,26 @@ private extension VaultDetailViewModel {
             }
         }
         return groups.first
+    }
+    
+    func setupBanners(for vault: Vault, appClosedBanners: [String]) -> [VaultBannerType] {
+        return VaultBannerType.allCases
+            .filter { banner in
+                if banner.isAppBanner && appClosedBanners.contains(banner.rawValue) {
+                    return false
+                } else if vault.closedBanners.contains(banner.rawValue) {
+                    return false
+                }
+                
+                switch banner {
+                case .backupVault:
+                    return !vault.isBackedUp
+                case .upgradeVault:
+                    return vault.libType == .GG20
+                case .followVultisig:
+                    return true
+                }
+            }
     }
 }
 

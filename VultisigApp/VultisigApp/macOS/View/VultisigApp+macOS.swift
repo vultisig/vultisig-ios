@@ -13,15 +13,15 @@ extension VultisigApp {
         ContentView(navigationRouter: navigationRouter)
             .environmentObject(applicationState) // Shared monolithic mutable state
             .environmentObject(vaultDetailViewModel)
-            .environmentObject(coinSelectionViewModel)
             .environmentObject(accountViewModel)
-            .environmentObject(deeplinkViewModel)
             .environmentObject(settingsViewModel)
-            .environmentObject(homeViewModel)
             .environmentObject(vultExtensionViewModel)
             .environmentObject(phoneCheckUpdateViewModel)
             .environmentObject(globalStateViewModel)
             .environmentObject(sheetPresentedCounterManager)
+            .environmentObject(homeViewModel)
+            .environmentObject(coinSelectionViewModel)
+            .environmentObject(deeplinkViewModel)
             .buttonStyle(BorderlessButtonStyle())
             .frame(minWidth: 900, minHeight: 600)
             .onAppear{

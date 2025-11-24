@@ -24,7 +24,6 @@
 		130652562EA7CEC6002CAD99 /* BondedNodesResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130652552EA7CEBE002CAD99 /* BondedNodesResponse.swift */; };
 		130652582EA7CF87002CAD99 /* BondedNodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130652572EA7CF82002CAD99 /* BondedNodes.swift */; };
 		1306525A2EA7D1DE002CAD99 /* THORChainNodesResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130652592EA7D1DB002CAD99 /* THORChainNodesResponse.swift */; };
-		1306525C2EA7D7D7002CAD99 /* DefiTHORChainBondViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1306525B2EA7D7CF002CAD99 /* DefiTHORChainBondViewModel.swift */; };
 		130652612EA7DBA7002CAD99 /* ChurnEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1306525D2EA7DBA7002CAD99 /* ChurnEntry.swift */; };
 		130652622EA7DBA7002CAD99 /* NodeDetailsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1306525F2EA7DBA7002CAD99 /* NodeDetailsResponse.swift */; };
 		13095A362E3264E6009F8785 /* HapticFeedbackManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */; };
@@ -46,6 +45,29 @@
 		131603482E60A450001ED972 /* VaultBackupPasswordScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603472E60A44F001ED972 /* VaultBackupPasswordScreen.swift */; };
 		131603512E60C45D001ED972 /* VaultBackupContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603502E60C453001ED972 /* VaultBackupContainerView.swift */; };
 		131F96E62E7887CF0018BA7B /* Satoshi-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 131F96E22E7887CF0018BA7B /* Satoshi-Medium.otf */; };
+		1321A82C2ED0A4ED004CBB99 /* DefiChainBondedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A8162ED0A4ED004CBB99 /* DefiChainBondedView.swift */; };
+		1321A82D2ED0A4ED004CBB99 /* DefiChainLPsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A8262ED0A4ED004CBB99 /* DefiChainLPsViewModel.swift */; };
+		1321A82E2ED0A4ED004CBB99 /* DefiChainAvailableNodesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A8152ED0A4ED004CBB99 /* DefiChainAvailableNodesView.swift */; };
+		1321A82F2ED0A4ED004CBB99 /* DefiChainLPPositionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A8192ED0A4ED004CBB99 /* DefiChainLPPositionView.swift */; };
+		1321A8302ED0A4ED004CBB99 /* DefiChainSelectPositionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A81E2ED0A4ED004CBB99 /* DefiChainSelectPositionsScreen.swift */; };
+		1321A8312ED0A4ED004CBB99 /* DefiChainStakeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A8282ED0A4ED004CBB99 /* DefiChainStakeViewModel.swift */; };
+		1321A8322ED0A4ED004CBB99 /* LPPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A80F2ED0A4ED004CBB99 /* LPPosition.swift */; };
+		1321A8332ED0A4ED004CBB99 /* DefiChainStakedPositionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A8212ED0A4ED004CBB99 /* DefiChainStakedPositionView.swift */; };
+		1321A8342ED0A4ED004CBB99 /* DefiChainMainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A82A2ED0A4ED004CBB99 /* DefiChainMainScreen.swift */; };
+		1321A8352ED0A4ED004CBB99 /* DefiChainMainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A8272ED0A4ED004CBB99 /* DefiChainMainViewModel.swift */; };
+		1321A8362ED0A4ED004CBB99 /* BondNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A80C2ED0A4ED004CBB99 /* BondNode.swift */; };
+		1321A8372ED0A4ED004CBB99 /* DefiChainPositionType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A80E2ED0A4ED004CBB99 /* DefiChainPositionType.swift */; };
+		1321A8382ED0A4ED004CBB99 /* DefiChainActiveNodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A8142ED0A4ED004CBB99 /* DefiChainActiveNodeView.swift */; };
+		1321A8392ED0A4ED004CBB99 /* DefiChainLPsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A81A2ED0A4ED004CBB99 /* DefiChainLPsView.swift */; };
+		1321A83A2ED0A4ED004CBB99 /* DefiChainActiveNodesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A8132ED0A4ED004CBB99 /* DefiChainActiveNodesView.swift */; };
+		1321A83B2ED0A4ED004CBB99 /* DefiChainLPPositionSkeletonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A8182ED0A4ED004CBB99 /* DefiChainLPPositionSkeletonView.swift */; };
+		1321A83C2ED0A4ED004CBB99 /* BondNodeStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A8122ED0A4ED004CBB99 /* BondNodeStateView.swift */; };
+		1321A83D2ED0A4ED004CBB99 /* StakePosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A8102ED0A4ED004CBB99 /* StakePosition.swift */; };
+		1321A83E2ED0A4ED004CBB99 /* BondPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A80D2ED0A4ED004CBB99 /* BondPosition.swift */; };
+		1321A83F2ED0A4ED004CBB99 /* DefiChainBondViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A8252ED0A4ED004CBB99 /* DefiChainBondViewModel.swift */; };
+		1321A8402ED0A4ED004CBB99 /* DefiChainBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A81C2ED0A4ED004CBB99 /* DefiChainBalanceView.swift */; };
+		1321A8412ED0A4ED004CBB99 /* DefiChainStakedPositionSkeletonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A8202ED0A4ED004CBB99 /* DefiChainStakedPositionSkeletonView.swift */; };
+		1321A8422ED0A4ED004CBB99 /* DefiChainStakedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A8222ED0A4ED004CBB99 /* DefiChainStakedView.swift */; };
 		1321D74A2E8F13D300ABE613 /* NativeToolbarItem+PreferenceKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321D7492E8F13BD00ABE613 /* NativeToolbarItem+PreferenceKey.swift */; };
 		132309FA2EAFFD7B00CD60F9 /* FunctionCallRouteBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132309F92EAFFD7B00CD60F9 /* FunctionCallRouteBuilder.swift */; };
 		132309FC2EAFFFD100CD60F9 /* FunctionCallPairScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132309FB2EAFFFD100CD60F9 /* FunctionCallPairScreen.swift */; };
@@ -114,8 +136,6 @@
 		134A9FCF2E96B4B500030C56 /* VaultBannerCarouselIndicators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FCE2E96B4B000030C56 /* VaultBannerCarouselIndicators.swift */; };
 		134E23F22EAA61CD00952600 /* DefiPositions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E23F12EAA61C500952600 /* DefiPositions.swift */; };
 		134E23F72EAA6F5500952600 /* THORChainAssetFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E23F62EAA6F5100952600 /* THORChainAssetFactory.swift */; };
-		134E23FA2EAA70F700952600 /* DefiTHORChainSelectPositionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E23F92EAA70EE00952600 /* DefiTHORChainSelectPositionsScreen.swift */; };
-		134E23FC2EAA8BC600952600 /* DefiTHORChainStakeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E23FB2EAA8BC600952600 /* DefiTHORChainStakeViewModel.swift */; };
 		134E8D7F2E451F6F0086EBC4 /* PreferredAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D7E2E451F6C0086EBC4 /* PreferredAsset.swift */; };
 		134E8D812E451F800086EBC4 /* PreferredAssetFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D802E451F7A0086EBC4 /* PreferredAssetFactory.swift */; };
 		134FF3662EBA48C000683169 /* TransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134FF3652EBA48B600683169 /* TransactionBuilder.swift */; };
@@ -138,6 +158,13 @@
 		135B6BBF2EA1470F00DD7140 /* ChainNotFoundEmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B6BBE2EA1470600DD7140 /* ChainNotFoundEmptyStateView.swift */; };
 		135B9FD32E7C8D6E0087D85D /* VaultEditCellContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B9FD22E7C8D6D0087D85D /* VaultEditCellContainer.swift */; };
 		135B9FD72E7C8DC60087D85D /* View+PlainListItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B9FD62E7C8DC00087D85D /* View+PlainListItem.swift */; };
+		135C14902ED0E46300459EFC /* THORChainStakeInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C148F2ED0E45B00459EFC /* THORChainStakeInteractor.swift */; };
+		135C14922ED0E49000459EFC /* StakeInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C14912ED0E48C00459EFC /* StakeInteractor.swift */; };
+		135C14952ED0E60700459EFC /* DefiInteractorResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C14942ED0E60100459EFC /* DefiInteractorResolver.swift */; };
+		135C14992ED0E71800459EFC /* BondInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C14982ED0E71800459EFC /* BondInteractor.swift */; };
+		135C149A2ED0E71800459EFC /* THORChainBondInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C14972ED0E71800459EFC /* THORChainBondInteractor.swift */; };
+		135C149E2ED0E96A00459EFC /* THORChainLPsInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C149C2ED0E96A00459EFC /* THORChainLPsInteractor.swift */; };
+		135C149F2ED0E96A00459EFC /* LPsInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C149D2ED0E96A00459EFC /* LPsInteractor.swift */; };
 		135C7AC52EA12649002F879A /* DefiMainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7AC42EA12646002F879A /* DefiMainViewModel.swift */; };
 		135C7ACD2EA12C69002F879A /* DefiSelectChainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7ACA2EA12C69002F879A /* DefiSelectChainScreen.swift */; };
 		135C7AD22EA13037002F879A /* DefiSelectChainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7AD12EA13033002F879A /* DefiSelectChainViewModel.swift */; };
@@ -150,14 +177,11 @@
 		135C7AE42EA14359002F879A /* VaultDefiChainsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7AE32EA1434E002F879A /* VaultDefiChainsService.swift */; };
 		135C88192E3AADB800FD097D /* GradientListSeparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C88182E3AADB000FD097D /* GradientListSeparator.swift */; };
 		1363B4FC2EA6901600818DF7 /* DateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1363B4FB2EA6900D00818DF7 /* DateFormatter.swift */; };
-		1363B4FE2EA6955500818DF7 /* LPPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1363B4FD2EA6955200818DF7 /* LPPosition.swift */; };
-		1363B5002EA6967200818DF7 /* DefiTHORChainLPPositionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1363B4FF2EA6967200818DF7 /* DefiTHORChainLPPositionView.swift */; };
 		1364A0942E9587C60023E869 /* BannersCarousel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1364A0932E9587C00023E869 /* BannersCarousel.swift */; };
 		1368C2732E832CC100BB240D /* VaultListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368C2722E832CBE00BB240D /* VaultListView.swift */; };
 		1368C2752E832EDB00BB240D /* FolderDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368C2742E832ED800BB240D /* FolderDetailView.swift */; };
 		1368C2772E83355E00BB240D /* EditFolderScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368C2762E83355B00BB240D /* EditFolderScreen.swift */; };
 		1368C2792E833DED00BB240D /* VaultFolderCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368C2782E833DE500BB240D /* VaultFolderCellView.swift */; };
-		1368D2CF2EA26B7B009A91CA /* DefiTHORChainMainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368D2CE2EA26B72009A91CA /* DefiTHORChainMainScreen.swift */; };
 		1368D2D32EA27391009A91CA /* DefiButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368D2D22EA2738F009A91CA /* DefiButton.swift */; };
 		1369C2212E34006F0002D815 /* WasmExecuteContractPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1369C2202E34006D0002D815 /* WasmExecuteContractPayload.swift */; };
 		136A12DC2E395F080001B1CA /* SecurityScannerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136A12DB2E395F080001B1CA /* SecurityScannerViewModel.swift */; };
@@ -184,7 +208,6 @@
 		137FA58C2EABC35A00843DB1 /* StakingDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137FA58B2EABC35A00843DB1 /* StakingDetails.swift */; };
 		137FA58E2EABC37C00843DB1 /* THORChainStakingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137FA58D2EABC37C00843DB1 /* THORChainStakingService.swift */; };
 		137FA5922EABC38D00843DB1 /* THORChainStakingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137FA5902EABC38D00843DB1 /* THORChainStakingAPI.swift */; };
-		137FA5952EABE38A00843DB1 /* DefiTHORChainStakedPositionSkeletonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137FA5942EABE38A00843DB1 /* DefiTHORChainStakedPositionSkeletonView.swift */; };
 		138538DD2E61F581006DF7C7 /* VultiServerAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138538DC2E61F581006DF7C7 /* VultiServerAPI.swift */; };
 		138538E02E61F5D5006DF7C7 /* ResendVaultShareRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138538DF2E61F5CF006DF7C7 /* ResendVaultShareRequest.swift */; };
 		138538E22E61F681006DF7C7 /* VultiServerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138538E12E61F67C006DF7C7 /* VultiServerService.swift */; };
@@ -253,19 +276,7 @@
 		13A0786C2E846FBA0093496F /* View+ListSectionSpacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A0786B2E846FBA0093496F /* View+ListSectionSpacing.swift */; };
 		13A078702E8484280093496F /* ListBottomSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A0786F2E8484250093496F /* ListBottomSection.swift */; };
 		13A078722E8488960093496F /* View+SheetStyling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A078712E84888E0093496F /* View+SheetStyling.swift */; };
-		13A657A62EA27B1100323E4C /* DefiTHORChainBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657A52EA27B0500323E4C /* DefiTHORChainBalanceView.swift */; };
-		13A657A92EA283E000323E4C /* DefiTHORChainMainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657A82EA283DB00323E4C /* DefiTHORChainMainViewModel.swift */; };
-		13A657AC2EA283FA00323E4C /* THORChainPositionType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657AB2EA283F500323E4C /* THORChainPositionType.swift */; };
-		13A657B12EA28B8200323E4C /* DefiTHORChainBondedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657B02EA28B7800323E4C /* DefiTHORChainBondedView.swift */; };
-		13A657B62EA28BAE00323E4C /* DefiTHORChainLPsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657B52EA28BAE00323E4C /* DefiTHORChainLPsView.swift */; };
-		13A657B82EA28BBB00323E4C /* DefiTHORChainStakedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657B72EA28BBB00323E4C /* DefiTHORChainStakedView.swift */; };
 		13A657BA2EA2972200323E4C /* ExpandableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657B92EA2971C00323E4C /* ExpandableView.swift */; };
-		13A657BC2EA2977200323E4C /* DefiTHORChainAvailableNodesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657BB2EA2976800323E4C /* DefiTHORChainAvailableNodesView.swift */; };
-		13A657BE2EA2994D00323E4C /* BondNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657BD2EA2994900323E4C /* BondNode.swift */; };
-		13A657C02EA29A9300323E4C /* BondNodeStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657BF2EA29A8F00323E4C /* BondNodeStateView.swift */; };
-		13A657C22EA2A0FC00323E4C /* DefiTHORChainActiveNodesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657C12EA2A0FC00323E4C /* DefiTHORChainActiveNodesView.swift */; };
-		13A657C52EA2A22800323E4C /* BondPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657C42EA2A22200323E4C /* BondPosition.swift */; };
-		13A657C72EA2AC5B00323E4C /* DefiTHORChainActiveNodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657C62EA2AC5900323E4C /* DefiTHORChainActiveNodeView.swift */; };
 		13A657C92EA2BCC400323E4C /* HiddenBalanceText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657C82EA2BCBE00323E4C /* HiddenBalanceText.swift */; };
 		13A899002E43C0FE006F75F0 /* PreferredAssetSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A898FF2E43C0EE006F75F0 /* PreferredAssetSelectionView.swift */; };
 		13A899022E43CEF3006F75F0 /* THORChainTokenMetadataFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A899012E43CEEB006F75F0 /* THORChainTokenMetadataFactory.swift */; };
@@ -278,7 +289,6 @@
 		13A964182EBBD8F60025FB7A /* TCYUnstakeTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A964172EBBD8F60025FB7A /* TCYUnstakeTransactionBuilder.swift */; };
 		13A9641A2EBBDA090025FB7A /* RUJIUnstakeTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A964192EBBDA090025FB7A /* RUJIUnstakeTransactionBuilder.swift */; };
 		13A9641C2EBBEB020025FB7A /* RUJIWithdrawRewardsTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A9641B2EBBEAF90025FB7A /* RUJIWithdrawRewardsTransactionBuilder.swift */; };
-		13AA6CDD2EA8742100760C8D /* DefiTHORChainLPsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AA6CDB2EA8742100760C8D /* DefiTHORChainLPsViewModel.swift */; };
 		13AA6CDE2EA8742100760C8D /* THORChainLPsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AA6CDC2EA8742100760C8D /* THORChainLPsAPI.swift */; };
 		13AA6CE02EA8743F00760C8D /* THORChainPoolStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AA6CDF2EA8743F00760C8D /* THORChainPoolStats.swift */; };
 		13AA6CE32EA8746300760C8D /* THORChainAPIService+LPs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AA6CE22EA8746300760C8D /* THORChainAPIService+LPs.swift */; };
@@ -335,8 +345,6 @@
 		13BD8D4F2E3D49AD0013B67E /* ThemeProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13BD8D3D2E3D49AD0013B67E /* ThemeProtocol.swift */; };
 		13BD8D502E3D49AD0013B67E /* ColorSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13BD8D2B2E3D49AD0013B67E /* ColorSystem.swift */; };
 		13BD8D512E3D49AD0013B67E /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13BD8D292E3D49AD0013B67E /* Color.swift */; };
-		13C02C5D2EA667AC00C12071 /* DefiTHORChainStakedPositionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C02C5C2EA6679C00C12071 /* DefiTHORChainStakedPositionView.swift */; };
-		13C02C5F2EA667DB00C12071 /* StakePosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C02C5E2EA667D600C12071 /* StakePosition.swift */; };
 		13C02C612EA6699C00C12071 /* AmountFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C02C602EA6699900C12071 /* AmountFormatter.swift */; };
 		13C0F79A2EC60C3A00C2A3B8 /* DefiBalanceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C0F7992EC60C3700C2A3B8 /* DefiBalanceService.swift */; };
 		13C0F79F2EC60FE500C2A3B8 /* DefiPositionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C0F79E2EC60FDA00C2A3B8 /* DefiPositionsService.swift */; };
@@ -399,7 +407,6 @@
 		13FB8AB62EA93B4200712A51 /* THORChainLiquidityProviderResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13FB8AB52EA93B4100712A51 /* THORChainLiquidityProviderResponse.swift */; };
 		13FB8AB82EA93B5700712A51 /* THORChainDepthHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13FB8AB72EA93B5700712A51 /* THORChainDepthHistory.swift */; };
 		13FB8ABA2EA93B6A00712A51 /* THORChainLPPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13FB8AB92EA93B6900712A51 /* THORChainLPPosition.swift */; };
-		13FB8ABC2EA93C2F00712A51 /* DefiTHORChainLPPositionSkeletonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13FB8ABB2EA93C2E00712A51 /* DefiTHORChainLPPositionSkeletonView.swift */; };
 		3438005C33774BADE4B163FD /* KyberSwapService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */; };
 		43E0C072714FC369B3B91499 /* HiddenToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCB0CAFF343CC6FF8986E07F /* HiddenToken.swift */; };
 		4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */; };
@@ -1193,7 +1200,6 @@
 		130652552EA7CEBE002CAD99 /* BondedNodesResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondedNodesResponse.swift; sourceTree = "<group>"; };
 		130652572EA7CF82002CAD99 /* BondedNodes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondedNodes.swift; sourceTree = "<group>"; };
 		130652592EA7D1DB002CAD99 /* THORChainNodesResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainNodesResponse.swift; sourceTree = "<group>"; };
-		1306525B2EA7D7CF002CAD99 /* DefiTHORChainBondViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainBondViewModel.swift; sourceTree = "<group>"; };
 		1306525D2EA7DBA7002CAD99 /* ChurnEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChurnEntry.swift; sourceTree = "<group>"; };
 		1306525F2EA7DBA7002CAD99 /* NodeDetailsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetailsResponse.swift; sourceTree = "<group>"; };
 		13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticFeedbackManager.swift; sourceTree = "<group>"; };
@@ -1215,6 +1221,29 @@
 		131603472E60A44F001ED972 /* VaultBackupPasswordScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBackupPasswordScreen.swift; sourceTree = "<group>"; };
 		131603502E60C453001ED972 /* VaultBackupContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBackupContainerView.swift; sourceTree = "<group>"; };
 		131F96E22E7887CF0018BA7B /* Satoshi-Medium.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Satoshi-Medium.otf"; sourceTree = "<group>"; };
+		1321A80C2ED0A4ED004CBB99 /* BondNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondNode.swift; sourceTree = "<group>"; };
+		1321A80D2ED0A4ED004CBB99 /* BondPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondPosition.swift; sourceTree = "<group>"; };
+		1321A80E2ED0A4ED004CBB99 /* DefiChainPositionType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiChainPositionType.swift; sourceTree = "<group>"; };
+		1321A80F2ED0A4ED004CBB99 /* LPPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LPPosition.swift; sourceTree = "<group>"; };
+		1321A8102ED0A4ED004CBB99 /* StakePosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StakePosition.swift; sourceTree = "<group>"; };
+		1321A8122ED0A4ED004CBB99 /* BondNodeStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondNodeStateView.swift; sourceTree = "<group>"; };
+		1321A8132ED0A4ED004CBB99 /* DefiChainActiveNodesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiChainActiveNodesView.swift; sourceTree = "<group>"; };
+		1321A8142ED0A4ED004CBB99 /* DefiChainActiveNodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiChainActiveNodeView.swift; sourceTree = "<group>"; };
+		1321A8152ED0A4ED004CBB99 /* DefiChainAvailableNodesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiChainAvailableNodesView.swift; sourceTree = "<group>"; };
+		1321A8162ED0A4ED004CBB99 /* DefiChainBondedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiChainBondedView.swift; sourceTree = "<group>"; };
+		1321A8182ED0A4ED004CBB99 /* DefiChainLPPositionSkeletonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiChainLPPositionSkeletonView.swift; sourceTree = "<group>"; };
+		1321A8192ED0A4ED004CBB99 /* DefiChainLPPositionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiChainLPPositionView.swift; sourceTree = "<group>"; };
+		1321A81A2ED0A4ED004CBB99 /* DefiChainLPsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiChainLPsView.swift; sourceTree = "<group>"; };
+		1321A81C2ED0A4ED004CBB99 /* DefiChainBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiChainBalanceView.swift; sourceTree = "<group>"; };
+		1321A81E2ED0A4ED004CBB99 /* DefiChainSelectPositionsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiChainSelectPositionsScreen.swift; sourceTree = "<group>"; };
+		1321A8202ED0A4ED004CBB99 /* DefiChainStakedPositionSkeletonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiChainStakedPositionSkeletonView.swift; sourceTree = "<group>"; };
+		1321A8212ED0A4ED004CBB99 /* DefiChainStakedPositionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiChainStakedPositionView.swift; sourceTree = "<group>"; };
+		1321A8222ED0A4ED004CBB99 /* DefiChainStakedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiChainStakedView.swift; sourceTree = "<group>"; };
+		1321A8252ED0A4ED004CBB99 /* DefiChainBondViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiChainBondViewModel.swift; sourceTree = "<group>"; };
+		1321A8262ED0A4ED004CBB99 /* DefiChainLPsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiChainLPsViewModel.swift; sourceTree = "<group>"; };
+		1321A8272ED0A4ED004CBB99 /* DefiChainMainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiChainMainViewModel.swift; sourceTree = "<group>"; };
+		1321A8282ED0A4ED004CBB99 /* DefiChainStakeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiChainStakeViewModel.swift; sourceTree = "<group>"; };
+		1321A82A2ED0A4ED004CBB99 /* DefiChainMainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiChainMainScreen.swift; sourceTree = "<group>"; };
 		1321D7492E8F13BD00ABE613 /* NativeToolbarItem+PreferenceKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NativeToolbarItem+PreferenceKey.swift"; sourceTree = "<group>"; };
 		132309F92EAFFD7B00CD60F9 /* FunctionCallRouteBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallRouteBuilder.swift; sourceTree = "<group>"; };
 		132309FB2EAFFFD100CD60F9 /* FunctionCallPairScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallPairScreen.swift; sourceTree = "<group>"; };
@@ -1283,8 +1312,6 @@
 		134A9FCE2E96B4B000030C56 /* VaultBannerCarouselIndicators.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBannerCarouselIndicators.swift; sourceTree = "<group>"; };
 		134E23F12EAA61C500952600 /* DefiPositions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiPositions.swift; sourceTree = "<group>"; };
 		134E23F62EAA6F5100952600 /* THORChainAssetFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainAssetFactory.swift; sourceTree = "<group>"; };
-		134E23F92EAA70EE00952600 /* DefiTHORChainSelectPositionsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainSelectPositionsScreen.swift; sourceTree = "<group>"; };
-		134E23FB2EAA8BC600952600 /* DefiTHORChainStakeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainStakeViewModel.swift; sourceTree = "<group>"; };
 		134E8D7E2E451F6C0086EBC4 /* PreferredAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAsset.swift; sourceTree = "<group>"; };
 		134E8D802E451F7A0086EBC4 /* PreferredAssetFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetFactory.swift; sourceTree = "<group>"; };
 		134FF3652EBA48B600683169 /* TransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionBuilder.swift; sourceTree = "<group>"; };
@@ -1307,6 +1334,13 @@
 		135B6BBE2EA1470600DD7140 /* ChainNotFoundEmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainNotFoundEmptyStateView.swift; sourceTree = "<group>"; };
 		135B9FD22E7C8D6D0087D85D /* VaultEditCellContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultEditCellContainer.swift; sourceTree = "<group>"; };
 		135B9FD62E7C8DC00087D85D /* View+PlainListItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+PlainListItem.swift"; sourceTree = "<group>"; };
+		135C148F2ED0E45B00459EFC /* THORChainStakeInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainStakeInteractor.swift; sourceTree = "<group>"; };
+		135C14912ED0E48C00459EFC /* StakeInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StakeInteractor.swift; sourceTree = "<group>"; };
+		135C14942ED0E60100459EFC /* DefiInteractorResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiInteractorResolver.swift; sourceTree = "<group>"; };
+		135C14972ED0E71800459EFC /* THORChainBondInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainBondInteractor.swift; sourceTree = "<group>"; };
+		135C14982ED0E71800459EFC /* BondInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondInteractor.swift; sourceTree = "<group>"; };
+		135C149C2ED0E96A00459EFC /* THORChainLPsInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainLPsInteractor.swift; sourceTree = "<group>"; };
+		135C149D2ED0E96A00459EFC /* LPsInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LPsInteractor.swift; sourceTree = "<group>"; };
 		135C7AC42EA12646002F879A /* DefiMainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiMainViewModel.swift; sourceTree = "<group>"; };
 		135C7ACA2EA12C69002F879A /* DefiSelectChainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiSelectChainScreen.swift; sourceTree = "<group>"; };
 		135C7AD12EA13033002F879A /* DefiSelectChainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiSelectChainViewModel.swift; sourceTree = "<group>"; };
@@ -1319,14 +1353,11 @@
 		135C7AE32EA1434E002F879A /* VaultDefiChainsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDefiChainsService.swift; sourceTree = "<group>"; };
 		135C88182E3AADB000FD097D /* GradientListSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientListSeparator.swift; sourceTree = "<group>"; };
 		1363B4FB2EA6900D00818DF7 /* DateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatter.swift; sourceTree = "<group>"; };
-		1363B4FD2EA6955200818DF7 /* LPPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LPPosition.swift; sourceTree = "<group>"; };
-		1363B4FF2EA6967200818DF7 /* DefiTHORChainLPPositionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainLPPositionView.swift; sourceTree = "<group>"; };
 		1364A0932E9587C00023E869 /* BannersCarousel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannersCarousel.swift; sourceTree = "<group>"; };
 		1368C2722E832CBE00BB240D /* VaultListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultListView.swift; sourceTree = "<group>"; };
 		1368C2742E832ED800BB240D /* FolderDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailView.swift; sourceTree = "<group>"; };
 		1368C2762E83355B00BB240D /* EditFolderScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditFolderScreen.swift; sourceTree = "<group>"; };
 		1368C2782E833DE500BB240D /* VaultFolderCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultFolderCellView.swift; sourceTree = "<group>"; };
-		1368D2CE2EA26B72009A91CA /* DefiTHORChainMainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainMainScreen.swift; sourceTree = "<group>"; };
 		1368D2D22EA2738F009A91CA /* DefiButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiButton.swift; sourceTree = "<group>"; };
 		1369C2202E34006D0002D815 /* WasmExecuteContractPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmExecuteContractPayload.swift; sourceTree = "<group>"; };
 		136A12DB2E395F080001B1CA /* SecurityScannerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerViewModel.swift; sourceTree = "<group>"; };
@@ -1353,7 +1384,6 @@
 		137FA58B2EABC35A00843DB1 /* StakingDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StakingDetails.swift; sourceTree = "<group>"; };
 		137FA58D2EABC37C00843DB1 /* THORChainStakingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainStakingService.swift; sourceTree = "<group>"; };
 		137FA5902EABC38D00843DB1 /* THORChainStakingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainStakingAPI.swift; sourceTree = "<group>"; };
-		137FA5942EABE38A00843DB1 /* DefiTHORChainStakedPositionSkeletonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainStakedPositionSkeletonView.swift; sourceTree = "<group>"; };
 		138538DC2E61F581006DF7C7 /* VultiServerAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultiServerAPI.swift; sourceTree = "<group>"; };
 		138538DF2E61F5CF006DF7C7 /* ResendVaultShareRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResendVaultShareRequest.swift; sourceTree = "<group>"; };
 		138538E12E61F67C006DF7C7 /* VultiServerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultiServerService.swift; sourceTree = "<group>"; };
@@ -1422,19 +1452,7 @@
 		13A0786B2E846FBA0093496F /* View+ListSectionSpacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+ListSectionSpacing.swift"; sourceTree = "<group>"; };
 		13A0786F2E8484250093496F /* ListBottomSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListBottomSection.swift; sourceTree = "<group>"; };
 		13A078712E84888E0093496F /* View+SheetStyling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+SheetStyling.swift"; sourceTree = "<group>"; };
-		13A657A52EA27B0500323E4C /* DefiTHORChainBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainBalanceView.swift; sourceTree = "<group>"; };
-		13A657A82EA283DB00323E4C /* DefiTHORChainMainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainMainViewModel.swift; sourceTree = "<group>"; };
-		13A657AB2EA283F500323E4C /* THORChainPositionType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainPositionType.swift; sourceTree = "<group>"; };
-		13A657B02EA28B7800323E4C /* DefiTHORChainBondedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainBondedView.swift; sourceTree = "<group>"; };
-		13A657B52EA28BAE00323E4C /* DefiTHORChainLPsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainLPsView.swift; sourceTree = "<group>"; };
-		13A657B72EA28BBB00323E4C /* DefiTHORChainStakedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainStakedView.swift; sourceTree = "<group>"; };
 		13A657B92EA2971C00323E4C /* ExpandableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpandableView.swift; sourceTree = "<group>"; };
-		13A657BB2EA2976800323E4C /* DefiTHORChainAvailableNodesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainAvailableNodesView.swift; sourceTree = "<group>"; };
-		13A657BD2EA2994900323E4C /* BondNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondNode.swift; sourceTree = "<group>"; };
-		13A657BF2EA29A8F00323E4C /* BondNodeStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondNodeStateView.swift; sourceTree = "<group>"; };
-		13A657C12EA2A0FC00323E4C /* DefiTHORChainActiveNodesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainActiveNodesView.swift; sourceTree = "<group>"; };
-		13A657C42EA2A22200323E4C /* BondPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondPosition.swift; sourceTree = "<group>"; };
-		13A657C62EA2AC5900323E4C /* DefiTHORChainActiveNodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainActiveNodeView.swift; sourceTree = "<group>"; };
 		13A657C82EA2BCBE00323E4C /* HiddenBalanceText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HiddenBalanceText.swift; sourceTree = "<group>"; };
 		13A898FF2E43C0EE006F75F0 /* PreferredAssetSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetSelectionView.swift; sourceTree = "<group>"; };
 		13A899012E43CEEB006F75F0 /* THORChainTokenMetadataFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainTokenMetadataFactory.swift; sourceTree = "<group>"; };
@@ -1447,7 +1465,6 @@
 		13A964172EBBD8F60025FB7A /* TCYUnstakeTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TCYUnstakeTransactionBuilder.swift; sourceTree = "<group>"; };
 		13A964192EBBDA090025FB7A /* RUJIUnstakeTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUJIUnstakeTransactionBuilder.swift; sourceTree = "<group>"; };
 		13A9641B2EBBEAF90025FB7A /* RUJIWithdrawRewardsTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUJIWithdrawRewardsTransactionBuilder.swift; sourceTree = "<group>"; };
-		13AA6CDB2EA8742100760C8D /* DefiTHORChainLPsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainLPsViewModel.swift; sourceTree = "<group>"; };
 		13AA6CDC2EA8742100760C8D /* THORChainLPsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainLPsAPI.swift; sourceTree = "<group>"; };
 		13AA6CDF2EA8743F00760C8D /* THORChainPoolStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainPoolStats.swift; sourceTree = "<group>"; };
 		13AA6CE22EA8746300760C8D /* THORChainAPIService+LPs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "THORChainAPIService+LPs.swift"; sourceTree = "<group>"; };
@@ -1503,8 +1520,6 @@
 		13BD8D3B2E3D49AD0013B67E /* ColorSystemProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorSystemProtocol.swift; sourceTree = "<group>"; };
 		13BD8D3C2E3D49AD0013B67E /* FontSystemProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontSystemProtocol.swift; sourceTree = "<group>"; };
 		13BD8D3D2E3D49AD0013B67E /* ThemeProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeProtocol.swift; sourceTree = "<group>"; };
-		13C02C5C2EA6679C00C12071 /* DefiTHORChainStakedPositionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainStakedPositionView.swift; sourceTree = "<group>"; };
-		13C02C5E2EA667D600C12071 /* StakePosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StakePosition.swift; sourceTree = "<group>"; };
 		13C02C602EA6699900C12071 /* AmountFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountFormatter.swift; sourceTree = "<group>"; };
 		13C0F7992EC60C3700C2A3B8 /* DefiBalanceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiBalanceService.swift; sourceTree = "<group>"; };
 		13C0F79E2EC60FDA00C2A3B8 /* DefiPositionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiPositionsService.swift; sourceTree = "<group>"; };
@@ -1567,7 +1582,6 @@
 		13FB8AB52EA93B4100712A51 /* THORChainLiquidityProviderResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainLiquidityProviderResponse.swift; sourceTree = "<group>"; };
 		13FB8AB72EA93B5700712A51 /* THORChainDepthHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainDepthHistory.swift; sourceTree = "<group>"; };
 		13FB8AB92EA93B6900712A51 /* THORChainLPPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainLPPosition.swift; sourceTree = "<group>"; };
-		13FB8ABB2EA93C2E00712A51 /* DefiTHORChainLPPositionSkeletonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTHORChainLPPositionSkeletonView.swift; sourceTree = "<group>"; };
 		4600167D2B71A12D00CE17C7 /* Tss.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:G8Q5XUAJD9:Cortina Ventures PTY LTD"; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsService.swift; sourceTree = "<group>"; };
 		461AD1B62BC6706500959278 /* VaultPairDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultPairDetailView.swift; sourceTree = "<group>"; };
@@ -2647,6 +2661,101 @@
 			path = Backup;
 			sourceTree = "<group>";
 		};
+		1321A8112ED0A4ED004CBB99 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				1321A80C2ED0A4ED004CBB99 /* BondNode.swift */,
+				1321A80D2ED0A4ED004CBB99 /* BondPosition.swift */,
+				1321A80E2ED0A4ED004CBB99 /* DefiChainPositionType.swift */,
+				1321A80F2ED0A4ED004CBB99 /* LPPosition.swift */,
+				1321A8102ED0A4ED004CBB99 /* StakePosition.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		1321A8172ED0A4ED004CBB99 /* Bonded */ = {
+			isa = PBXGroup;
+			children = (
+				1321A8122ED0A4ED004CBB99 /* BondNodeStateView.swift */,
+				1321A8132ED0A4ED004CBB99 /* DefiChainActiveNodesView.swift */,
+				1321A8142ED0A4ED004CBB99 /* DefiChainActiveNodeView.swift */,
+				1321A8152ED0A4ED004CBB99 /* DefiChainAvailableNodesView.swift */,
+				1321A8162ED0A4ED004CBB99 /* DefiChainBondedView.swift */,
+			);
+			path = Bonded;
+			sourceTree = "<group>";
+		};
+		1321A81B2ED0A4ED004CBB99 /* LPs */ = {
+			isa = PBXGroup;
+			children = (
+				1321A8182ED0A4ED004CBB99 /* DefiChainLPPositionSkeletonView.swift */,
+				1321A8192ED0A4ED004CBB99 /* DefiChainLPPositionView.swift */,
+				1321A81A2ED0A4ED004CBB99 /* DefiChainLPsView.swift */,
+			);
+			path = LPs;
+			sourceTree = "<group>";
+		};
+		1321A81D2ED0A4ED004CBB99 /* Main */ = {
+			isa = PBXGroup;
+			children = (
+				1321A81C2ED0A4ED004CBB99 /* DefiChainBalanceView.swift */,
+			);
+			path = Main;
+			sourceTree = "<group>";
+		};
+		1321A81F2ED0A4ED004CBB99 /* SelectPosition */ = {
+			isa = PBXGroup;
+			children = (
+				1321A81E2ED0A4ED004CBB99 /* DefiChainSelectPositionsScreen.swift */,
+			);
+			path = SelectPosition;
+			sourceTree = "<group>";
+		};
+		1321A8232ED0A4ED004CBB99 /* Staked */ = {
+			isa = PBXGroup;
+			children = (
+				1321A8202ED0A4ED004CBB99 /* DefiChainStakedPositionSkeletonView.swift */,
+				1321A8212ED0A4ED004CBB99 /* DefiChainStakedPositionView.swift */,
+				1321A8222ED0A4ED004CBB99 /* DefiChainStakedView.swift */,
+			);
+			path = Staked;
+			sourceTree = "<group>";
+		};
+		1321A8242ED0A4ED004CBB99 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				1321A8172ED0A4ED004CBB99 /* Bonded */,
+				1321A81B2ED0A4ED004CBB99 /* LPs */,
+				1321A81D2ED0A4ED004CBB99 /* Main */,
+				1321A81F2ED0A4ED004CBB99 /* SelectPosition */,
+				1321A8232ED0A4ED004CBB99 /* Staked */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		1321A8292ED0A4ED004CBB99 /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				1321A8252ED0A4ED004CBB99 /* DefiChainBondViewModel.swift */,
+				1321A8262ED0A4ED004CBB99 /* DefiChainLPsViewModel.swift */,
+				1321A8272ED0A4ED004CBB99 /* DefiChainMainViewModel.swift */,
+				1321A8282ED0A4ED004CBB99 /* DefiChainStakeViewModel.swift */,
+			);
+			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		1321A82B2ED0A4ED004CBB99 /* DefiChain */ = {
+			isa = PBXGroup;
+			children = (
+				135C148D2ED0E3F600459EFC /* Interactor */,
+				1321A8112ED0A4ED004CBB99 /* Model */,
+				1321A8242ED0A4ED004CBB99 /* View */,
+				1321A8292ED0A4ED004CBB99 /* ViewModel */,
+				1321A82A2ED0A4ED004CBB99 /* DefiChainMainScreen.swift */,
+			);
+			path = DefiChain;
+			sourceTree = "<group>";
+		};
 		1321D7482E8F13A100ABE613 /* CrossPlatformToolbar */ = {
 			isa = PBXGroup;
 			children = (
@@ -2856,14 +2965,6 @@
 			path = TextEditor;
 			sourceTree = "<group>";
 		};
-		134E23F82EAA70E800952600 /* SelectPosition */ = {
-			isa = PBXGroup;
-			children = (
-				134E23F92EAA70EE00952600 /* DefiTHORChainSelectPositionsScreen.swift */,
-			);
-			path = SelectPosition;
-			sourceTree = "<group>";
-		};
 		134E8D7D2E451F600086EBC4 /* PreferredAsset */ = {
 			isa = PBXGroup;
 			children = (
@@ -2955,6 +3056,44 @@
 			path = List;
 			sourceTree = "<group>";
 		};
+		135C148D2ED0E3F600459EFC /* Interactor */ = {
+			isa = PBXGroup;
+			children = (
+				135C149B2ED0E95E00459EFC /* LPs */,
+				135C14932ED0E49400459EFC /* Stake */,
+				135C14962ED0E70F00459EFC /* Bond */,
+				135C14942ED0E60100459EFC /* DefiInteractorResolver.swift */,
+			);
+			path = Interactor;
+			sourceTree = "<group>";
+		};
+		135C14932ED0E49400459EFC /* Stake */ = {
+			isa = PBXGroup;
+			children = (
+				135C148F2ED0E45B00459EFC /* THORChainStakeInteractor.swift */,
+				135C14912ED0E48C00459EFC /* StakeInteractor.swift */,
+			);
+			path = Stake;
+			sourceTree = "<group>";
+		};
+		135C14962ED0E70F00459EFC /* Bond */ = {
+			isa = PBXGroup;
+			children = (
+				135C14972ED0E71800459EFC /* THORChainBondInteractor.swift */,
+				135C14982ED0E71800459EFC /* BondInteractor.swift */,
+			);
+			path = Bond;
+			sourceTree = "<group>";
+		};
+		135C149B2ED0E95E00459EFC /* LPs */ = {
+			isa = PBXGroup;
+			children = (
+				135C149C2ED0E96A00459EFC /* THORChainLPsInteractor.swift */,
+				135C149D2ED0E96A00459EFC /* LPsInteractor.swift */,
+			);
+			path = LPs;
+			sourceTree = "<group>";
+		};
 		135C7AC32EA1263A002F879A /* ViewModel */ = {
 			isa = PBXGroup;
 			children = (
@@ -3020,17 +3159,6 @@
 			children = (
 			);
 			path = "New Group";
-			sourceTree = "<group>";
-		};
-		1368D2CB2EA26B2F009A91CA /* DefiTHORChain */ = {
-			isa = PBXGroup;
-			children = (
-				13A657AA2EA283F200323E4C /* Model */,
-				13A657A72EA283D300323E4C /* ViewModel */,
-				13A657A42EA27B0100323E4C /* View */,
-				1368D2CE2EA26B72009A91CA /* DefiTHORChainMainScreen.swift */,
-			);
-			path = DefiTHORChain;
 			sourceTree = "<group>";
 		};
 		1368D2D02EA27386009A91CA /* Common */ = {
@@ -3358,81 +3486,6 @@
 				139D15BB2E9D5F9B006F671C /* VultTierService.swift */,
 			);
 			path = Service;
-			sourceTree = "<group>";
-		};
-		13A657A42EA27B0100323E4C /* View */ = {
-			isa = PBXGroup;
-			children = (
-				134E23F82EAA70E800952600 /* SelectPosition */,
-				13A657B32EA28B8C00323E4C /* Staked */,
-				13A657B22EA28B8600323E4C /* LPs */,
-				13A657AF2EA28B7100323E4C /* Bonded */,
-				13A657AE2EA28B5A00323E4C /* Main */,
-			);
-			path = View;
-			sourceTree = "<group>";
-		};
-		13A657A72EA283D300323E4C /* ViewModel */ = {
-			isa = PBXGroup;
-			children = (
-				13AA6CDB2EA8742100760C8D /* DefiTHORChainLPsViewModel.swift */,
-				1306525B2EA7D7CF002CAD99 /* DefiTHORChainBondViewModel.swift */,
-				134E23FB2EAA8BC600952600 /* DefiTHORChainStakeViewModel.swift */,
-				13A657A82EA283DB00323E4C /* DefiTHORChainMainViewModel.swift */,
-			);
-			path = ViewModel;
-			sourceTree = "<group>";
-		};
-		13A657AA2EA283F200323E4C /* Model */ = {
-			isa = PBXGroup;
-			children = (
-				1363B4FD2EA6955200818DF7 /* LPPosition.swift */,
-				13C02C5E2EA667D600C12071 /* StakePosition.swift */,
-				13A657C42EA2A22200323E4C /* BondPosition.swift */,
-				13A657BD2EA2994900323E4C /* BondNode.swift */,
-				13A657AB2EA283F500323E4C /* THORChainPositionType.swift */,
-			);
-			path = Model;
-			sourceTree = "<group>";
-		};
-		13A657AE2EA28B5A00323E4C /* Main */ = {
-			isa = PBXGroup;
-			children = (
-				13A657A52EA27B0500323E4C /* DefiTHORChainBalanceView.swift */,
-			);
-			path = Main;
-			sourceTree = "<group>";
-		};
-		13A657AF2EA28B7100323E4C /* Bonded */ = {
-			isa = PBXGroup;
-			children = (
-				13A657C62EA2AC5900323E4C /* DefiTHORChainActiveNodeView.swift */,
-				13A657BF2EA29A8F00323E4C /* BondNodeStateView.swift */,
-				13A657BB2EA2976800323E4C /* DefiTHORChainAvailableNodesView.swift */,
-				13A657C12EA2A0FC00323E4C /* DefiTHORChainActiveNodesView.swift */,
-				13A657B02EA28B7800323E4C /* DefiTHORChainBondedView.swift */,
-			);
-			path = Bonded;
-			sourceTree = "<group>";
-		};
-		13A657B22EA28B8600323E4C /* LPs */ = {
-			isa = PBXGroup;
-			children = (
-				13FB8ABB2EA93C2E00712A51 /* DefiTHORChainLPPositionSkeletonView.swift */,
-				1363B4FF2EA6967200818DF7 /* DefiTHORChainLPPositionView.swift */,
-				13A657B52EA28BAE00323E4C /* DefiTHORChainLPsView.swift */,
-			);
-			path = LPs;
-			sourceTree = "<group>";
-		};
-		13A657B32EA28B8C00323E4C /* Staked */ = {
-			isa = PBXGroup;
-			children = (
-				137FA5942EABE38A00843DB1 /* DefiTHORChainStakedPositionSkeletonView.swift */,
-				13C02C5C2EA6679C00C12071 /* DefiTHORChainStakedPositionView.swift */,
-				13A657B72EA28BBB00323E4C /* DefiTHORChainStakedView.swift */,
-			);
-			path = Staked;
 			sourceTree = "<group>";
 		};
 		13A899092E44F540006F75F0 /* Text */ = {
@@ -3885,8 +3938,8 @@
 		13DB875B2E9FD703008E89B0 /* Defi */ = {
 			isa = PBXGroup;
 			children = (
+				1321A82B2ED0A4ED004CBB99 /* DefiChain */,
 				1368D2D02EA27386009A91CA /* Common */,
-				1368D2CB2EA26B2F009A91CA /* DefiTHORChain */,
 				135C7ACB2EA12C69002F879A /* DefiChainSelection */,
 				13DB875E2E9FD786008E89B0 /* DefiMain */,
 			);
@@ -6022,13 +6075,13 @@
 				A66BFCD32C135699004DCD4F /* ShareSheetViewModel.swift in Sources */,
 				130652502EA7CD08002CAD99 /* THORChainAPIService+Bonds.swift in Sources */,
 				A6386D922C8C291B00DDD58E /* SwapVerifyView+macOS.swift in Sources */,
+				135C14922ED0E49000459EFC /* StakeInteractor.swift in Sources */,
 				A6A8163E2CBCB00D009EE114 /* FileQRCodeImporterMac+iOS.swift in Sources */,
 				13E1E7672E6DD71E00D68F5D /* FormExpandableSection.swift in Sources */,
 				469ED3A02B98F5B4008D4951 /* THORChainAccountNumberResponse.swift in Sources */,
 				A646DFB52E16DE34006E8ECC /* SendDetailsAdditionalSection.swift in Sources */,
 				A622C84E2C9BC7C300908332 /* FastVaultEmailView+iOS.swift in Sources */,
 				134E8D7F2E451F6F0086EBC4 /* PreferredAsset.swift in Sources */,
-				13A657BC2EA2977200323E4C /* DefiTHORChainAvailableNodesView.swift in Sources */,
 				A6E5823D2BE98C4F006DA410 /* NavigationBlankBackButton.swift in Sources */,
 				A5E66B512CCA472000B6DA47 /* WarningView.swift in Sources */,
 				A6BFE1C72D95F3C9000B73C0 /* SwapCoinPickerView.swift in Sources */,
@@ -6062,7 +6115,6 @@
 				137B2C7B2E3A4AA50074F648 /* InnerHeightPreferenceKey.swift in Sources */,
 				A6182F4D2C92944A0059BFDD /* SendCryptoAmountTextField+macOS.swift in Sources */,
 				DE9EB0FC2BA463F7001747D9 /* KeygenViewModel.swift in Sources */,
-				1363B5002EA6967200818DF7 /* DefiTHORChainLPPositionView.swift in Sources */,
 				A5D8A3442CF8D5B0005A20A8 /* CustomMessagePayload.swift in Sources */,
 				13FB8AB82EA93B5700712A51 /* THORChainDepthHistory.swift in Sources */,
 				138C5E672E79E86B00C559C7 /* GlassEffect.swift in Sources */,
@@ -6103,7 +6155,6 @@
 				13A0786A2E846EB50093496F /* CommonListHeaderView.swift in Sources */,
 				A686965A2C1F72FF004EDE0B /* HiddenTextField.swift in Sources */,
 				139B400C2E42466F00238C2C /* MacOSOverlay.swift in Sources */,
-				13A657C02EA29A9300323E4C /* BondNodeStateView.swift in Sources */,
 				049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */,
 				13D3AC962E85901F00BA4273 /* VaultActionRouteBuilder.swift in Sources */,
 				DE727C0C2D000FC9007E9273 /* LibType.swift in Sources */,
@@ -6117,8 +6168,6 @@
 				A65BA9882BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift in Sources */,
 				DE64A4C62BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift in Sources */,
 				130C40F02E734BB000509C61 /* VaultMainChainListView.swift in Sources */,
-				13A657B82EA28BBB00323E4C /* DefiTHORChainStakedView.swift in Sources */,
-				13A657B62EA28BAE00323E4C /* DefiTHORChainLPsView.swift in Sources */,
 				A575F2CE2D50D421000C4F14 /* FastVaultSetHintView+macOS.swift in Sources */,
 				A527DD2E2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift in Sources */,
 				DEEB571D2D08F80C00B120D1 /* SchnorrKeygen.swift in Sources */,
@@ -6144,7 +6193,6 @@
 				13DB87632EA01182008E89B0 /* DefiMainBalanceView.swift in Sources */,
 				13EF20BB2EC3692200CEB7DA /* AddLPTransactionBuilder.swift in Sources */,
 				A58CC34B2C32FA760086D16B /* ProtoMappable.swift in Sources */,
-				134E23FC2EAA8BC600952600 /* DefiTHORChainStakeViewModel.swift in Sources */,
 				A6505AE72CA670FE0002FBF4 /* StringExtension+iOS.swift in Sources */,
 				A6505AEB2CA673860002FBF4 /* MacCameraServiceViewModel+iOS.swift in Sources */,
 				13AA6CE32EA8746300760C8D /* THORChainAPIService+LPs.swift in Sources */,
@@ -6189,7 +6237,6 @@
 				DE64A4CC2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift in Sources */,
 				A65618032CB6500A00E9CF19 /* RegisterVaultView.swift in Sources */,
 				A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */,
-				13A657C72EA2AC5B00323E4C /* DefiTHORChainActiveNodeView.swift in Sources */,
 				A594EC2D2D072DAA00B74EBC /* SettingsCustomMessageView+iOS.swift in Sources */,
 				A622C85A2C9BCD6600908332 /* KeygenView+iOS.swift in Sources */,
 				A6F2C54F2BA009420095C8E3 /* CoinSelectionViewModel.swift in Sources */,
@@ -6284,7 +6331,6 @@
 				13AC28082E61E294001CB9AA /* ScreenEdgeInsets.swift in Sources */,
 				137B2C892E3A84460074F648 /* Screen.swift in Sources */,
 				46F8F7212B99FDB70099454E /* TransactionBroadcastResponse.swift in Sources */,
-				13A657B12EA28B8200323E4C /* DefiTHORChainBondedView.swift in Sources */,
 				131603452E609D74001ED972 /* FileExporterSheet.swift in Sources */,
 				13B41AAB2EB3AA040049503D /* AddressFieldAccessoryButton.swift in Sources */,
 				B57138502CC5713E000E925B /* TonService.swift in Sources */,
@@ -6369,6 +6415,29 @@
 				138E1D622E9480830085EA8E /* SheetPresentedCounterManager.swift in Sources */,
 				13792A892E53B2AB0063CE99 /* isMacOS.swift in Sources */,
 				134FF3662EBA48C000683169 /* TransactionBuilder.swift in Sources */,
+				1321A82C2ED0A4ED004CBB99 /* DefiChainBondedView.swift in Sources */,
+				1321A82D2ED0A4ED004CBB99 /* DefiChainLPsViewModel.swift in Sources */,
+				1321A82E2ED0A4ED004CBB99 /* DefiChainAvailableNodesView.swift in Sources */,
+				1321A82F2ED0A4ED004CBB99 /* DefiChainLPPositionView.swift in Sources */,
+				1321A8302ED0A4ED004CBB99 /* DefiChainSelectPositionsScreen.swift in Sources */,
+				1321A8312ED0A4ED004CBB99 /* DefiChainStakeViewModel.swift in Sources */,
+				1321A8322ED0A4ED004CBB99 /* LPPosition.swift in Sources */,
+				1321A8332ED0A4ED004CBB99 /* DefiChainStakedPositionView.swift in Sources */,
+				1321A8342ED0A4ED004CBB99 /* DefiChainMainScreen.swift in Sources */,
+				1321A8352ED0A4ED004CBB99 /* DefiChainMainViewModel.swift in Sources */,
+				1321A8362ED0A4ED004CBB99 /* BondNode.swift in Sources */,
+				1321A8372ED0A4ED004CBB99 /* DefiChainPositionType.swift in Sources */,
+				1321A8382ED0A4ED004CBB99 /* DefiChainActiveNodeView.swift in Sources */,
+				1321A8392ED0A4ED004CBB99 /* DefiChainLPsView.swift in Sources */,
+				1321A83A2ED0A4ED004CBB99 /* DefiChainActiveNodesView.swift in Sources */,
+				1321A83B2ED0A4ED004CBB99 /* DefiChainLPPositionSkeletonView.swift in Sources */,
+				1321A83C2ED0A4ED004CBB99 /* BondNodeStateView.swift in Sources */,
+				1321A83D2ED0A4ED004CBB99 /* StakePosition.swift in Sources */,
+				1321A83E2ED0A4ED004CBB99 /* BondPosition.swift in Sources */,
+				1321A83F2ED0A4ED004CBB99 /* DefiChainBondViewModel.swift in Sources */,
+				1321A8402ED0A4ED004CBB99 /* DefiChainBalanceView.swift in Sources */,
+				1321A8412ED0A4ED004CBB99 /* DefiChainStakedPositionSkeletonView.swift in Sources */,
+				1321A8422ED0A4ED004CBB99 /* DefiChainStakedView.swift in Sources */,
 				A6ACAD632D110A1E00432CC4 /* SettingsAdvancedView+iOS.swift in Sources */,
 				B5E95E092BED84D9003778F0 /* ImagePicker.swift in Sources */,
 				B53DCB7D2C0D7327008388D4 /* EvmTokenServiceProtocol.swift in Sources */,
@@ -6425,7 +6494,6 @@
 				B5A97CF92BF42E72007574D7 /* FunctionCallAddressTextField.swift in Sources */,
 				A6182F572C9299370059BFDD /* SwapCryptoAmountTextField+iOS.swift in Sources */,
 				A6833D932C66A4EA002029E1 /* SwapCryptoHeader.swift in Sources */,
-				1363B4FE2EA6955500818DF7 /* LPPosition.swift in Sources */,
 				A6C670D12C9E8E1F00F59B6A /* NewWalletNameView+iOS.swift in Sources */,
 				1368C2732E832CC100BB240D /* VaultListView.swift in Sources */,
 				DE5F7E1F2C8155C50022030F /* VaultCreateRequest.swift in Sources */,
@@ -6435,7 +6503,6 @@
 				A69FBB9E2C8AD7BD00A4B78B /* ContentView+macOS.swift in Sources */,
 				DE9EB0F62BA3F9C2001747D9 /* ParticipantDiscovery.swift in Sources */,
 				132666C82E429C91007FDAC5 /* ReferralMainScreen.swift in Sources */,
-				134E23FA2EAA70F700952600 /* DefiTHORChainSelectPositionsScreen.swift in Sources */,
 				B50F46752DA9A308007B16DE /* Chain+ibc.swift in Sources */,
 				B5A80F1B2D0645E100DC9069 /* RippleService.swift in Sources */,
 				A6980C322BC0A2F700F452AB /* SettingsFAQView.swift in Sources */,
@@ -6445,7 +6512,6 @@
 				DE8BDCCD2C4A314D00A1EDA6 /* VaultPublicKeyExport.swift in Sources */,
 				A5125F082BEBBFAB008A79AA /* OneInchService.swift in Sources */,
 				A522C34A2C46948A00BC4311 /* SwapError.swift in Sources */,
-				13A657A62EA27B1100323E4C /* DefiTHORChainBalanceView.swift in Sources */,
 				1390D8B82E3938BF003F3E20 /* BlockaidRpcClientProtocol.swift in Sources */,
 				134856322EB51D5C003D10BE /* AmountTextField.swift in Sources */,
 				13A9641A2EBBDA090025FB7A /* RUJIUnstakeTransactionBuilder.swift in Sources */,
@@ -6468,7 +6534,6 @@
 				1385E63D2EC271F200CE634F /* DefiPositionsStorageService.swift in Sources */,
 				B57DD59A2C3DA5EA00934CBB /* SolanaFmTokenInfo.swift in Sources */,
 				A6966D312BA4048800903CA4 /* SwapCryptoDetailsView.swift in Sources */,
-				13A657AC2EA283FA00323E4C /* THORChainPositionType.swift in Sources */,
 				139450602EC37BAE006AEE94 /* RemoveLPTransactionBuilder.swift in Sources */,
 				13C0F79F2EC60FE500C2A3B8 /* DefiPositionsService.swift in Sources */,
 				A5F97C8E2BBF0BCF000C30DF /* BalanceService.swift in Sources */,
@@ -6536,7 +6601,6 @@
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,
 				A6F7B6E52D4B046800AC8104 /* KeygenProgressContainer.swift in Sources */,
 				A6BB9BC72DA9D5B90085E117 /* AllDevicesUpgradeView.swift in Sources */,
-				13AA6CDD2EA8742100760C8D /* DefiTHORChainLPsViewModel.swift in Sources */,
 				13AA6CDE2EA8742100760C8D /* THORChainLPsAPI.swift in Sources */,
 				1334C7462E301E8800CBAA3E /* SendCryptoDoneContent.swift in Sources */,
 				A6980C282BC086BC00F452AB /* SettingsViewModel.swift in Sources */,
@@ -6544,7 +6608,6 @@
 				A69FBBA62C8ADC2E00A4B78B /* WelcomeView+iOS.swift in Sources */,
 				A6AF96102C2E2DC900992578 /* FileQRCodeImporterMac.swift in Sources */,
 				DE9EB0FA2BA4491B001747D9 /* CoinExtension.swift in Sources */,
-				137FA5952EABE38A00843DB1 /* DefiTHORChainStakedPositionSkeletonView.swift in Sources */,
 				A52FE09D2D5D59E30016C9A0 /* OnboardingSummaryView+iOS.swift in Sources */,
 				13DB87602E9FD78E008E89B0 /* DefiMainScreen.swift in Sources */,
 				A6C671012CA276EF00F59B6A /* OnboardingView+iOS.swift in Sources */,
@@ -6564,6 +6627,7 @@
 				1348561E2EB511C8003D10BE /* FunctionTransactionType.swift in Sources */,
 				A6BB9BBC2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift in Sources */,
 				A6ECA1A02C93FC0000456110 /* VaultSetupCard+iOS.swift in Sources */,
+				135C14902ED0E46300459EFC /* THORChainStakeInteractor.swift in Sources */,
 				13FB8ABA2EA93B6A00712A51 /* THORChainLPPosition.swift in Sources */,
 				A670CEBF2DD7CFC600E33B09 /* NavigationBlankBackButton+iOS.swift in Sources */,
 				A6C6708C2C9CFD0100F59B6A /* KeysignView+iOS.swift in Sources */,
@@ -6590,11 +6654,14 @@
 				130C40FE2E7389C000509C61 /* VultiTabBar.swift in Sources */,
 				1348563E2EB529E7003D10BE /* AddressValidator.swift in Sources */,
 				A6386DA62C90243C00DDD58E /* TokenSelectionCell+iOS.swift in Sources */,
+				135C14992ED0E71800459EFC /* BondInteractor.swift in Sources */,
+				135C149E2ED0E96A00459EFC /* THORChainLPsInteractor.swift in Sources */,
+				135C149F2ED0E96A00459EFC /* LPsInteractor.swift in Sources */,
+				135C149A2ED0E71800459EFC /* THORChainBondInteractor.swift in Sources */,
 				13D178F92E5753E900007B48 /* AddressBookChainSelectionScreen.swift in Sources */,
 				A6C6713B2CA3C86E00F59B6A /* KeygenViewInstructions+iOS.swift in Sources */,
 				DEFC7BFB2B8D87370090B07A /* erc20.swift in Sources */,
 				139DE12A2E4D0B3A00BC2FD3 /* SendDoneScreen.swift in Sources */,
-				13A657A92EA283E000323E4C /* DefiTHORChainMainViewModel.swift in Sources */,
 				A65617FB2CB4F6DF00E9CF19 /* FolderDetailViewModel.swift in Sources */,
 				13AF0D1F2E4CE754004D4FD2 /* SendRouteBuilder.swift in Sources */,
 				B50E399B2BF5AB2100B9A269 /* FunctionCallAddressable.swift in Sources */,
@@ -6643,8 +6710,6 @@
 				135C7ACD2EA12C69002F879A /* DefiSelectChainScreen.swift in Sources */,
 				A66BFCCD2C1347D5004DCD4F /* NavigationQRShareButton.swift in Sources */,
 				A5CBA32C2BCD747C00088CC3 /* TappableTextFieldStyle.swift in Sources */,
-				1306525C2EA7D7D7002CAD99 /* DefiTHORChainBondViewModel.swift in Sources */,
-				13FB8ABC2EA93C2F00712A51 /* DefiTHORChainLPPositionSkeletonView.swift in Sources */,
 				DE1905272BD8CC4D0043577E /* KeysignVerify.swift in Sources */,
 				469ED39B2B98E8B5008D4951 /* CosmosBalance.swift in Sources */,
 				A57A03CB2BC47D4F00F6F3DF /* BlockChainService.swift in Sources */,
@@ -6716,7 +6781,7 @@
 				A6BEF5C02BE2B11C007A84A1 /* DeeplinkViewModel.swift in Sources */,
 				139D15BC2E9D5FA1006F671C /* VultTierService.swift in Sources */,
 				A5C568952C246A0000E463B6 /* CoinFactory.swift in Sources */,
-				13C02C5D2EA667AC00C12071 /* DefiTHORChainStakedPositionView.swift in Sources */,
+				135C14952ED0E60700459EFC /* DefiInteractorResolver.swift in Sources */,
 				131603512E60C45D001ED972 /* VaultBackupContainerView.swift in Sources */,
 				A5D0C9372BEE778F0022D421 /* OneInchSwaps.swift in Sources */,
 				A524F5712D4AD63500F294B2 /* LiFiSwapError.swift in Sources */,
@@ -6756,7 +6821,6 @@
 				134856302EB51A05003D10BE /* Publisher+Weak.swift in Sources */,
 				A65617FF2CB4FE1500E9CF19 /* FolderDetailHeader.swift in Sources */,
 				13AF0D1A2E4CE672004D4FD2 /* NavigationRouter+EnvironmentKey.swift in Sources */,
-				13A657BE2EA2994D00323E4C /* BondNode.swift in Sources */,
 				A6833D862C65BF6D002029E1 /* JoinKeygenHeader.swift in Sources */,
 				A65BA9902BAD402A00B2D8AA /* KeysignMessageConfirmView.swift in Sources */,
 				B590DF8A2C2E88F900ED934E /* VoteOption.swift in Sources */,
@@ -6855,7 +6919,6 @@
 				DE49A1A02B67143B000F3AFB /* Chain.swift in Sources */,
 				133EEA192E68787900E18280 /* SettingsCommonOptionView.swift in Sources */,
 				13C320032E61F8DB00255138 /* ReferralVaultSelectionScreen.swift in Sources */,
-				13A657C52EA2A22800323E4C /* BondPosition.swift in Sources */,
 				B5F7581A2BD8E7230097B5B9 /* SuiService.swift in Sources */,
 				135C7AE12EA14130002F879A /* CustomizeChainsActionBanner.swift in Sources */,
 				138E1D5E2E9480500085EA8E /* SheetPresentedViewModifier.swift in Sources */,
@@ -6944,7 +7007,6 @@
 				A633B1382B997F39003D1738 /* NavigationHelpButton.swift in Sources */,
 				138574182E2DA9D5002532BF /* ButtonType.swift in Sources */,
 				133EEA1C2E6885A300E18280 /* SecureTextField.swift in Sources */,
-				13A657C22EA2A0FC00323E4C /* DefiTHORChainActiveNodesView.swift in Sources */,
 				D9AD8EE62B6730A40009F8D5 /* PeerDiscoveryView.swift in Sources */,
 				461AD1BB2BC7239C00959278 /* DeviceInfo.swift in Sources */,
 				B5A97CF32BF426D4007574D7 /* FunctionCallDetailsScreen.swift in Sources */,
@@ -7027,7 +7089,6 @@
 				B2C8B53A2E684A4200DFA097 /* SwapFeatureGate.swift in Sources */,
 				A5125F072BEBBFAB008A79AA /* EVMQuote.swift in Sources */,
 				DE49A1672B65F6D9000F3AFB /* VultisigApp.swift in Sources */,
-				13C02C5F2EA667DB00C12071 /* StakePosition.swift in Sources */,
 				A58CC3462C32EE120086D16B /* KeysignMessageFactory.swift in Sources */,
 				B2ADDDC52E5D63AD00DB3B98 /* BanxaDisclaimer.swift in Sources */,
 				139880502E39007C00EC5D3F /* CosmosCoin.swift in Sources */,
@@ -7043,7 +7104,6 @@
 				A52B0D032CA53DCE00507966 /* ReshareView.swift in Sources */,
 				13B25BF12E82E302002BCF55 /* PlatformTypes.swift in Sources */,
 				A6725D3A2C3F9B4400D47716 /* AddAddressBookScreen.swift in Sources */,
-				1368D2CF2EA26B7B009A91CA /* DefiTHORChainMainScreen.swift in Sources */,
 				A6ECA18A2C93F4F400456110 /* SetupVaultImageManager+macOS.swift in Sources */,
 				A58760542CBD3CE00070956A /* Keychain.swift in Sources */,
 				130C704B2E31791E00EF2248 /* LongPressPrimaryButton.swift in Sources */,

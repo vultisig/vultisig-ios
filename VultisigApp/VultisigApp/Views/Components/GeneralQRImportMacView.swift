@@ -164,6 +164,4 @@ struct GeneralQRImportMacView: View {
 
 #Preview {
     GeneralQRImportMacView(type: .NewVault, selectedVault: Vault.example) { _ in }
-        .environmentObject(HomeViewModel())
-        .environmentObject(DeeplinkViewModel())
 }

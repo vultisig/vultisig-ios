@@ -6,9 +6,7 @@
 //
 
 import Foundation
-import WalletCore
 
-@MainActor
 class CoinSelectionViewModel: ObservableObject {
     
     @Published var groupedAssets: [Chain: [CoinMeta]] = [:]
