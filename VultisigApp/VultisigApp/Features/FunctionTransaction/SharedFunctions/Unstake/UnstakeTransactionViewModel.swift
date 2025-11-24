@@ -72,6 +72,12 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
                 amount: amountField.value,
                 sendMaxAmount: isMaxAmount
             )
+            
+        case "CACAO":
+            return CacaoUnstakeTransactionBuilder(
+                coin: coin,
+                percentage: Int(percentageSelected ?? percentageFromAmount),
+            )
         default:
             return nil
         }

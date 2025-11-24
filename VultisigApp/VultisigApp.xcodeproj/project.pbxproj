@@ -41,6 +41,8 @@
 		130C40FB2E7381E700509C61 /* HomeTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40FA2E7381E400509C61 /* HomeTab.swift */; };
 		130C40FE2E7389C000509C61 /* VultiTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40FD2E7389BD00509C61 /* VultiTabBar.swift */; };
 		130C704B2E31791E00EF2248 /* LongPressPrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */; };
+		13155A2E2ED4AD950042549B /* CacaoStakeTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13155A2D2ED4AD8F0042549B /* CacaoStakeTransactionBuilder.swift */; };
+		13155A302ED4AE5D0042549B /* CacaoUnstakeTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13155A2F2ED4AE5D0042549B /* CacaoUnstakeTransactionBuilder.swift */; };
 		131603452E609D74001ED972 /* FileExporterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603442E609D6B001ED972 /* FileExporterSheet.swift */; };
 		131603482E60A450001ED972 /* VaultBackupPasswordScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603472E60A44F001ED972 /* VaultBackupPasswordScreen.swift */; };
 		131603512E60C45D001ED972 /* VaultBackupContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603502E60C453001ED972 /* VaultBackupContainerView.swift */; };
@@ -1238,6 +1240,8 @@
 		130C40FA2E7381E400509C61 /* HomeTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTab.swift; sourceTree = "<group>"; };
 		130C40FD2E7389BD00509C61 /* VultiTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultiTabBar.swift; sourceTree = "<group>"; };
 		130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongPressPrimaryButton.swift; sourceTree = "<group>"; };
+		13155A2D2ED4AD8F0042549B /* CacaoStakeTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacaoStakeTransactionBuilder.swift; sourceTree = "<group>"; };
+		13155A2F2ED4AE5D0042549B /* CacaoUnstakeTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacaoUnstakeTransactionBuilder.swift; sourceTree = "<group>"; };
 		131603442E609D6B001ED972 /* FileExporterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileExporterSheet.swift; sourceTree = "<group>"; };
 		131603472E60A44F001ED972 /* VaultBackupPasswordScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBackupPasswordScreen.swift; sourceTree = "<group>"; };
 		131603502E60C453001ED972 /* VaultBackupContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBackupContainerView.swift; sourceTree = "<group>"; };
@@ -2689,6 +2693,15 @@
 			path = TabBar;
 			sourceTree = "<group>";
 		};
+		13155A2B2ED4AD6A0042549B /* Cacao */ = {
+			isa = PBXGroup;
+			children = (
+				13155A2D2ED4AD8F0042549B /* CacaoStakeTransactionBuilder.swift */,
+				13155A2F2ED4AE5D0042549B /* CacaoUnstakeTransactionBuilder.swift */,
+			);
+			path = Cacao;
+			sourceTree = "<group>";
+		};
 		1316034F2E60C438001ED972 /* Backup */ = {
 			isa = PBXGroup;
 			children = (
@@ -3283,6 +3296,7 @@
 		137DB52A2EBE3FCE0081C6BC /* Staking */ = {
 			isa = PBXGroup;
 			children = (
+				13155A2B2ED4AD6A0042549B /* Cacao */,
 				13A964152EBBD8E30025FB7A /* TCY */,
 				13A964142EBBD8DA0025FB7A /* RUJI */,
 			);
@@ -6422,6 +6436,7 @@
 				139450112EBB866D00A72AE9 /* StakeTransactionViewModel.swift in Sources */,
 				130C40EE2E73278A00509C61 /* CircularAccessoryIconButton.swift in Sources */,
 				133CA3CF2E8ADC5A009588F3 /* CoinDetailHeaderView.swift in Sources */,
+				13155A2E2ED4AD950042549B /* CacaoStakeTransactionBuilder.swift in Sources */,
 				A6E0C9382DF0A1B800A01543 /* ReferralTextFieldAction.swift in Sources */,
 				13A74CBD2ED3D1F700B97173 /* MayaChainStakeInteractor.swift in Sources */,
 				A622C8582C9BCCC600908332 /* JoinKeygenView+macOS.swift in Sources */,
@@ -6700,6 +6715,7 @@
 				D7620B1D2DF6BFD700294396 /* FunctionCallNodeMaintenance.swift in Sources */,
 				1385E63D2EC271F200CE634F /* DefiPositionsStorageService.swift in Sources */,
 				B57DD59A2C3DA5EA00934CBB /* SolanaFmTokenInfo.swift in Sources */,
+				13155A302ED4AE5D0042549B /* CacaoUnstakeTransactionBuilder.swift in Sources */,
 				A6966D312BA4048800903CA4 /* SwapCryptoDetailsView.swift in Sources */,
 				139450602EC37BAE006AEE94 /* RemoveLPTransactionBuilder.swift in Sources */,
 				13C0F79F2EC60FE500C2A3B8 /* DefiPositionsService.swift in Sources */,
