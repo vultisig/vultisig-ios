@@ -47,7 +47,7 @@ struct DefiChainBondedView<EmptyStateView: View>: View {
                     )
                     
                     VStack(alignment: .leading, spacing: .zero) {
-                        Text("bondedRune".localized)
+                        Text(String(format: "bondedCoin".localized, coin.ticker))
                             .font(Theme.fonts.footnote)
                             .foregroundStyle(Theme.colors.textExtraLight)
                         

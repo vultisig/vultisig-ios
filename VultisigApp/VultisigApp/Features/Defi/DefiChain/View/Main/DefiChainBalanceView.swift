@@ -49,8 +49,19 @@ struct DefiChainBalanceView: View {
             .clipShape(RoundedRectangle(cornerRadius: 16))
     }
     
+    var imageName: String {
+        switch groupedChain.chain {
+        case .thorChain:
+            "thorchain-banner"
+        case .mayaChain:
+            "mayachain-banner"
+        default:
+            ""
+        }
+    }
+    
     var imageView: some View {
-        Image("thorchain-banner")
+        Image(imageName)
             .resizable()
             .aspectRatio(contentMode: .fit)
     }

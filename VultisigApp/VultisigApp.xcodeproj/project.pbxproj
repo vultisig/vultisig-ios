@@ -281,6 +281,14 @@
 		13A74CBB2ED3D1CF00B97173 /* MayaChainBondInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A74CBA2ED3D1C900B97173 /* MayaChainBondInteractor.swift */; };
 		13A74CBD2ED3D1F700B97173 /* MayaChainStakeInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A74CBC2ED3D1F100B97173 /* MayaChainStakeInteractor.swift */; };
 		13A74CBF2ED3D2CA00B97173 /* DefaultLPsInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A74CBE2ED3D2C500B97173 /* DefaultLPsInteractor.swift */; };
+		13A74CCD2ED3D91C00B97173 /* MayaNetworkInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A74CC32ED3D91C00B97173 /* MayaNetworkInfo.swift */; };
+		13A74CCE2ED3D91C00B97173 /* MayaChainBondsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A74CC62ED3D91C00B97173 /* MayaChainBondsAPI.swift */; };
+		13A74CCF2ED3D91C00B97173 /* MayaChainAPIService+Bonds.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A74CCA2ED3D91C00B97173 /* MayaChainAPIService+Bonds.swift */; };
+		13A74CD02ED3D91C00B97173 /* MayaNodeResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A74CC12ED3D91C00B97173 /* MayaNodeResponse.swift */; };
+		13A74CD12ED3D91C00B97173 /* MayaChainAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A74CC92ED3D91C00B97173 /* MayaChainAPIService.swift */; };
+		13A74CD22ED3D91C00B97173 /* MayaBondMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A74CC02ED3D91C00B97173 /* MayaBondMetrics.swift */; };
+		13A74CD32ED3D91C00B97173 /* MayaChainStakingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A74CC72ED3D91C00B97173 /* MayaChainStakingAPI.swift */; };
+		13A74CD42ED3D91C00B97173 /* MayaChainAPIService+Staking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A74CCB2ED3D91C00B97173 /* MayaChainAPIService+Staking.swift */; };
 		13A899002E43C0FE006F75F0 /* PreferredAssetSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A898FF2E43C0EE006F75F0 /* PreferredAssetSelectionView.swift */; };
 		13A899022E43CEF3006F75F0 /* THORChainTokenMetadataFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A899012E43CEEB006F75F0 /* THORChainTokenMetadataFactory.swift */; };
 		13A899042E43FA4D006F75F0 /* PreferredAssetSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A899032E43FA4B006F75F0 /* PreferredAssetSelectionViewModel.swift */; };
@@ -1460,6 +1468,14 @@
 		13A74CBA2ED3D1C900B97173 /* MayaChainBondInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaChainBondInteractor.swift; sourceTree = "<group>"; };
 		13A74CBC2ED3D1F100B97173 /* MayaChainStakeInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaChainStakeInteractor.swift; sourceTree = "<group>"; };
 		13A74CBE2ED3D2C500B97173 /* DefaultLPsInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultLPsInteractor.swift; sourceTree = "<group>"; };
+		13A74CC02ED3D91C00B97173 /* MayaBondMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaBondMetrics.swift; sourceTree = "<group>"; };
+		13A74CC12ED3D91C00B97173 /* MayaNodeResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaNodeResponse.swift; sourceTree = "<group>"; };
+		13A74CC32ED3D91C00B97173 /* MayaNetworkInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaNetworkInfo.swift; sourceTree = "<group>"; };
+		13A74CC62ED3D91C00B97173 /* MayaChainBondsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaChainBondsAPI.swift; sourceTree = "<group>"; };
+		13A74CC72ED3D91C00B97173 /* MayaChainStakingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaChainStakingAPI.swift; sourceTree = "<group>"; };
+		13A74CC92ED3D91C00B97173 /* MayaChainAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaChainAPIService.swift; sourceTree = "<group>"; };
+		13A74CCA2ED3D91C00B97173 /* MayaChainAPIService+Bonds.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MayaChainAPIService+Bonds.swift"; sourceTree = "<group>"; };
+		13A74CCB2ED3D91C00B97173 /* MayaChainAPIService+Staking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MayaChainAPIService+Staking.swift"; sourceTree = "<group>"; };
 		13A898FF2E43C0EE006F75F0 /* PreferredAssetSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetSelectionView.swift; sourceTree = "<group>"; };
 		13A899012E43CEEB006F75F0 /* THORChainTokenMetadataFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainTokenMetadataFactory.swift; sourceTree = "<group>"; };
 		13A899032E43FA4B006F75F0 /* PreferredAssetSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetSelectionViewModel.swift; sourceTree = "<group>"; };
@@ -3497,6 +3513,53 @@
 			path = Service;
 			sourceTree = "<group>";
 		};
+		13A74CC22ED3D91C00B97173 /* Bonds */ = {
+			isa = PBXGroup;
+			children = (
+				13A74CC02ED3D91C00B97173 /* MayaBondMetrics.swift */,
+				13A74CC12ED3D91C00B97173 /* MayaNodeResponse.swift */,
+			);
+			path = Bonds;
+			sourceTree = "<group>";
+		};
+		13A74CC42ED3D91C00B97173 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				13A74CC32ED3D91C00B97173 /* MayaNetworkInfo.swift */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
+		13A74CC52ED3D91C00B97173 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				13A74CC22ED3D91C00B97173 /* Bonds */,
+				13A74CC42ED3D91C00B97173 /* Network */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		13A74CC82ED3D91C00B97173 /* TargetType */ = {
+			isa = PBXGroup;
+			children = (
+				13A74CC62ED3D91C00B97173 /* MayaChainBondsAPI.swift */,
+				13A74CC72ED3D91C00B97173 /* MayaChainStakingAPI.swift */,
+			);
+			path = TargetType;
+			sourceTree = "<group>";
+		};
+		13A74CCC2ED3D91C00B97173 /* MayaChainAPI */ = {
+			isa = PBXGroup;
+			children = (
+				13A74CC52ED3D91C00B97173 /* Models */,
+				13A74CC82ED3D91C00B97173 /* TargetType */,
+				13A74CC92ED3D91C00B97173 /* MayaChainAPIService.swift */,
+				13A74CCA2ED3D91C00B97173 /* MayaChainAPIService+Bonds.swift */,
+				13A74CCB2ED3D91C00B97173 /* MayaChainAPIService+Staking.swift */,
+			);
+			path = MayaChainAPI;
+			sourceTree = "<group>";
+		};
 		13A899092E44F540006F75F0 /* Text */ = {
 			isa = PBXGroup;
 			children = (
@@ -4092,6 +4155,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				13A74CCC2ED3D91C00B97173 /* MayaChainAPI */,
 				B5BCC2622EC26DA7007B5A2F /* RpcServiceStruct.swift */,
 				130652482EA7CCE8002CAD99 /* THORChainAPI */,
 				B5FFB0F32E7858E90062F63C /* PendingTransactionManager.swift */,
@@ -6227,6 +6291,14 @@
 				A65BA98A2BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift in Sources */,
 				1394501B2EBB8EA500A72AE9 /* WithdrawRewardsTransactionScreen.swift in Sources */,
 				A65618012CB64EB200E9CF19 /* SettingVaultRegistrationCell.swift in Sources */,
+				13A74CCD2ED3D91C00B97173 /* MayaNetworkInfo.swift in Sources */,
+				13A74CCE2ED3D91C00B97173 /* MayaChainBondsAPI.swift in Sources */,
+				13A74CCF2ED3D91C00B97173 /* MayaChainAPIService+Bonds.swift in Sources */,
+				13A74CD02ED3D91C00B97173 /* MayaNodeResponse.swift in Sources */,
+				13A74CD12ED3D91C00B97173 /* MayaChainAPIService.swift in Sources */,
+				13A74CD22ED3D91C00B97173 /* MayaBondMetrics.swift in Sources */,
+				13A74CD32ED3D91C00B97173 /* MayaChainStakingAPI.swift in Sources */,
+				13A74CD42ED3D91C00B97173 /* MayaChainAPIService+Staking.swift in Sources */,
 				13A078622E845AEB0093496F /* CommonListItemContainer.swift in Sources */,
 				B5A41F642DAB33E70075E921 /* FunctionCallCosmosMerge.swift in Sources */,
 				B5A41F652DAB33E70075E921 /* FunctionCallCosmosUnmerge.swift in Sources */,

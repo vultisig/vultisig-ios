@@ -915,7 +915,7 @@
 "bonded" = "已绑定";
 "staked" = "已质押";
 "lps" = "流动性池";
-"bondedRune" = "已绑定 RUNE";
+"bondedCoin" = "已绑定 %@";
 "availableNodes" = "可用节点";
 "activeNodes" = "活跃节点";
 "churnedOut" = "已淘汰";

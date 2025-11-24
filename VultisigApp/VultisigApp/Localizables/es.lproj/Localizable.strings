@@ -913,7 +913,7 @@
 "bonded" = "Vinculado";
 "staked" = "Apostado";
 "lps" = "LPs";
-"bondedRune" = "RUNE Vinculado";
+"bondedCoin" = "%@ Vinculado";
 "availableNodes" = "Nodos Disponibles";
 "activeNodes" = "Nodos Activos";
 "churnedOut" = "Desvinculado";
