@@ -11,7 +11,6 @@ struct DefiChainListView: View {
     @ObservedObject var vault: Vault
     @ObservedObject var viewModel: DefiMainViewModel
     
-    var onGroup: (GroupedChain) -> Void
     var onCustomizeChains: () -> Void
     
     var body: some View {
@@ -26,26 +25,21 @@ struct DefiChainListView: View {
     
     var chainList: some View {
         ForEach(Array(viewModel.filteredGroups.enumerated()), id: \.element.id) { index, group in
-//            NavigationLink {
-//                switch group.chain {
-//                case .thorChain, .mayaChain:
-//                    DefiChainMainScreen(vault: vault, group: group)
-//                default:
-//                    EmptyView()
-//                }
-//            } label: {
-            Button {
-                onGroup(group)
+            NavigationLink {
+                switch group.chain {
+                case .thorChain, .mayaChain:
+                    DefiChainMainScreen(vault: vault, group: group)
+                default:
+                    EmptyView()
+                }
             } label: {
                 DefiChainCellView(group: group, vault: vault)
                     .commonListItemContainer(
                         index: index,
                         itemsCount: viewModel.filteredGroups.count
                     )
-            }.buttonStyle(.plain)
-  
-//            }
-        }
+            }
+          }
     }
 }
 
@@ -53,6 +47,6 @@ struct DefiChainListView: View {
     DefiChainListView(
         vault: .example,
         viewModel: DefiMainViewModel()
-    ) {_ in } onCustomizeChains: {}
+    ) {}
         .environmentObject(VaultDetailViewModel())
 }

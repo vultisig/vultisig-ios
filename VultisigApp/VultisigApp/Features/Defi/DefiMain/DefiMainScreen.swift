@@ -20,7 +20,6 @@ struct DefiMainScreen: View {
     @State var focusSearch: Bool = false
     @State var scrollOffset: CGFloat = 0
     @State var showChainSelection: Bool = false
-    @State var selectedGroup: GroupedChain?
     
     private let scrollReferenceId = "DefiMainScreenBottomContentId"
     private let contentInset: CGFloat = 78
@@ -79,9 +78,6 @@ struct DefiMainScreen: View {
         .onChange(of: vault) { oldValue, newValue in
             refresh()
         }
-        .navigationDestination(item: $selectedGroup) {
-            DefiChainMainScreen(vault: vault, group: $0)
-        }
     }
     
     var bottomContentSection: some View {
@@ -100,7 +96,6 @@ struct DefiMainScreen: View {
             DefiChainListView(
                 vault: vault,
                 viewModel: viewModel,
-                onGroup: { selectedGroup = $0 },
                 onCustomizeChains: onCustomizeChains
             )
             VStack {}
