@@ -121,6 +121,27 @@ extension MayaChainAPIService {
 
         return stakeable >= minStake ? stakeable : 0
     }
+
+    /// Get bondable deposit assets (async version)
+    /// Returns array of CoinMeta for assets that can be bonded on MayaChain
+    func getDepositAssets() async throws -> [THORChainAsset] {
+        let pools = try await getPools()
+
+        // Filter bondable pools and map to CoinMeta
+        let bondableAssets = pools
+            .filter { $0.bondable }
+            .compactMap { pool -> THORChainAsset? in
+                // Parse asset format: "CHAIN.SYMBOL" or "CHAIN.SYMBOL-ADDRESS"
+                // Example: "ETH.ETH", "ETH.USDC-0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+                // Use THORChainAssetFactory which handles the same format
+                guard let coin = THORChainAssetFactory.createCoin(from: pool.asset) else {
+                    return nil
+                }
+                return THORChainAsset(thorchainAsset: pool.asset, asset: coin)
+            }
+
+        return bondableAssets
+    }
 }
 
 // MARK: - Staking Models

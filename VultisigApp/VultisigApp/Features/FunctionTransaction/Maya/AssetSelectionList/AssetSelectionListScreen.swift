@@ -1,17 +1,29 @@
 //
-//  PreferredAssetSelectionView.swift
+//  AssetSelectionListScreen.swift
 //  VultisigApp
 //
-//  Created by Gaston Mazzeo on 06/08/2025.
+//  Created by Gaston Mazzeo on 24/11/2025.
 //
 
 import SwiftUI
 
-struct PreferredAssetSelectionView: View {
+struct AssetSelectionListScreen: View {
     @Binding var isPresented: Bool
-    @Binding var preferredAsset: THORChainAsset?
+    @Binding var selectedAsset: THORChainAsset?
     var onSelect: () -> Void
-    @StateObject var viewModel = PreferredAssetSelectionViewModel()
+    @StateObject var viewModel: AssetSelectionListViewModel
+    
+    init(
+        isPresented: Binding<Bool>,
+        selectedAsset: Binding<THORChainAsset?>,
+        dataSource: AssetSelectionDataSource,
+        onSelect: @escaping () -> Void
+    ) {
+        self._isPresented = isPresented
+        self._selectedAsset = selectedAsset
+        self._viewModel = .init(wrappedValue: AssetSelectionListViewModel(dataSource: dataSource))
+        self.onSelect = onSelect
+    }
     
     var body: some View {
         Screen(showNavigationBar: false) {
@@ -49,8 +61,8 @@ struct PreferredAssetSelectionView: View {
     var list: some View {
         LazyVStack(spacing: 0) {
             ForEach(viewModel.filteredAssets, id: \.asset) { asset in
-                SwapCoinCell(coin: asset.asset, balance: nil, balanceFiat: nil, isSelected: preferredAsset?.asset == asset.asset) {
-                    preferredAsset = asset
+                SwapCoinCell(coin: asset.asset, balance: nil, balanceFiat: nil, isSelected: selectedAsset == asset) {
+                    selectedAsset = asset
                     onSelect()
                 }
             }
@@ -77,5 +89,9 @@ struct PreferredAssetSelectionView: View {
 }
 
 #Preview {
-    PreferredAssetSelectionView(isPresented: .constant(true), preferredAsset: .constant(THORChainAsset(thorchainAsset: ".", asset: .example))) {}
+    AssetSelectionListScreen(
+        isPresented: .constant(true),
+        selectedAsset: .constant(THORChainAsset(thorchainAsset: "THOR.THOR", asset: .example)),
+        dataSource: MayaAssetsDataSource()
+    ) {}
 }

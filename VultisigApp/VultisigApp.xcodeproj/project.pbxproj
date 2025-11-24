@@ -136,7 +136,7 @@
 		134A9FCF2E96B4B500030C56 /* VaultBannerCarouselIndicators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FCE2E96B4B000030C56 /* VaultBannerCarouselIndicators.swift */; };
 		134E23F22EAA61CD00952600 /* DefiPositions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E23F12EAA61C500952600 /* DefiPositions.swift */; };
 		134E23F72EAA6F5500952600 /* THORChainAssetFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E23F62EAA6F5100952600 /* THORChainAssetFactory.swift */; };
-		134E8D7F2E451F6F0086EBC4 /* PreferredAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D7E2E451F6C0086EBC4 /* PreferredAsset.swift */; };
+		134E8D7F2E451F6F0086EBC4 /* THORChainAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D7E2E451F6C0086EBC4 /* THORChainAsset.swift */; };
 		134E8D812E451F800086EBC4 /* PreferredAssetFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D802E451F7A0086EBC4 /* PreferredAssetFactory.swift */; };
 		134FF3662EBA48C000683169 /* TransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134FF3652EBA48B600683169 /* TransactionBuilder.swift */; };
 		134FF3682EBA499F00683169 /* BondTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134FF3672EBA499600683169 /* BondTransactionBuilder.swift */; };
@@ -411,6 +411,16 @@
 		13E1E7642E6DD6DB00D68F5D /* VerticalGrowAndFade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1E7632E6DD6D800D68F5D /* VerticalGrowAndFade.swift */; };
 		13E1E7672E6DD71E00D68F5D /* FormExpandableSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1E7662E6DD71D00D68F5D /* FormExpandableSection.swift */; };
 		13E1E7692E6DD79B00D68F5D /* ServerVaultCheckInboxScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1E7682E6DD79A00D68F5D /* ServerVaultCheckInboxScreen.swift */; };
+		13E4280C2ED494700097AD11 /* BondMayaTransactionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E4280B2ED4946A0097AD11 /* BondMayaTransactionViewModel.swift */; };
+		13E428102ED4948B0097AD11 /* BondMayaTransactionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E4280F2ED494830097AD11 /* BondMayaTransactionScreen.swift */; };
+		13E428142ED494DE0097AD11 /* UnbondMayaTransactionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E428122ED494DE0097AD11 /* UnbondMayaTransactionScreen.swift */; };
+		13E428152ED494DE0097AD11 /* UnbondMayaTransactionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E428132ED494DE0097AD11 /* UnbondMayaTransactionViewModel.swift */; };
+		13E4281B2ED497010097AD11 /* AssetSelectionListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E4281A2ED496FC0097AD11 /* AssetSelectionListScreen.swift */; };
+		13E4281D2ED4970D0097AD11 /* AssetSelectionListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E4281C2ED497030097AD11 /* AssetSelectionListViewModel.swift */; };
+		13E4281F2ED498830097AD11 /* MayaAssetsDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E4281E2ED4987C0097AD11 /* MayaAssetsDataSource.swift */; };
+		13E428222ED49AB50097AD11 /* AssetSelectionFormCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E428212ED49AB10097AD11 /* AssetSelectionFormCell.swift */; };
+		13E428242ED4A0200097AD11 /* BondMayaTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E428232ED4A01C0097AD11 /* BondMayaTransactionBuilder.swift */; };
+		13E428262ED4A2A80097AD11 /* IntValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E428252ED4A2A80097AD11 /* IntValidator.swift */; };
 		13EF20B72EC3675E00CEB7DA /* AddLPTransactionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EF20B52EC3675E00CEB7DA /* AddLPTransactionViewModel.swift */; };
 		13EF20B82EC3675E00CEB7DA /* AddLPTransactionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EF20B62EC3675E00CEB7DA /* AddLPTransactionScreen.swift */; };
 		13EF20BB2EC3692200CEB7DA /* AddLPTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EF20BA2EC3692200CEB7DA /* AddLPTransactionBuilder.swift */; };
@@ -1323,7 +1333,7 @@
 		134A9FCE2E96B4B000030C56 /* VaultBannerCarouselIndicators.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBannerCarouselIndicators.swift; sourceTree = "<group>"; };
 		134E23F12EAA61C500952600 /* DefiPositions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiPositions.swift; sourceTree = "<group>"; };
 		134E23F62EAA6F5100952600 /* THORChainAssetFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainAssetFactory.swift; sourceTree = "<group>"; };
-		134E8D7E2E451F6C0086EBC4 /* PreferredAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAsset.swift; sourceTree = "<group>"; };
+		134E8D7E2E451F6C0086EBC4 /* THORChainAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainAsset.swift; sourceTree = "<group>"; };
 		134E8D802E451F7A0086EBC4 /* PreferredAssetFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetFactory.swift; sourceTree = "<group>"; };
 		134FF3652EBA48B600683169 /* TransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionBuilder.swift; sourceTree = "<group>"; };
 		134FF3672EBA499600683169 /* BondTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondTransactionBuilder.swift; sourceTree = "<group>"; };
@@ -1597,6 +1607,16 @@
 		13E1E7632E6DD6D800D68F5D /* VerticalGrowAndFade.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerticalGrowAndFade.swift; sourceTree = "<group>"; };
 		13E1E7662E6DD71D00D68F5D /* FormExpandableSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormExpandableSection.swift; sourceTree = "<group>"; };
 		13E1E7682E6DD79A00D68F5D /* ServerVaultCheckInboxScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerVaultCheckInboxScreen.swift; sourceTree = "<group>"; };
+		13E4280B2ED4946A0097AD11 /* BondMayaTransactionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondMayaTransactionViewModel.swift; sourceTree = "<group>"; };
+		13E4280F2ED494830097AD11 /* BondMayaTransactionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondMayaTransactionScreen.swift; sourceTree = "<group>"; };
+		13E428122ED494DE0097AD11 /* UnbondMayaTransactionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnbondMayaTransactionScreen.swift; sourceTree = "<group>"; };
+		13E428132ED494DE0097AD11 /* UnbondMayaTransactionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnbondMayaTransactionViewModel.swift; sourceTree = "<group>"; };
+		13E4281A2ED496FC0097AD11 /* AssetSelectionListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetSelectionListScreen.swift; sourceTree = "<group>"; };
+		13E4281C2ED497030097AD11 /* AssetSelectionListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetSelectionListViewModel.swift; sourceTree = "<group>"; };
+		13E4281E2ED4987C0097AD11 /* MayaAssetsDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaAssetsDataSource.swift; sourceTree = "<group>"; };
+		13E428212ED49AB10097AD11 /* AssetSelectionFormCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetSelectionFormCell.swift; sourceTree = "<group>"; };
+		13E428232ED4A01C0097AD11 /* BondMayaTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondMayaTransactionBuilder.swift; sourceTree = "<group>"; };
+		13E428252ED4A2A80097AD11 /* IntValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntValidator.swift; sourceTree = "<group>"; };
 		13EF20B52EC3675E00CEB7DA /* AddLPTransactionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddLPTransactionViewModel.swift; sourceTree = "<group>"; };
 		13EF20B62EC3675E00CEB7DA /* AddLPTransactionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddLPTransactionScreen.swift; sourceTree = "<group>"; };
 		13EF20BA2EC3692200CEB7DA /* AddLPTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddLPTransactionBuilder.swift; sourceTree = "<group>"; };
@@ -2942,19 +2962,13 @@
 		1348561C2EB511C8003D10BE /* FunctionTransaction */ = {
 			isa = PBXGroup;
 			children = (
-				13EF20B42EC3675400CEB7DA /* RemoveLP */,
-				13EF20B22EC3674A00CEB7DA /* AddLP */,
+				13E428182ED495B60097AD11 /* SharedFunctions */,
+				13E428172ED495980097AD11 /* Maya */,
+				13E428162ED4958C0097AD11 /* Thorchain */,
 				134FF3642EBA48B000683169 /* TransactionBuilder */,
 				134FF36E2EBA64CA00683169 /* Common */,
 				1348563A2EB52891003D10BE /* TransactionFormScreen.swift */,
 				134856202EB511D7003D10BE /* FunctionTransactionScreen.swift */,
-				134856192EB511C8003D10BE /* Bond */,
-				134FF3692EBA504300683169 /* Unbond */,
-				139450192EBB8EA500A72AE9 /* WithdrawRewards */,
-				1394500D2EBB865F00A72AE9 /* Stake */,
-				139450142EBB8A3000A72AE9 /* Unstake */,
-				13732CC82EBE33DC00B6AA0C /* Mint */,
-				13732CC12EBE337F00B6AA0C /* Redeem */,
 			);
 			path = FunctionTransaction;
 			sourceTree = "<group>";
@@ -2992,7 +3006,7 @@
 			children = (
 				134E23F62EAA6F5100952600 /* THORChainAssetFactory.swift */,
 				134E8D802E451F7A0086EBC4 /* PreferredAssetFactory.swift */,
-				134E8D7E2E451F6C0086EBC4 /* PreferredAsset.swift */,
+				134E8D7E2E451F6C0086EBC4 /* THORChainAsset.swift */,
 			);
 			path = PreferredAsset;
 			sourceTree = "<group>";
@@ -3040,6 +3054,7 @@
 		134FF3702EBA64D300683169 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				13E428212ED49AB10097AD11 /* AssetSelectionFormCell.swift */,
 				134FF3752EBA64F800683169 /* FunctionAddressField.swift */,
 			);
 			path = View;
@@ -3591,6 +3606,7 @@
 		13A964162EBBD8EB0025FB7A /* Bond */ = {
 			isa = PBXGroup;
 			children = (
+				13E428232ED4A01C0097AD11 /* BondMayaTransactionBuilder.swift */,
 				134FF3672EBA499600683169 /* BondTransactionBuilder.swift */,
 				134FF3772EBA6C8500683169 /* UnbondTransactionBuilder.swift */,
 			);
@@ -4114,6 +4130,68 @@
 				134856262EB51642003D10BE /* FormValidationError.swift */,
 			);
 			path = Forms;
+			sourceTree = "<group>";
+		};
+		13E428062ED4945A0097AD11 /* BondMaya */ = {
+			isa = PBXGroup;
+			children = (
+				13E4280F2ED494830097AD11 /* BondMayaTransactionScreen.swift */,
+				13E4280B2ED4946A0097AD11 /* BondMayaTransactionViewModel.swift */,
+				13E428252ED4A2A80097AD11 /* IntValidator.swift */,
+			);
+			path = BondMaya;
+			sourceTree = "<group>";
+		};
+		13E428112ED494D40097AD11 /* UnbondMaya */ = {
+			isa = PBXGroup;
+			children = (
+				13E428122ED494DE0097AD11 /* UnbondMayaTransactionScreen.swift */,
+				13E428132ED494DE0097AD11 /* UnbondMayaTransactionViewModel.swift */,
+			);
+			path = UnbondMaya;
+			sourceTree = "<group>";
+		};
+		13E428162ED4958C0097AD11 /* Thorchain */ = {
+			isa = PBXGroup;
+			children = (
+				13EF20B42EC3675400CEB7DA /* RemoveLP */,
+				13EF20B22EC3674A00CEB7DA /* AddLP */,
+				134856192EB511C8003D10BE /* Bond */,
+				134FF3692EBA504300683169 /* Unbond */,
+				139450192EBB8EA500A72AE9 /* WithdrawRewards */,
+				13732CC82EBE33DC00B6AA0C /* Mint */,
+				13732CC12EBE337F00B6AA0C /* Redeem */,
+			);
+			path = Thorchain;
+			sourceTree = "<group>";
+		};
+		13E428172ED495980097AD11 /* Maya */ = {
+			isa = PBXGroup;
+			children = (
+				13E428192ED496F50097AD11 /* AssetSelectionList */,
+				13E428112ED494D40097AD11 /* UnbondMaya */,
+				13E428062ED4945A0097AD11 /* BondMaya */,
+			);
+			path = Maya;
+			sourceTree = "<group>";
+		};
+		13E428182ED495B60097AD11 /* SharedFunctions */ = {
+			isa = PBXGroup;
+			children = (
+				1394500D2EBB865F00A72AE9 /* Stake */,
+				139450142EBB8A3000A72AE9 /* Unstake */,
+			);
+			path = SharedFunctions;
+			sourceTree = "<group>";
+		};
+		13E428192ED496F50097AD11 /* AssetSelectionList */ = {
+			isa = PBXGroup;
+			children = (
+				13E4281E2ED4987C0097AD11 /* MayaAssetsDataSource.swift */,
+				13E4281C2ED497030097AD11 /* AssetSelectionListViewModel.swift */,
+				13E4281A2ED496FC0097AD11 /* AssetSelectionListScreen.swift */,
+			);
+			path = AssetSelectionList;
 			sourceTree = "<group>";
 		};
 		13EF20B22EC3674A00CEB7DA /* AddLP */ = {
@@ -6105,6 +6183,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				13E4280C2ED494700097AD11 /* BondMayaTransactionViewModel.swift in Sources */,
 				130652562EA7CEC6002CAD99 /* BondedNodesResponse.swift in Sources */,
 				A649AB9E2C6C54AA004710A9 /* PopupCapsule.swift in Sources */,
 				DE6EF0512D06709200A36D6A /* DKLSMessenger.swift in Sources */,
@@ -6154,7 +6233,7 @@
 				469ED3A02B98F5B4008D4951 /* THORChainAccountNumberResponse.swift in Sources */,
 				A646DFB52E16DE34006E8ECC /* SendDetailsAdditionalSection.swift in Sources */,
 				A622C84E2C9BC7C300908332 /* FastVaultEmailView+iOS.swift in Sources */,
-				134E8D7F2E451F6F0086EBC4 /* PreferredAsset.swift in Sources */,
+				134E8D7F2E451F6F0086EBC4 /* THORChainAsset.swift in Sources */,
 				A6E5823D2BE98C4F006DA410 /* NavigationBlankBackButton.swift in Sources */,
 				A5E66B512CCA472000B6DA47 /* WarningView.swift in Sources */,
 				A6BFE1C72D95F3C9000B73C0 /* SwapCoinPickerView.swift in Sources */,
@@ -6234,6 +6313,7 @@
 				1385741E2E2DB441002532BF /* PrimaryNavigationButton.swift in Sources */,
 				A622C8362C9BB76A00908332 /* CoinPickerView+iOS.swift in Sources */,
 				A622C8342C9BB28000908332 /* VultisigApp+macOS.swift in Sources */,
+				13E428262ED4A2A80097AD11 /* IntValidator.swift in Sources */,
 				134FF3742EBA64EF00683169 /* AddressViewModel.swift in Sources */,
 				A6980C262BC0848F00F452AB /* SettingCell.swift in Sources */,
 				A622C8522C9BC9D200908332 /* FastVaultSetPasswordView+iOS.swift in Sources */,
@@ -6276,6 +6356,7 @@
 				13D178FC2E57544A00007B48 /* AddressBookChainSelectionViewModel.swift in Sources */,
 				A6AF96142C2E545800992578 /* UtilsQrCodeFromImageError.swift in Sources */,
 				DE63AE4D2BB4E94E001BBE5C /* JSONRPCResponse.swift in Sources */,
+				13E4281D2ED4970D0097AD11 /* AssetSelectionListViewModel.swift in Sources */,
 				A63253C42C17BE9000D2F1B8 /* VaultDeletionDetails.swift in Sources */,
 				A6833D912C66A0B5002029E1 /* CreateVaultHeader.swift in Sources */,
 				138538E22E61F681006DF7C7 /* VultiServerService.swift in Sources */,
@@ -6350,6 +6431,7 @@
 				A6ECA1A22C93FC0D00456110 /* VaultSetupCard+macOS.swift in Sources */,
 				A6ECA1962C93F99700456110 /* InstructionPrompt+macOS.swift in Sources */,
 				DE1572972B70F254009BC7C5 /* LocalStateAccessorImp.swift in Sources */,
+				13E4281F2ED498830097AD11 /* MayaAssetsDataSource.swift in Sources */,
 				A6833D8D2C65D2A1002029E1 /* AddressQRCodeHeader.swift in Sources */,
 				A617B67C2CEC641B006E5122 /* SendCryptoDoneSummary.swift in Sources */,
 				A65BA9962BAD460600B2D8AA /* KeysignStartView.swift in Sources */,
@@ -6449,6 +6531,7 @@
 				A6E0C9192DE6BAD600A01543 /* StepsAnimationView.swift in Sources */,
 				13A74CBF2ED3D2CA00B97173 /* DefaultLPsInteractor.swift in Sources */,
 				139D15AE2E9C78FD006F671C /* VultDiscountTier.swift in Sources */,
+				13E428222ED49AB50097AD11 /* AssetSelectionFormCell.swift in Sources */,
 				B50E399D2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift in Sources */,
 				134856272EB51642003D10BE /* Form.swift in Sources */,
 				134856282EB51642003D10BE /* FormField.swift in Sources */,
@@ -6511,6 +6594,7 @@
 				1321A8362ED0A4ED004CBB99 /* BondNode.swift in Sources */,
 				1321A8372ED0A4ED004CBB99 /* DefiChainPositionType.swift in Sources */,
 				1321A8382ED0A4ED004CBB99 /* DefiChainActiveNodeView.swift in Sources */,
+				13E428242ED4A0200097AD11 /* BondMayaTransactionBuilder.swift in Sources */,
 				1321A8392ED0A4ED004CBB99 /* DefiChainLPsView.swift in Sources */,
 				1321A83A2ED0A4ED004CBB99 /* DefiChainActiveNodesView.swift in Sources */,
 				1321A83B2ED0A4ED004CBB99 /* DefiChainLPPositionSkeletonView.swift in Sources */,
@@ -6891,6 +6975,7 @@
 				A5BDC7BE2C32FF4A004DBBE7 /* CoinsGrouped.swift in Sources */,
 				DE64A4CA2BA7F90E00C342E3 /* ServiceDelegate.swift in Sources */,
 				A5D49F562BE26BB9001766C8 /* ChainAction.swift in Sources */,
+				13E4281B2ED497010097AD11 /* AssetSelectionListScreen.swift in Sources */,
 				138C5E722E7A01C600C559C7 /* ToolbarButton.swift in Sources */,
 				A6E52F802BBE430600FD3785 /* TransactionCell.swift in Sources */,
 				A6D739E22E0BAA3A0005697D /* SendDetailsTabEditTools.swift in Sources */,
@@ -7128,9 +7213,12 @@
 				A5BA150A2C078EED00AA6C07 /* TokenSelectionCell.swift in Sources */,
 				A65649E42B96602700E4B329 /* StringExtension.swift in Sources */,
 				A6C639492C1FED0F0078B8E3 /* NavigationButton.swift in Sources */,
+				13E428102ED4948B0097AD11 /* BondMayaTransactionScreen.swift in Sources */,
 				B596B2B02CC6F22E0068FCC8 /* SolanaJupiterTokenInfo.swift in Sources */,
 				B5BEB1ED2E137FBA00372170 /* ThorchainMergeTokens.swift in Sources */,
 				A6C670EB2C9E95E600F59B6A /* TransactionsView+macOS.swift in Sources */,
+				13E428142ED494DE0097AD11 /* UnbondMayaTransactionScreen.swift in Sources */,
+				13E428152ED494DE0097AD11 /* UnbondMayaTransactionViewModel.swift in Sources */,
 				131603482E60A450001ED972 /* VaultBackupPasswordScreen.swift in Sources */,
 				1334C73A2E2FE56500CBAA3E /* SendCryptoVerifySummary.swift in Sources */,
 				A6F9F7E92B9BBFD500790258 /* AddressQRCodeView.swift in Sources */,

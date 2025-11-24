@@ -13,8 +13,8 @@ class EditReferralViewModel: ObservableObject {
     @Published var loadingFees: Bool = false
     @Published var errorMessage: String?
     @Published var hasError = false
-    @Published var preferredAsset: PreferredAsset?
-    var initialPreferredAsset: PreferredAsset?
+    @Published var preferredAsset: THORChainAsset?
+    var initialPreferredAsset: THORChainAsset?
 
     let thornameDetails: THORName
     let currentBlockHeight: UInt64
@@ -108,7 +108,7 @@ private extension EditReferralViewModel {
     }
     
     @MainActor
-    func createTransaction(tx: SendTransaction, preferredAsset: PreferredAsset?) async {
+    func createTransaction(tx: SendTransaction, preferredAsset: THORChainAsset?) async {
         var preferredAssetCoin: Coin?
         if let preferredAsset {
             preferredAssetCoin = try? CoinService.addIfNeeded(asset: preferredAsset.asset, to: vault, priceProviderId: preferredAsset.asset.priceProviderId)

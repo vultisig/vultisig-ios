@@ -110,7 +110,7 @@ struct MayaPoolResponse: Codable {
         case asset
         case assetDepth = "balance_asset"
         case cacaoDepth = "balance_cacao"
-        case liquidityUnits = "lp_units"
+        case liquidityUnits = "LP_units"
         case bondable
     }
 }

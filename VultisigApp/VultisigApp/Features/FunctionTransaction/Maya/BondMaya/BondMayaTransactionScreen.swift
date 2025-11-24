@@ -1,0 +1,125 @@
+//
+//  BondMayaTransactionScreen.swift
+//  VultisigApp
+//
+//  Created by Gaston Mazzeo on 24/11/2025.
+//
+
+import SwiftUI
+
+struct BondMayaTransactionScreen: View {
+    enum FocusedField {
+        case address, amount
+    }
+    
+    @StateObject var viewModel: BondMayaTransactionViewModel
+    var onVerify: (TransactionBuilder) -> Void
+    
+    @State var focusedFieldBinding: FocusedField? = .none
+    @FocusState private var focusedField: FocusedField?
+    
+    @State var showAssetSelection: Bool = false
+    
+    var body: some View {
+        TransactionFormScreen(
+            title: "bond".localized,
+            validForm: $viewModel.validForm,
+            onContinue: onContinue
+        ) {
+            FormExpandableSection(
+                title: "address".localized,
+                isValid: viewModel.addressViewModel.field.valid,
+                value: viewModel.addressViewModel.field.value,
+                showValue: true,
+                focusedField: $focusedFieldBinding,
+                focusedFieldEquals: .address
+            ) {
+                focusedFieldBinding = $0 ? .address : .amount
+            } content: {
+                FunctionAddressField(viewModel: viewModel.addressViewModel)
+                    .focused($focusedField, equals: .address)
+            }
+            
+            FormExpandableSection(
+                title: "amount".localized,
+                isValid: viewModel.lpUnitsField.valid,
+                value: .empty,
+                showValue: false,
+                focusedField: $focusedFieldBinding,
+                focusedFieldEquals: .amount
+            ) {
+                focusedFieldBinding = $0 ? .amount : .address
+            } content: {
+                VStack(alignment: .leading, spacing: 12) {
+                    Button {
+                        showAssetSelection = true
+                    } label: {
+                        AssetSelectionFormCell(coin: viewModel.selectedAsset?.asset)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    
+                    CommonTextField(
+                        text: $viewModel.lpUnitsField.value,
+                        label: viewModel.lpUnitsField.label,
+                        placeholder: viewModel.lpUnitsField.placeholder ?? .empty,
+                        error: $viewModel.lpUnitsField.error,
+                        labelStyle: .secondary
+                    )
+#if os(iOS)
+                    .keyboardType(.decimalPad)
+#endif
+                }
+            }
+        }
+        .onLoad {
+            viewModel.onLoad()
+            onAddressFill()
+        }
+        .onChange(of: viewModel.addressViewModel.field.valid) { _, isValid in
+            onAddressFill()
+        }
+        .onChange(of: focusedFieldBinding) { oldValue, newValue in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                focusedField = newValue
+            }
+        }
+        .withLoading(isLoading: $viewModel.isLoading)
+        .crossPlatformSheet(isPresented: $showAssetSelection) {
+            AssetSelectionListScreen(
+                isPresented: $showAssetSelection,
+                selectedAsset: $viewModel.selectedAsset,
+                dataSource: viewModel.assetsDataSource
+            ) { showAssetSelection = false }
+        }
+    }
+    
+    func onContinue() {
+        switch focusedFieldBinding {
+        case .address:
+            focusedFieldBinding =  .amount
+        case .amount, nil:
+            if viewModel.lpUnitsField.valid, !viewModel.addressViewModel.field.valid {
+                focusedField = .address
+                return
+            }
+            
+            guard let transactionBuilder = viewModel.transactionBuilder else { return }
+            onVerify(transactionBuilder)
+        }
+    }
+    
+    func onAddressFill() {
+        focusedFieldBinding = viewModel.addressViewModel.field.valid ? .amount : .address
+    }
+}
+
+#Preview {
+    BondMayaTransactionScreen(
+        viewModel: BondMayaTransactionViewModel(
+            coin: .example,
+            vault: .example,
+            initialBondAddress: nil
+        )
+    ) { _ in }
+}

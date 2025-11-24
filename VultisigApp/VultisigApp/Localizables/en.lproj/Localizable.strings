@@ -994,3 +994,4 @@
 "rebondNote" = "Note: REBOND transactions must send 0 RUNE. The amount above only goes in the memo.";
 "chainNotAdded" = "Chain Not Added";
 "chainNotAddedMessage" = "The blockchain %@ is not added to this vault. Please add it manually from the vault settings.";
+"native" = "Native";
