@@ -89,15 +89,29 @@ struct VultDiscountTierView: View {
                 .fill(Theme.colors.bgSecondary)
             
             // Inner shadow with gradient
-            gradientView
-                .opacity(0.35)
+            innerShadow
+                .opacity(0.2)
                 .mask(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(lineWidth: 8)
-                        .blur(radius: 2)
+                        .stroke(lineWidth: 40)
+                        .blur(radius: 20)
                 )
                 .transition(.opacity)
                 .showIf(isExpanded)
+        }
+    }
+    
+    @ViewBuilder
+    var innerShadow: some View {
+        switch tier {
+        case .ultimate:
+            LinearGradient(
+                colors: [Color(hex: "f0d464"), .clear],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        default:
+            gradientView
         }
     }
     
