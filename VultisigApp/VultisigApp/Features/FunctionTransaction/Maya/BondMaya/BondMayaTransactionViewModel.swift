@@ -46,7 +46,6 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
     func onLoad() {
         isLoading = true
         setupForm()
-        // TODO: - Use LP units
         lpUnitsField.validators.append(IntValidator())
         lpUnitsField.validators.append(AmountBalanceValidator(balance: coin.balanceDecimal))
         
@@ -62,7 +61,7 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
                 await MainActor.run {
                     selectedAsset = firstAsset
                 }
-            }   
+            }
         }
     }
     
