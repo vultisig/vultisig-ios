@@ -66,6 +66,7 @@ struct BondMayaTransactionScreen: View {
                         error: $viewModel.lpUnitsField.error,
                         labelStyle: .secondary
                     )
+                    .focused($focusedField, equals: .amount)
 #if os(iOS)
                     .keyboardType(.decimalPad)
 #endif
