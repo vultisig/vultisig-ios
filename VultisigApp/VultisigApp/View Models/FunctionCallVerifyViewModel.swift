@@ -90,7 +90,13 @@ class FunctionCallVerifyViewModel: ObservableObject {
                     expirationTime: UInt64(expirationTime.timeIntervalSince1970),
                     isAffiliate: false
                 )
-                swapPayload = .thorchain(thorchainSwapPayload)
+                
+                switch tx.coin.chain {
+                case .mayaChain:
+                    swapPayload = .mayachain(thorchainSwapPayload)
+                default:
+                    swapPayload = .thorchain(thorchainSwapPayload)
+                }
                 
                 // Check if the coin requires approval (ERC20 tokens)
                 if tx.coin.shouldApprove && !tx.toAddress.isEmpty {

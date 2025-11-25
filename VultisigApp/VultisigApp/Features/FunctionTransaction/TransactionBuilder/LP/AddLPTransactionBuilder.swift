@@ -12,7 +12,7 @@ struct AddLPTransactionBuilder: TransactionBuilder {
     let coin: Coin
     let amount: String
     let poolName: String
-    let pairedAddress: String
+    let pairedAddress: String?
     let sendMaxAmount: Bool
     
     var amountMicro: UInt64 {
@@ -23,7 +23,7 @@ struct AddLPTransactionBuilder: TransactionBuilder {
     }
     
     var memo: String {
-        let address = pairedAddress.nilIfEmpty
+        let address = pairedAddress?.nilIfEmpty
         let lpData = AddLPMemoData(pool: poolName, pairedAddress: address)
         return lpData.memo
     }
@@ -31,7 +31,9 @@ struct AddLPTransactionBuilder: TransactionBuilder {
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("pool", poolName)
-        dict.set("pairedAddress", pairedAddress)
+        if let pairedAddress {
+            dict.set("pairedAddress", pairedAddress)
+        }
         dict.set("memo", memo)
         return dict
     }

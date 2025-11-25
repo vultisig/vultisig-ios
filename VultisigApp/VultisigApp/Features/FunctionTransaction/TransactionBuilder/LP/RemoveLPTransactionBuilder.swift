@@ -27,7 +27,9 @@ struct RemoveLPTransactionBuilder: TransactionBuilder {
         dict.set("pool", poolName)
         dict.set("withdrawPercentage", "\(percentage)%")
         dict.set("units", poolUnits)
-        dict.set("dustAmount", "0.02 RUNE")
+        if coin.chain == .thorChain {
+            dict.set("dustAmount", "0.02 RUNE")
+        }
         dict.set("memo", memo)
         return dict
     }
