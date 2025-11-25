@@ -913,7 +913,7 @@
 "bonded" = "Vincolato";
 "staked" = "In Staking";
 "lps" = "LPs";
-"bondedRune" = "RUNE Vincolato";
+"bondedCoin" = "Totale Vincolato %@";
 "availableNodes" = "Nodi Disponibili";
 "activeNodes" = "Nodi Attivi";
 "churnedOut" = "Escluso";
@@ -995,3 +995,7 @@
 "withdraw" = "Preleva";
 "chainNotAdded" = "Catena Non Aggiunta";
 "chainNotAddedMessage" = "La blockchain %@ non è aggiunta a questo caveau. Per favore, aggiungila manualmente dalle impostazioni del caveau.";
+"native" = "Nativo";
+"cacaoPool" = "Pool Cacao";
+"invalidIntegerError" = "Importo intero non valido";
+"emptyLPsField" = "Campo LPs vuoto";

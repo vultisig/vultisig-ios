@@ -7,16 +7,16 @@
 
 import SwiftUI
 
-struct FormExpandableSection<Content: View, T: Hashable>: View {
+struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View {
     let title: String
     let isValid: Bool
-    let value: String
     let showValue: Bool
     
     var focusedField: Binding<T?>
     let focusedFieldEquals: T
     var onExpand: (Bool) -> Void
     let content: () -> Content
+    let valueView: () -> ValueView
     
     init(
         title: String,
@@ -27,15 +27,43 @@ struct FormExpandableSection<Content: View, T: Hashable>: View {
         focusedFieldEquals: T,
         onExpand: @escaping (Bool) -> Void,
         @ViewBuilder content: @escaping () -> Content
+    ) where ValueView == AnyView {
+        self.init(
+            title: title,
+            isValid: isValid,
+            showValue: showValue,
+            focusedField: focusedField,
+            focusedFieldEquals: focusedFieldEquals,
+            onExpand: onExpand,
+            content: content,
+            valueView: {
+                AnyView(Text(value)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .lineLimit(1)
+                    .truncationMode(.middle))
+            }
+        )
+    }
+    
+    init(
+        title: String,
+        isValid: Bool,
+        showValue: Bool,
+        focusedField: Binding<T?>,
+        focusedFieldEquals: T,
+        onExpand: @escaping (Bool) -> Void,
+        @ViewBuilder content: @escaping () -> Content,
+        @ViewBuilder valueView: @escaping () -> ValueView
     ) {
         self.title = title
         self.isValid = isValid
-        self.value = value
         self.showValue = showValue
         self.focusedField = focusedField
         self.focusedFieldEquals = focusedFieldEquals
         self.onExpand = onExpand
         self.content = content
+        self.valueView = valueView
     }
     
     @State var isExpanded = false
@@ -54,12 +82,8 @@ struct FormExpandableSection<Content: View, T: Hashable>: View {
                     
                     if isValid && !isExpanded {
                         HStack(spacing: 12) {
-                            Text(value)
-                                .font(Theme.fonts.caption12)
-                                .foregroundStyle(Theme.colors.textExtraLight)
+                            valueView()
                                 .showIf(showValue)
-                                .lineLimit(1)
-                                .truncationMode(.middle)
                             Spacer()
                             HStack {
                                 Image(systemName: "checkmark.circle")

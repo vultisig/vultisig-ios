@@ -25,6 +25,8 @@ struct DefiBalanceService {
         switch chain {
         case .thorChain:
             thorChainTotalBalanceFiatDecimal(for: vault)
+        case .mayaChain:
+            mayaChainTotalBalanceFiatDecimal(for: vault)
         default:
             defaultTotalBalanceFiatDecimal(chain: chain, for: vault)
         }
@@ -36,9 +38,24 @@ private extension DefiBalanceService {
         guard let runeCoin = vault.runeCoin else { return .zero }
         let coinBalances = defaultTotalBalanceFiatDecimal(chain: .thorChain, for: vault)
         let lpBalances: Decimal = vault.lpPositions
+            .filter { $0.coin1.chain == .thorChain }
             .map { runeCoin.fiat(decimal: $0.coin1Amount) }
             .reduce(Decimal.zero, +)
         return coinBalances + lpBalances
+    }
+    
+    func mayaChainTotalBalanceFiatDecimal(for vault: Vault) -> Decimal {
+        guard let nativeCoin = vault.nativeCoin(for: .mayaChain) else { return .zero }
+        let coinBalances = defaultTotalBalanceFiatDecimal(chain: .mayaChain, for: vault)
+        let bondsBalance = vault.bondPositions
+            .filter { $0.node.coin.chain == .mayaChain }
+            .map { nativeCoin.fiat(decimal: $0.amount) }
+            .reduce(Decimal.zero, +)
+        let lpBalances: Decimal = vault.lpPositions
+            .filter { $0.coin1.chain == .mayaChain }
+            .map { nativeCoin.fiat(decimal: $0.coin1Amount) }
+            .reduce(Decimal.zero, +)
+        return coinBalances + bondsBalance + lpBalances
     }
     
     func defaultTotalBalanceFiatDecimal(chain: Chain, for vault: Vault) -> Decimal {

@@ -25,7 +25,7 @@ final class DefiChainMainViewModel: ObservableObject {
         }
     }
     
-    private let chain: Chain
+    let chain: Chain
     
     init(vault: Vault, chain: Chain) {
         self.vault = vault
@@ -62,11 +62,8 @@ final class DefiChainMainViewModel: ObservableObject {
     }
     
     func refresh() async {
-        guard let runeCoin = vault.runeCoin else {
-            return
-        }
-
-        await BalanceService.shared.updateBalance(for: runeCoin)
+        guard let nativeCoin = vault.nativeCoin(for: chain) else { return }
+        await BalanceService.shared.updateBalance(for: nativeCoin)
     }
     
     func setupSelectablePositions() async {
@@ -88,6 +85,8 @@ final class DefiChainMainViewModel: ObservableObject {
         switch chain {
         case .thorChain:
             [.bond, .stake, .liquidityPool]
+        case .mayaChain:
+            [.bond, .stake]
         default:
             []
         }

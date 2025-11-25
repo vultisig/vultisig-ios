@@ -10,6 +10,8 @@ enum DefiInteractorResolver {
         switch chain {
         case .thorChain:
             return THORChainStakeInteractor()
+        case .mayaChain:
+            return MayaChainStakeInteractor()
         default:
             fatalError("Chain \(chain.name) doesn't support DeFi Stake Tab")
         }
@@ -19,6 +21,8 @@ enum DefiInteractorResolver {
         switch chain {
         case .thorChain:
             return THORChainBondInteractor()
+        case .mayaChain:
+            return MayaChainBondInteractor()
         default:
             fatalError("Chain \(chain.name) doesn't support DeFi Bond Tab")
         }
@@ -28,6 +32,8 @@ enum DefiInteractorResolver {
         switch chain {
         case .thorChain:
             return THORChainLPsInteractor()
+        case .mayaChain:
+            return DefaultLPsInteractor()
         default:
             fatalError("Chain \(chain.name) doesn't support DeFi LPs Tab")
         }

@@ -22,26 +22,50 @@ struct FunctionTransactionScreen: View {
         ZStack {
             switch transactionType {
             case .bond(let coin, let node):
-                resolvingCoin(coinMeta: coin) {
-                    BondTransactionScreen(
-                        viewModel: BondTransactionViewModel(
-                            coin: $0,
-                            vault: vault,
-                            initialBondAddress: node
-                        ),
-                        onVerify: onVerify
-                    )
+                resolvingCoin(coinMeta: coin) { coin in
+                    switch coin.chain {
+                    case .mayaChain:
+                        BondMayaTransactionScreen(
+                            viewModel: BondMayaTransactionViewModel(
+                                coin: coin,
+                                vault: vault,
+                                initialBondAddress: node
+                            ),
+                            onVerify: onVerify
+                        )
+                    default:
+                        BondTransactionScreen(
+                            viewModel: BondTransactionViewModel(
+                                coin: coin,
+                                vault: vault,
+                                initialBondAddress: node
+                            ),
+                            onVerify: onVerify
+                        )
+                    }
                 }
             case .unbond(let node):
-                resolvingCoin(coin: vault.runeCoin) {
-                    UnbondTransactionScreen(
-                        viewModel: UnbondTransactionViewModel(
-                            coin: $0,
-                            vault: vault,
-                            bondAddress: node.address
-                        ),
-                        onVerify: onVerify
-                    )
+                resolvingCoin(coinMeta: node.coin) { coin in
+                    switch coin.chain {
+                    case .mayaChain:
+                        UnbondMayaTransactionScreen(
+                            viewModel: UnbondMayaTransactionViewModel(
+                                coin: coin,
+                                vault: vault,
+                                initialBondAddress: node.address
+                            ),
+                            onVerify: onVerify
+                        )
+                    default:
+                        UnbondTransactionScreen(
+                            viewModel: UnbondTransactionViewModel(
+                                coin: coin,
+                                vault: vault,
+                                bondAddress: node.address
+                            ),
+                            onVerify: onVerify
+                        )
+                    }
                 }
             case .stake(let coin, let defaultAutocompound):
                 resolvingCoin(coinMeta: coin) {
@@ -135,7 +159,7 @@ struct FunctionTransactionScreen: View {
     }
     
     @ViewBuilder
-    func resolvingCoin<Content: View>(coinMeta: CoinMeta, content: (Coin) -> Content) -> some View {
+    func resolvingCoin<Content: View>(coinMeta: CoinMeta, @ViewBuilder content: (Coin) -> Content) -> some View {
         let coin = vault.coins.first(where: { $0.toCoinMeta() == coinMeta })
         resolvingCoin(coin: coin, content: content)
     }
