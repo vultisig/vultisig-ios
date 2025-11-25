@@ -41,6 +41,7 @@
 		130C40FB2E7381E700509C61 /* HomeTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40FA2E7381E400509C61 /* HomeTab.swift */; };
 		130C40FE2E7389C000509C61 /* VultiTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40FD2E7389BD00509C61 /* VultiTabBar.swift */; };
 		130C704B2E31791E00EF2248 /* LongPressPrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */; };
+		13155AA72ED4F73E0042549B /* HighlightedTextWithImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13155AA62ED4F73E0042549B /* HighlightedTextWithImage.swift */; };
 		13155A2E2ED4AD950042549B /* CacaoStakeTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13155A2D2ED4AD8F0042549B /* CacaoStakeTransactionBuilder.swift */; };
 		13155A302ED4AE5D0042549B /* CacaoUnstakeTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13155A2F2ED4AE5D0042549B /* CacaoUnstakeTransactionBuilder.swift */; };
 		131603452E609D74001ED972 /* FileExporterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603442E609D6B001ED972 /* FileExporterSheet.swift */; };
@@ -1243,6 +1244,7 @@
 		130C40FA2E7381E400509C61 /* HomeTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTab.swift; sourceTree = "<group>"; };
 		130C40FD2E7389BD00509C61 /* VultiTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultiTabBar.swift; sourceTree = "<group>"; };
 		130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongPressPrimaryButton.swift; sourceTree = "<group>"; };
+		13155AA62ED4F73E0042549B /* HighlightedTextWithImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightedTextWithImage.swift; sourceTree = "<group>"; };
 		13155A2D2ED4AD8F0042549B /* CacaoStakeTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacaoStakeTransactionBuilder.swift; sourceTree = "<group>"; };
 		13155A2F2ED4AE5D0042549B /* CacaoUnstakeTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacaoUnstakeTransactionBuilder.swift; sourceTree = "<group>"; };
 		131603442E609D6B001ED972 /* FileExporterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileExporterSheet.swift; sourceTree = "<group>"; };
@@ -3617,6 +3619,7 @@
 		13A899092E44F540006F75F0 /* Text */ = {
 			isa = PBXGroup;
 			children = (
+				13155AA62ED4F73E0042549B /* HighlightedTextWithImage.swift */,
 				13D93BCE2E58B2ED001E31E8 /* HighlightedText.swift */,
 				13A8990A2E44F544006F75F0 /* RedactedText.swift */,
 			);
@@ -7132,6 +7135,7 @@
 				133EEA192E68787900E18280 /* SettingsCommonOptionView.swift in Sources */,
 				13C320032E61F8DB00255138 /* ReferralVaultSelectionScreen.swift in Sources */,
 				B5F7581A2BD8E7230097B5B9 /* SuiService.swift in Sources */,
+				13155AA72ED4F73E0042549B /* HighlightedTextWithImage.swift in Sources */,
 				135C7AE12EA14130002F879A /* CustomizeChainsActionBanner.swift in Sources */,
 				138E1D5E2E9480500085EA8E /* SheetPresentedViewModifier.swift in Sources */,
 				A6505ACE2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift in Sources */,
