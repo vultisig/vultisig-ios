@@ -6,11 +6,11 @@
 //
 
 enum PreferredAssetFactory {
-    static func createCoin(from asset: String, decimals: Int? = nil) -> PreferredAsset? {
+    static func createCoin(from asset: String, decimals: Int? = nil) -> THORChainAsset? {
         guard let coin = THORChainAssetFactory.createCoin(from: asset, decimals: decimals) else {
             return nil
         }
         
-        return PreferredAsset(thorchainAsset: asset, asset: coin)
+        return THORChainAsset(thorchainAsset: asset, asset: coin)
     }
 }

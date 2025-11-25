@@ -64,6 +64,11 @@ final class StakeTransactionViewModel: ObservableObject, Form {
                 amount: amountField.value,
                 sendMaxAmount: isMaxAmount
             )
+        case "CACAO":
+            return CacaoStakeTransactionBuilder(
+                coin: coin,
+                amount: amountField.value
+            )
         default:
             return nil
         }

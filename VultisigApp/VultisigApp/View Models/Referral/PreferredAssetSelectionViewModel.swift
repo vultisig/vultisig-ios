@@ -10,10 +10,10 @@ import SwiftUI
 class PreferredAssetSelectionViewModel: ObservableObject {
     @Published var searchText: String = ""
     @Published var isLoading: Bool = false
-    @Published private var assets: [PreferredAsset] = []
+    @Published private var assets: [THORChainAsset] = []
     private let thorchainService: THORChainAPIService
     
-    var filteredAssets: [PreferredAsset] {
+    var filteredAssets: [THORChainAsset] {
         guard searchText.isNotEmpty else { return assets }
         return assets.filter { $0.asset.ticker.localizedCaseInsensitiveContains(searchText) }
     }
@@ -26,7 +26,7 @@ class PreferredAssetSelectionViewModel: ObservableObject {
         await MainActor.run { isLoading = true }
         do {
             let pools = try await thorchainService.getPools()
-            let assets: [PreferredAsset] = pools.compactMap { pool -> PreferredAsset? in
+            let assets: [THORChainAsset] = pools.compactMap { pool -> THORChainAsset? in
                 PreferredAssetFactory.createCoin(from: pool.asset, decimals: pool.decimals)
             }
             
