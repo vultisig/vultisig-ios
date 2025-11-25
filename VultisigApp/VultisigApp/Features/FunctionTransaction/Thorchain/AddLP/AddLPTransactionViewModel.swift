@@ -43,9 +43,21 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
             coin: coin,
             amount: amountField.value.formatToDecimal(digits: coin.decimals),
             poolName: poolName,
-            pairedAddress: coin2.address,
+            pairedAddress: pairedAddress,
             sendMaxAmount: isMaxAmount
         )
+    }
+    
+    var pairedAddress: String? {
+        switch coin.chain {
+        case .thorChain:
+            coin2.address
+        case .mayaChain:
+            // MayaChain doesn't need pair address
+            nil
+        default:
+            coin2.address
+        }
     }
     
     func onPercentage(_ percentage: Double) {

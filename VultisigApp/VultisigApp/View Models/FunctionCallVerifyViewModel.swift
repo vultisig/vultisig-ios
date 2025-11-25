@@ -51,7 +51,7 @@ class FunctionCallVerifyViewModel: ObservableObject {
                 let vaultAddress: String
                 let routerAddress: String?
                 
-                if tx.coin.chain == .thorChain {
+                if tx.coin.chain == .thorChain || tx.coin.chain == .mayaChain {
                     // For RUNE LP, we send to paired chain's inbound address (set in tx.toAddress)
                     // We don't lookup inbound for RUNE chain itself - that would fail
                     vaultAddress = tx.toAddress // Use the paired chain's inbound address
@@ -90,7 +90,13 @@ class FunctionCallVerifyViewModel: ObservableObject {
                     expirationTime: UInt64(expirationTime.timeIntervalSince1970),
                     isAffiliate: false
                 )
-                swapPayload = .thorchain(thorchainSwapPayload)
+                
+                switch tx.coin.chain {
+                case .mayaChain:
+                    swapPayload = .mayachain(thorchainSwapPayload)
+                default:
+                    swapPayload = .thorchain(thorchainSwapPayload)
+                }
                 
                 // Check if the coin requires approval (ERC20 tokens)
                 if tx.coin.shouldApprove && !tx.toAddress.isEmpty {

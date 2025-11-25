@@ -86,7 +86,7 @@ final class DefiChainMainViewModel: ObservableObject {
         case .thorChain:
             [.bond, .stake, .liquidityPool]
         case .mayaChain:
-            [.bond, .stake]
+            [.bond, .stake, .liquidityPool]
         default:
             []
         }

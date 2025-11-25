@@ -88,7 +88,7 @@ extension THORChainAPIService {
 
         let response = try await httpClient.request(
             THORChainLPsAPI.getPoolStats(period: period),
-            responseType: [THORChainPoolStats].self
+             responseType: [THORChainPoolStats].self
         )
         let data = response.data
 
@@ -168,7 +168,8 @@ extension THORChainAPIService {
                 )
 
                 let position = THORChainLPPosition(
-                    liquidityProvider: lpDetails,
+                    runeRedeemValue: lpDetails?.runeRedeemValue ?? "0",
+                    assetRedeemValue: lpDetails?.assetRedeemValue ?? "0",
                     poolStats: poolStat
                 )
 
@@ -220,7 +221,8 @@ extension THORChainAPIService {
             }
 
             return THORChainLPPosition(
-                liquidityProvider: details,
+                runeRedeemValue: details.runeRedeemValue,
+                assetRedeemValue: details.assetRedeemValue,
                 poolStats: poolStat
             )
         } catch {
