@@ -98,7 +98,15 @@ class CoinSelectionViewModel: ObservableObject {
         if isSelected {
             selection.insert(asset)
         } else {
-            selection.remove(asset)
+            // If removing a native token, also remove all tokens from that chain
+            if asset.isNativeToken {
+                let tokensToRemove = selection.filter { $0.chain == asset.chain }
+                for token in tokensToRemove {
+                    selection.remove(token)
+                }
+            } else {
+                selection.remove(asset)
+            }
         }
     }
     
