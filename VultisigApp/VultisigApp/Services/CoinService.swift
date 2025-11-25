@@ -342,11 +342,10 @@ struct CoinService {
     }
     
     private static func findRemovedCoins(vault: Vault, selection: Set<CoinMeta>) -> [Coin] {
-        let removed = vault.coins.filter { coin in
-            let isInSelection = selection.contains(coin.toCoinMeta())
-            return !isInSelection
+        return vault.coins.filter { coin in
+            let coinMeta = coin.toCoinMeta()
+            return !selection.contains(coinMeta)
         }
-        return removed
     }
     
     private static func findChainsWithRemovedNativeToken(vault: Vault, selection: Set<CoinMeta>) -> Set<Chain> {
@@ -366,11 +365,11 @@ struct CoinService {
     }
     
     private static func findNewCoins(vault: Vault, selection: Set<CoinMeta>, excludedChains: Set<Chain>) -> [CoinMeta] {
+        let vaultCoinMetas = vault.coins.map { $0.toCoinMeta() }
         return selection.filter { asset in
             // Don't add coins from chains that were removed
-            !excludedChains.contains(asset.chain) &&
             // Don't add coins that already exist
-            !vault.coins.map { $0.toCoinMeta() }.contains(asset)
+            !excludedChains.contains(asset.chain) && !vaultCoinMetas.contains(asset)
         }
     }
     

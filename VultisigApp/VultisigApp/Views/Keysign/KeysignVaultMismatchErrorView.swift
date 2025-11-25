@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct KeysignVaultMismatchErrorView: View {
-    @State private var navigateToHome: Bool = false
-
+    @EnvironmentObject var appViewModel: AppViewModel
+    
     var body: some View {
         ErrorView(
             type: .warning,
@@ -17,13 +17,12 @@ struct KeysignVaultMismatchErrorView: View {
             description: "",
             buttonTitle: "tryAgain".localized
         ) {
-            navigateToHome = true
-        }.navigationDestination(isPresented: $navigateToHome) {
-            HomeScreen(showingVaultSelector: true)
+            appViewModel.set(selectedVault: nil, showingVaultSelector: true)
         }
     }
 }
 
 #Preview {
     KeysignVaultMismatchErrorView()
+        .environmentObject(AppViewModel())
 }

@@ -126,7 +126,25 @@ final class Vault: ObservableObject, Codable {
     }
 
     func coin(for meta: CoinMeta) -> Coin? {
-        return coins.first(where: { $0.chain == meta.chain && $0.ticker == meta.ticker })
+        let normalizedTicker = meta.ticker.lowercased()
+        let normalizedContract = meta.contractAddress.lowercased()
+        
+        return coins.first(where: { coin in
+            guard coin.chain == meta.chain else { return false }
+            
+            let coinTicker = coin.ticker.lowercased()
+            let coinContract = coin.contractAddress.lowercased()
+            
+            let isSameContract = normalizedContract == coinContract
+            let isSameTicker = coinTicker == normalizedTicker
+            
+            // Prefer contract comparison whenever available, fallback to ticker for native tokens
+            if normalizedContract.isNotEmpty || coinContract.isNotEmpty {
+                return isSameContract
+            } else {
+                return isSameTicker
+            }
+        })
     }
 
     func nativeCoin(for coin: Coin) -> Coin? {
