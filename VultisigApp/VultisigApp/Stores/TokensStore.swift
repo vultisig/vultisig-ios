@@ -1119,15 +1119,7 @@ class TokensStore {
             contractAddress: "",
             isNativeToken: true
         ),
-        CoinMeta(
-            chain: .mayaChain,
-            ticker: "CACAO",
-            logo: "cacao",
-            decimals: 10,
-            priceProviderId: "cacao",
-            contractAddress: "",
-            isNativeToken: true
-        ),
+        cacao,
         CoinMeta(
             chain: .mayaChain,
             ticker: "MAYA",
@@ -2016,5 +2008,15 @@ class TokensStore {
         priceProviderId: "thorstarter",
         contractAddress: "0x69fa0feE221AD11012BAb0FdB45d444D3D2Ce71c",
         isNativeToken: false
+    )
+    
+    static let cacao: CoinMeta = CoinMeta(
+        chain: .mayaChain,
+        ticker: "CACAO",
+        logo: "cacao",
+        decimals: 10,
+        priceProviderId: "cacao",
+        contractAddress: "",
+        isNativeToken: true
     )
 }

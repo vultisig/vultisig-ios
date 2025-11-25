@@ -913,7 +913,7 @@
 "bonded" = "Vinculado";
 "staked" = "Apostado";
 "lps" = "LPs";
-"bondedRune" = "RUNE Vinculado";
+"bondedCoin" = "Total Vinculado %@";
 "availableNodes" = "Nodos Disponibles";
 "activeNodes" = "Nodos Activos";
 "churnedOut" = "Desvinculado";
@@ -995,3 +995,7 @@
 "withdraw" = "Retirar";
 "chainNotAdded" = "Cadena No Añadida";
 "chainNotAddedMessage" = "La blockchain %@ no está añadida a esta bóveda. Por favor, añádela manualmente desde la configuración de la bóveda.";
+"native" = "Nativo";
+"cacaoPool" = "Pool de Cacao";
+"invalidIntegerError" = "Cantidad entera inválida";
+"emptyLPsField" = "Campo de LPs vacío";

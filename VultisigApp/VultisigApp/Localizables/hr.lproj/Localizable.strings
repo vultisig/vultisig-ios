@@ -913,7 +913,7 @@
 "bonded" = "Vezano";
 "staked" = "Uloženo";
 "lps" = "LPs";
-"bondedRune" = "Vezani RUNE";
+"bondedCoin" = "Ukupno Vezani %@";
 "availableNodes" = "Dostupni Čvorovi";
 "activeNodes" = "Aktivni Čvorovi";
 "churnedOut" = "Isključen";
@@ -995,3 +995,7 @@
 "withdraw" = "Povuci";
 "chainNotAdded" = "Lanac Nije Dodan";
 "chainNotAddedMessage" = "Blockchain %@ nije dodan u ovaj trezor. Molimo dodajte ga ručno iz postavki trezora.";
+"native" = "Izvorni";
+"cacaoPool" = "Cacao Pool";
+"invalidIntegerError" = "Nevažeći cijeli broj";
+"emptyLPsField" = "Prazno polje LPs";
