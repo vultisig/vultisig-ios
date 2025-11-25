@@ -18,7 +18,7 @@ struct VultDiscountTierIcon: View {
     var iconSize: CGFloat {
         switch size {
         case .big:
-            72
+            46
         case .small:
             36
         }

@@ -53,7 +53,7 @@ struct VultDiscountTierBottomSheet: View {
                         HighlightedTextWithImage(
                             text: String(format: "unlockXTier".localized, tier.name.localized),
                             highlightedText: tier.name.localized,
-                            imageName: "vult-ultimate-box-overlay",
+                            imageName: "vult-ultimate-text-overlay",
                             font: Theme.fonts.title1,
                             foregroundColor: Theme.colors.textPrimary
                         )
@@ -93,11 +93,11 @@ struct VultDiscountTierBottomSheet: View {
         .padding(.horizontal, 24)
         #if os(macOS)
         .padding(.bottom, 24)
-        .applySheetSize(400, 350)
+        .applySheetSize(400, 300)
         #endif
         .background(ModalBackgroundView(width: width))
         .presentationBackground(Theme.colors.bgSecondary)
-        .presentationDetents([.height(350)])
+        .presentationDetents([.height(300)])
         .presentationDragIndicator(.visible)
         .readSize {
             width = $0.width
