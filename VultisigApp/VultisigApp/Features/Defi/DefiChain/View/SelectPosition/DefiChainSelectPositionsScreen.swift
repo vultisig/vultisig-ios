@@ -43,7 +43,7 @@ struct DefiChainSelectPositionsScreen: View {
         TokenSelectionGridCell(
             coin: asset,
             // Prefix for LPs
-            name: section == .liquidityPool ? "RUNE/\(asset.ticker)" : asset.ticker,
+            name: section == .liquidityPool ? "\(viewModel.chain.ticker)/\(asset.ticker)" : asset.ticker,
             showChainIcon: section == .liquidityPool,
             isSelected: selection[safe: pos]?.contains(asset) ?? false
         ) { selected in

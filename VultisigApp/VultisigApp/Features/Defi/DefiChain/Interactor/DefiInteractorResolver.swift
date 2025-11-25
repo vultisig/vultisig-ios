@@ -33,7 +33,7 @@ enum DefiInteractorResolver {
         case .thorChain:
             return THORChainLPsInteractor()
         case .mayaChain:
-            return DefaultLPsInteractor()
+            return MayaChainLPsInteractor()
         default:
             fatalError("Chain \(chain.name) doesn't support DeFi LPs Tab")
         }

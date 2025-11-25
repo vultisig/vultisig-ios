@@ -178,6 +178,12 @@
 		135C7AE12EA14130002F879A /* CustomizeChainsActionBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7AE02EA1412B002F879A /* CustomizeChainsActionBanner.swift */; };
 		135C7AE42EA14359002F879A /* VaultDefiChainsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7AE32EA1434E002F879A /* VaultDefiChainsService.swift */; };
 		135C88192E3AADB800FD097D /* GradientListSeparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C88182E3AADB000FD097D /* GradientListSeparator.swift */; };
+		136095CB2ED63C560054A2B0 /* MayaChainLPsInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136095CA2ED63C500054A2B0 /* MayaChainLPsInteractor.swift */; };
+		136095CD2ED63CCB0054A2B0 /* MayaChainAPIService+LPs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136095CC2ED63CC30054A2B0 /* MayaChainAPIService+LPs.swift */; };
+		136095D22ED63FCE0054A2B0 /* MayaMemberDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136095CF2ED63FCE0054A2B0 /* MayaMemberDetails.swift */; };
+		136095D32ED63FCE0054A2B0 /* MayaPoolStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136095D02ED63FCE0054A2B0 /* MayaPoolStats.swift */; };
+		136095D42ED63FCE0054A2B0 /* MayaLPPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136095CE2ED63FCE0054A2B0 /* MayaLPPosition.swift */; };
+		136095D62ED63FE00054A2B0 /* MayaChainLPsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136095D52ED63FE00054A2B0 /* MayaChainLPsAPI.swift */; };
 		1363B4FC2EA6901600818DF7 /* DateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1363B4FB2EA6900D00818DF7 /* DateFormatter.swift */; };
 		1364A0942E9587C60023E869 /* BannersCarousel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1364A0932E9587C00023E869 /* BannersCarousel.swift */; };
 		1368C2732E832CC100BB240D /* VaultListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1368C2722E832CBE00BB240D /* VaultListView.swift */; };
@@ -1377,6 +1383,12 @@
 		135C7AE02EA1412B002F879A /* CustomizeChainsActionBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomizeChainsActionBanner.swift; sourceTree = "<group>"; };
 		135C7AE32EA1434E002F879A /* VaultDefiChainsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDefiChainsService.swift; sourceTree = "<group>"; };
 		135C88182E3AADB000FD097D /* GradientListSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientListSeparator.swift; sourceTree = "<group>"; };
+		136095CA2ED63C500054A2B0 /* MayaChainLPsInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaChainLPsInteractor.swift; sourceTree = "<group>"; };
+		136095CC2ED63CC30054A2B0 /* MayaChainAPIService+LPs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MayaChainAPIService+LPs.swift"; sourceTree = "<group>"; };
+		136095CE2ED63FCE0054A2B0 /* MayaLPPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaLPPosition.swift; sourceTree = "<group>"; };
+		136095CF2ED63FCE0054A2B0 /* MayaMemberDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaMemberDetails.swift; sourceTree = "<group>"; };
+		136095D02ED63FCE0054A2B0 /* MayaPoolStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaPoolStats.swift; sourceTree = "<group>"; };
+		136095D52ED63FE00054A2B0 /* MayaChainLPsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaChainLPsAPI.swift; sourceTree = "<group>"; };
 		1363B4FB2EA6900D00818DF7 /* DateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatter.swift; sourceTree = "<group>"; };
 		1364A0932E9587C00023E869 /* BannersCarousel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannersCarousel.swift; sourceTree = "<group>"; };
 		1368C2722E832CBE00BB240D /* VaultListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultListView.swift; sourceTree = "<group>"; };
@@ -3141,6 +3153,7 @@
 		135C149B2ED0E95E00459EFC /* LPs */ = {
 			isa = PBXGroup;
 			children = (
+				136095CA2ED63C500054A2B0 /* MayaChainLPsInteractor.swift */,
 				13A74CBE2ED3D2C500B97173 /* DefaultLPsInteractor.swift */,
 				135C149C2ED0E96A00459EFC /* THORChainLPsInteractor.swift */,
 				135C149D2ED0E96A00459EFC /* LPsInteractor.swift */,
@@ -3206,6 +3219,16 @@
 				135C7AE32EA1434E002F879A /* VaultDefiChainsService.swift */,
 			);
 			path = Service;
+			sourceTree = "<group>";
+		};
+		136095D12ED63FCE0054A2B0 /* LPs */ = {
+			isa = PBXGroup;
+			children = (
+				136095CE2ED63FCE0054A2B0 /* MayaLPPosition.swift */,
+				136095CF2ED63FCE0054A2B0 /* MayaMemberDetails.swift */,
+				136095D02ED63FCE0054A2B0 /* MayaPoolStats.swift */,
+			);
+			path = LPs;
 			sourceTree = "<group>";
 		};
 		1363B4FA2EA68FFE00818DF7 /* New Group */ = {
@@ -3563,6 +3586,7 @@
 		13A74CC52ED3D91C00B97173 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				136095D12ED63FCE0054A2B0 /* LPs */,
 				13A74CC22ED3D91C00B97173 /* Bonds */,
 				13A74CC42ED3D91C00B97173 /* Network */,
 			);
@@ -3572,6 +3596,7 @@
 		13A74CC82ED3D91C00B97173 /* TargetType */ = {
 			isa = PBXGroup;
 			children = (
+				136095D52ED63FE00054A2B0 /* MayaChainLPsAPI.swift */,
 				13A74CC62ED3D91C00B97173 /* MayaChainBondsAPI.swift */,
 				13A74CC72ED3D91C00B97173 /* MayaChainStakingAPI.swift */,
 			);
@@ -3581,6 +3606,7 @@
 		13A74CCC2ED3D91C00B97173 /* MayaChainAPI */ = {
 			isa = PBXGroup;
 			children = (
+				136095CC2ED63CC30054A2B0 /* MayaChainAPIService+LPs.swift */,
 				13A74CC52ED3D91C00B97173 /* Models */,
 				13A74CC82ED3D91C00B97173 /* TargetType */,
 				13A74CC92ED3D91C00B97173 /* MayaChainAPIService.swift */,
@@ -6247,6 +6273,7 @@
 				469ED3A02B98F5B4008D4951 /* THORChainAccountNumberResponse.swift in Sources */,
 				A646DFB52E16DE34006E8ECC /* SendDetailsAdditionalSection.swift in Sources */,
 				A622C84E2C9BC7C300908332 /* FastVaultEmailView+iOS.swift in Sources */,
+				136095CD2ED63CCB0054A2B0 /* MayaChainAPIService+LPs.swift in Sources */,
 				134E8D7F2E451F6F0086EBC4 /* THORChainAsset.swift in Sources */,
 				A6E5823D2BE98C4F006DA410 /* NavigationBlankBackButton.swift in Sources */,
 				A5E66B512CCA472000B6DA47 /* WarningView.swift in Sources */,
@@ -6451,6 +6478,7 @@
 				A617B67C2CEC641B006E5122 /* SendCryptoDoneSummary.swift in Sources */,
 				A65BA9962BAD460600B2D8AA /* KeysignStartView.swift in Sources */,
 				A6386D902C8C290F00DDD58E /* SwapVerifyView+iOS.swift in Sources */,
+				136095D62ED63FE00054A2B0 /* MayaChainLPsAPI.swift in Sources */,
 				A51AE8C22C931C6000EF9A7A /* FastVaultEnterPasswordView.swift in Sources */,
 				1344CB212E4A6366006F67B4 /* CrossPlatformShareButton.swift in Sources */,
 				A6F7B7392D4EF7BB00AC8104 /* FastBackupVaultOverview.swift in Sources */,
@@ -6657,6 +6685,7 @@
 				A6F9F7E72B9BB63700790258 /* VaultCell.swift in Sources */,
 				A57495822BBC3FCA00D5F172 /* SwapCryptoViewModel.swift in Sources */,
 				130C40F52E73583100509C61 /* NotificationBannerView.swift in Sources */,
+				136095CB2ED63C560054A2B0 /* MayaChainLPsInteractor.swift in Sources */,
 				A58CC34D2C32FB800086D16B /* KeysignMessage.swift in Sources */,
 				A6BFE1B72D93B1D8000B73C0 /* SwapRefreshQuoteCounter.swift in Sources */,
 				46F8F7262B99FEEC0099454E /* CosmosErrorResponse.swift in Sources */,
@@ -6848,6 +6877,9 @@
 				A65617FB2CB4F6DF00E9CF19 /* FolderDetailViewModel.swift in Sources */,
 				13AF0D1F2E4CE754004D4FD2 /* SendRouteBuilder.swift in Sources */,
 				B50E399B2BF5AB2100B9A269 /* FunctionCallAddressable.swift in Sources */,
+				136095D22ED63FCE0054A2B0 /* MayaMemberDetails.swift in Sources */,
+				136095D32ED63FCE0054A2B0 /* MayaPoolStats.swift in Sources */,
+				136095D42ED63FCE0054A2B0 /* MayaLPPosition.swift in Sources */,
 				A6F7B6F62D4C701D00AC8104 /* FastVaultPasswordDisclaimer.swift in Sources */,
 				A6521C562C6EC769002D5C5F /* MacScannerView.swift in Sources */,
 				13C7C1DE2E86DE5600A529FD /* AssetSelectionContainerScreen.swift in Sources */,

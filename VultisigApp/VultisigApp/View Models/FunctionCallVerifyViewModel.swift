@@ -51,7 +51,7 @@ class FunctionCallVerifyViewModel: ObservableObject {
                 let vaultAddress: String
                 let routerAddress: String?
                 
-                if tx.coin.chain == .thorChain {
+                if tx.coin.chain == .thorChain || tx.coin.chain == .mayaChain {
                     // For RUNE LP, we send to paired chain's inbound address (set in tx.toAddress)
                     // We don't lookup inbound for RUNE chain itself - that would fail
                     vaultAddress = tx.toAddress // Use the paired chain's inbound address
