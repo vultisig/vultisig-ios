@@ -22,7 +22,7 @@ struct VultTierService {
             .sorted { $0.balanceToUnlock > $1.balanceToUnlock }
             .first { balance >= $0.balanceToUnlock }
 
-        // Check for Thorguard boost (upgrade tier by one, up to Platinum)
+        // Check for Thorguard boost (upgrade tier by one level if eligible)
         if canUpgrade(tier) {
             let hasThorguard = await checkThorguardBalance(for: vault)
             if hasThorguard {
