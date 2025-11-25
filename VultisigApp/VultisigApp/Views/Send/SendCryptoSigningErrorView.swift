@@ -10,7 +10,7 @@ import SwiftUI
 struct SendCryptoSigningErrorView: View {
     let errorString: String
     
-    @State private var navigateToHome: Bool = false
+    @EnvironmentObject var appViewModel: AppViewModel
     
     var body: some View {
         ErrorView(
@@ -19,9 +19,7 @@ struct SendCryptoSigningErrorView: View {
             description: errorString,
             buttonTitle: "tryAgain".localized
         ) {
-            navigateToHome = true
-        }.navigationDestination(isPresented: $navigateToHome) {
-            HomeScreen()
+            appViewModel.restart()
         }
     }
 }
@@ -31,4 +29,5 @@ struct SendCryptoSigningErrorView: View {
         Background()
         SendCryptoSigningErrorView(errorString: "Error Message")
     }
+    .environmentObject(AppViewModel())
 }

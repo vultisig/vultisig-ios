@@ -11,10 +11,11 @@ struct JoinKeysignDoneSummary: View {
     let vault: Vault
     let viewModel: KeysignViewModel
     @Binding var showAlert: Bool
-    @Binding var moveToHome: Bool
     
     @Environment(\.openURL) var openURL
     let summaryViewModel = JoinKeysignSummaryViewModel()
+    
+    @EnvironmentObject var appViewModel: AppViewModel
     
     var body: some View {
         VStack {
@@ -74,7 +75,6 @@ struct JoinKeysignDoneSummary: View {
             vault: vault,
             keysignViewModel: viewModel,
             summaryViewModel: summaryViewModel,
-            moveToHome: $moveToHome,
             showAlert: $showAlert
         )
     }
@@ -135,7 +135,7 @@ struct JoinKeysignDoneSummary: View {
     }
     
     private func onDoneButtonPressed() {
-        moveToHome = true
+        appViewModel.restart()
     }
     
     var transactionLink: some View {
@@ -256,7 +256,8 @@ struct JoinKeysignDoneSummary: View {
 #Preview {
     ZStack {
         Background()
-        JoinKeysignDoneSummary(vault: Vault.example, viewModel: KeysignViewModel(), showAlert: .constant(false), moveToHome: .constant(false))
+        JoinKeysignDoneSummary(vault: Vault.example, viewModel: KeysignViewModel(), showAlert: .constant(false))
     }
     .environmentObject(SettingsViewModel())
+    .environmentObject(AppViewModel())
 }

@@ -16,7 +16,7 @@ struct SendCryptoDoneContentView: View {
     @State var navigateToTransactionDetails = false
     @State var navigateToHome = false
     @State var animationVM: RiveViewModel? = nil
-    @EnvironmentObject var accountViewModel: AccountViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
     
     var body: some View {
         VStack {
@@ -65,7 +65,7 @@ struct SendCryptoDoneContentView: View {
         }
         .onChange(of: navigateToHome) { _, newValue in
             guard newValue else { return }
-            accountViewModel.referenceID = UUID()
+            appViewModel.restart()
         }.onLoad {
             animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
         }
@@ -117,5 +117,5 @@ struct SendCryptoDoneContentView: View {
         swapTransaction: nil,
         isSend: true
     )
-    .environmentObject(AccountViewModel())
+    .environmentObject(AppViewModel())
 }

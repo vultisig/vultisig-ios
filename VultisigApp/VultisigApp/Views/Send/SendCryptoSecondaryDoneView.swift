@@ -16,10 +16,9 @@ struct SendCryptoSecondaryDoneView: View {
     @Environment(\.openURL) var openURL
     @EnvironmentObject var homeViewModel: HomeViewModel
     @State var canShowAddressBook: Bool = false
-    @State var navigateToHome: Bool = false
     
     @Environment(\.modelContext) var modelContext
-    @EnvironmentObject var accountViewModel: AccountViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
     
     var showAddressBookButton: Bool {
         input.isSend && canShowAddressBook
@@ -58,11 +57,7 @@ struct SendCryptoSecondaryDoneView: View {
         }
         .onChange(of: addressAdded) { oldValue, newValue in
             guard newValue else { return }
-            navigateToHome = true
-        }
-        .onChange(of: navigateToHome) { _, newValue in
-            guard newValue else { return }
-            accountViewModel.referenceID = UUID()
+            appViewModel.restart()
         }
     }
     
@@ -147,7 +142,7 @@ struct SendCryptoSecondaryDoneView: View {
     
     var continueButton: some View {
         PrimaryButton(title: "done") {
-            navigateToHome = true
+            appViewModel.restart()
         }
     }
     

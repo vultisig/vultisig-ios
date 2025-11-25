@@ -13,7 +13,7 @@ struct ContentView: View {
     
     @ObservedObject var navigationRouter: NavigationRouter
     @StateObject var router: VultisigRouter
-    @EnvironmentObject var accountViewModel: AccountViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
@@ -25,44 +25,46 @@ struct ContentView: View {
     }
 
     var body: some View {
-        ZStack {
-            NavigationStack(path: $navigationRouter.navPath) {
-                container
-                    .navigationDestination(for: SendRoute.self) { router.sendRouter.build($0) }
-            }
-            .environment(\.router, router.navigationRouter)
-            .accentColor(.white)
-            .onOpenURL { incomingURL in
-                handleDeeplink(incomingURL)
-            }
-            .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
-                if let incomingURL = userActivity.webpageURL {
-                    handleDeeplink(incomingURL)
-                }
-            }
-            
-            if accountViewModel.showCover {
-                CoverView()
-            }
+        NavigationStack(path: $navigationRouter.navPath) {
+            container
+                .navigationDestination(for: SendRoute.self) { router.sendRouter.build($0) }
         }
-        .id(accountViewModel.referenceID)
+        .environment(\.router, router.navigationRouter)
+        .id(appViewModel.referenceID)
         .colorScheme(.dark)
+        .accentColor(.white)
         .sheetPresentedStyle()
         .background(Theme.colors.bgPrimary)
+        .onOpenURL { incomingURL in
+            handleDeeplink(incomingURL)
+        }
+        .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
+            if let incomingURL = userActivity.webpageURL {
+                handleDeeplink(incomingURL)
+            }
+        }
+        .onLoad {
+            appViewModel.set(selectedVault: vaults.first)
+        }
     }
     
     var content: some View {
-        ZStack {
-            if accountViewModel.showSplashView {
+        Group {
+            if appViewModel.showSplashView {
                 splashView
-            } else if accountViewModel.showCover {
-                coverView
-            } else if vaults.count > 0 {
-                homeView
-            } else {
-                createVaultView
+            } else if appViewModel.showCover {
+                CoverView()
+            } else if vaults.count == 0 {
+                CreateVaultView(selectedVault: nil, showBackButton: false)
+            } else if let selectedVault = appViewModel.selectedVault {
+                HomeScreen(
+                    initialVault: selectedVault,
+                    showingVaultSelector: appViewModel.showingVaultSelector
+                )
             }
         }
+        .transition(.opacity)
+        .animation(.interpolatingSpring, value: appViewModel.referenceID)
     }
     
     var splashView: some View {
@@ -70,23 +72,11 @@ struct ContentView: View {
             .onAppear {
                 setData()
             }
-            .onChange(of: accountViewModel.canLogin) { oldValue, newValue in
+            .onChange(of: appViewModel.canLogin) { oldValue, newValue in
                 if newValue {
                     authenticateUser()
                 }
             }
-    }
-    
-    var coverView: some View {
-        CoverView()
-    }
-    
-    var homeView: some View {
-        HomeScreen()
-    }
-    
-    var createVaultView: some View {
-        CreateVaultView(selectedVault: nil, showBackButton: false)
     }
     
     private func setData() {
@@ -94,18 +84,18 @@ struct ContentView: View {
     }
     
     private func authenticateUser() {
-        guard accountViewModel.canLogin else {
+        guard appViewModel.canLogin else {
             return
         }
         
-        guard !accountViewModel.showOnboarding && vaults.count>0 else {
+        guard !appViewModel.showOnboarding && vaults.count>0 else {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                accountViewModel.showSplashView = false
+                appViewModel.showSplashView = false
             }
             return
         }
         
-        accountViewModel.authenticateUser()
+        appViewModel.authenticateUser()
     }
     
     private func handleDeeplink(_ incomingURL: URL) {
@@ -142,7 +132,7 @@ struct ContentView: View {
 
 #Preview {
     ContentView(navigationRouter: .init())
-        .environmentObject(AccountViewModel())
+        .environmentObject(AppViewModel())
         .environmentObject(ApplicationState())
         .environmentObject(HomeViewModel())
         .environmentObject(CoinSelectionViewModel())
