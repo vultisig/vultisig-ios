@@ -40,9 +40,17 @@ struct DefiChainActiveNodeView: View {
                 BondNodeStateView(state: activeNode.node.state)
             }
             
-            HiddenBalanceText(String(format: "bondedXCoin".localized, coin.formatWithTicker(value: activeNode.amount)))
-                .foregroundStyle(Theme.colors.textPrimary)
-                .font(Theme.fonts.title3)
+            HStack(spacing: 4) {
+                HiddenBalanceText(String(format: "bondedXCoin".localized, coin.formatWithTicker(value: activeNode.amount)))
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .font(Theme.fonts.title3)
+                Spacer()
+                
+                HiddenBalanceText(coin.valueWithDecimals(value: activeNode.amount).formatToFiat())
+                    .font(Theme.fonts.title3)
+                    .foregroundStyle(Theme.colors.textExtraLight)
+            }
+            .lineLimit(1)
             
             HStack(spacing: 4) {
                 Icon(named: "percent", size: 16)

@@ -18,6 +18,20 @@ struct DefiChainStakedView<EmptyStateView: View>: View {
         !viewModel.initialLoadingDone
     }
     
+    var formattedStakePositions: [(position: StakePosition, fiatAmount: String)] {
+        viewModel.stakePositions.compactMap { position -> (position: StakePosition, fiatAmount: Decimal)? in
+            guard let coin = viewModel.vault.coins.first(where: { $0.toCoinMeta() == position.coin }) else {
+                return nil
+            }
+            
+            let fiatAmount = coin.fiat(decimal: position.amount)
+            return (position, fiatAmount)
+        }
+        .sorted { $0.fiatAmount > $1.fiatAmount }
+        .map { ($0.position, $0.fiatAmount.formatToFiat(includeCurrencySymbol: true))}
+    }
+    
+    
     var body: some View {
         LazyVStack(spacing: 14) {
             if showLoading {
@@ -25,9 +39,10 @@ struct DefiChainStakedView<EmptyStateView: View>: View {
                     DefiChainStakedPositionSkeletonView()
                 }
             } else if viewModel.hasStakePositions {
-                ForEach(viewModel.stakePositions) { position in
+                ForEach(formattedStakePositions, id: \.position) { position, fiatAmount in
                     DefiChainStakedPositionView(
                         position: position,
+                        fiatAmount: fiatAmount,
                         onStake: { onStake(position) },
                         onUnstake: { onUnstake(position) },
                         onWithdraw: { onWithdraw(position) }

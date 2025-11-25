@@ -21,9 +21,10 @@ class BalanceService {
     private let ripple = RippleService.shared
     private let tron = TronService.shared
     private let cardano = CardanoService.shared
-    
+
     private let thorchainAPIService = THORChainAPIService()
-    
+    private let mayaChainAPIService = MayaChainAPIService()
+
     private let cryptoPriceService = CryptoPriceService.shared
     
     func updateBalances(vault: Vault) async {
@@ -98,18 +99,18 @@ private extension BalanceService {
             guard !coin.isNativeToken else {
                 return nil
             }
-            
+
             switch coin.ticker.uppercased() {
             case "TCY":
                 let service = ThorchainServiceFactory.getService(for: coin.chain)
                 let tcyStakedBalance = await service.fetchTcyStakedAmount(address: coin.address)
-                
+
                 if enableAutoCompoundStakedBalance {
                     let tcyAutoCompoundBalance = await service.fetchTcyAutoCompoundAmount(address: coin.address)
                     let totalStakedBalance = tcyStakedBalance + tcyAutoCompoundBalance
                     return totalStakedBalance.description
                 }
-                
+
                 let totalStakedBalance = tcyStakedBalance
                 return totalStakedBalance.description
             case "RUJI":
@@ -117,12 +118,12 @@ private extension BalanceService {
             default:
                 break
             }
-            
+
             // Handle merge account balances for non-native tokens
             if !coin.isNativeToken {
                 let service = ThorchainServiceFactory.getService(for: coin.chain)
                 let mergedAccounts = await service.fetchMergeAccounts(address: coin.address)
-                
+
                 if let matchedAccount = mergedAccounts.first(where: {
                     $0.pool.mergeAsset.metadata.symbol.caseInsensitiveCompare(coin.ticker) == .orderedSame
                 }) {
@@ -130,10 +131,29 @@ private extension BalanceService {
                     return amountInDecimal.description
                 }
             }
-            
+
             // Fallback return value
             return "0"
-            
+
+        case .mayaChain:
+            // Only CACAO (native token) supports staking via CACAO pool
+            guard coin.isNativeToken, coin.ticker.uppercased() == "CACAO" else {
+                return nil
+            }
+
+            do {
+                // Fetch CACAO pool position
+                let position = try await mayaChainAPIService.getCacaoPoolPosition(address: coin.address)
+
+                // Return staked amount (current value in CACAO)
+                let stakedAmountInAtomicUnits = position.stakedAmount
+                let stakedAmountBigInt = stakedAmountInAtomicUnits.description.toBigInt()
+                return stakedAmountBigInt.description
+            } catch {
+                print("Error fetching MayaChain CACAO staking balance: \(error.localizedDescription)")
+                return "0"
+            }
+
         default:
             // All other chains currently don't support staking
             return nil
