@@ -105,10 +105,10 @@ extension Decimal {
     /// For values ​​>= 1M, use abbreviations (K, M, B, T)
     /// For values ​​< 1M, use standard decimal formatting with locale
     /// ⚠️ ONLY for display - never use in input fields
-    func formatForDisplay(maxDecimals: Int = 2, locale: Locale = Locale.current) -> String {
+    func formatForDisplay(maxDecimals: Int = 2, locale: Locale = Locale.current, skipAbbreviation: Bool = false) -> String {
         let million = Decimal(1_000_000)
         
-        if abs(self) >= million {
+        if abs(self) >= million, !skipAbbreviation {
             return formatWithAbbreviation(maxDecimals: maxDecimals)
         } else {
             return formatDecimalToLocale(locale: locale)

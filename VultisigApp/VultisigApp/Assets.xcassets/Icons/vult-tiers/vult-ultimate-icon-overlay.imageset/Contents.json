@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "vult-ultimate-icon-overlay.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
