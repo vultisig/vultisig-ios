@@ -15,7 +15,7 @@ struct DefiChainBalanceView: View {
     
     let service = DefiBalanceService()
     var balance: String {
-        service.totalBalanceInFiatString(for: .thorChain, vault: vault)
+        service.totalBalanceInFiatString(for: groupedChain.chain, vault: vault)
     }
     
     var body: some View {
@@ -49,8 +49,19 @@ struct DefiChainBalanceView: View {
             .clipShape(RoundedRectangle(cornerRadius: 16))
     }
     
+    var imageName: String {
+        switch groupedChain.chain {
+        case .thorChain:
+            "thorchain-banner"
+        case .mayaChain:
+            "mayachain-banner"
+        default:
+            ""
+        }
+    }
+    
     var imageView: some View {
-        Image("thorchain-banner")
+        Image(imageName)
             .resizable()
             .aspectRatio(contentMode: .fit)
     }

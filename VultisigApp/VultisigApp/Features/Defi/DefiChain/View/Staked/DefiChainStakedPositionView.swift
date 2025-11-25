@@ -9,6 +9,7 @@ import SwiftUI
 
 struct DefiChainStakedPositionView: View {
     let position: StakePosition
+    let fiatAmount: String
     var onStake: () -> Void
     var onUnstake: () -> Void
     var onWithdraw: () -> Void
@@ -20,7 +21,12 @@ struct DefiChainStakedPositionView: View {
     var title: String {
         switch position.type {
         case .stake:
-            String(format: "stakedCoin".localized, position.coin.ticker)
+            switch position.coin.chain {
+            case .mayaChain:
+                "cacaoPool".localized
+            default:
+                String(format: "stakedCoin".localized, position.coin.ticker)
+            }
         case .compound:
             String(format: "compoundedCoin".localized, position.coin.ticker)
         case .index:
@@ -78,6 +84,12 @@ struct DefiChainStakedPositionView: View {
                     .foregroundStyle(Theme.colors.textPrimary)
                     .contentTransition(.numericText())
                     .animation(.interpolatingSpring, value: stakedAmount)
+                
+                HiddenBalanceText(fiatAmount)
+                    .font(Theme.fonts.priceCaption)
+                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .contentTransition(.numericText())
+                    .animation(.interpolatingSpring, value: fiatAmount)
             }
             Spacer()
         }
@@ -161,12 +173,30 @@ struct DefiChainStakedPositionView: View {
 
     var defaultButtonsView: some View {
         HStack(alignment: .top, spacing: 16) {
-            DefiButton(title: "unstake".localized, icon: "minus-circle", type: .secondary) {
+            DefiButton(title: removeButonTitle, icon: "minus-circle", type: .secondary) {
                 onUnstake()
             }.disabled(unstakeDisabled)
-            DefiButton(title: "stake".localized, icon: "plus-circle") {
+            DefiButton(title: addButonTitle, icon: "plus-circle") {
                 onStake()
             }
+        }
+    }
+    
+    var addButonTitle: String {
+        switch position.coin.chain {
+        case .mayaChain:
+            "add".localized
+        default:
+            "stake".localized
+        }
+    }
+    
+    var removeButonTitle: String {
+        switch position.coin.chain {
+        case .mayaChain:
+            "remove".localized
+        default:
+            "unstake".localized
         }
     }
 
@@ -205,6 +235,7 @@ struct DefiChainStakedPositionView: View {
                 rewardCoin: .example,
                 vault: .example
             ),
+            fiatAmount: "",
             onStake: {},
             onUnstake: {},
             onWithdraw: {}
@@ -222,6 +253,7 @@ struct DefiChainStakedPositionView: View {
                 rewardCoin: .example,
                 vault: .example
             ),
+            fiatAmount: "",
             onStake: {},
             onUnstake: {},
             onWithdraw: {}
