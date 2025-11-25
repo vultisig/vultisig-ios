@@ -212,7 +212,12 @@ class KeygenViewModel: ObservableObject {
                                         isInitiateDevice: self.isInitiateDevice,
                                         localUI: ecdsaPrivateKeyHex)
             try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0, additionalHeader: chain.name)
-            // TODO: save the keyshare to vault
+            guard let keyShare = dklsKeygen.getKeyshare() else {
+                throw HelperError.runtimeError("fail to get EdDSA keyshare after import")
+            }
+            
+            self.vault.keyshares.append(KeyShare(pubkey: keyShare.PubKey, keyshare: keyShare.Keyshare))
+            self.vault.chainPublicKeys.append(ChainPublicKey(chain: chain, publicKeyHex: keyShare.PubKey,isEddsa: false))
         }
         catch  {
             self.logger.error("Failed to import Ecdsa private key, error: \(error.localizedDescription)")
@@ -235,7 +240,12 @@ class KeygenViewModel: ObservableObject {
                                               setupMessage: [UInt8](),
                                               localUI: eddsaPrivateKeyHex)
             try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0, additionalHeader: chain.name)
-            // TODO: save the keyshare to vault
+            guard let keyShare = schnorrKeygen.getKeyshare() else {
+                throw HelperError.runtimeError("fail to get EdDSA keyshare after import")
+            }
+            
+            self.vault.keyshares.append(KeyShare(pubkey: keyShare.PubKey, keyshare: keyShare.Keyshare))
+            self.vault.chainPublicKeys.append(ChainPublicKey(chain: chain, publicKeyHex: keyShare.PubKey,isEddsa: true))
         }
         catch  {
             self.logger.error("Failed to import EdDSA private key, error: \(error.localizedDescription)")
