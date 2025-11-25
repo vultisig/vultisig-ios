@@ -13,7 +13,16 @@ final class RemoveLPTransactionViewModel: ObservableObject {
     let vault: Vault
     let position: LPPosition
     
-    var dustAmount: Decimal { 0.02 }
+    var dustAmount: Decimal {
+        switch coin.chain {
+        case .thorChain:
+            0.02
+        case .mayaChain:
+            0
+        default:
+            0
+        }
+    }
 
     @Published var percentageSelected: Double? = 100
     @Published var feeError: String? = nil
