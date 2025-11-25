@@ -10,7 +10,7 @@ import Foundation
 struct IntValidator: FormFieldValidator {
     let errorMessage: String
     
-    init(errorMessage: String = "mustBeInteger".localized) {
+    init(errorMessage: String = "invalidIntegerError".localized) {
         self.errorMessage = errorMessage
     }
     
@@ -20,15 +20,9 @@ struct IntValidator: FormFieldValidator {
             return
         }
         
-        // Check if the value contains only digits (and optionally whitespace)
         let trimmedValue = value.trimmingCharacters(in: .whitespaces)
         
         guard Int(trimmedValue) != nil else {
-            throw HelperError.runtimeError(errorMessage)
-        }
-        
-        // Also ensure there are no decimal points or other non-integer characters
-        guard !trimmedValue.contains(".") && !trimmedValue.contains(",") else {
             throw HelperError.runtimeError(errorMessage)
         }
     }

@@ -46,8 +46,10 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
     func onLoad() {
         isLoading = true
         setupForm()
-        lpUnitsField.validators.append(IntValidator())
-        lpUnitsField.validators.append(AmountBalanceValidator(balance: coin.balanceDecimal))
+        lpUnitsField.validators = [
+            RequiredValidator(errorMessage: "emptyLPsField".localized),
+            IntValidator()
+        ]
         
         if let initialBondAddress {
             addressViewModel.field.value = initialBondAddress
@@ -67,14 +69,14 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
     
     var transactionBuilder: TransactionBuilder? {
         validateErrors()
-        guard validForm, let selectedAsset else { return nil }
+        guard validForm, let selectedAsset, let lpUnits = UInt64(lpUnitsField.value) else { return nil }
         
         return BondMayaTransactionBuilder(
             coin: coin,
             isBond: true,
             nodeAddress: addressViewModel.field.value,
             selectedAsset: selectedAsset.thorchainAsset,
-            lpUnits: UInt64(lpUnitsField.value) ?? 0
+            lpUnits: lpUnits
         )
     }
 }

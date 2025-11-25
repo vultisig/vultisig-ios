@@ -41,7 +41,7 @@ struct BondMayaTransactionScreen: View {
             }
             
             FormExpandableSection(
-                title: "assetSelection".localized,
+                title: "asset".localized,
                 isValid: viewModel.lpUnitsField.valid,
                 value: .empty,
                 showValue: false,

@@ -997,3 +997,7 @@
 "rebondNote" = "注意：REBOND 交易必须发送 0 RUNE。上述金额仅用于备忘录。";
 "chainNotAdded" = "链未添加";
 "chainNotAddedMessage" = "区块链 %@ 未添加到此保险库。请从保险库设置中手动添加。";
+"native" = "原生";
+"cacaoPool" = "Cacao 池";
+"invalidIntegerError" = "无效的整数数量";
+"emptyLPsField" = "LPs 字段为空";

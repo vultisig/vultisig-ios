@@ -995,3 +995,7 @@
 "withdraw" = "Sacar";
 "chainNotAdded" = "Cadeia Não Adicionada";
 "chainNotAddedMessage" = "A blockchain %@ não está adicionada neste cofre. Por favor, adicione-a manualmente nas configurações do cofre.";
+"native" = "Nativo";
+"cacaoPool" = "Pool de Cacao";
+"invalidIntegerError" = "Quantidade inteira inválida";
+"emptyLPsField" = "Campo de LPs vazio";

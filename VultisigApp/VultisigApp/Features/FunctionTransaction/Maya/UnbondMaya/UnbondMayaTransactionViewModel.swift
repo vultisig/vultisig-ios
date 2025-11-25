@@ -46,8 +46,10 @@ final class UnbondMayaTransactionViewModel: ObservableObject, Form {
     func onLoad() {
         isLoading = true
         setupForm()
-        lpUnitsField.validators.append(IntValidator())
-        lpUnitsField.validators.append(AmountBalanceValidator(balance: coin.balanceDecimal))
+        lpUnitsField.validators = [
+            RequiredValidator(errorMessage: "emptyLPsField".localized),
+            IntValidator()
+        ]
         
         if let initialBondAddress {
             addressViewModel.field.value = initialBondAddress
