@@ -658,7 +658,7 @@
 "securityScannerTransactionScanning" = "Scansione ...";
 "seedPhrases" = "frasi di recupero";
 "select" = "Seleziona";
-"selectAsset" = "Selezionare Asset";
+"selectAsset" = "Seleziona asset";
 "selectAtleastOneVault" = "Selezionare almeno un Vault e riprovare.";
 "selectChain" = "Seleziona catena";
 "selectChains" = "Seleziona catene";
