@@ -657,7 +657,7 @@
 "securityScannerTransactionScanning" = "Scanning…";
 "seedPhrases" = "seed phrases";
 "select" = "Select";
-"selectAsset" = "Select Asset";
+"selectAsset" = "Select asset";
 "selectAtleastOneVault" = "Please select at least one vault and try again.";
 "selectChain" = "Select chain";
 "selectChains" = "Select chains";

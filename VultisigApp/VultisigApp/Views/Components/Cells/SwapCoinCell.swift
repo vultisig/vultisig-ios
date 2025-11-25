@@ -38,12 +38,7 @@ struct SwapCoinCell: View {
             title
             chain
             Spacer()
-            
-            if isSelected {
-                check
-            } else {
-                balanceView
-            }
+            balanceView
         }
         .padding(.horizontal, 22)
         .padding(.vertical, 12)
@@ -74,16 +69,6 @@ struct SwapCoinCell: View {
                 RoundedRectangle(cornerRadius: 24)
                     .stroke(Theme.colors.bgTertiary, lineWidth: 1)
             )
-    }
-    
-    var check: some View {
-        Image(systemName: "checkmark")
-            .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.alertInfo)
-            .frame(width: 24, height: 24)
-            .background(Theme.colors.bgSecondary)
-            .cornerRadius(32)
-            .bold()
     }
     
     @ViewBuilder
