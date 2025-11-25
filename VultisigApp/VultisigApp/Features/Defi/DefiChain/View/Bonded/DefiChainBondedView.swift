@@ -14,14 +14,6 @@ struct DefiChainBondedView<EmptyStateView: View>: View {
     var onBond: (BondNode?) -> Void
     var onUnbond: (BondNode) -> Void
     var emptyStateView: () -> EmptyStateView
-
-    var showBondButton: Bool {
-        coin.stakedBalanceDecimal > 0
-    }
-    
-    var bondedBalance: String {
-        coin.defiBalanceStringWithTicker
-    }
         
     var body: some View {
         LazyVStack(spacing: 14) {
@@ -47,15 +39,19 @@ struct DefiChainBondedView<EmptyStateView: View>: View {
                     )
                     
                     VStack(alignment: .leading, spacing: .zero) {
-                        Text("bondedRune".localized)
+                        Text(String(format: "bondedCoin".localized, coin.ticker))
                             .font(Theme.fonts.footnote)
                             .foregroundStyle(Theme.colors.textExtraLight)
                         
-                        HiddenBalanceText(bondedBalance)
+                        HiddenBalanceText(viewModel.totalBondedBalance)
                             .font(Theme.fonts.priceTitle1)
                             .foregroundStyle(Theme.colors.textPrimary)
                             .contentTransition(.numericText())
-                            .animation(.interpolatingSpring, value: bondedBalance)
+                            .animation(.interpolatingSpring, value: viewModel.totalBondedBalance)
+                        
+                        HiddenBalanceText(viewModel.totalBondedBalanceFiat)
+                            .font(Theme.fonts.priceCaption)
+                            .foregroundStyle(Theme.colors.textExtraLight)
                     }
                     Spacer()
                 }

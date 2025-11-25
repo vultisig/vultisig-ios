@@ -9,7 +9,7 @@ import SwiftUI
 
 struct PreferredAssetSelectionView: View {
     @Binding var isPresented: Bool
-    @Binding var preferredAsset: PreferredAsset?
+    @Binding var preferredAsset: THORChainAsset?
     var onSelect: () -> Void
     @StateObject var viewModel = PreferredAssetSelectionViewModel()
     
@@ -77,5 +77,5 @@ struct PreferredAssetSelectionView: View {
 }
 
 #Preview {
-    PreferredAssetSelectionView(isPresented: .constant(true), preferredAsset: .constant(PreferredAsset(thorchainAsset: ".", asset: .example))) {}
+    PreferredAssetSelectionView(isPresented: .constant(true), preferredAsset: .constant(THORChainAsset(thorchainAsset: ".", asset: .example))) {}
 }
