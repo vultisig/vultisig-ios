@@ -18,14 +18,12 @@ struct VaultBackupContainerView<Content: View>: View {
     var content: () -> Content
     
     @State var presentSuccess: Bool = false
-    @State var presentHome: Bool = false
+    
+    @EnvironmentObject var appViewModel: AppViewModel
     
     var body: some View {
         content()
             .sensoryFeedback(.success, trigger: backupType.vault.isBackedUp)
-            .navigationDestination(isPresented: $presentHome) {
-                HomeScreen(initialVault: backupType.vault)
-            }
             .navigationDestination(isPresented: $presentSuccess) {
                 BackupVaultSuccessView(tssType: tssType, vault: backupType.vault)
             }
@@ -61,7 +59,7 @@ struct VaultBackupContainerView<Content: View>: View {
             if isNewVault {
                 presentSuccess = true
             } else {
-                presentHome = true
+                appViewModel.set(selectedVault: backupType.vault)
             }
         }
     }

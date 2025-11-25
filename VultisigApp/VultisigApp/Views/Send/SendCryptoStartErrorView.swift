@@ -9,7 +9,8 @@ import SwiftUI
 
 struct SendCryptoStartErrorView: View {
     let errorText: String
-    @State private var navigateToHome: Bool = false
+    
+    @EnvironmentObject var appViewModel: AppViewModel
 
     var body: some View {
         ErrorView(
@@ -18,13 +19,12 @@ struct SendCryptoStartErrorView: View {
             description: errorText,
             buttonTitle: "tryAgain".localized
         ) {
-            navigateToHome = true
-        }.navigationDestination(isPresented: $navigateToHome) {
-            HomeScreen()
+            appViewModel.restart()
         }
     }
 }
 
 #Preview {
     SendCryptoStartErrorView(errorText: "error")
+        .environmentObject(AppViewModel())
 }

@@ -10,7 +10,7 @@ import RiveRuntime
 
 struct OnboardingView: View {
     
-    @EnvironmentObject var accountViewModel: AccountViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
     
     @State var tabIndex = 0
     
@@ -58,7 +58,7 @@ struct OnboardingView: View {
         }
         .crossPlatformSheet(isPresented: $showSummary) {
             OnboardingSummaryView(kind: .initial, isPresented: $showSummary, onDismiss: {
-                accountViewModel.showOnboarding = false
+                appViewModel.showOnboarding = false
             })
         }
     }
@@ -158,7 +158,7 @@ private extension OnboardingView {
     }
     
     func moveToVaultView() {
-        accountViewModel.showOnboarding = false
+        appViewModel.showOnboarding = false
     }
     
     func setupStartupText() {
@@ -187,5 +187,5 @@ private extension OnboardingView {
 
 #Preview {
     OnboardingView()
-        .environmentObject(AccountViewModel())
+        .environmentObject(AppViewModel())
 }

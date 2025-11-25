@@ -9,8 +9,8 @@
 import SwiftUI
 
 struct KeysignWrongVaultTypeErrorView: View {
-    @State private var navigateToHome: Bool = false
-
+    @EnvironmentObject var appViewModel: AppViewModel
+    
     var body: some View {
         ErrorView(
             type: .warning,
@@ -18,9 +18,7 @@ struct KeysignWrongVaultTypeErrorView: View {
             description: "",
             buttonTitle: "tryAgain".localized
         ) {
-            navigateToHome = true
-        }.navigationDestination(isPresented: $navigateToHome) {
-            HomeScreen(showingVaultSelector: true)
+            appViewModel.set(selectedVault: nil, showingVaultSelector: true)
         }
     }
 }
@@ -29,5 +27,6 @@ struct KeysignWrongVaultTypeErrorView: View {
     ZStack {
         Background()
         KeysignWrongVaultTypeErrorView()
+            .environmentObject(AppViewModel())
     }
 }

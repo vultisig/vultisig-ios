@@ -16,23 +16,21 @@ struct BackupVaultSuccessView: View {
     @State var fastAnimationVM: RiveViewModel? = nil
     @State var upgradeAnimationVM: RiveViewModel? = nil
 
-    @State var isHomeViewActive = false
     @State var isFastSummaryActive = false
     @State var isSecureSummaryActive = false
+    
+    @EnvironmentObject var appViewModel: AppViewModel
 
     var body: some View {
         container
-            .navigationDestination(isPresented: $isHomeViewActive) {
-                HomeScreen(initialVault: vault, showingVaultSelector: false)
-            }
             .crossPlatformSheet(isPresented: $isFastSummaryActive) {
                 OnboardingSummaryView(kind: .fast, isPresented: $isFastSummaryActive, onDismiss: {
-                    isHomeViewActive = true
+                    goToHome()
                 }, vault: vault)
             }
             .crossPlatformSheet(isPresented: $isSecureSummaryActive) {
                 OnboardingSummaryView(kind: .secure, isPresented: $isSecureSummaryActive, onDismiss: {
-                    isHomeViewActive = true
+                    goToHome()
                 }, vault: vault)
             }
             .onAppear {
@@ -110,7 +108,7 @@ struct BackupVaultSuccessView: View {
     
     var migrateButton: some View {
         PrimaryButton(title: "goToWallet") {
-            isHomeViewActive = true
+            goToHome()
         }
         .padding(.horizontal, 40)
         .padding(.bottom, 40)
@@ -150,6 +148,10 @@ struct BackupVaultSuccessView: View {
         } else {
             isSecureSummaryActive = true
         }
+    }
+    
+    func goToHome() {
+        appViewModel.set(selectedVault: vault)
     }
 }
 

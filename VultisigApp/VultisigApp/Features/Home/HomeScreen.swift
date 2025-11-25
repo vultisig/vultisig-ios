@@ -45,7 +45,7 @@ struct HomeScreen: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var phoneCheckUpdateViewModel: PhoneCheckUpdateViewModel
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
-    @EnvironmentObject var accountViewModel: AccountViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
     @Environment(\.modelContext) private var modelContext
     private let tabs: [HomeTab] = [.wallet, .defi]
 
@@ -365,7 +365,7 @@ extension HomeScreen {
     }
     
     fileprivate func setData() {
-        accountViewModel.authenticateUserIfNeeded()
+        appViewModel.authenticateUserIfNeeded()
         fetchVaults()
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
@@ -608,5 +608,5 @@ extension HomeScreen {
 #Preview {
     HomeScreen(initialVault: .example, showingVaultSelector: false)
         .environmentObject(VaultDetailViewModel())
-        .environmentObject(AccountViewModel())
+        .environmentObject(AppViewModel())
 }

@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct WelcomeView: View {
-    @EnvironmentObject var viewModel: AccountViewModel
+    @EnvironmentObject var viewModel: AppViewModel
     
     @State var didAppear = false
     
@@ -66,5 +66,5 @@ struct WelcomeView: View {
 // Preview
 #Preview {
         WelcomeView()
-            .environmentObject(AccountViewModel())
+            .environmentObject(AppViewModel())
 }

@@ -12,8 +12,9 @@ struct SendCryptoKeysignView: View {
     var title: String? = nil
     var showError = false
     
-    @State private var navigateToHome = false
     @State var loadingAnimationVM: RiveViewModel? = nil
+    
+    @EnvironmentObject var appViewModel: AppViewModel
     
     var body: some View {
         ZStack {
@@ -46,10 +47,7 @@ struct SendCryptoKeysignView: View {
             description: title?.localized ?? .empty,
             buttonTitle: "tryAgain".localized
         ) {
-            navigateToHome = true
-        }
-        .navigationDestination(isPresented: $navigateToHome) {
-            HomeScreen()
+            appViewModel.restart()
         }
     }
     
@@ -101,4 +99,5 @@ struct SendCryptoKeysignView: View {
         
         SendCryptoKeysignView()
     }
+    .environmentObject(AppViewModel())
 }

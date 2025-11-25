@@ -1,5 +1,5 @@
 //
-//  AccountViewModel.swift
+//  AppViewModel.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2024-03-24.
@@ -9,21 +9,36 @@ import SwiftUI
 import LocalAuthentication
 
 @MainActor
-class AccountViewModel: ObservableObject {
+class AppViewModel: ObservableObject {
     @AppStorage("showOnboarding") var showOnboarding: Bool = true
     @AppStorage("showCover") var showCover: Bool = true
     @AppStorage("isAuthenticationEnabled") var isAuthenticationEnabled: Bool = true
     @AppStorage("didAskForAuthentication") var didAskForAuthentication: Bool = false
     @AppStorage("lastRecordedTime") var lastRecordedTime: String = ""
     
+
     @Published var isAuthenticated = false
     @Published var showSplashView = true
     @Published var didUserCancelAuthentication = false
     @Published var canLogin = true
-    @Published var referenceID = UUID()
     @Published var authenticationType: AuthenticationType = .None
     
+    // Properties to manage global navigation
+    @Published private(set) var selectedVault: Vault?
+    @Published private(set) var showingVaultSelector: Bool = false
+    @Published private(set) var referenceID = UUID()
+    
     private let logic = AccountLogic()
+    
+    func restart() {
+        set(selectedVault: nil)
+    }
+    
+    func set(selectedVault: Vault?, showingVaultSelector: Bool = false) {
+        self.selectedVault = selectedVault ?? self.selectedVault
+        self.showingVaultSelector = showingVaultSelector
+        self.referenceID = UUID()
+    }
     
     func authenticateUser() {
         let context = LAContext()

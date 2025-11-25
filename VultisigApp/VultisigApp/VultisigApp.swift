@@ -15,7 +15,7 @@ struct VultisigApp: App {
     @StateObject var applicationState = ApplicationState.shared
     @StateObject var vaultDetailViewModel = VaultDetailViewModel()
     @StateObject var coinSelectionViewModel = CoinSelectionViewModel()
-    @StateObject var accountViewModel = AccountViewModel()
+    @StateObject var appViewModel = AppViewModel()
     @StateObject var deeplinkViewModel = DeeplinkViewModel()
     @StateObject var settingsViewModel = SettingsViewModel.shared
     @StateObject var homeViewModel = HomeViewModel()
@@ -88,11 +88,11 @@ struct VultisigApp: App {
     }()
     
     func continueLogin() {
-        accountViewModel.enableAuth()
+        appViewModel.enableAuth()
     }
     
     func resetLogin() {
-        accountViewModel.revokeAuth()
+        appViewModel.revokeAuth()
     }
 }
 
