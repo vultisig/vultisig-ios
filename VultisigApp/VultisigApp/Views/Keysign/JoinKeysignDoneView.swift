@@ -29,4 +29,5 @@ struct JoinKeysignDoneView: View {
         Background()
         JoinKeysignDoneView(vault: Vault.example, viewModel: KeysignViewModel(), showAlert: .constant(false))
     }
+    .environmentObject(AppViewModel())
 }
