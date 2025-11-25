@@ -41,6 +41,7 @@
 		130C40FB2E7381E700509C61 /* HomeTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40FA2E7381E400509C61 /* HomeTab.swift */; };
 		130C40FE2E7389C000509C61 /* VultiTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40FD2E7389BD00509C61 /* VultiTabBar.swift */; };
 		130C704B2E31791E00EF2248 /* LongPressPrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */; };
+		13155AA72ED4F73E0042549B /* HighlightedTextWithImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13155AA62ED4F73E0042549B /* HighlightedTextWithImage.swift */; };
 		13155A2E2ED4AD950042549B /* CacaoStakeTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13155A2D2ED4AD8F0042549B /* CacaoStakeTransactionBuilder.swift */; };
 		13155A302ED4AE5D0042549B /* CacaoUnstakeTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13155A2F2ED4AE5D0042549B /* CacaoUnstakeTransactionBuilder.swift */; };
 		131603452E609D74001ED972 /* FileExporterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603442E609D6B001ED972 /* FileExporterSheet.swift */; };
@@ -80,6 +81,9 @@
 		132666C82E429C91007FDAC5 /* ReferralMainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666C72E429C91007FDAC5 /* ReferralMainScreen.swift */; };
 		1326EBB92E4637FE008A3F8F /* SendCryptoDoneHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1326EBB82E4637F5008A3F8F /* SendCryptoDoneHeaderView.swift */; };
 		1326EBBB2E463C59008A3F8F /* ReferralCodeMemoFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1326EBBA2E463C58008A3F8F /* ReferralCodeMemoFactory.swift */; };
+		1328E64E2ED5F32C0080BEE1 /* VaultPairDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1328E64C2ED5F32C0080BEE1 /* VaultPairDetailViewModel.swift */; };
+		1328E64F2ED5F32C0080BEE1 /* VaultPairDetailViewModel+Render.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1328E64D2ED5F32C0080BEE1 /* VaultPairDetailViewModel+Render.swift */; };
+		1328E6542ED5F4BE0080BEE1 /* VaultPairDetailCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1328E6532ED5F4BE0080BEE1 /* VaultPairDetailCard.swift */; };
 		132B04372E70C4EB00745651 /* VaultMainScreenBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132B04362E70C4E500745651 /* VaultMainScreenBackground.swift */; };
 		132FB6582E78706500599464 /* isIPadOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132FB6572E78705B00599464 /* isIPadOS.swift */; };
 		132FB65A2E7871AB00599464 /* View+GroupedTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132FB6592E7871A100599464 /* View+GroupedTabView.swift */; };
@@ -1240,6 +1244,7 @@
 		130C40FA2E7381E400509C61 /* HomeTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTab.swift; sourceTree = "<group>"; };
 		130C40FD2E7389BD00509C61 /* VultiTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultiTabBar.swift; sourceTree = "<group>"; };
 		130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongPressPrimaryButton.swift; sourceTree = "<group>"; };
+		13155AA62ED4F73E0042549B /* HighlightedTextWithImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightedTextWithImage.swift; sourceTree = "<group>"; };
 		13155A2D2ED4AD8F0042549B /* CacaoStakeTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacaoStakeTransactionBuilder.swift; sourceTree = "<group>"; };
 		13155A2F2ED4AE5D0042549B /* CacaoUnstakeTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacaoUnstakeTransactionBuilder.swift; sourceTree = "<group>"; };
 		131603442E609D6B001ED972 /* FileExporterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileExporterSheet.swift; sourceTree = "<group>"; };
@@ -1279,6 +1284,9 @@
 		132666C72E429C91007FDAC5 /* ReferralMainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralMainScreen.swift; sourceTree = "<group>"; };
 		1326EBB82E4637F5008A3F8F /* SendCryptoDoneHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneHeaderView.swift; sourceTree = "<group>"; };
 		1326EBBA2E463C58008A3F8F /* ReferralCodeMemoFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralCodeMemoFactory.swift; sourceTree = "<group>"; };
+		1328E64C2ED5F32C0080BEE1 /* VaultPairDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultPairDetailViewModel.swift; sourceTree = "<group>"; };
+		1328E64D2ED5F32C0080BEE1 /* VaultPairDetailViewModel+Render.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultPairDetailViewModel+Render.swift"; sourceTree = "<group>"; };
+		1328E6532ED5F4BE0080BEE1 /* VaultPairDetailCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultPairDetailCard.swift; sourceTree = "<group>"; };
 		132B04362E70C4E500745651 /* VaultMainScreenBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainScreenBackground.swift; sourceTree = "<group>"; };
 		132FB6572E78705B00599464 /* isIPadOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = isIPadOS.swift; sourceTree = "<group>"; };
 		132FB6592E7871A100599464 /* View+GroupedTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+GroupedTabView.swift"; sourceTree = "<group>"; };
@@ -2836,6 +2844,24 @@
 			path = Referral;
 			sourceTree = "<group>";
 		};
+		1328E6502ED5F32F0080BEE1 /* VaultPairDetailViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				1328E64C2ED5F32C0080BEE1 /* VaultPairDetailViewModel.swift */,
+				1328E64D2ED5F32C0080BEE1 /* VaultPairDetailViewModel+Render.swift */,
+			);
+			path = VaultPairDetailViewModel;
+			sourceTree = "<group>";
+		};
+		1328E6512ED5F47C0080BEE1 /* VaultDetail */ = {
+			isa = PBXGroup;
+			children = (
+				1328E6532ED5F4BE0080BEE1 /* VaultPairDetailCard.swift */,
+				461AD1B62BC6706500959278 /* VaultPairDetailView.swift */,
+			);
+			path = VaultDetail;
+			sourceTree = "<group>";
+		};
 		132FB6562E78705400599464 /* Platforms */ = {
 			isa = PBXGroup;
 			children = (
@@ -3593,6 +3619,7 @@
 		13A899092E44F540006F75F0 /* Text */ = {
 			isa = PBXGroup;
 			children = (
+				13155AA62ED4F73E0042549B /* HighlightedTextWithImage.swift */,
 				13D93BCE2E58B2ED001E31E8 /* HighlightedText.swift */,
 				13A8990A2E44F544006F75F0 /* RedactedText.swift */,
 			);
@@ -5009,6 +5036,7 @@
 		A65649D52B965FC400E4B329 /* View Models */ = {
 			isa = PBXGroup;
 			children = (
+				1328E6502ED5F32F0080BEE1 /* VaultPairDetailViewModel */,
 				13B1C2C92E65FC3200050637 /* Vault */,
 				13D178FA2E57543500007B48 /* AddressBook */,
 				132666C92E429EC6007FDAC5 /* Referral */,
@@ -5744,12 +5772,12 @@
 		D9AD8F042B675E230009F8D5 /* Vault */ = {
 			isa = PBXGroup;
 			children = (
+				1328E6512ED5F47C0080BEE1 /* VaultDetail */,
 				13B1C2C32E65D28700050637 /* VaultPairView.swift */,
 				1316034F2E60C438001ED972 /* Backup */,
 				13CC617F2E5614B2003307F9 /* Settings */,
 				A6F9F7E82B9BBFD500790258 /* AddressQRCodeView.swift */,
 				A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */,
-				461AD1B62BC6706500959278 /* VaultPairDetailView.swift */,
 				A6FA40202C10241700D6C6B7 /* VaultDeletionConfirmView.swift */,
 				A533E63F2CEC814F00FCBAEB /* MonthlyBackupView.swift */,
 				A5340A6A2CECF099002ADD35 /* MonthlyBackupView+macOS.swift */,
@@ -6340,11 +6368,14 @@
 				DEEB571D2D08F80C00B120D1 /* SchnorrKeygen.swift in Sources */,
 				465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */,
 				B571384D2CC560F2000E925B /* Ton.swift in Sources */,
+				1328E64E2ED5F32C0080BEE1 /* VaultPairDetailViewModel.swift in Sources */,
+				1328E64F2ED5F32C0080BEE1 /* VaultPairDetailViewModel+Render.swift in Sources */,
 				13DF05752E3CEF7D0000188C /* SearchTextField.swift in Sources */,
 				B54E31812BF5A22700D4FC0A /* StyledFloatingPointField.swift in Sources */,
 				A6980C342BC0A30900F452AB /* SettingFAQCell.swift in Sources */,
 				A6E0C91D2DE7B22F00A01543 /* ReferralSendOverviewView.swift in Sources */,
 				138538E02E61F5D5006DF7C7 /* ResendVaultShareRequest.swift in Sources */,
+				1328E6542ED5F4BE0080BEE1 /* VaultPairDetailCard.swift in Sources */,
 				A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */,
 				469ED3942B98E776008D4951 /* ThorchainService.swift in Sources */,
 				A56644D22D0087C9000F4149 /* SettingsCustomMessageView.swift in Sources */,
@@ -7104,6 +7135,7 @@
 				133EEA192E68787900E18280 /* SettingsCommonOptionView.swift in Sources */,
 				13C320032E61F8DB00255138 /* ReferralVaultSelectionScreen.swift in Sources */,
 				B5F7581A2BD8E7230097B5B9 /* SuiService.swift in Sources */,
+				13155AA72ED4F73E0042549B /* HighlightedTextWithImage.swift in Sources */,
 				135C7AE12EA14130002F879A /* CustomizeChainsActionBanner.swift in Sources */,
 				138E1D5E2E9480500085EA8E /* SheetPresentedViewModifier.swift in Sources */,
 				A6505ACE2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift in Sources */,
