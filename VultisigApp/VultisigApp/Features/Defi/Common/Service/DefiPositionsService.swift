@@ -16,6 +16,8 @@ struct DefiPositionsService {
         switch chain {
         case .thorChain:
             [TokensStore.rune]
+        case .mayaChain:
+            [TokensStore.cacao]
         default:
             []
         }
@@ -29,6 +31,10 @@ struct DefiPositionsService {
                 TokensStore.ruji,
                 TokensStore.yrune,
                 TokensStore.ytcy
+            ]
+        case .mayaChain:
+            [
+                TokensStore.cacao
             ]
         default:
             []

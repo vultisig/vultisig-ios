@@ -913,7 +913,7 @@
 "bonded" = "Gebunden";
 "staked" = "Eingesetzt";
 "lps" = "LPs";
-"bondedRune" = "Gebundene RUNE";
+"bondedCoin" = "Gesamt Gebundene %@";
 "availableNodes" = "Verfügbare Knoten";
 "activeNodes" = "Aktive Knoten";
 "churnedOut" = "Ausgeschieden";
@@ -995,3 +995,7 @@
 "withdraw" = "Abheben";
 "chainNotAdded" = "Blockchain nicht hinzugefügt";
 "chainNotAddedMessage" = "Die Blockchain %@ ist diesem Tresor nicht hinzugefügt. Bitte fügen Sie sie manuell in den Tresoreinstellungen hinzu.";
+"native" = "Nativ";
+"cacaoPool" = "Cacao Pool";
+"invalidIntegerError" = "Ungültige Ganzzahl";
+"emptyLPsField" = "Leeres LPs-Feld";

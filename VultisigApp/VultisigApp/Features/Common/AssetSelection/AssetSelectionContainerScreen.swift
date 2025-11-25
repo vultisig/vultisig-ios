@@ -168,7 +168,7 @@ struct AssetSelectionContainerScreen<Asset: Hashable, SectionType: Hashable, Cel
         let gridItem = GridItem(.flexible(), spacing: spacing)
         ForEach(elements, id: \.self) { section in
             VStack(alignment: .leading, spacing: 8) {
-                if let title = section.title {
+                if let title = section.title, !section.assets.isEmpty {
                     Text(title)
                         .foregroundStyle(Theme.colors.textExtraLight)
                         .font(Theme.fonts.footnote)

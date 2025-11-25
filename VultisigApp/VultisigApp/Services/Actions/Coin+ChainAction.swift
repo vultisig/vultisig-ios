@@ -23,7 +23,8 @@ extension CoinAction {
     ]
     
     static var defiChains: [Chain] = [
-        .thorChain
+        .thorChain,
+        .mayaChain
     ]
 }
 
