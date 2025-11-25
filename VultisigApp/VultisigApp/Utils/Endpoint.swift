@@ -475,6 +475,10 @@ class Endpoint {
     static func bitcoinBroadcast() -> URL {
         "\(vultisigApiProxy)/bitcoin/".asUrl
     }
+    
+    static func dashBroadcast() -> URL {
+        "\(vultisigApiProxy)/dash/".asUrl
+    }
     static func blockchairDashboard(_ address: String, _ coinName: String) -> URL {
         // ?state=latest
         "\(vultisigApiProxy)/blockchair/\(coinName)/dashboards/address/\(address)".asUrl
