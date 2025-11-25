@@ -37,24 +37,32 @@ class HiddenToken {
         return "\(chain)-\(ticker)-\(contractAddress)"
     }
     
+    private var normalizedTicker: String {
+        ticker.lowercased()
+    }
+    
+    private var normalizedContract: String {
+        contractAddress.lowercased()
+    }
+    
     /// Check if this hidden token matches a CoinMeta
     func matches(_ coinMeta: CoinMeta) -> Bool {
-        return chain == coinMeta.chain.rawValue &&
-               ticker == coinMeta.ticker &&
-               contractAddress == coinMeta.contractAddress
+        return chain.caseInsensitiveCompare(coinMeta.chain.rawValue) == .orderedSame &&
+               normalizedTicker == coinMeta.ticker.lowercased() &&
+               normalizedContract == coinMeta.contractAddress.lowercased()
     }
 }
 
 extension HiddenToken: Hashable {
     static func == (lhs: HiddenToken, rhs: HiddenToken) -> Bool {
-        return lhs.chain == rhs.chain &&
-               lhs.ticker == rhs.ticker &&
-               lhs.contractAddress == rhs.contractAddress
+        return lhs.chain.caseInsensitiveCompare(rhs.chain) == .orderedSame &&
+               lhs.normalizedTicker == rhs.normalizedTicker &&
+               lhs.normalizedContract == rhs.normalizedContract
     }
     
     func hash(into hasher: inout Hasher) {
-        hasher.combine(chain)
-        hasher.combine(ticker)
-        hasher.combine(contractAddress)
+        hasher.combine(chain.lowercased())
+        hasher.combine(normalizedTicker)
+        hasher.combine(normalizedContract)
     }
 } 

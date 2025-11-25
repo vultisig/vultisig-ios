@@ -22,6 +22,87 @@ class TokensStore {
             isNativeToken: true
         ),
         CoinMeta(
+            chain: .hyperliquid,
+            ticker: "kHYPE",
+            logo: "khype",
+            decimals: 18,
+            priceProviderId: "kinetic-staked-hype",
+            contractAddress: "0xfD739d4e423301CE9385c1fb8850539D657C296D",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .hyperliquid,
+            ticker: "wstHYPE",
+            logo: "wsthype",
+            decimals: 18,
+            priceProviderId: "staked-hype-shares",
+            contractAddress: "0x94e8396e0869c9F2200760aF0621aFd240E1CF38",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .hyperliquid,
+            ticker: "WHYPE",
+            logo: "whype",
+            decimals: 18,
+            priceProviderId: "wrapped-hype",
+            contractAddress: "0x5555555555555555555555555555555555555555",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .hyperliquid,
+            ticker: "UFART",
+            logo: "ufart",
+            decimals: 6,
+            priceProviderId: "unit-fartcoin",
+            contractAddress: "0x3B4575E689DEd21CAAD31d64C4df1f10F3B2CedF",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .hyperliquid,
+            ticker: "USDT0",
+            logo: "usdt0",
+            decimals: 6,
+            priceProviderId: "usdt0",
+            contractAddress: "0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .hyperliquid,
+            ticker: "vkHYPE",
+            logo: "vkhype",
+            decimals: 18,
+            priceProviderId: "kinetiq-earn-vault",
+            contractAddress: "0x9BA2EDc44E0A4632EB4723E81d4142353e1bB160",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .hyperliquid,
+            ticker: "UBTC",
+            logo: "ubtc",
+            decimals: 8,
+            priceProviderId: "unit-bitcoin",
+            contractAddress: "0x9FDBdA0A5e284c32744D2f17Ee5c74B284993463",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .hyperliquid,
+            ticker: "vHYPE",
+            logo: "vhype",
+            decimals: 18,
+            priceProviderId: "ventuals-vhype",
+            contractAddress: "0x8888888FdAAc0E7CF8C6523c8955bF7954c216fa",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .hyperliquid,
+            ticker: "USDC",
+            logo: "usdc",
+            decimals: 6,
+            priceProviderId: "usd-coin",
+            contractAddress: "0xb88339CB7199b77E23DB6E890353E22632Ba630f",
+            isNativeToken: false
+        ),
+        CoinMeta(
             chain: .sei,
             ticker: "SEI",
             logo: "sei",
