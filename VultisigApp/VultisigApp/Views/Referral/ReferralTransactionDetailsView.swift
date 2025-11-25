@@ -14,6 +14,7 @@ struct ReferralTransactionDetailsView: View {
     
     @Environment(\.openURL) var openURL
     @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
     
     var body: some View {
         ZStack {
@@ -170,12 +171,13 @@ struct ReferralTransactionDetailsView: View {
     }
     
     var button: some View {
-        PrimaryNavigationButton(title: "done") {
-            HomeScreen()
+        PrimaryButton(title: "done") {
+            appViewModel.restart()
         }
     }
 }
 
 #Preview {
     ReferralTransactionDetailsView(hash: "", sendTx: SendTransaction(), referralViewModel: ReferralViewModel())
+        .environmentObject(AppViewModel())
 }

@@ -25,11 +25,10 @@ struct SendCryptoDoneView: View {
 
     @State var showAlert = false
     @State var alertTitle = "hashCopied"
-    @State var navigateToHome = false
     
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
-    @EnvironmentObject var accountViewModel: AccountViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
     
     init(
         vault: Vault,
@@ -58,10 +57,6 @@ struct SendCryptoDoneView: View {
             Background()
             view
             PopupCapsule(text: alertTitle, showPopup: $showAlert)
-        }
-        .onChange(of: navigateToHome) { _, newValue in
-            guard newValue else { return }
-            accountViewModel.referenceID = UUID()
         }
     }
     
@@ -124,8 +119,7 @@ struct SendCryptoDoneView: View {
             sendSummaryViewModel: sendSummaryViewModel,
             swapSummaryViewModel: swapSummaryViewModel,
             showAlert: $showAlert,
-            alertTitle: $alertTitle,
-            navigateToHome: $navigateToHome
+            alertTitle: $alertTitle
         )
     }
 
@@ -146,5 +140,5 @@ struct SendCryptoDoneView: View {
         isSend: true
     )
     .environmentObject(SettingsViewModel())
-    .environmentObject(AccountViewModel())
+    .environmentObject(AppViewModel())
 }

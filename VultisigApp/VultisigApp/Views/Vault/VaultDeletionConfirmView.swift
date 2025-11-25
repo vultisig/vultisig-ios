@@ -16,12 +16,12 @@ struct VaultDeletionConfirmView: View {
     @State var canLoseFundCheck = false
     @State var vaultBackupCheck = false
     
-    @State var navigateBackToHome = false
     @State var navigateToCreateVault = false
     @State var nextSelectedVault: Vault? = nil
     
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
     
     var buttonEnabled: Bool {
         permanentDeletionCheck && canLoseFundCheck && vaultBackupCheck
@@ -43,9 +43,6 @@ struct VaultDeletionConfirmView: View {
         }
         .navigationDestination(isPresented: $navigateToCreateVault) {
             CreateVaultView(selectedVault: nil, showBackButton: false)
-        }
-        .navigationDestination(isPresented: $navigateBackToHome) {
-            HomeScreen(initialVault: nextSelectedVault, showingVaultSelector: false)
         }
     }
     
@@ -95,7 +92,7 @@ struct VaultDeletionConfirmView: View {
         nextSelectedVault = vaultsNext?.first
         
         if nextSelectedVault != nil {
-            navigateBackToHome = true
+            appViewModel.set(selectedVault: nextSelectedVault, showingVaultSelector: false)
         } else {
             navigateToCreateVault = true
         }
@@ -138,4 +135,5 @@ struct VaultDeletionConfirmView: View {
 #Preview {
     VaultDeletionConfirmView(vault: Vault.example, devicesInfo: [])
         .environmentObject(HomeViewModel())
+        .environmentObject(AppViewModel())
 }

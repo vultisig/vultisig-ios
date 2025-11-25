@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SendCryptoVaultErrorView: View {
-    @State private var navigateToHome: Bool = false
+    @EnvironmentObject var appViewModel: AppViewModel
 
     var body: some View {
         ErrorView(
@@ -17,13 +17,12 @@ struct SendCryptoVaultErrorView: View {
             description: "",
             buttonTitle: "changeVault".localized
         ) {
-            navigateToHome = true
-        }.navigationDestination(isPresented: $navigateToHome) {
-            HomeScreen(showingVaultSelector: true)
+            appViewModel.set(selectedVault: nil, showingVaultSelector: true)
         }
     }
 }
 
 #Preview {
     SendCryptoVaultErrorView()
+        .environmentObject(AppViewModel())
 }

@@ -18,13 +18,13 @@ struct SwapCryptoDoneView: View {
     let swapSummaryViewModel: SwapCryptoViewModel
     @Binding var showAlert: Bool
     @Binding var alertTitle: String
-    @Binding var navigateToHome: Bool
     
     @State var showFees: Bool = false
     @State var animationVM: RiveViewModel? = nil
     
     @Environment(\.openURL) var openURL
     @EnvironmentObject var settingsViewModel: SettingsViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
     
     var body: some View {
         VStack(spacing: 0) {
@@ -58,7 +58,7 @@ struct SwapCryptoDoneView: View {
     
     var doneButton: some View {
         PrimaryButton(title: "done") {
-            navigateToHome = true
+            appViewModel.restart()
         }
     }
     
@@ -364,8 +364,8 @@ struct SwapCryptoDoneView: View {
         sendSummaryViewModel: SendSummaryViewModel(),
         swapSummaryViewModel: SwapCryptoViewModel(),
         showAlert: .constant(false),
-        alertTitle: .constant(""),
-        navigateToHome: .constant(false)
+        alertTitle: .constant("")
     )
     .environmentObject(SettingsViewModel())
+    .environmentObject(AppViewModel())
 }

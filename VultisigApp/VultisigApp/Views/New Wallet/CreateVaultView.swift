@@ -18,7 +18,7 @@ struct CreateVaultView: View {
     @State var shouldJoinKeygen = false
     
     @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject var accountViewModel: AccountViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
 
     var body: some View {
         ZStack {
@@ -64,7 +64,7 @@ struct CreateVaultView: View {
     
     var newVaultButton: some View {
         PrimaryNavigationButton(title: "createNewVault") {
-            if accountViewModel.showOnboarding {
+            if appViewModel.showOnboarding {
                 OnboardingView()
             } else {
                 SetupQRCodeView(tssType: .Keygen, vault: nil)
@@ -121,5 +121,5 @@ struct CreateVaultView: View {
 
 #Preview {
     CreateVaultView(selectedVault: Vault.example)
-        .environmentObject(AccountViewModel())
+        .environmentObject(AppViewModel())
 }

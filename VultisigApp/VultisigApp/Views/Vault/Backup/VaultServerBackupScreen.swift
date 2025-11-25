@@ -25,6 +25,8 @@ struct VaultServerBackupScreen: View {
     @FocusState private var focusedField: FocusedField?
     private let passwordBottomId = "passwordBottomId"
     
+    @EnvironmentObject var appViewModel: AppViewModel
+    
     var body: some View {
         Screen(title: "serverBackup".localized) {
             ScrollViewReader { proxy in
@@ -71,11 +73,8 @@ struct VaultServerBackupScreen: View {
         }
         .crossPlatformSheet(isPresented: $viewModel.showSuccess) {
             ServerVaultCheckInboxScreen(isPresented: $viewModel.showSuccess) {
-                moveToHome = true
+                appViewModel.set(selectedVault: vault, showingVaultSelector: false)
             }
-        }
-        .navigationDestination(isPresented: $moveToHome) {
-            HomeScreen(initialVault: vault, showingVaultSelector: false)
         }
     }
     
