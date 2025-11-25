@@ -23,10 +23,11 @@ struct VultTierService {
             .first { balance >= $0.balanceToUnlock }
 
         // Check for Thorguard boost (upgrade tier by one, up to Platinum)
-        if let currentTier = tier, canUpgrade(currentTier) {
+        if canUpgrade(tier) {
             let hasThorguard = await checkThorguardBalance(for: vault)
             if hasThorguard {
-                tier = upgradeTier(currentTier)
+                tier = upgradeTier(tier)
+                print("Upgraded VULT Tier to ", tier?.name ?? "")
             }
         }
 
@@ -59,7 +60,8 @@ struct VultTierService {
     }
 
     /// Upgrades a tier to the next level (capped at Platinum for Thorguard boost)
-    private func upgradeTier(_ tier: VultDiscountTier) -> VultDiscountTier {
+    private func upgradeTier(_ tier: VultDiscountTier?) -> VultDiscountTier {
+        guard let tier else { return .bronze }
         let tiers = VultDiscountTier.allCases
         let index = tiers.firstIndex(of: tier)
         if let index {
@@ -69,11 +71,13 @@ struct VultTierService {
         }
     }
     
-    private func canUpgrade(_ tier: VultDiscountTier) -> Bool {
+    private func canUpgrade(_ tier: VultDiscountTier?) -> Bool {
         switch tier {
-        case .bronze, .silver, .gold:
+        case .bronze, .silver, .gold, .none:
+            print("Can upgrade VULT Tier, currently \(tier?.name ?? "")")
             return true
         case .platinum, .diamond, .ultimate:
+            print("Cannot upgrade VULT Tier, currently \(tier?.name ?? "")")
             return false
         }
     }
@@ -91,6 +95,7 @@ struct VultTierService {
                 contractAddress: thorguardContractAddress,
                 walletAddress: ethCoin.address
             )
+            print("THORGuards balance is \(balance) for \(ethCoin.address)")
             return balance > 0
         } catch {
             print("Error fetching Thorguard balance: \(error.localizedDescription)")
