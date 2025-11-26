@@ -172,7 +172,7 @@ class FunctionCallCosmosIBC: FunctionCallAddressable, ObservableObject {
                 )
             )
             StyledTextField(
-                placeholder: NSLocalizedString("memo", comment: ""),
+                placeholder: NSLocalizedString("memoLabel", comment: ""),
                 text: Binding(
                     get: { self.fnCall },
                     set: { self.fnCall = $0 }

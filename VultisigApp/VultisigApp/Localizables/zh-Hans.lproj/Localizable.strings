@@ -1024,37 +1024,37 @@
 "Secured Assets" = "担保资产";
 "Withdraw Secured Asset" = "提取担保资产";
 "optional" = "(可选)";
-"fee" = "费用";
+
 
 "selectToken" = "选择代币";
 "amountBalance" = "金额 ( 余额: %@ %@ )";
 "amountSelectToken" = "金额 ( 选择代币 )";
 "customMemo" = "自定义备注";
 "proposalID" = "提案 ID";
-"enterAmountToUnmerge" = "输入解合并金额";
+"enterAmountToUnmerge" = "输入解绑金额";
 "sharesBalance" = "份额 ( 余额: %@ )";
-"shares" = "份额";
-"loading" = "加载中...";
-"retry" = "重试";
-"rebondRequiresRune" = "重新绑定需要在 THORChain 上使用 RUNE 代币";
+"sharesLabel" = "份额";
+"loadingPools" = "加载资金池中...";
+"loadingSecuredAssets" = "加载担保资产中...";
+"rebondRequiresRune" = "重新绑定需要在 THORChain 上有 RUNE 代币";
 "inboundPaused" = "%@ 的入站操作已暂停。请稍后再试。";
-"routerNotAvailable" = "%@ 的路由不可用于批准。请稍后再试。";
+"routerNotAvailable" = "%@ 的路由不可用。请稍后再试。";
 "thorAddressNotFound" = "保险库中未找到 THORChain 地址。请确保您的保险库中有 RUNE。";
 "enterValidAmount" = "请输入大于零的有效金额。";
 "selectSecuredAssetToSeeBalance" = "选择担保资产以查看可用余额。";
-"withdrawSecuredAssetError" = "要提取 %@，您需要先将 %@ 代币添加到您的保险库。转到保险库设置并添加 %@ 以继续。";
+"withdrawSecuredAssetError" = "要提取 %@，您需要先将 %@ 代币添加到您的保险库。请前往保险库设置并添加 %@ 以继续。";
 "noSecuredAssets" = "保险库中未找到担保资产。请先铸造一些资产。";
 "noSecuredAssetsAvailable" = "没有可用的担保资产";
-"noPoolsAvailable" = "没有可用的池";
+"noPoolsAvailable" = "没有可用的资金池";
 "errorLoadingBalance" = "加载余额出错";
 "noThorAddressFound" = "未找到 THORChain 地址";
 "selectDestinationChain" = "选择目标链";
 "selectTokenToMerge" = "选择要合并的代币";
-"theUnmerge" = "解合并";
+"theUnmerge" = "解绑";
 "mintSecuredAsset" = "铸造担保资产 (SECURE+)";
 "targetAsset" = "目标资产: %@";
 "erc20ApprovalRequired" = "需要 ERC20 批准";
-"erc20ApprovalRequiredMessage" = "此 ERC20 代币在铸造前需要批准。将签署两笔交易：";
+"erc20ApprovalRequiredMessage" = "铸造前需要批准此 ERC20 代币。将签署两笔交易：";
 "approvalTransaction" = "1. 批准交易";
 "mintTransaction" = "2. 铸造担保资产交易";
 "addLiquidityTransaction" = "2. 添加流动性交易";
@@ -1063,15 +1063,13 @@
 "selectSecuredAssetToWithdraw" = "选择要提取的担保资产";
 "amountToWithdraw" = "提取金额";
 "selectAssetToSeeBalance" = "选择资产以查看余额";
-"loadingSecuredAssets" = "正在加载担保资产...";
-"loadingPools" = "正在加载池...";
-"approvalRequiredMessageLP" = "此 ERC20 代币在添加到流动性池之前需要批准。将签署两笔交易：";
+"approvalRequiredMessageLP" = "添加到流动性池前需要批准此 ERC20 代币。将签署两笔交易：";
+"failedToLoadPools" = "加载资金池失败。请检查您的连接并重试。";
+"balanceInParentheses" = "( 余额: %@ %@ )";
 
-"failedToLoadPools" = "Failed to load pools. Please check your connection and try again.";
-"balanceInParentheses" = "( Balance: %@ %@ )";
-
-"asset" = "Asset";
-"lpUnits" = "LPUNITS";
-"memo" = "Memo";
-
-"bps" = "BPS";
+"assetLabel" = "资产";
+"lpUnitsLabel" = "LP单位";
+"memoLabel" = "备注";
+"bpsLabel" = "基点";
+"nodeAddressLabel" = "节点地址";
+"loading" = "加载中...";

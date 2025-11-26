@@ -36,7 +36,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
     @Published var tokenValid: Bool = false
     @Published var selectedToken: IdentifiableString = .init(value: NSLocalizedString("theUnmerge", comment: ""))
     
-    @Published var balanceLabel: String = NSLocalizedString("shares", comment: "")
+    @Published var balanceLabel: String = NSLocalizedString("sharesLabel", comment: "")
     @Published var sharePrice: Decimal = 0  // Price per share (not used for transaction)
     @Published var totalShares: String = "0"  // Total shares owned
     @Published var availableBalance: Decimal = 0.0  // Available balance for validation

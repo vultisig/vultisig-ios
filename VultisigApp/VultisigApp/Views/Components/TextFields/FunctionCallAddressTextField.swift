@@ -32,7 +32,7 @@ struct FunctionCallAddressTextField<MemoType: FunctionCallAddressable>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text(NSLocalizedString(addressKey, comment: "") + optionalMessage)
+                Text(NSLocalizedString("nodeAddressLabel", comment: "Node Address placeholder") + optionalMessage)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundColor(Theme.colors.textPrimary)
                 

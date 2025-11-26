@@ -1022,7 +1022,7 @@
 "Secured Assets" = "Osigurana imovina";
 "Withdraw Secured Asset" = "Povuci osiguranu imovinu";
 "optional" = "(neobavezno)";
-"fee" = "Naknada";
+
 
 "selectToken" = "Select Token";
 "amountBalance" = "Amount ( Balance: %@ %@ )";
@@ -1031,9 +1031,9 @@
 "proposalID" = "Proposal ID";
 "enterAmountToUnmerge" = "Enter amount to unmerge";
 "sharesBalance" = "Shares ( Balance: %@ )";
-"shares" = "Shares";
-"loading" = "Loading...";
-"retry" = "Retry";
+"sharesLabel" = "Shares";
+"loadingPools" = "Loading pools...";
+"loadingSecuredAssets" = "Loading secured assets...";
 "rebondRequiresRune" = "REBOND requires RUNE token on THORChain";
 "inboundPaused" = "Inbound actions are paused for %@. Try again later.";
 "routerNotAvailable" = "Router not available for approvals on %@. Try again later.";
@@ -1061,15 +1061,13 @@
 "selectSecuredAssetToWithdraw" = "Select Secured Asset to Withdraw";
 "amountToWithdraw" = "Amount to Withdraw";
 "selectAssetToSeeBalance" = "Select asset to see balance";
-"loadingSecuredAssets" = "Loading secured assets...";
-"loadingPools" = "Loading pools...";
 "approvalRequiredMessageLP" = "This ERC20 token requires approval before adding to liquidity pool. Two transactions will be signed:";
-
 "failedToLoadPools" = "Failed to load pools. Please check your connection and try again.";
 "balanceInParentheses" = "( Balance: %@ %@ )";
 
-"asset" = "Asset";
-"lpUnits" = "LPUNITS";
-"memo" = "Memo";
-
-"bps" = "BPS";
+"assetLabel" = "Asset";
+"lpUnitsLabel" = "LPUNITS";
+"memoLabel" = "Memo";
+"bpsLabel" = "BPS";
+"nodeAddressLabel" = "Node Address";
+"loading" = "Loading...";
