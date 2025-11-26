@@ -19,9 +19,9 @@ enum FunctionCallContractType: String, CaseIterable, Identifiable {
     func getDescription(for coin: Coin) -> String {
         switch self {
         case .thorChainMessageDeposit:
-            return "\(coin.chain.name) message deposit"
+            return String(format: NSLocalizedString("messageDeposit", comment: ""), coin.chain.name)
         case .cosmosMessageVote:
-            return "\(coin.chain.name) message vote"
+            return String(format: NSLocalizedString("messageVote", comment: ""), coin.chain.name)
         }
     }
     

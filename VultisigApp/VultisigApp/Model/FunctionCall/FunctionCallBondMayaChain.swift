@@ -25,7 +25,7 @@ class FunctionCallBondMayaChain: FunctionCallAddressable, ObservableObject
     @Published var feeValid: Bool = true
     @Published var assetValid: Bool = false
     
-    @Published var selectedAsset: IdentifiableString = .init(value: "Asset")
+    @Published var selectedAsset: IdentifiableString = .init(value: NSLocalizedString("asset", comment: ""))
     
     @Published var assets: [IdentifiableString] = []
     
@@ -107,12 +107,12 @@ class FunctionCallBondMayaChain: FunctionCallAddressable, ObservableObject
                     descriptionProvider: { $0.value },
                     onSelect: { asset in
                         self.selectedAsset = asset
-                        self.assetValid = asset.value.lowercased() != "Asset".lowercased()
+                        self.assetValid = asset.value.lowercased() != NSLocalizedString("asset", comment: "").lowercased()
                     }
                 )
                 
                 StyledIntegerField(
-                    placeholder: "LPUNITS",
+                    placeholder: NSLocalizedString("lpUnits", comment: ""),
                     value: Binding(
                         get: { self.fee },
                         set: { self.fee = $0 }

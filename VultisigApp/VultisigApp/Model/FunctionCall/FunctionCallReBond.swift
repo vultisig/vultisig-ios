@@ -106,7 +106,7 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
     private func validateRuneToken() {
         // Ensure we're using RUNE for rebond operations
         if tx.coin.chain != .thorChain || !tx.coin.isNativeToken {
-            customErrorMessage = "REBOND requires RUNE token on THORChain"
+            customErrorMessage = NSLocalizedString("rebondRequiresRune", comment: "Error when not using RUNE for Rebond")
             isTheFormValid = false
         }
     }

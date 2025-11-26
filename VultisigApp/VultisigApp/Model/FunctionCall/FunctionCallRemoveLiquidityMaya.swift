@@ -52,7 +52,7 @@ class FunctionCallRemoveLiquidityMaya: ObservableObject
             VStack {
                 
                 StyledIntegerField(
-                    placeholder: "BPS",
+                    placeholder: NSLocalizedString("bps", comment: ""),
                     value: Binding(
                         get: { self.fee },
                         set: { self.fee = $0 }

@@ -96,7 +96,7 @@ class FunctionCallCosmosSwitch: FunctionCallAddressable, ObservableObject {
     
     var balance: String {
         let balance = tx.coin.balanceDecimal.description
-        return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
+        return String(format: NSLocalizedString("balanceInParentheses", comment: ""), balance, tx.coin.ticker.uppercased())
     }
     
     private func setupValidation() {

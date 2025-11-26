@@ -34,9 +34,9 @@ class FunctionCallCosmosUnmerge: ObservableObject {
     
     @Published var tokens: [IdentifiableString] = []
     @Published var tokenValid: Bool = false
-    @Published var selectedToken: IdentifiableString = .init(value: "The Unmerge")
+    @Published var selectedToken: IdentifiableString = .init(value: NSLocalizedString("theUnmerge", comment: ""))
     
-    @Published var balanceLabel: String = "Shares"
+    @Published var balanceLabel: String = NSLocalizedString("shares", comment: "")
     @Published var sharePrice: Decimal = 0  // Price per share (not used for transaction)
     @Published var totalShares: String = "0"  // Total shares owned
     @Published var availableBalance: Decimal = 0.0  // Available balance for validation
@@ -135,7 +135,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
             
             guard !thorAddress.isEmpty else {
                 print("ERROR: No THORChain address found in vault")
-                balanceLabel = "No THORChain address found"
+                balanceLabel = NSLocalizedString("noThorAddressFound", comment: "")
                 amount = 0
                 totalShares = "0"
                 sharePrice = 0
@@ -164,7 +164,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
             objectWillChange.send() // Force UI update after setting values
         } catch {
             print("Error fetching merged balance: \(error)")
-            balanceLabel = "Error loading balance"
+            balanceLabel = NSLocalizedString("errorLoadingBalance", comment: "")
             amount = 0
             availableBalance = 0
             totalShares = "0"
@@ -175,7 +175,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
     
     @MainActor
     private func updateBalanceLabel() {
-        balanceLabel = "Shares ( Balance: \(availableBalance.formatDecimalToLocale()) )"
+        balanceLabel = String(format: NSLocalizedString("sharesBalance", comment: ""), availableBalance.formatDecimalToLocale())
         objectWillChange.send() // Force UI update
     }
     
@@ -192,7 +192,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
         // Validate selected token
         $selectedToken
             .sink { [weak self] token in
-                self?.tokenValid = token.value.lowercased() != "the unmerge"
+                self?.tokenValid = token.value.lowercased() != NSLocalizedString("theUnmerge", comment: "").lowercased()
             }
             .store(in: &cancellables)
         
@@ -210,7 +210,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
         // Check if amount is positive
         guard amount > 0 else {
             amountValid = false
-            customErrorMessage = NSLocalizedString("insufficientBalanceForFunctions", comment: "Error message when amount is invalid")
+            customErrorMessage = NSLocalizedString("enterValidAmount", comment: "")
             return
         }
         
@@ -280,7 +280,7 @@ struct UnmergeView: View {
                     viewModel.availableBalance = 0
                     viewModel.totalShares = "0"
                     viewModel.sharePrice = 0
-                    viewModel.balanceLabel = "Loading..."
+                    viewModel.balanceLabel = NSLocalizedString("loading", comment: "")
                     viewModel.customErrorMessage = nil
                     
                     viewModel.selectToken(asset)
@@ -294,7 +294,7 @@ struct UnmergeView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     StyledFloatingPointField(
                         label: viewModel.balanceLabel,
-                        placeholder: "Enter amount to unmerge",
+                        placeholder: NSLocalizedString("enterAmountToUnmerge", comment: ""),
                         value: Binding(
                             get: { viewModel.amount },
                             set: {
