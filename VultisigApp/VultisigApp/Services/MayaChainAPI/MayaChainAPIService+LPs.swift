@@ -62,15 +62,17 @@ extension MayaChainAPIService {
 
         var positions: [THORChainLPPosition] = []
 
-        // Create a map of member pools for quick lookup
-        let memberPoolsMap = Dictionary(uniqueKeysWithValues:
-            (memberDetails?.pools ?? []).map { ($0.pool, $0) }
-        )
+        let userPools = poolStats.filter {
+            guard let poolCoin = THORChainAssetFactory.createCoin(from: $0.asset) else {
+                return false
+            }
+            return userLPs.contains(poolCoin)
+        }
 
         // Process each user-selected pool
-        for poolStat in poolStats where poolStat.isAvailable {
+        for poolStat in userPools where poolStat.isAvailable {
             // Check if user has a position in this pool
-            let memberPool = memberPoolsMap[poolStat.asset]
+            let memberPool = memberDetails?.pools.first(where: { $0.pool == poolStat.asset })
 
             // Create THORChainLPPosition (reusing the same model for MayaChain)
             let position = THORChainLPPosition(
