@@ -90,6 +90,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         // mediator server need to be
         self.mediator.start(name: self.serviceName)
         
+        var coin: Coin?
         if let keysignPayload {
             do {
                 // Refresh Solana blockhash BEFORE generating messages to ensure both devices
@@ -104,6 +105,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
                 let keysignFactory = KeysignMessageFactory(payload: finalPayload)
                 let preSignedImageHash = try keysignFactory.getKeysignMessages(vault: vault)
                 self.keysignMessages = preSignedImageHash.sorted()
+                coin = keysignPayload.coin
             } catch {
                 self.logger.error("Failed to get preSignedImageHash: \(error)")
                 self.errorMessage = error.localizedDescription
@@ -113,6 +115,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         
         if let customMessagePayload {
             self.keysignMessages = customMessagePayload.keysignMessages
+            coin = vault.nativeCoin(for: Chain(name: customMessagePayload.chain) ?? .ethereum)
         }
         
         if keysignMessages.isEmpty {
@@ -120,7 +123,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             status = .FailToStart
         }
         
-        if let fastVaultPassword, let keysignPayload {
+        if let fastVaultPassword, let coin {
             // when fast sign , always using relay server
             serverAddr = Endpoint.vultisigRelay
             
@@ -134,8 +137,8 @@ class KeysignDiscoveryViewModel: ObservableObject {
                 keysignMessages: self.keysignMessages,
                 sessionID: self.sessionID,
                 hexEncryptionKey: self.encryptionKeyHex!,
-                derivePath: keysignPayload.coin.coinType.derivationPath(),
-                isECDSA: keysignPayload.coin.chain.isECDSA,
+                derivePath: coin.coinType.derivationPath(),
+                isECDSA: coin.chain.isECDSA,
                 vaultPassword: fastVaultPassword
             ) { isSuccess in
                 if !isSuccess {

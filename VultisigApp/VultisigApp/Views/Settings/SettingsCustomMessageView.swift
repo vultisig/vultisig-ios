@@ -18,13 +18,19 @@ struct SettingsCustomMessageView: View {
     @State var method: String = .empty
     @State var message: String = .empty
 
+    @State var fastVaultPassword: String = .empty
+    @State var fastPasswordPresented = false
+    @State var isFastVault = false
+    
     let vault: Vault
+    private let fastVaultService = FastVaultService.shared
 
     var body: some View {
         ZStack {
             Background()
             main
         }
+        .onLoad(perform: onLoad)
     }
 
     var view: some View {
@@ -53,7 +59,8 @@ struct SettingsCustomMessageView: View {
         }
         .safeAreaInset(edge: .bottom) {
             if viewModel.state == .initial {
-                button
+                signButton
+                    .padding(.bottom, isMacOS ? 40 : 0)
             }
         }
     }
@@ -87,7 +94,7 @@ struct SettingsCustomMessageView: View {
             vault: vault,
             keysignPayload: nil,
             customMessagePayload: customMessagePayload,
-            fastVaultPassword: nil,
+            fastVaultPassword: fastVaultPassword.nilIfEmpty,
             shareSheetViewModel: shareSheetViewModel
         ) { input in
             self.keysignView = KeysignView(
@@ -107,16 +114,6 @@ struct SettingsCustomMessageView: View {
         }
     }
 
-    var buttonLabel: some View {
-        PrimaryButton(title: "Sign") {
-            viewModel.moveToNextView()
-        }
-        .padding(.horizontal, 16)
-        .padding(.bottom, 12)
-        .disabled(!buttonEnabled)
-        .opacity(buttonEnabled ? 1 : 0.5)
-    }
-
     var backButton: some View {
         return Button {
             viewModel.handleBackTap()
@@ -127,7 +124,7 @@ struct SettingsCustomMessageView: View {
         .disabled(viewModel.state == .done)
     }
 
-    var buttonEnabled: Bool {
+    var signButtonEnabled: Bool {
         return !method.isEmpty && !message.isEmpty
     }
 
@@ -138,5 +135,46 @@ struct SettingsCustomMessageView: View {
                                     vaultLocalPartyID: vault.localPartyID,
                                     chain: Chain.ethereum.name,
                                     decodedMessage: nil)
+    }
+    
+    @ViewBuilder
+    var signButton: some View {
+        VStack(spacing: 16) {
+            if isFastVault {
+                Text(NSLocalizedString("holdForPairedSign", comment: ""))
+                    .foregroundColor(Theme.colors.textExtraLight)
+                    .font(Theme.fonts.bodySMedium)
+                
+                LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
+                    fastPasswordPresented = true
+                } longPressAction: {
+                    onSignPress()
+                }
+                .crossPlatformSheet(isPresented: $fastPasswordPresented) {
+                    FastVaultEnterPasswordView(
+                        password: $fastVaultPassword,
+                        vault: vault,
+                        onSubmit: { onSignPress() }
+                    )
+                }
+            } else {
+                PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
+                    onSignPress()
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+    }
+    
+    func onLoad() {
+        Task { @MainActor in
+            let isExist = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
+            let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
+            isFastVault = isExist && !isLocalBackup
+        }
+    }
+    
+    func onSignPress() {
+        viewModel.moveToNextView()
     }
 }
