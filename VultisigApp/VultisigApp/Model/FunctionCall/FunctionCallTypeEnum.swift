@@ -34,39 +34,39 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
     func display(coin: Coin) -> String {
         switch self {
         case .rebond:
-            return "Rebond"
+            return NSLocalizedString("Rebond", comment: "")
         case .bondMaya:
-            return "Bond"
+            return NSLocalizedString("Bond", comment: "")
         case .unbondMaya:
-            return "Unbond"
+            return NSLocalizedString("Unbond", comment: "")
         case .addPool:
-            return "Add Pool"
+            return NSLocalizedString("Add Pool", comment: "")
         case .removePool:
-            return "Remove Pool"
+            return NSLocalizedString("Remove Pool", comment: "")
         case .leave:
-            return "Leave"
+            return NSLocalizedString("Leave", comment: "")
         case .custom:
-            return "Custom"
+            return NSLocalizedString("Custom", comment: "")
         case .vote:
-            return "Vote"
+            return NSLocalizedString("Vote", comment: "")
         case .stake:
-            return "Stake"
+            return NSLocalizedString("Stake", comment: "")
         case .unstake:
-            return "Unstake"
+            return NSLocalizedString("Unstake", comment: "")
         case .cosmosIBC:
-            return "IBC Transfer"
+            return NSLocalizedString("IBC Transfer", comment: "")
         case .merge:
-            return "Merge"
+            return NSLocalizedString("Merge", comment: "")
         case .unmerge:
-            return "Withdraw RUJI"
+            return NSLocalizedString("Withdraw RUJI", comment: "")
         case .theSwitch:
-            return "Switch"
+            return NSLocalizedString("Switch", comment: "")
         case .addThorLP:
-            return "Add THORChain LP"
+            return NSLocalizedString("Add THORChain LP", comment: "")
         case .securedAsset:
-            return "Secured Assets"
+            return NSLocalizedString("Secured Assets", comment: "")
         case .withdrawSecuredAsset:
-            return "Withdraw Secured Asset"
+            return NSLocalizedString("Withdraw Secured Asset", comment: "")
         }
     }
     
