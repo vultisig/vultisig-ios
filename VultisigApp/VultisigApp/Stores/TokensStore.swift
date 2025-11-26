@@ -1951,6 +1951,8 @@ class TokensStore {
         isNativeToken: false
     )
     
+    // MARK: - THORChain LPs Tokens
+    
     static let avaxSol: CoinMeta = CoinMeta(
         chain: .avalanche,
         ticker: "SOL",
@@ -2099,5 +2101,77 @@ class TokensStore {
         priceProviderId: "cacao",
         contractAddress: "",
         isNativeToken: true
+    )
+    
+    // MARK: - Maya Chain LPs Tokens
+    
+    static let ethWSTETH: CoinMeta = CoinMeta(
+        chain: .ethereum,
+        ticker: "WSTETH",
+        logo: "wsteth",
+        decimals: 18,
+        priceProviderId: "wrapped-steth",
+        contractAddress: "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
+        isNativeToken: false
+    )
+    
+    static let ethLLD: CoinMeta = CoinMeta(
+        chain: .ethereum,
+        ticker: "LLD",
+        logo: "lld",
+        decimals: 18,
+        priceProviderId: "liberland-lld",
+        contractAddress: "0x054c9d4c6f4ea4e14391addd1812106c97d05690",
+        isNativeToken: false
+    )
+    
+    static let ethMoca: CoinMeta = CoinMeta(
+        chain: .ethereum,
+        ticker: "MOCA",
+        logo: "moca",
+        decimals: 18,
+        priceProviderId: "",
+        contractAddress: "0x53312F85Bba24C8cb99CFFc13BF82420157230d3",
+        isNativeToken: false
+    )
+    
+    static let arbLEO: CoinMeta = CoinMeta(
+        chain: .arbitrum,
+        ticker: "LEO",
+        logo: "leo",
+        decimals: 3,
+        priceProviderId: "",
+        contractAddress: "0x93864d81175095dd93360ffa2a529b8642F76A6E",
+        isNativeToken: false
+    )
+    
+    static let arbYUM: CoinMeta = CoinMeta(
+        chain: .arbitrum,
+        ticker: "YUM",
+        logo: "yum",
+        decimals: 18,
+        priceProviderId: "",
+        contractAddress: "0x9F41b34f42058a7b74672055a5fae22c4b113Fd1",
+        isNativeToken: false
+    )
+    
+    static let arbGLD: CoinMeta = CoinMeta(
+        chain: .arbitrum,
+        ticker: "GLD",
+        logo: "gld",
+        decimals: 18,
+        priceProviderId: "",
+        contractAddress: "0xaFD091f140C21770f4e5d53d26B2859Ae97555Aa",
+        isNativeToken: false
+    )
+    
+    static let arbWSTETH: CoinMeta = CoinMeta(
+        chain: .ethereum,
+        ticker: "WSTETH",
+        logo: "wsteth",
+        decimals: 18,
+        priceProviderId: "wrapped-steth",
+        contractAddress: "0x5979D7b546E38E414F7E9822514be443A4800529",
+        isNativeToken: false
     )
 }
