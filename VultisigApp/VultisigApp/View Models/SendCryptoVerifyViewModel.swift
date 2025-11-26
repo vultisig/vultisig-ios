@@ -9,6 +9,7 @@ import SwiftUI
 import BigInt
 import WalletCore
 
+
 @MainActor
 class SendCryptoVerifyViewModel: ObservableObject {
     let securityScanViewModel = SecurityScannerViewModel()
@@ -25,9 +26,142 @@ class SendCryptoVerifyViewModel: ObservableObject {
     private let utxo = BlockchairService.shared
     private let blockChainService = BlockChainService.shared
     
+    // Services for fee calculation
+    private let sol = SolanaService.shared
+    private let sui = SuiService.shared
+    private let ton = TonService.shared
+    private let ripple = RippleService.shared
+    private let tron = TronService.shared
+    private let balanceService = BalanceService.shared
+    
     func onLoad() {
         securityScanViewModel.$state
             .assign(to: &$securityScannerState)
+    }
+    
+    func loadGasInfoForSending(txData: SendTransactionStruct, tx: SendTransaction) async {
+        tx.isCalculatingFee = true
+        self.isLoading = true
+        self.errorMessage = ""
+        
+        do {
+            if txData.coin.chain.chainType == .EVM {
+                let service = try EthereumFeeService(chain: txData.coin.chain)
+                let feeInfo = try await service.calculateFees(
+                    chain: txData.coin.chain,
+                    limit: BigInt(EVMHelper.defaultETHTransferGasUnit),
+                    isSwap: false,
+                    fromAddress: txData.fromAddress,
+                    feeMode: .default
+                )
+                
+                await MainActor.run {
+                    tx.fee = feeInfo.amount
+                    
+                    switch feeInfo {
+                    case .GasFee(let price, _, _, _):
+                        tx.gas = price
+                    case .Eip1559(_, let maxFeePerGas, _, _, _):
+                        tx.gas = maxFeePerGas
+                    case .BasicFee(let amount, _, let limit):
+                         if limit > 0 {
+                            tx.gas = amount / limit
+                         } else {
+                            tx.gas = amount
+                         }
+                    }
+                    
+                    tx.isCalculatingFee = false
+                    self.isLoading = false
+                    self.validateBalanceWithFee(txData: txData, tx: tx)
+                }
+            } else {
+                // Fallback for other chains (UTXO, etc.)
+                print("DEBUG: Fetching specific for \(txData.coin.chain.name)")
+                let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
+                print("DEBUG: Chain specific fetched: \(chainSpecific)")
+                let fee = try await calculateUTXOPlanFee(txData: txData, chainSpecific: chainSpecific)
+                print("DEBUG: Calculated fee: \(fee)")
+                 
+                await MainActor.run {
+                    tx.fee = fee
+                    tx.gas = fee // For UTXO, gas field often holds the fee
+                    tx.isCalculatingFee = false
+                    self.isLoading = false
+                    self.validateBalanceWithFee(txData: txData, tx: tx)
+                }
+            }
+        } catch {
+            print("DEBUG: Error calculating fee: \(error)")
+            await MainActor.run {
+                self.errorMessage = error.localizedDescription
+                self.showAlert = true
+                tx.isCalculatingFee = false
+                self.isLoading = false
+            }
+        }
+    }
+    
+    func calculateUTXOPlanFee(txData: SendTransactionStruct, chainSpecific: BlockChainSpecific) async throws -> BigInt {
+        guard let vault = ApplicationState.shared.currentVault else {
+            throw HelperError.runtimeError("No vault available for UTXO fee calculation")
+        }
+        
+        // Don't calculate plan fee if amount is 0 or empty
+        // Normalize decimal separator (replace comma with period for consistent parsing)
+        let normalizedAmount = txData.amount.replacingOccurrences(of: ",", with: ".")
+        print("DEBUG: txData.amount = \(txData.amount), normalized = \(normalizedAmount), coin.decimals = \(txData.coin.decimals)")
+        let actualAmount = normalizedAmount.toBigInt(decimals: txData.coin.decimals)
+        print("DEBUG: actualAmount = \(actualAmount)")
+        if actualAmount == 0 {
+            throw HelperError.runtimeError("Enter an amount to calculate accurate UTXO fees")
+        }
+        
+        // Force fresh UTXO fetch for fee calculation
+        await BlockchairService.shared.clearUTXOCache(for: txData.coin)
+        let _ = try await BlockchairService.shared.fetchBlockchairData(coin: txData.coin)
+        
+        let keysignFactory = KeysignPayloadFactory()
+        let keysignPayload = try await keysignFactory.buildTransfer(
+            coin: txData.coin,
+            toAddress: txData.toAddress.isEmpty ? txData.coin.address : txData.toAddress,
+            amount: actualAmount,
+            memo: txData.memo.isEmpty ? nil : txData.memo,
+            chainSpecific: chainSpecific,
+            swapPayload: nil,
+            vault: vault
+        )
+        
+        let planFee: BigInt
+        
+        switch txData.coin.chain {
+        case .cardano:
+            let cardanoHelper = CardanoHelper()
+            planFee = try cardanoHelper.calculateDynamicFee(keysignPayload: keysignPayload)
+            
+        default: // UTXO chains
+            guard let utxoHelper = UTXOChainsHelper.getHelper(coin: txData.coin) else {
+                throw HelperError.runtimeError("UTXO helper not available for \(txData.coin.chain.name)")
+            }
+            let plan = try utxoHelper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
+            print("DEBUG: UTXO Plan Fee: \(plan.fee), Amount: \(plan.amount), UTXOs: \(plan.utxos.count)")
+            planFee = BigInt(plan.fee)
+        }
+        
+        if planFee > 0 {
+            return planFee
+        }
+        
+        return BigInt.zero
+    }
+    
+    func validateBalanceWithFee(txData: SendTransactionStruct, tx: SendTransaction) {
+        let totalAmount = txData.amount.toBigInt(decimals: txData.coin.decimals) + tx.fee
+        if totalAmount > txData.coin.rawBalance.toBigInt(decimals: txData.coin.decimals) {
+            errorMessage = "walletBalanceExceededError"
+            showAlert = true
+            isAmountCorrect = false // Reset confirmation if balance exceeded
+        }
     }
     
     var isValidForm: Bool {

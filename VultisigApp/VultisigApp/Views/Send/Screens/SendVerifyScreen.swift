@@ -7,8 +7,10 @@
 
 import SwiftUI
 
+
 struct SendVerifyScreen: View {
     @StateObject var sendCryptoVerifyViewModel = SendCryptoVerifyViewModel()
+    let txData: SendTransactionStruct
     @ObservedObject var tx: SendTransaction
     let vault: Vault
     
@@ -35,9 +37,17 @@ struct SendVerifyScreen: View {
                 dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
             )
         }
+        .alert(isPresented: $sendCryptoVerifyViewModel.showAlert) {
+            Alert(
+                title: Text(NSLocalizedString("error", comment: "")),
+                message: Text(NSLocalizedString(sendCryptoVerifyViewModel.errorMessage, comment: "")),
+                dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+            )
+        }
         .onLoad {
             sendCryptoVerifyViewModel.onLoad()
             Task {
+                await sendCryptoVerifyViewModel.loadGasInfoForSending(txData: txData, tx: tx)
                 await sendCryptoVerifyViewModel.scan(transaction: tx, vault: vault)
             }
         }
@@ -63,8 +73,8 @@ struct SendVerifyScreen: View {
                 network: tx.coin.chain.name,
                 networkImage: tx.coin.chain.logo,
                 memo: tx.memo,
-                feeCrypto: tx.gasInReadable,
-                feeFiat: CryptoAmountFormatter.feesInReadable(tx: tx, vault: vault),
+                feeCrypto: tx.isCalculatingFee ? "Loading..." : tx.gasInReadable,
+                feeFiat: tx.isCalculatingFee ? "" : CryptoAmountFormatter.feesInReadable(tx: tx, vault: vault),
                 coinImage: tx.coin.logo,
                 amount: tx.amount,
                 coinTicker: tx.coin.ticker
@@ -156,6 +166,16 @@ struct VerifyKeysignPayload: Identifiable, Hashable {
 
 #Preview {
     SendVerifyScreen(
+        txData: SendTransactionStruct(
+            coin: Coin.example,
+            amount: "1.0",
+            memo: "",
+            toAddress: "",
+            fromAddress: "",
+            isFastVault: false,
+            fastVaultPassword: "",
+            transactionType: .unspecified
+        ),
         tx: SendTransaction(),
         vault: Vault.example
     )

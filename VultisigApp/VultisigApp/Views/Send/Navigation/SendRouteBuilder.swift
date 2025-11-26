@@ -6,6 +6,51 @@
 //
 
 import SwiftUI
+import VultisigCommonData
+
+struct SendTransactionStruct: Hashable {
+    let coin: Coin
+    let amount: String
+    let memo: String
+    let toAddress: String
+    let fromAddress: String
+    let isFastVault: Bool
+    let fastVaultPassword: String
+    let transactionType: VSTransactionType
+    
+    init(coin: Coin, amount: String, memo: String, toAddress: String, fromAddress: String, isFastVault: Bool, fastVaultPassword: String, transactionType: VSTransactionType) {
+        self.coin = coin
+        self.amount = amount
+        self.memo = memo
+        self.toAddress = toAddress
+        self.fromAddress = fromAddress
+        self.isFastVault = isFastVault
+        self.fastVaultPassword = fastVaultPassword
+        self.transactionType = transactionType
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(coin)
+        hasher.combine(amount)
+        hasher.combine(memo)
+        hasher.combine(toAddress)
+        hasher.combine(fromAddress)
+        hasher.combine(isFastVault)
+        hasher.combine(fastVaultPassword)
+        hasher.combine(transactionType)
+    }
+    
+    static func == (lhs: SendTransactionStruct, rhs: SendTransactionStruct) -> Bool {
+        return lhs.coin == rhs.coin &&
+            lhs.amount == rhs.amount &&
+            lhs.memo == rhs.memo &&
+            lhs.toAddress == rhs.toAddress &&
+            lhs.fromAddress == rhs.fromAddress &&
+            lhs.isFastVault == rhs.isFastVault &&
+            lhs.fastVaultPassword == rhs.fastVaultPassword &&
+            lhs.transactionType == rhs.transactionType
+    }
+}
 
 struct SendRouteBuilder {
     
@@ -25,8 +70,8 @@ struct SendRouteBuilder {
     }
     
     @ViewBuilder
-    func buildVerifyScreen(tx: SendTransaction, vault: Vault) -> some View {
-        SendVerifyScreen(tx: tx, vault: vault)
+    func buildVerifyScreen(txData: SendTransactionStruct, tx: SendTransaction, vault: Vault) -> some View {
+        SendVerifyScreen(txData: txData, tx: tx, vault: vault)
     }
     
     @ViewBuilder

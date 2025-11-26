@@ -9,6 +9,7 @@ import OSLog
 import SwiftUI
 import BigInt
 
+
 enum Field: Int, Hashable {
     case toAddress
     case amount
@@ -54,7 +55,7 @@ struct SendDetailsScreen: View {
                 sendDetailsViewModel.onLoad()
                 Task {
                     await setMainData()
-                    await loadGasInfo()
+                    // Fee calculation moved to Verify screen
                     await checkPendingTransactions()
                     
                     // Start polling for current chain if there are pending transactions
@@ -70,7 +71,7 @@ struct SendDetailsScreen: View {
                     // SEMPRE para o polling da chain anterior
                     PendingTransactionManager.shared.stopPollingForChain(oldValue.chain)
                     
-                    await loadGasInfo()
+                    // Fee calculation moved to Verify screen
                     await checkPendingTransactions()
                     
                     // Só inicia polling se a NOVA chain suportar pending transactions
@@ -103,7 +104,21 @@ struct SendDetailsScreen: View {
                 )
             }
             .navigationDestination(isPresented: $navigateToVerify) {
-                SendRouteBuilder().buildVerifyScreen(tx: tx, vault: vault)
+                let txData = SendTransactionStruct(
+                    coin: tx.coin,
+                    amount: tx.amount,
+                    memo: tx.memo,
+                    toAddress: tx.toAddress,
+                    fromAddress: tx.fromAddress,
+                    isFastVault: tx.isFastVault,
+                    fastVaultPassword: tx.fastVaultPassword,
+                    transactionType: tx.transactionType
+                )
+                SendRouteBuilder().buildVerifyScreen(
+                    txData: txData,
+                    tx: tx,
+                    vault: vault
+                )
             }
             .crossPlatformSheet(isPresented: $sendDetailsViewModel.showChainPickerSheet) {
                 SwapChainPickerView(
@@ -347,10 +362,10 @@ struct SendDetailsScreen: View {
     }
     
     private func onRefresh() async {
-        async let gas: Void = sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+        // Fee calculation moved to Verify screen
         async let bal: Void = BalanceService.shared.updateBalance(for: tx.coin)
         async let pendingCheck: Void = PendingTransactionManager.shared.forceCheckPendingTransactions()
-        _ = await (gas, bal, pendingCheck)
+        _ = await (bal, pendingCheck)
         if Task.isCancelled { return }
         await MainActor.run {
             coinBalance = tx.coin.balanceString
@@ -374,7 +389,7 @@ extension SendDetailsScreen: SendGasSettingsOutput {
         tx.feeMode = mode
         
         Task {
-            await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+            // Fee calculation moved to Verify screen
         }
     }
 }
@@ -411,8 +426,7 @@ extension SendDetailsScreen {
     }
     
     private func loadGasInfo() async {
-        guard !sendCryptoViewModel.isLoading else { return }
-        await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+        // Fee calculation moved to Verify screen
     }
     
     private func validateAddress(_ newValue: String) {

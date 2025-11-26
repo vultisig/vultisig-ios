@@ -25,8 +25,8 @@ struct SendRouter {
                 tx: tx,
                 vault: vault
             )
-        case .verify(let tx, let vault):
-            viewBuilder.buildVerifyScreen(tx: tx, vault: vault)
+        case .verify(let txData, let tx, let vault):
+            viewBuilder.buildVerifyScreen(txData: txData, tx: tx, vault: vault)
         case .pairing(let vault, let tx, let keysignPayload, let fastVaultPassword):
             viewBuilder.buildPairScreen(
                 vault: vault,
