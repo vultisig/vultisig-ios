@@ -51,39 +51,31 @@ extension MayaChainAPIService {
     ///   - userLPs: The list of user-selected LP coins
     ///   - period: Optional time period for APR calculation (e.g., "30d", "100d"). Defaults to "30d".
     /// - Returns: Array of complete LP positions with current values and APR
+    /// - Note: Returns all user-selected pools, with redeem values set to "0" if no position exists
     func getLPPositions(address: String, userLPs: [CoinMeta], period: String? = nil) async throws -> [THORChainLPPosition] {
         // Fetch pool stats and member details in parallel
         async let poolStatsTask = getPoolStats(period: period)
-        async let memberDetailsTask = getMemberDetails(address: address)
+        async let memberDetailsTask = try? getMemberDetails(address: address)
 
-        let (poolStats, memberDetails) = try await (poolStatsTask, memberDetailsTask)
+        let poolStats = try await poolStatsTask
+        let memberDetails = await memberDetailsTask
 
         var positions: [THORChainLPPosition] = []
 
-        // Filter pools by user selection
-        let userPoolAssets = Set(userLPs.map { coin -> String in
-            // Convert coin to pool asset format (e.g., "BTC.BTC", "ETH.ETH")
-            let chain = coin.chain.swapAsset.uppercased()
-            return "\(chain).\(coin.ticker.uppercased())"
-        })
+        // Create a map of member pools for quick lookup
+        let memberPoolsMap = Dictionary(uniqueKeysWithValues:
+            (memberDetails?.pools ?? []).map { ($0.pool, $0) }
+        )
 
-        // Process each member pool position
-        for memberPool in memberDetails.pools {
-            // Check if this pool is in the user's selected LPs
-            guard userPoolAssets.contains(memberPool.pool) else {
-                continue
-            }
-
-            // Find matching pool stats
-            guard let poolStat = poolStats.first(where: { $0.asset == memberPool.pool }),
-                  poolStat.isAvailable else {
-                continue
-            }
+        // Process each user-selected pool
+        for poolStat in poolStats where poolStat.isAvailable {
+            // Check if user has a position in this pool
+            let memberPool = memberPoolsMap[poolStat.asset]
 
             // Create THORChainLPPosition (reusing the same model for MayaChain)
             let position = THORChainLPPosition(
-                runeRedeemValue: memberPool.runeAdded,
-                assetRedeemValue: memberPool.assetAdded,
+                runeRedeemValue: memberPool?.runeAdded ?? "0",
+                assetRedeemValue: memberPool?.assetAdded ?? "0",
                 poolStats: THORChainPoolStats(
                     asset: poolStat.asset,
                     assetDepth: poolStat.assetDepth,

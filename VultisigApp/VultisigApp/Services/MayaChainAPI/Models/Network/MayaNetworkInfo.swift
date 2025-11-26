@@ -27,7 +27,7 @@ struct MayaHealth: Decodable {
     let lastMayaNode: LastNodeInfo
 
     enum CodingKeys: String, CodingKey {
-        case lastMayaNode = "lastMayaNode"
+        case lastMayaNode = "lastThorNode"
     }
 
     struct LastNodeInfo: Decodable {
