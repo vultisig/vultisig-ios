@@ -68,7 +68,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             .showIf(input.toAddress.isNotEmpty)
             
             Group {
-                getValueCell(for: "memo", with: input.memo)
+                getValueCell(for: "memo", with: input.memo, isMultiLine: true)
                 Separator()
             }
             .showIf(input.memo.isNotEmpty)
@@ -128,7 +128,8 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
         with value: String,
         bracketValue: String? = nil,
         secondRowText: String? = nil,
-        image: String? = nil
+        image: String? = nil,
+        isMultiLine: Bool = false
     ) -> some View {
         HStack(spacing: 4) {
             Text(NSLocalizedString(title, comment: ""))
@@ -145,8 +146,10 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             VStack(alignment: .trailing, spacing: 2) {
                 Text(value)
                     .foregroundColor(Theme.colors.textPrimary)
-                    .lineLimit(1)
+                    .lineLimit(isMultiLine ? nil : 1)
                     .truncationMode(.middle)
+                    .multilineTextAlignment(.trailing)
+                    .fixedSize(horizontal: false, vertical: true)
                 
                 if let secondRowText {
                     Text(secondRowText)
