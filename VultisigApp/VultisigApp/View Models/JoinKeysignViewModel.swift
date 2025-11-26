@@ -377,11 +377,22 @@ class JoinKeysignViewModel: ObservableObject {
             return
         }
         
-        do {
-            let evmDecoded = try await MemoDecodingService.shared.decode(memo: memo)
-            decodedMemo = evmDecoded
-        } catch {
-            print("EVM memo decoding error: \(error.localizedDescription)")
+        // Use the new comprehensive decoding service
+        if let parsedParams = await MemoDecodingService.shared.getParsedMemo(memo: memo) {
+            // Format: "Function(Args)" or just "Function" if no args
+            if !parsedParams.functionArguments.isEmpty && parsedParams.functionArguments != "{}" {
+                decodedMemo = "\(parsedParams.functionSignature)\n\nArguments:\n\(parsedParams.functionArguments)"
+            } else {
+                decodedMemo = parsedParams.functionSignature
+            }
+        } else {
+            // Fallback to simple decode if full parsing fails
+            do {
+                let evmDecoded = try await MemoDecodingService.shared.decode(memo: memo)
+                decodedMemo = evmDecoded
+            } catch {
+                print("EVM memo decoding error: \(error.localizedDescription)")
+            }
         }
     }
     
