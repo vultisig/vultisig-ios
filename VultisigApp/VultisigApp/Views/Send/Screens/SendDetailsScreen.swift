@@ -152,8 +152,7 @@ struct SendDetailsScreen: View {
             }
             .navigationDestination(isPresented: $isCoinPickerActive) {
                 CoinPickerView(coins: sendCryptoViewModel.pickerCoins(vault: vault, tx: tx)) { coin in
-                    tx.coin = coin
-                    tx.fromAddress = coin.address
+                    tx.reset(coin: coin)
                 }
             }
     }
@@ -399,13 +398,19 @@ extension SendDetailsScreen {
         guard !sendCryptoViewModel.isLoading else { return }
         
         if let coin = coin {
-            tx.coin = coin
-            tx.fromAddress = coin.address
-            // Only set toAddress from deeplinkViewModel if tx.toAddress is empty
-            // This preserves the address that was already set before navigation
-            if tx.toAddress.isEmpty {
-            tx.toAddress = deeplinkViewModel.address ?? ""
+            // Store toAddress before reset if it's not empty
+            let savedToAddress = tx.toAddress.isEmpty ? nil : tx.toAddress
+            
+            // Reset clears all state including fee
+            tx.reset(coin: coin)
+            
+            // Restore or set toAddress
+            if let saved = savedToAddress {
+                tx.toAddress = saved
+            } else if tx.toAddress.isEmpty {
+                tx.toAddress = deeplinkViewModel.address ?? ""
             }
+            
             deeplinkViewModel.address = nil
             self.coin = nil
             selectedChain = coin.chain

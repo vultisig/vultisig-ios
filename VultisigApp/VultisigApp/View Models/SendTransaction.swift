@@ -205,6 +205,8 @@ class SendTransaction: ObservableObject, Hashable {
         self.amountInFiat = .empty
         self.memo = .empty
         self.gas = .zero
+        self.fee = .zero  // Clear previous fee
+        self.isCalculatingFee = false  // Reset UI state
         self.estematedGasLimit = nil
         self.customGasLimit = nil
         self.customByteFee = nil
@@ -212,6 +214,9 @@ class SendTransaction: ObservableObject, Hashable {
         self.coin = coin
         self.sendMaxAmount = false
         self.fromAddress = coin.address
+        self.wasmContractPayload = nil  // Clear contract payload
+        self.transactionType = .unspecified  // Reset transaction type
+        self.memoFunctionDictionary = ThreadSafeDictionary()  // Clear memo functions
     }
     
     func parseCryptoURI(_ uri: String) {

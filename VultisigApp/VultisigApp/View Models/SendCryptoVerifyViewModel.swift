@@ -76,16 +76,34 @@ class SendCryptoVerifyViewModel: ObservableObject {
                     self.validateBalanceWithFee(txData: txData, tx: tx)
                 }
             } else {
-                // Fallback for other chains (UTXO, etc.)
+                // Fetch chain-specific data
                 print("DEBUG: Fetching specific for \(txData.coin.chain.name)")
                 let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
                 print("DEBUG: Chain specific fetched: \(chainSpecific)")
-                let fee = try await calculateUTXOPlanFee(txData: txData, chainSpecific: chainSpecific)
-                print("DEBUG: Calculated fee: \(fee)")
-                 
+                
+                let fee: BigInt
+                
+                // Determine fee based on chain type
+                switch txData.coin.chain.chainType {
+                case .UTXO, .Cardano:
+                    // For UTXO chains, we need to calculate the plan fee
+                    fee = try await calculateUTXOPlanFee(txData: txData, chainSpecific: chainSpecific)
+                    print("DEBUG: Calculated UTXO fee: \(fee)")
+                    
+                case .Cosmos, .THORChain:
+                    // For Cosmos-based chains (including MayaChain), the fee is already in chainSpecific
+                    fee = chainSpecific.fee
+                    print("DEBUG: Using Cosmos fee from chainSpecific: \(fee)")
+                    
+                default:
+                    // For other chains, use the gas value from chainSpecific
+                    fee = chainSpecific.gas
+                    print("DEBUG: Using gas from chainSpecific: \(fee)")
+                }
+                
                 await MainActor.run {
                     tx.fee = fee
-                    tx.gas = fee // For UTXO, gas field often holds the fee
+                    tx.gas = fee
                     tx.isCalculatingFee = false
                     self.isLoading = false
                     self.validateBalanceWithFee(txData: txData, tx: tx)
@@ -111,7 +129,13 @@ class SendCryptoVerifyViewModel: ObservableObject {
         // Normalize decimal separator (replace comma with period for consistent parsing)
         let normalizedAmount = txData.amount.replacingOccurrences(of: ",", with: ".")
         print("DEBUG: txData.amount = \(txData.amount), normalized = \(normalizedAmount), coin.decimals = \(txData.coin.decimals)")
-        let actualAmount = normalizedAmount.toBigInt(decimals: txData.coin.decimals)
+        
+        // Convert to Decimal and multiply by 10^decimals to get the raw amount
+        let amountDecimal = normalizedAmount.toDecimal()
+        let multiplier = pow(Decimal(10), txData.coin.decimals)
+        let rawAmount = amountDecimal * multiplier
+        let actualAmount = BigInt(NSDecimalNumber(decimal: rawAmount).int64Value)
+        
         print("DEBUG: actualAmount = \(actualAmount)")
         if actualAmount == 0 {
             throw HelperError.runtimeError("Enter an amount to calculate accurate UTXO fees")

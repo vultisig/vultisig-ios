@@ -150,13 +150,7 @@ extension String {
     
     // We must truncate before converting to bigInt.
     func toBigInt(decimals: Int) -> BigInt {
-        let decimalValue = self.toDecimal()
-        let truncated = decimalValue.truncated(toPlaces: decimals)
-        let multiplier = pow(Decimal(10), decimals)
-        let result = truncated * multiplier
-        // Convert to integer string by rounding
-        let rounded = NSDecimalNumber(decimal: result).int64Value
-        return BigInt(rounded)
+        self.toDecimal().truncated(toPlaces: decimals).description.toBigInt()
     }
     
     func isValidDecimal() -> Bool {
