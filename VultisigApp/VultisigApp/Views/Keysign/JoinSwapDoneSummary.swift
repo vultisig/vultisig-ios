@@ -13,12 +13,12 @@ struct JoinSwapDoneSummary: View {
     let vault: Vault
     let keysignViewModel: KeysignViewModel
     let summaryViewModel: JoinKeysignSummaryViewModel
-    @Binding var moveToHome: Bool
     @Binding var showAlert: Bool
     
     @State var animationVM: RiveViewModel? = nil
     
     @Environment(\.openURL) var openURL
+    @EnvironmentObject var appViewModel: AppViewModel
     
     var body: some View {
         VStack(spacing: 0) {
@@ -61,7 +61,7 @@ struct JoinSwapDoneSummary: View {
     
     var doneButton: some View {
         PrimaryButton(title: "done") {
-            moveToHome = true
+            appViewModel.restart()
         }
     }
     
@@ -352,5 +352,11 @@ struct JoinSwapDoneSummary: View {
 }
 
 #Preview {
-    JoinSwapDoneSummary(vault: Vault.example, keysignViewModel: KeysignViewModel(), summaryViewModel: JoinKeysignSummaryViewModel(), moveToHome: .constant(false), showAlert: .constant(false))
+    JoinSwapDoneSummary(
+        vault: Vault.example,
+        keysignViewModel: KeysignViewModel(),
+        summaryViewModel: JoinKeysignSummaryViewModel(),
+        showAlert: .constant(false)
+    )
+    .environmentObject(AppViewModel())
 }

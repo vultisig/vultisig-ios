@@ -19,7 +19,7 @@ final class DefiChainLPsViewModel: ObservableObject {
     }
     
     var vaultLPPositions: [CoinMeta] {
-        vault.defiPositions.first { $0.chain == .thorChain }?.lps ?? []
+        vault.defiPositions.first { $0.chain == chain }?.lps ?? []
     }
 
     private let interactor: LPsInteractor

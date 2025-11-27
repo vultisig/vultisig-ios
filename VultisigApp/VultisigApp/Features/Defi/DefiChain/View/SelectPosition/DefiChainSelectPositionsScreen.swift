@@ -43,7 +43,7 @@ struct DefiChainSelectPositionsScreen: View {
         TokenSelectionGridCell(
             coin: asset,
             // Prefix for LPs
-            name: section == .liquidityPool ? "RUNE/\(asset.ticker)" : asset.ticker,
+            name: section == .liquidityPool ? "\(viewModel.chain.ticker)/\(asset.ticker)" : asset.ticker,
             showChainIcon: section == .liquidityPool,
             isSelected: selection[safe: pos]?.contains(asset) ?? false
         ) { selected in
@@ -56,7 +56,7 @@ struct DefiChainSelectPositionsScreen: View {
     }
     
     func setupSelection() {
-        let defiPositions = viewModel.vault.defiPositions.first { $0.chain == .thorChain }
+        let defiPositions = viewModel.vault.defiPositions.first { $0.chain == viewModel.chain }
         selection = [
             defiPositions?.bonds ?? [],
             defiPositions?.staking ?? [],
@@ -92,10 +92,10 @@ struct DefiChainSelectPositionsScreen: View {
     
     @MainActor
     func updateVaultDefiPositions() {
-        viewModel.vault.defiPositions.removeAll(where: { $0.chain == .thorChain })
+        viewModel.vault.defiPositions.removeAll(where: { $0.chain == viewModel.chain })
         viewModel.vault.defiPositions.append(
             DefiPositions(
-                chain: .thorChain,
+                chain: viewModel.chain,
                 bonds: Array(Set(selection[safe: 0] ?? [])),
                 staking: Array(Set(selection[safe: 1] ?? [])),
                 lps: Array(Set(selection[safe: 2] ?? []))

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct KeysignSameDeviceShareErrorView: View {
-    @State private var navigateToHome: Bool = false
+    @EnvironmentObject var appViewModel: AppViewModel
 
     var body: some View {
         ErrorView(
@@ -17,9 +17,7 @@ struct KeysignSameDeviceShareErrorView: View {
             description: "",
             buttonTitle: "goToHomeView".localized
         ) {
-            navigateToHome = true
-        }.navigationDestination(isPresented: $navigateToHome) {
-            HomeScreen(showingVaultSelector: true)
+            appViewModel.set(selectedVault: nil, showingVaultSelector: true)
         }
     }
 }
@@ -29,4 +27,5 @@ struct KeysignSameDeviceShareErrorView: View {
         Background()
         KeysignSameDeviceShareErrorView()
     }
+    .environmentObject(AppViewModel())
 }

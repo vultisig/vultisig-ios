@@ -17,6 +17,7 @@ struct CoinDetailScreen: View {
 
     @State var showReceiveSheet: Bool = false
     @State var addressToCopy: Coin?
+    @State var size: CGFloat?
 
     @StateObject var viewModel: CoinDetailViewModel
 
@@ -51,41 +52,40 @@ struct CoinDetailScreen: View {
 #else
         content
             .presentationSizingFitted()
-            .applySheetSize()
+            .applySheetSize(700, 450)
             .transaction { $0.disablesAnimations = true }
 #endif
     }
     
     var content: some View {
-        GeometryReader { proxy in
-            ScrollView {
-                VStack(spacing: 32) {
-                    CoinDetailHeaderView(coin: coin)
-                    CoinActionsView(
-                        actions: viewModel.availableActions,
-                        onAction: onAction
-                    )
-                    .padding(.bottom, 8)
-                    CoinPriceNetworkView(
-                        chainName: group.name,
-                        price: Decimal(coin.price).formatToFiat()
-                    )
-                }
-                .padding(.horizontal, 24)
+        ScrollView {
+            VStack(spacing: 32) {
+                CoinDetailHeaderView(coin: coin)
+                CoinActionsView(
+                    actions: viewModel.availableActions,
+                    onAction: onAction
+                )
+                .padding(.bottom, 8)
+                CoinPriceNetworkView(
+                    chainName: group.name,
+                    price: Decimal(coin.price).formatToFiat()
+                )
             }
-            .background(ModalBackgroundView(width: proxy.size.width))
-            .onLoad(perform: viewModel.setup)
-            .onAppear(perform: onAppear)
-            .withAddressCopy(coin: $addressToCopy)
-            .refreshable {
-                await refresh()
-            }
+            .padding(.horizontal, 24)
+            .padding(.top, isMacOS ? 40 : 0)
+        }
+        .background(ModalBackgroundView(width: size ?? 0))
+        .onLoad(perform: viewModel.setup)
+        .onAppear(perform: onAppear)
+        .withAddressCopy(coin: $addressToCopy)
+        .refreshable {
+            await refresh()
         }
         .presentationDetents([isIPadOS ? .large : .medium])
         .presentationBackground(Theme.colors.bgSecondary)
         .presentationDragIndicator(.visible)
         .background(Theme.colors.bgSecondary)
-        .applySheetSize(700, 450)
+        .readSize { size = $0.width }
         .crossPlatformSheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(
                 coin: coin,
@@ -100,6 +100,11 @@ struct CoinDetailScreen: View {
         }
         .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
             #if os(macOS)
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "x") {
+                    isPresented.toggle()
+                }
+            }
             CustomToolbarItem(placement: .trailing) {
                 RefreshToolbarButton(onRefresh: onRefreshButton)
             }

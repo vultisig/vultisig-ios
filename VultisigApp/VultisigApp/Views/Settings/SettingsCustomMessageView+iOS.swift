@@ -26,10 +26,6 @@ extension SettingsCustomMessageView {
         }
     }
     
-    var button: some View {
-        buttonLabel
-    }
-    
     var customMessageContent: some View {
         VStack(spacing: 16) {
             textField(title: "Signing method", text: $method)

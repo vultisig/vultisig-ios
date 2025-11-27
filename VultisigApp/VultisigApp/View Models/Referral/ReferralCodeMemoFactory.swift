@@ -6,7 +6,7 @@
 //
 
 enum ReferralCodeMemoFactory {
-    static func createEdit(referralCode: String, nativeCoin: Coin, preferredAsset: PreferredAsset?, preferredAssetCoin: Coin?) -> String {
+    static func createEdit(referralCode: String, nativeCoin: Coin, preferredAsset: THORChainAsset?, preferredAssetCoin: Coin?) -> String {
         var preferredAssetAddressPart = ":THOR"
         var preferredAssetPart = ""
         if let preferredAsset, let preferredAssetCoin {

@@ -19,8 +19,8 @@ class FunctionCallCustom: FunctionCallAddressable, ObservableObject {
     // Token selection
     @Published var tokens: [IdentifiableString] = []
     @Published var tokenValid: Bool = false
-    @Published var selectedToken: IdentifiableString = .init(value: "Select Token")
-    @Published var balanceLabel: String = "( Select a token )"
+    @Published var selectedToken: IdentifiableString = .init(value: NSLocalizedString("selectToken", comment: "Select Token placeholder"))
+    @Published var balanceLabel: String = NSLocalizedString("amountSelectToken", comment: "Amount label when no token selected")
     
     // Internal
     @Published var amountValid: Bool = false
@@ -119,9 +119,9 @@ class FunctionCallCustom: FunctionCallAddressable, ObservableObject {
     func updateBalanceLabel() {
         if let coin = selectedVaultCoin {
             let balance = coin.balanceDecimal.formatForDisplay()
-            balanceLabel = "Amount ( Balance: \(balance) \(coin.ticker.uppercased()) )"
+            balanceLabel = String(format: NSLocalizedString("amountBalance", comment: "Amount with balance"), balance, coin.ticker.uppercased())
         } else {
-            balanceLabel = "Amount ( Select a token )"
+            balanceLabel = NSLocalizedString("amountSelectToken", comment: "Amount label when no token selected")
         }
     }
     
@@ -172,7 +172,7 @@ private struct FunctionCallCustomView: View {
                 descriptionProvider: { $0.value },
                 onSelect: { token in
                     viewModel.selectedToken = token
-                    viewModel.tokenValid = token.value.lowercased() != "select token"
+                    viewModel.tokenValid = token.value.lowercased() != NSLocalizedString("selectToken", comment: "").lowercased()
                     
                     if let coin = viewModel.selectedVaultCoin {
                         withAnimation {
@@ -184,7 +184,7 @@ private struct FunctionCallCustomView: View {
                             }
                         }
                     } else {
-                        viewModel.balanceLabel = "Amount ( Select a token )"
+                        viewModel.balanceLabel = NSLocalizedString("amountSelectToken", comment: "")
                         viewModel.objectWillChange.send()
                     }
                 }
@@ -211,7 +211,7 @@ private struct FunctionCallCustomView: View {
             .id("field-\(viewModel.balanceLabel)-\(viewModel.amount)")
             
             StyledTextField(
-                placeholder: "Custom Memo",
+                placeholder: NSLocalizedString("customMemo", comment: "Custom Memo placeholder"),
                 text: Binding(
                     get: { viewModel.custom },
                     set: { viewModel.custom = $0 }

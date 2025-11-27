@@ -47,16 +47,26 @@ struct CoinMeta: Hashable, Codable {
     }
     
     static var example = CoinMeta(chain: .bitcoin, ticker: "BTC", logo: "btc", decimals: 1, priceProviderId: "provider", contractAddress: "123456789", isNativeToken: true)
+    
+    private var normalizedTicker: String {
+        ticker.lowercased()
+    }
+    
+    private var normalizedContract: String {
+        contractAddress.lowercased()
+    }
 }
 
 extension CoinMeta: Equatable {
     static func == (lhs: CoinMeta, rhs: CoinMeta) -> Bool {
-        return lhs.chain == rhs.chain && lhs.ticker == rhs.ticker && lhs.contractAddress == rhs.contractAddress
+        return lhs.chain == rhs.chain &&
+        lhs.normalizedTicker == rhs.normalizedTicker &&
+        lhs.normalizedContract == rhs.normalizedContract
     }
-
+    
     func hash(into hasher: inout Hasher) {
         hasher.combine(chain)
-        hasher.combine(ticker)
-        hasher.combine(contractAddress)
+        hasher.combine(normalizedTicker)
+        hasher.combine(normalizedContract)
     }
 }

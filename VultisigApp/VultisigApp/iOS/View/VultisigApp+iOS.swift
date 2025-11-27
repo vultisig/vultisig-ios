@@ -13,7 +13,7 @@ extension VultisigApp {
         ContentView(navigationRouter: navigationRouter)
             .environmentObject(applicationState) // Shared monolithic mutable state
             .environmentObject(vaultDetailViewModel)
-            .environmentObject(accountViewModel)
+            .environmentObject(appViewModel)
             .environmentObject(settingsViewModel)
             .environmentObject(vultExtensionViewModel)
             .environmentObject(phoneCheckUpdateViewModel)

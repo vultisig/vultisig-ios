@@ -249,7 +249,9 @@ class Endpoint {
         if (chain == .thorchain || chain == .thorchainStagenet) && !referredCode.isEmpty {
             // THORChain supports nested affiliates
             let affiliateFeeRateBp = bps(for: discountBps, affiliateFeeRate: THORChainSwaps.referredAffiliateFeeRateBp)
-            affiliateParams.append((referredCode, THORChainSwaps.referredUserFeeRateBp))
+            if discountBps != .max {
+                affiliateParams.append((referredCode, THORChainSwaps.referredUserFeeRateBp))
+            }
             affiliateParams.append((THORChainSwaps.affiliateFeeAddress, "\(affiliateFeeRateBp)"))
         } else {
             // MayaChain only supports single affiliate
@@ -736,7 +738,7 @@ class Endpoint {
         case .dash:
             return "https://blockchair.com/dash/transaction/\(txid)"
         case .zcash:
-            return "https://blockexplorer.one/zcash/mainnet/tx/\(txid)"
+            return "https://blockchair.com/zcash/transaction/\(txid)"
         case .thorChain:
             return "https://runescan.io/tx/\(txid.stripHexPrefix())"
         case .thorChainStagenet:
@@ -817,7 +819,7 @@ class Endpoint {
         case .dash:
             return "https://blockchair.com/dash/address/\(address)"
         case .zcash:
-            return "https://blockexplorer.one/zcash/mainnet/address/\(address)"
+            return "https://blockchair.com/zcash/address/\(address)"
         case .thorChain:
             return "https://runescan.io/address/\(address)"
         case .thorChainStagenet:
@@ -1002,7 +1004,7 @@ class Endpoint {
         case .dash:
             return "https://blockchair.com/dash/address/\(address)"
         case .zcash:
-            return "https://blockexplorer.one/zcash/mainnet/address/\(address)"
+            return "https://blockchair.com/zcash/address/\(address)"
         case .mayaChain:
             return "https://www.explorer.mayachain.info/address/\(address)"
         case .arbitrum:

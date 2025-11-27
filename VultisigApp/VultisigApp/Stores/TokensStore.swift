@@ -22,6 +22,87 @@ class TokensStore {
             isNativeToken: true
         ),
         CoinMeta(
+            chain: .hyperliquid,
+            ticker: "kHYPE",
+            logo: "khype",
+            decimals: 18,
+            priceProviderId: "kinetic-staked-hype",
+            contractAddress: "0xfD739d4e423301CE9385c1fb8850539D657C296D",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .hyperliquid,
+            ticker: "wstHYPE",
+            logo: "wsthype",
+            decimals: 18,
+            priceProviderId: "staked-hype-shares",
+            contractAddress: "0x94e8396e0869c9F2200760aF0621aFd240E1CF38",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .hyperliquid,
+            ticker: "WHYPE",
+            logo: "whype",
+            decimals: 18,
+            priceProviderId: "wrapped-hype",
+            contractAddress: "0x5555555555555555555555555555555555555555",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .hyperliquid,
+            ticker: "UFART",
+            logo: "ufart",
+            decimals: 6,
+            priceProviderId: "unit-fartcoin",
+            contractAddress: "0x3B4575E689DEd21CAAD31d64C4df1f10F3B2CedF",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .hyperliquid,
+            ticker: "USDT0",
+            logo: "usdt0",
+            decimals: 6,
+            priceProviderId: "usdt0",
+            contractAddress: "0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .hyperliquid,
+            ticker: "vkHYPE",
+            logo: "vkhype",
+            decimals: 18,
+            priceProviderId: "kinetiq-earn-vault",
+            contractAddress: "0x9BA2EDc44E0A4632EB4723E81d4142353e1bB160",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .hyperliquid,
+            ticker: "UBTC",
+            logo: "ubtc",
+            decimals: 8,
+            priceProviderId: "unit-bitcoin",
+            contractAddress: "0x9FDBdA0A5e284c32744D2f17Ee5c74B284993463",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .hyperliquid,
+            ticker: "vHYPE",
+            logo: "vhype",
+            decimals: 18,
+            priceProviderId: "ventuals-vhype",
+            contractAddress: "0x8888888FdAAc0E7CF8C6523c8955bF7954c216fa",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .hyperliquid,
+            ticker: "USDC",
+            logo: "usdc",
+            decimals: 6,
+            priceProviderId: "usd-coin",
+            contractAddress: "0xb88339CB7199b77E23DB6E890353E22632Ba630f",
+            isNativeToken: false
+        ),
+        CoinMeta(
             chain: .sei,
             ticker: "SEI",
             logo: "sei",
@@ -1119,15 +1200,7 @@ class TokensStore {
             contractAddress: "",
             isNativeToken: true
         ),
-        CoinMeta(
-            chain: .mayaChain,
-            ticker: "CACAO",
-            logo: "cacao",
-            decimals: 10,
-            priceProviderId: "cacao",
-            contractAddress: "",
-            isNativeToken: true
-        ),
+        cacao,
         CoinMeta(
             chain: .mayaChain,
             ticker: "MAYA",
@@ -1878,6 +1951,8 @@ class TokensStore {
         isNativeToken: false
     )
     
+    // MARK: - THORChain LPs Tokens
+    
     static let avaxSol: CoinMeta = CoinMeta(
         chain: .avalanche,
         ticker: "SOL",
@@ -2015,6 +2090,88 @@ class TokensStore {
         decimals: 18,
         priceProviderId: "thorstarter",
         contractAddress: "0x69fa0feE221AD11012BAb0FdB45d444D3D2Ce71c",
+        isNativeToken: false
+    )
+    
+    static let cacao: CoinMeta = CoinMeta(
+        chain: .mayaChain,
+        ticker: "CACAO",
+        logo: "cacao",
+        decimals: 10,
+        priceProviderId: "cacao",
+        contractAddress: "",
+        isNativeToken: true
+    )
+    
+    // MARK: - Maya Chain LPs Tokens
+    
+    static let ethWSTETH: CoinMeta = CoinMeta(
+        chain: .ethereum,
+        ticker: "WSTETH",
+        logo: "wsteth",
+        decimals: 18,
+        priceProviderId: "wrapped-steth",
+        contractAddress: "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
+        isNativeToken: false
+    )
+    
+    static let ethLLD: CoinMeta = CoinMeta(
+        chain: .ethereum,
+        ticker: "LLD",
+        logo: "lld",
+        decimals: 18,
+        priceProviderId: "liberland-lld",
+        contractAddress: "0x054c9d4c6f4ea4e14391addd1812106c97d05690",
+        isNativeToken: false
+    )
+    
+    static let ethMoca: CoinMeta = CoinMeta(
+        chain: .ethereum,
+        ticker: "MOCA",
+        logo: "moca",
+        decimals: 18,
+        priceProviderId: "",
+        contractAddress: "0x53312F85Bba24C8cb99CFFc13BF82420157230d3",
+        isNativeToken: false
+    )
+    
+    static let arbLEO: CoinMeta = CoinMeta(
+        chain: .arbitrum,
+        ticker: "LEO",
+        logo: "leo",
+        decimals: 3,
+        priceProviderId: "",
+        contractAddress: "0x93864d81175095dd93360ffa2a529b8642F76A6E",
+        isNativeToken: false
+    )
+    
+    static let arbYUM: CoinMeta = CoinMeta(
+        chain: .arbitrum,
+        ticker: "YUM",
+        logo: "yum",
+        decimals: 18,
+        priceProviderId: "",
+        contractAddress: "0x9F41b34f42058a7b74672055a5fae22c4b113Fd1",
+        isNativeToken: false
+    )
+    
+    static let arbGLD: CoinMeta = CoinMeta(
+        chain: .arbitrum,
+        ticker: "GLD",
+        logo: "gld",
+        decimals: 18,
+        priceProviderId: "",
+        contractAddress: "0xaFD091f140C21770f4e5d53d26B2859Ae97555Aa",
+        isNativeToken: false
+    )
+    
+    static let arbWSTETH: CoinMeta = CoinMeta(
+        chain: .arbitrum,
+        ticker: "WSTETH",
+        logo: "wsteth",
+        decimals: 18,
+        priceProviderId: "wrapped-steth",
+        contractAddress: "0x5979D7b546E38E414F7E9822514be443A4800529",
         isNativeToken: false
     )
 }
