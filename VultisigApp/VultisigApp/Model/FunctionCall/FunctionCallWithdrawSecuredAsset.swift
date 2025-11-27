@@ -13,13 +13,13 @@ import Combine
 
 class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObject {
     
-    static let INITIAL_ITEM_FOR_DROPDOWN_TEXT: String = "Select Secured Asset to Withdraw"
+    static let INITIAL_ITEM_FOR_DROPDOWN_TEXT: String = NSLocalizedString("selectSecuredAssetToWithdraw", comment: "")
     
     @Published var isTheFormValid: Bool = false
     @Published var customErrorMessage: String? = nil
     @Published var amount: Decimal = 0.0
     @Published var destinationAddress: String = ""
-    @Published var selectedSecuredAsset: IdentifiableString = .init(value: "Select Secured Asset to Withdraw")
+    @Published var selectedSecuredAsset: IdentifiableString = .init(value: NSLocalizedString("selectSecuredAssetToWithdraw", comment: ""))
     
     
     @Published var amountValid: Bool = false
@@ -101,12 +101,12 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             
             // Always start with "Select asset" placeholder to ensure dropdown works
-            var assetList = [IdentifiableString(value: "Select Secured Asset to Withdraw")]
+            var assetList = [IdentifiableString(value: NSLocalizedString("selectSecuredAssetToWithdraw", comment: ""))]
             
             if securedAssetsInVault.isEmpty {
                 // Keep just the placeholder
                 self.availableSecuredAssets = assetList
-                self.loadError = "No Secured Assets found in vault. Mint some assets first."
+                self.loadError = NSLocalizedString("noSecuredAssets", comment: "")
             } else {
                 
                 let vaultAssets = securedAssetsInVault.map { coin in
@@ -171,7 +171,7 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
             // If no coin exists for that chain in the vault, show error
             destinationAddress = ""
             destinationAddressValid = false
-            customErrorMessage = "To withdraw \(ticker), you need to add the \(ticker) coin to your vault first. Go to vault settings and add \(targetChain.name) to continue."
+            customErrorMessage = String(format: NSLocalizedString("withdrawSecuredAssetError", comment: ""), ticker, ticker, targetChain.name)
         }
     }
     
@@ -252,7 +252,7 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
             amountValid = false
             // Only set amount error if there's no destination address error
             if destinationAddressValid {
-                customErrorMessage = "Please enter a valid amount greater than zero."
+                customErrorMessage = NSLocalizedString("enterValidAmount", comment: "")
             }
             return
         }
@@ -267,7 +267,7 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
             amountValid = false
             // Only set this error if there's no destination address error
             if destinationAddressValid {
-                customErrorMessage = "Select a secured asset to see available balance."
+                customErrorMessage = NSLocalizedString("selectSecuredAssetToSeeBalance", comment: "")
             }
         }
     }
@@ -282,15 +282,15 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
     
     var balance: String {
         if selectedSecuredAsset.value.isEmpty || selectedSecuredAsset.value == Self.INITIAL_ITEM_FOR_DROPDOWN_TEXT {
-            return "( Select asset to see balance )"
+            return NSLocalizedString("selectAssetToSeeBalance", comment: "")
         }
         
         // Use the selectedSecuredAssetCoin which contains the actual secured asset
         if let securedAsset = selectedSecuredAssetCoin {
             let b = securedAsset.balanceDecimal.formatForDisplay()
-            return "( Balance: \(b) \(selectedSecuredAsset.value) )"
+            return String(format: NSLocalizedString("balanceInParentheses", comment: ""), b, selectedSecuredAsset.value)
         } else {
-            return "( Balance: 0 \(selectedSecuredAsset.value) )"
+            return String(format: NSLocalizedString("balanceInParentheses", comment: ""), "0", selectedSecuredAsset.value)
         }
     }
     
@@ -351,7 +351,7 @@ struct SecuredAssetSelectorSection: View {
     
     private var loadingView: some View {
         HStack(spacing: 12) {
-            Text("Loading secured assets...")
+            Text(NSLocalizedString("loadingSecuredAssets", comment: ""))
                 .font(.body)
                 .foregroundColor(.primary)
             
@@ -374,7 +374,7 @@ struct SecuredAssetSelectorSection: View {
                     .font(.body)
                     .foregroundColor(.orange)
                 
-                Text(model.loadError ?? "No secured assets available")
+                Text(model.loadError ?? NSLocalizedString("noSecuredAssetsAvailable", comment: ""))
                     .font(.body)
                     .foregroundColor(.primary)
                     .lineLimit(2)
@@ -386,7 +386,7 @@ struct SecuredAssetSelectorSection: View {
                     model.isLoadingAssets = true
                     model.loadAvailableSecuredAssets()
                 } label: {
-                    Text("Retry")
+                    Text(NSLocalizedString("retry", comment: ""))
                         .font(.caption)
                         .foregroundColor(.blue)
                 }
@@ -421,8 +421,8 @@ struct AmountInputSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             StyledFloatingPointField(
-                label: "Amount to Withdraw",
-                placeholder: "Enter amount",
+                label: NSLocalizedString("amountToWithdraw", comment: ""),
+                placeholder: NSLocalizedString("enterAmount", comment: ""),
                 value: Binding(
                     get: { model.amount },
                     set: { model.amount = $0 }
