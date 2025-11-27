@@ -26,14 +26,14 @@ struct MayaChainStakeInteractor: StakeInteractor {
 
         do {
             // Fetch CACAO pool position
-            let position = try await mayaChainAPIService.getCacaoPoolPosition(address: cacaoCoin.address)
+            let position = try await mayaChainAPIService.getCacaoPoolPosition(address: "maya16krhuvh6nr2z8mpsrmm7n637d5slwsfqndsras")
 
             // Only create a position if user has staked amount
             guard position.stakedAmount > 0 else {
                 return []
             }
 
-            let stakedAmount = position.stakedAmount / pow(10, cacaoCoin.decimals)
+            let stakedAmount = position.userUnits / pow(10, cacaoCoin.decimals)
             // Fetch APR/APY
             let aprData = try await mayaChainAPIService.getCacaoPoolAPR()
 
