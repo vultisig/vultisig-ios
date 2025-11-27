@@ -2166,7 +2166,7 @@ class TokensStore {
     )
     
     static let arbWSTETH: CoinMeta = CoinMeta(
-        chain: .ethereum,
+        chain: .arbitrum,
         ticker: "WSTETH",
         logo: "wsteth",
         decimals: 18,
