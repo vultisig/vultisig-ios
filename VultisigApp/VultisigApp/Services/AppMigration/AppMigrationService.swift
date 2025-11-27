@@ -6,22 +6,35 @@
 //
 
 import Foundation
-import SwiftUI
 
 /// Service responsible for handling app migrations
 /// Migrations are executed once per migration version on app launch
 /// Uses incremental integer versions (1, 2, 3, etc.) independent of app version
-class AppMigrationService {
-    @AppStorage("lastMigratedVersion") private var lastMigratedVersion: Int = -1
+///
+/// Migration version is stored in Keychain (not UserDefaults) to:
+/// 1. Persist across app reinstalls - prevents re-running migrations for existing users
+/// 2. Detect fresh installations - new devices have no Keychain entry, so migrations are skipped
+struct AppMigrationService {
+    private let keychainService: KeychainService
+
+    init(keychainService: KeychainService = DefaultKeychainService.shared) {
+        self.keychainService = keychainService
+    }
 
     /// Performs all necessary migrations
     func performMigrationsIfNeeded() {
-        let lastVersion = lastMigratedVersion
         let migrations = getAllMigrations()
 
         // Get the highest migration version available
         guard let latestMigrationVersion = migrations.map(\.version).max() else {
             print("✅ [Migration] No migrations registered")
+            return
+        }
+
+        // Check if this is a fresh installation (no migration version in Keychain)
+        guard let lastVersion = keychainService.getLastMigratedVersion() else {
+            print("✅ [Migration] Fresh installation detected - skipping all migrations, setting to version \(latestMigrationVersion)")
+            keychainService.setLastMigratedVersion(latestMigrationVersion)
             return
         }
 
@@ -49,7 +62,7 @@ class AppMigrationService {
             print("🔄 [Migration] Executing migration #\(migration.version): \(migration.description)")
             do {
                 try migration.migrate()
-                lastMigratedVersion = migration.version
+                keychainService.setLastMigratedVersion(migration.version)
                 print("✅ [Migration] Successfully completed migration #\(migration.version)")
             } catch {
                 print("❌ [Migration] Failed migration #\(migration.version): \(error.localizedDescription)")
