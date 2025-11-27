@@ -150,6 +150,7 @@ struct SettingsCustomMessageView: View {
                 } longPressAction: {
                     onSignPress()
                 }
+                .disabled(!signButtonEnabled)
                 .crossPlatformSheet(isPresented: $fastPasswordPresented) {
                     FastVaultEnterPasswordView(
                         password: $fastVaultPassword,
@@ -161,6 +162,7 @@ struct SettingsCustomMessageView: View {
                 PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
                     onSignPress()
                 }
+                .disabled(!signButtonEnabled)
             }
         }
         .padding(.horizontal, 16)
