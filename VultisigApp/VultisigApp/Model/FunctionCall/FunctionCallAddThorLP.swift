@@ -194,7 +194,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
                 DispatchQueue.main.async {
                     self.availablePools = []
                     self.isLoadingPools = false
-                    self.loadError = "Failed to load pools. Please check your connection and try again."
+                    self.loadError = NSLocalizedString("failedToLoadPools", comment: "Failed to load pools error")
                 }
             }
         }
@@ -241,10 +241,10 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
         
         if let assetCoin = vault.coins.first(where: { $0.chain == chainCoin.chain && $0.ticker.uppercased() == assetTicker }) {
             let balance = assetCoin.balanceDecimal.formatForDisplay()
-            pairedAssetBalance = "( Balance: \(balance) \(assetCoin.ticker.uppercased()) )"
+            pairedAssetBalance = String(format: NSLocalizedString("balanceInParentheses", comment: ""), balance, assetCoin.ticker.uppercased())
         } else if assetTicker == chainPrefix {
             let balance = chainCoin.balanceDecimal.formatForDisplay()
-            pairedAssetBalance = "( Balance: \(balance) \(chainCoin.ticker.uppercased()) )"
+            pairedAssetBalance = String(format: NSLocalizedString("balanceInParentheses", comment: ""), balance, chainCoin.ticker.uppercased())
         } else {
             pairedAssetBalance = "( \(assetTicker) not found in vault )"
         }
@@ -301,7 +301,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     }
     
     private func formatBalance(_ balance: Decimal, ticker: String) -> String {
-        return "( Balance: \(balance.formatForDisplay()) \(ticker.uppercased()) )"
+        return String(format: NSLocalizedString("balanceInParentheses", comment: ""), balance.formatForDisplay(), ticker.uppercased())
     }
     
     private func setupValidation() {
@@ -363,7 +363,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     
     var balance: String {
         let b = tx.coin.balanceDecimal.formatForDisplay()
-        return "( Balance: \(b) \(tx.coin.ticker.uppercased()) )"
+        return String(format: NSLocalizedString("balanceInParentheses", comment: ""), b, tx.coin.ticker.uppercased())
     }
     
     func getView() -> AnyView {
@@ -395,14 +395,14 @@ struct FunctionCallAddThorLPView: View {
                 label: {
                     // If adding RUNE (thorChain), show RUNE balance. Otherwise show the selected pool's asset balance.
                     if model.tx.coin.chain == .thorChain {
-                        return "Amount \(model.balance)"
+                        return "\(NSLocalizedString("amount", comment: "")) \(model.balance)"
                     } else if !model.selectedPoolBalance.isEmpty {
-                        return "Amount \(model.selectedPoolBalance)"
+                        return "\(NSLocalizedString("amount", comment: "")) \(model.selectedPoolBalance)"
                     } else {
-                        return "Amount \(model.balance)"
+                        return "\(NSLocalizedString("amount", comment: "")) \(model.balance)"
                     }
                 }(),
-                placeholder: "Enter amount",
+                placeholder: NSLocalizedString("enterAmount", comment: ""),
                 value: Binding(get: { model.amount }, set: { model.amount = $0 }),
                 isValid: Binding(get: { model.amountValid }, set: { model.amountValid = $0 })
             )
@@ -427,7 +427,7 @@ struct PoolSelectorSection: View {
     
     private var loadingView: some View {
         HStack(spacing: 12) {
-            Text("Loading pools...")
+            Text(NSLocalizedString("loadingPools", comment: ""))
                 .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(Theme.colors.textPrimary)
             
@@ -450,7 +450,7 @@ struct PoolSelectorSection: View {
                     .font(Theme.fonts.bodyMRegular)
                     .foregroundColor(.orange)
                 
-                Text(model.loadError ?? "No pools available")
+                Text(model.loadError ?? NSLocalizedString("noPoolsAvailable", comment: ""))
                     .font(Theme.fonts.bodySMedium)
                     .foregroundColor(Theme.colors.textPrimary)
                     .lineLimit(2)
@@ -462,7 +462,7 @@ struct PoolSelectorSection: View {
                     model.isLoadingPools = true
                     model.loadPools()
                 } label: {
-                    Text("Retry")
+                    Text(NSLocalizedString("retry", comment: ""))
                         .font(.caption)
                         .foregroundColor(Theme.colors.primaryAccent1)
                 }
@@ -480,7 +480,7 @@ struct PoolSelectorSection: View {
             items: .constant(model.availablePools),
             selected: Binding(get: { model.selectedPool }, set: { model.selectedPool = $0 }),
             mandatoryMessage: "*",
-            descriptionProvider: { $0.value.isEmpty ? "Select pool" : $0.value },
+            descriptionProvider: { $0.value.isEmpty ? NSLocalizedString("selectPool", comment: "") : $0.value },
             onSelect: { pool in
                 model.selectedPool = pool
                 model.poolValid = !pool.value.isEmpty
@@ -502,19 +502,19 @@ struct PoolSelectorSection: View {
 struct ApprovalInfoSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("ERC20 Approval Required")
+            Text(NSLocalizedString("erc20ApprovalRequired", comment: ""))
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(Theme.colors.textPrimary)
             
-            Text("This ERC20 token requires approval before adding to liquidity pool. Two transactions will be signed:")
+            Text(NSLocalizedString("approvalRequiredMessageLP", comment: ""))
                 .font(Theme.fonts.bodySRegular)
                 .foregroundColor(Theme.colors.textPrimary)
             
             VStack(alignment: .leading, spacing: 4) {
-                Text("1. Approval transaction")
+                Text(NSLocalizedString("approvalTransaction", comment: ""))
                     .font(Theme.fonts.caption12)
                     .foregroundColor(Theme.colors.primaryAccent1)
-                Text("2. Add liquidity transaction")
+                Text(NSLocalizedString("addLiquidityTransaction", comment: ""))
                     .font(Theme.fonts.caption12)
                     .foregroundColor(Theme.colors.primaryAccent1)
             }
