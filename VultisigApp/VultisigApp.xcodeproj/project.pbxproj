@@ -258,6 +258,8 @@
 		1390D8C62E3943AE003F3E20 /* SecurityScannerServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8C52E3943A3003F3E20 /* SecurityScannerServiceProtocol.swift */; };
 		1390D8C82E394527003F3E20 /* SecurityScannerSettingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8C72E39450D003F3E20 /* SecurityScannerSettingsService.swift */; };
 		1390D8CC2E394778003F3E20 /* SecurityScannerServiceFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8CB2E394770003F3E20 /* SecurityScannerServiceFactory.swift */; };
+		13924F442ED88EB200F458D5 /* AppMigrationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13924F412ED88EB200F458D5 /* AppMigrationService.swift */; };
+		13924F482ED88F6000F458D5 /* THORChainDuplicateTokensMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13924F472ED88F5700F458D5 /* THORChainDuplicateTokensMigration.swift */; };
 		139450102EBB866D00A72AE9 /* StakeTransactionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1394500F2EBB866D00A72AE9 /* StakeTransactionScreen.swift */; };
 		139450112EBB866D00A72AE9 /* StakeTransactionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1394500E2EBB866D00A72AE9 /* StakeTransactionViewModel.swift */; };
 		139450152EBB8A3000A72AE9 /* UnstakeTransactionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139450132EBB8A3000A72AE9 /* UnstakeTransactionScreen.swift */; };
@@ -1467,6 +1469,8 @@
 		1390D8C52E3943A3003F3E20 /* SecurityScannerServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerServiceProtocol.swift; sourceTree = "<group>"; };
 		1390D8C72E39450D003F3E20 /* SecurityScannerSettingsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerSettingsService.swift; sourceTree = "<group>"; };
 		1390D8CB2E394770003F3E20 /* SecurityScannerServiceFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerServiceFactory.swift; sourceTree = "<group>"; };
+		13924F412ED88EB200F458D5 /* AppMigrationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMigrationService.swift; sourceTree = "<group>"; };
+		13924F472ED88F5700F458D5 /* THORChainDuplicateTokensMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainDuplicateTokensMigration.swift; sourceTree = "<group>"; };
 		1394500E2EBB866D00A72AE9 /* StakeTransactionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StakeTransactionViewModel.swift; sourceTree = "<group>"; };
 		1394500F2EBB866D00A72AE9 /* StakeTransactionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StakeTransactionScreen.swift; sourceTree = "<group>"; };
 		139450122EBB8A3000A72AE9 /* UnstakeTransactionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnstakeTransactionViewModel.swift; sourceTree = "<group>"; };
@@ -3496,6 +3500,23 @@
 			path = Blockaid;
 			sourceTree = "<group>";
 		};
+		13924F432ED88EB200F458D5 /* AppMigration */ = {
+			isa = PBXGroup;
+			children = (
+				13924F462ED88F4700F458D5 /* Migrations */,
+				13924F412ED88EB200F458D5 /* AppMigrationService.swift */,
+			);
+			path = AppMigration;
+			sourceTree = "<group>";
+		};
+		13924F462ED88F4700F458D5 /* Migrations */ = {
+			isa = PBXGroup;
+			children = (
+				13924F472ED88F5700F458D5 /* THORChainDuplicateTokensMigration.swift */,
+			);
+			path = Migrations;
+			sourceTree = "<group>";
+		};
 		1394500D2EBB865F00A72AE9 /* Stake */ = {
 			isa = PBXGroup;
 			children = (
@@ -4300,6 +4321,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				13924F432ED88EB200F458D5 /* AppMigration */,
 				13A74CCC2ED3D91C00B97173 /* MayaChainAPI */,
 				B5BCC2622EC26DA7007B5A2F /* RpcServiceStruct.swift */,
 				130652482EA7CCE8002CAD99 /* THORChainAPI */,
@@ -7122,6 +7144,7 @@
 				13D93BCF2E58B2F1001E31E8 /* HighlightedText.swift in Sources */,
 				A6C670D52C9E8EEF00F59B6A /* SwapCryptoView+iOS.swift in Sources */,
 				13C7C1DC2E86DD8F00A529FD /* TokenSelectionScreen.swift in Sources */,
+				13924F482ED88F6000F458D5 /* THORChainDuplicateTokensMigration.swift in Sources */,
 				A6FB96B12BD086AD00D56F68 /* HomeViewModel.swift in Sources */,
 				A6980C2C2BC0896C00F452AB /* SettingsLanguageSelectionView.swift in Sources */,
 				135C7AD82EA132C8002F879A /* DefiChainSelection.swift in Sources */,
@@ -7267,6 +7290,7 @@
 				B54E317B2BF57D9300D4FC0A /* FunctionCallContractSelectorDropDown.swift in Sources */,
 				B5F758182BD8E65D0097B5B9 /* Sui.swift in Sources */,
 				13B1C2C82E65E40000050637 /* VaultServerBackupScreen.swift in Sources */,
+				13924F442ED88EB200F458D5 /* AppMigrationService.swift in Sources */,
 				137DB52F2EBE452B0081C6BC /* RedeemTransactionBuilder.swift in Sources */,
 				B5F758192BD8E65D0097B5BB /* SuiConstants.swift in Sources */,
 				139DE1282E4D095000BC2FD3 /* SendKeysignScreen.swift in Sources */,
