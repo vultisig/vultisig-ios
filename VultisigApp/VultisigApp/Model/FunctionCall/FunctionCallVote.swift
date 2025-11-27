@@ -75,7 +75,7 @@ class FunctionCallVote: FunctionCallAddressable, ObservableObject {
             )
             
             StyledIntegerField(
-                placeholder: "Proposal ID",
+                placeholder: NSLocalizedString("proposalID", comment: "Proposal ID placeholder"),
                 value: Binding(
                     get: { self.proposalID },
                     set: { self.proposalID = $0 }

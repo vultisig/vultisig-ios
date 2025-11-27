@@ -39,7 +39,7 @@ class FunctionCallCosmosIBC: FunctionCallAddressable, ObservableObject {
     
     @Published var chains: [IdentifiableString] = []
     @Published var chainValid: Bool = false
-    @Published var selectedChain: IdentifiableString = .init(value: "Select the destination chain")
+    @Published var selectedChain: IdentifiableString = .init(value: NSLocalizedString("selectDestinationChain", comment: ""))
     
     @Published var selectedChainObject: Chain? = nil
     
@@ -97,7 +97,7 @@ class FunctionCallCosmosIBC: FunctionCallAddressable, ObservableObject {
     
     var balance: String {
         let balance = tx.coin.balanceDecimal.description
-        return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
+        return String(format: NSLocalizedString("balanceInParentheses", comment: ""), balance, tx.coin.ticker.uppercased())
     }
     
     private func setupValidation() {
@@ -141,7 +141,7 @@ class FunctionCallCosmosIBC: FunctionCallAddressable, ObservableObject {
                 descriptionProvider: { $0.value },
                 onSelect: { asset in
                     self.selectedChain = asset
-                    self.chainValid = asset.value.lowercased() != "Select the destination chain".lowercased()
+                    self.chainValid = asset.value.lowercased() != NSLocalizedString("selectDestinationChain", comment: "").lowercased()
                     
                     let chainInfos = asset.value.split(separator: " ")
                     let chainName = chainInfos[0]
@@ -172,7 +172,7 @@ class FunctionCallCosmosIBC: FunctionCallAddressable, ObservableObject {
                 )
             )
             StyledTextField(
-                placeholder: "Memo",
+                placeholder: NSLocalizedString("memoLabel", comment: ""),
                 text: Binding(
                     get: { self.fnCall },
                     set: { self.fnCall = $0 }

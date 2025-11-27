@@ -32,7 +32,7 @@ struct FunctionCallAddressTextField<MemoType: FunctionCallAddressable>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("\(addressKey.toFormattedTitleCase())\(optionalMessage)")
+                Text(NSLocalizedString("nodeAddressLabel", comment: "Node Address placeholder") + optionalMessage)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundColor(Theme.colors.textPrimary)
                 
@@ -132,7 +132,7 @@ struct FunctionCallAddressTextField<MemoType: FunctionCallAddressable>: View {
     
     var optionalMessage: String {
         if isOptional {
-            return " (optional)"
+            return " " + NSLocalizedString("optional", comment: "Optional field indicator")
         }
         return .empty
     }
