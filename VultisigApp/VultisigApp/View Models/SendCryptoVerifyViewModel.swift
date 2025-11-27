@@ -77,9 +77,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 }
             } else {
                 // Fetch chain-specific data
-                print("DEBUG: Fetching specific for \(txData.coin.chain.name)")
                 let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
-                print("DEBUG: Chain specific fetched: \(chainSpecific)")
                 
                 let fee: BigInt
                 
@@ -88,17 +86,14 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 case .UTXO, .Cardano:
                     // For UTXO chains, we need to calculate the plan fee
                     fee = try await calculateUTXOPlanFee(txData: txData, chainSpecific: chainSpecific)
-                    print("DEBUG: Calculated UTXO fee: \(fee)")
                     
                 case .Cosmos, .THORChain:
                     // For Cosmos-based chains (including MayaChain), the fee is already in chainSpecific
                     fee = chainSpecific.fee
-                    print("DEBUG: Using Cosmos fee from chainSpecific: \(fee)")
                     
                 default:
                     // For other chains, use the gas value from chainSpecific
                     fee = chainSpecific.gas
-                    print("DEBUG: Using gas from chainSpecific: \(fee)")
                 }
                 
                 await MainActor.run {
@@ -128,7 +123,6 @@ class SendCryptoVerifyViewModel: ObservableObject {
         // Don't calculate plan fee if amount is 0 or empty
         // Normalize decimal separator (replace comma with period for consistent parsing)
         let normalizedAmount = txData.amount.replacingOccurrences(of: ",", with: ".")
-        print("DEBUG: txData.amount = \(txData.amount), normalized = \(normalizedAmount), coin.decimals = \(txData.coin.decimals)")
         
         // Convert to Decimal and multiply by 10^decimals to get the raw amount
         let amountDecimal = normalizedAmount.toDecimal()
@@ -136,14 +130,16 @@ class SendCryptoVerifyViewModel: ObservableObject {
         let rawAmount = amountDecimal * multiplier
         let actualAmount = BigInt(NSDecimalNumber(decimal: rawAmount).int64Value)
         
-        print("DEBUG: actualAmount = \(actualAmount)")
         if actualAmount == 0 {
             throw HelperError.runtimeError("Enter an amount to calculate accurate UTXO fees")
         }
         
-        // Force fresh UTXO fetch for fee calculation
-        await BlockchairService.shared.clearUTXOCache(for: txData.coin)
-        let _ = try await BlockchairService.shared.fetchBlockchairData(coin: txData.coin)
+        // Force fresh UTXO fetch for fee calculation (ONLY for UTXO chains, not Cardano)
+        if txData.coin.chain.chainType == .UTXO {
+            await BlockchairService.shared.clearUTXOCache(for: txData.coin)
+            let _ = try await BlockchairService.shared.fetchBlockchairData(coin: txData.coin)
+        }
+        // Cardano uses CardanoService.getUTXOs() which is called inside KeysignPayloadFactory
         
         let keysignFactory = KeysignPayloadFactory()
         let keysignPayload = try await keysignFactory.buildTransfer(
@@ -168,7 +164,6 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 throw HelperError.runtimeError("UTXO helper not available for \(txData.coin.chain.name)")
             }
             let plan = try utxoHelper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
-            print("DEBUG: UTXO Plan Fee: \(plan.fee), Amount: \(plan.amount), UTXOs: \(plan.utxos.count)")
             planFee = BigInt(plan.fee)
         }
         

@@ -227,4 +227,46 @@ class CardanoService {
         }
     }
     
+    /// Broadcast a signed Cardano transaction using Koios API
+    /// - Parameter signedTransaction: The signed transaction in CBOR hex format
+    /// - Returns: The transaction hash
+    func broadcastTransaction(signedTransaction: String) async throws -> String {
+        let url = URL(string: "https://api.koios.rest/api/v1/submittx")!
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/cbor", forHTTPHeaderField: "Content-Type")
+        
+        // Koios expects raw CBOR bytes
+        guard let cborData = Data(hexString: signedTransaction) else {
+            throw NSError(domain: "CardanoServiceError", code: 6, userInfo: [NSLocalizedDescriptionKey: "Failed to convert hex to CBOR"])
+        }
+        
+        request.httpBody = cborData
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NSError(domain: "CardanoServiceError", code: 7, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
+        }
+        
+        guard (200...299).contains(httpResponse.statusCode) else {
+            // Try to get error message from response
+            var errorDetail = "HTTP \(httpResponse.statusCode)"
+            if let responseString = String(data: data, encoding: .utf8), !responseString.isEmpty {
+                errorDetail += ": \(responseString)"
+            }
+            throw NSError(domain: "CardanoServiceError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Broadcast failed: \(errorDetail)"])
+        }
+        
+        // Koios returns the transaction hash as a quoted string (e.g., "hash")
+        // Convert response to string and remove quotes
+        if let responseString = String(data: data, encoding: .utf8) {
+            let txHash = responseString.trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+            return txHash
+        }
+        
+        throw NSError(domain: "CardanoServiceError", code: 8, userInfo: [NSLocalizedDescriptionKey: "Failed to parse transaction hash from response"])
+    }
+    
 } 
