@@ -25,6 +25,9 @@ extension VultisigApp {
             .buttonStyle(BorderlessButtonStyle())
             .frame(minWidth: 900, minHeight: 600)
             .onAppear{
+                // Run migrations on app launch
+                AppMigrationService().performMigrationsIfNeeded()
+
                 NSWindow.allowsAutomaticWindowTabbing = false
                 continueLogin()
             }

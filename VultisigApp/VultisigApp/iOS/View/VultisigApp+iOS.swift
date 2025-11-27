@@ -33,6 +33,9 @@ extension VultisigApp {
                 }
             }
             .onAppear() {
+                // Run migrations on app launch
+                AppMigrationService().performMigrationsIfNeeded()
+
                 if ProcessInfo.processInfo.isiOSAppOnMac {
                     continueLogin()
                 }
