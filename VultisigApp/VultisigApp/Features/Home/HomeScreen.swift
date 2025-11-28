@@ -62,7 +62,6 @@ struct HomeScreen: View {
                 initialView
             }
         }
-
         .onLoad {
             showVaultSelector = showingVaultSelector
             setData()

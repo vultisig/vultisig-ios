@@ -160,6 +160,8 @@ struct PeerDiscoveryView: View {
             encryptionKeyHex: viewModel.encryptionKeyHex ?? "",
             oldResharePrefix: viewModel.vault.resharePrefix ?? "",
             fastSignConfig: fastSignConfig,
+            // TODO: - Set keyImportInput
+            keyImportInput: nil,
             isInitiateDevice: true,
             hideBackButton: $hideBackButton,
             selectedTab: selectedTab
