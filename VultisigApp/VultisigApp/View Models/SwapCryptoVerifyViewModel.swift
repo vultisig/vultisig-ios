@@ -17,7 +17,7 @@ class SwapCryptoVerifyViewModel: ObservableObject {
     
     @Published var showSecurityScannerSheet: Bool = false
     @Published var securityScannerState: SecurityScannerState = .idle
-
+    
     func onLoad() {
         securityScanViewModel.$state
             .assign(to: &$securityScannerState)
