@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-
 struct SendVerifyScreen: View {
     @StateObject var sendCryptoVerifyViewModel = SendCryptoVerifyViewModel()
     @ObservedObject var tx: SendTransaction

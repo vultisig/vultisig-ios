@@ -560,11 +560,7 @@ class KeysignViewModel: ObservableObject {
                 case .cardano:
                     do {
                         self.txid = try await CardanoService.shared.broadcastTransaction(signedTransaction: tx.rawTransaction)
-                        // Clear UTXO cache after successful broadcast (Cardano uses CardanoService, not Blockchair)
-                        // No cache to clear for Cardano
                     } catch {
-                        print("Transaction Type: \(transactionType)")
-                        print("Transaction hash: \(transactionType.transactionHash)")
                         self.handleBroadcastError(error: error, transactionType: transactionType)
                     }
                 case .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash:
