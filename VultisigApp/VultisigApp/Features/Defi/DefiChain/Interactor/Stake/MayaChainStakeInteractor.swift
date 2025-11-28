@@ -33,7 +33,7 @@ struct MayaChainStakeInteractor: StakeInteractor {
                 return []
             }
 
-            let stakedAmount = position.stakedAmount / pow(10, cacaoCoin.decimals)
+            let stakedAmount = position.userUnits / pow(10, cacaoCoin.decimals)
             // Fetch APR/APY
             let aprData = try await mayaChainAPIService.getCacaoPoolAPR()
 
