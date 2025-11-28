@@ -59,10 +59,6 @@ class SendCryptoViewModel: ObservableObject {
         isValidatingForm
     }
     
-    func loadGasInfoForSending(tx: SendTransaction) async {
-        // Fee calculation moved to Verify screen
-    }
-    
     func loadFastVault(tx: SendTransaction, vault: Vault) async {
         tx.isFastVault = await logic.loadFastVault(tx: tx, vault: vault)
     }
@@ -201,11 +197,6 @@ struct SendCryptoLogic {
         var showAddressAlert: Bool = false
     }
     
-    func loadGasInfoForSending(tx: SendTransaction) async -> (gas: BigInt, fee: BigInt, gasLimit: BigInt?)? {
-        // Fee calculation moved to Verify screen
-        return nil
-    }
-    
     func loadFastVault(tx: SendTransaction, vault: Vault) async -> Bool {
         let isExist = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
         let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
@@ -327,16 +318,9 @@ struct SendCryptoLogic {
             let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2)
             tx.amountInFiat = truncatedValueFiat.formatToDecimal(digits: tx.coin.decimals)
             tx.sendMaxAmount = setMaxValue
-            
-            // Recalculate UTXO-based fees when amount changes
-            // recalculateUTXOFeesIfNeeded(tx: tx)
         } else {
             tx.amountInFiat = ""
         }
-    }
-    
-    func recalculateUTXOFeesIfNeeded(tx: SendTransaction) {
-        // Fee calculation moved to Verify screen
     }
     
     func setMaxValues(tx: SendTransaction, percentage: Double = 100) async {

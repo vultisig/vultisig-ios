@@ -20,7 +20,7 @@ struct SendDetailsAdditionalSection: View {
         VStack(spacing: 14) {
             addMemoField
             
-
+            
         }
         .onAppear {
             if !tx.memo.isEmpty {
@@ -61,11 +61,6 @@ struct SendDetailsAdditionalSection: View {
             MemoTextField(memo: $tx.memo)
                 .frame(height: isMemoExpanded ? nil : 0, alignment: .top)
                 .clipped()
-                .onChange(of: tx.memo) { oldValue, newValue in
-                    Task {
-                        await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
-                    }
-                }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -73,8 +68,6 @@ struct SendDetailsAdditionalSection: View {
     var separator: some View {
         LinearSeparator()
     }
-    
-
     
     private func getFieldTitle(_ title: String) -> some View {
         Text(NSLocalizedString(title, comment: ""))
