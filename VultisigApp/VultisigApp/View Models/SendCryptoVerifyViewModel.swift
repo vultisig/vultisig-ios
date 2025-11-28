@@ -73,6 +73,8 @@ class SendCryptoVerifyViewModel: ObservableObject {
     
     func validateForm(tx: SendTransaction, vault: Vault) async throws -> KeysignPayload {
         isLoading = true
+        defer { isLoading = false }
+        
         do {
             if !isValidForm {
                 throw HelperError.runtimeError("mustAgreeTermsError")
@@ -80,10 +82,8 @@ class SendCryptoVerifyViewModel: ObservableObject {
             
             try await logic.validateUtxosIfNeeded(tx: tx)
             let keysignPayload = try await logic.buildKeysignPayload(tx: tx, vault: vault)
-            isLoading = false
             return keysignPayload
         } catch {
-            isLoading = false
             throw error
         }
     }

@@ -32,9 +32,14 @@ struct SendCryptoVerifyLogic {
     
     private func calculateEVMFee(tx: SendTransaction) async throws -> FeeResult {
         let service = try EthereumFeeService(chain: tx.coin.chain)
+        
+        let gasLimit = tx.coin.isNativeToken ? 
+            BigInt(EVMHelper.defaultETHTransferGasUnit) : 
+            BigInt(EVMHelper.defaultERC20TransferGasUnit)
+            
         let feeInfo = try await service.calculateFees(
             chain: tx.coin.chain,
-            limit: BigInt(EVMHelper.defaultETHTransferGasUnit),
+            limit: gasLimit,
             isSwap: false,
             fromAddress: tx.fromAddress,
             feeMode: .default
@@ -90,7 +95,12 @@ struct SendCryptoVerifyLogic {
         let amountDecimal = normalizedAmount.toDecimal()
         let multiplier = pow(Decimal(10), tx.coin.decimals)
         let rawAmount = amountDecimal * multiplier
-        let actualAmount = BigInt(NSDecimalNumber(decimal: rawAmount).int64Value)
+        
+        // Convert to BigInt safely using string representation to avoid overflow
+        let rawAmountString = NSDecimalNumber(decimal: rawAmount).stringValue
+        guard let actualAmount = BigInt(rawAmountString) else {
+            throw HelperError.runtimeError("Invalid amount for fee calculation")
+        }
         
         if actualAmount == 0 {
             throw HelperError.runtimeError("Enter an amount to calculate accurate UTXO fees")
