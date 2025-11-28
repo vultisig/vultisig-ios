@@ -15,6 +15,7 @@ private struct SettingsCurrencyViewModel {
 struct SettingsCurrencySelectionView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var settingsViewModel: SettingsViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
     
     @State private var currencies: [SettingsCurrencyViewModel] = []
     @State var isLoading = false
@@ -48,7 +49,7 @@ struct SettingsCurrencySelectionView: View {
         settingsViewModel.selectedCurrency = currency
         
         // Refresh prices in the background without blocking the UI
-        if let currentVault = ApplicationState.shared.currentVault {
+        if let currentVault = appViewModel.selectedVault {
             Task.detached {
                 await BalanceService.shared.updateBalances(vault: currentVault)
             }
@@ -73,4 +74,5 @@ struct SettingsCurrencySelectionView: View {
 
 #Preview {
     SettingsCurrencySelectionView()
+        .environmentObject(AppViewModel())
 }

@@ -325,7 +325,7 @@ struct JoinSwapDoneSummary: View {
         if coin.isNativeToken {
             nativeCoinAux = coin
         } else {
-            nativeCoinAux = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == coin.chain && $0.isNativeToken })
+            nativeCoinAux = appViewModel.selectedVault?.coins.first(where: { $0.chain == coin.chain && $0.isNativeToken })
         }
         
         guard let nativeCoin = nativeCoinAux else {

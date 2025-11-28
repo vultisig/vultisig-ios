@@ -7,7 +7,6 @@ import SwiftUI
 import AVFoundation
 
 final class ApplicationState : ObservableObject {
-    @Published var currentVault: Vault?
     @Published var isCameraPermissionGranted: Bool = false
     
     // Singleton

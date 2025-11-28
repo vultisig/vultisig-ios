@@ -13,7 +13,7 @@ struct SendDetailsAddressFields: View {
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @FocusState.Binding var focusedField: Field?
     
-    @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
     
     var body: some View {
         VStack(spacing: 16) {
@@ -34,7 +34,7 @@ struct SendDetailsAddressFields: View {
     
     var fromDetailsField: some View {
         VStack(alignment: .leading, spacing: 2) {
-            if let vaultName = homeViewModel.selectedVault?.name {
+            if let vaultName = appViewModel.selectedVault?.name {
                 Text(vaultName)
                     .foregroundColor(Theme.colors.textPrimary)
             }
@@ -92,7 +92,7 @@ struct SendDetailsAddressFields: View {
         }
                 
         // Attempt to detect and switch chain if address belongs to different chain
-        if !tx.toAddress.isEmpty, let vault = homeViewModel.selectedVault {
+        if !tx.toAddress.isEmpty, let vault = appViewModel.selectedVault {
             let detectedCoin = viewModel.detectAndSwitchChain(
                 from: tx.toAddress,
                 vault: vault,

@@ -19,6 +19,8 @@ struct ReferralLaunchView: View {
     private let referralSavePercentage2: String = "20%"
     private let scrollToReferenceId = "scrollTo"
     
+    @EnvironmentObject var appViewModel: AppViewModel
+    
     var isLoading: Bool {
         referredViewModel.isLoading || referralViewModel.isLoading
     }
@@ -49,7 +51,7 @@ struct ReferralLaunchView: View {
         }
         .overlay(referredViewModel.isLoading ? Loader() : nil)
         .onAppear {
-            referralViewModel.currentVault = ApplicationState.shared.currentVault
+            referralViewModel.currentVault = appViewModel.selectedVault
             referredViewModel.setData()
         }
         .onDisappear {
@@ -187,4 +189,5 @@ private extension ReferralLaunchView {
 
 #Preview {
     ReferralLaunchView(referredViewModel: ReferredViewModel(), referralViewModel: ReferralViewModel())
+        .environmentObject(AppViewModel())
 }

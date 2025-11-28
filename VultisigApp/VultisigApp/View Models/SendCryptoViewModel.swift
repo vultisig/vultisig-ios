@@ -247,7 +247,7 @@ struct SendCryptoLogic {
     }
     
     func calculateUTXOPlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
-        guard let vault = ApplicationState.shared.currentVault else {
+        guard let vault = AppViewModel.shared.selectedVault else {
             throw HelperError.runtimeError("No vault available for UTXO fee calculation")
         }
         

@@ -10,10 +10,8 @@ import SwiftUI
 import WalletCore
 
 struct HomeScreen: View {
-    let initialVault: Vault?
     let showingVaultSelector: Bool
     
-    @State var selectedVault: Vault? = nil
     @State var showVaultSelector: Bool = false
     @State var addressToCopy: Coin?
     @State var showUpgradeVaultSheet: Bool = false
@@ -49,14 +47,13 @@ struct HomeScreen: View {
     @Environment(\.modelContext) private var modelContext
     private let tabs: [HomeTab] = [.wallet, .defi]
 
-    init(initialVault: Vault? = nil, showingVaultSelector: Bool = false) {
-        self.initialVault = initialVault
+    init(showingVaultSelector: Bool = false) {
         self.showingVaultSelector = showingVaultSelector
     }
     
     var body: some View {
         ZStack {
-            if let selectedVault = homeViewModel.selectedVault {
+            if let selectedVault = appViewModel.selectedVault {
                 content(selectedVault: selectedVault)
             } else {
                 initialView
@@ -247,7 +244,7 @@ struct HomeScreen: View {
                         hasPreselectedCoin: true))
             }
             .navigationDestination(isPresented: $shouldKeysignTransaction) {
-                if let vault = homeViewModel.selectedVault {
+                if let vault = appViewModel.selectedVault {
                     JoinKeysignView(vault: vault)
                 }
             }
@@ -255,7 +252,7 @@ struct HomeScreen: View {
                 ImportWalletView()
             }
             .navigationDestination(isPresented: $showBackupNow) {
-                if let vault = homeViewModel.selectedVault {
+                if let vault = appViewModel.selectedVault {
                     VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: vault))
                 }
             }
@@ -279,7 +276,7 @@ struct HomeScreen: View {
                         }
                     } else {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        homeViewModel.setSelectedVault(vault)
+                        appViewModel.set(selectedVault: vault)
                     }
                 }
             }
@@ -319,7 +316,7 @@ extension HomeScreen {
             return
         }
         
-        homeViewModel.setSelectedVault(vault)
+        appViewModel.set(selectedVault: vault)
         showVaultSelector = false
         // Reset first to ensure SwiftUI detects the change
         shouldKeysignTransaction = false
@@ -369,16 +366,7 @@ extension HomeScreen {
         fetchVaults()
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
-        homeViewModel.selectedVault = nil
         checkUpdate()
-        
-        if let vault = initialVault {
-            homeViewModel.setSelectedVault(vault)
-            selectedVault = nil
-            return
-        } else {
-            homeViewModel.loadSelectedVault(for: vaults)
-        }
         
         if deeplinkViewModel.type == .NewVault {
             presetValuesForDeeplink()
@@ -435,7 +423,7 @@ extension HomeScreen {
             return
         }
 
-        if deeplinkViewModel.isInternalDeeplink, let selectedVault = homeViewModel.selectedVault {
+        if deeplinkViewModel.isInternalDeeplink, let selectedVault = appViewModel.selectedVault {
             closeScannerIfNeeded {
                 self.handleSendDeeplinkAfterVaultSelection(vault: selectedVault)
             }
@@ -463,7 +451,7 @@ extension HomeScreen {
 
     private func handleSendDeeplinkAfterVaultSelection(vault: Vault) {
         deeplinkViewModel.pendingSendDeeplink = false
-        homeViewModel.setSelectedVault(vault)
+        appViewModel.set(selectedVault: vault)
 
         let coin = deeplinkViewModel.findCoin(in: vault)
 
@@ -513,7 +501,7 @@ extension HomeScreen {
             return
         }
 
-        if deeplinkViewModel.isInternalDeeplink, let selectedVault = homeViewModel.selectedVault {
+        if deeplinkViewModel.isInternalDeeplink, let selectedVault = appViewModel.selectedVault {
             closeScannerIfNeeded {
                 self.processAddressOnlyDeeplink(address: address, vault: selectedVault)
             }
@@ -534,7 +522,7 @@ extension HomeScreen {
     }
 
     private func processAddressOnlyDeeplink(address: String, vault: Vault) {
-        homeViewModel.setSelectedVault(vault)
+        appViewModel.set(selectedVault: vault)
 
         var coinToUse: Coin?
 
@@ -598,7 +586,7 @@ extension HomeScreen {
         case .settings:
             SettingsMainScreen(vault: vault)
         case .createVault:
-            CreateVaultView(selectedVault: selectedVault, showBackButton: true)
+            CreateVaultView(selectedVault: appViewModel.selectedVault, showBackButton: true)
         case .mainAction(let action):
             VaultActionRouteBuilder().buildActionRoute(action: action, sendTx: sendTx, vault: vault)
         }
@@ -606,7 +594,7 @@ extension HomeScreen {
 }
 
 #Preview {
-    HomeScreen(initialVault: .example, showingVaultSelector: false)
+    HomeScreen(showingVaultSelector: false)
         .environmentObject(VaultDetailViewModel())
         .environmentObject(AppViewModel())
 }

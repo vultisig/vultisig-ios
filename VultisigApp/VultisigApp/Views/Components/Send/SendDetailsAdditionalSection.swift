@@ -14,7 +14,7 @@ struct SendDetailsAdditionalSection: View {
     
     @State var isMemoExpanded = false
     
-    @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
     
     var body: some View {
         VStack(spacing: 14) {
@@ -95,7 +95,7 @@ struct SendDetailsAdditionalSection: View {
             VStack(alignment: .trailing) {
                 Text(tx.gasInReadable)
                 
-                if let selectedVault = homeViewModel.selectedVault {
+                if let selectedVault = appViewModel.selectedVault {
                     Text(sendCryptoViewModel.feesInReadable(tx: tx, vault: selectedVault))
                         .foregroundStyle(Theme.colors.textExtraLight)
                 }
@@ -112,5 +112,10 @@ struct SendDetailsAdditionalSection: View {
 }
 
 #Preview {
-    SendDetailsAdditionalSection(tx: SendTransaction(), viewModel: SendDetailsViewModel(), sendCryptoViewModel: SendCryptoViewModel())
+    SendDetailsAdditionalSection(
+        tx: SendTransaction(),
+        viewModel: SendDetailsViewModel(),
+        sendCryptoViewModel: SendCryptoViewModel()
+    )
+    .environmentObject(AppViewModel())
 }
