@@ -230,19 +230,27 @@ class CardanoService {
     /// Broadcast a signed Cardano transaction using Koios API
     /// - Parameter signedTransaction: The signed transaction in CBOR hex format
     /// - Returns: The transaction hash
+    /// Broadcast a signed Cardano transaction using Vultisig API Proxy (JSON-RPC)
+    /// - Parameter signedTransaction: The signed transaction in CBOR hex format
+    /// - Returns: The transaction hash
     func broadcastTransaction(signedTransaction: String) async throws -> String {
-        let url = URL(string: "https://api.koios.rest/api/v1/submittx")!
+        let url = Endpoint.cardanoBroadcast()
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.addValue("application/cbor", forHTTPHeaderField: "Content-Type")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        // Koios expects raw CBOR bytes
-        guard let cborData = Data(hexString: signedTransaction) else {
-            throw NSError(domain: "CardanoServiceError", code: 6, userInfo: [NSLocalizedDescriptionKey: "Failed to convert hex to CBOR"])
-        }
+        // Construct JSON-RPC request
+        let requestBody: [String: Any] = [
+            "jsonrpc": "2.0",
+            "method": "submitTransaction",
+            "params": [
+                "transaction": ["cbor": signedTransaction]
+            ],
+            "id": 1
+        ]
         
-        request.httpBody = cborData
+        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
         
         let (data, response) = try await URLSession.shared.data(for: request)
         
@@ -259,14 +267,27 @@ class CardanoService {
             throw NSError(domain: "CardanoServiceError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Broadcast failed: \(errorDetail)"])
         }
         
-        // Koios returns the transaction hash as a quoted string (e.g., "hash")
-        // Convert response to string and remove quotes
-        if let responseString = String(data: data, encoding: .utf8) {
-            let txHash = responseString.trimmingCharacters(in: CharacterSet(charactersIn: "\""))
-            return txHash
+        // Parse JSON-RPC response
+        guard let jsonResponse = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw NSError(domain: "CardanoServiceError", code: 8, userInfo: [NSLocalizedDescriptionKey: "Failed to parse JSON response"])
         }
         
-        throw NSError(domain: "CardanoServiceError", code: 8, userInfo: [NSLocalizedDescriptionKey: "Failed to parse transaction hash from response"])
+        // Check for RPC error
+        if let error = jsonResponse["error"] as? [String: Any],
+           let message = error["message"] as? String {
+            throw NSError(domain: "CardanoServiceError", code: 9, userInfo: [NSLocalizedDescriptionKey: "RPC Error: \(message)"])
+        }
+        
+        // Extract result (transaction hash)
+        // Response structure: { "result": { "transaction": { "id": "hash" } } }
+        if let result = jsonResponse["result"] as? [String: Any],
+           let transaction = result["transaction"] as? [String: Any],
+           let txId = transaction["id"] as? String {
+            return txId
+        }
+        
+        // If result is missing but no error, something is wrong
+        throw NSError(domain: "CardanoServiceError", code: 10, userInfo: [NSLocalizedDescriptionKey: "Missing result in RPC response: \(jsonResponse)"])
     }
     
 } 
