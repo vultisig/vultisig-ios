@@ -31,20 +31,20 @@ class SendCryptoVerifyViewModel: ObservableObject {
             .assign(to: &$securityScannerState)
     }
     
-    func loadGasInfoForSending(txData: SendTransactionStruct, tx: SendTransaction) async {
+    func loadGasInfoForSending(tx: SendTransaction) async {
         tx.isCalculatingFee = true
         isLoading = true
         errorMessage = ""
         
         do {
-            let feeResult = try await logic.calculateFee(txData: txData, tx: tx)
+            let feeResult = try await logic.calculateFee(tx: tx)
             
             tx.fee = feeResult.fee
             tx.gas = feeResult.gas
             tx.isCalculatingFee = false
             isLoading = false
             
-            validateBalanceWithFee(txData: txData, tx: tx)
+            validateBalanceWithFee(tx: tx)
         } catch {
             print("DEBUG: Error calculating fee: \(error)")
             errorMessage = error.localizedDescription
@@ -54,8 +54,8 @@ class SendCryptoVerifyViewModel: ObservableObject {
         }
     }
     
-    func validateBalanceWithFee(txData: SendTransactionStruct, tx: SendTransaction) {
-        let result = logic.validateBalanceWithFee(txData: txData, fee: tx.fee)
+    func validateBalanceWithFee(tx: SendTransaction) {
+        let result = logic.validateBalanceWithFee(tx: tx)
         if !result.isValid {
             errorMessage = result.errorMessage ?? ""
             showAlert = true

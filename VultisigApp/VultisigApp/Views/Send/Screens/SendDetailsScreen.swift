@@ -9,7 +9,6 @@ import OSLog
 import SwiftUI
 import BigInt
 
-
 enum Field: Int, Hashable {
     case toAddress
     case amount
@@ -104,18 +103,7 @@ struct SendDetailsScreen: View {
                 )
             }
             .navigationDestination(isPresented: $navigateToVerify) {
-                let txData = SendTransactionStruct(
-                    coin: tx.coin,
-                    amount: tx.amount,
-                    memo: tx.memo,
-                    toAddress: tx.toAddress,
-                    fromAddress: tx.fromAddress,
-                    isFastVault: tx.isFastVault,
-                    fastVaultPassword: tx.fastVaultPassword,
-                    transactionType: tx.transactionType
-                )
                 SendRouteBuilder().buildVerifyScreen(
-                    txData: txData,
                     tx: tx,
                     vault: vault
                 )
@@ -386,10 +374,6 @@ extension SendDetailsScreen: SendGasSettingsOutput {
         }
         
         tx.feeMode = mode
-        
-        Task {
-            // Fee calculation moved to Verify screen
-        }
     }
 }
 
@@ -428,10 +412,6 @@ extension SendDetailsScreen {
         }
         
         await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
-    }
-    
-    private func loadGasInfo() async {
-        // Fee calculation moved to Verify screen
     }
     
     private func validateAddress(_ newValue: String) {

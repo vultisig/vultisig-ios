@@ -22,21 +22,21 @@ struct SendCryptoVerifyLogic {
         let gas: BigInt
     }
     
-    func calculateFee(txData: SendTransactionStruct, tx: SendTransaction) async throws -> FeeResult {
-        if txData.coin.chain.chainType == .EVM {
-            return try await calculateEVMFee(txData: txData)
+    func calculateFee(tx: SendTransaction) async throws -> FeeResult {
+        if tx.coin.chain.chainType == .EVM {
+            return try await calculateEVMFee(tx: tx)
         } else {
-            return try await calculateNonEVMFee(txData: txData, tx: tx)
+            return try await calculateNonEVMFee(tx: tx)
         }
     }
     
-    private func calculateEVMFee(txData: SendTransactionStruct) async throws -> FeeResult {
-        let service = try EthereumFeeService(chain: txData.coin.chain)
+    private func calculateEVMFee(tx: SendTransaction) async throws -> FeeResult {
+        let service = try EthereumFeeService(chain: tx.coin.chain)
         let feeInfo = try await service.calculateFees(
-            chain: txData.coin.chain,
+            chain: tx.coin.chain,
             limit: BigInt(EVMHelper.defaultETHTransferGasUnit),
             isSwap: false,
-            fromAddress: txData.fromAddress,
+            fromAddress: tx.fromAddress,
             feeMode: .default
         )
         
@@ -59,14 +59,14 @@ struct SendCryptoVerifyLogic {
         return FeeResult(fee: fee, gas: gas)
     }
     
-    private func calculateNonEVMFee(txData: SendTransactionStruct, tx: SendTransaction) async throws -> FeeResult {
+    private func calculateNonEVMFee(tx: SendTransaction) async throws -> FeeResult {
         let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
         
         let fee: BigInt
         
-        switch txData.coin.chain.chainType {
+        switch tx.coin.chain.chainType {
         case .UTXO, .Cardano:
-            fee = try await calculateUTXOPlanFee(txData: txData, chainSpecific: chainSpecific)
+            fee = try await calculateUTXOPlanFee(tx: tx, chainSpecific: chainSpecific)
             
         case .Cosmos, .THORChain:
             fee = chainSpecific.fee
@@ -78,17 +78,17 @@ struct SendCryptoVerifyLogic {
         return FeeResult(fee: fee, gas: fee)
     }
     
-    func calculateUTXOPlanFee(txData: SendTransactionStruct, chainSpecific: BlockChainSpecific) async throws -> BigInt {
+    func calculateUTXOPlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
         guard let vault = ApplicationState.shared.currentVault else {
             throw HelperError.runtimeError("No vault available for UTXO fee calculation")
         }
         
         // Normalize decimal separator (replace comma with period for consistent parsing)
-        let normalizedAmount = txData.amount.replacingOccurrences(of: ",", with: ".")
+        let normalizedAmount = tx.amount.replacingOccurrences(of: ",", with: ".")
         
         // Convert to Decimal and multiply by 10^decimals to get the raw amount
         let amountDecimal = normalizedAmount.toDecimal()
-        let multiplier = pow(Decimal(10), txData.coin.decimals)
+        let multiplier = pow(Decimal(10), tx.coin.decimals)
         let rawAmount = amountDecimal * multiplier
         let actualAmount = BigInt(NSDecimalNumber(decimal: rawAmount).int64Value)
         
@@ -97,18 +97,18 @@ struct SendCryptoVerifyLogic {
         }
         
         // Force fresh UTXO fetch for fee calculation (ONLY for UTXO chains, not Cardano)
-        if txData.coin.chain.chainType == .UTXO {
-            await BlockchairService.shared.clearUTXOCache(for: txData.coin)
-            let _ = try await BlockchairService.shared.fetchBlockchairData(coin: txData.coin)
+        if tx.coin.chain.chainType == .UTXO {
+            await BlockchairService.shared.clearUTXOCache(for: tx.coin)
+            let _ = try await BlockchairService.shared.fetchBlockchairData(coin: tx.coin)
         }
         // Cardano uses CardanoService.getUTXOs() which is called inside KeysignPayloadFactory
         
         let keysignFactory = KeysignPayloadFactory()
         let keysignPayload = try await keysignFactory.buildTransfer(
-            coin: txData.coin,
-            toAddress: txData.toAddress.isEmpty ? txData.coin.address : txData.toAddress,
+            coin: tx.coin,
+            toAddress: tx.toAddress.isEmpty ? tx.coin.address : tx.toAddress,
             amount: actualAmount,
-            memo: txData.memo.isEmpty ? nil : txData.memo,
+            memo: tx.memo.isEmpty ? nil : tx.memo,
             chainSpecific: chainSpecific,
             swapPayload: nil,
             vault: vault
@@ -116,14 +116,14 @@ struct SendCryptoVerifyLogic {
         
         let planFee: BigInt
         
-        switch txData.coin.chain {
+        switch tx.coin.chain {
         case .cardano:
             let cardanoHelper = CardanoHelper()
             planFee = try cardanoHelper.calculateDynamicFee(keysignPayload: keysignPayload)
             
         default: // UTXO chains
-            guard let utxoHelper = UTXOChainsHelper.getHelper(coin: txData.coin) else {
-                throw HelperError.runtimeError("UTXO helper not available for \(txData.coin.chain.name)")
+            guard let utxoHelper = UTXOChainsHelper.getHelper(coin: tx.coin) else {
+                throw HelperError.runtimeError("UTXO helper not available for \(tx.coin.chain.name)")
             }
             let plan = try utxoHelper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
             planFee = BigInt(plan.fee)
@@ -143,9 +143,9 @@ struct SendCryptoVerifyLogic {
         let errorMessage: String?
     }
     
-    func validateBalanceWithFee(txData: SendTransactionStruct, fee: BigInt) -> BalanceValidationResult {
-        let totalAmount = txData.amount.toBigInt(decimals: txData.coin.decimals) + fee
-        if totalAmount > txData.coin.rawBalance.toBigInt(decimals: txData.coin.decimals) {
+    func validateBalanceWithFee(tx: SendTransaction) -> BalanceValidationResult {
+        let totalAmount = tx.amount.toBigInt(decimals: tx.coin.decimals) + tx.fee
+        if totalAmount > tx.coin.rawBalance.toBigInt(decimals: tx.coin.decimals) {
             return BalanceValidationResult(isValid: false, errorMessage: "walletBalanceExceededError")
         }
         return BalanceValidationResult(isValid: true, errorMessage: nil)
@@ -198,4 +198,3 @@ struct SendCryptoVerifyLogic {
         }
     }
 }
-

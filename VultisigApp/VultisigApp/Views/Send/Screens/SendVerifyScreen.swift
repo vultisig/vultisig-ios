@@ -10,7 +10,6 @@ import SwiftUI
 
 struct SendVerifyScreen: View {
     @StateObject var sendCryptoVerifyViewModel = SendCryptoVerifyViewModel()
-    let txData: SendTransactionStruct
     @ObservedObject var tx: SendTransaction
     let vault: Vault
     
@@ -47,7 +46,7 @@ struct SendVerifyScreen: View {
         .onLoad {
             sendCryptoVerifyViewModel.onLoad()
             Task {
-                await sendCryptoVerifyViewModel.loadGasInfoForSending(txData: txData, tx: tx)
+                await sendCryptoVerifyViewModel.loadGasInfoForSending(tx: tx)
                 await sendCryptoVerifyViewModel.scan(transaction: tx, vault: vault)
             }
         }
@@ -166,16 +165,6 @@ struct VerifyKeysignPayload: Identifiable, Hashable {
 
 #Preview {
     SendVerifyScreen(
-        txData: SendTransactionStruct(
-            coin: Coin.example,
-            amount: "1.0",
-            memo: "",
-            toAddress: "",
-            fromAddress: "",
-            isFastVault: false,
-            fastVaultPassword: "",
-            transactionType: .unspecified
-        ),
         tx: SendTransaction(),
         vault: Vault.example
     )
