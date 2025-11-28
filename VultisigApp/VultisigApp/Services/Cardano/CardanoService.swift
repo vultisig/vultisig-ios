@@ -227,9 +227,6 @@ class CardanoService {
         }
     }
     
-    /// Broadcast a signed Cardano transaction using Koios API
-    /// - Parameter signedTransaction: The signed transaction in CBOR hex format
-    /// - Returns: The transaction hash
     /// Broadcast a signed Cardano transaction using Vultisig API Proxy (JSON-RPC)
     /// - Parameter signedTransaction: The signed transaction in CBOR hex format
     /// - Returns: The transaction hash
