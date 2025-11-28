@@ -304,7 +304,7 @@ class CardanoHelper {
     /// Calculate Cardano Transaction ID manually following official specification
     /// Cardano TX ID = Blake2b-256 hash of the transaction BODY only (not complete transaction)
     /// Transaction CBOR structure: [body, witness_set, valid_script?, metadata?]
-    private static func calculateCardanoTransactionHash(from transactionData: Data) -> String {
+    static func calculateCardanoTransactionHash(from transactionData: Data) -> String {
         
         do {
             // Parse CBOR to extract transaction body (first element)
