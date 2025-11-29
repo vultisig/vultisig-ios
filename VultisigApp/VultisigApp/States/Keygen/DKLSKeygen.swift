@@ -305,8 +305,9 @@ final class DKLSKeygen {
         request.httpMethod = "DELETE"
         let (_,_) = try await URLSession.shared.data(for: request)
     }
-    
-    func DKLSKeygenWithRetry(attempt: UInt8) async throws {
+    // DKLSKeygenWithRetry tries to do keygen with retry mechanism
+    // additionalHeader is used to pass extra header info to messenger when uploading setup message
+    func DKLSKeygenWithRetry(attempt: UInt8, additionalHeader: String? = nil) async throws {
         self.setKeygenDone(status: false)
         self.cache.removeAllObjects()
         var task: Task<(), any Error>? = nil
@@ -326,10 +327,10 @@ final class DKLSKeygen {
                     (keygenSetupMsg,handler) = try getDklsKeyImportSetupMessage(hexPrivateKey: localPrivateSecret, hexRootChainCode: self.hexChainCode)
                 }
                 self.setupMessage = keygenSetupMsg
-                try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString(),nil)
+                try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString(),additionalHeader)
             } else {
                 // download the setup message from relay server
-                let strKeygenSetupMsg = try await messenger.downloadSetupMessageWithRetry(nil)
+                let strKeygenSetupMsg = try await messenger.downloadSetupMessageWithRetry(additionalHeader)
                 keygenSetupMsg = Array(base64: strKeygenSetupMsg)
                 self.setupMessage = keygenSetupMsg
             }
@@ -418,7 +419,7 @@ final class DKLSKeygen {
             task?.cancel()
             if attempt < 3 { // let's retry
                 print("keygen/reshare retry, attemp: \(attempt)")
-                try await DKLSKeygenWithRetry(attempt: attempt + 1)
+                try await DKLSKeygenWithRetry(attempt: attempt + 1,additionalHeader: additionalHeader)
             } else {
                 throw error
             }

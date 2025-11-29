@@ -281,8 +281,9 @@ final class SchnorrKeygen {
         request.httpMethod = "DELETE"
         let (_,_) = try await URLSession.shared.data(for: request)
     }
-    
-    func SchnorrKeygenWithRetry(attempt: UInt8) async throws {
+    // SchnorrKeygenWithRetry will perform keygen/migration/keyimport with retry mechanism
+    // additionalHeader is used to differentiate the setup message when doing key import
+    func SchnorrKeygenWithRetry(attempt: UInt8, additionalHeader: String? = nil) async throws {
         self.setKeygenDone(status: false)
         self.cache.removeAllObjects()
         var task: Task<(), any Error>? = nil
@@ -323,9 +324,9 @@ final class SchnorrKeygen {
                         throw HelperError.runtimeError("can't import , local private key is empty")
                     }
                     (keygenSetupMsg,handler) = try getKeyImportSetupMessage(hexPrivateKey: localPrivateSecret, hexRootChainCode: self.hexChainCode)
-                    try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString(),"eddsa_key_import")
+                    try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString(), additionalHeader ?? "eddsa_key_import")
                 } else {
-                    let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry("eddsa_key_import")
+                    let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry(additionalHeader ?? "eddsa_key_import")
                     keygenSetupMsg = Array(base64: strReshareSetupMsg)
                     var decodedSetupMsg = keygenSetupMsg.to_dkls_goslice()
                     let result = schnorr_key_importer_new(&decodedSetupMsg,&localPartySlice,&handler)
@@ -371,7 +372,7 @@ final class SchnorrKeygen {
             task?.cancel()
             if attempt < 3 { // let's retry
                 print("keygen/reshare retry, attemp: \(attempt)")
-                try await SchnorrKeygenWithRetry(attempt: attempt + 1)
+                try await SchnorrKeygenWithRetry(attempt: attempt + 1,additionalHeader: additionalHeader)
             } else {
                 throw error
             }
