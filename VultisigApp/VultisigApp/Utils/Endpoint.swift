@@ -246,12 +246,20 @@ class Endpoint {
     
     static func buildAffiliateParams(chain: SwapChain, referredCode: String, discountBps: Int) -> String {
         var affiliateParams: [(affiliate: String, bps: String)] = []
+        
+        // For ultimate tier (50+ bps discount), return 0 affiliate fee with no referrer
+        // This matches Android behavior (Windows does NOT have this early return)
+        if discountBps >= THORChainSwaps.affiliateFeeRateBp {
+            affiliateParams.append((THORChainSwaps.affiliateFeeAddress, "0"))
+            let affiliates = affiliateParams.map(\.affiliate).joined(separator: "/")
+            let affiliateBps = affiliateParams.map(\.bps).joined(separator: "/")
+            return "&affiliate=\(affiliates)&affiliate_bps=\(affiliateBps)"
+        }
+        
         if (chain == .thorchain || chain == .thorchainStagenet) && !referredCode.isEmpty {
             // THORChain supports nested affiliates
             let affiliateFeeRateBp = bps(for: discountBps, affiliateFeeRate: THORChainSwaps.referredAffiliateFeeRateBp)
-            if discountBps != .max {
-                affiliateParams.append((referredCode, THORChainSwaps.referredUserFeeRateBp))
-            }
+            affiliateParams.append((referredCode, THORChainSwaps.referredUserFeeRateBp))
             affiliateParams.append((THORChainSwaps.affiliateFeeAddress, "\(affiliateFeeRateBp)"))
         } else {
             // MayaChain only supports single affiliate
@@ -261,10 +269,10 @@ class Endpoint {
         
         guard !affiliateParams.isEmpty else { return .empty }
         
-        let affilates = affiliateParams.map(\.affiliate).joined(separator: "/")
+        let affiliates = affiliateParams.map(\.affiliate).joined(separator: "/")
         let affiliateBps = affiliateParams.map(\.bps).joined(separator: "/")
         
-        return "&affiliate=\(affilates)&affiliate_bps=\(affiliateBps)"
+        return "&affiliate=\(affiliates)&affiliate_bps=\(affiliateBps)"
     }
     
     static func bps(for discount: Int, affiliateFeeRate: Int) -> Int {
