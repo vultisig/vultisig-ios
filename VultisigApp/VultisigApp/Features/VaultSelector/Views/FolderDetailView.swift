@@ -16,6 +16,7 @@ struct FolderDetailView: View {
     
     @Query(sort: \Vault.order, order: .forward) var vaults: [Vault]
     @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
     
     var filteredVaults: [Vault] {
         vaults.filter {
@@ -94,7 +95,7 @@ struct FolderDetailView: View {
         ForEach(filteredVaults) { vault in
             VaultCellView(
                 vault: vault,
-                isSelected: homeViewModel.selectedVault == vault,
+                isSelected: appViewModel.selectedVault == vault,
                 isEditing: .constant(false)
             ) {
                 onSelectVault(vault)
@@ -112,4 +113,5 @@ struct FolderDetailView: View {
         onEditFolder: {},
         onBack: {}
     ).environmentObject(HomeViewModel())
+        .environmentObject(AppViewModel())
 }

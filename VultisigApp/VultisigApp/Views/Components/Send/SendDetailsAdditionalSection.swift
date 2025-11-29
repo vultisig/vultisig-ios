@@ -14,7 +14,7 @@ struct SendDetailsAdditionalSection: View {
     
     @State var isMemoExpanded = false
     
-    @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
     
     var body: some View {
         VStack(spacing: 14) {
@@ -77,5 +77,10 @@ struct SendDetailsAdditionalSection: View {
 }
 
 #Preview {
-    SendDetailsAdditionalSection(tx: SendTransaction(), viewModel: SendDetailsViewModel(), sendCryptoViewModel: SendCryptoViewModel())
+    SendDetailsAdditionalSection(
+        tx: SendTransaction(),
+        viewModel: SendDetailsViewModel(),
+        sendCryptoViewModel: SendCryptoViewModel()
+    )
+    .environmentObject(AppViewModel())
 }

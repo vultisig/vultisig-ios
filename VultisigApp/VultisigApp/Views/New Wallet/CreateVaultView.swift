@@ -19,6 +19,11 @@ struct CreateVaultView: View {
     
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var appViewModel: AppViewModel
+    
+    init(selectedVault: Vault? = nil, showBackButton: Bool = false) {
+        self.selectedVault = selectedVault
+        self.showBackButton = showBackButton
+    }
 
     var body: some View {
         ZStack {

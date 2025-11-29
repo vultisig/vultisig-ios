@@ -60,7 +60,7 @@ struct JoinKeysignGasViewModel {
     
     func feesInReadable(coin: Coin, fee: BigInt) -> String {
         // Try to get native coin from vault first (has up-to-date price data)
-        if let vaultNativeCoin = ApplicationState.shared.currentVault?.nativeCoin(for: coin.chain) {
+        if let vaultNativeCoin = AppViewModel.shared.selectedVault?.nativeCoin(for: coin.chain) {
             let feeDecimal = vaultNativeCoin.decimal(for: fee)
             // Use fee-specific formatting with more decimal places (5 instead of 2)
             let fiatString = RateProvider.shared.fiatFeeString(value: feeDecimal, coin: vaultNativeCoin)

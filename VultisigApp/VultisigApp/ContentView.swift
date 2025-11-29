@@ -44,7 +44,7 @@ struct ContentView: View {
             }
         }
         .onLoad {
-            appViewModel.set(selectedVault: vaults.first)
+            appViewModel.loadSelectedVault(for: vaults)
         }
     }
     
@@ -55,12 +55,9 @@ struct ContentView: View {
             } else if appViewModel.showCover {
                 CoverView()
             } else if vaults.count == 0 {
-                CreateVaultView(selectedVault: nil, showBackButton: false)
+                CreateVaultView(showBackButton: false)
             } else if let selectedVault = appViewModel.selectedVault {
-                HomeScreen(
-                    initialVault: selectedVault,
-                    showingVaultSelector: appViewModel.showingVaultSelector
-                )
+                HomeScreen(showingVaultSelector: appViewModel.showingVaultSelector)
             }
         }
         .transition(.opacity)

@@ -31,7 +31,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var transactionType: VSTransactionType = .unspecified
     @Published var vault: Vault?
     
-    var txVault: Vault? { vault ?? ApplicationState.shared.currentVault}
+    var txVault: Vault? { vault ?? AppViewModel.shared.selectedVault }
     
     var gasLimit: BigInt {
         return customGasLimit ?? estematedGasLimit ?? BigInt(EVMHelper.defaultETHTransferGasUnit)
