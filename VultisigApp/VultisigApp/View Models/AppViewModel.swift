@@ -36,7 +36,7 @@ class AppViewModel: ObservableObject {
         set(selectedVault: selectedVault, restartNavigation: true)
     }
     
-    func set(selectedVault: Vault?, showingVaultSelector: Bool = false, restartNavigation: Bool = false) {
+    func set(selectedVault: Vault?, showingVaultSelector: Bool = false, restartNavigation: Bool = true) {
         self.selectedVault = selectedVault
         self.vaultName = selectedVault?.name ?? ""
         self.selectedPubKeyECDSA = selectedVault?.pubKeyECDSA ?? ""
