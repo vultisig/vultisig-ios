@@ -1087,6 +1087,7 @@
 		B5F758192BD8E65D0097B5BB /* SuiConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758182BD8E65D0097B5BA /* SuiConstants.swift */; };
 		B5F7581A2BD8E7230097B5B9 /* SuiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758192BD8E7230097B5B9 /* SuiService.swift */; };
 		B5F7581D2BD8FDA20097B5B9 /* SuiCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F7581C2BD8FDA20097B5B9 /* SuiCoin.swift */; };
+		B5FF07032ED9424E00B0FD55 /* SendCryptoVerifyLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5FF07022ED9424E00B0FD55 /* SendCryptoVerifyLogic.swift */; };
 		B5FFB0F42E7858EB0062F63C /* PendingTransactionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5FFB0F32E7858E90062F63C /* PendingTransactionManager.swift */; };
 		BU61YTK5IM2CA6CN47V4L8BG /* FunctionCallAddThorLP.swift in Sources */ = {isa = PBXBuildFile; fileRef = BWXBB99J8F32LB10N1PT9BIH /* FunctionCallAddThorLP.swift */; };
 		CF711D753DDB0FC62425A9DA /* KyberSwapQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7878748BB9E16298184860 /* KyberSwapQuote.swift */; };
@@ -2297,6 +2298,7 @@
 		B5F758182BD8E65D0097B5BA /* SuiConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SuiConstants.swift; sourceTree = "<group>"; };
 		B5F758192BD8E7230097B5B9 /* SuiService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SuiService.swift; sourceTree = "<group>"; };
 		B5F7581C2BD8FDA20097B5B9 /* SuiCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuiCoin.swift; sourceTree = "<group>"; };
+		B5FF07022ED9424E00B0FD55 /* SendCryptoVerifyLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifyLogic.swift; sourceTree = "<group>"; };
 		B5FFB0F32E7858E90062F63C /* PendingTransactionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingTransactionManager.swift; sourceTree = "<group>"; };
 		BWXBB99J8F32LB10N1PT9BIH /* FunctionCallAddThorLP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallAddThorLP.swift; sourceTree = "<group>"; };
 		CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapService.swift; sourceTree = "<group>"; };
@@ -5084,6 +5086,7 @@
 		A65649D52B965FC400E4B329 /* View Models */ = {
 			isa = PBXGroup;
 			children = (
+				B5FF07022ED9424E00B0FD55 /* SendCryptoVerifyLogic.swift */,
 				1328E6502ED5F32F0080BEE1 /* VaultPairDetailViewModel */,
 				13B1C2C92E65FC3200050637 /* Vault */,
 				13D178FA2E57543500007B48 /* AddressBook */,
@@ -7256,6 +7259,7 @@
 				B59173312C641F3D007100E3 /* CoinService.swift in Sources */,
 				B5C5B4AC2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift in Sources */,
 				B548BEDE2EA2D3B600E32308 /* ThorchainStagenetService.swift in Sources */,
+				B5FF07032ED9424E00B0FD55 /* SendCryptoVerifyLogic.swift in Sources */,
 				B548BEDF2EA2D3B600E32308 /* ThorchainServiceFactory.swift in Sources */,
 				130C40EB2E73239B00509C61 /* VaultTab.swift in Sources */,
 				132309FC2EAFFFD100CD60F9 /* FunctionCallPairScreen.swift in Sources */,

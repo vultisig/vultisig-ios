@@ -227,4 +227,82 @@ class CardanoService {
         }
     }
     
-} 
+    /// Broadcast a signed Cardano transaction using Vultisig API Proxy (JSON-RPC)
+    /// - Parameter signedTransaction: The signed transaction in CBOR hex format
+    /// - Returns: The transaction hash
+    func broadcastTransaction(signedTransaction: String) async throws -> String {
+        let url = Endpoint.cardanoBroadcast()
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        // Construct JSON-RPC request
+        let requestBody: [String: Any] = [
+            "jsonrpc": "2.0",
+            "method": "submitTransaction",
+            "params": [
+                "transaction": ["cbor": signedTransaction]
+            ],
+            "id": 1
+        ]
+        
+        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NSError(domain: "CardanoServiceError", code: 7, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
+        }
+        
+        // Try to parse JSON response first, as it might contain specific error codes we want to handle (like 3117)
+        // even if the HTTP status code is an error (e.g., 400)
+        if let jsonResponse = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+            
+            // Check for RPC error
+            if let error = jsonResponse["error"] as? [String: Any] {
+                if let code = error["code"] as? Int, code == 3117 {
+                    // Error 3117: "The transaction contains unknown UTxO references as inputs."
+                    // This usually means the transaction was already broadcasted by another device in TSS.
+                    // We should calculate the hash locally and return it as success.
+                    if let txData = Data(hexString: signedTransaction) {
+                        let txId = CardanoHelper.calculateCardanoTransactionHash(from: txData)
+                        print("Cardano Service: Transaction already in mempool (3117). Returning local hash: \(txId)")
+                        return txId
+                    }
+                }
+                
+                // If it's another error and status code is bad, we'll throw later or here
+                if let message = error["message"] as? String {
+                     // If we have a specific error message from RPC, prefer it over generic HTTP error
+                     throw NSError(domain: "CardanoServiceError", code: 9, userInfo: [NSLocalizedDescriptionKey: "RPC Error: \(message)"])
+                }
+            }
+            
+            // Extract result (transaction hash)
+            // Response structure: { "result": { "transaction": { "id": "hash" } } }
+            if let result = jsonResponse["result"] as? [String: Any],
+               let transaction = result["transaction"] as? [String: Any],
+               let txId = transaction["id"] as? String {
+                return txId
+            }
+        }
+        
+        // If we haven't returned yet, check HTTP status code
+        guard (200...299).contains(httpResponse.statusCode) else {
+            // Try to get error message from response
+            var errorDetail = "HTTP \(httpResponse.statusCode)"
+            if let responseString = String(data: data, encoding: .utf8), !responseString.isEmpty {
+                errorDetail += ": \(responseString)"
+            }
+            throw NSError(domain: "CardanoServiceError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Broadcast failed: \(errorDetail)"])
+        }
+        
+        // If we got here, it means status was 200 OK but we failed to parse JSON or find result
+        // Try to parse JSON again for debugging message if possible
+        let jsonString = String(data: data, encoding: .utf8) ?? "invalid data"
+        throw NSError(domain: "CardanoServiceError", code: 10, userInfo: [NSLocalizedDescriptionKey: "Missing result in RPC response: \(jsonString)"])
+    }
+
+    
+}

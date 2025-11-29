@@ -20,10 +20,7 @@ struct SendDetailsAdditionalSection: View {
         VStack(spacing: 14) {
             addMemoField
             
-            if !tx.amount.isEmpty {
-                separator
-                networkFeeField
-            }
+            
         }
         .onAppear {
             if !tx.memo.isEmpty {
@@ -64,44 +61,12 @@ struct SendDetailsAdditionalSection: View {
             MemoTextField(memo: $tx.memo)
                 .frame(height: isMemoExpanded ? nil : 0, alignment: .top)
                 .clipped()
-                .onChange(of: tx.memo) { oldValue, newValue in
-                    Task {
-                        await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
-                    }
-                }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     var separator: some View {
         LinearSeparator()
-    }
-    
-    var networkFeeField: some View {
-        HStack {
-            getFieldTitle("estNetworkFee")
-            Spacer()
-            networkFeeDescription
-        }
-    }
-    
-    var networkFeeDescription: some View {
-        HStack(spacing: 8) {
-            if tx.isCalculatingFee {
-                ProgressView()
-                    .scaleEffect(0.7)
-            }
-            
-            VStack(alignment: .trailing) {
-                Text(tx.gasInReadable)
-                
-                if let selectedVault = appViewModel.selectedVault {
-                    Text(sendCryptoViewModel.feesInReadable(tx: tx, vault: selectedVault))
-                        .foregroundStyle(Theme.colors.textExtraLight)
-                }
-            }
-            .font(Theme.fonts.bodySMedium)
-        }
     }
     
     private func getFieldTitle(_ title: String) -> some View {

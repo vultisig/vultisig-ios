@@ -59,24 +59,6 @@ class SendCryptoViewModel: ObservableObject {
         isValidatingForm
     }
     
-    func loadGasInfoForSending(tx: SendTransaction) async {
-        guard !isLoading else {
-            return
-        }
-        isLoading = true
-        defer {
-            isLoading = false
-        }
-        
-        if let info = await logic.loadGasInfoForSending(tx: tx) {
-            tx.gas = info.gas
-            tx.fee = info.fee
-            if let gasLimit = info.gasLimit {
-                tx.estematedGasLimit = gasLimit
-            }
-        }
-    }
-    
     func loadFastVault(tx: SendTransaction, vault: Vault) async {
         tx.isFastVault = await logic.loadFastVault(tx: tx, vault: vault)
     }
@@ -215,30 +197,6 @@ struct SendCryptoLogic {
         var showAddressAlert: Bool = false
     }
     
-    func loadGasInfoForSending(tx: SendTransaction) async -> (gas: BigInt, fee: BigInt, gasLimit: BigInt?)? {
-        do {
-            let specific = try await blockchainService.fetchSpecific(tx: tx)
-            let gas = specific.gas
-            var fee = specific.fee
-            
-            // For UTXO and Cardano chains, calculate actual total fee using WalletCore plan.fee (like Android)
-            if tx.coin.chainType == .UTXO || tx.coin.chainType == .Cardano {
-                if tx.amountInRaw > 0 {
-                    // Only calculate accurate fee when user has entered an amount
-                    fee = try await calculateUTXOPlanFee(tx: tx, chainSpecific: specific)
-                } else {
-                    // Initial state - no amount yet, use 0 to indicate fee not calculated yet
-                    fee = BigInt.zero
-                }
-            }
-            
-            return (gas: gas, fee: fee, gasLimit: specific.gasLimit)
-        } catch {
-            print("error fetching data: \(error.localizedDescription)")
-            return nil
-        }
-    }
-    
     func loadFastVault(tx: SendTransaction, vault: Vault) async -> Bool {
         let isExist = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
         let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
@@ -246,58 +204,7 @@ struct SendCryptoLogic {
         return isExist && !isLocalBackup
     }
     
-    func calculateUTXOPlanFee(tx: SendTransaction, chainSpecific: BlockChainSpecific) async throws -> BigInt {
-        guard let vault = AppViewModel.shared.selectedVault else {
-            throw HelperError.runtimeError("No vault available for UTXO fee calculation")
-        }
-        
-        // Don't calculate plan fee if amount is 0 or empty
-        let actualAmount = tx.amountInRaw
-        if actualAmount == 0 {
-            throw HelperError.runtimeError("Enter an amount to calculate accurate UTXO fees")
-        }
-        
-        // Force fresh UTXO fetch for fee calculation to avoid stale cache
-        await BlockchairService.shared.clearUTXOCache(for: tx.coin)
-        
-        // Fetch fresh UTXOs from API
-        let _ = try await BlockchairService.shared.fetchBlockchairData(coin: tx.coin)
-        
-        let keysignFactory = KeysignPayloadFactory()
-        let keysignPayload = try await keysignFactory.buildTransfer(
-            coin: tx.coin,
-            toAddress: tx.toAddress.isEmpty ? tx.coin.address : tx.toAddress,
-            amount: actualAmount,
-            memo: tx.memo.isEmpty ? nil : tx.memo,
-            chainSpecific: chainSpecific,
-            swapPayload: nil,
-            vault: vault
-        )
-        
-        let planFee: BigInt
-        
-        switch tx.coin.chain {
-        case .cardano:
-            let cardanoHelper = CardanoHelper()
-            planFee = try cardanoHelper.calculateDynamicFee(keysignPayload: keysignPayload)
-            
-        default: // UTXO chains
-            guard let utxoHelper = UTXOChainsHelper.getHelper(coin: tx.coin) else {
-                throw HelperError.runtimeError("UTXO helper not available for \(tx.coin.chain.name)")
-            }
-            let plan = try utxoHelper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
-            planFee = BigInt(plan.fee)
-        }
-        
-        // WalletCore must return valid fee
-        if planFee > 0 {
-            return planFee
-        }
-        
-        // If WalletCore returns 0, it means insufficient balance
-        // Return 0 and let the form validation handle it via tx.isAmountExceeded
-        return BigInt.zero
-    }
+
     
     func validateForm(tx: SendTransaction, hasPendingTransaction: Bool) async -> ValidationResult {
         var result = ValidationResult(isValid: true)
@@ -320,23 +227,7 @@ struct SendCryptoLogic {
             return result
         }
         
-        if gasFee == 0 && !tx.coin.allowZeroGas() {
-            result.errorTitle = "error"
-            result.errorMessage = "noGasEstimation"
-            result.showAmountAlert = true
-            logger.log("No gas estimation.")
-            result.isValid = false
-            return result
-        }
-        
-        if gasFee < 0 {
-            result.errorTitle = "error"
-            result.errorMessage = "nonNegativeFeeError"
-            result.showAmountAlert = true
-            logger.log("Invalid or negative fee.")
-            result.isValid = false
-            return result
-        }
+
         
         if tx.isAmountExceeded {
             result.errorTitle = "error"
@@ -347,27 +238,7 @@ struct SendCryptoLogic {
             return result
         }
         
-        // check UTXO minimum amount and fee validation
-        if tx.coin.chainType == .UTXO {
-            let dustThreshold = tx.coin.coinType.getFixedDustThreshold()
-            if tx.amountInRaw < dustThreshold {
-                result.errorTitle = "error"
-                result.errorMessage = "amount is below the dust threshold."
-                result.showAmountAlert = true
-                result.isValid = false
-                return result
-            }
-            
-            // Check if WalletCore returned 0 fee (insufficient balance for UTXO transaction)
-            if tx.fee == 0 && tx.amountInRaw > 0 {
-                result.errorTitle = "error"
-                result.errorMessage = "walletBalanceExceededError"
-                result.showAmountAlert = true
-                logger.log("Insufficient UTXO balance to cover transaction and fees.")
-                result.isValid = false
-                return result
-            }
-        }
+
         
         // Validate To Address
         let validToAddress = await validateToAddress(tx: tx)
@@ -379,62 +250,11 @@ struct SendCryptoLogic {
             return result
         }
         
-        if !tx.coin.isNativeToken {
-            do {
-                let evmToken = try await blockchainService.fetchSpecific(tx: tx)
-                let (hasEnoughFees, feeErrorMsg) = await tx.hasEnoughNativeTokensToPayTheFees(specific: evmToken)
-                if !hasEnoughFees {
-                    result.errorTitle = "error"
-                    result.errorMessage = feeErrorMsg
-                    result.showAlert = true
-                    logger.log("\(feeErrorMsg)")
-                    result.isValid = false
-                }
-            } catch {
-                let fetchErrorMsg = "Failed to fetch specific token data: \(tx.coin.ticker)"
-                logger.log("\(fetchErrorMsg)")
-                result.errorTitle = "error"
-                result.errorMessage = fetchErrorMsg
-                result.showAlert = true
-                result.isValid = false
-            }
-        }
+
         
-        // Cardano-specific validation
-        if tx.coin.chain == .cardano && !tx.sendMaxAmount {
-            let amountInLovelaces = tx.amountInRaw
-            let totalBalance = tx.coin.rawBalance
-            let estimatedFee = tx.fee
-            
-            let validation = CardanoHelper.validateUTXORequirements(
-                sendAmount: amountInLovelaces,
-                totalBalance: totalBalance.toBigInt(),
-                estimatedFee: estimatedFee
-            )
-            
-            if !validation.isValid {
-                result.errorTitle = "error"
-                result.errorMessage = validation.errorMessage ?? "Cardano UTXO validation failed"
-                result.showAlert = true
-                logger.log("Cardano UTXO validation failed: \(validation.errorMessage ?? "Unknown error")")
-                result.isValid = false
-            }
-        }
+
         
-        // DOT-specific validation
-        if tx.coin.chain == .polkadot {
-            let totalBalance = BigInt(tx.coin.rawBalance) ?? BigInt.zero
-            let totalTransactionCost = tx.amountInRaw + tx.gas
-            let remainingBalance = totalBalance - totalTransactionCost
-            
-            if !tx.sendMaxAmount && remainingBalance < PolkadotHelper.defaultExistentialDeposit && remainingBalance > 0 {
-                result.errorTitle = "error"
-                result.errorMessage = "Keep account balance above 1 DOT. The remaining funds will be lost if balance is below 1 DOT"
-                result.showAlert = true
-                logger.log("DOT transaction would leave balance below existential deposit")
-                result.isValid = false
-            }
-        }
+
         
         return result
     }
@@ -498,38 +318,8 @@ struct SendCryptoLogic {
             let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2)
             tx.amountInFiat = truncatedValueFiat.formatToDecimal(digits: tx.coin.decimals)
             tx.sendMaxAmount = setMaxValue
-            
-            // Recalculate UTXO-based fees when amount changes
-            recalculateUTXOFeesIfNeeded(tx: tx)
         } else {
             tx.amountInFiat = ""
-        }
-    }
-    
-    func recalculateUTXOFeesIfNeeded(tx: SendTransaction) {
-        guard (tx.coin.chainType == .UTXO || tx.coin.chainType == .Cardano) && tx.amountInRaw > 0 else { 
-            return 
-        }
-        
-        Task {
-            await MainActor.run {
-                tx.isCalculatingFee = true
-            }
-            
-            do {
-                let specific = try await blockchainService.fetchSpecific(tx: tx)
-                let newFee = try await calculateUTXOPlanFee(tx: tx, chainSpecific: specific)
-                
-                await MainActor.run {
-                    tx.fee = newFee
-                    tx.isCalculatingFee = false
-                }
-            } catch {
-                await MainActor.run {
-                    tx.isCalculatingFee = false
-                }
-                print("Failed to recalculate UTXO fee: \(error.localizedDescription)")
-            }
         }
     }
     
