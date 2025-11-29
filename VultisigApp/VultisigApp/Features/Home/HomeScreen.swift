@@ -276,7 +276,7 @@ struct HomeScreen: View {
                         }
                     } else {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        appViewModel.set(selectedVault: vault)
+                        appViewModel.set(selectedVault: vault,restartNavigation: false)
                     }
                 }
             }
@@ -316,7 +316,7 @@ extension HomeScreen {
             return
         }
         
-        appViewModel.set(selectedVault: vault)
+        appViewModel.set(selectedVault: vault,restartNavigation: false)
         showVaultSelector = false
         // Reset first to ensure SwiftUI detects the change
         shouldKeysignTransaction = false
@@ -451,7 +451,7 @@ extension HomeScreen {
 
     private func handleSendDeeplinkAfterVaultSelection(vault: Vault) {
         deeplinkViewModel.pendingSendDeeplink = false
-        appViewModel.set(selectedVault: vault)
+        appViewModel.set(selectedVault: vault,restartNavigation: false)
 
         let coin = deeplinkViewModel.findCoin(in: vault)
 
@@ -522,7 +522,7 @@ extension HomeScreen {
     }
 
     private func processAddressOnlyDeeplink(address: String, vault: Vault) {
-        appViewModel.set(selectedVault: vault)
+        appViewModel.set(selectedVault: vault,restartNavigation: false)
 
         var coinToUse: Coin?
 
