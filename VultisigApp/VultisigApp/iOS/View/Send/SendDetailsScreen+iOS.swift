@@ -35,7 +35,6 @@ extension SendDetailsScreen {
     func setData() {
         keyboardObserver.keyboardHeight = 0
         Task {
-            await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
             await getBalance()
         }
     }

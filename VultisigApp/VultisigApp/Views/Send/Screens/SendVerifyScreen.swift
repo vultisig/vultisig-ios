@@ -35,9 +35,17 @@ struct SendVerifyScreen: View {
                 dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
             )
         }
+        .alert(isPresented: $sendCryptoVerifyViewModel.showAlert) {
+            Alert(
+                title: Text(NSLocalizedString("error", comment: "")),
+                message: Text(NSLocalizedString(sendCryptoVerifyViewModel.errorMessage, comment: "")),
+                dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+            )
+        }
         .onLoad {
             sendCryptoVerifyViewModel.onLoad()
             Task {
+                await sendCryptoVerifyViewModel.loadGasInfoForSending(tx: tx)
                 await sendCryptoVerifyViewModel.scan(transaction: tx, vault: vault)
             }
         }
@@ -63,8 +71,8 @@ struct SendVerifyScreen: View {
                 network: tx.coin.chain.name,
                 networkImage: tx.coin.chain.logo,
                 memo: tx.memo,
-                feeCrypto: tx.gasInReadable,
-                feeFiat: CryptoAmountFormatter.feesInReadable(tx: tx, vault: vault),
+                feeCrypto: tx.isCalculatingFee ? "Loading..." : tx.gasInReadable,
+                feeFiat: tx.isCalculatingFee ? "" : CryptoAmountFormatter.feesInReadable(tx: tx, vault: vault),
                 coinImage: tx.coin.logo,
                 amount: tx.amount,
                 coinTicker: tx.coin.ticker

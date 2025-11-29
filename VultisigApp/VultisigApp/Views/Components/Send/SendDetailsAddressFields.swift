@@ -72,9 +72,6 @@ struct SendDetailsAddressFields: View {
             DebounceHelper.shared.debounce {
                 validateAddress(newValue)
             }
-            Task {
-                await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
-            }
         }
     }
     
