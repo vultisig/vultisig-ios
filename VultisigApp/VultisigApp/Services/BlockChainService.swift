@@ -667,11 +667,9 @@ private extension BlockChainService {
         let service = try EvmService.getService(forChain: tx.fromCoin.chain)
         switch(tx.quote){
         case .mayachain(_), .thorchain(_), .thorchainStagenet(_):
-            if tx.fromCoin.isNativeToken {
-                return BigInt(EVMHelper.defaultETHTransferGasUnit)
-            } else {
-                return BigInt(EVMHelper.defaultERC20TransferGasUnit)
-            }
+            // Swapping native ETH/AVAX/BSC to THORChain router is a contract call, not a simple transfer.
+            // 23000 is too low. Using 120000 (same as ERC20) is safer.
+            return BigInt(EVMHelper.defaultERC20TransferGasUnit)
         case .oneinch(let quote,_),.kyberswap(let quote, _),.lifi(let quote,_, _):
             if tx.fromCoin.isNativeToken {
                 return try await service.estimateGasLimitForSwap(senderAddress: tx.fromCoin.address, toAddress: quote.tx.to, value: tx.amountInCoinDecimal, data: quote.tx.data)
