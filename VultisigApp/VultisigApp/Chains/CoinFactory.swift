@@ -11,8 +11,20 @@ import CryptoKit
 
 struct CoinFactory {
     private init() { }
-    static func create(asset: CoinMeta, publicKeyECDSA: String, publicKeyEdDSA: String, hexChainCode: String) throws -> Coin {
-        let publicKey = try publicKey(asset: asset, publicKeyECDSA: publicKeyECDSA, publicKeyEdDSA: publicKeyEdDSA, hexChainCode: hexChainCode)
+    static func create(
+        asset: CoinMeta,
+        publicKeyECDSA: String,
+        publicKeyEdDSA: String,
+        hexChainCode: String,
+        isDerived: Bool = false
+    ) throws -> Coin {
+        let publicKey = try publicKey(
+            asset: asset,
+            publicKeyECDSA: publicKeyECDSA,
+            publicKeyEdDSA: publicKeyEdDSA,
+            hexChainCode: hexChainCode,
+            isDerived: isDerived
+        )
         
         var address: String
         switch asset.chain {
@@ -58,7 +70,13 @@ extension CoinFactory {
     
     
     
-    static func publicKey(asset: CoinMeta, publicKeyECDSA: String, publicKeyEdDSA: String, hexChainCode: String) throws -> PublicKey {
+    static func publicKey(
+        asset: CoinMeta,
+        publicKeyECDSA: String,
+        publicKeyEdDSA: String,
+        hexChainCode: String,
+        isDerived: Bool
+    ) throws -> PublicKey {
         switch asset.chain.signingKeyType {
         case .EdDSA:
             
@@ -87,8 +105,7 @@ extension CoinFactory {
             return publicKey
             
         case .ECDSA:
-            // TODO: - Don't derive for chain key
-            let derivedKey = PublicKeyHelper.getDerivedPubKey(
+            let derivedKey = isDerived ? publicKeyECDSA : PublicKeyHelper.getDerivedPubKey(
                 hexPubKey: publicKeyECDSA,
                 hexChainCode: hexChainCode,
                 derivePath: asset.coinType.derivationPath()
