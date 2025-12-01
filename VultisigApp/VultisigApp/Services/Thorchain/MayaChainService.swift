@@ -31,7 +31,7 @@ class MayachainService: ThorchainSwapProvider {
         do {
             let balances: [CosmosBalance] = try await fetchBalances(address)
             var coinMetaList = [CoinMeta]()
-            for balance in balances where balance.denom.caseInsensitiveCompare("cacao") == .orderedSame {
+            for balance in balances where balance.denom.caseInsensitiveCompare("cacao") != .orderedSame {
                 // Check if token exists in TokensStore first
                 let localAsset = TokensStore.TokenSelectionAssets.first(where: { 
                     $0.chain == .mayaChain && ($0.contractAddress == balance.denom || $0.ticker.uppercased() == balance.denom.uppercased())
