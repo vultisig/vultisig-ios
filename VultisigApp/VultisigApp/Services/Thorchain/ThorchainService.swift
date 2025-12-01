@@ -33,7 +33,7 @@ class ThorchainService: ThorchainSwapProvider {
         do {
             let balances: [CosmosBalance] =  try await fetchBalances(address)
             var coinMetaList = [CoinMeta]()
-            for balance in balances where balance.denom.caseInsensitiveCompare("rune") == .orderedSame {
+            for balance in balances where balance.denom.caseInsensitiveCompare("rune") != .orderedSame {
                 var ticker: String
                 var decimals: Int
                 var logo: String

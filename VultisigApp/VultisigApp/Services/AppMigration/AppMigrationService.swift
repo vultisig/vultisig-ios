@@ -31,12 +31,11 @@ struct AppMigrationService {
             return
         }
 
-        // Check if this is a fresh installation (no migration version in Keychain)
-        guard let lastVersion = keychainService.getLastMigratedVersion() else {
-            print("✅ [Migration] Fresh installation detected - skipping all migrations, setting to version \(latestMigrationVersion)")
-            keychainService.setLastMigratedVersion(latestMigrationVersion)
-            return
-        }
+        // Get the last migrated version from Keychain
+        // there is no way to figure out whether it is a new installation , or an update from a version without AppMigrationService
+        // So when the last migrated version is nil , we need to do the migration
+        // thus we need to make sure the migration is idempotent
+         let lastVersion = keychainService.getLastMigratedVersion() ?? -1
 
         // If already migrated to the latest version, skip
         if lastVersion >= latestMigrationVersion {
