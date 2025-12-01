@@ -303,7 +303,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     libType: vault.libType ?? .GG20
                 )
                 let data = try ProtoSerializer.serialize(keygenMsg)
-                return "https://vultisig.com?type=NewVault&tssType=\(TssType.Keygen.rawValue)&jsonData=\(data)"
+                return "https://vultisig.com?type=NewVault&tssType=\(tssType.rawValue)&jsonData=\(data)"
             case .Reshare, .Migrate:
                 let reshareMsg = ReshareMessage(
                     sessionID: sessionID,

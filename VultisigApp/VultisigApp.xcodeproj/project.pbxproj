@@ -373,6 +373,10 @@
 		13C0F79F2EC60FE500C2A3B8 /* DefiPositionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C0F79E2EC60FDA00C2A3B8 /* DefiPositionsService.swift */; };
 		13C232692E68A95900DB42D0 /* AddressQRCodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C232682E68A95100DB42D0 /* AddressQRCodeScannerView.swift */; };
 		13C320032E61F8DB00255138 /* ReferralVaultSelectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C320022E61F8D500255138 /* ReferralVaultSelectionScreen.swift */; };
+		13C4A02F2EDDC5710033BDB1 /* ImportWalletScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C4A02E2EDDC5680033BDB1 /* ImportWalletScreen.swift */; };
+		13C4A0322EDDC5C10033BDB1 /* ImportSeedphraseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C4A0312EDDC5B70033BDB1 /* ImportSeedphraseView.swift */; };
+		13C4A0352EDDCB0C0033BDB1 /* FilledSegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C4A0342EDDCB070033BDB1 /* FilledSegmentedControl.swift */; };
+		13C4A0382EDDCBA20033BDB1 /* ImportWalletType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C4A0372EDDCBA10033BDB1 /* ImportWalletType.swift */; };
 		13C7C1DC2E86DD8F00A529FD /* TokenSelectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C7C1DB2E86DD8900A529FD /* TokenSelectionScreen.swift */; };
 		13C7C1DE2E86DE5600A529FD /* AssetSelectionContainerScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C7C1DD2E86DE4C00A529FD /* AssetSelectionContainerScreen.swift */; };
 		13C7C1E32E86EE0200A529FD /* TokenSelectionGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C7C1E22E86EE0200A529FD /* TokenSelectionGridCell.swift */; };
@@ -1582,6 +1586,10 @@
 		13C0F79E2EC60FDA00C2A3B8 /* DefiPositionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiPositionsService.swift; sourceTree = "<group>"; };
 		13C232682E68A95100DB42D0 /* AddressQRCodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressQRCodeScannerView.swift; sourceTree = "<group>"; };
 		13C320022E61F8D500255138 /* ReferralVaultSelectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralVaultSelectionScreen.swift; sourceTree = "<group>"; };
+		13C4A02E2EDDC5680033BDB1 /* ImportWalletScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWalletScreen.swift; sourceTree = "<group>"; };
+		13C4A0312EDDC5B70033BDB1 /* ImportSeedphraseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportSeedphraseView.swift; sourceTree = "<group>"; };
+		13C4A0342EDDCB070033BDB1 /* FilledSegmentedControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilledSegmentedControl.swift; sourceTree = "<group>"; };
+		13C4A0372EDDCBA10033BDB1 /* ImportWalletType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWalletType.swift; sourceTree = "<group>"; };
 		13C7C1DB2E86DD8900A529FD /* TokenSelectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionScreen.swift; sourceTree = "<group>"; };
 		13C7C1DD2E86DE4C00A529FD /* AssetSelectionContainerScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetSelectionContainerScreen.swift; sourceTree = "<group>"; };
 		13C7C1E22E86EE0200A529FD /* TokenSelectionGridCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionGridCell.swift; sourceTree = "<group>"; };
@@ -2496,6 +2504,7 @@
 		049BBB4E2B71E37B004C231F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				13C4A0332EDDCAFF0033BDB1 /* SegmentedControls */,
 				13B41AAE2EB3CCD00049503D /* Forms */,
 				135C7ADF2EA14124002F879A /* ActionBanner */,
 				13D9EBFC2E84579F0089B2A7 /* Sheet */,
@@ -2504,7 +2513,6 @@
 				138C5E682E79EDD300C559C7 /* Toolbar */,
 				1334C73D2E30079000CBAA3E /* ViewModifiers */,
 				130C40FC2E7389B500509C61 /* TabBar */,
-				130C40E42E731CD300509C61 /* SegmentedControl.swift */,
 				1348FA632E6895AE001551F6 /* TextEditor */,
 				B2ADDDC32E5D638F00DB3B98 /* banxa */,
 				13D93BD32E58C772001E31E8 /* Layout */,
@@ -3892,6 +3900,50 @@
 			path = Theme;
 			sourceTree = "<group>";
 		};
+		13C4A02C2EDDC5490033BDB1 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				13C4A02D2EDDC54D0033BDB1 /* ImportVault */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		13C4A02D2EDDC54D0033BDB1 /* ImportVault */ = {
+			isa = PBXGroup;
+			children = (
+				13C4A0362EDDCB9D0033BDB1 /* Models */,
+				13C4A0302EDDC5A50033BDB1 /* Views */,
+				13C4A02E2EDDC5680033BDB1 /* ImportWalletScreen.swift */,
+			);
+			path = ImportVault;
+			sourceTree = "<group>";
+		};
+		13C4A0302EDDC5A50033BDB1 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				13C4A0312EDDC5B70033BDB1 /* ImportSeedphraseView.swift */,
+				A633B1392B9A5A22003D1738 /* ImportWalletView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		13C4A0332EDDCAFF0033BDB1 /* SegmentedControls */ = {
+			isa = PBXGroup;
+			children = (
+				13C4A0342EDDCB070033BDB1 /* FilledSegmentedControl.swift */,
+				130C40E42E731CD300509C61 /* SegmentedControl.swift */,
+			);
+			path = SegmentedControls;
+			sourceTree = "<group>";
+		};
+		13C4A0362EDDCB9D0033BDB1 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				13C4A0372EDDCBA10033BDB1 /* ImportWalletType.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
 		13C7C1D92E86DD7F00A529FD /* TokenSelection */ = {
 			isa = PBXGroup;
 			children = (
@@ -3951,6 +4003,7 @@
 		13C880552E70A312009C67F1 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				13C4A02C2EDDC5490033BDB1 /* Onboarding */,
 				1348561C2EB511C8003D10BE /* FunctionTransaction */,
 				130C40F62E737FBC00509C61 /* Home */,
 				13DB875C2E9FD725008E89B0 /* Wallet */,
@@ -5756,7 +5809,6 @@
 			isa = PBXGroup;
 			children = (
 				A633B12C2B994E92003D1738 /* CreateVaultView.swift */,
-				A633B1392B9A5A22003D1738 /* ImportWalletView.swift */,
 				A633B13B2B9A6564003D1738 /* SetupQRCodeView.swift */,
 				A6F9E7A42BED6BC800BA36E1 /* SetupVaultTabView.swift */,
 				A623A09E2BF09FEE00AA2F8D /* NewWalletNameView.swift */,
@@ -6415,6 +6467,7 @@
 				A6B7F49A2C49418A006D83D1 /* VaultDetailQRCode.swift in Sources */,
 				13B25BF32E82E321002BCF55 /* PlatformImageExtension.swift in Sources */,
 				A60F29E32DA5A50B00C24765 /* SwapCryptoDoneView+iOS.swift in Sources */,
+				13C4A0352EDDCB0C0033BDB1 /* FilledSegmentedControl.swift in Sources */,
 				B5A97CF52BF4287A007574D7 /* FunctionCallSelectorDropdown.swift in Sources */,
 				134856212EB511DB003D10BE /* FunctionTransactionScreen.swift in Sources */,
 				A6F7B6C62D4AB86900AC8104 /* EmptyPeerCell.swift in Sources */,
@@ -6940,6 +6993,7 @@
 				A56C98D42CC013C500FC1B08 /* SettingsBiometryViewModel.swift in Sources */,
 				A66BFCD12C134B3B004DCD4F /* QRShareSheetImage.swift in Sources */,
 				A6A6EFC12D703AF60062F6EA /* SwitchToLocalLink.swift in Sources */,
+				13C4A02F2EDDC5710033BDB1 /* ImportWalletScreen.swift in Sources */,
 				A6BFE1C52D9490DF000B73C0 /* SwapFromToChain.swift in Sources */,
 				139642382E79951E00CFEFAF /* VaultManagementSheet.swift in Sources */,
 				137B2C782E3A4A490074F648 /* BottomSheetModifier.swift in Sources */,
@@ -7035,6 +7089,7 @@
 				131603512E60C45D001ED972 /* VaultBackupContainerView.swift in Sources */,
 				A5D0C9372BEE778F0022D421 /* OneInchSwaps.swift in Sources */,
 				A524F5712D4AD63500F294B2 /* LiFiSwapError.swift in Sources */,
+				13C4A0382EDDCBA20033BDB1 /* ImportWalletType.swift in Sources */,
 				DE64A4CE2BA7FEE100C342E3 /* JoinKeysignViewModel.swift in Sources */,
 				139450152EBB8A3000A72AE9 /* UnstakeTransactionScreen.swift in Sources */,
 				1378B04B2E462ADB005CC32D /* CircularProgressIndicator.swift in Sources */,
@@ -7156,6 +7211,7 @@
 				A6E0C9042DDD271600A01543 /* FileManagerExtension.swift in Sources */,
 				13D0C84D2E74620800A1301F /* TabBarAccessoryButton.swift in Sources */,
 				B5CDB87B2DDD8714007DF355 /* MergeAccountResponse.swift in Sources */,
+				13C4A0322EDDC5C10033BDB1 /* ImportSeedphraseView.swift in Sources */,
 				B5CDB87C2DDD8715007DF355 /* AccountRootData.swift in Sources */,
 				A6182F552C9296DB0059BFDD /* StyledFloatingPointField+macOS.swift in Sources */,
 				B547A3FF2DF3F9220052164D /* CardanoService.swift in Sources */,

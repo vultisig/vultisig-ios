@@ -72,9 +72,9 @@ final class Vault: ObservableObject, Codable {
         defiPositions = try container.decodeIfPresent([DefiPositions].self, forKey: .defiPositions) ?? []
     }
     
-    init(name: String) {
+    init(name: String, libType: LibType? = nil) {
         self.name = name
-        self.libType = GetLibType()
+        self.libType = libType ?? GetLibType()
     }
     
     init(

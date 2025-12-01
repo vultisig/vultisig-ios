@@ -11,6 +11,15 @@ struct PeerDiscoveryView: View {
     let vault: Vault
     let selectedTab: SetupVaultState
     let fastSignConfig: FastSignConfig?
+    let keyImportInput: KeyImportInput?
+    
+    init(tssType: TssType, vault: Vault, selectedTab: SetupVaultState, fastSignConfig: FastSignConfig?, keyImportInput: KeyImportInput? = nil) {
+        self.tssType = tssType
+        self.vault = vault
+        self.selectedTab = selectedTab
+        self.fastSignConfig = fastSignConfig
+        self.keyImportInput = keyImportInput
+    }
 
     @StateObject var viewModel = KeygenPeerDiscoveryViewModel()
     @StateObject var participantDiscovery = ParticipantDiscovery()
@@ -160,8 +169,7 @@ struct PeerDiscoveryView: View {
             encryptionKeyHex: viewModel.encryptionKeyHex ?? "",
             oldResharePrefix: viewModel.vault.resharePrefix ?? "",
             fastSignConfig: fastSignConfig,
-            // TODO: - Set keyImportInput
-            keyImportInput: nil,
+            keyImportInput: keyImportInput,
             isInitiateDevice: true,
             hideBackButton: $hideBackButton,
             selectedTab: selectedTab
