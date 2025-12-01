@@ -247,14 +247,7 @@ class Endpoint {
     static func buildAffiliateParams(chain: SwapChain, referredCode: String, discountBps: Int) -> String {
         var affiliateParams: [(affiliate: String, bps: String)] = []
         
-        // For ultimate tier (50+ bps discount), return 0 affiliate fee with no referrer
-        // This matches Android behavior (Windows does NOT have this early return)
-        if discountBps >= THORChainSwaps.affiliateFeeRateBp {
-            affiliateParams.append((THORChainSwaps.affiliateFeeAddress, "0"))
-            let affiliates = affiliateParams.map(\.affiliate).joined(separator: "/")
-            let affiliateBps = affiliateParams.map(\.bps).joined(separator: "/")
-            return "&affiliate=\(affiliates)&affiliate_bps=\(affiliateBps)"
-        }
+
         
         if (chain == .thorchain || chain == .thorchainStagenet) && !referredCode.isEmpty {
             // THORChain supports nested affiliates
