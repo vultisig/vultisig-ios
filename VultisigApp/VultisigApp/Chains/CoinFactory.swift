@@ -87,14 +87,15 @@ extension CoinFactory {
             return publicKey
             
         case .ECDSA:
+            // TODO: - Don't derive for chain key
             let derivedKey = PublicKeyHelper.getDerivedPubKey(
                 hexPubKey: publicKeyECDSA,
                 hexChainCode: hexChainCode,
                 derivePath: asset.coinType.derivationPath()
             )
-            
+        
             guard
-                let pubKeyData = Data(hexString: derivedKey),
+                let pubKeyData = Data(hexString: publicKeyECDSA),
                 let publicKey = PublicKey(data: pubKeyData, type: .secp256k1) else {
                 throw Errors.invalidPublicKey(pubKey: publicKeyECDSA)
             }

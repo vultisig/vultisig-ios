@@ -50,6 +50,7 @@ extension VSLibType {
     }
 }
 
+// TODO: - Remove this
 func GetLibType() -> LibType {
     let existDKLS = UserDefaults.standard.value(forKey: "isDKLSEnabled")
     if existDKLS == nil {

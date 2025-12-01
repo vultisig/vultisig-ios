@@ -119,9 +119,10 @@ struct CoinService {
     }
     
     static func addToChain(asset: CoinMeta, to vault: Vault, priceProviderId: String?) throws -> Coin? {
+        let pubKey = vault.chainPublicKeys.first { $0.chain == asset.chain }?.publicKeyHex
         let newCoin = try CoinFactory.create(asset: asset,
-                                             publicKeyECDSA: vault.pubKeyECDSA,
-                                             publicKeyEdDSA: vault.pubKeyEdDSA,
+                                             publicKeyECDSA: asset.chain.isECDSA ? pubKey ?? vault.pubKeyECDSA : vault.pubKeyECDSA,
+                                             publicKeyEdDSA: !asset.chain.isECDSA ? pubKey ?? vault.pubKeyEdDSA : vault.pubKeyEdDSA,
                                              hexChainCode: vault.hexChainCode)
         
         // Check if coin with same ID already exists

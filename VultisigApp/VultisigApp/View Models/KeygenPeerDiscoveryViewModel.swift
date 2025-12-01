@@ -302,6 +302,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     vaultName: vault.name,
                     libType: vault.libType ?? .GG20
                 )
+                // TODO: - Pass chains here?
                 let data = try ProtoSerializer.serialize(keygenMsg)
                 return "https://vultisig.com?type=NewVault&tssType=\(tssType.rawValue)&jsonData=\(data)"
             case .Reshare, .Migrate:

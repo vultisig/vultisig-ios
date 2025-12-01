@@ -212,35 +212,49 @@ class KeygenViewModel: ObservableObject {
     
     // TODO: - Update UI state to show current progress
     func startKeyImportKeygen(modelContext: ModelContext) async throws {
-        guard let keyImportInput else {
-            throw HelperError.runtimeError("Key import keygen should have keyImportInput")
-        }
-        
-        guard let wallet = HDWallet(mnemonic: keyImportInput.mnemnonic, passphrase: "") else {
-            throw HelperError.runtimeError("Couldn't create HDWallet from mnemonic")
+        var wallet: HDWallet?
+        if self.isInitiateDevice {
+            guard let keyImportInput else {
+                throw HelperError.runtimeError("Key import keygen should have keyImportInput")
+            }
+            
+            print("Mnemonic is ", keyImportInput.mnemnonic)
+            guard let mnemonicWallet = HDWallet(mnemonic: keyImportInput.mnemnonic, passphrase: "") else {
+                throw HelperError.runtimeError("Couldn't create HDWallet from mnemonic")
+            }
+            
+            wallet = mnemonicWallet
         }
         
         try await startRootKeyImportKeygen(modelContext: modelContext, wallet: wallet)
         
-        for chain in keyImportInput.chains {
-            let chainKey = wallet.getKeyForCoin(coin: chain.coinType)
+        for chain in keyImportInput?.chains ?? [.bitcoin, .solana] {
+            let chainKey = wallet?.getKeyForCoin(coin: chain.coinType)
             let keyshare: DKLSKeyshare
             if chain.isECDSA {
+                print("[Key import] ECDSA Public Key for chain \(chain.name): \(chainKey?.getPublicKey(coinType: chain.coinType).data.hexString)")
                 keyshare = try await importDklsKey(
                     context: modelContext,
-                    ecdsaPrivateKeyHex: chainKey.data.hexString,
+                    ecdsaPrivateKeyHex: chainKey?.data.hexString,
                     chain: chain
                 )
+                print("[Key import] ECDSA Public-after Key for chain \(chain.name): \(keyshare.PubKey)")
             } else {
-                guard let chainSeed = clampThenUniformScalar(from: chainKey.data) else {
-                    throw HelperError.runtimeError("Couldn't transform key to scalar for Schnorr key import for chain \(chain.name)")
+                var chainSeed: Data?
+                if isInitiateDevice {
+                    guard let chainKey, let serializedChainSeed = clampThenUniformScalar(from: chainKey.data) else {
+                        throw HelperError.runtimeError("Couldn't transform key to scalar for Schnorr key import for chain \(chain.name)")
+                    }
+                    chainSeed = serializedChainSeed
                 }
                 
+                print("[Key import] EDDSA Public Key for chain \(chain.name): \(chainKey?.getPublicKey(coinType: chain.coinType).data.hexString)")
                 keyshare = try await importSchnorrKey(
                     context: modelContext,
-                    eddsaPrivateKeyHex: chainSeed.hexString,
+                    eddsaPrivateKeyHex: chainSeed?.hexString,
                     chain: chain
                 )
+                print("[Key import] EDDSA Public-after Key for chain \(chain.name): \(keyshare.PubKey)")
             }
             self.vault.keyshares.append(KeyShare(pubkey: keyshare.PubKey, keyshare: keyshare.Keyshare))
             self.vault.chainPublicKeys.append(
@@ -269,16 +283,18 @@ class KeygenViewModel: ObservableObject {
         self.status = .KeygenFinished
     }
     
-    func startRootKeyImportKeygen(modelContext: ModelContext, wallet: HDWallet) async throws {
+    func startRootKeyImportKeygen(modelContext: ModelContext, wallet: HDWallet?) async throws {
         
-        let ecDSAKey = wallet.getMasterKey(curve: .secp256k1)
-        let keyshareECDSA = try await importDklsKey(context: modelContext, ecdsaPrivateKeyHex: ecDSAKey.data.hexString, chain: nil)
+        let ecDSAKey = wallet?.getMasterKey(curve: .secp256k1)
+        let keyshareECDSA = try await importDklsKey(context: modelContext, ecdsaPrivateKeyHex: ecDSAKey?.data.hexString, chain: nil)
     
-        let edDSAKey = wallet.getMasterKey(curve: .ed25519)
-        guard let edDSAKeySerialized = clampThenUniformScalar(from: edDSAKey.data) else {
-            throw HelperError.runtimeError("Couldn't transform key to scalar for Schnorr key import for root key")
+        let edDSAKey = wallet?.getMasterKey(curve: .ed25519)
+        var edDSAKeySerialized: Data?
+        if let edDSAKey {
+            edDSAKeySerialized = clampThenUniformScalar(from: edDSAKey.data)
         }
-        let keyshareEdDSA = try await importSchnorrKey(context: modelContext, eddsaPrivateKeyHex: edDSAKeySerialized.hexString, chain: nil)
+        
+        let keyshareEdDSA = try await importSchnorrKey(context: modelContext, eddsaPrivateKeyHex: edDSAKeySerialized?.hexString, chain: nil)
         
         self.vault.pubKeyECDSA = keyshareECDSA.PubKey
         self.vault.pubKeyEdDSA = keyshareEdDSA.PubKey
@@ -286,7 +302,7 @@ class KeygenViewModel: ObservableObject {
     }
     
     // Import existing ECDSA private key to DKLS vault
-    func importDklsKey(context: ModelContext, ecdsaPrivateKeyHex: String, chain: Chain?) async throws -> DKLSKeyshare {
+    func importDklsKey(context: ModelContext, ecdsaPrivateKeyHex: String?, chain: Chain?) async throws -> DKLSKeyshare {
         do {
             let dklsKeygen = DKLSKeygen(vault: self.vault,
                                         tssType: self.tssType,
@@ -310,7 +326,7 @@ class KeygenViewModel: ObservableObject {
         }
     }
     // Import existing EdDSA private key to DKLS vault
-    func importSchnorrKey(context: ModelContext, eddsaPrivateKeyHex: String, chain: Chain?) async throws -> DKLSKeyshare {
+    func importSchnorrKey(context: ModelContext, eddsaPrivateKeyHex: String?, chain: Chain?) async throws -> DKLSKeyshare {
         do {
             let schnorrKeygen = SchnorrKeygen(vault: self.vault,
                                               tssType: self.tssType,

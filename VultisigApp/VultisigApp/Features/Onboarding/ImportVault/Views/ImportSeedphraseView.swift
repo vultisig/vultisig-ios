@@ -74,7 +74,7 @@ struct ImportSeedphraseView: View {
                 fastSignConfig: nil,
                 keyImportInput: KeyImportInput(
                     mnemnonic: words.joined(separator: " "),
-                    chains: [.bitcoin]
+                    chains: [.bitcoin, .solana]
                 )
             )
         }
