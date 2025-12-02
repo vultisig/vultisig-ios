@@ -14,10 +14,7 @@ struct KeyImportChainsSetupScreen: View {
     @State var presentPeersScreen: Bool = false
     
     var body: some View {
-        Screen(
-            title: "importSeedphrase".localized,
-            backgroundType: viewModel.state == .activeChains ? .gradient : .plain
-        ) {
+        Screen(title: "importSeedphrase".localized) {
             Group {
                 switch viewModel.state {
                 case .scanningChains:

@@ -66,6 +66,7 @@ struct KeyImportActiveChainsView: View {
                 PrimaryButton(title: "customizeChains", type: .secondary, action: onCustomize)
             }
         }
+        .background(BlurredBackground().ignoresSafeArea())
     }
 }
 
