@@ -8,14 +8,14 @@
 import SwiftUI
 import LocalAuthentication
 
-@MainActor
 class AppViewModel: ObservableObject {
     @AppStorage("showOnboarding") var showOnboarding: Bool = true
     @AppStorage("showCover") var showCover: Bool = true
     @AppStorage("isAuthenticationEnabled") var isAuthenticationEnabled: Bool = true
     @AppStorage("didAskForAuthentication") var didAskForAuthentication: Bool = false
     @AppStorage("lastRecordedTime") var lastRecordedTime: String = ""
-    
+    @AppStorage("vaultName") var vaultName: String = ""
+    @AppStorage("selectedPubKeyECDSA") var selectedPubKeyECDSA: String = ""
 
     @Published var isAuthenticated = false
     @Published var showSplashView = true
@@ -30,14 +30,37 @@ class AppViewModel: ObservableObject {
     
     private let logic = AccountLogic()
     
+    static let shared = AppViewModel()
+    
     func restart() {
-        set(selectedVault: nil)
+        set(selectedVault: selectedVault, restartNavigation: true)
     }
     
-    func set(selectedVault: Vault?, showingVaultSelector: Bool = false) {
-        self.selectedVault = selectedVault ?? self.selectedVault
+    func set(selectedVault: Vault?, showingVaultSelector: Bool = false, restartNavigation: Bool = true) {
+        self.selectedVault = selectedVault
+        self.vaultName = selectedVault?.name ?? ""
+        self.selectedPubKeyECDSA = selectedVault?.pubKeyECDSA ?? ""
+        
         self.showingVaultSelector = showingVaultSelector
-        self.referenceID = UUID()
+        if restartNavigation {
+            self.referenceID = UUID()
+        }
+    }
+    
+    func loadSelectedVault(for vaults: [Vault]) {
+        if vaultName.isEmpty || selectedPubKeyECDSA.isEmpty {
+            set(selectedVault: vaults.first)
+            return
+        }
+
+        for vault in vaults {
+            if vaultName==vault.name && selectedPubKeyECDSA==vault.pubKeyECDSA {
+                set(selectedVault: vault)
+                return
+            }
+        }
+
+        set(selectedVault: vaults.first)
     }
     
     func authenticateUser() {

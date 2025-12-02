@@ -258,6 +258,8 @@
 		1390D8C62E3943AE003F3E20 /* SecurityScannerServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8C52E3943A3003F3E20 /* SecurityScannerServiceProtocol.swift */; };
 		1390D8C82E394527003F3E20 /* SecurityScannerSettingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8C72E39450D003F3E20 /* SecurityScannerSettingsService.swift */; };
 		1390D8CC2E394778003F3E20 /* SecurityScannerServiceFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8CB2E394770003F3E20 /* SecurityScannerServiceFactory.swift */; };
+		13924F442ED88EB200F458D5 /* AppMigrationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13924F412ED88EB200F458D5 /* AppMigrationService.swift */; };
+		13924F482ED88F6000F458D5 /* THORChainDuplicateTokensMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13924F472ED88F5700F458D5 /* THORChainDuplicateTokensMigration.swift */; };
 		139450102EBB866D00A72AE9 /* StakeTransactionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1394500F2EBB866D00A72AE9 /* StakeTransactionScreen.swift */; };
 		139450112EBB866D00A72AE9 /* StakeTransactionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1394500E2EBB866D00A72AE9 /* StakeTransactionViewModel.swift */; };
 		139450152EBB8A3000A72AE9 /* UnstakeTransactionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139450132EBB8A3000A72AE9 /* UnstakeTransactionScreen.swift */; };
@@ -1091,6 +1093,7 @@
 		B5F758192BD8E65D0097B5BB /* SuiConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758182BD8E65D0097B5BA /* SuiConstants.swift */; };
 		B5F7581A2BD8E7230097B5B9 /* SuiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758192BD8E7230097B5B9 /* SuiService.swift */; };
 		B5F7581D2BD8FDA20097B5B9 /* SuiCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F7581C2BD8FDA20097B5B9 /* SuiCoin.swift */; };
+		B5FF07032ED9424E00B0FD55 /* SendCryptoVerifyLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5FF07022ED9424E00B0FD55 /* SendCryptoVerifyLogic.swift */; };
 		B5FFB0F42E7858EB0062F63C /* PendingTransactionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5FFB0F32E7858E90062F63C /* PendingTransactionManager.swift */; };
 		BU61YTK5IM2CA6CN47V4L8BG /* FunctionCallAddThorLP.swift in Sources */ = {isa = PBXBuildFile; fileRef = BWXBB99J8F32LB10N1PT9BIH /* FunctionCallAddThorLP.swift */; };
 		CF711D753DDB0FC62425A9DA /* KyberSwapQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7878748BB9E16298184860 /* KyberSwapQuote.swift */; };
@@ -1473,6 +1476,8 @@
 		1390D8C52E3943A3003F3E20 /* SecurityScannerServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerServiceProtocol.swift; sourceTree = "<group>"; };
 		1390D8C72E39450D003F3E20 /* SecurityScannerSettingsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerSettingsService.swift; sourceTree = "<group>"; };
 		1390D8CB2E394770003F3E20 /* SecurityScannerServiceFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerServiceFactory.swift; sourceTree = "<group>"; };
+		13924F412ED88EB200F458D5 /* AppMigrationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMigrationService.swift; sourceTree = "<group>"; };
+		13924F472ED88F5700F458D5 /* THORChainDuplicateTokensMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainDuplicateTokensMigration.swift; sourceTree = "<group>"; };
 		1394500E2EBB866D00A72AE9 /* StakeTransactionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StakeTransactionViewModel.swift; sourceTree = "<group>"; };
 		1394500F2EBB866D00A72AE9 /* StakeTransactionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StakeTransactionScreen.swift; sourceTree = "<group>"; };
 		139450122EBB8A3000A72AE9 /* UnstakeTransactionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnstakeTransactionViewModel.swift; sourceTree = "<group>"; };
@@ -2305,6 +2310,7 @@
 		B5F758182BD8E65D0097B5BA /* SuiConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SuiConstants.swift; sourceTree = "<group>"; };
 		B5F758192BD8E7230097B5B9 /* SuiService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SuiService.swift; sourceTree = "<group>"; };
 		B5F7581C2BD8FDA20097B5B9 /* SuiCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuiCoin.swift; sourceTree = "<group>"; };
+		B5FF07022ED9424E00B0FD55 /* SendCryptoVerifyLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifyLogic.swift; sourceTree = "<group>"; };
 		B5FFB0F32E7858E90062F63C /* PendingTransactionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingTransactionManager.swift; sourceTree = "<group>"; };
 		BWXBB99J8F32LB10N1PT9BIH /* FunctionCallAddThorLP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallAddThorLP.swift; sourceTree = "<group>"; };
 		CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapService.swift; sourceTree = "<group>"; };
@@ -3508,6 +3514,23 @@
 			path = Blockaid;
 			sourceTree = "<group>";
 		};
+		13924F432ED88EB200F458D5 /* AppMigration */ = {
+			isa = PBXGroup;
+			children = (
+				13924F462ED88F4700F458D5 /* Migrations */,
+				13924F412ED88EB200F458D5 /* AppMigrationService.swift */,
+			);
+			path = AppMigration;
+			sourceTree = "<group>";
+		};
+		13924F462ED88F4700F458D5 /* Migrations */ = {
+			isa = PBXGroup;
+			children = (
+				13924F472ED88F5700F458D5 /* THORChainDuplicateTokensMigration.swift */,
+			);
+			path = Migrations;
+			sourceTree = "<group>";
+		};
 		1394500D2EBB865F00A72AE9 /* Stake */ = {
 			isa = PBXGroup;
 			children = (
@@ -4357,6 +4380,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				13924F432ED88EB200F458D5 /* AppMigration */,
 				13A74CCC2ED3D91C00B97173 /* MayaChainAPI */,
 				B5BCC2622EC26DA7007B5A2F /* RpcServiceStruct.swift */,
 				130652482EA7CCE8002CAD99 /* THORChainAPI */,
@@ -5119,6 +5143,7 @@
 		A65649D52B965FC400E4B329 /* View Models */ = {
 			isa = PBXGroup;
 			children = (
+				B5FF07022ED9424E00B0FD55 /* SendCryptoVerifyLogic.swift */,
 				1328E6502ED5F32F0080BEE1 /* VaultPairDetailViewModel */,
 				13B1C2C92E65FC3200050637 /* Vault */,
 				13D178FA2E57543500007B48 /* AddressBook */,
@@ -7185,6 +7210,7 @@
 				13D93BCF2E58B2F1001E31E8 /* HighlightedText.swift in Sources */,
 				A6C670D52C9E8EEF00F59B6A /* SwapCryptoView+iOS.swift in Sources */,
 				13C7C1DC2E86DD8F00A529FD /* TokenSelectionScreen.swift in Sources */,
+				13924F482ED88F6000F458D5 /* THORChainDuplicateTokensMigration.swift in Sources */,
 				A6FB96B12BD086AD00D56F68 /* HomeViewModel.swift in Sources */,
 				A6980C2C2BC0896C00F452AB /* SettingsLanguageSelectionView.swift in Sources */,
 				135C7AD82EA132C8002F879A /* DefiChainSelection.swift in Sources */,
@@ -7297,6 +7323,7 @@
 				B59173312C641F3D007100E3 /* CoinService.swift in Sources */,
 				B5C5B4AC2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift in Sources */,
 				B548BEDE2EA2D3B600E32308 /* ThorchainStagenetService.swift in Sources */,
+				B5FF07032ED9424E00B0FD55 /* SendCryptoVerifyLogic.swift in Sources */,
 				B548BEDF2EA2D3B600E32308 /* ThorchainServiceFactory.swift in Sources */,
 				130C40EB2E73239B00509C61 /* VaultTab.swift in Sources */,
 				132309FC2EAFFFD100CD60F9 /* FunctionCallPairScreen.swift in Sources */,
@@ -7331,6 +7358,7 @@
 				B54E317B2BF57D9300D4FC0A /* FunctionCallContractSelectorDropDown.swift in Sources */,
 				B5F758182BD8E65D0097B5B9 /* Sui.swift in Sources */,
 				13B1C2C82E65E40000050637 /* VaultServerBackupScreen.swift in Sources */,
+				13924F442ED88EB200F458D5 /* AppMigrationService.swift in Sources */,
 				137DB52F2EBE452B0081C6BC /* RedeemTransactionBuilder.swift in Sources */,
 				B5F758192BD8E65D0097B5BB /* SuiConstants.swift in Sources */,
 				139DE1282E4D095000BC2FD3 /* SendKeysignScreen.swift in Sources */,
@@ -7640,7 +7668,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 29;
+				CURRENT_PROJECT_VERSION = 30;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
@@ -7676,7 +7704,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.30;
+				MARKETING_VERSION = 1.31;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vultisig.wallet;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -7703,7 +7731,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 29;
+				CURRENT_PROJECT_VERSION = 30;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
@@ -7740,7 +7768,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.30;
+				MARKETING_VERSION = 1.31;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vultisig.wallet;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -7761,7 +7789,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 29;
+				CURRENT_PROJECT_VERSION = 30;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -7787,7 +7815,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 29;
+				CURRENT_PROJECT_VERSION = 30;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
 				ENABLE_TESTABILITY = NO;
@@ -7813,7 +7841,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 29;
+				CURRENT_PROJECT_VERSION = 30;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
@@ -7834,7 +7862,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 29;
+				CURRENT_PROJECT_VERSION = 30;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;

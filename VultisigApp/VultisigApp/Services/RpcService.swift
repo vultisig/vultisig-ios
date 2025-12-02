@@ -1,11 +1,11 @@
 import Foundation
 import BigInt
 
-enum RpcServiceError: Error {
+enum RpcServiceError: LocalizedError {
     case rpcError(code: Int, message: String)
     case invalidURL(String)
     
-    var localizedDescription: String {
+    var errorDescription: String? {
         switch self {
         case let .rpcError(code, message):
             return "RPC Error \(code): \(message)"

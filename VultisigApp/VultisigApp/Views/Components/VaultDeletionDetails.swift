@@ -11,11 +11,11 @@ struct VaultDeletionDetails: View {
     let vault: Vault
     let devicesInfo: [DeviceInfo]
     
-    @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
     @State var totalValue: String = ""
     
     func setData(){
-        totalValue = homeViewModel.selectedVault?.coins.totalBalanceInFiatString ?? "$0"
+        totalValue = appViewModel.selectedVault?.coins.totalBalanceInFiatString ?? "$0"
     }
     
     var body: some View {
@@ -137,6 +137,6 @@ struct VaultDeletionDetails: View {
     ZStack {
         Background()
         VaultDeletionDetails(vault: Vault.example, devicesInfo: [])
-            .environmentObject(HomeViewModel())
+            .environmentObject(AppViewModel())
     }
 }

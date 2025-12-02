@@ -14,7 +14,7 @@ struct AddAddressBookScreen: View {
     let shouldDismiss: Bool
     
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
-    @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
     
     @State var title = ""
     @State var address: String
@@ -101,7 +101,7 @@ struct AddAddressBookScreen: View {
     }
     
     private func setData() {
-        guard let vault = homeViewModel.selectedVault else {
+        guard let vault = appViewModel.selectedVault else {
             return
         }
         
@@ -177,5 +177,5 @@ struct AddAddressBookScreen: View {
 #Preview {
     AddAddressBookScreen(addressAdded: .constant(false))
         .environmentObject(CoinSelectionViewModel())
-        .environmentObject(HomeViewModel())
+        .environmentObject(AppViewModel())
 }

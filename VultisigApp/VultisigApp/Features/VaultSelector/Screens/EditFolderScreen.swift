@@ -22,6 +22,7 @@ struct EditFolderScreen: View {
     
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var viewModel: HomeViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
     
     var saveButtonDisabled: Bool {
         folderName.isEmpty || folderViewModel.selectedVaults.count == 0
@@ -76,7 +77,7 @@ struct EditFolderScreen: View {
             VaultFolderCellView(
                 vault: vault,
                 isOnFolder: true,
-                isSelected: viewModel.selectedVault == vault,
+                isSelected: appViewModel.selectedVault == vault,
                 onSelection: { removeVault(vault) }
             )
             .plainListItem()
@@ -90,7 +91,7 @@ struct EditFolderScreen: View {
             VaultFolderCellView(
                 vault: vault,
                 isOnFolder: false,
-                isSelected: viewModel.selectedVault == vault,
+                isSelected: appViewModel.selectedVault == vault,
                 onSelection: { addVault(vault) }
             )
             .plainListItem()
@@ -202,4 +203,5 @@ private extension EditFolderScreen {
         onClose: {}
     )
     .environmentObject(HomeViewModel())
+    .environmentObject(AppViewModel())
 }

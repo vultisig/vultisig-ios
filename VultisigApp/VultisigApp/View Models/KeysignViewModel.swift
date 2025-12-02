@@ -569,21 +569,10 @@ class KeysignViewModel: ObservableObject {
                         }
                     }
                 case .cardano:
-                    let chainName = keysignPayload.coin.chain.name.lowercased()
-                    UTXOTransactionsService.broadcastTransaction(chain: chainName, signedTransaction: tx.rawTransaction) { result in
-                        switch result {
-                        case .success(let transactionHash):
-                            self.txid = transactionHash
-                            // Clear UTXO cache after successful broadcast to prevent using spent UTXOs
-                            Task {
-                                await BlockchairService.shared.clearUTXOCache(for: keysignPayload.coin)
-                            }
-                        case .failure(let error):
-                            print("Transaction Type: \(transactionType)")
-                            
-                            print("Transaction has : \(transactionType.transactionHash)")
-                            self.handleBroadcastError(error: error, transactionType: transactionType)
-                        }
+                    do {
+                        self.txid = try await CardanoService.shared.broadcastTransaction(signedTransaction: tx.rawTransaction)
+                    } catch {
+                        self.handleBroadcastError(error: error, transactionType: transactionType)
                     }
                 case .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash:
                     let service = try CosmosService.getService(forChain: keysignPayload.coin.chain)
