@@ -148,30 +148,36 @@ class KeysignViewModel: ObservableObject {
         switch vault.libType {
         case .GG20,.none:
             await startKeysignGG20()
-        case .DKLS,.KeyImport:
-            await startKeysignDKLS()
+        case .DKLS:
+            await startKeysignDKLS(isImport: false)
+        case .KeyImport:
+            await startKeysignDKLS(isImport: true)
         }
     }
     
-    func startKeysignDKLS(isImport: Bool = false) async {
+    func startKeysignDKLS(isImport: Bool) async {
         do {
             // Check if we have either keysignPayload or customMessagePayload
             guard self.keysignPayload != nil || self.customMessagePayload != nil else {
                 throw HelperError.runtimeError("keysign payload is nil")
             }
-            
             // Determine chainPath - use keysignPayload if available, otherwise determine from customMessagePayload
             var chainPath: String
+            var publicKey: String? = nil
             if let keysignPayload = self.keysignPayload {
                 chainPath = keysignPayload.coin.coinType.derivationPath()
+                publicKey = self.vault.chainPublicKeys.first(where: { $0.chain == keysignPayload.coin.chain })?.publicKeyHex
             } else if let customMessagePayload = self.customMessagePayload {
+                var targetChain: Chain = .ethereum // Default to Ethereum
                 // Get chain from customMessagePayload and use its coinType (case-insensitive match)
                 if let chain = Chain.allCases.first(where: { $0.name.caseInsensitiveCompare(customMessagePayload.chain) == .orderedSame }) {
                     chainPath = chain.coinType.derivationPath()
+                    targetChain = chain
                 } else {
                     // Fallback to Ethereum if chain name cannot be parsed
                     chainPath = TokensStore.Token.ethereum.coinType.derivationPath()
                 }
+                publicKey = self.vault.chainPublicKeys.first(where: { $0.chain == targetChain })?.publicKeyHex
             } else {
                 throw HelperError.runtimeError("keysign payload is nil")
             }
@@ -183,6 +189,9 @@ class KeysignViewModel: ObservableObject {
             switch self.keysignType {
             case .ECDSA:
                 status = .KeysignECDSA
+                if !isImport {
+                    publicKey = vault.pubKeyECDSA
+                }
                 let dklsKeysign = DKLSKeysign(keysignCommittee: self.keysignCommittee,
                                               mediatorURL: self.mediatorURL,
                                               sessionID: self.sessionID,
@@ -190,7 +199,8 @@ class KeysignViewModel: ObservableObject {
                                               vault: self.vault,
                                               encryptionKeyHex: self.encryptionKeyHex,
                                               chainPath: chainPath,
-                                              isInitiateDevice: self.isInitiateDevice)
+                                              isInitiateDevice: self.isInitiateDevice,
+                                              publicKeyECDSA: publicKey ?? vault.pubKeyECDSA)
                 try await dklsKeysign.DKLSKeysignWithRetry()
                 self.signatures = dklsKeysign.getSignatures()
                 if self.signatures.count == 0 {
@@ -204,7 +214,8 @@ class KeysignViewModel: ObservableObject {
                                                     messsageToSign: self.messsageToSign,
                                                     vault: self.vault,
                                                     encryptionKeyHex: self.encryptionKeyHex,
-                                                    isInitiateDevice: self.isInitiateDevice)
+                                                    isInitiateDevice: self.isInitiateDevice,
+                                                    publicKeyEdDSA: publicKey ?? vault.pubKeyEdDSA)
                 try await schnorrKeysign.KeysignWithRetry()
                 self.signatures = schnorrKeysign.getSignatures()
                 if self.signatures.count == 0 {
