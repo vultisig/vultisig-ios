@@ -206,6 +206,10 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         updateFeesTask = Task {[weak self] in
             try? await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds delay
             guard !Task.isCancelled else { return }
+            
+            self?.isLoadingFees = true
+            defer { self?.isLoadingFees = false }
+            
             await self?.updateFees(tx: tx, vault: vault)
         }
     }
@@ -217,6 +221,14 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         updateQuoteTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds delay
             guard !Task.isCancelled else { return }
+            
+            self?.isLoadingQuotes = true
+            self?.isLoadingFees = true
+            defer { 
+                self?.isLoadingQuotes = false 
+                self?.isLoadingFees = false
+            }
+            
             await self?.updateQuotes(tx: tx, vault: vault, referredCode: referredCode)
             await self?.updateFees(tx: tx, vault: vault)
         }
@@ -239,8 +251,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 private extension SwapCryptoViewModel {
     
     func updateQuotes(tx: SwapTransaction, vault: Vault, referredCode: String) async {
-        isLoadingQuotes = true
-        defer { isLoadingQuotes = false }
+        // Loading state managed by caller
         
         tx.quote = nil
         
@@ -265,8 +276,7 @@ private extension SwapCryptoViewModel {
     }
     
     func updateFees(tx: SwapTransaction, vault: Vault) async {
-        isLoadingFees = true
-        defer { isLoadingFees = false }
+        // Loading state managed by caller
         
         tx.gas = .zero
         tx.thorchainFee = .zero
@@ -278,7 +288,6 @@ private extension SwapCryptoViewModel {
         
         do {
             let chainSpecific = try await logic.fetchChainSpecific(tx: tx)
-            print("Fetched chain specific: \(chainSpecific)")
             tx.gas = chainSpecific.gas
             tx.thorchainFee = try await logic.thorchainFee(for: chainSpecific, tx: tx, vault: vault)
 
