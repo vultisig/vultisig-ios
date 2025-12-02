@@ -161,7 +161,7 @@ struct PeerDiscoveryView: View {
         case .Migrate:
             return Set(viewModel.selections) != Set(viewModel.vault.signers)
         case .KeyImport:
-            return viewModel.selections.count != 2
+            return viewModel.selections.count != 3
         }
     }
     
@@ -178,8 +178,7 @@ struct PeerDiscoveryView: View {
             fastSignConfig: fastSignConfig,
             keyImportInput: keyImportInput,
             isInitiateDevice: true,
-            hideBackButton: $hideBackButton,
-            selectedTab: selectedTab
+            hideBackButton: $hideBackButton
         )
     }
     

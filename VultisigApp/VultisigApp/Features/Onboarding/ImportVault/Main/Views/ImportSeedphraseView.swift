@@ -13,12 +13,16 @@ struct ImportSeedphraseView: View {
     
     @State var selectedWordsCount: Int = 12
     @State var words: [String] = []
-    @State private var presentPeersScreen: Bool = false
+    @State private var presentChainsSetup: Bool = false
     
     @FocusState private var focusedField: Int?
     
     var isValidMnemonic: Bool {
-        Mnemonic.isValid(mnemonic: words.joined(separator: " "))
+        Mnemonic.isValid(mnemonic: mnemonic)
+    }
+    
+    var mnemonic: String {
+        words.joined(separator: " ")
     }
     
     var body: some View {
@@ -66,18 +70,8 @@ struct ImportSeedphraseView: View {
         }
         .animation(.easeInOut(duration: 0.2), value: focusedField)
         .padding(.top, 24)
-        // TODO: - Remove - only for testing
-        .navigationDestination(isPresented: $presentPeersScreen) {
-            PeerDiscoveryView(
-                tssType: .KeyImport,
-                vault: Vault(name: "Test seedphrase " + UUID().uuidString, libType: .KeyImport),
-                selectedTab: .secure,
-                fastSignConfig: nil,
-                keyImportInput: KeyImportInput(
-                    mnemnonic: words.joined(separator: " "),
-                    chains: [.bitcoin, .solana]
-                )
-            )
+        .navigationDestination(isPresented: $presentChainsSetup) {
+            KeyImportChainsSetupScreen(mnemonic: mnemonic)
         }
     }
     
@@ -146,7 +140,7 @@ struct ImportSeedphraseView: View {
     }
     
     func onImport() {
-        presentPeersScreen = true
+        presentChainsSetup = true
     }
 }
 

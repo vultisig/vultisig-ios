@@ -16,9 +16,9 @@ enum ImportWalletType: Int, CaseIterable, FilledSegmentedControlType {
     var title: String {
         switch self {
         case .vault:
-            "Import share"
+            "importShare".localized
         case .seedphrase:
-            "Import seedphrase"
+            "importSeedphrase".localized.lowercased().capitalized
         }
     }
 }

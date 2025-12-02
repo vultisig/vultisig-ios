@@ -33,15 +33,17 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
                 HStack {
                     ForEach(options) { option in
                         Button {
-                            self.selection = option
+                            withAnimation {
+                                self.selection = option
+                            }
                         } label: {
                             Text(option.title)
                                 .font(Theme.fonts.bodySMedium)
                                 .foregroundStyle(Theme.colors.textPrimary)
                                 .padding(16)
-                                .contentShape(RoundedRectangle(cornerRadius: 99))
+                                .frame(maxWidth: .infinity)
                         }
-                        .frame(maxWidth: .infinity)
+                        .contentShape(Rectangle())
                     }
                 }
             }

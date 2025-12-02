@@ -25,9 +25,7 @@ struct KeygenView: View {
     let keyImportInput: KeyImportInput?
     let isInitiateDevice: Bool
     @Binding var hideBackButton: Bool
-    
-    var selectedTab: SetupVaultState? = nil
-    
+        
     @StateObject var viewModel = KeygenViewModel()
     
     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
@@ -348,7 +346,7 @@ struct KeygenView: View {
     }
     
     private func checkVaultType() {
-        if let selectedTab, selectedTab == .fast {
+        if fastSignConfig != nil {
             showVerificationView = true
         }
     }
@@ -369,8 +367,7 @@ struct KeygenView: View {
             fastSignConfig: nil,
             keyImportInput: nil,
             isInitiateDevice: false,
-            hideBackButton: .constant(false),
-            selectedTab: SetupVaultState.active
+            hideBackButton: .constant(false)
         )
     }
     .frame(height: 600)
