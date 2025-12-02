@@ -10,17 +10,12 @@ import SwiftUI
 
 extension ImportWalletView {
     var content: some View {
-        ZStack {
-            Background()
-            main
-        }
-        .navigationTitle(NSLocalizedString("import", comment: "Import title"))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                NavigationHelpButton()
+        main
+            .toolbar {
+                ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                    NavigationHelpButton()
+                }
             }
-        }
     }
     
     var main: some View {

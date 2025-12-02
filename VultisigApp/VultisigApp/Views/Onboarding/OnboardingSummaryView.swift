@@ -36,6 +36,10 @@ struct OnboardingSummaryView: View {
     @State var animationVM: RiveViewModel? = nil
     @State var presentChainSelection: Bool = false
     
+    var showChooseChainsButton: Bool {
+        vault != nil && vault?.libType != .KeyImport
+    }
+    
     init(kind: Kind, isPresented: Binding<Bool>, onDismiss: (() -> Void)?, vault: Vault? = nil) {
         self.kind = kind
         self._isPresented = isPresented
@@ -56,7 +60,7 @@ struct OnboardingSummaryView: View {
                         orSeparator
                         chooseYourChainButton
                     }
-                    .showIf(vault != nil)
+                    .showIf(showChooseChainsButton)
                 }
                 .disabled(!didAgree)
                 
