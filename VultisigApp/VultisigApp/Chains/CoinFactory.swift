@@ -112,7 +112,7 @@ extension CoinFactory {
             )
         
             guard
-                let pubKeyData = Data(hexString: publicKeyECDSA),
+                let pubKeyData = Data(hexString: derivedKey),
                 let publicKey = PublicKey(data: pubKeyData, type: .secp256k1) else {
                 throw Errors.invalidPublicKey(pubKey: publicKeyECDSA)
             }
