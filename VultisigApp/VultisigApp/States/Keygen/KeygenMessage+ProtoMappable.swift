@@ -30,7 +30,7 @@ extension KeygenMessage: ProtoMappable {
             $0.useVultisigRelay = useVultisigRelay
             $0.vaultName = vaultName
             $0.libType = libType.toVSLibType()
-            $0.chains = chains.map { $0.name.lowercased() }
+            $0.chains = chains.map { $0.name }
         }
     }
 }

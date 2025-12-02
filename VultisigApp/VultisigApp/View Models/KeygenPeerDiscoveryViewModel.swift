@@ -129,7 +129,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                            encryptionPassword: config.password,
                                            email: config.email,
                                            lib_type: 2,
-                                           chains: chains?.map { $0.name.lowercased() } ?? [])
+                                           chains: chains?.map { $0.name } ?? [])
             case .Reshare:
                 let pubKeyECDSA = config.isExist ? vault.pubKeyECDSA : .empty
                 fastVaultService.reshare(name: vault.name,
