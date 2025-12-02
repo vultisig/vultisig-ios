@@ -138,7 +138,13 @@ class KeysignViewModel: ObservableObject {
             return Endpoint.getStagenetSwapProgressURL(txid: txid)
         case .mayachain:
             return Endpoint.getMayaSwapTracker(txid: txid)
-        case .generic, .none:
+        case .generic(let payload):
+            if payload.provider == .lifi {
+                return Endpoint.getLifiSwapTracker(txid: txid)
+            } else {
+                return Endpoint.getExplorerURL(chain: payload.fromCoin.chain, txid: txid)
+            }
+        case .none:
             return nil
         }
     }

@@ -108,8 +108,13 @@ struct CoinService {
         for asset in assets {
             var assetPriceProviderId = asset.priceProviderId
             if assetPriceProviderId.isEmpty {
-                let priceProviderID  = try await CryptoPriceService.shared.resolvePriceProviderID(symbol: asset.ticker, contract: asset.contractAddress)
-                assetPriceProviderId = priceProviderID ?? ""
+                // When fail to match a price provider id , should not stop user from adding the coin
+                do {
+                    let priceProviderID  = try await CryptoPriceService.shared.resolvePriceProviderID(symbol: asset.ticker, contract: asset.contractAddress)
+                    assetPriceProviderId = priceProviderID ?? ""
+                } catch {
+                    print("Error resolving price provider ID for \(asset.ticker): \(error.localizedDescription)")
+                }
             }
             if let newCoin = try addToChain(asset: asset, to: vault, priceProviderId: assetPriceProviderId) {
                 // Only do auto-discovery for native tokens
