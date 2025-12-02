@@ -161,7 +161,7 @@ class Endpoint {
         "https://chainnet-thornode.thorchain.network/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
     }
     
-    static let thorchainStagenetNetworkInfo = "https://stagenet-rpc.ninerealms.com/status".asUrl
+    static let thorchainStagenetNetworkInfo = "https://chainnet-rpc.thorchain.network/status".asUrl
     
     static let fetchThorchainStagenetInboundAddressesNineRealms = "https://chainnet-thornode.thorchain.network/thorchain/inbound_addresses"
     
