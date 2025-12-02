@@ -1075,3 +1075,13 @@
 "bpsLabel" = "BPS";
 "nodeAddressLabel" = "Node Address";
 "loading" = "Loading...";
+"importSeedphrase" = "Import Seedphrase";
+"importShare" = "Import share";
+"scanningForChains" = "Scanning for chains...";
+"scanningForChainsSubtitle" = "We’re checking which blockchains have active addresses associated with your seedphrase.";
+"importTheseChains" = "Import these chains";
+"foundActiveChainsTitle" = "We found your active chains";
+"foundActiveChainsSubtitle" = "We suggest importing %d chains. You can add more but it will increase vault generation time.";
+"selectChainsToImport" = "Select %d chains or more you want to import.";
+"addOtherChains" = "Add other chains";
+"youCanSelectXChains" = "You can only select %d chains at a time";

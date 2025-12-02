@@ -11,4 +11,5 @@ struct KeygenMessage {
     let useVultisigRelay: Bool
     let vaultName: String
     let libType: LibType
+    let chains: [Chain]
 }

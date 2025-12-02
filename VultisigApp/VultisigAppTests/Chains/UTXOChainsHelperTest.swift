@@ -16,7 +16,13 @@ final class UTXOChainsHelperTest: XCTestCase {
         let vaultForTest = Vault(name: "TestVault")
         vaultForTest.pubKeyECDSA = hexPublicKey
         vaultForTest.hexChainCode = hexChainCode
-        let btc = try CoinFactory.create(asset: TokensStore.Token.bitcoin, publicKeyECDSA: hexPublicKey,publicKeyEdDSA: "",hexChainCode: hexChainCode)
+        let btc = try CoinFactory.create(
+            asset: TokensStore.Token.bitcoin,
+            publicKeyECDSA: hexPublicKey,
+            publicKeyEdDSA: "",
+            hexChainCode: hexChainCode,
+            isDerived: false
+        )
         
         XCTAssertNotNil(btc)
         XCTAssertEqual(btc.chain.ticker, "BTC")
@@ -24,13 +30,25 @@ final class UTXOChainsHelperTest: XCTestCase {
         XCTAssertEqual(btc.hexPublicKey, "026724d27f668b88513c925360ba5c5888cc03641eccbe70e6d85023e7c511b969")
         
         
-        let bch = try CoinFactory.create(asset: TokensStore.Token.bitcoinCash,publicKeyECDSA:hexPublicKey,publicKeyEdDSA: "",hexChainCode: hexChainCode)
+        let bch = try CoinFactory.create(
+            asset: TokensStore.Token.bitcoinCash,
+            publicKeyECDSA:hexPublicKey,
+            publicKeyEdDSA: "",
+            hexChainCode: hexChainCode,
+            isDerived: false
+        )
         XCTAssertNotNil(bch)
         XCTAssertEqual(bch.chain.ticker, "BCH")
         XCTAssertEqual(bch.address, "qrfc9f9ta67l6x3ufcv8fdz83228r2vtcqmnul7jgx")
         XCTAssertEqual(bch.hexPublicKey, "0333bda0119776bd3f22b5dc6b1083bd3f5993b4d4b10b26db2dc55b919a5bb587")
         
-        let ltc = try CoinFactory.create(asset: TokensStore.Token.litecoin, publicKeyECDSA:hexPublicKey,publicKeyEdDSA: "",hexChainCode: hexChainCode)
+        let ltc = try CoinFactory.create(
+            asset: TokensStore.Token.litecoin,
+            publicKeyECDSA:hexPublicKey,
+            publicKeyEdDSA: "",
+            hexChainCode: hexChainCode,
+            isDerived: false
+        )
         
         
         XCTAssertNotNil(ltc)
@@ -39,7 +57,13 @@ final class UTXOChainsHelperTest: XCTestCase {
         XCTAssertEqual(ltc.hexPublicKey, "0278fb4446eb161e89e33e4bf365dc465c9117c7a9808899eefced1bf905b57256")
         
         
-        let doge = try CoinFactory.create(asset: TokensStore.Token.dogecoin, publicKeyECDSA:hexPublicKey,publicKeyEdDSA: "",hexChainCode: hexChainCode)
+        let doge = try CoinFactory.create(
+            asset: TokensStore.Token.dogecoin,
+            publicKeyECDSA:hexPublicKey,
+            publicKeyEdDSA: "",
+            hexChainCode: hexChainCode,
+            isDerived: false
+        )
         
         XCTAssertNotNil(doge)
         XCTAssertEqual(doge.chain.ticker, "DOGE")
@@ -53,7 +77,13 @@ final class UTXOChainsHelperTest: XCTestCase {
         let vaultForTest = Vault(name: "TestVault")
         vaultForTest.pubKeyECDSA = hexPublicKey
         vaultForTest.hexChainCode = hexChainCode
-        let btc = try CoinFactory.create(asset: TokensStore.Token.bitcoin, publicKeyECDSA: hexPublicKey,publicKeyEdDSA: "",hexChainCode: hexChainCode)
+        let btc = try CoinFactory.create(
+            asset: TokensStore.Token.bitcoin,
+            publicKeyECDSA: hexPublicKey,
+            publicKeyEdDSA: "",
+            hexChainCode: hexChainCode,
+            isDerived: false
+        )
         let result = try utxoHelper.getPreSignedImageHash(
             keysignPayload: KeysignPayload(
                 coin: btc,
@@ -83,7 +113,13 @@ final class UTXOChainsHelperTest: XCTestCase {
         let vaultForTest = Vault(name: "TestVault")
         vaultForTest.pubKeyECDSA = hexPublicKey
         vaultForTest.hexChainCode = hexChainCode
-        let bch = try CoinFactory.create(asset: TokensStore.Token.bitcoinCash, publicKeyECDSA:hexPublicKey,publicKeyEdDSA: "",hexChainCode: hexChainCode)
+        let bch = try CoinFactory.create(
+            asset: TokensStore.Token.bitcoinCash,
+            publicKeyECDSA:hexPublicKey,
+            publicKeyEdDSA: "",
+            hexChainCode: hexChainCode,
+            isDerived: false
+        )
         let result = try utxoHelper.getPreSignedImageHash(
             keysignPayload: KeysignPayload(
                 coin:bch,

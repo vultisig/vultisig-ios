@@ -36,7 +36,8 @@ final class DKLSKeysign {
          vault: Vault,
          encryptionKeyHex: String,
          chainPath: String,
-         isInitiateDevice: Bool) {
+         isInitiateDevice: Bool,
+         publicKeyECDSA: String) {
         self.keysignCommittee = keysignCommittee
         self.mediatorURL = mediatorURL
         self.sessionID = sessionID
@@ -46,7 +47,7 @@ final class DKLSKeysign {
         self.chainPath = chainPath
         self.isInitiateDevice = isInitiateDevice
         self.localPartyID = vault.localPartyID
-        self.publicKeyECDSA = vault.pubKeyECDSA
+        self.publicKeyECDSA = publicKeyECDSA
     }
     
     func getSignatures() -> [String: TssKeysignResponse] {
