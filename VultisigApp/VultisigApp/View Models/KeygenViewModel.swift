@@ -228,36 +228,40 @@ class KeygenViewModel: ObservableObject {
         try await startRootKeyImportKeygen(modelContext: modelContext, wallet: wallet)
         
         guard let chains = keyImportInput?.chains else {
-            throw HelperError.runtimeError("No chains to import")
+            throw HelperError.runtimeError("KeyImportInput should have at least one chain")
         }
         
         for chain in chains {
-            let chainKey = wallet?.getKeyForCoin(coin: chain.coinType)
+            var chainKey: Data?
+            if isInitiateDevice {
+                chainKey = wallet?.getKeyForCoin(coin: chain.coinType).data
+            }
+            
             let keyshare: DKLSKeyshare
             if chain.isECDSA {
-                print("[Key import] ECDSA Public Key for chain \(chain.name): \(chainKey?.getPublicKey(coinType: chain.coinType).data.hexString)")
+                self.logger.info("Starting DKLS process for chain \(chain.name)")
                 keyshare = try await importDklsKey(
                     context: modelContext,
-                    ecdsaPrivateKeyHex: chainKey?.data.hexString,
+                    ecdsaPrivateKeyHex: chainKey?.hexString,
                     chain: chain
                 )
-                print("[Key import] ECDSA Public-after Key for chain \(chain.name): \(keyshare.PubKey)")
+                self.logger.info("Finished DKLS process for chain \(chain.name). Generated pub key: \(keyshare.PubKey)")
             } else {
                 var chainSeed: Data?
                 if isInitiateDevice {
-                    guard let chainKey, let serializedChainSeed = clampThenUniformScalar(from: chainKey.data) else {
+                    guard let chainKey, let serializedChainSeed = clampThenUniformScalar(from: chainKey) else {
                         throw HelperError.runtimeError("Couldn't transform key to scalar for Schnorr key import for chain \(chain.name)")
                     }
                     chainSeed = serializedChainSeed
                 }
                 
-                print("[Key import] EDDSA Public Key for chain \(chain.name): \(chainKey?.getPublicKey(coinType: chain.coinType).data.hexString)")
+                self.logger.info("Starting Schnorr process for chain \(chain.name)")
                 keyshare = try await importSchnorrKey(
                     context: modelContext,
                     eddsaPrivateKeyHex: chainSeed?.hexString,
                     chain: chain
                 )
-                print("[Key import] EDDSA Public-after Key for chain \(chain.name): \(keyshare.PubKey)")
+                self.logger.info("Finished Schnorr process for chain \(chain.name). Generated pub key: \(keyshare.PubKey)")
             }
             self.vault.keyshares.append(KeyShare(pubkey: keyshare.PubKey, keyshare: keyshare.Keyshare))
             self.vault.chainPublicKeys.append(
@@ -287,17 +291,21 @@ class KeygenViewModel: ObservableObject {
     }
     
     func startRootKeyImportKeygen(modelContext: ModelContext, wallet: HDWallet?) async throws {
+        self.logger.info("Starting Root Key import process")
         
+        self.logger.info("Starting DKLS process for root key")
         let ecDSAKey = wallet?.getMasterKey(curve: .secp256k1)
         let keyshareECDSA = try await importDklsKey(context: modelContext, ecdsaPrivateKeyHex: ecDSAKey?.data.hexString, chain: nil)
-    
+        self.logger.info("Finished DKLS process for root key. Generated pub key: \(keyshareECDSA.PubKey)")
+        
+        self.logger.info("Starting Schnorr process for root key")
         let edDSAKey = wallet?.getMasterKey(curve: .ed25519)
         var edDSAKeySerialized: Data?
         if let edDSAKey {
             edDSAKeySerialized = clampThenUniformScalar(from: edDSAKey.data)
         }
-        
         let keyshareEdDSA = try await importSchnorrKey(context: modelContext, eddsaPrivateKeyHex: edDSAKeySerialized?.hexString, chain: nil)
+        self.logger.info("Finished Schnorr process for root key. Generated pub key: \(keyshareEdDSA.PubKey)")
         
         self.vault.pubKeyECDSA = keyshareECDSA.PubKey
         self.vault.pubKeyEdDSA = keyshareEdDSA.PubKey
