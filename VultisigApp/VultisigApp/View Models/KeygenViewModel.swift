@@ -218,7 +218,6 @@ class KeygenViewModel: ObservableObject {
                 throw HelperError.runtimeError("Key import keygen should have keyImportInput")
             }
             
-            print("Mnemonic is ", keyImportInput.mnemnonic)
             guard let mnemonicWallet = HDWallet(mnemonic: keyImportInput.mnemnonic, passphrase: "") else {
                 throw HelperError.runtimeError("Couldn't create HDWallet from mnemonic")
             }
@@ -228,7 +227,11 @@ class KeygenViewModel: ObservableObject {
         
         try await startRootKeyImportKeygen(modelContext: modelContext, wallet: wallet)
         
-        for chain in keyImportInput?.chains ?? [.bitcoin, .solana] {
+        guard let chains = keyImportInput?.chains else {
+            throw HelperError.runtimeError("No chains to import")
+        }
+        
+        for chain in chains {
             let chainKey = wallet?.getKeyForCoin(coin: chain.coinType)
             let keyshare: DKLSKeyshare
             if chain.isECDSA {

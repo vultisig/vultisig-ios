@@ -18,6 +18,7 @@ extension KeygenMessage: ProtoMappable {
         self.useVultisigRelay = proto.useVultisigRelay
         self.vaultName = proto.vaultName
         self.libType = proto.libType.toLibType()
+        self.chains = proto.chains.compactMap { Chain(name: $0) }
     }
 
     func mapToProtobuff() -> VSKeygenMessage {
@@ -29,6 +30,7 @@ extension KeygenMessage: ProtoMappable {
             $0.useVultisigRelay = useVultisigRelay
             $0.vaultName = vaultName
             $0.libType = libType.toVSLibType()
+            $0.chains = chains.map { $0.name.lowercased() }
         }
     }
 }

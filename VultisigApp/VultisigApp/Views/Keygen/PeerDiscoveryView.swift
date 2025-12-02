@@ -13,7 +13,13 @@ struct PeerDiscoveryView: View {
     let fastSignConfig: FastSignConfig?
     let keyImportInput: KeyImportInput?
     
-    init(tssType: TssType, vault: Vault, selectedTab: SetupVaultState, fastSignConfig: FastSignConfig?, keyImportInput: KeyImportInput? = nil) {
+    init(
+        tssType: TssType,
+        vault: Vault,
+        selectedTab: SetupVaultState,
+        fastSignConfig: FastSignConfig?,
+        keyImportInput: KeyImportInput? = nil
+    ) {
         self.tssType = tssType
         self.vault = vault
         self.selectedTab = selectedTab
@@ -60,7 +66,8 @@ struct PeerDiscoveryView: View {
                     tssType: tssType, 
                     state: selectedTab,
                     participantDiscovery: participantDiscovery,
-                    fastSignConfig: fastSignConfig
+                    fastSignConfig: fastSignConfig,
+                    chains: keyImportInput?.chains
                 )
                 setData()
                 viewModel.startDiscovery()
@@ -154,7 +161,7 @@ struct PeerDiscoveryView: View {
         case .Migrate:
             return Set(viewModel.selections) != Set(viewModel.vault.signers)
         case .KeyImport:
-            return viewModel.selections.count != 3
+            return viewModel.selections.count != 2
         }
     }
     

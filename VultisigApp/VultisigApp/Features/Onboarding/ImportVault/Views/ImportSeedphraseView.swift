@@ -66,10 +66,11 @@ struct ImportSeedphraseView: View {
         }
         .animation(.easeInOut(duration: 0.2), value: focusedField)
         .padding(.top, 24)
+        // TODO: - Remove - only for testing
         .navigationDestination(isPresented: $presentPeersScreen) {
             PeerDiscoveryView(
                 tssType: .KeyImport,
-                vault: Vault(name: "Test seedphrase", libType: .KeyImport),
+                vault: Vault(name: "Test seedphrase " + UUID().uuidString, libType: .KeyImport),
                 selectedTab: .secure,
                 fastSignConfig: nil,
                 keyImportInput: KeyImportInput(

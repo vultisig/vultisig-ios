@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vultisig/commondata",
       "state" : {
-        "branch" : "add-chain-publickeys",
-        "revision" : "71e1e8231dd31e71a7816e5219f07cc5d0dfd5dc"
+        "branch" : "main",
+        "revision" : "8d61981586c4507da23a559e403646f946c5db4f"
       }
     },
     {

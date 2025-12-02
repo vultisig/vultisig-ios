@@ -23,6 +23,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     var vault: Vault
     var participantDiscovery: ParticipantDiscovery?
     var encryptionKeyHex: String?
+    var chains: [Chain]?
     
     @Published var status = PeerDiscoveryStatus.WaitingForDevices
     @Published var serviceName = ""
@@ -64,7 +65,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         tssType: TssType,
         state: SetupVaultState,
         participantDiscovery: ParticipantDiscovery,
-        fastSignConfig: FastSignConfig?
+        fastSignConfig: FastSignConfig?,
+        chains: [Chain]?
     ) {
         self.isLoading = true
         self.setupPeersFoundCancellable(
@@ -74,7 +76,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.vault = vault
         self.tssType = tssType
         self.participantDiscovery = participantDiscovery
-        
+        self.chains = chains
         if self.sessionID.isEmpty {
             self.sessionID = UUID().uuidString
         }
@@ -127,7 +129,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                            encryptionPassword: config.password,
                                            email: config.email,
                                            lib_type: 2,
-                                           chains: ["bitcoin","solana"]) // TODO: make sure chains are lowercased
+                                           chains: chains?.map { $0.name.lowercased() } ?? [])
             case .Reshare:
                 let pubKeyECDSA = config.isExist ? vault.pubKeyECDSA : .empty
                 fastVaultService.reshare(name: vault.name,
@@ -300,9 +302,9 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     encryptionKeyHex: encryptionKeyHex,
                     useVultisigRelay: VultisigRelay.IsRelayEnabled,
                     vaultName: vault.name,
-                    libType: vault.libType ?? .GG20
+                    libType: vault.libType ?? .GG20,
+                    chains: chains ?? []
                 )
-                // TODO: - Pass chains here?
                 let data = try ProtoSerializer.serialize(keygenMsg)
                 return "https://vultisig.com?type=NewVault&tssType=\(tssType.rawValue)&jsonData=\(data)"
             case .Reshare, .Migrate:

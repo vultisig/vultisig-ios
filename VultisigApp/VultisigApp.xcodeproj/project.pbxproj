@@ -7932,7 +7932,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/vultisig/commondata";
 			requirement = {
-				branch = "add-chain-publickeys";
+				branch = main;
 				kind = branch;
 			};
 		};
