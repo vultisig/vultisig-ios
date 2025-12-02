@@ -106,7 +106,17 @@ struct CoinService {
     
     static func addToChain(assets: [CoinMeta], to vault: Vault) async throws {
         for asset in assets {
-            if let newCoin = try addToChain(asset: asset, to: vault, priceProviderId: asset.priceProviderId) {
+            var assetPriceProviderId = asset.priceProviderId
+            if assetPriceProviderId.isEmpty {
+                // When fail to match a price provider id , should not stop user from adding the coin
+                do {
+                    let priceProviderID  = try await CryptoPriceService.shared.resolvePriceProviderID(symbol: asset.ticker, contract: asset.contractAddress)
+                    assetPriceProviderId = priceProviderID ?? ""
+                } catch {
+                    print("Error resolving price provider ID for \(asset.ticker): \(error.localizedDescription)")
+                }
+            }
+            if let newCoin = try addToChain(asset: asset, to: vault, priceProviderId: assetPriceProviderId) {
                 // Only do auto-discovery for native tokens
                 if newCoin.isNativeToken {
                     // Clear hidden tokens for this chain when adding native token back
@@ -151,7 +161,7 @@ struct CoinService {
             return coin
         }
         
-        return try  addToChain(asset: asset, to: vault, priceProviderId: priceProviderId)
+        return try addToChain(asset: asset, to: vault, priceProviderId: priceProviderId)
     }
     
     static func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async {
@@ -196,7 +206,7 @@ struct CoinService {
                         continue
                     }
                     
-                    _ = try addToChain(asset: token, to: vault, priceProviderId: token.priceProviderId)
+                    _ =  try addToChain(asset: token, to: vault, priceProviderId: token.priceProviderId)
                 } catch {
                     print("Error adding the token \(token.ticker) service: \(error.localizedDescription)")
                 }
