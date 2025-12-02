@@ -513,10 +513,13 @@ struct SwapCryptoLogic {
                 .filter { $0.chain == chain }
                 .sorted { $0.isNativeToken && !$1.isNativeToken }
                 .first
+            let pubKey = vault.chainPublicKeys.first { $0.chain == chain }?.publicKeyHex
+            let isDerived = pubKey != nil
             guard let coinMeta, let coin = try? CoinFactory.create(asset: coinMeta,
-                                                                   publicKeyECDSA: vault.pubKeyECDSA,
-                                                                   publicKeyEdDSA: vault.pubKeyEdDSA,
-                                                                   hexChainCode: vault.hexChainCode) else {
+                                                                   publicKeyECDSA:  pubKey ?? vault.pubKeyECDSA,
+                                                                   publicKeyEdDSA: pubKey ?? vault.pubKeyEdDSA,
+                                                                   hexChainCode: vault.hexChainCode,
+                                                                   isDerived: isDerived) else {
                 return nil
             }
             return coin

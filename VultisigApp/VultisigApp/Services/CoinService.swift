@@ -123,8 +123,8 @@ struct CoinService {
         let isDerived = pubKey != nil
         let newCoin = try CoinFactory.create(
             asset: asset,
-            publicKeyECDSA: asset.chain.isECDSA ? pubKey ?? vault.pubKeyECDSA : vault.pubKeyECDSA,
-            publicKeyEdDSA: !asset.chain.isECDSA ? pubKey ?? vault.pubKeyEdDSA : vault.pubKeyEdDSA,
+            publicKeyECDSA:  pubKey ?? vault.pubKeyECDSA,
+            publicKeyEdDSA:  pubKey ?? vault.pubKeyEdDSA,
             hexChainCode: vault.hexChainCode,
             isDerived: isDerived
         )

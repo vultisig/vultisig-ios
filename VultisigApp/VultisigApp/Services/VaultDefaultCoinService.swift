@@ -37,12 +37,17 @@ class VaultDefaultCoinService {
                     .filter { asset in baseDefaultChains.contains(where: { $0 == asset.chain }) }
             
             let coins = chains
-                .compactMap { try? CoinFactory.create(
-                    asset: $0,
-                    publicKeyECDSA: vault.pubKeyECDSA,
-                    publicKeyEdDSA: vault.pubKeyEdDSA,
-                    hexChainCode: vault.hexChainCode
-                )}
+                .compactMap { c in
+                    let pubKey = vault.chainPublicKeys.first { $0.chain ==  c.chain}?.publicKeyHex
+                    let isDerived = pubKey != nil
+                    return try? CoinFactory.create(
+                        asset: c,
+                        publicKeyECDSA: pubKey ?? vault.pubKeyECDSA,
+                        publicKeyEdDSA: pubKey ?? vault.pubKeyEdDSA,
+                        hexChainCode: vault.hexChainCode,
+                        isDerived: isDerived
+                    )
+                }
             
             for coin in coins {
                 if coin.isNativeToken {

@@ -109,7 +109,6 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         case .secure:
             break
         }
-        
         if let config = fastSignConfig {
             switch tssType {
             case .Keygen:
@@ -122,12 +121,13 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                         lib_type: vault.libType == .DKLS ? 1 : 0)
             case .KeyImport:
                 fastVaultService.keyImport(name: vault.name,
-                                        sessionID: sessionID,
-                                        hexEncryptionKey: encryptionKeyHex!,
-                                        hexChainCode: vault.hexChainCode,
-                                        encryptionPassword: config.password,
-                                        email: config.email,
-                                        lib_type: 2)
+                                           sessionID: sessionID,
+                                           hexEncryptionKey: encryptionKeyHex!,
+                                           hexChainCode: vault.hexChainCode,
+                                           encryptionPassword: config.password,
+                                           email: config.email,
+                                           lib_type: 2,
+                                           chains: ["bitcoin","solana"]) // TODO: make sure chains are lowercased
             case .Reshare:
                 let pubKeyECDSA = config.isExist ? vault.pubKeyECDSA : .empty
                 fastVaultService.reshare(name: vault.name,

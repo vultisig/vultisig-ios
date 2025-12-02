@@ -16,7 +16,7 @@ struct CoinFactory {
         publicKeyECDSA: String,
         publicKeyEdDSA: String,
         hexChainCode: String,
-        isDerived: Bool = false
+        isDerived: Bool
     ) throws -> Coin {
         let publicKey = try publicKey(
             asset: asset,

@@ -313,7 +313,7 @@ class KeygenViewModel: ObservableObject {
                                         encryptionKeyHex: self.encryptionKeyHex,
                                         isInitiateDevice: self.isInitiateDevice,
                                         localUI: ecdsaPrivateKeyHex)
-            try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0, additionalHeader: chain?.name)
+            try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0, additionalHeader: chain?.name.lowercased())
             guard let keyShare = dklsKeygen.getKeyshare() else {
                 throw HelperError.runtimeError("fail to get EdDSA keyshare after import")
             }
@@ -338,7 +338,7 @@ class KeygenViewModel: ObservableObject {
                                               isInitiatedDevice: self.isInitiateDevice,
                                               setupMessage: [UInt8](),
                                               localUI: eddsaPrivateKeyHex)
-            try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0, additionalHeader: chain?.name)
+            try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0, additionalHeader: chain?.name.lowercased())
             guard let keyShare = schnorrKeygen.getKeyshare() else {
                 throw HelperError.runtimeError("fail to get EdDSA keyshare after import")
             }
