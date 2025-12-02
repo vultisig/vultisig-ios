@@ -8,10 +8,11 @@
 import SwiftUI
 
 struct ImportWalletScreen: View {
-    @State var importType: ImportWalletType = .seedphrase
+    @State var importType: ImportWalletType = .vault
     
     var body: some View {
-        Screen {
+        Screen(title: "importVault".localized) {
+            #if DEBUG
             VStack {
                 FilledSegmentedControl(
                     selection: $importType,
@@ -30,6 +31,9 @@ struct ImportWalletScreen: View {
                 .animation(.interpolatingSpring, value: importType)
                 .frame(maxHeight: .infinity)
             }
+            #else
+            ImportWalletView()
+            #endif
         }
     }
 }
