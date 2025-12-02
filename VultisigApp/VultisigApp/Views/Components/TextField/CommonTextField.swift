@@ -100,7 +100,7 @@ struct CommonTextField<TrailingView: View>: View {
                         .showIf(isEnabled)
                     trailingView()
                 }
-                .frame(height: 36)
+                .frame(height: height)
                 .font(Theme.fonts.bodyMMedium)
                 .padding(.horizontal, 12)
                 .background(Theme.colors.bgSecondary)
@@ -168,7 +168,7 @@ struct CommonTextField<TrailingView: View>: View {
                 TextField(placeholder.localized, text: $text)
             }
         }
-        .frame(height: 56)
+        .frame(height: height)
     }
     
     var labelFont: Font {

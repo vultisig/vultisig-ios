@@ -29,6 +29,8 @@ struct KeyImportActiveChainsView: View {
                 Text(String(format: "foundActiveChainsSubtitle".localized, maxChains))
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textExtraLight)
+                    .frame(maxWidth: 330)
+                    .multilineTextAlignment(.center)
             }
             
             VStack(spacing: 12) {

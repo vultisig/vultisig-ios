@@ -22,6 +22,8 @@ struct KeyImportScanningForChainsView: View {
             Text("scanningForChainsSubtitle".localized)
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textExtraLight)
+                .frame(maxWidth: 330)
+                .multilineTextAlignment(.center)
             Spacer()
         }
         .onAppear {

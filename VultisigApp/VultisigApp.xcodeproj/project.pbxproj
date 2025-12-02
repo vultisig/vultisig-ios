@@ -74,6 +74,7 @@
 		1321D74A2E8F13D300ABE613 /* NativeToolbarItem+PreferenceKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321D7492E8F13BD00ABE613 /* NativeToolbarItem+PreferenceKey.swift */; };
 		1322B8892EDF6D8100FE47F2 /* KeyImportActiveChainsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1322B8882EDF6D7800FE47F2 /* KeyImportActiveChainsView.swift */; };
 		1322B88B2EDF727C00FE47F2 /* KeyImportCustomizeChainsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1322B88A2EDF727400FE47F2 /* KeyImportCustomizeChainsView.swift */; };
+		1322B88E2EDF80A700FE47F2 /* VaultSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1322B88D2EDF80A400FE47F2 /* VaultSetupScreen.swift */; };
 		132309FA2EAFFD7B00CD60F9 /* FunctionCallRouteBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132309F92EAFFD7B00CD60F9 /* FunctionCallRouteBuilder.swift */; };
 		132309FC2EAFFFD100CD60F9 /* FunctionCallPairScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132309FB2EAFFFD100CD60F9 /* FunctionCallPairScreen.swift */; };
 		132354552ECB5C9500BAFE7C /* ThrottledOnAppearModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132354542ECB5C9500BAFE7C /* ThrottledOnAppearModifier.swift */; };
@@ -1297,6 +1298,7 @@
 		1321D7492E8F13BD00ABE613 /* NativeToolbarItem+PreferenceKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NativeToolbarItem+PreferenceKey.swift"; sourceTree = "<group>"; };
 		1322B8882EDF6D7800FE47F2 /* KeyImportActiveChainsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyImportActiveChainsView.swift; sourceTree = "<group>"; };
 		1322B88A2EDF727400FE47F2 /* KeyImportCustomizeChainsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyImportCustomizeChainsView.swift; sourceTree = "<group>"; };
+		1322B88D2EDF80A400FE47F2 /* VaultSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultSetupScreen.swift; sourceTree = "<group>"; };
 		132309F92EAFFD7B00CD60F9 /* FunctionCallRouteBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallRouteBuilder.swift; sourceTree = "<group>"; };
 		132309FB2EAFFFD100CD60F9 /* FunctionCallPairScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallPairScreen.swift; sourceTree = "<group>"; };
 		132354542ECB5C9500BAFE7C /* ThrottledOnAppearModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThrottledOnAppearModifier.swift; sourceTree = "<group>"; };
@@ -2870,6 +2872,14 @@
 			path = CrossPlatformToolbar;
 			sourceTree = "<group>";
 		};
+		1322B88C2EDF809F00FE47F2 /* VaultSetup */ = {
+			isa = PBXGroup;
+			children = (
+				1322B88D2EDF80A400FE47F2 /* VaultSetupScreen.swift */,
+			);
+			path = VaultSetup;
+			sourceTree = "<group>";
+		};
 		132666C92E429EC6007FDAC5 /* Referral */ = {
 			isa = PBXGroup;
 			children = (
@@ -3946,6 +3956,7 @@
 		13C4A02D2EDDC54D0033BDB1 /* ImportVault */ = {
 			isa = PBXGroup;
 			children = (
+				1322B88C2EDF809F00FE47F2 /* VaultSetup */,
 				13DACCC32EDF670900BE0F97 /* Main */,
 				13DACCC22EDF66F100BE0F97 /* KeyImport */,
 			);
@@ -7027,6 +7038,7 @@
 				135C149E2ED0E96A00459EFC /* THORChainLPsInteractor.swift in Sources */,
 				135C149F2ED0E96A00459EFC /* LPsInteractor.swift in Sources */,
 				135C149A2ED0E71800459EFC /* THORChainBondInteractor.swift in Sources */,
+				1322B88E2EDF80A700FE47F2 /* VaultSetupScreen.swift in Sources */,
 				13D178F92E5753E900007B48 /* AddressBookChainSelectionScreen.swift in Sources */,
 				A6C6713B2CA3C86E00F59B6A /* KeygenViewInstructions+iOS.swift in Sources */,
 				DEFC7BFB2B8D87370090B07A /* erc20.swift in Sources */,
