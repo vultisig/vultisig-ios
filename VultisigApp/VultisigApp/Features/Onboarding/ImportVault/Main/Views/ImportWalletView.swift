@@ -48,8 +48,6 @@ struct ImportWalletView: View {
             Spacer()
             continueButton
         }
-        .padding(.top, 30)
-        .padding(.horizontal, 30)
     }
     
     var instruction: some View {
@@ -76,8 +74,6 @@ struct ImportWalletView: View {
         PrimaryButton(title: "continue") {
             handleButtonTap()
         }
-        .padding(.horizontal, 10)
-        .padding(.bottom, 40)
         .disabled(!backupViewModel.isFileUploaded)
     }
     

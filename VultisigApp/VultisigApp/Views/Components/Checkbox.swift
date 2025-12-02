@@ -9,10 +9,24 @@ import SwiftUI
 
 struct Checkbox: View {
     @Binding var isChecked: Bool
-    let text: String
-    var font: Font = Theme.fonts.bodySMedium
-    var alignment: TextAlignment = .leading
-    var isExtended: Bool = true
+    let text: String?
+    var font: Font
+    var alignment: TextAlignment
+    var isExtended: Bool
+    
+    init(
+        isChecked: Binding<Bool>,
+        text: String? = nil,
+        font: Font = Theme.fonts.bodySMedium,
+        alignment: TextAlignment = .leading,
+        isExtended: Bool = true
+    ) {
+        self._isChecked = isChecked
+        self.text = text
+        self.font = font
+        self.alignment = alignment
+        self.isExtended = isExtended
+    }
     
     var body: some View {
         Button {
@@ -45,11 +59,14 @@ struct Checkbox: View {
             )
     }
     
+    @ViewBuilder
     var description: some View {
-        Text(NSLocalizedString(text, comment: "Checkbox description"))
-            .font(font)
-            .foregroundColor(Theme.colors.textLight)
-            .multilineTextAlignment(alignment)
+        if let text {
+            Text(NSLocalizedString(text, comment: "Checkbox description"))
+                .font(font)
+                .foregroundColor(Theme.colors.textLight)
+                .multilineTextAlignment(alignment)
+        }
     }
 }
 

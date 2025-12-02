@@ -100,7 +100,7 @@ struct CreateVaultView: View {
     
     var importVaultButton: some View {
         PrimaryNavigationButton(title: "importVault", type: .secondary) {
-            ImportWalletView()
+            ImportWalletScreen()
         }
     }
     
