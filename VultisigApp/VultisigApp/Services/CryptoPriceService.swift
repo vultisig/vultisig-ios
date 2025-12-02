@@ -1,8 +1,14 @@
 import Foundation
 import SwiftUI
 
+struct CoinGeckoCoin : Decodable {
+    let id: String
+    let symbol: String
+    let name: String
+    let platforms: [String: String]
+}
+
 public class CryptoPriceService: ObservableObject {
-    
     struct ResolvedSources {
         let providerIds: [String]
         let contracts: [Chain: [String]]
@@ -23,8 +29,22 @@ public class CryptoPriceService: ObservableObject {
         
         await refresh(coins: [coin])
     }
+    
+    func resolvePriceProviderID(symbol: String,contract: String) async throws ->  String? {
+        let requestUrl = Endpoint.coinGeckoCoinsList()
+        let request = URLRequest(url: requestUrl)
+        let (data,resp) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResp = resp as? HTTPURLResponse, httpResp.statusCode == 200 else {
+            print("Error: Invalid response from server")
+            return nil
+        }
+        let decoder = JSONDecoder()
+        let coinsList = try decoder.decode([CoinGeckoCoin].self, from: data)
+        let target = coinsList.first{ $0.symbol.lowercased() == symbol.lowercased() && $0.platforms.values.contains(contract)}
+        return target?.id
+    }
 }
-
 private extension CryptoPriceService {
     
     @MainActor func refresh(vault: Vault) {
