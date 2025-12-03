@@ -8,6 +8,16 @@ struct CoinGeckoCoin : Decodable {
     let platforms: [String: String]
 }
 
+class CacheCoinGeckoCoin {
+    let coins: [CoinGeckoCoin]
+    let timestamp: Date
+    
+    init(coins: [CoinGeckoCoin], timestamp: Date) {
+        self.coins = coins
+        self.timestamp = timestamp
+    }
+}
+
 public class CryptoPriceService: ObservableObject {
     struct ResolvedSources {
         let providerIds: [String]
@@ -15,7 +25,9 @@ public class CryptoPriceService: ObservableObject {
     }
     
     public static let shared = CryptoPriceService()
-    
+    private let cache: NSCache<NSString,CacheCoinGeckoCoin> = NSCache()
+    private let coinGeckoListCacheKey: NSString = "coingecko-list"
+
     private init() {}
     
     func fetchPrices(vault: Vault) async throws {
@@ -31,6 +43,12 @@ public class CryptoPriceService: ObservableObject {
     }
     
     func resolvePriceProviderID(symbol: String,contract: String) async throws ->  String? {
+        let cachedList = self.cache.object(forKey: coinGeckoListCacheKey)
+        // good to cache it for an hour , it doesn't change much
+        if let cachedList = cachedList, Date().timeIntervalSince(cachedList.timestamp) < 3600 {
+            let target = cachedList.coins.first{ $0.symbol.lowercased() == symbol.lowercased() && $0.platforms.values.contains(contract)}
+            return target?.id
+        }
         let requestUrl = Endpoint.coinGeckoCoinsList()
         let request = URLRequest(url: requestUrl)
         let (data,resp) = try await URLSession.shared.data(for: request)
@@ -41,6 +59,9 @@ public class CryptoPriceService: ObservableObject {
         }
         let decoder = JSONDecoder()
         let coinsList = try decoder.decode([CoinGeckoCoin].self, from: data)
+        if !coinsList.isEmpty {   
+            self.cache.setObject(CacheCoinGeckoCoin(coins:coinsList, timestamp: Date()), forKey: coinGeckoListCacheKey)
+        }
         let target = coinsList.first{ $0.symbol.lowercased() == symbol.lowercased() && $0.platforms.values.contains(contract)}
         return target?.id
     }
