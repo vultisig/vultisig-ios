@@ -193,6 +193,7 @@ struct VaultMainScreen: View {
             CircularAccessoryIconButton(icon: "crypto-wallet-pen", type: .secondary) {
                 showChainSelection.toggle()
             }
+            .showIf(viewModel.canShowChainSelection(vault: vault))
         }
     }
     

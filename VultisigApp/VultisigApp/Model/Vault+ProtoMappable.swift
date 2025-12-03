@@ -24,6 +24,12 @@ extension Vault: ProtoMappable {
         self.order = 0
         self.isBackedUp = true
         self.libType = proto.libType.toLibType()
+        self.chainPublicKeys = try proto.chainPublicKeys.map {
+            guard let chain = Chain(name: $0.chain) else {
+                throw HelperError.runtimeError("Invalid chain name in proto: \($0.chain)")
+            }
+            return ChainPublicKey( chain: chain,publicKeyHex: $0.publicKey, isEddsa: $0.isEddsa)
+        }
     }
     
     func mapToProtobuff() ->  VSVault {
@@ -43,6 +49,13 @@ extension Vault: ProtoMappable {
                 return share
             }
             $0.createdAt = Google_Protobuf_Timestamp(date: self.createdAt)
+            $0.chainPublicKeys = self.chainPublicKeys.map{c in
+                var cp = VSVault.ChainPublicKey()
+                cp.publicKey = c.publicKeyHex
+                cp.chain = c.chain.name
+                cp.isEddsa = c.isEddsa
+                return cp
+            }
         }
     }
 }

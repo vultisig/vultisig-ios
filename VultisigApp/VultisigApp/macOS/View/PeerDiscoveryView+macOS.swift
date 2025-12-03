@@ -77,7 +77,7 @@ extension PeerDiscoveryView {
             LazyVGrid(columns: adaptiveColumnsMac, spacing: 8) {
                 ThisDevicePeerCell(deviceName: "Mac")
                 devices
-                EmptyPeerCell(counter: participantDiscovery.peersFound.count)
+                EmptyPeerCell()
             }
             .animation(.easeInOut(duration: 0.2), value: viewModel.selections)
         }

@@ -9,9 +9,6 @@ import SwiftUI
 import RiveRuntime
 
 struct EmptyPeerCell: View {
-    let counter: Int
-    
-    @State var isPhone: Bool = false
     @State var animationVM: RiveViewModel? = nil
     
     var body: some View {
@@ -56,5 +53,5 @@ struct EmptyPeerCell: View {
 }
 
 #Preview {
-    EmptyPeerCell(counter: 0)
+    EmptyPeerCell()
 }

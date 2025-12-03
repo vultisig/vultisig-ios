@@ -90,6 +90,7 @@ struct JoinKeygenView: View {
             encryptionKeyHex: viewModel.encryptionKeyHex,
             oldResharePrefix: viewModel.oldResharePrefix,
             fastSignConfig: nil,
+            keyImportInput: viewModel.keyImportInput,
             isInitiateDevice: false,
             hideBackButton: $hideBackButton
         )

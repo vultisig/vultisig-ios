@@ -19,13 +19,6 @@ struct SecureBackupGuideAnimation: View {
     @State var showCell4: Bool = false
 
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
-    }
-
-    var main: some View {
         HStack(spacing: 0) {
             rectangle
             content

@@ -494,7 +494,9 @@ class Endpoint {
     static func fetchCryptoPrices(ids: String, currencies: String) -> URL {
         "\(vultisigApiProxy)/coingeicko/api/v3/simple/price?ids=\(ids)&vs_currencies=\(currencies)".asUrl
     }
-    
+    static func coinGeckoCoinsList() -> URL {
+        "\(vultisigApiProxy)/coingeicko/api/v3/coins/list?include_platform=true&status=active".asUrl
+    }
     static func fetchLifiTokenPrice(network: String, address: String) -> URL {
         let url = "https://li.quest/v1/token?chain=\(network.lowercased())&token=\(address)"
         return url.asUrl
