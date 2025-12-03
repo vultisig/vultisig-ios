@@ -41,10 +41,10 @@ struct InfoBannerView: View {
                 .foregroundStyle(fontColor)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .multilineTextAlignment(.leading)
-            
-            Spacer()
+                .fixedSize(horizontal: false, vertical: true)
             
             if let onClose {
+                Spacer()
                 Button(action: onClose) {
                     Icon(named: "x", color: Theme.colors.textLight, size: 12)
                         .padding(8)

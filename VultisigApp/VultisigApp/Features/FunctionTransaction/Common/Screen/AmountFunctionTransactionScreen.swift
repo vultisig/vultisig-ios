@@ -51,7 +51,7 @@ struct AmountFunctionTransactionScreen<CustomView: View>: View {
     }
     
     var body: some View {
-        TransactionFormScreen(
+        FormScreen(
             title: title,
             validForm: $validForm,
             onContinue: onContinue

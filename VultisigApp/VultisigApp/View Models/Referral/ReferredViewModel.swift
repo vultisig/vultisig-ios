@@ -61,6 +61,16 @@ class ReferredViewModel: ObservableObject {
         referredCode = savedReferredCode
     }
     
+    func verifyAndSaveReferredCode() async -> Bool {
+        let verified = await verifyReferredCode()
+        
+        if verified {
+            saveReferredCode()
+        }
+        
+        return verified
+    }
+    
     func verifyReferredCode() async -> Bool {
         clearFormMessages()
         
@@ -78,7 +88,13 @@ class ReferredViewModel: ObservableObject {
             return false
         }
         
-        return await checkNameAvailability(code: referredCode)
+        do {
+            try await ReferredCodeInteractor().verify(code: referredCode)
+            return true
+        } catch {
+            showNameError(with: error.localizedDescription)
+            return false
+        }
     }
     
     func clearFormMessages() {
@@ -121,28 +137,6 @@ class ReferredViewModel: ObservableObject {
         }
     }
     
-    private func checkNameAvailability(code: String) async -> Bool {
-        do {
-            let thorname = try await thorchainReferralService.getThornameLookup(name: code)
-            
-            let hasThorAlias = thorname.entries.contains {
-                $0.chain == "THOR" &&  $0.address == thorname.owner
-            }
-            
-            guard hasThorAlias else {
-                showNameError(with: "referralCodeWithoutAlias")
-                return false
-            }
-            
-            saveReferredCode()
-            return true
-        } catch {
-            let errorMessage = (error as? THORChainAPIError) == THORChainAPIError.thornameNotFound ? "referralCodeNotFound" : "systemErrorMessage"
-            showNameError(with: errorMessage)
-            return false
-        }
-    }
-    
     private func showNameError(with message: String) {
         referredLaunchViewErrorMessage = message.localized
         isLoading = false
@@ -175,5 +169,26 @@ class ReferredViewModel: ObservableObject {
         
         saveReferredCode(code: savedReferredCode, vault: currentVault)
         UserDefaults.standard.setValue(nil, forKey: "savedReferredCode")
+    }
+}
+
+struct ReferredCodeInteractor {
+    private let thorchainReferralService = THORChainAPIService()
+    
+    func verify(code: String) async throws {
+        do {
+            let thorname = try await thorchainReferralService.getThornameLookup(name: code)
+            
+            let hasThorAlias = thorname.entries.contains {
+                $0.chain == "THOR" &&  $0.address == thorname.owner
+            }
+            
+            guard hasThorAlias else {
+                throw HelperError.runtimeError("referralCodeWithoutAlias")
+            }
+        } catch {
+            let errorMessage = (error as? THORChainAPIError) == THORChainAPIError.thornameNotFound ? "referralCodeNotFound" : "systemErrorMessage"
+            throw HelperError.runtimeError(errorMessage)
+        }
     }
 }

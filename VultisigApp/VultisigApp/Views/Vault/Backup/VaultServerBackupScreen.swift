@@ -15,11 +15,8 @@ struct VaultServerBackupScreen: View {
     let vault: Vault
     @StateObject var viewModel = VaultServerBackupViewModel()
     
-    @StateObject var keyboardObserver = KeyboardObserver()
     @State var scrollViewProxy: ScrollViewProxy?
     @State var showAlert = false
-    @State var emailExpanded = true
-    @State var passwordExpanded = false
     @State var moveToHome = false
     @State var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?

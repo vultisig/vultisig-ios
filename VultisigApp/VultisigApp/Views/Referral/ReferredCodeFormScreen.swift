@@ -61,7 +61,7 @@ struct ReferredCodeFormScreen: View {
     var button: some View {
         PrimaryButton(title: "saveReferral") {
             Task { @MainActor in
-                let codeUpdated = await referredViewModel.verifyReferredCode()
+                let codeUpdated = await referredViewModel.verifyAndSaveReferredCode()
                 if codeUpdated {
                     dismiss()
                 }

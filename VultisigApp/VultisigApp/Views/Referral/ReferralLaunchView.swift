@@ -130,7 +130,7 @@ private extension ReferralLaunchView {
     var referredCodeButton: some View {
         PrimaryButton(title: referredViewModel.referredButtonTitle, type: .secondary) {
             Task { @MainActor in
-                await referredViewModel.verifyReferredCode()
+                await referredViewModel.verifyAndSaveReferredCode()
             }
         }
         .disabled(referredViewModel.referredButtonDisabled)

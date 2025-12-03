@@ -10,12 +10,12 @@ import SwiftUI
 struct SecureTextField: View {
     @Binding var value: String
     let label: String?
-    let placeholder: String
+    let placeholder: String?
     @Binding var error: String?
     
     @State var isSecure: Bool = true
     
-    init(value: Binding<String>, label: String? = nil, placeholder: String, error: Binding<String?>) {
+    init(value: Binding<String>, label: String? = nil, placeholder: String?, error: Binding<String?>) {
         self._value = value
         self.label = label
         self.placeholder = placeholder

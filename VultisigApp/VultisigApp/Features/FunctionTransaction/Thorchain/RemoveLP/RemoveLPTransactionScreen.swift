@@ -19,7 +19,7 @@ struct RemoveLPTransactionScreen: View {
     @FocusState private var focusedField: FocusedField?
     
     var body: some View {
-        TransactionFormScreen(
+        FormScreen(
             title: String(format: "removeCoinLP".localized, viewModel.position.coin1.chain.name),
             validForm: $viewModel.validForm,
             onContinue: onContinue
