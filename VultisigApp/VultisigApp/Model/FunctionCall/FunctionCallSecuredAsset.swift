@@ -53,6 +53,7 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
         prefillAddresses()
         fetchInboundAddressAndSetupApproval()
         setupValidation()
+        updateErrorMessage()
     }
     
     private func prefillAddresses() {
@@ -61,6 +62,8 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
             thorAddress = thorCoin.address
             thorAddressValid = true
         } else {
+            thorAddressValid = false
+            isTheFormValid = false
         }
         
         // No additional prefilling needed for mint/swap
@@ -75,6 +78,7 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
             await MainActor.run {
                 if self.tx.coin.chain == .thorChain {
                     // For THORChain, we don't need an inbound address initially
+                    self.tx.toAddress = self.tx.coin.address
                     self.isApprovalRequired = false
                     self.approvePayload = nil
                     return
@@ -128,6 +132,7 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
             .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
             .sink { [weak self] amount in
                 self?.validateAmount()
+                self?.updateErrorMessage()
             }
             .store(in: &cancellables)
         
@@ -141,10 +146,8 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
                 // For mint, need valid amount AND valid THORChain address AND non-zero amount
                 let isValid = amountValid && thorAddressValid && !self.amount.isZero
                 
-                // Set specific error message if THORChain address is missing
-                if !thorAddressValid && self.customErrorMessage == nil {
-                    self.customErrorMessage = NSLocalizedString("thorAddressNotFound", comment: "")
-                }
+                // Update error messages
+                self.updateErrorMessage()
                 
                 return isValid
             }
@@ -157,16 +160,52 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
         let currentBalance = tx.coin.balanceDecimal
         let isValidAmount = amount > 0 && amount <= currentBalance
         amountValid = isValidAmount
+    }
+    
+    private func updateErrorMessage() {
+        var errors: [String] = []
         
+        // Check THORChain address
+        if !thorAddressValid {
+            let error = FunctionCallSecuredAssetError.thorAddressNotFound
+            errors.append(error.localizedDescription)
+            print("Validation Error: \(error.localizedDescription)")
+        }
         
+        // Check amount
         if amount <= 0 {
-            amountValid = false
-            customErrorMessage = NSLocalizedString("enterValidAmount", comment: "")
-        } else if currentBalance < amount {
-            amountValid = false
-            customErrorMessage = NSLocalizedString("insufficientBalanceForFunctions", comment: "Error message when user tries to enter amount greater than available balance")
-        } else {
+            let error = FunctionCallSecuredAssetError.invalidAmount
+            errors.append(error.localizedDescription)
+            print("Validation Error: \(error.localizedDescription)")
+        } else if tx.coin.balanceDecimal < amount {
+            let error = FunctionCallSecuredAssetError.insufficientBalance
+            errors.append(error.localizedDescription)
+            print("Validation Error: \(error.localizedDescription)")
+        }
+        
+        // Concatenate all errors with newlines
+        if errors.isEmpty {
             customErrorMessage = nil
+            print("Validation Success: Form is valid")
+        } else {
+            customErrorMessage = errors.joined(separator: "\n")
+        }
+    }
+    
+    enum FunctionCallSecuredAssetError: LocalizedError {
+        case invalidAmount
+        case insufficientBalance
+        case thorAddressNotFound
+        
+        var errorDescription: String? {
+            switch self {
+            case .invalidAmount:
+                return NSLocalizedString("enterValidAmount", comment: "")
+            case .insufficientBalance:
+                return NSLocalizedString("insufficientBalanceForFunctions", comment: "Error message when user tries to enter amount greater than available balance")
+            case .thorAddressNotFound:
+                return NSLocalizedString("thorAddressNotFound", comment: "")
+            }
         }
     }
     
@@ -201,17 +240,26 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
     }
     
     func getView() -> AnyView {
-        AnyView(VStack(spacing: 16) {
+        AnyView(FunctionCallSecuredAssetView(model: self))
+    }
+}
+
+// MARK: - View
+struct FunctionCallSecuredAssetView: View {
+    @ObservedObject var model: FunctionCallSecuredAsset
+    
+    var body: some View {
+        VStack(spacing: 16) {
             VStack(alignment: .leading, spacing: 8) {
                 Text(NSLocalizedString("mintSecuredAsset", comment: ""))
                     .font(.headline)
-                Text(String(format: NSLocalizedString("targetAsset", comment: ""), "\(tx.coin.chain.swapAsset)-\(tx.coin.ticker)"))
+                Text(String(format: NSLocalizedString("targetAsset", comment: ""), "\(model.tx.coin.chain.swapAsset)-\(model.tx.coin.ticker)"))
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
             
             // Show ERC20 approval info if needed
-            if isApprovalRequired {
+            if model.isApprovalRequired {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(NSLocalizedString("erc20ApprovalRequired", comment: ""))
                         .font(.headline)
@@ -242,20 +290,20 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
                     label: NSLocalizedString("amount", comment: ""),
                     placeholder: NSLocalizedString("enterAmount", comment: ""),
                     value: Binding(
-                        get: { self.amount },
-                        set: { self.amount = $0 }
+                        get: { model.amount },
+                        set: { model.amount = $0 }
                     ),
                     isValid: Binding(
-                        get: { self.amountValid },
-                        set: { self.amountValid = $0 }
+                        get: { model.amountValid },
+                        set: { model.amountValid = $0 }
                     )
                 )
                 
-                Text(balance)
+                Text(model.balance)
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
-                if let errorMessage = customErrorMessage {
+                if let errorMessage = model.customErrorMessage {
                     Text(errorMessage)
                         .font(.caption)
                         .foregroundColor(.red)
@@ -263,12 +311,12 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
             }
             
             // Show THORChain address info (read-only)
-            if !thorAddress.isEmpty {
+            if !model.thorAddress.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(NSLocalizedString("thorAddressAutoFilled", comment: ""))
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    Text(thorAddress)
+                    Text(model.thorAddress)
                         .font(.footnote)
                         .padding(8)
                         .background(Color.gray.opacity(0.1))
@@ -282,15 +330,16 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
                 Text(NSLocalizedString("generatedMemo", comment: ""))
                     .font(.caption)
                     .foregroundColor(.secondary)
-                Text(toString())
+                Text(model.toString())
                     .font(.footnote)
                     .padding(8)
                     .background(Color.gray.opacity(0.1))
                     .cornerRadius(8)
             }
             
-        }.onAppear {
-            self.initialize()
-        })
+        }
+        .onAppear {
+            model.initialize()
+        }
     }
 }
