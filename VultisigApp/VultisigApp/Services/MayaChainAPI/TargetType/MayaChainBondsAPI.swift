@@ -12,10 +12,11 @@ enum MayaChainBondsAPI: TargetType {
     case getNodeDetails(nodeAddress: String)
     case getHealth
     case getNetwork
+    case getMimir
 
     var baseURL: URL {
         switch self {
-        case .getAllNodes, .getNodeDetails:
+        case .getAllNodes, .getNodeDetails, .getMimir:
             return URL(string: "https://mayanode.mayachain.info")!
         case .getHealth:
             return URL(string: "https://midgard.mayachain.info/v2")!
@@ -34,26 +35,28 @@ enum MayaChainBondsAPI: TargetType {
             return "/health"
         case .getNetwork:
             return "/network"
+        case .getMimir:
+            return "/mayachain/mimir"
         }
     }
 
     var method: HTTPMethod {
         switch self {
-        case .getAllNodes, .getNodeDetails, .getHealth, .getNetwork:
+        case .getAllNodes, .getNodeDetails, .getHealth, .getNetwork, .getMimir:
             return .get
         }
     }
 
     var task: HTTPTask {
         switch self {
-        case .getAllNodes, .getNodeDetails, .getHealth, .getNetwork:
+        case .getAllNodes, .getNodeDetails, .getHealth, .getNetwork, .getMimir:
             return .requestPlain
         }
     }
 
     var headers: [String: String]? {
         switch self {
-        case .getAllNodes, .getNodeDetails, .getHealth, .getNetwork:
+        case .getAllNodes, .getNodeDetails, .getHealth, .getNetwork, .getMimir:
             return ["X-Client-ID": "vultisig"]
         }
     }
