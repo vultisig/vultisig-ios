@@ -90,6 +90,7 @@ struct DefiPositionsStorageService {
                 existing.nextPayout = position.nextPayout
                 existing.rewards = position.rewards
                 existing.rewardCoin = position.rewardCoin
+                existing.unstakeMetadata = position.unstakeMetadata
             } else {
                 // Insert new position
                 Storage.shared.modelContext.insert(position)
