@@ -71,6 +71,11 @@ class VaultDetailViewModel: ObservableObject {
             print("Error while saving closedBanners for vault", error.localizedDescription)
         }
     }
+    
+    func canShowChainSelection(vault: Vault) -> Bool {
+        // Vault cannot change chains for KeyImport for now
+        vault.libType != .KeyImport
+    }
 }
 
 // MARK: - VaultDetailLogic

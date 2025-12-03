@@ -35,7 +35,8 @@ final class SchnorrKeysign {
          messsageToSign: [String],
          vault: Vault,
          encryptionKeyHex: String,
-         isInitiateDevice: Bool) {
+         isInitiateDevice: Bool,
+         publicKeyEdDSA: String) {
         self.keysignCommittee = keysignCommittee
         self.mediatorURL = mediatorURL
         self.sessionID = sessionID
@@ -44,7 +45,7 @@ final class SchnorrKeysign {
         self.encryptionKeyHex = encryptionKeyHex
         self.isInitiateDevice = isInitiateDevice
         self.localPartyID = vault.localPartyID
-        self.publicKeyEdDSA = vault.pubKeyEdDSA
+        self.publicKeyEdDSA = publicKeyEdDSA
     }
     
     func getSignatures() -> [String: TssKeysignResponse] {

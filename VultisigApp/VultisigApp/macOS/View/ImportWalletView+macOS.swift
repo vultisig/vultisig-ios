@@ -10,17 +10,13 @@ import SwiftUI
 
 extension ImportWalletView {
     var content: some View {
-        ZStack {
-            Background()
-            view
-        }
-        .crossPlatformToolbar("import".localized)
-        .onDrop(of: [.data], isTargeted: $isUploading) { providers -> Bool in
-            Task{
-                await backupViewModel.handleOnDrop(providers: providers)
+        view
+            .onDrop(of: [.data], isTargeted: $isUploading) { providers -> Bool in
+                Task{
+                    await backupViewModel.handleOnDrop(providers: providers)
+                }
+                return true
             }
-            return true
-        }
     }
 }
 #endif

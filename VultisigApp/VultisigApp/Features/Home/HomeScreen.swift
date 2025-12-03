@@ -59,7 +59,6 @@ struct HomeScreen: View {
                 initialView
             }
         }
-
         .onLoad {
             showVaultSelector = showingVaultSelector
             setData()
@@ -249,7 +248,7 @@ struct HomeScreen: View {
                 }
             }
             .navigationDestination(isPresented: $shouldImportBackup) {
-                ImportWalletView()
+                ImportWalletScreen()
             }
             .navigationDestination(isPresented: $showBackupNow) {
                 if let vault = appViewModel.selectedVault {

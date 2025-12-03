@@ -36,6 +36,7 @@ final class Vault: ObservableObject, Codable {
     @Relationship(deleteRule: .cascade) var bondPositions: [BondPosition] = []
     @Relationship(deleteRule: .cascade) var stakePositions: [StakePosition] = []
     @Relationship(deleteRule: .cascade) var lpPositions: [LPPosition] = []
+    @Relationship(deleteRule: .cascade) var chainPublicKeys: [ChainPublicKey] = []
         
     enum CodingKeys: CodingKey {
         case name
@@ -71,9 +72,9 @@ final class Vault: ObservableObject, Codable {
         defiPositions = try container.decodeIfPresent([DefiPositions].self, forKey: .defiPositions) ?? []
     }
     
-    init(name: String) {
+    init(name: String, libType: LibType? = nil) {
         self.name = name
-        self.libType = GetLibType()
+        self.libType = libType ?? GetLibType()
     }
     
     init(
