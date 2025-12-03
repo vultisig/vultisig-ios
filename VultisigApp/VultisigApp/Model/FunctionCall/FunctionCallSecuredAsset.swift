@@ -169,24 +169,20 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
         if !thorAddressValid {
             let error = FunctionCallSecuredAssetError.thorAddressNotFound
             errors.append(error.localizedDescription)
-            print("Validation Error: \(error.localizedDescription)")
         }
         
         // Check amount
         if amount <= 0 {
             let error = FunctionCallSecuredAssetError.invalidAmount
             errors.append(error.localizedDescription)
-            print("Validation Error: \(error.localizedDescription)")
         } else if tx.coin.balanceDecimal < amount {
             let error = FunctionCallSecuredAssetError.insufficientBalance
             errors.append(error.localizedDescription)
-            print("Validation Error: \(error.localizedDescription)")
         }
         
         // Concatenate all errors with newlines
         if errors.isEmpty {
             customErrorMessage = nil
-            print("Validation Success: Form is valid")
         } else {
             customErrorMessage = errors.joined(separator: "\n")
         }
