@@ -32,9 +32,9 @@ struct MayaChainAPIService {
         return data
     }
 
-    func getHealth() async throws -> MayaHealth {
+    func getHealth(shouldCache: Bool = true) async throws -> MayaHealth {
         // Check cache first
-        if let cached = await cache.getCachedHealth() {
+        if shouldCache, let cached = await cache.getCachedHealth() {
             return cached
         }
 
@@ -63,6 +63,22 @@ struct MayaChainAPIService {
 
         return data
     }
+
+    func getMimir() async throws -> MayaMimir {
+        // Check cache first
+        if let cached = await cache.getCachedMimir() {
+            return cached
+        }
+
+        // Fetch from network
+        let response = try await httpClient.request(MayaChainBondsAPI.getMimir, responseType: MayaMimir.self)
+        let data = response.data
+
+        // Cache the result
+        await cache.cacheMimir(data)
+
+        return data
+    }
 }
 
 // MARK: - Cache
@@ -71,6 +87,7 @@ actor MayaChainAPICache {
     private var networkInfo: (data: MayaNetworkInfo, timestamp: Date)?
     private var health: (data: MayaHealth, timestamp: Date)?
     private var pools: (data: [MayaPoolResponse], timestamp: Date)?
+    private var mimir: (data: MayaMimir, timestamp: Date)?
 
     private let cacheValidityDuration: TimeInterval = 300 // 5 minutes
 
@@ -108,6 +125,18 @@ actor MayaChainAPICache {
 
     func cachePools(_ data: [MayaPoolResponse]) {
         pools = (data, Date())
+    }
+
+    func getCachedMimir() -> MayaMimir? {
+        guard let cached = mimir,
+              Date().timeIntervalSince(cached.timestamp) < cacheValidityDuration else {
+            return nil
+        }
+        return cached.data
+    }
+
+    func cacheMimir(_ data: MayaMimir) {
+        mimir = (data, Date())
     }
 }
 

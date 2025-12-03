@@ -23,6 +23,14 @@ struct MayaChainStakeInteractor: StakeInteractor {
         guard vaultStakePositions.contains(where: { $0.ticker == cacaoCoin.ticker }) else {
             return []
         }
+        
+        guard
+            let health = try? await mayaChainAPIService.getHealth(shouldCache: false),
+            let mimir = try? await mayaChainAPIService.getMimir()
+        else {
+            print("Could not fetch health and mimir for Maya chain")
+            return []
+        }
 
         do {
             // Fetch CACAO pool position
@@ -35,18 +43,27 @@ struct MayaChainStakeInteractor: StakeInteractor {
 
             let stakedAmount = position.userUnits / pow(10, cacaoCoin.decimals)
             // Fetch APR/APY
-            let aprData = try await mayaChainAPIService.getCacaoPoolAPR()
+            let aprData = try? await mayaChainAPIService.getCacaoPoolAPR()
+            
+            
+            // Check for withdrawal date
+            let unstakeMetadata = calculateUnstakeMetadata(
+                currentHeight: health.lastMayaNode.height,
+                lastDepositHeight: position.lastDepositHeight,
+                maturityBlocks: mimir.cacaoPoolDepositMaturityBlocks
+            )
 
             // Create stake position
             let stakePosition = StakePosition(
                 coin: cacaoCoin.toCoinMeta(),
-                type: .stake,  // CACAO pool is simple staking
+                type: .stake,
                 amount: stakedAmount,
-                apr: aprData.apr,
+                apr: aprData?.apr ?? 0,
                 estimatedReward: nil,  // CACAO pool doesn't show estimated rewards separately
                 nextPayout: nil,  // CACAO pool rewards are continuously accrued
                 rewards: nil,
                 rewardCoin: nil,  // Rewards in CACAO
+                unstakeMetadata: unstakeMetadata,
                 vault: vault
             )
 
@@ -82,5 +99,26 @@ private extension MayaChainStakeInteractor {
         } catch {
             print("An error occurred while saving staked positions: \(error)")
         }
+    }
+
+    func calculateUnstakeMetadata(
+        currentHeight: Int64,
+        lastDepositHeight: Int64,
+        maturityBlocks: Int64
+    ) -> UnstakeMetadata? {
+        let differenceBlocks = currentHeight - lastDepositHeight
+
+        // If maturity has been reached, no metadata needed
+        guard differenceBlocks < maturityBlocks else {
+            return nil
+        }
+
+        let blocksPerDay: Double = 14400
+        let blocksRemaining = maturityBlocks - differenceBlocks
+        let daysRemaining = Double(blocksRemaining) / blocksPerDay
+        let secondsRemaining = daysRemaining * 24 * 60 * 60
+        let unstakeAvailableDate = Date().addingTimeInterval(secondsRemaining)
+
+        return UnstakeMetadata(unstakeAvailableDate: unstakeAvailableDate.timeIntervalSince1970)
     }
 }

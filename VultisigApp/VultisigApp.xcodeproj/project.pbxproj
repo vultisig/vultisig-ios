@@ -103,6 +103,8 @@
 		1336BB3A2E81767000597070 /* ChainDetailListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1336BB392E81766B00597070 /* ChainDetailListView.swift */; };
 		1336BB3C2E81774400597070 /* ChainDetailHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1336BB3B2E81774000597070 /* ChainDetailHeaderView.swift */; };
 		1336BB3E2E817DE300597070 /* TokenCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1336BB3D2E817DDC00597070 /* TokenCellView.swift */; };
+		13398AE02EE0761F002419F0 /* MayaMimir.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13398ADF2EE0761F002419F0 /* MayaMimir.swift */; };
+		13398AE32EE0788E002419F0 /* UnstakeMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13398AE22EE0788B002419F0 /* UnstakeMetadata.swift */; };
 		133CA3CC2E8AD183009588F3 /* CoinDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CA3CB2E8AD180009588F3 /* CoinDetailScreen.swift */; };
 		133CA3CF2E8ADC5A009588F3 /* CoinDetailHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CA3CE2E8ADC56009588F3 /* CoinDetailHeaderView.swift */; };
 		133CA3D22E8ADEE1009588F3 /* CoinDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CA3D12E8ADEDC009588F3 /* CoinDetailViewModel.swift */; };
@@ -1327,6 +1329,8 @@
 		1336BB392E81766B00597070 /* ChainDetailListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailListView.swift; sourceTree = "<group>"; };
 		1336BB3B2E81774000597070 /* ChainDetailHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailHeaderView.swift; sourceTree = "<group>"; };
 		1336BB3D2E817DDC00597070 /* TokenCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenCellView.swift; sourceTree = "<group>"; };
+		13398ADF2EE0761F002419F0 /* MayaMimir.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaMimir.swift; sourceTree = "<group>"; };
+		13398AE22EE0788B002419F0 /* UnstakeMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnstakeMetadata.swift; sourceTree = "<group>"; };
 		133CA3CB2E8AD180009588F3 /* CoinDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDetailScreen.swift; sourceTree = "<group>"; };
 		133CA3CE2E8ADC56009588F3 /* CoinDetailHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDetailHeaderView.swift; sourceTree = "<group>"; };
 		133CA3D12E8ADEDC009588F3 /* CoinDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDetailViewModel.swift; sourceTree = "<group>"; };
@@ -2769,11 +2773,11 @@
 		1321A8112ED0A4ED004CBB99 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				13398AE12EE07885002419F0 /* Staking */,
 				1321A80C2ED0A4ED004CBB99 /* BondNode.swift */,
 				1321A80D2ED0A4ED004CBB99 /* BondPosition.swift */,
 				1321A80E2ED0A4ED004CBB99 /* DefiChainPositionType.swift */,
 				1321A80F2ED0A4ED004CBB99 /* LPPosition.swift */,
-				1321A8102ED0A4ED004CBB99 /* StakePosition.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -2990,6 +2994,15 @@
 				13B25BF22E82E321002BCF55 /* PlatformImageExtension.swift */,
 			);
 			path = View;
+			sourceTree = "<group>";
+		};
+		13398AE12EE07885002419F0 /* Staking */ = {
+			isa = PBXGroup;
+			children = (
+				13398AE22EE0788B002419F0 /* UnstakeMetadata.swift */,
+				1321A8102ED0A4ED004CBB99 /* StakePosition.swift */,
+			);
+			path = Staking;
 			sourceTree = "<group>";
 		};
 		133CA3CA2E8AD17A009588F3 /* CoinDetail */ = {
@@ -3656,12 +3669,13 @@
 			path = Bonds;
 			sourceTree = "<group>";
 		};
-		13A74CC42ED3D91C00B97173 /* Network */ = {
+		13A74CC42ED3D91C00B97173 /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				13398ADF2EE0761F002419F0 /* MayaMimir.swift */,
 				13A74CC32ED3D91C00B97173 /* MayaNetworkInfo.swift */,
 			);
-			path = Network;
+			path = Common;
 			sourceTree = "<group>";
 		};
 		13A74CC52ED3D91C00B97173 /* Models */ = {
@@ -3669,7 +3683,7 @@
 			children = (
 				136095D12ED63FCE0054A2B0 /* LPs */,
 				13A74CC22ED3D91C00B97173 /* Bonds */,
-				13A74CC42ED3D91C00B97173 /* Network */,
+				13A74CC42ED3D91C00B97173 /* Common */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -6649,6 +6663,7 @@
 				A51AE8C22C931C6000EF9A7A /* FastVaultEnterPasswordView.swift in Sources */,
 				1344CB212E4A6366006F67B4 /* CrossPlatformShareButton.swift in Sources */,
 				A6F7B7392D4EF7BB00AC8104 /* FastBackupVaultOverview.swift in Sources */,
+				13398AE02EE0761F002419F0 /* MayaMimir.swift in Sources */,
 				13CCEC0C2E54EE3000F28937 /* SettingsSectionContainerView.swift in Sources */,
 				B5D1B9FC2DF66B4400D82EFB /* CoinFactory+Cardano.swift in Sources */,
 				A500603F2C10E3EA008237D9 /* ThorchainSwapProvider.swift in Sources */,
@@ -7271,6 +7286,7 @@
 				135C7AD82EA132C8002F879A /* DefiChainSelection.swift in Sources */,
 				133573672E70B18B00C0005F /* HomeMainHeaderView.swift in Sources */,
 				A5125F042BEBBE43008A79AA /* SwapService.swift in Sources */,
+				13398AE32EE0788E002419F0 /* UnstakeMetadata.swift in Sources */,
 				A6C671032CA276F800F59B6A /* OnboardingView+macOS.swift in Sources */,
 				A50E793A2BFE30210031DB47 /* Storage.swift in Sources */,
 				A6505AF32CA677B50002FBF4 /* KeyboardObserver+iOS.swift in Sources */,

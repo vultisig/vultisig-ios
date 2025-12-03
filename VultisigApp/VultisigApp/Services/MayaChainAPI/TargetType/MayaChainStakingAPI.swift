@@ -15,9 +15,9 @@ enum MayaChainStakingAPI: TargetType {
 
     var baseURL: URL {
         switch self {
-        case .getCacaoPoolMember, .getCacaoPoolHistory:
+        case .getCacaoPoolHistory:
             return URL(string: "https://midgard.mayachain.info/v2")!
-        case .getPools:
+        case .getPools, .getCacaoPoolMember:
             return URL(string: "https://mayanode.mayachain.info")!
         }
     }
@@ -25,7 +25,7 @@ enum MayaChainStakingAPI: TargetType {
     var path: String {
         switch self {
         case .getCacaoPoolMember(let address):
-            return "/cacaopool/\(address)"
+            return "mayachain/cacao_provider/\(address)"
         case .getCacaoPoolHistory:
             return "/history/cacaopool"
         case .getPools:
@@ -66,16 +66,18 @@ enum MayaChainStakingAPI: TargetType {
 
 /// Response model for CACAO pool member
 struct MayaCacaoPoolMemberResponse: Codable {
-    let cacaoAddress: String
-    let cacaoDeposit: String
-    let cacaoWithdrawn: String
-    let liquidityUnits: String
+    let depositAmount: String
+    let withdrawAmount: String
+    let units: String
+    let lastWithdrawHeight: Int64
+    let lastDepositHeight: Int64
 
     enum CodingKeys: String, CodingKey {
-        case cacaoAddress = "cacaoAddress"
-        case cacaoDeposit = "cacaoDeposit"
-        case cacaoWithdrawn = "cacaoWithdrawn"
-        case liquidityUnits = "units"
+        case depositAmount = "deposit_amount"
+        case withdrawAmount = "withdraw_amount"
+        case units = "units"
+        case lastWithdrawHeight = "last_withdraw_height"
+        case lastDepositHeight = "last_deposit_height"
     }
 }
 
