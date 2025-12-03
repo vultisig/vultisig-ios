@@ -58,7 +58,9 @@ public class CryptoPriceService: ObservableObject {
         }
         let decoder = JSONDecoder()
         let coinsList = try decoder.decode([CoinGeckoCoin].self, from: data)
-        self.cache.setObject(CacheCoinGeckoCoin(coins:coinsList, timestamp: Date()), forKey: "coingecko-list")
+        if !coinsList.isEmpty {   
+            self.cache.setObject(CacheCoinGeckoCoin(coins:coinsList, timestamp: Date()), forKey: "coingecko-list")
+        }
         let target = coinsList.first{ $0.symbol.lowercased() == symbol.lowercased() && $0.platforms.values.contains(contract)}
         return target?.id
     }
