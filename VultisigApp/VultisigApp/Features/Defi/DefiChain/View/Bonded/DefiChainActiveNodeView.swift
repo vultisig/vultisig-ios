@@ -27,6 +27,10 @@ struct DefiChainActiveNodeView: View {
         return CustomDateFormatter.formatMonthDayYear(nextChurn)
     }
     
+    var fiatAmount: String {
+        coin.fiat(decimal: coin.valueWithDecimals(value: activeNode.amount)).formatToFiat()
+    }
+    
     var unbondDisabled: Bool { !activeNode.node.state.canUnbond || !canUnbond }
     var bondDisabled: Bool { !activeNode.node.state.canBond }
 
@@ -46,7 +50,7 @@ struct DefiChainActiveNodeView: View {
                     .font(Theme.fonts.title3)
                 Spacer()
                 
-                HiddenBalanceText(coin.valueWithDecimals(value: activeNode.amount).formatToFiat())
+                HiddenBalanceText(fiatAmount)
                     .font(Theme.fonts.title3)
                     .foregroundStyle(Theme.colors.textExtraLight)
             }

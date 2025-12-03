@@ -1085,3 +1085,4 @@
 "selectChainsToImport" = "Select %d chains or more you want to import.";
 "addOtherChains" = "Add other chains";
 "youCanSelectXChains" = "You can only select %d chains at a time";
+"cacaoUnstakeMaturityMessage" = "%@ until deposit maturity reached";

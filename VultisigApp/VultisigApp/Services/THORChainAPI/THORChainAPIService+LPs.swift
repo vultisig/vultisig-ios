@@ -168,8 +168,8 @@ extension THORChainAPIService {
                 )
 
                 let position = THORChainLPPosition(
-                    runeRedeemValue: lpDetails?.runeRedeemValue ?? "0",
-                    assetRedeemValue: lpDetails?.assetRedeemValue ?? "0",
+                    runeRedeemValue: lpDetails?.runeDepositValue ?? "0",
+                    assetRedeemValue: lpDetails?.assetDepositValue ?? "0",
                     poolStats: poolStat
                 )
 
