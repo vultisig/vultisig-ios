@@ -56,7 +56,7 @@ struct ContentView: View {
                 CoverView()
             } else if vaults.count == 0 {
                 CreateVaultView(showBackButton: false)
-            } else if let selectedVault = appViewModel.selectedVault {
+            } else if appViewModel.selectedVault != nil {
                 HomeScreen(showingVaultSelector: appViewModel.showingVaultSelector)
             }
         }

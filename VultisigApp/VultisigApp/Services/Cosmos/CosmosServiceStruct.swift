@@ -53,9 +53,11 @@ struct CosmosServiceStruct {
             if let denomTrace = response.denomTrace {
                 return denomTrace
             } else if let error = response.error {
+                print("Error fetching IBC denom traces: \(error)")
                 // Handle "not implemented" error
                 return nil
             } else if let code = response.code, let message = response.message {
+                print("Error fetching IBC denom traces - Code: \(code), Message: \(message)")
                 // Handle general error
                 return nil
             } else {
