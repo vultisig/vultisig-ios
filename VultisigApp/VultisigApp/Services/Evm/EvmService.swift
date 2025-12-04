@@ -231,8 +231,8 @@ enum EvmService {
         return try await (try service).getTokenInfo(contractAddress: contractAddress)
     }
     
-    func getTokens(nativeToken: Coin) async throws -> [CoinMeta] {
-        return await (try service).getTokens(nativeToken: nativeToken)
+    func getTokens(nativeToken: CoinMeta, address: String) async throws -> [CoinMeta] {
+        return await (try service).getTokens(nativeToken: nativeToken, address: address)
     }
     
     func resolveENS(ensName: String) async throws -> String {

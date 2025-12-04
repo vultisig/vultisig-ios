@@ -108,7 +108,10 @@ private extension KeyImportChainsSetupViewModel {
                 continue
             }
 
-            let tokenBalances = await fetchBalancesForTokens(tokens: tokens, address: address)
+            // Merge discovered tokens with static tokens
+            let allTokens = await mergeWithDiscoveredTokens(tokens: tokens, address: address)
+
+            let tokenBalances = await fetchBalancesForTokens(tokens: allTokens, address: address)
 
             if !tokenBalances.isEmpty {
                 chainTokens.append((chain, tokenBalances))
@@ -116,6 +119,34 @@ private extension KeyImportChainsSetupViewModel {
         }
 
         return chainTokens
+    }
+
+    func mergeWithDiscoveredTokens(tokens: [CoinMeta], address: String) async -> [CoinMeta] {
+        // Find the native token for this chain
+        guard let nativeToken = tokens.first(where: { $0.isNativeToken }) else {
+            return tokens
+        }
+
+        // Fetch discovered tokens for this chain
+        do {
+            let discoveredTokens = try await CoinService.fetchDiscoveredTokens(
+                nativeCoin: nativeToken,
+                address: address
+            )
+
+            // Merge and deduplicate tokens
+            let allTokens = tokens + discoveredTokens
+            let uniqueTokens = allTokens.uniqueBy { token in
+                // Create unique key: chain + ticker + contractAddress
+                "\(token.chain.rawValue)_\(token.ticker)_\(token.contractAddress)"
+            }
+
+            return uniqueTokens
+        } catch {
+            // If fetching discovered tokens fails, return original tokens
+            print("Failed to fetch discovered tokens for \(nativeToken.chain): \(error.localizedDescription)")
+            return tokens
+        }
     }
 
     func fetchBalancesForTokens(

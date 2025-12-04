@@ -241,8 +241,12 @@ struct EvmServiceStruct {
         }
     }
     
-    func getTokens(nativeToken: Coin) async -> [CoinMeta] {
-        return await config.tokenProvider.getTokens(nativeToken: nativeToken, rpcService: rpcService)
+    func getTokens(nativeToken: CoinMeta, address: String) async -> [CoinMeta] {
+        return await config.tokenProvider.getTokens(
+            nativeToken: nativeToken,
+            address: address,
+            rpcService: rpcService
+        )
     }
     
     // MARK: - Private Helpers
@@ -332,12 +336,12 @@ struct EvmServiceStruct {
     
     // MARK: - Static Helper for Standard Token Fetching
     
-    static func getTokensStandard(nativeToken: Coin, rpcService: RpcServiceStruct) async -> [CoinMeta] {
+    static func getTokensStandard(nativeToken: CoinMeta, address: String, rpcService: RpcServiceStruct) async -> [CoinMeta] {
         // Try alchemy_getTokenBalances first (for chains that support it)
         do {
             let tokenBalances: [[String: Any]] = try await rpcService.sendRPCRequest(
                 method: "alchemy_getTokenBalances",
-                params: [nativeToken.address]
+                params: [address]
             ) { result in
                 guard
                     let response = result as? [String: Any],
@@ -407,12 +411,12 @@ struct EvmServiceStruct {
             
         } catch {
             // Fallback: Check known tokens from TokensStore using standard RPC methods
-            return await getTokensFallback(nativeToken: nativeToken, rpcService: rpcService)
+            return await getTokensFallback(nativeToken: nativeToken, address: address, rpcService: rpcService)
         }
     }
     
     // Fallback method: Check balance of known tokens from TokensStore
-    private static func getTokensFallback(nativeToken: Coin, rpcService: RpcServiceStruct) async -> [CoinMeta] {
+    private static func getTokensFallback(nativeToken: CoinMeta, address: String, rpcService: RpcServiceStruct) async -> [CoinMeta] {
         // Get all known tokens for this chain from TokensStore
         let knownTokens = TokensStore.TokenSelectionAssets.filter { token in
             token.chain == nativeToken.chain && !token.isNativeToken && !token.contractAddress.isEmpty
@@ -430,7 +434,7 @@ struct EvmServiceStruct {
                 group.addTask {
                     do {
                         // Function signature for balanceOf(address) is 0x70a08231
-                        let paddedAddress = String(nativeToken.address.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")
+                        let paddedAddress = String(address.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")
                         let data = "0x70a08231" + paddedAddress
                         
                         let params: [Any] = [
