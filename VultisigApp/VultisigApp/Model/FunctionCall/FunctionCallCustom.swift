@@ -208,7 +208,7 @@ private struct FunctionCallCustomView: View {
                 ),
                 isOptional: true
             )
-            .id("field-\(viewModel.balanceLabel)-\(viewModel.amount)")
+            .id("field-\(viewModel.selectedToken.value)")
             
             StyledTextField(
                 placeholder: NSLocalizedString("customMemo", comment: "Custom Memo placeholder"),
