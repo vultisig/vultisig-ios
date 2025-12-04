@@ -59,7 +59,7 @@ struct SwapVerifyView: View {
             fields
             signButton
                 .padding(.horizontal, 16)
-                .disabled(!verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired))
+                .disabled(!verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired) || swapViewModel.isLoadingFees || signButtonDisabled)
         }
     }
     
@@ -87,6 +87,7 @@ struct SwapVerifyView: View {
                         with: swapViewModel.swapGasString(tx: tx),
                         bracketValue: swapViewModel.approveFeeString(tx: tx)
                     )
+                    .blur(radius: swapViewModel.isLoadingFees ? 1 : 0)
                 }
                 
                 if swapViewModel.showFees(tx: tx) {
@@ -96,6 +97,7 @@ struct SwapVerifyView: View {
                         with: swapViewModel.swapFeeString(tx: tx),
                         bracketValue:nil
                     )
+                    .blur(radius: swapViewModel.isLoadingFees ? 1 : 0)
                 }
                 
                 if swapViewModel.showTotalFees(tx: tx) {
@@ -104,6 +106,7 @@ struct SwapVerifyView: View {
                         for: "maxTotalFee",
                         with: swapViewModel.totalFeeString(tx: tx)
                     )
+                    .blur(radius: swapViewModel.isLoadingFees ? 1 : 0)
                 }
                 
                 separator
