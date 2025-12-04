@@ -305,16 +305,16 @@ class TokensStore {
             ticker: "JOE",
             logo: "joe",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "joe",
             contractAddress: "0x6e84a6216eA6dACC71eE8E6b0a5B7322EEbC0fDd",
             isNativeToken: false
         ),
         CoinMeta(
             chain: .avalanche,
             ticker: "PNG",
-            logo: "png",
+            logo: "PNG",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "pangolin",
             contractAddress: "0x60781C2586D68229fde47564546784ab3fACA982",
             isNativeToken: false
         ),
@@ -359,7 +359,7 @@ class TokensStore {
             ticker: "sAVAX",
             logo: "savax",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "benqi-liquid-staked-avax",
             contractAddress: "0x2b2C81e08f1Af8835a78Bb2A90AE924ACE0eA4bE",
             isNativeToken: false
         ),
@@ -521,7 +521,7 @@ class TokensStore {
             ticker: "AI",
             logo: "anyinu",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "any-inu",
             contractAddress: "0x764933fbAd8f5D04Ccd088602096655c2ED9879F",
             isNativeToken: false
         ),
@@ -530,7 +530,7 @@ class TokensStore {
             ticker: "BAG",
             logo: "bag",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "bag",
             contractAddress: "0xb9dfCd4CF589bB8090569cb52FaC1b88Dbe4981F",
             isNativeToken: false
         ),
@@ -539,7 +539,7 @@ class TokensStore {
             ticker: "BLAST",
             logo: "blast",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "blast",
             contractAddress: "0xb1a5700fA2358173Fe465e6eA4Ff52E36e88E2ad",
             isNativeToken: false
         ),
@@ -548,7 +548,7 @@ class TokensStore {
             ticker: "DACKIE",
             logo: "dackie",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "dackieswap",
             contractAddress: "0x47C337Bd5b9344a6F3D6f58C474D9D8cd419D8cA",
             isNativeToken: false
         ),
@@ -566,7 +566,7 @@ class TokensStore {
             ticker: "JUICE",
             logo: "juice",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "juice-finance",
             contractAddress: "0x818a92bc81Aad0053d72ba753fb5Bc3d0C5C0923",
             isNativeToken: false
         ),
@@ -575,7 +575,7 @@ class TokensStore {
             ticker: "MIM",
             logo: "mim",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "magic-internet-money-blast",
             contractAddress: "0x76DA31D7C9CbEAE102aff34D3398bC450c8374c1",
             isNativeToken: false
         ),
@@ -584,7 +584,7 @@ class TokensStore {
             ticker: "OMNI",
             logo: "omni",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "omnicat",
             contractAddress: "0x9e20461bc2c4c980f62f1B279D71734207a6A356",
             isNativeToken: false
         ),
@@ -593,7 +593,7 @@ class TokensStore {
             ticker: "USDB",
             logo: "usdb",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "usdb",
             contractAddress: "0x4300000000000000000000000000000000000003",
             isNativeToken: false
         ),

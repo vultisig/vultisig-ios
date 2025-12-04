@@ -1071,3 +1071,4 @@
 "bpsLabel" = "BPS";
 "nodeAddressLabel" = "Indirizzo Nodo";
 "loading" = "Loading...";
+"cacaoUnstakeMaturityMessage" = "%@ fino al raggiungimento della maturità del deposito";

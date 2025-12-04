@@ -24,7 +24,7 @@ final class DefiChainBondViewModel: ObservableObject {
     
     var totalBondedBalanceFiat: String {
         guard let nativeCoin = vault.nativeCoin(for: chain) else { return "" }
-        return nativeCoin.valueWithDecimals(value: totalBondedDecimal).formatToFiat()
+        return nativeCoin.fiat(decimal: nativeCoin.valueWithDecimals(value: totalBondedDecimal)).formatToFiat()
     }
 
     var hasBondPositions: Bool {

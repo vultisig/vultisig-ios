@@ -120,7 +120,7 @@ extension MayaChainAPIService {
         // Maya has approximately 5 seconds per block
         let avgBlockTime: Double = 5.0
 
-        let remainingBlocks = nextChurnHeight - currentHeight
+        let remainingBlocks = Int64(nextChurnHeight) - currentHeight
         let etaSeconds = Double(remainingBlocks) * avgBlockTime
 
         return Date(timeIntervalSince1970: currentTimestamp).addingTimeInterval(etaSeconds)
