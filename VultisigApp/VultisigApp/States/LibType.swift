@@ -8,7 +8,7 @@
 import VultisigCommonData
 import Foundation
 
-enum LibType : Int,Codable {
+enum LibType : Int,Codable, CaseIterable {
     case GG20 = 0
     case DKLS = 1
     case KeyImport = 2
