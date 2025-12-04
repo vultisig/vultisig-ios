@@ -96,10 +96,10 @@ final class VaultSetupViewModel: ObservableObject, Form {
                 viewModel.task = Task {
                     do {
                         try await ReferredCodeInteractor().verify(code: value)
-                        viewModel.referralField.error = nil
+                        await MainActor.run { viewModel.referralField.error = nil }
                     } catch {
                         if let task = viewModel.task, !task.isCancelled {
-                            viewModel.referralField.error = error.localizedDescription
+                            await MainActor.run { viewModel.referralField.error = error.localizedDescription }
                         }
                     }
                 }
