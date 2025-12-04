@@ -142,7 +142,11 @@ class KeysignDiscoveryViewModel: ObservableObject {
                 vaultPassword: fastVaultPassword
             ) { isSuccess in
                 if !isSuccess {
+                    self.logger.error("Fast Vault signing failed")
                     self.status = .FailToStart
+                    self.errorMessage = "Fast Vault signing failed. Please check your password or try Paired Sign by long-pressing the button."
+                } else {
+                    self.logger.info("Fast Vault signing initiated successfully")
                 }
             }
             
