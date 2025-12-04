@@ -26,7 +26,6 @@ struct SendVerifyScreen: View {
                 fields
                 pairedSignButton
             }
-            .blur(radius: sendCryptoVerifyViewModel.isLoading ? 1 : 0)
         }
         .alert(item: $error) { error in
             Alert(
@@ -51,6 +50,10 @@ struct SendVerifyScreen: View {
         }
         .onDisappear {
             sendCryptoVerifyViewModel.isLoading = false
+            // Clear password if navigating back (not forward to keysign)
+            if keysignPayload == nil {
+                tx.fastVaultPassword = .empty
+            }
         }
         .navigationDestination(item: $keysignPayload) { payload in
             SendRouteBuilder().buildPairScreen(
@@ -73,6 +76,7 @@ struct SendVerifyScreen: View {
                 memo: tx.memo,
                 feeCrypto: tx.isCalculatingFee ? "Loading..." : tx.gasInReadable,
                 feeFiat: tx.isCalculatingFee ? "" : CryptoAmountFormatter.feesInReadable(tx: tx, vault: vault),
+                isCalculatingFee: tx.isCalculatingFee,
                 coinImage: tx.coin.logo,
                 amount: tx.amount,
                 coinTicker: tx.coin.ticker
@@ -133,6 +137,8 @@ struct SendVerifyScreen: View {
                 LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
                     fastPasswordPresented = true
                 } longPressAction: {
+                    // Clear password for paired sign (long press)
+                    tx.fastVaultPassword = .empty
                     onSignPress()
                 }
                 .crossPlatformSheet(isPresented: $fastPasswordPresented) {
