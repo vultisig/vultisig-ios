@@ -80,8 +80,8 @@ enum CosmosService {
     
     // MARK: - Public API
     
-    func fetchBalances(coin: Coin) async throws -> [CosmosBalance] {
-        return try await service.fetchBalances(coin: coin)
+    func fetchBalances(coin: CoinMeta, address: String) async throws -> [CosmosBalance] {
+        return try await service.fetchBalances(coin: coin, address: address)
     }
     
     func fetchIbcDenomTraces(coin: Coin) async -> CosmosIbcDenomTraceDenomTrace? {
@@ -89,7 +89,7 @@ enum CosmosService {
     }
     
     func fetchWasmTokenBalances(coin: Coin) async throws -> String {
-        return try await service.fetchWasmTokenBalances(coin: coin)
+        return try await service.fetchWasmTokenBalances(coin: coin.toCoinMeta(), address: coin.address)
     }
     
     func fetchLatestBlock(coin: Coin) async throws -> String {

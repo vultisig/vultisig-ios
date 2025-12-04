@@ -81,7 +81,7 @@ class SwapTransaction: ObservableObject {
     var isAffiliate: Bool {
         let fiatAmount = RateProvider.shared.fiatBalance(
             value: fromAmountDecimal,
-            coin: fromCoin,
+            coin: fromCoin.toCoinMeta(),
             currency: .USD
         )
 

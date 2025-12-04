@@ -86,6 +86,67 @@ class BalanceService {
             print("Fetch Balance error: \(error.localizedDescription)")
         }
     }
+    
+    func fetchBalance(for coin: CoinMeta, address: String) async throws -> String {
+        switch coin.chain {
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
+            let blockChairData = try await utxo.fetchBlockchairData(coin: coin, address: address)
+            return blockChairData.address?.balance?.description ?? "0"
+            
+        case .cardano:
+            return try await cardano.getBalance(coin: coin, address: address)
+            
+        case .thorChain, .thorChainStagenet:
+            let service = ThorchainServiceFactory.getService(for: coin.chain)
+            let thorBalances = try await service.fetchBalances(address)
+            return thorBalances.balance(denom: coin.chain.ticker.lowercased(), coin: coin)
+            
+        case .solana:
+            return try await sol.getSolanaBalance(coin: coin, address: address)
+            
+        case .sui:
+            return try await sui.getBalance(coin: coin, address: address)
+            
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid, .sei:
+            let service = try EvmService.getService(forChain: coin.chain)
+            return try await service.getBalance(coin: coin, address: address)
+            
+        case .gaiaChain, .dydx, .kujira, .osmosis, .terra, .terraClassic, .noble, .akash:
+            let cosmosService = try CosmosService.getService(forChain: coin.chain)
+            let balances = try await cosmosService.fetchBalances(coin: coin, address: address)
+            
+            // Determine the correct denom for each chain
+            let denom: String
+            switch coin.chain {
+            case .terra, .terraClassic:
+                denom = "uluna"
+            default:
+                denom = coin.chain.ticker.lowercased()
+            }
+            
+            return balances.balance(denom: denom, coin: coin)
+            
+        case .mayaChain:
+            let mayaBalance = try await maya.fetchBalances(address)
+            return mayaBalance.balance(denom: coin.ticker.lowercased())
+            
+        case .polkadot:
+            return try await dot.getBalance(address: address)
+            
+        case .ton:
+            if coin.isNativeToken {
+                return try await ton.getBalance(coin: coin, address: address)
+            } else {
+                return try await ton.getJettonBalance(coin: coin, address: address)
+            }
+            
+        case .ripple:
+            return try await ripple.getBalance(coin: coin, address: address)
+            
+        case .tron:
+            return try await tron.getBalance(coin: coin, address: address)
+        }
+    }
 }
 
 private extension BalanceService {
@@ -161,64 +222,7 @@ private extension BalanceService {
     }
     
     func fetchBalance(for coin: Coin) async throws -> String {
-        switch coin.chain {
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
-            let blockChairData = try await utxo.fetchBlockchairData(coin: coin)
-            return blockChairData.address?.balance?.description ?? "0"
-            
-        case .cardano:
-            return try await cardano.getBalance(coin: coin)
-            
-        case .thorChain, .thorChainStagenet:
-            let service = ThorchainServiceFactory.getService(for: coin.chain)
-            let thorBalances = try await service.fetchBalances(coin.address)
-            return thorBalances.balance(denom: coin.chain.ticker.lowercased(), coin: coin)
-            
-        case .solana:
-            return try await sol.getSolanaBalance(coin: coin)
-            
-        case .sui:
-            return try await sui.getBalance(coin: coin)
-            
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid, .sei:
-            let service = try EvmService.getService(forChain: coin.chain)
-            return try await service.getBalance(coin: coin)
-            
-        case .gaiaChain, .dydx, .kujira, .osmosis, .terra, .terraClassic, .noble, .akash:
-            let cosmosService = try CosmosService.getService(forChain: coin.chain)
-            let balances = try await cosmosService.fetchBalances(coin: coin)
-            
-            // Determine the correct denom for each chain
-            let denom: String
-            switch coin.chain {
-            case .terra, .terraClassic:
-                denom = "uluna"
-            default:
-                denom = coin.chain.ticker.lowercased()
-            }
-            
-            return balances.balance(denom: denom, coin: coin)
-            
-        case .mayaChain:
-            let mayaBalance = try await maya.fetchBalances(coin.address)
-            return mayaBalance.balance(denom: coin.ticker.lowercased())
-            
-        case .polkadot:
-            return try await dot.getBalance(coin: coin)
-            
-        case .ton:
-            if coin.isNativeToken {
-                return try await ton.getBalance(coin)
-            } else {
-                return try await ton.getJettonBalance(coin)
-            }
-            
-        case .ripple:
-            return try await ripple.getBalance(coin)
-            
-        case .tron:
-            return try await tron.getBalance(coin: coin)
-        }
+        try await fetchBalance(for: coin.toCoinMeta(), address: coin.address)
     }
     
     @MainActor func updateCoin(_ coin: Coin, rawBalance: String) async throws {

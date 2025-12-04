@@ -334,9 +334,9 @@ class TronService: RpcService {
         }
     }
     
-    func getBalance(coin: Coin) async throws -> String {
+    func getBalance(coin: CoinMeta, address: String) async throws -> String {
         if coin.isNativeToken {
-            let body: [String: Any] = ["address": coin.address, "visible": true]
+            let body: [String: Any] = ["address": address, "visible": true]
             let dataPayload = try JSONSerialization.data(
                 withJSONObject: body,
                 options: []
@@ -359,7 +359,7 @@ class TronService: RpcService {
             return "0"
         } else {
             
-            guard let hexAddressData = Base58.decode(string: coin.address) else {
+            guard let hexAddressData = Base58.decode(string: address) else {
                 return "0"
             }
             let hexAddress = hexAddressData.hexString

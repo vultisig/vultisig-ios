@@ -12,8 +12,8 @@ class CardanoService {
     
     private init() {}
     
-    func getBalance(coin: Coin) async throws -> String {
-        let url = URL(string: Endpoint.fetchCardanoBalance(address: coin.address))!
+    func getBalance(coin: CoinMeta, address: String) async throws -> String {
+        let url = URL(string: Endpoint.fetchCardanoBalance(address: address))!
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -21,7 +21,7 @@ class CardanoService {
         
         // Koios API expects JSON body with addresses array
         let requestBody = [
-            "_addresses": [coin.address]
+            "_addresses": [address]
         ]
         
         do {

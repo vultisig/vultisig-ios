@@ -13,7 +13,7 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
     let showValue: Bool
     
     var focusedField: Binding<T?>
-    let focusedFieldEquals: T
+    let focusedFieldEquals: [T]
     var onExpand: (Bool) -> Void
     let content: () -> Content
     let valueView: () -> ValueView
@@ -49,9 +49,57 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
     init(
         title: String,
         isValid: Bool,
+        value: String,
+        showValue: Bool,
+        focusedField: Binding<T?>,
+        focusedFieldEquals: [T],
+        onExpand: @escaping (Bool) -> Void,
+        @ViewBuilder content: @escaping () -> Content
+    ) where ValueView == AnyView {
+        self.init(
+            title: title,
+            isValid: isValid,
+            showValue: showValue,
+            focusedField: focusedField,
+            focusedFieldEquals: focusedFieldEquals,
+            onExpand: onExpand,
+            content: content,
+            valueView: {
+                AnyView(Text(value)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .lineLimit(1)
+                    .truncationMode(.middle))
+            }
+        )
+    }
+    
+    init(
+        title: String,
+        isValid: Bool,
         showValue: Bool,
         focusedField: Binding<T?>,
         focusedFieldEquals: T,
+        onExpand: @escaping (Bool) -> Void,
+        @ViewBuilder content: @escaping () -> Content,
+        @ViewBuilder valueView: @escaping () -> ValueView
+    ) {
+        self.title = title
+        self.isValid = isValid
+        self.showValue = showValue
+        self.focusedField = focusedField
+        self.focusedFieldEquals = [focusedFieldEquals]
+        self.onExpand = onExpand
+        self.content = content
+        self.valueView = valueView
+    }
+    
+    init(
+        title: String,
+        isValid: Bool,
+        showValue: Bool,
+        focusedField: Binding<T?>,
+        focusedFieldEquals: [T],
         onExpand: @escaping (Bool) -> Void,
         @ViewBuilder content: @escaping () -> Content,
         @ViewBuilder valueView: @escaping () -> ValueView
@@ -106,7 +154,7 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
         }
         .onChange(of: focusedField.wrappedValue) { _, newValue in
             guard let newValue else { return }
-            isExpanded = newValue == focusedFieldEquals
+            isExpanded = focusedFieldEquals.contains(newValue) 
         }
     }
 }

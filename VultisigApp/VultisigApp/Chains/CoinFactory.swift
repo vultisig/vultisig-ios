@@ -19,15 +19,51 @@ struct CoinFactory {
         isDerived: Bool
     ) throws -> Coin {
         let publicKey = try publicKey(
-            asset: asset,
+            chain: asset.chain,
             publicKeyECDSA: publicKeyECDSA,
             publicKeyEdDSA: publicKeyEdDSA,
             hexChainCode: hexChainCode,
             isDerived: isDerived
         )
         
+        let address = try generateAddress(
+            chain: asset.chain,
+            publicKey: publicKey,
+            publicKeyEdDSA: publicKeyEdDSA
+        )
+        
+        return Coin(asset: asset, address: address, hexPublicKey: publicKey.data.hexString)
+    }
+    
+    static func generateAddress(
+        chain: Chain,
+        publicKeyECDSA: String,
+        publicKeyEdDSA: String,
+        hexChainCode: String,
+        isDerived: Bool
+    ) throws -> String {
+        let publicKey = try publicKey(
+            chain: chain,
+            publicKeyECDSA: publicKeyECDSA,
+            publicKeyEdDSA: publicKeyEdDSA,
+            hexChainCode: hexChainCode,
+            isDerived: isDerived
+        )
+        
+        return try generateAddress(
+            chain: chain,
+            publicKey: publicKey,
+            publicKeyEdDSA: publicKeyEdDSA
+        )
+    }
+    
+    static func generateAddress(
+        chain: Chain,
+        publicKey: PublicKey,
+        publicKeyEdDSA: String
+    ) throws -> String {
         var address: String
-        switch asset.chain {
+        switch chain {
         case .mayaChain:
             let anyAddress = AnyAddress(publicKey: publicKey, coin: .thorchain, hrp: "maya")
             address = anyAddress.description
@@ -44,14 +80,14 @@ struct CoinFactory {
                 throw Errors.invalidPublicKey(pubKey: "WalletCore validation failed for Cardano address: \(address)")
             }
         default:
-            address = asset.coinType.deriveAddressFromPublicKey(publicKey: publicKey)
+            address = chain.coinType.deriveAddressFromPublicKey(publicKey: publicKey)
         }
         
-        if asset.chain == .bitcoinCash {
+        if chain == .bitcoinCash {
             address = address.replacingOccurrences(of: "bitcoincash:", with: "")
         }
         
-        return Coin(asset: asset, address: address, hexPublicKey: publicKey.data.hexString)
+        return address
     }
 }
 
@@ -71,16 +107,16 @@ extension CoinFactory {
     
     
     static func publicKey(
-        asset: CoinMeta,
+        chain: Chain,
         publicKeyECDSA: String,
         publicKeyEdDSA: String,
         hexChainCode: String,
         isDerived: Bool
     ) throws -> PublicKey {
-        switch asset.chain.signingKeyType {
+        switch chain.signingKeyType {
         case .EdDSA:
             
-            if asset.chain == .cardano {
+            if chain == .cardano {
                 // For Cardano, we still need to create a proper PublicKey for transaction signing
                 // even though we're creating the address manually
                 let cardanoExtendedKey = try createCardanoExtendedKey(
@@ -108,7 +144,7 @@ extension CoinFactory {
             let derivedKey = isDerived ? publicKeyECDSA : PublicKeyHelper.getDerivedPubKey(
                 hexPubKey: publicKeyECDSA,
                 hexChainCode: hexChainCode,
-                derivePath: asset.coinType.derivationPath()
+                derivePath: chain.coinType.derivationPath()
             )
         
             guard
@@ -117,7 +153,7 @@ extension CoinFactory {
                 throw Errors.invalidPublicKey(pubKey: publicKeyECDSA)
             }
             
-            if asset.coinType == .tron {
+            if chain.coinType == .tron {
                 return publicKey.uncompressed
             }
             
