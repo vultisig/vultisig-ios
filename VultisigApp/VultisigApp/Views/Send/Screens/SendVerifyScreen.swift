@@ -50,6 +50,10 @@ struct SendVerifyScreen: View {
         }
         .onDisappear {
             sendCryptoVerifyViewModel.isLoading = false
+            // Clear password if navigating back (not forward to keysign)
+            if keysignPayload == nil {
+                tx.fastVaultPassword = .empty
+            }
         }
         .navigationDestination(item: $keysignPayload) { payload in
             SendRouteBuilder().buildPairScreen(
@@ -133,6 +137,8 @@ struct SendVerifyScreen: View {
                 LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
                     fastPasswordPresented = true
                 } longPressAction: {
+                    // Clear password for paired sign (long press)
+                    tx.fastVaultPassword = .empty
                     onSignPress()
                 }
                 .crossPlatformSheet(isPresented: $fastPasswordPresented) {

@@ -121,7 +121,11 @@ struct FastVaultEnterPasswordView: View {
                 onSubmit?()
                 dismiss()
             },
-            onError: nil)
+            onError: { error in
+                // Log authentication error - don't fail silently
+                print("Fast Vault authentication error: \(error.localizedDescription)")
+                // Error is shown by system dialog, no need to show another alert
+            })
     }
 }
 
