@@ -86,6 +86,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             Separator()
             
             getValueCell(for: "estNetworkFee", with: input.feeCrypto, secondRowText: input.feeFiat)
+                .blur(radius: input.isCalculatingFee ? 1 : 0)
         }
         .padding(24)
         .background(Theme.colors.bgSecondary)
