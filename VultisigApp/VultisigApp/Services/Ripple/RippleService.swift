@@ -59,9 +59,9 @@ class RippleService {
         return ""
     }
     
-    func getBalance(_ coin: Coin) async throws -> String {
+    func getBalance(coin: CoinMeta, address: String) async throws -> String {
         // Fetch account info and server state in parallel
-        async let accountInfoTask = self.fetchAccountsInfo(for: coin.address)
+        async let accountInfoTask = self.fetchAccountsInfo(for: address)
         async let serverStateTask = self.fetchServerState()
         
         let (accountInfo, serverState) = try await (accountInfoTask, serverStateTask)

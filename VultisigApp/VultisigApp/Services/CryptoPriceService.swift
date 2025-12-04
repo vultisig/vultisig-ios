@@ -24,6 +24,20 @@ public class CryptoPriceService: ObservableObject {
         await refresh(coins: vault.coins)
     }
     
+    func fetchPrices(coins: [CoinMeta]) async throws {
+        let sources = resolveSources(coins: coins)
+        
+        if !sources.providerIds.isEmpty {
+            try await fetchPrices(ids: sources.providerIds)
+        }
+        
+        if !sources.contracts.isEmpty {
+            for (chain, contracts) in sources.contracts {
+                try await fetchPrices(contracts: contracts, chain: chain)
+            }
+        }
+    }
+    
     func fetchPrice(coin: Coin) async throws {
         try await fetchPrices(coins: [coin])
         
@@ -58,20 +72,10 @@ private extension CryptoPriceService {
     }
     
     func fetchPrices(coins: [Coin]) async throws {
-        let sources = resolveSources(coins: coins)
-        
-        if !sources.providerIds.isEmpty {
-            try await fetchPrices(ids: sources.providerIds)
-        }
-        
-        if !sources.contracts.isEmpty {
-            for (chain, contracts) in sources.contracts {
-                try await fetchPrices(contracts: contracts, chain: chain)
-            }
-        }
+        try await fetchPrices(coins: coins.map { $0.toCoinMeta() })
     }
     
-    func resolveSources(coins: [Coin]) -> ResolvedSources {
+    func resolveSources(coins: [CoinMeta]) -> ResolvedSources {
         var providerIds: [String] = []
         var contracts: [Chain: [String]] = [:]
         

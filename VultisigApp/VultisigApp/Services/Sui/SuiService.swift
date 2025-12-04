@@ -23,16 +23,16 @@ class SuiService {
         return await (try gasPrice, try allCoins)
     }
     
-    func getBalance(coin: Coin) async throws -> String {
-        return try await getAllBalances(coin: coin)
+    func getBalance(coin: CoinMeta, address: String) async throws -> String {
+        return try await getAllBalances(coin: coin, address: address)
     }
     
-    func getAllBalances(coin: Coin) async throws -> String {
+    func getAllBalances(coin: CoinMeta, address: String) async throws -> String {
         do {
             let data = try await Utils.PostRequestRpc(
                 rpcURL: rpcURL,
                 method: "suix_getAllBalances",
-                params: [coin.address]
+                params: [address]
             )
             
             if let result = Utils.extractResultFromJson(fromData: data, path: "result") as? [[String: Any]] {

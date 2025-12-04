@@ -175,8 +175,8 @@ enum EvmService {
     
     // MARK: - Protocol Methods
     
-    func getBalance(coin: Coin) async throws -> String {
-        return try await (try service).getBalance(coin: coin)
+    func getBalance(coin: CoinMeta, address: String) async throws -> String {
+        return try await (try service).getBalance(coin: coin, address: address)
     }
     
     func getGasInfo(fromAddress: String, mode: FeeMode) async throws -> (gasPrice: BigInt, priorityFee: BigInt, nonce: Int64) {

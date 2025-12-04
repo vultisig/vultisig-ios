@@ -19,14 +19,14 @@ struct EvmServiceStruct {
     
     // MARK: - Balance Operations
     
-    func getBalance(coin: Coin) async throws -> String {
+    func getBalance(coin: CoinMeta, address: String) async throws -> String {
         if coin.isNativeToken {
-            let balance = try await fetchBalance(address: coin.address)
+            let balance = try await fetchBalance(address: address)
             return String(balance)
         } else {
             let balance = try await fetchERC20TokenBalance(
                 contractAddress: coin.contractAddress,
-                walletAddress: coin.address
+                walletAddress: address
             )
             return String(balance)
         }

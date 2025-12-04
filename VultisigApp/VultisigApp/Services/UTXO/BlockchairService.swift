@@ -18,9 +18,9 @@ actor BlockchairService {
 
     private var cacheFeePrice: [String: (data: BigInt, timestamp: Date)] = [:]
 
-    func fetchBlockchairData(coin: Coin) async throws -> Blockchair {
+    func fetchBlockchairData(coin: CoinMeta, address: String) async throws -> Blockchair {
         let coinName = coin.chain.name.lowercased()
-        let url = Endpoint.blockchairDashboard(coin.address, coinName)
+        let url = Endpoint.blockchairDashboard(address, coinName)
         let (data, _) = try await URLSession.shared.data(from: url)
         
         let decoder = JSONDecoder()
@@ -28,13 +28,17 @@ actor BlockchairService {
         
         let decodedData = try decoder.decode(BlockchairResponse.self, from: data)
 
-        guard let d = decodedData.data[coin.address] else {
+        guard let d = decodedData.data[address] else {
             throw Errors.fetchBlockchairDataFailed
         }
 
-        blockchairData.set(coin.blockchairKey, d)
+        blockchairData.set(blockchairKey(for: coin, address: address), d)
 
         return d
+    }
+    
+    func blockchairKey(for coin: CoinMeta, address: String) -> String {
+        return "\(address)-\(coin.chain.name.lowercased())"
     }
     
     func fetchSatsPrice(coin: Coin) async throws -> BigInt {

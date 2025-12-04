@@ -16,13 +16,13 @@ struct CosmosServiceStruct {
     
     // MARK: - Balance Operations
     
-    func fetchBalances(coin: Coin) async throws -> [CosmosBalance] {
+    func fetchBalances(coin: CoinMeta, address: String) async throws -> [CosmosBalance] {
         if coin.isNativeToken
             || (!coin.isNativeToken && coin.contractAddress.contains("ibc/"))
             || (!coin.isNativeToken && coin.contractAddress.contains("factory/"))
             || (!coin.isNativeToken && !coin.contractAddress.contains("terra"))
         {
-            guard let url = config.balanceURL(forAddress: coin.address) else {
+            guard let url = config.balanceURL(forAddress: address) else {
                 return [CosmosBalance]()
             }
             
@@ -31,7 +31,7 @@ struct CosmosServiceStruct {
             return balanceResponse.balances
             
         } else {
-            let balance = try await fetchWasmTokenBalances(coin: coin)
+            let balance = try await fetchWasmTokenBalances(coin: coin, address: address)
             return [CosmosBalance(denom: coin.contractAddress, amount: balance)]
         }
     }
@@ -70,8 +70,8 @@ struct CosmosServiceStruct {
     
     // MARK: - WASM Token Operations
     
-    func fetchWasmTokenBalances(coin: Coin) async throws -> String {
-        let payload = "{\"balance\":{\"address\":\"\(coin.address)\"}}"
+    func fetchWasmTokenBalances(coin: CoinMeta, address: String) async throws -> String {
+        let payload = "{\"balance\":{\"address\":\"\(address)\"}}"
         let base64Payload = payload.data(using: .utf8)?.base64EncodedString()
         
         guard let base64Payload else {

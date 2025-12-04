@@ -326,6 +326,8 @@ struct SendCryptoLogic {
     func setMaxValues(tx: SendTransaction, percentage: Double = 100) async {
         let coinName = tx.coin.chain.name.lowercased()
         let key: String = "\(tx.fromAddress)-\(coinName)"
+        let coinMeta = tx.coin.toCoinMeta()
+        let address = tx.coin.address
         
         switch tx.coin.chain {
         case .bitcoin,.dogecoin,.litecoin,.bitcoinCash,.dash, .zcash:
@@ -396,7 +398,7 @@ struct SendCryptoLogic {
             
         case .sui:
             do {
-                let rawBalance = try await sui.getBalance(coin: tx.coin)
+                let rawBalance = try await sui.getBalance(coin: coinMeta, address: address)
                 await MainActor.run { tx.coin.rawBalance = rawBalance }
                 
                 if tx.coin.isNativeToken {
@@ -484,9 +486,9 @@ struct SendCryptoLogic {
                 await MainActor.run { tx.sendMaxAmount = percentage == 100 }
                 let rawBalance: String
                 if tx.coin.isNativeToken {
-                    rawBalance = try await ton.getBalance(tx.coin)
+                    rawBalance = try await ton.getBalance(coin: coinMeta, address: address)
                 } else {
-                    rawBalance = try await ton.getJettonBalance(tx.coin)
+                    rawBalance = try await ton.getJettonBalance(coin: coinMeta, address: address)
                 }
 
                 await MainActor.run {
@@ -502,7 +504,7 @@ struct SendCryptoLogic {
 
         case .ripple:
             do {
-                let rawBalance = try await ripple.getBalance(tx.coin)
+                let rawBalance = try await ripple.getBalance(coin: coinMeta, address: address)
                 await MainActor.run {
                     tx.coin.rawBalance = rawBalance
                     var gas = BigInt.zero
@@ -519,7 +521,7 @@ struct SendCryptoLogic {
             
         case .tron:
             do {
-                let rawBalance = try await tron.getBalance(coin: tx.coin)
+                let rawBalance = try await tron.getBalance(coin: coinMeta, address: address)
                 await MainActor.run {
                     tx.coin.rawBalance = rawBalance
                     var gas = BigInt.zero
