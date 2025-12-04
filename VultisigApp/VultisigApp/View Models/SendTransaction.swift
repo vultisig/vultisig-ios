@@ -217,6 +217,7 @@ class SendTransaction: ObservableObject, Hashable {
         self.wasmContractPayload = nil  // Clear contract payload
         self.transactionType = .unspecified  // Reset transaction type
         self.memoFunctionDictionary = ThreadSafeDictionary()  // Clear memo functions
+        self.fastVaultPassword = .empty  // Clear password state
     }
     
     func parseCryptoURI(_ uri: String) {

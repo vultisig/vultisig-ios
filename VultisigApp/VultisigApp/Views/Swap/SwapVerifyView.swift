@@ -32,6 +32,10 @@ struct SwapVerifyView: View {
         }
         .onDisappear {
             swapViewModel.isLoading = false
+            // Clear password if navigating back (not forward to keysign)
+            if swapViewModel.keysignPayload == nil {
+                tx.fastVaultPassword = .empty
+            }
         }
         .onLoad {
             referredViewModel.setData()
@@ -200,6 +204,8 @@ struct SwapVerifyView: View {
             LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
                 fastPasswordPresented = true
             } longPressAction: {
+                // Clear password for paired sign (long press)
+                tx.fastVaultPassword = .empty
                 onSignPress()
             }
             .disabled(signButtonDisabled)

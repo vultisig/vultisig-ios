@@ -38,6 +38,10 @@ struct FunctionCallVerifyScreen: View {
         }
         .onDisappear {
             depositVerifyViewModel.isLoading = false
+            // Clear password if navigating back (not forward to keysign)
+            if keysignPayload == nil {
+                tx.fastVaultPassword = .empty
+            }
         }
         .alert(item: $error) { error in
             Alert(
@@ -101,6 +105,8 @@ struct FunctionCallVerifyScreen: View {
                     title: NSLocalizedString("signTransaction", comment: "")) {
                         fastPasswordPresented = true
                     } longPressAction: {
+                        // Clear password for paired sign (long press)
+                        tx.fastVaultPassword = .empty
                         onSignPress()
                     }
                     .crossPlatformSheet(isPresented: $fastPasswordPresented) {
