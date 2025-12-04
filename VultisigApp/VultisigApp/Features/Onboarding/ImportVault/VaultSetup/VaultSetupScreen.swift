@@ -198,7 +198,7 @@ struct VaultSetupScreen: View {
                     .font(Theme.fonts.footnote)
                 Spacer()
                 Icon(named: "chevron-down-small", color: Theme.colors.textPrimary, size: 16)
-                    .rotationEffect(.degrees(hintExpanded ? 180 : 0))
+                    .rotationEffect(.degrees(isExpanded.wrappedValue ? 180 : 0))
             }
             .padding(.bottom, isExpanded.wrappedValue ? 12 : 0)
         }
