@@ -203,7 +203,7 @@ private struct FunctionCallCosmosMergeView: View {
                     set: { viewModel.amountValid = $0 }
                 )
             )
-            .id("field-\(viewModel.balanceLabel)-\(viewModel.amount)")
+            .id("field-\(viewModel.selectedToken.value)")
         }
     }
 }
