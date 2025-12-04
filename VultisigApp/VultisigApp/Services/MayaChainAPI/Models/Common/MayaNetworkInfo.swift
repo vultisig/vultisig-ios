@@ -31,7 +31,7 @@ struct MayaHealth: Decodable {
     }
 
     struct LastNodeInfo: Decodable {
-        let height: Int
+        let height: Int64
         let timestamp: Int
 
         enum CodingKeys: String, CodingKey {

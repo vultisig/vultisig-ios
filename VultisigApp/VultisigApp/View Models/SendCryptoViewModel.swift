@@ -216,7 +216,6 @@ struct SendCryptoLogic {
         }
         
         let amount = tx.amountDecimal
-        let gasFee = tx.gasDecimal
         
         if amount <= 0 {
             result.errorTitle = "error"
@@ -322,7 +321,7 @@ struct SendCryptoLogic {
             tx.amountInFiat = ""
         }
     }
-    
+    @MainActor
     func setMaxValues(tx: SendTransaction, percentage: Double = 100) async {
         let coinName = tx.coin.chain.name.lowercased()
         let key: String = "\(tx.fromAddress)-\(coinName)"
@@ -331,75 +330,60 @@ struct SendCryptoLogic {
         
         switch tx.coin.chain {
         case .bitcoin,.dogecoin,.litecoin,.bitcoinCash,.dash, .zcash:
-            await MainActor.run { tx.sendMaxAmount = percentage == 100 }
+            tx.sendMaxAmount = percentage == 100
             let amount = await utxo.getByKey(key: key)?.address?.balanceInBTC ?? "0.0"
-            await MainActor.run { tx.amount = amount }
-            await MainActor.run { setPercentageAmount(tx: tx, for: percentage) }
-            await MainActor.run { convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount) }
+            tx.amount = amount
+            setPercentageAmount(tx: tx, for: percentage)
+            convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
             
         case .cardano:
-            await MainActor.run { tx.sendMaxAmount = percentage == 100 }
+            tx.sendMaxAmount = percentage == 100
             await balanceService.updateBalance(for: tx.coin)
             
             let gas = BigInt.zero
             let maxDecimals = tx.coin.decimals > 0 ? tx.coin.decimals - 1 : tx.coin.decimals
             let amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: maxDecimals))"
-            await MainActor.run { tx.amount = amount }
-            await MainActor.run { setPercentageAmount(tx: tx, for: percentage) }
-            await MainActor.run { convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount) }
-            
+            tx.amount = amount
+            setPercentageAmount(tx: tx, for: percentage)
+            convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync,.ethereumSepolia, .mantle, .hyperliquid, .sei:
             do {
                 if tx.coin.isNativeToken {
                     let evm = try await blockchainService.fetchSpecific(tx: tx)
                     let totalFeeWei = evm.fee
-                    await MainActor.run {
-                        tx.amount = "\(tx.coin.getMaxValue(totalFeeWei).formatToDecimal(digits: tx.coin.decimals))"
-                        setPercentageAmount(tx: tx, for: percentage)
-                    }
+                    tx.amount = "\(tx.coin.getMaxValue(totalFeeWei).formatToDecimal(digits: tx.coin.decimals))"
+                    setPercentageAmount(tx: tx, for: percentage)
                 } else {
-                    await MainActor.run {
-                        tx.amount = "\(tx.coin.getMaxValue(0))"
-                        setPercentageAmount(tx: tx, for: percentage)
-                    }
-                }
-            } catch {
-                await MainActor.run {
                     tx.amount = "\(tx.coin.getMaxValue(0))"
                     setPercentageAmount(tx: tx, for: percentage)
                 }
+            } catch {
+                tx.amount = "\(tx.coin.getMaxValue(0))"
+                setPercentageAmount(tx: tx, for: percentage)
                 print("Failed to get EVM balance, error: \(error.localizedDescription)")
             }
-            await MainActor.run { convertToFiat(newValue: tx.amount, tx: tx) }
-            
+            convertToFiat(newValue: tx.amount, tx: tx)
         case .solana:
             do{
                 if tx.coin.isNativeToken {
                     let rawBalance = try await sol.getSolanaBalance(coin: tx.coin)
-                    await MainActor.run {
-                        tx.coin.rawBalance = rawBalance
-                        tx.amount = "\(tx.coin.getMaxValue(SolanaHelper.defaultFeeInLamports).formatToDecimal(digits: tx.coin.decimals))"
-                        setPercentageAmount(tx: tx, for: percentage)
-                    }
+                    tx.coin.rawBalance = rawBalance
+                    tx.amount = "\(tx.coin.getMaxValue(SolanaHelper.defaultFeeInLamports).formatToDecimal(digits: tx.coin.decimals))"
+                    setPercentageAmount(tx: tx, for: percentage)
                 } else {
-                    await MainActor.run {
-                        tx.amount = "\(tx.coin.getMaxValue(0))"
-                        setPercentageAmount(tx: tx, for: percentage)
-                    }
-                }
-            } catch {
-                await MainActor.run {
                     tx.amount = "\(tx.coin.getMaxValue(0))"
                     setPercentageAmount(tx: tx, for: percentage)
                 }
+            } catch {
+                tx.amount = "\(tx.coin.getMaxValue(0))"
+                setPercentageAmount(tx: tx, for: percentage)
                 print("Failed to get SOLANA balance, error: \(error.localizedDescription)")
             }
-            await MainActor.run { convertToFiat(newValue: tx.amount, tx: tx) }
-            
+            convertToFiat(newValue: tx.amount, tx: tx)
         case .sui:
             do {
                 let rawBalance = try await sui.getBalance(coin: coinMeta, address: address)
-                await MainActor.run { tx.coin.rawBalance = rawBalance }
+                tx.coin.rawBalance = rawBalance
                 
                 if tx.coin.isNativeToken {
                     var gas = BigInt.zero
@@ -408,11 +392,8 @@ struct SendCryptoLogic {
                         let originalAmount = tx.amount
                         let maxAmount = tx.coin.rawBalance.toBigInt(decimals: tx.coin.decimals)
                         let maxDecimal = Decimal(maxAmount) / pow(10, tx.coin.decimals)
-                        await MainActor.run {
-                            tx.amount = "\(maxDecimal.formatToDecimal(digits: tx.coin.decimals))"
-                            tx.sendMaxAmount = true
-                        }
-                        
+                        tx.amount = "\(maxDecimal.formatToDecimal(digits: tx.coin.decimals))"
+                        tx.sendMaxAmount = true
                         do {
                             let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
                             if case .Sui(_, _, let gasBudget) = chainSpecific {
@@ -423,22 +404,15 @@ struct SendCryptoLogic {
                             gas = (BigInt(3000000) * 115) / 100
                         }
                         
-                        await MainActor.run {
-                            tx.sendMaxAmount = false
-                            tx.amount = originalAmount
-                        }
+                        tx.sendMaxAmount = false
+                        tx.amount = originalAmount
                     }
-                    
-                    await MainActor.run {
-                        tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
-                        setPercentageAmount(tx: tx, for: percentage)
-                        convertToFiat(newValue: tx.amount, tx: tx)
-                    }
+                    tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
+                    setPercentageAmount(tx: tx, for: percentage)
+                    convertToFiat(newValue: tx.amount, tx: tx)
                 } else {
-                    await MainActor.run {
-                        tx.amount = "\(tx.coin.getMaxValue(0))"
-                        setPercentageAmount(tx: tx, for: percentage)
-                    }
+                    tx.amount = "\(tx.coin.getMaxValue(0))"
+                    setPercentageAmount(tx: tx, for: percentage)
                 }
             } catch {
                 print("⚠️ Failed to load Sui balance: \(error.localizedDescription)")
@@ -452,52 +426,42 @@ struct SendCryptoLogic {
                 gas = BigInt(tx.gasDecimal.description,radix:10) ?? 0
             }
             
-            await MainActor.run {
-                tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
-                setPercentageAmount(tx: tx, for: percentage)
-                convertToFiat(newValue: tx.amount, tx: tx)
-            }
-            
+            tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
+            setPercentageAmount(tx: tx, for: percentage)
+            convertToFiat(newValue: tx.amount, tx: tx)
         case .polkadot:
             do {
-                await MainActor.run { tx.sendMaxAmount = percentage == 100 }
+                tx.sendMaxAmount = percentage == 100
                 await balanceService.updateBalance(for: tx.coin)
                 
-                var gas = BigInt.zero
                 let dot = try await blockchainService.fetchSpecific(tx: tx)
-                gas = dot.gas
+                let gas = dot.gas
                 
-                await MainActor.run {
-                    tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
-                    setPercentageAmount(tx: tx, for: percentage)
-                    convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
-                }
+                tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
+                setPercentageAmount(tx: tx, for: percentage)
+                convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
             } catch {
-                await MainActor.run {
-                    tx.amount = "\(tx.coin.getMaxValue(0))"
-                    setPercentageAmount(tx: tx, for: percentage)
-                    convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
-                }
+                tx.amount = "\(tx.coin.getMaxValue(0))"
+                setPercentageAmount(tx: tx, for: percentage)
+                convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
+                
                 print("Failed to get Polkadot dynamic fee, error: \(error.localizedDescription)")
             }
             
         case .ton:
             do {
-                await MainActor.run { tx.sendMaxAmount = percentage == 100 }
+                tx.sendMaxAmount = percentage == 100
                 let rawBalance: String
                 if tx.coin.isNativeToken {
                     rawBalance = try await ton.getBalance(coin: coinMeta, address: address)
                 } else {
                     rawBalance = try await ton.getJettonBalance(coin: coinMeta, address: address)
                 }
-
-                await MainActor.run {
-                    tx.coin.rawBalance = rawBalance
-                    let gasForMax: BigInt = tx.coin.isNativeToken && percentage != 100 ? TonHelper.defaultFee : 0
-                    tx.amount = "\(tx.coin.getMaxValue(gasForMax).formatToDecimal(digits: tx.coin.decimals))"
-                    setPercentageAmount(tx: tx, for: percentage)
-                    convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
-                }
+                tx.coin.rawBalance = rawBalance
+                let gasForMax: BigInt = tx.coin.isNativeToken && percentage != 100 ? TonHelper.defaultFee : 0
+                tx.amount = "\(tx.coin.getMaxValue(gasForMax).formatToDecimal(digits: tx.coin.decimals))"
+                setPercentageAmount(tx: tx, for: percentage)
+                convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
             } catch {
                 print("fail to load ton balances,error:\(error.localizedDescription)")
             }
@@ -505,33 +469,28 @@ struct SendCryptoLogic {
         case .ripple:
             do {
                 let rawBalance = try await ripple.getBalance(coin: coinMeta, address: address)
-                await MainActor.run {
-                    tx.coin.rawBalance = rawBalance
-                    var gas = BigInt.zero
-                    if percentage == 100 {
-                        gas = tx.coin.feeDefault.toBigInt()
-                    }
-                    tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
-                    setPercentageAmount(tx: tx, for: percentage)
-                    convertToFiat(newValue: tx.amount, tx: tx)
+                tx.coin.rawBalance = rawBalance
+                var gas = BigInt.zero
+                if percentage == 100 {
+                    gas = tx.coin.feeDefault.toBigInt()
                 }
+                tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
+                setPercentageAmount(tx: tx, for: percentage)
+                convertToFiat(newValue: tx.amount, tx: tx)
             } catch {
                 print("fail to load ripple balances,error:\(error.localizedDescription)")
             }
-            
         case .tron:
             do {
                 let rawBalance = try await tron.getBalance(coin: coinMeta, address: address)
-                await MainActor.run {
-                    tx.coin.rawBalance = rawBalance
-                    var gas = BigInt.zero
-                    if percentage == 100 {
-                        gas = tx.coin.feeDefault.toBigInt()
-                    }
-                    tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
-                    setPercentageAmount(tx: tx, for: percentage)
-                    convertToFiat(newValue: tx.amount, tx: tx)
+                tx.coin.rawBalance = rawBalance
+                var gas = BigInt.zero
+                if percentage == 100 {
+                    gas = tx.coin.feeDefault.toBigInt()
                 }
+                tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
+                setPercentageAmount(tx: tx, for: percentage)
+                convertToFiat(newValue: tx.amount, tx: tx)
             } catch {
                 print("fail to load TRON balances,error:\(error.localizedDescription)")
             }

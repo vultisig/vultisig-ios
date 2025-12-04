@@ -45,7 +45,7 @@ struct VaultSetupScreen: View {
             focusedFieldBinding = .name
             viewModel.onLoad()
         }
-        .onChange(of: focusedFieldBinding) { oldValue, newValue in
+        .onChange(of: focusedFieldBinding) { _, newValue in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 focusedField = newValue
             }
