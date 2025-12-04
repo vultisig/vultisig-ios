@@ -106,6 +106,7 @@
 		13398B0C2EE087AE002419F0 /* VaultSetupViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13398B0B2EE087AA002419F0 /* VaultSetupViewModel.swift */; };
 		13398B0F2EE08952002419F0 /* EmailValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13398B0E2EE08950002419F0 /* EmailValidator.swift */; };
 		13398B112EE08AE4002419F0 /* VaultNameValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13398B102EE08AE0002419F0 /* VaultNameValidator.swift */; };
+		13398B162EE0F262002419F0 /* Wallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13398B152EE0F261002419F0 /* Wallet.swift */; };
 		13398AE02EE0761F002419F0 /* MayaMimir.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13398ADF2EE0761F002419F0 /* MayaMimir.swift */; };
 		13398AE32EE0788E002419F0 /* UnstakeMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13398AE22EE0788B002419F0 /* UnstakeMetadata.swift */; };
 		133CA3CC2E8AD183009588F3 /* CoinDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CA3CB2E8AD180009588F3 /* CoinDetailScreen.swift */; };
@@ -1335,6 +1336,7 @@
 		13398B0B2EE087AA002419F0 /* VaultSetupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultSetupViewModel.swift; sourceTree = "<group>"; };
 		13398B0E2EE08950002419F0 /* EmailValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailValidator.swift; sourceTree = "<group>"; };
 		13398B102EE08AE0002419F0 /* VaultNameValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultNameValidator.swift; sourceTree = "<group>"; };
+		13398B152EE0F261002419F0 /* Wallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Wallet.swift; sourceTree = "<group>"; };
 		13398ADF2EE0761F002419F0 /* MayaMimir.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaMimir.swift; sourceTree = "<group>"; };
 		13398AE22EE0788B002419F0 /* UnstakeMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnstakeMetadata.swift; sourceTree = "<group>"; };
 		133CA3CB2E8AD180009588F3 /* CoinDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDetailScreen.swift; sourceTree = "<group>"; };
@@ -5269,6 +5271,7 @@
 		A65649D62B96602700E4B329 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				13398B152EE0F261002419F0 /* Wallet.swift */,
 				1348562C2EB519EA003D10BE /* Combine */,
 				13453ACB2E4A433000D76629 /* Bundle.swift */,
 				13D764392E4127AF00F048DE /* Array.swift */,
@@ -7172,6 +7175,7 @@
 				13B25BEB2E82C93D002BCF55 /* CGMutablePath+LineHelpers.swift in Sources */,
 				13DACCC82EDF674F00BE0F97 /* KeyImportChainsSetupViewModel.swift in Sources */,
 				13B25BEC2E82C93D002BCF55 /* QRCodeStyle.swift in Sources */,
+				13398B162EE0F262002419F0 /* Wallet.swift in Sources */,
 				13B25BED2E82C93D002BCF55 /* QRCodeShape.swift in Sources */,
 				13B25BEF2E82C93D002BCF55 /* QRCodePixelShapePixel.swift in Sources */,
 				134FF3682EBA499F00683169 /* BondTransactionBuilder.swift in Sources */,

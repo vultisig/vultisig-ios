@@ -36,7 +36,7 @@ struct KeyImportChainsSetupScreen: View {
             .transition(.opacity)
         }
         .animation(.interpolatingSpring, value: viewModel.state)
-        .onLoad(perform: { await viewModel.onLoad() })
+        .onLoad(perform: { await viewModel.onLoad(mnemonic: mnemonic) })
         .navigationDestination(isPresented: $presentVaultSetup) {
             VaultSetupScreen(
                 tssType: .KeyImport,

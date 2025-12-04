@@ -164,30 +164,36 @@ struct CoinService {
         return try addToChain(asset: asset, to: vault, priceProviderId: priceProviderId)
     }
     
-    static func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async {
-        do {
-            var tokens: [CoinMeta] = []
-            switch nativeToken.chain.chainType {
-            case .EVM :
-                let service = try EvmService.getService(forChain: nativeToken.chain)
-                tokens = try await service.getTokens(nativeToken: nativeToken)
-            case .Solana:
-                tokens = try await SolanaService.shared.fetchTokens(for: nativeToken.address)
-            case .Sui:
-                tokens = try await SuiService.shared.getAllTokensWithMetadata(coin: nativeToken)
-            case .THORChain:
-                switch nativeToken.chain {
-                case .thorChain, .thorChainStagenet:
-                    let service = ThorchainServiceFactory.getService(for: nativeToken.chain)
-                    tokens = try await service.fetchTokens(nativeToken.address)
-                case .mayaChain:
-                    tokens = try await MayachainService.shared.fetchTokens(nativeToken.address)
-                default:
-                    tokens = []
-                }
+    static func fetchDiscoveredTokens(nativeCoin: CoinMeta, address: String) async throws -> [CoinMeta] {
+        var tokens: [CoinMeta] = []
+        switch nativeCoin.chain.chainType {
+        case .EVM :
+            let service = try EvmService.getService(forChain: nativeCoin.chain)
+            tokens = try await service.getTokens(nativeToken: nativeCoin, address: address)
+        case .Solana:
+            tokens = try await SolanaService.shared.fetchTokens(for: address)
+        case .Sui:
+            tokens = try await SuiService.shared.getAllTokensWithMetadata(address: address)
+        case .THORChain:
+            switch nativeCoin.chain {
+            case .thorChain, .thorChainStagenet:
+                let service = ThorchainServiceFactory.getService(for: nativeCoin.chain)
+                tokens = try await service.fetchTokens(address)
+            case .mayaChain:
+                tokens = try await MayachainService.shared.fetchTokens(address)
             default:
                 tokens = []
             }
+        default:
+            tokens = []
+        }
+        
+        return tokens
+    }
+    
+    static func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async {
+        do {
+            var tokens = try await fetchDiscoveredTokens(nativeCoin: nativeToken.toCoinMeta(), address: nativeToken.address)
             
             for token in tokens {
                 do {

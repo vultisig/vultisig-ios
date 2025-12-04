@@ -101,11 +101,15 @@ class SolanaService {
     }
     
     func getSolanaBalance(coin: Coin) async throws -> String {
+        try await getSolanaBalance(coin: coin.toCoinMeta(), address: coin.address)
+    }
+    
+    func getSolanaBalance(coin: CoinMeta, address: String) async throws -> String {
         if coin.isNativeToken {
             let data = try await Utils.PostRequestRpc(
                 rpcURL: rpcURL,
                 method: "getBalance",
-                params: [coin.address]
+                params: [address]
             )
             
             guard
@@ -120,7 +124,7 @@ class SolanaService {
         } else {
             guard
                 let balance = try await fetchTokenBalance(
-                    for: coin.address,
+                    for: address,
                     contractAddress: coin.contractAddress
                 )
             else { return "0" }
