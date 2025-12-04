@@ -15,6 +15,7 @@ struct SendCryptoVerifySummary {
     let memoFunctionDictionary: [String: String]?
     let feeCrypto: String
     let feeFiat: String
+    let isCalculatingFee: Bool
     let coinImage: String
     let amount: String
     let coinTicker: String
@@ -30,6 +31,7 @@ struct SendCryptoVerifySummary {
         memoFunctionDictionary: [String : String]? = nil,
         feeCrypto: String,
         feeFiat: String,
+        isCalculatingFee: Bool = false,
         coinImage: String,
         amount: String,
         coinTicker: String
@@ -43,6 +45,7 @@ struct SendCryptoVerifySummary {
         self.memoFunctionDictionary = memoFunctionDictionary
         self.feeCrypto = feeCrypto
         self.feeFiat = feeFiat
+        self.isCalculatingFee = isCalculatingFee
         self.coinImage = coinImage
         self.amount = amount
         self.coinTicker = coinTicker

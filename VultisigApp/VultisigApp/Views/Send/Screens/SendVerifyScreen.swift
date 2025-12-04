@@ -26,7 +26,6 @@ struct SendVerifyScreen: View {
                 fields
                 pairedSignButton
             }
-            .blur(radius: sendCryptoVerifyViewModel.isLoading ? 1 : 0)
         }
         .alert(item: $error) { error in
             Alert(
@@ -73,6 +72,7 @@ struct SendVerifyScreen: View {
                 memo: tx.memo,
                 feeCrypto: tx.isCalculatingFee ? "Loading..." : tx.gasInReadable,
                 feeFiat: tx.isCalculatingFee ? "" : CryptoAmountFormatter.feesInReadable(tx: tx, vault: vault),
+                isCalculatingFee: tx.isCalculatingFee,
                 coinImage: tx.coin.logo,
                 amount: tx.amount,
                 coinTicker: tx.coin.ticker
