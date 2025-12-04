@@ -27,7 +27,7 @@ final class RateProvider {
 
     static let shared = RateProvider()
 
-    static func cryptoId(for coin: Coin) -> CryptoId {
+    static func cryptoId(for coin: CoinMeta) -> CryptoId {
         switch coin.chain.chainType {
         case .EVM, .Solana, .Sui, .THORChain:
             if coin.isNativeToken || !coin.priceProviderId.isEmpty {
@@ -80,13 +80,17 @@ final class RateProvider {
         }
     }
     
-    func fiatBalance(value: Decimal, coin: Coin, rate: Rate, currency: SettingsCurrency = .current) -> Decimal {
+    func fiatBalance(value: Decimal, coin: CoinMeta, rate: Rate, currency: SettingsCurrency = .current) -> Decimal {
         let result = value * Decimal(rate.value)
         // Don't truncate here - let the formatter handle precision
         return result
     }
 
     func fiatBalance(value: Decimal, coin: Coin, currency: SettingsCurrency = .current) -> Decimal {
+        fiatBalance(value: value, coin: coin.toCoinMeta(), currency: currency)
+    }
+    
+    func fiatBalance(value: Decimal, coin: CoinMeta, currency: SettingsCurrency = .current) -> Decimal {
         guard let rate = rate(for: coin, currency: currency) else {
             return .zero
         }
@@ -94,7 +98,7 @@ final class RateProvider {
     }
 
     func fiatBalance(for coin: Coin, currency: SettingsCurrency = .current) -> Decimal {
-        return fiatBalance(value: coin.balanceDecimal, coin: coin, currency: currency)
+        return fiatBalance(value: coin.balanceDecimal, coin: coin.toCoinMeta(), currency: currency)
     }
 
     func fiatBalanceString(for coin: Coin, currency: SettingsCurrency = .current) -> String {
@@ -102,22 +106,26 @@ final class RateProvider {
     }
     
     func fiatBalanceString(value: Decimal, coin: Coin, rate: Rate, currency: SettingsCurrency = .current) -> String {
-        let balance = fiatBalance(value: value, coin: coin, rate: rate, currency: currency)
+        let balance = fiatBalance(value: value, coin: coin.toCoinMeta(), rate: rate, currency: currency)
         return balance.formatToFiat(includeCurrencySymbol: true)
     }
 
     func fiatBalanceString(value: Decimal, coin: Coin, currency: SettingsCurrency = .current) -> String {
-        let balance = fiatBalance(value: value, coin: coin, currency: currency)
+        let balance = fiatBalance(value: value, coin: coin.toCoinMeta(), currency: currency)
         return balance.formatToFiat(includeCurrencySymbol: true)
     }
     
     /// Format fiat balance for fee display with more decimal places (e.g., $0.0065 instead of $0.00)
     func fiatFeeString(value: Decimal, coin: Coin, currency: SettingsCurrency = .current) -> String {
-        let balance = fiatBalance(value: value, coin: coin, currency: currency)
+        let balance = fiatBalance(value: value, coin: coin.toCoinMeta(), currency: currency)
         return balance.formatToFiatForFee(includeCurrencySymbol: true)
     }
 
     func rate(for coin: Coin, currency: SettingsCurrency = .current) -> Rate? {
+        rate(for: coin.toCoinMeta(), currency: currency)
+    }
+    
+    func rate(for coin: CoinMeta, currency: SettingsCurrency = .current) -> Rate? {
         let cryptoId = RateProvider.cryptoId(for: coin)
         let identifier = Rate.identifier(fiat: currency.rawValue, crypto: cryptoId.id)
         return rates.first(where: { $0.id == identifier })

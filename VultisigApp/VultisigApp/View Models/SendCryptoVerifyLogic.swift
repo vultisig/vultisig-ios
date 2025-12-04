@@ -109,7 +109,7 @@ struct SendCryptoVerifyLogic {
         // Force fresh UTXO fetch for fee calculation (ONLY for UTXO chains, not Cardano)
         if tx.coin.chain.chainType == .UTXO {
             await BlockchairService.shared.clearUTXOCache(for: tx.coin)
-            let _ = try await BlockchairService.shared.fetchBlockchairData(coin: tx.coin)
+            let _ = try await BlockchairService.shared.fetchBlockchairData(coin: tx.coin.toCoinMeta(), address: tx.coin.address)
         }
         // Cardano uses CardanoService.getUTXOs() which is called inside KeysignPayloadFactory
         
@@ -166,7 +166,7 @@ struct SendCryptoVerifyLogic {
     func validateUtxosIfNeeded(tx: SendTransaction) async throws {
         if tx.coin.chain.chainType == ChainType.UTXO {
             do {
-                _ = try await utxo.fetchBlockchairData(coin: tx.coin)
+                _ = try await utxo.fetchBlockchairData(coin: tx.coin.toCoinMeta(), address: tx.coin.address)
             } catch {
                 print("Failed to fetch UTXO data from Blockchair, error: \(error.localizedDescription)")
                 throw HelperError.runtimeError("Failed to fetch UTXO data. Please check your internet connection and try again.")

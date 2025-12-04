@@ -11,7 +11,7 @@ struct KeyImportChainsSetupScreen: View {
     let mnemonic: String
     
     @StateObject var viewModel = KeyImportChainsSetupViewModel()
-    @State var presentPeersScreen: Bool = false
+    @State var presentVaultSetup: Bool = false
     
     var body: some View {
         Screen(title: "importSeedphrase".localized) {
@@ -23,28 +23,23 @@ struct KeyImportChainsSetupScreen: View {
                     KeyImportActiveChainsView(
                         activeChains: viewModel.activeChains,
                         maxChains: viewModel.maxChains,
-                        onImport: { presentPeersScreen = true },
+                        onImport: { presentVaultSetup = true },
                         onCustomize: onCustomizeChains
                     )
                 case .customizeChains:
                     KeyImportCustomizeChainsView(
                         viewModel: viewModel,
-                        onImport: { presentPeersScreen = true }
+                        onImport: { presentVaultSetup = true }
                     )
                 }
             }
             .transition(.opacity)
         }
         .animation(.interpolatingSpring, value: viewModel.state)
-        .onLoad(perform: { await viewModel.onLoad() })
-        // TODO: - Remove - only for testing, should go to vault setup screen
-        .navigationDestination(isPresented: $presentPeersScreen) {
-            PeerDiscoveryView(
+        .onLoad(perform: { await viewModel.onLoad(mnemonic: mnemonic) })
+        .navigationDestination(isPresented: $presentVaultSetup) {
+            VaultSetupScreen(
                 tssType: .KeyImport,
-                vault: Vault(name: "Test seedphrase " + UUID().uuidString, libType: .KeyImport),
-                selectedTab: .secure,
-                // TODO: - Use email and pass from form setup screen
-                fastSignConfig: .init(email: "test@gmail.com", password: "t", hint: nil, isExist: false),
                 keyImportInput: KeyImportInput(
                     mnemnonic: mnemonic,
                     chains: viewModel.chainsToImport

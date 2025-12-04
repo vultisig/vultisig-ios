@@ -40,9 +40,9 @@ class TonService {
         }
     }
     
-    func getTONBalance(_ coin: Coin) async throws -> String {
+    func getTONBalance(_ coin: CoinMeta, address: String) async throws -> String {
         
-        guard let url = URL(string: Endpoint.fetchTonBalance(address: coin.address)) else {
+        guard let url = URL(string: Endpoint.fetchTonBalance(address: address)) else {
             throw URLError(.badURL)
         }
         let request = URLRequest(url: url)
@@ -56,11 +56,11 @@ class TonService {
         return .zero
     }
     
-    func getBalance(_ coin: Coin) async throws -> String {
+    func getBalance(coin: CoinMeta, address: String) async throws -> String {
         if coin.isNativeToken {
-            return try await getTONBalance(coin)
+            return try await getTONBalance(coin, address: address)
         } else {
-            return try await getJettonBalance(coin)
+            return try await getJettonBalance(coin: coin, address: address)
         }
     }
     
@@ -80,9 +80,9 @@ class TonService {
     }
     
     
-    func getJettonBalance(_ coin: Coin) async throws -> String {
+    func getJettonBalance(coin: CoinMeta, address: String) async throws -> String {
         // Use Vultisig proxy jetton wallets endpoint (matches Android)
-        guard let url = URL(string: Endpoint.fetchTonJettonBalance(address: coin.address, jettonAddress: coin.contractAddress)) else {
+        guard let url = URL(string: Endpoint.fetchTonJettonBalance(address: address, jettonAddress: coin.contractAddress)) else {
             throw URLError(.badURL)
         }
         

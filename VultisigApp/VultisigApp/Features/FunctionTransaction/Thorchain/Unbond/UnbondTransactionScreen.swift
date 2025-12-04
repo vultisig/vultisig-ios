@@ -20,7 +20,7 @@ struct UnbondTransactionScreen: View {
     @State var percentageSelected: Double?
     
     var body: some View {
-        TransactionFormScreen(
+        FormScreen(
             title: "unbondRune".localized,
             validForm: $viewModel.validForm,
             onContinue: onContinue

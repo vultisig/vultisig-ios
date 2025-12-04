@@ -1085,4 +1085,8 @@
 "selectChainsToImport" = "Select %d chains or more you want to import.";
 "addOtherChains" = "Add other chains";
 "youCanSelectXChains" = "You can only select %d chains at a time";
+"vaultSetup" = "Vault Setup";
+"reEnterPassword" = "Re-enter password";
+"addHint" = "Add Hint (Optional)";
+"addReferral" = "Add Referral";
 "cacaoUnstakeMaturityMessage" = "%@ until deposit maturity reached";

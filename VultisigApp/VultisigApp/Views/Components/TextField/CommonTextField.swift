@@ -15,7 +15,7 @@ struct CommonTextField<TrailingView: View>: View {
     @Environment(\.isEnabled) var isEnabled
     @Binding var text: String
     let label: String?
-    let placeholder: String
+    let placeholder: String?
     @Binding var isSecure: Bool
     @Binding var error: String?
     @Binding var isValid: Bool?
@@ -29,7 +29,7 @@ struct CommonTextField<TrailingView: View>: View {
     init(
         text: Binding<String>,
         label: String? = nil,
-        placeholder: String,
+        placeholder: String?,
         isSecure: Binding<Bool> = .constant(false),
         error: Binding<String?> = .constant(nil),
         isValid: Binding<Bool?> = .constant(nil),
@@ -55,7 +55,7 @@ struct CommonTextField<TrailingView: View>: View {
     init(
         text: Binding<String>,
         label: String? = nil,
-        placeholder: String,
+        placeholder: String?,
         isSecure: Binding<Bool> = .constant(false),
         error: Binding<String?> = .constant(nil),
         isValid: Binding<Bool?> = .constant(nil),
@@ -163,9 +163,9 @@ struct CommonTextField<TrailingView: View>: View {
     var textField: some View {
         Group {
             if isSecure {
-                SecureField(placeholder.localized, text: $text)
+                SecureField(placeholder?.localized ?? .empty, text: $text)
             } else {
-                TextField(placeholder.localized, text: $text)
+                TextField(placeholder?.localized ?? .empty, text: $text)
             }
         }
         .frame(height: height)
