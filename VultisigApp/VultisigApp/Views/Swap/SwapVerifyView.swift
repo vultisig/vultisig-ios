@@ -97,6 +97,7 @@ struct SwapVerifyView: View {
                         with: swapViewModel.swapFeeString(tx: tx),
                         bracketValue:nil
                     )
+                    .blur(radius: swapViewModel.isLoadingFees ? 1 : 0)
                 }
                 
                 if swapViewModel.showTotalFees(tx: tx) {
@@ -105,6 +106,7 @@ struct SwapVerifyView: View {
                         for: "maxTotalFee",
                         with: swapViewModel.totalFeeString(tx: tx)
                     )
+                    .blur(radius: swapViewModel.isLoadingFees ? 1 : 0)
                 }
                 
                 separator
