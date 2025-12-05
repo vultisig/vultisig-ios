@@ -49,18 +49,18 @@ class AppViewModel: ObservableObject {
     
     func loadSelectedVault(for vaults: [Vault]) {
         if vaultName.isEmpty || selectedPubKeyECDSA.isEmpty {
-            set(selectedVault: vaults.first)
+            set(selectedVault: nil, showingVaultSelector: true)
             return
         }
 
         for vault in vaults {
-            if vaultName==vault.name && selectedPubKeyECDSA==vault.pubKeyECDSA {
+            if vaultName == vault.name && selectedPubKeyECDSA == vault.pubKeyECDSA {
                 set(selectedVault: vault)
                 return
             }
         }
 
-        set(selectedVault: vaults.first)
+        set(selectedVault: nil, showingVaultSelector: true)
     }
     
     func authenticateUser() {

@@ -203,11 +203,7 @@ struct DeeplinkLogic {
                 vault.coins.contains { $0.chain.name.lowercased() == chainName.lowercased() }
             }
         }
-        
-        if result.selectedVault == nil && !vaults.isEmpty {
-            result.selectedVault = vaults.first
-        }
-        
+
         result.shouldNotify = true
         return result
     }
