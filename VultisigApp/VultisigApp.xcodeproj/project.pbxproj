@@ -103,12 +103,12 @@
 		1336BB3A2E81767000597070 /* ChainDetailListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1336BB392E81766B00597070 /* ChainDetailListView.swift */; };
 		1336BB3C2E81774400597070 /* ChainDetailHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1336BB3B2E81774000597070 /* ChainDetailHeaderView.swift */; };
 		1336BB3E2E817DE300597070 /* TokenCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1336BB3D2E817DDC00597070 /* TokenCellView.swift */; };
+		13398AE02EE0761F002419F0 /* MayaMimir.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13398ADF2EE0761F002419F0 /* MayaMimir.swift */; };
+		13398AE32EE0788E002419F0 /* UnstakeMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13398AE22EE0788B002419F0 /* UnstakeMetadata.swift */; };
 		13398B0C2EE087AE002419F0 /* VaultSetupViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13398B0B2EE087AA002419F0 /* VaultSetupViewModel.swift */; };
 		13398B0F2EE08952002419F0 /* EmailValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13398B0E2EE08950002419F0 /* EmailValidator.swift */; };
 		13398B112EE08AE4002419F0 /* VaultNameValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13398B102EE08AE0002419F0 /* VaultNameValidator.swift */; };
 		13398B162EE0F262002419F0 /* Wallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13398B152EE0F261002419F0 /* Wallet.swift */; };
-		13398AE02EE0761F002419F0 /* MayaMimir.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13398ADF2EE0761F002419F0 /* MayaMimir.swift */; };
-		13398AE32EE0788E002419F0 /* UnstakeMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13398AE22EE0788B002419F0 /* UnstakeMetadata.swift */; };
 		133CA3CC2E8AD183009588F3 /* CoinDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CA3CB2E8AD180009588F3 /* CoinDetailScreen.swift */; };
 		133CA3CF2E8ADC5A009588F3 /* CoinDetailHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CA3CE2E8ADC56009588F3 /* CoinDetailHeaderView.swift */; };
 		133CA3D22E8ADEE1009588F3 /* CoinDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CA3D12E8ADEDC009588F3 /* CoinDetailViewModel.swift */; };
@@ -1333,12 +1333,12 @@
 		1336BB392E81766B00597070 /* ChainDetailListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailListView.swift; sourceTree = "<group>"; };
 		1336BB3B2E81774000597070 /* ChainDetailHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailHeaderView.swift; sourceTree = "<group>"; };
 		1336BB3D2E817DDC00597070 /* TokenCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenCellView.swift; sourceTree = "<group>"; };
+		13398ADF2EE0761F002419F0 /* MayaMimir.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaMimir.swift; sourceTree = "<group>"; };
+		13398AE22EE0788B002419F0 /* UnstakeMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnstakeMetadata.swift; sourceTree = "<group>"; };
 		13398B0B2EE087AA002419F0 /* VaultSetupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultSetupViewModel.swift; sourceTree = "<group>"; };
 		13398B0E2EE08950002419F0 /* EmailValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailValidator.swift; sourceTree = "<group>"; };
 		13398B102EE08AE0002419F0 /* VaultNameValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultNameValidator.swift; sourceTree = "<group>"; };
 		13398B152EE0F261002419F0 /* Wallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Wallet.swift; sourceTree = "<group>"; };
-		13398ADF2EE0761F002419F0 /* MayaMimir.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaMimir.swift; sourceTree = "<group>"; };
-		13398AE22EE0788B002419F0 /* UnstakeMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnstakeMetadata.swift; sourceTree = "<group>"; };
 		133CA3CB2E8AD180009588F3 /* CoinDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDetailScreen.swift; sourceTree = "<group>"; };
 		133CA3CE2E8ADC56009588F3 /* CoinDetailHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDetailHeaderView.swift; sourceTree = "<group>"; };
 		133CA3D12E8ADEDC009588F3 /* CoinDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDetailViewModel.swift; sourceTree = "<group>"; };
@@ -7756,7 +7756,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 30;
+				CURRENT_PROJECT_VERSION = 31;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
@@ -7819,7 +7819,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 30;
+				CURRENT_PROJECT_VERSION = 31;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
