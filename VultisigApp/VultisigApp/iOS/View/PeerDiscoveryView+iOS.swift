@@ -26,7 +26,7 @@ extension PeerDiscoveryView {
                 screenHeight = proxy.size.height
                 setData()
             }
-            .crossPlatformToolbar("scanQR".localized) {
+            .crossPlatformToolbar(NSLocalizedString(getHeaderTitle(),comment: "")) {
                 CustomToolbarItem(placement: .trailing) {
                     if isShareButtonVisible {
                         NavigationQRShareButton(

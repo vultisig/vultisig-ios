@@ -153,14 +153,6 @@ extension PeerDiscoveryView {
         min(screenWidth/2.5, screenHeight/2.5)
     }
     
-    private func getHeaderTitle() -> String {
-        if viewModel.status == .WaitingForDevices {
-            tssType == .Migrate ? "" : "scanQR"
-        } else if tssType == .Migrate {
-            ""
-        } else {
-            "creatingVault"
-        }
-    }
+    
 }
 #endif

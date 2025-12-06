@@ -56,7 +56,7 @@
 "backupNowWarning" = "Sichern Sie Ihren Tresor auf jedem Gerät einzeln!";
 "backupOptionsBox1" = "Standardmäßig ist Ihre Sicherung ohne zusätzliches Passwort sicher, da Sie Vault -Freigaben an verschiedenen Orten speichern.";
 "backupOptionsBox1Highlighted" = "sicher ohne";
-"backupOptionsBox2" = "Wenn Sie ein Passwort hinzufügen möchten, wird dies verwendet, um die Sicherungsdatei zu verschlüsseln.";
+"backupOptionsBox2" = "Wenn Sie ein Passwort hinzufügen, wird Ihr Tresor-Passwort zur Verschlüsselung der Sicherungsdatei verwendet.";
 "backupOptionsBox2Highlighted" = "verschlüsseln";
 "backupOptionsBox3" = "Denken Sie daran: Wenn Sie Ihr Gewölbekennwort vergessen, kann es nicht zurückgesetzt oder wiederhergestellt werden.";
 "backupOptionsBox3Highlighted" = "kann nicht";

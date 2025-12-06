@@ -56,8 +56,8 @@
 "backupNowWarning" = "在每个设备上单独备份您的保险库！";
 "backupOptionsBox1" = "默认情况下，您的备份是安全的，无需额外密码，因为您将保险库份额存储在不同位置";
 "backupOptionsBox1Highlighted" = "无需";
-"backupOptionsBox2" = "如果您选择添加密码，这将用于加密备份文件";
-"backupOptionsBox2Highlighted" = "加密";
+"backupOptionsBox2" = "如果您选择添加密码，您的保险库密码将用于加密备份文件";
+"backupOptionsBox2Highlighted" = "保险库密码";
 "backupOptionsBox3" = "记住：如果您忘记保险库密码，它将无法重置或恢复";
 "backupOptionsBox3Highlighted" = "无法";
 "backupOptionsTitle" = "您想用密码加密备份吗？";

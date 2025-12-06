@@ -71,6 +71,9 @@ struct PeerDiscoveryView: View {
                 )
                 setData()
                 viewModel.startDiscovery()
+                if selectedTab == .fast {
+                    hideBackButton = true
+                }
             }
             .onDisappear {
                 viewModel.stopMediator()
@@ -222,6 +225,18 @@ struct PeerDiscoveryView: View {
             showInfoSheet = false
         case .KeyImport:
             showInfoSheet = false
+        }
+    }
+    func getHeaderTitle() -> String {
+        if viewModel.status == .WaitingForDevices {
+            if selectedTab == .fast {
+                return ""
+            }
+            return tssType == .Migrate ? "" : "scanQR"
+        } else if tssType == .Migrate {
+            return ""
+        } else {
+            return "creatingVault"
         }
     }
 }

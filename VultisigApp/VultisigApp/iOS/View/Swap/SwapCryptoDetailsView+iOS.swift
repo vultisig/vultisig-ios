@@ -15,16 +15,17 @@ extension SwapCryptoDetailsView {
                 toolbarItemWithHiddenBackground(placement: Placement.topBarTrailing.getPlacement()) {
                     refreshCounter
                 }
-                
-                ToolbarItemGroup(placement: .keyboard) {
-                    percentageButtons
-                    
-                    Spacer()
-                    
-                    Button {
-                        hideKeyboard()
-                    } label: {
-                        Text(NSLocalizedString("done", comment: "Done"))
+                if !swapViewModel.showFromChainSelector && !swapViewModel.showToChainSelector && !swapViewModel.showFromCoinSelector && !swapViewModel.showToCoinSelector {
+                    ToolbarItemGroup(placement: .keyboard) {
+                        percentageButtons
+                        
+                        Spacer()
+                        
+                        Button {
+                            hideKeyboard()
+                        } label: {
+                            Text(NSLocalizedString("done", comment: "Done"))
+                        }
                     }
                 }
             }
