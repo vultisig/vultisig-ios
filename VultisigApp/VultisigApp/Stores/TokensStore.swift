@@ -239,7 +239,7 @@ class TokensStore {
         ),
         CoinMeta(
             chain: .arbitrum,
-            ticker: "USDT",
+            ticker: "USD₮0",
             logo: "usdt",
             decimals: 6,
             priceProviderId: "tether",
