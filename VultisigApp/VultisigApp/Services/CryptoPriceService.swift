@@ -189,8 +189,17 @@ private extension CryptoPriceService {
                     let rate: Rate = .init(fiat: "usd", crypto: contract, value: price ?? 0.0)
                     rates.append(rate)
                 } else {
-                    let sanitisedContract = contract.uppercased().replacingOccurrences(of: "X/", with: "")
-                    let poolPrice = await thorService.getAssetPriceInUSD(assetName: sanitisedContract)
+                    var sanitisedContract = contract.uppercased().replacingOccurrences(of: "X/", with: "")
+                    
+                    // Handle staking assets mappings to their underlying asset for price
+                    if sanitisedContract.starts(with: "STAKING-") {
+                        sanitisedContract = sanitisedContract.replacingOccurrences(of: "STAKING-", with: "")
+                    }
+                    
+                    // Ensure we have the THOR. prefix for the pool lookup
+                    let assetName = sanitisedContract.contains(".") ? sanitisedContract : "THOR.\(sanitisedContract)"
+                    
+                    let poolPrice = await thorService.getAssetPriceInUSD(assetName: assetName)
                     let poolRate: Rate = .init(fiat: "usd", crypto: contract, value: poolPrice)
                     rates.append(poolRate)
                 }
