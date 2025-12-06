@@ -56,7 +56,7 @@
 "backupNowWarning" = "Sigurnosno kopirajte svoj trezor na svakom uređaju pojedinačno!";
 "backupOptionsBox1" = "Prema zadanim postavkama, vaša je sigurnosna kopija sigurna bez dodatne lozinke, jer pohranite dionice trezora na različitim lokacijama.";
 "backupOptionsBox1Highlighted" = "osigurati bez";
-"backupOptionsBox2" = "Ako odlučite dodati lozinku, ovo će se koristiti za šifriranje sigurnosne kopije.";
+"backupOptionsBox2" = "Ako odlučite dodati lozinku, lozinka vašeg trezora bit će upotrijebljena za šifriranje datoteke sigurnosne kopije.";
 "backupOptionsBox2Highlighted" = "šifrirati";
 "backupOptionsBox3" = "Zapamtite: Ako zaboravite svoju lozinku za trezor, ona se ne može resetirati ili oporaviti.";
 "backupOptionsBox3Highlighted" = "ne može";

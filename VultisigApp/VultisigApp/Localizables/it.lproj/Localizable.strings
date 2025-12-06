@@ -56,7 +56,7 @@
 "backupNowWarning" = "Esegui il backup del tuo caveau su ogni dispositivo singolarmente!";
 "backupOptionsBox1" = "Per impostazione predefinita, il backup è sicuro senza una password aggiuntiva, poiché si archiviano condivisioni Vault in diverse posizioni.";
 "backupOptionsBox1Highlighted" = "sicuro senza";
-"backupOptionsBox2" = "Se si sceglie di aggiungere una password, verrà utilizzato per crittografare il file di backup.";
+"backupOptionsBox2" = "Se scegli di aggiungere una password, la password della tua cassaforte verrà usata per crittografare il file di backup.";
 "backupOptionsBox2Highlighted" = "crittografare";
 "backupOptionsBox3" = "Ricorda: Se dimentichi la password del Vault, non può essere ripristinato o recuperato.";
 "backupOptionsBox3Highlighted" = "non può";

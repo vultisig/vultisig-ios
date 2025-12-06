@@ -56,7 +56,7 @@
 "backupNowWarning" = "Faça o backup do seu cofre em cada dispositivo individualmente!";
 "backupOptionsBox1" = "Por padrão, seu backup é seguro sem uma senha extra, pois você armazena compartilha do Vault em diferentes locais.";
 "backupOptionsBox1Highlighted" = "seguro sem";
-"backupOptionsBox2" = "Se você optar por adicionar uma senha, isso será usado para criptografar o arquivo de backup.";
+"backupOptionsBox2" = "Se escolher adicionar uma senha, a senha do seu cofre será usada para criptografar o arquivo de backup.";
 "backupOptionsBox2Highlighted" = "Criptografar";
 "backupOptionsBox3" = "Lembre -se: Se você esquecer sua senha do cofre, ela não poderá ser redefinida ou recuperada.";
 "backupOptionsBox3Highlighted" = "não pode";

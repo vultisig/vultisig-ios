@@ -56,8 +56,8 @@
 "backupNowWarning" = "Backup your vault on every device individually!";
 "backupOptionsBox1" = "By default, your backup is secure without an extra password, since you store Vault shares in different locations.";
 "backupOptionsBox1Highlighted" = "secure without";
-"backupOptionsBox2" = "If you choose to add a password, this  will be used to encrypt the backup file.";
-"backupOptionsBox2Highlighted" = "encrypt";
+"backupOptionsBox2" = "If you choose to add a password, your vault password will be used to encrypt the backup file.";
+"backupOptionsBox2Highlighted" = "vault password";
 "backupOptionsBox3" = "Remember: If you forget your vault password, it cannot be reset or recovered.";
 "backupOptionsBox3Highlighted" = "cannot";
 "backupOptionsTitle" = "Do you want to encrypt your backup with a password?";
