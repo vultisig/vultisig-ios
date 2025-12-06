@@ -57,7 +57,7 @@
 "backupOptionsBox1" = "Prema zadanim postavkama, vaša je sigurnosna kopija sigurna bez dodatne lozinke, jer pohranite dionice trezora na različitim lokacijama.";
 "backupOptionsBox1Highlighted" = "osigurati bez";
 "backupOptionsBox2" = "Ako odlučite dodati lozinku, lozinka vašeg trezora bit će upotrijebljena za šifriranje datoteke sigurnosne kopije.";
-"backupOptionsBox2Highlighted" = "šifrirati";
+"backupOptionsBox2Highlighted" = "lozinka vašeg trezora";
 "backupOptionsBox3" = "Zapamtite: Ako zaboravite svoju lozinku za trezor, ona se ne može resetirati ili oporaviti.";
 "backupOptionsBox3Highlighted" = "ne može";
 "backupOptionsTitle" = "Želite li svoju sigurnosnu kopiju šifrirati lozinkom?";

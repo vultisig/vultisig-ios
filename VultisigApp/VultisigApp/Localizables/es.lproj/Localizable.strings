@@ -57,7 +57,7 @@
 "backupOptionsBox1" = "De manera predeterminada, su copia de seguridad es segura sin una contraseña adicional, ya que almacena acciones de bóveda en diferentes ubicaciones.";
 "backupOptionsBox1Highlighted" = "asegurar sin";
 "backupOptionsBox2" = "Si decides añadir una contraseña, la contraseña de tu bóveda se usará para cifrar el archivo de copia de seguridad.";
-"backupOptionsBox2Highlighted" = "encriptar";
+"backupOptionsBox2Highlighted" = "contraseña de tu bóveda";
 "backupOptionsBox3" = "Recuerde: Si olvida su contraseña de bóveda, no se puede restablecer o recuperar.";
 "backupOptionsBox3Highlighted" = "no puedo";
 "backupOptionsTitle" = "¿Quieres cifrar tu copia de seguridad con una contraseña?";
