@@ -36,15 +36,9 @@ struct MayaChainStakeInteractor: StakeInteractor {
             // Fetch CACAO pool position
             let position = try await mayaChainAPIService.getCacaoPoolPosition(address: cacaoCoin.address)
 
-            // Only create a position if user has staked amount
-            guard position.stakedAmount > 0 else {
-                return []
-            }
-
             let stakedAmount = position.userUnits / pow(10, cacaoCoin.decimals)
             // Fetch APR/APY
             let aprData = try? await mayaChainAPIService.getCacaoPoolAPR()
-            
             
             // Check for withdrawal date
             let unstakeMetadata = calculateUnstakeMetadata(
