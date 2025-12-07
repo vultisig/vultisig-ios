@@ -11,12 +11,22 @@ import SwiftData
 @MainActor
 struct CoinService {
     
-    static func removeCoins(coins: [Coin], vault: Vault)  throws {
+    static func removeCoins(coins: [Coin], vault: Vault) throws {
         for coin in coins {
-            if let idx = vault.coins.firstIndex(where: { $0.ticker == coin.ticker && $0.chain == coin.chain && $0.contractAddress == coin.contractAddress }) {
-                vault.coins.remove(at: idx)
+            let coinsToRemove = vault.coins.filter {
+                $0.chain == coin.chain &&
+                $0.ticker.caseInsensitiveCompare(coin.ticker) == .orderedSame &&
+                $0.contractAddress.caseInsensitiveCompare(coin.contractAddress) == .orderedSame
             }
-            Storage.shared.delete(coin)
+            
+            if !coinsToRemove.isEmpty {
+                for coinToRemove in coinsToRemove {
+                    if let idx = vault.coins.firstIndex(of: coinToRemove) {
+                         vault.coins.remove(at: idx)
+                    }
+                    Storage.shared.delete(coinToRemove)
+                }
+            }
         }
     }
     
@@ -193,7 +203,7 @@ struct CoinService {
     
     static func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async {
         do {
-            var tokens = try await fetchDiscoveredTokens(nativeCoin: nativeToken.toCoinMeta(), address: nativeToken.address)
+            let tokens = try await fetchDiscoveredTokens(nativeCoin: nativeToken.toCoinMeta(), address: nativeToken.address)
             
             for token in tokens {
                 do {
@@ -415,9 +425,12 @@ struct CoinService {
         }
         
         if !alreadyHidden {
+            print("🙈 Hiding Token: \(coin.ticker) (\(coin.contractAddress))")
             let hiddenToken = HiddenToken(coin: coin)
             vault.hiddenTokens.append(hiddenToken)
             Storage.shared.insert([hiddenToken])
+        } else {
+            print("🙈 Token already hidden: \(coin.ticker)")
         }
     }
     
