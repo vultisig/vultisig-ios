@@ -62,7 +62,7 @@ final class Vault: ObservableObject, Codable {
     
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        name = try container.decode(String.self, forKey: .name).sanitizeVaultName
+        name = try container.decode(String.self, forKey: .name)
         signers = try container.decode([String].self, forKey: .signers)
         createdAt = try container.decode(Date.self, forKey: .createdAt)
         pubKeyECDSA = try container.decode(String.self, forKey: .pubKeyECDSA)
