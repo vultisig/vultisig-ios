@@ -77,7 +77,7 @@ struct FolderCellView: View {
                 size: 16
             )
             
-            Text("'\(selectedVaultName ?? "")' \("active".localized)")
+            Text("\(selectedVaultName ?? "") \("active".localized)")
                 .foregroundStyle(Theme.colors.alertInfo)
                 .font(Theme.fonts.footnote)
         }
