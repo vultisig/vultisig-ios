@@ -241,7 +241,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     }
     
     func startKeygen() {
-        self.startKeygen(allParticipants: self.selections.map { $0 })
+        self.startKeygen(allParticipants: self.selections.map { $0 }.sorted())
         self.status = .Keygen
         self.participantDiscovery?.stop()
     }
@@ -268,8 +268,11 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     
     private func startKeygen(allParticipants: [String]) {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
+        // Enforce deterministic order (alphabetical sort)
+        // This ensures all devices agree on the index (0..N-1)
+        let sortedParticipants = allParticipants.sorted()
         
-        Utils.sendRequest(urlString: urlString, method: "POST",headers:nil, body: allParticipants) { _ in
+        Utils.sendRequest(urlString: urlString, method: "POST",headers:nil, body: sortedParticipants) { _ in
             self.logger.info("kicked off keygen successfully")
         }
     }

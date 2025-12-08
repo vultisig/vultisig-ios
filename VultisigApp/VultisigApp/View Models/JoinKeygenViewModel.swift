@@ -171,7 +171,7 @@ class JoinKeygenViewModel: ObservableObject {
                 let peers = try decoder.decode([String].self, from: data)
                 DispatchQueue.main.async {
                     if peers.contains(self.localPartyID) {
-                        for peer in peers {
+                        for peer in peers.sorted() {
                             if !self.keygenCommittee.contains(peer) {
                                 self.keygenCommittee.append(peer)
                             }
