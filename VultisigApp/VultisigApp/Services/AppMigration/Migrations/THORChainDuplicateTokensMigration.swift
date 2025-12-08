@@ -7,7 +7,7 @@
 
 import SwiftData
 
-struct THORChainDuplicateTokensMigration: AppMigration {
+struct THORChainDuplicateTokensMigration: @MainActor AppMigration {
     let version: Int = 0
     
     let description: String = "Removing duplicate THORChain-like native tokens"
