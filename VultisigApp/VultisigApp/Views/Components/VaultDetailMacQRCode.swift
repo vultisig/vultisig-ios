@@ -62,7 +62,7 @@ struct VaultDetailMacQRCode: View {
     }
     
     var name: some View {
-        Text(vault.name)
+        Text(vault.sanitizedName)
             .font(Theme.fonts.display)
             .foregroundColor(Theme.colors.textPrimary)
             .padding(.top, 60)

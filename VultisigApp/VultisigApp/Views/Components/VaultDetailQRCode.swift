@@ -58,7 +58,7 @@ struct VaultDetailQRCode: View {
     }
     
     var name: some View {
-        Text(vault.name)
+        Text(vault.sanitizedName)
             .font(Theme.fonts.bodyMMedium)
             .foregroundColor(Theme.colors.textPrimary)
             .lineLimit(2)
