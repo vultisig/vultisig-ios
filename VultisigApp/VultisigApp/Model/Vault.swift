@@ -9,10 +9,6 @@ import WalletCore
 @Model
 final class Vault: ObservableObject, Codable {
     @Attribute(.unique) var name: String
-    
-    var sanitizedName: String {
-        name.sanitizeVaultName
-    }
     @Attribute(.unique) var pubKeyECDSA: String = ""
     @Attribute(.unique) var pubKeyEdDSA: String = ""
     
@@ -77,7 +73,7 @@ final class Vault: ObservableObject, Codable {
     }
     
     init(name: String, libType: LibType? = nil) {
-        self.name = name.sanitizeVaultName
+        self.name = name
         self.libType = libType ?? GetLibType()
     }
     
@@ -92,7 +88,7 @@ final class Vault: ObservableObject, Codable {
         resharePrefix: String?,
         libType: LibType?
     ) {
-        self.name = name.sanitizeVaultName
+        self.name = name
         self.signers = signers
         self.createdAt = Date.now
         self.pubKeyECDSA = pubKeyECDSA
@@ -240,11 +236,5 @@ extension Vault {
     
     var tcyCoin: Coin? {
         coins.first(where: { $0.chain == .thorChain && $0.ticker.uppercased() == "TCY" })
-    }
-}
-
-fileprivate extension String {
-    var sanitizeVaultName: String {
-        return self.replacingOccurrences(of: "`", with: "")
     }
 }

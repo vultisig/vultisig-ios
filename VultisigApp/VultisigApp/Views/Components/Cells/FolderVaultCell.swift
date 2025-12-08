@@ -38,7 +38,7 @@ struct FolderVaultCell: View {
     }
     
     var text: some View {
-        Text(vault.sanitizedName)
+        Text(vault.name)
             .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
     }

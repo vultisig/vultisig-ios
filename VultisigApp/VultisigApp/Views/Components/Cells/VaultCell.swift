@@ -48,7 +48,7 @@ struct VaultCell: View {
     
     
     var title: some View {
-        Text(vault.sanitizedName.capitalized)
+        Text(vault.name.capitalized)
             .font(Theme.fonts.bodyMMedium)
             .foregroundColor(Theme.colors.textPrimary)
             .frame(maxWidth: .infinity, alignment: .leading)

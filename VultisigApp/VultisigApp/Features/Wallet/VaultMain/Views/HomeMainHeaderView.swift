@@ -26,7 +26,7 @@ struct HomeMainHeaderView: View {
     var body: some View {
         HStack(spacing: 32) {
             VaultSelectorView(
-                vaultName: vault.sanitizedName,
+                vaultName: vault.name,
                 isFastVault: vault.isFastVault,
                 action: vaultSelectorAction
             )

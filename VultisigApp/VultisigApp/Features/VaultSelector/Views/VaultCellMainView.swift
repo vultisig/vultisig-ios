@@ -23,7 +23,7 @@ struct VaultCellMainView: View {
                         .stroke(Theme.colors.borderLight, lineWidth: 1)
                 )
             VStack(alignment: .leading, spacing: 2) {
-                Text(vault.sanitizedName)
+                Text(vault.name)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.bodySMedium)
                     .lineLimit(1)
