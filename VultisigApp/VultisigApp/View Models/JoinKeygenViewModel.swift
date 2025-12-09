@@ -27,6 +27,12 @@ class JoinKeygenViewModel: ObservableObject {
     var vault: Vault
     var serviceDelegate: ServiceDelegate?
     
+    private var keyImportChains: [Chain] = []
+    var keyImportInput: KeyImportInput? {
+        guard tssType == .KeyImport else { return nil }
+        return KeyImportInput(mnemnonic: "", chains: keyImportChains)
+    }
+    
     @Published var tssType: TssType = .Keygen
     @Published var isShowingScanner = false
     @Published var sessionID: String? = nil
@@ -52,7 +58,13 @@ class JoinKeygenViewModel: ObservableObject {
         self.vault = Vault(name: "Main Vault")
     }
     
-    func setData(vault: Vault, selectedVault: Vault?,serviceDelegate: ServiceDelegate, vaults: [Vault], isCameraPermissionGranted: Bool) {
+    func setData(
+        vault: Vault,
+        selectedVault: Vault?,
+        serviceDelegate: ServiceDelegate,
+        vaults: [Vault],
+        isCameraPermissionGranted: Bool
+    ) {
         self.vault = vault
         self.selectedVault = selectedVault
         self.vaults = vaults
@@ -159,11 +171,8 @@ class JoinKeygenViewModel: ObservableObject {
                 let peers = try decoder.decode([String].self, from: data)
                 DispatchQueue.main.async {
                     if peers.contains(self.localPartyID) {
-                        for peer in peers {
-                            if !self.keygenCommittee.contains(peer) {
-                                self.keygenCommittee.append(peer)
-                            }
-                        }
+                        // Trust the server's authoritative list order.
+                        self.keygenCommittee = peers
                         self.status = .KeygenStarted
                     }
                 }
@@ -204,6 +213,7 @@ class JoinKeygenViewModel: ObservableObject {
                 useVultisigRelay = keygenMsg.useVultisigRelay
                 vault.name = keygenMsg.vaultName
                 vault.libType = keygenMsg.libType
+                keyImportChains = keygenMsg.chains
                 if isVaultNameAlreadyExist(name: keygenMsg.vaultName) {
                     errorMessage = "vaultExistsError".localized
                     logger.error("\(self.errorMessage)")

@@ -20,6 +20,15 @@ final class StakePosition {
     var nextPayout: TimeInterval?
     var rewards: Decimal?
     var rewardCoin: CoinMeta?
+    var unstakeMetadata: UnstakeMetadata?
+    
+    var canUnstake: Bool {
+        !amount.isZero && (unstakeMetadata?.canUnstake ?? true)
+    }
+    
+    var unstakeMessage: String? {
+        unstakeMetadata?.unstakeMessage(for: coin)
+    }
     
     @Relationship(inverse: \Vault.stakePositions) var vault: Vault?
     
@@ -32,6 +41,7 @@ final class StakePosition {
         nextPayout: TimeInterval? = nil,
         rewards: Decimal? = nil,
         rewardCoin: CoinMeta? = nil,
+        unstakeMetadata: UnstakeMetadata? = nil,
         vault: Vault
     ) {
         self.coin = coin
@@ -42,6 +52,7 @@ final class StakePosition {
         self.nextPayout = nextPayout
         self.rewards = rewards
         self.rewardCoin = rewardCoin
+        self.unstakeMetadata = unstakeMetadata
         self.vault = vault
         self.id = "\(coin.chain.ticker)_\(coin.contractAddress)_\(vault.pubKeyECDSA)"
     }

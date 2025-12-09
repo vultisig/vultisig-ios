@@ -34,9 +34,9 @@ class FunctionCallCosmosMerge: ObservableObject {
     
     @Published var tokens: [IdentifiableString] = []
     @Published var tokenValid: Bool = false
-    @Published var selectedToken: IdentifiableString = .init(value: "Select the token to be merged")
+    @Published var selectedToken: IdentifiableString = .init(value: NSLocalizedString("selectTokenToMerge", comment: ""))
     
-    @Published var balanceLabel: String = "( Select a token )"
+    @Published var balanceLabel: String = NSLocalizedString("amountSelectToken", comment: "")
     
     @ObservedObject var tx: SendTransaction
     
@@ -86,7 +86,7 @@ class FunctionCallCosmosMerge: ObservableObject {
             destinationAddress = match.wasmContractAddress
             if let coin = selectedVaultCoin {
                 amount = coin.balanceDecimal
-                balanceLabel = "Amount ( Balance: \(amount.formatForDisplay()) \(coin.ticker.uppercased()) )"
+                balanceLabel = String(format: NSLocalizedString("amountBalance", comment: ""), amount.formatForDisplay(), coin.ticker.uppercased())
             }
         }
     }
@@ -108,9 +108,9 @@ class FunctionCallCosmosMerge: ObservableObject {
     var balance: String {
         if let coin = selectedVaultCoin {
             let balance = coin.balanceDecimal.formatForDisplay()
-            return "Amount ( Balance: \(balance) \(coin.ticker.uppercased()) )"
+            return String(format: NSLocalizedString("amountBalance", comment: ""), balance, coin.ticker.uppercased())
         } else {
-            return "Amount ( Select a token )"
+            return NSLocalizedString("amountSelectToken", comment: "")
         }
     }
     
@@ -163,7 +163,7 @@ private struct FunctionCallCosmosMergeView: View {
                 descriptionProvider: { $0.value },
                 onSelect: { asset in
                     viewModel.selectedToken = asset
-                    viewModel.tokenValid = asset.value.lowercased() != "select the token to be merged"
+                    viewModel.tokenValid = asset.value.lowercased() != NSLocalizedString("selectTokenToMerge", comment: "").lowercased()
                     viewModel.destinationAddress = ThorchainMergeTokens.tokensToMerge.first {
                         $0.denom.lowercased() == asset.value.lowercased()
                     }?.wasmContractAddress ?? ""
@@ -171,7 +171,7 @@ private struct FunctionCallCosmosMergeView: View {
                     if let coin = viewModel.selectedVaultCoin {
                         
                         withAnimation {
-                            viewModel.balanceLabel = "Amount ( Balance: \(coin.balanceDecimal.formatForDisplay()) \(coin.ticker.uppercased()) )"
+                            viewModel.balanceLabel = String(format: NSLocalizedString("amountBalance", comment: ""), coin.balanceDecimal.formatForDisplay(), coin.ticker.uppercased())
                             viewModel.amount = coin.balanceDecimal
                             
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -180,7 +180,7 @@ private struct FunctionCallCosmosMergeView: View {
                             }
                         }
                     } else {
-                        viewModel.balanceLabel = "Amount ( Select a token )"
+                        viewModel.balanceLabel = NSLocalizedString("amountSelectToken", comment: "")
                         viewModel.objectWillChange.send()
                     }
                 }
@@ -203,7 +203,7 @@ private struct FunctionCallCosmosMergeView: View {
                     set: { viewModel.amountValid = $0 }
                 )
             )
-            .id("field-\(viewModel.balanceLabel)-\(viewModel.amount)")
+            .id("field-\(viewModel.selectedToken.value)")
         }
     }
 }

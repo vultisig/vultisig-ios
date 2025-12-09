@@ -21,7 +21,7 @@ struct BondMayaTransactionScreen: View {
     @State var showAssetSelection: Bool = false
     
     var body: some View {
-        TransactionFormScreen(
+        FormScreen(
             title: "bond".localized,
             validForm: $viewModel.validForm,
             onContinue: onContinue

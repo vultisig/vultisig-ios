@@ -34,7 +34,8 @@ class DeeplinkViewModel: ObservableObject {
     
     private let logic = DeeplinkLogic()
     
-    func extractParameters(_ url: URL, vaults: [Vault], isInternal: Bool = false) {
+    @discardableResult
+    func extractParameters(_ url: URL, vaults: [Vault], isInternal: Bool = false) -> Bool {
         resetFieldsForExtraction()
         isInternalDeeplink = isInternal
         viewID = UUID()
@@ -45,7 +46,10 @@ class DeeplinkViewModel: ObservableObject {
         
         if result.shouldNotify {
             NotificationCenter.default.post(name: NSNotification.Name("ProcessDeeplink"), object: nil)
+            return true
         }
+        
+        return false
     }
     
     
@@ -203,11 +207,7 @@ struct DeeplinkLogic {
                 vault.coins.contains { $0.chain.name.lowercased() == chainName.lowercased() }
             }
         }
-        
-        if result.selectedVault == nil && !vaults.isEmpty {
-            result.selectedVault = vaults.first
-        }
-        
+
         result.shouldNotify = true
         return result
     }

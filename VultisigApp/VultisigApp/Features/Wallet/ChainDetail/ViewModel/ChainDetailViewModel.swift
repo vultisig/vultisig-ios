@@ -34,14 +34,11 @@ final class ChainDetailViewModel: ObservableObject {
     }
     
     var tokens: [Coin] {
-        return vault.coins
-            .filter { $0.chain == group.chain }
+        return vault.coins.filter { $0.chain == group.chain }
             .sorted {
                 if $0.isNativeToken != $1.isNativeToken {
                     return $0.isNativeToken
                 }
-                // Sort by fiat value (descending), not balance
-                // Tokens with missing prices default to 0 and go last
                 return ($0.balanceInFiatDecimal) > ($1.balanceInFiatDecimal)
             }
     }

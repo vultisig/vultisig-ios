@@ -14,7 +14,6 @@ struct SendCryptoSecondaryDoneView: View {
     @State var addressAdded: Bool = false
     @State var navigateToAddressBook = false
     @Environment(\.openURL) var openURL
-    @EnvironmentObject var homeViewModel: HomeViewModel
     @State var canShowAddressBook: Bool = false
     
     @Environment(\.modelContext) var modelContext
@@ -45,7 +44,7 @@ struct SendCryptoSecondaryDoneView: View {
             )
             let addressItems = try? modelContext.fetch(addressItemsDescriptor)
             
-            canShowAddressBook = addressItems?.isEmpty ?? false && !(homeViewModel.selectedVault?.coins.map(\.address).contains(input.toAddress) ?? true)
+            canShowAddressBook = addressItems?.isEmpty ?? false && !(appViewModel.selectedVault?.coins.map(\.address).contains(input.toAddress) ?? true)
         }
         .navigationDestination(isPresented: $navigateToAddressBook) {
             AddAddressBookScreen(
@@ -81,7 +80,7 @@ struct SendCryptoSecondaryDoneView: View {
             
             separator
             
-            if let vaultName = homeViewModel.selectedVault?.name, vaultName.isNotEmpty {
+            if let vaultName = appViewModel.selectedVault?.name, vaultName.isNotEmpty {
                 SendCryptoTransactionDetailsRow(
                     title: "from",
                     description: vaultName,

@@ -7,26 +7,36 @@
 
 import SwiftUI
 
+enum CommonTextFieldSize {
+    case normal, small
+}
+
 struct CommonTextField<TrailingView: View>: View {
     @Environment(\.isEnabled) var isEnabled
     @Binding var text: String
     let label: String?
-    let placeholder: String
+    let placeholder: String?
     @Binding var isSecure: Bool
     @Binding var error: String?
+    @Binding var isValid: Bool?
+    let showErrorText: Bool
     let isScrollable: Bool
     let labelStyle: TextFieldLabelStyle
+    let size: CommonTextFieldSize
     
     let trailingView: () -> TrailingView
     
     init(
         text: Binding<String>,
         label: String? = nil,
-        placeholder: String,
+        placeholder: String?,
         isSecure: Binding<Bool> = .constant(false),
         error: Binding<String?> = .constant(nil),
+        isValid: Binding<Bool?> = .constant(nil),
+        showErrorText: Bool = true,
         isScrollable: Bool = false,
         labelStyle: TextFieldLabelStyle = .primary,
+        size: CommonTextFieldSize = .normal,
         @ViewBuilder trailingView: @escaping () -> TrailingView
     ) {
         self._text = text
@@ -34,19 +44,25 @@ struct CommonTextField<TrailingView: View>: View {
         self.placeholder = placeholder
         self._isSecure = isSecure
         self._error = error
+        self.showErrorText = showErrorText
         self.isScrollable = isScrollable
         self.trailingView = trailingView
         self.labelStyle = labelStyle
+        self.size = size
+        self._isValid = isValid
     }
     
     init(
         text: Binding<String>,
         label: String? = nil,
-        placeholder: String,
+        placeholder: String?,
         isSecure: Binding<Bool> = .constant(false),
         error: Binding<String?> = .constant(nil),
+        isValid: Binding<Bool?> = .constant(nil),
+        showErrorText: Bool = true,
         isScrollable: Bool = false,
         labelStyle: TextFieldLabelStyle = .primary,
+        size: CommonTextFieldSize = .normal
     ) where TrailingView == EmptyView {
         self.init(
             text: text,
@@ -54,8 +70,11 @@ struct CommonTextField<TrailingView: View>: View {
             placeholder: placeholder,
             isSecure: isSecure,
             error: error,
+            isValid: isValid,
+            showErrorText: showErrorText,
             isScrollable: isScrollable,
             labelStyle: labelStyle,
+            size: size,
             trailingView: { EmptyView() }
         )
     }
@@ -81,7 +100,7 @@ struct CommonTextField<TrailingView: View>: View {
                         .showIf(isEnabled)
                     trailingView()
                 }
-                .frame(height: 56)
+                .frame(height: height)
                 .font(Theme.fonts.bodyMMedium)
                 .padding(.horizontal, 12)
                 .background(Theme.colors.bgSecondary)
@@ -94,7 +113,7 @@ struct CommonTextField<TrailingView: View>: View {
                 .borderlessTextFieldStyle()
                 .padding(1)
                 
-                if let error {
+                if let error, showErrorText {
                     Text(error.localized)
                         .foregroundColor(Theme.colors.alertError)
                         .font(Theme.fonts.footnote)
@@ -121,7 +140,11 @@ struct CommonTextField<TrailingView: View>: View {
     }
     
     var borderColor: Color {
-        (error != nil && error != .empty) ? Theme.colors.alertError : Theme.colors.border
+        if let isValid, isValid {
+            return Theme.colors.alertSuccess
+        }
+        
+        return (error != nil && error != .empty) ? Theme.colors.alertError : Theme.colors.border
     }
     
     @ViewBuilder
@@ -140,12 +163,12 @@ struct CommonTextField<TrailingView: View>: View {
     var textField: some View {
         Group {
             if isSecure {
-                SecureField(placeholder.localized, text: $text)
+                SecureField(placeholder?.localized ?? .empty, text: $text)
             } else {
-                TextField(placeholder.localized, text: $text)
+                TextField(placeholder?.localized ?? .empty, text: $text)
             }
         }
-        .frame(height: 56)
+        .frame(height: height)
     }
     
     var labelFont: Font {
@@ -169,5 +192,14 @@ struct CommonTextField<TrailingView: View>: View {
     enum TextFieldLabelStyle {
         case primary
         case secondary
+    }
+    
+    var height: CGFloat {
+        switch size {
+        case .normal:
+            56
+        case .small:
+            36
+        }
     }
 }

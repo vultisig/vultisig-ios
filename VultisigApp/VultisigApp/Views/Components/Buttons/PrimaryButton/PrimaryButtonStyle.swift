@@ -55,7 +55,7 @@ private extension PrimaryButtonStyle {
     func padding(for size: ButtonSize) -> EdgeInsets {
         switch size {
         case .medium:
-            return EdgeInsets(top: 14, leading: 32, bottom: 14, trailing: 32)
+            return EdgeInsets(top: 14, leading: 0, bottom: 14, trailing: 0)
         case .small:
             return EdgeInsets(top: 12, leading: 24, bottom: 12, trailing: 24)
         case .mini:

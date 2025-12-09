@@ -23,16 +23,16 @@ class SuiService {
         return await (try gasPrice, try allCoins)
     }
     
-    func getBalance(coin: Coin) async throws -> String {
-        return try await getAllBalances(coin: coin)
+    func getBalance(coin: CoinMeta, address: String) async throws -> String {
+        return try await getAllBalances(coin: coin, address: address)
     }
     
-    func getAllBalances(coin: Coin) async throws -> String {
+    func getAllBalances(coin: CoinMeta, address: String) async throws -> String {
         do {
             let data = try await Utils.PostRequestRpc(
                 rpcURL: rpcURL,
                 method: "suix_getAllBalances",
-                params: [coin.address]
+                params: [address]
             )
             
             if let result = Utils.extractResultFromJson(fromData: data, path: "result") as? [[String: Any]] {
@@ -156,10 +156,10 @@ class SuiService {
         return []
     }
     
-    func getAllTokens(coin: Coin) async throws -> [[String: String]] {
+    func getAllTokens(address: String) async throws -> [[String: String]] {
         
         do {
-            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getOwnedObjects", params: [coin.address])
+            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getOwnedObjects", params: [address])
             
             if let objects: [[String: Any]] = Utils.extractResultFromJson(fromData: data, path: "result.data") as? [[String: Any]] {
                 var tokens: [[String: String]] = []
@@ -194,8 +194,8 @@ class SuiService {
         return []
     }
     
-    func getAllTokensWithMetadata(coin: Coin) async throws -> [CoinMeta] {
-        let allTokens = try await getAllTokens(coin: coin) // Get tokens first
+    func getAllTokensWithMetadata(address: String) async throws -> [CoinMeta] {
+        let allTokens = try await getAllTokens(address: address) // Get tokens first
         
         var tokensWithMetadata: [CoinMeta] = []
         

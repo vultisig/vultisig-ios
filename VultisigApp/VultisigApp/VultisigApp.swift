@@ -15,7 +15,7 @@ struct VultisigApp: App {
     @StateObject var applicationState = ApplicationState.shared
     @StateObject var vaultDetailViewModel = VaultDetailViewModel()
     @StateObject var coinSelectionViewModel = CoinSelectionViewModel()
-    @StateObject var appViewModel = AppViewModel()
+    @StateObject var appViewModel = AppViewModel.shared
     @StateObject var deeplinkViewModel = DeeplinkViewModel()
     @StateObject var settingsViewModel = SettingsViewModel.shared
     @StateObject var homeViewModel = HomeViewModel()

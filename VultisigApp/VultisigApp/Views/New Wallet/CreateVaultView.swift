@@ -16,9 +16,17 @@ struct CreateVaultView: View {
     @State var showButtonStack = false
     @State var showSheet = false
     @State var shouldJoinKeygen = false
+    @State var showImportSelectionSheet: Bool = false
+    @State var showImportSeedphrase: Bool = false
+    @State var showImportVaultShare: Bool = false
     
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var appViewModel: AppViewModel
+    
+    init(selectedVault: Vault? = nil, showBackButton: Bool = false) {
+        self.selectedVault = selectedVault
+        self.showBackButton = showBackButton
+    }
 
     var body: some View {
         ZStack {
@@ -26,6 +34,21 @@ struct CreateVaultView: View {
             main
         }
         .navigationBarBackButtonHidden(showBackButton ? false : true)
+        .navigationDestination(isPresented: $showImportSeedphrase) {
+            ImportSeedphraseScreen()
+        }
+        .navigationDestination(isPresented: $showImportVaultShare) {
+            ImportVaultShareScreen()
+        }
+        .crossPlatformSheet(isPresented: $showImportSelectionSheet) {
+            ImportVaultSelectionSheet(isPresented: $showImportSelectionSheet) {
+                showImportSelectionSheet = false
+                showImportSeedphrase = true
+            } onVaultShare: {
+                showImportSelectionSheet = false
+                showImportVaultShare = true
+            }
+        }
         .onLoad {
             setData()
         }
@@ -94,8 +117,13 @@ struct CreateVaultView: View {
     }
     
     var importVaultButton: some View {
-        PrimaryNavigationButton(title: "importVault", type: .secondary) {
-            ImportWalletView()
+        PrimaryButton(title: "importVault", type: .secondary) {
+            // TODO: - Remove before seed phrase import release
+            #if DEBUG
+            showImportSelectionSheet = true
+            #else
+            showImportVaultShare = true
+            #endif
         }
     }
     

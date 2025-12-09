@@ -53,6 +53,7 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
         prefillAddresses()
         fetchInboundAddressAndSetupApproval()
         setupValidation()
+        updateErrorMessage()
     }
     
     private func prefillAddresses() {
@@ -61,6 +62,8 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
             thorAddress = thorCoin.address
             thorAddressValid = true
         } else {
+            thorAddressValid = false
+            isTheFormValid = false
         }
         
         // No additional prefilling needed for mint/swap
@@ -75,6 +78,7 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
             await MainActor.run {
                 if self.tx.coin.chain == .thorChain {
                     // For THORChain, we don't need an inbound address initially
+                    self.tx.toAddress = self.tx.coin.address
                     self.isApprovalRequired = false
                     self.approvePayload = nil
                     return
@@ -86,7 +90,7 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
                     }
                     
                     if inbound.halted || inbound.global_trading_paused || inbound.chain_trading_paused || inbound.chain_lp_actions_paused {
-                        self.customErrorMessage = "Inbound actions are paused for \(inbound.chain). Try again later."
+                        self.customErrorMessage = String(format: NSLocalizedString("inboundPaused", comment: ""), inbound.chain)
                         self.isTheFormValid = false
                         return
                     }
@@ -95,7 +99,7 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
                     if self.tx.coin.shouldApprove {
                         // ERC20 token → approval to router (router is required)
                         guard let router = inbound.router, !router.isEmpty else {
-                            self.customErrorMessage = "Router not available for approvals on \(inbound.chain). Try again later."
+                            self.customErrorMessage = String(format: NSLocalizedString("routerNotAvailable", comment: ""), inbound.chain)
                             self.isApprovalRequired = false
                             self.isTheFormValid = false
                             return
@@ -128,6 +132,7 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
             .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
             .sink { [weak self] amount in
                 self?.validateAmount()
+                self?.updateErrorMessage()
             }
             .store(in: &cancellables)
         
@@ -141,10 +146,8 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
                 // For mint, need valid amount AND valid THORChain address AND non-zero amount
                 let isValid = amountValid && thorAddressValid && !self.amount.isZero
                 
-                // Set specific error message if THORChain address is missing
-                if !thorAddressValid && self.customErrorMessage == nil {
-                    self.customErrorMessage = "THORChain address not found in vault. Please ensure you have RUNE in your vault."
-                }
+                // Update error messages
+                self.updateErrorMessage()
                 
                 return isValid
             }
@@ -157,16 +160,48 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
         let currentBalance = tx.coin.balanceDecimal
         let isValidAmount = amount > 0 && amount <= currentBalance
         amountValid = isValidAmount
+    }
+    
+    private func updateErrorMessage() {
+        var errors: [String] = []
         
+        // Check THORChain address
+        if !thorAddressValid {
+            let error = FunctionCallSecuredAssetError.thorAddressNotFound
+            errors.append(error.localizedDescription)
+        }
         
+        // Check amount
         if amount <= 0 {
-            amountValid = false
-            customErrorMessage = "Please enter a valid amount greater than zero."
-        } else if currentBalance < amount {
-            amountValid = false
-            customErrorMessage = NSLocalizedString("insufficientBalanceForFunctions", comment: "Error message when user tries to enter amount greater than available balance")
-        } else {
+            let error = FunctionCallSecuredAssetError.invalidAmount
+            errors.append(error.localizedDescription)
+        } else if tx.coin.balanceDecimal < amount {
+            let error = FunctionCallSecuredAssetError.insufficientBalance
+            errors.append(error.localizedDescription)
+        }
+        
+        // Concatenate all errors with newlines
+        if errors.isEmpty {
             customErrorMessage = nil
+        } else {
+            customErrorMessage = errors.joined(separator: "\n")
+        }
+    }
+    
+    enum FunctionCallSecuredAssetError: LocalizedError {
+        case invalidAmount
+        case insufficientBalance
+        case thorAddressNotFound
+        
+        var errorDescription: String? {
+            switch self {
+            case .invalidAmount:
+                return NSLocalizedString("enterValidAmount", comment: "")
+            case .insufficientBalance:
+                return NSLocalizedString("insufficientBalanceForFunctions", comment: "Error message when user tries to enter amount greater than available balance")
+            case .thorAddressNotFound:
+                return NSLocalizedString("thorAddressNotFound", comment: "")
+            }
         }
     }
     
@@ -201,31 +236,40 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
     }
     
     func getView() -> AnyView {
-        AnyView(VStack(spacing: 16) {
+        AnyView(FunctionCallSecuredAssetView(model: self))
+    }
+}
+
+// MARK: - View
+struct FunctionCallSecuredAssetView: View {
+    @ObservedObject var model: FunctionCallSecuredAsset
+    
+    var body: some View {
+        VStack(spacing: 16) {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Mint Secured Asset (SECURE+)")
+                Text(NSLocalizedString("mintSecuredAsset", comment: ""))
                     .font(.headline)
-                Text("Target Asset: \(tx.coin.chain.swapAsset)-\(tx.coin.ticker)")
+                Text(String(format: NSLocalizedString("targetAsset", comment: ""), "\(model.tx.coin.chain.swapAsset)-\(model.tx.coin.ticker)"))
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
             
             // Show ERC20 approval info if needed
-            if isApprovalRequired {
+            if model.isApprovalRequired {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("ERC20 Approval Required")
+                    Text(NSLocalizedString("erc20ApprovalRequired", comment: ""))
                         .font(.headline)
                         .foregroundColor(.primary)
                     
-                    Text("This ERC20 token requires approval before minting. Two transactions will be signed:")
+                    Text(NSLocalizedString("erc20ApprovalRequiredMessage", comment: ""))
                         .font(.body)
                         .foregroundColor(.primary)
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("1. Approval transaction")
+                        Text(NSLocalizedString("approvalTransaction", comment: ""))
                             .font(.caption)
                             .foregroundColor(.blue)
-                        Text("2. Mint secured asset transaction")
+                        Text(NSLocalizedString("mintTransaction", comment: ""))
                             .font(.caption)
                             .foregroundColor(.blue)
                     }
@@ -242,20 +286,20 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
                     label: NSLocalizedString("amount", comment: ""),
                     placeholder: NSLocalizedString("enterAmount", comment: ""),
                     value: Binding(
-                        get: { self.amount },
-                        set: { self.amount = $0 }
+                        get: { model.amount },
+                        set: { model.amount = $0 }
                     ),
                     isValid: Binding(
-                        get: { self.amountValid },
-                        set: { self.amountValid = $0 }
+                        get: { model.amountValid },
+                        set: { model.amountValid = $0 }
                     )
                 )
                 
-                Text(balance)
+                Text(model.balance)
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
-                if let errorMessage = customErrorMessage {
+                if let errorMessage = model.customErrorMessage {
                     Text(errorMessage)
                         .font(.caption)
                         .foregroundColor(.red)
@@ -263,12 +307,12 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
             }
             
             // Show THORChain address info (read-only)
-            if !thorAddress.isEmpty {
+            if !model.thorAddress.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("THORChain Address (auto-filled)")
+                    Text(NSLocalizedString("thorAddressAutoFilled", comment: ""))
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    Text(thorAddress)
+                    Text(model.thorAddress)
                         .font(.footnote)
                         .padding(8)
                         .background(Color.gray.opacity(0.1))
@@ -279,18 +323,19 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
             // No additional fields needed for mint/swap operations
             
             VStack(alignment: .leading, spacing: 4) {
-                Text("Generated Memo:")
+                Text(NSLocalizedString("generatedMemo", comment: ""))
                     .font(.caption)
                     .foregroundColor(.secondary)
-                Text(toString())
+                Text(model.toString())
                     .font(.footnote)
                     .padding(8)
                     .background(Color.gray.opacity(0.1))
                     .cornerRadius(8)
             }
             
-        }.onAppear {
-            self.initialize()
-        })
+        }
+        .onAppear {
+            model.initialize()
+        }
     }
 }

@@ -1,12 +1,13 @@
 import Foundation
 import OSLog
 import SwiftUI
+import VultisigCommonData
+
+
+
 import UniformTypeIdentifiers
 import WalletCore
 import BigInt
-import Combine
-import VultisigCommonData
-
 class SendTransaction: ObservableObject, Hashable {
     @Published var fromAddress: String = ""
     @Published var toAddress: String = .empty
@@ -30,7 +31,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var transactionType: VSTransactionType = .unspecified
     @Published var vault: Vault?
     
-    var txVault: Vault? { vault ?? ApplicationState.shared.currentVault}
+    var txVault: Vault? { vault ?? AppViewModel.shared.selectedVault }
     
     var gasLimit: BigInt {
         return customGasLimit ?? estematedGasLimit ?? BigInt(EVMHelper.defaultETHTransferGasUnit)
@@ -204,6 +205,8 @@ class SendTransaction: ObservableObject, Hashable {
         self.amountInFiat = .empty
         self.memo = .empty
         self.gas = .zero
+        self.fee = .zero  // Clear previous fee
+        self.isCalculatingFee = false  // Reset UI state
         self.estematedGasLimit = nil
         self.customGasLimit = nil
         self.customByteFee = nil
@@ -211,6 +214,10 @@ class SendTransaction: ObservableObject, Hashable {
         self.coin = coin
         self.sendMaxAmount = false
         self.fromAddress = coin.address
+        self.wasmContractPayload = nil  // Clear contract payload
+        self.transactionType = .unspecified  // Reset transaction type
+        self.memoFunctionDictionary = ThreadSafeDictionary()  // Clear memo functions
+        self.fastVaultPassword = .empty  // Clear password state
     }
     
     func parseCryptoURI(_ uri: String) {

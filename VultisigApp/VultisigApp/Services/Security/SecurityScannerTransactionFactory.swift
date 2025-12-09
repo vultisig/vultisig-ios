@@ -76,10 +76,9 @@ private extension SecurityScannerTransactionFactory {
     }
     
     func createSOLSecurityScanner(transaction: SendTransaction) async throws -> SecurityScannerTransaction {
-        guard let decodedKey = Base58.decodeNoCheck(string: transaction.fromAddress) else {
+        guard let _ = Base58.decodeNoCheck(string: transaction.fromAddress) else {
             throw SecurityScannerTransactionFactoryError.invalidAddress(transaction.fromAddress)
         }
-        let vaultHexPubKey = decodedKey.toHexString()
         var blockchainSpecific: BlockChainSpecific = try await BlockChainService.shared.fetchSpecific(tx: transaction)
         let type: SecurityTransactionType
         

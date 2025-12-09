@@ -124,7 +124,11 @@ struct VaultMainScreen: View {
     func topContentSection(width: CGFloat) -> some View {
         LazyVStack(spacing: 0) {
             Group {
-                VaultMainBalanceView(vault: vault, balanceToShow: homeViewModel.vaultBalanceText, style: .wallet)
+                VaultMainBalanceView(
+                    vault: vault,
+                    balanceToShow: homeViewModel.balanceText(for: vault),
+                    style: .wallet
+                )
                     .padding(.bottom, 32)
                 CoinActionsView(
                     actions: viewModel.availableActions,
@@ -189,6 +193,7 @@ struct VaultMainScreen: View {
             CircularAccessoryIconButton(icon: "crypto-wallet-pen", type: .secondary) {
                 showChainSelection.toggle()
             }
+            .showIf(viewModel.canShowChainSelection(vault: vault))
         }
     }
     

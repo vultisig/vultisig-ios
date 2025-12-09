@@ -9,6 +9,7 @@ import SwiftUI
 import BigInt
 import WalletCore
 
+
 @MainActor
 class SendCryptoVerifyViewModel: ObservableObject {
     let securityScanViewModel = SecurityScannerViewModel()
@@ -22,12 +23,44 @@ class SendCryptoVerifyViewModel: ObservableObject {
     @Published var showSecurityScannerSheet: Bool = false
     @Published var securityScannerState: SecurityScannerState = .idle
     
-    private let utxo = BlockchairService.shared
-    private let blockChainService = BlockChainService.shared
+    // Logic delegation
+    private let logic = SendCryptoVerifyLogic()
     
     func onLoad() {
         securityScanViewModel.$state
             .assign(to: &$securityScannerState)
+    }
+    
+    func loadGasInfoForSending(tx: SendTransaction) async {
+        tx.isCalculatingFee = true
+        isLoading = true
+        errorMessage = ""
+        
+        do {
+            let feeResult = try await logic.calculateFee(tx: tx)
+            
+            tx.fee = feeResult.fee
+            tx.gas = feeResult.gas
+            tx.isCalculatingFee = false
+            isLoading = false
+            
+            validateBalanceWithFee(tx: tx)
+        } catch {
+            print("DEBUG: Error calculating fee: \(error)")
+            errorMessage = error.localizedDescription
+            showAlert = true
+            tx.isCalculatingFee = false
+            isLoading = false
+        }
+    }
+    
+    func validateBalanceWithFee(tx: SendTransaction) {
+        let result = logic.validateBalanceWithFee(tx: tx)
+        if !result.isValid {
+            errorMessage = result.errorMessage ?? ""
+            showAlert = true
+            isAmountCorrect = false
+        }
     }
     
     var isValidForm: Bool {
@@ -39,62 +72,19 @@ class SendCryptoVerifyViewModel: ObservableObject {
     }
     
     func validateForm(tx: SendTransaction, vault: Vault) async throws -> KeysignPayload {
-        await MainActor.run { isLoading = true }
+        isLoading = true
+        defer { isLoading = false }
+        
         do {
             if !isValidForm {
                 throw HelperError.runtimeError("mustAgreeTermsError")
             }
             
-            try await validateUtxosIfNeeded(tx: tx)
-            let keysignPayload = try await buildKeysignPayload(tx: tx, vault: vault)
-            await MainActor.run { isLoading = false }
+            try await logic.validateUtxosIfNeeded(tx: tx)
+            let keysignPayload = try await logic.buildKeysignPayload(tx: tx, vault: vault)
             return keysignPayload
         } catch {
-            await MainActor.run { isLoading = false }
             throw error
-        }
-    }
-    
-    func validateUtxosIfNeeded(tx: SendTransaction) async throws {
-        if tx.coin.chain.chainType == ChainType.UTXO {
-            do {
-                _ = try await utxo.fetchBlockchairData(coin: tx.coin)
-            } catch {
-                print("Failed to fetch UTXO data from Blockchair, error: \(error.localizedDescription)")
-                throw HelperError.runtimeError("Failed to fetch UTXO data. Please check your internet connection and try again.")
-            }
-        }
-    }
-    
-    func buildKeysignPayload(tx: SendTransaction, vault: Vault) async throws -> KeysignPayload {
-        do {
-            let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
-            
-            return try await KeysignPayloadFactory().buildTransfer(
-                coin: tx.coin,
-                toAddress: tx.toAddress,
-                amount: tx.amountInRaw,
-                memo: tx.memo,
-                chainSpecific: chainSpecific,
-                vault: vault
-            )
-            
-        } catch {
-            // Handle UTXO-specific errors with more user-friendly messages
-            let errorMessage: String
-            switch error {
-            case KeysignPayloadFactory.Errors.notEnoughUTXOError:
-                errorMessage = NSLocalizedString("notEnoughUTXOError", comment: "")
-            case KeysignPayloadFactory.Errors.utxoTooSmallError:
-                errorMessage = NSLocalizedString("utxoTooSmallError", comment: "")
-            case KeysignPayloadFactory.Errors.utxoSelectionFailedError:
-                errorMessage = NSLocalizedString("utxoSelectionFailedError", comment: "")
-            case KeysignPayloadFactory.Errors.notEnoughBalanceError:
-                errorMessage = NSLocalizedString("notEnoughBalanceError", comment: "")
-            default:
-                errorMessage = error.localizedDescription
-            }
-            throw HelperError.runtimeError(errorMessage)
         }
     }
     

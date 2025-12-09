@@ -30,10 +30,7 @@ struct GeneralCodeScannerView: View {
         QRCodeScannerView(
             showScanner: $showSheet
         ) { result in
-            guard let url = URL(string: result) else {
-                return
-            }
-            deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
+            handle(urlString: result)
         } handleScan: { result in
             handleScan(result: result)
         }
@@ -42,12 +39,19 @@ struct GeneralCodeScannerView: View {
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
         case .success(let result):
-            guard let url = URL(string: result.string) else {
-                return
-            }
-            deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
+            handle(urlString: result.string)
         case .failure(_):
             return
+        }
+    }
+    
+    private func handle(urlString: String) {
+        guard let url = URL(string: urlString) else {
+            return
+        }
+        let validDeeplink = deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
+        if validDeeplink {
+            showSheet = false
         }
     }
 }

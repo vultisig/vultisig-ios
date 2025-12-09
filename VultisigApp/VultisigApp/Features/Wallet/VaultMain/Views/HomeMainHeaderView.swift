@@ -20,7 +20,7 @@ struct HomeMainHeaderView: View {
     @State private var showBalanceInternal = false
     
     var balanceText: String {
-        activeTab == .defi ? homeViewModel.defiBalanceText : homeViewModel.vaultBalanceText
+        activeTab == .defi ? homeViewModel.defiBalanceText(for: vault) : homeViewModel.balanceText(for: vault)
     }
     
     var body: some View {

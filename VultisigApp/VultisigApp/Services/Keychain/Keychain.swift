@@ -64,6 +64,21 @@ struct Keychain {
         setString(value ? "true" : nil, for: key)
     }
 
+    // MARK: - Int
+
+    func getInt(for key: KeychainIdentifier) -> Int? {
+        guard let string = getString(for: key),
+              let value = Int(string) else {
+            return nil
+        }
+        return value
+    }
+
+    func setInt(_ value: Int?, for key: KeychainIdentifier) {
+        let string = value.map { String($0) }
+        setString(string, for: key)
+    }
+
     //MARK: - Array
 
     func getObject<T: Codable>(key: KeychainIdentifier) -> T? {

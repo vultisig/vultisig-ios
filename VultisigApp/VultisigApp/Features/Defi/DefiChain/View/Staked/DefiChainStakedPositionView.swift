@@ -39,7 +39,7 @@ struct DefiChainStakedPositionView: View {
         return CustomDateFormatter.formatMonthDayYear(nextPayout)
     }
 
-    var unstakeDisabled: Bool { position.amount.isZero }
+    var unstakeDisabled: Bool { !position.canUnstake }
     var canWithdraw: Bool {
         guard let rewards = position.rewards else { return false }
         return rewards > 0
@@ -161,10 +161,16 @@ struct DefiChainStakedPositionView: View {
     var stakeButtonsView: some View {
         switch position.type {
         case .stake, .compound:
-            VStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 16) {
                 PrimaryButton(title: withdrawTitle, action: onWithdraw)
                     .showIf(canWithdraw)
                 defaultButtonsView
+                
+                if let unstakeMessage = position.unstakeMessage {
+                    Text(unstakeMessage)
+                        .font(Theme.fonts.caption10)
+                        .foregroundStyle(Theme.colors.textLight)
+                }
             }
         case .index:
             indexButtonsView

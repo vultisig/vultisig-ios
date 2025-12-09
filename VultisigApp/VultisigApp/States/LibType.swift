@@ -8,7 +8,7 @@
 import VultisigCommonData
 import Foundation
 
-enum LibType : Int,Codable {
+enum LibType : Int,Codable, CaseIterable {
     case GG20 = 0
     case DKLS = 1
     case KeyImport = 2
@@ -50,6 +50,7 @@ extension VSLibType {
     }
 }
 
+// TODO: - Remove this
 func GetLibType() -> LibType {
     let existDKLS = UserDefaults.standard.value(forKey: "isDKLSEnabled")
     if existDKLS == nil {

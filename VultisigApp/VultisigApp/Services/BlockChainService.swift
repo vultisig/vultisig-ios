@@ -173,9 +173,18 @@ final class BlockChainService {
         }
         
         let gasLimit = try await estimateSwapGasLimit(tx: tx)
+        
+        let action: Action
+        switch tx.quote {
+        case .thorchain, .thorchainStagenet, .mayachain:
+            action = .transfer
+        default:
+            action = .swap
+        }
+        
         let specific = try await fetchSpecific(
             for: tx.fromCoin,
-            action: .swap,
+            action: action,
             sendMaxAmount: false,
             isDeposit: tx.isDeposit,
             transactionType: .unspecified,
@@ -657,10 +666,10 @@ private extension BlockChainService {
         }
         let service = try EvmService.getService(forChain: tx.fromCoin.chain)
         switch(tx.quote){
-        case .mayachain(_):
-            return nil
-        case .thorchain(_), .thorchainStagenet(_):
-            return nil
+        case .mayachain(_), .thorchain(_), .thorchainStagenet(_):
+            // Swapping native ETH/AVAX/BSC to THORChain router is a contract call, not a simple transfer.
+            // 23000 is too low. Using 120000 (same as ERC20) is safer.
+            return BigInt(EVMHelper.defaultERC20TransferGasUnit)
         case .oneinch(let quote,_),.kyberswap(let quote, _),.lifi(let quote,_, _):
             if tx.fromCoin.isNativeToken {
                 return try await service.estimateGasLimitForSwap(senderAddress: tx.fromCoin.address, toAddress: quote.tx.to, value: tx.amountInCoinDecimal, data: quote.tx.data)

@@ -13,7 +13,7 @@ struct SendDetailsAssetTab: View {
     @ObservedObject var viewModel: SendDetailsViewModel
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     
-    @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
     
     var body: some View {
         content
@@ -30,7 +30,7 @@ struct SendDetailsAssetTab: View {
                 handleAssetSelection(oldValue, newValue)
             }
             .onChange(of: viewModel.selectedChain) { oldValue, newValue in
-                guard let vault = homeViewModel.selectedVault else { return }
+                guard let vault = appViewModel.selectedVault else { return }
                 
                 // ALWAYS select the NATIVE token for the chain, NEVER a regular token
                 let nativeCoin = vault.coins.first(where: { 
@@ -185,4 +185,5 @@ struct SendDetailsAssetTab: View {
         viewModel: SendDetailsViewModel(),
         sendCryptoViewModel: SendCryptoViewModel()
     )
+    .environmentObject(AppViewModel())
 }

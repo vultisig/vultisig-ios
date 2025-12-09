@@ -11,6 +11,21 @@ struct PeerDiscoveryView: View {
     let vault: Vault
     let selectedTab: SetupVaultState
     let fastSignConfig: FastSignConfig?
+    let keyImportInput: KeyImportInput?
+    
+    init(
+        tssType: TssType,
+        vault: Vault,
+        selectedTab: SetupVaultState,
+        fastSignConfig: FastSignConfig?,
+        keyImportInput: KeyImportInput? = nil
+    ) {
+        self.tssType = tssType
+        self.vault = vault
+        self.selectedTab = selectedTab
+        self.fastSignConfig = fastSignConfig
+        self.keyImportInput = keyImportInput
+    }
 
     @StateObject var viewModel = KeygenPeerDiscoveryViewModel()
     @StateObject var participantDiscovery = ParticipantDiscovery()
@@ -51,10 +66,14 @@ struct PeerDiscoveryView: View {
                     tssType: tssType, 
                     state: selectedTab,
                     participantDiscovery: participantDiscovery,
-                    fastSignConfig: fastSignConfig
+                    fastSignConfig: fastSignConfig,
+                    chains: keyImportInput?.chains
                 )
                 setData()
                 viewModel.startDiscovery()
+                if selectedTab == .fast {
+                    hideBackButton = true
+                }
             }
             .onDisappear {
                 viewModel.stopMediator()
@@ -153,16 +172,16 @@ struct PeerDiscoveryView: View {
         KeygenView(
             vault: viewModel.vault,
             tssType: tssType,
-            keygenCommittee: viewModel.selections.map { $0 }.sorted(),
+            keygenCommittee: viewModel.keygenCommittee,
             vaultOldCommittee: viewModel.vault.signers.filter { viewModel.selections.contains($0)},
             mediatorURL: viewModel.serverAddr,
             sessionID: viewModel.sessionID,
             encryptionKeyHex: viewModel.encryptionKeyHex ?? "",
             oldResharePrefix: viewModel.vault.resharePrefix ?? "",
             fastSignConfig: fastSignConfig,
+            keyImportInput: keyImportInput,
             isInitiateDevice: true,
-            hideBackButton: $hideBackButton,
-            selectedTab: selectedTab
+            hideBackButton: $hideBackButton
         )
     }
     
@@ -206,6 +225,18 @@ struct PeerDiscoveryView: View {
             showInfoSheet = false
         case .KeyImport:
             showInfoSheet = false
+        }
+    }
+    func getHeaderTitle() -> String {
+        if viewModel.status == .WaitingForDevices {
+            if selectedTab == .fast {
+                return ""
+            }
+            return tssType == .Migrate ? "" : "scanQR"
+        } else if tssType == .Migrate {
+            return ""
+        } else {
+            return "creatingVault"
         }
     }
 }

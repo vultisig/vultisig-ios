@@ -24,7 +24,7 @@ class Endpoint {
             case .thorchain:
                 return "https://thornode.ninerealms.com/thorchain"
             case .thorchainStagenet:
-                return "https://stagenet-thornode.ninerealms.com/thorchain"
+                return "https://chainnet-thornode.thorchain.network/thorchain"
             case .maya:
                 return "https://mayanode.mayachain.info/mayachain"
             }
@@ -148,24 +148,24 @@ class Endpoint {
     
     // Stagenet endpoints
     static func fetchAccountNumberThorchainStagenet(_ address: String) -> String {
-        "https://stagenet-thornode.ninerealms.com/auth/accounts/\(address)"
+        "https://chainnet-thornode.thorchain.network/auth/accounts/\(address)"
     }
     
-    static let fetchThorchainStagenetNetworkInfoNineRealms = "https://stagenet-thornode.ninerealms.com/thorchain/network"
+    static let fetchThorchainStagenetNetworkInfoNineRealms = "https://chainnet-thornode.thorchain.network/thorchain/network"
     
     static func fetchThorchainStagenetDenomMetadata(denom: String) -> String {
-        "https://stagenet-thornode.ninerealms.com/cosmos/bank/v1beta1/denoms_metadata/\(encodePathComponent(denom))"
+        "https://chainnet-thornode.thorchain.network/cosmos/bank/v1beta1/denoms_metadata/\(encodePathComponent(denom))"
     }
     
     static func fetchThorchainStagenetAllDenomMetadata() -> String {
-        "https://stagenet-thornode.ninerealms.com/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
+        "https://chainnet-thornode.thorchain.network/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
     }
     
-    static let thorchainStagenetNetworkInfo = "https://stagenet-rpc.ninerealms.com/status".asUrl
+    static let thorchainStagenetNetworkInfo = "https://chainnet-rpc.thorchain.network/status".asUrl
     
-    static let fetchThorchainStagenetInboundAddressesNineRealms = "https://stagenet-thornode.ninerealms.com/thorchain/inbound_addresses"
+    static let fetchThorchainStagenetInboundAddressesNineRealms = "https://chainnet-thornode.thorchain.network/thorchain/inbound_addresses"
     
-    static let broadcastTransactionThorchainStagenet = "https://stagenet-thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
+    static let broadcastTransactionThorchainStagenet = "https://chainnet-thornode.thorchain.network/cosmos/tx/v1beta1/txs"
     
     static func fetchAccountNumberMayachain(_ address: String) -> String {
         "https://mayanode.mayachain.info/auth/accounts/\(address)"
@@ -174,7 +174,7 @@ class Endpoint {
         "https://thornode.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)"
     }
     static func fetchAccountBalanceThorchainStagenet(address: String) -> String {
-        "https://stagenet-thornode.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)"
+        "https://chainnet-thornode.thorchain.network/cosmos/bank/v1beta1/balances/\(address)"
     }
     static func fetchAccountBalanceMayachain(address: String) -> String {
         "https://mayanode.mayachain.info/cosmos/bank/v1beta1/balances/\(address)"
@@ -186,7 +186,7 @@ class Endpoint {
     }
     
     static func fetchStagenetPoolInfo(asset: String) -> String {
-        "https://stagenet-thornode.ninerealms.com/thorchain/pool/\(asset)"
+        "https://chainnet-thornode.thorchain.network/thorchain/pool/\(asset)"
     }
     
     static func fetchTcyStakedAmount(address: String) -> String {
@@ -225,10 +225,10 @@ class Endpoint {
     
     // THORChain Stagenet LP endpoints
     static func fetchThorchainStagenetPoolLiquidityProvider(asset: String, address: String) -> String {
-        "https://stagenet-thornode.ninerealms.com/thorchain/pool/\(asset)/liquidity_provider/\(address)"
+        "https://chainnet-thornode.thorchain.network/thorchain/pool/\(asset)/liquidity_provider/\(address)"
     }
     
-    static let fetchThorchainStagenetPools = "https://stagenet-thornode.ninerealms.com/thorchain/pools"
+    static let fetchThorchainStagenetPools = "https://chainnet-thornode.thorchain.network/thorchain/pools"
     
     static func fetchSwapQuoteThorchain(
         chain: SwapChain,
@@ -246,12 +246,13 @@ class Endpoint {
     
     static func buildAffiliateParams(chain: SwapChain, referredCode: String, discountBps: Int) -> String {
         var affiliateParams: [(affiliate: String, bps: String)] = []
+        
+
+        
         if (chain == .thorchain || chain == .thorchainStagenet) && !referredCode.isEmpty {
             // THORChain supports nested affiliates
             let affiliateFeeRateBp = bps(for: discountBps, affiliateFeeRate: THORChainSwaps.referredAffiliateFeeRateBp)
-            if discountBps != .max {
-                affiliateParams.append((referredCode, THORChainSwaps.referredUserFeeRateBp))
-            }
+            affiliateParams.append((referredCode, THORChainSwaps.referredUserFeeRateBp))
             affiliateParams.append((THORChainSwaps.affiliateFeeAddress, "\(affiliateFeeRateBp)"))
         } else {
             // MayaChain only supports single affiliate
@@ -261,10 +262,10 @@ class Endpoint {
         
         guard !affiliateParams.isEmpty else { return .empty }
         
-        let affilates = affiliateParams.map(\.affiliate).joined(separator: "/")
+        let affiliates = affiliateParams.map(\.affiliate).joined(separator: "/")
         let affiliateBps = affiliateParams.map(\.bps).joined(separator: "/")
         
-        return "&affiliate=\(affilates)&affiliate_bps=\(affiliateBps)"
+        return "&affiliate=\(affiliates)&affiliate_bps=\(affiliateBps)"
     }
     
     static func bps(for discount: Int, affiliateFeeRate: Int) -> Int {
@@ -493,7 +494,9 @@ class Endpoint {
     static func fetchCryptoPrices(ids: String, currencies: String) -> URL {
         "\(vultisigApiProxy)/coingeicko/api/v3/simple/price?ids=\(ids)&vs_currencies=\(currencies)".asUrl
     }
-    
+    static func coinGeckoCoinsList() -> URL {
+        "\(vultisigApiProxy)/coingeicko/api/v3/coins/list?include_platform=true&status=active".asUrl
+    }
     static func fetchLifiTokenPrice(network: String, address: String) -> URL {
         let url = "https://li.quest/v1/token?chain=\(network.lowercased())&token=\(address)"
         return url.asUrl
@@ -798,12 +801,17 @@ class Endpoint {
         case .cardano:
             return "https://cardanoscan.io/transaction/\(txid)"
         case .mantle:
-            return "https://mantlescan.xyz/tx/\(txid)"
+            return "https://explorer.mantle.xyz/tx/\(txid)"
+
         case .hyperliquid:
             return "https://liquidscan.io/tx/\(txid)"
         case .sei:
             return "https://seiscan.io/tx/\(txid)"
         }
+    }
+    
+    static func cardanoBroadcast() -> URL {
+        return "\(vultisigApiProxy)/ada/".asUrl
     }
     
     static func getExplorerByAddressURL(chain: Chain, address:String) -> String? {

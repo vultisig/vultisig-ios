@@ -23,6 +23,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     var vault: Vault
     var participantDiscovery: ParticipantDiscovery?
     var encryptionKeyHex: String?
+    var chains: [Chain]?
     
     @Published var status = PeerDiscoveryStatus.WaitingForDevices
     @Published var serviceName = ""
@@ -30,6 +31,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     @Published var sessionID = ""
     @Published var localPartyID = ""
     @Published var selections = Set<String>()
+    @Published var keygenCommittee = [String]()
     @Published var serverAddr = "http://127.0.0.1:18080"
     @Published var selectedNetwork = VultisigRelay.IsRelayEnabled ? NetworkPromptType.Internet : NetworkPromptType.Local {
         didSet {
@@ -64,7 +66,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         tssType: TssType,
         state: SetupVaultState,
         participantDiscovery: ParticipantDiscovery,
-        fastSignConfig: FastSignConfig?
+        fastSignConfig: FastSignConfig?,
+        chains: [Chain]?
     ) {
         self.isLoading = true
         self.setupPeersFoundCancellable(
@@ -74,7 +77,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.vault = vault
         self.tssType = tssType
         self.participantDiscovery = participantDiscovery
-        
+        self.chains = chains
         if self.sessionID.isEmpty {
             self.sessionID = UUID().uuidString
         }
@@ -109,7 +112,6 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         case .secure:
             break
         }
-        
         if let config = fastSignConfig {
             switch tssType {
             case .Keygen:
@@ -122,12 +124,13 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                         lib_type: vault.libType == .DKLS ? 1 : 0)
             case .KeyImport:
                 fastVaultService.keyImport(name: vault.name,
-                                        sessionID: sessionID,
-                                        hexEncryptionKey: encryptionKeyHex!,
-                                        hexChainCode: vault.hexChainCode,
-                                        encryptionPassword: config.password,
-                                        email: config.email,
-                                        lib_type: 2)
+                                           sessionID: sessionID,
+                                           hexEncryptionKey: encryptionKeyHex!,
+                                           hexChainCode: vault.hexChainCode,
+                                           encryptionPassword: config.password,
+                                           email: config.email,
+                                           lib_type: 2,
+                                           chains: chains?.map { $0.name } ?? [])
             case .Reshare:
                 let pubKeyECDSA = config.isExist ? vault.pubKeyECDSA : .empty
                 fastVaultService.reshare(name: vault.name,
@@ -264,10 +267,38 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
     }
     
+
+
     private func startKeygen(allParticipants: [String]) {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
         
-        Utils.sendRequest(urlString: urlString, method: "POST",headers:nil, body: allParticipants) { _ in
+        // Enforce deterministic order (assumes calling device is the initiator): local device first, then peers by discovery order
+        var sortedParticipants = [String]()
+        
+        // Always add self first if selected
+        if self.selections.contains(self.localPartyID) {
+            sortedParticipants.append(self.localPartyID)
+        }
+        
+        // Add discovered peers in order
+        if let discoveredPeers = self.participantDiscovery?.peersFound {
+            for peer in discoveredPeers {
+                if self.selections.contains(peer) {
+                    sortedParticipants.append(peer)
+                }
+            }
+        }
+        
+        // Fallback: If there are any selected peers not in discovery list (edge case), add them
+        for peer in allParticipants {
+            if !sortedParticipants.contains(peer) {
+                sortedParticipants.append(peer)
+            }
+        }
+        
+        self.keygenCommittee = sortedParticipants
+        
+        Utils.sendRequest(urlString: urlString, method: "POST",headers:nil, body: sortedParticipants) { _ in
             self.logger.info("kicked off keygen successfully")
         }
     }
@@ -300,10 +331,11 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     encryptionKeyHex: encryptionKeyHex,
                     useVultisigRelay: VultisigRelay.IsRelayEnabled,
                     vaultName: vault.name,
-                    libType: vault.libType ?? .GG20
+                    libType: vault.libType ?? .GG20,
+                    chains: chains ?? []
                 )
                 let data = try ProtoSerializer.serialize(keygenMsg)
-                return "https://vultisig.com?type=NewVault&tssType=\(TssType.Keygen.rawValue)&jsonData=\(data)"
+                return "https://vultisig.com?type=NewVault&tssType=\(tssType.rawValue)&jsonData=\(data)"
             case .Reshare, .Migrate:
                 let reshareMsg = ReshareMessage(
                     sessionID: sessionID,

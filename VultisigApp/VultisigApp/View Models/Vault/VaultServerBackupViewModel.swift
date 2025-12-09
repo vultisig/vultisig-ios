@@ -91,7 +91,7 @@ final class VaultServerBackupViewModel: ObservableObject {
     
     func validate(email: String) {
         if email.isEmpty || email.trimmingCharacters(in: .whitespaces).isEmpty {
-            emailError = "emailIsRequired".localized
+            emailError = nil
         } else if !email.isValidEmail {
             emailError = "invalidEmailPleaseCheck".localized
         } else {

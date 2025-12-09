@@ -17,7 +17,7 @@ struct MacScannerView: View {
     
     @Query var vaults: [Vault]
     
-    @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
@@ -36,7 +36,7 @@ struct MacScannerView: View {
             JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: selectedVault)
         }
         .navigationDestination(isPresented: $cameraViewModel.shouldKeysignTransaction) {
-            if let vault = homeViewModel.selectedVault {
+            if let vault = appViewModel.selectedVault {
                 JoinKeysignView(vault: vault)
             }
         }
@@ -160,7 +160,7 @@ struct MacScannerView: View {
 
 #Preview {
     MacScannerView(type: .NewVault, sendTx: SendTransaction(), selectedVault: nil)
-        .environmentObject(HomeViewModel())
+        .environmentObject(AppViewModel())
         .environmentObject(DeeplinkViewModel())
         .environmentObject(VaultDetailViewModel())
         .environmentObject(CoinSelectionViewModel())

@@ -1,15 +1,33 @@
 import Foundation
 import SwiftUI
 
-public class CryptoPriceService: ObservableObject {
+struct CoinGeckoCoin : Decodable {
+    let id: String
+    let symbol: String
+    let name: String
+    let platforms: [String: String]
+}
+
+class CacheCoinGeckoCoin {
+    let coins: [CoinGeckoCoin]
+    let timestamp: Date
     
+    init(coins: [CoinGeckoCoin], timestamp: Date) {
+        self.coins = coins
+        self.timestamp = timestamp
+    }
+}
+
+public class CryptoPriceService: ObservableObject {
     struct ResolvedSources {
         let providerIds: [String]
         let contracts: [Chain: [String]]
     }
     
     public static let shared = CryptoPriceService()
-    
+    private let cache: NSCache<NSString,CacheCoinGeckoCoin> = NSCache()
+    private let coinGeckoListCacheKey: NSString = "coingecko-list"
+
     private init() {}
     
     func fetchPrices(vault: Vault) async throws {
@@ -18,26 +36,7 @@ public class CryptoPriceService: ObservableObject {
         await refresh(coins: vault.coins)
     }
     
-    func fetchPrice(coin: Coin) async throws {
-        try await fetchPrices(coins: [coin])
-        
-        await refresh(coins: [coin])
-    }
-}
-
-private extension CryptoPriceService {
-    
-    @MainActor func refresh(vault: Vault) {
-        vault.objectWillChange.send()
-    }
-    
-    @MainActor func refresh(coins: [Coin]) {
-        for coin in coins {
-            coin.objectWillChange.send()
-        }
-    }
-    
-    func fetchPrices(coins: [Coin]) async throws {
+    func fetchPrices(coins: [CoinMeta]) async throws {
         let sources = resolveSources(coins: coins)
         
         if !sources.providerIds.isEmpty {
@@ -51,7 +50,53 @@ private extension CryptoPriceService {
         }
     }
     
-    func resolveSources(coins: [Coin]) -> ResolvedSources {
+    func fetchPrice(coin: Coin) async throws {
+        try await fetchPrices(coins: [coin])
+        
+        await refresh(coins: [coin])
+    }
+    
+    func resolvePriceProviderID(symbol: String,contract: String) async throws ->  String? {
+        let cachedList = self.cache.object(forKey: coinGeckoListCacheKey)
+        // good to cache it for an hour , it doesn't change much
+        if let cachedList = cachedList, Date().timeIntervalSince(cachedList.timestamp) < 3600 {
+            let target = cachedList.coins.first{ $0.symbol.lowercased() == symbol.lowercased() && $0.platforms.values.contains(contract)}
+            return target?.id
+        }
+        let requestUrl = Endpoint.coinGeckoCoinsList()
+        let request = URLRequest(url: requestUrl)
+        let (data,resp) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResp = resp as? HTTPURLResponse, httpResp.statusCode == 200 else {
+            print("Error: Invalid response from server")
+            return nil
+        }
+        let decoder = JSONDecoder()
+        let coinsList = try decoder.decode([CoinGeckoCoin].self, from: data)
+        if !coinsList.isEmpty {   
+            self.cache.setObject(CacheCoinGeckoCoin(coins:coinsList, timestamp: Date()), forKey: coinGeckoListCacheKey)
+        }
+        let target = coinsList.first{ $0.symbol.lowercased() == symbol.lowercased() && $0.platforms.values.contains(contract)}
+        return target?.id
+    }
+}
+private extension CryptoPriceService {
+    
+    @MainActor func refresh(vault: Vault) {
+        vault.objectWillChange.send()
+    }
+    
+    @MainActor func refresh(coins: [Coin]) {
+        for coin in coins {
+            coin.objectWillChange.send()
+        }
+    }
+    
+    func fetchPrices(coins: [Coin]) async throws {
+        try await fetchPrices(coins: coins.map { $0.toCoinMeta() })
+    }
+    
+    func resolveSources(coins: [CoinMeta]) -> ResolvedSources {
         var providerIds: [String] = []
         var contracts: [Chain: [String]] = [:]
         
@@ -144,8 +189,17 @@ private extension CryptoPriceService {
                     let rate: Rate = .init(fiat: "usd", crypto: contract, value: price ?? 0.0)
                     rates.append(rate)
                 } else {
-                    let sanitisedContract = contract.uppercased().replacingOccurrences(of: "X/", with: "")
-                    let poolPrice = await thorService.getAssetPriceInUSD(assetName: sanitisedContract)
+                    var sanitisedContract = contract.uppercased().replacingOccurrences(of: "X/", with: "")
+                    
+                    // Handle staking assets mappings to their underlying asset for price
+                    if sanitisedContract.starts(with: "STAKING-") {
+                        sanitisedContract = sanitisedContract.replacingOccurrences(of: "STAKING-", with: "")
+                    }
+                    
+                    // Ensure we have the THOR. prefix for the pool lookup
+                    let assetName = sanitisedContract.contains(".") ? sanitisedContract : "THOR.\(sanitisedContract)"
+                    
+                    let poolPrice = await thorService.getAssetPriceInUSD(assetName: assetName)
                     let poolRate: Rate = .init(fiat: "usd", crypto: contract, value: poolPrice)
                     rates.append(poolRate)
                 }

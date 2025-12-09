@@ -12,16 +12,14 @@ extension MayaChainAPIService {
     func getCacaoPoolPosition(address: String) async throws -> MayaCacaoPoolPosition {
         let response = try await httpClient.request(
             MayaChainStakingAPI.getCacaoPoolMember(address: address),
-            responseType: [MayaCacaoPoolMemberResponse].self
+            responseType: MayaCacaoPoolMemberResponse.self
         )
-        guard let member = response.data.first else {
-            throw HelperError.runtimeError("Failed to parse CACAO pool member data")
-        }
-
+        
+        let member = response.data
         // Calculate net deposit
-        let cacaoDeposit = Decimal(string: member.cacaoDeposit) ?? 0
-        let cacaoWithdrawn = Decimal(string: member.cacaoWithdrawn) ?? 0
-        let userUnits = Decimal(string: member.liquidityUnits) ?? 0
+        let cacaoDeposit = Decimal(string: member.depositAmount) ?? 0
+        let cacaoWithdrawn = Decimal(string: member.withdrawAmount) ?? 0
+        let userUnits = Decimal(string: member.units) ?? 0
 
         let netDeposit = cacaoDeposit - cacaoWithdrawn
 
@@ -29,7 +27,9 @@ extension MayaChainAPIService {
             address: address,
             stakedAmount: netDeposit,
             userUnits: userUnits,
-            netDeposit: netDeposit
+            netDeposit: netDeposit,
+            lastWithdrawHeight: member.lastWithdrawHeight,
+            lastDepositHeight: member.lastDepositHeight
         )
     }
 
@@ -124,4 +124,6 @@ struct MayaCacaoPoolPosition {
     let stakedAmount: Decimal     // Current value in CACAO
     let userUnits: Decimal         // User's pool units
     let netDeposit: Decimal        // Deposit - Withdrawn
+    let lastWithdrawHeight: Int64
+    let lastDepositHeight: Int64
 }

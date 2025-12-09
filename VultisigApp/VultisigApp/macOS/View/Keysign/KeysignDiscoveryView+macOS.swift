@@ -67,7 +67,7 @@ extension KeysignDiscoveryView {
             LazyVGrid(columns: adaptiveColumnsMac, spacing: 18) {
                 ThisDevicePeerCell(deviceName: "Mac")
                 devices
-                EmptyPeerCell(counter: participantDiscovery.peersFound.count)
+                EmptyPeerCell()
             }
             .padding(.bottom, 120)
         }

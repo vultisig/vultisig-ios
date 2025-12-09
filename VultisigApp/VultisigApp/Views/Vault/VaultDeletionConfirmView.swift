@@ -42,7 +42,7 @@ struct VaultDeletionConfirmView: View {
             .background(backgroundView)
         }
         .navigationDestination(isPresented: $navigateToCreateVault) {
-            CreateVaultView(selectedVault: nil, showBackButton: false)
+            CreateVaultView(showBackButton: false)
         }
     }
     

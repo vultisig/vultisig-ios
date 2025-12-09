@@ -83,13 +83,14 @@ struct JoinKeygenView: View {
         KeygenView(
             vault: self.viewModel.vault,
             tssType: self.viewModel.tssType,
-            keygenCommittee: self.viewModel.keygenCommittee.sorted(),
+            keygenCommittee: self.viewModel.keygenCommittee,
             vaultOldCommittee: self.viewModel.oldCommittee.filter { self.viewModel.keygenCommittee.contains($0) },
             mediatorURL: viewModel.serverAddress!,
             sessionID: self.viewModel.sessionID!,
             encryptionKeyHex: viewModel.encryptionKeyHex,
             oldResharePrefix: viewModel.oldResharePrefix,
             fastSignConfig: nil,
+            keyImportInput: viewModel.keyImportInput,
             isInitiateDevice: false,
             hideBackButton: $hideBackButton
         )

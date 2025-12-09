@@ -77,7 +77,7 @@ extension PeerDiscoveryView {
             LazyVGrid(columns: adaptiveColumnsMac, spacing: 8) {
                 ThisDevicePeerCell(deviceName: "Mac")
                 devices
-                EmptyPeerCell(counter: participantDiscovery.peersFound.count)
+                EmptyPeerCell()
             }
             .animation(.easeInOut(duration: 0.2), value: viewModel.selections)
         }
@@ -153,14 +153,6 @@ extension PeerDiscoveryView {
         min(screenWidth/2.5, screenHeight/2.5)
     }
     
-    private func getHeaderTitle() -> String {
-        if viewModel.status == .WaitingForDevices {
-            tssType == .Migrate ? "" : "scanQR"
-        } else if tssType == .Migrate {
-            ""
-        } else {
-            "creatingVault"
-        }
-    }
+    
 }
 #endif

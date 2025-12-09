@@ -11,12 +11,22 @@ import SwiftData
 @MainActor
 struct CoinService {
     
-    static func removeCoins(coins: [Coin], vault: Vault)  throws {
+    static func removeCoins(coins: [Coin], vault: Vault) throws {
         for coin in coins {
-            if let idx = vault.coins.firstIndex(where: { $0.ticker == coin.ticker && $0.chain == coin.chain && $0.contractAddress == coin.contractAddress }) {
-                vault.coins.remove(at: idx)
+            let coinsToRemove = vault.coins.filter {
+                $0.chain == coin.chain &&
+                $0.ticker.caseInsensitiveCompare(coin.ticker) == .orderedSame &&
+                $0.contractAddress.caseInsensitiveCompare(coin.contractAddress) == .orderedSame
             }
-            Storage.shared.delete(coin)
+            
+            if !coinsToRemove.isEmpty {
+                for coinToRemove in coinsToRemove {
+                    if let idx = vault.coins.firstIndex(of: coinToRemove) {
+                         vault.coins.remove(at: idx)
+                    }
+                    Storage.shared.delete(coinToRemove)
+                }
+            }
         }
     }
     
@@ -106,7 +116,17 @@ struct CoinService {
     
     static func addToChain(assets: [CoinMeta], to vault: Vault) async throws {
         for asset in assets {
-            if let newCoin = try addToChain(asset: asset, to: vault, priceProviderId: asset.priceProviderId) {
+            var assetPriceProviderId = asset.priceProviderId
+            if assetPriceProviderId.isEmpty {
+                // When fail to match a price provider id , should not stop user from adding the coin
+                do {
+                    let priceProviderID  = try await CryptoPriceService.shared.resolvePriceProviderID(symbol: asset.ticker, contract: asset.contractAddress)
+                    assetPriceProviderId = priceProviderID ?? ""
+                } catch {
+                    print("Error resolving price provider ID for \(asset.ticker): \(error.localizedDescription)")
+                }
+            }
+            if let newCoin = try addToChain(asset: asset, to: vault, priceProviderId: assetPriceProviderId) {
                 // Only do auto-discovery for native tokens
                 if newCoin.isNativeToken {
                     // Clear hidden tokens for this chain when adding native token back
@@ -119,10 +139,15 @@ struct CoinService {
     }
     
     static func addToChain(asset: CoinMeta, to vault: Vault, priceProviderId: String?) throws -> Coin? {
-        let newCoin = try CoinFactory.create(asset: asset,
-                                             publicKeyECDSA: vault.pubKeyECDSA,
-                                             publicKeyEdDSA: vault.pubKeyEdDSA,
-                                             hexChainCode: vault.hexChainCode)
+        let pubKey = vault.chainPublicKeys.first { $0.chain == asset.chain }?.publicKeyHex
+        let isDerived = pubKey != nil
+        let newCoin = try CoinFactory.create(
+            asset: asset,
+            publicKeyECDSA:  pubKey ?? vault.pubKeyECDSA,
+            publicKeyEdDSA:  pubKey ?? vault.pubKeyEdDSA,
+            hexChainCode: vault.hexChainCode,
+            isDerived: isDerived
+        )
         
         // Check if coin with same ID already exists
         if vault.coins.contains(where: { $0.id == newCoin.id }) {
@@ -146,33 +171,39 @@ struct CoinService {
             return coin
         }
         
-        return try  addToChain(asset: asset, to: vault, priceProviderId: priceProviderId)
+        return try addToChain(asset: asset, to: vault, priceProviderId: priceProviderId)
+    }
+    
+    static func fetchDiscoveredTokens(nativeCoin: CoinMeta, address: String) async throws -> [CoinMeta] {
+        var tokens: [CoinMeta] = []
+        switch nativeCoin.chain.chainType {
+        case .EVM :
+            let service = try EvmService.getService(forChain: nativeCoin.chain)
+            tokens = try await service.getTokens(nativeToken: nativeCoin, address: address)
+        case .Solana:
+            tokens = try await SolanaService.shared.fetchTokens(for: address)
+        case .Sui:
+            tokens = try await SuiService.shared.getAllTokensWithMetadata(address: address)
+        case .THORChain:
+            switch nativeCoin.chain {
+            case .thorChain, .thorChainStagenet:
+                let service = ThorchainServiceFactory.getService(for: nativeCoin.chain)
+                tokens = try await service.fetchTokens(address)
+            case .mayaChain:
+                tokens = try await MayachainService.shared.fetchTokens(address)
+            default:
+                tokens = []
+            }
+        default:
+            tokens = []
+        }
+        
+        return tokens
     }
     
     static func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async {
         do {
-            var tokens: [CoinMeta] = []
-            switch nativeToken.chain.chainType {
-            case .EVM :
-                let service = try EvmService.getService(forChain: nativeToken.chain)
-                tokens = try await service.getTokens(nativeToken: nativeToken)
-            case .Solana:
-                tokens = try await SolanaService.shared.fetchTokens(for: nativeToken.address)
-            case .Sui:
-                tokens = try await SuiService.shared.getAllTokensWithMetadata(coin: nativeToken)
-            case .THORChain:
-                switch nativeToken.chain {
-                case .thorChain, .thorChainStagenet:
-                    let service = ThorchainServiceFactory.getService(for: nativeToken.chain)
-                    tokens = try await service.fetchTokens(nativeToken.address)
-                case .mayaChain:
-                    tokens = try await MayachainService.shared.fetchTokens(nativeToken.address)
-                default:
-                    tokens = []
-                }
-            default:
-                tokens = []
-            }
+            let tokens = try await fetchDiscoveredTokens(nativeCoin: nativeToken.toCoinMeta(), address: nativeToken.address)
             
             for token in tokens {
                 do {
@@ -191,7 +222,7 @@ struct CoinService {
                         continue
                     }
                     
-                    _ = try addToChain(asset: token, to: vault, priceProviderId: token.priceProviderId)
+                    _ =  try addToChain(asset: token, to: vault, priceProviderId: token.priceProviderId)
                 } catch {
                     print("Error adding the token \(token.ticker) service: \(error.localizedDescription)")
                 }
@@ -394,9 +425,12 @@ struct CoinService {
         }
         
         if !alreadyHidden {
+            print("🙈 Hiding Token: \(coin.ticker) (\(coin.contractAddress))")
             let hiddenToken = HiddenToken(coin: coin)
             vault.hiddenTokens.append(hiddenToken)
             Storage.shared.insert([hiddenToken])
+        } else {
+            print("🙈 Token already hidden: \(coin.ticker)")
         }
     }
     

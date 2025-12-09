@@ -28,6 +28,10 @@ struct FastVaultEmailView: View {
                 if !newValue.isEmpty {
                     isEmptyEmail = false
                 }
+                
+                if isInvalidEmail && newValue.isValidEmail {
+                    isInvalidEmail = false
+                }
             }
             .onAppear(){
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {

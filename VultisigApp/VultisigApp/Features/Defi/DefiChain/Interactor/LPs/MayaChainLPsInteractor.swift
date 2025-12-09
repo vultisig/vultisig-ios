@@ -63,7 +63,6 @@ private extension MayaChainLPsInteractor {
             }
             
             // Convert amounts from base units to decimal
-            // Note: THORChain uses 8 decimals for RUNE
             let runeAmount = apiPosition.currentRuneAmount / pow(10, cacaoCoin.decimals)
             let assetAmount = apiPosition.currentAssetAmount / pow(10, cacaoCoin.decimals)
             

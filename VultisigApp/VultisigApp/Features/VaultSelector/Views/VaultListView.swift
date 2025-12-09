@@ -21,6 +21,7 @@ struct VaultListView: View {
     
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
     
     var filteredVaults: [Vault] {
         homeViewModel.getFilteredVaults(vaults: vaults, folders: folders)
@@ -130,7 +131,7 @@ struct VaultListView: View {
         ForEach(folders) { folder in
             FolderCellView(
                 folder: folder,
-                selectedVaultName: homeViewModel.selectedVault?.name,
+                selectedVaultName: appViewModel.selectedVault?.name,
                 isEditing: $isEditing
             ) {
                 onSelectFolder(folder)
@@ -147,7 +148,7 @@ struct VaultListView: View {
         ForEach(filteredVaults) { vault in
             VaultCellView(
                 vault: vault,
-                isSelected: homeViewModel.selectedVault == vault,
+                isSelected: appViewModel.selectedVault == vault,
                 isEditing: $isEditing) {
                     onSelectVault(vault)
                 }
@@ -207,4 +208,5 @@ struct VaultListView: View {
         }
     )
     .environmentObject(HomeViewModel())
+    .environmentObject(AppViewModel())
 }
