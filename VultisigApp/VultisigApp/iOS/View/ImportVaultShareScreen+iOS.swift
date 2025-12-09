@@ -1,5 +1,5 @@
 //
-//  ImportWalletView+iOS.swift
+//  ImportVaultShareScreen+iOS.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2024-09-01.

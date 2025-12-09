@@ -647,8 +647,8 @@
 		A625D9C62C5B5FE30078FBF4 /* KeygenViewInstructionsMac.swift in Sources */ = {isa = PBXBuildFile; fileRef = A625D9C52C5B5FE30078FBF4 /* KeygenViewInstructionsMac.swift */; };
 		A62758F22B97B10600ADE3A6 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62758F12B97B10600ADE3A6 /* Endpoint.swift */; };
 		A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62758F62B97DF4A00ADE3A6 /* ColorStyle.swift */; };
-		A62766512C85275F002C666A /* ImportWalletView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62766502C85275F002C666A /* ImportWalletView+iOS.swift */; };
-		A62766532C852765002C666A /* ImportWalletView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62766522C852765002C666A /* ImportWalletView+macOS.swift */; };
+		A62766512C85275F002C666A /* ImportVaultShareScreen+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62766502C85275F002C666A /* ImportVaultShareScreen+iOS.swift */; };
+		A62766532C852765002C666A /* ImportVaultShareScreen+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62766522C852765002C666A /* ImportVaultShareScreen+macOS.swift */; };
 		A63001B12C54AC0100D18E25 /* EditAddressBookScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63001B02C54AC0100D18E25 /* EditAddressBookScreen.swift */; };
 		A63253C42C17BE9000D2F1B8 /* VaultDeletionDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63253C32C17BE9000D2F1B8 /* VaultDeletionDetails.swift */; };
 		A633B11C2B99273A003D1738 /* ColorExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B11B2B99273A003D1738 /* ColorExtensions.swift */; };
@@ -1877,8 +1877,8 @@
 		A625D9C52C5B5FE30078FBF4 /* KeygenViewInstructionsMac.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenViewInstructionsMac.swift; sourceTree = "<group>"; };
 		A62758F12B97B10600ADE3A6 /* Endpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoint.swift; sourceTree = "<group>"; };
 		A62758F62B97DF4A00ADE3A6 /* ColorStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorStyle.swift; sourceTree = "<group>"; };
-		A62766502C85275F002C666A /* ImportWalletView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImportWalletView+iOS.swift"; sourceTree = "<group>"; };
-		A62766522C852765002C666A /* ImportWalletView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImportWalletView+macOS.swift"; sourceTree = "<group>"; };
+		A62766502C85275F002C666A /* ImportVaultShareScreen+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImportVaultShareScreen+iOS.swift"; sourceTree = "<group>"; };
+		A62766522C852765002C666A /* ImportVaultShareScreen+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImportVaultShareScreen+macOS.swift"; sourceTree = "<group>"; };
 		A63001B02C54AC0100D18E25 /* EditAddressBookScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditAddressBookScreen.swift; sourceTree = "<group>"; };
 		A63253C32C17BE9000D2F1B8 /* VaultDeletionDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDeletionDetails.swift; sourceTree = "<group>"; };
 		A633B11B2B99273A003D1738 /* ColorExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorExtensions.swift; sourceTree = "<group>"; };
@@ -5393,7 +5393,7 @@
 				A5340A682CECF093002ADD35 /* MonthlyBackupView+iOS.swift */,
 				A6F7B71E2D4ED2D800AC8104 /* SecureBackupVaultOverview+iOS.swift */,
 				A622C8312C9BB26F00908332 /* VultisigApp+iOS.swift */,
-				A62766502C85275F002C666A /* ImportWalletView+iOS.swift */,
+				A62766502C85275F002C666A /* ImportVaultShareScreen+iOS.swift */,
 				A69FBBA52C8ADC2E00A4B78B /* WelcomeView+iOS.swift */,
 				A69FBBC32C8BB5AD00A4B78B /* NoCameraPermissionView+iOS.swift */,
 				A69FBBC92C8BB77900A4B78B /* CoverView+iOS.swift */,
@@ -5429,7 +5429,7 @@
 			children = (
 				A575F2CD2D50D421000C4F14 /* FastVaultSetHintView+macOS.swift */,
 				A622C8332C9BB28000908332 /* VultisigApp+macOS.swift */,
-				A62766522C852765002C666A /* ImportWalletView+macOS.swift */,
+				A62766522C852765002C666A /* ImportVaultShareScreen+macOS.swift */,
 				A69FBB992C8AD63C00A4B78B /* CreateVaultView+macOS.swift */,
 				A69FBBA72C8ADC4600A4B78B /* WelcomeView+macOS.swift */,
 				A69FBBC52C8BB5B700A4B78B /* NoCameraPermissionView+macOS.swift */,
@@ -6983,7 +6983,7 @@
 				A6386D962C8C2AA200DDD58E /* SwapCryptoDetailsView+macOS.swift in Sources */,
 				13A078662E8464BF0093496F /* View+NavigationBarHidden.swift in Sources */,
 				1368C2792E833DED00BB240D /* VaultFolderCellView.swift in Sources */,
-				A62766512C85275F002C666A /* ImportWalletView+iOS.swift in Sources */,
+				A62766512C85275F002C666A /* ImportVaultShareScreen+iOS.swift in Sources */,
 				A6E0C93C2DF0AC9B00A01543 /* ReferralTextField+macOS.swift in Sources */,
 				A6182F472C9292EC0059BFDD /* NavigationButton+iOS.swift in Sources */,
 				A58760562CBD3D1E0070956A /* KeychainIdentifier.swift in Sources */,
@@ -7134,7 +7134,7 @@
 				13A964112EBB9FA20025FB7A /* TCYStakeTransactionBuilder.swift in Sources */,
 				A6F7B7192D4EC25D00AC8104 /* BackupVaultSuccessView+macOS.swift in Sources */,
 				13A8990B2E44F547006F75F0 /* RedactedText.swift in Sources */,
-				A62766532C852765002C666A /* ImportWalletView+macOS.swift in Sources */,
+				A62766532C852765002C666A /* ImportVaultShareScreen+macOS.swift in Sources */,
 				A52313DE2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift in Sources */,
 				DEEDAEE32B8AF8B1005170E8 /* publickey.swift in Sources */,
 				A6C671352CA3C53800F59B6A /* QRShareSheetImage+macOS.swift in Sources */,
