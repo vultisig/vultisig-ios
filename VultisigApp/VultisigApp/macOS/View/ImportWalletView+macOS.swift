@@ -8,7 +8,7 @@
 #if os(macOS)
 import SwiftUI
 
-extension ImportWalletView {
+extension ImportVaultShareScreen {
     var content: some View {
         view
             .onDrop(of: [.data], isTargeted: $isUploading) { providers -> Bool in

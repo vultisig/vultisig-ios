@@ -8,7 +8,7 @@
 #if os(iOS)
 import SwiftUI
 
-extension ImportWalletView {
+extension ImportVaultShareScreen {
     var content: some View {
         main
             .toolbar {
