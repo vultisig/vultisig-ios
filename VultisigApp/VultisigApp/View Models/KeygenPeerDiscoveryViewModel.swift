@@ -31,6 +31,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     @Published var sessionID = ""
     @Published var localPartyID = ""
     @Published var selections = Set<String>()
+    @Published var keygenCommittee = [String]()
     @Published var serverAddr = "http://127.0.0.1:18080"
     @Published var selectedNetwork = VultisigRelay.IsRelayEnabled ? NetworkPromptType.Internet : NetworkPromptType.Local {
         didSet {
@@ -241,7 +242,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     }
     
     func startKeygen() {
-        self.startKeygen(allParticipants: self.selections.map { $0 }.sorted())
+        self.startKeygen(allParticipants: self.selections.map { $0 })
         self.status = .Keygen
         self.participantDiscovery?.stop()
     }
@@ -266,11 +267,39 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
     }
     
+
+
     private func startKeygen(allParticipants: [String]) {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
-        // Enforce deterministic order (alphabetical sort)
-        // This ensures all devices agree on the index (0..N-1)
-        let sortedParticipants = allParticipants.sorted()
+        
+        // Enforce deterministic order based on discovery/arrival time
+        // 1. Initiator (Self) is always first
+        // 2. Then peers in the order they were discovered (First Joiner, Second Joiner...)
+        var sortedParticipants = [String]()
+        
+        // Always add self first if selected
+        if self.selections.contains(self.localPartyID) {
+            sortedParticipants.append(self.localPartyID)
+        }
+        
+        // Add discovered peers in order
+        if let discoveredPeers = self.participantDiscovery?.peersFound {
+            for peer in discoveredPeers {
+                if self.selections.contains(peer) {
+                    sortedParticipants.append(peer)
+                }
+            }
+        }
+        
+        // Fallback: If there are any selected peers not in discovery list (edge case), add them
+        for peer in allParticipants {
+            if !sortedParticipants.contains(peer) {
+                sortedParticipants.append(peer)
+            }
+        }
+        
+        // Save the ordered list so the View can use it (instead of re-sorting/shuffling)
+        self.keygenCommittee = sortedParticipants
         
         Utils.sendRequest(urlString: urlString, method: "POST",headers:nil, body: sortedParticipants) { _ in
             self.logger.info("kicked off keygen successfully")
