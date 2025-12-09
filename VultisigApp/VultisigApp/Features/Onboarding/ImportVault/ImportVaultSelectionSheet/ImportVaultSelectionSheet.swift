@@ -40,9 +40,6 @@ struct ImportVaultSelectionSheet: View {
                 )
             }
         }
-        .applySheetSize(650, 400)
-        .sheetStyle()
-        .presentationDetents([.medium])
         .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
             CustomToolbarItem(placement: .leading) {
                 ToolbarButton(image: "x") {
@@ -50,6 +47,9 @@ struct ImportVaultSelectionSheet: View {
                 }
             }
         }
+        .applySheetSize(650, 400)
+        .sheetStyle()
+        .presentationDetents([.medium])
     }
     
     func importButton(
