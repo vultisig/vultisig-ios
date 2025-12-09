@@ -171,8 +171,7 @@ class JoinKeygenViewModel: ObservableObject {
                 let peers = try decoder.decode([String].self, from: data)
                 DispatchQueue.main.async {
                     if peers.contains(self.localPartyID) {
-                        // Strictly overwrite the committee with the server's authoritative list.
-                        // The server list (set by Initiator) is the single source of truth for order.
+                        // Trust the server's authoritative list order.
                         self.keygenCommittee = peers
                         self.status = .KeygenStarted
                     }

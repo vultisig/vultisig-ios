@@ -272,9 +272,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     private func startKeygen(allParticipants: [String]) {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
         
-        // Enforce deterministic order based on discovery/arrival time
-        // 1. Initiator (Self) is always first
-        // 2. Then peers in the order they were discovered (First Joiner, Second Joiner...)
+        // Enforce deterministic order: Initiator first, then peers by discovery order.
         var sortedParticipants = [String]()
         
         // Always add self first if selected
@@ -298,7 +296,6 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             }
         }
         
-        // Save the ordered list so the View can use it (instead of re-sorting/shuffling)
         self.keygenCommittee = sortedParticipants
         
         Utils.sendRequest(urlString: urlString, method: "POST",headers:nil, body: sortedParticipants) { _ in
