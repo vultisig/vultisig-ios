@@ -139,7 +139,8 @@ class KeysignDiscoveryViewModel: ObservableObject {
                 hexEncryptionKey: self.encryptionKeyHex!,
                 derivePath: coin.coinType.derivationPath(),
                 isECDSA: coin.chain.isECDSA,
-                vaultPassword: fastVaultPassword
+                vaultPassword: fastVaultPassword,
+                chain: coin.chain.name
             ) { isSuccess in
                 if !isSuccess {
                     self.logger.error("Fast Vault signing failed")
