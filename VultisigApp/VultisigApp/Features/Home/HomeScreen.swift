@@ -248,7 +248,7 @@ struct HomeScreen: View {
                 }
             }
             .navigationDestination(isPresented: $shouldImportBackup) {
-                ImportWalletScreen()
+                ImportVaultShareScreen()
             }
             .navigationDestination(isPresented: $showBackupNow) {
                 if let vault = appViewModel.selectedVault {

@@ -1072,3 +1072,10 @@
 "nodeAddressLabel" = "Node Address";
 "loading" = "Loading...";
 "cacaoUnstakeMaturityMessage" = "%@ até atingir a maturidade do depósito";
+"importVaultSelectionTitle" = "Recupere seu cofre ou converta sua frase semente em um cofre";
+"importSeedphraseTitle" = "Importar frase semente";
+"importSeedphraseSubtitle" = "Digite-a, crie um cofre, nunca olhe para trás.";
+"importVaultShareTitle" = "Importar compartilhamento de cofre";
+"importVaultShareSubtitle" = "Use um compartilhamento de cofre para recuperar seu cofre.";
+"importVaultShareCaption" = "Tipos de arquivo suportados: .bak e .vult";
+"new" = "NOVO";
