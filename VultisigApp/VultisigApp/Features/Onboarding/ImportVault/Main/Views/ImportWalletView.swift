@@ -82,10 +82,12 @@ struct ImportWalletView: View {
         
         if let data = vultExtensionViewModel.documentData, let url = data.fileURL {
             backupViewModel.handleFileDocument(url)
+            vultExtensionViewModel.documentData = nil
         }
         
         if let url = vultExtensionViewModel.documentUrl {
             backupViewModel.handleFileDocument(url)
+            vultExtensionViewModel.documentUrl = nil
         }
     }
     
