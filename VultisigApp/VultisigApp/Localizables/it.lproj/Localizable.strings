@@ -1072,3 +1072,10 @@
 "nodeAddressLabel" = "Indirizzo Nodo";
 "loading" = "Loading...";
 "cacaoUnstakeMaturityMessage" = "%@ fino al raggiungimento della maturità del deposito";
+"importVaultSelectionTitle" = "Recupera il tuo vault o converti la tua seed phrase in un vault";
+"importSeedphraseTitle" = "Importa seed phrase";
+"importSeedphraseSubtitle" = "Inseriscila, crea un vault, non voltarti mai indietro.";
+"importVaultShareTitle" = "Importa condivisione vault";
+"importVaultShareSubtitle" = "Usa una condivisione vault per recuperare il tuo vault.";
+"importVaultShareCaption" = "Tipi di file supportati: .bak e .vult";
+"new" = "NUOVO";

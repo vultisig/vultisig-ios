@@ -1072,3 +1072,10 @@
 "nodeAddressLabel" = "Node Address";
 "loading" = "Loading...";
 "cacaoUnstakeMaturityMessage" = "%@ hasta que se alcance la madurez del depósito";
+"importVaultSelectionTitle" = "Recupera tu bóveda o convierte tu frase semilla en una bóveda";
+"importSeedphraseTitle" = "Importar frase semilla";
+"importSeedphraseSubtitle" = "Ingrésala, crea una bóveda, nunca mires atrás.";
+"importVaultShareTitle" = "Importar parte de bóveda";
+"importVaultShareSubtitle" = "Usa una parte de bóveda para recuperar tu bóveda.";
+"importVaultShareCaption" = "Tipos de archivo soportados: .bak y .vult";
+"new" = "NUEVO";

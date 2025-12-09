@@ -1072,3 +1072,10 @@
 "nodeAddressLabel" = "Node Address";
 "loading" = "Loading...";
 "cacaoUnstakeMaturityMessage" = "%@ do dosezanja zrelosti depozita";
+"importVaultSelectionTitle" = "Oporavite svoj trezor ili pretvorite svoju seed frazu u trezor";
+"importSeedphraseTitle" = "Uvezi seed frazu";
+"importSeedphraseSubtitle" = "Unesite je, stvorite trezor, nikad ne gledajte natrag.";
+"importVaultShareTitle" = "Uvezi dijeljenje trezora";
+"importVaultShareSubtitle" = "Koristite dijeljenje trezora da oporavite svoj trezor.";
+"importVaultShareCaption" = "Podržane vrste datoteka: .bak i .vult";
+"new" = "NOVO";
