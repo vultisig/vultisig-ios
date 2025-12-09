@@ -272,7 +272,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     private func startKeygen(allParticipants: [String]) {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
         
-        // Enforce deterministic order: Initiator first, then peers by discovery order.
+        // Enforce deterministic order: Local device (Initiator) first, then peers by discovery order.
         var sortedParticipants = [String]()
         
         // Always add self first if selected
