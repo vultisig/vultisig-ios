@@ -1074,3 +1074,10 @@
 "nodeAddressLabel" = "节点地址";
 "loading" = "加载中...";
 "cacaoUnstakeMaturityMessage" = "距离存款到期还有 %@";
+"importVaultSelectionTitle" = "恢复您的保险库或将您的助记词转换为保险库";
+"importSeedphraseTitle" = "导入助记词";
+"importSeedphraseSubtitle" = "输入它，创建保险库，永不回头。";
+"importVaultShareTitle" = "导入保险库共享";
+"importVaultShareSubtitle" = "使用保险库共享来恢复您的保险库。";
+"importVaultShareCaption" = "支持的文件类型：.bak 和 .vult";
+"new" = "新";

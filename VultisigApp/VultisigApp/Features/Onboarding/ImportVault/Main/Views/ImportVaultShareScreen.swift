@@ -8,7 +8,7 @@
 import SwiftUI
 import SwiftData
 
-struct ImportWalletView: View {
+struct ImportVaultShareScreen: View {
     @Environment(\.modelContext) private var context
     @StateObject var backupViewModel = EncryptedBackupViewModel()
     
@@ -19,27 +19,29 @@ struct ImportWalletView: View {
     @EnvironmentObject var appViewModel: AppViewModel
     
     var body: some View {
-        content
-            .fileImporter(
-                isPresented: $backupViewModel.showVaultImporter,
-                allowedContentTypes: [.data],
-                allowsMultipleSelection: false
-            ) { result in
-                backupViewModel.handleFileImporter(result)
-            }
-            .onChange(of: backupViewModel.isVaultImported) { _, isVaultImported in
-                guard isVaultImported else { return }
-                appViewModel.showOnboarding = false
-                appViewModel.set(selectedVault: backupViewModel.selectedVault)
-            }
-            .onAppear {
-                setData()
-            }
-            .onDisappear {
-                resetData()
-            }
+        Screen(title: "importVault".localized) {
+            content
+        }
+        .fileImporter(
+            isPresented: $backupViewModel.showVaultImporter,
+            allowedContentTypes: [.data],
+            allowsMultipleSelection: false
+        ) { result in
+            backupViewModel.handleFileImporter(result)
+        }
+        .onChange(of: backupViewModel.isVaultImported) { _, isVaultImported in
+            guard isVaultImported else { return }
+            appViewModel.showOnboarding = false
+            appViewModel.set(selectedVault: backupViewModel.selectedVault)
+        }
+        .onAppear {
+            setData()
+        }
+        .onDisappear {
+            resetData()
+        }
     }
-
+    
     var view: some View {
         VStack(spacing: 15) {
             Spacer()
@@ -117,7 +119,7 @@ struct ImportWalletView: View {
 }
 
 #Preview {
-    ImportWalletView()
+    ImportVaultShareScreen()
         .environmentObject(VultExtensionViewModel())
         .environmentObject(AppViewModel())
 }

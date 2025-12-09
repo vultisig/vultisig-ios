@@ -1090,3 +1090,10 @@
 "addHint" = "Add Hint (Optional)";
 "addReferral" = "Add Referral";
 "cacaoUnstakeMaturityMessage" = "%@ until deposit maturity reached";
+"importVaultSelectionTitle" = "Recover your vault or convert your seedphrase to a vault";
+"importSeedphraseTitle" = "Import seedphrase";
+"importSeedphraseSubtitle" = "Enter it, create a vault, never look back.";
+"importVaultShareTitle" = "Import vault share";
+"importVaultShareSubtitle" = "Use a vault share to recover your vault.";
+"importVaultShareCaption" = "Supported file types: .bak & .vult";
+"new" = "NEW";

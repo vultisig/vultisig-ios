@@ -1,5 +1,5 @@
 //
-//  ImportSeedphraseView.swift
+//  ImportSeedphraseScreen.swift
 //  VultisigApp
 //
 //  Created by Gaston Mazzeo on 01/12/2025.
@@ -8,7 +8,7 @@
 import SwiftUI
 import WalletCore
 
-struct ImportSeedphraseView: View {
+struct ImportSeedphraseScreen: View {
     let wordsCount = [12, 24]
     
     @State var selectedWordsCount: Int = 12
@@ -26,50 +26,51 @@ struct ImportSeedphraseView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            wordsButtonStack
-                .padding(.bottom, 16)
-            Separator(color: Theme.colors.borderLight, opacity: 1)
-            
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 16) {
-                    ForEach(0..<(words.count / 2), id: \.self) { row in
-                        HStack(spacing: 16) {
-                            WordInputRow(
-                                index: row * 2,
-                                word: $words[row * 2],
-                                focusedField: $focusedField,
-                                totalWords: words.count,
-                                onPaste: handlePastedSeedPhrase
-                            )
-                            
-                            WordInputRow(
-                                index: row * 2 + 1,
-                                word: $words[row * 2 + 1],
-                                focusedField: $focusedField,
-                                totalWords: words.count,
-                                onPaste: handlePastedSeedPhrase
-                            )
+        Screen(title: "importVault".localized) {
+            VStack(spacing: 0) {
+                wordsButtonStack
+                    .padding(.bottom, 16)
+                Separator(color: Theme.colors.borderLight, opacity: 1)
+                
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 16) {
+                        ForEach(0..<(words.count / 2), id: \.self) { row in
+                            HStack(spacing: 16) {
+                                WordInputRow(
+                                    index: row * 2,
+                                    word: $words[row * 2],
+                                    focusedField: $focusedField,
+                                    totalWords: words.count,
+                                    onPaste: handlePastedSeedPhrase
+                                )
+                                
+                                WordInputRow(
+                                    index: row * 2 + 1,
+                                    word: $words[row * 2 + 1],
+                                    focusedField: $focusedField,
+                                    totalWords: words.count,
+                                    onPaste: handlePastedSeedPhrase
+                                )
+                            }
                         }
                     }
                 }
+                .scrollIndicators(.never)
+                .contentMargins(.vertical, 16)
+                .padding(.bottom, 16)
+                .overlay(overlay)
+                
+                PrimaryButton(title: "import".localized) {
+                    onImport()
+                }
+                .disabled(!isValidMnemonic)
             }
-            .scrollIndicators(.never)
-            .contentMargins(.vertical, 16)
-            .padding(.bottom, 16)
-            .overlay(overlay)
-            
-            PrimaryButton(title: "import".localized) {
-                onImport()
-            }
-            .disabled(!isValidMnemonic)
         }
         .onLoad(perform: setup)
         .onChange(of: selectedWordsCount) { _, _ in
             setup()
         }
         .animation(.easeInOut(duration: 0.2), value: focusedField)
-        .padding(.top, 24)
         .navigationDestination(isPresented: $presentChainsSetup) {
             KeyImportChainsSetupScreen(mnemonic: mnemonic)
         }
@@ -201,6 +202,6 @@ struct WordInputRow: View {
 }
 
 #Preview {
-    ImportSeedphraseView()
+    ImportSeedphraseScreen()
         .background(Theme.colors.bgPrimary)
 }
