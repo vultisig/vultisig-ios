@@ -15,4 +15,5 @@ struct KeysignRequest: Hashable,Codable {
     let derive_path: String
     let is_ecdsa: Bool
     let vault_password: String
+    let chain: String
 }

@@ -120,9 +120,10 @@ final class FastVaultService {
         derivePath:String,
         isECDSA: Bool,
         vaultPassword: String,
+        chain: String,
         completion: @escaping (Bool) -> Void
     ) {
-        let request = KeysignRequest(public_key: publicKeyEcdsa, messages: keysignMessages, session: sessionID, hex_encryption_key: hexEncryptionKey, derive_path: derivePath, is_ecdsa: isECDSA, vault_password: vaultPassword)
+        let request = KeysignRequest(public_key: publicKeyEcdsa, messages: keysignMessages, session: sessionID, hex_encryption_key: hexEncryptionKey, derive_path: derivePath, is_ecdsa: isECDSA, vault_password: vaultPassword, chain: chain)
 
         Utils.sendRequest(
             urlString: "\(endpoint)/sign",
