@@ -1072,3 +1072,10 @@
 "nodeAddressLabel" = "Node Address";
 "loading" = "Loading...";
 "cacaoUnstakeMaturityMessage" = "%@ bis zur Erreichung der Einzahlungsreife";
+"importVaultSelectionTitle" = "Stellen Sie Ihren Tresor wieder her oder wandeln Sie Ihre Seed-Phrase in einen Tresor um";
+"importSeedphraseTitle" = "Seed-Phrase importieren";
+"importSeedphraseSubtitle" = "Geben Sie sie ein, erstellen Sie einen Tresor, schauen Sie nie zurück.";
+"importVaultShareTitle" = "Tresoranteil importieren";
+"importVaultShareSubtitle" = "Verwenden Sie einen Tresoranteil, um Ihren Tresor wiederherzustellen.";
+"importVaultShareCaption" = "Unterstützte Dateitypen: .bak & .vult";
+"new" = "NEU";
