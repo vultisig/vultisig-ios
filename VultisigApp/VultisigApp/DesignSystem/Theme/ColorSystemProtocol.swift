@@ -50,5 +50,7 @@ public protocol ColorSystemProtocol {
     var alertError: Color { get }
     var alertWarning: Color { get }
     var alertInfo: Color { get }
+    
+    var turquoise: Color { get }
 }
 

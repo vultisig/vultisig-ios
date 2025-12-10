@@ -41,8 +41,11 @@ struct ABIDecoder {
     }
     
     private static func decodeType(type: String, data: Data, offset: Int) throws -> (Any, Int) {
-        // Handle dynamic types (string, bytes, arrays)
-        if type == "string" || type == "bytes" || type.hasSuffix("[]") {
+        
+        // Handle dynamic types (string, bytes, arrays, dynamic tuples)
+        let isDynamic = isDynamicType(type)
+        
+        if isDynamic {
             // Read the offset pointer
             guard offset + 32 <= data.count else { throw DecodingError.indexOutOfBounds }
             let pointerData = data.subdata(in: offset..<offset+32)
@@ -59,34 +62,59 @@ struct ABIDecoder {
                 let baseType = String(type.dropLast(2))
                 let arrayValue = try decodeArray(baseType: baseType, data: data, offset: dataOffset)
                 return (arrayValue, offset + 32)
+            } else if type.hasPrefix("(") && type.hasSuffix(")") {
+                // Dynamic tuple (because it contains a dynamic type)
+                let innerTypes = parseTupleTypes(type)
+                let tupleValue = try decodeTuple(types: innerTypes, data: data, offset: dataOffset)
+                return (tupleValue, offset + 32)
             }
+        }
+        
+        // Handle static tuples (in place)
+        if type.hasPrefix("(") && type.hasSuffix(")") {
+             let innerTypes = parseTupleTypes(type)
+             let (tupleValue, newOffset) = try decodeTupleInPlace(types: innerTypes, data: data, offset: offset)
+             return (tupleValue, newOffset)
         }
         
         // Handle static types
         if type == "address" {
-            guard offset + 32 <= data.count else { throw DecodingError.indexOutOfBounds }
+            guard offset + 32 <= data.count else { 
+                throw DecodingError.indexOutOfBounds 
+            }
             let slice = data.subdata(in: offset..<offset+32)
             // Address is the last 20 bytes of the 32-byte word
             let addressData = slice.suffix(20)
             let address = "0x" + addressData.map { String(format: "%02x", $0) }.joined()
             return (address, offset + 32)
         } else if type.hasPrefix("uint") {
-            guard offset + 32 <= data.count else { throw DecodingError.indexOutOfBounds }
+            guard offset + 32 <= data.count else { 
+                throw DecodingError.indexOutOfBounds 
+            }
             let slice = data.subdata(in: offset..<offset+32)
             let value = BigUInt(slice)
             return (value.description, offset + 32)
         } else if type.hasPrefix("int") {
-            guard offset + 32 <= data.count else { throw DecodingError.indexOutOfBounds }
+            guard offset + 32 <= data.count else { 
+                 throw DecodingError.indexOutOfBounds 
+            }
             let slice = data.subdata(in: offset..<offset+32)
-            // Simplified handling for signed int (treating as BigUInt for display purposes mostly)
-            // In a real scenario, we'd check the sign bit.
             let value = BigUInt(slice)
             return (value.description, offset + 32)
         } else if type == "bool" {
-            guard offset + 32 <= data.count else { throw DecodingError.indexOutOfBounds }
+            guard offset + 32 <= data.count else { 
+                throw DecodingError.indexOutOfBounds 
+            }
             let slice = data.subdata(in: offset..<offset+32)
             let value = slice.last != 0
             return (value, offset + 32)
+        } else if type.hasPrefix("bytes") {
+             // Static bytes like bytes32
+             guard offset + 32 <= data.count else { 
+                throw DecodingError.indexOutOfBounds 
+             }
+             let slice = data.subdata(in: offset..<offset+32)
+             return ("0x" + slice.map { String(format: "%02x", $0) }.joined(), offset + 32)
         }
         
         throw DecodingError.unsupportedType(type)
@@ -133,14 +161,73 @@ struct ABIDecoder {
         var currentOffset = offset + 32
         
         for _ in 0..<length {
-            // Recursive call for each element
-            // Note: This assumes static base types in array for simplicity (e.g. address[], uint256[])
-            // Dynamic types in arrays (string[]) would require more complex offset handling
             let (value, newOffset) = try decodeType(type: baseType, data: data, offset: currentOffset)
             result.append(value)
             currentOffset = newOffset
         }
         
         return result
+    }
+    
+    // MARK: - Tuple Helpers
+    
+    private static func decodeTuple(types: [String], data: Data, offset: Int) throws -> [Any] {
+        let (values, _) = try decodeTupleInPlace(types: types, data: data, offset: offset)
+        return values
+    }
+    
+    private static func decodeTupleInPlace(types: [String], data: Data, offset: Int) throws -> ([Any], Int) {
+        var result: [Any] = []
+        var currentOffset = offset
+        
+        for type in types {
+             let (value, newOffset) = try decodeType(type: type, data: data, offset: currentOffset)
+             result.append(value)
+             currentOffset = newOffset
+        }
+        return (result, currentOffset)
+    }
+
+    private static func isDynamicType(_ type: String) -> Bool {
+        if type == "string" || type == "bytes" || type.hasSuffix("[]") {
+            return true
+        }
+        if type.hasPrefix("(") && type.hasSuffix(")") {
+             // Recursive check: Tuple is dynamic if ANY component is dynamic
+             let innerTypes = parseTupleTypes(type)
+             return innerTypes.contains { isDynamicType($0) }
+        }
+        return false
+    }
+
+    private static func parseTupleTypes(_ type: String) -> [String] {
+        guard type.hasPrefix("(") && type.hasSuffix(")") else { return [] }
+        let content = String(type.dropFirst().dropLast())
+        return splitTypes(content)
+    }
+
+    private static func splitTypes(_ content: String) -> [String] {
+        var types: [String] = []
+        var currentType = ""
+        var depth = 0
+        
+        for char in content {
+            if char == "(" {
+                depth += 1
+            } else if char == ")" {
+                depth -= 1
+            }
+            
+            if char == "," && depth == 0 {
+                types.append(currentType.trimmingCharacters(in: .whitespaces))
+                currentType = ""
+            } else {
+                currentType.append(char)
+            }
+        }
+        if !currentType.isEmpty {
+            types.append(currentType.trimmingCharacters(in: .whitespaces))
+        }
+        return types
     }
 }

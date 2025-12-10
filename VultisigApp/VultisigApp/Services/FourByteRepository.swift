@@ -9,7 +9,9 @@ import Foundation
 
 struct FunctionCallInfo: Codable {
     let functionName: String
+    let fullSignature: String
     let parameters: [String: String] // Key: Value (as string)
+    let encodedArguments: String // JSON representation of arguments
 }
 
 struct FourByteRepository {
@@ -40,7 +42,7 @@ struct FourByteRepository {
         let functionName = String(textSignature[..<nameEndIndex])
         let paramsString = String(textSignature[textSignature.index(after: nameEndIndex)..<paramsEndIndex])
         
-        let paramTypes = paramsString.isEmpty ? [] : paramsString.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+        let paramTypes = splitTypes(paramsString)
         
         // 3. Decode Arguments
         do {
@@ -54,12 +56,23 @@ struct FourByteRepository {
                 parameters[key] = "\(value)"
             }
             
-            return FunctionCallInfo(functionName: functionName, parameters: parameters)
+            let encodedArguments = formatJSON(decodedValues)
+            
+            return FunctionCallInfo(
+                functionName: functionName,
+                fullSignature: textSignature,
+                parameters: parameters,
+                encodedArguments: encodedArguments
+            )
             
         } catch {
-            print("Failed to decode ABI data: \(error)")
             // Return at least the function name if decoding fails
-            return FunctionCallInfo(functionName: functionName, parameters: [:])
+            return FunctionCallInfo(
+                functionName: functionName,
+                fullSignature: functionName, // Fallback
+                parameters: [:],
+                encodedArguments: "[]"
+            )
         }
     }
     
@@ -81,8 +94,57 @@ struct FourByteRepository {
             return response.results.first?.text_signature
             
         } catch {
-            print("Error fetching 4byte signature: \(error)")
             return nil
+        }
+    }
+    
+    private func splitTypes(_ content: String) -> [String] {
+        var types: [String] = []
+        var currentType = ""
+        var depth = 0
+        
+        for char in content {
+            if char == "(" {
+                depth += 1
+            } else if char == ")" {
+                depth -= 1
+            }
+            
+            if char == "," && depth == 0 {
+                types.append(currentType.trimmingCharacters(in: .whitespaces))
+                currentType = ""
+            } else {
+                currentType.append(char)
+            }
+        }
+        if !currentType.isEmpty {
+            types.append(currentType.trimmingCharacters(in: .whitespaces))
+        }
+        return types
+    }
+    
+    private func formatJSON(_ value: Any, indentLevel: Int = 0) -> String {
+        let indent = String(repeating: "  ", count: indentLevel)
+        let nextIndent = String(repeating: "  ", count: indentLevel + 1)
+        
+        if let stringValue = value as? String {
+            return "\"\(stringValue)\""
+        } else if let boolValue = value as? Bool {
+            return boolValue ? "true" : "false"
+        } else if let arrayValue = value as? [Any] {
+            if arrayValue.isEmpty { return "[]" }
+            var result = "[\n"
+            for (index, item) in arrayValue.enumerated() {
+                result += nextIndent + formatJSON(item, indentLevel: indentLevel + 1)
+                if index < arrayValue.count - 1 {
+                    result += ","
+                }
+                result += "\n"
+            }
+            result += indent + "]"
+            return result
+        } else {
+            return "\"\(value)\""
         }
     }
 }

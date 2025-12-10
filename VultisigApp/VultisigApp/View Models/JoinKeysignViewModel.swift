@@ -46,6 +46,8 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var isCameraPermissionGranted: Bool? = nil
     
     @Published var decodedMemo: String?
+    @Published var decodedFunctionSignature: String?
+    @Published var decodedFunctionArguments: String?
         
     var encryptionKeyHex: String = ""
     var payloadID: String = ""
@@ -357,7 +359,7 @@ class JoinKeysignViewModel: ObservableObject {
         do {
             _ = try await ThorchainService.shared.getTHORChainChainID()
         } catch {
-            print("fail to get thorchain network id, \(error.localizedDescription)")
+            logger.error("fail to get thorchain network id, \(error.localizedDescription)")
         }
     }
     
@@ -366,32 +368,44 @@ class JoinKeysignViewModel: ObservableObject {
             return
         }
         
-        // Use async decoding for proper function selector resolution
-        if let extensionDecoded = await memo.decodedExtensionMemoAsync() {
-            decodedMemo = extensionDecoded
-            return
+        // 1. Attempt to get structured parameters (Generic 4byte path)
+        var parsedParams: ParsedMemoParams? = nil
+        if keysignPayload?.coin.chainType == .EVM, memo.hasPrefix("0x") {
+             parsedParams = await MemoDecodingService.shared.getParsedMemo(memo: memo)
         }
         
-        // Fall back to EVM-specific decoding for EVM chains
-        guard keysignPayload?.coin.chainType == .EVM else {
-            return
-        }
+        // 2. Get the full string representation from the existing extension service
+        // This handles known selectors (Transfer, Approve), Kyber, etc.
+        let extensionDecoded = await memo.decodedExtensionMemoAsync()
         
-        // Use the new comprehensive decoding service
-        if let parsedParams = await MemoDecodingService.shared.getParsedMemo(memo: memo) {
-            // Format: "Function(Args)" or just "Function" if no args
-            if !parsedParams.functionArguments.isEmpty && parsedParams.functionArguments != "{}" {
-                decodedMemo = "\(parsedParams.functionSignature)\n\nArguments:\n\(parsedParams.functionArguments)"
+        DispatchQueue.main.async {
+            // Default to showing the extension decoded string as the Memo
+            self.decodedMemo = extensionDecoded
+            
+            // 3. Decide if we should show the enhanced Split View (Signature + Arguments)
+            if let p = parsedParams, let extStr = extensionDecoded {
+                // Heuristic: If the extension string contains "Parameters:", it likely came from
+                // the generic fallback logic in String+ExtensionMemo.swift.
+                // In this case, we prefer the native Split View with Turquoise text.
+                if extStr.contains("Parameters:") {
+                    self.decodedFunctionSignature = p.functionSignature
+                    self.decodedFunctionArguments = p.functionArguments
+                } else {
+                    // It's a "Known Selector" or "Custom Action" (e.g. "Transfer Token").
+                    // Keep the text-based Memo view to preserve user-friendly naming.
+                    self.decodedFunctionSignature = nil
+                    self.decodedFunctionArguments = nil
+                }
+            } else if let p = parsedParams {
+                // We have structured params but no extension string (unlikely, but fallback)
+                // Use split view
+                self.decodedFunctionSignature = p.functionSignature
+                self.decodedFunctionArguments = p.functionArguments
+                self.decodedMemo = p.functionSignature // fallback title
             } else {
-                decodedMemo = parsedParams.functionSignature
-            }
-        } else {
-            // Fallback to simple decode if full parsing fails
-            do {
-                let evmDecoded = try await MemoDecodingService.shared.decode(memo: memo)
-                decodedMemo = evmDecoded
-            } catch {
-                print("EVM memo decoding error: \(error.localizedDescription)")
+                // No structured params, strict fallback
+                self.decodedFunctionSignature = nil
+                self.decodedFunctionArguments = nil
             }
         }
     }

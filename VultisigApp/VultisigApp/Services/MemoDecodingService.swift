@@ -56,8 +56,8 @@ struct MemoDecodingService {
             }
             
             return ParsedMemoParams(
-                functionSignature: info.functionName,
-                functionArguments: argsString
+                functionSignature: info.fullSignature,
+                functionArguments: info.encodedArguments
             )
             
         } catch {
