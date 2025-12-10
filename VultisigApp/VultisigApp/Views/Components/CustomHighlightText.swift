@@ -1,5 +1,5 @@
 //
-//  GradiengHighlitText.swift
+//  CustomHighlightText.swift
 //  VultisigApp
 //
 //  Created by Gaston Mazzeo on 10/12/2025.
@@ -7,26 +7,26 @@
 
 import SwiftUI
 
-struct GradientHighlightText: View {
+struct CustomHighlightText: View {
     let text: String
-    let highlightRanges: [(start: Int, end: Int, gradient: LinearGradient)]
+    let highlightRanges: [(start: Int, end: Int, style: AnyShapeStyle)]
     
     // Primary initializer with index-based ranges
-    init(_ text: String, highlightRanges: [(Int, Int, LinearGradient)]) {
+    init(_ text: String, highlightRanges: [(Int, Int, AnyShapeStyle)]) {
         self.text = text
         self.highlightRanges = highlightRanges
     }
     
-    // Convenience initializer with string matching (NEW!)
-    init(_ text: String, highlight: String, gradient: LinearGradient) {
+    // Convenience initializer with string matching
+    init<S: ShapeStyle>(_ text: String, highlight: String, style: S) {
         self.text = text
-        var ranges: [(Int, Int, LinearGradient)] = []
+        var ranges: [(Int, Int, AnyShapeStyle)] = []
         
         var searchRange = text.startIndex..<text.endIndex
         while let range = text.range(of: highlight, range: searchRange) {
             let startIndex = text.distance(from: text.startIndex, to: range.lowerBound)
             let endIndex = text.distance(from: text.startIndex, to: range.upperBound)
-            ranges.append((startIndex, endIndex, gradient))
+            ranges.append((startIndex, endIndex, AnyShapeStyle(style)))
             
             // Continue searching after this match
             searchRange = range.upperBound..<text.endIndex
@@ -36,16 +36,44 @@ struct GradientHighlightText: View {
     }
     
     // Convenience initializer with multiple string matches
+    init<S: ShapeStyle>(_ text: String, highlights: [(String, S)]) {
+        self.text = text
+        var ranges: [(Int, Int, AnyShapeStyle)] = []
+        
+        for (highlightText, style) in highlights {
+            var searchRange = text.startIndex..<text.endIndex
+            while let range = text.range(of: highlightText, range: searchRange) {
+                let startIndex = text.distance(from: text.startIndex, to: range.lowerBound)
+                let endIndex = text.distance(from: text.startIndex, to: range.upperBound)
+                ranges.append((startIndex, endIndex, AnyShapeStyle(style)))
+                
+                searchRange = range.upperBound..<text.endIndex
+            }
+        }
+        
+        self.highlightRanges = ranges
+    }
+    
+    // Backward compatibility initializers for LinearGradient
+    init(_ text: String, highlightRanges: [(Int, Int, LinearGradient)]) {
+        self.text = text
+        self.highlightRanges = highlightRanges.map { (start: $0.0, end: $0.1, style: AnyShapeStyle($0.2)) }
+    }
+    
+    init(_ text: String, highlight: String, gradient: LinearGradient) {
+        self.init(text, highlight: highlight, style: gradient)
+    }
+    
     init(_ text: String, highlights: [(String, LinearGradient)]) {
         self.text = text
-        var ranges: [(Int, Int, LinearGradient)] = []
+        var ranges: [(Int, Int, AnyShapeStyle)] = []
         
         for (highlightText, gradient) in highlights {
             var searchRange = text.startIndex..<text.endIndex
             while let range = text.range(of: highlightText, range: searchRange) {
                 let startIndex = text.distance(from: text.startIndex, to: range.lowerBound)
                 let endIndex = text.distance(from: text.startIndex, to: range.upperBound)
-                ranges.append((startIndex, endIndex, gradient))
+                ranges.append((startIndex, endIndex, AnyShapeStyle(gradient)))
                 
                 searchRange = range.upperBound..<text.endIndex
             }
@@ -72,13 +100,12 @@ struct GradientHighlightText: View {
             // Add text before highlight
             if currentIndex < startIdx {
                 result = result + Text(String(text[currentIndex..<startIdx]))
-                    .foregroundStyle(.white)
             }
             
-            // Add highlighted text with gradient
+            // Add highlighted text with style
             if startIdx < text.endIndex && endIdx <= text.endIndex {
                 result = result + Text(String(text[startIdx..<endIdx]))
-                    .foregroundStyle(range.gradient)
+                    .foregroundStyle(range.style)
             }
             
             currentIndex = endIdx
@@ -87,7 +114,6 @@ struct GradientHighlightText: View {
         // Add remaining text
         if currentIndex < text.endIndex {
             result = result + Text(String(text[currentIndex..<text.endIndex]))
-                .foregroundStyle(.white)
         }
         
         return result
@@ -95,5 +121,5 @@ struct GradientHighlightText: View {
 }
 
 #Preview {
-    GradientHighlightText("This is a highlighted text", highlights: [("highlighted", LinearGradient.primaryGradient)])
+    CustomHighlightText("This is a highlighted text", highlights: [("highlighted", LinearGradient.primaryGradient)])
 }

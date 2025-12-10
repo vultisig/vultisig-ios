@@ -12,6 +12,7 @@ struct KeyImportOnboardingScreen: View {
     @State var animationVM: RiveViewModel? = nil
     @State var showInformation: Bool = false
     @State var informationOpacity: CGFloat = 0
+    @State private var showImportSeedPhrase = false
     
     var body: some View {
         Screen {
@@ -19,17 +20,21 @@ struct KeyImportOnboardingScreen: View {
                 animationVM?.view()
                     .frame(maxHeight: 270)
                     .scaledToFit()
+                    .offset(y: showInformation ? 0 : -24)
                 Group {
                     Spacer()
                     Group {
                         informationView
                         Spacer().frame(maxHeight: 65)
-                        PrimaryButton(title: "Get started", action: {})
+                        PrimaryButton(title: "Get started") {
+                            showImportSeedPhrase = true
+                        }
                     }
                     .opacity(informationOpacity)
                 }
                 .showIf(showInformation)
             }
+            .frame(maxHeight: .infinity)
         }
         .onAppear {
             animationVM = RiveViewModel(fileName: "import_seedphrase", autoPlay: true)
@@ -38,6 +43,9 @@ struct KeyImportOnboardingScreen: View {
         .onDisappear {
             animationVM?.stop()
             animationVM = nil
+        }
+        .navigationDestination(isPresented: $showImportSeedPhrase) {
+            ImportSeedphraseScreen()
         }
     }
     
@@ -48,14 +56,15 @@ struct KeyImportOnboardingScreen: View {
                     .foregroundStyle(Theme.colors.textLight)
                     .font(Theme.fonts.caption12)
                 
-                GradientHighlightText(
+                CustomHighlightText(
                     "youAreEnteringAnewEra".localized,
                     highlight: "youAreEnteringAnewEraHighlight".localized,
-                    gradient: LinearGradient.primaryGradientHorizontal
+                    style: LinearGradient.primaryGradientHorizontal
                 )
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.title2)
                 .frame(maxWidth: 330, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
             }
             
             VStack(alignment: .leading, spacing: 24) {

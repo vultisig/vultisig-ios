@@ -29,7 +29,8 @@
 		13095A362E3264E6009F8785 /* HapticFeedbackManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */; };
 		130ABEF92E9E28210074BF67 /* RefreshToolbarButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130ABEF82E9E281B0074BF67 /* RefreshToolbarButton.swift */; };
 		130C058C2EE9A42200A7303A /* import_seedphrase.riv in Resources */ = {isa = PBXBuildFile; fileRef = 130C058B2EE9A42200A7303A /* import_seedphrase.riv */; };
-		130C059A2EE9B0AD00A7303A /* GradiengHighlitText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C05992EE9B0A800A7303A /* GradiengHighlitText.swift */; };
+		130C059A2EE9B0AD00A7303A /* CustomHighlightText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C05992EE9B0A800A7303A /* CustomHighlightText.swift */; };
+		130C059D2EE9CDFE00A7303A /* GlowIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C059C2EE9CDFB00A7303A /* GlowIcon.swift */; };
 		130C40DD2E71E0BE00509C61 /* VaultMainBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40DC2E71E0B800509C61 /* VaultMainBalanceView.swift */; };
 		130C40DF2E72FD7100509C61 /* CoinActionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40DE2E72FD6000509C61 /* CoinActionsView.swift */; };
 		130C40E22E7303CE00509C61 /* CarouselBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40E12E7303CB00509C61 /* CarouselBannerView.swift */; };
@@ -1261,7 +1262,8 @@
 		13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticFeedbackManager.swift; sourceTree = "<group>"; };
 		130ABEF82E9E281B0074BF67 /* RefreshToolbarButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshToolbarButton.swift; sourceTree = "<group>"; };
 		130C058B2EE9A42200A7303A /* import_seedphrase.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = import_seedphrase.riv; sourceTree = "<group>"; };
-		130C05992EE9B0A800A7303A /* GradiengHighlitText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradiengHighlitText.swift; sourceTree = "<group>"; };
+		130C05992EE9B0A800A7303A /* CustomHighlightText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomHighlightText.swift; sourceTree = "<group>"; };
+		130C059C2EE9CDFB00A7303A /* GlowIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlowIcon.swift; sourceTree = "<group>"; };
 		130C40DC2E71E0B800509C61 /* VaultMainBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainBalanceView.swift; sourceTree = "<group>"; };
 		130C40DE2E72FD6000509C61 /* CoinActionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinActionsView.swift; sourceTree = "<group>"; };
 		130C40E12E7303CB00509C61 /* CarouselBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselBannerView.swift; sourceTree = "<group>"; };
@@ -2540,7 +2542,8 @@
 		049BBB4E2B71E37B004C231F /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				130C05992EE9B0A800A7303A /* GradiengHighlitText.swift */,
+				130C059B2EE9CDF400A7303A /* Icons */,
+				130C05992EE9B0A800A7303A /* CustomHighlightText.swift */,
 				13C4A0332EDDCAFF0033BDB1 /* SegmentedControls */,
 				13B41AAE2EB3CCD00049503D /* Forms */,
 				135C7ADF2EA14124002F879A /* ActionBanner */,
@@ -2558,7 +2561,6 @@
 				13CCEC0D2E55010900F28937 /* Banners */,
 				1378B0492E462AD2005CC32D /* Loaders */,
 				13A899092E44F540006F75F0 /* Text */,
-				132666C52E42954F007FDAC5 /* Icon.swift */,
 				132666BF2E428B72007FDAC5 /* CounterView.swift */,
 				139B400A2E42466400238C2C /* Covers */,
 				13DD3B182E3CFE6600D46FA0 /* Picker */,
@@ -2687,6 +2689,15 @@
 				13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */,
 			);
 			path = Utils;
+			sourceTree = "<group>";
+		};
+		130C059B2EE9CDF400A7303A /* Icons */ = {
+			isa = PBXGroup;
+			children = (
+				130C059C2EE9CDFB00A7303A /* GlowIcon.swift */,
+				132666C52E42954F007FDAC5 /* Icon.swift */,
+			);
+			path = Icons;
 			sourceTree = "<group>";
 		};
 		130C40E02E7303C800509C61 /* Banners */ = {
@@ -6436,6 +6447,7 @@
 				13B0DCE32E86C70500D4E609 /* ReceiveChainSelectionScreen.swift in Sources */,
 				A564ED422BC350520056FDC0 /* SwapTransaction.swift in Sources */,
 				A67530622CAFBDC200B1E344 /* Folder.swift in Sources */,
+				130C059D2EE9CDFE00A7303A /* GlowIcon.swift in Sources */,
 				138574262E2DB9C6002532BF /* NavigationIconButton.swift in Sources */,
 				13B25BF62E82FA39002BCF55 /* AddressCopyBannerViewModifier.swift in Sources */,
 				138574272E2DB9C6002532BF /* IconButton.swift in Sources */,
@@ -7463,7 +7475,7 @@
 				13924F442ED88EB200F458D5 /* AppMigrationService.swift in Sources */,
 				137DB52F2EBE452B0081C6BC /* RedeemTransactionBuilder.swift in Sources */,
 				B5F758192BD8E65D0097B5BB /* SuiConstants.swift in Sources */,
-				130C059A2EE9B0AD00A7303A /* GradiengHighlitText.swift in Sources */,
+				130C059A2EE9B0AD00A7303A /* CustomHighlightText.swift in Sources */,
 				139DE1282E4D095000BC2FD3 /* SendKeysignScreen.swift in Sources */,
 				A633B1362B997D57003D1738 /* NavigationBackButton.swift in Sources */,
 				A6833D972C671F11002029E1 /* SettingsHeader.swift in Sources */,
