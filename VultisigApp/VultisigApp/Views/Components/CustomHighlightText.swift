@@ -14,7 +14,9 @@ struct CustomHighlightText: View {
     // Primary initializer with index-based ranges
     init(_ text: String, highlightRanges: [(Int, Int, AnyShapeStyle)]) {
         self.text = text
-        self.highlightRanges = highlightRanges
+        self.highlightRanges = highlightRanges.filter { (start, end, _) in
+            start >= 0 && end <= text.count && start < end
+        }
     }
     
     // Convenience initializer with string matching
@@ -96,6 +98,9 @@ struct CustomHighlightText: View {
         for range in sortedRanges {
             let startIdx = text.index(text.startIndex, offsetBy: range.start)
             let endIdx = text.index(text.startIndex, offsetBy: range.end)
+            
+            // Skip this range if it starts before current position (overlap)
+            guard startIdx >= currentIndex else { continue }
             
             // Add text before highlight
             if currentIndex < startIdx {

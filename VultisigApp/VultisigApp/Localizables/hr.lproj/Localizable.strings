@@ -1090,3 +1090,5 @@
 "enterYourSeedphrase" = "Unesite svoju seed frazu";
 "enterYourSeedphraseSubtitle" = "Ostavite razmak između svake riječi. Podržane su seed fraze od 12 ili 24 riječi.";
 "enterYourSeedphraseSubtitleHighlight" = "12 ili 24";
+"seedPhraseWordCountError" = "Unijeli ste %d riječi. Seed fraza mora imati 12 ili 24 riječi.";
+"seedPhraseInvalidError" = "Neispravna seed fraza. Molimo provjerite svoje riječi.";

@@ -26,7 +26,7 @@ struct KeyImportOnboardingScreen: View {
                     Group {
                         informationView
                         Spacer().frame(maxHeight: 65)
-                        PrimaryButton(title: "Get started") {
+                        PrimaryButton(title: "getStarted") {
                             showImportSeedPhrase = true
                         }
                     }
@@ -80,6 +80,7 @@ struct KeyImportOnboardingScreen: View {
                     icon: "devices"
                 )
             }
+            .fixedSize(horizontal: false, vertical: true)
         }
     }
     

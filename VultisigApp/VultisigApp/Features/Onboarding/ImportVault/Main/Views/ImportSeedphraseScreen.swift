@@ -83,8 +83,10 @@ struct ImportSeedphraseScreen: View {
             let cleaned = cleanMnemonic(text: newValue)
             let words = cleaned.split(separator: " ")
 
-            if mnemonicInput.isEmpty, words.isEmpty, wordsCountType.contains(words.count) {
+            if oldValue.isEmpty, words.isEmpty, wordsCountType.contains(words.count) {
                 mnemonicInput = cleaned
+                validateMnemonic(cleaned)
+                return
             }
             
             // Cancel any existing validation task
@@ -137,14 +139,14 @@ struct ImportSeedphraseScreen: View {
         // Check if word count is valid (12 or 24)
         guard wordsCountType.contains(wordCount) else {
             if wordCount > 0 {
-                errorMessage = "You entered \(wordCount) words. Seed phrase must be 12 or 24 words."
+                errorMessage = String(format: "seedPhraseWordCountError".localized, wordCount)
             }
             return
         }
         
         // Check if mnemonic is valid
         guard Mnemonic.isValid(mnemonic: cleaned) else {
-            errorMessage = "Invalid seed phrase. Please double-check your words."
+            errorMessage = "seedPhraseInvalidError".localized
             return
         }
         
