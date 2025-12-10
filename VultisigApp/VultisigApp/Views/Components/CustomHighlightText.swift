@@ -24,6 +24,11 @@ struct CustomHighlightText: View {
         self.text = text
         var ranges: [(Int, Int, AnyShapeStyle)] = []
         
+        guard !highlight.isEmpty else {
+            self.highlightRanges = ranges
+            return
+        }
+        
         var searchRange = text.startIndex..<text.endIndex
         while let range = text.range(of: highlight, range: searchRange) {
             let startIndex = text.distance(from: text.startIndex, to: range.lowerBound)
@@ -56,12 +61,6 @@ struct CustomHighlightText: View {
         self.highlightRanges = ranges
     }
     
-    // Backward compatibility initializers for LinearGradient
-    init(_ text: String, highlightRanges: [(Int, Int, LinearGradient)]) {
-        self.text = text
-        self.highlightRanges = highlightRanges.map { (start: $0.0, end: $0.1, style: AnyShapeStyle($0.2)) }
-    }
-    
     init(_ text: String, highlight: String, gradient: LinearGradient) {
         self.init(text, highlight: highlight, style: gradient)
     }
@@ -71,6 +70,8 @@ struct CustomHighlightText: View {
         var ranges: [(Int, Int, AnyShapeStyle)] = []
         
         for (highlightText, gradient) in highlights {
+            guard !highlightText.isEmpty else { continue }
+            
             var searchRange = text.startIndex..<text.endIndex
             while let range = text.range(of: highlightText, range: searchRange) {
                 let startIndex = text.distance(from: text.startIndex, to: range.lowerBound)
