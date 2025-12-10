@@ -1088,3 +1088,7 @@
 "yourSeedphraseSubtitle" = "输入它，创建保险库，永不回头";
 "twoDevices" = "2台设备";
 "twoDevicesSubtitle" = "您需要2台设备（手机、笔记本电脑、浏览器、iPad等）";
+"mnemonicPlaceholder" = "输入您的助记词的12个或24个单词";
+"enterYourSeedphrase" = "输入您的助记词";
+"enterYourSeedphraseSubtitle" = "在每个单词之间留一个空格。支持12或24个单词的助记词。";
+"enterYourSeedphraseSubtitleHighlight" = "12或24";

@@ -1086,3 +1086,7 @@
 "yourSeedphraseSubtitle" = "Geben Sie sie ein, erstellen Sie einen Tresor, schauen Sie nie zurück";
 "twoDevices" = "2 Geräte";
 "twoDevicesSubtitle" = "Sie benötigen 2 Geräte (ein Telefon, Laptop, Browser, iPad usw.)";
+"mnemonicPlaceholder" = "Geben Sie die 12 oder 24 Wörter Ihrer Seed-Phrase ein";
+"enterYourSeedphrase" = "Geben Sie Ihre Seed-Phrase ein";
+"enterYourSeedphraseSubtitle" = "Lassen Sie ein Leerzeichen zwischen jedem Wort. Seed-Phrasen mit 12 oder 24 Wörtern werden unterstützt.";
+"enterYourSeedphraseSubtitleHighlight" = "12 oder 24";

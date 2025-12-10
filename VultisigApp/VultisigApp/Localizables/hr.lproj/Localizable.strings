@@ -1086,3 +1086,7 @@
 "yourSeedphraseSubtitle" = "Unesite je, stvorite trezor, nikad ne gledajte natrag";
 "twoDevices" = "2 uređaja";
 "twoDevicesSubtitle" = "Potrebna su vam 2 uređaja (telefon, laptop, preglednik, iPad, itd.)";
+"mnemonicPlaceholder" = "Unesite 12 ili 24 riječi svoje seed fraze";
+"enterYourSeedphrase" = "Unesite svoju seed frazu";
+"enterYourSeedphraseSubtitle" = "Ostavite razmak između svake riječi. Podržane su seed fraze od 12 ili 24 riječi.";
+"enterYourSeedphraseSubtitleHighlight" = "12 ili 24";

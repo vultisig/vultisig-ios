@@ -1086,3 +1086,7 @@
 "yourSeedphraseSubtitle" = "Inseriscila, crea un vault, non voltarti mai indietro";
 "twoDevices" = "2 dispositivi";
 "twoDevicesSubtitle" = "Hai bisogno di 2 dispositivi (un telefono, laptop, browser, iPad, ecc.)";
+"mnemonicPlaceholder" = "Inserisci le 12 o 24 parole della tua seed phrase";
+"enterYourSeedphrase" = "Inserisci la tua seed phrase";
+"enterYourSeedphraseSubtitle" = "Lascia uno spazio tra ogni parola. Sono supportate seed phrase di 12 o 24 parole.";
+"enterYourSeedphraseSubtitleHighlight" = "12 o 24";
