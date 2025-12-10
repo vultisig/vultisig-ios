@@ -35,7 +35,7 @@ struct CreateVaultView: View {
         }
         .navigationBarBackButtonHidden(showBackButton ? false : true)
         .navigationDestination(isPresented: $showImportSeedphrase) {
-            ImportSeedphraseScreen()
+            KeyImportOnboardingScreen()
         }
         .navigationDestination(isPresented: $showImportVaultShare) {
             ImportVaultShareScreen()

@@ -9,195 +9,151 @@ import SwiftUI
 import WalletCore
 
 struct ImportSeedphraseScreen: View {
-    let wordsCount = [12, 24]
+    let wordsCountType = [12, 24]
     
-    @State var selectedWordsCount: Int = 12
-    @State var words: [String] = []
     @State private var presentChainsSetup: Bool = false
+    @State private var validationTask: Task<Void, Never>?
     
-    @FocusState private var focusedField: Int?
+    @FocusState var isFocused: Bool
+    @State var mnemonicInput: String = ""
+    @State var validMnemonic: Bool? = false
+    @State var errorMessage: String?
     
-    var isValidMnemonic: Bool {
-        Mnemonic.isValid(mnemonic: mnemonic)
+    var importButtonDisabled: Bool {
+        validMnemonic == false
     }
     
-    var mnemonic: String {
-        words.joined(separator: " ")
+    var wordsCount: Int {
+        cleanMnemonic(text: mnemonicInput)
+            .split(separator: " ")
+            .count
+    }
+    
+    var wordsCountAccessory: String {
+        let maxWords = wordsCount > 12 ? 24 : 12
+        return "\(wordsCount)/\(maxWords)"
     }
     
     var body: some View {
-        Screen(title: "importVault".localized) {
+        Screen {
             VStack(spacing: 0) {
-                wordsButtonStack
-                    .padding(.bottom, 16)
-                Separator(color: Theme.colors.borderLight, opacity: 1)
-                
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 16) {
-                        ForEach(0..<(words.count / 2), id: \.self) { row in
-                            HStack(spacing: 16) {
-                                WordInputRow(
-                                    index: row * 2,
-                                    word: $words[row * 2],
-                                    focusedField: $focusedField,
-                                    totalWords: words.count,
-                                    onPaste: handlePastedSeedPhrase
-                                )
-                                
-                                WordInputRow(
-                                    index: row * 2 + 1,
-                                    word: $words[row * 2 + 1],
-                                    focusedField: $focusedField,
-                                    totalWords: words.count,
-                                    onPaste: handlePastedSeedPhrase
-                                )
-                            }
-                        }
+                VStack(spacing: 32) {
+                    VStack(spacing: 12) {
+                        GlowIcon(icon: "import-seedphrase")
+                            .padding(.bottom, 12)
+                        Text("enterYourSeedphrase".localized)
+                            .foregroundStyle(Theme.colors.textPrimary)
+                            .font(Theme.fonts.title2)
+                        CustomHighlightText(
+                            "enterYourSeedphraseSubtitle".localized,
+                            highlight: "enterYourSeedphraseSubtitleHighlight".localized,
+                            style: Theme.colors.textPrimary,
+                        )
+                        .foregroundStyle(Theme.colors.textExtraLight)
+                        .font(Theme.fonts.bodySMedium)
+                        .frame(maxWidth: 300)
+                        .multilineTextAlignment(.center)
+                        .fixedSize()
                     }
+                    
+                    CommonTextEditor(
+                        value: $mnemonicInput,
+                        placeholder: "mnemonicPlaceholder".localized,
+                        isFocused: $isFocused,
+                        onSubmit: onImport,
+                        error: $errorMessage,
+                        isValid: $validMnemonic,
+                        accessory: wordsCountAccessory
+                    )
+                    .animation(.interpolatingSpring, value: wordsCount)
+                    .contentTransition(.numericText())
+                    #if os(iOS)
+                    .textInputAutocapitalization(.never)
+                    #endif
                 }
-                .scrollIndicators(.never)
-                .contentMargins(.vertical, 16)
-                .padding(.bottom, 16)
-                .overlay(overlay)
-                
+                Spacer()
                 PrimaryButton(title: "import".localized) {
                     onImport()
                 }
-                .disabled(!isValidMnemonic)
+                .disabled(importButtonDisabled)
             }
         }
         .onLoad(perform: setup)
-        .onChange(of: selectedWordsCount) { _, _ in
-            setup()
-        }
-        .animation(.easeInOut(duration: 0.2), value: focusedField)
-        .navigationDestination(isPresented: $presentChainsSetup) {
-            KeyImportChainsSetupScreen(mnemonic: mnemonic)
-        }
-    }
-    
-    var wordsButtonStack: some View {
-        HStack(spacing: 8) {
-            ForEach(wordsCount, id: \.hashValue) { words in
-                Button {
-                    selectedWordsCount = words
-                } label: {
-                    Text("\(words) words")
-                        .foregroundStyle(Theme.colors.textPrimary)
-                        .font(Theme.fonts.caption12)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 16)
-                        .background(
-                            RoundedRectangle(cornerRadius: 99)
-                                .fill(Theme.colors.bgButtonTertiary)
-                                .showIf(selectedWordsCount == words)
-                                .animation(.interpolatingSpring, value: selectedWordsCount)
-                        )
-                }
+        .onChange(of: mnemonicInput) { oldValue, newValue in
+            let cleaned = cleanMnemonic(text: newValue)
+            let words = cleaned.split(separator: " ")
+
+            if oldValue.isEmpty, words.isEmpty, wordsCountType.contains(words.count) {
+                mnemonicInput = cleaned
+                validateMnemonic(cleaned)
+                return
+            }
+            
+            // Cancel any existing validation task
+            validationTask?.cancel()
+            
+            // Clear error message immediately when user is typing
+            errorMessage = nil
+            validMnemonic = false
+            
+            // Debounce validation by 0.5 seconds
+            validationTask = Task {
+                try? await Task.sleep(for: .milliseconds(500))
+                
+                guard !Task.isCancelled else { return }
+                
+                validateMnemonic(cleaned)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .navigationDestination(isPresented: $presentChainsSetup) {
+            KeyImportChainsSetupScreen(mnemonic: cleanMnemonic(text: mnemonicInput))
+        }
     }
     
-    var overlay: some View {
-        VStack {
-            LinearGradient(
-                colors: [Theme.colors.bgPrimary, .clear],
-                startPoint: .top,
-                endPoint: .bottom
-            ).frame(height: 16)
-            Spacer()
-            LinearGradient(
-                colors: [Theme.colors.bgPrimary, .clear],
-                startPoint: .bottom,
-                endPoint: .top
-            ).frame(height: 32)
-        }
+    func cleanMnemonic(text: String) -> String {
+        text
+            .components(separatedBy: .whitespacesAndNewlines)
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
     }
     
     func setup() {
-        words = Array(repeating: "", count: selectedWordsCount)
-    }
-    
-    func handlePastedSeedPhrase(_ pastedText: String) {
-        let components = pastedText.split(separator: " ").map(String.init)
-        
-        // Check if it's a valid 12 or 24 word seed phrase
-        if components.count == 12 || components.count == 24 {
-            // Auto-switch to the correct word count if needed
-            if components.count != selectedWordsCount {
-                selectedWordsCount = components.count
-            }
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                words = components
-                
-                // Dismiss keyboard if the pasted mnemonic is valid
-                if Mnemonic.isValid(mnemonic: pastedText) {
-                    focusedField = nil
-                }
-            }
-        }
+        isFocused = true
     }
     
     func onImport() {
+        guard validMnemonic == true else { return }
         presentChainsSetup = true
     }
-}
-
-struct WordInputRow: View {
-    let index: Int
-    @Binding var word: String
-    @FocusState.Binding var focusedField: Int?
-    let totalWords: Int
-    let onPaste: (String) -> Void
     
-    @State var isValidWord: Bool = false
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            Text("\(index + 1)")
-                .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
-                .frame(width: 36, height: 36)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Theme.colors.bgSecondary)
-                )
-            
-            CommonTextField(
-                text: $word,
-                placeholder: "",
-                error: Binding(get: { !isValidWord && word.isNotEmpty ? "word-error" : nil }, set: { _ in }),
-                isValid: Binding(get: { isValidWord }, set: { _ in }),
-                showErrorText: false,
-                size: .small,
-            )
-            .autocorrectionDisabled()
-            .focused($focusedField, equals: index)
-            #if os(iOS)
-            .textInputAutocapitalization(.never)
-            .submitLabel(.next)
-            #endif
-            .onSubmit {
-                if index < totalWords - 1 {
-                    focusedField = index + 1
-                } else {
-                    focusedField = nil
-                }
-            }
-            .onChange(of: word) { _, newValue in
-                handlePaste(newValue: newValue)
-                isValidWord = Mnemonic.isValidWord(word: newValue)
-            }
+    @MainActor
+    func validateMnemonic(_ cleaned: String) {
+        // Don't validate if input is empty
+        guard !cleaned.isEmpty else {
+            errorMessage = nil
+            return
         }
-    }
-    
-    private func handlePaste(newValue: String) {
-        // Check if this looks like a paste operation (multiple words added at once)
-        let components = newValue.split(separator: " ")
-        guard components.count > 1 else { return }
-        onPaste(newValue)
+        
+        let words = cleaned.split(separator: " ")
+        let wordCount = words.count
+        
+        // Check if word count is valid (12 or 24)
+        guard wordsCountType.contains(wordCount) else {
+            if wordCount > 0 {
+                errorMessage = String(format: "seedPhraseWordCountError".localized, wordCount)
+            }
+            return
+        }
+        
+        // Check if mnemonic is valid
+        guard Mnemonic.isValid(mnemonic: cleaned) else {
+            errorMessage = "seedPhraseInvalidError".localized
+            return
+        }
+        
+        // Valid mnemonic
+        errorMessage = nil
+        validMnemonic = true
     }
 }
 

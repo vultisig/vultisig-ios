@@ -1079,3 +1079,16 @@
 "importVaultShareSubtitle" = "Usa una parte de bóveda para recuperar tu bóveda.";
 "importVaultShareCaption" = "Tipos de archivo soportados: .bak y .vult";
 "new" = "NUEVO";
+"beforeYouStart" = "Antes de comenzar...";
+"youAreEnteringAnewEra" = "Estás entrando en una nueva era, dejando atrás las viejas frases semilla. Necesitarás:";
+"youAreEnteringAnewEraHighlight" = "dejando atrás las viejas frases semilla.";
+"yourSeedphrase" = "Tu frase semilla";
+"yourSeedphraseSubtitle" = "Ingrésala, crea una bóveda, nunca mires atrás";
+"twoDevices" = "2 dispositivos";
+"twoDevicesSubtitle" = "Necesitas 2 dispositivos (un teléfono, laptop, navegador, iPad, etc.)";
+"mnemonicPlaceholder" = "Ingresa las 12 o 24 palabras de tu frase semilla";
+"enterYourSeedphrase" = "Ingresa tu frase semilla";
+"enterYourSeedphraseSubtitle" = "Deja un espacio entre cada palabra. Se admiten frases semilla de 12 o 24 palabras.";
+"enterYourSeedphraseSubtitleHighlight" = "12 o 24";
+"seedPhraseWordCountError" = "Ingresaste %d palabras. La frase semilla debe tener 12 o 24 palabras.";
+"seedPhraseInvalidError" = "Frase semilla inválida. Por favor, verifica tus palabras.";
