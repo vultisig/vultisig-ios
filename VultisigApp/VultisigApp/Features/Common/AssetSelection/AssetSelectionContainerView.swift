@@ -1,77 +1,43 @@
 //
-//  AssetSelectionContainerScreen.swift
+//  AssetSelectionContainerView.swift
 //  VultisigApp
 //
-//  Created by Gaston Mazzeo on 26/09/2025.
+//  Created by Gaston Mazzeo on 10/12/2025.
 //
 
 import SwiftUI
 
-struct AssetSection<SectionType: Hashable, Asset: Hashable>: Hashable {
+struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellView: View, EmptyStateView: View>: View {
     let title: String?
-    let type: SectionType
-    let assets: [Asset]
-    
-    init(title: String? = nil, type: SectionType, assets: [Asset]) {
-        self.title = title
-        self.type = type
-        self.assets = assets
-    }
-    
-    init(title: String? = nil, assets: [Asset]) where SectionType == Int {
-        self.title = title
-        self.type = .zero
-        self.assets = assets
-    }
-}
-
-struct AssetSelectionContainerScreen<Asset: Hashable, SectionType: Hashable, CellView: View, EmptyStateView: View>: View {
-    let title: String
     let subtitle: String?
-    @Binding var isPresented: Bool
     @Binding var searchText: String
     let elements: [AssetSection<SectionType, Asset>]
-    var onSave: () -> Void
     var cellBuilder: (Asset, SectionType) -> CellView
     var emptyStateBuilder: () -> EmptyStateView
+    let insets: EdgeInsets
     
     @State var searchBarFocused: Bool = false
     
     init(
-        title: String,
+        title: String? = nil,
         subtitle: String? = nil,
-        isPresented: Binding<Bool>,
         searchText: Binding<String>,
+        insets: EdgeInsets = .init(top: 0, leading: 0, bottom: 0, trailing: 0),
         elements: [AssetSection<SectionType, Asset>],
-        onSave: @escaping () -> Void,
         cellBuilder: @escaping (Asset, SectionType) -> CellView,
         emptyStateBuilder: @escaping () -> EmptyStateView
     ) {
         self.title = title
         self.subtitle = subtitle
-        self._isPresented = isPresented
         self._searchText = searchText
         self.elements = elements
-        self.onSave = onSave
         self.cellBuilder = cellBuilder
         self.emptyStateBuilder = emptyStateBuilder
+        self.insets = insets
     }
     
     var body: some View {
-        container
-    }
-    
-    var container: some View {
-#if os(iOS)
-        NavigationStack {
-            content
-        }
-#else
         content
-            .presentationSizingFitted()
-            .applySheetSize()
-            .transaction { $0.disablesAnimations = true }
-#endif
     }
     
     var showEmptyState: Bool {
@@ -93,29 +59,12 @@ struct AssetSelectionContainerScreen<Asset: Hashable, SectionType: Hashable, Cel
                     .frame(minHeight: 300)
                 }
             }
-            .padding(.top, 24)
-            .padding(.horizontal, 16)
+            .padding(.top, insets.top)
+            .padding(.horizontal, insets.leading)
             
             gradientOverlay
         }
         .ignoresSafeArea(.container, edges: .bottom)
-        .crossPlatformToolbar(showsBackButton: false) {
-            CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "x") {
-                    isPresented.toggle()
-                }
-            }
-            
-            CustomToolbarItem(placement: .trailing) {
-                ToolbarButton(image: "check", type: .confirmation) {
-                    onSave()
-                }
-            }
-        }
-        .presentationDetents([.large])
-        .presentationBackground(Theme.colors.bgPrimary)
-        .presentationDragIndicator(.visible)
-        .background(Theme.colors.bgPrimary)
     }
     
     var gradientOverlay: some View {
@@ -132,10 +81,12 @@ struct AssetSelectionContainerScreen<Asset: Hashable, SectionType: Hashable, Cel
     
     var textfield: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(title)
-                .foregroundStyle(Theme.colors.textPrimary)
-                .font(Theme.fonts.title2)
-                .multilineTextAlignment(.leading)
+            if let title {
+                Text(title)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .font(Theme.fonts.title2)
+                    .multilineTextAlignment(.leading)
+            }
             
             if let subtitle {
                 Text(subtitle)
@@ -185,15 +136,11 @@ struct AssetSelectionContainerScreen<Asset: Hashable, SectionType: Hashable, Cel
 }
 
 #Preview {
-    AssetSelectionContainerScreen(
+    AssetSelectionContainerView(
         title: "Select chains",
-        isPresented: .constant(true),
         searchText: .constant(""),
         elements: [AssetSection(title: nil, type: 1, assets: [ Coin.example])],
-        onSave: {},
         cellBuilder: { _, _ in ChainSelectionGridCell(assets: [.example], isSelected: true, onSelection: { _ in }) },
         emptyStateBuilder: { EmptyView() }
     )
 }
-
-

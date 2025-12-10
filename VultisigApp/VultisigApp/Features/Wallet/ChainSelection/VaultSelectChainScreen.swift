@@ -34,7 +34,7 @@ struct VaultSelectChainScreen: View {
     }
     
     var body: some View {
-        AssetSelectionContainerScreen(
+        AssetSelectionContainerSheet(
             title: "selectChains".localized,
             isPresented: $isPresented,
             searchText: $viewModel.searchText,
