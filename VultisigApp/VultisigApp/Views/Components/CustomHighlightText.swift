@@ -48,6 +48,8 @@ struct CustomHighlightText: View {
         var ranges: [(Int, Int, AnyShapeStyle)] = []
         
         for (highlightText, style) in highlights {
+            guard !highlightText.isEmpty else { continue }
+            
             var searchRange = text.startIndex..<text.endIndex
             while let range = text.range(of: highlightText, range: searchRange) {
                 let startIndex = text.distance(from: text.startIndex, to: range.lowerBound)
