@@ -122,6 +122,7 @@ struct ImportSeedphraseScreen: View {
     }
     
     func onImport() {
+        guard validMnemonic == true else { return }
         presentChainsSetup = true
     }
     
