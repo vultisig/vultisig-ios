@@ -1079,3 +1079,10 @@
 "importVaultShareSubtitle" = "Verwenden Sie einen Tresoranteil, um Ihren Tresor wiederherzustellen.";
 "importVaultShareCaption" = "Unterstützte Dateitypen: .bak & .vult";
 "new" = "NEU";
+"beforeYouStart" = "Bevor Sie beginnen...";
+"youAreEnteringAnewEra" = "Sie betreten eine neue Ära und lassen alte Seed-Phrasen hinter sich. Sie benötigen:";
+"youAreEnteringAnewEraHighlight" = "alte Seed-Phrasen hinter sich lassen.";
+"yourSeedphrase" = "Ihre Seed-Phrase";
+"yourSeedphraseSubtitle" = "Geben Sie sie ein, erstellen Sie einen Tresor, schauen Sie nie zurück";
+"twoDevices" = "2 Geräte";
+"twoDevicesSubtitle" = "Sie benötigen 2 Geräte (ein Telefon, Laptop, Browser, iPad usw.)";

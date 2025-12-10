@@ -1081,3 +1081,10 @@
 "importVaultShareSubtitle" = "使用保险库共享来恢复您的保险库。";
 "importVaultShareCaption" = "支持的文件类型：.bak 和 .vult";
 "new" = "新";
+"beforeYouStart" = "开始之前...";
+"youAreEnteringAnewEra" = "您正在进入一个新时代，将旧助记词抛在身后。您需要：";
+"youAreEnteringAnewEraHighlight" = "将旧助记词抛在身后。";
+"yourSeedphrase" = "您的助记词";
+"yourSeedphraseSubtitle" = "输入它，创建保险库，永不回头";
+"twoDevices" = "2台设备";
+"twoDevicesSubtitle" = "您需要2台设备（手机、笔记本电脑、浏览器、iPad等）";

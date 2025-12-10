@@ -1079,3 +1079,10 @@
 "importVaultShareSubtitle" = "Koristite dijeljenje trezora da oporavite svoj trezor.";
 "importVaultShareCaption" = "Podržane vrste datoteka: .bak i .vult";
 "new" = "NOVO";
+"beforeYouStart" = "Prije nego započnete...";
+"youAreEnteringAnewEra" = "Ulazite u novu eru, ostavljajući stare seed fraze iza sebe. Trebat će vam:";
+"youAreEnteringAnewEraHighlight" = "ostavljajući stare seed fraze iza sebe.";
+"yourSeedphrase" = "Vaša seed fraza";
+"yourSeedphraseSubtitle" = "Unesite je, stvorite trezor, nikad ne gledajte natrag";
+"twoDevices" = "2 uređaja";
+"twoDevicesSubtitle" = "Potrebna su vam 2 uređaja (telefon, laptop, preglednik, iPad, itd.)";

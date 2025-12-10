@@ -302,7 +302,7 @@
 "generatingEdDSAText1" = "Cross-chain. ";
 "generatingEdDSAText2" = "Swap your favourite tokens all in one vault";
 "German" = "German";
-"getStarted" = "Get Started";
+"getStarted" = "Get started";
 "github" = "GitHub";
 "gotIt" = "Got it";
 "goToHomeView" = "Go to Home View";
@@ -1097,3 +1097,11 @@
 "importVaultShareSubtitle" = "Use a vault share to recover your vault.";
 "importVaultShareCaption" = "Supported file types: .bak & .vult";
 "new" = "NEW";
+"beforeYouStart" = "Before you start...";
+"youAreEnteringAnewEra" = "You are entering a new era, leaving old seed phrases behind. You’ll need:";
+"youAreEnteringAnewEraHighlight" = "leaving old seed phrases behind.";
+"yourSeedphrase" = "Your seedphrase";
+"yourSeedphraseSubtitle" = "Enter it, create a vault, never look back";
+"twoDevices" = "2 devices";
+"twoDevicesSubtitle" = "You'll need 2 devices (a phone, laptop, a browser, an iPad, etc...)";
+

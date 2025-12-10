@@ -1079,3 +1079,10 @@
 "importVaultShareSubtitle" = "Use um compartilhamento de cofre para recuperar seu cofre.";
 "importVaultShareCaption" = "Tipos de arquivo suportados: .bak e .vult";
 "new" = "NOVO";
+"beforeYouStart" = "Antes de começar...";
+"youAreEnteringAnewEra" = "Você está entrando em uma nova era, deixando frases semente antigas para trás. Você precisará de:";
+"youAreEnteringAnewEraHighlight" = "deixando frases semente antigas para trás.";
+"yourSeedphrase" = "Sua frase semente";
+"yourSeedphraseSubtitle" = "Digite-a, crie um cofre, nunca olhe para trás";
+"twoDevices" = "2 dispositivos";
+"twoDevicesSubtitle" = "Você precisa de 2 dispositivos (um telefone, laptop, navegador, iPad, etc.)";

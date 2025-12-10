@@ -28,6 +28,8 @@
 		130652622EA7DBA7002CAD99 /* NodeDetailsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1306525F2EA7DBA7002CAD99 /* NodeDetailsResponse.swift */; };
 		13095A362E3264E6009F8785 /* HapticFeedbackManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */; };
 		130ABEF92E9E28210074BF67 /* RefreshToolbarButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130ABEF82E9E281B0074BF67 /* RefreshToolbarButton.swift */; };
+		130C058C2EE9A42200A7303A /* import_seedphrase.riv in Resources */ = {isa = PBXBuildFile; fileRef = 130C058B2EE9A42200A7303A /* import_seedphrase.riv */; };
+		130C059A2EE9B0AD00A7303A /* GradiengHighlitText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C05992EE9B0A800A7303A /* GradiengHighlitText.swift */; };
 		130C40DD2E71E0BE00509C61 /* VaultMainBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40DC2E71E0B800509C61 /* VaultMainBalanceView.swift */; };
 		130C40DF2E72FD7100509C61 /* CoinActionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40DE2E72FD6000509C61 /* CoinActionsView.swift */; };
 		130C40E22E7303CE00509C61 /* CarouselBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40E12E7303CB00509C61 /* CarouselBannerView.swift */; };
@@ -384,6 +386,7 @@
 		13C0F79A2EC60C3A00C2A3B8 /* DefiBalanceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C0F7992EC60C3700C2A3B8 /* DefiBalanceService.swift */; };
 		13C0F79F2EC60FE500C2A3B8 /* DefiPositionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C0F79E2EC60FDA00C2A3B8 /* DefiPositionsService.swift */; };
 		13C232692E68A95900DB42D0 /* AddressQRCodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C232682E68A95100DB42D0 /* AddressQRCodeScannerView.swift */; };
+		13C286712EE8B828004D8AC8 /* KeyImportOnboardingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C286702EE8B823004D8AC8 /* KeyImportOnboardingScreen.swift */; };
 		13C320032E61F8DB00255138 /* ReferralVaultSelectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C320022E61F8D500255138 /* ReferralVaultSelectionScreen.swift */; };
 		13C4A0322EDDC5C10033BDB1 /* ImportSeedphraseScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C4A0312EDDC5B70033BDB1 /* ImportSeedphraseScreen.swift */; };
 		13C4A0352EDDCB0C0033BDB1 /* FilledSegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C4A0342EDDCB070033BDB1 /* FilledSegmentedControl.swift */; };
@@ -1257,6 +1260,8 @@
 		1306525F2EA7DBA7002CAD99 /* NodeDetailsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetailsResponse.swift; sourceTree = "<group>"; };
 		13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticFeedbackManager.swift; sourceTree = "<group>"; };
 		130ABEF82E9E281B0074BF67 /* RefreshToolbarButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshToolbarButton.swift; sourceTree = "<group>"; };
+		130C058B2EE9A42200A7303A /* import_seedphrase.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = import_seedphrase.riv; sourceTree = "<group>"; };
+		130C05992EE9B0A800A7303A /* GradiengHighlitText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradiengHighlitText.swift; sourceTree = "<group>"; };
 		130C40DC2E71E0B800509C61 /* VaultMainBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainBalanceView.swift; sourceTree = "<group>"; };
 		130C40DE2E72FD6000509C61 /* CoinActionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinActionsView.swift; sourceTree = "<group>"; };
 		130C40E12E7303CB00509C61 /* CarouselBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselBannerView.swift; sourceTree = "<group>"; };
@@ -1612,6 +1617,7 @@
 		13C0F7992EC60C3700C2A3B8 /* DefiBalanceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiBalanceService.swift; sourceTree = "<group>"; };
 		13C0F79E2EC60FDA00C2A3B8 /* DefiPositionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiPositionsService.swift; sourceTree = "<group>"; };
 		13C232682E68A95100DB42D0 /* AddressQRCodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressQRCodeScannerView.swift; sourceTree = "<group>"; };
+		13C286702EE8B823004D8AC8 /* KeyImportOnboardingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyImportOnboardingScreen.swift; sourceTree = "<group>"; };
 		13C320022E61F8D500255138 /* ReferralVaultSelectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralVaultSelectionScreen.swift; sourceTree = "<group>"; };
 		13C4A0312EDDC5B70033BDB1 /* ImportSeedphraseScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportSeedphraseScreen.swift; sourceTree = "<group>"; };
 		13C4A0342EDDCB070033BDB1 /* FilledSegmentedControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilledSegmentedControl.swift; sourceTree = "<group>"; };
@@ -2534,6 +2540,7 @@
 		049BBB4E2B71E37B004C231F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				130C05992EE9B0A800A7303A /* GradiengHighlitText.swift */,
 				13C4A0332EDDCAFF0033BDB1 /* SegmentedControls */,
 				13B41AAE2EB3CCD00049503D /* Forms */,
 				135C7ADF2EA14124002F879A /* ActionBanner */,
@@ -3976,6 +3983,16 @@
 			path = Theme;
 			sourceTree = "<group>";
 		};
+		13C2866F2EE8B80F004D8AC8 /* ChainsSetup */ = {
+			isa = PBXGroup;
+			children = (
+				13DACCC92EDF6C3D00BE0F97 /* Views */,
+				13DACCC72EDF674D00BE0F97 /* KeyImportChainsSetupViewModel.swift */,
+				13DACCC52EDF671A00BE0F97 /* KeyImportChainsSetupScreen.swift */,
+			);
+			path = ChainsSetup;
+			sourceTree = "<group>";
+		};
 		13C4A02C2EDDC5490033BDB1 /* Onboarding */ = {
 			isa = PBXGroup;
 			children = (
@@ -4218,9 +4235,8 @@
 		13DACCC22EDF66F100BE0F97 /* KeyImport */ = {
 			isa = PBXGroup;
 			children = (
-				13DACCC92EDF6C3D00BE0F97 /* Views */,
-				13DACCC72EDF674D00BE0F97 /* KeyImportChainsSetupViewModel.swift */,
-				13DACCC52EDF671A00BE0F97 /* KeyImportChainsSetupScreen.swift */,
+				13C286702EE8B823004D8AC8 /* KeyImportOnboardingScreen.swift */,
+				13C2866F2EE8B80F004D8AC8 /* ChainsSetup */,
 			);
 			path = KeyImport;
 			sourceTree = "<group>";
@@ -5582,6 +5598,7 @@
 		A6F7B6702D42BDB700AC8104 /* Animations */ = {
 			isa = PBXGroup;
 			children = (
+				130C058B2EE9A42200A7303A /* import_seedphrase.riv */,
 				DEE8B2AB2E40842B0020DA63 /* upgrade_success.riv */,
 				1387FDA72E32C2CC007ECDB4 /* QRScanner.riv */,
 				A6C58D832D7B6F3C000D2833 /* backup_vault.riv */,
@@ -6378,6 +6395,7 @@
 				A6CBF2DF2C268D1400FD8080 /* Montserrat.ttf in Resources */,
 				DE49A1942B65F7B6000F3AFB /* Mediator in Resources */,
 				A6BB9BCF2DA9E43B0085E117 /* all_devices_animation.riv in Resources */,
+				130C058C2EE9A42200A7303A /* import_seedphrase.riv in Resources */,
 				DE49A16D2B65F6DB000F3AFB /* Assets.xcassets in Resources */,
 				A53065FC2D5AA5D3000B82E6 /* securevault_overview.riv in Resources */,
 				A6C58D822D7AD81D000D2833 /* securevault_summary.riv in Resources */,
@@ -6528,6 +6546,7 @@
 				A601D3A52DB96995004B6A0A /* JoinSwapDoneSummary.swift in Sources */,
 				A6F9F7DF2B9BAA9F00790258 /* Separator.swift in Sources */,
 				B5E654EB2D277CE2003A037C /* TronService.swift in Sources */,
+				13C286712EE8B828004D8AC8 /* KeyImportOnboardingScreen.swift in Sources */,
 				A6F9F7DB2B9BA2DE00790258 /* ChainCell.swift in Sources */,
 				13A0786A2E846EB50093496F /* CommonListHeaderView.swift in Sources */,
 				A686965A2C1F72FF004EDE0B /* HiddenTextField.swift in Sources */,
@@ -7444,6 +7463,7 @@
 				13924F442ED88EB200F458D5 /* AppMigrationService.swift in Sources */,
 				137DB52F2EBE452B0081C6BC /* RedeemTransactionBuilder.swift in Sources */,
 				B5F758192BD8E65D0097B5BB /* SuiConstants.swift in Sources */,
+				130C059A2EE9B0AD00A7303A /* GradiengHighlitText.swift in Sources */,
 				139DE1282E4D095000BC2FD3 /* SendKeysignScreen.swift in Sources */,
 				A633B1362B997D57003D1738 /* NavigationBackButton.swift in Sources */,
 				A6833D972C671F11002029E1 /* SettingsHeader.swift in Sources */,

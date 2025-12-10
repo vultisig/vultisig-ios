@@ -1,0 +1,111 @@
+//
+//  KeyImportOnboardingScreen.swift
+//  VultisigApp
+//
+//  Created by Gaston Mazzeo on 09/12/2025.
+//
+
+import SwiftUI
+import RiveRuntime
+
+struct KeyImportOnboardingScreen: View {
+    @State var animationVM: RiveViewModel? = nil
+    @State var showInformation: Bool = false
+    @State var informationOpacity: CGFloat = 0
+    
+    var body: some View {
+        Screen {
+            VStack(spacing: .zero) {
+                animationVM?.view()
+                    .frame(maxHeight: 270)
+                    .scaledToFit()
+                Group {
+                    Spacer()
+                    Group {
+                        informationView
+                        Spacer().frame(maxHeight: 65)
+                        PrimaryButton(title: "Get started", action: {})
+                    }
+                    .opacity(informationOpacity)
+                }
+                .showIf(showInformation)
+            }
+        }
+        .onAppear {
+            animationVM = RiveViewModel(fileName: "import_seedphrase", autoPlay: true)
+        }
+        .onLoad(perform: startAnimations)
+        .onDisappear {
+            animationVM?.stop()
+            animationVM = nil
+        }
+    }
+    
+    var informationView: some View {
+        VStack(alignment: .leading, spacing: 32) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("beforeYouStart".localized)
+                    .foregroundStyle(Theme.colors.textLight)
+                    .font(Theme.fonts.caption12)
+                
+                GradientHighlightText(
+                    "youAreEnteringAnewEra".localized,
+                    highlight: "youAreEnteringAnewEraHighlight".localized,
+                    gradient: LinearGradient.primaryGradientHorizontal
+                )
+                .foregroundStyle(Theme.colors.textPrimary)
+                .font(Theme.fonts.title2)
+                .frame(maxWidth: 330, alignment: .leading)
+            }
+            
+            VStack(alignment: .leading, spacing: 24) {
+                informationRow(
+                    title: "yourSeedphrase".localized,
+                    subtitle: "yourSeedphraseSubtitle".localized,
+                    icon: "seedphrase"
+                )
+                
+                informationRow(
+                    title: "twoDevices".localized,
+                    subtitle: "twoDevicesSubtitle".localized,
+                    icon: "devices"
+                )
+            }
+        }
+    }
+    
+    func informationRow(title: String, subtitle: String, icon: String) -> some View {
+        HStack(alignment: .top, spacing: 16) {
+            Icon(
+                named: icon,
+                color: Theme.colors.alertInfo,
+                size: 20
+            )
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .font(Theme.fonts.subtitle)
+                
+                Text(subtitle)
+                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .font(Theme.fonts.footnote)
+            }
+        }
+    }
+    
+    func startAnimations() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            withAnimation(.interpolatingSpring) {
+                showInformation = true
+            }
+            
+            withAnimation(.interpolatingSpring.delay(0.7)) {
+                informationOpacity = 1
+            }
+        }
+    }
+}
+
+#Preview {
+    KeyImportOnboardingScreen()
+}

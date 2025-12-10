@@ -1079,3 +1079,10 @@
 "importVaultShareSubtitle" = "Usa una condivisione vault per recuperare il tuo vault.";
 "importVaultShareCaption" = "Tipi di file supportati: .bak e .vult";
 "new" = "NUOVO";
+"beforeYouStart" = "Prima di iniziare...";
+"youAreEnteringAnewEra" = "Stai entrando in una nuova era, lasciando indietro le vecchie seed phrase. Avrai bisogno di:";
+"youAreEnteringAnewEraHighlight" = "lasciando indietro le vecchie seed phrase.";
+"yourSeedphrase" = "La tua seed phrase";
+"yourSeedphraseSubtitle" = "Inseriscila, crea un vault, non voltarti mai indietro";
+"twoDevices" = "2 dispositivi";
+"twoDevicesSubtitle" = "Hai bisogno di 2 dispositivi (un telefono, laptop, browser, iPad, ecc.)";
