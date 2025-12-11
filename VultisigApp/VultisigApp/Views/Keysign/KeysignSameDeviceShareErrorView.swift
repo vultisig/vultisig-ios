@@ -17,7 +17,7 @@ struct KeysignSameDeviceShareErrorView: View {
             description: "",
             buttonTitle: "goToHomeView".localized
         ) {
-            appViewModel.set(selectedVault: nil, showingVaultSelector: true)
+            appViewModel.restart()
         }
     }
 }

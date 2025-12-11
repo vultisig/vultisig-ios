@@ -17,7 +17,7 @@ struct KeysignVaultMismatchErrorView: View {
             description: "",
             buttonTitle: "tryAgain".localized
         ) {
-            appViewModel.set(selectedVault: nil, showingVaultSelector: true)
+            appViewModel.set(selectedVault: appViewModel.selectedVault, showingVaultSelector: true)
         }
     }
 }

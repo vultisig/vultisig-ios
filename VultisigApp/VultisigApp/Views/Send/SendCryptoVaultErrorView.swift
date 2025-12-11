@@ -17,7 +17,7 @@ struct SendCryptoVaultErrorView: View {
             description: "",
             buttonTitle: "changeVault".localized
         ) {
-            appViewModel.set(selectedVault: nil, showingVaultSelector: true)
+            appViewModel.set(selectedVault: appViewModel.selectedVault, showingVaultSelector: true)
         }
     }
 }
