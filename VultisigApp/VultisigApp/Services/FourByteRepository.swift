@@ -42,7 +42,7 @@ struct FourByteRepository {
         let functionName = String(textSignature[..<nameEndIndex])
         let paramsString = String(textSignature[textSignature.index(after: nameEndIndex)..<paramsEndIndex])
         
-        let paramTypes = splitTypes(paramsString)
+        let paramTypes = ABIDecoder.splitTypes(paramsString)
         
         // 3. Decode Arguments
         do {
@@ -98,30 +98,6 @@ struct FourByteRepository {
         }
     }
     
-    private func splitTypes(_ content: String) -> [String] {
-        var types: [String] = []
-        var currentType = ""
-        var depth = 0
-        
-        for char in content {
-            if char == "(" {
-                depth += 1
-            } else if char == ")" {
-                depth -= 1
-            }
-            
-            if char == "," && depth == 0 {
-                types.append(currentType.trimmingCharacters(in: .whitespaces))
-                currentType = ""
-            } else {
-                currentType.append(char)
-            }
-        }
-        if !currentType.isEmpty {
-            types.append(currentType.trimmingCharacters(in: .whitespaces))
-        }
-        return types
-    }
     
     private func formatJSON(_ value: Any, indentLevel: Int = 0) -> String {
         // Use JSONSerialization for proper escaping of special characters

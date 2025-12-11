@@ -231,7 +231,7 @@ struct ABIDecoder {
         return splitTypes(content)
     }
 
-    private static func splitTypes(_ content: String) -> [String] {
+    static func splitTypes(_ content: String) -> [String] {
         var types: [String] = []
         var currentType = ""
         var depth = 0

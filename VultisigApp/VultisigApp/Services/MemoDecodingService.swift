@@ -34,27 +34,6 @@ struct MemoDecodingService {
                 return nil
             }
             
-            // Convert parameters dictionary to a formatted JSON-like string for display
-            let sortedKeys = info.parameters.keys.sorted()
-            var argsString = ""
-            
-            if !info.parameters.isEmpty {
-                argsString = "{\n"
-                for key in sortedKeys {
-                    if let value = info.parameters[key] {
-                        argsString += "  \"\(key)\": \"\(value)\",\n"
-                    }
-                }
-                // Remove trailing comma and newline
-                if argsString.hasSuffix(",\n") {
-                    argsString = String(argsString.dropLast(2))
-                    argsString += "\n"
-                }
-                argsString += "}"
-            } else {
-                argsString = "{}"
-            }
-            
             return ParsedMemoParams(
                 functionSignature: info.fullSignature,
                 functionArguments: info.encodedArguments
