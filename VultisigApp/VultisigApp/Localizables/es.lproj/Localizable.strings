@@ -1092,3 +1092,9 @@
 "enterYourSeedphraseSubtitleHighlight" = "12 o 24";
 "seedPhraseWordCountError" = "Ingresaste %d palabras. La frase semilla debe tener 12 o 24 palabras.";
 "seedPhraseInvalidError" = "Frase semilla inválida. Por favor, verifica tus palabras.";
+"scanningForChainsSubtitle" = "Estamos verificando qué blockchains tienen direcciones activas asociadas con tu frase semilla. Este proceso puede tardar hasta 2 minutos.";
+"scanningForChainsSubtitleHighlight" = "Este proceso puede tardar hasta 2 minutos.";
+"selectChainsManually" = "Seleccionar chains manualmente";
+"foundActiveChainsTitle" = "Encontramos %d chains activas";
+"foundActiveChainsSubtitle" = "Cada chain adicional aproximadamente duplica el tiempo para generar tu bóveda. Tiempo estimado para todas las chains seleccionadas: %d minutos";
+"foundActiveChainsSubtitleHighlight" = "%d minutos";

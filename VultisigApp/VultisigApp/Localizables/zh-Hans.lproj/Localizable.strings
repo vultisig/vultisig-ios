@@ -1094,3 +1094,9 @@
 "enterYourSeedphraseSubtitleHighlight" = "12或24";
 "seedPhraseWordCountError" = "您输入了%d个单词。助记词必须是12个或24个单词。";
 "seedPhraseInvalidError" = "无效的助记词。请仔细检查您的单词。";
+"scanningForChainsSubtitle" = "我们正在检查哪些区块链有与您的助记词相关联的活跃地址。此过程可能需要长达2分钟。";
+"scanningForChainsSubtitleHighlight" = "此过程可能需要长达2分钟。";
+"selectChainsManually" = "手动选择链";
+"foundActiveChainsTitle" = "我们找到了%d条活跃链";
+"foundActiveChainsSubtitle" = "每增加一条链大约会使生成保险库的时间翻倍。所有选定链的预计时间：%d分钟";
+"foundActiveChainsSubtitleHighlight" = "%d分钟";

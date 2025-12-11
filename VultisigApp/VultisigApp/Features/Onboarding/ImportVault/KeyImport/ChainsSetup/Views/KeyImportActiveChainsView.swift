@@ -15,65 +15,94 @@ struct KeyImportChain: Identifiable, Hashable {
 
 struct KeyImportActiveChainsView: View {
     let activeChains: [KeyImportChain]
-    let maxChains: Int
     let onImport: () -> Void
     let onCustomize: () -> Void
+    
+    var minutes: Int {
+        activeChains.count * 2
+    }
     
     var body: some View {
         VStack(spacing: 24) {
             Spacer()
+            CircleIcon(
+                icon: "active-chain",
+                color: Theme.colors.alertSuccess
+            )
             VStack(spacing: 12) {
-                Text("foundActiveChainsTitle")
+                Text(String(format: "foundActiveChainsTitle".localized, activeChains.count))
                     .font(Theme.fonts.title2)
                     .foregroundStyle(Theme.colors.textPrimary)
-                Text(String(format: "foundActiveChainsSubtitle".localized, maxChains))
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textExtraLight)
-                    .frame(maxWidth: 330)
-                    .multilineTextAlignment(.center)
+                CustomHighlightText(
+                    String(format: "foundActiveChainsSubtitle".localized, minutes),
+                    highlight: String(format: "foundActiveChainsSubtitleHighlight".localized, minutes),
+                    style: Theme.colors.textPrimary
+                )
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textExtraLight)
+                .frame(maxWidth: 330)
+                .multilineTextAlignment(.center)
             }
             
-            VStack(spacing: 12) {
-                ForEach(activeChains) { chain in
-                    HStack(spacing: 12) {
-                        AsyncImageView(
-                            logo: chain.chain.logo,
-                            size: .init(width: 32, height: 32),
-                            ticker: "",
-                            tokenChainLogo: nil
-                        )
-                        Text(chain.chain.name)
-                            .foregroundStyle(Theme.colors.textPrimary)
-                            .font(Theme.fonts.bodySMedium)
-                        Spacer()
-                        Text(chain.balance)
-                            .foregroundStyle(Theme.colors.textPrimary)
-                            .font(Theme.fonts.priceBodyS)
+            ZStack(alignment: .bottom) {
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 12) {
+                        ForEach(activeChains) { chain in
+                            HStack(spacing: 12) {
+                                AsyncImageView(
+                                    logo: chain.chain.logo,
+                                    size: .init(width: 32, height: 32),
+                                    ticker: "",
+                                    tokenChainLogo: nil
+                                )
+                                Text(chain.chain.name)
+                                    .foregroundStyle(Theme.colors.textPrimary)
+                                    .font(Theme.fonts.bodySMedium)
+                                Spacer()
+                                Text(chain.balance)
+                                    .foregroundStyle(Theme.colors.textPrimary)
+                                    .font(Theme.fonts.priceBodyS)
+                            }
+                            .padding(12)
+                            .padding(.trailing, 16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .inset(by: 0.5)
+                                    .stroke(Theme.colors.borderLight, lineWidth: 1)
+                                    .fill(Theme.colors.bgSecondary.opacity(0.7))
+                            )
+                        }
                     }
-                    .padding(12)
-                    .padding(.trailing, 16)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .inset(by: 0.5)
-                            .stroke(Theme.colors.borderLight, lineWidth: 1)
-                            .fill(Theme.colors.bgSecondary.opacity(0.7))
-                    )
+                }
+                .contentMargins(.bottom, 150)
+                
+                LinearGradient(colors: [Theme.colors.bgPrimary, .clear], startPoint: .bottom, endPoint: .top)
+                    .frame(height: 150)
+                
+                VStack(spacing: 12) {
+                    PrimaryButton(title: "importTheseChains", action: onImport)
+                    Button(action: onCustomize) {
+                        HStack(spacing: 8) {
+                            Icon(
+                                named: "magic-pen",
+                                color: Theme.colors.textPrimary,
+                                size: 16
+                            )
+                            Text("customizeChains".localized)
+                        }
+                        .foregroundStyle(Theme.colors.textPrimary)
+                        .font(Theme.fonts.buttonSMedium)
+                        .padding(.vertical, 14)
+                    }
                 }
             }
-            
-            VStack(spacing: 12) {
-                PrimaryButton(title: "importTheseChains", action: onImport)
-                PrimaryButton(title: "customizeChains", type: .secondary, action: onCustomize)
-            }
         }
-        .background(BlurredBackground().ignoresSafeArea())
     }
 }
 
 #Preview {
     KeyImportActiveChainsView(
         activeChains: [],
-        maxChains: 4,
         onImport: {},
         onCustomize: {}
     )

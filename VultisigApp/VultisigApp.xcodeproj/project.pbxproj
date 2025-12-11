@@ -31,6 +31,9 @@
 		130C058C2EE9A42200A7303A /* import_seedphrase.riv in Resources */ = {isa = PBXBuildFile; fileRef = 130C058B2EE9A42200A7303A /* import_seedphrase.riv */; };
 		130C059A2EE9B0AD00A7303A /* CustomHighlightText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C05992EE9B0A800A7303A /* CustomHighlightText.swift */; };
 		130C059D2EE9CDFE00A7303A /* GlowIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C059C2EE9CDFB00A7303A /* GlowIcon.swift */; };
+		130C059F2EE9F44300A7303A /* CircleIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C059E2EE9F43700A7303A /* CircleIcon.swift */; };
+		130C05A12EE9FB4900A7303A /* KeyImportNoActiveChainsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C05A02EE9FB4600A7303A /* KeyImportNoActiveChainsView.swift */; };
+		130C05A32EE9FFC200A7303A /* AssetSelectionContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C05A22EE9FFB900A7303A /* AssetSelectionContainerView.swift */; };
 		130C40DD2E71E0BE00509C61 /* VaultMainBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40DC2E71E0B800509C61 /* VaultMainBalanceView.swift */; };
 		130C40DF2E72FD7100509C61 /* CoinActionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40DE2E72FD6000509C61 /* CoinActionsView.swift */; };
 		130C40E22E7303CE00509C61 /* CarouselBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40E12E7303CB00509C61 /* CarouselBannerView.swift */; };
@@ -392,7 +395,7 @@
 		13C4A0322EDDC5C10033BDB1 /* ImportSeedphraseScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C4A0312EDDC5B70033BDB1 /* ImportSeedphraseScreen.swift */; };
 		13C4A0352EDDCB0C0033BDB1 /* FilledSegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C4A0342EDDCB070033BDB1 /* FilledSegmentedControl.swift */; };
 		13C7C1DC2E86DD8F00A529FD /* TokenSelectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C7C1DB2E86DD8900A529FD /* TokenSelectionScreen.swift */; };
-		13C7C1DE2E86DE5600A529FD /* AssetSelectionContainerScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C7C1DD2E86DE4C00A529FD /* AssetSelectionContainerScreen.swift */; };
+		13C7C1DE2E86DE5600A529FD /* AssetSelectionContainerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C7C1DD2E86DE4C00A529FD /* AssetSelectionContainerSheet.swift */; };
 		13C7C1E32E86EE0200A529FD /* TokenSelectionGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C7C1E22E86EE0200A529FD /* TokenSelectionGridCell.swift */; };
 		13C7C1E52E86EE2A00A529FD /* AssetSelectionGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C7C1E42E86EE2900A529FD /* AssetSelectionGridCell.swift */; };
 		13C7C1E72E86EEBE00A529FD /* CustomTokenGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C7C1E62E86EEB900A529FD /* CustomTokenGridCell.swift */; };
@@ -1264,6 +1267,9 @@
 		130C058B2EE9A42200A7303A /* import_seedphrase.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = import_seedphrase.riv; sourceTree = "<group>"; };
 		130C05992EE9B0A800A7303A /* CustomHighlightText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomHighlightText.swift; sourceTree = "<group>"; };
 		130C059C2EE9CDFB00A7303A /* GlowIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlowIcon.swift; sourceTree = "<group>"; };
+		130C059E2EE9F43700A7303A /* CircleIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleIcon.swift; sourceTree = "<group>"; };
+		130C05A02EE9FB4600A7303A /* KeyImportNoActiveChainsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyImportNoActiveChainsView.swift; sourceTree = "<group>"; };
+		130C05A22EE9FFB900A7303A /* AssetSelectionContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetSelectionContainerView.swift; sourceTree = "<group>"; };
 		130C40DC2E71E0B800509C61 /* VaultMainBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainBalanceView.swift; sourceTree = "<group>"; };
 		130C40DE2E72FD6000509C61 /* CoinActionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinActionsView.swift; sourceTree = "<group>"; };
 		130C40E12E7303CB00509C61 /* CarouselBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselBannerView.swift; sourceTree = "<group>"; };
@@ -1624,7 +1630,7 @@
 		13C4A0312EDDC5B70033BDB1 /* ImportSeedphraseScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportSeedphraseScreen.swift; sourceTree = "<group>"; };
 		13C4A0342EDDCB070033BDB1 /* FilledSegmentedControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilledSegmentedControl.swift; sourceTree = "<group>"; };
 		13C7C1DB2E86DD8900A529FD /* TokenSelectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionScreen.swift; sourceTree = "<group>"; };
-		13C7C1DD2E86DE4C00A529FD /* AssetSelectionContainerScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetSelectionContainerScreen.swift; sourceTree = "<group>"; };
+		13C7C1DD2E86DE4C00A529FD /* AssetSelectionContainerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetSelectionContainerSheet.swift; sourceTree = "<group>"; };
 		13C7C1E22E86EE0200A529FD /* TokenSelectionGridCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionGridCell.swift; sourceTree = "<group>"; };
 		13C7C1E42E86EE2900A529FD /* AssetSelectionGridCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetSelectionGridCell.swift; sourceTree = "<group>"; };
 		13C7C1E62E86EEB900A529FD /* CustomTokenGridCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTokenGridCell.swift; sourceTree = "<group>"; };
@@ -2694,6 +2700,7 @@
 		130C059B2EE9CDF400A7303A /* Icons */ = {
 			isa = PBXGroup;
 			children = (
+				130C059E2EE9F43700A7303A /* CircleIcon.swift */,
 				130C059C2EE9CDFB00A7303A /* GlowIcon.swift */,
 				132666C52E42954F007FDAC5 /* Icon.swift */,
 			);
@@ -4073,9 +4080,10 @@
 		13C7C1E02E86EDDB00A529FD /* AssetSelection */ = {
 			isa = PBXGroup;
 			children = (
+				130C05A22EE9FFB900A7303A /* AssetSelectionContainerView.swift */,
 				135B6BBE2EA1470600DD7140 /* ChainNotFoundEmptyStateView.swift */,
 				13C7C1E42E86EE2900A529FD /* AssetSelectionGridCell.swift */,
-				13C7C1DD2E86DE4C00A529FD /* AssetSelectionContainerScreen.swift */,
+				13C7C1DD2E86DE4C00A529FD /* AssetSelectionContainerSheet.swift */,
 			);
 			path = AssetSelection;
 			sourceTree = "<group>";
@@ -4263,6 +4271,7 @@
 		13DACCC92EDF6C3D00BE0F97 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				130C05A02EE9FB4600A7303A /* KeyImportNoActiveChainsView.swift */,
 				1322B88A2EDF727400FE47F2 /* KeyImportCustomizeChainsView.swift */,
 				1322B8882EDF6D7800FE47F2 /* KeyImportActiveChainsView.swift */,
 				13DACCCA2EDF6C4400BE0F97 /* KeyImportScanningForChainsView.swift */,
@@ -6448,6 +6457,7 @@
 				A564ED422BC350520056FDC0 /* SwapTransaction.swift in Sources */,
 				A67530622CAFBDC200B1E344 /* Folder.swift in Sources */,
 				130C059D2EE9CDFE00A7303A /* GlowIcon.swift in Sources */,
+				130C05A12EE9FB4900A7303A /* KeyImportNoActiveChainsView.swift in Sources */,
 				138574262E2DB9C6002532BF /* NavigationIconButton.swift in Sources */,
 				13B25BF62E82FA39002BCF55 /* AddressCopyBannerViewModifier.swift in Sources */,
 				138574272E2DB9C6002532BF /* IconButton.swift in Sources */,
@@ -6789,6 +6799,7 @@
 				B5E654ED2D2788CC003A037C /* Tron.swift in Sources */,
 				A61173592BC8A10D00D616F9 /* ChainCellViewModel.swift in Sources */,
 				1336BB372E81755A00597070 /* ChainDetailTab.swift in Sources */,
+				130C059F2EE9F44300A7303A /* CircleIcon.swift in Sources */,
 				DE6DCB952B97D88A009A39D5 /* THORChainSwapPayload.swift in Sources */,
 				A6966D2B2BA4018600903CA4 /* SendCryptoAmountTextField.swift in Sources */,
 				DEFF59012BD238CF005DFDF9 /* SignedTransactionResult.swift in Sources */,
@@ -7109,7 +7120,7 @@
 				1322B8892EDF6D8100FE47F2 /* KeyImportActiveChainsView.swift in Sources */,
 				A6F7B6F62D4C701D00AC8104 /* FastVaultPasswordDisclaimer.swift in Sources */,
 				A6521C562C6EC769002D5C5F /* MacScannerView.swift in Sources */,
-				13C7C1DE2E86DE5600A529FD /* AssetSelectionContainerScreen.swift in Sources */,
+				13C7C1DE2E86DE5600A529FD /* AssetSelectionContainerSheet.swift in Sources */,
 				A56386862C3A21B8008B848E /* KeysignMessage+ProtoMappable.swift in Sources */,
 				A675305E2CAFB2CE00B1E344 /* FolderVaultCell.swift in Sources */,
 				B217CEA92ED5A01B00503503 /* ChainPublicKey.swift in Sources */,
@@ -7359,6 +7370,7 @@
 				A6182F552C9296DB0059BFDD /* StyledFloatingPointField+macOS.swift in Sources */,
 				B547A3FF2DF3F9220052164D /* CardanoService.swift in Sources */,
 				A6BFE1BF2D94663E000B73C0 /* SwapChainPickerView.swift in Sources */,
+				130C05A32EE9FFC200A7303A /* AssetSelectionContainerView.swift in Sources */,
 				134856342EB525D6003D10BE /* PercentageSliderView.swift in Sources */,
 				A6C670CF2C9E8D3F00F59B6A /* SetupQRCodeView+macOS.swift in Sources */,
 				A622C8562C9BCCB800908332 /* JoinKeygenView+iOS.swift in Sources */,
