@@ -1092,3 +1092,24 @@
 "enterYourSeedphraseSubtitleHighlight" = "12 oder 24";
 "seedPhraseWordCountError" = "Sie haben %d Wörter eingegeben. Die Seed-Phrase muss 12 oder 24 Wörter enthalten.";
 "seedPhraseInvalidError" = "Ungültige Seed-Phrase. Bitte überprüfen Sie Ihre Wörter.";
+
+// Circle
+"circleTitle" = "Circle U.S. Dollar";
+"circleRowGetStarted" = "Loslegen";
+"circleRowCreateWallet" = "Wallet erstellen";
+"circleSetupTitle" = "Circle Wallet einrichten";
+"circleSetupDescription" = "Erstellen Sie eine sichere Circle Wallet zur Verwaltung Ihrer USDC.";
+"circleSetupCreateAccount" = "Konto erstellen";
+"circleDepositTitle" = "USDC einzahlen";
+"circleDepositInstruction" = "Senden Sie Ethereum USDC an diese Adresse";
+"circleDashboardTitle" = "Circle Wallet";
+"circleBalance" = "Guthaben";
+"circleYield" = "Rendite";
+"circleWithdraw" = "Abheben";
+"circleDeposit" = "Einzahlen";
+"circleWithdrawTitle" = "USDC abheben";
+"circleWithdrawInstruction" = "Geben Sie Adresse und Betrag zum Abheben ein";
+"circleWithdrawAddressLabel" = "Adresse";
+"circleWithdrawAmountLabel" = "Betrag";
+"circleWithdrawButton" = "Abheben";
+"circleTransactionSuccess" = "Transaktion erfolgreich";

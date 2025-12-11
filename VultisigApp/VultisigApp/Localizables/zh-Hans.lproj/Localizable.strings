@@ -1094,3 +1094,24 @@
 "enterYourSeedphraseSubtitleHighlight" = "12或24";
 "seedPhraseWordCountError" = "您输入了%d个单词。助记词必须是12个或24个单词。";
 "seedPhraseInvalidError" = "无效的助记词。请仔细检查您的单词。";
+
+// Circle
+"circleTitle" = "Circle 美元";
+"circleRowGetStarted" = "开始";
+"circleRowCreateWallet" = "创建钱包";
+"circleSetupTitle" = "设置 Circle 钱包";
+"circleSetupDescription" = "创建一个安全的 Circle 钱包来管理您的 USDC。";
+"circleSetupCreateAccount" = "创建账户";
+"circleDepositTitle" = "存入 USDC";
+"circleDepositInstruction" = "发送以太坊 USDC 到此地址";
+"circleDashboardTitle" = "Circle 钱包";
+"circleBalance" = "余额";
+"circleYield" = "收益";
+"circleWithdraw" = "提现";
+"circleDeposit" = "存入";
+"circleWithdrawTitle" = "提现 USDC";
+"circleWithdrawInstruction" = "输入提现地址和金额";
+"circleWithdrawAddressLabel" = "地址";
+"circleWithdrawAmountLabel" = "金额";
+"circleWithdrawButton" = "提现";
+"circleTransactionSuccess" = "交易成功";
