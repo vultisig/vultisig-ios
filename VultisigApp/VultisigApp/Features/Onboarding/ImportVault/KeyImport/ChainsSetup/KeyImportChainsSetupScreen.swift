@@ -14,18 +14,24 @@ struct KeyImportChainsSetupScreen: View {
     @State var presentVaultSetup: Bool = false
     
     var body: some View {
-        Screen(title: "importSeedphrase".localized) {
+        Screen(
+            title: viewModel.screenTitle,
+            backgroundType: viewModel.state == .activeChains ? .gradient : .plain
+        ) {
             Group {
                 switch viewModel.state {
                 case .scanningChains:
-                    KeyImportScanningForChainsView()
+                    KeyImportScanningForChainsView(
+                        onSelectChainsManually: viewModel.onSelectChainsManually
+                    )
                 case .activeChains:
                     KeyImportActiveChainsView(
                         activeChains: viewModel.activeChains,
-                        maxChains: viewModel.maxChains,
                         onImport: { presentVaultSetup = true },
                         onCustomize: onCustomizeChains
                     )
+                case .noActiveChains:
+                    KeyImportNoActiveChainsView(onAddCustomChains: viewModel.onSelectChainsManually)
                 case .customizeChains:
                     KeyImportCustomizeChainsView(
                         viewModel: viewModel,

@@ -16,7 +16,7 @@ struct DefiChainSelectPositionsScreen: View {
     
     var body: some View {
         ZStack {
-            AssetSelectionContainerScreen(
+            AssetSelectionContainerSheet(
                 title: "selectPositions".localized,
                 subtitle: "selectPositionsSubtitle".localized,
                 isPresented: $isPresented,

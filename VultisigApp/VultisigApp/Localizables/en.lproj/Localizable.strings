@@ -1078,10 +1078,12 @@
 "importSeedphrase" = "Import Seedphrase";
 "importShare" = "Import share";
 "scanningForChains" = "Scanning for chains...";
-"scanningForChainsSubtitle" = "We’re checking which blockchains have active addresses associated with your seedphrase.";
+"scanningForChainsSubtitle" = "We’re checking which blockchains have active addresses associated with your seedphrase. This process can take up to 2 minutes.";
+"scanningForChainsSubtitleHighlight" = "This process can take up to 2 minutes.";
 "importTheseChains" = "Import these chains";
-"foundActiveChainsTitle" = "We found your active chains";
-"foundActiveChainsSubtitle" = "We suggest importing %d chains. You can add more but it will increase vault generation time.";
+"foundActiveChainsTitle" = "We found %d active chains";
+"foundActiveChainsSubtitle" = "Each extra chain roughly doubles the time to generate your vault. Estimated time for all selected chains: %d minutes";
+"foundActiveChainsSubtitleHighlight" = "%d minutes";
 "selectChainsToImport" = "Select %d chains or more you want to import.";
 "addOtherChains" = "Add other chains";
 "youCanSelectXChains" = "You can only select %d chains at a time";
@@ -1110,3 +1112,7 @@
 "enterYourSeedphraseSubtitleHighlight" = "12 or 24";
 "seedPhraseWordCountError" = "You entered %d words. Seed phrase must be 12 or 24 words.";
 "seedPhraseInvalidError" = "Invalid seed phrase. Please double-check your words.";
+"selectChainsManually" = "Select chains manually";
+"noActiveChainsFound" = "No active chains found";
+"noActiveChainsFoundSubtitle" = "We didn’t detect any assets on this seedphrase. You can still continue and select chains manually.";
+"addCustomChains" = "Add custom chains";

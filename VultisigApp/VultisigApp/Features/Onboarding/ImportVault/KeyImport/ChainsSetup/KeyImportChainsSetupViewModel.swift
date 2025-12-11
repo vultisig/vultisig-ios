@@ -11,6 +11,7 @@ import WalletCore
 enum KeyImportChainsState {
     case scanningChains
     case activeChains
+    case noActiveChains
     case customizeChains
 }
 
@@ -26,31 +27,54 @@ final class KeyImportChainsSetupViewModel: ObservableObject {
     @Published var otherChains = [KeyImportChain]()
 
     var selectedChainsCount: Int { selectedChains.count }
-    var maxChainsExceeded: Bool { selectedChainsCount > maxChains }
-    var buttonDisabled: Bool { selectedChains.isEmpty || maxChainsExceeded }
-    var buttonTitle: String {
-        maxChainsExceeded ? String(format: "youCanSelectXChains".localized, maxChains) : "continue".localized
-    }
+    var buttonDisabled: Bool { selectedChains.isEmpty }
     var chainsToImport: [Chain] {
         selectedChains.isEmpty ? activeChains.map(\.chain) : selectedChains
     }
-
-    let maxChains: Int = 4
+    
+    var screenTitle: String {
+        switch state {
+        case .scanningChains:
+            "importSeedphrase".localized
+        case .customizeChains:
+            "selectChains".localized
+        case .activeChains, .noActiveChains:
+            ""
+        }
+    }
 
     private let balanceService = BalanceService.shared
     private let priceService = CryptoPriceService.shared
+    
+    var fetchChainsTask: Task<Void, Never>?
 
     init() {}
     
     func onLoad(mnemonic: String) async {
-        let activeChains = await fetchActiveChains(mnemonic: mnemonic)
-        await MainActor.run {
-            self.activeChains = activeChains
-            self.otherChains = Chain.allCases
-                .filter { !activeChains.map(\.chain).contains($0) }
-                .map { KeyImportChain(chain: $0, balance: Decimal.zero.formatToFiat()) }
-            self.state = activeChains.isEmpty ? .customizeChains : .activeChains
+        fetchChainsTask = Task {
+            let activeChains = await fetchActiveChains(mnemonic: mnemonic)
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                updateState(with: activeChains, skipped: false)
+            }
         }
+    }
+    
+    func updateState(with activeChains: [KeyImportChain], skipped: Bool) {
+        self.activeChains = activeChains
+        let filteredChains = activeChains.isEmpty ? Chain.enabledChains : Chain.enabledChains
+            .filter { !activeChains.map(\.chain).contains($0) }
+        self.otherChains = filteredChains
+            .map { KeyImportChain(chain: $0, balance: Decimal.zero.formatToFiat()) }
+        
+        let newState: KeyImportChainsState
+        if activeChains.isEmpty {
+            newState = skipped ? .customizeChains : .noActiveChains
+        } else {
+            newState = .activeChains
+        }
+        
+        self.state = newState
     }
     
     func fetchActiveChains(mnemonic: String) async -> [KeyImportChain] {
@@ -60,6 +84,7 @@ final class KeyImportChainsSetupViewModel: ObservableObject {
 
         let groupedByChain = groupTokensByChain()
         let chainTokens = await fetchBalancesForChains(groupedByChain: groupedByChain, wallet: wallet)
+        guard !Task.isCancelled else { return [] }
 
         await fetchPricesForTokens(chainTokens: chainTokens)
 
@@ -69,16 +94,22 @@ final class KeyImportChainsSetupViewModel: ObservableObject {
         return topChainsAsKeyImportChains(sortedChains: sortedChains)
     }
 
-    func isSelected(chain: KeyImportChain) -> Bool {
-        selectedChains.contains(chain.chain)
+    func isSelected(chain: Chain) -> Bool {
+        selectedChains.contains(chain)
     }
 
-    func toggleSelection(chain: KeyImportChain, isSelected: Bool) {
+    func toggleSelection(chain: Chain, isSelected: Bool) {
         if isSelected {
-            selectedChains.append(chain.chain)
+            selectedChains.append(chain)
         } else {
-            selectedChains.removeAll { $0 == chain.chain }
+            selectedChains.removeAll { $0 == chain }
         }
+    }
+    
+    func onSelectChainsManually() {
+        fetchChainsTask?.cancel()
+        fetchChainsTask = nil
+        updateState(with: [], skipped: true)
     }
 }
 
@@ -104,6 +135,8 @@ private extension KeyImportChainsSetupViewModel {
         var chainTokens: [(chain: Chain, tokens: [CoinMetaBalance])] = []
 
         for (chain, tokens) in groupedByChain {
+            guard !Task.isCancelled else { return [] }
+            
             guard let address = generateAddress(for: chain, wallet: wallet) else {
                 continue
             }
@@ -216,7 +249,7 @@ private extension KeyImportChainsSetupViewModel {
     func topChainsAsKeyImportChains(
         sortedChains: [(chain: Chain, fiatBalance: Decimal)]
     ) -> [KeyImportChain] {
-        Array(sortedChains.prefix(maxChains)).map { item in
+        sortedChains.map { item in
             KeyImportChain(
                 chain: item.chain,
                 balance: item.fiatBalance.formatToFiat()
