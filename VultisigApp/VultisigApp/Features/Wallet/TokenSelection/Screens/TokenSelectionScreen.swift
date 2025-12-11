@@ -33,7 +33,7 @@ struct TokenSelectionScreen: View {
     }
     
     var body: some View {
-        AssetSelectionContainerScreen(
+        AssetSelectionContainerSheet(
             title: "selectTokensTitle".localized,
             subtitle: "selectTokensSubtitle".localized,
             isPresented: $isPresented,

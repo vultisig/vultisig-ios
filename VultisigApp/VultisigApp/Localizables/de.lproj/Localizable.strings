@@ -1092,7 +1092,6 @@
 "enterYourSeedphraseSubtitleHighlight" = "12 oder 24";
 "seedPhraseWordCountError" = "Sie haben %d Wörter eingegeben. Die Seed-Phrase muss 12 oder 24 Wörter enthalten.";
 "seedPhraseInvalidError" = "Ungültige Seed-Phrase. Bitte überprüfen Sie Ihre Wörter.";
-
 // Circle
 "circleTitle" = "Circle U.S. Dollar";
 "circleRowGetStarted" = "Loslegen";
@@ -1113,3 +1112,10 @@
 "circleWithdrawAmountLabel" = "Betrag";
 "circleWithdrawButton" = "Abheben";
 "circleTransactionSuccess" = "Transaktion erfolgreich";
+
+"scanningForChainsSubtitle" = "Wir prüfen, welche Blockchains aktive Adressen haben, die mit Ihrer Seed-Phrase verknüpft sind. Dieser Vorgang kann bis zu 2 Minuten dauern.";
+"scanningForChainsSubtitleHighlight" = "Dieser Vorgang kann bis zu 2 Minuten dauern.";
+"selectChainsManually" = "Chains manuell auswählen";
+"foundActiveChainsTitle" = "Wir haben %d aktive Chains gefunden";
+"foundActiveChainsSubtitle" = "Jede zusätzliche Chain verdoppelt ungefähr die Zeit zur Generierung Ihres Tresors. Geschätzte Zeit für alle ausgewählten Chains: %d Minuten";
+"foundActiveChainsSubtitleHighlight" = "%d Minuten";

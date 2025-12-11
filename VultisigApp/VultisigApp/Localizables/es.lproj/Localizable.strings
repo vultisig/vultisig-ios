@@ -1113,3 +1113,10 @@
 "circleWithdrawAmountLabel" = "Cantidad";
 "circleWithdrawButton" = "Retirar";
 "circleTransactionSuccess" = "Transacción Exitosa";
+
+"scanningForChainsSubtitle" = "Estamos verificando qué cadenas de bloques tienen direcciones activas asociadas con tu frase semilla. Este proceso puede tardar hasta 2 minutos.";
+"scanningForChainsSubtitleHighlight" = "Este proceso puede tardar hasta 2 minutos.";
+"selectChainsManually" = "Seleccionar cadenas manualmente";
+"foundActiveChainsTitle" = "Encontramos %d cadenas activas";
+"foundActiveChainsSubtitle" = "Cada cadena adicional duplica aproximadamente el tiempo para generar tu bóveda. Tiempo estimado para todas las cadenas seleccionadas: %d minutos";
+"foundActiveChainsSubtitleHighlight" = "%d minutos";

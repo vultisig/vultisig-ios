@@ -1092,7 +1092,6 @@
 "enterYourSeedphraseSubtitleHighlight" = "12 o 24";
 "seedPhraseWordCountError" = "Hai inserito %d parole. La seed phrase deve contenere 12 o 24 parole.";
 "seedPhraseInvalidError" = "Seed phrase non valida. Controlla le tue parole.";
-
 // Circle
 "circleTitle" = "Circle U.S. Dollar";
 "circleRowGetStarted" = "Inizia";
@@ -1113,3 +1112,10 @@
 "circleWithdrawAmountLabel" = "Importo";
 "circleWithdrawButton" = "Preleva";
 "circleTransactionSuccess" = "Transazione Riuscita";
+
+"scanningForChainsSubtitle" = "Stiamo verificando quali blockchain hanno indirizzi attivi associati alla tua seed phrase. Questo processo può richiedere fino a 2 minuti.";
+"scanningForChainsSubtitleHighlight" = "Questo processo può richiedere fino a 2 minuti.";
+"selectChainsManually" = "Seleziona chain manualmente";
+"foundActiveChainsTitle" = "Abbiamo trovato %d chain attive";
+"foundActiveChainsSubtitle" = "Ogni chain aggiuntiva raddoppia approssimativamente il tempo per generare il tuo vault. Tempo stimato per tutte le chain selezionate: %d minuti";
+"foundActiveChainsSubtitleHighlight" = "%d minuti";

@@ -1092,7 +1092,6 @@
 "enterYourSeedphraseSubtitleHighlight" = "12 ou 24";
 "seedPhraseWordCountError" = "Você digitou %d palavras. A frase semente deve ter 12 ou 24 palavras.";
 "seedPhraseInvalidError" = "Frase semente inválida. Por favor, verifique suas palavras.";
-
 // Circle
 "circleTitle" = "Circle U.S. Dollar";
 "circleRowGetStarted" = "Começar";
@@ -1113,3 +1112,10 @@
 "circleWithdrawAmountLabel" = "Valor";
 "circleWithdrawButton" = "Sacar";
 "circleTransactionSuccess" = "Transação Bem-sucedida";
+
+"scanningForChainsSubtitle" = "Estamos verificando quais blockchains têm endereços ativos associados à sua frase semente. Este processo pode levar até 2 minutos.";
+"scanningForChainsSubtitleHighlight" = "Este processo pode levar até 2 minutos.";
+"selectChainsManually" = "Selecionar chains manualmente";
+"foundActiveChainsTitle" = "Encontramos %d chains ativas";
+"foundActiveChainsSubtitle" = "Cada chain adicional aproximadamente dobra o tempo para gerar seu cofre. Tempo estimado para todas as chains selecionadas: %d minutos";
+"foundActiveChainsSubtitleHighlight" = "%d minutos";

@@ -67,11 +67,32 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             }
             .showIf(input.toAddress.isNotEmpty)
             
-            Group {
-                getValueCell(for: "memo", with: input.memo)
+            if let signature = input.decodedFunctionSignature, !signature.isEmpty {
+                getValueCell(for: "functionSignature", with: signature, isMultiLine: true, color: Theme.colors.turquoise)
                 Separator()
+                
+                if let args = input.decodedFunctionArguments, !args.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(NSLocalizedString("functionArguments", comment: ""))
+                            .foregroundColor(Theme.colors.textExtraLight)
+                            .font(Theme.fonts.bodySMedium)
+                        
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            Text(args)
+                                .foregroundColor(Theme.colors.turquoise)
+                                .font(Theme.fonts.bodySMedium)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    Separator()
+                }
+            } else {
+                Group {
+                    getValueCell(for: "memo", with: input.memo, isMultiLine: true)
+                    Separator()
+                }
+                .showIf(input.memo.isNotEmpty)
             }
-            .showIf(input.memo.isNotEmpty)
             
             if let dictionary = input.memoFunctionDictionary, !dictionary.isEmpty {
                 ForEach(Array(dictionary.keys), id: \.self) { key in
@@ -129,7 +150,9 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
         with value: String,
         bracketValue: String? = nil,
         secondRowText: String? = nil,
-        image: String? = nil
+        image: String? = nil,
+        isMultiLine: Bool = false,
+        color: Color? = nil
     ) -> some View {
         HStack(spacing: 4) {
             Text(NSLocalizedString(title, comment: ""))
@@ -145,9 +168,11 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             
             VStack(alignment: .trailing, spacing: 2) {
                 Text(value)
-                    .foregroundColor(Theme.colors.textPrimary)
-                    .lineLimit(1)
+                    .foregroundColor(color ?? Theme.colors.textPrimary)
+                    .lineLimit(isMultiLine ? nil : 1)
                     .truncationMode(.middle)
+                    .multilineTextAlignment(.trailing)
+                    .fixedSize(horizontal: false, vertical: true)
                 
                 if let secondRowText {
                     Text(secondRowText)

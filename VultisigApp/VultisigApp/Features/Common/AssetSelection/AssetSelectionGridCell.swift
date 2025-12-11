@@ -15,7 +15,14 @@ struct AssetSelectionGridCell: View {
     @Binding var isSelected: Bool
     var onSelection: () -> Void
     
-    init(name: String, ticker: String, logo: String, tokenChainLogo: String? = nil, isSelected: Binding<Bool>, onSelection: @escaping () -> Void) {
+    init(
+        name: String,
+        ticker: String,
+        logo: String,
+        tokenChainLogo: String? = nil,
+        isSelected: Binding<Bool>,
+        onSelection: @escaping () -> Void
+    ) {
         self.name = name
         self.ticker = ticker
         self.logo = logo

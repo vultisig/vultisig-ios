@@ -1092,7 +1092,6 @@
 "enterYourSeedphraseSubtitleHighlight" = "12 ili 24";
 "seedPhraseWordCountError" = "Unijeli ste %d riječi. Seed fraza mora imati 12 ili 24 riječi.";
 "seedPhraseInvalidError" = "Neispravna seed fraza. Molimo provjerite svoje riječi.";
-
 // Circle
 "circleTitle" = "Circle američki dolar";
 "circleRowGetStarted" = "Započni";
@@ -1113,3 +1112,10 @@
 "circleWithdrawAmountLabel" = "Iznos";
 "circleWithdrawButton" = "Povuci";
 "circleTransactionSuccess" = "Transakcija uspješna";
+
+"scanningForChainsSubtitle" = "Provjeravamo koji blockchaini imaju aktivne adrese povezane s vašom seed frazom. Ovaj proces može potrajati do 2 minute.";
+"scanningForChainsSubtitleHighlight" = "Ovaj proces može potrajati do 2 minute.";
+"selectChainsManually" = "Odaberi chainove ručno";
+"foundActiveChainsTitle" = "Pronašli smo %d aktivnih chainova";
+"foundActiveChainsSubtitle" = "Svaki dodatni chain otprilike udvostručuje vrijeme za generiranje vašeg trezora. Procijenjeno vrijeme za sve odabrane chainove: %d minuta";
+"foundActiveChainsSubtitleHighlight" = "%d minuta";

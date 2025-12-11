@@ -47,12 +47,50 @@ struct KeysignCustomMessageConfirmView: View {
     }
 
     var message: some View {
-        // Show decoded message if available, otherwise show raw message
-        if let decodedMessage = viewModel.customMessagePayload?.decodedMessage, !decodedMessage.isEmpty {
-            getPrimaryCell(title: "Transaction Details", value: decodedMessage)
-        } else {
-            getPrimaryCell(title: "Message", value: viewModel.customMessagePayload?.message ?? "")
+        VStack(alignment: .leading, spacing: 12) {
+            Text(NSLocalizedString("message", comment: "") + ":")
+                .font(Theme.fonts.bodyLMedium)
+                .foregroundColor(Theme.colors.textPrimary)
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                Text(formattedMessage)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundColor(Theme.colors.turquoise)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    /// Formats the message for display - decodes hex if needed
+    private var formattedMessage: String {
+        guard let payload = viewModel.customMessagePayload else { return "" }
+        
+        let rawMessage = payload.message
+        
+        // For personal_sign, always try to decode hex first (it contains the actual message)
+        if payload.method == "personal_sign" && rawMessage.hasPrefix("0x") {
+            let hex = String(rawMessage.dropFirst(2))
+            if let data = Data(hexString: hex), let decoded = String(data: data, encoding: .utf8) {
+                return decoded
+            }
+        }
+        
+        // For other methods, try decoded message from ViewModel
+        if let decoded = payload.decodedMessage, !decoded.isEmpty {
+            return decoded
+        }
+        
+        // Try to decode hex to UTF8 (generic fallback)
+        if rawMessage.hasPrefix("0x") {
+            let hex = String(rawMessage.dropFirst(2))
+            if let data = Data(hexString: hex), let decoded = String(data: data, encoding: .utf8) {
+                return decoded
+            }
+        }
+        
+        // Fallback to raw message
+        return rawMessage
     }
 
     var button: some View {

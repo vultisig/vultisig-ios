@@ -22,6 +22,8 @@ struct KeysignMessageConfirmView: View {
                         network: viewModel.keysignPayload?.coin.chain.name ?? .empty,
                         networkImage: viewModel.keysignPayload?.coin.chain.logo ?? .empty,
                         memo: viewModel.memo ?? .empty,
+                        decodedFunctionSignature: viewModel.decodedFunctionSignature,
+                        decodedFunctionArguments: viewModel.decodedFunctionArguments,
                         feeCrypto: fees.feeCrypto,
                         feeFiat: fees.feeFiat,
                         coinImage: viewModel.keysignPayload?.coin.logo ?? .empty,

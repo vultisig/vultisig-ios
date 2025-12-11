@@ -546,4 +546,15 @@ extension Chain {
             return false
         }
     }
+    
+    static var enabledChains: [Chain] {
+        allCases.filter {
+            switch $0 {
+            case .thorChainStagenet, .polygon:
+                return false
+            default:
+                return true
+            }
+        }
+    }
 }
