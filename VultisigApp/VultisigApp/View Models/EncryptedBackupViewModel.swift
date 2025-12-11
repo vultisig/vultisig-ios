@@ -640,7 +640,7 @@ class EncryptedBackupViewModel: ObservableObject {
                 isVaultImported = false
                 return
             }
-            if isDKLS(filename: self.importedFileName ?? ""), vault.libType != LibType.GG20 {
+            if isDKLS(filename: self.importedFileName ?? ""), vault.libType != LibType.GG20 , vault.libType != LibType.KeyImport {
                 vault.libType = LibType.DKLS
             }
             
