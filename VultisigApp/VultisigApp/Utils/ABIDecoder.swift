@@ -99,8 +99,19 @@ struct ABIDecoder {
                  throw DecodingError.indexOutOfBounds 
             }
             let slice = data.subdata(in: offset..<offset+32)
-            let value = BigUInt(slice)
-            return (value.description, offset + 32)
+            let unsignedValue = BigUInt(slice)
+            
+            // Check if the most significant bit is set (negative number in two's complement)
+            let isNegative = (slice.first ?? 0) & 0x80 != 0
+            
+            if isNegative {
+                // Convert from two's complement: signedValue = unsignedValue - 2^256
+                let maxValue = BigInt(1) << (slice.count * 8)
+                let signedValue = BigInt(unsignedValue) - maxValue
+                return (signedValue.description, offset + 32)
+            } else {
+                return (BigInt(unsignedValue).description, offset + 32)
+            }
         } else if type == "bool" {
             guard offset + 32 <= data.count else { 
                 throw DecodingError.indexOutOfBounds 
@@ -158,12 +169,26 @@ struct ABIDecoder {
         let length = Int(BigUInt(lengthData))
         
         var result: [Any] = []
-        var currentOffset = offset + 32
+        let arrayDataStart = offset + 32 // Position right after the length
+        let elementIsDynamic = isDynamicType(baseType)
         
-        for _ in 0..<length {
-            let (value, newOffset) = try decodeType(type: baseType, data: data, offset: currentOffset)
-            result.append(value)
-            currentOffset = newOffset
+        for i in 0..<length {
+            let slotOffset = arrayDataStart + (i * 32)
+            
+            if elementIsDynamic {
+                // For dynamic types, the slot contains a relative pointer
+                guard slotOffset + 32 <= data.count else { throw DecodingError.indexOutOfBounds }
+                let pointerData = data.subdata(in: slotOffset..<slotOffset+32)
+                let relativePointer = Int(BigUInt(pointerData))
+                let elementAbsoluteOffset = arrayDataStart + relativePointer
+                
+                let (value, _) = try decodeType(type: baseType, data: data, offset: elementAbsoluteOffset)
+                result.append(value)
+            } else {
+                // For static types, decode in place
+                let (value, _) = try decodeType(type: baseType, data: data, offset: slotOffset)
+                result.append(value)
+            }
         }
         
         return result

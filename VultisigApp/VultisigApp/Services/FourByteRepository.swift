@@ -124,25 +124,28 @@ struct FourByteRepository {
     }
     
     private func formatJSON(_ value: Any, indentLevel: Int = 0) -> String {
-        let indent = String(repeating: "  ", count: indentLevel)
-        let nextIndent = String(repeating: "  ", count: indentLevel + 1)
-        
-        if let stringValue = value as? String {
-            return "\"\(stringValue)\""
+        // Use JSONSerialization for proper escaping of special characters
+        if let arrayValue = value as? [Any] {
+            // Convert to JSON-serializable format
+            do {
+                let data = try JSONSerialization.data(withJSONObject: arrayValue, options: [.prettyPrinted, .sortedKeys])
+                return String(data: data, encoding: .utf8) ?? "[]"
+            } catch {
+                return "[]"
+            }
+        } else if let stringValue = value as? String {
+            // Properly escape the string using JSONSerialization
+            do {
+                let data = try JSONSerialization.data(withJSONObject: [stringValue], options: [])
+                let jsonString = String(data: data, encoding: .utf8) ?? "[\"\"]"
+                // Extract the escaped string from the array wrapper
+                let trimmed = jsonString.dropFirst().dropLast() // Remove [ and ]
+                return String(trimmed)
+            } catch {
+                return "\"\(value)\""
+            }
         } else if let boolValue = value as? Bool {
             return boolValue ? "true" : "false"
-        } else if let arrayValue = value as? [Any] {
-            if arrayValue.isEmpty { return "[]" }
-            var result = "[\n"
-            for (index, item) in arrayValue.enumerated() {
-                result += nextIndent + formatJSON(item, indentLevel: indentLevel + 1)
-                if index < arrayValue.count - 1 {
-                    result += ","
-                }
-                result += "\n"
-            }
-            result += indent + "]"
-            return result
         } else {
             return "\"\(value)\""
         }

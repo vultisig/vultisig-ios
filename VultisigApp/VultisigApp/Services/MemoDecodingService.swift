@@ -61,7 +61,6 @@ struct MemoDecodingService {
             )
             
         } catch {
-            print("Error parsing memo: \(error)")
             return nil
         }
     }
