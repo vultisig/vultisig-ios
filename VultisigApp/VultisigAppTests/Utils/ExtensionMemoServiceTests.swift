@@ -261,4 +261,4 @@ final class ExtensionMemoServiceTests: XCTestCase {
             // This is acceptable - the API might not have this specific selector
         }
     }
-} 
+}

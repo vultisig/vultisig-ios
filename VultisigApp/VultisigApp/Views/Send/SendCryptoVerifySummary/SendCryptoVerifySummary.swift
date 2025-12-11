@@ -12,6 +12,8 @@ struct SendCryptoVerifySummary {
     let network: String
     let networkImage: String
     let memo: String
+    let decodedFunctionSignature: String?
+    let decodedFunctionArguments: String?
     let memoFunctionDictionary: [String: String]?
     let feeCrypto: String
     let feeFiat: String
@@ -28,6 +30,8 @@ struct SendCryptoVerifySummary {
         networkImage: String,
         memo: String,
         // Only for Function Calls
+        decodedFunctionSignature: String? = nil,
+        decodedFunctionArguments: String? = nil,
         memoFunctionDictionary: [String : String]? = nil,
         feeCrypto: String,
         feeFiat: String,
@@ -42,6 +46,8 @@ struct SendCryptoVerifySummary {
         self.network = network
         self.networkImage = networkImage
         self.memo = memo
+        self.decodedFunctionSignature = decodedFunctionSignature
+        self.decodedFunctionArguments = decodedFunctionArguments
         self.memoFunctionDictionary = memoFunctionDictionary
         self.feeCrypto = feeCrypto
         self.feeFiat = feeFiat
