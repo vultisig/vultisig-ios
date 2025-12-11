@@ -57,7 +57,7 @@ struct UnbondTransactionScreen: View {
                     ticker: viewModel.coin.chain.ticker,
                     type: .slider,
                     availableAmount: viewModel.bondNodeFormattedAmount,
-                    decimals: viewModel.coin.decimals,
+                    decimals: 4,
                     percentage: $percentageSelected,
                 ).focused($focusedField, equals: .amount)
             }
