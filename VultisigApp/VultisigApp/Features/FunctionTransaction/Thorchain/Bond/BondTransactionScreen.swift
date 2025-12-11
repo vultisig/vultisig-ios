@@ -59,7 +59,7 @@ struct BondTransactionScreen: View {
                         ticker: Chain.thorChain.ticker,
                         type: .button,
                         availableAmount: viewModel.coin.balanceDecimal,
-                        decimals: viewModel.coin.decimals,
+                        decimals: 4, // keep 4 decimals
                         percentage: $percentageSelected,
                     ).focused($focusedField, equals: .amount)
                     
