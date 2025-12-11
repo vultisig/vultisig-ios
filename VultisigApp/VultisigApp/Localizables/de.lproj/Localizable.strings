@@ -1079,3 +1079,16 @@
 "importVaultShareSubtitle" = "Verwenden Sie einen Tresoranteil, um Ihren Tresor wiederherzustellen.";
 "importVaultShareCaption" = "Unterstützte Dateitypen: .bak & .vult";
 "new" = "NEU";
+"beforeYouStart" = "Bevor Sie beginnen...";
+"youAreEnteringAnewEra" = "Sie betreten eine neue Ära und lassen alte Seed-Phrasen hinter sich. Sie benötigen:";
+"youAreEnteringAnewEraHighlight" = "alte Seed-Phrasen hinter sich lassen.";
+"yourSeedphrase" = "Ihre Seed-Phrase";
+"yourSeedphraseSubtitle" = "Geben Sie sie ein, erstellen Sie einen Tresor, schauen Sie nie zurück";
+"twoDevices" = "2 Geräte";
+"twoDevicesSubtitle" = "Sie benötigen 2 Geräte (ein Telefon, Laptop, Browser, iPad usw.)";
+"mnemonicPlaceholder" = "Geben Sie die 12 oder 24 Wörter Ihrer Seed-Phrase ein";
+"enterYourSeedphrase" = "Geben Sie Ihre Seed-Phrase ein";
+"enterYourSeedphraseSubtitle" = "Lassen Sie ein Leerzeichen zwischen jedem Wort. Seed-Phrasen mit 12 oder 24 Wörtern werden unterstützt.";
+"enterYourSeedphraseSubtitleHighlight" = "12 oder 24";
+"seedPhraseWordCountError" = "Sie haben %d Wörter eingegeben. Die Seed-Phrase muss 12 oder 24 Wörter enthalten.";
+"seedPhraseInvalidError" = "Ungültige Seed-Phrase. Bitte überprüfen Sie Ihre Wörter.";
