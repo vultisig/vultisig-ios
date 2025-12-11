@@ -49,7 +49,9 @@ class AppViewModel: ObservableObject {
     
     func loadSelectedVault(for vaults: [Vault]) {
         if vaultName.isEmpty || selectedPubKeyECDSA.isEmpty {
-            set(selectedVault: nil, showingVaultSelector: true)
+            // when vaultName is empty / selectedPubKeyECDSA is empty, select the first vault if available
+            // otherwise the app have nothing to show
+            set(selectedVault: vaults.first, showingVaultSelector: true)
             return
         }
 
