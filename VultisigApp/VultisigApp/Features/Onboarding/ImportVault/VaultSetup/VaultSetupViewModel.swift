@@ -57,7 +57,7 @@ final class VaultSetupViewModel: ObservableObject, Form {
         nameField.value
     }
     
-    var fastConfig: FastSignConfig? {
+    var fastConfig: FastSignConfig {
         // TODO: - Check this after screen is used in other places besides key import
         FastSignConfig(
             email: emailField.value,

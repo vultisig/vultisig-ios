@@ -35,7 +35,6 @@ struct PeerDiscoveryView: View {
     
     @State var showInfoSheet: Bool = false
     @State var hideBackButton: Bool = false
-    @State var showDisclaimer: Bool = true
     
     @State var screenWidth: CGFloat = .zero
     @State var screenHeight: CGFloat = .zero
@@ -131,7 +130,6 @@ struct PeerDiscoveryView: View {
     var qrCode: some View {
         VStack(spacing: 16) {
             paringBarcode
-            disclaimer
         }
     }
     

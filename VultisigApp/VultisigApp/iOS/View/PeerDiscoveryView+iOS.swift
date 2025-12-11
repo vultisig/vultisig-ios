@@ -122,17 +122,6 @@ extension PeerDiscoveryView {
         .animation(.easeInOut(duration: 0.2), value: isButtonDisabled)
     }
     
-    var disclaimer: some View {
-        ZStack {
-            if viewModel.selectedNetwork == .Local {
-                LocalModeDisclaimer()
-            } else if showDisclaimer && tssType != .Migrate {
-                PeerDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
-            }
-        }
-        .padding(.horizontal, idiom == .pad ? 24 : 16)
-    }
-    
     var switchLink: some View {
         SwitchToLocalLink(isForKeygen: true, selectedNetwork: $viewModel.selectedNetwork)
             .disabled(viewModel.isLoading)

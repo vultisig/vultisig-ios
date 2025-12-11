@@ -48,18 +48,28 @@ struct KeygenView: View {
             .sensoryFeedback(.error, trigger: showError)
             .sensoryFeedback(.impact(weight: .heavy), trigger: viewModel.status)
             .navigationDestination(isPresented: $viewModel.isLinkActive) {
-                if let fastSignConfig, showVerificationView {
-                    FastBackupVaultOverview(
-                        tssType: tssType,
-                        vault: vault,
-                        email: fastSignConfig.email
-                    )
-                } else {
-                    if tssType == .Migrate {
-                        VaultBackupNowScreen(tssType: tssType, backupType: .single(vault: vault), isNewVault: true)
+                switch tssType {
+                case .Keygen, .Reshare:
+                    if let fastSignConfig, showVerificationView {
+                        FastBackupVaultOverview(
+                            tssType: tssType,
+                            vault: vault,
+                            email: fastSignConfig.email
+                        )
                     } else {
                         SecureBackupVaultOverview(vault: vault)
                     }
+                case .Migrate:
+                    VaultBackupNowScreen(
+                        tssType: tssType,
+                        backupType: .single(vault: vault),
+                        isNewVault: true
+                    )
+                case .KeyImport:
+                    KeyImportOverviewScreen(
+                        vault: vault,
+                        email: fastSignConfig?.email ?? .empty
+                    )
                 }
             }
             .onAppear {
