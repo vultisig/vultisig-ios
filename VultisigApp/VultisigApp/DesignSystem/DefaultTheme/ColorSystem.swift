@@ -50,4 +50,6 @@ struct ColorSystem: ColorSystemProtocol {
     var alertError: Color { .init(hex: "FF5C5C") }
     var alertWarning: Color { .init(hex: "FFC25C") }
     var alertInfo: Color { .init(hex: "5CA7FF") }
+    
+    var turquoise: Color { .init(hex: "33E6BF") }
 }

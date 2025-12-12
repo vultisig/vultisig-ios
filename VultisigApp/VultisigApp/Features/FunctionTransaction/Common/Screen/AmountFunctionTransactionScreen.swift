@@ -72,7 +72,7 @@ struct AmountFunctionTransactionScreen<CustomView: View>: View {
                     ticker: coin.ticker,
                     type: percentageFieldType,
                     availableAmount: availableAmount,
-                    decimals: coin.decimals,
+                    decimals: 4, // keep 4 decimals
                     percentage: $percentageSelected,
                     customViewPosition: customViewPosition,
                     customView: { customView() }
