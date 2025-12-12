@@ -223,5 +223,5 @@ struct VaultSetupScreen: View {
 }
 
 #Preview {
-    VaultSetupScreen(tssType: .KeyImport, keyImportInput: .init(mnemnonic: "test", chains: [.bitcoin]))
+    VaultSetupScreen(tssType: .KeyImport, keyImportInput: .init(mnemonic: "test", chains: [.bitcoin]))
 }

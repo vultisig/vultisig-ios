@@ -73,7 +73,7 @@ struct KeyImportNewVaultSetupScreen: View {
     KeyImportNewVaultSetupScreen(
         vault: .example,
         keyImportInput: .init(
-            mnemnonic: "",
+            mnemonic: "",
             chains: []
         ),
         fastSignConfig: .init(
