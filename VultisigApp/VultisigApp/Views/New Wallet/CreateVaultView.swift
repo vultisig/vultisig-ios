@@ -103,8 +103,8 @@ struct CreateVaultView: View {
             PrimaryButton(
                 title: "import",
                 leadingIcon: "arrow-down-circle",
-                trailingIcon: "fake-icon",
-                type: .secondary
+                type: .secondary,
+                reserveTrailingIconSpace: true
             ) {
                 // TODO: - Remove before seed phrase import release
                 #if DEBUG
