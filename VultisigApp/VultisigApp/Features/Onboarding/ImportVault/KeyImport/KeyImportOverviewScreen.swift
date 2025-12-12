@@ -10,6 +10,7 @@ import SwiftUI
 struct KeyImportOverviewScreen: View {
     let vault: Vault
     let email: String?
+    let keyImportInput: KeyImportInput?
     
     enum Page: Int, CaseIterable, Hashable {
         case multisig
@@ -21,6 +22,7 @@ struct KeyImportOverviewScreen: View {
     
     @State private var isVerificationLinkActive = false
     @State private var isBackupLinkActive = false
+    @State private var goBackToEmailSetup = false
     
     var body: some View {
         Screen(edgeInsets: .init(leading: 0, trailing: 0)) {
@@ -46,14 +48,16 @@ struct KeyImportOverviewScreen: View {
                 vault: vault,
                 email: email ?? .empty,
                 isPresented: $isVerificationLinkActive,
-                // TODO: - Check what to do here
                 isBackupLinkActive: .constant(false),
                 tabIndex: .constant(0),
-                goBackToEmailSetup: .constant(false)
+                goBackToEmailSetup: $goBackToEmailSetup
             )
         }
         .navigationDestination(isPresented: $presentBackupNowScreen) {
             VaultBackupNowScreen(tssType: .KeyImport, backupType: .single(vault: vault), isNewVault: true)
+        }
+        .navigationDestination(isPresented: $goBackToEmailSetup) {
+            VaultSetupScreen(tssType: .KeyImport, keyImportInput: keyImportInput)
         }
         .onLoad {
             if email != nil {
@@ -155,6 +159,7 @@ struct KeyImportOverviewScreen: View {
 #Preview {
     KeyImportOverviewScreen(
         vault: .example,
-        email: ""
+        email: "",
+        keyImportInput: nil
     )
 }

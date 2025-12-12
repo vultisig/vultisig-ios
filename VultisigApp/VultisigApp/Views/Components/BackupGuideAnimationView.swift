@@ -17,12 +17,14 @@ struct BackupGuideAnimationView: View {
     let type: BackupGuideAnimationType
 
     var body: some View {
-        StepsAnimationView(
-            title: "backupGuide".localized,
-            steps: type == .secure ? 4 : 5
-        ) { animationCell(index: $0)
-        } header: {
-            animationHeader
+        ScrollView(showsIndicators: false) {
+            StepsAnimationView(
+                title: "backupGuide".localized,
+                steps: type == .secure ? 4 : 5
+            ) { animationCell(index: $0)
+            } header: {
+                animationHeader
+            }
         }
     }
     
@@ -84,6 +86,7 @@ struct BackupGuideAnimationView: View {
                 bottomTrailingRadius: 32,
                 topTrailingRadius: 32
             )
+            .inset(by: 1)
             .stroke(Theme.colors.borderLight, lineWidth: 2)
         )
         .offset(x: -1)
@@ -100,6 +103,7 @@ struct BackupGuideAnimationView: View {
             Text(text.localized)
                 .foregroundColor(Theme.colors.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .font(Theme.fonts.bodySMedium)
     }

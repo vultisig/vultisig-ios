@@ -55,9 +55,7 @@ struct OnboardingSummaryView: View {
     var body: some View {
         Screen {
             VStack(spacing: 16) {
-                Spacer()
                 animation
-                Spacer()
                 disclaimer
                 VStack(spacing: 8) {
                     startUsingVaultButton
@@ -87,6 +85,7 @@ struct OnboardingSummaryView: View {
                 }
             }
         }
+        .applySheetSize(700, kind == .keyImport ? 750 : 650)
     }
     
     var animation: some View {
@@ -100,9 +99,6 @@ struct OnboardingSummaryView: View {
                 BackupGuideAnimationView(vault: vault, type: .keyImport)
             }
         }
-        #if os(macOS)
-        .frame(width: 450, height: 350)
-        #endif
     }
 
     var disclaimer: some View {
@@ -161,4 +157,22 @@ struct OnboardingSummaryView: View {
             animationVM = RiveViewModel(fileName: kind.animation)
         }
     }
+}
+
+#Preview {
+    @Previewable @State var isPresented: Bool = false
+    return VStack {
+        
+    }
+    .crossPlatformSheet(isPresented: $isPresented) {
+        OnboardingSummaryView(
+            kind: .secure,
+            isPresented: .constant(true),
+            onDismiss: {}
+        ).environmentObject(HomeViewModel())
+    }
+    .onAppear {
+        isPresented = true
+    }
+
 }

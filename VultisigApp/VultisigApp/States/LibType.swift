@@ -49,16 +49,3 @@ extension VSLibType {
         }
     }
 }
-
-// TODO: - Remove this
-func GetLibType() -> LibType {
-    let existDKLS = UserDefaults.standard.value(forKey: "isDKLSEnabled")
-    if existDKLS == nil {
-        UserDefaults.standard.set(true, forKey: "isDKLSEnabled")
-    }
-    let useDKLS = UserDefaults.standard.bool(forKey: "isDKLSEnabled")
-    if useDKLS {
-        return .DKLS
-    }
-    return .GG20
-}

@@ -74,7 +74,7 @@ final class Vault: ObservableObject, Codable {
     
     init(name: String, libType: LibType? = nil) {
         self.name = name
-        self.libType = libType ?? GetLibType()
+        self.libType = libType ?? .DKLS
     }
     
     init(

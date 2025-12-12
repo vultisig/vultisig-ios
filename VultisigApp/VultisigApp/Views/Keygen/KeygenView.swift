@@ -68,7 +68,8 @@ struct KeygenView: View {
                 case .KeyImport:
                     KeyImportOverviewScreen(
                         vault: vault,
-                        email: fastSignConfig?.email
+                        email: fastSignConfig?.email,
+                        keyImportInput: keyImportInput
                     )
                 }
             }
