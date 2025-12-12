@@ -20,7 +20,7 @@ struct VaultSetupScreen: View {
     @State var scrollViewProxy: ScrollViewProxy?
     @State var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?
-    @State var presentPeersScreen = false
+    @State var presentNewVaultSetupScreen = false
     @State var hintExpanded = false
     @State var referralExpanded = false
     
@@ -50,13 +50,11 @@ struct VaultSetupScreen: View {
                 focusedField = newValue
             }
         }
-        .navigationDestination(isPresented: $presentPeersScreen) {
-            PeerDiscoveryView(
-                tssType: tssType,
+        .navigationDestination(isPresented: $presentNewVaultSetupScreen) {
+            KeyImportNewVaultSetupScreen(
                 vault: viewModel.getVault(keyImportInput: keyImportInput),
-                selectedTab: .secure,
-                fastSignConfig: viewModel.fastConfig,
-                keyImportInput: keyImportInput
+                keyImportInput: keyImportInput,
+                fastSignConfig: viewModel.fastConfig
             )
         }
     }
@@ -220,10 +218,10 @@ struct VaultSetupScreen: View {
         }
         
         guard viewModel.validForm else { return }
-        presentPeersScreen = true
+        presentNewVaultSetupScreen = true
     }
 }
 
 #Preview {
-    VaultSetupScreen(tssType: .KeyImport, keyImportInput: .init(mnemnonic: "test", chains: [.bitcoin]))
+    VaultSetupScreen(tssType: .KeyImport, keyImportInput: .init(mnemonic: "test", chains: [.bitcoin]))
 }

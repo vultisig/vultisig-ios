@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "seed-phrase-vault-setup.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

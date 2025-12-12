@@ -67,14 +67,14 @@ final class Vault: ObservableObject, Codable {
         keyshares = try container.decode([KeyShare].self, forKey: .keyshares)
         localPartyID = try container.decode(String.self, forKey: .localPartyID)
         resharePrefix = try container.decodeIfPresent(String.self, forKey: .resharePrefix)
-        libType = try container.decodeIfPresent(LibType.self, forKey: .libType) ?? .GG20
+        libType = try container.decodeIfPresent(LibType.self, forKey: .libType) ?? .DKLS
         defiChains = try container.decodeIfPresent([Chain].self, forKey: .defiChains) ?? []
         defiPositions = try container.decodeIfPresent([DefiPositions].self, forKey: .defiPositions) ?? []
     }
     
     init(name: String, libType: LibType? = nil) {
         self.name = name
-        self.libType = libType ?? GetLibType()
+        self.libType = libType ?? .DKLS
     }
     
     init(
@@ -97,7 +97,7 @@ final class Vault: ObservableObject, Codable {
         self.localPartyID = localPartyID
         self.hexChainCode = hexChainCode
         self.resharePrefix = resharePrefix
-        self.libType = libType ?? .GG20
+        self.libType = libType ?? .DKLS
     }
     
     func encode(to encoder: Encoder) throws {

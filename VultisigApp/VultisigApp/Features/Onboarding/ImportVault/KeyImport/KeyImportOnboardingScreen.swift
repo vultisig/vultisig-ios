@@ -68,38 +68,19 @@ struct KeyImportOnboardingScreen: View {
             }
             
             VStack(alignment: .leading, spacing: 24) {
-                informationRow(
+                OnboardingInformationRowView(
                     title: "yourSeedphrase".localized,
                     subtitle: "yourSeedphraseSubtitle".localized,
                     icon: "seedphrase"
                 )
                 
-                informationRow(
+                OnboardingInformationRowView(
                     title: "twoDevices".localized,
                     subtitle: "twoDevicesSubtitle".localized,
                     icon: "devices"
                 )
             }
             .fixedSize(horizontal: false, vertical: true)
-        }
-    }
-    
-    func informationRow(title: String, subtitle: String, icon: String) -> some View {
-        HStack(alignment: .top, spacing: 16) {
-            Icon(
-                named: icon,
-                color: Theme.colors.alertInfo,
-                size: 20
-            )
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                    .font(Theme.fonts.subtitle)
-                
-                Text(subtitle)
-                    .foregroundStyle(Theme.colors.textExtraLight)
-                    .font(Theme.fonts.footnote)
-            }
         }
     }
     

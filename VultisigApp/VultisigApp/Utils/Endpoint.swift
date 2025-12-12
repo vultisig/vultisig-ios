@@ -247,8 +247,6 @@ class Endpoint {
     static func buildAffiliateParams(chain: SwapChain, referredCode: String, discountBps: Int) -> String {
         var affiliateParams: [(affiliate: String, bps: String)] = []
         
-
-        
         if (chain == .thorchain || chain == .thorchainStagenet) && !referredCode.isEmpty {
             // THORChain supports nested affiliates
             let affiliateFeeRateBp = bps(for: discountBps, affiliateFeeRate: THORChainSwaps.referredAffiliateFeeRateBp)

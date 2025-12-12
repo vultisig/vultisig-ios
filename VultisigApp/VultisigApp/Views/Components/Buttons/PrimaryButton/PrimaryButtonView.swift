@@ -13,19 +13,22 @@ struct PrimaryButtonView: View {
     let trailingIcon: String?
     let isLoading: Bool
     let paddingLeading: CGFloat
+    let reserveTrailingIconSpace: Bool
     
     init(
         title: String,
         leadingIcon: String? = nil,
         trailingIcon: String? = nil,
         isLoading: Bool = false,
-        paddingLeading: CGFloat = 0
+        paddingLeading: CGFloat = 0,
+        reserveTrailingIconSpace: Bool = false
     ) {
         self.title = title
         self.leadingIcon = leadingIcon
         self.trailingIcon = trailingIcon
         self.isLoading = isLoading
         self.paddingLeading = paddingLeading
+        self.reserveTrailingIconSpace = reserveTrailingIconSpace
     }
     
     var body: some View {
@@ -41,6 +44,9 @@ struct PrimaryButtonView: View {
             
             if let trailingIcon {
                 Icon(named: trailingIcon, color: Theme.colors.textPrimary, size: 15)
+            } else if reserveTrailingIconSpace {
+                // Reserve space for trailing icon to keep content centered
+                Icon(named: "check", color: .clear, size: 15)
             }
             if isLoading {
                 ProgressView()

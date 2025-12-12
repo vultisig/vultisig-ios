@@ -9,10 +9,13 @@ import SwiftUI
 import RiveRuntime
 
 struct OnboardingSummaryView: View {
-    enum Kind {
+    enum Kind: String, Identifiable {
         case initial
         case fast
         case secure
+        case keyImport
+        
+        var id: String { rawValue }
 
         var animation: String {
             switch self {
@@ -22,6 +25,8 @@ struct OnboardingSummaryView: View {
                 return "fastvault_summary"
             case .secure:
                 return "securevault_summary"
+            case .keyImport:
+                return .empty
             }
         }
     }
@@ -50,9 +55,7 @@ struct OnboardingSummaryView: View {
     var body: some View {
         Screen {
             VStack(spacing: 16) {
-                Spacer()
                 animation
-                Spacer()
                 disclaimer
                 VStack(spacing: 8) {
                     startUsingVaultButton
@@ -80,6 +83,20 @@ struct OnboardingSummaryView: View {
                     isPresented = false
                     onDismiss?()
                 }
+            }
+        }
+        .applySheetSize(700, kind == .keyImport ? 750 : 650)
+    }
+    
+    var animation: some View {
+        Group {
+            switch kind {
+            case .initial, .fast:
+                animationVM?.view()
+            case .secure:
+                BackupGuideAnimationView(vault: vault, type: .secure)
+            case .keyImport:
+                BackupGuideAnimationView(vault: vault, type: .keyImport)
             }
         }
     }
@@ -140,4 +157,22 @@ struct OnboardingSummaryView: View {
             animationVM = RiveViewModel(fileName: kind.animation)
         }
     }
+}
+
+#Preview {
+    @Previewable @State var isPresented: Bool = false
+    return VStack {
+        
+    }
+    .crossPlatformSheet(isPresented: $isPresented) {
+        OnboardingSummaryView(
+            kind: .secure,
+            isPresented: .constant(true),
+            onDismiss: {}
+        ).environmentObject(HomeViewModel())
+    }
+    .onAppear {
+        isPresented = true
+    }
+
 }

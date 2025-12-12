@@ -505,7 +505,6 @@ extension ThorchainService {
 // MARK: - THORChain LP Functionality
 extension ThorchainService {
     
-    // TODO: - This
     /// Fetch LP positions for a given address with caching
     func fetchLPPositions(runeAddress: String? = nil, assetAddress: String? = nil) async throws -> [ThorchainLPPosition] {
         let targetAddress = runeAddress ?? assetAddress

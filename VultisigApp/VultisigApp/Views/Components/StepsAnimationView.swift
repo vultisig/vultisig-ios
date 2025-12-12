@@ -9,7 +9,7 @@ import SwiftUI
 
 struct StepsAnimationView<Header: View, CellContent: View>: View {
     @State var contentHeight: CGFloat = .zero
-    @State var cellHeight: CGFloat = .zero
+    let cellHeight: CGFloat = 68
     
     let title: String
     let steps: Int
@@ -45,17 +45,20 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
     }
     
     var body: some View {
-        HStack(spacing: 0) {
+        HStack(alignment: .top, spacing: 0) {
             rectangle
             content
         }
     }
     
+    @ViewBuilder
     var rectangle: some View {
+        let height = contentHeight - cellHeight / 2 + 1.5
         Rectangle()
-            .frame(width: 2, height: contentHeight-cellHeight+6)
-            .foregroundColor(Theme.colors.bgSecondary)
-            .offset(y: -2)
+            .frame(width: 3, height: height)
+            .foregroundColor(Theme.colors.borderLight)
+            .offset(x: 1)
+            .showIf(height.isFinite && height > 0)
     }
 
     var content: some View {
@@ -64,15 +67,15 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
             titleView
             list
         }
-        .background(
-            GeometryReader { geometry in
-                Color.clear
-                    .onAppear {
-                        contentHeight = geometry.size.height
-                        setData()
-                    }
+        .scaledToFit()
+        .readSize {
+            let currentContentHeight = contentHeight
+            contentHeight = $0.height
+            
+            if currentContentHeight == 0 {
+                setData()
             }
-        )
+        }
     }
 
     var headerContent: some View {
@@ -102,16 +105,6 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
         VStack(spacing: 16) {
             ForEach(0..<steps, id: \.self) { index in
                 getCell(index: index)
-                    .background(
-                        index == 0 ?
-                            GeometryReader { geometry in
-                                Color.clear
-                                    .onAppear {
-                                        cellHeight = geometry.size.height
-                                    }
-                            }
-                        : nil
-                    )
             }
         }
     }
@@ -121,16 +114,18 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
         let showCell = showCells[index]
         HStack(spacing: 0) {
             Rectangle()
-                .frame(width: 22, height: 2)
-                .foregroundColor(Theme.colors.bgSecondary)
+                .frame(width: 22, height: 3)
+                .foregroundColor(Theme.colors.borderLight)
 
             cellContent(index)
                 .padding(16)
+                .frame(height: cellHeight)
                 .background(Theme.colors.bgSecondary)
                 .cornerRadius(16)
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(Theme.colors.border, lineWidth: 1)
+                        .inset(by: 1)
+                        .stroke(Theme.colors.borderLight, lineWidth: 1)
                 )
         }
         .opacity(showCell ? 1 : 0)

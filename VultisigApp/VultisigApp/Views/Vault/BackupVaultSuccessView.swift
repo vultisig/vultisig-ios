@@ -9,6 +9,7 @@ import SwiftUI
 import RiveRuntime
 
 struct BackupVaultSuccessView: View {
+    
     let tssType: TssType
     let vault: Vault
     
@@ -16,22 +17,22 @@ struct BackupVaultSuccessView: View {
     @State var fastAnimationVM: RiveViewModel? = nil
     @State var upgradeAnimationVM: RiveViewModel? = nil
 
-    @State var isFastSummaryActive = false
-    @State var isSecureSummaryActive = false
+    @State var activeSummary: OnboardingSummaryView.Kind? = nil
     
     @EnvironmentObject var appViewModel: AppViewModel
 
     var body: some View {
         container
-            .crossPlatformSheet(isPresented: $isFastSummaryActive) {
-                OnboardingSummaryView(kind: .fast, isPresented: $isFastSummaryActive, onDismiss: {
-                    goToHome()
-                }, vault: vault)
-            }
-            .crossPlatformSheet(isPresented: $isSecureSummaryActive) {
-                OnboardingSummaryView(kind: .secure, isPresented: $isSecureSummaryActive, onDismiss: {
-                    goToHome()
-                }, vault: vault)
+            .crossPlatformSheet(item: $activeSummary) { activeSummary in
+                OnboardingSummaryView(
+                    kind: activeSummary,
+                    isPresented: Binding(
+                        get: { true },
+                        set: { self.activeSummary = $0 ? activeSummary : nil }
+                    ),
+                    onDismiss: { goToHome() },
+                    vault: vault
+                )
             }
             .onAppear {
                 setData()
@@ -143,10 +144,11 @@ struct BackupVaultSuccessView: View {
     }
     
     private func nextTapped() {
-        if vault.isFastVault {
-            isFastSummaryActive = true
-        } else {
-            isSecureSummaryActive = true
+        switch vault.libType {
+        case .GG20, .DKLS, .none:
+            activeSummary = vault.isFastVault ? .fast : .secure
+        case .KeyImport:
+            activeSummary = .keyImport
         }
     }
     

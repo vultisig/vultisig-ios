@@ -9,14 +9,12 @@ import SwiftUI
 
 struct CoverView: View {
     var body: some View {
-        container
-    }
-    
-    var content: some View {
-        ZStack {
-            Background()
-            VultisigLogo()
-        }
+        VultisigLogo()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(PrimaryBackgroundWithGradient())
+        #if os(iOS)
+        .toolbar(.hidden, for: .navigationBar)
+        #endif
     }
 }
 

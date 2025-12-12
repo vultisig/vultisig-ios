@@ -47,7 +47,7 @@ struct KeyImportChainsSetupScreen: View {
             VaultSetupScreen(
                 tssType: .KeyImport,
                 keyImportInput: KeyImportInput(
-                    mnemnonic: mnemonic,
+                    mnemonic: mnemonic,
                     chains: viewModel.chainsToImport
                 )
             )
