@@ -1092,6 +1092,27 @@
 "enterYourSeedphraseSubtitleHighlight" = "12 ili 24";
 "seedPhraseWordCountError" = "Unijeli ste %d riječi. Seed fraza mora imati 12 ili 24 riječi.";
 "seedPhraseInvalidError" = "Neispravna seed fraza. Molimo provjerite svoje riječi.";
+// Circle
+"circleTitle" = "Circle američki dolar";
+"circleRowGetStarted" = "Započni";
+"circleRowCreateWallet" = "Izradi novčanik";
+"circleSetupTitle" = "Postavi Circle novčanik";
+"circleSetupDescription" = "Izradite siguran Circle novčanik za upravljanje vašim USDC-om.";
+"circleSetupCreateAccount" = "Izradi račun";
+"circleDepositTitle" = "Položi USDC";
+"circleDepositInstruction" = "Pošalji Ethereum USDC na ovu adresu";
+"circleDashboardTitle" = "Circle novčanik";
+"circleBalance" = "Stanje";
+"circleYield" = "Prinos";
+"circleWithdraw" = "Povuci";
+"circleDeposit" = "Položi";
+"circleWithdrawTitle" = "Povuci USDC";
+"circleWithdrawInstruction" = "Unesite adresu i iznos za povlačenje";
+"circleWithdrawAddressLabel" = "Adresa";
+"circleWithdrawAmountLabel" = "Iznos";
+"circleWithdrawButton" = "Povuci";
+"circleTransactionSuccess" = "Transakcija uspješna";
+
 "scanningForChainsSubtitle" = "Provjeravamo koji blockchaini imaju aktivne adrese povezane s vašom seed frazom. Ovaj proces može potrajati do 2 minute.";
 "scanningForChainsSubtitleHighlight" = "Ovaj proces može potrajati do 2 minute.";
 "selectChainsManually" = "Odaberi chainove ručno";

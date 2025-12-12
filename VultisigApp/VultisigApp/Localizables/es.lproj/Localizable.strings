@@ -1092,9 +1092,31 @@
 "enterYourSeedphraseSubtitleHighlight" = "12 o 24";
 "seedPhraseWordCountError" = "Ingresaste %d palabras. La frase semilla debe tener 12 o 24 palabras.";
 "seedPhraseInvalidError" = "Frase semilla inválida. Por favor, verifica tus palabras.";
-"scanningForChainsSubtitle" = "Estamos verificando qué blockchains tienen direcciones activas asociadas con tu frase semilla. Este proceso puede tardar hasta 2 minutos.";
+
+// Circle
+"circleTitle" = "Circle U.S. Dollar";
+"circleRowGetStarted" = "Empezar";
+"circleRowCreateWallet" = "Crear Billetera";
+"circleSetupTitle" = "Configurar Billetera Circle";
+"circleSetupDescription" = "Crea una billetera Circle segura para gestionar tus USDC.";
+"circleSetupCreateAccount" = "Crear Cuenta";
+"circleDepositTitle" = "Depositar USDC";
+"circleDepositInstruction" = "Envía Ethereum USDC a esta dirección";
+"circleDashboardTitle" = "Billetera Circle";
+"circleBalance" = "Saldo";
+"circleYield" = "Rendimiento";
+"circleWithdraw" = "Retirar";
+"circleDeposit" = "Depositar";
+"circleWithdrawTitle" = "Retirar USDC";
+"circleWithdrawInstruction" = "Ingresa dirección y cantidad a retirar";
+"circleWithdrawAddressLabel" = "Dirección";
+"circleWithdrawAmountLabel" = "Cantidad";
+"circleWithdrawButton" = "Retirar";
+"circleTransactionSuccess" = "Transacción Exitosa";
+
+"scanningForChainsSubtitle" = "Estamos verificando qué cadenas de bloques tienen direcciones activas asociadas con tu frase semilla. Este proceso puede tardar hasta 2 minutos.";
 "scanningForChainsSubtitleHighlight" = "Este proceso puede tardar hasta 2 minutos.";
-"selectChainsManually" = "Seleccionar chains manualmente";
-"foundActiveChainsTitle" = "Encontramos %d chains activas";
-"foundActiveChainsSubtitle" = "Cada chain adicional aproximadamente duplica el tiempo para generar tu bóveda. Tiempo estimado para todas las chains seleccionadas: %d minutos";
+"selectChainsManually" = "Seleccionar cadenas manualmente";
+"foundActiveChainsTitle" = "Encontramos %d cadenas activas";
+"foundActiveChainsSubtitle" = "Cada cadena adicional duplica aproximadamente el tiempo para generar tu bóveda. Tiempo estimado para todas las cadenas seleccionadas: %d minutos";
 "foundActiveChainsSubtitleHighlight" = "%d minutos";
