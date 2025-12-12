@@ -36,11 +36,7 @@ struct CircleSetupView: View {
             
             PrimaryButton(title: NSLocalizedString("circleSetupCreateAccount", comment: "Create Account")) {
                 Task {
-                    do {
-                        _ = try await model.logic.createWallet(vault: vault)
-                    } catch {
-                        print("Failed to create wallet: \(error)")
-                    }
+                    await createWallet()
                 }
             }
             .padding(.horizontal)
@@ -54,14 +50,18 @@ struct CircleSetupView: View {
     }
     
     private func createWallet() async {
+        print("CircleSetupView: Starting createWallet flow")
         await MainActor.run { model.isLoading = true }
         do {
+            print("CircleSetupView: Calling model.logic.createWallet with vault: \(vault.pubKeyECDSA)")
             let newAddress = try await model.logic.createWallet(vault: vault)
+            print("CircleSetupView: Wallet created successfully with address: \(newAddress)")
             await MainActor.run {
                 vault.circleWalletAddress = newAddress
                 model.isLoading = false
             }
         } catch {
+            print("CircleSetupView: Failed to create wallet. Error: \(error)")
             await MainActor.run {
                 model.error = error
                 model.isLoading = false

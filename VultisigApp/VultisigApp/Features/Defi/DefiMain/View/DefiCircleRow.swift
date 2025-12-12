@@ -17,7 +17,7 @@ struct DefiCircleRow: View {
         HStack {
             HStack(spacing: 12) {
                 // Circle Logo
-                Image("circle")
+                Image(systemName: "circle.circle")
                     .resizable()
                     .frame(width: 36, height: 36)
                     .clipShape(Circle())

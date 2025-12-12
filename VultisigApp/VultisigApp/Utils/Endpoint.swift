@@ -519,35 +519,20 @@ class Endpoint {
     
     // MARK: - Circle MSCA Endpoints
     
-    static let circleApiBase = "\(vultisigApiProxy)/circle/v1"
+    static let circleApiBase = "\(vultisigApiProxy)/circle"
     
+    // GET /wallet?refId=...
+    static func fetchCircleWallets(refId: String) -> String {
+        "\(circleApiBase)/wallet?refId=\(refId)"
+    }
+    
+    // POST /create
     static func createCircleWallet() -> String {
-        "\(circleApiBase)/wallet/create"
+        "\(circleApiBase)/create" 
     }
     
-    static func fetchCircleWallet(vaultId: String) -> String {
-        "\(circleApiBase)/wallet/\(vaultId)"
-    }
-    
-    static func fetchCircleBalance(address: String) -> String {
-        "\(circleApiBase)/wallet/\(address)/balance"
-    }
-    
-    static func fetchCircleYield(address: String) -> String {
-        "\(circleApiBase)/wallet/\(address)/yield"
-    }
-    
-    static func cleanCircleWallet(address: String) -> String {
-        "\(circleApiBase)/wallet/\(address)/claim"
-    }
-    
-    static func withdrawCircleWallet(address: String) -> String {
-        "\(circleApiBase)/wallet/\(address)/withdraw"
-    }
-    
-    static func executeCircleTransaction(address: String) -> String {
-        "\(circleApiBase)/wallet/\(address)/execute"
-    }
+    // Note: Balance and Yield are not available via this proxy.
+    // We must use standard EVM RPC calls to the wallet address.
     
     static func fetchBitcoinTransactions(_ userAddress: String) -> String {
         "https://mempool.space/api/address/\(userAddress)/txs"

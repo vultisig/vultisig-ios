@@ -51,63 +51,21 @@ final class CircleViewModel: ObservableObject {
 // MARK: - Logic (Methods)
 struct CircleViewLogic {
     func createWallet(vault: Vault) async throws -> String {
+        print("CircleViewLogic: createWallet called for vault pubKey: \(vault.pubKeyECDSA)")
         return try await CircleApiService.shared.createWallet(vaultPubkey: vault.pubKeyECDSA)
     }
     
     func fetchData(address: String) async throws -> (Decimal, CircleApiService.CircleYieldResponse) {
-        async let balance = CircleApiService.shared.fetchBalance(address: address)
-        async let yield = CircleApiService.shared.fetchYield(address: address)
-        return try await (balance, yield)
+        print("CircleViewLogic: fetchData called for address: \(address)")
+        // Stub: The proxy doesn't support balance/yield. 
+        // Future: Implement EVM RPC calls here.
+        return (.zero, CircleApiService.CircleYieldResponse(apy: "0", totalRewards: "0", currentRewards: "0"))
     }
     
     func getWithdrawalPayload(vault: Vault, recipient: String, amount: BigInt) async throws -> KeysignPayload {
-        // 1. Get Transaction Data from Backend
-        // The backend `withdraw` endpoint returns the calldata to execute the withdrawal
-        guard let ethAddress = vault.coins.first(where: { $0.chain == .ethereum })?.address else {
-             throw CircleServiceError.invalidDetails
-        }
-        
-        let tx = try await CircleApiService.shared.withdraw(
-            walletAddress: vault.circleWalletAddress ?? "", // Should be handled before calling this if nil
-            recipientAddress: recipient,
-            amount: String(amount) // Convert BigInt to String
-        )
-        
-        // 2. Fetch Nonce (EOA)
-        let service = try EvmService.getService(forChain: .ethereum)
-        let (_, _, nonce) = try await service.getGasInfo(fromAddress: ethAddress, mode: .normal)
-
-        let gasLimit = CircleMSCAConfig.gasLimit
-        let maxFeePerGas = BigInt(tx.maxFeePerGas) ?? BigInt(50000000000)
-        let maxPriorityFeePerGas = BigInt(tx.maxPriorityFeePerGas) ?? BigInt(1500000000)
-        
-        // 3. Construct BlockChainSpecific
-        let specific = BlockChainSpecific.Ethereum(
-            maxFeePerGasWei: maxFeePerGas,
-            priorityFeeWei: maxPriorityFeePerGas,
-            nonce: Int64(nonce),
-            gasLimit: gasLimit
-        )
-        
-        let amountBigInt = BigInt(amount) ?? BigInt(0)
-        
-        let keysignMessage = try await CircleService.shared.getKeysignPayload(
-            encryptionKeyHex: vault.hexChainCode,
-            vault: vault,
-            toAddress: tx.to, // Contract address
-            amount: amountBigInt,
-            memo: nil,
-            fee: maxFeePerGas * gasLimit,
-            chainSpecific: specific
-        )
-        
-        guard let payload = keysignMessage.payload else {
-            throw CircleServiceError.keysignError("Failed to generate keysign payload")
-        }
-        
-        return payload
+        print("CircleViewLogic: getWithdrawalPayload called.")
+        throw CircleServiceError.keysignError("Withdrawal not implemented (Requires on-chain logic)")
     }
 }
 
-// Localization keys to be added:
-// "circleTitle" = "Circle";
+// Local definitions or extensions can go here if needed

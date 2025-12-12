@@ -41,9 +41,14 @@ struct CircleService {
         chainSpecific: BlockChainSpecific
     ) async throws -> KeysignMessage {
         
+        print("CircleService: getKeysignPayload called")
+        print("CircleService: Inputs - To: \(toAddress), Amount: \(amount), Fee: \(fee)")
+
         guard let coin = vault.coins.first(where: { $0.chain == .ethereum && $0.isNativeToken }) else {
+            print("CircleService: Error - ETH native token not found in vault")
             throw CircleServiceError.invalidDetails
         }
+        print("CircleService: Using coin: \(coin.ticker)")
         
         // MCSA uses Ethereum chain (Circle uses Ethereum Mainnet)
         // We reuse Ethereum logic but with specific contract calls if needed
@@ -77,6 +82,8 @@ struct CircleService {
             wasmExecuteContractPayload: nil,
             skipBroadcast: false
         )
+        
+        print("CircleService: KeysignPayload constructed. Chain: \(coin.chain.name), To: \(keysignPayload.toAddress), Amount: \(keysignPayload.toAmount)")
         
         return KeysignMessage(
             sessionID: UUID().uuidString,
