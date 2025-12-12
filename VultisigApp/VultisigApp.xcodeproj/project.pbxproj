@@ -941,7 +941,7 @@
 		A6D739DE2E0B30440005697D /* SendDetailsAssetTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D739DD2E0B30440005697D /* SendDetailsAssetTab.swift */; };
 		A6D739E02E0B993A0005697D /* SendDetailsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D739DF2E0B993A0005697D /* SendDetailsViewModel.swift */; };
 		A6D739E22E0BAA3A0005697D /* SendDetailsTabEditTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D739E12E0BAA3A0005697D /* SendDetailsTabEditTools.swift */; };
-		A6DFC0592D5FE4F2001C9598 /* SecureBackupGuideAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6DFC0582D5FE4F2001C9598 /* SecureBackupGuideAnimation.swift */; };
+		A6DFC0592D5FE4F2001C9598 /* BackupGuideAnimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6DFC0582D5FE4F2001C9598 /* BackupGuideAnimationView.swift */; };
 		A6E0C9042DDD271600A01543 /* FileManagerExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9032DDD271600A01543 /* FileManagerExtension.swift */; };
 		A6E0C90F2DE4E8CE00A01543 /* ReferredCodeFormScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C90E2DE4E8CE00A01543 /* ReferredCodeFormScreen.swift */; };
 		A6E0C9112DE4F89100A01543 /* ReferralTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9102DE4F89100A01543 /* ReferralTextField.swift */; };
@@ -2177,7 +2177,7 @@
 		A6D739DD2E0B30440005697D /* SendDetailsAssetTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDetailsAssetTab.swift; sourceTree = "<group>"; };
 		A6D739DF2E0B993A0005697D /* SendDetailsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDetailsViewModel.swift; sourceTree = "<group>"; };
 		A6D739E12E0BAA3A0005697D /* SendDetailsTabEditTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDetailsTabEditTools.swift; sourceTree = "<group>"; };
-		A6DFC0582D5FE4F2001C9598 /* SecureBackupGuideAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureBackupGuideAnimation.swift; sourceTree = "<group>"; };
+		A6DFC0582D5FE4F2001C9598 /* BackupGuideAnimationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupGuideAnimationView.swift; sourceTree = "<group>"; };
 		A6E0C9032DDD271600A01543 /* FileManagerExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManagerExtension.swift; sourceTree = "<group>"; };
 		A6E0C90E2DE4E8CE00A01543 /* ReferredCodeFormScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferredCodeFormScreen.swift; sourceTree = "<group>"; };
 		A6E0C9102DE4F89100A01543 /* ReferralTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralTextField.swift; sourceTree = "<group>"; };
@@ -2620,7 +2620,7 @@
 				A6AF960B2C2E2D6400992578 /* GeneralQRImportMacView.swift */,
 				A6F7B6782D481D5F00AC8104 /* SetupVaultSecureText.swift */,
 				A6F7B6BB2D4880FF00AC8104 /* SetupVaultSwitchControl.swift */,
-				A6DFC0582D5FE4F2001C9598 /* SecureBackupGuideAnimation.swift */,
+				A6DFC0582D5FE4F2001C9598 /* BackupGuideAnimationView.swift */,
 				A6A6EFC02D703AF60062F6EA /* SwitchToLocalLink.swift */,
 				A6A6EFC22D703E700062F6EA /* LocalModeDisclaimer.swift */,
 				A66E90A02D778B1A00BF7BCB /* IconCapsule.swift */,
@@ -6980,7 +6980,7 @@
 				134856322EB51D5C003D10BE /* AmountTextField.swift in Sources */,
 				13A9641A2EBBDA090025FB7A /* RUJIUnstakeTransactionBuilder.swift in Sources */,
 				1377C8DE2E5F9855006DC969 /* VaultBackupSelectionScreen.swift in Sources */,
-				A6DFC0592D5FE4F2001C9598 /* SecureBackupGuideAnimation.swift in Sources */,
+				A6DFC0592D5FE4F2001C9598 /* BackupGuideAnimationView.swift in Sources */,
 				13453ACA2E4A1D4800D76629 /* ErrorView.swift in Sources */,
 				A61BC8192BA2687E00484689 /* TokensStore.swift in Sources */,
 				A6386DA12C90235200DDD58E /* CoinSelectionCell+iOS.swift in Sources */,

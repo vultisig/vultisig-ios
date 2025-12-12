@@ -95,10 +95,9 @@ struct OnboardingSummaryView: View {
             case .initial, .fast:
                 animationVM?.view()
             case .secure:
-                SecureBackupGuideAnimation(vault: vault)
+                BackupGuideAnimationView(vault: vault, type: .secure)
             case .keyImport:
-                // TODO: - Replace
-                SecureBackupGuideAnimation(vault: vault)
+                BackupGuideAnimationView(vault: vault, type: .keyImport)
             }
         }
         #if os(macOS)

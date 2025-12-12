@@ -53,9 +53,9 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
     
     var rectangle: some View {
         Rectangle()
-            .frame(width: 2, height: contentHeight-cellHeight+6)
-            .foregroundColor(Theme.colors.bgSecondary)
-            .offset(y: -2)
+            .frame(width: 3, height: contentHeight - cellHeight + 3)
+            .foregroundColor(Theme.colors.borderLight)
+            .offset(x: 1)
     }
 
     var content: some View {
@@ -103,7 +103,7 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
             ForEach(0..<steps, id: \.self) { index in
                 getCell(index: index)
                     .background(
-                        index == 0 ?
+                        index == (steps - 1) ?
                             GeometryReader { geometry in
                                 Color.clear
                                     .onAppear {
@@ -121,8 +121,8 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
         let showCell = showCells[index]
         HStack(spacing: 0) {
             Rectangle()
-                .frame(width: 22, height: 2)
-                .foregroundColor(Theme.colors.bgSecondary)
+                .frame(width: 22, height: 3)
+                .foregroundColor(Theme.colors.borderLight)
 
             cellContent(index)
                 .padding(16)
@@ -130,7 +130,7 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
                 .cornerRadius(16)
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(Theme.colors.border, lineWidth: 1)
+                        .stroke(Theme.colors.borderLight, lineWidth: 1)
                 )
         }
         .opacity(showCell ? 1 : 0)

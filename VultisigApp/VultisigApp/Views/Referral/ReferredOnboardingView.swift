@@ -18,7 +18,6 @@ struct ReferredOnboardingView: View {
                     } header: {
                         animationHeader
                     }
-
                 }
                 
                 button
@@ -102,10 +101,23 @@ struct ReferredOnboardingView: View {
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
         .background(Theme.colors.bgSecondary)
-        .cornerRadius(32)
+        .clipShape(
+            UnevenRoundedRectangle(
+                topLeadingRadius: 0,
+                bottomLeadingRadius: 0,
+                bottomTrailingRadius: 32,
+                topTrailingRadius: 32
+            )
+        )
         .overlay(
-            RoundedRectangle(cornerRadius: 32)
-                .stroke(Theme.colors.border, lineWidth: 1)
+            UnevenRoundedRectangle(
+                topLeadingRadius: 0,
+                bottomLeadingRadius: 0,
+                bottomTrailingRadius: 32,
+                topTrailingRadius: 32
+            )
+            .inset(by: 1)
+            .stroke(Theme.colors.borderLight, lineWidth: 2)
         )
         .offset(x: -2)
     }
