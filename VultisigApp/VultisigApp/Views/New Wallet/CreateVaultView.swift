@@ -29,10 +29,9 @@ struct CreateVaultView: View {
     }
 
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
+        main
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(PrimaryBackgroundWithGradient())
         .navigationBarBackButtonHidden(showBackButton ? false : true)
         .navigationDestination(isPresented: $showImportSeedphrase) {
             KeyImportOnboardingScreen()
@@ -59,9 +58,10 @@ struct CreateVaultView: View {
     }
     
     var view: some View {
-        VStack {
+        VStack(spacing: 0) {
             Spacer()
             VultisigLogo()
+                .offset(y: 64)
             Spacer()
             buttons
         }
@@ -69,9 +69,7 @@ struct CreateVaultView: View {
     
     var buttons: some View {
         VStack(spacing: 16) {
-            newVaultButton
-            orSeparator
-            Group {
+            HStack(spacing: 8) {
                 scanButton
                 importVaultButton
             }
@@ -80,13 +78,14 @@ struct CreateVaultView: View {
             .scaleEffect(showButtonStack ? 1 : 0.8)
             .blur(radius: showButtonStack ? 0 : 10)
             .animation(.spring(duration: 0.3), value: showButtonStack)
+            newVaultButton
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 40)
     }
     
     var newVaultButton: some View {
-        PrimaryNavigationButton(title: "createNewVault") {
+        PrimaryNavigationButton(title: "getStarted") {
             if appViewModel.showOnboarding {
                 OnboardingView()
             } else {
@@ -99,31 +98,40 @@ struct CreateVaultView: View {
         .animation(.spring(duration: 0.3), value: showNewVaultButton)
     }
     
-    var orSeparator: some View {
-        HStack(spacing: 16) {
-            Separator()
-            
-            Text(NSLocalizedString("or", comment: ""))
-                .foregroundColor(Theme.colors.textPrimary)
-                .font(Theme.fonts.caption12)
-            
-            Separator()
-        }
-        .opacity(showSeparator ? 1 : 0)
-        .offset(y: showSeparator ? 0 : 50)
-        .scaleEffect(showSeparator ? 1 : 0.8)
-        .blur(radius: showSeparator ? 0 : 10)
-        .animation(.spring(duration: 0.3), value: showSeparator)
-    }
-    
     var importVaultButton: some View {
-        PrimaryButton(title: "importVault", type: .secondary) {
+        ZStack(alignment: .center) {
+            PrimaryButton(
+                title: "import",
+                leadingIcon: "arrow-down-circle",
+                trailingIcon: "fake-icon",
+                type: .secondary
+            ) {
+                // TODO: - Remove before seed phrase import release
+                #if DEBUG
+                showImportSelectionSheet = true
+                #else
+                showImportVaultShare = true
+                #endif
+            }
+            
             // TODO: - Remove before seed phrase import release
             #if DEBUG
-            showImportSelectionSheet = true
-            #else
-            showImportVaultShare = true
+            newTag
+                .offset(x: 48)
             #endif
+        }
+    }
+    
+    private var newTag: some View {
+        HStack(spacing: 2) {
+            Icon(
+                named: "stars",
+                color: Theme.colors.alertWarning,
+                size: 8
+            )
+            Text("new")
+                .foregroundStyle(Theme.colors.alertWarning)
+                .font(FontStyle.brockmanMedium.size(8))
         }
     }
     

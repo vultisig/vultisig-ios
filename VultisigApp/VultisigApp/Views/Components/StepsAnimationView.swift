@@ -58,7 +58,7 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
             .frame(width: 3, height: height)
             .foregroundColor(Theme.colors.borderLight)
             .offset(x: 1)
-            .showIf(height > 0)
+            .showIf(height.isFinite && height > 0)
     }
 
     var content: some View {
