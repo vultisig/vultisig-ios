@@ -9,7 +9,7 @@ import SwiftUI
 
 struct KeyImportOverviewScreen: View {
     let vault: Vault
-    let email: String
+    let email: String?
     
     enum Page: Int, CaseIterable, Hashable {
         case multisig
@@ -44,7 +44,7 @@ struct KeyImportOverviewScreen: View {
             ServerBackupVerificationView(
                 tssType: .KeyImport,
                 vault: vault,
-                email: email,
+                email: email ?? .empty,
                 isPresented: $isVerificationLinkActive,
                 // TODO: - Check what to do here
                 isBackupLinkActive: .constant(false),
@@ -56,7 +56,9 @@ struct KeyImportOverviewScreen: View {
             VaultBackupNowScreen(tssType: .KeyImport, backupType: .single(vault: vault), isNewVault: true)
         }
         .onLoad {
-            isVerificationLinkActive = true
+            if email != nil {
+                isVerificationLinkActive = true
+            }
         }
     }
     

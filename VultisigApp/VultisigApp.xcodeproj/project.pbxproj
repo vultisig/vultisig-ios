@@ -526,8 +526,6 @@
 		A52B0D052CA59E8200507966 /* ReshareViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52B0D042CA59E8200507966 /* ReshareViewModel.swift */; };
 		A52B0D072CA6216400507966 /* ReshareView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52B0D062CA6216400507966 /* ReshareView+iOS.swift */; };
 		A52B0D092CA621B500507966 /* ReshareView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52B0D082CA621B500507966 /* ReshareView+macOS.swift */; };
-		A52FE09D2D5D59E30016C9A0 /* OnboardingSummaryView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52FE09C2D5D59E30016C9A0 /* OnboardingSummaryView+iOS.swift */; };
-		A52FE09F2D5D5A280016C9A0 /* OnboardingSummaryView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52FE09E2D5D5A280016C9A0 /* OnboardingSummaryView+macOS.swift */; };
 		A53065F62D57CAED000B82E6 /* OnboardingSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A53065F52D57CAED000B82E6 /* OnboardingSummaryView.swift */; };
 		A53065FA2D5A9FEF000B82E6 /* fastvault_overview.riv in Resources */ = {isa = PBXBuildFile; fileRef = A53065F92D5A9FEF000B82E6 /* fastvault_overview.riv */; };
 		A53065FC2D5AA5D3000B82E6 /* securevault_overview.riv in Resources */ = {isa = PBXBuildFile; fileRef = A53065FB2D5AA5D3000B82E6 /* securevault_overview.riv */; };
@@ -1766,8 +1764,6 @@
 		A52B0D042CA59E8200507966 /* ReshareViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReshareViewModel.swift; sourceTree = "<group>"; };
 		A52B0D062CA6216400507966 /* ReshareView+iOS.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ReshareView+iOS.swift"; sourceTree = "<group>"; };
 		A52B0D082CA621B500507966 /* ReshareView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReshareView+macOS.swift"; sourceTree = "<group>"; };
-		A52FE09C2D5D59E30016C9A0 /* OnboardingSummaryView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnboardingSummaryView+iOS.swift"; sourceTree = "<group>"; };
-		A52FE09E2D5D5A280016C9A0 /* OnboardingSummaryView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnboardingSummaryView+macOS.swift"; sourceTree = "<group>"; };
 		A53065F52D57CAED000B82E6 /* OnboardingSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSummaryView.swift; sourceTree = "<group>"; };
 		A53065F92D5A9FEF000B82E6 /* fastvault_overview.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = fastvault_overview.riv; sourceTree = "<group>"; };
 		A53065FB2D5AA5D3000B82E6 /* securevault_overview.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = securevault_overview.riv; sourceTree = "<group>"; };
@@ -5402,8 +5398,6 @@
 			children = (
 				A6966D1D2BA3DDAD00903CA4 /* OnboardingView.swift */,
 				A53065F52D57CAED000B82E6 /* OnboardingSummaryView.swift */,
-				A52FE09C2D5D59E30016C9A0 /* OnboardingSummaryView+iOS.swift */,
-				A52FE09E2D5D5A280016C9A0 /* OnboardingSummaryView+macOS.swift */,
 				A6F7B6762D42F64D00AC8104 /* OnboardingTextCard.swift */,
 			);
 			path = Onboarding;
@@ -7079,7 +7073,6 @@
 				A69FBBA62C8ADC2E00A4B78B /* WelcomeView+iOS.swift in Sources */,
 				A6AF96102C2E2DC900992578 /* FileQRCodeImporterMac.swift in Sources */,
 				DE9EB0FA2BA4491B001747D9 /* CoinExtension.swift in Sources */,
-				A52FE09D2D5D59E30016C9A0 /* OnboardingSummaryView+iOS.swift in Sources */,
 				13DB87602E9FD78E008E89B0 /* DefiMainScreen.swift in Sources */,
 				A6C671012CA276EF00F59B6A /* OnboardingView+iOS.swift in Sources */,
 				465A8D562B9E6E0B006E7457 /* SolanaRpc.swift in Sources */,
@@ -7206,7 +7199,6 @@
 				A6C671352CA3C53800F59B6A /* QRShareSheetImage+macOS.swift in Sources */,
 				A65C754D2BBF5A250076F30A /* PeerCell.swift in Sources */,
 				135C88192E3AADB800FD097D /* GradientListSeparator.swift in Sources */,
-				A52FE09F2D5D5A280016C9A0 /* OnboardingSummaryView+macOS.swift in Sources */,
 				13B25B902E81B7FE002BCF55 /* ReceiveQRCodeBottomSheet.swift in Sources */,
 				13EFA1CB2E31389D009838EB /* OTPCharTextField.swift in Sources */,
 				B52196422C1296DF0021D27A /* IntExtension.swift in Sources */,

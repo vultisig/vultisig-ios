@@ -9,10 +9,13 @@ import SwiftUI
 import RiveRuntime
 
 struct OnboardingSummaryView: View {
-    enum Kind {
+    enum Kind: String, Identifiable {
         case initial
         case fast
         case secure
+        case keyImport
+        
+        var id: String { rawValue }
 
         var animation: String {
             switch self {
@@ -22,6 +25,8 @@ struct OnboardingSummaryView: View {
                 return "fastvault_summary"
             case .secure:
                 return "securevault_summary"
+            case .keyImport:
+                return .empty
             }
         }
     }
@@ -82,6 +87,23 @@ struct OnboardingSummaryView: View {
                 }
             }
         }
+    }
+    
+    var animation: some View {
+        Group {
+            switch kind {
+            case .initial, .fast:
+                animationVM?.view()
+            case .secure:
+                SecureBackupGuideAnimation(vault: vault)
+            case .keyImport:
+                // TODO: - Replace
+                SecureBackupGuideAnimation(vault: vault)
+            }
+        }
+        #if os(macOS)
+        .frame(width: 450, height: 350)
+        #endif
     }
 
     var disclaimer: some View {
