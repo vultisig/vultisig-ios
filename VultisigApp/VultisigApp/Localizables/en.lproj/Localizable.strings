@@ -1137,3 +1137,23 @@
 "noActiveChainsFound" = "No active chains found";
 "noActiveChainsFoundSubtitle" = "We didn’t detect any assets on this seedphrase. You can still continue and select chains manually.";
 "addCustomChains" = "Add custom chains";
+
+"circleTitle" = "Circle";
+"circleWithdrawTitle" = "Withdraw USDC";
+"circleWithdrawToAddress" = "To Address";
+"circleWithdrawAddressPlaceholder" = "0x...";
+"circleWithdrawAmount" = "Amount (USDC)";
+"circleWithdrawConfirm" = "Confirm Withdrawal";
+"circleDepositTitle" = "Deposit USDC";
+"circleDepositInstruction" = "Send Ethereum USDC to this address";
+"circleDepositAddressLabel" = "Circle Wallet Address";
+"circleDepositCopy" = "Copy"; 
+"circleSetupTitle" = "Setup Circle Wallet";
+"circleSetupDescription" = "Create a Circle Multi-Signature Contract Account (MSCA) to enable advanced DeFi features.";
+"circleCreateAccount" = "Create Account";
+
+"circleDashboardDeposit" = "Deposit";
+"circleDashboardWithdraw" = "Withdraw";
+"circleDashboardTotalBalance" = "Total Balance";
+"circleDashboardAPY" = "APY";
+"circleDashboardLifetimeEarnings" = "Lifetime Earnings";

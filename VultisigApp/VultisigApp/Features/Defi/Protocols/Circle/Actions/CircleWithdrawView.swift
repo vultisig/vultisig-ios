@@ -41,6 +41,8 @@ struct CircleWithdrawView: View {
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .disableAutocorrection(true)
                         .textContentType(.oneTimeCode)
+                        .disabled(true) // Fixed to Vault address per requirements
+                        .opacity(0.6)
                 }
                 .padding(.horizontal)
                 
@@ -54,6 +56,16 @@ struct CircleWithdrawView: View {
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                 }
                 .padding(.horizontal)
+                .onAppear {
+                     // Pre-fill with Vault's ETH address
+                     if let eth = vault.coins.first(where: { $0.chain == .ethereum }) {
+                         recipientAddress = eth.address
+                     }
+                     // Pre-fill with Total Balance
+                     if model.balance > 0 {
+                         amount = "\(model.balance)"
+                     }
+                }
                 
                 if let error = error {
                     Text(error.localizedDescription)
@@ -74,7 +86,16 @@ struct CircleWithdrawView: View {
                     .disabled(recipientAddress.isEmpty || amount.isEmpty)
                 }
             }
+            }
+        #if os(iOS)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                NavigationBackButton()
+            }
         }
+        #endif
+        .navigationTitle(NSLocalizedString("circleWithdrawTitle", comment: "Withdraw USDC"))
         .navigationDestination(item: $keysignPayload) { payload in
             SendRouteBuilder().buildPairScreen(
                 vault: vault,
@@ -92,7 +113,31 @@ struct CircleWithdrawView: View {
         }
         
         do {
-            let amountVal: BigInt = BigInt(amount) ?? BigInt(0)
+            // 1. Validate Amount Format
+            guard let amountDecimal = Decimal(string: amount), amountDecimal > 0 else {
+                await MainActor.run {
+                    self.error = NSError(domain: "CircleWithdraw", code: 400, userInfo: [NSLocalizedDescriptionKey: NSLocalizedString("invalidAmount", comment: "Invalid amount")])
+                    self.isLoading = false
+                }
+                return
+            }
+            
+            // 2. Validate Balance
+            if amountDecimal > model.balance {
+                await MainActor.run {
+                    self.error = NSError(domain: "CircleWithdraw", code: 400, userInfo: [NSLocalizedDescriptionKey: NSLocalizedString("insufficientBalance", comment: "Insufficient balance")])
+                    self.isLoading = false
+                }
+                return
+            }
+            
+            // 3. Convert to Units (USDC = 6 decimals)
+            let decimals = 6
+            let amountUnits = (amountDecimal * pow(10, decimals)).description
+            // Remove any decimal point from string before BigInt
+            let cleanAmountUnits = amountUnits.components(separatedBy: ".").first ?? amountUnits
+            let amountVal = BigInt(cleanAmountUnits) ?? BigInt(0)
+            
             let logic: CircleViewLogic = model.logic
             let v: Vault = vault
             let r: String = recipientAddress

@@ -10,17 +10,32 @@ import CoreImage.CIFilterBuiltins
 
 struct CircleDepositView: View {
     let vault: Vault
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         ZStack {
             Theme.colors.bgPrimary.ignoresSafeArea()
             
             VStack(spacing: 24) {
-                Text(NSLocalizedString("circleDepositTitle", comment: "Deposit USDC"))
-                    .font(.title2)
-                    .bold()
-                    .foregroundStyle(Theme.colors.textPrimary)
-                    .padding(.top, 20)
+                HStack {
+                    Spacer()
+                    Text(NSLocalizedString("circleDepositTitle", comment: "Deposit USDC"))
+                        .font(.title2)
+                        .bold()
+                        .foregroundStyle(Theme.colors.textPrimary)
+                    Spacer()
+                }
+                .overlay(alignment: .topTrailing) {
+                     Button {
+                         dismiss()
+                     } label: {
+                         Image(systemName: "xmark")
+                             .font(.title2)
+                             .foregroundColor(Theme.colors.textPrimary)
+                             .padding()
+                     }
+                }
+                .padding(.top, 20)
                 
                 if let address = vault.circleWalletAddress {
                     generateQRCode(from: address)
@@ -88,6 +103,4 @@ struct CircleDepositView: View {
     }
 }
 
-// Localization keys to be added:
-// "circleDepositTitle" = "Deposit USDC";
-// "circleDepositInstruction" = "Send Ethereum USDC to this address";
+

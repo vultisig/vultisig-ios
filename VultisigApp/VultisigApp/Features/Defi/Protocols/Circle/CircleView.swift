@@ -55,17 +55,146 @@ struct CircleViewLogic {
         return try await CircleApiService.shared.createWallet(vaultPubkey: vault.pubKeyECDSA)
     }
     
-    func fetchData(address: String) async throws -> (Decimal, CircleApiService.CircleYieldResponse) {
+    func fetchData(address: String, vault: Vault) async throws -> (Decimal, CircleApiService.CircleYieldResponse) {
         print("CircleViewLogic: fetchData called for address: \(address)")
-        // Stub: The proxy doesn't support balance/yield. 
-        // Future: Implement EVM RPC calls here.
-        return (.zero, CircleApiService.CircleYieldResponse(apy: "0", totalRewards: "0", currentRewards: "0"))
+        
+        // 1. Determine Chain and USDC Contract
+        // Check if vault has Sepolia enabled
+        let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
+        let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
+        
+        // USDC Constants
+        let usdcMainnet = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+        let usdcSepolia = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238" 
+        let usdcContract = isSepolia ? usdcSepolia : usdcMainnet
+        
+        print("CircleViewLogic: Using chain \(chain.name), USDC Contract: \(usdcContract)")
+        
+        do {
+            let service = try EvmService.getService(forChain: chain)
+            let balanceBigInt = try await service.fetchERC20TokenBalance(contractAddress: usdcContract, walletAddress: address)
+            
+            // USDC is 6 decimals
+            let decimals = 6
+            let balanceDecimal = Decimal(string: String(balanceBigInt)) ?? 0
+            let divisor = pow(10, decimals)
+            let balance = balanceDecimal / divisor
+            
+            print("CircleViewLogic: Fetched Balance: \(balance) USDC")
+            
+            // Yield is still stubbed as it's not on-chain standard
+            return (balance, CircleApiService.CircleYieldResponse(apy: "0", totalRewards: "0", currentRewards: "0"))
+            
+        } catch {
+            print("CircleViewLogic: Failed to fetch balance. Error: \(error)")
+            // For UI stability, returning 0 with error log is often better for "view" logic.
+            return (.zero, CircleApiService.CircleYieldResponse(apy: "0", totalRewards: "0", currentRewards: "0"))
+        }
     }
     
+    struct CircleWithdrawalInfo {
+        let usdcContract: String
+    }
+
     func getWithdrawalPayload(vault: Vault, recipient: String, amount: BigInt) async throws -> KeysignPayload {
-        print("CircleViewLogic: getWithdrawalPayload called.")
-        throw CircleServiceError.keysignError("Withdrawal not implemented (Requires on-chain logic)")
+        print("CircleViewLogic: getWithdrawalPayload called. Address: \(vault.circleWalletAddress ?? "nil"), Recipient: \(recipient), Amount: \(amount)")
+        
+        guard let circleWalletAddress = vault.circleWalletAddress else {
+            throw CircleServiceError.keysignError("Missing Circle Wallet Address")
+        }
+        
+        // 1. Determine Chain and Contracts
+        let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
+        let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
+        
+        let usdcMainnet = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+        let usdcSepolia = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"
+        let usdcContract = isSepolia ? usdcSepolia : usdcMainnet
+        
+        let withdrawalInfo = CircleWithdrawalInfo(usdcContract: usdcContract)
+        
+        // 2. Build Execution Data (CircleService)
+        let (to, value, data) = try await CircleService.shared.getWithdrawalValues(
+            vault: vault,
+            recipientAddress: recipient,
+            amount: amount,
+            info: withdrawalInfo
+        )
+        
+        // 3. Fetch Gas Info (EvmService)
+        let service = try EvmService.getService(forChain: chain)
+        
+        // The sender is the Vault's ETH address.
+        let senderAddress = vault.coins.first(where: { $0.chain == .ethereum })?.address ?? ""
+        if senderAddress.isEmpty { throw CircleServiceError.keysignError("Missing ETH Address") }
+        
+        let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: senderAddress, mode: .normal)
+        
+        // Estimate Gas
+        let gasLimit = try await service.estimateGasLimitForSwap(
+            senderAddress: senderAddress,
+            toAddress: to,
+            value: value,
+            data: data.hexString
+        )
+        
+        print("CircleViewLogic: Gas Estimated: \(gasLimit), Nonce: \(nonce)")
+        
+        // 4. Construct Keysign Payload
+        guard let coin = vault.coins.first(where: { $0.chain == .ethereum && $0.isNativeToken }) else {
+            throw CircleServiceError.keysignError("Missing ETH Coin")
+        }
+        
+        let chainSpecific = BlockChainSpecific.Ethereum(
+            maxFeePerGasWei: gasPrice,
+            priorityFeeWei: priorityFee,
+            nonce: nonce,
+            gasLimit: gasLimit
+        )
+        
+        // Use GenericSwapPayload to carry the execution data
+        // EVMQuote requires gas as Int64, implying it might not handle > 64 bit gas limits well, but standard tx usually fits.
+        // We cast BigInt gasLimit to Int64.
+        let gasLimitInt64 = Int64(gasLimit.description) ?? 200000
+        
+        let executeQuote = EVMQuote(
+            dstAmount: "0",
+            tx: EVMQuote.Transaction(
+                from: senderAddress,
+                to: to,
+                data: data.hexString,
+                value: "0",
+                gasPrice: gasPrice.description, 
+                gas: gasLimitInt64
+            )
+        )
+        
+        let genericPayload = GenericSwapPayload(
+            fromCoin: coin,
+            toCoin: coin, // Self-transfer essentially, or transfer to contract
+            fromAmount: value,
+            toAmountDecimal: Decimal(0),
+            quote: executeQuote,
+            provider: .oneInch 
+        )
+        
+        let payloadWithData = KeysignPayload(
+            coin: coin,
+            toAddress: to,
+            toAmount: value,
+            chainSpecific: chainSpecific,
+            utxos: [],
+            memo: nil,
+            swapPayload: SwapPayload.generic(genericPayload),
+            approvePayload: nil,
+            vaultPubKeyECDSA: vault.pubKeyECDSA,
+            vaultLocalPartyID: vault.localPartyID,
+            libType: (vault.libType ?? .GG20) == .DKLS ? "dkls" : "gg20",
+            wasmExecuteContractPayload: nil,
+            skipBroadcast: false
+        )
+        
+        return payloadWithData
     }
 }
 
-// Local definitions or extensions can go here if needed
