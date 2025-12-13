@@ -1175,3 +1175,11 @@
 "circleDashboardTotalRewards" = "Total Rewards";
 "circleDashboardCurrentRewards" = "Current Rewards";
 "circleDashboardETHRequired" = "ETH is required for network fees.\nAdd ETH to your deposit account to continue.";
+
+"circleDepositTitle" = "Deposit to Circle Account";
+"circleDepositAmount" = "Amount";
+"circleDepositBalanceAvailable" = "Balance available:";
+"circleDepositContinue" = "Continue";
+"circleWithdrawTitle" = "Withdraw from Circle";
+"circleWithdrawAmount" = "Amount";
+"circleWithdrawConfirm" = "Continue";
