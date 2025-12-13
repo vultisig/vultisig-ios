@@ -15,6 +15,16 @@ struct CircleDashboardView: View {
     @State private var showDeposit = false
     @State private var showWithdraw = false
     
+    /// Wallet USDC balance (from vault coins - what user HAS available)
+    private var walletUSDCBalance: Decimal {
+        let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
+        let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
+        if let usdcCoin = vault.coins.first(where: { $0.chain == chain && $0.ticker == "USDC" }) {
+            return usdcCoin.balanceDecimal
+        }
+        return .zero
+    }
+    
     var body: some View {
         content
     }
@@ -28,8 +38,8 @@ struct CircleDashboardView: View {
                     .bold()
                     .foregroundStyle(Theme.colors.textLight)
                 
-                // Dynamic Total Balance matching API
-                Text("$\(model.balance.formatted())") 
+                // Wallet USDC balance (what user HAS on blockchain)
+                Text("$\(walletUSDCBalance.formatted())") 
                     .font(.system(size: 32, weight: .bold))
                     .foregroundStyle(Theme.colors.textPrimary)
             }

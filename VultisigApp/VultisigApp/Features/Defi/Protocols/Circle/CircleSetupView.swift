@@ -13,6 +13,16 @@ struct CircleSetupView: View {
     
     @State private var showInfoBanner = true
     
+    /// Wallet USDC balance (from vault coins, NOT Circle deposited)
+    private var walletUSDCBalance: Decimal {
+        let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
+        let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
+        if let usdcCoin = vault.coins.first(where: { $0.chain == chain && $0.ticker == "USDC" }) {
+            return usdcCoin.balanceDecimal
+        }
+        return .zero
+    }
+    
     var body: some View {
         ZStack {
             VaultMainScreenBackground()
@@ -81,7 +91,7 @@ struct CircleSetupView: View {
                     .bold()
                     .foregroundStyle(Theme.colors.textLight)
                 
-                Text("$1,240.50") // Placeholder as requested
+                Text("$\(walletUSDCBalance.formatted())")
                     .font(.system(size: 32, weight: .bold)) // Primary emphasis
                     .foregroundStyle(Theme.colors.textPrimary)
             }
