@@ -1157,3 +1157,21 @@
 "circleDashboardTotalBalance" = "Total Balance";
 "circleDashboardAPY" = "APY";
 "circleDashboardLifetimeEarnings" = "Lifetime Earnings";
+
+"circleSetupDeposited" = "Deposited";
+"circleSetupDepositDescription" = "Deposit your $USDC into a Circle account and earn yield securely within your Vultisig vault.";
+"circleSetupInfoText" = "Funds remain fully under your vault’s control. Circle accounts are self-custodial and yield is generated through secure off-chain treasuries.";
+"circleSetupAccountTitle" = "Circle USDC Account";
+"circleSetupUSDCDeposited" = "USDC deposited";
+"circleSetupOpenAccount" = "Open Account";
+
+"circleDashboardCircleUSDCAccount" = "Circle USDC Account";
+"circleDashboardDeposited" = "Deposited";
+"circleDashboardDepositDescription" = "Deposit your $USDC into a Circle account and earn yield securely within your Vultisig vault.";
+"circleDashboardInfoText" = "Funds remain fully under your vault’s control. Circle accounts are self-custodial and yield is generated through secure off-chain treasuries.";
+"circleDashboardUSDCDeposited" = "USDC deposited";
+"circleDashboardDepositUSDC" = "Deposit USDC";
+"circleDashboardYieldDetails" = "Circle Yield Details";
+"circleDashboardTotalRewards" = "Total Rewards";
+"circleDashboardCurrentRewards" = "Current Rewards";
+"circleDashboardETHRequired" = "ETH is required for network fees.\nAdd ETH to your deposit account to continue.";

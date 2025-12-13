@@ -41,8 +41,10 @@ final class CircleViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var error: Error?
     @Published var balance: Decimal = .zero
+    @Published var ethBalance: Decimal = .zero
     @Published var apy: String = "0%"
     @Published var totalRewards: String = "0"
+    @Published var currentRewards: String = "0"
     
     // Logic is delegated to CircleViewLogic struct
     let logic = CircleViewLogic()
@@ -55,7 +57,8 @@ struct CircleViewLogic {
         return try await CircleApiService.shared.createWallet(vaultPubkey: vault.pubKeyECDSA)
     }
     
-    func fetchData(address: String, vault: Vault) async throws -> (Decimal, CircleApiService.CircleYieldResponse) {
+    // Returns: (USDC Balance, ETH Balance, Yield Response)
+    func fetchData(address: String, vault: Vault) async throws -> (Decimal, Decimal, CircleApiService.CircleYieldResponse) {
         print("CircleViewLogic: fetchData called for address: \(address)")
         
         // 1. Determine Chain and USDC Contract
@@ -72,23 +75,44 @@ struct CircleViewLogic {
         
         do {
             let service = try EvmService.getService(forChain: chain)
-            let balanceBigInt = try await service.fetchERC20TokenBalance(contractAddress: usdcContract, walletAddress: address)
+            
+            // Find Native Coin for Context (needed for RPC calls sometimes)
+            // Even if we query a different address, we need a CoinMeta to specify the chain asset details
+            guard let nativeCoin = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken }) else {
+                 print("CircleViewLogic: No native coin found for chain \(chain)")
+                 return (.zero, .zero, CircleApiService.CircleYieldResponse(apy: "0", totalRewards: "0", currentRewards: "0"))
+            }
+            
+            // Fetch USDC Balance
+            async let usdcBalanceBigInt = service.fetchERC20TokenBalance(contractAddress: usdcContract, walletAddress: address)
+            // Fetch ETH Balance (Native) - returns String (wei)
+            async let ethBalanceString = service.getBalance(coin: nativeCoin.toCoinMeta(), address: address)
+            
+            let (usdcVal, ethValStr) = try await (usdcBalanceBigInt, ethBalanceString)
+            let ethVal = BigInt(ethValStr) ?? 0
             
             // USDC is 6 decimals
-            let decimals = 6
-            let balanceDecimal = Decimal(string: String(balanceBigInt)) ?? 0
-            let divisor = pow(10, decimals)
-            let balance = balanceDecimal / divisor
+            let usdcDecimals = 6
+            let usdcDivisor = pow(10, usdcDecimals)
+            let usdcBalance = (Decimal(string: String(usdcVal)) ?? 0) / usdcDivisor
             
-            print("CircleViewLogic: Fetched Balance: \(balance) USDC")
+            // ETH is 18 decimals
+            let ethDecimals = 18
+            let ethDivisor = pow(10, ethDecimals)
+            let ethBalance = (Decimal(string: String(ethVal)) ?? 0) / ethDivisor
+            
+            print("CircleViewLogic: Fetched USDC: \(usdcBalance), ETH: \(ethBalance)")
             
             // Yield is still stubbed as it's not on-chain standard
-            return (balance, CircleApiService.CircleYieldResponse(apy: "0", totalRewards: "0", currentRewards: "0"))
+            // Mocking currentRewards for UI as requested by user (should be API in real implementation)
+            let yield = CircleApiService.CircleYieldResponse(apy: "5.17%", totalRewards: "1,293.23", currentRewards: "428.25")
+            
+            return (usdcBalance, ethBalance, yield)
             
         } catch {
             print("CircleViewLogic: Failed to fetch balance. Error: \(error)")
             // For UI stability, returning 0 with error log is often better for "view" logic.
-            return (.zero, CircleApiService.CircleYieldResponse(apy: "0", totalRewards: "0", currentRewards: "0"))
+            return (.zero, .zero, CircleApiService.CircleYieldResponse(apy: "0", totalRewards: "0", currentRewards: "0"))
         }
     }
     
