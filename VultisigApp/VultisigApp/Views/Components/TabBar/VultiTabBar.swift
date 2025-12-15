@@ -31,15 +31,21 @@ struct VultiTabBar<Item: TabBarItem, Content: View>: View {
     }
     
     var body: some View {
-        #if os(macOS)
-        legacyTabBar
-        #else
-        if #available(iOS 26.0, *), !isIPadOS {
-            glassTabBar
-        } else {
+        ZStack {
+#if os(macOS)
             legacyTabBar
+#else
+            if #available(iOS 26.0, *), !isIPadOS {
+                glassTabBar
+            } else {
+                legacyTabBar
+            }
+#endif
+        }.onChange(of: selectedItem) { oldValue, newValue in
+            if newValue == accessory {
+                selectedItem = oldValue
+            }
         }
-        #endif
     }
 }
 

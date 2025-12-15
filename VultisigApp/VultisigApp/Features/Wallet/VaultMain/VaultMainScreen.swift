@@ -16,6 +16,7 @@ struct VaultMainScreen: View {
     @Binding var showBackupNow: Bool
     @Binding var showBalanceInHeader: Bool
     @Binding var shouldRefresh: Bool
+    var onCamera: () -> Void
     
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var viewModel: VaultDetailViewModel
@@ -163,7 +164,8 @@ struct VaultMainScreen: View {
             VaultMainChainListView(
                 vault: vault,
                 onCopy: onCopy,
-                onCustomizeChains: onCustomizeChains
+                onCustomizeChains: onCustomizeChains,
+                onCamera: onCamera
             )
             .background(
                 // Reference to scroll when search gets presented
@@ -304,7 +306,8 @@ struct VaultMainScreen: View {
         showUpgradeVaultSheet: .constant(false),
         showBackupNow: .constant(false),
         showBalanceInHeader: .constant(false),
-        shouldRefresh: .constant(false)
+        shouldRefresh: .constant(false),
+        onCamera: {}
     )
     .environmentObject(HomeViewModel())
     .environmentObject(VaultDetailViewModel())
