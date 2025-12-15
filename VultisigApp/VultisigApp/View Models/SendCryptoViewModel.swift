@@ -341,7 +341,7 @@ struct SendCryptoLogic {
             await balanceService.updateBalance(for: tx.coin)
             
             let gas = BigInt.zero
-            let maxDecimals = tx.coin.decimals > 0 ? tx.coin.decimals - 1 : tx.coin.decimals
+            let maxDecimals = tx.coin.decimals > 0 ? tx.coin.decimals : 6 // Fallback to 6 decimals if coin decimals is 0
             let amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: maxDecimals))"
             tx.amount = amount
             setPercentageAmount(tx: tx, for: percentage)
@@ -501,6 +501,7 @@ struct SendCryptoLogic {
         let max = tx.amount
         let multiplier = (Decimal(percentage) / 100)
         let amountDecimal = max.toDecimal() * multiplier
-        tx.amount = amountDecimal.formatToDecimal(digits: tx.coin.decimals)
+        let digits = tx.coin.decimals > 8 ? 8 : tx.coin.decimals
+        tx.amount = amountDecimal.formatToDecimal(digits: digits)
     }
 }
