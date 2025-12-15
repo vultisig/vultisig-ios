@@ -20,8 +20,11 @@ struct CircleWithdrawView: View {
     @State private var isLoading = false
     @State private var error: Error?
     @State private var keysignPayload: KeysignPayload?
+    @State private var isFastVault = false
+    @State private var fastPasswordPresented = false
+    @State private var fastVaultPassword: String = ""
     
-    // Dummy SendTransaction to satisfy SendRouteBuilder
+    // SendTransaction for routing
     @StateObject private var sendTransaction = SendTransaction()
     
     var body: some View {
@@ -138,7 +141,7 @@ struct CircleWithdrawView: View {
                                 .font(.caption)
                         }
                         
-                         if model.ethBalance <= 0 {
+                        if model.ethBalance <= 0 {
                             Text(NSLocalizedString("circleDashboardETHRequired", comment: "ETH is required..."))
                                 .font(.caption)
                                 .foregroundStyle(Theme.colors.alertWarning)
@@ -146,10 +149,7 @@ struct CircleWithdrawView: View {
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                         
-                        PrimaryButton(title: NSLocalizedString("circleWithdrawConfirm", comment: "Continue")) { // "Continue" per spec, using existing key or localized literal
-                            Task { await handleWithdraw() }
-                        }
-                        .disabled(amount.isEmpty || (Decimal(string: amount) ?? 0) <= 0 || (Decimal(string: amount) ?? 0) > model.balance || model.ethBalance <= 0 || isLoading)
+                        withdrawButton
                     }
                     .padding()
                     .background(Theme.colors.bgPrimary)
@@ -160,14 +160,65 @@ struct CircleWithdrawView: View {
                     ProgressView()
                 }
             }
-             .navigationDestination(item: $keysignPayload) { payload in
+            .onAppear {
+                Task { await loadFastVaultStatus() }
+            }
+            .navigationDestination(item: $keysignPayload) { payload in
                 SendRouteBuilder().buildPairScreen(
                     vault: vault,
                     tx: sendTransaction,
                     keysignPayload: payload,
-                    fastVaultPassword: nil
+                    fastVaultPassword: fastVaultPassword.nilIfEmpty
                 )
             }
+            .crossPlatformSheet(isPresented: $fastPasswordPresented) {
+                FastVaultEnterPasswordView(
+                    password: $fastVaultPassword,
+                    vault: vault,
+                    onSubmit: { Task { await handleWithdraw() } }
+                )
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var withdrawButton: some View {
+        if isFastVault {
+            // Fast Vault: Show long press button with password option
+            VStack {
+                Text(NSLocalizedString("holdForPairedSign", comment: ""))
+                    .foregroundColor(Theme.colors.textExtraLight)
+                    .font(Theme.fonts.bodySMedium)
+                
+                LongPressPrimaryButton(title: NSLocalizedString("circleWithdrawConfirm", comment: "Continue")) {
+                    // Short press: Show password entry
+                    fastPasswordPresented = true
+                } longPressAction: {
+                    // Long press: Paired sign (no password)
+                    fastVaultPassword = ""
+                    Task { await handleWithdraw() }
+                }
+            }
+            .disabled(isButtonDisabled)
+        } else {
+            // Normal Vault: Simple button
+            PrimaryButton(title: NSLocalizedString("circleWithdrawConfirm", comment: "Continue")) {
+                Task { await handleWithdraw() }
+            }
+            .disabled(isButtonDisabled)
+        }
+    }
+    
+    private var isButtonDisabled: Bool {
+        amount.isEmpty || (Decimal(string: amount) ?? 0) <= 0 || (Decimal(string: amount) ?? 0) > model.balance || model.ethBalance <= 0 || isLoading
+    }
+    
+    private func loadFastVaultStatus() async {
+        let isExist = await FastVaultService.shared.exist(pubKeyECDSA: vault.pubKeyECDSA)
+        let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
+        
+        await MainActor.run {
+            isFastVault = isExist && !isLocalBackup
         }
     }
     
@@ -207,11 +258,9 @@ struct CircleWithdrawView: View {
             let cleanAmountUnits = amountUnits.components(separatedBy: ".").first ?? amountUnits
             let amountVal = BigInt(cleanAmountUnits) ?? BigInt(0)
             
-            // Recipient is Vault Address
-            // Which one? The one matching the chain.
-            // Circle supports ETH. So ETH address.
+            // Recipient is Vault Address (ETH chain)
             guard let recipientCoin = vault.coins.first(where: { $0.chain == .ethereum }) else {
-                 throw NSError(domain: "CircleWithdraw", code: 404, userInfo: [NSLocalizedDescriptionKey: "ETH address not found"])
+                throw NSError(domain: "CircleWithdraw", code: 404, userInfo: [NSLocalizedDescriptionKey: "ETH address not found"])
             }
             
             let payload = try await model.logic.getWithdrawalPayload(
@@ -220,12 +269,13 @@ struct CircleWithdrawView: View {
                 amount: amountVal
             )
             
-            // Setup Dummy Transaction for Routing
-            // We need a coin for the "SendTransaction" context to render details correctly in Keysign
-            let coinToUse = recipientCoin // Use ETH coin as context or USDC if present
+            // Setup Transaction for Routing
+            let coinToUse = recipientCoin
             
             await MainActor.run {
                 self.sendTransaction.reset(coin: coinToUse)
+                self.sendTransaction.isFastVault = isFastVault
+                self.sendTransaction.fastVaultPassword = fastVaultPassword
                 self.keysignPayload = payload
                 isLoading = false
             }

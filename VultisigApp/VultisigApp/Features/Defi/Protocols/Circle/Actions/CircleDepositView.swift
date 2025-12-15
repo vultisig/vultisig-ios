@@ -15,11 +15,13 @@ struct CircleDepositView: View {
     @Environment(\.dismiss) var dismiss
     
     @StateObject private var tx = SendTransaction()
+    @StateObject private var sendCryptoViewModel = SendCryptoViewModel()
     @State private var amount: String = ""
     @State private var percentage: Double = 0.0
     @State private var usdcCoin: Coin?
     @State private var navigateToVerify = false
     @State private var error: Error?
+    @State private var isLoading = false
     
     var body: some View {
         NavigationStack {
@@ -136,32 +138,42 @@ struct CircleDepositView: View {
                                 .padding(.bottom, 8)
                         }
                         
-                        PrimaryButton(title: NSLocalizedString("circleDepositContinue", comment: "Continue")) {
-                            handleContinue()
+                        if isLoading {
+                            ProgressView()
+                                .padding()
+                        } else {
+                            PrimaryButton(title: NSLocalizedString("circleDepositContinue", comment: "Continue")) {
+                                Task { await handleContinue() }
+                            }
+                            .disabled(amount.isEmpty || (Decimal(string: amount) ?? 0) <= 0 || (Decimal(string: amount) ?? 0) > (usdcCoin?.balanceDecimal ?? 0))
                         }
-                        .disabled(amount.isEmpty || (Decimal(string: amount) ?? 0) <= 0 || (Decimal(string: amount) ?? 0) > (usdcCoin?.balanceDecimal ?? 0))
                     }
                     .padding()
                     .background(Theme.colors.bgPrimary)
                 }
             }
-            .onAppear(perform: loadData)
+            .onAppear {
+                Task { await loadData() }
+            }
             .navigationDestination(isPresented: $navigateToVerify) {
                 SendRouteBuilder().buildVerifyScreen(tx: tx, vault: vault)
             }
         }
     }
     
-    private func loadData() {
+    private func loadData() async {
         // Find USDC Coin
         let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
         let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
         
         if let coin = vault.coins.first(where: { $0.chain == chain && $0.ticker == "USDC" }) {
-            self.usdcCoin = coin
-            // Force refresh if needed, usually viewmodel handles it
+            await MainActor.run {
+                self.usdcCoin = coin
+                tx.reset(coin: coin)
+            }
+            // Load Fast Vault status
+            await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
         }
-        
     }
     
     private func updatePercentage(from amountStr: String) {
@@ -183,22 +195,26 @@ struct CircleDepositView: View {
         }
     }
     
-    private func handleContinue() {
+    private func handleContinue() async {
         guard let coin = usdcCoin, let amountDec = Decimal(string: amount), let toAddress = vault.circleWalletAddress else {
             return
         }
         
+        await MainActor.run { isLoading = true }
+        
         // Prepare Transaction
-        tx.reset(coin: coin)
         tx.coin = coin
         tx.fromAddress = coin.address
         tx.toAddress = toAddress
         tx.amount = amountDec.description
-        // Convert to Raw Amount (BigInt)
-        let rawAmount = coin.raw(for: amountDec)
-        // Set memo if needed? No specific memo for Circle Deposit usually
         
-        // Push verify
-        navigateToVerify = true
+        // Ensure Fast Vault state is loaded (in case it wasn't loaded in loadData)
+        await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
+        
+        await MainActor.run {
+            isLoading = false
+            navigateToVerify = true
+        }
     }
 }
+
