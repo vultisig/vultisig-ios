@@ -28,6 +28,11 @@ struct ContentView: View {
         NavigationStack(path: $navigationRouter.navPath) {
             container
                 .navigationDestination(for: SendRoute.self) { router.sendRouter.build($0) }
+                .navigationDestination(for: KeygenRoute.self) { router.keygenRouter.build($0) }
+                .navigationDestination(for: VaultRoute.self) { router.vaultRouter.build($0) }
+                .navigationDestination(for: OnboardingRoute.self) { router.onboardingRouter.build($0) }
+                .navigationDestination(for: ReferralRoute.self) { router.referralRouter.build($0) }
+                .navigationDestination(for: FunctionCallRoute.self) { router.functionCallRouter.build($0) }
         }
         .environment(\.router, router.navigationRouter)
         .id(appViewModel.referenceID)

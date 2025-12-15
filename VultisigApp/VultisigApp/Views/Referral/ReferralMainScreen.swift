@@ -11,12 +11,13 @@ import SwiftData
 struct ReferralMainScreen: View {
     @ObservedObject var referredViewModel: ReferredViewModel
     @ObservedObject var referralViewModel: ReferralViewModel
-    
+
     @State var selectedVault: Vault?
     @State var showReferralCodeCopied = false
     @State var presentEditReferredScreen = false
     @State var presentVaultSelectionScreen = false
-    
+    @Environment(\.router) var router
+
     private let referralSavePercentage: String = "10%"
     
     init(referredViewModel: ReferredViewModel, referralViewModel: ReferralViewModel) {
@@ -38,11 +39,16 @@ struct ReferralMainScreen: View {
             }
         }
         .overlay(PopupCapsule(text: "referralCodeCopied", showPopup: $showReferralCodeCopied))
-        .navigationDestination(isPresented: $presentEditReferredScreen) {
-            ReferredCodeFormScreen(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
+        .onChange(of: presentEditReferredScreen) { _, isActive in
+            guard isActive else { return }
+            router.navigate(to: ReferralRoute.referredCodeForm(
+                referredViewModel: referredViewModel,
+                referralViewModel: referralViewModel
+            ))
         }
-        .navigationDestination(isPresented: $presentVaultSelectionScreen) {
-            ReferralVaultSelectionScreen(selectedVault: $selectedVault)
+        .onChange(of: presentVaultSelectionScreen) { _, isActive in
+            guard isActive else { return }
+            router.navigate(to: ReferralRoute.vaultSelection(selectedVault: selectedVault))
         }
         .onLoad {
             Task {
@@ -59,8 +65,8 @@ struct ReferralMainScreen: View {
     }
 
     var createReferredBanner: some View {
-        NavigationLink {
-            ReferredCodeFormScreen(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
+        Button {
+            presentEditReferredScreen = true
         } label: {
             BannerView(bgImage: "referral-banner") {
                 VStack(alignment: .leading, spacing: 2) {
@@ -73,7 +79,7 @@ struct ReferralMainScreen: View {
                     } highlightedTextStyle: {
                         $0.foregroundColor = Theme.colors.primaryAccent4
                     }
-                    
+
                     Text("addFriendsReferral".localized)
                         .foregroundStyle(Theme.colors.textPrimary)
                         .font(Theme.fonts.bodySMedium)

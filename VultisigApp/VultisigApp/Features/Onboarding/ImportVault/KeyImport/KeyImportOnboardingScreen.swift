@@ -13,7 +13,8 @@ struct KeyImportOnboardingScreen: View {
     @State var showInformation: Bool = false
     @State var informationOpacity: CGFloat = 0
     @State private var showImportSeedPhrase = false
-    
+    @Environment(\.router) var router
+
     var body: some View {
         Screen {
             VStack(spacing: .zero) {
@@ -44,8 +45,9 @@ struct KeyImportOnboardingScreen: View {
             animationVM?.stop()
             animationVM = nil
         }
-        .navigationDestination(isPresented: $showImportSeedPhrase) {
-            ImportSeedphraseScreen()
+        .onChange(of: showImportSeedPhrase) { _, isActive in
+            guard isActive else { return }
+            router.navigate(to: OnboardingRoute.importSeedphrase(keyImportInput: nil))
         }
     }
     

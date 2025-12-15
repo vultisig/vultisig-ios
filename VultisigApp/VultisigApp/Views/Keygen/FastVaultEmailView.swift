@@ -21,7 +21,8 @@ struct FastVaultEmailView: View {
     @State var isEmptyEmail: Bool = false
     @State var isInvalidEmail: Bool = false
     @FocusState var isEmailFocused: Bool
-    
+    @Environment(\.router) var router
+
     var body: some View {
         content
             .onChange(of: email) { _ ,newValue in

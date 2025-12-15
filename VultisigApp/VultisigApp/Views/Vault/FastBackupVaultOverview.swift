@@ -22,7 +22,8 @@ struct FastBackupVaultOverview: View {
     
     @State var animationVM: RiveViewModel? = nil
     @State var backupVaultAnimationVM: RiveViewModel? = nil
-    
+    @Environment(\.router) var router
+
     var body: some View {
         ZStack {
             Background()
@@ -40,12 +41,22 @@ struct FastBackupVaultOverview: View {
                 goBackToEmailSetup: $goBackToEmailSetup
             )
         }
-        .navigationDestination(isPresented: $isBackupLinkActive) {
-            VaultBackupNowScreen(tssType: tssType, backupType: .single(vault: vault), isNewVault: true)
+        .onChange(of: isBackupLinkActive) { _, isActive in
+            guard isActive else { return }
+            router.navigate(to: KeygenRoute.backupNow(
+                tssType: tssType,
+                backupType: .single(vault: vault),
+                isNewVault: true
+            ))
         }
-        .navigationDestination(isPresented: $goBackToEmailSetup, destination: {
-            NewWalletNameView(tssType: .Keygen,selectedTab: .fast, name: "")
-        })
+        .onChange(of: goBackToEmailSetup) { _, isActive in
+            guard isActive else { return }
+            router.navigate(to: KeygenRoute.newWalletName(
+                tssType: .Keygen,
+                selectedTab: .fast,
+                name: ""
+            ))
+        }
         .onAppear {
             setData()
         }

@@ -11,8 +11,9 @@ struct KeyImportNewVaultSetupScreen: View {
     let vault: Vault
     let keyImportInput: KeyImportInput?
     let fastSignConfig: FastSignConfig
-    
+
     @State private var presentPeersScreen: Bool = false
+    @Environment(\.router) var router
     
     var body: some View {
         Screen(edgeInsets: .init(leading: 0, trailing: 0)) {
@@ -32,14 +33,15 @@ struct KeyImportNewVaultSetupScreen: View {
                 .padding(.horizontal, 16)
             }
         }
-        .navigationDestination(isPresented: $presentPeersScreen) {
-            PeerDiscoveryView(
+        .onChange(of: presentPeersScreen) { _, isActive in
+            guard isActive else { return }
+            router.navigate(to: KeygenRoute.peerDiscovery(
                 tssType: .KeyImport,
                 vault: vault,
                 selectedTab: .secure,
                 fastSignConfig: fastSignConfig,
                 keyImportInput: keyImportInput
-            )
+            ))
         }
     }
     

@@ -18,7 +18,8 @@ struct VaultBackupNowScreen: View {
     @State var animation: RiveViewModel?
     @State var fileModel: FileExporterModel<EncryptedDataFile>?
     @State var presentFileExporter = false
-   
+    @Environment(\.router) var router
+
     var body: some View {
         VaultBackupContainerView(
             presentFileExporter: $presentFileExporter,
@@ -39,8 +40,13 @@ struct VaultBackupNowScreen: View {
                 }
             }
         }
-        .navigationDestination(isPresented: $presentBackupOptions) {
-            VaultBackupPasswordOptionsScreen(tssType: tssType, backupType: backupType, isNewVault: isNewVault)
+        .onChange(of: presentBackupOptions) { _, isActive in
+            guard isActive else { return }
+            router.navigate(to: VaultRoute.backupPasswordOptions(
+                tssType: tssType,
+                backupType: backupType,
+                isNewVault: isNewVault
+            ))
         }
         .onLoad(perform: onLoad)
     }

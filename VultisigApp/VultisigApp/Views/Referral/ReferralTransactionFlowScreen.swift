@@ -20,7 +20,8 @@ struct ReferralTransactionFlowScreen: View {
     @State var keysignView: KeysignView? = nil
     @State var isLoading = false
     @State var navigateToVerify = false
-    
+    @Environment(\.router) var router
+
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
@@ -38,10 +39,9 @@ struct ReferralTransactionFlowScreen: View {
                     }
                 }
             }
-            .navigationDestination(isPresented: $navigateToVerify) {
-                if let vault {
-                    FunctionCallRouteBuilder().buildVerifyScreen(tx: sendTx, vault: vault)
-                }
+            .onChange(of: navigateToVerify) { _, isActive in
+                guard isActive, let vault else { return }
+                router.navigate(to: FunctionCallRoute.verify(tx: sendTx, vault: vault))
             }
     }
     

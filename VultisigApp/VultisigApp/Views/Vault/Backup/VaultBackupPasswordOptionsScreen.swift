@@ -17,7 +17,8 @@ struct VaultBackupPasswordOptionsScreen: View {
     @State var presentPasswordScreen = false
     @StateObject var backupViewModel = EncryptedBackupViewModel()
     @State var fileModel: FileExporterModel<EncryptedDataFile>?
-    
+    @Environment(\.router) var router
+
     var body: some View {
         VaultBackupContainerView(
             presentFileExporter: $presentFileExporter,
@@ -36,8 +37,13 @@ struct VaultBackupPasswordOptionsScreen: View {
                 }
             }
         }
-        .navigationDestination(isPresented: $presentPasswordScreen) {
-            VaultBackupPasswordScreen(tssType: tssType, backupType: backupType, isNewVault: isNewVault)
+        .onChange(of: presentPasswordScreen) { _, isActive in
+            guard isActive else { return }
+            router.navigate(to: VaultRoute.backupPasswordScreen(
+                tssType: tssType,
+                backupType: backupType,
+                isNewVault: isNewVault
+            ))
         }
         .onAppear(perform: onAppear)
         .onDisappear(perform: backupViewModel.resetData)

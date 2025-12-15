@@ -10,14 +10,15 @@ import WalletCore
 
 struct ImportSeedphraseScreen: View {
     let wordsCountType = [12, 24]
-    
+
     @State private var presentChainsSetup: Bool = false
     @State private var validationTask: Task<Void, Never>?
-    
+
     @FocusState var isFocused: Bool
     @State var mnemonicInput: String = ""
     @State var validMnemonic: Bool? = false
     @State var errorMessage: String?
+    @Environment(\.router) var router
     
     var importButtonDisabled: Bool {
         validMnemonic == false
@@ -105,8 +106,11 @@ struct ImportSeedphraseScreen: View {
                 validateMnemonic(cleaned)
             }
         }
-        .navigationDestination(isPresented: $presentChainsSetup) {
-            KeyImportChainsSetupScreen(mnemonic: cleanMnemonic(text: mnemonicInput))
+        .onChange(of: presentChainsSetup) { _, isActive in
+            guard isActive else { return }
+            router.navigate(to: OnboardingRoute.chainsSetup(
+                mnemonic: cleanMnemonic(text: mnemonicInput)
+            ))
         }
     }
     

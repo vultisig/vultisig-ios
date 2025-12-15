@@ -20,9 +20,10 @@ struct VaultDeletionConfirmView: View {
     @State var nextSelectedVault: Vault? = nil
     
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.router) var router
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var appViewModel: AppViewModel
-    
+
     var buttonEnabled: Bool {
         permanentDeletionCheck && canLoseFundCheck && vaultBackupCheck
     }
@@ -41,8 +42,9 @@ struct VaultDeletionConfirmView: View {
             }
             .background(backgroundView)
         }
-        .navigationDestination(isPresented: $navigateToCreateVault) {
-            CreateVaultView(showBackButton: false)
+        .onChange(of: navigateToCreateVault) { _, isActive in
+            guard isActive else { return }
+            router.navigate(to: VaultRoute.createVault(showBackButton: false))
         }
     }
     

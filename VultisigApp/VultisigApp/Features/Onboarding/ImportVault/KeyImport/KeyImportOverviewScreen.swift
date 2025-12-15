@@ -23,7 +23,8 @@ struct KeyImportOverviewScreen: View {
     @State private var isVerificationLinkActive = false
     @State private var isBackupLinkActive = false
     @State private var goBackToEmailSetup = false
-    
+    @Environment(\.router) var router
+
     var body: some View {
         Screen(edgeInsets: .init(leading: 0, trailing: 0)) {
             VStack(spacing: 0) {
@@ -53,11 +54,20 @@ struct KeyImportOverviewScreen: View {
                 goBackToEmailSetup: $goBackToEmailSetup
             )
         }
-        .navigationDestination(isPresented: $presentBackupNowScreen) {
-            VaultBackupNowScreen(tssType: .KeyImport, backupType: .single(vault: vault), isNewVault: true)
+        .onChange(of: presentBackupNowScreen) { _, isActive in
+            guard isActive else { return }
+            router.navigate(to: KeygenRoute.backupNow(
+                tssType: .KeyImport,
+                backupType: .single(vault: vault),
+                isNewVault: true
+            ))
         }
-        .navigationDestination(isPresented: $goBackToEmailSetup) {
-            VaultSetupScreen(tssType: .KeyImport, keyImportInput: keyImportInput)
+        .onChange(of: goBackToEmailSetup) { _, isActive in
+            guard isActive else { return }
+            router.navigate(to: OnboardingRoute.vaultSetup(
+                tssType: .KeyImport,
+                keyImportInput: keyImportInput
+            ))
         }
         .onLoad {
             if email != nil {

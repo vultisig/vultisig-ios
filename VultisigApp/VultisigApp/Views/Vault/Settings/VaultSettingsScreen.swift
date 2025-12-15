@@ -15,7 +15,8 @@ struct VaultSettingsScreen: View {
     @Query var folders: [Folder]
     
     @Environment(\.dismiss) var dismiss
-    
+    @Environment(\.router) var router
+
     @State var devicesInfo: [DeviceInfo] = []
     @State var showUpgradeYourVaultSheet = false
     @State var upgradeYourVaultLinkActive = false
@@ -67,12 +68,12 @@ struct VaultSettingsScreen: View {
             }
         }
         .onLoad(perform: onLoad)
-        .navigationDestination(isPresented: $upgradeYourVaultLinkActive) {
-            if vault.isFastVault {
-                VaultShareBackupsView(vault: vault)
-            } else {
-                AllDevicesUpgradeView(vault: vault)
-            }
+        .onChange(of: upgradeYourVaultLinkActive) { _, isActive in
+            guard isActive else { return }
+            router.navigate(to: VaultRoute.upgradeVault(
+                vault: vault,
+                isFastVault: vault.isFastVault
+            ))
         }
         .crossPlatformSheet(isPresented: $showUpgradeYourVaultSheet) {
             UpgradeYourVaultView(
@@ -89,14 +90,21 @@ struct VaultSettingsScreen: View {
                 presentServerBackup = true
             }
         }
-        .navigationDestination(isPresented: $presentServerBackup) {
-            VaultServerBackupScreen(vault: vault)
+        .onChange(of: presentServerBackup) { _, isActive in
+            guard isActive else { return }
+            router.navigate(to: VaultRoute.serverBackup(vault: vault))
         }
-        .navigationDestination(isPresented: $presentSingleDeviceBackup) {
-            VaultBackupPasswordOptionsScreen(tssType: .Keygen, backupType: .single(vault: vault))
+        .onChange(of: presentSingleDeviceBackup) { _, isActive in
+            guard isActive else { return }
+            router.navigate(to: VaultRoute.backupPasswordOptions(
+                tssType: .Keygen,
+                backupType: .single(vault: vault),
+                isNewVault: false
+            ))
         }
-        .navigationDestination(isPresented: $presentMultipleDeviceBackup) {
-            VaultBackupSelectionScreen(selectedVault: vault)
+        .onChange(of: presentMultipleDeviceBackup) { _, isActive in
+            guard isActive else { return }
+            router.navigate(to: VaultRoute.backupSelection(vault: vault))
         }
         .onChange(of: presentFastSigningBiometricsSheet) { _, isPresented in
             if !isPresented {

@@ -15,6 +15,7 @@ struct SecureBackupVaultOverview: View {
     @State var isVerificationLinkActive = false
     @State var isBackupLinkActive = false
     @State var animationVM: RiveViewModel? = nil
+    @Environment(\.router) var router
 
     let totalTabCount = 2
 
@@ -24,8 +25,13 @@ struct SecureBackupVaultOverview: View {
             animation
             container
         }
-        .navigationDestination(isPresented: $isBackupLinkActive) {
-            VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: vault), isNewVault: true)
+        .onChange(of: isBackupLinkActive) { _, isActive in
+            guard isActive else { return }
+            router.navigate(to: KeygenRoute.backupNow(
+                tssType: .Keygen,
+                backupType: .single(vault: vault),
+                isNewVault: true
+            ))
         }
         .onAppear {
             animationVM = RiveViewModel(fileName: "securevault_overview", autoPlay: true)

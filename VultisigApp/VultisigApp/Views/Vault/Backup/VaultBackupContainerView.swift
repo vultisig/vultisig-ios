@@ -18,14 +18,19 @@ struct VaultBackupContainerView<Content: View>: View {
     var content: () -> Content
     
     @State var presentSuccess: Bool = false
-    
+    @Environment(\.router) var router
+
     @EnvironmentObject var appViewModel: AppViewModel
-    
+
     var body: some View {
         content()
             .sensoryFeedback(.success, trigger: backupType.vault.isBackedUp)
-            .navigationDestination(isPresented: $presentSuccess) {
-                BackupVaultSuccessView(tssType: tssType, vault: backupType.vault)
+            .onChange(of: presentSuccess) { _, isActive in
+                guard isActive else { return }
+                router.navigate(to: VaultRoute.backupSuccess(
+                    tssType: tssType,
+                    vault: backupType.vault
+                ))
             }
             .fileExporter(isPresented: $presentFileExporter, fileModel: $fileModel) { result in
                 switch result {

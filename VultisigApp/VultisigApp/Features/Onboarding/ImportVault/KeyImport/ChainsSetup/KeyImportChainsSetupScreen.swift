@@ -9,9 +9,10 @@ import SwiftUI
 
 struct KeyImportChainsSetupScreen: View {
     let mnemonic: String
-    
+
     @StateObject var viewModel = KeyImportChainsSetupViewModel()
     @State var presentVaultSetup: Bool = false
+    @Environment(\.router) var router
     
     var body: some View {
         Screen(
@@ -43,14 +44,15 @@ struct KeyImportChainsSetupScreen: View {
         }
         .animation(.interpolatingSpring, value: viewModel.state)
         .onLoad(perform: { await viewModel.onLoad(mnemonic: mnemonic) })
-        .navigationDestination(isPresented: $presentVaultSetup) {
-            VaultSetupScreen(
+        .onChange(of: presentVaultSetup) { _, isActive in
+            guard isActive else { return }
+            router.navigate(to: OnboardingRoute.vaultSetup(
                 tssType: .KeyImport,
                 keyImportInput: KeyImportInput(
                     mnemonic: mnemonic,
                     chains: viewModel.chainsToImport
                 )
-            )
+            ))
         }
     }
     

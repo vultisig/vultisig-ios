@@ -18,7 +18,8 @@ struct FastVaultSetHintView: View {
     @State var hint: String = ""
     @State var isLinkActive = false
     @FocusState var isFocused: Bool
-    
+    @Environment(\.router) var router
+
     var body: some View {
         content
             .onAppear(){

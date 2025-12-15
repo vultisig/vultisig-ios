@@ -10,6 +10,7 @@ import SwiftUI
 struct BackupVaultNowView: View {
     let vault: Vault
     @State var isHomeAfterSkipShown = false
+    @Environment(\.router) var router
 
     var body: some View {
         ZStack {
@@ -18,11 +19,16 @@ struct BackupVaultNowView: View {
         }
         .navigationBarBackButtonHidden(true)
     }
-    
+
     var view: some View {
         container
-            .navigationDestination(isPresented: $isHomeAfterSkipShown) {
-                HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
+            .onChange(of: isHomeAfterSkipShown) { _, isActive in
+                guard isActive else { return }
+                router.navigate(to: VaultRoute.home(
+                    vault: vault,
+                    showVaultsList: false,
+                    shouldJoinKeygen: false
+                ))
             }
     }
     
