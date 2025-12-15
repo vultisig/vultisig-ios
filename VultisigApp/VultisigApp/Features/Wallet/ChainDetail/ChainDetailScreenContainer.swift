@@ -38,6 +38,10 @@ struct ChainDetailScreenContainer: View {
             } onAccessory: {
                 onCamera()
             }
+            .onChange(of: selectedTab) { _, tab in
+                guard tab == .camera else { return }
+                onCamera()
+            }
             .showIf(!tabs.isEmpty)
         }
         .onLoad {
