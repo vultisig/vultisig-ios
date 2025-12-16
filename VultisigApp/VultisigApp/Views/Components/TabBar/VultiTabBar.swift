@@ -31,7 +31,7 @@ struct VultiTabBar<Item: TabBarItem, Content: View>: View {
     }
     
     var body: some View {
-        ZStack {
+        Group {
 #if os(macOS)
             legacyTabBar
 #else
@@ -44,6 +44,7 @@ struct VultiTabBar<Item: TabBarItem, Content: View>: View {
         }.onChange(of: selectedItem) { oldValue, newValue in
             if newValue == accessory {
                 selectedItem = oldValue
+                onAccessory?()
             }
         }
     }

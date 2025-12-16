@@ -10,43 +10,62 @@ import SwiftUI
 struct ChainDetailScreenContainer: View {
     @ObservedObject var group: GroupedChain
     let vault: Vault
-    let onCamera: () -> Void
+    @Binding var showCamera: Bool
     
     @State private var selectedTab: HomeTab = .wallet
-    @State private var tabs: [HomeTab] = []
+    private let tabs: [HomeTab]
+    
+    @State private var showAction: Bool = false
+    @State private var vaultAction: VaultAction? = nil
+    @StateObject var sendTx = SendTransaction()
+    
+    init(group: GroupedChain, vault: Vault, showCamera: Binding<Bool>) {
+        self.group = group
+        self.vault = vault
+        self._showCamera = showCamera
+        let supportsDefiTab = CoinAction.defiChains.contains(group.chain)
+        tabs = supportsDefiTab ? [.wallet, .defi] : [.wallet]
+    }
     
     var body: some View {
-        ZStack {
-            VultiTabBar(
-                selectedItem: $selectedTab,
-                items: tabs,
-                accessory: .camera
-            ) { tab in
-                Group {
-                    switch tab {
-                    case .wallet:
-                        ChainDetailScreen(group: group, vault: vault)
-                    case .defi:
-                        DefiChainMainScreen(vault: vault, group: group)
-                    case .camera:
-                        EmptyView()
-                    }
+        VultiTabBar(
+            selectedItem: $selectedTab,
+            items: tabs,
+            accessory: .camera
+        ) { tab in
+            Group {
+                switch tab {
+                case .wallet:
+                    ChainDetailScreen(
+                        group: group,
+                        vault: vault,
+                        vaultAction: $vaultAction,
+                        showAction: $showAction
+                    )
+                case .defi:
+                    DefiChainMainScreen(vault: vault, group: group)
+                case .camera:
+                    EmptyView()
                 }
+            }
 #if os(macOS)
-                .navigationBarBackButtonHidden()
+            .navigationBarBackButtonHidden()
 #endif
-            } onAccessory: {
-                onCamera()
-            }
-            .onChange(of: selectedTab) { _, tab in
-                guard tab == .camera else { return }
-                onCamera()
-            }
-            .showIf(!tabs.isEmpty)
+        } onAccessory: {
+            showCamera = true
         }
-        .onLoad {
-            let supportsDefiTab = CoinAction.defiChains.contains(group.chain)
-            tabs = supportsDefiTab ? [.wallet, .defi] : [.wallet]
+        .onChange(of: selectedTab) { _, tab in
+            guard tab == .camera else { return }
+            showCamera = true
+        }
+        .navigationDestination(isPresented: $showAction) {
+            if let vaultAction {
+                VaultActionRouteBuilder().buildActionRoute(
+                    action: vaultAction,
+                    sendTx: sendTx,
+                    vault: vault
+                )
+            }
         }
     }
 }
@@ -55,6 +74,6 @@ struct ChainDetailScreenContainer: View {
     ChainDetailScreenContainer(
         group: .example,
         vault: .example,
-        onCamera: {}
+        showCamera: .constant(false)
     )
 }

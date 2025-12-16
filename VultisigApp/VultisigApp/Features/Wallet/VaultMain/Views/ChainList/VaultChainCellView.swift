@@ -12,6 +12,7 @@ struct VaultChainCellView: View {
     let vault: Vault
     var onCopy: () -> Void
     var onCamera: () -> Void
+    @State private var showCamera: Bool = false
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
@@ -20,7 +21,7 @@ struct VaultChainCellView: View {
             ChainDetailScreenContainer(
                 group: group,
                 vault: vault,
-                onCamera: onCamera
+                showCamera: $showCamera
             )
         } label: {
             GroupedChainCellView(
@@ -33,6 +34,12 @@ struct VaultChainCellView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .onChange(of: showCamera) { oldValue, newValue in
+            if newValue {
+                onCamera()
+                showCamera = false
+            }
+        }
     }
 }
 
