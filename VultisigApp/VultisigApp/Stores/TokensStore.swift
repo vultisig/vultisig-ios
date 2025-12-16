@@ -1878,7 +1878,14 @@ class TokensStore {
         ethUSDP,
         ethVTHOR,
         ethXDEFI,
-        ethXRUNE
+        ethXRUNE,
+        ethWSTETH,
+        ethLLD,
+        ethMoca,
+        arbLEO,
+        arbYUM,
+        arbGLD,
+        arbWSTETH
     ]
     
     static let rune: CoinMeta = CoinMeta(
