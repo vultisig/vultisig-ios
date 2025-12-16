@@ -120,6 +120,11 @@ struct VaultMainScreen: View {
             shouldRefresh = false
             refresh()
         }
+        .onChange(of: vault.coins) { oldValue, newValue in
+            if oldValue.count != newValue.count {
+                refresh()
+            }
+        }
     }
     
     func topContentSection(width: CGFloat) -> some View {
