@@ -1087,7 +1087,7 @@
 "yourSeedphrase" = "Ihre Seed-Phrase";
 "yourSeedphraseSubtitle" = "Geben Sie sie ein, erstellen Sie einen Tresor, schauen Sie nie zurück";
 "twoDevices" = "2 Geräte";
-"twoDevicesSubtitle" = "Sie benötigen 2 Geräte (ein Telefon, Laptop, Browser, iPad usw.)";
+"twoDevicesSubtitle" = "Jedes Gerät, auf dem Vultisig ausgeführt werden kann, funktioniert.";
 "mnemonicPlaceholder" = "Geben Sie die 12 oder 24 Wörter Ihrer Seed-Phrase ein";
 "enterYourSeedphrase" = "Geben Sie Ihre Seed-Phrase ein";
 "enterYourSeedphraseSubtitle" = "Lassen Sie ein Leerzeichen zwischen jedem Wort. Seed-Phrasen mit 12 oder 24 Wörtern werden unterstützt.";
@@ -1097,6 +1097,9 @@
 "scanningForChainsSubtitle" = "Wir prüfen, welche Blockchains aktive Adressen haben, die mit Ihrer Seed-Phrase verknüpft sind. Dieser Vorgang kann bis zu 2 Minuten dauern.";
 "scanningForChainsSubtitleHighlight" = "Dieser Vorgang kann bis zu 2 Minuten dauern.";
 "selectChainsManually" = "Chains manuell auswählen";
+"noActiveChainsFound" = "Keine aktiven Chains gefunden";
+"noActiveChainsFoundSubtitle" = "Wir haben keine Assets auf dieser Seed-Phrase erkannt.\nJede zusätzliche Chain erhöht die Zeit zur Generierung Ihres Tresors und die Möglichkeit einer Zeitüberschreitung.";
+"addCustomChains" = "Benutzerdefinierte Chains hinzufügen";
 "foundActiveChainsTitle" = "Wir haben %d aktive Chains gefunden";
 "foundActiveChainsSubtitle" = "Jede zusätzliche Chain verdoppelt ungefähr die Zeit zur Generierung Ihres Tresors. Geschätzte Zeit für alle ausgewählten Chains: %d Minuten";
 "foundActiveChainsSubtitleHighlight" = "%d Minuten";

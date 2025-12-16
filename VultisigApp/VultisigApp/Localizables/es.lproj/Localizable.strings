@@ -1087,7 +1087,7 @@
 "yourSeedphrase" = "Tu frase semilla";
 "yourSeedphraseSubtitle" = "Ingrésala, crea una bóveda, nunca mires atrás";
 "twoDevices" = "2 dispositivos";
-"twoDevicesSubtitle" = "Necesitas 2 dispositivos (un teléfono, laptop, navegador, iPad, etc.)";
+"twoDevicesSubtitle" = "Cualquier dispositivo que pueda ejecutar Vultisig funcionará.";
 "mnemonicPlaceholder" = "Ingresa las 12 o 24 palabras de tu frase semilla";
 "enterYourSeedphrase" = "Ingresa tu frase semilla";
 "enterYourSeedphraseSubtitle" = "Deja un espacio entre cada palabra. Se admiten frases semilla de 12 o 24 palabras.";
@@ -1097,6 +1097,9 @@
 "scanningForChainsSubtitle" = "Estamos verificando qué blockchains tienen direcciones activas asociadas con tu frase semilla. Este proceso puede tardar hasta 2 minutos.";
 "scanningForChainsSubtitleHighlight" = "Este proceso puede tardar hasta 2 minutos.";
 "selectChainsManually" = "Seleccionar chains manualmente";
+"noActiveChainsFound" = "No se encontraron chains activas";
+"noActiveChainsFoundSubtitle" = "No detectamos ningún activo en esta frase semilla.\nCada chain adicional aumenta el tiempo para generar tu bóveda y la posibilidad de un tiempo de espera.";
+"addCustomChains" = "Agregar chains personalizadas";
 "foundActiveChainsTitle" = "Encontramos %d chains activas";
 "foundActiveChainsSubtitle" = "Cada chain adicional aproximadamente duplica el tiempo para generar tu bóveda. Tiempo estimado para todas las chains seleccionadas: %d minutos";
 "foundActiveChainsSubtitleHighlight" = "%d minutos";

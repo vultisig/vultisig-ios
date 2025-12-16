@@ -1087,7 +1087,7 @@
 "yourSeedphrase" = "Sua frase semente";
 "yourSeedphraseSubtitle" = "Digite-a, crie um cofre, nunca olhe para trás";
 "twoDevices" = "2 dispositivos";
-"twoDevicesSubtitle" = "Você precisa de 2 dispositivos (um telefone, laptop, navegador, iPad, etc.)";
+"twoDevicesSubtitle" = "Qualquer dispositivo que possa executar o Vultisig funcionará.";
 "mnemonicPlaceholder" = "Digite as 12 ou 24 palavras da sua frase semente";
 "enterYourSeedphrase" = "Digite sua frase semente";
 "enterYourSeedphraseSubtitle" = "Deixe um espaço entre cada palavra. Frases semente de 12 ou 24 palavras são suportadas.";
@@ -1097,6 +1097,9 @@
 "scanningForChainsSubtitle" = "Estamos verificando quais blockchains têm endereços ativos associados à sua frase semente. Este processo pode levar até 2 minutos.";
 "scanningForChainsSubtitleHighlight" = "Este processo pode levar até 2 minutos.";
 "selectChainsManually" = "Selecionar chains manualmente";
+"noActiveChainsFound" = "Nenhuma chain ativa encontrada";
+"noActiveChainsFoundSubtitle" = "Não detectamos nenhum ativo nesta frase semente.\nCada chain adicional aumenta o tempo para gerar seu cofre e a possibilidade de um tempo limite.";
+"addCustomChains" = "Adicionar chains personalizadas";
 "foundActiveChainsTitle" = "Encontramos %d chains ativas";
 "foundActiveChainsSubtitle" = "Cada chain adicional aproximadamente dobra o tempo para gerar seu cofre. Tempo estimado para todas as chains selecionadas: %d minutos";
 "foundActiveChainsSubtitleHighlight" = "%d minutos";
