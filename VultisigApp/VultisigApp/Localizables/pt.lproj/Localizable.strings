@@ -1119,5 +1119,7 @@
 "vaultSharesTitle" = "Partes do cofre, mantenha-as seguras para acessar seu cofre";
 "vaultSharesTitleHighlight" = "Partes do cofre";
 "whatAreVaultShares" = "O que são partes do cofre?";
-"whatAreVaultSharesDescription" = "Em vez de uma frase semente, seu cofre é dividido em peças chamadas partes do cofre. Cada dispositivo contém uma parte do cofre. Uma única parte não faz nada sozinha, mas combinar essas partes dá acesso ao seu cofre. Por isso é importante fazer backup delas. Cada dispositivo tem uma parte do cofre, também o servidor, faremos isso agora.";
-"whatAreVaultSharesDescriptionHighlight" = "Cada dispositivo tem uma parte do cofre, também o servidor, faremos isso agora.";
+"whatAreVaultSharesDescription" = "Em vez de uma frase semente, seu cofre é dividido em peças chamadas partes do cofre. Cada dispositivo contém uma parte do cofre. Uma única parte não faz nada sozinha, mas combinar essas partes dá acesso ao seu cofre. Por isso é importante fazer backup delas.";
+"whatAreVaultSharesDescription2" = "Cada dispositivo tem uma parte do cofre, também o servidor, faremos isso agora.";
+"appStoreReady" = "Pronto para App Store";
+"appStoreReadyDescription" = "Este cofre está pronto para usar os primeiros aplicativos de autocustódia que automatizam seus fundos com segurança!";

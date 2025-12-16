@@ -1133,5 +1133,7 @@
 "vaultSharesTitle" = "Vault shares, keep these safe to access your vault";
 "vaultSharesTitleHighlight" = "Vault shares";
 "whatAreVaultShares" = "What are vault shares?";
-"whatAreVaultSharesDescription" = "Instead of one seed phrase, your vault is split into pieces called vault shares. Each device holds one vault share. A single share does nothing on its own, but combining these shares gives you access to your vault. That’s why backing them up is important. Each device has one vault share, also the server, we’ll do that now.";
-"whatAreVaultSharesDescriptionHighlight" = "Each device has one vault share, also the server, we’ll do that now.";
+"whatAreVaultSharesDescription" = "Instead of one seed phrase, your vault is split into pieces called vault shares. Each device holds one vault share. A single share does nothing on its own, but combining these shares gives you access to your vault. That’s why backing them up is important.";
+"whatAreVaultSharesDescription2" = "Each device has one vault share, also the server, we’ll do that now.";
+"appStoreReady" = "App Store Ready";
+"appStoreReadyDescription" = "This Vault is ready to use the first self-custodial Apps to securely automate your funds!";

@@ -1121,5 +1121,7 @@
 "vaultSharesTitle" = "保险库份额，请妥善保管以访问您的保险库";
 "vaultSharesTitleHighlight" = "保险库份额";
 "whatAreVaultShares" = "什么是保险库份额？";
-"whatAreVaultSharesDescription" = "您的保险库被分成称为保险库份额的部分，而不是一个助记词。每台设备持有一个保险库份额。单个份额本身不起作用，但组合这些份额可以让您访问保险库。这就是为什么备份它们很重要。每台设备都有一个保险库份额，服务器也有，我们现在就来做。";
-"whatAreVaultSharesDescriptionHighlight" = "每台设备都有一个保险库份额，服务器也有，我们现在就来做。";
+"whatAreVaultSharesDescription" = "您的保险库被分成称为保险库份额的部分，而不是一个助记词。每台设备持有一个保险库份额。单个份额本身不起作用，但组合这些份额可以让您访问保险库。这就是为什么备份它们很重要。";
+"whatAreVaultSharesDescription2" = "每台设备都有一个保险库份额，服务器也有，我们现在就来做。";
+"appStoreReady" = "App Store就绪";
+"appStoreReadyDescription" = "此保险库已准备好使用第一批可安全自动化管理您资金的自托管应用程序！";

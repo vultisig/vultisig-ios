@@ -1119,5 +1119,7 @@
 "vaultSharesTitle" = "Parti del vault, tienile al sicuro per accedere al tuo vault";
 "vaultSharesTitleHighlight" = "Parti del vault";
 "whatAreVaultShares" = "Cosa sono le parti del vault?";
-"whatAreVaultSharesDescription" = "Invece di una seed phrase, il tuo vault è diviso in pezzi chiamati parti del vault. Ogni dispositivo contiene una parte del vault. Una singola parte da sola non fa nulla, ma combinando queste parti ottieni l'accesso al tuo vault. Ecco perché è importante farne il backup. Ogni dispositivo ha una parte del vault, anche il server, lo faremo ora.";
-"whatAreVaultSharesDescriptionHighlight" = "Ogni dispositivo ha una parte del vault, anche il server, lo faremo ora.";
+"whatAreVaultSharesDescription" = "Invece di una seed phrase, il tuo vault è diviso in pezzi chiamati parti del vault. Ogni dispositivo contiene una parte del vault. Una singola parte da sola non fa nulla, ma combinando queste parti ottieni l'accesso al tuo vault. Ecco perché è importante farne il backup.";
+"whatAreVaultSharesDescription2" = "Ogni dispositivo ha una parte del vault, anche il server, lo faremo ora.";
+"appStoreReady" = "Pronto per App Store";
+"appStoreReadyDescription" = "Questo vault è pronto per utilizzare le prime app di autocustodia che automatizzano i tuoi fondi in sicurezza!";

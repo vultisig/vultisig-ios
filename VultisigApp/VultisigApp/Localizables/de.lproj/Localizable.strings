@@ -1119,5 +1119,7 @@
 "vaultSharesTitle" = "Tresor-Anteile, bewahren Sie diese sicher auf, um auf Ihren Tresor zuzugreifen";
 "vaultSharesTitleHighlight" = "Tresor-Anteile";
 "whatAreVaultShares" = "Was sind Tresor-Anteile?";
-"whatAreVaultSharesDescription" = "Anstelle einer Seed-Phrase wird Ihr Tresor in Teile namens Tresor-Anteile aufgeteilt. Jedes Gerät hält einen Tresor-Anteil. Ein einzelner Anteil bewirkt allein nichts, aber die Kombination dieser Anteile gewährt Ihnen Zugang zu Ihrem Tresor. Deshalb ist es wichtig, sie zu sichern. Jedes Gerät hat einen Tresor-Anteil, auch der Server, das machen wir jetzt.";
-"whatAreVaultSharesDescriptionHighlight" = "Jedes Gerät hat einen Tresor-Anteil, auch der Server, das machen wir jetzt.";
+"whatAreVaultSharesDescription" = "Anstelle einer Seed-Phrase wird Ihr Tresor in Teile namens Tresor-Anteile aufgeteilt. Jedes Gerät hält einen Tresor-Anteil. Ein einzelner Anteil bewirkt allein nichts, aber die Kombination dieser Anteile gewährt Ihnen Zugang zu Ihrem Tresor. Deshalb ist es wichtig, sie zu sichern.";
+"whatAreVaultSharesDescription2" = "Jedes Gerät hat einen Tresor-Anteil, auch der Server, das machen wir jetzt.";
+"appStoreReady" = "App Store bereit";
+"appStoreReadyDescription" = "Dieser Tresor ist bereit, die ersten selbstverwahrenden Apps zu nutzen, die Ihre Mittel sicher automatisieren!";

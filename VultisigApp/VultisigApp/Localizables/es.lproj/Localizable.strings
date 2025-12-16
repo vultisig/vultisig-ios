@@ -1119,5 +1119,7 @@
 "vaultSharesTitle" = "Partes de bóveda, mantén estas seguras para acceder a tu bóveda";
 "vaultSharesTitleHighlight" = "Partes de bóveda";
 "whatAreVaultShares" = "¿Qué son las partes de bóveda?";
-"whatAreVaultSharesDescription" = "En lugar de una frase semilla, tu bóveda se divide en piezas llamadas partes de bóveda. Cada dispositivo contiene una parte de bóveda. Una sola parte no hace nada por sí sola, pero combinar estas partes te da acceso a tu bóveda. Por eso es importante hacer copias de seguridad. Cada dispositivo tiene una parte de bóveda, también el servidor, lo haremos ahora.";
-"whatAreVaultSharesDescriptionHighlight" = "Cada dispositivo tiene una parte de bóveda, también el servidor, lo haremos ahora.";
+"whatAreVaultSharesDescription" = "En lugar de una frase semilla, tu bóveda se divide en piezas llamadas partes de bóveda. Cada dispositivo contiene una parte de bóveda. Una sola parte no hace nada por sí sola, pero combinar estas partes te da acceso a tu bóveda. Por eso es importante hacer copias de seguridad.";
+"whatAreVaultSharesDescription2" = "Cada dispositivo tiene una parte de bóveda, también el servidor, lo haremos ahora.";
+"appStoreReady" = "Listo para App Store";
+"appStoreReadyDescription" = "¡Esta bóveda está lista para usar las primeras aplicaciones de autocustodia que automatizan tus fondos de forma segura!";
