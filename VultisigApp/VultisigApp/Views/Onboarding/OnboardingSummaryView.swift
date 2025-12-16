@@ -68,7 +68,8 @@ struct OnboardingSummaryView: View {
                 .disabled(!didAgree)
                 
             }
-            .background(BlurredBackground().opacity(0.5))
+            .padding(.top, 32)
+            .background(BlurredBackground())
             .onAppear {
                 setData()
             }
@@ -155,6 +156,7 @@ struct OnboardingSummaryView: View {
     private func setData() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             animationVM = RiveViewModel(fileName: kind.animation)
+            animationVM?.fit = .layout
         }
     }
 }
@@ -166,7 +168,7 @@ struct OnboardingSummaryView: View {
     }
     .crossPlatformSheet(isPresented: $isPresented) {
         OnboardingSummaryView(
-            kind: .secure,
+            kind: .keyImport,
             isPresented: .constant(true),
             onDismiss: {}
         ).environmentObject(HomeViewModel())
