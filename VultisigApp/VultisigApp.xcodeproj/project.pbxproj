@@ -1234,6 +1234,8 @@
 		DEFF59012BD238CF005DFDF9 /* SignedTransactionResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF59002BD238CF005DFDF9 /* SignedTransactionResult.swift */; };
 		F6MAHZO7QADAUEOCUKP14KWW /* ThorchainLP.swift in Sources */ = {isa = PBXBuildFile; fileRef = VX9GYT3ZT7ENIW24C32BA8O7 /* ThorchainLP.swift */; };
 		FB000BDFB76736F8CCD80FDF /* CircleDepositView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B96312D2493F377B159E118 /* CircleDepositView.swift */; };
+
+
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1752,6 +1754,8 @@
 		46F8F7272B9A011B0099454E /* ThorchainBroadcastTransactionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainBroadcastTransactionService.swift; sourceTree = "<group>"; };
 		5E7878748BB9E16298184860 /* KyberSwapQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapQuote.swift; sourceTree = "<group>"; };
 		6B96312D2493F377B159E118 /* CircleDepositView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CircleDepositView.swift; path = Features/Defi/Protocols/Circle/Actions/CircleDepositView.swift; sourceTree = "<group>"; };
+
+
 		8BE8825D6F0DBD6E8F28CB49 /* DefiCircleRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DefiCircleRow.swift; path = Features/Defi/DefiMain/View/DefiCircleRow.swift; sourceTree = "<group>"; };
 		8F55CD3A2DC382E400B53E85 /* TokensStore+Token.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TokensStore+Token.swift"; sourceTree = "<group>"; };
 		927BE27A46C4476AA7DA2902 /* SuiTokenPriceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SuiTokenPriceTests.swift; sourceTree = "<group>"; };
@@ -6208,6 +6212,8 @@
 				2082307F2DAAB6FA5911FFDC /* CircleSetupView.swift */,
 				25397BD8D2AFBC8FB7C3DDBB /* CircleDashboardView.swift */,
 				6B96312D2493F377B159E118 /* CircleDepositView.swift */,
+
+
 				BA94F61754C5BFEECCC60925 /* CircleWithdrawView.swift */,
 				8BE8825D6F0DBD6E8F28CB49 /* DefiCircleRow.swift */,
 				C4AF608FBA4584A74C87F9A8 /* CircleMSCAConfig.swift */,
@@ -7667,6 +7673,8 @@
 				784957DA9E44EAC291A4E593 /* CircleSetupView.swift in Sources */,
 				1C7BFBF50387F766821B21C2 /* CircleDashboardView.swift in Sources */,
 				FB000BDFB76736F8CCD80FDF /* CircleDepositView.swift in Sources */,
+
+
 				DB6653B223D15AFB8C3A8105 /* CircleWithdrawView.swift in Sources */,
 				60A0614473DB30544D99C624 /* DefiCircleRow.swift in Sources */,
 				ABC120DFD2AAFF2C1A56AED0 /* CircleMSCAConfig.swift in Sources */,

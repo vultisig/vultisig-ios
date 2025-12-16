@@ -31,6 +31,49 @@ struct EvmServiceStruct {
             return String(balance)
         }
     }
+
+    func getCode(address: String) async throws -> String {
+        return try await rpcService.strRpcCall(method: "eth_getCode", params: [address, "latest"])
+    }
+    
+    /// Fetches the owner of a contract using ERC-173 owner() function
+    /// Returns nil if the contract doesn't implement owner() or call fails
+    func fetchContractOwner(contractAddress: String) async -> String? {
+        // owner() function selector: 0x8da5cb5b
+        let data = "0x8da5cb5b"
+        
+        let params: [Any] = [
+            ["to": contractAddress, "data": data],
+            "latest"
+        ]
+        
+        do {
+            let result = try await rpcService.strRpcCall(method: "eth_call", params: params)
+            
+            // Result should be a 32-byte hex string (64 chars + 0x prefix)
+            // The address is in the last 20 bytes (40 chars)
+            let cleanedHex = result.stripHexPrefix()
+            
+            guard cleanedHex.count >= 40 else {
+                print("EvmServiceStruct: Invalid owner response length: \(cleanedHex.count)")
+                return nil
+            }
+            
+            // Extract the last 40 characters (20 bytes = address)
+            let addressHex = String(cleanedHex.suffix(40))
+            
+            // Check if it's a zero address
+            if addressHex == String(repeating: "0", count: 40) {
+                print("EvmServiceStruct: Owner is zero address")
+                return "0x0000000000000000000000000000000000000000"
+            }
+            
+            return "0x" + addressHex
+        } catch {
+            print("EvmServiceStruct: Failed to fetch contract owner: \(error)")
+            return nil
+        }
+    }
     
     // MARK: - Gas Operations
     

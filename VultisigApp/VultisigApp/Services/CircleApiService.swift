@@ -6,8 +6,6 @@
 //
 
 import Foundation
-import BigInt
-import WalletCore
 
 enum CircleApiError: Error {
     case invalidUrl
@@ -66,38 +64,44 @@ struct CircleApiService {
         let scaCore: String
     }
     
-    func createWallet(vaultPubkey: String) async throws -> String {
-        // Correct logic:
-        // 1. Derive ETH address from Vault Pubkey
-        guard let pubKeyData = Data(hexString: vaultPubkey),
-              let publicKey = PublicKey(data: pubKeyData, type: .secp256k1) else {
-            throw CircleApiError.invalidUrl // Or a more specific error
-        }
-        let ethAddress = AnyAddress(publicKey: publicKey, coin: .ethereum).description
+    func createWallet(ethAddress: String, force: Bool = false) async throws -> String {
+        // Simple approach: Just use the vault's ETH address directly
+        // No need to re-derive - the address already exists in vault.coins
         
-        print("CircleApiService: createWallet called. VaultPubkey: \(vaultPubkey), Derived ETH Address: \(ethAddress)")
+        print("CircleApiService: createWallet called.")
+        print("CircleApiService: ETH Address (owner): \(ethAddress)")
+        print("CircleApiService: Force: \(force)")
         
-        // 2. Fetch existing wallet via refId
-        let fetchUrlString = Endpoint.fetchCircleWallets(refId: ethAddress)
-        guard let fetchUrl = URL(string: fetchUrlString) else {
+        guard !ethAddress.isEmpty else {
+            print("CircleApiService: ERROR - ETH address is empty!")
             throw CircleApiError.invalidUrl
         }
         
-        print("CircleApiService: Fetching wallet from: \(fetchUrl.absoluteString)")
-        let (fetchData, fetchResponse) = try await URLSession.shared.data(from: fetchUrl)
-        
-        if let httpResponse = fetchResponse as? HTTPURLResponse {
-             print("CircleApiService: createWallet (FETCH) Status: \(httpResponse.statusCode)")
-        }
-        
-        if let httpResponse = fetchResponse as? HTTPURLResponse, httpResponse.statusCode == 200 {
-            let wallets = try JSONDecoder().decode([CircleWalletItem].self, from: fetchData)
-            if let firstWallet = wallets.first {
-                print("CircleApiService: Found existing wallet: \(firstWallet.address)")
-                return firstWallet.address
-            } else {
-                print("CircleApiService: No existing wallet found for this refId.")
+        // 2. Fetch existing wallet via refId (Skip if force is true)
+        if !force {
+            let fetchUrlString = Endpoint.fetchCircleWallets(refId: ethAddress)
+            guard let fetchUrl = URL(string: fetchUrlString) else {
+                throw CircleApiError.invalidUrl
             }
+            
+            print("CircleApiService: Fetching wallet from: \(fetchUrl.absoluteString)")
+            let (fetchData, fetchResponse) = try await URLSession.shared.data(from: fetchUrl)
+            
+            if let httpResponse = fetchResponse as? HTTPURLResponse {
+                 print("CircleApiService: createWallet (FETCH) Status: \(httpResponse.statusCode)")
+            }
+            
+            if let httpResponse = fetchResponse as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                let wallets = try JSONDecoder().decode([CircleWalletItem].self, from: fetchData)
+                if let firstWallet = wallets.first {
+                    print("CircleApiService: Found existing wallet: \(firstWallet.address)")
+                    return firstWallet.address
+                } else {
+                    print("CircleApiService: No existing wallet found for this refId.")
+                }
+            }
+        } else {
+             print("CircleApiService: FORCE flag enabled. Skipping check for existing wallet.")
         }
         
         // 3. If not found, try to Create (POST)

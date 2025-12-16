@@ -1183,3 +1183,9 @@
 "circleWithdrawTitle" = "Withdraw from Circle";
 "circleWithdrawAmount" = "Amount";
 "circleWithdrawConfirm" = "Continue";
+
+"circleDepositETHTitle" = "Deposit ETH";
+"circleWithdrawETHTitle" = "Withdraw ETH";
+"circleDashboardETHandGas" = "ETH & Gas";
+"circleDashboardDepositETH" = "Deposit";
+"circleDashboardETHDeposited" = "ETH & Gas Deposited";

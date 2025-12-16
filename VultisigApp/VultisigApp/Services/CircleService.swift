@@ -94,7 +94,8 @@ struct CircleService {
         vault: Vault,
         recipientAddress: String,
         amount: BigInt,
-        info: CircleViewLogic.CircleWithdrawalInfo
+        info: CircleViewLogic.CircleWithdrawalInfo,
+        isNative: Bool = false
     ) async throws -> (to: String, amount: BigInt, data: Data) {
         
         let usdcContract = info.usdcContract
@@ -103,28 +104,53 @@ struct CircleService {
         guard let recipientAddr = AnyAddress(string: recipientAddress, coin: .ethereum) else {
             throw CircleServiceError.keysignError("Invalid Recipient Address")
         }
-        guard let usdcAddr = AnyAddress(string: usdcContract, coin: .ethereum) else {
-            throw CircleServiceError.keysignError("Invalid USDC Contract Address")
+        
+        var targetHelperIndex: Data
+        var valueHelper: BigInt
+        var dataHelper: Data
+        
+        if isNative {
+            // Case 1: Native ETH Transfer
+            // execute(recipient, amount, emptyData)
+            targetHelperIndex = recipientAddr.data
+            valueHelper = amount
+            dataHelper = Data() // Empty data for native helper
+        } else {
+            // Case 2: ERC20 Token Transfer (USDC)
+            // execute(tokenContract, 0, transfer(recipient, amount))
+            guard let usdcAddr = AnyAddress(string: usdcContract, coin: .ethereum) else {
+                throw CircleServiceError.keysignError("Invalid USDC Contract Address")
+            }
+            
+            // Encode Inner Call: USDC transfer(to, amount)
+            let transferFunc = EthereumAbiFunction(name: "transfer")
+            transferFunc.addParamAddress(val: recipientAddr.data, isOutput: false)
+            transferFunc.addParamUInt256(val: amount.serializeForEvm(), isOutput: false)
+            
+            targetHelperIndex = usdcAddr.data
+            valueHelper = BigInt(0)
+            dataHelper = EthereumAbi.encode(fn: transferFunc)
         }
-        
-        // 1. Encode Inner Call: USDC transfer(to, amount)
-        // Function: transfer(address,uint256)
-        let transferFunc = EthereumAbiFunction(name: "transfer")
-        transferFunc.addParamAddress(val: recipientAddr.data, isOutput: false)
-        transferFunc.addParamUInt256(val: amount.serializeForEvm(), isOutput: false)
-        
-        let transferData = EthereumAbi.encode(fn: transferFunc)
         
         // 2. Encode Outer Call: MSCA execute(target, value, data)
         // Function: execute(address,uint256,bytes)
         let executeFunc = EthereumAbiFunction(name: "execute")
-        executeFunc.addParamAddress(val: usdcAddr.data, isOutput: false) // Target
-        executeFunc.addParamUInt256(val: BigInt(0).serializeForEvm(), isOutput: false) // Value (0 ETH)
-        executeFunc.addParamBytes(val: transferData, isOutput: false) // Data (Inner Call)
+        executeFunc.addParamAddress(val: targetHelperIndex, isOutput: false) // Target
+        executeFunc.addParamUInt256(val: valueHelper.serializeForEvm(), isOutput: false) // Value
+        executeFunc.addParamBytes(val: dataHelper, isOutput: false) // Data
         
         let executeData = EthereumAbi.encode(fn: executeFunc)
         
-        print("CircleService: Constructed Validated Execute Data: \(executeData.hexString)")
+        print("CircleService: Constructed Validated Execute Data (Native: \(isNative)): \(executeData.hexString)")
+        print("CircleService: execute payload details -> Target: \(targetHelperIndex.hexString), Value: \(valueHelper), Data: \(dataHelper.hexString)")
+        
+        let innerSelector = dataHelper.prefix(4).hexString
+        print("CircleService: Inner Selector: \(innerSelector)")
+        if !isNative && dataHelper.count > 68 {
+             // Try to log the recipient encoded in the inner transfer
+             let recipientPart = dataHelper.subdata(in: 4..<36)
+             print("CircleService: Inner Recipient Data Chunk: \(recipientPart.hexString)")
+        }
         
         // The transaction is sent TO the Circle Wallet (MSCA) itself
         guard let circleWalletAddress = vault.circleWalletAddress else {

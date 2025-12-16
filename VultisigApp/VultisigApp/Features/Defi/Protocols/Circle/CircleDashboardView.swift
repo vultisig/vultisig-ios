@@ -62,6 +62,15 @@ struct CircleDashboardView: View {
         .padding(.horizontal)
     }
     
+    var cardBackground: some View {
+        RoundedRectangle(cornerRadius: 16)
+            .fill(Theme.colors.bgSecondary)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Theme.colors.borderLight, lineWidth: 1)
+            )
+    }
+    
     var usdcDepositedCard: some View {
         VStack(spacing: 24) {
              HStack(spacing: 12) {
@@ -87,16 +96,35 @@ struct CircleDashboardView: View {
                 Spacer()
             }
             
-            DefiButton(
-                title: NSLocalizedString("circleDashboardDepositUSDC", comment: "Deposit USDC"),
-                icon: "arrow.down.left",
-                action: { showDeposit = true }
-            )
+            HStack(spacing: 12) {
+                DefiButton(
+                    title: NSLocalizedString("circleDashboardWithdraw", comment: "Withdraw"),
+                    icon: "arrow.up.right",
+                    action: { showWithdraw = true }
+                )
+                .disabled(model.balance <= 0)
+                
+                DefiButton(
+                    title: NSLocalizedString("circleDashboardDepositUSDC", comment: "Deposit"),
+                    icon: "arrow.down.left",
+                    action: { showDeposit = true }
+                )
+            }
+            
+            if model.ethBalance <= 0 && model.balance > 0 {
+                Text(NSLocalizedString("circleDashboardETHRequired", comment: "ETH is required..."))
+                    .font(.caption)
+                    .foregroundStyle(Theme.colors.alertWarning)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
         .padding(24)
         .background(cardBackground)
         .padding(.horizontal)
     }
+    
+
     
     var yieldDetailsCard: some View {
         VStack(spacing: 24) {
@@ -113,22 +141,7 @@ struct CircleDashboardView: View {
                 detailRow(title: NSLocalizedString("circleDashboardCurrentRewards", comment: "Current Rewards"), value: "+\(model.currentRewards) USDC")
             }
             
-            VStack(spacing: 12) {
-                DefiButton(
-                    title: NSLocalizedString("circleDashboardWithdraw", comment: "Withdraw"),
-                    icon: "arrow.up.right",
-                    action: { showWithdraw = true }
-                )
-                .disabled(model.ethBalance <= 0)
-                
-                if model.ethBalance <= 0 {
-                    Text(NSLocalizedString("circleDashboardETHRequired", comment: "ETH is required..."))
-                        .font(.caption)
-                        .foregroundStyle(Theme.colors.alertWarning)
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
+            // Buttons moved to usdcDepositedCard
         }
         .padding(24)
         .background(cardBackground)
@@ -149,28 +162,30 @@ struct CircleDashboardView: View {
     }
     
     // Internal access for extensions
-    var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 16)
-            .inset(by: 0.5)
-            .stroke(Color(hex: "34E6BF").opacity(0.17))
-            .fill(
-                LinearGradient(
-                    stops: [
-                        Gradient.Stop(color: Color(hex: "34E6BF"), location: 0.00),
-                        Gradient.Stop(color: Color(red: 0.11, green: 0.5, blue: 0.42).opacity(0), location: 1.00),
-                    ],
-                    startPoint: UnitPoint(x: 0.5, y: 0),
-                    endPoint: UnitPoint(x: 0.5, y: 1)
-                ).opacity(0.09)
-            )
-    }
+
     
 
     // Internal access for extensions
     func loadData() async {
-        guard let address = vault.circleWalletAddress else { return }
+        guard let mscaAddress = vault.circleWalletAddress else { return }
+        
+        // Refresh Vault Balances (USDC and ETH) to ensure "Wallet Balance" is up to date
+        let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
+        let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
+        
+        let coinsToRefresh = vault.coins.filter { coin in
+            coin.chain == chain && (coin.ticker == "USDC" || coin.isNativeToken)
+        }
+        
+        for coin in coinsToRefresh {
+            await BalanceService.shared.updateBalance(for: coin)
+        }
+        
+        // Run MSCA verification
+        await verifyMSCAOnLoad(mscaAddress: mscaAddress, chain: chain)
+        
         do {
-            let (balance, ethBalance, yield) = try await model.logic.fetchData(address: address, vault: vault)
+            let (balance, ethBalance, yield) = try await model.logic.fetchData(address: mscaAddress, vault: vault)
             await MainActor.run {
                 model.balance = balance
                 model.ethBalance = ethBalance
@@ -180,6 +195,101 @@ struct CircleDashboardView: View {
             }
         } catch {
             print("Error fetching Circle data: \(error)")
+        }
+    }
+    
+    // DEBUG: Verify MSCA on dashboard load
+    private func verifyMSCAOnLoad(mscaAddress: String, chain: Chain) async {
+        let vaultEthAddress = vault.coins.first(where: { $0.chain == chain })?.address ?? ""
+        
+        print("")
+        print("╔══════════════════════════════════════════════════════════════════╗")
+        print("║           CIRCLE DASHBOARD - MSCA VERIFICATION                   ║")
+        print("╠══════════════════════════════════════════════════════════════════╣")
+        print("║ Timestamp: \(Date())")
+        print("║ Chain: \(chain.name)")
+        print("╠══════════════════════════════════════════════════════════════════╣")
+        print("║ ADDRESSES:")
+        print("║   Vault ETH Address: \(vaultEthAddress)")
+        print("║   Circle MSCA:       \(mscaAddress)")
+        print("╠══════════════════════════════════════════════════════════════════╣")
+        
+        do {
+            let service = try EvmService.getService(forChain: chain)
+            
+            // 1. Check deployment
+            print("║ DEPLOYMENT STATUS:")
+            let code = try await service.getCode(address: mscaAddress)
+            let isDeployed = code != "0x" && code.count > 2
+            print("║   Contract code length: \(code.count) chars")
+            print("║   Is Deployed: \(isDeployed ? "✅ YES" : "❌ NO - NOT DEPLOYED!")")
+            
+            if !isDeployed {
+                print("║")
+                print("║ ⚠️  WARNING: MSCA is NOT deployed on-chain!")
+                print("║ The backend needs to call transferNativeOwnership to deploy.")
+                print("╚══════════════════════════════════════════════════════════════════╝")
+                print("")
+                return
+            }
+            
+            // 2. Fetch owner
+            print("║")
+            print("║ OWNERSHIP:")
+            let owner = await service.fetchContractOwner(contractAddress: mscaAddress)
+            if let owner = owner {
+                print("║   Owner from contract: \(owner)")
+                let ownerMatch = owner.lowercased() == vaultEthAddress.lowercased()
+                print("║   Matches vault address: \(ownerMatch ? "✅ YES" : "❌ NO - MISMATCH!")")
+                
+                if !ownerMatch {
+                    print("║")
+                    print("║ ❌ OWNER MISMATCH!")
+                    print("║   Expected (vault): \(vaultEthAddress)")
+                    print("║   Actual (MSCA):    \(owner)")
+                    print("║   Withdrawals will FAIL with this mismatch!")
+                }
+            } else {
+                print("║   Owner: ❓ Could not fetch (may not implement owner())")
+                print("║   Check Etherscan manually for ownership info")
+            }
+            
+            // 3. Balances
+            print("║")
+            print("║ BALANCES:")
+            
+            let usdcContract = chain == .ethereumSepolia 
+                ? "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"
+                : "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+            
+            let usdcBalance = try await service.fetchERC20TokenBalance(contractAddress: usdcContract, walletAddress: mscaAddress)
+            let usdcFormatted = Decimal(string: String(usdcBalance))! / pow(10, 6)
+            print("║   MSCA USDC: \(usdcFormatted) USDC")
+            
+            if let nativeCoin = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken }) {
+                let ethBalanceStr = try await service.getBalance(coin: nativeCoin.toCoinMeta(), address: mscaAddress)
+                let ethBalanceWei = Decimal(string: ethBalanceStr) ?? 0
+                let ethBalance = ethBalanceWei / pow(10, 18)
+                print("║   MSCA ETH:  \(ethBalance) ETH")
+                
+                // Vault balances
+                let vaultEthStr = try await service.getBalance(coin: nativeCoin.toCoinMeta(), address: vaultEthAddress)
+                let vaultEthWei = Decimal(string: vaultEthStr) ?? 0
+                let vaultEth = vaultEthWei / pow(10, 18)
+                print("║   Vault ETH: \(vaultEth) ETH (for gas)")
+            }
+            
+            print("╠══════════════════════════════════════════════════════════════════╣")
+            print("║ LINKS:")
+            print("║   MSCA:  https://etherscan.io/address/\(mscaAddress)")
+            print("║   Vault: https://etherscan.io/address/\(vaultEthAddress)")
+            print("╚══════════════════════════════════════════════════════════════════╝")
+            print("")
+            
+        } catch {
+            print("║ ❌ Verification error: \(error)")
+            print("╚══════════════════════════════════════════════════════════════════╝")
+            print("")
         }
     }
 }
@@ -220,7 +330,12 @@ extension CircleDashboardView {
                     }
                     
                     usdcDepositedCard
-                    yieldDetailsCard
+                    // ETH Card Removed
+                    
+                    // Only show yield details if real API data is available
+                    if !model.apy.isEmpty {
+                        yieldDetailsCard
+                    }
                 }
                 .padding(.vertical, 20)
             }
@@ -284,7 +399,12 @@ extension CircleDashboardView {
                     }
                     
                     usdcDepositedCard
-                    yieldDetailsCard
+                    // ETH Card Removed
+                    
+                    // Only show yield details if real API data is available
+                    if !model.apy.isEmpty {
+                        yieldDetailsCard
+                    }
                 }
                 .padding(.vertical, 20)
             }
@@ -294,9 +414,15 @@ extension CircleDashboardView {
         }
         .sheet(isPresented: $showDeposit) {
             CircleDepositView(vault: vault)
+                .presentationSizingFitted()
+                .applySheetSize(700, nil)
+                .background(Theme.colors.bgPrimary)
         }
         .sheet(isPresented: $showWithdraw) {
             CircleWithdrawView(vault: vault, model: model)
+                .presentationSizingFitted()
+                .applySheetSize(700, nil)
+                .background(Theme.colors.bgPrimary)
         }
         .navigationTitle(NSLocalizedString("circleTitle", comment: "Circle"))
         .toolbar {
