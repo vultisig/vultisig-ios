@@ -73,8 +73,3 @@ private extension String {
         return "\(self.prefix(4))...\(self.suffix(4))"
     }
 }
-
-// Localization keys to be added:
-// "circleRowCreateWallet" = "Create Wallet";
-// "circleRowYieldAccount" = "Yield Account";
-// "circleRowGetStarted" = "Get Started";

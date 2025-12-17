@@ -63,31 +63,21 @@ struct CircleApiService {
         let createDate: String?
         let scaCore: String?
     }
+    
     func fetchWallet(ethAddress: String) async throws -> String? {
         let fetchUrlString = Endpoint.fetchCircleWallets(refId: ethAddress)
-        print("[CircleAPI] fetchWallet - URL: \(fetchUrlString)")
         guard let fetchUrl = URL(string: fetchUrlString) else {
             throw CircleApiError.invalidUrl
         }
         
         let (fetchData, fetchResponse) = try await URLSession.shared.data(from: fetchUrl)
         
-        if let httpResponse = fetchResponse as? HTTPURLResponse {
-            print("[CircleAPI] fetchWallet - Status: \(httpResponse.statusCode)")
-            if let responseString = String(data: fetchData, encoding: .utf8) {
-                print("[CircleAPI] fetchWallet - Response: \(responseString.prefix(500))")
-            }
-            
-            if httpResponse.statusCode == 200 {
-                let wallets = try JSONDecoder().decode([CircleWalletItem].self, from: fetchData)
-                print("[CircleAPI] fetchWallet - Decoded \(wallets.count) wallets")
-                if let firstWallet = wallets.first {
-                    print("[CircleAPI] fetchWallet - Returning address: \(firstWallet.address)")
-                    return firstWallet.address
-                }
+        if let httpResponse = fetchResponse as? HTTPURLResponse, httpResponse.statusCode == 200 {
+            let wallets = try JSONDecoder().decode([CircleWalletItem].self, from: fetchData)
+            if let firstWallet = wallets.first {
+                return firstWallet.address
             }
         }
-        print("[CircleAPI] fetchWallet - Returning nil")
         return nil
     }
     

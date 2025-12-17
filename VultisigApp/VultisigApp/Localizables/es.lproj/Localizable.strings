@@ -1115,6 +1115,37 @@
 "circleWithdrawButton" = "Retirar";
 "circleTransactionSuccess" = "Transacción Exitosa";
 
+"circleSetupDeposited" = "Depositado";
+"circleSetupDepositDescription" = "Deposite sus $USDC en una cuenta Circle y gane rendimiento de forma segura dentro de su bóveda Vultisig.";
+"circleSetupInfoText" = "Los fondos permanecen totalmente bajo el control de su bóveda. Las cuentas Circle son de auto-custodia y el rendimiento se genera a través de tesorerías seguras fuera de la cadena.";
+"circleSetupAccountTitle" = "Cuenta Circle USDC";
+"circleSetupUSDCDeposited" = "USDC depositado";
+"circleSetupOpenAccount" = "Abrir Cuenta";
+"circleDashboardCircleUSDCAccount" = "Cuenta Circle USDC";
+"circleDashboardDeposited" = "Depositado";
+"circleDashboardDepositDescription" = "Deposite sus $USDC en una cuenta Circle y gane rendimiento de forma segura dentro de su bóveda Vultisig.";
+"circleDashboardInfoText" = "Los fondos permanecen totalmente bajo el control de su bóveda. Las cuentas Circle son de auto-custodia y el rendimiento se genera a través de tesorerías seguras fuera de la cadena.";
+"circleDashboardUSDCDeposited" = "USDC depositado";
+"circleDashboardDepositUSDC" = "Depositar USDC";
+"circleDashboardYieldDetails" = "Detalles de Rendimiento Circle";
+"circleDashboardTotalRewards" = "Recompensas Totales";
+"circleDashboardCurrentRewards" = "Recompensas Actuales";
+"circleDashboardETHRequired" = "Se requiere ETH para las tarifas de red.\nAñada ETH a su cuenta de depósito para continuar.";
+"circleDepositAmount" = "Cantidad";
+"circleDepositBalanceAvailable" = "Saldo disponible:";
+"circleDepositContinue" = "Continuar";
+"circleWithdrawAmount" = "Cantidad";
+"circleWithdrawConfirm" = "Continuar";
+"circleDepositETHTitle" = "Depositar ETH";
+"circleWithdrawETHTitle" = "Retirar ETH";
+"circleDashboardETHandGas" = "ETH y Gas";
+"circleDashboardDepositETH" = "Depositar";
+"circleDashboardETHDeposited" = "ETH y Gas depositado";
+"circleEthereumRequired" = "Ethereum Requerido";
+"circleEthereumRequiredDescription" = "Por favor añada Ethereum a su bóveda para usar Circle.";
+"circleErrorInvalidDetails" = "Detalles inválidos";
+"circleErrorWalletNotDeployed" = "Cartera Circle aún no desplegada. Por favor intente más tarde.";
+
 "scanningForChainsSubtitle" = "Estamos verificando qué cadenas de bloques tienen direcciones activas asociadas con tu frase semilla. Este proceso puede tardar hasta 2 minutos.";
 "scanningForChainsSubtitleHighlight" = "Este proceso puede tardar hasta 2 minutos.";
 "selectChainsManually" = "Seleccionar cadenas manualmente";

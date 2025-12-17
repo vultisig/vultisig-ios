@@ -1190,3 +1190,9 @@
 "circleDashboardETHandGas" = "ETH & Gas";
 "circleDashboardDepositETH" = "Deposit";
 "circleDashboardETHDeposited" = "ETH & Gas Deposited";
+
+// Circle Error Messages
+"circleEthereumRequired" = "Ethereum Required";
+"circleEthereumRequiredDescription" = "Please add Ethereum to your vault to use Circle.";
+"circleErrorInvalidDetails" = "Invalid details";
+"circleErrorWalletNotDeployed" = "Circle wallet not yet deployed. Please try again later.";

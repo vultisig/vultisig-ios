@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import SwiftData
 import BigInt
 import WalletCore
 import VultisigCommonData
@@ -22,22 +21,22 @@ struct CircleView: View {
             Theme.colors.bgPrimary.ignoresSafeArea()
             
             if !hasCheckedBackend {
-                // Mostrar loading enquanto verifica backend
+                // Show loading while checking backend
                 ProgressView()
                     .progressViewStyle(.circular)
             } else if model.missingEth {
-                // Mostrar aviso para adicionar ETH
+                // Show warning to add ETH
                 VStack(spacing: 24) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 60))
                         .foregroundStyle(.orange)
                     
-                    Text("Ethereum Required")
+                    Text(NSLocalizedString("circleEthereumRequired", comment: "Ethereum Required"))
                         .font(.title2)
                         .bold()
                         .foregroundStyle(Theme.colors.textPrimary)
                     
-                    Text("Please add Ethereum to your vault to use Circle.")
+                    Text(NSLocalizedString("circleEthereumRequiredDescription", comment: "Please add Ethereum..."))
                         .font(.body)
                         .foregroundStyle(Theme.colors.textLight)
                         .multilineTextAlignment(.center)
@@ -54,7 +53,6 @@ struct CircleView: View {
             }
         }
         .onAppear {
-            print("[Circle] onAppear - Local address: \(vault.circleWalletAddress ?? "nil")")
             Task { await checkExistingWallet() }
         }
         .navigationTitle(NSLocalizedString("circleTitle", comment: "Circle"))
@@ -67,26 +65,18 @@ struct CircleView: View {
     }
     
     private func checkExistingWallet() async {
-        print("[Circle] checkExistingWallet START")
         await MainActor.run { model.isLoading = true }
         
         do {
-            print("[Circle] Calling API...")
             let existingAddress = try await model.logic.checkExistingWallet(vault: vault)
-            print("[Circle] API returned: \(existingAddress ?? "nil")")
             await MainActor.run {
                 if let existingAddress, !existingAddress.isEmpty {
-                    print("[Circle] Updating vault address from '\(vault.circleWalletAddress ?? "nil")' to '\(existingAddress)'")
                     vault.circleWalletAddress = existingAddress
-                } else {
-                    print("[Circle] API returned nil/empty - keeping local: \(vault.circleWalletAddress ?? "nil")")
                 }
                 model.isLoading = false
                 hasCheckedBackend = true
-                print("[Circle] checkExistingWallet DONE - Final address: \(vault.circleWalletAddress ?? "nil")")
             }
         } catch let error as CircleServiceError {
-            print("[Circle] CircleServiceError: \(error)")
             await MainActor.run {
                 if case .keysignError(let msg) = error, msg.contains("No Ethereum") || msg.contains("No ETH") {
                     model.missingEth = true
@@ -95,7 +85,6 @@ struct CircleView: View {
                 hasCheckedBackend = true
             }
         } catch {
-            print("[Circle] API ERROR: \(error)")
             await MainActor.run {
                 model.isLoading = false
                 hasCheckedBackend = true
@@ -133,13 +122,12 @@ struct CircleViewLogic {
         let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
         
         guard let ethCoin = vault.coins.first(where: { $0.chain == chain }) else {
-            print("[Circle] ERROR: No ETH coin found in vault!")
             throw CircleServiceError.keysignError("No Ethereum found in vault. Please add Ethereum first.")
         }
         
         return try await CircleApiService.shared.fetchWallet(ethAddress: ethCoin.address)
     }
-
+    
     func createWallet(vault: Vault, force: Bool = false) async throws -> String {
         let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
         let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
@@ -182,9 +170,9 @@ struct CircleViewLogic {
             return (.zero, .zero, CircleApiService.CircleYieldResponse(apy: "", totalRewards: "", currentRewards: ""))
         }
     }
-
+    
     func getWithdrawalPayload(vault: Vault, recipient: String, amount: BigInt, isNative: Bool = false) async throws -> KeysignPayload {
-        guard let circleWalletAddress = vault.circleWalletAddress else {
+        guard vault.circleWalletAddress != nil else {
             throw CircleServiceError.keysignError("Missing Circle Wallet Address")
         }
         

@@ -34,7 +34,7 @@ struct CircleDashboardView: View {
                     .bold()
                     .foregroundStyle(Theme.colors.textLight)
                 
-                Text("$\(walletUSDCBalance.formatted())") 
+                Text("$\(walletUSDCBalance.formatted())")
                     .font(.system(size: 32, weight: .bold))
                     .foregroundStyle(Theme.colors.textPrimary)
             }
@@ -67,7 +67,7 @@ struct CircleDashboardView: View {
     
     var usdcDepositedCard: some View {
         VStack(spacing: 24) {
-             HStack(spacing: 12) {
+            HStack(spacing: 12) {
                 Image("usdc")
                     .resizable()
                     .frame(width: 32, height: 32)
@@ -104,34 +104,6 @@ struct CircleDashboardView: View {
                     action: { model.showDeposit = true }
                 )
             }
-            
-            if model.ethBalance <= 0 && model.balance > 0 {
-                Text(NSLocalizedString("circleDashboardETHRequired", comment: "ETH is required..."))
-                    .font(.caption)
-                    .foregroundStyle(Theme.colors.alertWarning)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-        .padding(24)
-        .background(cardBackground)
-        .padding(.horizontal)
-    }
-    
-    var yieldDetailsCard: some View {
-        VStack(spacing: 24) {
-            HStack {
-                Text(NSLocalizedString("circleDashboardYieldDetails", comment: "Circle Yield Details"))
-                    .font(.headline)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                Spacer()
-            }
-            
-            VStack(spacing: 12) {
-                detailRow(title: "APY", value: model.apy)
-                detailRow(title: NSLocalizedString("circleDashboardTotalRewards", comment: "Total Rewards"), value: "\(model.totalRewards) USDC")
-                detailRow(title: NSLocalizedString("circleDashboardCurrentRewards", comment: "Current Rewards"), value: "+\(model.currentRewards) USDC")
-            }
         }
         .padding(24)
         .background(cardBackground)
@@ -150,7 +122,7 @@ struct CircleDashboardView: View {
                 .foregroundStyle(Theme.colors.textPrimary)
         }
     }
-
+    
     func loadData() async {
         guard let mscaAddress = vault.circleWalletAddress else { return }
         
@@ -175,7 +147,9 @@ struct CircleDashboardView: View {
                 model.currentRewards = yield.currentRewards
             }
         } catch {
-            // Log error silently or use proper logger
+            print(
+                "Error to load the data for Circle: \(error.localizedDescription)"
+            )
         }
     }
 }

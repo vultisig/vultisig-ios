@@ -1114,6 +1114,37 @@
 "circleWithdrawButton" = "Sacar";
 "circleTransactionSuccess" = "Transação Bem-sucedida";
 
+"circleSetupDeposited" = "Depositado";
+"circleSetupDepositDescription" = "Deposite seus $USDC em uma conta Circle e ganhe rendimento de forma segura dentro do seu cofre Vultisig.";
+"circleSetupInfoText" = "Os fundos permanecem totalmente sob o controle do seu cofre. As contas Circle são de auto-custódia e o rendimento é gerado através de tesourarias seguras fora da cadeia.";
+"circleSetupAccountTitle" = "Conta Circle USDC";
+"circleSetupUSDCDeposited" = "USDC depositado";
+"circleSetupOpenAccount" = "Abrir Conta";
+"circleDashboardCircleUSDCAccount" = "Conta Circle USDC";
+"circleDashboardDeposited" = "Depositado";
+"circleDashboardDepositDescription" = "Deposite seus $USDC em uma conta Circle e ganhe rendimento de forma segura dentro do seu cofre Vultisig.";
+"circleDashboardInfoText" = "Os fundos permanecem totalmente sob o controle do seu cofre. As contas Circle são de auto-custódia e o rendimento é gerado através de tesourarias seguras fora da cadeia.";
+"circleDashboardUSDCDeposited" = "USDC depositado";
+"circleDashboardDepositUSDC" = "Depositar USDC";
+"circleDashboardYieldDetails" = "Detalhes de Rendimento Circle";
+"circleDashboardTotalRewards" = "Recompensas Totais";
+"circleDashboardCurrentRewards" = "Recompensas Atuais";
+"circleDashboardETHRequired" = "ETH é necessário para taxas de rede.\nAdicione ETH à sua conta de depósito para continuar.";
+"circleDepositAmount" = "Quantidade";
+"circleDepositBalanceAvailable" = "Saldo disponível:";
+"circleDepositContinue" = "Continuar";
+"circleWithdrawAmount" = "Quantidade";
+"circleWithdrawConfirm" = "Continuar";
+"circleDepositETHTitle" = "Depositar ETH";
+"circleWithdrawETHTitle" = "Sacar ETH";
+"circleDashboardETHandGas" = "ETH e Gas";
+"circleDashboardDepositETH" = "Depositar";
+"circleDashboardETHDeposited" = "ETH e Gas depositado";
+"circleEthereumRequired" = "Ethereum Necessário";
+"circleEthereumRequiredDescription" = "Por favor adicione Ethereum ao seu cofre para usar o Circle.";
+"circleErrorInvalidDetails" = "Detalhes inválidos";
+"circleErrorWalletNotDeployed" = "Carteira Circle ainda não implantada. Por favor tente novamente mais tarde.";
+
 "scanningForChainsSubtitle" = "Estamos verificando quais blockchains têm endereços ativos associados à sua frase semente. Este processo pode levar até 2 minutos.";
 "scanningForChainsSubtitleHighlight" = "Este processo pode levar até 2 minutos.";
 "selectChainsManually" = "Selecionar chains manualmente";

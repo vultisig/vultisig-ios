@@ -31,7 +31,7 @@ extension CircleDashboardView {
                     .padding(.horizontal, 16)
                     
                     if showInfoBanner {
-                         InfoBannerView(
+                        InfoBannerView(
                             description: NSLocalizedString("circleDashboardInfoText", comment: "Funds remain..."),
                             type: .info,
                             leadingIcon: "info.circle",
@@ -43,10 +43,6 @@ extension CircleDashboardView {
                     }
                     
                     usdcDepositedCard
-                    
-                    if !model.apy.isEmpty {
-                        yieldDetailsCard
-                    }
                 }
                 .padding(.vertical, 20)
             }

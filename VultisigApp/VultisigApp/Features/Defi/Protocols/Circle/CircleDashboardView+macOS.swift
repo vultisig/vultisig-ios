@@ -20,14 +20,10 @@ extension CircleDashboardView {
                     headerDescription
                     
                     if showInfoBanner {
-                         infoBanner
+                        infoBanner
                     }
                     
                     usdcDepositedCard
-                    
-                    if !model.apy.isEmpty {
-                        yieldDetailsCard
-                    }
                 }
                 .padding(.vertical, 20)
             }
@@ -37,9 +33,9 @@ extension CircleDashboardView {
         }
         .navigationTitle(NSLocalizedString("circleTitle", comment: "Circle"))
         .toolbar {
-             ToolbarItem(placement: .navigation) {
-                 NavigationBackButton()
-             }
+            ToolbarItem(placement: .navigation) {
+                NavigationBackButton()
+            }
         }
     }
     
@@ -60,14 +56,14 @@ extension CircleDashboardView {
     
     var infoBanner: some View {
         InfoBannerView(
-           description: NSLocalizedString("circleDashboardInfoText", comment: "Funds remain..."),
-           type: .info,
-           leadingIcon: "info.circle",
-           onClose: {
-               withAnimation { showInfoBanner = false }
-           }
-       )
-       .padding(.horizontal, 16)
+            description: NSLocalizedString("circleDashboardInfoText", comment: "Funds remain..."),
+            type: .info,
+            leadingIcon: "info.circle",
+            onClose: {
+                withAnimation { showInfoBanner = false }
+            }
+        )
+        .padding(.horizontal, 16)
     }
 }
 #endif

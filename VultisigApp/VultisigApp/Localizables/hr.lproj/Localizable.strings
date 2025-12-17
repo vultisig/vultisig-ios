@@ -1114,6 +1114,37 @@
 "circleWithdrawButton" = "Povuci";
 "circleTransactionSuccess" = "Transakcija uspješna";
 
+"circleSetupDeposited" = "Deponirano";
+"circleSetupDepositDescription" = "Deponirajte svoje $USDC na Circle račun i zarađujte prinos sigurno unutar vašeg Vultisig trezora.";
+"circleSetupInfoText" = "Sredstva ostaju potpuno pod kontrolom vašeg trezora. Circle računi su samoskrbnički i prinos se generira kroz sigurne off-chain riznice.";
+"circleSetupAccountTitle" = "Circle USDC Račun";
+"circleSetupUSDCDeposited" = "USDC deponiran";
+"circleSetupOpenAccount" = "Otvori Račun";
+"circleDashboardCircleUSDCAccount" = "Circle USDC Račun";
+"circleDashboardDeposited" = "Deponirano";
+"circleDashboardDepositDescription" = "Deponirajte svoje $USDC na Circle račun i zarađujte prinos sigurno unutar vašeg Vultisig trezora.";
+"circleDashboardInfoText" = "Sredstva ostaju potpuno pod kontrolom vašeg trezora. Circle računi su samoskrbnički i prinos se generira kroz sigurne off-chain riznice.";
+"circleDashboardUSDCDeposited" = "USDC deponiran";
+"circleDashboardDepositUSDC" = "Deponiraj USDC";
+"circleDashboardYieldDetails" = "Circle Detalji Prinosa";
+"circleDashboardTotalRewards" = "Ukupne Nagrade";
+"circleDashboardCurrentRewards" = "Trenutne Nagrade";
+"circleDashboardETHRequired" = "ETH je potreban za mrežne naknade.\nDodajte ETH na svoj depozitni račun za nastavak.";
+"circleDepositAmount" = "Iznos";
+"circleDepositBalanceAvailable" = "Dostupni saldo:";
+"circleDepositContinue" = "Nastavi";
+"circleWithdrawAmount" = "Iznos";
+"circleWithdrawConfirm" = "Nastavi";
+"circleDepositETHTitle" = "Deponiraj ETH";
+"circleWithdrawETHTitle" = "Povuci ETH";
+"circleDashboardETHandGas" = "ETH i Gas";
+"circleDashboardDepositETH" = "Deponiraj";
+"circleDashboardETHDeposited" = "ETH i Gas deponiran";
+"circleEthereumRequired" = "Ethereum Potreban";
+"circleEthereumRequiredDescription" = "Molimo dodajte Ethereum u vaš trezor za korištenje Circle-a.";
+"circleErrorInvalidDetails" = "Nevažeći detalji";
+"circleErrorWalletNotDeployed" = "Circle novčanik još nije postavljen. Molimo pokušajte kasnije.";
+
 "scanningForChainsSubtitle" = "Provjeravamo koji blockchaini imaju aktivne adrese povezane s vašom seed frazom. Ovaj proces može potrajati do 2 minute.";
 "scanningForChainsSubtitleHighlight" = "Ovaj proces može potrajati do 2 minute.";
 "selectChainsManually" = "Odaberi chainove ručno";

@@ -1114,6 +1114,37 @@
 "circleWithdrawButton" = "Preleva";
 "circleTransactionSuccess" = "Transazione Riuscita";
 
+"circleSetupDeposited" = "Depositato";
+"circleSetupDepositDescription" = "Deposita i tuoi $USDC su un account Circle e guadagna rendimento in modo sicuro nel tuo vault Vultisig.";
+"circleSetupInfoText" = "I fondi rimangono completamente sotto il controllo del tuo vault. Gli account Circle sono auto-custoditi e il rendimento viene generato attraverso tesorerie sicure off-chain.";
+"circleSetupAccountTitle" = "Account Circle USDC";
+"circleSetupUSDCDeposited" = "USDC depositato";
+"circleSetupOpenAccount" = "Apri Account";
+"circleDashboardCircleUSDCAccount" = "Account Circle USDC";
+"circleDashboardDeposited" = "Depositato";
+"circleDashboardDepositDescription" = "Deposita i tuoi $USDC su un account Circle e guadagna rendimento in modo sicuro nel tuo vault Vultisig.";
+"circleDashboardInfoText" = "I fondi rimangono completamente sotto il controllo del tuo vault. Gli account Circle sono auto-custoditi e il rendimento viene generato attraverso tesorerie sicure off-chain.";
+"circleDashboardUSDCDeposited" = "USDC depositato";
+"circleDashboardDepositUSDC" = "Deposita USDC";
+"circleDashboardYieldDetails" = "Dettagli Rendimento Circle";
+"circleDashboardTotalRewards" = "Ricompense Totali";
+"circleDashboardCurrentRewards" = "Ricompense Attuali";
+"circleDashboardETHRequired" = "ETH è richiesto per le commissioni di rete.\nAggiungi ETH al tuo account di deposito per continuare.";
+"circleDepositAmount" = "Importo";
+"circleDepositBalanceAvailable" = "Saldo disponibile:";
+"circleDepositContinue" = "Continua";
+"circleWithdrawAmount" = "Importo";
+"circleWithdrawConfirm" = "Continua";
+"circleDepositETHTitle" = "Deposita ETH";
+"circleWithdrawETHTitle" = "Preleva ETH";
+"circleDashboardETHandGas" = "ETH e Gas";
+"circleDashboardDepositETH" = "Deposita";
+"circleDashboardETHDeposited" = "ETH e Gas depositato";
+"circleEthereumRequired" = "Ethereum Richiesto";
+"circleEthereumRequiredDescription" = "Per favore aggiungi Ethereum al tuo vault per usare Circle.";
+"circleErrorInvalidDetails" = "Dettagli non validi";
+"circleErrorWalletNotDeployed" = "Wallet Circle non ancora distribuito. Per favore riprova più tardi.";
+
 "scanningForChainsSubtitle" = "Stiamo verificando quali blockchain hanno indirizzi attivi associati alla tua seed phrase. Questo processo può richiedere fino a 2 minuti.";
 "scanningForChainsSubtitleHighlight" = "Questo processo può richiedere fino a 2 minuti.";
 "selectChainsManually" = "Seleziona chain manualmente";
