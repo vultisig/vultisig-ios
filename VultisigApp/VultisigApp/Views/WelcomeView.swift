@@ -7,17 +7,15 @@ struct WelcomeView: View {
     @State var didAppear = false
     
     var body: some View {
-        container
-    }
-    
-    var content: some View {
-        ZStack {
-            Background()
-            view
-        }
+        view
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(PrimaryBackgroundWithGradient())
         .onAppear {
             setData()
         }
+        #if os(iOS)
+        .toolbar(.hidden, for: .navigationBar)
+        #endif
     }
     
     var view: some View {

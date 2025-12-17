@@ -21,74 +21,25 @@ struct VultisigLogo: View {
     }
     
     var content: some View {
-        VStack(spacing: 0) {
-            logo
-            
+        VStack(spacing: 18) {
+            primaryLogo
             if showTexts {
                 title
             }
         }
     }
     
-    var logo: some View {
-        ZStack {
-            stroke3
-            stroke2
-            stroke1
-            primaryLogo
-        }
-    }
-    
     var primaryLogo: some View {
-        Image("VultisigLogo")
+        Image("VultisigLogoSquared")
             .resizable()
-            .frame(width: 160, height: 160)
+            .frame(width: 60, height: 60)
             .scaleEffect(didAppear ? 1 : 0)
             .opacity(didAppear ? 1 : 0)
-    }
-    
-    var stroke1: some View {
-        Image("VultisigLogoStroke1")
-            .resizable()
-            .frame(width: 179.8, height: 154.5)
-            .offset(y: 2)
-            .scaleEffect(didAppear ? 1 : 0)
-            .opacity(didAppear ? 1 : 0)
-            .animation(
-                isAnimated ? .spring(duration: 0.2).delay(0.1) : .none,
-                value: didAppear
-            )
-    }
-    
-    var stroke2: some View {
-        Image("VultisigLogoStroke2")
-            .resizable()
-            .frame(width: 201.3, height: 171.2)
-            .offset(y: 4)
-            .scaleEffect(didAppear ? 1 : 0)
-            .opacity(didAppear ? 1 : 0)
-            .animation(
-                isAnimated ? .spring(duration: 0.2).delay(0.2) : .none,
-                value: didAppear
-            )
-    }
-    
-    var stroke3: some View {
-        Image("VultisigLogoStroke3")
-            .resizable()
-            .frame(width: 222.8, height: 190)
-            .offset(y: 5)
-            .scaleEffect(didAppear ? 1 : 0)
-            .opacity(didAppear ? 1 : 0)
-            .animation(
-                isAnimated ? .spring(duration: 0.2).delay(0.3) : .none,
-                value: didAppear
-            )
     }
     
     var title: some View {
         Text("Vultisig")
-            .font(Theme.fonts.headline)
+            .font(Theme.fonts.title1)
             .foregroundColor(Theme.colors.textPrimary)
             .opacity(didAppear ? 1 : 0)
             .animation(

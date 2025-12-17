@@ -10,7 +10,12 @@ import SwiftUI
 extension LinearGradient {
     static let primaryGradient = LinearGradient(colors: [Color(hex: "33E6BF"), Color(hex: "0439C7")], startPoint: .topLeading, endPoint: .bottomTrailing)
     static let primaryGradientLinear = LinearGradient(colors: [Color(hex: "33E6BF"), Color(hex: "0439C7")], startPoint: .top, endPoint: .bottom)
-    static let primaryGradientHorizontal = LinearGradient(colors: [Color(hex: "33E6BF"), Color(hex: "0439C7")], startPoint: .leading, endPoint: .trailing)
+    static let primaryGradientHorizontal = LinearGradient(colors: [Color(hex: "33E6BF"), Color(hex: "0439C7")],  startPoint: .leading, endPoint: .trailing)
+    static let secondaryGradientHorizontal = LinearGradient(
+        stops: [.init(color: Color(hex: "33E6BF"), location: 0), .init(color: Color(hex: "0439C7"), location: 2)],
+        startPoint: .leading,
+        endPoint: .trailing
+    )
     static let progressGradient = LinearGradient(colors: [Color(hex: "0439C7"), Color(hex: "33E6BF")], startPoint: .leading, endPoint: .trailing)
     static let cancelRed = LinearGradient(colors: [Color.red], startPoint: .topLeading, endPoint: .bottomTrailing)
     static let solidBlue = LinearGradient(colors: [Theme.colors.bgButtonTertiary], startPoint: .topLeading, endPoint: .bottomTrailing)

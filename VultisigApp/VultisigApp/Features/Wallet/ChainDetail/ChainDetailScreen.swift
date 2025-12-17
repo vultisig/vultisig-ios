@@ -10,8 +10,8 @@ import SwiftUI
 struct ChainDetailScreen: View {
     @ObservedObject var group: GroupedChain
     let vault: Vault
-    @State var vaultAction: VaultAction?
-    @State var showAction: Bool = false
+    @Binding var vaultAction: VaultAction?
+    @Binding var showAction: Bool
     
     @StateObject var viewModel: ChainDetailViewModel
     
@@ -31,9 +31,16 @@ struct ChainDetailScreen: View {
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
     
-    init(group: GroupedChain, vault: Vault) {
+    init(
+        group: GroupedChain,
+        vault: Vault,
+        vaultAction: Binding<VaultAction?>,
+        showAction: Binding<Bool>
+    ) {
         self.group = group
         self.vault = vault
+        self._vaultAction = vaultAction
+        self._showAction = showAction
         self._viewModel = StateObject(wrappedValue: ChainDetailViewModel(vault: vault, group: group))
     }
     
@@ -78,15 +85,6 @@ struct ChainDetailScreen: View {
         .onLoad {
             viewModel.refresh(group: group)
             refresh()
-        }
-        .navigationDestination(isPresented: $showAction) {
-            if let vaultAction {
-                VaultActionRouteBuilder().buildActionRoute(
-                    action: vaultAction,
-                    sendTx: sendTx,
-                    vault: vault
-                )
-            }
         }
         .crossPlatformSheet(item: $coinToShow) {
             CoinDetailScreen(
@@ -287,6 +285,8 @@ private extension ChainDetailScreen {
 #Preview {
     ChainDetailScreen(
         group: .example,
-        vault: .example
+        vault: .example,
+        vaultAction: .constant(nil),
+        showAction: .constant(false)
     )
 }

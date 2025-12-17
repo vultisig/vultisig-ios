@@ -64,12 +64,13 @@ private extension VaultSelectChainScreen {
     func onSaveInternal() {
         isLoading = true
         Task {
-            await saveAssets()
             await MainActor.run {
                 isLoading = false
                 onSave()
                 isPresented.toggle()
             }
+            await saveAssets()
+            
         }
     }
     

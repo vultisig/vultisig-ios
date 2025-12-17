@@ -49,6 +49,9 @@ struct SendDetailsScreen: View {
             .onAppear {
                 // Initialize button state immediately based on chain
                 sendCryptoViewModel.initializePendingTransactionState(for: tx.coin.chain)
+                Task {
+                    await checkPendingTransactions()
+                }
             }
             .onLoad {
                 sendDetailsViewModel.onLoad()
@@ -378,7 +381,7 @@ extension SendDetailsScreen: SendGasSettingsOutput {
 }
 
 extension SendDetailsScreen {
-    private func setMainData() async {
+private func setMainData() async {
         guard !sendCryptoViewModel.isLoading else { return }
         
         if let coin = coin {

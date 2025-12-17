@@ -30,7 +30,7 @@ class JoinKeygenViewModel: ObservableObject {
     private var keyImportChains: [Chain] = []
     var keyImportInput: KeyImportInput? {
         guard tssType == .KeyImport else { return nil }
-        return KeyImportInput(mnemnonic: "", chains: keyImportChains)
+        return KeyImportInput(mnemonic: "", chains: keyImportChains)
     }
     
     @Published var tssType: TssType = .Keygen

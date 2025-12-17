@@ -22,7 +22,7 @@ enum KeygenStatus {
 }
 
 struct KeyImportInput {
-    let mnemnonic: String
+    let mnemonic: String
     let chains: [Chain]
 }
 
@@ -176,7 +176,7 @@ class KeygenViewModel: ObservableObject {
                 throw HelperError.runtimeError("Key import keygen should have keyImportInput")
             }
             
-            guard let mnemonicWallet = HDWallet(mnemonic: keyImportInput.mnemnonic, passphrase: "") else {
+            guard let mnemonicWallet = HDWallet(mnemonic: keyImportInput.mnemonic, passphrase: "") else {
                 throw HelperError.runtimeError("Couldn't create HDWallet from mnemonic")
             }
             

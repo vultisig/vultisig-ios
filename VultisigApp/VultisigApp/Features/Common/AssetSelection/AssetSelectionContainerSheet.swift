@@ -84,16 +84,25 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
             cellBuilder: cellBuilder,
             emptyStateBuilder: emptyStateBuilder
         )
+        .supportsLiquidGlass { view, isSupported in
+            view.padding(.bottom, isSupported ? 0 : 16)
+        }
         .crossPlatformToolbar(showsBackButton: false) {
             CustomToolbarItem(placement: .leading) {
                 ToolbarButton(image: "x") {
                     isPresented.toggle()
+                }
+                .supportsLiquidGlass { view, isSupported in
+                    view.padding(.top, isSupported ? 0 : 16)
                 }
             }
             
             CustomToolbarItem(placement: .trailing) {
                 ToolbarButton(image: "check", type: .confirmation) {
                     onSave()
+                }
+                .supportsLiquidGlass { view, isSupported in
+                    view.padding(.top, isSupported ? 0 : 16)
                 }
             }
         }
