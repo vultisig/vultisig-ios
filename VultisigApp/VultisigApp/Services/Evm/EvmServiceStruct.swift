@@ -55,7 +55,6 @@ struct EvmServiceStruct {
             let cleanedHex = result.stripHexPrefix()
             
             guard cleanedHex.count >= 40 else {
-                print("EvmServiceStruct: Invalid owner response length: \(cleanedHex.count)")
                 return nil
             }
             
@@ -64,13 +63,11 @@ struct EvmServiceStruct {
             
             // Check if it's a zero address
             if addressHex == String(repeating: "0", count: 40) {
-                print("EvmServiceStruct: Owner is zero address")
                 return "0x0000000000000000000000000000000000000000"
             }
             
             return "0x" + addressHex
         } catch {
-            print("EvmServiceStruct: Failed to fetch contract owner: \(error)")
             return nil
         }
     }

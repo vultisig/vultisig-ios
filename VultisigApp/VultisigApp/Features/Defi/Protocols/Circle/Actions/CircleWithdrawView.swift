@@ -15,150 +15,88 @@ struct CircleWithdrawView: View {
     @ObservedObject var model: CircleViewModel
     @Environment(\.dismiss) var dismiss
     
-    @State private var amount: String = ""
-    @State private var percentage: Double = 0.0
-    @State private var isLoading = false
-    @State private var error: Error?
-    @State private var keysignPayload: KeysignPayload?
-    @State private var isFastVault = false
-    @State private var fastPasswordPresented = false
-    @State private var fastVaultPassword: String = ""
+    @State var amount: String = ""
+    @State var percentage: Double = 0.0
+    @State var isLoading = false
+    @State var error: Error?
+    @State var keysignPayload: KeysignPayload?
+    @State var isFastVault = false
+    @State var fastPasswordPresented = false
+    @State var fastVaultPassword: String = ""
     
-    // SendTransaction for routing
-    @StateObject private var sendTransaction = SendTransaction()
+    @StateObject var sendTransaction = SendTransaction()
     
     var body: some View {
         NavigationStack {
-            #if os(iOS)
-            ZStack {
-                Theme.colors.bgPrimary.ignoresSafeArea()
-                content
-            }
-            .onAppear {
-                Task {
-                    let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
-                    let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
-                    let vaultCoin = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken })
-                    
-                    await loadFastVaultStatus()
-                }
-            }
-            .navigationDestination(item: $keysignPayload) { payload in
-                SendRouteBuilder().buildPairScreen(
-                    vault: vault,
-                    tx: sendTransaction,
-                    keysignPayload: payload,
-                    fastVaultPassword: fastVaultPassword.nilIfEmpty
-                )
-            }
-            .crossPlatformSheet(isPresented: $fastPasswordPresented) {
-                FastVaultEnterPasswordView(
-                    password: $fastVaultPassword,
-                    vault: vault,
-                    onSubmit: { Task { await handleWithdraw() } }
-                )
-            }
-            #else
-            content
-                .background(Theme.colors.bgPrimary)
-                .onAppear {
-                    Task {
-                        let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
-                        let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
-                        let vaultCoin = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken })
-                        
-                        await loadFastVaultStatus()
-                    }
-                }
-                .navigationDestination(item: $keysignPayload) { payload in
-                    SendRouteBuilder().buildPairScreen(
-                        vault: vault,
-                        tx: sendTransaction,
-                        keysignPayload: payload,
-                        fastVaultPassword: fastVaultPassword.nilIfEmpty
-                    )
-                }
-                .crossPlatformSheet(isPresented: $fastPasswordPresented) {
-                    FastVaultEnterPasswordView(
-                        password: $fastVaultPassword,
-                        vault: vault,
-                        onSubmit: { Task { await handleWithdraw() } }
-                    )
-                }
-            #endif
+            main
         }
     }
 
     var content: some View {
         ZStack {
-        VStack(spacing: 0) {
-            // Custom Header
-            HStack {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.left")
-                    .font(.title3)
-                    .foregroundColor(Theme.colors.textPrimary)
-                    .frame(width: 40, height: 40)
-                    .background(Circle().fill(Color.white.opacity(0.1)))
-                }
-                
-                Spacer()
-                
-                Text(NSLocalizedString("circleWithdrawTitle", comment: "Withdraw from Circle"))
-                    .font(.headline)
-                    .bold()
-                    .foregroundStyle(Theme.colors.textPrimary)
-                
-                Spacer()
-                
-                // Invisible balancer
-                Color.clear.frame(width: 40, height: 40)
-            }
-            .padding()
-            
-            #if os(iOS)
-            ScrollView {
+            VStack(spacing: 0) {
+                headerView
                 scrollableContent
+                footerView
             }
-            #else
-            scrollableContent
-            #endif
             
-            // Footer Button and Warnings
-            VStack(spacing: 12) {
-                if let error = error {
-                    Text(error.localizedDescription)
-                        .foregroundStyle(Theme.colors.alertError)
-                        .font(.caption)
-                }
-                
-                if vaultEthBalance <= 0 {
-                    Text(NSLocalizedString("circleDashboardETHRequired", comment: "ETH is required..."))
-                        .font(.caption)
-                        .foregroundStyle(Theme.colors.alertWarning)
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                
-                withdrawButton
+            if isLoading {
+                Color.black.opacity(0.5).ignoresSafeArea()
+                ProgressView()
             }
-            .padding()
-            .background(Theme.colors.bgPrimary)
         }
-        
-        if isLoading {
-            Color.black.opacity(0.5).ignoresSafeArea()
-            ProgressView()
+    }
+    
+    var headerView: some View {
+        HStack {
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "chevron.left")
+                .font(.title3)
+                .foregroundColor(Theme.colors.textPrimary)
+                .frame(width: 40, height: 40)
+                .background(Circle().fill(Color.white.opacity(0.1)))
+            }
+            
+            Spacer()
+            
+            Text(NSLocalizedString("circleWithdrawTitle", comment: "Withdraw from Circle"))
+                .font(.headline)
+                .bold()
+                .foregroundStyle(Theme.colors.textPrimary)
+            
+            Spacer()
+            
+            Color.clear.frame(width: 40, height: 40)
         }
+        .padding()
+    }
+    
+    var footerView: some View {
+        VStack(spacing: 12) {
+            if let error = error {
+                Text(error.localizedDescription)
+                    .foregroundStyle(Theme.colors.alertError)
+                    .font(.caption)
+            }
+            
+            if vaultEthBalance <= 0 {
+                Text(NSLocalizedString("circleDashboardETHRequired", comment: "ETH is required..."))
+                    .font(.caption)
+                    .foregroundStyle(Theme.colors.alertWarning)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            
+            withdrawButton
         }
+        .padding()
+        .background(Theme.colors.bgPrimary)
     }
     
     var scrollableContent: some View {
         VStack(spacing: 24) {
-            
-            // Amount Card
             VStack(spacing: 24) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(NSLocalizedString("circleWithdrawAmount", comment: "Amount"))
@@ -171,16 +109,7 @@ struct CircleWithdrawView: View {
                 
                 VStack(spacing: 8) {
                     HStack(spacing: 4) {
-                        TextField("0", text: $amount)
-                            .font(.system(size: 40, weight: .bold))
-                            .foregroundStyle(Theme.colors.textPrimary)
-                            .multilineTextAlignment(.center)
-                            #if os(iOS)
-                            .keyboardType(.decimalPad)
-                            #endif
-                            .onChange(of: amount) { newValue in
-                                updatePercentage(from: newValue)
-                            }
+                        amountTextField
                         
                         Text("USDC")
                             .font(.title2)
@@ -230,29 +159,34 @@ struct CircleWithdrawView: View {
         }
         .padding(.top, 20)
     }
-
     
+    var amountTextField: some View {
+        TextField("0", text: $amount)
+            .font(.system(size: 40, weight: .bold))
+            .foregroundStyle(Theme.colors.textPrimary)
+            .multilineTextAlignment(.center)
+            .onChange(of: amount) { newValue in
+                updatePercentage(from: newValue)
+            }
+    }
+
     @ViewBuilder
-    private var withdrawButton: some View {
+    var withdrawButton: some View {
         if isFastVault {
-            // Fast Vault: Show long press button with password option
             VStack {
                 Text(NSLocalizedString("holdForPairedSign", comment: ""))
                     .foregroundColor(Theme.colors.textExtraLight)
                     .font(Theme.fonts.bodySMedium)
                 
                 LongPressPrimaryButton(title: NSLocalizedString("circleWithdrawConfirm", comment: "Continue")) {
-                    // Short press: Show password entry
                     fastPasswordPresented = true
                 } longPressAction: {
-                    // Long press: Paired sign (no password)
                     fastVaultPassword = ""
                     Task { await handleWithdraw() }
                 }
             }
             .disabled(isButtonDisabled)
         } else {
-            // Normal Vault: Simple button
             PrimaryButton(title: NSLocalizedString("circleWithdrawConfirm", comment: "Continue")) {
                 Task { await handleWithdraw() }
             }
@@ -260,18 +194,17 @@ struct CircleWithdrawView: View {
         }
     }
     
-    private var vaultEthBalance: Decimal {
+    var vaultEthBalance: Decimal {
         let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
         let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
         return vault.coins.first(where: { $0.chain == chain && $0.isNativeToken })?.balanceDecimal ?? 0
     }
     
-    private var isButtonDisabled: Bool {
+    var isButtonDisabled: Bool {
         amount.isEmpty || (Decimal(string: amount) ?? 0) <= 0 || (Decimal(string: amount) ?? 0) > model.balance || vaultEthBalance <= 0 || isLoading
     }
 
-    
-    private func loadFastVaultStatus() async {
+    func loadFastVaultStatus() async {
         let isExist = await FastVaultService.shared.exist(pubKeyECDSA: vault.pubKeyECDSA)
         let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
         
@@ -280,7 +213,7 @@ struct CircleWithdrawView: View {
         }
     }
     
-    private func updatePercentage(from amountStr: String) {
+    func updatePercentage(from amountStr: String) {
         let balance = model.balance
         guard let amountDec = Decimal(string: amountStr), balance > 0 else {
             return
@@ -291,7 +224,7 @@ struct CircleWithdrawView: View {
         }
     }
     
-    private func updateAmount(from percent: Double) {
+    func updateAmount(from percent: Double) {
         let balance = model.balance
         guard balance > 0 else { return }
         let amountDec = balance * Decimal(percent) / 100
@@ -301,7 +234,7 @@ struct CircleWithdrawView: View {
         }
     }
     
-    private func handleWithdraw() async {
+    func handleWithdraw() async {
         await MainActor.run {
             isLoading = true
             error = nil
@@ -310,20 +243,17 @@ struct CircleWithdrawView: View {
         do {
             guard let amountDecimal = Decimal(string: amount) else { return }
             
-            // Convert to Units (USDC = 6 decimals)
             let decimals = 6
             let amountUnits = (amountDecimal * pow(10, decimals)).description
             let cleanAmountUnits = amountUnits.components(separatedBy: ".").first ?? amountUnits
             let amountVal = BigInt(cleanAmountUnits) ?? BigInt(0)
             
-            // Recipient is Vault Address (ETH chain)
             let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
             let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
             guard let recipientCoin = vault.coins.first(where: { $0.chain == chain }) else {
                 throw NSError(domain: "CircleWithdraw", code: 404, userInfo: [NSLocalizedDescriptionKey: "ETH address not found"])
             }
             
-            // Define cleanup/retry closure to avoid repetition
             func attemptPayload() async throws -> KeysignPayload {
                 return try await model.logic.getWithdrawalPayload(
                     vault: vault,
@@ -336,15 +266,11 @@ struct CircleWithdrawView: View {
             do {
                 payload = try await attemptPayload()
             } catch let err as CircleServiceError {
-                // Catch undeployed error specifically
-                if case .keysignError(let msg) = err, msg.contains("not deployed") {
-                     print("CircleWithdrawView: Wallet undeployed. Attempting Force Create logic.")
-                     // Attempt force create using vault's ETH address
+                if case .walletNotDeployed = err {
                      let _ = try? await CircleApiService.shared.createWallet(
                         ethAddress: recipientCoin.address,
                         force: true
                      )
-                     // Retry payload generation once
                      payload = try await attemptPayload()
                 } else {
                     throw err
@@ -353,7 +279,6 @@ struct CircleWithdrawView: View {
                 throw error
             }
             
-            // Setup Transaction for Routing
             let coinToUse = recipientCoin
             
             await MainActor.run {

@@ -11,10 +11,9 @@ struct CircleSetupView: View {
     let vault: Vault
     @ObservedObject var model: CircleViewModel
     
-    @State private var showInfoBanner = true
+    @State var showInfoBanner = true
     
-    /// Wallet USDC balance (from vault coins, NOT Circle deposited)
-    private var walletUSDCBalance: Decimal {
+    var walletUSDCBalance: Decimal {
         let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
         let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
         if let usdcCoin = vault.coins.first(where: { $0.chain == chain && $0.ticker == "USDC" }) {
@@ -29,13 +28,11 @@ struct CircleSetupView: View {
             
             ScrollView {
                 VStack(spacing: 24) {
-                    // 2. Top Banner
                     topBanner
                     
-                    // 3. Section Header
                     VStack(alignment: .leading, spacing: 8) {
                         Text(NSLocalizedString("circleSetupDeposited", comment: "Deposited"))
-                            .font(.headline) // Tab-like style
+                            .font(.headline)
                             .foregroundStyle(Theme.colors.textPrimary)
                         
                         Text(NSLocalizedString("circleSetupDepositDescription", comment: "Deposit your $USDC..."))
@@ -46,12 +43,11 @@ struct CircleSetupView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 16)
                     
-                    // 4. Info Banner
                     if showInfoBanner {
                         InfoBannerView(
                             description: NSLocalizedString("circleSetupInfoText", comment: "Funds remain..."),
                             type: .info,
-                            leadingIcon: "info.circle", // Standard icon
+                            leadingIcon: "info.circle",
                             onClose: {
                                 withAnimation { showInfoBanner = false }
                             }
@@ -59,31 +55,18 @@ struct CircleSetupView: View {
                         .padding(.horizontal, 16)
                     }
                     
-                    // 5. Bottom Card & 6. Action Button
                     bottomCard
                 }
                 .padding(.vertical, 20)
             }
         }
-        .navigationTitle("") // No title in navbar
-        #if os(iOS)
-        .navigationBarBackButtonHidden(true)
+        .navigationTitle("")
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                NavigationBackButton()
-            }
+            toolbarContent
         }
-        #endif
-        #if os(macOS)
-        .toolbar {
-            ToolbarItem(placement: .navigation) {
-                NavigationBackButton()
-            }
-        }
-        #endif
     }
     
-    private var topBanner: some View {
+    var topBanner: some View {
         HStack {
             VStack(alignment: .leading, spacing: 8) {
                 Text(NSLocalizedString("circleSetupAccountTitle", comment: "Circle USDC Account"))
@@ -92,11 +75,10 @@ struct CircleSetupView: View {
                     .foregroundStyle(Theme.colors.textLight)
                 
                 Text("$\(walletUSDCBalance.formatted())")
-                    .font(.system(size: 32, weight: .bold)) // Primary emphasis
+                    .font(.system(size: 32, weight: .bold))
                     .foregroundStyle(Theme.colors.textPrimary)
             }
             Spacer()
-            // Decorative graphic
             Image(systemName: "circle.hexagongrid")
                 .resizable()
                 .scaledToFit()
@@ -114,10 +96,10 @@ struct CircleSetupView: View {
         .padding(.horizontal, 16)
     }
     
-    private var bottomCard: some View {
+    var bottomCard: some View {
         VStack(spacing: 24) {
             HStack(spacing: 12) {
-                Image("usdc") // Existing USDC asset
+                Image("usdc")
                     .resizable()
                     .frame(width: 32, height: 32)
                     .clipShape(Circle())
@@ -135,10 +117,9 @@ struct CircleSetupView: View {
                 Spacer()
             }
             
-            // 6. Primary Action Button
             DefiButton(
                 title: NSLocalizedString("circleSetupOpenAccount", comment: "Open Account"),
-                icon: "arrow.right", // Standard forward action
+                icon: "arrow.right",
                 action: {
                     Task { await createWallet() }
                 }
@@ -149,8 +130,7 @@ struct CircleSetupView: View {
         .padding(.horizontal, 16)
     }
     
-    // Reused DeFi Card Style
-    private var cardBackground: some View {
+    var cardBackground: some View {
         RoundedRectangle(cornerRadius: 16)
             .inset(by: 0.5)
             .stroke(Color(hex: "34E6BF").opacity(0.17))
@@ -166,19 +146,15 @@ struct CircleSetupView: View {
             )
     }
     
-    private func createWallet() async {
-        print("CircleSetupView: Starting createWallet flow")
+    func createWallet() async {
         await MainActor.run { model.isLoading = true }
         do {
-            print("CircleSetupView: Calling model.logic.createWallet with vault: \(vault.pubKeyECDSA)")
             let newAddress = try await model.logic.createWallet(vault: vault)
-            print("CircleSetupView: Wallet created successfully with address: \(newAddress)")
             await MainActor.run {
                 vault.circleWalletAddress = newAddress
                 model.isLoading = false
             }
         } catch {
-            print("CircleSetupView: Failed to create wallet. Error: \(error)")
             await MainActor.run {
                 model.error = error
                 model.isLoading = false
@@ -186,8 +162,3 @@ struct CircleSetupView: View {
         }
     }
 }
-
-// Localization keys to be added:
-// "circleSetupTitle" = "Circle Programmable Wallet";
-// "circleSetupDescription" = "Earn yield on your USDC with a smart contract account controlled by your vault.";
-// "circleSetupCreateAccount" = "Create Account";

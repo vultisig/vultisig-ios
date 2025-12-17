@@ -14,105 +14,80 @@ struct CircleDepositView: View {
     let vault: Vault
     @Environment(\.dismiss) var dismiss
     
-    @StateObject private var tx = SendTransaction()
-    @StateObject private var sendCryptoViewModel = SendCryptoViewModel()
-    @State private var amount: String = ""
-    @State private var percentage: Double = 0.0
-    @State private var usdcCoin: Coin?
-    @State private var navigateToVerify = false
-    @State private var error: Error?
-    @State private var isLoading = false
+    @StateObject var tx = SendTransaction()
+    @StateObject var sendCryptoViewModel = SendCryptoViewModel()
+    @State var amount: String = ""
+    @State var percentage: Double = 0.0
+    @State var usdcCoin: Coin?
+    @State var navigateToVerify = false
+    @State var error: Error?
+    @State var isLoading = false
     
     var body: some View {
         NavigationStack {
-            #if os(iOS)
-            ZStack {
-                Theme.colors.bgPrimary.ignoresSafeArea()
-                content
-            }
-            .onAppear {
-                Task { await loadData() }
-            }
-            .navigationDestination(isPresented: $navigateToVerify) {
-                SendRouteBuilder().buildVerifyScreen(tx: tx, vault: vault)
-            }
-            #else
-            content
-                .background(Theme.colors.bgPrimary)
-                .onAppear {
-                    Task { await loadData() }
-                }
-                .navigationDestination(isPresented: $navigateToVerify) {
-                    SendRouteBuilder().buildVerifyScreen(tx: tx, vault: vault)
-                }
-            #endif
+            main
         }
     }
 
     var content: some View {
         VStack(spacing: 0) {
-            // Custom Header
-            HStack {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.title3)
-                        .foregroundColor(Theme.colors.textPrimary)
-                        .frame(width: 40, height: 40)
-                        .background(Circle().fill(Color.white.opacity(0.1)))
-                }
-                
-                Spacer()
-                
-                Text(NSLocalizedString("circleDepositTitle", comment: "Deposit to Circle Account"))
-                    .font(.headline)
-                    .bold()
-                    .foregroundStyle(Theme.colors.textPrimary)
-                
-                Spacer()
-                
-                // Invisible balancer
-                Color.clear.frame(width: 40, height: 40)
-            }
-            .padding()
-            
-            #if os(iOS)
-            ScrollView {
-                scrollableContent
-            }
-            #else
-            scrollableContent
-            #endif
-            
-            // Footer Button
-            VStack {
-                if let error = error {
-                    Text(error.localizedDescription)
-                        .foregroundStyle(Theme.colors.alertError)
-                        .font(.caption)
-                        .padding(.bottom, 8)
-                }
-                
-                if isLoading {
-                    ProgressView()
-                        .padding()
-                } else {
-                    PrimaryButton(title: NSLocalizedString("circleDepositContinue", comment: "Continue")) {
-                        Task { await handleContinue() }
-                    }
-                    .disabled(amount.isEmpty || (Decimal(string: amount) ?? 0) <= 0 || (Decimal(string: amount) ?? 0) > (usdcCoin?.balanceDecimal ?? 0))
-                }
-            }
-            .padding()
-            .background(Theme.colors.bgPrimary)
+            headerView
+            scrollView
+            footerView
         }
+    }
+    
+    var headerView: some View {
+        HStack {
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "chevron.left")
+                    .font(.title3)
+                    .foregroundColor(Theme.colors.textPrimary)
+                    .frame(width: 40, height: 40)
+                    .background(Circle().fill(Color.white.opacity(0.1)))
+            }
+            
+            Spacer()
+            
+            Text(NSLocalizedString("circleDepositTitle", comment: "Deposit to Circle Account"))
+                .font(.headline)
+                .bold()
+                .foregroundStyle(Theme.colors.textPrimary)
+            
+            Spacer()
+            
+            Color.clear.frame(width: 40, height: 40)
+        }
+        .padding()
+    }
+    
+    var footerView: some View {
+        VStack {
+            if let error = error {
+                Text(error.localizedDescription)
+                    .foregroundStyle(Theme.colors.alertError)
+                    .font(.caption)
+                    .padding(.bottom, 8)
+            }
+            
+            if isLoading {
+                ProgressView()
+                    .padding()
+            } else {
+                PrimaryButton(title: NSLocalizedString("circleDepositContinue", comment: "Continue")) {
+                    Task { await handleContinue() }
+                }
+                .disabled(amount.isEmpty || (Decimal(string: amount) ?? 0) <= 0 || (Decimal(string: amount) ?? 0) > (usdcCoin?.balanceDecimal ?? 0))
+            }
+        }
+        .padding()
+        .background(Theme.colors.bgPrimary)
     }
     
     var scrollableContent: some View {
         VStack(spacing: 24) {
-            
-            // Amount Card
             VStack(spacing: 24) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(NSLocalizedString("circleDepositAmount", comment: "Amount"))
@@ -125,16 +100,7 @@ struct CircleDepositView: View {
                 
                 VStack(spacing: 8) {
                     HStack(spacing: 4) {
-                        TextField("0", text: $amount)
-                            .font(.system(size: 40, weight: .bold))
-                            .foregroundStyle(Theme.colors.textPrimary)
-                            .multilineTextAlignment(.center)
-                            #if os(iOS)
-                            .keyboardType(.decimalPad)
-                            #endif
-                            .onChange(of: amount) { newValue in
-                                updatePercentage(from: newValue)
-                            }
+                        amountTextField
                         
                         Text("USDC")
                             .font(.title2)
@@ -185,26 +151,32 @@ struct CircleDepositView: View {
         .padding(.top, 20)
     }
 
+    var amountTextField: some View {
+        TextField("0", text: $amount)
+            .font(.system(size: 40, weight: .bold))
+            .foregroundStyle(Theme.colors.textPrimary)
+            .multilineTextAlignment(.center)
+            .onChange(of: amount) { newValue in
+                updatePercentage(from: newValue)
+            }
+    }
     
-    private func loadData() async {
-        // Find USDC Coin
+    func loadData() async {
         let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
         let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
         
         if let coin = vault.coins.first(where: { $0.chain == chain && $0.ticker == "USDC" }) {
-            // Refresh the balance from blockchain to ensure we have the latest
             await BalanceService.shared.updateBalance(for: coin)
             
             await MainActor.run {
                 self.usdcCoin = coin
                 tx.reset(coin: coin)
             }
-            // Load Fast Vault status
             await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
         }
     }
     
-    private func updatePercentage(from amountStr: String) {
+    func updatePercentage(from amountStr: String) {
         guard let coin = usdcCoin, let amountDec = Decimal(string: amountStr), coin.balanceDecimal > 0 else {
             return
         }
@@ -214,7 +186,7 @@ struct CircleDepositView: View {
         }
     }
     
-    private func updateAmount(from percent: Double) {
+    func updateAmount(from percent: Double) {
         guard let coin = usdcCoin else { return }
         let amountDec = coin.balanceDecimal * Decimal(percent) / 100
         let newAmount = amountDec.truncated(toPlaces: 6).description
@@ -223,20 +195,18 @@ struct CircleDepositView: View {
         }
     }
     
-    private func handleContinue() async {
+    func handleContinue() async {
         guard let coin = usdcCoin, let amountDec = Decimal(string: amount), let toAddress = vault.circleWalletAddress else {
             return
         }
         
         await MainActor.run { isLoading = true }
         
-        // Prepare Transaction
         tx.coin = coin
         tx.fromAddress = coin.address
         tx.toAddress = toAddress
         tx.amount = amountDec.description
         
-        // Ensure Fast Vault state is loaded (in case it wasn't loaded in loadData)
         await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
         
         await MainActor.run {
