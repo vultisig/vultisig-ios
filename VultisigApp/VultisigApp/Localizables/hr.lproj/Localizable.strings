@@ -1095,6 +1095,7 @@
 // Circle
 "circleTitle" = "Circle američki dolar";
 "circleRowGetStarted" = "Započni";
+"circleRowYieldAccount" = "Račun za prinos";
 "circleRowCreateWallet" = "Izradi novčanik";
 "circleSetupTitle" = "Postavi Circle novčanik";
 "circleSetupDescription" = "Izradite siguran Circle novčanik za upravljanje vašim USDC-om.";

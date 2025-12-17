@@ -124,6 +124,7 @@ struct CircleSetupView: View {
                     Task { await createWallet() }
                 }
             )
+            .disabled(model.isLoading)
         }
         .padding(24)
         .background(cardBackground)

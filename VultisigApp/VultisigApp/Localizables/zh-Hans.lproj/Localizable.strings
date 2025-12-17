@@ -1097,6 +1097,7 @@
 // Circle
 "circleTitle" = "Circle 美元";
 "circleRowGetStarted" = "开始";
+"circleRowYieldAccount" = "收益账户";
 "circleRowCreateWallet" = "创建钱包";
 "circleSetupTitle" = "设置 Circle 钱包";
 "circleSetupDescription" = "创建一个安全的 Circle 钱包来管理您的 USDC。";

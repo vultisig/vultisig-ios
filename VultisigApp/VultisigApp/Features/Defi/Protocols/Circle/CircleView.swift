@@ -15,18 +15,47 @@ struct CircleView: View {
     let vault: Vault
     
     @StateObject private var model = CircleViewModel()
+    @State private var hasCheckedBackend = false
     
     var content: some View {
         ZStack {
             Theme.colors.bgPrimary.ignoresSafeArea()
             
-            VStack {
-                if let address = vault.circleWalletAddress, !address.isEmpty {
-                    CircleDashboardView(vault: vault, model: model)
-                } else {
-                    CircleSetupView(vault: vault, model: model)
+            if !hasCheckedBackend {
+                // Mostrar loading enquanto verifica backend
+                ProgressView()
+                    .progressViewStyle(.circular)
+            } else if model.missingEth {
+                // Mostrar aviso para adicionar ETH
+                VStack(spacing: 24) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 60))
+                        .foregroundStyle(.orange)
+                    
+                    Text("Ethereum Required")
+                        .font(.title2)
+                        .bold()
+                        .foregroundStyle(Theme.colors.textPrimary)
+                    
+                    Text("Please add Ethereum to your vault to use Circle.")
+                        .font(.body)
+                        .foregroundStyle(Theme.colors.textLight)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 32)
+                }
+            } else {
+                VStack {
+                    if let address = vault.circleWalletAddress, !address.isEmpty {
+                        CircleDashboardView(vault: vault, model: model)
+                    } else {
+                        CircleSetupView(vault: vault, model: model)
+                    }
                 }
             }
+        }
+        .onAppear {
+            print("[Circle] onAppear - Local address: \(vault.circleWalletAddress ?? "nil")")
+            Task { await checkExistingWallet() }
         }
         .navigationTitle(NSLocalizedString("circleTitle", comment: "Circle"))
         .navigationDestination(isPresented: $model.showDeposit) {
@@ -36,12 +65,50 @@ struct CircleView: View {
             CircleWithdrawView(vault: vault, model: model)
         }
     }
+    
+    private func checkExistingWallet() async {
+        print("[Circle] checkExistingWallet START")
+        await MainActor.run { model.isLoading = true }
+        
+        do {
+            print("[Circle] Calling API...")
+            let existingAddress = try await model.logic.checkExistingWallet(vault: vault)
+            print("[Circle] API returned: \(existingAddress ?? "nil")")
+            await MainActor.run {
+                if let existingAddress, !existingAddress.isEmpty {
+                    print("[Circle] Updating vault address from '\(vault.circleWalletAddress ?? "nil")' to '\(existingAddress)'")
+                    vault.circleWalletAddress = existingAddress
+                } else {
+                    print("[Circle] API returned nil/empty - keeping local: \(vault.circleWalletAddress ?? "nil")")
+                }
+                model.isLoading = false
+                hasCheckedBackend = true
+                print("[Circle] checkExistingWallet DONE - Final address: \(vault.circleWalletAddress ?? "nil")")
+            }
+        } catch let error as CircleServiceError {
+            print("[Circle] CircleServiceError: \(error)")
+            await MainActor.run {
+                if case .keysignError(let msg) = error, msg.contains("No Ethereum") || msg.contains("No ETH") {
+                    model.missingEth = true
+                }
+                model.isLoading = false
+                hasCheckedBackend = true
+            }
+        } catch {
+            print("[Circle] API ERROR: \(error)")
+            await MainActor.run {
+                model.isLoading = false
+                hasCheckedBackend = true
+            }
+        }
+    }
 }
 
 // MARK: - View Model (State Only)
 final class CircleViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var error: Error?
+    @Published var missingEth = false
     @Published var balance: Decimal = .zero
     @Published var ethBalance: Decimal = .zero
     @Published var apy: String = "0%"
@@ -61,6 +128,18 @@ struct CircleViewLogic {
         let usdcContract: String
     }
     
+    func checkExistingWallet(vault: Vault) async throws -> String? {
+        let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
+        let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
+        
+        guard let ethCoin = vault.coins.first(where: { $0.chain == chain }) else {
+            print("[Circle] ERROR: No ETH coin found in vault!")
+            throw CircleServiceError.keysignError("No Ethereum found in vault. Please add Ethereum first.")
+        }
+        
+        return try await CircleApiService.shared.fetchWallet(ethAddress: ethCoin.address)
+    }
+
     func createWallet(vault: Vault, force: Bool = false) async throws -> String {
         let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
         let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum

@@ -1096,6 +1096,7 @@
 // Circle
 "circleTitle" = "Circle U.S. Dollar";
 "circleRowGetStarted" = "Empezar";
+"circleRowYieldAccount" = "Cuenta de Rendimiento";
 "circleRowCreateWallet" = "Crear Billetera";
 "circleSetupTitle" = "Configurar Billetera Circle";
 "circleSetupDescription" = "Crea una billetera Circle segura para gestionar tus USDC.";
