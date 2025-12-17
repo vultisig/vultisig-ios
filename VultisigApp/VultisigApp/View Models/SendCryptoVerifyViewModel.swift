@@ -12,6 +12,14 @@ import WalletCore
 
 @MainActor
 class SendCryptoVerifyViewModel: ObservableObject {
+    
+    enum FeeState {
+        case idle
+        case loading
+        case loaded
+        case failed(Error)
+    }
+    
     let securityScanViewModel = SecurityScannerViewModel()
     
     @Published var isAddressCorrect = false
@@ -22,6 +30,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
     
     @Published var showSecurityScannerSheet: Bool = false
     @Published var securityScannerState: SecurityScannerState = .idle
+    @Published var feeState: FeeState = .idle
     
     // Logic delegation
     private let logic = SendCryptoVerifyLogic()
@@ -35,26 +44,39 @@ class SendCryptoVerifyViewModel: ObservableObject {
         tx.isCalculatingFee = true
         isLoading = true
         errorMessage = ""
+        feeState = .loading
         
         do {
+            // Update balance to ensure we aren't using stale data
+            await BalanceService.shared.updateBalance(for: tx.coin)
+            
             let feeResult = try await logic.calculateFee(tx: tx)
             
             tx.fee = feeResult.fee
             tx.gas = feeResult.gas
             tx.isCalculatingFee = false
             isLoading = false
+            feeState = .loaded
             
             validateBalanceWithFee(tx: tx)
         } catch {
             print("DEBUG: Error calculating fee: \(error)")
+            // If fee estimation fails, show the real error, not "insufficient balance"
             errorMessage = error.localizedDescription
             showAlert = true
             tx.isCalculatingFee = false
             isLoading = false
+            feeState = .failed(error)
         }
     }
     
     func validateBalanceWithFee(tx: SendTransaction) {
+        // Validation should be based on feeState == .loaded
+        guard case .loaded = feeState else { return }
+        
+        // Also ensure we don't show error if we are currently loading (double check)
+        guard !isLoading else { return }
+        
         let result = logic.validateBalanceWithFee(tx: tx)
         if !result.isValid {
             errorMessage = result.errorMessage ?? ""
