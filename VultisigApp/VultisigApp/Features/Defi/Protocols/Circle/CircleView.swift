@@ -253,37 +253,16 @@ struct CircleViewLogic {
             gasLimit: gasLimit
         )
         
-        let gasLimitInt64 = Int64(gasLimit.description) ?? 200000
-        
-        let executeQuote = EVMQuote(
-            dstAmount: "0",
-            tx: EVMQuote.Transaction(
-                from: senderAddress,
-                to: to,
-                data: dataHex,
-                value: "0",
-                gasPrice: boostedGasPrice.description, 
-                gas: gasLimitInt64
-            )
-        )
-        
-        let genericPayload = GenericSwapPayload(
-            fromCoin: coin,
-            toCoin: coin,
-            fromAmount: value,
-            toAmountDecimal: Decimal(0),
-            quote: executeQuote,
-            provider: .oneInch 
-        )
-        
+        // Use memo with hex data instead of swapPayload
+        // This ensures the transaction is treated as a "Send" not a "Swap" on join devices
         let payloadWithData = KeysignPayload(
             coin: coin,
             toAddress: to,
             toAmount: value,
             chainSpecific: chainSpecific,
             utxos: [],
-            memo: nil,
-            swapPayload: SwapPayload.generic(genericPayload),
+            memo: dataHex, // Pass contract data as hex memo
+            swapPayload: nil, // No swap payload = shows as Send
             approvePayload: nil,
             vaultPubKeyECDSA: vault.pubKeyECDSA,
             vaultLocalPartyID: vault.localPartyID,
