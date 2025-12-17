@@ -33,6 +33,7 @@ struct ContentView: View {
                 .navigationDestination(for: OnboardingRoute.self) { router.onboardingRouter.build($0) }
                 .navigationDestination(for: ReferralRoute.self) { router.referralRouter.build($0) }
                 .navigationDestination(for: FunctionCallRoute.self) { router.functionCallRouter.build($0) }
+                .navigationDestination(for: SettingsRoute.self) { router.settingsRouter.build($0) }
         }
         .environment(\.router, router.navigationRouter)
         .id(appViewModel.referenceID)

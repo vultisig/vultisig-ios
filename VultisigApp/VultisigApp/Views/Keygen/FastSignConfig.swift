@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct FastSignConfig {
+struct FastSignConfig: Hashable {
     let email: String
     let password: String
     let hint: String?

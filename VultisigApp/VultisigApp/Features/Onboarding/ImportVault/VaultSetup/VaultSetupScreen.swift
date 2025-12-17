@@ -20,7 +20,6 @@ struct VaultSetupScreen: View {
     @State var scrollViewProxy: ScrollViewProxy?
     @State var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?
-    @State var presentNewVaultSetupScreen = false
     @State var hintExpanded = false
     @State var referralExpanded = false
     @Environment(\.router) var router
@@ -50,14 +49,6 @@ struct VaultSetupScreen: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 focusedField = newValue
             }
-        }
-        .onChange(of: presentNewVaultSetupScreen) { _, isActive in
-            guard isActive else { return }
-            router.navigate(to: OnboardingRoute.keyImportNewVaultSetup(
-                vault: viewModel.getVault(keyImportInput: keyImportInput),
-                keyImportInput: keyImportInput,
-                fastSignConfig: viewModel.fastConfig
-            ))
         }
     }
     
@@ -220,7 +211,11 @@ struct VaultSetupScreen: View {
         }
         
         guard viewModel.validForm else { return }
-        presentNewVaultSetupScreen = true
+        router.navigate(to: OnboardingRoute.keyImportNewVaultSetup(
+            vault: viewModel.getVault(keyImportInput: keyImportInput),
+            keyImportInput: keyImportInput,
+            fastSignConfig: viewModel.fastConfig
+        ))
     }
 }
 

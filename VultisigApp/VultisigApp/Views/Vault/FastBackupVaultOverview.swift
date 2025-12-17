@@ -17,8 +17,6 @@ struct FastBackupVaultOverview: View {
     
     @State var tabIndex = 0
     @State var isVerificationLinkActive = false
-    @State var isBackupLinkActive = false
-    @State var goBackToEmailSetup = false
     
     @State var animationVM: RiveViewModel? = nil
     @State var backupVaultAnimationVM: RiveViewModel? = nil
@@ -36,26 +34,17 @@ struct FastBackupVaultOverview: View {
                 vault: vault,
                 email: email,
                 isPresented: $isVerificationLinkActive,
-                isBackupLinkActive: $isBackupLinkActive,
                 tabIndex: $tabIndex,
-                goBackToEmailSetup: $goBackToEmailSetup
+                onBackup: {
+                    onBackup()
+                }, onBackToEmailSetup: {
+                    router.navigate(to: KeygenRoute.newWalletName(
+                        tssType: .Keygen,
+                        selectedTab: .fast,
+                        name: ""
+                    ))
+                }
             )
-        }
-        .onChange(of: isBackupLinkActive) { _, isActive in
-            guard isActive else { return }
-            router.navigate(to: KeygenRoute.backupNow(
-                tssType: tssType,
-                backupType: .single(vault: vault),
-                isNewVault: true
-            ))
-        }
-        .onChange(of: goBackToEmailSetup) { _, isActive in
-            guard isActive else { return }
-            router.navigate(to: KeygenRoute.newWalletName(
-                tssType: .Keygen,
-                selectedTab: .fast,
-                name: ""
-            ))
         }
         .onAppear {
             setData()
@@ -149,11 +138,19 @@ struct FastBackupVaultOverview: View {
         }
         
         if tabIndex == 3 {
-            isBackupLinkActive = true
+            onBackup()
             return
         }
         
         tabIndex += 1
+    }
+    
+    func onBackup() {
+        router.navigate(to: KeygenRoute.backupNow(
+            tssType: tssType,
+            backupType: .single(vault: vault),
+            isNewVault: true
+        ))
     }
     
     private func moveToBackupView() {

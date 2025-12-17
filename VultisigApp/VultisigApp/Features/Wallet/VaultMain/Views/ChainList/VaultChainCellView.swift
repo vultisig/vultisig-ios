@@ -11,12 +11,14 @@ struct VaultChainCellView: View {
     @ObservedObject var group: GroupedChain
     let vault: Vault
     var onCopy: () -> Void
-    
+
+    @Environment(\.router) var router
+
     @EnvironmentObject var homeViewModel: HomeViewModel
-    
+
     var body: some View {
-        NavigationLink {
-            ChainDetailScreen(group: group, vault: vault)
+        Button {
+            router.navigate(to: VaultRoute.chainDetail(group: group, vault: vault))
         } label: {
             GroupedChainCellView(
                 group: group,

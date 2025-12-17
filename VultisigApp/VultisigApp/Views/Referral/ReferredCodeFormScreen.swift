@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct ReferredCodeFormScreen: View {
-    @ObservedObject var referredViewModel: ReferredViewModel
-    @ObservedObject var referralViewModel: ReferralViewModel
+    @EnvironmentObject var referredViewModel: ReferredViewModel
+    @EnvironmentObject var referralViewModel: ReferralViewModel
     
     private let referralSavePercentage: String = "10%"    
     @Environment(\.dismiss) var dismiss
@@ -83,5 +83,5 @@ struct ReferredCodeFormScreen: View {
 }
 
 #Preview {
-    ReferredCodeFormScreen(referredViewModel: ReferredViewModel(), referralViewModel: ReferralViewModel())
+    ReferredCodeFormScreen()
 }

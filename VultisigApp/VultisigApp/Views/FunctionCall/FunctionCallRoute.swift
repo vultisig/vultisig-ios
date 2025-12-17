@@ -10,4 +10,5 @@ enum FunctionCallRoute: Hashable {
     case verify(tx: SendTransaction, vault: Vault)
     case pair(vault: Vault, tx: SendTransaction, keysignPayload: KeysignPayload, fastVaultPassword: String?)
     case keysign(input: KeysignInput, tx: SendTransaction)
+    case functionTransaction(vault: Vault, transactionType: FunctionTransactionType)
 }

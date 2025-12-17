@@ -10,6 +10,7 @@ import SwiftUI
 struct BackupVaultNowView: View {
     let vault: Vault
     @State var isHomeAfterSkipShown = false
+    @State var navigateToBackup = false
     @Environment(\.router) var router
 
     var body: some View {
@@ -29,6 +30,15 @@ struct BackupVaultNowView: View {
                     showVaultsList: false,
                     shouldJoinKeygen: false
                 ))
+            }
+            .onChange(of: navigateToBackup) { _, shouldNavigate in
+                guard shouldNavigate else { return }
+                router.navigate(to: KeygenRoute.backupNow(
+                    tssType: .Keygen,
+                    backupType: .secure,
+                    isNewVault: true
+                ))
+                navigateToBackup = false
             }
     }
     
@@ -80,8 +90,8 @@ struct BackupVaultNowView: View {
     }
     
     var backupButton: some View {
-        PrimaryNavigationButton(title: "Backup") {
-            VaultBackupNowScreen(tssType: .Keygen, vault: vault, isNewVault: true)
+        PrimaryButton(title: "Backup") {
+            navigateToBackup = true
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 40)

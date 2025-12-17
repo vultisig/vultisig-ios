@@ -35,6 +35,11 @@ struct FunctionCallRouter {
             )
         case .keysign(let input, let tx):
             viewBuilder.buildKeysignScreen(input: input, tx: tx)
+        case .functionTransaction(let vault, let transactionType):
+            viewBuilder.buildFunctionTransactionScreen(
+                vault: vault,
+                transactionType: transactionType
+            )
         }
     }
 }

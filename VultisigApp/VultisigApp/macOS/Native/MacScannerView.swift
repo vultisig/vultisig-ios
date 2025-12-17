@@ -26,19 +26,35 @@ struct MacScannerView: View {
     
     @StateObject var cameraViewModel = MacCameraServiceViewModel()
     
+    @State var navigateToUploadQR = false
+    
     var body: some View {
         ZStack(alignment: .top) {
             Background()
             main
         }
         .crossPlatformToolbar(cameraViewModel.getTitle(type))
-        .navigationDestination(isPresented: $cameraViewModel.shouldJoinKeygen) {
-            JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: selectedVault)
+        .onChange(of: cameraViewModel.shouldJoinKeygen) { _, shouldNavigate in
+            guard shouldNavigate else { return }
+            router.navigate(to: OnboardingRoute.joinKeygen(
+                vault: Vault(name: "Main Vault"),
+                selectedVault: selectedVault
+            ))
+            cameraViewModel.shouldJoinKeygen = false
         }
-        .navigationDestination(isPresented: $cameraViewModel.shouldKeysignTransaction) {
-            if let vault = appViewModel.selectedVault {
-                JoinKeysignView(vault: vault)
-            }
+        .onChange(of: cameraViewModel.shouldKeysignTransaction) { _, shouldNavigate in
+            guard shouldNavigate, let vault = appViewModel.selectedVault else { return }
+            router.navigate(to: KeygenRoute.joinKeysign(vault: vault))
+            cameraViewModel.shouldKeysignTransaction = false
+        }
+        .onChange(of: navigateToUploadQR) { _, shouldNavigate in
+            guard shouldNavigate else { return }
+            router.navigate(to: KeygenRoute.generalQRImport(
+                type: type,
+                selectedVault: selectedVault,
+                sendTx: sendTx
+            ))
+            navigateToUploadQR = false
         }
     }
     
@@ -48,13 +64,13 @@ struct MacScannerView: View {
         }
         .onChange(of: cameraViewModel.detectedQRCode) { _, newValue in
             if let newValue = newValue, !newValue.isEmpty {
-            cameraViewModel.handleScan(
-                vaults: vaults,
-                sendTx: sendTx,
-                deeplinkViewModel: deeplinkViewModel,
-                vaultDetailViewModel: vaultDetailViewModel,
-                coinSelectionViewModel: coinSelectionViewModel
-            )
+                cameraViewModel.handleScan(
+                    vaults: vaults,
+                    sendTx: sendTx,
+                    deeplinkViewModel: deeplinkViewModel,
+                    vaultDetailViewModel: vaultDetailViewModel,
+                    coinSelectionViewModel: coinSelectionViewModel
+                )
             }
         }
     }
@@ -118,10 +134,8 @@ struct MacScannerView: View {
     }
     
     var uploadQRCodeButton: some View {
-        PrimaryNavigationButton(title: "uploadQRCodeImage") {
-            GeneralQRImportMacView(type: type, selectedVault: selectedVault) {
-                sendTx.toAddress = $0
-            }
+        PrimaryButton(title: "uploadQRCodeImage") {
+            navigateToUploadQR = true
         }
     }
     

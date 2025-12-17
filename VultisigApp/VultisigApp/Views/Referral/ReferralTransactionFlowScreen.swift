@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ReferralTransactionFlowScreen: View {
-    @ObservedObject var referralViewModel: ReferralViewModel
+    @EnvironmentObject var referralViewModel: ReferralViewModel
     let isEdit: Bool
     
     @StateObject var sendTx = SendTransaction()
@@ -19,7 +19,6 @@ struct ReferralTransactionFlowScreen: View {
     @State var keysignPayload: KeysignPayload? = nil
     @State var keysignView: KeysignView? = nil
     @State var isLoading = false
-    @State var navigateToVerify = false
     @Environment(\.router) var router
 
     @EnvironmentObject var homeViewModel: HomeViewModel
@@ -38,10 +37,6 @@ struct ReferralTransactionFlowScreen: View {
                         await functionCallViewModel.loadFastVault(tx: sendTx, vault: vault)
                     }
                 }
-            }
-            .onChange(of: navigateToVerify) { _, isActive in
-                guard isActive, let vault else { return }
-                router.navigate(to: FunctionCallRoute.verify(tx: sendTx, vault: vault))
             }
     }
     
@@ -76,11 +71,12 @@ struct ReferralTransactionFlowScreen: View {
     }
     
     func moveToNext() {
-        navigateToVerify = true
+        guard let vault else { return }
+        router.navigate(to: FunctionCallRoute.verify(tx: sendTx, vault: vault))
     }
 }
 
 #Preview {
-    ReferralTransactionFlowScreen(referralViewModel: ReferralViewModel(), isEdit: false)
+    ReferralTransactionFlowScreen(isEdit: false)
         .environmentObject(HomeViewModel())
 }

@@ -15,8 +15,7 @@ struct VaultDeletionConfirmView: View {
     @State var permanentDeletionCheck = false
     @State var canLoseFundCheck = false
     @State var vaultBackupCheck = false
-    
-    @State var navigateToCreateVault = false
+
     @State var nextSelectedVault: Vault? = nil
     
     @Environment(\.modelContext) private var modelContext
@@ -41,10 +40,6 @@ struct VaultDeletionConfirmView: View {
                 deleteButton
             }
             .background(backgroundView)
-        }
-        .onChange(of: navigateToCreateVault) { _, isActive in
-            guard isActive else { return }
-            router.navigate(to: VaultRoute.createVault(showBackButton: false))
         }
     }
     
@@ -96,7 +91,7 @@ struct VaultDeletionConfirmView: View {
         if nextSelectedVault != nil {
             appViewModel.set(selectedVault: nextSelectedVault, showingVaultSelector: false)
         } else {
-            navigateToCreateVault = true
+            router.navigate(to: VaultRoute.createVault(showBackButton: false))
         }
         
         // Add delay on deletion to prevent accesing deleted vault during navigation

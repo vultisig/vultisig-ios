@@ -9,13 +9,14 @@ import SwiftUI
 import SwiftData
 
 struct SendCryptoSecondaryDoneView: View {
+    @Environment(\.router) var router
     let input: SendCryptoContent
-    
-    @State var addressAdded: Bool = false
+
     @State var navigateToAddressBook = false
     @Environment(\.openURL) var openURL
     @State var canShowAddressBook: Bool = false
-    
+    @State var addressCountBeforeNavigation: Int = 0
+
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var appViewModel: AppViewModel
     
@@ -43,20 +44,29 @@ struct SendCryptoSecondaryDoneView: View {
                 predicate: #Predicate { $0.address == address }
             )
             let addressItems = try? modelContext.fetch(addressItemsDescriptor)
-            
+
             canShowAddressBook = addressItems?.isEmpty ?? false && !(appViewModel.selectedVault?.coins.map(\.address).contains(input.toAddress) ?? true)
         }
-        .navigationDestination(isPresented: $navigateToAddressBook) {
-            AddAddressBookScreen(
-                address: input.toAddress,
-                chain: .init(coinMeta: input.coin.toCoinMeta()),
-                addressAdded: $addressAdded,
-                shouldDismiss: false
-            )
-        }
-        .onChange(of: addressAdded) { oldValue, newValue in
-            guard newValue else { return }
-            appViewModel.restart()
+        .onChange(of: navigateToAddressBook) { _, shouldNavigate in
+            if shouldNavigate {
+                // Store address count before navigation
+                let allAddressesDescriptor = FetchDescriptor<AddressBookItem>()
+                addressCountBeforeNavigation = (try? modelContext.fetch(allAddressesDescriptor).count) ?? 0
+
+                router.navigate(to: SettingsRoute.addAddressBook(
+                    address: input.toAddress,
+                    chain: .init(coinMeta: input.coin.toCoinMeta())
+                ))
+                navigateToAddressBook = false
+            } else if addressCountBeforeNavigation > 0 {
+                // Check if address was added when returning from navigation
+                let allAddressesDescriptor = FetchDescriptor<AddressBookItem>()
+                let currentCount = (try? modelContext.fetch(allAddressesDescriptor).count) ?? 0
+                if currentCount > addressCountBeforeNavigation {
+                    appViewModel.restart()
+                    addressCountBeforeNavigation = 0
+                }
+            }
         }
     }
     

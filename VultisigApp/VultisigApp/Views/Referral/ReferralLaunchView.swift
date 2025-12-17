@@ -14,7 +14,8 @@ struct ReferralLaunchView: View {
     @StateObject var keyboardObserver = KeyboardObserver()
     @State var scrollViewProxy: ScrollViewProxy?
     @State var screenHeight: CGFloat = 0
-    
+    @Environment(\.router) var router
+
     private let referralSavePercentage: String = "10%"
     private let referralSavePercentage2: String = "20%"
     private let scrollToReferenceId = "scrollTo"
@@ -175,14 +176,14 @@ private extension ReferralLaunchView {
     }
     
     var createReferralButton: some View {
-        PrimaryNavigationButton(title: "createReferral") {
-            ReferralTransactionFlowScreen(referralViewModel: referralViewModel, isEdit: false)
+        PrimaryButton(title: "createReferral") {
+            router.navigate(to: ReferralRoute.transactionFlow(isEdit: false))
         }
     }
     
     var editReferralButton: some View {
-        PrimaryNavigationButton(title: "editReferral") {
-            ReferralMainScreen(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
+        PrimaryButton(title: "editReferral") {
+            router.navigate(to: ReferralRoute.main)
         }
     }
 }

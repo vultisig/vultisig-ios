@@ -8,20 +8,25 @@
 import SwiftUI
 
 struct MonthlyBackupWarningViewModifier: ViewModifier {
+    @Environment(\.router) var router
     let vault: Vault
-    
+
     @State var shouldShow: Bool = false
-    @State var isBackupLinkActive: Bool = false
     @AppStorage("monthlyReminderDate") var monthlyReminderDate: Date = Date()
-    
+
     func body(content: Content) -> some View {
         content
             .crossPlatformSheet(isPresented: $shouldShow) {
-                MonthlyBackupView(isPresented: $shouldShow, isBackupPresented: $isBackupLinkActive)
-                    .presentationDetents([.height(224)])
-            }
-            .navigationDestination(isPresented: $isBackupLinkActive) {
-                VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: vault))
+                MonthlyBackupView(
+                    isPresented: $shouldShow,
+                    onBackup: {
+                        router.navigate(to: KeygenRoute.backupNow(
+                            tssType: .Keygen,
+                            backupType: .single(vault: vault),
+                            isNewVault: false
+                        ))
+                    }
+                ).presentationDetents([.height(224)])
             }
             .onLoad {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {

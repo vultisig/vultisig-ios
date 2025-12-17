@@ -8,15 +8,15 @@
 import SwiftUI
 
 struct SettingsMainScreen: View {
+    @Environment(\.router) var router
     @ObservedObject var vault: Vault
     @EnvironmentObject var settingsViewModel: SettingsViewModel
-    
+
     @StateObject var referredViewModel = ReferredViewModel()
     @StateObject var referralViewModel = ReferralViewModel()
-    
+
     @State var tapCount = 0
     @State var scale: CGFloat = 1
-    @State var showAdvancedSettings: Bool = false
     @State var showVaultDetailQRCode: Bool = false
     @State var selectedOption: SettingsOption?
 
@@ -81,46 +81,50 @@ struct SettingsMainScreen: View {
         .crossPlatformToolbar("settings".localized) {
             CustomToolbarItem(placement: .trailing) {
                 ToolbarButton(image: "qr-code") {
-                    showVaultDetailQRCode = true
+                    router.navigate(to: SettingsRoute.vaultDetailQRCode(vault: vault))
                 }
             }
         }
-        .navigationDestination(item: $selectedOption) { option in
+        .onChange(of: selectedOption) { _, option in
+            guard let option else { return }
+
             switch option {
             case .vaultSettings:
-                VaultSettingsScreen(vault: vault)
+                router.navigate(to: SettingsRoute.vaultSettings(vault: vault))
             case .vultDiscountTiers:
-                VultDiscountTiersScreen(vault: vault)
+                router.navigate(to: SettingsRoute.vultDiscountTiers(vault: vault))
             case .registerVaults:
-                RegisterVaultView(vault: vault)
+                router.navigate(to: SettingsRoute.registerVaults(vault: vault))
             case .language:
-                SettingsLanguageSelectionView()
+                router.navigate(to: SettingsRoute.language)
             case .currency:
-                SettingsCurrencySelectionView()
+                router.navigate(to: SettingsRoute.currency)
             case .addressBook:
-                AddressBookView(
-                    shouldReturnAddress: false,
-                    returnAddress: .constant("")
-                )
+                router.navigate(to: SettingsRoute.addressBook)
             case .faq:
-                SettingsFAQView()
+                router.navigate(to: SettingsRoute.faq)
             case .checkForUpdates:
-                checkUpdateView
+                router.navigate(to: SettingsRoute.checkForUpdates)
             default:
-                EmptyView()
+                break
             }
+
+            selectedOption = nil
         }
-        .navigationDestination(isPresented: $showAdvancedSettings) {
-            SettingsAdvancedView()
+        .onChange(of: referredViewModel.navigationToReferralOverview) { _, shouldNavigate in
+            guard shouldNavigate else { return }
+            router.navigate(to: SettingsRoute.referralOnboarding(
+                referredViewModel: StateWrapper(object: referredViewModel)
+            ))
+            referredViewModel.navigationToReferralOverview = false
         }
-        .navigationDestination(isPresented: $showVaultDetailQRCode) {
-            VaultDetailQRCodeView(vault: vault)
-        }
-        .navigationDestination(isPresented: $referredViewModel.navigationToReferralOverview) {
-            ReferredOnboardingView(referredViewModel: referredViewModel)
-        }
-        .navigationDestination(isPresented: $referredViewModel.navigationToReferralsView) {
-            referralView
+        .onChange(of: referredViewModel.navigationToReferralsView) { _, shouldNavigate in
+            guard shouldNavigate else { return }
+            router.navigate(to: SettingsRoute.referrals(
+                referralViewModel: StateWrapper(object: referralViewModel),
+                referredViewModel: StateWrapper(object: referredViewModel)
+            ))
+            referredViewModel.navigationToReferralsView = false
         }
         .crossPlatformSheet(isPresented: $referredViewModel.showReferralBannerSheet) {
             referralOverviewSheet
@@ -209,7 +213,7 @@ struct SettingsMainScreen: View {
             
             if tapCount > 4 {
                 tapCount = 0
-                showAdvancedSettings = true
+                router.navigate(to: SettingsRoute.advancedSettings)
             }
         }
     }

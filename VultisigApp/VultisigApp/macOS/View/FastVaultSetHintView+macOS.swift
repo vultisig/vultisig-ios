@@ -19,16 +19,6 @@ extension FastVaultSetHintView {
     
     var main: some View {
         view
-            .onChange(of: isLinkActive) { _, isActive in
-                guard isActive else { return }
-                router.navigate(to: KeygenRoute.peerDiscovery(
-                    tssType: tssType,
-                    vault: vault,
-                    selectedTab: selectedTab,
-                    fastSignConfig: fastSignConfig,
-                    keyImportInput: nil
-                ))
-            }
     }
     
     var view: some View {

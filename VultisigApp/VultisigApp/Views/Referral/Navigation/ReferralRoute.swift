@@ -6,6 +6,8 @@
 //
 
 enum ReferralRoute: Hashable {
-    case referredCodeForm(referredViewModel: ReferredViewModel, referralViewModel: ReferralViewModel)
+    case referredCodeForm
     case vaultSelection(selectedVault: Vault?)
+    case transactionFlow(isEdit: Bool)
+    case main
 }

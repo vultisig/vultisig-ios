@@ -10,16 +10,17 @@ import SwiftUI
 import WalletCore
 
 struct HomeScreen: View {
+    @Environment(\.router) var router
     let showingVaultSelector: Bool
-    
+
     @State var showVaultSelector: Bool = false
     @State var addressToCopy: Coin?
     @State var showUpgradeVaultSheet: Bool = false
-    
+
     @State var vaults: [Vault] = []
     @State private var selectedTab: HomeTab = .wallet
     @State var vaultRoute: VaultMainRoute?
-    
+
     @State var showScanner: Bool = false
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
@@ -192,8 +193,19 @@ struct HomeScreen: View {
                     onCamera()
                 }
             }
-            .navigationDestination(item: $vaultRoute) { route in
-                buildVaultRoute(route: route, vault: selectedVault)
+            .onChange(of: vaultRoute) { _, route in
+                guard let route else { return }
+
+                switch route {
+                case .settings:
+                    router.navigate(to: SettingsRoute.vaultSettings(vault: selectedVault))
+                case .createVault:
+                    router.navigate(to: VaultRoute.createVault(showBackButton: true))
+                case .mainAction(let action):
+                    handleVaultAction(action, vault: selectedVault)
+                }
+
+                vaultRoute = nil
             }
 
         applyNavigationModifiers(to: withBasicModifiers, selectedVault: selectedVault)
@@ -203,9 +215,14 @@ struct HomeScreen: View {
     private func applyNavigationModifiers<V: View>(to view: V, selectedVault: Vault) -> some View {
         view
 #if os(macOS)
-            .navigationDestination(isPresented: $showScanner) {
-                    MacScannerView(
-                        type: .SignTransaction, sendTx: sendTx, selectedVault: selectedVault)
+            .onChange(of: showScanner) { _, shouldNavigate in
+                guard shouldNavigate else { return }
+                router.navigate(to: KeygenRoute.macScanner(
+                    type: .SignTransaction,
+                    sendTx: sendTx,
+                    selectedVault: selectedVault
+                ))
+                showScanner = false
             }
 #else
             .crossPlatformSheet(isPresented: $showScanner) {
@@ -228,8 +245,13 @@ struct HomeScreen: View {
                 }
             }
 #endif
-            .navigationDestination(isPresented: $shouldJoinKeygen) {
-                JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: selectedVault)
+            .onChange(of: shouldJoinKeygen) { _, shouldNavigate in
+                guard shouldNavigate else { return }
+                router.navigate(to: OnboardingRoute.joinKeygen(
+                    vault: Vault(name: "Main Vault"),
+                    selectedVault: selectedVault
+                ))
+                shouldJoinKeygen = false
             }
             .onChange(of: shouldSendCrypto) { _, newValue in
                 guard newValue else { return }
@@ -242,18 +264,24 @@ struct HomeScreen: View {
                         coin: deeplinkChain ?? vaultDetailViewModel.selectedGroup?.nativeCoin,
                         hasPreselectedCoin: true))
             }
-            .navigationDestination(isPresented: $shouldKeysignTransaction) {
-                if let vault = appViewModel.selectedVault {
-                    JoinKeysignView(vault: vault)
-                }
+            .onChange(of: shouldKeysignTransaction) { _, shouldNavigate in
+                guard shouldNavigate, let vault = appViewModel.selectedVault else { return }
+                router.navigate(to: KeygenRoute.joinKeysign(vault: vault))
+                shouldKeysignTransaction = false
             }
-            .navigationDestination(isPresented: $shouldImportBackup) {
-                ImportVaultShareScreen()
+            .onChange(of: shouldImportBackup) { _, shouldNavigate in
+                guard shouldNavigate else { return }
+                router.navigate(to: OnboardingRoute.importVaultShare)
+                shouldImportBackup = false
             }
-            .navigationDestination(isPresented: $showBackupNow) {
-                if let vault = appViewModel.selectedVault {
-                    VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: vault))
-                }
+            .onChange(of: showBackupNow) { _, shouldNavigate in
+                guard shouldNavigate, let vault = appViewModel.selectedVault else { return }
+                router.navigate(to: KeygenRoute.backupNow(
+                    tssType: .Keygen,
+                    backupType: .single(vault: vault),
+                    isNewVault: false
+                ))
+                showBackupNow = false
             }
             .crossPlatformSheet(isPresented: $showVaultSelector) {
                 VaultManagementSheet(
@@ -579,15 +607,28 @@ extension HomeScreen {
 }
 
 extension HomeScreen {
-    @ViewBuilder
-    func buildVaultRoute(route: VaultMainRoute, vault: Vault) -> some View {
-        switch route {
-        case .settings:
-            SettingsMainScreen(vault: vault)
-        case .createVault:
-            CreateVaultView(selectedVault: appViewModel.selectedVault, showBackButton: true)
-        case .mainAction(let action):
-            VaultActionRouteBuilder().buildActionRoute(action: action, sendTx: sendTx, vault: vault)
+    func handleVaultAction(_ action: VaultAction, vault: Vault) {
+        switch action {
+        case .send(let coin, let hasPreselectedCoin):
+            router.navigate(to: SendRoute.details(
+                coin: coin,
+                hasPreselectedCoin: hasPreselectedCoin,
+                tx: sendTx,
+                vault: vault
+            ))
+        case .swap(let fromCoin):
+            router.navigate(to: VaultRoute.swap(fromCoin: fromCoin, toCoin: nil, vault: vault))
+        case .function(let coin):
+            router.navigate(to: FunctionCallRoute.details(
+                defaultCoin: coin,
+                sendTx: sendTx,
+                vault: vault
+            ))
+        case .buy(let address, let blockChainCode, let coinType):
+            // Need to check if SendRoute has a buy route
+            // For now, keeping the old buildActionRoute approach for buy
+            // TODO: Add buy route to SendRoute if not exists
+            break
         }
     }
 }

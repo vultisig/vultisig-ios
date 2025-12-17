@@ -46,6 +46,13 @@ struct KeygenRouter {
                 fastSignConfig: fastSignConfig,
                 keyImportInput: keyImportInput
             )
+        case .fastVaultEmail(let tssType, let vault, let selectedTab, let fastVaultExist):
+            viewBuilder.buildFastVaultEmailScreen(
+                tssType: tssType,
+                vault: vault,
+                selectedTab: selectedTab,
+                fastVaultExist: fastVaultExist
+            )
         case .fastVaultSetHint(let tssType, let vault, let selectedTab, let fastVaultEmail, let fastVaultPassword, let fastVaultExist):
             viewBuilder.buildFastVaultSetHintScreen(
                 tssType: tssType,
@@ -68,6 +75,25 @@ struct KeygenRouter {
                 tssType: tssType,
                 selectedTab: selectedTab,
                 name: name
+            )
+        case .joinKeysign(let vault):
+            viewBuilder.buildJoinKeysignScreen(vault: vault)
+        case .macScanner(let type, let sendTx, let selectedVault):
+            viewBuilder.buildMacScannerScreen(
+                type: type,
+                sendTx: sendTx,
+                selectedVault: selectedVault
+            )
+        case .macAddressScanner(let selectedVault, let resultId):
+            viewBuilder.buildMacAddressScannerScreen(
+                selectedVault: selectedVault,
+                resultId: resultId
+            )
+        case .generalQRImport(let type, let selectedVault, let sendTx):
+            viewBuilder.buildGeneralQRImportScreen(
+                type: type,
+                selectedVault: selectedVault,
+                sendTx: sendTx
             )
         }
     }

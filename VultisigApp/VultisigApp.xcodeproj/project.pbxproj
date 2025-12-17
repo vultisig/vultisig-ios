@@ -441,6 +441,23 @@
 		13DACCCB2EDF6C4500BE0F97 /* KeyImportScanningForChainsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DACCCA2EDF6C4400BE0F97 /* KeyImportScanningForChainsView.swift */; };
 		13DB87602E9FD78E008E89B0 /* DefiMainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DB875F2E9FD78A008E89B0 /* DefiMainScreen.swift */; };
 		13DB87632EA01182008E89B0 /* DefiMainBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DB87622EA0117E008E89B0 /* DefiMainBalanceView.swift */; };
+		13DD00422EF2F3E40091F833 /* OnboardingRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD003E2EF2F3E40091F833 /* OnboardingRoute.swift */; };
+		13DD00432EF2F3E40091F833 /* OnboardingRouteBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD003F2EF2F3E40091F833 /* OnboardingRouteBuilder.swift */; };
+		13DD00442EF2F3E40091F833 /* OnboardingRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD00402EF2F3E40091F833 /* OnboardingRouter.swift */; };
+		13DD00472EF2F4010091F833 /* FunctionCallRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD00452EF2F4010091F833 /* FunctionCallRoute.swift */; };
+		13DD00482EF2F4010091F833 /* FunctionCallRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD00462EF2F4010091F833 /* FunctionCallRouter.swift */; };
+		13DD004D2EF2F40D0091F833 /* KeygenRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD00492EF2F40D0091F833 /* KeygenRoute.swift */; };
+		13DD004E2EF2F40D0091F833 /* KeygenRouteBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD004A2EF2F40D0091F833 /* KeygenRouteBuilder.swift */; };
+		13DD004F2EF2F40D0091F833 /* KeygenRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD004B2EF2F40D0091F833 /* KeygenRouter.swift */; };
+		13DD00542EF2F42D0091F833 /* ReferralRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD00522EF2F42D0091F833 /* ReferralRouter.swift */; };
+		13DD00552EF2F42D0091F833 /* ReferralRouteBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD00512EF2F42D0091F833 /* ReferralRouteBuilder.swift */; };
+		13DD00562EF2F42D0091F833 /* ReferralRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD00502EF2F42D0091F833 /* ReferralRoute.swift */; };
+		13DD005C2EF2F4420091F833 /* SettingsRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD005A2EF2F4420091F833 /* SettingsRouter.swift */; };
+		13DD005D2EF2F4420091F833 /* SettingsRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD00582EF2F4420091F833 /* SettingsRoute.swift */; };
+		13DD005E2EF2F4420091F833 /* SettingsRouteBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD00592EF2F4420091F833 /* SettingsRouteBuilder.swift */; };
+		13DD00632EF2F5750091F833 /* VaultRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD00612EF2F5750091F833 /* VaultRouter.swift */; };
+		13DD00642EF2F5750091F833 /* VaultRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD005F2EF2F5750091F833 /* VaultRoute.swift */; };
+		13DD00652EF2F5750091F833 /* VaultRouteBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD00602EF2F5750091F833 /* VaultRouteBuilder.swift */; };
 		13DD3B172E3CFE5900D46FA0 /* OffsetObservingScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD3B162E3CFE5800D46FA0 /* OffsetObservingScrollView.swift */; };
 		13DD3B1A2E3CFE7D00D46FA0 /* FlatPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD3B192E3CFE6E00D46FA0 /* FlatPicker.swift */; };
 		13DD547C2E561598007335DA /* SettingsOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD547B2E561598007335DA /* SettingsOption.swift */; };
@@ -1675,6 +1692,23 @@
 		13DACCCA2EDF6C4400BE0F97 /* KeyImportScanningForChainsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyImportScanningForChainsView.swift; sourceTree = "<group>"; };
 		13DB875F2E9FD78A008E89B0 /* DefiMainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiMainScreen.swift; sourceTree = "<group>"; };
 		13DB87622EA0117E008E89B0 /* DefiMainBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiMainBalanceView.swift; sourceTree = "<group>"; };
+		13DD003E2EF2F3E40091F833 /* OnboardingRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingRoute.swift; sourceTree = "<group>"; };
+		13DD003F2EF2F3E40091F833 /* OnboardingRouteBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingRouteBuilder.swift; sourceTree = "<group>"; };
+		13DD00402EF2F3E40091F833 /* OnboardingRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingRouter.swift; sourceTree = "<group>"; };
+		13DD00452EF2F4010091F833 /* FunctionCallRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallRoute.swift; sourceTree = "<group>"; };
+		13DD00462EF2F4010091F833 /* FunctionCallRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallRouter.swift; sourceTree = "<group>"; };
+		13DD00492EF2F40D0091F833 /* KeygenRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenRoute.swift; sourceTree = "<group>"; };
+		13DD004A2EF2F40D0091F833 /* KeygenRouteBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenRouteBuilder.swift; sourceTree = "<group>"; };
+		13DD004B2EF2F40D0091F833 /* KeygenRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenRouter.swift; sourceTree = "<group>"; };
+		13DD00502EF2F42D0091F833 /* ReferralRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralRoute.swift; sourceTree = "<group>"; };
+		13DD00512EF2F42D0091F833 /* ReferralRouteBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralRouteBuilder.swift; sourceTree = "<group>"; };
+		13DD00522EF2F42D0091F833 /* ReferralRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralRouter.swift; sourceTree = "<group>"; };
+		13DD00582EF2F4420091F833 /* SettingsRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRoute.swift; sourceTree = "<group>"; };
+		13DD00592EF2F4420091F833 /* SettingsRouteBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRouteBuilder.swift; sourceTree = "<group>"; };
+		13DD005A2EF2F4420091F833 /* SettingsRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRouter.swift; sourceTree = "<group>"; };
+		13DD005F2EF2F5750091F833 /* VaultRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultRoute.swift; sourceTree = "<group>"; };
+		13DD00602EF2F5750091F833 /* VaultRouteBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultRouteBuilder.swift; sourceTree = "<group>"; };
+		13DD00612EF2F5750091F833 /* VaultRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultRouter.swift; sourceTree = "<group>"; };
 		13DD3B162E3CFE5800D46FA0 /* OffsetObservingScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffsetObservingScrollView.swift; sourceTree = "<group>"; };
 		13DD3B192E3CFE6E00D46FA0 /* FlatPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlatPicker.swift; sourceTree = "<group>"; };
 		13DD547B2E561598007335DA /* SettingsOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsOption.swift; sourceTree = "<group>"; };
@@ -4019,6 +4053,7 @@
 		13C4A02C2EDDC5490033BDB1 /* Onboarding */ = {
 			isa = PBXGroup;
 			children = (
+				13DD00412EF2F3E40091F833 /* Navigation */,
 				13204DD82EEB1CB700297D01 /* Common */,
 				13C4A02D2EDDC54D0033BDB1 /* ImportVault */,
 			);
@@ -4339,6 +4374,56 @@
 				13DB87622EA0117E008E89B0 /* DefiMainBalanceView.swift */,
 			);
 			path = View;
+			sourceTree = "<group>";
+		};
+		13DD00412EF2F3E40091F833 /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				13DD003E2EF2F3E40091F833 /* OnboardingRoute.swift */,
+				13DD003F2EF2F3E40091F833 /* OnboardingRouteBuilder.swift */,
+				13DD00402EF2F3E40091F833 /* OnboardingRouter.swift */,
+			);
+			path = Navigation;
+			sourceTree = "<group>";
+		};
+		13DD004C2EF2F40D0091F833 /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				13DD00492EF2F40D0091F833 /* KeygenRoute.swift */,
+				13DD004A2EF2F40D0091F833 /* KeygenRouteBuilder.swift */,
+				13DD004B2EF2F40D0091F833 /* KeygenRouter.swift */,
+			);
+			path = Navigation;
+			sourceTree = "<group>";
+		};
+		13DD00532EF2F42D0091F833 /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				13DD00502EF2F42D0091F833 /* ReferralRoute.swift */,
+				13DD00512EF2F42D0091F833 /* ReferralRouteBuilder.swift */,
+				13DD00522EF2F42D0091F833 /* ReferralRouter.swift */,
+			);
+			path = Navigation;
+			sourceTree = "<group>";
+		};
+		13DD005B2EF2F4420091F833 /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				13DD00582EF2F4420091F833 /* SettingsRoute.swift */,
+				13DD00592EF2F4420091F833 /* SettingsRouteBuilder.swift */,
+				13DD005A2EF2F4420091F833 /* SettingsRouter.swift */,
+			);
+			path = Navigation;
+			sourceTree = "<group>";
+		};
+		13DD00622EF2F5750091F833 /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				13DD005F2EF2F5750091F833 /* VaultRoute.swift */,
+				13DD00602EF2F5750091F833 /* VaultRouteBuilder.swift */,
+				13DD00612EF2F5750091F833 /* VaultRouter.swift */,
+			);
+			path = Navigation;
 			sourceTree = "<group>";
 		};
 		13DD3B152E3CFE4800D46FA0 /* ScrollView */ = {
@@ -4671,6 +4756,7 @@
 		46D067E42B8852B70052F535 /* Keygen */ = {
 			isa = PBXGroup;
 			children = (
+				13DD004C2EF2F40D0091F833 /* Navigation */,
 				13EFA1C92E313886009838EB /* Components */,
 				A51AE8BE2C931C6000EF9A7A /* FastVaultEmailView.swift */,
 				A51AE8BF2C931C6000EF9A7A /* FastVaultEnterPasswordView.swift */,
@@ -5421,6 +5507,7 @@
 		A6980C222BC0834E00F452AB /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				13DD005B2EF2F4420091F833 /* Navigation */,
 				1348FA612E6894C2001551F6 /* SettingsPasswordHintScreen.swift */,
 				133EEA182E68785F00E18280 /* SettingsCommonOptionView.swift */,
 				13DD54802E561A4E007335DA /* SettingsSectionView.swift */,
@@ -5589,6 +5676,7 @@
 		A6E0C90D2DE4E86900A01543 /* Referral */ = {
 			isa = PBXGroup;
 			children = (
+				13DD00532EF2F42D0091F833 /* Navigation */,
 				13C320022E61F8D500255138 /* ReferralVaultSelectionScreen.swift */,
 				13A898FF2E43C0EE006F75F0 /* PreferredAssetSelectionView.swift */,
 				138E370B2E439A780032C31C /* EditReferralDetailsView.swift */,
@@ -5801,6 +5889,8 @@
 		B5A97CEB2BF41554007574D7 /* FunctionCall */ = {
 			isa = PBXGroup;
 			children = (
+				13DD00452EF2F4010091F833 /* FunctionCallRoute.swift */,
+				13DD00462EF2F4010091F833 /* FunctionCallRouter.swift */,
 				132309FB2EAFFFD100CD60F9 /* FunctionCallPairScreen.swift */,
 				132309F92EAFFD7B00CD60F9 /* FunctionCallRouteBuilder.swift */,
 				B5A97CF22BF426D4007574D7 /* FunctionCallDetailsScreen.swift */,
@@ -6004,6 +6094,7 @@
 		D9AD8F042B675E230009F8D5 /* Vault */ = {
 			isa = PBXGroup;
 			children = (
+				13DD00622EF2F5750091F833 /* Navigation */,
 				1328E6512ED5F47C0080BEE1 /* VaultDetail */,
 				13B1C2C32E65D28700050637 /* VaultPairView.swift */,
 				1316034F2E60C438001ED972 /* Backup */,
@@ -6467,8 +6558,14 @@
 				130ABEF92E9E28210074BF67 /* RefreshToolbarButton.swift in Sources */,
 				B51119332C0072620020B711 /* FunctionCallCustom.swift in Sources */,
 				13B0DCE32E86C70500D4E609 /* ReceiveChainSelectionScreen.swift in Sources */,
+				13DD00542EF2F42D0091F833 /* ReferralRouter.swift in Sources */,
+				13DD00552EF2F42D0091F833 /* ReferralRouteBuilder.swift in Sources */,
+				13DD00562EF2F42D0091F833 /* ReferralRoute.swift in Sources */,
 				A564ED422BC350520056FDC0 /* SwapTransaction.swift in Sources */,
 				A67530622CAFBDC200B1E344 /* Folder.swift in Sources */,
+				13DD004D2EF2F40D0091F833 /* KeygenRoute.swift in Sources */,
+				13DD004E2EF2F40D0091F833 /* KeygenRouteBuilder.swift in Sources */,
+				13DD004F2EF2F40D0091F833 /* KeygenRouter.swift in Sources */,
 				130C059D2EE9CDFE00A7303A /* GlowIcon.swift in Sources */,
 				130C05A12EE9FB4900A7303A /* KeyImportNoActiveChainsView.swift in Sources */,
 				138574262E2DB9C6002532BF /* NavigationIconButton.swift in Sources */,
@@ -6504,6 +6601,9 @@
 				A66BFCD32C135699004DCD4F /* ShareSheetViewModel.swift in Sources */,
 				130652502EA7CD08002CAD99 /* THORChainAPIService+Bonds.swift in Sources */,
 				A6386D922C8C291B00DDD58E /* SwapVerifyView+macOS.swift in Sources */,
+				13DD00422EF2F3E40091F833 /* OnboardingRoute.swift in Sources */,
+				13DD00432EF2F3E40091F833 /* OnboardingRouteBuilder.swift in Sources */,
+				13DD00442EF2F3E40091F833 /* OnboardingRouter.swift in Sources */,
 				135C14922ED0E49000459EFC /* StakeInteractor.swift in Sources */,
 				A6A8163E2CBCB00D009EE114 /* FileQRCodeImporterMac+iOS.swift in Sources */,
 				13E1E7672E6DD71E00D68F5D /* FormExpandableSection.swift in Sources */,
@@ -6973,6 +7073,9 @@
 				DE8BDCCD2C4A314D00A1EDA6 /* VaultPublicKeyExport.swift in Sources */,
 				A5125F082BEBBFAB008A79AA /* OneInchService.swift in Sources */,
 				A522C34A2C46948A00BC4311 /* SwapError.swift in Sources */,
+				13DD00632EF2F5750091F833 /* VaultRouter.swift in Sources */,
+				13DD00642EF2F5750091F833 /* VaultRoute.swift in Sources */,
+				13DD00652EF2F5750091F833 /* VaultRouteBuilder.swift in Sources */,
 				1390D8B82E3938BF003F3E20 /* BlockaidRpcClientProtocol.swift in Sources */,
 				134856322EB51D5C003D10BE /* AmountTextField.swift in Sources */,
 				13A9641A2EBBDA090025FB7A /* RUJIUnstakeTransactionBuilder.swift in Sources */,
@@ -7268,6 +7371,9 @@
 				A6CBF2DC2C251D4100FD8080 /* LookingForDevicesLoader.swift in Sources */,
 				A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */,
 				138E1D602E9480740085EA8E /* SheetPresentedCounterManagerKey.swift in Sources */,
+				13DD005C2EF2F4420091F833 /* SettingsRouter.swift in Sources */,
+				13DD005D2EF2F4420091F833 /* SettingsRoute.swift in Sources */,
+				13DD005E2EF2F4420091F833 /* SettingsRouteBuilder.swift in Sources */,
 				B530F8742C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift in Sources */,
 				13CCEC0F2E55010D00F28937 /* InfoBannerView.swift in Sources */,
 				A670CEC12DD7CFD400E33B09 /* NavigationBlankBackButton+macOS.swift in Sources */,
@@ -7456,6 +7562,8 @@
 				B5BCC2612EC26D79007B5A2F /* EvmServiceStruct.swift in Sources */,
 				B576BE5D2DCC2CA1005D33D4 /* ThorchainService+TCYStake.swift in Sources */,
 				1336BB312E8173A500597070 /* ChainDetailScreen.swift in Sources */,
+				13DD00472EF2F4010091F833 /* FunctionCallRoute.swift in Sources */,
+				13DD00482EF2F4010091F833 /* FunctionCallRouter.swift in Sources */,
 				B59173312C641F3D007100E3 /* CoinService.swift in Sources */,
 				B5C5B4AC2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift in Sources */,
 				B548BEDE2EA2D3B600E32308 /* ThorchainStagenetService.swift in Sources */,

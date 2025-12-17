@@ -38,13 +38,26 @@ import AVFoundation
 struct MacAddressScannerView: View {
     @Binding var showCameraScanView: Bool
     let selectedVault: Vault?
-    var onParsedResult: (AddressResult?) -> Void
-    
+    @Binding var scannedResult: AddressResult?
+    var onParsedResult: ((AddressResult?) -> Void)?
+
     @State var showImportOptions: Bool = false
-    
+
     @StateObject var scannerViewModel = MacAddressScannerViewModel()
-    
+
     @Environment(\.dismiss) var dismiss
+
+    init(
+        showCameraScanView: Binding<Bool>,
+        selectedVault: Vault?,
+        scannedResult: Binding<AddressResult?> = .constant(nil),
+        onParsedResult: ((AddressResult?) -> Void)? = nil
+    ) {
+        self._showCameraScanView = showCameraScanView
+        self.selectedVault = selectedVault
+        self._scannedResult = scannedResult
+        self.onParsedResult = onParsedResult
+    }
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -70,7 +83,9 @@ struct MacAddressScannerView: View {
     var importOption: some View {
         GeneralQRImportMacView(type: .Unknown, selectedVault: selectedVault) { address in
             goBack()
-            onParsedResult(AddressResult(address: address))
+            let result = AddressResult(address: address)
+            scannedResult = result
+            onParsedResult?(result)
         }
     }
     
@@ -165,7 +180,9 @@ struct MacAddressScannerView: View {
         }
 
         goBack()
-        onParsedResult(AddressResult.fromURI(detectedQRCode))
+        let result = AddressResult.fromURI(detectedQRCode)
+        scannedResult = result
+        onParsedResult?(result)
     }
     
     private func goBack() {

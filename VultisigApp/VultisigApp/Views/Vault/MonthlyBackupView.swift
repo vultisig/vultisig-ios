@@ -10,7 +10,7 @@ import SwiftUI
 struct MonthlyBackupView: View {
 
     @Binding var isPresented: Bool
-    @Binding var isBackupPresented: Bool
+    let onBackup: () -> Void
 
     @AppStorage("monthlyReminderDate") var monthlyReminderDate: Date = Date()
 
@@ -65,7 +65,7 @@ struct MonthlyBackupView: View {
 
     var backupButton: some View {
         PrimaryButton(title: "backup") {
-            isBackupPresented = true
+            onBackup()
             isPresented = false
         }
         .padding(.horizontal, 16)

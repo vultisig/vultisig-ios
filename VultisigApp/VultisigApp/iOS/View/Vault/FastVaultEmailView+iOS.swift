@@ -21,16 +21,6 @@ extension FastVaultEmailView {
     
     var main: some View {
         view
-            .onChange(of: isLinkActive) { _, isActive in
-                guard isActive else { return }
-                router.navigate(to: KeygenRoute.fastVaultSetPassword(
-                    tssType: tssType,
-                    vault: vault,
-                    selectedTab: selectedTab,
-                    fastVaultEmail: email,
-                    fastVaultExist: fastVaultExist
-                ))
-            }
     }
     
     var view: some View {

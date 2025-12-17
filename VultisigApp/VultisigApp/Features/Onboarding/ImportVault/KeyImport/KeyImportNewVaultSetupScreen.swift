@@ -12,7 +12,6 @@ struct KeyImportNewVaultSetupScreen: View {
     let keyImportInput: KeyImportInput?
     let fastSignConfig: FastSignConfig
 
-    @State private var presentPeersScreen: Bool = false
     @Environment(\.router) var router
     
     var body: some View {
@@ -27,21 +26,17 @@ struct KeyImportNewVaultSetupScreen: View {
                     informationView
                     Spacer().frame(maxHeight: 64)
                     PrimaryButton(title: "setup") {
-                        presentPeersScreen = true
+                        router.navigate(to: KeygenRoute.peerDiscovery(
+                            tssType: .KeyImport,
+                            vault: vault,
+                            selectedTab: .secure,
+                            fastSignConfig: fastSignConfig,
+                            keyImportInput: keyImportInput
+                        ))
                     }
                 }
                 .padding(.horizontal, 16)
             }
-        }
-        .onChange(of: presentPeersScreen) { _, isActive in
-            guard isActive else { return }
-            router.navigate(to: KeygenRoute.peerDiscovery(
-                tssType: .KeyImport,
-                vault: vault,
-                selectedTab: .secure,
-                fastSignConfig: fastSignConfig,
-                keyImportInput: keyImportInput
-            ))
         }
     }
     

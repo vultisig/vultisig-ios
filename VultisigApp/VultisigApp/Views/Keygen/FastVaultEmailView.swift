@@ -16,7 +16,6 @@ struct FastVaultEmailView: View {
     var backButtonHidden: Bool = false
 
     @State var email: String = ""
-    @State var isLinkActive = false
     
     @State var isEmptyEmail: Bool = false
     @State var isInvalidEmail: Bool = false
@@ -119,7 +118,14 @@ struct FastVaultEmailView: View {
         }
         
         isInvalidEmail = false
-        isLinkActive = true
+        
+        router.navigate(to: KeygenRoute.fastVaultSetPassword(
+            tssType: tssType,
+            vault: vault,
+            selectedTab: selectedTab,
+            fastVaultEmail: email,
+            fastVaultExist: fastVaultExist
+        ))
     }
     
     private func isEmptyEmailCheck() -> Bool {

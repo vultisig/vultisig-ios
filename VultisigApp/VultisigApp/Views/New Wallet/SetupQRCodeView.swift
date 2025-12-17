@@ -17,7 +17,8 @@ struct SetupQRCodeView: View {
     @State var shouldJoinKeygen = false
 
     @Environment(\.modelContext) private var modelContext
-    
+    @Environment(\.router) var router
+
     var body: some View {
         content
             .sensoryFeedback(.selection, trigger: selectedTab)
@@ -41,27 +42,29 @@ struct SetupQRCodeView: View {
     }
     
     var startButton: some View {
-        PrimaryNavigationButton(title: "next") {
+        PrimaryButton(title: "next") {
             if tssType == .Keygen {
-                NewWalletNameView(
+                router.navigate(to: KeygenRoute.newWalletName(
                     tssType: tssType,
                     selectedTab: selectedTab,
                     name: Vault.getUniqueVaultName(modelContext: modelContext, state: selectedTab)
-                )
+                ))
             } else if let vault {
                 if selectedTab.isFastVault {
-                    FastVaultEmailView(
+                    router.navigate(to: KeygenRoute.fastVaultEmail(
                         tssType: tssType,
                         vault: vault,
-                        selectedTab: selectedTab
-                    )
+                        selectedTab: selectedTab,
+                        fastVaultExist: false
+                    ))
                 } else {
-                    PeerDiscoveryView(
+                    router.navigate(to: KeygenRoute.peerDiscovery(
                         tssType: tssType,
                         vault: vault,
-                        selectedTab: selectedTab, 
-                        fastSignConfig: nil
-                    )
+                        selectedTab: selectedTab,
+                        fastSignConfig: nil,
+                        keyImportInput: nil
+                    ))
                 }
             }
         }

@@ -9,22 +9,20 @@ import SwiftUI
 import SwiftData
 
 struct ReferralMainScreen: View {
-    @ObservedObject var referredViewModel: ReferredViewModel
-    @ObservedObject var referralViewModel: ReferralViewModel
+    @EnvironmentObject var referredViewModel: ReferredViewModel
+    @EnvironmentObject var referralViewModel: ReferralViewModel
 
     @State var selectedVault: Vault?
     @State var showReferralCodeCopied = false
-    @State var presentEditReferredScreen = false
-    @State var presentVaultSelectionScreen = false
     @Environment(\.router) var router
 
     private let referralSavePercentage: String = "10%"
     
-    init(referredViewModel: ReferredViewModel, referralViewModel: ReferralViewModel) {
-        self.referredViewModel = referredViewModel
-        self.referralViewModel = referralViewModel
-        self.selectedVault = referralViewModel.currentVault
-    }
+//    init(referredViewModel: ReferredViewModel, referralViewModel: ReferralViewModel) {
+//        self.referredViewModel = referredViewModel
+//        self.referralViewModel = referralViewModel
+//        self.selectedVault = referralViewModel.currentVault
+//    }
     
     var body: some View {
         Screen(title: "referral".localized) {
@@ -39,17 +37,6 @@ struct ReferralMainScreen: View {
             }
         }
         .overlay(PopupCapsule(text: "referralCodeCopied", showPopup: $showReferralCodeCopied))
-        .onChange(of: presentEditReferredScreen) { _, isActive in
-            guard isActive else { return }
-            router.navigate(to: ReferralRoute.referredCodeForm(
-                referredViewModel: referredViewModel,
-                referralViewModel: referralViewModel
-            ))
-        }
-        .onChange(of: presentVaultSelectionScreen) { _, isActive in
-            guard isActive else { return }
-            router.navigate(to: ReferralRoute.vaultSelection(selectedVault: selectedVault))
-        }
         .onLoad {
             Task {
                 await referralViewModel.fetchReferralCodeDetails()
@@ -66,7 +53,7 @@ struct ReferralMainScreen: View {
 
     var createReferredBanner: some View {
         Button {
-            presentEditReferredScreen = true
+            router.navigate(to: ReferralRoute.referredCodeForm)
         } label: {
             BannerView(bgImage: "referral-banner") {
                 VStack(alignment: .leading, spacing: 2) {
@@ -127,8 +114,8 @@ struct ReferralMainScreen: View {
                     .multilineTextAlignment(.center)
             }
             
-            PrimaryNavigationButton(title: "createReferral".localized) {
-                ReferralTransactionFlowScreen(referralViewModel: referralViewModel, isEdit: false)
+            PrimaryButton(title: "createReferral".localized) {
+                router.navigate(to: ReferralRoute.transactionFlow(isEdit: false))
             }
             .padding(.bottom, 12)
         }
@@ -184,8 +171,8 @@ struct ReferralMainScreen: View {
     }
     
     var editReferralButton: some View {
-        PrimaryNavigationButton(title: "editReferral") {
-            ReferralTransactionFlowScreen(referralViewModel: referralViewModel, isEdit: true)
+        PrimaryButton(title: "editReferral") {
+            router.navigate(to: ReferralRoute.transactionFlow(isEdit: true))
         }
         .disabled(!referralViewModel.canEditCode)
     }
@@ -196,7 +183,7 @@ struct ReferralMainScreen: View {
             value: referredViewModel.savedReferredCode,
             icon: "pencil"
         ) {
-            presentEditReferredScreen = true
+            router.navigate(to: ReferralRoute.referredCodeForm)
         }
         .containerStyle(padding: 14)
     }
@@ -208,7 +195,7 @@ struct ReferralMainScreen: View {
                 .font(Theme.fonts.bodySMedium)
             
             Button {
-                presentVaultSelectionScreen = true
+                router.navigate(to: ReferralRoute.vaultSelection(selectedVault: selectedVault))
             } label: {
                 HStack(spacing: 10) {
                     Image("vault-icon")
@@ -267,5 +254,5 @@ struct ReferralCodeBoxView: View {
 
 
 #Preview {
-    ReferralMainScreen(referredViewModel: ReferredViewModel(), referralViewModel: ReferralViewModel())
+    ReferralMainScreen()
 }

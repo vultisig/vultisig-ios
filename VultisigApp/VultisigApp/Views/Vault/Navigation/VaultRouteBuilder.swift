@@ -70,10 +70,75 @@ struct VaultRouteBuilder {
         showVaultsList: Bool,
         shouldJoinKeygen: Bool
     ) -> some View {
-        HomeView(
-            selectedVault: vault,
-            showVaultsList: showVaultsList,
-            shouldJoinKeygen: shouldJoinKeygen
+        HomeScreen(
+//            selectedVault: vault,
+//            showVaultsList: showVaultsList,
+//            shouldJoinKeygen: shouldJoinKeygen
         )
+    }
+
+    @ViewBuilder
+    func buildSwapScreen(fromCoin: Coin?, toCoin: Coin?, vault: Vault) -> some View {
+        SwapCryptoView(fromCoin: fromCoin, toCoin: toCoin, vault: vault)
+    }
+
+    @ViewBuilder
+    func buildAllDevicesUpgradeScreen(vault: Vault) -> some View {
+        AllDevicesUpgradeView(vault: vault)
+    }
+
+    @ViewBuilder
+    func buildVaultShareBackupsScreen(vault: Vault) -> some View {
+        VaultShareBackupsView(vault: vault)
+    }
+
+    @ViewBuilder
+    func buildReshareScreen(vault: Vault) -> some View {
+        ReshareView(vault: vault)
+    }
+
+    @ViewBuilder
+    func buildPasswordHintScreen(vault: Vault) -> some View {
+        SettingsPasswordHintScreen(vault: vault, viewModel: SettingsBiometryViewModel())
+    }
+
+    @ViewBuilder
+    func buildVaultDetailsScreen(vault: Vault, devicesInfo: [DeviceInfo]) -> some View {
+        VaultPairDetailView(vault: vault, devicesInfo: devicesInfo)
+    }
+
+    @ViewBuilder
+    func buildRenameVaultScreen(vault: Vault, vaults: [Vault], folders: [Folder]) -> some View {
+        RenameVaultView(vaults: vaults, folders: folders, vault: vault)
+    }
+
+    @ViewBuilder
+    func buildDeleteVaultScreen(vault: Vault, devicesInfo: [DeviceInfo]) -> some View {
+        VaultDeletionConfirmView(vault: vault, devicesInfo: devicesInfo)
+    }
+
+    @ViewBuilder
+    func buildAdvancedSettingsScreen(vault: Vault) -> some View {
+        VaultAdvancedSettingsScreen(vault: vault)
+    }
+
+    @ViewBuilder
+    func buildCustomMessageScreen(vault: Vault) -> some View {
+        SettingsCustomMessageView(vault: vault)
+    }
+
+    @ViewBuilder
+    func buildOnChainSecurityScreen() -> some View {
+        OnChainSecurityScreen()
+    }
+    
+    @ViewBuilder
+    func buildChainDetailScreen(groupedChain: GroupedChain, vault: Vault) -> some View {
+        ChainDetailScreen(group: groupedChain, vault: vault)
+    }
+    
+    @ViewBuilder
+    func buildDefiChainDetailScreen(groupedChain: GroupedChain, vault: Vault) -> some View {
+        DefiChainMainScreen(vault: vault, group: groupedChain)
     }
 }

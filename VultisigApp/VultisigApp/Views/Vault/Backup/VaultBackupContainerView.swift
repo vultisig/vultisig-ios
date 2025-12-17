@@ -17,7 +17,6 @@ struct VaultBackupContainerView<Content: View>: View {
     let isNewVault: Bool
     var content: () -> Content
     
-    @State var presentSuccess: Bool = false
     @Environment(\.router) var router
 
     @EnvironmentObject var appViewModel: AppViewModel
@@ -25,13 +24,6 @@ struct VaultBackupContainerView<Content: View>: View {
     var body: some View {
         content()
             .sensoryFeedback(.success, trigger: backupType.vault.isBackedUp)
-            .onChange(of: presentSuccess) { _, isActive in
-                guard isActive else { return }
-                router.navigate(to: VaultRoute.backupSuccess(
-                    tssType: tssType,
-                    vault: backupType.vault
-                ))
-            }
             .fileExporter(isPresented: $presentFileExporter, fileModel: $fileModel) { result in
                 switch result {
                 case .success(let didSave):
@@ -62,7 +54,10 @@ struct VaultBackupContainerView<Content: View>: View {
     func dismissView() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             if isNewVault {
-                presentSuccess = true
+                router.navigate(to: VaultRoute.backupSuccess(
+                    tssType: tssType,
+                    vault: backupType.vault
+                ))
             } else {
                 appViewModel.set(selectedVault: backupType.vault)
             }

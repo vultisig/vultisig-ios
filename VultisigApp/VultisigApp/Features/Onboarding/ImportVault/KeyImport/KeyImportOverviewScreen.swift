@@ -17,12 +17,10 @@ struct KeyImportOverviewScreen: View {
         case vaultShares
     }
     
-    @State private var presentBackupNowScreen: Bool = false
     @State private var scrollPosition: Page? = .multisig
     
     @State private var isVerificationLinkActive = false
     @State private var isBackupLinkActive = false
-    @State private var goBackToEmailSetup = false
     @Environment(\.router) var router
 
     var body: some View {
@@ -37,7 +35,11 @@ struct KeyImportOverviewScreen: View {
                     pages
                     pagesIndicator
                     PrimaryButton(title: "backupNow".localized) {
-                        presentBackupNowScreen = true
+                        router.navigate(to: KeygenRoute.backupNow(
+                            tssType: .KeyImport,
+                            backupType: .single(vault: vault),
+                            isNewVault: true
+                        ))
                     }
                     .padding(.horizontal, 16)
                 }
@@ -49,25 +51,15 @@ struct KeyImportOverviewScreen: View {
                 vault: vault,
                 email: email ?? .empty,
                 isPresented: $isVerificationLinkActive,
-                isBackupLinkActive: .constant(false),
                 tabIndex: .constant(0),
-                goBackToEmailSetup: $goBackToEmailSetup
+                onBackup: { },
+                onBackToEmailSetup: {
+                    router.navigate(to: OnboardingRoute.vaultSetup(
+                        tssType: .KeyImport,
+                        keyImportInput: keyImportInput
+                    ))
+                }
             )
-        }
-        .onChange(of: presentBackupNowScreen) { _, isActive in
-            guard isActive else { return }
-            router.navigate(to: KeygenRoute.backupNow(
-                tssType: .KeyImport,
-                backupType: .single(vault: vault),
-                isNewVault: true
-            ))
-        }
-        .onChange(of: goBackToEmailSetup) { _, isActive in
-            guard isActive else { return }
-            router.navigate(to: OnboardingRoute.vaultSetup(
-                tssType: .KeyImport,
-                keyImportInput: keyImportInput
-            ))
         }
         .onLoad {
             if email != nil {

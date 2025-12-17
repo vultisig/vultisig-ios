@@ -40,12 +40,32 @@ struct VaultRouter {
             viewBuilder.buildBackupSuccessScreen(tssType: tssType, vault: vault)
         case .createVault(let showBackButton):
             viewBuilder.buildCreateVaultScreen(showBackButton: showBackButton)
-        case .home(let vault, let showVaultsList, let shouldJoinKeygen):
-            viewBuilder.buildHomeScreen(
-                vault: vault,
-                showVaultsList: showVaultsList,
-                shouldJoinKeygen: shouldJoinKeygen
-            )
+        case .swap(let fromCoin, let toCoin, let vault):
+            viewBuilder.buildSwapScreen(fromCoin: fromCoin, toCoin: toCoin, vault: vault)
+        case .allDevicesUpgrade(let vault):
+            viewBuilder.buildAllDevicesUpgradeScreen(vault: vault)
+        case .vaultShareBackups(let vault):
+            viewBuilder.buildVaultShareBackupsScreen(vault: vault)
+        case .reshare(let vault):
+            viewBuilder.buildReshareScreen(vault: vault)
+        case .passwordHint(let vault):
+            viewBuilder.buildPasswordHintScreen(vault: vault)
+        case .vaultDetails(let vault, let devicesInfo):
+            viewBuilder.buildVaultDetailsScreen(vault: vault, devicesInfo: devicesInfo)
+        case .renameVault(let vault, let vaults, let folders):
+            viewBuilder.buildRenameVaultScreen(vault: vault, vaults: vaults, folders: folders)
+        case .deleteVault(let vault, let devicesInfo):
+            viewBuilder.buildDeleteVaultScreen(vault: vault, devicesInfo: devicesInfo)
+        case .advancedSettings(let vault):
+            viewBuilder.buildAdvancedSettingsScreen(vault: vault)
+        case .customMessage(let vault):
+            viewBuilder.buildCustomMessageScreen(vault: vault)
+        case .onChainSecurity:
+            viewBuilder.buildOnChainSecurityScreen()
+        case .chainDetail(let groupedChain, let vault):
+            viewBuilder.buildChainDetailScreen(groupedChain: groupedChain, vault: vault)
+        case .defiChain(let groupedChain, let vault):
+            viewBuilder.buildDefiChainDetailScreen(groupedChain: groupedChain, vault: vault)
         }
     }
 }

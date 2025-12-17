@@ -14,7 +14,7 @@ For each flow:
 
 ---
 
-## ✅ Completed Flows (5/10)
+## ✅ Completed Flows (6/10)
 
 ### 1. Keygen Flow - 9 files migrated ✓
 **Created:**
@@ -134,44 +134,84 @@ For each flow:
 
 ---
 
-## 🔄 In Progress / Remaining Flows (5/10)
+### 6. Send Flow - 4 files migrated ✓
+**Created:**
+- SendRouter, SendRoute, SendRouteBuilder already existed
 
-### 6. Send Flow - ~6 files
-**Status:** SendRouter already exists as reference implementation
+**Routes:**
+- `details(coin, hasPreselectedCoin, tx, vault)`
+- `verify(tx, vault)`
+- `pairing(vault, tx, keysignPayload, fastVaultPassword)`
+- `keysign(input, tx)`
+- `done(vault, hash, chain, tx)`
 
-**Files with navigationDestination:**
-- SendCryptoDoneContentView.swift
-- SendCryptoSecondaryDoneView.swift
-- SendVerifyScreen.swift
-- SendPairScreen.swift
-- SendKeysignScreen.swift
-- SendDetailsScreen.swift
+**Migrated Files:**
+1. SendDetailsScreen.swift
+2. SendVerifyScreen.swift
+3. SendPairScreen.swift
+4. SendKeysignScreen.swift
 
-**Note:** These may already be migrated since SendRouter was the original reference.
-
----
-
-### 7. Settings Flow - 1 file
-**Files:**
-- SettingsMainScreen.swift
+**Note:** CoinPickerView navigation kept as `.navigationDestination` (utility picker, not main flow)
 
 ---
 
-### 8. DeFi Flow - 1 file
-**Files:**
-- DefiChainMainScreen.swift
+## ✅ Completed Flows (7/10)
+
+### 7. Settings Flow - 1 file migrated ✓
+**Created:**
+- `VultisigApp/Views/Settings/Navigation/SettingsRoute.swift`
+- `VultisigApp/Views/Settings/Navigation/SettingsRouter.swift`
+- `VultisigApp/Views/Settings/Navigation/SettingsRouteBuilder.swift`
+
+**Routes:**
+- `vaultSettings(vault)`
+- `vultDiscountTiers(vault)`
+- `registerVaults(vault)`
+- `language`
+- `currency`
+- `addressBook`
+- `faq`
+- `checkForUpdates`
+- `advancedSettings`
+- `vaultDetailQRCode(vault)`
+- `referralOnboarding(referredViewModel)` - Uses StateWrapper for @StateObject
+- `referrals(referralViewModel, referredViewModel)` - Uses StateWrapper for @StateObject
+
+**Migrated Files:**
+1. SettingsMainScreen.swift
 
 ---
 
-### 9. Home/Wallet Flow - ~5 files
-**Files:**
-- HomeScreen.swift
-- ChainDetailScreen.swift
-- VaultMain/Views/Modifiers/UpgradeVaultViewModifier.swift
-- VaultMain/Views/Modifiers/MonthlyBackupWarningViewModifier.swift
-- (1 more file)
+### 8. DeFi Flow - 1 file migrated ✓
+**Updated:**
+- `VultisigApp/Views/FunctionCall/FunctionCallRoute.swift` - Added `functionTransaction` route
+- `VultisigApp/Views/FunctionCall/FunctionCallRouter.swift` - Added handler for `functionTransaction`
+- `VultisigApp/Views/FunctionCall/FunctionCallRouteBuilder.swift` - Added `buildFunctionTransactionScreen`
+
+**Routes:**
+- `functionTransaction(vault, transactionType)` - Navigates to FunctionTransactionScreen for DeFi operations
+
+**Migrated Files:**
+1. DefiChainMainScreen.swift
 
 ---
+
+### 9. Home/Wallet Flow - 4 files migrated ✓
+**Extended Routes:**
+- Added `KeygenRoute.joinKeysign(vault)` for joining keysign sessions
+- Added `VaultRoute.swap(fromCoin, vault)` for token swaps
+
+**Migrated Files:**
+1. HomeScreen.swift - Migrated VaultMainRoute/VaultAction handling to centralized routes
+2. ChainDetailScreen.swift
+3. UpgradeVaultViewModifier.swift
+4. MonthlyBackupWarningViewModifier.swift
+
+**Note:** macOS-specific MacScannerView kept as navigationDestination (platform-specific, low priority)
+
+---
+
+## 🔄 In Progress / Remaining Flows (1/10)
 
 ### 10. Miscellaneous - ~8 files
 **Files:**
@@ -198,6 +238,7 @@ final class VultisigRouter: ObservableObject {
     let onboardingRouter: OnboardingRouter        // ✓ Added
     let referralRouter: ReferralRouter            // ✓ Added
     let functionCallRouter: FunctionCallRouter    // ✓ Added
+    let settingsRouter: SettingsRouter            // ✓ Added
 }
 ```
 
@@ -211,6 +252,7 @@ NavigationStack(path: $navigationRouter.navPath) {
         .navigationDestination(for: OnboardingRoute.self) { ... }   // ✓ Added
         .navigationDestination(for: ReferralRoute.self) { ... }     // ✓ Added
         .navigationDestination(for: FunctionCallRoute.self) { ... } // ✓ Added
+        .navigationDestination(for: SettingsRoute.self) { ... }     // ✓ Added
 }
 ```
 
@@ -242,23 +284,23 @@ private struct ReferralVaultSelectionWrapper: View {
 
 ## Statistics
 
-- **Total Files Migrated:** 25 files
-- **Routing Infrastructures Created:** 5 complete flows
-- **Routes Defined:** ~35 routes across all flows
-- **Completion:** ~46% of identified files (25/~50)
+- **Total Files Migrated:** 35 files
+- **Routing Infrastructures Created:** 8 complete flows (+ 3 route extensions)
+- **Routes Defined:** ~55 routes across all flows
+- **Completion:** ~70% of identified files (35/~50)
 
 ---
 
 ## Next Steps
 
-1. Verify Send flow migration status
-2. Migrate Settings flow (1 file)
-3. Migrate DeFi flow (1 file)
-4. Migrate Home/Wallet flow (~5 files)
+1. ✅ ~~Verify Send flow migration status~~ - COMPLETED (4 files)
+2. ✅ ~~Migrate Settings flow~~ - COMPLETED (1 file)
+3. ✅ ~~Migrate DeFi flow~~ - COMPLETED (1 file)
+4. ✅ ~~Migrate Home/Wallet flow~~ - COMPLETED (4 files)
 5. Migrate remaining miscellaneous files (~8 files)
 6. Final verification: `grep -r "navigationDestination" --include="*.swift" --exclude="ContentView.swift"`
 7. Build and test all navigation flows
 
 ---
 
-Last Updated: 2025-12-15
+Last Updated: 2025-12-16

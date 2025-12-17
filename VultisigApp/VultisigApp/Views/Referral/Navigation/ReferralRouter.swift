@@ -18,13 +18,14 @@ struct ReferralRouter {
     @ViewBuilder
     func build(_ route: ReferralRoute) -> some View {
         switch route {
-        case .referredCodeForm(let referredViewModel, let referralViewModel):
-            viewBuilder.buildReferredCodeFormScreen(
-                referredViewModel: referredViewModel,
-                referralViewModel: referralViewModel
-            )
+        case .referredCodeForm:
+            viewBuilder.buildReferredCodeFormScreen()
         case .vaultSelection(let selectedVault):
             viewBuilder.buildVaultSelectionScreen(selectedVault: selectedVault)
+        case .transactionFlow(let isEdit):
+            viewBuilder.buildTransactionFlowScreen(isEdit: isEdit)
+        case .main:
+            viewBuilder.buildMainScreen()
         }
     }
 }

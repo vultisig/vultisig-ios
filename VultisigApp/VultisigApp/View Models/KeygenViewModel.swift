@@ -21,7 +21,7 @@ enum KeygenStatus {
     case KeygenFailed
 }
 
-struct KeyImportInput {
+struct KeyImportInput: Hashable {
     let mnemonic: String
     let chains: [Chain]
 }

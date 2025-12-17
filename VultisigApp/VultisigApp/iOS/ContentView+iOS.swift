@@ -13,8 +13,10 @@ extension ContentView {
         content
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarTitleTextColor(Theme.colors.textPrimary)
-            .navigationDestination(isPresented: $vultExtensionViewModel.showImportView) {
-                ImportVaultShareScreen()
+            .onChange(of: vultExtensionViewModel.showImportView) { _, shouldNavigate in
+                guard shouldNavigate else { return }
+                navigationRouter.navigate(to: OnboardingRoute.importVaultShare)
+                vultExtensionViewModel.showImportView = false
             }
     }
 }

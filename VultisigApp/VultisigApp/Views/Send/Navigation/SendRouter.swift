@@ -43,6 +43,8 @@ struct SendRouter {
                 chain: chain,
                 tx: tx
             )
+        case .coinPicker(let coins, let tx):
+            viewBuilder.buildCoinPickerScreen(coins: coins, tx: tx)
         }
     }
 }

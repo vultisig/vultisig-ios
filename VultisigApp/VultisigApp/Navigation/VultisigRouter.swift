@@ -15,6 +15,7 @@ final class VultisigRouter: ObservableObject {
     let onboardingRouter: OnboardingRouter
     let referralRouter: ReferralRouter
     let functionCallRouter: FunctionCallRouter
+    let settingsRouter: SettingsRouter
 
     init(navigationRouter: NavigationRouter) {
         self.navigationRouter = navigationRouter
@@ -24,5 +25,6 @@ final class VultisigRouter: ObservableObject {
         self.onboardingRouter = OnboardingRouter(navigationRouter: navigationRouter)
         self.referralRouter = ReferralRouter(navigationRouter: navigationRouter)
         self.functionCallRouter = FunctionCallRouter(navigationRouter: navigationRouter)
+        self.settingsRouter = SettingsRouter(navigationRouter: navigationRouter)
     }
 }

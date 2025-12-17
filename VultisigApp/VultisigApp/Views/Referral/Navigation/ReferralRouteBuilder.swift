@@ -10,19 +10,23 @@ import SwiftUI
 struct ReferralRouteBuilder {
 
     @ViewBuilder
-    func buildReferredCodeFormScreen(
-        referredViewModel: ReferredViewModel,
-        referralViewModel: ReferralViewModel
-    ) -> some View {
-        ReferredCodeFormScreen(
-            referredViewModel: referredViewModel,
-            referralViewModel: referralViewModel
-        )
+    func buildReferredCodeFormScreen() -> some View {
+        ReferredCodeFormScreen()
     }
 
     @ViewBuilder
     func buildVaultSelectionScreen(selectedVault: Vault?) -> some View {
         ReferralVaultSelectionWrapper(initialVault: selectedVault)
+    }
+
+    @ViewBuilder
+    func buildTransactionFlowScreen(isEdit: Bool) -> some View {
+        ReferralTransactionFlowScreen(isEdit: isEdit)
+    }
+
+    @ViewBuilder
+    func buildMainScreen() -> some View {
+        ReferralMainScreen()
     }
 }
 

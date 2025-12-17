@@ -8,14 +8,14 @@
 import SwiftUI
 
 struct FunctionTransactionScreen: View {
+    @Environment(\.router) var router
     let vault: Vault
     let transactionType: FunctionTransactionType
-    
+
     @StateObject private var functionCallViewModel = FunctionCallViewModel()
     @State private var sendTx: SendTransaction?
-    @State private var navigateToVerify: Bool = false
     @State var isLoading: Bool = false
-    
+
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
@@ -137,11 +137,6 @@ struct FunctionTransactionScreen: View {
             }
         }
         .withLoading(isLoading: $isLoading)
-        .navigationDestination(isPresented: $navigateToVerify) {
-            if let sendTx {
-                FunctionCallRouteBuilder().buildVerifyScreen(tx: sendTx, vault: vault)
-            }
-        }
     }
     
     func onVerify(_ transactionBuilder: TransactionBuilder) {
@@ -154,7 +149,7 @@ struct FunctionTransactionScreen: View {
             
             sendTx = tx
             isLoading = false
-            navigateToVerify = true
+            router.navigate(to: FunctionCallRoute.verify(tx: tx, vault: vault))
         }
     }
     

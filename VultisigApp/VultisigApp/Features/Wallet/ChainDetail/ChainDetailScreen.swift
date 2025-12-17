@@ -8,13 +8,14 @@
 import SwiftUI
 
 struct ChainDetailScreen: View {
+    @Environment(\.router) var router
     @ObservedObject var group: GroupedChain
     let vault: Vault
     @State var vaultAction: VaultAction?
     @State var showAction: Bool = false
-    
+
     @StateObject var viewModel: ChainDetailViewModel
-    
+
     @State private var addressToCopy: Coin?
     @State var showManageTokens: Bool = false
     @State var showSearchHeader: Bool = false
@@ -22,11 +23,11 @@ struct ChainDetailScreen: View {
     @State var focusSearch: Bool = false
     @State var showReceiveSheet: Bool = false
     @State var scrollProxy: ScrollViewProxy?
-    
+
     @StateObject var sendTx = SendTransaction()
-    
+
     private let scrollReferenceId = "chainDetailScreenBottomContentId"
-    
+
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
@@ -79,14 +80,31 @@ struct ChainDetailScreen: View {
             viewModel.refresh(group: group)
             refresh()
         }
-        .navigationDestination(isPresented: $showAction) {
-            if let vaultAction {
-                VaultActionRouteBuilder().buildActionRoute(
-                    action: vaultAction,
+        .onChange(of: showAction) { _, shouldNavigate in
+            guard shouldNavigate, let action = vaultAction else { return }
+
+            switch action {
+            case .send(let coin, let hasPreselectedCoin):
+                router.navigate(to: SendRoute.details(
+                    coin: coin,
+                    hasPreselectedCoin: hasPreselectedCoin,
+                    tx: sendTx,
+                    vault: vault
+                ))
+            case .swap(let fromCoin):
+                router.navigate(to: VaultRoute.swap(fromCoin: fromCoin, toCoin: nil, vault: vault))
+            case .function(let coin):
+                router.navigate(to: FunctionCallRoute.details(
+                    defaultCoin: coin,
                     sendTx: sendTx,
                     vault: vault
-                )
+                ))
+            case .buy:
+                // TODO: Add buy route to SendRoute if needed
+                break
             }
+
+            showAction = false
         }
         .crossPlatformSheet(item: $coinToShow) {
             CoinDetailScreen(

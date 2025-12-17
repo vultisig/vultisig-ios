@@ -15,9 +15,9 @@ struct ServerBackupVerificationView: View {
     let email: String
 
     @Binding var isPresented: Bool
-    @Binding var isBackupLinkActive: Bool
     @Binding var tabIndex: Int
-    @Binding var goBackToEmailSetup: Bool
+    let onBackup: () -> Void
+    let onBackToEmailSetup: () -> Void
 
     @FocusState var focusedField: Int?
 
@@ -176,7 +176,7 @@ struct ServerBackupVerificationView: View {
                 isPresented = false
                 
                 if tssType == .Migrate {
-                    isBackupLinkActive = true
+                    onBackup()
                 }
             } else {
                 showAlert = true
@@ -194,7 +194,7 @@ struct ServerBackupVerificationView: View {
             try modelContext.save()
             isLoading = false
             isPresented = false
-            goBackToEmailSetup = true
+            onBackToEmailSetup()
         } catch {
             print("Error: \(error)")
         }
@@ -207,8 +207,8 @@ struct ServerBackupVerificationView: View {
         vault: Vault.example,
         email: "mail@email.com",
         isPresented: .constant(false),
-        isBackupLinkActive: .constant(false),
         tabIndex: .constant(2),
-        goBackToEmailSetup: .constant(false)
+        onBackup: {},
+        onBackToEmailSetup: {}
     )
 }

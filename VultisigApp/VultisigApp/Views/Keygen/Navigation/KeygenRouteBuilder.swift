@@ -30,7 +30,7 @@ struct KeygenRouteBuilder {
     @ViewBuilder
     func buildBackupNowScreen(
         tssType: TssType,
-        backupType: BackupType,
+        backupType: VaultBackupType,
         isNewVault: Bool
     ) -> some View {
         VaultBackupNowScreen(
@@ -56,8 +56,8 @@ struct KeygenRouteBuilder {
     @ViewBuilder
     func buildPeerDiscoveryScreen(
         tssType: TssType,
-        vault: Vault?,
-        selectedTab: SetupVaultState?,
+        vault: Vault,
+        selectedTab: SetupVaultState,
         fastSignConfig: FastSignConfig?,
         keyImportInput: KeyImportInput?
     ) -> some View {
@@ -71,9 +71,24 @@ struct KeygenRouteBuilder {
     }
 
     @ViewBuilder
+    func buildFastVaultEmailScreen(
+        tssType: TssType,
+        vault: Vault,
+        selectedTab: SetupVaultState,
+        fastVaultExist: Bool
+    ) -> some View {
+        FastVaultEmailView(
+            tssType: tssType,
+            vault: vault,
+            selectedTab: selectedTab,
+            fastVaultExist: fastVaultExist
+        )
+    }
+
+    @ViewBuilder
     func buildFastVaultSetHintScreen(
         tssType: TssType,
-        vault: Vault?,
+        vault: Vault,
         selectedTab: SetupVaultState,
         fastVaultEmail: String,
         fastVaultPassword: String,
@@ -92,7 +107,7 @@ struct KeygenRouteBuilder {
     @ViewBuilder
     func buildFastVaultSetPasswordScreen(
         tssType: TssType,
-        vault: Vault?,
+        vault: Vault,
         selectedTab: SetupVaultState,
         fastVaultEmail: String,
         fastVaultExist: Bool
@@ -117,5 +132,57 @@ struct KeygenRouteBuilder {
             selectedTab: selectedTab,
             name: name
         )
+    }
+
+    @ViewBuilder
+    func buildJoinKeysignScreen(vault: Vault) -> some View {
+        JoinKeysignView(vault: vault)
+    }
+
+    @ViewBuilder
+    func buildMacScannerScreen(
+        type: DeeplinkFlowType,
+        sendTx: SendTransaction,
+        selectedVault: Vault?
+    ) -> some View {
+        #if os(macOS)
+        MacScannerView(
+            type: type,
+            sendTx: sendTx,
+            selectedVault: selectedVault
+        )
+        #else
+        EmptyView()
+        #endif
+    }
+
+    @ViewBuilder
+    func buildMacAddressScannerScreen(
+        selectedVault: Vault?,
+        resultId: UUID
+    ) -> some View {
+        #if os(macOS)
+        MacAddressScannerView(
+            showCameraScanView: .constant(true),
+            selectedVault: selectedVault,
+            scannedResult: ScannerResultManager.shared.getBinding(for: resultId)
+        )
+        #else
+        EmptyView()
+        #endif
+    }
+
+    @ViewBuilder
+    func buildGeneralQRImportScreen(
+        type: DeeplinkFlowType,
+        selectedVault: Vault?,
+        sendTx: SendTransaction?
+    ) -> some View {
+        GeneralQRImportMacView(
+            type: type,
+            selectedVault: selectedVault
+        ) { address in
+            sendTx?.toAddress = address
+        }
     }
 }
