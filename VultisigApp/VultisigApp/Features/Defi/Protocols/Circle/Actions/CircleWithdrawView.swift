@@ -27,16 +27,14 @@ struct CircleWithdrawView: View {
     @StateObject var sendTransaction = SendTransaction()
     
     var body: some View {
-        NavigationStack {
-            main
-        }
+        main
     }
 
     var content: some View {
         ZStack {
             VStack(spacing: 0) {
                 headerView
-                scrollableContent
+                scrollView
                 footerView
             }
             

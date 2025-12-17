@@ -12,6 +12,7 @@ extension CircleWithdrawView {
     var main: some View {
         content
             .background(Theme.colors.bgPrimary)
+            .navigationBarBackButtonHidden(true)
             .onAppear {
                 Task {
                     await loadFastVaultStatus()
@@ -35,7 +36,9 @@ extension CircleWithdrawView {
     }
     
     var scrollView: some View {
-        scrollableContent
+        ScrollView {
+            scrollableContent
+        }
     }
 }
 #endif

@@ -29,6 +29,12 @@ struct CircleView: View {
             }
         }
         .navigationTitle(NSLocalizedString("circleTitle", comment: "Circle"))
+        .navigationDestination(isPresented: $model.showDeposit) {
+            CircleDepositView(vault: vault)
+        }
+        .navigationDestination(isPresented: $model.showWithdraw) {
+            CircleWithdrawView(vault: vault, model: model)
+        }
     }
 }
 
@@ -41,6 +47,9 @@ final class CircleViewModel: ObservableObject {
     @Published var apy: String = "0%"
     @Published var totalRewards: String = "0"
     @Published var currentRewards: String = "0"
+    
+    @Published var showDeposit = false
+    @Published var showWithdraw = false
     
     let logic = CircleViewLogic()
 }

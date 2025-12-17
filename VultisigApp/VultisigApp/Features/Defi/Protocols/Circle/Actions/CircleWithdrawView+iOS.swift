@@ -14,6 +14,7 @@ extension CircleWithdrawView {
             Theme.colors.bgPrimary.ignoresSafeArea()
             content
         }
+        .navigationBarBackButtonHidden(true)
         .onAppear {
             Task {
                 await loadFastVaultStatus()

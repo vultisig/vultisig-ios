@@ -57,12 +57,6 @@ extension CircleDashboardView {
         .onAppear {
             Task { await loadData() }
         }
-        .sheet(isPresented: $showDeposit) {
-            CircleDepositView(vault: vault)
-        }
-        .sheet(isPresented: $showWithdraw) {
-            CircleWithdrawView(vault: vault, model: model)
-        }
         .navigationTitle(NSLocalizedString("circleTitle", comment: "Circle"))
         .navigationBarBackButtonHidden(true)
         .toolbar {

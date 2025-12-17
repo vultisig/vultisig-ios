@@ -14,6 +14,7 @@ extension CircleDepositView {
             Theme.colors.bgPrimary.ignoresSafeArea()
             content
         }
+        .navigationBarBackButtonHidden(true)
         .onAppear {
             Task { await loadData() }
         }

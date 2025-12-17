@@ -12,6 +12,7 @@ extension CircleDepositView {
     var main: some View {
         content
             .background(Theme.colors.bgPrimary)
+            .navigationBarBackButtonHidden(true)
             .onAppear {
                 Task { await loadData() }
             }
@@ -21,7 +22,9 @@ extension CircleDepositView {
     }
     
     var scrollView: some View {
-        scrollableContent
+        ScrollView {
+            scrollableContent
+        }
     }
 }
 #endif

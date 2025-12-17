@@ -24,9 +24,7 @@ struct CircleDepositView: View {
     @State var isLoading = false
     
     var body: some View {
-        NavigationStack {
-            main
-        }
+        main
     }
 
     var content: some View {

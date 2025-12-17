@@ -12,8 +12,6 @@ struct CircleDashboardView: View {
     @ObservedObject var model: CircleViewModel
     
     @State var showInfoBanner = true
-    @State var showDeposit = false
-    @State var showWithdraw = false
     
     var walletUSDCBalance: Decimal {
         let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
@@ -96,14 +94,14 @@ struct CircleDashboardView: View {
                 DefiButton(
                     title: NSLocalizedString("circleDashboardWithdraw", comment: "Withdraw"),
                     icon: "arrow.up.right",
-                    action: { showWithdraw = true }
+                    action: { model.showWithdraw = true }
                 )
                 .disabled(model.balance <= 0)
                 
                 DefiButton(
                     title: NSLocalizedString("circleDashboardDepositUSDC", comment: "Deposit"),
                     icon: "arrow.down.left",
-                    action: { showDeposit = true }
+                    action: { model.showDeposit = true }
                 )
             }
             
