@@ -62,14 +62,15 @@ struct CircleViewLogic {
             let usdcBalance = (Decimal(string: String(usdcVal)) ?? 0) / pow(10, 6)
             let ethBalance = (Decimal(string: String(ethVal)) ?? 0) / pow(10, 18)
             
+            // TODO: Implement Circle Yield API fetching when available
+            // Currently returning empty values as yield fetching is not yet implemented
             let yield = CircleApiService.CircleYieldResponse(apy: "", totalRewards: "", currentRewards: "")
             
             return (usdcBalance, ethBalance, yield)
             
         } catch {
             print("Circle Fetch Error: \(error.localizedDescription)")
-            // Return zero balances but indicate failure via empty yield or add specific error state handling if needed
-            return (.zero, .zero, CircleApiService.CircleYieldResponse(apy: "", totalRewards: "", currentRewards: ""))
+            throw error
         }
     }
     
