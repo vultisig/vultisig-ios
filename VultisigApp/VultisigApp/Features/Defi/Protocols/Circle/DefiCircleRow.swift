@@ -66,10 +66,3 @@ struct DefiCircleRow: View {
         .buttonStyle(.plain)
     }
 }
-
-private extension String {
-    var truncatedMiddle: String {
-        guard count > 10 else { return self }
-        return "\(self.prefix(4))...\(self.suffix(4))"
-    }
-}

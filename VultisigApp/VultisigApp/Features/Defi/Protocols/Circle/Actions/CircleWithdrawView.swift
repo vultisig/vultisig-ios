@@ -29,7 +29,7 @@ struct CircleWithdrawView: View {
     var body: some View {
         main
     }
-
+    
     var content: some View {
         ZStack {
             VStack(spacing: 0) {
@@ -51,10 +51,10 @@ struct CircleWithdrawView: View {
                 dismiss()
             } label: {
                 Image(systemName: "chevron.left")
-                .font(.title3)
-                .foregroundColor(Theme.colors.textPrimary)
-                .frame(width: 40, height: 40)
-                .background(Circle().fill(Color.white.opacity(0.1)))
+                    .font(.title3)
+                    .foregroundColor(Theme.colors.textPrimary)
+                    .frame(width: 40, height: 40)
+                    .background(Circle().fill(Color.white.opacity(0.1)))
             }
             
             Spacer()
@@ -167,7 +167,7 @@ struct CircleWithdrawView: View {
                 updatePercentage(from: newValue)
             }
     }
-
+    
     @ViewBuilder
     var withdrawButton: some View {
         if isFastVault {
@@ -201,7 +201,7 @@ struct CircleWithdrawView: View {
     var isButtonDisabled: Bool {
         amount.isEmpty || (Decimal(string: amount) ?? 0) <= 0 || (Decimal(string: amount) ?? 0) > model.balance || vaultEthBalance <= 0 || isLoading
     }
-
+    
     func loadFastVaultStatus() async {
         let isExist = await FastVaultService.shared.exist(pubKeyECDSA: vault.pubKeyECDSA)
         let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
@@ -233,14 +233,19 @@ struct CircleWithdrawView: View {
     }
     
     func handleWithdraw() async {
+        guard let amountDecimal = Decimal(string: amount) else {
+            await MainActor.run {
+                isLoading = false
+            }
+            return
+        }
+        
         await MainActor.run {
             isLoading = true
             error = nil
         }
         
         do {
-            guard let amountDecimal = Decimal(string: amount) else { return }
-            
             let decimals = 6
             let amountUnits = (amountDecimal * pow(10, decimals)).description
             let cleanAmountUnits = amountUnits.components(separatedBy: ".").first ?? amountUnits
@@ -265,11 +270,11 @@ struct CircleWithdrawView: View {
                 payload = try await attemptPayload()
             } catch let err as CircleServiceError {
                 if case .walletNotDeployed = err {
-                     let _ = try? await CircleApiService.shared.createWallet(
+                    let _ = try? await CircleApiService.shared.createWallet(
                         ethAddress: recipientCoin.address,
                         force: true
-                     )
-                     payload = try await attemptPayload()
+                    )
+                    payload = try await attemptPayload()
                 } else {
                     throw err
                 }
@@ -295,3 +300,4 @@ struct CircleWithdrawView: View {
         }
     }
 }
+

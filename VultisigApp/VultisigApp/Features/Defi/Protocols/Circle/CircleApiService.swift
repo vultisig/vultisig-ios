@@ -109,18 +109,34 @@ struct CircleApiService {
             "owner": ethAddress
         ]
         
-        request.httpBody = try? JSONEncoder().encode(payload)
+        do {
+            request.httpBody = try JSONEncoder().encode(payload)
+        } catch {
+             throw CircleApiError.serverError("Failed to encode payload: \(error.localizedDescription)")
+        }
         
         let (createData, createResponse) = try await URLSession.shared.data(for: request)
         
-        guard let httpResponse = createResponse as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-            throw CircleApiError.serverError("Failed to create wallet")
+        if let httpResponse = createResponse as? HTTPURLResponse {
+            if (200...299).contains(httpResponse.statusCode) {
+                // Success
+                let wallets = try JSONDecoder().decode([CircleWalletItem].self, from: createData)
+                if let first = wallets.first {
+                    return first.address
+                }
+                // Fallback if array mismatch, try single object or string
+                if let addressString = try? JSONDecoder().decode(String.self, from: createData) {
+                    return addressString
+                }
+                 throw CircleApiError.decodingError
+            } else if httpResponse.statusCode == 401 {
+                throw CircleApiError.unauthorized
+            } else {
+                 let errorMsg = String(data: createData, encoding: .utf8) ?? "Unknown Error"
+                 throw CircleApiError.serverError("Create failed: \(httpResponse.statusCode) - \(errorMsg)")
+            }
         }
         
-        if let addressString = try? JSONDecoder().decode(String.self, from: createData) {
-            return addressString
-        }
-        
-        throw CircleApiError.decodingError
+        throw CircleApiError.unknown
     }
 }

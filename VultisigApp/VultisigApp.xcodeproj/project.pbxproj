@@ -1094,6 +1094,9 @@
 		B5A97CF72BF42BE1007574D7 /* FunctionCallVerifyScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CF62BF42BE1007574D7 /* FunctionCallVerifyScreen.swift */; };
 		B5A97CF92BF42E72007574D7 /* FunctionCallAddressTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CF82BF42E72007574D7 /* FunctionCallAddressTextField.swift */; };
 		B5A97CFC2BF4365E007574D7 /* FunctionCallInstance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CFB2BF4365E007574D7 /* FunctionCallInstance.swift */; };
+		B5B47B562EF3718E007F2150 /* CircleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B47B552EF37188007F2150 /* CircleViewModel.swift */; };
+		B5B47B582EF37205007F2150 /* CircleConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B47B572EF37203007F2150 /* CircleConstants.swift */; };
+		B5B47B5D2EF372B2007F2150 /* CircleViewLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B47B5C2EF372B2007F2150 /* CircleViewLogic.swift */; };
 		B5B5E2782CCADD69001167C3 /* FunctionCallStake.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B5E2772CCADD69001167C3 /* FunctionCallStake.swift */; };
 		B5B5E27A2CCADE85001167C3 /* FunctionCallUnstake.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B5E2792CCADE85001167C3 /* FunctionCallUnstake.swift */; };
 		B5B974A42E7DC76100816454 /* FunctionCallSecuredAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B974A32E7DC74B00816454 /* FunctionCallSecuredAsset.swift */; };
@@ -2350,6 +2353,9 @@
 		B5A97CF62BF42BE1007574D7 /* FunctionCallVerifyScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallVerifyScreen.swift; sourceTree = "<group>"; };
 		B5A97CF82BF42E72007574D7 /* FunctionCallAddressTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallAddressTextField.swift; sourceTree = "<group>"; };
 		B5A97CFB2BF4365E007574D7 /* FunctionCallInstance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallInstance.swift; sourceTree = "<group>"; };
+		B5B47B552EF37188007F2150 /* CircleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleViewModel.swift; sourceTree = "<group>"; };
+		B5B47B572EF37203007F2150 /* CircleConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleConstants.swift; sourceTree = "<group>"; };
+		B5B47B5C2EF372B2007F2150 /* CircleViewLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleViewLogic.swift; sourceTree = "<group>"; };
 		B5B5E2772CCADD69001167C3 /* FunctionCallStake.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallStake.swift; sourceTree = "<group>"; };
 		B5B5E2792CCADE85001167C3 /* FunctionCallUnstake.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallUnstake.swift; sourceTree = "<group>"; };
 		B5B974A32E7DC74B00816454 /* FunctionCallSecuredAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallSecuredAsset.swift; sourceTree = "<group>"; };
@@ -4763,6 +4769,9 @@
 		9690397CDD1E0CE7CD6E2A18 /* Circle */ = {
 			isa = PBXGroup;
 			children = (
+				B5B47B5C2EF372B2007F2150 /* CircleViewLogic.swift */,
+				B5B47B572EF37203007F2150 /* CircleConstants.swift */,
+				B5B47B552EF37188007F2150 /* CircleViewModel.swift */,
 				29B3EE2059C84ADD4F8C4F16 /* CircleApiService.swift */,
 				25397BD8D2AFBC8FB7C3DDBB /* CircleDashboardView.swift */,
 				25397BD8D2AFBC8FB7C3DDC1 /* CircleDashboardView+iOS.swift */,
@@ -6935,6 +6944,7 @@
 				A6C671192CA3B9B400F59B6A /* AddressBookTextField+macOS.swift in Sources */,
 				A5D49F5A2BE26C87001766C8 /* Coin+ChainAction.swift in Sources */,
 				A51AE8C12C931C6000EF9A7A /* FastVaultEmailView.swift in Sources */,
+				B5B47B582EF37205007F2150 /* CircleConstants.swift in Sources */,
 				A54676522C179A93004DD782 /* Coin+Swaps.swift in Sources */,
 				A6182F312C922B750059BFDD /* AsyncImageView+macOS.swift in Sources */,
 				13D9EC022E84584A0089B2A7 /* VaultCellMainView.swift in Sources */,
@@ -7409,6 +7419,7 @@
 				1345D13B2EA8148700FC7BFD /* BondMetrics.swift in Sources */,
 				1390D8C82E394527003F3E20 /* SecurityScannerSettingsService.swift in Sources */,
 				13B41AAD2EB3AA360049503D /* AddressFieldAccessoryStack.swift in Sources */,
+				B5B47B5D2EF372B2007F2150 /* CircleViewLogic.swift in Sources */,
 				134FF3782EBA6C8500683169 /* UnbondTransactionBuilder.swift in Sources */,
 				A6BB9BD32DA9E5750085E117 /* VaultShareBackupsView+macOS.swift in Sources */,
 				A6D739DE2E0B30440005697D /* SendDetailsAssetTab.swift in Sources */,
@@ -7573,6 +7584,7 @@
 				A6BB9BD72DA9EAB10085E117 /* UpgradeYourVaultView+iOS.swift in Sources */,
 				13A964182EBBD8F60025FB7A /* TCYUnstakeTransactionBuilder.swift in Sources */,
 				A6CEFE762D8E32B9005AB80C /* VaultBackupPasswordOptionsScreen.swift in Sources */,
+				B5B47B562EF3718E007F2150 /* CircleViewModel.swift in Sources */,
 				A6ECA18C2C93F65D00456110 /* VultisigLogo+iOS.swift in Sources */,
 				B54E317B2BF57D9300D4FC0A /* FunctionCallContractSelectorDropDown.swift in Sources */,
 				B5F758182BD8E65D0097B5B9 /* Sui.swift in Sources */,
