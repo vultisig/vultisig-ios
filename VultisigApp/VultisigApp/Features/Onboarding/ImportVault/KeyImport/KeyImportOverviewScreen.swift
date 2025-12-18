@@ -24,19 +24,43 @@ struct KeyImportOverviewScreen: View {
     @State private var isBackupLinkActive = false
     @State private var goBackToEmailSetup = false
     
+    var buttonTitle: String {
+        scrollPosition == .multisig ? "continue".localized : "backupNow".localized
+    }
+    
     var body: some View {
         Screen(edgeInsets: .init(leading: 0, trailing: 0)) {
             VStack(spacing: 0) {
                 Spacer()
-                Image("seed-phrase-vault-setup")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
+                ZStack {
+                    if scrollPosition == .multisig {
+                        Image("seed-phrase-vault-setup")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .scaleEffect(1.2)
+                            .offset(x: -20)
+                    } else {
+                        Image("seed-phrase-vault-shares")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .offset(x: 0, y: -20)
+                    }
+                }
+                .frame(maxWidth: 600, maxHeight: .infinity)
+                .offset(y: 50)
+                .animation(.interpolatingSpring, value: scrollPosition)
                 Spacer()
                 VStack(spacing: 32) {
                     pages
                     pagesIndicator
-                    PrimaryButton(title: "backupNow".localized) {
-                        presentBackupNowScreen = true
+                    PrimaryButton(title: buttonTitle) {
+                        if scrollPosition == .multisig {
+                            withAnimation(.interpolatingSpring) {
+                                scrollPosition = .vaultShares
+                            }
+                        } else {
+                            presentBackupNowScreen = true
+                        }
                     }
                     .padding(.horizontal, 16)
                 }
@@ -102,7 +126,7 @@ struct KeyImportOverviewScreen: View {
             }
         }
     }
-
+    
     var multisigPageContent: some View {
         VStack(alignment: .leading, spacing: 24) {
             CustomHighlightText(
@@ -143,12 +167,12 @@ struct KeyImportOverviewScreen: View {
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.subtitle)
                 
-                CustomHighlightText(
-                    "whatAreVaultSharesDescription".localized,
-                    highlight: "whatAreVaultSharesDescriptionHighlight".localized,
-                    style: Theme.colors.textPrimary
-                )
-                .foregroundStyle(Theme.colors.textExtraLight)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("whatAreVaultSharesDescription".localized)
+                        .foregroundStyle(Theme.colors.textExtraLight)
+                    Text("whatAreVaultSharesDescription2".localized)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                }
                 .font(Theme.fonts.footnote)
             }
         }

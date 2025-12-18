@@ -106,19 +106,11 @@ struct CreateVaultView: View {
                 type: .secondary,
                 reserveTrailingIconSpace: true
             ) {
-                // TODO: - Remove before seed phrase import release
-                #if DEBUG
                 showImportSelectionSheet = true
-                #else
-                showImportVaultShare = true
-                #endif
             }
             
-            // TODO: - Remove before seed phrase import release
-            #if DEBUG
             newTag
                 .offset(x: 48)
-            #endif
         }
     }
     

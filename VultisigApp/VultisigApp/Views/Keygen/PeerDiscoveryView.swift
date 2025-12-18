@@ -56,6 +56,8 @@ struct PeerDiscoveryView: View {
         GridItem(.adaptive(minimum: 400, maximum: 800), spacing: 12)
     ]
     
+    var localModeAvailable: Bool { tssType != .KeyImport }
+    
     var body: some View {
         content
             .onLoad {
@@ -120,6 +122,7 @@ struct PeerDiscoveryView: View {
             views
             bottomButton
             switchLink
+                .showIf(localModeAvailable)
         }
     }
     
