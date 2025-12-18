@@ -39,7 +39,6 @@ struct VaultSetupScreen: View {
             nameSection
             emailSection
             passwordSection
-                .padding(.bottom, 300)
         }
         .onLoad {
             focusedFieldBinding = .name
@@ -56,6 +55,9 @@ struct VaultSetupScreen: View {
                 keyImportInput: keyImportInput,
                 fastSignConfig: viewModel.fastConfig
             )
+        }
+        .onSubmit {
+            onContinue()
         }
     }
     
@@ -177,9 +179,6 @@ struct VaultSetupScreen: View {
                     )
                     .focused($focusedField, equals: .hint)
                 }
-            }
-            .onSubmit {
-                onContinue()
             }
         }
     }

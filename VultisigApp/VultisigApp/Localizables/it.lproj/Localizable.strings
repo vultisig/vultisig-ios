@@ -1087,7 +1087,7 @@
 "yourSeedphrase" = "La tua seed phrase";
 "yourSeedphraseSubtitle" = "Inseriscila, crea un vault, non voltarti mai indietro";
 "twoDevices" = "2 dispositivi";
-"twoDevicesSubtitle" = "Hai bisogno di 2 dispositivi (un telefono, laptop, browser, iPad, ecc.)";
+"twoDevicesSubtitle" = "Qualsiasi dispositivo in grado di eseguire Vultisig funzionerà.";
 "mnemonicPlaceholder" = "Inserisci le 12 o 24 parole della tua seed phrase";
 "enterYourSeedphrase" = "Inserisci la tua seed phrase";
 "enterYourSeedphraseSubtitle" = "Lascia uno spazio tra ogni parola. Sono supportate seed phrase di 12 o 24 parole.";
@@ -1097,6 +1097,9 @@
 "scanningForChainsSubtitle" = "Stiamo verificando quali blockchain hanno indirizzi attivi associati alla tua seed phrase. Questo processo può richiedere fino a 2 minuti.";
 "scanningForChainsSubtitleHighlight" = "Questo processo può richiedere fino a 2 minuti.";
 "selectChainsManually" = "Seleziona chain manualmente";
+"noActiveChainsFound" = "Nessuna chain attiva trovata";
+"noActiveChainsFoundSubtitle" = "Non abbiamo rilevato alcun asset su questa seed phrase.\nOgni chain aggiuntiva aumenta il tempo per generare il tuo vault e la possibilità di un timeout.";
+"addCustomChains" = "Aggiungi chain personalizzate";
 "foundActiveChainsTitle" = "Abbiamo trovato %d chain attive";
 "foundActiveChainsSubtitle" = "Ogni chain aggiuntiva raddoppia approssimativamente il tempo per generare il tuo vault. Tempo stimato per tutte le chain selezionate: %d minuti";
 "foundActiveChainsSubtitleHighlight" = "%d minuti";
@@ -1116,5 +1119,7 @@
 "vaultSharesTitle" = "Parti del vault, tienile al sicuro per accedere al tuo vault";
 "vaultSharesTitleHighlight" = "Parti del vault";
 "whatAreVaultShares" = "Cosa sono le parti del vault?";
-"whatAreVaultSharesDescription" = "Invece di una seed phrase, il tuo vault è diviso in pezzi chiamati parti del vault. Ogni dispositivo contiene una parte del vault. Una singola parte da sola non fa nulla, ma combinando queste parti ottieni l'accesso al tuo vault. Ecco perché è importante farne il backup. Ogni dispositivo ha una parte del vault, anche il server, lo faremo ora.";
-"whatAreVaultSharesDescriptionHighlight" = "Ogni dispositivo ha una parte del vault, anche il server, lo faremo ora.";
+"whatAreVaultSharesDescription" = "Invece di una seed phrase, il tuo vault è diviso in pezzi chiamati parti del vault. Ogni dispositivo contiene una parte del vault. Una singola parte da sola non fa nulla, ma combinando queste parti ottieni l'accesso al tuo vault. Ecco perché è importante farne il backup.";
+"whatAreVaultSharesDescription2" = "Ogni dispositivo ha una parte del vault, anche il server, lo faremo ora.";
+"appStoreReady" = "Pronto per App Store";
+"appStoreReadyDescription" = "Questo vault è pronto per utilizzare le prime app di autocustodia che automatizzano i tuoi fondi in sicurezza!";
