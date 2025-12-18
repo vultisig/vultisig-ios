@@ -19,7 +19,7 @@ struct SendDetailsAmountTab: View {
     
     var body: some View {
         content
-            .padding(.bottom, 100)
+            .padding(.bottom, 65)
             .clipped()
             .onChange(of: isExpanded) { _, newValue in
                 guard newValue else {

@@ -271,14 +271,15 @@ struct SendDetailsScreen: View {
     func handleScroll(newValue: SendDetailsFocusedTab?, oldValue: SendDetailsFocusedTab?, delay: Double = 0.7) {
         // This delay is necessary when the screen starts
         DispatchQueue.main.asyncAfter(deadline: .now() + (oldValue == nil ? 0.2 : 0)) {
-            scrollProxy?.scrollTo(SendDetailsFocusedTab.amount.rawValue, anchor: .top)
-            
-            // If it's .amount, there is no need to scroll again
-            guard newValue != .amount else { return }
+            if newValue != .amount {
+                withAnimation(.easeInOut) {
+                    scrollProxy?.scrollTo(SendDetailsFocusedTab.amount.rawValue, anchor: .top)
+                }
+            }
             
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 withAnimation(.easeInOut) {
-                    scrollProxy?.scrollTo(newValue?.rawValue, anchor: .top)
+                    scrollProxy?.scrollTo(newValue?.rawValue, anchor: .bottom)
                 }
             }
         }
