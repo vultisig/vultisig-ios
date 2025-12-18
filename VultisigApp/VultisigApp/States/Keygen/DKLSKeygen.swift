@@ -25,8 +25,6 @@ final class DKLSKeygen {
     let encryptionKeyHex: String
     let isInitiateDevice: Bool
     var messenger: DKLSMessenger
-    var keygenDoneIndicator = false
-    let keyGenLock = NSLock()
     let localPartyID: String
     var cache = NSCache<NSString, AnyObject>()
     var setupMessage:[UInt8] = []
@@ -137,22 +135,6 @@ final class DKLSKeygen {
         
     }
     
-    func isKeygenDone() -> Bool {
-        self.keyGenLock.lock()
-        defer {
-            self.keyGenLock.unlock()
-        }
-        return self.keygenDoneIndicator
-    }
-    
-    func setKeygenDone(status: Bool){
-        self.keyGenLock.lock()
-        defer {
-            self.keyGenLock.unlock()
-        }
-        self.keygenDoneIndicator = status
-    }
-    
     func getOutboundMessageReceiver(handle: godkls.Handle,message: godkls.go_slice,idx: UInt32) -> [UInt8] {
         var buf_receiver = godkls.tss_buffer()
         defer {
@@ -181,13 +163,7 @@ final class DKLSKeygen {
                 print("fail to get outbound message,\(result)")
             }
             if outboundMessage.count == 0 {
-                if self.isKeygenDone() {
-                    print("DKLS ECDSA keygen finished")
-                    return
-                }
-                // back off 100ms and continue
-                try await Task.sleep(for: .milliseconds(100))
-                continue
+                return
             }
             let message = outboundMessage.to_dkls_goslice()
             let encodedOutboundMessage = Data(outboundMessage).base64EncodedString()
@@ -293,6 +269,7 @@ final class DKLSKeygen {
             }
             self.cache.setObject(NSObject(), forKey: key)
             try await deleteMessageFromServer(hash: msg.hash)
+            try await self.processDKLSOutboundMessage(handle: handle)
             // local party keygen finished
             if isFinished != 0 {
                 return true
@@ -313,9 +290,8 @@ final class DKLSKeygen {
     // DKLSKeygenWithRetry tries to do keygen with retry mechanism
     // additionalHeader is used to pass extra header info to messenger when uploading setup message
     func DKLSKeygenWithRetry(attempt: UInt8, additionalHeader: String? = nil) async throws {
-        self.setKeygenDone(status: false)
+        print("keygen committee: \(self.keygenCommittee)")
         self.cache.removeAllObjects()
-        var task: Task<(), any Error>? = nil
         do {
             var keygenSetupMsg:[UInt8]
             var handler = godkls.Handle()
@@ -387,14 +363,11 @@ final class DKLSKeygen {
                 }
             }
             let h = handler
-            task = Task{
-                try await processDKLSOutboundMessage(handle: h)
-            }
-            defer {
-                task?.cancel()
-            }
+            try await processDKLSOutboundMessage(handle: h)
             let isFinished = try await pullInboundMessages(handle: h)
             if isFinished {
+                // in case there are more messages need to send out
+                try await processDKLSOutboundMessage(handle: h)
                 var keyshareHandler = godkls.Handle()
                 let keyShareResult = dkls_keygen_session_finish(handler,&keyshareHandler)
                 if keyShareResult != DKLS_LIB_OK {
@@ -414,14 +387,10 @@ final class DKLSKeygen {
                                              chaincode: chainCodeBytes.toHexString())
                 print("publicKeyECDSA:\(publicKeyECDSA.toHexString())")
                 print("chaincode: \(chainCodeBytes.toHexString())")
-                try await Task.sleep(for: .milliseconds(1000))
-                self.setKeygenDone(status: true)
             }
         }
         catch {
             print("Failed to generate key, error: \(error.localizedDescription)")
-            self.setKeygenDone(status: true)
-            task?.cancel()
             if attempt < 3 { // let's retry
                 print("keygen/reshare retry, attemp: \(attempt)")
                 try await DKLSKeygenWithRetry(attempt: attempt + 1,additionalHeader: additionalHeader)
@@ -529,9 +498,7 @@ final class DKLSKeygen {
     }
     
     func DKLSReshareWithRetry(attempt: UInt8) async throws {
-        self.setKeygenDone(status: false)
         self.cache.removeAllObjects()
-        var task: Task<(), any Error>? = nil
         do {
             var keyshareHandle = godkls.Handle()
             if !self.publicKeyECDSA.isEmpty {
@@ -571,14 +538,10 @@ final class DKLSKeygen {
                 }
             }
             let h = handler
-            task = Task{
-                try await processDKLSOutboundMessage(handle: h)
-            }
-            defer {
-                task?.cancel()
-            }
+            try await processDKLSOutboundMessage(handle: h)
             let isFinished = try await pullInboundMessages(handle: h)
             if isFinished {
+                try await processDKLSOutboundMessage(handle: h)
                 var newKeyshareHandler = godkls.Handle()
                 let keyShareResult = dkls_qc_session_finish(handler,&newKeyshareHandler)
                 if keyShareResult != DKLS_LIB_OK {
@@ -599,15 +562,10 @@ final class DKLSKeygen {
                 print("reshare ECDSA key successfully")
                 print("publicKeyECDSA:\(publicKeyECDSA.toHexString())")
                 print("chaincode: \(chainCodeBytes.toHexString())")
-                try await Task.sleep(for: .milliseconds(1000))
-                self.setKeygenDone(status: true)
             }
         }
         catch {
             print("Failed to reshare key, error: \(error.localizedDescription)")
-            self.setKeygenDone(status: true)
-
-            task?.cancel()
             if attempt < 3 { // let's retry
                 print("keygen/reshare retry, attemp: \(attempt)")
                 try await DKLSReshareWithRetry(attempt: attempt + 1)
