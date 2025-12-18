@@ -14,12 +14,7 @@ struct CircleDashboardView: View {
     @State var showInfoBanner = true
     
     var walletUSDCBalance: Decimal {
-        let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
-        let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
-        if let usdcCoin = vault.coins.first(where: { $0.chain == chain && $0.ticker == "USDC" }) {
-            return usdcCoin.balanceDecimal
-        }
-        return .zero
+        return CircleViewLogic.getWalletUSDCBalance(vault: vault)
     }
     
     var body: some View {
@@ -126,8 +121,7 @@ struct CircleDashboardView: View {
     func loadData() async {
         guard let mscaAddress = vault.circleWalletAddress else { return }
         
-        let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
-        let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
+        let (chain, _) = CircleViewLogic.getChainDetails(vault: vault)
         
         let coinsToRefresh = vault.coins.filter { coin in
             coin.chain == chain && (coin.ticker == "USDC" || coin.isNativeToken)
@@ -138,13 +132,10 @@ struct CircleDashboardView: View {
         }
         
         do {
-            let (balance, ethBalance, yield) = try await model.logic.fetchData(address: mscaAddress, vault: vault)
+            let (balance, ethBalance) = try await model.logic.fetchData(address: mscaAddress, vault: vault)
             await MainActor.run {
                 model.balance = balance
                 model.ethBalance = ethBalance
-                model.apy = yield.apy
-                model.totalRewards = yield.totalRewards
-                model.currentRewards = yield.currentRewards
             }
         } catch {
             print(

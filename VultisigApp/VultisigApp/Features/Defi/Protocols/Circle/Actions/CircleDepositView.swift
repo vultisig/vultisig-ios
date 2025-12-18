@@ -160,8 +160,7 @@ struct CircleDepositView: View {
     }
     
     func loadData() async {
-        let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
-        let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
+        let (chain, _) = CircleViewLogic.getChainDetails(vault: vault)
         
         if let coin = vault.coins.first(where: { $0.chain == chain && $0.ticker == "USDC" }) {
             await BalanceService.shared.updateBalance(for: coin)

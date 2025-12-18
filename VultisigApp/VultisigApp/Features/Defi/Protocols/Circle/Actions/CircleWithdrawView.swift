@@ -43,6 +43,9 @@ struct CircleWithdrawView: View {
                 ProgressView()
             }
         }
+        .task {
+            await loadFastVaultStatus()
+        }
     }
     
     var headerView: some View {
@@ -193,8 +196,7 @@ struct CircleWithdrawView: View {
     }
     
     var vaultEthBalance: Decimal {
-        let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
-        let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
+        let (chain, _) = CircleViewLogic.getChainDetails(vault: vault)
         return vault.coins.first(where: { $0.chain == chain && $0.isNativeToken })?.balanceDecimal ?? 0
     }
     
@@ -251,8 +253,7 @@ struct CircleWithdrawView: View {
             let cleanAmountUnits = amountUnits.components(separatedBy: ".").first ?? amountUnits
             let amountVal = BigInt(cleanAmountUnits) ?? BigInt(0)
             
-            let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
-            let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
+            let (chain, _) = CircleViewLogic.getChainDetails(vault: vault)
             guard let recipientCoin = vault.coins.first(where: { $0.chain == chain }) else {
                 throw NSError(domain: "CircleWithdraw", code: 404, userInfo: [NSLocalizedDescriptionKey: "ETH address not found"])
             }
@@ -271,8 +272,7 @@ struct CircleWithdrawView: View {
             } catch let err as CircleServiceError {
                 if case .walletNotDeployed = err {
                     let _ = try? await CircleApiService.shared.createWallet(
-                        ethAddress: recipientCoin.address,
-                        force: true
+                        ethAddress: recipientCoin.address
                     )
                     payload = try await attemptPayload()
                 } else {

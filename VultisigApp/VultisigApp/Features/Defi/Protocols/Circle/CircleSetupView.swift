@@ -14,12 +14,7 @@ struct CircleSetupView: View {
     @State var showInfoBanner = true
     
     var walletUSDCBalance: Decimal {
-        let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
-        let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
-        if let usdcCoin = vault.coins.first(where: { $0.chain == chain && $0.ticker == "USDC" }) {
-            return usdcCoin.balanceDecimal
-        }
-        return .zero
+        return CircleViewLogic.getWalletUSDCBalance(vault: vault)
     }
     
     var body: some View {

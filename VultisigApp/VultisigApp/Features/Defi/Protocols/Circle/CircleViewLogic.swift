@@ -18,8 +18,7 @@ struct CircleViewLogic {
     }
     
     func checkExistingWallet(vault: Vault) async throws -> String? {
-        let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
-        let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
+        let (chain, _) = CircleViewLogic.getChainDetails(vault: vault)
         
         guard let ethCoin = vault.coins.first(where: { $0.chain == chain }) else {
             throw CircleServiceError.keysignError("No Ethereum found in vault. Please add Ethereum first.")
@@ -28,29 +27,25 @@ struct CircleViewLogic {
         return try await CircleApiService.shared.fetchWallet(ethAddress: ethCoin.address)
     }
     
-    func createWallet(vault: Vault, force: Bool = false) async throws -> String {
-        let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
-        let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
+    func createWallet(vault: Vault) async throws -> String {
+        let (chain, _) = CircleViewLogic.getChainDetails(vault: vault)
         
         guard let ethCoin = vault.coins.first(where: { $0.chain == chain }) else {
             throw CircleServiceError.keysignError("No ETH coin found in vault. Please add Ethereum first.")
         }
         
-        return try await CircleApiService.shared.createWallet(ethAddress: ethCoin.address, force: force)
+        return try await CircleApiService.shared.createWallet(ethAddress: ethCoin.address)
     }
     
-    /// Returns: (USDC Balance, ETH Balance, Yield Response)
-    func fetchData(address: String, vault: Vault) async throws -> (Decimal, Decimal, CircleApiService.CircleYieldResponse) {
-        let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
-        let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
-        
-        let usdcContract = isSepolia ? CircleConstants.usdcSepolia : CircleConstants.usdcMainnet
+    /// Returns: (USDC Balance, ETH Balance)
+    func fetchData(address: String, vault: Vault) async throws -> (Decimal, Decimal) {
+        let (chain, usdcContract) = CircleViewLogic.getChainDetails(vault: vault)
         
         do {
             let service = try EvmService.getService(forChain: chain)
             
             guard let nativeCoin = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken }) else {
-                return (.zero, .zero, CircleApiService.CircleYieldResponse(apy: "", totalRewards: "", currentRewards: ""))
+                return (.zero, .zero)
             }
             
             async let usdcBalanceBigInt = service.fetchERC20TokenBalance(contractAddress: usdcContract, walletAddress: address)
@@ -62,11 +57,7 @@ struct CircleViewLogic {
             let usdcBalance = (Decimal(string: String(usdcVal)) ?? 0) / pow(10, 6)
             let ethBalance = (Decimal(string: String(ethVal)) ?? 0) / pow(10, 18)
             
-            // TODO: Implement Circle Yield API fetching when available
-            // Currently returning empty values as yield fetching is not yet implemented
-            let yield = CircleApiService.CircleYieldResponse(apy: "", totalRewards: "", currentRewards: "")
-            
-            return (usdcBalance, ethBalance, yield)
+            return (usdcBalance, ethBalance)
             
         } catch {
             print("Circle Fetch Error: \(error.localizedDescription)")
@@ -79,10 +70,7 @@ struct CircleViewLogic {
             throw CircleServiceError.keysignError("Missing Circle Wallet Address")
         }
         
-        let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
-        let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
-        
-        let usdcContract = isSepolia ? CircleConstants.usdcSepolia : CircleConstants.usdcMainnet
+        let (chain, usdcContract) = CircleViewLogic.getChainDetails(vault: vault)
         
         let withdrawalInfo = CircleWithdrawalInfo(usdcContract: usdcContract)
         
@@ -143,9 +131,7 @@ struct CircleViewLogic {
             nonce: nonce,
             gasLimit: gasLimit
         )
-        
-        // Use memo with hex data instead of swapPayload
-        // This ensures the transaction is treated as a "Send" not a "Swap" on join devices
+
         let payloadWithData = KeysignPayload(
             coin: coin,
             toAddress: to,
@@ -163,5 +149,20 @@ struct CircleViewLogic {
         )
         
         return payloadWithData
+    }
+
+    static func getChainDetails(vault: Vault) -> (chain: Chain, usdcContract: String) {
+        let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
+        let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
+        let usdcContract = isSepolia ? CircleConstants.usdcSepolia : CircleConstants.usdcMainnet
+        return (chain, usdcContract)
+    }
+    
+    static func getWalletUSDCBalance(vault: Vault) -> Decimal {
+        let (chain, _) = getChainDetails(vault: vault)
+        if let usdcCoin = vault.coins.first(where: { $0.chain == chain && $0.ticker == "USDC" }) {
+            return usdcCoin.balanceDecimal
+        }
+        return .zero
     }
 }

@@ -81,16 +81,14 @@ struct CircleApiService {
         return nil
     }
     
-    func createWallet(ethAddress: String, force: Bool = false) async throws -> String {
+    func createWallet(ethAddress: String) async throws -> String {
         guard !ethAddress.isEmpty else {
             throw CircleApiError.invalidUrl
         }
         
-        // Fetch existing wallet via refId (Skip if force is true)
-        if !force {
-            if let existing = try? await fetchWallet(ethAddress: ethAddress) {
-                return existing
-            }
+        // Fetch existing wallet via refId
+        if let existing = try? await fetchWallet(ethAddress: ethAddress) {
+            return existing
         }
         
         // Create new wallet
