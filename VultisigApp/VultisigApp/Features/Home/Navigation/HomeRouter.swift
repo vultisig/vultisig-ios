@@ -24,6 +24,8 @@ struct HomeRouter {
         switch route {
         case .home(let showingVaultSelector):
             viewBuilder.buildHome(showingVaultSelector: showingVaultSelector)
+        case .vaultAction(let action, let sendTx, let vault):
+            viewBuilder.buildActionRoute(action: action, sendTx: sendTx, vault: vault)
         }
     }
 }

@@ -202,7 +202,7 @@ struct HomeScreen: View {
                 case .createVault:
                     router.navigate(to: VaultRoute.createVault(showBackButton: true))
                 case .mainAction(let action):
-                    handleVaultAction(action, vault: selectedVault)
+                    router.navigate(to: HomeRoute.vaultAction(action: action, sendTx: sendTx, vault: selectedVault))
                 }
 
                 vaultRoute = nil
@@ -602,33 +602,6 @@ extension HomeScreen {
             }
         } else {
             completion()
-        }
-    }
-}
-
-extension HomeScreen {
-    func handleVaultAction(_ action: VaultAction, vault: Vault) {
-        switch action {
-        case .send(let coin, let hasPreselectedCoin):
-            router.navigate(to: SendRoute.details(
-                coin: coin,
-                hasPreselectedCoin: hasPreselectedCoin,
-                tx: sendTx,
-                vault: vault
-            ))
-        case .swap(let fromCoin):
-            router.navigate(to: VaultRoute.swap(fromCoin: fromCoin, toCoin: nil, vault: vault))
-        case .function(let coin):
-            router.navigate(to: FunctionCallRoute.details(
-                defaultCoin: coin,
-                sendTx: sendTx,
-                vault: vault
-            ))
-        case .buy(let address, let blockChainCode, let coinType):
-            // Need to check if SendRoute has a buy route
-            // For now, keeping the old buildActionRoute approach for buy
-            // TODO: Add buy route to SendRoute if not exists
-            break
         }
     }
 }
