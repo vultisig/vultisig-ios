@@ -17,7 +17,7 @@ struct DefiCircleRow: View {
         HStack {
             HStack(spacing: 12) {
                 // Circle Logo
-                Image(systemName: "circle.circle")
+                Image("circle-logo")
                     .resizable()
                     .frame(width: 36, height: 36)
                     .clipShape(Circle())
@@ -60,9 +60,10 @@ struct DefiCircleRow: View {
                 Icon(named: "chevron-right-small", color: Theme.colors.textPrimary, size: 16)
             }
         }
-        .padding(.horizontal, 16)
         .padding(.vertical, 12)
+        .padding(.horizontal, 16)
         .background(Theme.colors.bgSecondary)
+        .cornerRadius(10)
         .buttonStyle(.plain)
     }
 }

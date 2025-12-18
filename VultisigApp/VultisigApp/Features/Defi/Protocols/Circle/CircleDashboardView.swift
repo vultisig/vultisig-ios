@@ -34,7 +34,7 @@ struct CircleDashboardView: View {
                     .foregroundStyle(Theme.colors.textPrimary)
             }
             Spacer()
-            Image(systemName: "circle.hexagongrid")
+            Image("circle-logo")
                 .resizable()
                 .scaledToFit()
                 .frame(width: 60, height: 60)
