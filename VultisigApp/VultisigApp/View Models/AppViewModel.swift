@@ -26,7 +26,7 @@ class AppViewModel: ObservableObject {
     // Properties to manage global navigation
     @Published private(set) var selectedVault: Vault?
     @Published private(set) var showingVaultSelector: Bool = false
-    @Published private(set) var restartNavigation: Bool = false
+    @Published var restartNavigation: Bool = false
     
     private let logic = AccountLogic()
     

@@ -59,8 +59,17 @@ struct ContentView: View {
         .overlay(appViewModel.showCover ? CoverView().ignoresSafeArea() : nil)
         .onChange(of: appViewModel.selectedVault) { _, _ in
             guard appViewModel.restartNavigation else { return }
-            navigationRouter.replace(to: HomeRoute.home(showingVaultSelector: appViewModel.showingVaultSelector))
+            navigateToHome()
         }
+        .onChange(of: appViewModel.restartNavigation) { oldValue, newValue in
+            guard newValue else { return }
+            navigateToHome()
+            appViewModel.restartNavigation = false
+        }
+    }
+    
+    func navigateToHome() {
+        navigationRouter.replace(to: HomeRoute.home(showingVaultSelector: appViewModel.showingVaultSelector))
     }
     
     var content: some View {
