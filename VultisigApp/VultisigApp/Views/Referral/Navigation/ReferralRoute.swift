@@ -5,9 +5,32 @@
 //  Created by Gaston Mazzeo on 15/12/2025.
 //
 
+import Foundation
+
 enum ReferralRoute: Hashable {
-    case referredCodeForm
-    case vaultSelection(selectedVault: Vault?)
-    case transactionFlow(isEdit: Bool)
+    case initial
+    case onboarding
     case main
+    case vaultSelection(selectedVaultViewModel: VaultSelectedViewModel)
+    case referredCodeForm
+    case createReferral
+    case editReferral
 }
+
+final class VaultSelectedViewModel: ObservableObject, Hashable {
+    static func == (lhs: VaultSelectedViewModel, rhs: VaultSelectedViewModel) -> Bool {
+        lhs.selectedVault == rhs.selectedVault
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(selectedVault)
+    }
+    
+    @Published var selectedVault: Vault?
+    
+    init(selectedVault: Vault? = nil) {
+        self.selectedVault = selectedVault
+    }
+}
+
+

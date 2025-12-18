@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ReferralTransactionFlowScreen: View {
-    @EnvironmentObject var referralViewModel: ReferralViewModel
+    @StateObject var referralViewModel = ReferralViewModel()
     let isEdit: Bool
     
     @StateObject var sendTx = SendTransaction()
@@ -21,7 +21,11 @@ struct ReferralTransactionFlowScreen: View {
     @State var isLoading = false
     @Environment(\.router) var router
 
-    @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var appViewModel: AppViewModel
+    
+    var vault: Vault? {
+        referralViewModel.currentVault
+    }
     
     var body: some View {
         detailsView
@@ -29,7 +33,7 @@ struct ReferralTransactionFlowScreen: View {
             .frame(maxHeight: .infinity)
             .onLoad {
                 isLoading = true
-                referralViewModel.setup(tx: sendTx)
+                referralViewModel.setup(tx: sendTx, defaultVault: appViewModel.selectedVault)
                 isLoading = false
                 
                 Task {
@@ -38,10 +42,6 @@ struct ReferralTransactionFlowScreen: View {
                     }
                 }
             }
-    }
-    
-    var vault: Vault? {
-        referralViewModel.currentVault
     }
     
     @ViewBuilder
@@ -78,5 +78,5 @@ struct ReferralTransactionFlowScreen: View {
 
 #Preview {
     ReferralTransactionFlowScreen(isEdit: false)
-        .environmentObject(HomeViewModel())
+        .environmentObject(AppViewModel())
 }

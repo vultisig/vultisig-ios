@@ -9,20 +9,16 @@ import SwiftUI
 import SwiftData
 
 struct ReferralMainScreen: View {
-    @EnvironmentObject var referredViewModel: ReferredViewModel
-    @EnvironmentObject var referralViewModel: ReferralViewModel
+    @StateObject var referredViewModel = ReferredViewModel()
+    @StateObject var referralViewModel = ReferralViewModel()
 
-    @State var selectedVault: Vault?
+    @StateObject var vaultSelectionViewModel = VaultSelectedViewModel()
     @State var showReferralCodeCopied = false
     @Environment(\.router) var router
+    
+    @EnvironmentObject var appViewModel: AppViewModel
 
     private let referralSavePercentage: String = "10%"
-    
-//    init(referredViewModel: ReferredViewModel, referralViewModel: ReferralViewModel) {
-//        self.referredViewModel = referredViewModel
-//        self.referralViewModel = referralViewModel
-//        self.selectedVault = referralViewModel.currentVault
-//    }
     
     var body: some View {
         Screen(title: "referral".localized) {
@@ -38,11 +34,12 @@ struct ReferralMainScreen: View {
         }
         .overlay(PopupCapsule(text: "referralCodeCopied", showPopup: $showReferralCodeCopied))
         .onLoad {
+            vaultSelectionViewModel.selectedVault = appViewModel.selectedVault
             Task {
                 await referralViewModel.fetchReferralCodeDetails()
             }
         }
-        .onChange(of: selectedVault) { _, newValue in
+        .onChange(of: vaultSelectionViewModel.selectedVault) { _, newValue in
             referralViewModel.currentVault = newValue
             referredViewModel.currentVault = newValue
             Task {
@@ -115,7 +112,7 @@ struct ReferralMainScreen: View {
             }
             
             PrimaryButton(title: "createReferral".localized) {
-                router.navigate(to: ReferralRoute.transactionFlow(isEdit: false))
+                router.navigate(to: ReferralRoute.createReferral)
             }
             .padding(.bottom, 12)
         }
@@ -172,7 +169,7 @@ struct ReferralMainScreen: View {
     
     var editReferralButton: some View {
         PrimaryButton(title: "editReferral") {
-            router.navigate(to: ReferralRoute.transactionFlow(isEdit: true))
+            router.navigate(to: ReferralRoute.editReferral)
         }
         .disabled(!referralViewModel.canEditCode)
     }
@@ -195,7 +192,7 @@ struct ReferralMainScreen: View {
                 .font(Theme.fonts.bodySMedium)
             
             Button {
-                router.navigate(to: ReferralRoute.vaultSelection(selectedVault: selectedVault))
+                router.navigate(to: ReferralRoute.vaultSelection(selectedVaultViewModel: vaultSelectionViewModel))
             } label: {
                 HStack(spacing: 10) {
                     Image("vault-icon")

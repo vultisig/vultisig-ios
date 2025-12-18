@@ -9,6 +9,11 @@ import SwiftUI
 
 struct SettingsRouteBuilder {
     @ViewBuilder
+    func buildMainSettingsScreen(vault: Vault) -> some View {
+        SettingsMainScreen(vault: vault)
+    }
+    
+    @ViewBuilder
     func buildVaultSettingsScreen(vault: Vault) -> some View {
         VaultSettingsScreen(vault: vault)
     }
@@ -69,15 +74,5 @@ struct SettingsRouteBuilder {
     @ViewBuilder
     func buildVaultDetailQRCodeScreen(vault: Vault) -> some View {
         VaultDetailQRCodeView(vault: vault)
-    }
-
-    @ViewBuilder
-    func buildReferralOnboardingScreen(referredViewModel: ReferredViewModel) -> some View {
-        ReferredOnboardingView(referredViewModel: referredViewModel)
-    }
-
-    @ViewBuilder
-    func buildReferralsScreen() -> some View {
-        ReferralMainScreen()
     }
 }

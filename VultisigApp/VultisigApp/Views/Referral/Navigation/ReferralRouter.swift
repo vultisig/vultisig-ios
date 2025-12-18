@@ -18,12 +18,18 @@ struct ReferralRouter {
     @ViewBuilder
     func build(_ route: ReferralRoute) -> some View {
         switch route {
+        case .initial:
+            viewBuilder.buildInitialScreen()
+        case .onboarding:
+            viewBuilder.buildOnboardingScreen()
         case .referredCodeForm:
             viewBuilder.buildReferredCodeFormScreen()
-        case .vaultSelection(let selectedVault):
-            viewBuilder.buildVaultSelectionScreen(selectedVault: selectedVault)
-        case .transactionFlow(let isEdit):
-            viewBuilder.buildTransactionFlowScreen(isEdit: isEdit)
+        case .vaultSelection(let viewModel):
+            viewBuilder.buildVaultSelectionScreen(viewModel: viewModel)
+        case .createReferral:
+            viewBuilder.buildTransactionFlowScreen(isEdit: false)
+        case .editReferral:
+            viewBuilder.buildTransactionFlowScreen(isEdit: true)
         case .main:
             viewBuilder.buildMainScreen()
         }

@@ -18,7 +18,7 @@ struct SettingsMainScreen: View {
     @State var tapCount = 0
     @State var scale: CGFloat = 1
     @State var showVaultDetailQRCode: Bool = false
-    @State var selectedOption: SettingsOption?
+    @State var showReferralBannerSheet = false
 
     let groups: [SettingsOptionGroup] = [
         SettingsOptionGroup(
@@ -85,49 +85,14 @@ struct SettingsMainScreen: View {
                 }
             }
         }
-        .onChange(of: selectedOption) { _, option in
-            guard let option else { return }
-
-            switch option {
-            case .vaultSettings:
-                router.navigate(to: SettingsRoute.vaultSettings(vault: vault))
-            case .vultDiscountTiers:
-                router.navigate(to: SettingsRoute.vultDiscountTiers(vault: vault))
-            case .registerVaults:
-                router.navigate(to: SettingsRoute.registerVaults(vault: vault))
-            case .language:
-                router.navigate(to: SettingsRoute.language)
-            case .currency:
-                router.navigate(to: SettingsRoute.currency)
-            case .addressBook:
-                router.navigate(to: SettingsRoute.addressBook)
-            case .faq:
-                router.navigate(to: SettingsRoute.faq)
-            case .checkForUpdates:
-                router.navigate(to: SettingsRoute.checkForUpdates)
-            default:
-                break
-            }
-
-            selectedOption = nil
-        }
-        .onChange(of: referredViewModel.navigationToReferralOverview) { _, shouldNavigate in
-            guard shouldNavigate else { return }
-            router.navigate(to: SettingsRoute.referralOnboarding(
-                referredViewModel: StateWrapper(object: referredViewModel)
-            ))
-            referredViewModel.navigationToReferralOverview = false
-        }
-        .onChange(of: referredViewModel.navigationToReferralsView) { _, shouldNavigate in
-            guard shouldNavigate else { return }
-            router.navigate(to: SettingsRoute.referrals(
-                referralViewModel: StateWrapper(object: referralViewModel),
-                referredViewModel: StateWrapper(object: referredViewModel)
-            ))
-            referredViewModel.navigationToReferralsView = false
-        }
-        .crossPlatformSheet(isPresented: $referredViewModel.showReferralBannerSheet) {
-            referralOverviewSheet
+        .crossPlatformSheet(isPresented: $showReferralBannerSheet) {
+            ReferralOnboardingBanner {
+                showReferralBannerSheet = false
+                referredViewModel.showReferralCodeOnboarding = false
+                router.navigate(to: ReferralRoute.onboarding)
+            } onClose: {
+                showReferralBannerSheet = false
+            }.presentationDetents([.height(400)])
         }
     }
     
@@ -161,7 +126,7 @@ struct SettingsMainScreen: View {
         switch option.type {
         case .navigation:
             Button {
-                selectedOption = option
+                navigateToOption(option)
             } label: {
                 content()
             }
@@ -175,6 +140,29 @@ struct SettingsMainScreen: View {
             Link(destination: url, label: content)
         case .shareLink(let url):
             ShareLink(item: url, label: content)
+        }
+    }
+
+    func navigateToOption(_ option: SettingsOption) {
+        switch option {
+        case .vaultSettings:
+            router.navigate(to: SettingsRoute.vaultSettings(vault: vault))
+        case .vultDiscountTiers:
+            router.navigate(to: SettingsRoute.vultDiscountTiers(vault: vault))
+        case .registerVaults:
+            router.navigate(to: SettingsRoute.registerVaults(vault: vault))
+        case .language:
+            router.navigate(to: SettingsRoute.language)
+        case .currency:
+            router.navigate(to: SettingsRoute.currency)
+        case .addressBook:
+            router.navigate(to: SettingsRoute.addressBook)
+        case .faq:
+            router.navigate(to: SettingsRoute.faq)
+        case .checkForUpdates:
+            router.navigate(to: SettingsRoute.checkForUpdates)
+        default:
+            break
         }
     }
     
@@ -226,26 +214,13 @@ struct SettingsMainScreen: View {
         switch option {
         case .referralCode:
             if referredViewModel.showReferralCodeOnboarding {
-                referredViewModel.showReferralBannerSheet = true
+                showReferralBannerSheet = true
             } else {
-                referredViewModel.navigationToReferralsView = true
+                router.navigate(to: ReferralRoute.initial)
             }
         default:
             return
         }
-    }
-    
-    var referralOverviewSheet: some View {
-        ReferralOnboardingBanner(referredViewModel: referredViewModel)
-            .presentationDetents([.height(400)])
-    }
-    
-    @ViewBuilder
-    var referralView: some View {
-        ReferralLaunchView(
-            referredViewModel: referredViewModel,
-            referralViewModel: referralViewModel
-        )
     }
 }
 

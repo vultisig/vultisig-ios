@@ -8,6 +8,7 @@
 import SwiftUI
 
 enum SettingsRoute: Hashable {
+    case main(vault: Vault)
     case vaultSettings(vault: Vault)
     case vultDiscountTiers(vault: Vault)
     case registerVaults(vault: Vault)
@@ -20,20 +21,4 @@ enum SettingsRoute: Hashable {
     case checkForUpdates
     case advancedSettings
     case vaultDetailQRCode(vault: Vault)
-    case referralOnboarding(referredViewModel: StateWrapper<ReferredViewModel>)
-    case referrals(referralViewModel: StateWrapper<ReferralViewModel>, referredViewModel: StateWrapper<ReferredViewModel>)
-}
-
-// Wrapper for @StateObject to make it Hashable
-struct StateWrapper<T: ObservableObject>: Hashable {
-    let id: UUID = UUID()
-    let object: T
-
-    static func == (lhs: StateWrapper<T>, rhs: StateWrapper<T>) -> Bool {
-        lhs.id == rhs.id
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
 }

@@ -1,5 +1,5 @@
 //
-//  ReferralLaunchView.swift
+//  ReferralInitialScreen.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2025-05-29.
@@ -7,9 +7,9 @@
 
 import SwiftUI
 
-struct ReferralLaunchView: View {
-    @ObservedObject var referredViewModel: ReferredViewModel
-    @ObservedObject var referralViewModel: ReferralViewModel
+struct ReferralInitialScreen: View {
+    @StateObject var referredViewModel = ReferredViewModel()
+    @StateObject var referralViewModel = ReferralViewModel()
     
     @StateObject var keyboardObserver = KeyboardObserver()
     @State var scrollViewProxy: ScrollViewProxy?
@@ -127,7 +127,7 @@ struct ReferralLaunchView: View {
 
 // MARK: - Referred
 
-private extension ReferralLaunchView {
+private extension ReferralInitialScreen {
     var referredCodeButton: some View {
         PrimaryButton(title: referredViewModel.referredButtonTitle, type: .secondary) {
             Task { @MainActor in
@@ -149,7 +149,7 @@ private extension ReferralLaunchView {
 
 // MARK: - Referral
 
-private extension ReferralLaunchView {
+private extension ReferralInitialScreen {
     var referralContent: some View {
         VStack(spacing: 16) {
             referralTitle
@@ -177,7 +177,7 @@ private extension ReferralLaunchView {
     
     var createReferralButton: some View {
         PrimaryButton(title: "createReferral") {
-            router.navigate(to: ReferralRoute.transactionFlow(isEdit: false))
+            router.navigate(to: ReferralRoute.createReferral)
         }
     }
     
@@ -189,6 +189,6 @@ private extension ReferralLaunchView {
 }
 
 #Preview {
-    ReferralLaunchView(referredViewModel: ReferredViewModel(), referralViewModel: ReferralViewModel())
+    ReferralInitialScreen()
         .environmentObject(AppViewModel())
 }

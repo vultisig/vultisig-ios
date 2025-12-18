@@ -10,37 +10,32 @@ import SwiftUI
 struct ReferralRouteBuilder {
 
     @ViewBuilder
+    func buildInitialScreen() -> some View {
+        ReferralInitialScreen()
+    }
+    
+    @ViewBuilder
+    func buildOnboardingScreen() -> some View {
+        ReferredOnboardingView()
+    }
+    
+    @ViewBuilder
+    func buildMainScreen() -> some View {
+        ReferralMainScreen()
+    }
+    
+    @ViewBuilder
     func buildReferredCodeFormScreen() -> some View {
         ReferredCodeFormScreen()
     }
 
     @ViewBuilder
-    func buildVaultSelectionScreen(selectedVault: Vault?) -> some View {
-        ReferralVaultSelectionWrapper(initialVault: selectedVault)
+    func buildVaultSelectionScreen(viewModel: VaultSelectedViewModel) -> some View {
+        ReferralVaultSelectionScreen(viewModel: viewModel)
     }
 
     @ViewBuilder
     func buildTransactionFlowScreen(isEdit: Bool) -> some View {
         ReferralTransactionFlowScreen(isEdit: isEdit)
-    }
-
-    @ViewBuilder
-    func buildMainScreen() -> some View {
-        ReferralMainScreen()
-    }
-}
-
-// Wrapper to handle the binding requirement
-private struct ReferralVaultSelectionWrapper: View {
-    let initialVault: Vault?
-    @State private var selectedVault: Vault?
-
-    init(initialVault: Vault?) {
-        self.initialVault = initialVault
-        self._selectedVault = State(initialValue: initialVault)
-    }
-
-    var body: some View {
-        ReferralVaultSelectionScreen(selectedVault: $selectedVault)
     }
 }

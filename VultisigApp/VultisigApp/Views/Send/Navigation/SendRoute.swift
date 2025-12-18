@@ -5,7 +5,6 @@
 //  Created by Gaston Mazzeo on 13/08/2025.
 //
 
-// TODO: - Start using it once we move completely to NavPath routing
 enum SendRoute: Hashable {
     case details(coin: Coin?, hasPreselectedCoin: Bool, tx: SendTransaction, vault: Vault)
     case verify(tx: SendTransaction, vault: Vault)

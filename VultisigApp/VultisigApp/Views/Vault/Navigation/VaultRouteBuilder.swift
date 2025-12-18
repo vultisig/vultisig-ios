@@ -71,8 +71,8 @@ struct VaultRouteBuilder {
         shouldJoinKeygen: Bool
     ) -> some View {
         HomeScreen(
+            showingVaultSelector: showVaultsList
 //            selectedVault: vault,
-//            showVaultsList: showVaultsList,
 //            shouldJoinKeygen: shouldJoinKeygen
         )
     }

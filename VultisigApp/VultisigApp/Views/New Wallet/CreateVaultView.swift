@@ -18,7 +18,6 @@ struct CreateVaultView: View {
     @State var showSheet = false
     @State var shouldJoinKeygen = false
     @State var showImportSelectionSheet: Bool = false
-    @State var navigateToGetStarted = false
     @State var navigateToScanQR = false
     @State var navigateToGeneralQRImport = false
 
@@ -35,15 +34,6 @@ struct CreateVaultView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(PrimaryBackgroundWithGradient())
         .navigationBarBackButtonHidden(showBackButton ? false : true)
-        .onChange(of: navigateToGetStarted) { _, shouldNavigate in
-            guard shouldNavigate else { return }
-            if appViewModel.showOnboarding {
-                router.navigate(to: OnboardingRoute.onboarding)
-            } else {
-                router.navigate(to: OnboardingRoute.setupQRCode(tssType: .Keygen, vault: nil))
-            }
-            navigateToGetStarted = false
-        }
         .onChange(of: navigateToScanQR) { _, shouldNavigate in
             guard shouldNavigate else { return }
             router.navigate(to: KeygenRoute.macScanner(
@@ -109,7 +99,11 @@ struct CreateVaultView: View {
     
     var newVaultButton: some View {
         PrimaryButton(title: "getStarted") {
-            navigateToGetStarted = true
+            if appViewModel.showOnboarding {
+                router.navigate(to: OnboardingRoute.onboarding)
+            } else {
+                router.navigate(to: OnboardingRoute.setupQRCode(tssType: .Keygen, vault: nil))
+            }
         }
         .opacity(showNewVaultButton ? 1 : 0)
         .offset(y: showNewVaultButton ? 0 : 20)

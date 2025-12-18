@@ -17,7 +17,7 @@ final class NavigationRouter: ObservableObject {
     }
 
     func replace(to destination: any NavPath) {
-        navPath.removeLast(navPath.count)
+        navPath = NavigationPath()
         navPath.append(destination)
     }
 

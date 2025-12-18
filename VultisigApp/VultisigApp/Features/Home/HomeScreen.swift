@@ -198,7 +198,7 @@ struct HomeScreen: View {
 
                 switch route {
                 case .settings:
-                    router.navigate(to: SettingsRoute.vaultSettings(vault: selectedVault))
+                    router.navigate(to: SettingsRoute.main(vault: selectedVault))
                 case .createVault:
                     router.navigate(to: VaultRoute.createVault(showBackButton: true))
                 case .mainAction(let action):
@@ -343,7 +343,7 @@ extension HomeScreen {
             return
         }
         
-        appViewModel.set(selectedVault: vault,restartNavigation: false)
+        appViewModel.set(selectedVault: vault, restartNavigation: false)
         showVaultSelector = false
         // Reset first to ensure SwiftUI detects the change
         shouldKeysignTransaction = false
