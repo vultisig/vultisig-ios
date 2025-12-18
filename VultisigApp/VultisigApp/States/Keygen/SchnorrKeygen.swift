@@ -237,10 +237,13 @@ final class SchnorrKeygen {
             
             if result != LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
+            } else {
+                print("successfully applied inbound message to schnorr, isFinished:\(isFinished), hash:\(msg.hash) ,sequence_no:\(msg.sequence_no)")
             }
             self.cache.setObject(NSObject(), forKey: key)
-            try await deleteMessageFromServer(hash: msg.hash)
+            try await Task.sleep(for: .milliseconds(50))
             try await self.processSchnorrOutboundMessage(handle: handle)
+            try await deleteMessageFromServer(hash: msg.hash)
             // local party keygen finished
             if isFinished != 0 {
                 return true
@@ -261,8 +264,8 @@ final class SchnorrKeygen {
     // SchnorrKeygenWithRetry will perform keygen/migration/keyimport with retry mechanism
     // additionalHeader is used to differentiate the setup message when doing key import
     func SchnorrKeygenWithRetry(attempt: UInt8, additionalHeader: String? = nil) async throws {
+        print("start Schnorr keygen/migration/keyimport , attempt:\(attempt)")
         self.cache.removeAllObjects()
-        var task: Task<(), any Error>? = nil
         do {
             var decodedSetupMsg = self.setupMessage.to_dkls_goslice()
             var handler = goschnorr.Handle()
@@ -319,7 +322,6 @@ final class SchnorrKeygen {
                 schnorr_keygen_session_free(&handler)
             }
             let h = handler
-           
             try await processSchnorrOutboundMessage(handle: h)
             let isFinished = try await pullInboundMessages(handle: h)
             if isFinished {
@@ -339,7 +341,6 @@ final class SchnorrKeygen {
         }
         catch {
             print("Failed to generate key, error: \(error.localizedDescription)")
-            task?.cancel()
             if attempt < 3 { // let's retry
                 print("keygen/reshare retry, attemp: \(attempt)")
                 try await SchnorrKeygenWithRetry(attempt: attempt + 1,additionalHeader: additionalHeader)
@@ -435,8 +436,8 @@ final class SchnorrKeygen {
     }
     
     func SchnorrReshareWithRetry(attempt: UInt8) async throws {
+        print("start Schnorr reshare , attempt:\(attempt) , keygenCommittee: \(self.keygenCommittee)")
         self.cache.removeAllObjects()
-        var task: Task<(), any Error>? = nil
         do {
             var keyshareHandle = goschnorr.Handle()
             if !self.publicKeyEdDSA.isEmpty {
@@ -482,7 +483,6 @@ final class SchnorrKeygen {
             }
             let h = handler
             try await processSchnorrOutboundMessage(handle: h)
-            
             let isFinished = try await pullInboundMessages(handle: h)
             if isFinished {
                 try await processSchnorrOutboundMessage(handle: h)
@@ -504,7 +504,6 @@ final class SchnorrKeygen {
         }
         catch {
             print("Failed to reshare key, error: \(error.localizedDescription)")
-            task?.cancel()
             if attempt < 3 { // let's retry
                 print("keygen/reshare retry, attemp: \(attempt)")
                 try await SchnorrReshareWithRetry(attempt: attempt + 1)

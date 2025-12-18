@@ -232,14 +232,11 @@ final class DKLSKeygen {
         let decoder = JSONDecoder()
         let msgs = try decoder.decode([Message].self, from: data)
         let sortedMsgs = msgs.sorted(by: { $0.sequence_no < $1.sequence_no })
-        if sortedMsgs.count > 0 {
-            print("got \(sortedMsgs.count) inbound messages")
-        }
         
         for msg in sortedMsgs {
             let key = "\(self.sessionID)-\(self.localPartyID)-\(msg.hash)" as NSString
             if self.cache.object(forKey: key) != nil {
-                print("XXXXX message with key:\(key) has been applied before")
+                print("message with key:\(key) has been applied before")
                 continue
             }
             print("Got message from: \(msg.from), to: \(msg.to), key:\(key) , seq: \(msg.sequence_no)")
@@ -268,6 +265,7 @@ final class DKLSKeygen {
                 print("successfully applied inbound message to dkls, isFinished:\(isFinished), hash:\(msg.hash)")
             }
             self.cache.setObject(NSObject(), forKey: key)
+            try await Task.sleep(for: .milliseconds(50))
             try await deleteMessageFromServer(hash: msg.hash)
             try await self.processDKLSOutboundMessage(handle: handle)
             // local party keygen finished
@@ -387,6 +385,7 @@ final class DKLSKeygen {
                                              chaincode: chainCodeBytes.toHexString())
                 print("publicKeyECDSA:\(publicKeyECDSA.toHexString())")
                 print("chaincode: \(chainCodeBytes.toHexString())")
+                try await Task.sleep(for: .milliseconds(500))
             }
         }
         catch {
@@ -562,6 +561,7 @@ final class DKLSKeygen {
                 print("reshare ECDSA key successfully")
                 print("publicKeyECDSA:\(publicKeyECDSA.toHexString())")
                 print("chaincode: \(chainCodeBytes.toHexString())")
+                try await Task.sleep(for: .milliseconds(500))
             }
         }
         catch {
