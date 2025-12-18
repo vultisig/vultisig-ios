@@ -124,14 +124,10 @@ struct CircleApiService {
             if (200...299).contains(httpResponse.statusCode) {
                 // Success
                 let wallets = try JSONDecoder().decode([CircleWalletItem].self, from: createData)
-                if let first = wallets.first {
+                 if let first = wallets.first {
                     return first.address
                 }
-                // Fallback if array mismatch, try single object or string
-                if let addressString = try? JSONDecoder().decode(String.self, from: createData) {
-                    return addressString
-                }
-                 throw CircleApiError.decodingError
+                throw CircleApiError.decodingError
             } else if httpResponse.statusCode == 401 {
                 throw CircleApiError.unauthorized
             } else {
