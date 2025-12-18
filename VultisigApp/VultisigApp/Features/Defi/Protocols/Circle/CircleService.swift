@@ -58,7 +58,7 @@ struct CircleService {
             toAmount: amount,
             chainSpecific: chainSpecific,
             utxos: [],
-            memo: nil,
+            memo: memo,
             swapPayload: nil,
             approvePayload: nil,
             vaultPubKeyECDSA: vault.pubKeyECDSA,
