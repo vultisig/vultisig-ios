@@ -11,12 +11,18 @@ struct VaultChainCellView: View {
     @ObservedObject var group: GroupedChain
     let vault: Vault
     var onCopy: () -> Void
+    var onCamera: () -> Void
+    @State private var showCamera: Bool = false
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
         NavigationLink {
-            ChainDetailScreen(group: group, vault: vault)
+            ChainDetailScreenContainer(
+                group: group,
+                vault: vault,
+                showCamera: $showCamera
+            )
         } label: {
             GroupedChainCellView(
                 group: group,
@@ -28,11 +34,16 @@ struct VaultChainCellView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .onChange(of: showCamera) { oldValue, newValue in
+            if newValue {
+                onCamera()
+                showCamera = false
+            }
+        }
     }
 }
 
 #Preview {
-    VaultChainCellView(group: .example, vault: .example) {
-    }
+    VaultChainCellView(group: .example, vault: .example) {} onCamera: {}
         .environmentObject(HomeViewModel())
 }
