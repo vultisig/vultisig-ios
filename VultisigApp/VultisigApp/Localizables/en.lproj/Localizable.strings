@@ -1166,6 +1166,8 @@
 "circleDashboardETHDeposited" = "ETH & Gas Deposited";
 "circleTransactionSuccess" = "Transaction Successful";
 "circleRowYieldAccount" = "Yield Account";
+"circleRowCreateWallet" = "Create Wallet";
+"circleRowGetStarted" = "Get Started";
 
 // Circle Error Messages
 "circleEthereumRequired" = "Ethereum Required";
