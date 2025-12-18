@@ -177,7 +177,7 @@ final class SchnorrKeygen {
                 }
                 let receiverString = String(bytes:receiverArray,encoding: .utf8)!
                 print("sending message from \(self.localPartyID) to: \(receiverString)")
-                try self.messenger.send(self.localPartyID, to: receiverString, body: encodedOutboundMessage)
+                try await self.messenger.send(self.localPartyID, to: receiverString, body: encodedOutboundMessage)
             }
         } while 1 > 0
         

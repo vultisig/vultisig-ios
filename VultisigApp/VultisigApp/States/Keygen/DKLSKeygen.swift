@@ -35,6 +35,7 @@ final class DKLSKeygen {
     let localPrivateSecret: String?
     let hexChainCode: String
     let DKLS_LIB_OK: godkls.lib_error = .init(0)
+    
     init(vault: Vault,
          tssType: TssType,
          keygenCommittee: [String],
@@ -188,7 +189,6 @@ final class DKLSKeygen {
                 try await Task.sleep(for: .milliseconds(100))
                 continue
             }
-            
             let message = outboundMessage.to_dkls_goslice()
             let encodedOutboundMessage = Data(outboundMessage).base64EncodedString()
             for i in 0..<self.keygenCommittee.count {
@@ -201,10 +201,9 @@ final class DKLSKeygen {
                 }
                 let receiverString = String(bytes:receiverArray,encoding: .utf8)!
                 print("sending message from \(self.localPartyID) to: \(receiverString)")
-                try self.messenger.send(self.localPartyID, to: receiverString, body: encodedOutboundMessage)
+                try await self.messenger.send(self.localPartyID, to: receiverString, body: encodedOutboundMessage)
             }
         } while 1 > 0
-        
     }
     
     func pullInboundMessages(handle: godkls.Handle) async throws -> Bool {
@@ -257,13 +256,17 @@ final class DKLSKeygen {
         let decoder = JSONDecoder()
         let msgs = try decoder.decode([Message].self, from: data)
         let sortedMsgs = msgs.sorted(by: { $0.sequence_no < $1.sequence_no })
+        if sortedMsgs.count > 0 {
+            print("got \(sortedMsgs.count) inbound messages")
+        }
+        
         for msg in sortedMsgs {
             let key = "\(self.sessionID)-\(self.localPartyID)-\(msg.hash)" as NSString
             if self.cache.object(forKey: key) != nil {
-                print("message with key:\(key) has been applied before")
+                print("XXXXX message with key:\(key) has been applied before")
                 continue
             }
-            print("Got message from: \(msg.from), to: \(msg.to), key:\(key)")
+            print("Got message from: \(msg.from), to: \(msg.to), key:\(key) , seq: \(msg.sequence_no)")
             guard let decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex) else {
                 throw HelperError.runtimeError("fail to decrypted message body")
             }
@@ -285,6 +288,8 @@ final class DKLSKeygen {
             
             if result != DKLS_LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
+            } else {
+                print("successfully applied inbound message to dkls, isFinished:\(isFinished), hash:\(msg.hash)")
             }
             self.cache.setObject(NSObject(), forKey: key)
             try await deleteMessageFromServer(hash: msg.hash)

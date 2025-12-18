@@ -25,7 +25,7 @@ enum SetupVaultState: CaseIterable {
     var hasOtherDevices: Bool {
         switch self {
         case .fast:
-            return false
+            return true
         case .active, .secure:
             return true
         }
