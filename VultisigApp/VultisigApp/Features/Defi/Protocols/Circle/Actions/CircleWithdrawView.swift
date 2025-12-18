@@ -271,9 +271,13 @@ struct CircleWithdrawView: View {
                 payload = try await attemptPayload()
             } catch let err as CircleServiceError {
                 if case .walletNotDeployed = err {
-                    let _ = try? await CircleApiService.shared.createWallet(
-                        ethAddress: recipientCoin.address
-                    )
+                    do {
+                        let _ = try await CircleApiService.shared.createWallet(
+                            ethAddress: recipientCoin.address
+                        )
+                    } catch {
+                        print("Circle create wallet error: \(error.localizedDescription)")
+                    }
                     payload = try await attemptPayload()
                 } else {
                     throw err

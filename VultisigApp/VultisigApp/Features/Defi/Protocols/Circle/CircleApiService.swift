@@ -13,6 +13,7 @@ enum CircleApiError: Error {
     case serverError(String)
     case unauthorized
     case unknown
+    case apiError(statusCode: Int, body: String?)
 }
 
 struct CircleApiService {
@@ -64,7 +65,7 @@ struct CircleApiService {
         let scaCore: String?
     }
     
-    func fetchWallet(ethAddress: String) async throws -> String? {
+    public func fetchWallet(ethAddress: String) async throws -> String? {
         let fetchUrlString = Endpoint.fetchCircleWallets(refId: ethAddress)
         guard let fetchUrl = URL(string: fetchUrlString) else {
             throw CircleApiError.invalidUrl
@@ -72,13 +73,17 @@ struct CircleApiService {
         
         let (fetchData, fetchResponse) = try await URLSession.shared.data(from: fetchUrl)
         
-        if let httpResponse = fetchResponse as? HTTPURLResponse, httpResponse.statusCode == 200 {
-            let wallets = try JSONDecoder().decode([CircleWalletItem].self, from: fetchData)
-            if let firstWallet = wallets.first {
-                return firstWallet.address
+        if let httpResponse = fetchResponse as? HTTPURLResponse {
+            if (200...299).contains(httpResponse.statusCode) {
+                let wallets = try JSONDecoder().decode([CircleWalletItem].self, from: fetchData)
+                return wallets.first?.address
+            } else {
+                let body = String(data: fetchData, encoding: .utf8)
+                throw CircleApiError.apiError(statusCode: httpResponse.statusCode, body: body)
             }
         }
-        return nil
+        
+        throw CircleApiError.unknown
     }
     
     func createWallet(ethAddress: String) async throws -> String {
