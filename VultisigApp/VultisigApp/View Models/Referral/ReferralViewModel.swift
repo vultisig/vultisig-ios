@@ -60,10 +60,18 @@ class ReferralViewModel: ObservableObject {
     let blockchainService = BlockChainService.shared
     private let thorchainReferralService = THORChainAPIService()
     
-    private(set) var thornameDetails: THORName?
-    private(set) var currentBlockheight: UInt64 = 0
+    var thornameDetails: THORName?
+    var currentBlockheight: UInt64 = 0
     
     @Published var currentVault: Vault?
+    
+    init(
+        thornameDetails: THORName? = nil,
+        currentBlockheight: UInt64 = 0
+    ) {
+        self.thornameDetails = thornameDetails
+        self.currentBlockheight = currentBlockheight
+    }
     
     var createReferralButtonEnabled: Bool {
         availabilityStatus == .available && !isLoading

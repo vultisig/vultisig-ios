@@ -13,8 +13,8 @@ enum ReferralRoute: Hashable {
     case main
     case vaultSelection(selectedVaultViewModel: VaultSelectedViewModel)
     case referredCodeForm
-    case createReferral
-    case editReferral
+    case createReferral(selectedVaultViewModel: VaultSelectedViewModel)
+    case editReferral(selectedVaultViewModel: VaultSelectedViewModel, thornameDetails: THORName?, currentBlockheight: UInt64)
 }
 
 final class VaultSelectedViewModel: ObservableObject, Hashable {

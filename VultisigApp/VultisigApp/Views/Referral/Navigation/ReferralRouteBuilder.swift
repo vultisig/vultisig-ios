@@ -35,7 +35,7 @@ struct ReferralRouteBuilder {
     }
 
     @ViewBuilder
-    func buildTransactionFlowScreen(isEdit: Bool) -> some View {
-        ReferralTransactionFlowScreen(isEdit: isEdit)
+    func buildTransactionFlowScreen(viewModel: VaultSelectedViewModel, thornameDetails: THORName?, currentBlockheight: UInt64) -> some View {
+        ReferralTransactionFlowScreen(viewModel: viewModel, thornameDetails: thornameDetails, currentBlockHeight: currentBlockheight)
     }
 }

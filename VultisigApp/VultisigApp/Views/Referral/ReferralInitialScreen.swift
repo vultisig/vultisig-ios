@@ -177,7 +177,7 @@ private extension ReferralInitialScreen {
     
     var createReferralButton: some View {
         PrimaryButton(title: "createReferral") {
-            router.navigate(to: ReferralRoute.createReferral)
+            router.navigate(to: ReferralRoute.createReferral(selectedVaultViewModel: VaultSelectedViewModel()))
         }
     }
     

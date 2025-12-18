@@ -484,6 +484,7 @@
 		13EF34E72EF44F9300F60DD3 /* HomeRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EF34E62EF44F9000F60DD3 /* HomeRoute.swift */; };
 		13EF34E92EF44FB300F60DD3 /* HomeRouteBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EF34E82EF44FB000F60DD3 /* HomeRouteBuilder.swift */; };
 		13EF34EB2EF44FD300F60DD3 /* HomeRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EF34EA2EF44FD000F60DD3 /* HomeRouter.swift */; };
+		13EF34ED2EF46EB000F60DD3 /* ScannerResultManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EF34EC2EF46EB000F60DD3 /* ScannerResultManager.swift */; };
 		13EFA1CB2E31389D009838EB /* OTPCharTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EFA1CA2E31389C009838EB /* OTPCharTextField.swift */; };
 		13FB8AB62EA93B4200712A51 /* THORChainLiquidityProviderResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13FB8AB52EA93B4100712A51 /* THORChainLiquidityProviderResponse.swift */; };
 		13FB8AB82EA93B5700712A51 /* THORChainDepthHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13FB8AB72EA93B5700712A51 /* THORChainDepthHistory.swift */; };
@@ -1738,6 +1739,7 @@
 		13EF34E62EF44F9000F60DD3 /* HomeRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeRoute.swift; sourceTree = "<group>"; };
 		13EF34E82EF44FB000F60DD3 /* HomeRouteBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeRouteBuilder.swift; sourceTree = "<group>"; };
 		13EF34EA2EF44FD000F60DD3 /* HomeRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeRouter.swift; sourceTree = "<group>"; };
+		13EF34EC2EF46EB000F60DD3 /* ScannerResultManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerResultManager.swift; sourceTree = "<group>"; };
 		13EFA1CA2E31389C009838EB /* OTPCharTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTPCharTextField.swift; sourceTree = "<group>"; };
 		13FB8AB52EA93B4100712A51 /* THORChainLiquidityProviderResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainLiquidityProviderResponse.swift; sourceTree = "<group>"; };
 		13FB8AB72EA93B5700712A51 /* THORChainDepthHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainDepthHistory.swift; sourceTree = "<group>"; };
@@ -6170,6 +6172,7 @@
 		DE1572AA2B7174C5009BC7C5 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				13EF34EC2EF46EB000F60DD3 /* ScannerResultManager.swift */,
 				B51A0AF12ED6C077002EFA48 /* ABIDecoder.swift */,
 				13B25BC42E82C915002BCF55 /* QRCodeGenerator */,
 				132FB6562E78705400599464 /* Platforms */,
@@ -7694,6 +7697,7 @@
 				A6C670842C9CF66400F59B6A /* JoinKeysignView+iOS.swift in Sources */,
 				A6A8163C2CBCAF60009EE114 /* GeneralQRImportMacView+iOS.swift in Sources */,
 				469ED3A42B98F5DE008D4951 /* CosmosAccountValue.swift in Sources */,
+				13EF34ED2EF46EB000F60DD3 /* ScannerResultManager.swift in Sources */,
 				A6ACAD5B2D0A613A00432CC4 /* CoinPickerCell.swift in Sources */,
 				DE5F7E212C816AC70022030F /* KeysignRequest.swift in Sources */,
 				A5199AF02BBD8C0400AA0A39 /* ThorchainSwapQuote.swift in Sources */,

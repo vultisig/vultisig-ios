@@ -112,7 +112,7 @@ struct ReferralMainScreen: View {
             }
             
             PrimaryButton(title: "createReferral".localized) {
-                router.navigate(to: ReferralRoute.createReferral)
+                router.navigate(to: ReferralRoute.createReferral(selectedVaultViewModel: vaultSelectionViewModel))
             }
             .padding(.bottom, 12)
         }
@@ -169,7 +169,13 @@ struct ReferralMainScreen: View {
     
     var editReferralButton: some View {
         PrimaryButton(title: "editReferral") {
-            router.navigate(to: ReferralRoute.editReferral)
+            router.navigate(
+                to: ReferralRoute.editReferral(
+                    selectedVaultViewModel: vaultSelectionViewModel,
+                    thornameDetails: referralViewModel.thornameDetails,
+                    currentBlockheight: referralViewModel.currentBlockheight
+                )
+            )
         }
         .disabled(!referralViewModel.canEditCode)
     }

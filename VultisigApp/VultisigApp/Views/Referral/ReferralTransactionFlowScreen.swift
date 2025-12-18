@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct ReferralTransactionFlowScreen: View {
-    @StateObject var referralViewModel = ReferralViewModel()
-    let isEdit: Bool
+    @StateObject var referralViewModel: ReferralViewModel
+    @ObservedObject var vaultSelectionViewModel: VaultSelectedViewModel
     
     @StateObject var sendTx = SendTransaction()
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
@@ -22,6 +22,16 @@ struct ReferralTransactionFlowScreen: View {
     @Environment(\.router) var router
 
     @EnvironmentObject var appViewModel: AppViewModel
+    
+    init(viewModel: VaultSelectedViewModel, thornameDetails: THORName?, currentBlockHeight: UInt64) {
+        self.vaultSelectionViewModel = viewModel
+        self._referralViewModel = StateObject(
+            wrappedValue: ReferralViewModel(
+                thornameDetails: thornameDetails,
+                currentBlockheight: currentBlockHeight
+            )
+        )
+    }
     
     var vault: Vault? {
         referralViewModel.currentVault
@@ -46,8 +56,7 @@ struct ReferralTransactionFlowScreen: View {
     
     @ViewBuilder
     var detailsView: some View {
-        if isEdit,
-           let details = referralViewModel.thornameDetails,
+        if let details = referralViewModel.thornameDetails,
            let nativeCoin = referralViewModel.nativeCoin,
            let vault
         {
@@ -77,6 +86,6 @@ struct ReferralTransactionFlowScreen: View {
 }
 
 #Preview {
-    ReferralTransactionFlowScreen(isEdit: false)
+    ReferralTransactionFlowScreen(viewModel: VaultSelectedViewModel(), thornameDetails: nil, currentBlockHeight: 0)
         .environmentObject(AppViewModel())
 }

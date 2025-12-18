@@ -54,11 +54,12 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
     @ViewBuilder
     var rectangle: some View {
         let height = contentHeight - cellHeight / 2 + 1.5
-        Rectangle()
-            .frame(width: 3, height: height)
-            .foregroundColor(Theme.colors.borderLight)
-            .offset(x: 1)
-            .showIf(height.isFinite && height > 0)
+        if height.isFinite && height > 0 {
+            Rectangle()
+                .frame(width: 3, height: height)
+                .foregroundColor(Theme.colors.borderLight)
+                .offset(x: 1)
+        }
     }
 
     var content: some View {

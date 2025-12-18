@@ -26,10 +26,10 @@ struct ReferralRouter {
             viewBuilder.buildReferredCodeFormScreen()
         case .vaultSelection(let viewModel):
             viewBuilder.buildVaultSelectionScreen(viewModel: viewModel)
-        case .createReferral:
-            viewBuilder.buildTransactionFlowScreen(isEdit: false)
-        case .editReferral:
-            viewBuilder.buildTransactionFlowScreen(isEdit: true)
+        case .createReferral(let viewModel):
+            viewBuilder.buildTransactionFlowScreen(viewModel: viewModel, thornameDetails: nil, currentBlockheight: 0)
+        case .editReferral(let viewModel, let thornameDetails, let currentBlockheight):
+            viewBuilder.buildTransactionFlowScreen(viewModel: viewModel, thornameDetails: thornameDetails, currentBlockheight: currentBlockheight)
         case .main:
             viewBuilder.buildMainScreen()
         }
