@@ -34,7 +34,6 @@ struct VaultChainCellView: View {
 }
 
 #Preview {
-    VaultChainCellView(group: .example, vault: .example) {
-    }
+    VaultChainCellView(group: .example, vault: .example) {}
         .environmentObject(HomeViewModel())
 }

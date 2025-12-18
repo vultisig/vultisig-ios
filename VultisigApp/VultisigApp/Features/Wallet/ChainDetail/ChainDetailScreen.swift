@@ -11,8 +11,6 @@ struct ChainDetailScreen: View {
     @Environment(\.router) var router
     @ObservedObject var group: GroupedChain
     let vault: Vault
-    @State var vaultAction: VaultAction?
-    @State var showAction: Bool = false
 
     @StateObject var viewModel: ChainDetailViewModel
 
@@ -32,7 +30,10 @@ struct ChainDetailScreen: View {
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
     
-    init(group: GroupedChain, vault: Vault) {
+    init(
+        group: GroupedChain,
+        vault: Vault
+    ) {
         self.group = group
         self.vault = vault
         self._viewModel = StateObject(wrappedValue: ChainDetailViewModel(vault: vault, group: group))
@@ -79,32 +80,6 @@ struct ChainDetailScreen: View {
         .onLoad {
             viewModel.refresh(group: group)
             refresh()
-        }
-        .onChange(of: showAction) { _, shouldNavigate in
-            guard shouldNavigate, let action = vaultAction else { return }
-
-            switch action {
-            case .send(let coin, let hasPreselectedCoin):
-                router.navigate(to: SendRoute.details(
-                    coin: coin,
-                    hasPreselectedCoin: hasPreselectedCoin,
-                    tx: sendTx,
-                    vault: vault
-                ))
-            case .swap(let fromCoin):
-                router.navigate(to: VaultRoute.swap(fromCoin: fromCoin, toCoin: nil, vault: vault))
-            case .function(let coin):
-                router.navigate(to: FunctionCallRoute.details(
-                    defaultCoin: coin,
-                    sendTx: sendTx,
-                    vault: vault
-                ))
-            case .buy:
-                // TODO: Add buy route to SendRoute if needed
-                break
-            }
-
-            showAction = false
         }
         .crossPlatformSheet(item: $coinToShow) {
             CoinDetailScreen(
@@ -287,8 +262,8 @@ private extension ChainDetailScreen {
         }
         
         guard let vaultAction else { return }
-        self.vaultAction = vaultAction
-        self.showAction = true
+
+        navigateToAction(action: vaultAction)
     }
     
     func onCopy() {
@@ -297,8 +272,11 @@ private extension ChainDetailScreen {
     
     func onCoinAction(_ action: VaultAction) {
         coinToShow = nil
-        self.vaultAction = action
-        self.showAction = true
+        navigateToAction(action: action)
+    }
+    
+    func navigateToAction(action: VaultAction) {
+        router.navigate(to: HomeRoute.vaultAction(action: action, sendTx: sendTx, vault: vault))
     }
 }
 

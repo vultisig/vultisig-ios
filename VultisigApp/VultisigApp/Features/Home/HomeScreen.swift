@@ -137,7 +137,8 @@ struct HomeScreen: View {
                                 showUpgradeVaultSheet: $showUpgradeVaultSheet,
                                 showBackupNow: $showBackupNow,
                                 showBalanceInHeader: $walletShowPortfolioHeader,
-                                shouldRefresh: $shouldRefresh
+                                shouldRefresh: $shouldRefresh,
+                                onCamera: onCamera
                             )
                         case .defi:
                             DefiMainScreen(
@@ -189,7 +190,6 @@ struct HomeScreen: View {
             .onChange(of: selectedTab) { oldValue, newValue in
                 updateHeader()
                 if newValue == .camera {
-                    selectedTab = oldValue
                     onCamera()
                 }
             }

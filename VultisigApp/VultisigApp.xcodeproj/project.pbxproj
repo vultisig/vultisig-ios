@@ -222,6 +222,7 @@
 		13732CC92EBE33DC00B6AA0C /* MintTransactionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13732CC62EBE33DC00B6AA0C /* MintTransactionViewModel.swift */; };
 		13732CCA2EBE33DC00B6AA0C /* MintTransactionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13732CC72EBE33DC00B6AA0C /* MintTransactionScreen.swift */; };
 		13732CCD2EBE346D00B6AA0C /* AmountFunctionTransactionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13732CCC2EBE346200B6AA0C /* AmountFunctionTransactionScreen.swift */; };
+		137561DC2EF05CDB00FBCEC3 /* ChainDetailScreenContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137561DB2EF05CD400FBCEC3 /* ChainDetailScreenContainer.swift */; };
 		137587032E56151B0048C795 /* SettingsOptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137587022E56151B0048C795 /* SettingsOptionView.swift */; };
 		137650832E8DC1060012C60A /* VaultMainScreenScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137650822E8DC0FE0012C60A /* VaultMainScreenScrollView.swift */; };
 		1377C8DE2E5F9855006DC969 /* VaultBackupSelectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1377C8DD2E5F984C006DC969 /* VaultBackupSelectionScreen.swift */; };
@@ -1477,6 +1478,7 @@
 		13732CC62EBE33DC00B6AA0C /* MintTransactionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MintTransactionViewModel.swift; sourceTree = "<group>"; };
 		13732CC72EBE33DC00B6AA0C /* MintTransactionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MintTransactionScreen.swift; sourceTree = "<group>"; };
 		13732CCC2EBE346200B6AA0C /* AmountFunctionTransactionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountFunctionTransactionScreen.swift; sourceTree = "<group>"; };
+		137561DB2EF05CD400FBCEC3 /* ChainDetailScreenContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailScreenContainer.swift; sourceTree = "<group>"; };
 		137587022E56151B0048C795 /* SettingsOptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsOptionView.swift; sourceTree = "<group>"; };
 		137650822E8DC0FE0012C60A /* VaultMainScreenScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainScreenScrollView.swift; sourceTree = "<group>"; };
 		1377C8DD2E5F984C006DC969 /* VaultBackupSelectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBackupSelectionScreen.swift; sourceTree = "<group>"; };
@@ -3045,6 +3047,7 @@
 		1336BB2F2E81739C00597070 /* ChainDetail */ = {
 			isa = PBXGroup;
 			children = (
+				137561DB2EF05CD400FBCEC3 /* ChainDetailScreenContainer.swift */,
 				1336BB382E8175FC00597070 /* View */,
 				1336BB352E81755300597070 /* Model */,
 				1336BB322E81752700597070 /* ViewModel */,
@@ -6782,6 +6785,7 @@
 				13A74CD22ED3D91C00B97173 /* MayaBondMetrics.swift in Sources */,
 				13A74CD32ED3D91C00B97173 /* MayaChainStakingAPI.swift in Sources */,
 				13A74CD42ED3D91C00B97173 /* MayaChainAPIService+Staking.swift in Sources */,
+				137561DC2EF05CDB00FBCEC3 /* ChainDetailScreenContainer.swift in Sources */,
 				13A078622E845AEB0093496F /* CommonListItemContainer.swift in Sources */,
 				B5A41F642DAB33E70075E921 /* FunctionCallCosmosMerge.swift in Sources */,
 				B5A41F652DAB33E70075E921 /* FunctionCallCosmosUnmerge.swift in Sources */,

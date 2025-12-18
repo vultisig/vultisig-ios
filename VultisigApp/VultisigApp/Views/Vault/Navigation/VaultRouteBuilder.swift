@@ -134,7 +134,7 @@ struct VaultRouteBuilder {
     
     @ViewBuilder
     func buildChainDetailScreen(groupedChain: GroupedChain, vault: Vault) -> some View {
-        ChainDetailScreen(group: groupedChain, vault: vault)
+        ChainDetailScreenContainer(group: groupedChain, vault: vault)
     }
     
     @ViewBuilder

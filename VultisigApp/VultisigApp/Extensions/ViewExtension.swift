@@ -56,4 +56,12 @@ extension View {
             self
         }
     }
+    
+    @ViewBuilder func supportsLiquidGlass<Content: View>(transform: (Self, Bool) -> Content) -> some View {
+        if #available(iOS 26.0, *) {
+            transform(self, true)
+        } else {
+            transform(self, false)
+        }
+    }
 }

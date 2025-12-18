@@ -39,7 +39,6 @@ struct VaultSetupScreen: View {
             nameSection
             emailSection
             passwordSection
-                .padding(.bottom, 300)
         }
         .onLoad {
             focusedFieldBinding = .name
@@ -49,6 +48,9 @@ struct VaultSetupScreen: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 focusedField = newValue
             }
+        }
+        .onSubmit {
+            onContinue()
         }
     }
     
@@ -170,9 +172,6 @@ struct VaultSetupScreen: View {
                     )
                     .focused($focusedField, equals: .hint)
                 }
-            }
-            .onSubmit {
-                onContinue()
             }
         }
     }

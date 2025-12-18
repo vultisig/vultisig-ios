@@ -33,15 +33,11 @@ struct KeyImportActiveChainsView: View {
                 Text(String(format: "foundActiveChainsTitle".localized, activeChains.count))
                     .font(Theme.fonts.title2)
                     .foregroundStyle(Theme.colors.textPrimary)
-                CustomHighlightText(
-                    String(format: "foundActiveChainsSubtitle".localized, minutes),
-                    highlight: String(format: "foundActiveChainsSubtitleHighlight".localized, minutes),
-                    style: Theme.colors.textPrimary
-                )
-                .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textExtraLight)
-                .frame(maxWidth: 330)
-                .multilineTextAlignment(.center)
+                Text("foundActiveChainsSubtitle".localized)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .frame(maxWidth: 330)
+                    .multilineTextAlignment(.center)
             }
             
             ZStack(alignment: .bottom) {

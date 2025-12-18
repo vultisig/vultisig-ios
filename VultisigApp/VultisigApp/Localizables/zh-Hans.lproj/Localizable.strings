@@ -1089,7 +1089,7 @@
 "yourSeedphrase" = "您的助记词";
 "yourSeedphraseSubtitle" = "输入它，创建保险库，永不回头";
 "twoDevices" = "2台设备";
-"twoDevicesSubtitle" = "您需要2台设备（手机、笔记本电脑、浏览器、iPad等）";
+"twoDevicesSubtitle" = "任何可以运行Vultisig的设备都可以使用。";
 "mnemonicPlaceholder" = "输入您的助记词的12个或24个单词";
 "enterYourSeedphrase" = "输入您的助记词";
 "enterYourSeedphraseSubtitle" = "在每个单词之间留一个空格。支持12或24个单词的助记词。";
@@ -1099,6 +1099,9 @@
 "scanningForChainsSubtitle" = "我们正在检查哪些区块链有与您的助记词相关联的活跃地址。此过程可能需要长达2分钟。";
 "scanningForChainsSubtitleHighlight" = "此过程可能需要长达2分钟。";
 "selectChainsManually" = "手动选择链";
+"noActiveChainsFound" = "未找到活跃链";
+"noActiveChainsFoundSubtitle" = "我们未在此助记词中检测到任何资产。\n每增加一条链都会增加生成保险库的时间和超时的可能性。";
+"addCustomChains" = "添加自定义链";
 "foundActiveChainsTitle" = "我们找到了%d条活跃链";
 "foundActiveChainsSubtitle" = "每增加一条链大约会使生成保险库的时间翻倍。所有选定链的预计时间：%d分钟";
 "foundActiveChainsSubtitleHighlight" = "%d分钟";
@@ -1118,5 +1121,7 @@
 "vaultSharesTitle" = "保险库份额，请妥善保管以访问您的保险库";
 "vaultSharesTitleHighlight" = "保险库份额";
 "whatAreVaultShares" = "什么是保险库份额？";
-"whatAreVaultSharesDescription" = "您的保险库被分成称为保险库份额的部分，而不是一个助记词。每台设备持有一个保险库份额。单个份额本身不起作用，但组合这些份额可以让您访问保险库。这就是为什么备份它们很重要。每台设备都有一个保险库份额，服务器也有，我们现在就来做。";
-"whatAreVaultSharesDescriptionHighlight" = "每台设备都有一个保险库份额，服务器也有，我们现在就来做。";
+"whatAreVaultSharesDescription" = "您的保险库被分成称为保险库份额的部分，而不是一个助记词。每台设备持有一个保险库份额。单个份额本身不起作用，但组合这些份额可以让您访问保险库。这就是为什么备份它们很重要。";
+"whatAreVaultSharesDescription2" = "每台设备都有一个保险库份额，服务器也有，我们现在就来做。";
+"appStoreReady" = "App Store就绪";
+"appStoreReadyDescription" = "此保险库已准备好使用第一批可安全自动化管理您资金的自托管应用程序！";

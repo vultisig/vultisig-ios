@@ -16,6 +16,7 @@ struct VaultMainScreen: View {
     @Binding var showBackupNow: Bool
     @Binding var showBalanceInHeader: Bool
     @Binding var shouldRefresh: Bool
+    var onCamera: () -> Void
     
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var viewModel: VaultDetailViewModel
@@ -118,6 +119,11 @@ struct VaultMainScreen: View {
             guard newValue else { return }
             shouldRefresh = false
             refresh()
+        }
+        .onChange(of: vault.coins) { oldValue, newValue in
+            if oldValue.count != newValue.count {
+                refresh()
+            }
         }
     }
     
@@ -304,7 +310,8 @@ struct VaultMainScreen: View {
         showUpgradeVaultSheet: .constant(false),
         showBackupNow: .constant(false),
         showBalanceInHeader: .constant(false),
-        shouldRefresh: .constant(false)
+        shouldRefresh: .constant(false),
+        onCamera: {}
     )
     .environmentObject(HomeViewModel())
     .environmentObject(VaultDetailViewModel())

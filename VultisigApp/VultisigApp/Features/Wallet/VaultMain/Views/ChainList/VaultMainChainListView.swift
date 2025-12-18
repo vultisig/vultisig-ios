@@ -38,8 +38,8 @@ struct VaultMainChainListView: View {
 }
 
 #Preview {
-    VaultMainChainListView(vault: .example) { _ in
-    } onCustomizeChains: {
-        
-    }.environmentObject(VaultDetailViewModel())
+    VaultMainChainListView(vault: .example)
+    { _ in }
+    onCustomizeChains: {}
+    .environmentObject(VaultDetailViewModel())
 }
