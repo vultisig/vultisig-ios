@@ -14,7 +14,7 @@ extension CircleDashboardView {
             VaultMainScreenBackground()
             
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: CircleConstants.Design.verticalSpacing) {
                     topBanner
                     
                     VStack(alignment: .leading, spacing: 8) {
@@ -28,23 +28,22 @@ extension CircleDashboardView {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 16)
                     
-                    if showInfoBanner {
-                        InfoBannerView(
-                            description: NSLocalizedString("circleDashboardInfoText", comment: "Funds remain..."),
-                            type: .info,
-                            leadingIcon: "info.circle",
-                            onClose: {
-                                withAnimation { showInfoBanner = false }
-                            }
-                        )
-                        .padding(.horizontal, 16)
-                    }
+                    InfoBannerView(
+                        description: NSLocalizedString("circleDashboardInfoText", comment: "Funds remain..."),
+                        type: .info,
+                        leadingIcon: nil,
+                        onClose: {
+                            withAnimation { showInfoBanner = false }
+                        }
+                    )
+                    .showIf(showInfoBanner)
                     
                     usdcDepositedCard
                 }
-                .padding(.vertical, 20)
+                .padding(.top, CircleConstants.Design.mainViewTopPadding)
+                .padding(.bottom, CircleConstants.Design.mainViewBottomPadding)
+                .padding(.horizontal, CircleConstants.Design.horizontalPadding)
             }
             .refreshable {
                 await loadData()

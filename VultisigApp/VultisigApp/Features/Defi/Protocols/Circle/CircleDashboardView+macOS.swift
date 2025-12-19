@@ -14,7 +14,7 @@ extension CircleDashboardView {
             VaultMainScreenBackground()
             
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: CircleConstants.Design.verticalSpacing) {
                     topBanner
                     
                     headerDescription
@@ -25,7 +25,9 @@ extension CircleDashboardView {
                     
                     usdcDepositedCard
                 }
-                .padding(.vertical, 20)
+                .padding(.top, CircleConstants.Design.mainViewTopPadding)
+                .padding(.bottom, CircleConstants.Design.mainViewBottomPadding)
+                .padding(.horizontal, CircleConstants.Design.horizontalPadding)
             }
         }
         .onAppear {
@@ -51,19 +53,19 @@ extension CircleDashboardView {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 16)
+
     }
     
     var infoBanner: some View {
         InfoBannerView(
             description: NSLocalizedString("circleDashboardInfoText", comment: "Funds remain..."),
             type: .info,
-            leadingIcon: "info.circle",
+            leadingIcon: nil,
             onClose: {
                 withAnimation { showInfoBanner = false }
             }
         )
-        .padding(.horizontal, 16)
+
     }
 }
 #endif

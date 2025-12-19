@@ -63,15 +63,14 @@ struct CircleWithdrawView: View {
             Spacer()
             
             Text(NSLocalizedString("circleWithdrawTitle", comment: "Withdraw from Circle"))
-                .font(.headline)
-                .bold()
+                .font(Theme.fonts.bodyLMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
             
             Spacer()
             
             Color.clear.frame(width: 40, height: 40)
         }
-        .padding()
+        .padding(CircleConstants.Design.horizontalPadding)
     }
     
     var footerView: some View {
@@ -92,16 +91,16 @@ struct CircleWithdrawView: View {
             
             withdrawButton
         }
-        .padding()
+        .padding(CircleConstants.Design.horizontalPadding)
         .background(Theme.colors.bgPrimary)
     }
     
     var scrollableContent: some View {
-        VStack(spacing: 24) {
-            VStack(spacing: 24) {
+        VStack(spacing: CircleConstants.Design.verticalSpacing) {
+            VStack(spacing: CircleConstants.Design.verticalSpacing) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(NSLocalizedString("circleWithdrawAmount", comment: "Amount"))
-                        .font(.subheadline)
+                        .font(CircleConstants.Fonts.subtitle)
                         .foregroundStyle(Theme.colors.textLight)
                     
                     Divider()
@@ -113,17 +112,16 @@ struct CircleWithdrawView: View {
                         amountTextField
                         
                         Text("USDC")
-                            .font(.title2)
-                            .bold()
+                            .font(Theme.fonts.bodyLMedium)
                             .foregroundStyle(Theme.colors.textLight)
                     }
                     .frame(maxWidth: .infinity)
                     
                     Text("\(Int(percentage))%")
-                        .font(.caption)
+                        .font(CircleConstants.Fonts.subtitle)
                         .foregroundStyle(Theme.colors.textLight)
                 }
-                .padding(.vertical, 20)
+                .padding(.vertical, CircleConstants.Design.verticalSpacing)
                 
                 Slider(value: Binding(
                     get: { percentage },
@@ -136,29 +134,29 @@ struct CircleWithdrawView: View {
                 
                 HStack {
                     Text(NSLocalizedString("circleDepositBalanceAvailable", comment: "Balance available:"))
-                        .font(.caption)
+                        .font(CircleConstants.Fonts.subtitle)
                         .foregroundStyle(Theme.colors.textLight)
                     
                     Spacer()
                     
                     Text("\(model.balance.formatted()) USDC")
-                        .font(.caption)
+                        .font(CircleConstants.Fonts.subtitle)
                         .bold()
                         .foregroundStyle(Theme.colors.textPrimary)
                 }
             }
-            .padding(24)
+            .padding(CircleConstants.Design.cardPadding)
             .background(
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: CircleConstants.Design.cornerRadius)
                     .fill(Theme.colors.bgSecondary)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 16)
+                        RoundedRectangle(cornerRadius: CircleConstants.Design.cornerRadius)
                             .stroke(Theme.colors.borderLight, lineWidth: 1)
                     )
             )
-            .padding(.horizontal)
+            .padding(.horizontal, CircleConstants.Design.horizontalPadding)
         }
-        .padding(.top, 20)
+        .padding(.top, CircleConstants.Design.verticalSpacing)
     }
     
     var amountTextField: some View {

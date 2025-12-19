@@ -24,13 +24,12 @@ struct CircleDashboardView: View {
     var topBanner: some View {
         HStack {
             VStack(alignment: .leading, spacing: 8) {
-                Text(NSLocalizedString("circleDashboardCircleUSDCAccount", comment: "Circle USDC Account"))
-                    .font(.subheadline)
-                    .bold()
+                Text(NSLocalizedString("circleSetupAccountTitle", comment: "Circle USDC Account"))
+                    .font(CircleConstants.Fonts.title)
                     .foregroundStyle(Theme.colors.textLight)
                 
                 Text("$\(walletUSDCBalance.formatted())")
-                    .font(.system(size: 32, weight: .bold))
+                    .font(CircleConstants.Fonts.balance)
                     .foregroundStyle(Theme.colors.textPrimary)
             }
             Spacer()
@@ -46,17 +45,23 @@ struct CircleDashboardView: View {
                     )
                 )
         }
-        .padding(24)
+        .padding(CircleConstants.Design.cardPadding)
         .background(cardBackground)
-        .padding(.horizontal)
     }
     
     var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 16)
-            .fill(Theme.colors.bgSecondary)
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(Theme.colors.borderLight, lineWidth: 1)
+        RoundedRectangle(cornerRadius: CircleConstants.Design.cornerRadius)
+            .inset(by: 0.5)
+            .stroke(Color(hex: "34E6BF").opacity(0.17))
+            .fill(
+                LinearGradient(
+                    stops: [
+                        Gradient.Stop(color: Color(hex: "34E6BF"), location: 0.00),
+                        Gradient.Stop(color: Color(red: 0.11, green: 0.5, blue: 0.42).opacity(0), location: 1.00),
+                    ],
+                    startPoint: UnitPoint(x: 0.5, y: 0),
+                    endPoint: UnitPoint(x: 0.5, y: 1)
+                ).opacity(0.09)
             )
     }
     
@@ -65,57 +70,45 @@ struct CircleDashboardView: View {
             HStack(spacing: 12) {
                 Image("usdc")
                     .resizable()
-                    .frame(width: 32, height: 32)
+                    .frame(width: 39, height: 39)
                     .clipShape(Circle())
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(NSLocalizedString("circleDashboardUSDCDeposited", comment: "USDC deposited"))
-                        .font(.caption)
+                        .font(CircleConstants.Fonts.subtitle)
                         .foregroundStyle(Theme.colors.textLight)
                     
                     Text("\(model.balance.formatted()) USDC")
-                        .font(.title2)
-                        .bold()
+                        .font(Theme.fonts.priceBodyL)
                         .foregroundStyle(Theme.colors.textPrimary)
                     
                     Text("$\(model.balance.formatted())")
-                        .font(.caption)
+                        .font(CircleConstants.Fonts.subtitle)
                         .foregroundStyle(Theme.colors.textLight)
                 }
                 Spacer()
             }
             
-            HStack(spacing: 12) {
+            VStack {
                 DefiButton(
                     title: NSLocalizedString("circleDashboardWithdraw", comment: "Withdraw"),
-                    icon: "arrow.up.right",
+                    icon: "arrow.down",
+                    type: .outline,
+                    isSystemIcon: true,
                     action: { model.showWithdraw = true }
                 )
                 .disabled(model.balance <= 0)
                 
                 DefiButton(
                     title: NSLocalizedString("circleDashboardDepositUSDC", comment: "Deposit"),
-                    icon: "arrow.down.left",
+                    icon: "arrow.up",
+                    isSystemIcon: true,
                     action: { model.showDeposit = true }
                 )
             }
         }
-        .padding(24)
+        .padding(CircleConstants.Design.cardPadding)
         .background(cardBackground)
-        .padding(.horizontal)
-    }
-    
-    func detailRow(title: String, value: String) -> some View {
-        HStack {
-            Text(title)
-                .font(.subheadline)
-                .foregroundStyle(Theme.colors.textLight)
-            Spacer()
-            Text(value)
-                .font(.subheadline)
-                .bold()
-                .foregroundStyle(Theme.colors.textPrimary)
-        }
     }
     
     func loadData() async {

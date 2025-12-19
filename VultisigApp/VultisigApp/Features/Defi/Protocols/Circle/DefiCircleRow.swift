@@ -61,7 +61,7 @@ struct DefiCircleRow: View {
             }
         }
         .padding(.vertical, 12)
-        .padding(.horizontal, 16)
+        .padding(.horizontal, CircleConstants.Design.horizontalPadding)
         .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
         .buttonStyle(.plain)

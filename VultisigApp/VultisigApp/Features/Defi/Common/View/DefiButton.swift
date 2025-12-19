@@ -9,18 +9,20 @@ import SwiftUI
 
 struct DefiButton: View {
     let title: String
-    let icon: String
+    let icon: String?
     let type: ButtonType
+    let isSystemIcon: Bool
     let action: () -> Void
     
     @Environment(\.isEnabled) var isEnabled
     
     let iconSize: CGFloat = 12
     let iconPadding: CGFloat = 4
-    init(title: String, icon: String, type: ButtonType = .primary, action: @escaping () -> Void) {
+    init(title: String, icon: String? = nil, type: ButtonType = .primary, isSystemIcon: Bool = false, action: @escaping () -> Void) {
         self.title = title
         self.icon = icon
         self.type = type
+        self.isSystemIcon = isSystemIcon
         self.action = action
     }
     
@@ -31,18 +33,21 @@ struct DefiButton: View {
             #endif
             action()
         } label: {
-            PrimaryButtonView(title: title, paddingLeading: (iconSize * 2 + iconPadding) / 2)
+            PrimaryButtonView(title: title, paddingLeading: icon != nil ? (iconSize * 2 + iconPadding) / 2 : 0)
         }
         .buttonStyle(PrimaryButtonStyle(type: type,size: .small))
         .overlay(iconView, alignment: .leading)
     }
     
+    @ViewBuilder
     var iconView: some View {
-        Icon(named: icon, color: Theme.colors.textPrimary, size: iconSize)
-            .padding(iconSize)
-            .background(Circle().fill(.white.opacity(0.12)))
-            .padding(.leading, iconPadding)
-            .opacity(isEnabled ? 1 : 0.5)
+        if let icon {
+            Icon(named: icon, color: Theme.colors.textPrimary, size: iconSize, isSystem: isSystemIcon)
+                .padding(iconSize)
+                .background(Circle().fill(.white.opacity(0.12)))
+                .padding(.leading, iconPadding)
+                .opacity(isEnabled ? 1 : 0.5)
+        }
     }
 }
 

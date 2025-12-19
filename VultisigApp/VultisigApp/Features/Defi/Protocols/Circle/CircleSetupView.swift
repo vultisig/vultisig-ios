@@ -18,44 +18,50 @@ struct CircleSetupView: View {
     }
     
     var body: some View {
-        ZStack {
-            VaultMainScreenBackground()
-            
-            ScrollView {
-                VStack(spacing: 24) {
-                    topBanner
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(NSLocalizedString("circleSetupDeposited", comment: "Deposited"))
-                            .font(.headline)
+        ScrollView {
+            VStack(spacing: CircleConstants.Design.verticalSpacing) {
+                topBanner
+                
+                //TODO: reuse that on Dashboard
+                VStack(alignment: .leading, spacing: 8) {
+                    VStack(spacing: 8) {
+                        Text("circleSetupDeposited".localized)
+                            .font(Theme.fonts.bodySMedium)
                             .foregroundStyle(Theme.colors.textPrimary)
-                        
-                        Text(NSLocalizedString("circleSetupDepositDescription", comment: "Deposit your $USDC..."))
-                            .font(.body)
-                            .foregroundStyle(Theme.colors.textLight)
-                            .fixedSize(horizontal: false, vertical: true)
+                        Rectangle()
+                            .fill(Theme.colors.primaryAccent4)
+                            .frame(height: 2)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 16)
+                    .fixedSize()
+                    Spacer()
                     
-                    if showInfoBanner {
-                        InfoBannerView(
-                            description: NSLocalizedString("circleSetupInfoText", comment: "Funds remain..."),
-                            type: .info,
-                            leadingIcon: "info.circle",
-                            onClose: {
-                                withAnimation { showInfoBanner = false }
-                            }
-                        )
-                        .padding(.horizontal, 16)
-                    }
-                    
-                    bottomCard
+                    Text("circleSetupDepositDescription".localized)
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                .padding(.vertical, 20)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                
+                InfoBannerView(
+                    description: "circleSetupInfoText".localized,
+                    type: .info,
+                    leadingIcon: nil,
+                    onClose: {
+                        withAnimation { showInfoBanner = false }
+                    }
+                )
+                .showIf(showInfoBanner)
+                
+                bottomCard
             }
+            .padding(.top, CircleConstants.Design.mainViewTopPadding)
+            .padding(.bottom, CircleConstants.Design.mainViewBottomPadding)
+            .padding(.horizontal, CircleConstants.Design.horizontalPadding)
         }
+        .background(VaultMainScreenBackground())
         .navigationTitle("")
+        .navigationBarBackButtonHidden(true)
         .toolbar {
             toolbarContent
         }
@@ -65,12 +71,11 @@ struct CircleSetupView: View {
         HStack {
             VStack(alignment: .leading, spacing: 8) {
                 Text(NSLocalizedString("circleSetupAccountTitle", comment: "Circle USDC Account"))
-                    .font(.subheadline)
-                    .bold()
+                    .font(CircleConstants.Fonts.title)
                     .foregroundStyle(Theme.colors.textLight)
                 
                 Text("$\(walletUSDCBalance.formatted())")
-                    .font(.system(size: 32, weight: .bold))
+                    .font(CircleConstants.Fonts.balance)
                     .foregroundStyle(Theme.colors.textPrimary)
             }
             Spacer()
@@ -86,13 +91,12 @@ struct CircleSetupView: View {
                     )
                 )
         }
-        .padding(24)
+        .padding(CircleConstants.Design.cardPadding)
         .background(cardBackground)
-        .padding(.horizontal, 16)
     }
     
     var bottomCard: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: CircleConstants.Design.cardPadding) {
             HStack(spacing: 12) {
                 Image("usdc")
                     .resizable()
@@ -101,12 +105,11 @@ struct CircleSetupView: View {
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(NSLocalizedString("circleSetupUSDCDeposited", comment: "USDC deposited"))
-                        .font(.caption)
+                        .font(CircleConstants.Fonts.subtitle)
                         .foregroundStyle(Theme.colors.textLight)
                     
                     Text("\(model.balance.formatted()) USDC")
-                        .font(.title2)
-                        .bold()
+                        .font(Theme.fonts.priceBodyL)
                         .foregroundStyle(Theme.colors.textPrimary)
                 }
                 Spacer()
@@ -114,20 +117,19 @@ struct CircleSetupView: View {
             
             DefiButton(
                 title: NSLocalizedString("circleSetupOpenAccount", comment: "Open Account"),
-                icon: "arrow.right",
+                icon: nil,
                 action: {
                     Task { await createWallet() }
                 }
             )
             .disabled(model.isLoading)
         }
-        .padding(24)
+        .padding(CircleConstants.Design.cardPadding)
         .background(cardBackground)
-        .padding(.horizontal, 16)
     }
     
     var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 16)
+        RoundedRectangle(cornerRadius: CircleConstants.Design.cornerRadius)
             .inset(by: 0.5)
             .stroke(Color(hex: "34E6BF").opacity(0.17))
             .fill(
