@@ -18,10 +18,10 @@ struct AddressResult {
         self.amount = amount
     }
     
-    static func fromURI(_ uri: String) -> AddressResult? {
+    static func fromURI(_ uri: String) -> AddressResult {
         guard URLComponents(string: uri) != nil else {
-            print("Invalid URI")
-            return nil
+            // Validate up
+            return .init(address: uri)
         }
         
         let (address, amount, message) = Utils.parseCryptoURI(uri)

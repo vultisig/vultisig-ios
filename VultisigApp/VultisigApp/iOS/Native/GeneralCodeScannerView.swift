@@ -31,17 +31,6 @@ struct GeneralCodeScannerView: View {
             showScanner: $showSheet
         ) { result in
             handle(urlString: result)
-        } handleScan: { result in
-            handleScan(result: result)
-        }
-    }
-    
-    private func handleScan(result: Result<ScanResult, ScanError>) {
-        switch result {
-        case .success(let result):
-            handle(urlString: result.string)
-        case .failure(_):
-            return
         }
     }
     
