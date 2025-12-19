@@ -1176,3 +1176,4 @@
 "whatAreVaultSharesDescription2" = "Jedes Gerät hat einen Tresor-Anteil, auch der Server, das machen wir jetzt.";
 "appStoreReady" = "App Store bereit";
 "appStoreReadyDescription" = "Dieser Tresor ist bereit, die ersten selbstverwahrenden Apps zu nutzen, die Ihre Mittel sicher automatisieren!";
+"noBarcodesFound" = "Keine Barcodes gefunden";

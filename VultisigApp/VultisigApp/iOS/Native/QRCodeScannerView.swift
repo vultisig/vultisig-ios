@@ -13,10 +13,10 @@ import AVFoundation
 struct QRCodeScannerView: View {
     @Binding var showScanner: Bool
     var handleImport: (String) -> Void
-    var handleScan: (Result<ScanResult, ScanError>) -> Void
     
     @State var isGalleryPresented = false
     @State var isFilePresented = false
+    @State var showErrorPopup = false
     
     private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     
@@ -24,6 +24,7 @@ struct QRCodeScannerView: View {
         ZStack {
             cameraView
             content
+            PopupCapsule(text: "noBarcodesFound".localized, showPopup: $showErrorPopup)
         }
         .frame(maxWidth: idiom == .pad ? .infinity : nil, maxHeight: idiom == .pad ? .infinity : nil)
         .ignoresSafeArea()
@@ -32,13 +33,11 @@ struct QRCodeScannerView: View {
             allowedContentTypes: [UTType.image],
             allowsMultipleSelection: false
         ) { result in
-            do {
-                let qrCode = try Utils.handleQrCodeFromImage(result: result)
-                guard let result = String(data: qrCode, encoding: .utf8) else { return }
-                handleImport(result)
-            } catch {
-                print(error)
-            }
+                if let qrCode = try? Utils.handleQrCodeFromImage(result: result), let result = String(data: qrCode, encoding: .utf8) {
+                    handleImport(result)
+                } else {
+                    showErrorPopup = true
+                }
         }
     }
     
@@ -87,9 +86,15 @@ struct QRCodeScannerView: View {
             CodeScannerView(
                 codeTypes: [.qr],
                 isGalleryPresented: $isGalleryPresented,
-                videoCaptureDevice: AVCaptureDevice.zoomedCameraForQRCode(withMinimumCodeSize: 100),
-                completion: handleScan
-            )
+                videoCaptureDevice: AVCaptureDevice.zoomedCameraForQRCode(withMinimumCodeSize: 100)
+            ) { result in
+                switch result {
+                case .success(let success):
+                    handleImport(success.string)
+                case .failure(_):
+                    showErrorPopup = true
+                }
+            }
             
             overlay
         }

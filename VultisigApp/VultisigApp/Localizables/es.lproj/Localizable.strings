@@ -1177,3 +1177,4 @@
 "whatAreVaultSharesDescription2" = "Cada dispositivo tiene una parte de bóveda, también el servidor, lo haremos ahora.";
 "appStoreReady" = "Listo para App Store";
 "appStoreReadyDescription" = "¡Esta bóveda está lista para usar las primeras aplicaciones de autocustodia que automatizan tus fondos de forma segura!";
+"noBarcodesFound" = "No se encontraron códigos de barras";

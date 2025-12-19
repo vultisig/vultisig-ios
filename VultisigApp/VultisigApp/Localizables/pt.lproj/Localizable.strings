@@ -1176,3 +1176,4 @@
 "whatAreVaultSharesDescription2" = "Cada dispositivo tem uma parte do cofre, também o servidor, faremos isso agora.";
 "appStoreReady" = "Pronto para App Store";
 "appStoreReadyDescription" = "Este cofre está pronto para usar os primeiros aplicativos de autocustódia que automatizam seus fundos com segurança!";
+"noBarcodesFound" = "Nenhum código de barras encontrado";
