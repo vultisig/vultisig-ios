@@ -13,6 +13,7 @@ struct CircleSetupView: View {
     @Environment(\.dismiss) var dismiss
     
     @State var showInfoBanner = true
+    @State var showError = false
     
     var walletUSDCBalance: Decimal {
         return CircleViewLogic.getWalletUSDCBalance(vault: vault)
@@ -68,6 +69,15 @@ struct CircleSetupView: View {
         #if os(iOS)
         .navigationBarHidden(true)
         #endif
+        .alert(isPresented: $showError) {
+            Alert(
+                title: Text(NSLocalizedString("error", comment: "Error")),
+                message: Text(model.error?.localizedDescription ?? NSLocalizedString("somethingWentWrongTryAgain", comment: "Something went wrong")),
+                dismissButton: .default(Text(NSLocalizedString("ok", comment: "OK"))) {
+                    model.error = nil
+                }
+            )
+        }
     }
     
     var headerView: some View {
@@ -123,6 +133,18 @@ struct CircleSetupView: View {
         .background(cardBackground)
     }
     
+    var hasAccount: Bool {
+        vault.circleWalletAddress != nil
+    }
+    
+    var bottomCardLabel: String {
+        if hasAccount || model.balance > 0 {
+            return NSLocalizedString("circleSetupUSDCDeposited", comment: "USDC deposited")
+        } else {
+            return NSLocalizedString("circleSetupAccountBalance", comment: "Circle Account Balance")
+        }
+    }
+    
     var bottomCard: some View {
         VStack(spacing: CircleConstants.Design.cardPadding) {
             HStack(spacing: 12) {
@@ -132,7 +154,7 @@ struct CircleSetupView: View {
                     .clipShape(Circle())
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(NSLocalizedString("circleSetupUSDCDeposited", comment: "USDC deposited"))
+                    Text(bottomCardLabel)
                         .font(CircleConstants.Fonts.subtitle)
                         .foregroundStyle(Theme.colors.textLight)
                     
@@ -184,6 +206,7 @@ struct CircleSetupView: View {
             await MainActor.run {
                 model.error = error
                 model.isLoading = false
+                showError = true
             }
         }
     }

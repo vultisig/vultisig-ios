@@ -42,6 +42,17 @@ extension CircleDashboardView {
                         )
                         .showIf(showInfoBanner)
                         
+                        if let error = model.error {
+                            InfoBannerView(
+                                description: error.localizedDescription,
+                                type: .error,
+                                leadingIcon: nil,
+                                onClose: {
+                                    withAnimation { model.error = nil }
+                                }
+                            )
+                        }
+                        
                         usdcDepositedCard
                     }
                     .padding(.top, CircleConstants.Design.mainViewTopPadding)

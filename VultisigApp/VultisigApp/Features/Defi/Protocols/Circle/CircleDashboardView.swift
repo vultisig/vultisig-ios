@@ -157,9 +157,10 @@ struct CircleDashboardView: View {
                 model.ethBalance = ethBalance
             }
         } catch {
-            print(
-                "Error to load the data for Circle: \(error.localizedDescription)"
-            )
+            print("Error loading Circle data: \(error.localizedDescription)")
+            await MainActor.run {
+                model.error = error
+            }
         }
     }
 }
