@@ -11,7 +11,7 @@ import SwiftUI
 extension CircleWithdrawView {
     var main: some View {
         content
-            .background(Theme.colors.bgPrimary)
+            .background(VaultMainScreenBackground())
             .navigationBarBackButtonHidden(true)
             .onAppear {
                 Task {

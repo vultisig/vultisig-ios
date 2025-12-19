@@ -4549,19 +4549,6 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
-		2C72345018432546F4D894E5 /* Actions */ = {
-			isa = PBXGroup;
-			children = (
-				6B96312D2493F377B159E118 /* CircleDepositView.swift */,
-				6B96312D2493F377B159E119 /* CircleDepositView+iOS.swift */,
-				6B96312D2493F377B159E11A /* CircleDepositView+macOS.swift */,
-				BA94F61754C5BFEECCC60925 /* CircleWithdrawView.swift */,
-				BA94F61754C5BFEECCC60926 /* CircleWithdrawView+iOS.swift */,
-				BA94F61754C5BFEECCC60927 /* CircleWithdrawView+macOS.swift */,
-			);
-			path = Actions;
-			sourceTree = "<group>";
-		};
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
@@ -4784,7 +4771,12 @@
 				35953B42171F515630BA7E9C /* CircleView+iOS.swift */,
 				35953B42171F515630BA7E9D /* CircleView+macOS.swift */,
 				8BE8825D6F0DBD6E8F28CB49 /* DefiCircleRow.swift */,
-				2C72345018432546F4D894E5 /* Actions */,
+				6B96312D2493F377B159E118 /* CircleDepositView.swift */,
+				6B96312D2493F377B159E119 /* CircleDepositView+iOS.swift */,
+				6B96312D2493F377B159E11A /* CircleDepositView+macOS.swift */,
+				BA94F61754C5BFEECCC60925 /* CircleWithdrawView.swift */,
+				BA94F61754C5BFEECCC60926 /* CircleWithdrawView+iOS.swift */,
+				BA94F61754C5BFEECCC60927 /* CircleWithdrawView+macOS.swift */,
 			);
 			path = Circle;
 			sourceTree = "<group>";

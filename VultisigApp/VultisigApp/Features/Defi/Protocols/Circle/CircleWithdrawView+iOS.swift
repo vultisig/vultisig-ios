@@ -11,7 +11,7 @@ import SwiftUI
 extension CircleWithdrawView {
     var main: some View {
         ZStack {
-            Theme.colors.bgPrimary.ignoresSafeArea()
+            VaultMainScreenBackground()
             content
         }
         .navigationBarBackButtonHidden(true)

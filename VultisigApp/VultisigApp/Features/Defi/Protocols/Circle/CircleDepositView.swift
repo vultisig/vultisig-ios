@@ -30,7 +30,7 @@ struct CircleDepositView: View {
     var content: some View {
         VStack(spacing: 0) {
             headerView
-            scrollView
+            scrollableContent
             footerView
         }
     }
@@ -85,7 +85,7 @@ struct CircleDepositView: View {
     
     var scrollableContent: some View {
         VStack(spacing: CircleConstants.Design.verticalSpacing) {
-            VStack(spacing: CircleConstants.Design.verticalSpacing) {
+            VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(NSLocalizedString("circleDepositAmount", comment: "Amount"))
                         .font(CircleConstants.Fonts.subtitle)
@@ -94,6 +94,8 @@ struct CircleDepositView: View {
                     Divider()
                         .background(Theme.colors.textExtraLight.opacity(0.2))
                 }
+                
+                Spacer()
                 
                 VStack(spacing: 8) {
                     HStack(spacing: 4) {
@@ -109,42 +111,55 @@ struct CircleDepositView: View {
                         .font(CircleConstants.Fonts.subtitle)
                         .foregroundStyle(Theme.colors.textLight)
                 }
-                .padding(.vertical, CircleConstants.Design.verticalSpacing)
                 
-                Slider(value: Binding(
-                    get: { percentage },
-                    set: { newValue in
-                        percentage = newValue
-                        updateAmount(from: newValue)
+                Spacer()
+                
+                VStack(spacing: CircleConstants.Design.verticalSpacing) {
+                    Slider(value: Binding(
+                        get: { percentage },
+                        set: { newValue in
+                            percentage = newValue
+                            updateAmount(from: newValue)
+                        }
+                    ), in: 0...100)
+                    .accentColor(Theme.colors.primaryAccent1)
+                    
+                    HStack {
+                        Text(NSLocalizedString("circleDepositBalanceAvailable", comment: "Balance available:"))
+                            .font(CircleConstants.Fonts.subtitle)
+                            .foregroundStyle(Theme.colors.textLight)
+                        
+                        Spacer()
+                        
+                        Text("\(usdcCoin?.balanceString ?? "0") USDC")
+                            .font(CircleConstants.Fonts.subtitle)
+                            .bold()
+                            .foregroundStyle(Theme.colors.textPrimary)
                     }
-                ), in: 0...100)
-                .accentColor(Theme.colors.primaryAccent1)
-                
-                HStack {
-                    Text(NSLocalizedString("circleDepositBalanceAvailable", comment: "Balance available:"))
-                        .font(CircleConstants.Fonts.subtitle)
-                        .foregroundStyle(Theme.colors.textLight)
-                    
-                    Spacer()
-                    
-                    Text("\(usdcCoin?.balanceString ?? "0") USDC")
-                        .font(CircleConstants.Fonts.subtitle)
-                        .bold()
-                        .foregroundStyle(Theme.colors.textPrimary)
                 }
             }
             .padding(CircleConstants.Design.cardPadding)
-            .background(
-                RoundedRectangle(cornerRadius: CircleConstants.Design.cornerRadius)
-                    .fill(Theme.colors.bgSecondary)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: CircleConstants.Design.cornerRadius)
-                            .stroke(Theme.colors.borderLight, lineWidth: 1)
-                    )
-            )
+            .background(cardBackground)
             .padding(.horizontal, CircleConstants.Design.horizontalPadding)
         }
         .padding(.top, CircleConstants.Design.verticalSpacing)
+        .frame(maxHeight: .infinity)
+    }
+    
+    var cardBackground: some View {
+        RoundedRectangle(cornerRadius: CircleConstants.Design.cornerRadius)
+            .inset(by: 0.5)
+            .stroke(Color(hex: "34E6BF").opacity(0.17))
+            .fill(
+                LinearGradient(
+                    stops: [
+                        Gradient.Stop(color: Color(hex: "34E6BF"), location: 0.00),
+                        Gradient.Stop(color: Color(red: 0.11, green: 0.5, blue: 0.42).opacity(0), location: 1.00),
+                    ],
+                    startPoint: UnitPoint(x: 0.5, y: 0),
+                    endPoint: UnitPoint(x: 0.5, y: 1)
+                ).opacity(0.09)
+            )
     }
 
     var amountTextField: some View {
