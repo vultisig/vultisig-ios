@@ -25,6 +25,7 @@ struct BackupGuideAnimationView: View {
             } header: {
                 animationHeader
             }
+            .padding(.top, 32)
         }
     }
     

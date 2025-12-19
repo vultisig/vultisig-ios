@@ -1084,8 +1084,7 @@
 "scanningForChainsSubtitleHighlight" = "This process can take up to 2 minutes.";
 "importTheseChains" = "Import these chains";
 "foundActiveChainsTitle" = "We found %d active chains";
-"foundActiveChainsSubtitle" = "Each extra chain roughly doubles the time to generate your vault. Estimated time for all selected chains: %d minutes";
-"foundActiveChainsSubtitleHighlight" = "%d minutes";
+"foundActiveChainsSubtitle" = "Each extra chain increases the time to generate your vault and possibility of an timeout.";
 "selectChainsToImport" = "Select %d chains or more you want to import.";
 "addOtherChains" = "Add other chains";
 "youCanSelectXChains" = "You can only select %d chains at a time";
@@ -1107,7 +1106,7 @@
 "yourSeedphrase" = "Your seedphrase";
 "yourSeedphraseSubtitle" = "Enter it, create a vault, never look back";
 "twoDevices" = "2 devices";
-"twoDevicesSubtitle" = "You'll need 2 devices (a phone, laptop, a browser, an iPad, etc...)";
+"twoDevicesSubtitle" = "Any device that can run Vultisig will work.";
 "mnemonicPlaceholder" = "Enter the 12 or 24 words of your seedphrase";
 "enterYourSeedphrase" = "Enter your seedphrase";
 "enterYourSeedphraseSubtitle" = "Leave a space between each word. Seed phrases of 12 or 24 words are supported.";
@@ -1177,7 +1176,7 @@
 
 "selectChainsManually" = "Select chains manually";
 "noActiveChainsFound" = "No active chains found";
-"noActiveChainsFoundSubtitle" = "We didn’t detect any assets on this seedphrase. You can still continue and select chains manually.";
+"noActiveChainsFoundSubtitle" = "We didn’t detect any assets on this seed phrase.\nEach extra chain increases the time to generate your vault and possibility of an timeout.";
 "addCustomChains" = "Add custom chains";
 
 "yourNewVaultSetup" = "Your new vault setup";
@@ -1196,5 +1195,7 @@
 "vaultSharesTitle" = "Vault shares, keep these safe to access your vault";
 "vaultSharesTitleHighlight" = "Vault shares";
 "whatAreVaultShares" = "What are vault shares?";
-"whatAreVaultSharesDescription" = "Instead of one seed phrase, your vault is split into pieces called vault shares. Each device holds one vault share. A single share does nothing on its own, but combining these shares gives you access to your vault. That’s why backing them up is important. Each device has one vault share, also the server, we’ll do that now.";
-"whatAreVaultSharesDescriptionHighlight" = "Each device has one vault share, also the server, we’ll do that now.";
+"whatAreVaultSharesDescription" = "Instead of one seed phrase, your vault is split into pieces called vault shares. Each device holds one vault share. A single share does nothing on its own, but combining these shares gives you access to your vault. That’s why backing them up is important.";
+"whatAreVaultSharesDescription2" = "Each device has one vault share, also the server, we’ll do that now.";
+"appStoreReady" = "App Store Ready";
+"appStoreReadyDescription" = "This Vault is ready to use the first self-custodial Apps to securely automate your funds!";
