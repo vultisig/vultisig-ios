@@ -12,6 +12,12 @@ struct DefiMainScreen: View {
     @ObservedObject var vault: Vault
     @Binding var showBalanceInHeader: Bool
     
+    // Logic/State for Circle presence check
+    private var isCircleEnabled: Bool {
+        // Feature flag or simply always enabled as per requirements
+        return true
+    }
+    
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     
@@ -92,6 +98,14 @@ struct DefiMainScreen: View {
             .transition(.opacity)
             .frame(height: 42)
             .padding(.bottom, 16)
+            
+            // Circle Protocol Entry
+            if isCircleEnabled {
+                NavigationLink(destination: CircleView(vault: vault)) {
+                    DefiCircleRow(vault: vault)
+                        .padding(.vertical, 4) // Spacing to match list style
+                }
+            }
             
             DefiChainListView(
                 vault: vault,

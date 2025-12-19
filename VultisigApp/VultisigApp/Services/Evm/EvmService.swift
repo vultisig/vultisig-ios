@@ -179,6 +179,14 @@ enum EvmService {
         return try await (try service).getBalance(coin: coin, address: address)
     }
     
+    func getCode(address: String) async throws -> String {
+        return try await (try service).getCode(address: address)
+    }
+    
+    func fetchContractOwner(contractAddress: String) async -> String? {
+        return await (try? service)?.fetchContractOwner(contractAddress: contractAddress)
+    }
+    
     func getGasInfo(fromAddress: String, mode: FeeMode) async throws -> (gasPrice: BigInt, priorityFee: BigInt, nonce: Int64) {
         return try await (try service).getGasInfo(fromAddress: fromAddress, mode: mode)
     }
