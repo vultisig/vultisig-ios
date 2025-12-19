@@ -115,24 +115,39 @@ struct CircleApiService {
         do {
             request.httpBody = try JSONEncoder().encode(payload)
         } catch {
-             throw CircleApiError.serverError("Failed to encode payload: \(error.localizedDescription)")
+            throw CircleApiError.serverError("Failed to encode payload: \(error.localizedDescription)")
         }
         
         let (createData, createResponse) = try await URLSession.shared.data(for: request)
         
         if let httpResponse = createResponse as? HTTPURLResponse {
             if (200...299).contains(httpResponse.statusCode) {
-                // Success
-                let wallets = try JSONDecoder().decode([CircleWalletItem].self, from: createData)
-                 if let first = wallets.first {
+                // Success - API returns just the address as a string
+                if let addressString = String(data: createData, encoding: .utf8)?
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                    .replacingOccurrences(of: "\"", with: "") {
+                    if !addressString.isEmpty {
+                        return addressString
+                    }
+                }
+                
+                // Try as array of objects
+                if let wallets = try? JSONDecoder().decode([CircleWalletItem].self, from: createData),
+                   let first = wallets.first {
                     return first.address
                 }
+                
+                // Try as single object
+                if let wallet = try? JSONDecoder().decode(CircleWalletItem.self, from: createData) {
+                    return wallet.address
+                }
+                
                 throw CircleApiError.decodingError
             } else if httpResponse.statusCode == 401 {
                 throw CircleApiError.unauthorized
             } else {
-                 let errorMsg = String(data: createData, encoding: .utf8) ?? "Unknown Error"
-                 throw CircleApiError.serverError("Create failed: \(httpResponse.statusCode) - \(errorMsg)")
+                let errorMsg = String(data: createData, encoding: .utf8) ?? "Unknown Error"
+                throw CircleApiError.serverError("Create failed: \(httpResponse.statusCode) - \(errorMsg)")
             }
         }
         
