@@ -13,17 +13,18 @@ struct BackupNowDisclaimer: View {
     @Environment(\.router) var router
 
     var body: some View {
-        container
-            .listRowInsets(EdgeInsets())
-            .listRowSeparator(.hidden)
-            .padding(1)
-            .onTapGesture {
-                router.navigate(to: VaultRoute.backupPasswordOptions(
-                    tssType: .Keygen,
-                    backupType: .single(vault: vault),
-                    isNewVault: false
-                ))
-            }
+        Button {
+            router.navigate(to: VaultRoute.backupPasswordOptions(
+                tssType: .Keygen,
+                backupType: .single(vault: vault),
+                isNewVault: false
+            ))
+        } label: {
+            container
+                .listRowInsets(EdgeInsets())
+                .listRowSeparator(.hidden)
+                .padding(1)
+        }.buttonStyle(.plain)   
     }
     
     var content: some View {
