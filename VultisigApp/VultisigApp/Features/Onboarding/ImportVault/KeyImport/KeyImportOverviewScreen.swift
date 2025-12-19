@@ -20,7 +20,6 @@ struct KeyImportOverviewScreen: View {
     @State private var scrollPosition: Page? = .multisig
     
     @State private var isVerificationLinkActive = false
-    @State private var isBackupLinkActive = false
     @Environment(\.router) var router
     
     var buttonTitle: String {

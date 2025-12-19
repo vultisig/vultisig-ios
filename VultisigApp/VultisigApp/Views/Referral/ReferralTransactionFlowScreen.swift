@@ -34,7 +34,7 @@ struct ReferralTransactionFlowScreen: View {
     }
     
     var vault: Vault? {
-        referralViewModel.currentVault
+        vaultSelectionViewModel.selectedVault ?? referralViewModel.currentVault
     }
     
     var body: some View {
