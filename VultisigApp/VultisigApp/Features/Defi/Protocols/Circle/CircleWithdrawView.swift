@@ -151,27 +151,10 @@ struct CircleWithdrawView: View {
                 }
             }
             .padding(CircleConstants.Design.cardPadding)
-            .background(cardBackground)
             .padding(.horizontal, CircleConstants.Design.horizontalPadding)
         }
         .padding(.top, CircleConstants.Design.verticalSpacing)
         .frame(maxHeight: .infinity)
-    }
-    
-    var cardBackground: some View {
-        RoundedRectangle(cornerRadius: CircleConstants.Design.cornerRadius)
-            .inset(by: 0.5)
-            .stroke(Color(hex: "34E6BF").opacity(0.17))
-            .fill(
-                LinearGradient(
-                    stops: [
-                        Gradient.Stop(color: Color(hex: "34E6BF"), location: 0.00),
-                        Gradient.Stop(color: Color(red: 0.11, green: 0.5, blue: 0.42).opacity(0), location: 1.00),
-                    ],
-                    startPoint: UnitPoint(x: 0.5, y: 0),
-                    endPoint: UnitPoint(x: 0.5, y: 1)
-                ).opacity(0.09)
-            )
     }
     
     var amountTextField: some View {

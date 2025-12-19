@@ -11,7 +11,7 @@ import SwiftUI
 extension CircleDepositView {
     var main: some View {
         content
-            .background(VaultMainScreenBackground())
+             .background(VaultMainScreenBackground())
             .navigationBarBackButtonHidden(true)
             .onAppear {
                 Task { await loadData() }
