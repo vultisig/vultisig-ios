@@ -1176,3 +1176,4 @@
 "whatAreVaultSharesDescription2" = "Svaki uređaj ima jedan udio trezora, također i poslužitelj, to ćemo učiniti sada.";
 "appStoreReady" = "Spremno za App Store";
 "appStoreReadyDescription" = "Ovaj trezor je spreman koristiti prve aplikacije s autocustody opcijom koje sigurno automatiziraju vaša sredstva!";
+"noBarcodesFound" = "Nisu pronađeni barkodovi";

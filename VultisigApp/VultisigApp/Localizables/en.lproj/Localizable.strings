@@ -1200,3 +1200,4 @@
 "whatAreVaultSharesDescription2" = "Each device has one vault share, also the server, we’ll do that now.";
 "appStoreReady" = "App Store Ready";
 "appStoreReadyDescription" = "This Vault is ready to use the first self-custodial Apps to securely automate your funds!";
+"noBarcodesFound" = "No barcodes found";

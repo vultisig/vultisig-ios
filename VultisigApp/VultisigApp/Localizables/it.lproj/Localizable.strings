@@ -1176,3 +1176,4 @@
 "whatAreVaultSharesDescription2" = "Ogni dispositivo ha una parte del vault, anche il server, lo faremo ora.";
 "appStoreReady" = "Pronto per App Store";
 "appStoreReadyDescription" = "Questo vault è pronto per utilizzare le prime app di autocustodia che automatizzano i tuoi fondi in sicurezza!";
+"noBarcodesFound" = "Nessun codice a barre trovato";
