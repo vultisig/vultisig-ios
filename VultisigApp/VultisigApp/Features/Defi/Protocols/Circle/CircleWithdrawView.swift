@@ -162,6 +162,9 @@ struct CircleWithdrawView: View {
             .font(.system(size: 40, weight: .bold))
             .foregroundStyle(Theme.colors.textPrimary)
             .multilineTextAlignment(.center)
+            #if os(macOS)
+            .textFieldStyle(.plain)
+            #endif
             .onChange(of: amount) { newValue in
                 updatePercentage(from: newValue)
             }
