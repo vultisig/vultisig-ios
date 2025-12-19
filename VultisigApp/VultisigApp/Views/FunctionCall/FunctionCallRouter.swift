@@ -8,12 +8,7 @@
 import SwiftUI
 
 struct FunctionCallRouter {
-    private let navigationRouter: NavigationRouter
     private let viewBuilder = FunctionCallRouteBuilder()
-
-    init(navigationRouter: NavigationRouter) {
-        self.navigationRouter = navigationRouter
-    }
 
     @ViewBuilder
     func build(_ route: FunctionCallRoute) -> some View {

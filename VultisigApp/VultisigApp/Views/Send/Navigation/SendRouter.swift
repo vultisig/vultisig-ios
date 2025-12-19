@@ -8,13 +8,8 @@
 import SwiftUI
 
 struct SendRouter {
-    private let navigationRouter: NavigationRouter
     private let viewBuilder = SendRouteBuilder()
-    
-    init(navigationRouter: NavigationRouter) {
-        self.navigationRouter = navigationRouter
-    }
-    
+
     @ViewBuilder
     func build(_ route: SendRoute) -> some View {
         switch route {

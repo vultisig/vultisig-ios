@@ -8,12 +8,7 @@
 import SwiftUI
 
 struct ReferralRouter {
-    private let navigationRouter: NavigationRouter
     private let viewBuilder = ReferralRouteBuilder()
-
-    init(navigationRouter: NavigationRouter) {
-        self.navigationRouter = navigationRouter
-    }
 
     @ViewBuilder
     func build(_ route: ReferralRoute) -> some View {

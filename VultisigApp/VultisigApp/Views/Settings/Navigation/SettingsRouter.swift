@@ -8,16 +8,7 @@
 import SwiftUI
 
 struct SettingsRouter {
-    private let navigationRouter: NavigationRouter
     private let viewBuilder = SettingsRouteBuilder()
-
-    init(navigationRouter: NavigationRouter) {
-        self.navigationRouter = navigationRouter
-    }
-
-    func navigate(to route: SettingsRoute) {
-        navigationRouter.navigate(to: route)
-    }
 
     @ViewBuilder
     func build(_ route: SettingsRoute) -> some View {

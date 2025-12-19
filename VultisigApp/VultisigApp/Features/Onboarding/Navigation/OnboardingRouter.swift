@@ -8,12 +8,7 @@
 import SwiftUI
 
 struct OnboardingRouter {
-    private let navigationRouter: NavigationRouter
     private let viewBuilder = OnboardingRouteBuilder()
-
-    init(navigationRouter: NavigationRouter) {
-        self.navigationRouter = navigationRouter
-    }
 
     @ViewBuilder
     func build(_ route: OnboardingRoute) -> some View {

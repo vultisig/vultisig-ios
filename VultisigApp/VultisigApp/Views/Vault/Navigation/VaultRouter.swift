@@ -8,12 +8,7 @@
 import SwiftUI
 
 struct VaultRouter {
-    private let navigationRouter: NavigationRouter
     private let viewBuilder = VaultRouteBuilder()
-
-    init(navigationRouter: NavigationRouter) {
-        self.navigationRouter = navigationRouter
-    }
 
     @ViewBuilder
     func build(_ route: VaultRoute) -> some View {

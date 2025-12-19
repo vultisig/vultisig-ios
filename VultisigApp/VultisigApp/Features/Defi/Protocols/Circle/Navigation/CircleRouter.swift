@@ -8,12 +8,7 @@
 import SwiftUI
 
 struct CircleRouter {
-    private let navigationRouter: NavigationRouter
     private let viewBuilder = CircleRouteBuilder()
-
-    init(navigationRouter: NavigationRouter) {
-        self.navigationRouter = navigationRouter
-    }
 
     @ViewBuilder
     func build(_ route: CircleRoute) -> some View {

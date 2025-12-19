@@ -8,12 +8,7 @@
 import SwiftUI
 
 struct KeygenRouter {
-    private let navigationRouter: NavigationRouter
     private let viewBuilder = KeygenRouteBuilder()
-
-    init(navigationRouter: NavigationRouter) {
-        self.navigationRouter = navigationRouter
-    }
 
     @ViewBuilder
     func build(_ route: KeygenRoute) -> some View {

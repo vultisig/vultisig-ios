@@ -21,14 +21,14 @@ final class VultisigRouter: ObservableObject {
 
     init(navigationRouter: NavigationRouter) {
         self.navigationRouter = navigationRouter
-        self.sendRouter = SendRouter(navigationRouter: navigationRouter)
-        self.keygenRouter = KeygenRouter(navigationRouter: navigationRouter)
-        self.vaultRouter = VaultRouter(navigationRouter: navigationRouter)
-        self.onboardingRouter = OnboardingRouter(navigationRouter: navigationRouter)
-        self.referralRouter = ReferralRouter(navigationRouter: navigationRouter)
-        self.functionCallRouter = FunctionCallRouter(navigationRouter: navigationRouter)
-        self.settingsRouter = SettingsRouter(navigationRouter: navigationRouter)
-        self.homeRouter = HomeRouter(navigationRouter: navigationRouter)
-        self.circleRouter = CircleRouter(navigationRouter: navigationRouter)
+        self.sendRouter = SendRouter()
+        self.keygenRouter = KeygenRouter()
+        self.vaultRouter = VaultRouter()
+        self.onboardingRouter = OnboardingRouter()
+        self.referralRouter = ReferralRouter()
+        self.functionCallRouter = FunctionCallRouter()
+        self.settingsRouter = SettingsRouter()
+        self.homeRouter = HomeRouter()
+        self.circleRouter = CircleRouter()
     }
 }
