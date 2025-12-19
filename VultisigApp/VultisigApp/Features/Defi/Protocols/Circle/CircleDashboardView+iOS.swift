@@ -13,52 +13,51 @@ extension CircleDashboardView {
         ZStack {
             VaultMainScreenBackground()
             
-            ScrollView {
-                VStack(spacing: CircleConstants.Design.verticalSpacing) {
-                    topBanner
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(NSLocalizedString("circleDashboardDeposited", comment: "Deposited"))
-                            .font(.headline)
-                            .foregroundStyle(Theme.colors.textPrimary)
+            VStack(spacing: 0) {
+                headerView
+                
+                ScrollView {
+                    VStack(spacing: CircleConstants.Design.verticalSpacing) {
+                        topBanner
                         
-                        Text(NSLocalizedString("circleDashboardDepositDescription", comment: "Deposit your $USDC..."))
-                            .font(.body)
-                            .foregroundStyle(Theme.colors.textLight)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    
-                    InfoBannerView(
-                        description: NSLocalizedString("circleDashboardInfoText", comment: "Funds remain..."),
-                        type: .info,
-                        leadingIcon: nil,
-                        onClose: {
-                            withAnimation { showInfoBanner = false }
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(NSLocalizedString("circleDashboardDeposited", comment: "Deposited"))
+                                .font(.headline)
+                                .foregroundStyle(Theme.colors.textPrimary)
+                            
+                            Text(NSLocalizedString("circleDashboardDepositDescription", comment: "Deposit your $USDC..."))
+                                .font(.body)
+                                .foregroundStyle(Theme.colors.textLight)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
-                    )
-                    .showIf(showInfoBanner)
-                    
-                    usdcDepositedCard
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        InfoBannerView(
+                            description: NSLocalizedString("circleDashboardInfoText", comment: "Funds remain..."),
+                            type: .info,
+                            leadingIcon: nil,
+                            onClose: {
+                                withAnimation { showInfoBanner = false }
+                            }
+                        )
+                        .showIf(showInfoBanner)
+                        
+                        usdcDepositedCard
+                    }
+                    .padding(.top, CircleConstants.Design.mainViewTopPadding)
+                    .padding(.bottom, CircleConstants.Design.mainViewBottomPadding)
+                    .padding(.horizontal, CircleConstants.Design.horizontalPadding)
                 }
-                .padding(.top, CircleConstants.Design.mainViewTopPadding)
-                .padding(.bottom, CircleConstants.Design.mainViewBottomPadding)
-                .padding(.horizontal, CircleConstants.Design.horizontalPadding)
-            }
-            .refreshable {
-                await loadData()
+                .refreshable {
+                    await loadData()
+                }
             }
         }
         .onAppear {
             Task { await loadData() }
         }
-        .navigationTitle(NSLocalizedString("circleTitle", comment: "Circle"))
         .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                NavigationBackButton()
-            }
-        }
+        .navigationBarHidden(true)
     }
 }
 #endif

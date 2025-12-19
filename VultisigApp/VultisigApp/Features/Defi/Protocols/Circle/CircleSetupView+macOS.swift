@@ -11,8 +11,8 @@ import SwiftUI
 extension CircleSetupView {
     @ToolbarContentBuilder
     var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .navigation) {
-            NavigationBackButton()
+        ToolbarItem(placement: .automatic) {
+            EmptyView()
         }
     }
 }

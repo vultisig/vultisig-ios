@@ -10,6 +10,7 @@ import SwiftUI
 struct CircleSetupView: View {
     let vault: Vault
     @ObservedObject var model: CircleViewModel
+    @Environment(\.dismiss) var dismiss
     
     @State var showInfoBanner = true
     
@@ -18,53 +19,80 @@ struct CircleSetupView: View {
     }
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: CircleConstants.Design.verticalSpacing) {
-                topBanner
-                
-                //TODO: reuse that on Dashboard
-                VStack(alignment: .leading, spacing: 8) {
-                    VStack(spacing: 8) {
-                        Text("circleSetupDeposited".localized)
+        VStack(spacing: 0) {
+            headerView
+            ScrollView {
+                VStack(spacing: CircleConstants.Design.verticalSpacing) {
+                    topBanner
+                    
+                    //TODO: reuse that on Dashboard
+                    VStack(alignment: .leading, spacing: 8) {
+                        VStack(spacing: 8) {
+                            Text("circleSetupDeposited".localized)
+                                .font(Theme.fonts.bodySMedium)
+                                .foregroundStyle(Theme.colors.textPrimary)
+                            Rectangle()
+                                .fill(Theme.colors.primaryAccent4)
+                                .frame(height: 2)
+                        }
+                        .fixedSize()
+                        Spacer()
+                        
+                        Text("circleSetupDepositDescription".localized)
                             .font(Theme.fonts.bodySMedium)
                             .foregroundStyle(Theme.colors.textPrimary)
-                        Rectangle()
-                            .fill(Theme.colors.primaryAccent4)
-                            .frame(height: 2)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
-                    .fixedSize()
-                    Spacer()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     
-                    Text("circleSetupDepositDescription".localized)
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                        .fixedSize(horizontal: false, vertical: true)
+                    InfoBannerView(
+                        description: "circleSetupInfoText".localized,
+                        type: .info,
+                        leadingIcon: nil,
+                        onClose: {
+                            withAnimation { showInfoBanner = false }
+                        }
+                    )
+                    .showIf(showInfoBanner)
+                    
+                    bottomCard
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                
-                InfoBannerView(
-                    description: "circleSetupInfoText".localized,
-                    type: .info,
-                    leadingIcon: nil,
-                    onClose: {
-                        withAnimation { showInfoBanner = false }
-                    }
-                )
-                .showIf(showInfoBanner)
-                
-                bottomCard
+                .padding(.top, CircleConstants.Design.mainViewTopPadding)
+                .padding(.bottom, CircleConstants.Design.mainViewBottomPadding)
+                .padding(.horizontal, CircleConstants.Design.horizontalPadding)
             }
-            .padding(.top, CircleConstants.Design.mainViewTopPadding)
-            .padding(.bottom, CircleConstants.Design.mainViewBottomPadding)
-            .padding(.horizontal, CircleConstants.Design.horizontalPadding)
         }
         .background(VaultMainScreenBackground())
-        .navigationTitle("")
         .navigationBarBackButtonHidden(true)
-        .toolbar {
-            toolbarContent
+        #if os(iOS)
+        .navigationBarHidden(true)
+        #endif
+    }
+    
+    var headerView: some View {
+        HStack {
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "chevron.left")
+                    .font(.title3)
+                    .foregroundColor(Theme.colors.textPrimary)
+                    .frame(width: 40, height: 40)
+                    .background(Circle().fill(Color.white.opacity(0.1)))
+            }
+            
+            Spacer()
+            
+            Text(NSLocalizedString("circleTitle", comment: "Circle"))
+                .font(Theme.fonts.bodyLMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+            
+            Spacer()
+            
+            Color.clear.frame(width: 40, height: 40)
         }
+        .padding(CircleConstants.Design.horizontalPadding)
     }
     
     var topBanner: some View {

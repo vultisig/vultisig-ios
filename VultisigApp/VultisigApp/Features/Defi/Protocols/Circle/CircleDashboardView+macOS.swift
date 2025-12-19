@@ -13,32 +13,31 @@ extension CircleDashboardView {
         ZStack {
             VaultMainScreenBackground()
             
-            ScrollView {
-                VStack(spacing: CircleConstants.Design.verticalSpacing) {
-                    topBanner
-                    
-                    headerDescription
-                    
-                    if showInfoBanner {
-                        infoBanner
+            VStack(spacing: 0) {
+                headerView
+                
+                ScrollView {
+                    VStack(spacing: CircleConstants.Design.verticalSpacing) {
+                        topBanner
+                        
+                        headerDescription
+                        
+                        if showInfoBanner {
+                            infoBanner
+                        }
+                        
+                        usdcDepositedCard
                     }
-                    
-                    usdcDepositedCard
+                    .padding(.top, CircleConstants.Design.mainViewTopPadding)
+                    .padding(.bottom, CircleConstants.Design.mainViewBottomPadding)
+                    .padding(.horizontal, CircleConstants.Design.horizontalPadding)
                 }
-                .padding(.top, CircleConstants.Design.mainViewTopPadding)
-                .padding(.bottom, CircleConstants.Design.mainViewBottomPadding)
-                .padding(.horizontal, CircleConstants.Design.horizontalPadding)
             }
         }
         .onAppear {
             Task { await loadData() }
         }
-        .navigationTitle(NSLocalizedString("circleTitle", comment: "Circle"))
-        .toolbar {
-            ToolbarItem(placement: .navigation) {
-                NavigationBackButton()
-            }
-        }
+        .navigationBarBackButtonHidden(true)
     }
     
     var headerDescription: some View {
