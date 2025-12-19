@@ -193,6 +193,11 @@ struct HomeScreen: View {
                     onCamera()
                 }
             }
+            .onChange(of: appViewModel.showCamera) { _, newValue in
+                guard newValue else { return }
+                onCamera()
+                appViewModel.showCamera = false
+            }
             .onChange(of: vaultRoute) { _, route in
                 guard let route else { return }
 

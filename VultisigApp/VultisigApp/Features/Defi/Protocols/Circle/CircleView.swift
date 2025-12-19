@@ -12,14 +12,14 @@ import VultisigCommonData
 
 struct CircleView: View {
     let vault: Vault
-    
+
     @StateObject private var model = CircleViewModel()
     @State private var hasCheckedBackend = false
-    
+
     var content: some View {
         ZStack {
             Theme.colors.bgPrimary.ignoresSafeArea()
-            
+
             if !hasCheckedBackend {
                 // Show loading while checking backend
                 ProgressView()
@@ -30,12 +30,12 @@ struct CircleView: View {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 60))
                         .foregroundStyle(.orange)
-                    
+
                     Text(NSLocalizedString("circleEthereumRequired", comment: "Ethereum Required"))
                         .font(.title2)
                         .bold()
                         .foregroundStyle(Theme.colors.textPrimary)
-                    
+
                     Text(NSLocalizedString("circleEthereumRequiredDescription", comment: "Please add Ethereum..."))
                         .font(.body)
                         .foregroundStyle(Theme.colors.textLight)
@@ -56,12 +56,6 @@ struct CircleView: View {
             Task { await checkExistingWallet() }
         }
         .navigationTitle(NSLocalizedString("circleTitle", comment: "Circle"))
-        .navigationDestination(isPresented: $model.showDeposit) {
-            CircleDepositView(vault: vault)
-        }
-        .navigationDestination(isPresented: $model.showWithdraw) {
-            CircleWithdrawView(vault: vault, model: model)
-        }
     }
     
     private func checkExistingWallet() async {

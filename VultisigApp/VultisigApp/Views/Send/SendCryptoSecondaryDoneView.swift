@@ -192,7 +192,7 @@ struct SendCryptoSecondaryDoneView: View {
             isSend: true,
             fromAddress: "thor1kkmnmgvd85puk8zsvqfxx36cqy9mxqret39t8z",
             toAddress: "thor1kkmnmgvd85puk8zsvqfxx36cqy9mxqret39t8z",
-            fee: ("0.001 RUNE", "US$ 0.00")
+            fee: FeeDisplay(crypto: "0.001 RUNE", fiat: "US$ 0.00")
         )
     ).environmentObject(HomeViewModel())
 }

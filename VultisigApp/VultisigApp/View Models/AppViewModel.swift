@@ -27,6 +27,7 @@ class AppViewModel: ObservableObject {
     @Published private(set) var selectedVault: Vault?
     @Published private(set) var showingVaultSelector: Bool = false
     @Published var restartNavigation: Bool = false
+    @Published var showCamera: Bool = false
     
     private let logic = AccountLogic()
     

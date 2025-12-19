@@ -12,4 +12,5 @@ enum SendRoute: Hashable {
     case keysign(input: KeysignInput, tx: SendTransaction)
     case done(vault: Vault, hash: String, chain: Chain, tx: SendTransaction)
     case coinPicker(coins: [Coin], tx: SendTransaction)
+    case transactionDetails(input: SendCryptoContent)
 }

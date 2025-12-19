@@ -50,7 +50,6 @@ struct SendVerifyScreen: View {
         .onDisappear {
             sendCryptoVerifyViewModel.isLoading = false
             // Clear password if navigating back (not forward to keysign)
-            // TODO: - Check fast vault password
             if tx.fastVaultPassword.isNotEmpty {
                 tx.fastVaultPassword = .empty
             }

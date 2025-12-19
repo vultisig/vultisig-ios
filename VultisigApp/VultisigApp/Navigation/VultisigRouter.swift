@@ -17,6 +17,7 @@ final class VultisigRouter: ObservableObject {
     let functionCallRouter: FunctionCallRouter
     let settingsRouter: SettingsRouter
     let homeRouter: HomeRouter
+    let circleRouter: CircleRouter
 
     init(navigationRouter: NavigationRouter) {
         self.navigationRouter = navigationRouter
@@ -28,5 +29,6 @@ final class VultisigRouter: ObservableObject {
         self.functionCallRouter = FunctionCallRouter(navigationRouter: navigationRouter)
         self.settingsRouter = SettingsRouter(navigationRouter: navigationRouter)
         self.homeRouter = HomeRouter(navigationRouter: navigationRouter)
+        self.circleRouter = CircleRouter(navigationRouter: navigationRouter)
     }
 }

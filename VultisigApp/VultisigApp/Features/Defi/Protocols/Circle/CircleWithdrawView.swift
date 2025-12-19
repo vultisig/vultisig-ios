@@ -12,14 +12,14 @@ import VultisigCommonData
 
 struct CircleWithdrawView: View {
     let vault: Vault
-    @ObservedObject var model: CircleViewModel
+    @StateObject private var model = CircleViewModel()
     @Environment(\.dismiss) var dismiss
+    @Environment(\.router) var router
     
     @State var amount: String = ""
     @State var percentage: Double = 0.0
     @State var isLoading = false
     @State var error: Error?
-    @State var keysignPayload: KeysignPayload?
     @State var isFastVault = false
     @State var fastPasswordPresented = false
     @State var fastVaultPassword: String = ""
@@ -291,7 +291,16 @@ struct CircleWithdrawView: View {
                 self.sendTransaction.reset(coin: coinToUse)
                 self.sendTransaction.isFastVault = isFastVault
                 self.sendTransaction.fastVaultPassword = fastVaultPassword
-                self.keysignPayload = payload
+                
+                router.navigate(
+                    to: SendRoute.pairing(
+                        vault: vault,
+                        tx: sendTransaction,
+                        keysignPayload: payload,
+                        fastVaultPassword: fastVaultPassword.nilIfEmpty
+                    )
+                )
+                
                 isLoading = false
             }
             

@@ -20,14 +20,6 @@ extension CircleWithdrawView {
                 await loadFastVaultStatus()
             }
         }
-        .navigationDestination(item: $keysignPayload) { payload in
-            SendRouteBuilder().buildPairScreen(
-                vault: vault,
-                tx: sendTransaction,
-                keysignPayload: payload,
-                fastVaultPassword: fastVaultPassword.nilIfEmpty
-            )
-        }
         .crossPlatformSheet(isPresented: $fastPasswordPresented) {
             FastVaultEnterPasswordView(
                 password: $fastVaultPassword,

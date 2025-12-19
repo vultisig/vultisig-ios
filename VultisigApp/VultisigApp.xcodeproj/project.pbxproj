@@ -53,6 +53,9 @@
 		131603452E609D74001ED972 /* FileExporterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603442E609D6B001ED972 /* FileExporterSheet.swift */; };
 		131603482E60A450001ED972 /* VaultBackupPasswordScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603472E60A44F001ED972 /* VaultBackupPasswordScreen.swift */; };
 		131603512E60C45D001ED972 /* VaultBackupContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603502E60C453001ED972 /* VaultBackupContainerView.swift */; };
+		13194DB12EF5908500BEC93C /* CircleRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13194DAD2EF5908500BEC93C /* CircleRoute.swift */; };
+		13194DB22EF5908500BEC93C /* CircleRouteBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13194DAE2EF5908500BEC93C /* CircleRouteBuilder.swift */; };
+		13194DB32EF5908500BEC93C /* CircleRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13194DAF2EF5908500BEC93C /* CircleRouter.swift */; };
 		131F96E62E7887CF0018BA7B /* Satoshi-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 131F96E22E7887CF0018BA7B /* Satoshi-Medium.otf */; };
 		13204DD52EEB129E00297D01 /* KeyImportNewVaultSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13204DD42EEB129800297D01 /* KeyImportNewVaultSetupScreen.swift */; };
 		13204DD72EEB1B3D00297D01 /* KeyImportOverviewScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13204DD62EEB1B3600297D01 /* KeyImportOverviewScreen.swift */; };
@@ -247,10 +250,8 @@
 		138574182E2DA9D5002532BF /* ButtonType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574172E2DA9CD002532BF /* ButtonType.swift */; };
 		1385741A2E2DAAE9002532BF /* PrimaryButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574192E2DAAE5002532BF /* PrimaryButtonView.swift */; };
 		1385741C2E2DAC50002532BF /* PrimaryButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1385741B2E2DAC4D002532BF /* PrimaryButtonStyle.swift */; };
-		1385741E2E2DB441002532BF /* PrimaryNavigationButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1385741D2E2DB428002532BF /* PrimaryNavigationButton.swift */; };
 		138574212E2DB6EC002532BF /* IconButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574202E2DB6D2002532BF /* IconButtonView.swift */; };
 		138574232E2DB765002532BF /* IconButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574222E2DB765002532BF /* IconButtonStyle.swift */; };
-		138574262E2DB9C6002532BF /* NavigationIconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574242E2DB9C6002532BF /* NavigationIconButton.swift */; };
 		138574272E2DB9C6002532BF /* IconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574252E2DB9C6002532BF /* IconButton.swift */; };
 		1385E63D2EC271F200CE634F /* DefiPositionsStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1385E63C2EC271F100CE634F /* DefiPositionsStorageService.swift */; };
 		1387E24B2E565A540033F92C /* BlurredBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1387E24A2E565A4F0033F92C /* BlurredBackground.swift */; };
@@ -1331,6 +1332,9 @@
 		131603442E609D6B001ED972 /* FileExporterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileExporterSheet.swift; sourceTree = "<group>"; };
 		131603472E60A44F001ED972 /* VaultBackupPasswordScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBackupPasswordScreen.swift; sourceTree = "<group>"; };
 		131603502E60C453001ED972 /* VaultBackupContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBackupContainerView.swift; sourceTree = "<group>"; };
+		13194DAD2EF5908500BEC93C /* CircleRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleRoute.swift; sourceTree = "<group>"; };
+		13194DAE2EF5908500BEC93C /* CircleRouteBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleRouteBuilder.swift; sourceTree = "<group>"; };
+		13194DAF2EF5908500BEC93C /* CircleRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleRouter.swift; sourceTree = "<group>"; };
 		131F96E22E7887CF0018BA7B /* Satoshi-Medium.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Satoshi-Medium.otf"; sourceTree = "<group>"; };
 		13204DD42EEB129800297D01 /* KeyImportNewVaultSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyImportNewVaultSetupScreen.swift; sourceTree = "<group>"; };
 		13204DD62EEB1B3600297D01 /* KeyImportOverviewScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyImportOverviewScreen.swift; sourceTree = "<group>"; };
@@ -1525,10 +1529,8 @@
 		138574172E2DA9CD002532BF /* ButtonType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonType.swift; sourceTree = "<group>"; };
 		138574192E2DAAE5002532BF /* PrimaryButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryButtonView.swift; sourceTree = "<group>"; };
 		1385741B2E2DAC4D002532BF /* PrimaryButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryButtonStyle.swift; sourceTree = "<group>"; };
-		1385741D2E2DB428002532BF /* PrimaryNavigationButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryNavigationButton.swift; sourceTree = "<group>"; };
 		138574202E2DB6D2002532BF /* IconButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconButtonView.swift; sourceTree = "<group>"; };
 		138574222E2DB765002532BF /* IconButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconButtonStyle.swift; sourceTree = "<group>"; };
-		138574242E2DB9C6002532BF /* NavigationIconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationIconButton.swift; sourceTree = "<group>"; };
 		138574252E2DB9C6002532BF /* IconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconButton.swift; sourceTree = "<group>"; };
 		1385E63C2EC271F100CE634F /* DefiPositionsStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiPositionsStorageService.swift; sourceTree = "<group>"; };
 		1387E24A2E565A4F0033F92C /* BlurredBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurredBackground.swift; sourceTree = "<group>"; };
@@ -2882,6 +2884,16 @@
 			path = Backup;
 			sourceTree = "<group>";
 		};
+		13194DB02EF5908500BEC93C /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				13194DAD2EF5908500BEC93C /* CircleRoute.swift */,
+				13194DAE2EF5908500BEC93C /* CircleRouteBuilder.swift */,
+				13194DAF2EF5908500BEC93C /* CircleRouter.swift */,
+			);
+			path = Navigation;
+			sourceTree = "<group>";
+		};
 		13204DD82EEB1CB700297D01 /* Common */ = {
 			isa = PBXGroup;
 			children = (
@@ -3577,7 +3589,6 @@
 			isa = PBXGroup;
 			children = (
 				130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */,
-				1385741D2E2DB428002532BF /* PrimaryNavigationButton.swift */,
 				1385741B2E2DAC4D002532BF /* PrimaryButtonStyle.swift */,
 				138574192E2DAAE5002532BF /* PrimaryButtonView.swift */,
 				138574172E2DA9CD002532BF /* ButtonType.swift */,
@@ -3590,7 +3601,6 @@
 		1385741F2E2DB6C8002532BF /* IconButton */ = {
 			isa = PBXGroup;
 			children = (
-				138574242E2DB9C6002532BF /* NavigationIconButton.swift */,
 				138574252E2DB9C6002532BF /* IconButton.swift */,
 				138574222E2DB765002532BF /* IconButtonStyle.swift */,
 				138574202E2DB6D2002532BF /* IconButtonView.swift */,
@@ -4858,6 +4868,7 @@
 		9690397CDD1E0CE7CD6E2A18 /* Circle */ = {
 			isa = PBXGroup;
 			children = (
+				13194DB02EF5908500BEC93C /* Navigation */,
 				B5B47B5C2EF372B2007F2150 /* CircleViewLogic.swift */,
 				B5B47B572EF37203007F2150 /* CircleConstants.swift */,
 				B5B47B552EF37188007F2150 /* CircleViewModel.swift */,
@@ -6667,7 +6678,6 @@
 				13DD004F2EF2F40D0091F833 /* KeygenRouter.swift in Sources */,
 				130C059D2EE9CDFE00A7303A /* GlowIcon.swift in Sources */,
 				130C05A12EE9FB4900A7303A /* KeyImportNoActiveChainsView.swift in Sources */,
-				138574262E2DB9C6002532BF /* NavigationIconButton.swift in Sources */,
 				13B25BF62E82FA39002BCF55 /* AddressCopyBannerViewModifier.swift in Sources */,
 				138574272E2DB9C6002532BF /* IconButton.swift in Sources */,
 				A6ACAD5F2D1109EF00432CC4 /* SettingsAdvancedView.swift in Sources */,
@@ -6788,7 +6798,6 @@
 				139B400C2E42466F00238C2C /* MacOSOverlay.swift in Sources */,
 				049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */,
 				DE727C0C2D000FC9007E9273 /* LibType.swift in Sources */,
-				1385741E2E2DB441002532BF /* PrimaryNavigationButton.swift in Sources */,
 				A622C8362C9BB76A00908332 /* CoinPickerView+iOS.swift in Sources */,
 				A622C8342C9BB28000908332 /* VultisigApp+macOS.swift in Sources */,
 				13E428262ED4A2A80097AD11 /* IntValidator.swift in Sources */,
@@ -7728,6 +7737,9 @@
 				13B26D3F2E32B506000D3B3A /* SendFormExpandableSection.swift in Sources */,
 				139D15B62E9D50E2006F671C /* VultDiscountTierIcon.swift in Sources */,
 				1363B4FC2EA6901600818DF7 /* DateFormatter.swift in Sources */,
+				13194DB12EF5908500BEC93C /* CircleRoute.swift in Sources */,
+				13194DB22EF5908500BEC93C /* CircleRouteBuilder.swift in Sources */,
+				13194DB32EF5908500BEC93C /* CircleRouter.swift in Sources */,
 				B54B01972BDCEB8E00FDA472 /* Polkadot.swift in Sources */,
 				A6AF960C2C2E2D6400992578 /* GeneralQRImportMacView.swift in Sources */,
 				DE49A19E2B671416000F3AFB /* Coin.swift in Sources */,

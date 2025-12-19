@@ -12,11 +12,11 @@ struct SendCryptoDoneContentView: View {
     let input: SendCryptoContent
     @Binding var showAlert: Bool
     var onDone: () -> Void = {}
-    
-    @State var navigateToTransactionDetails = false
+
     @State var navigateToHome = false
     @State var animationVM: RiveViewModel? = nil
     @EnvironmentObject var appViewModel: AppViewModel
+    @Environment(\.router) var router
     
     var body: some View {
         VStack {
@@ -60,13 +60,11 @@ struct SendCryptoDoneContentView: View {
                 onDoneButtonPressed()
             }
         }
-        .navigationDestination(isPresented: $navigateToTransactionDetails) {
-            SendCryptoSecondaryDoneView(input: input)
-        }
         .onChange(of: navigateToHome) { _, newValue in
             guard newValue else { return }
             appViewModel.restart()
-        }.onLoad {
+        }
+        .onLoad {
             animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
         }
     }
@@ -78,7 +76,7 @@ struct SendCryptoDoneContentView: View {
     
     var transactionDetailsButton: some View {
         Button {
-            navigateToTransactionDetails = true
+            router.navigate(to: SendRoute.transactionDetails(input: input))
         } label: {
             HStack {
                 Text(NSLocalizedString("transactionDetails", comment: ""))
