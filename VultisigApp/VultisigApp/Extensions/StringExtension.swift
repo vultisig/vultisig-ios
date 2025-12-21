@@ -222,4 +222,9 @@ extension String {
     var localized: String {
         NSLocalizedString(self, comment: "")
     }
+    
+    var truncatedMiddle: String {
+        guard count > 10 else { return self }
+        return "\(self.prefix(4))...\(self.suffix(4))"
+    }
 }

@@ -13,13 +13,10 @@ import AVFoundation
 struct AddressQRCodeScannerView: View {
     @Binding var showScanner: Bool
     let onAddress: (String) -> Void
-    let handleScan: (Result<ScanResult, ScanError>) -> Void
     
     var body: some View {
         QRCodeScannerView(showScanner: $showScanner) { address in
             onAddress(address)
-        } handleScan: { result in
-            handleScan(result)
         }
     }
 }

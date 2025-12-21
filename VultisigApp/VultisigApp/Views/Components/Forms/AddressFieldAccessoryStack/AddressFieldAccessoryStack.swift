@@ -55,8 +55,7 @@ struct AddressFieldAccessoryStack: View {
         .crossPlatformSheet(isPresented: $showScanner) {
             AddressQRCodeScannerView(
                 showScanner: $showScanner,
-                onAddress: { onResult(.init(address: $0)) },
-                handleScan: handleScan
+                onAddress: { handleScan(result: $0) }
             )
         }
         #else
@@ -95,15 +94,9 @@ struct AddressFieldAccessoryStack: View {
 
 #if os(iOS)
 private extension AddressFieldAccessoryStack {
-    func handleScan(result: Result<ScanResult, ScanError>) {
-        switch result {
-        case .success(let result):
-            onResult(.fromURI(result.string))
-            showScanner = false
-        case .failure(let err):
-            print("fail to scan QR code,error:\(err.localizedDescription)")
-            break
-        }
+    func handleScan(result: String) {
+        onResult(.fromURI(result))
+        showScanner = false
     }
     
     func processImage() {

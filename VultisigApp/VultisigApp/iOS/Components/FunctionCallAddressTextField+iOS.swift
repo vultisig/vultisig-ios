@@ -64,8 +64,7 @@ extension FunctionCallAddressTextField {
     var codeScanner: some View {
         AddressQRCodeScannerView(
             showScanner: $showScanner,
-            onAddress: { self.memo.addressFields[addressKey] = $0 },
-            handleScan: handleScan
+            onAddress: { handleScan(result: $0) }
         )
     }
     
@@ -81,16 +80,10 @@ extension FunctionCallAddressTextField {
         handleImageQrCode(image: selectedImage)
     }
     
-    private func handleScan(result: Result<ScanResult, ScanError>) {
-        switch result {
-        case .success(let result):
-            let qrCodeResult = result.string
-            memo.addressFields[addressKey] = qrCodeResult
-            validateAddress(memo.addressFields[addressKey] ?? "")
-            showScanner = false
-        case .failure(let err):
-            print("Failed to scan QR code, error: \(err.localizedDescription)")
-        }
+    private func handleScan(result: String) {
+        memo.addressFields[addressKey] = result
+        validateAddress(memo.addressFields[addressKey] ?? "")
+        showScanner = false
     }
     
     private func handleImageQrCode(image: UIImage) {

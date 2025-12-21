@@ -39,19 +39,13 @@ extension AddressBookTextField {
     var codeScanner: some View {
         AddressQRCodeScannerView(
             showScanner: $showScanner,
-            onAddress: { text = $0 },
-            handleScan: handleScan
+            onAddress: { handleScan(result: $0) }
         )
     }
     
-    func handleScan(result: Result<ScanResult, ScanError>) {
-        switch result {
-        case .success(let result):
-            text = Utils.sanitizeAddress(address: result.string)
-            showScanner = false
-        case .failure(let err):
-            print("fail to scan QR code,error:\(err.localizedDescription)")
-        }
+    func handleScan(result: String) {
+        text = Utils.sanitizeAddress(address: result)
+        showScanner = false
     }
     
     func pasteAddress() {
