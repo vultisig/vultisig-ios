@@ -163,7 +163,6 @@ struct KeygenRouteBuilder {
     ) -> some View {
         #if os(macOS)
         MacAddressScannerView(
-            showCameraScanView: .constant(true),
             selectedVault: selectedVault,
             scannedResult: ScannerResultManager.shared.getBinding(for: resultId)
         )

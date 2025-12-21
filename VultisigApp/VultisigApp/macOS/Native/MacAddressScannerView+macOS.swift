@@ -36,7 +36,6 @@ import SwiftData
 import AVFoundation
 
 struct MacAddressScannerView: View {
-    @Binding var showCameraScanView: Bool
     let selectedVault: Vault?
     @Binding var scannedResult: AddressResult?
     var onParsedResult: ((AddressResult?) -> Void)?
@@ -48,12 +47,10 @@ struct MacAddressScannerView: View {
     @Environment(\.dismiss) var dismiss
 
     init(
-        showCameraScanView: Binding<Bool>,
         selectedVault: Vault?,
         scannedResult: Binding<AddressResult?> = .constant(nil),
         onParsedResult: ((AddressResult?) -> Void)? = nil
     ) {
-        self._showCameraScanView = showCameraScanView
         self.selectedVault = selectedVault
         self._scannedResult = scannedResult
         self.onParsedResult = onParsedResult
@@ -188,15 +185,11 @@ struct MacAddressScannerView: View {
     private func goBack() {
         scannerViewModel.stopSession()
         showImportOptions = false
-        showCameraScanView = false
         dismiss()
     }
 }
 
 #Preview {
-    MacAddressScannerView(
-        showCameraScanView: .constant(true),
-        selectedVault: Vault.example
-    ) { _ in }
+    MacAddressScannerView(selectedVault: Vault.example) { _ in }
 }
 #endif
