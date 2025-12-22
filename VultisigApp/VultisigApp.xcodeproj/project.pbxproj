@@ -138,6 +138,7 @@
 		1345D1392EA813F100FC7BFD /* THORChainNetworkInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1345D1382EA813F000FC7BFD /* THORChainNetworkInfo.swift */; };
 		1345D13B2EA8148700FC7BFD /* BondMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1345D13A2EA8148600FC7BFD /* BondMetrics.swift */; };
 		1345D13D2EA81A2D00FC7BFD /* NetworkBondInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1345D13C2EA81A2D00FC7BFD /* NetworkBondInfo.swift */; };
+		134716672EF97E71004DDC43 /* keygen_animation.riv in Resources */ = {isa = PBXBuildFile; fileRef = 134716662EF97E71004DDC43 /* keygen_animation.riv */; };
 		1348561D2EB511C8003D10BE /* BondTransactionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134856182EB511C8003D10BE /* BondTransactionScreen.swift */; };
 		1348561E2EB511C8003D10BE /* FunctionTransactionType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1348561A2EB511C8003D10BE /* FunctionTransactionType.swift */; };
 		134856212EB511DB003D10BE /* FunctionTransactionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134856202EB511D7003D10BE /* FunctionTransactionScreen.swift */; };
@@ -1019,7 +1020,6 @@
 		A6F7B6C22D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B6C12D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv */; };
 		A6F7B6C62D4AB86900AC8104 /* EmptyPeerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6C52D4AB86900AC8104 /* EmptyPeerCell.swift */; };
 		A6F7B6C82D4ABA5A00AC8104 /* WaitingForDevice.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B6C72D4ABA5A00AC8104 /* WaitingForDevice.riv */; };
-		A6F7B6E52D4B046800AC8104 /* KeygenProgressContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6E42D4B046800AC8104 /* KeygenProgressContainer.swift */; };
 		A6F7B6E72D4B07B500AC8104 /* KeygenProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6E62D4B07B500AC8104 /* KeygenProgressBar.swift */; };
 		A6F7B6E92D4B0D6E00AC8104 /* CreatingVaultCircles.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B6E82D4B0D6D00AC8104 /* CreatingVaultCircles.riv */; };
 		A6F7B6EB2D4B0D8500AC8104 /* CreatingVaultCheckmark.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B6EA2D4B0D8500AC8104 /* CreatingVaultCheckmark.riv */; };
@@ -1417,6 +1417,7 @@
 		1345D1382EA813F000FC7BFD /* THORChainNetworkInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainNetworkInfo.swift; sourceTree = "<group>"; };
 		1345D13A2EA8148600FC7BFD /* BondMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondMetrics.swift; sourceTree = "<group>"; };
 		1345D13C2EA81A2D00FC7BFD /* NetworkBondInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkBondInfo.swift; sourceTree = "<group>"; };
+		134716662EF97E71004DDC43 /* keygen_animation.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = keygen_animation.riv; sourceTree = "<group>"; };
 		134856182EB511C8003D10BE /* BondTransactionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondTransactionScreen.swift; sourceTree = "<group>"; };
 		1348561A2EB511C8003D10BE /* FunctionTransactionType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionTransactionType.swift; sourceTree = "<group>"; };
 		134856202EB511D7003D10BE /* FunctionTransactionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionTransactionScreen.swift; sourceTree = "<group>"; };
@@ -2300,7 +2301,6 @@
 		A6F7B6C12D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = PeerDiscoveryInfoBanner.riv; sourceTree = "<group>"; };
 		A6F7B6C52D4AB86900AC8104 /* EmptyPeerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyPeerCell.swift; sourceTree = "<group>"; };
 		A6F7B6C72D4ABA5A00AC8104 /* WaitingForDevice.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = WaitingForDevice.riv; sourceTree = "<group>"; };
-		A6F7B6E42D4B046800AC8104 /* KeygenProgressContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenProgressContainer.swift; sourceTree = "<group>"; };
 		A6F7B6E62D4B07B500AC8104 /* KeygenProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenProgressBar.swift; sourceTree = "<group>"; };
 		A6F7B6E82D4B0D6D00AC8104 /* CreatingVaultCircles.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = CreatingVaultCircles.riv; sourceTree = "<group>"; };
 		A6F7B6EA2D4B0D8500AC8104 /* CreatingVaultCheckmark.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = CreatingVaultCheckmark.riv; sourceTree = "<group>"; };
@@ -5823,6 +5823,7 @@
 				130C058B2EE9A42200A7303A /* import_seedphrase.riv */,
 				DEE8B2AB2E40842B0020DA63 /* upgrade_success.riv */,
 				1387FDA72E32C2CC007ECDB4 /* QRScanner.riv */,
+				134716662EF97E71004DDC43 /* keygen_animation.riv */,
 				A6C58D832D7B6F3C000D2833 /* backup_vault.riv */,
 				A6EF93512D690BC8004D7EBF /* Onboarding.riv */,
 				A5AB69C62D63E26500E54DEB /* backupvault_splash.riv */,
@@ -5852,7 +5853,6 @@
 			children = (
 				A6F9E7A82BED6BDB00BA36E1 /* SetupVaultAnimationManager.swift */,
 				A6F7B6BF2D4977F500AC8104 /* PeerDiscoveryInfoBanner.swift */,
-				A6F7B6E42D4B046800AC8104 /* KeygenProgressContainer.swift */,
 				A6F7B6E62D4B07B500AC8104 /* KeygenProgressBar.swift */,
 				A6F7B6F52D4C701D00AC8104 /* FastVaultPasswordDisclaimer.swift */,
 			);
@@ -6617,6 +6617,7 @@
 				A53065FA2D5A9FEF000B82E6 /* fastvault_overview.riv in Resources */,
 				A65F8A182D42224100CF4DDB /* Brockmann-Regular.otf in Resources */,
 				1387FDA82E32C2CC007ECDB4 /* QRScanner.riv in Resources */,
+				134716672EF97E71004DDC43 /* keygen_animation.riv in Resources */,
 				A65F8A192D42224100CF4DDB /* Brockmann-Medium.otf in Resources */,
 				A6F7B6F82D4C94D700AC8104 /* ConnectingWithServer.riv in Resources */,
 				DE8AD7432BC64A4C00339775 /* PrivacyInfo.xcprivacy in Resources */,
@@ -7276,7 +7277,6 @@
 				F6MAHZO7QADAUEOCUKP14KWW /* ThorchainLP.swift in Sources */,
 				A6C670CB2C9E8BAB00F59B6A /* VultExtensionViewModel.swift in Sources */,
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,
-				A6F7B6E52D4B046800AC8104 /* KeygenProgressContainer.swift in Sources */,
 				A6BB9BC72DA9D5B90085E117 /* AllDevicesUpgradeView.swift in Sources */,
 				13AA6CDE2EA8742100760C8D /* THORChainLPsAPI.swift in Sources */,
 				1334C7462E301E8800CBAA3E /* SendCryptoDoneContent.swift in Sources */,

@@ -25,7 +25,7 @@ struct KeygenView: View {
     let keyImportInput: KeyImportInput?
     let isInitiateDevice: Bool
     @Binding var hideBackButton: Bool
-        
+    
     @StateObject var viewModel = KeygenViewModel()
     
     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
@@ -38,11 +38,13 @@ struct KeygenView: View {
     @State var showVerificationView = false
     @State var vaultCreatedAnimationVM: RiveViewModel? = nil
     @State var checkmarkAnimationVM: RiveViewModel? = nil
+    @State var keygenAnimationVM: RiveViewModel? = nil
+    @State var keygenAnimationVMInstance: RiveDataBindingViewModel.Instance?
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var context
     @Environment(\.router) var router
-
+    
     var body: some View {
         content
             .sensoryFeedback(.success, trigger: showDoneText)
@@ -56,12 +58,25 @@ struct KeygenView: View {
                 hideBackButton = true
                 vaultCreatedAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
                 checkmarkAnimationVM = RiveViewModel(fileName: "CreatingVaultCheckmark", autoPlay: true)
+                keygenAnimationVM = RiveViewModel(
+                    fileName: "keygen_animation",
+                    autoPlay: true,
+                )
+                keygenAnimationVM?.fit = .layout
+                keygenAnimationVM?.layoutScaleFactor = RiveViewModel.layoutScaleFactorAutomatic
+                keygenAnimationVM?.riveModel?.enableAutoBind { instance in
+                    keygenAnimationVMInstance = instance
+                }
             }
             .onDisappear {
                 vaultCreatedAnimationVM?.stop()
             }
+            .onChange(of: keygenAnimationVMInstance) { oldValue, instance in
+                let connected = instance?.booleanProperty(fromPath: "Connected")
+                connected?.value = true
+            }
     }
-
+    
     private func handleNavigation() {
         switch tssType {
         case .Keygen, .Reshare:
@@ -91,7 +106,7 @@ struct KeygenView: View {
     
     var container: some View {
         ZStack {
-            fields
+            states
                 .opacity(tssType == .Migrate ? 0 : 1)
             
             if tssType == .Migrate {
@@ -104,35 +119,6 @@ struct KeygenView: View {
         }
     }
     
-    var fields: some View {
-        VStack(spacing: 12) {
-            Spacer()
-            if showProgressRing {
-                if progressCounter<4 {
-                    title
-                }
-                states
-            }
-            Spacer()
-            
-            if progressCounter < 4 {
-                if viewModel.status == .KeygenFailed {
-                    ErrorView(
-                        type: .alert,
-                        title: "keygenFailedErrorMessage".localized,
-                        description: "",
-                        buttonTitle: "tryAgain".localized
-                    ) {
-                        dismiss()
-                    }
-                    .padding(.horizontal, isMacOS ? 40 : 20)
-                } else {
-                    progressContainer
-                }
-            }
-        }
-    }
-    
     var migrateView: some View {
         UpgradingVaultView()
     }
@@ -140,77 +126,26 @@ struct KeygenView: View {
     var states: some View {
         ZStack {
             switch viewModel.status {
-            case .CreatingInstance:
-                preparingVaultText
-            case .KeygenECDSA:
-                generatingECDSAText
-            case .KeygenEdDSA:
-                generatingEdDSAText
-            case .ReshareECDSA:
-                reshareECDSAText
-            case .ReshareEdDSA:
-                reshareEdDSAText
+            case .CreatingInstance,
+                    .KeygenECDSA,
+                    .KeygenEdDSA,
+                    .ReshareECDSA,
+                    .ReshareEdDSA:
+                keygenAnimationVM?.view()
+                    .ignoresSafeArea()
+                    .readSize { size in
+                        let posXcircles = keygenAnimationVMInstance?.numberProperty(fromPath: "posXcircles")
+                        posXcircles?.value = Float(size.width / 2)
+                    }
+                    .onChange(of: viewModel.progress) { _, newValue in
+                        let progessPercentage = keygenAnimationVMInstance?.numberProperty(fromPath: "progessPercentage")
+                        progessPercentage?.value = newValue
+                    }
             case .KeygenFinished:
                 doneText
             case .KeygenFailed:
                 keygenFailedView
             }
-        }
-    }
-    
-    var title: some View {
-        Text(NSLocalizedString("whileYouWait", comment: "KEYGEN"))
-            .foregroundColor(Theme.colors.textExtraLight)
-            .font(Theme.fonts.bodyMMedium)
-    }
-    
-    var preparingVaultText: some View {
-        KeygenStatusText(
-            gradientText: "preparingVaultText1",
-            plainText: "preparingVaultText2"
-        )
-        .onAppear {
-            progressCounter = 1
-        }
-    }
-    
-    var generatingECDSAText: some View {
-        KeygenStatusText(
-            gradientText: "generatingECDSAText1",
-            plainText: "generatingECDSAText2"
-        )
-        .onAppear {
-            progressCounter = 2
-        }
-    }
-    
-    var generatingEdDSAText: some View {
-        KeygenStatusText(
-            gradientText: "generatingEdDSAText1",
-            plainText: "generatingEdDSAText2"
-        )
-        .onAppear {
-            progressCounter = 3
-        }
-    }
-    
-    var reshareECDSAText: some View {
-        KeygenStatusText(
-            gradientText: "",
-            plainText: "reshareECDSA"
-        )
-        .onAppear {
-            progressCounter = 2
-        }
-    }
-    
-    var reshareEdDSAText: some View {
-        KeygenStatusText(
-            gradientText: "",
-            plainText: "reshareEdDSA"
-        )
-        .onAppear {
-            progressCounter = 3
         }
     }
     
