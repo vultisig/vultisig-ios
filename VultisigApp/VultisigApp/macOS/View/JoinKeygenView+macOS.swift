@@ -18,8 +18,9 @@ extension JoinKeygenView {
     }
     
     var main: some View {
-        VStack {
+        VStack(spacing: .zero) {
             headerMac
+                .showIf(viewModel.status != .KeygenStarted)
             Spacer()
             states
             Spacer()
