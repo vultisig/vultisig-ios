@@ -115,8 +115,7 @@ struct OnboardingSummaryView: View {
 
     var disclaimerLabel: some View {
         HStack(spacing: 8) {
-            Image(systemName: didAgree ? "checkmark.circle" : "circle")
-                .foregroundColor(Theme.colors.alertInfo)
+            Checkbox(isChecked: $didAgree, isExtended: false)
 
             Text(NSLocalizedString("secureVaultSummaryDiscalimer", comment: ""))
                 .foregroundColor(Theme.colors.textPrimary)
@@ -168,7 +167,7 @@ struct OnboardingSummaryView: View {
     }
     .crossPlatformSheet(isPresented: $isPresented) {
         OnboardingSummaryView(
-            kind: .keyImport,
+            kind: .secure,
             isPresented: .constant(true),
             onDismiss: {}
         ).environmentObject(HomeViewModel())
