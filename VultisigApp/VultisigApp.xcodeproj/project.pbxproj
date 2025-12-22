@@ -139,6 +139,7 @@
 		1345D13B2EA8148700FC7BFD /* BondMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1345D13A2EA8148600FC7BFD /* BondMetrics.swift */; };
 		1345D13D2EA81A2D00FC7BFD /* NetworkBondInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1345D13C2EA81A2D00FC7BFD /* NetworkBondInfo.swift */; };
 		134716672EF97E71004DDC43 /* keygen_animation.riv in Resources */ = {isa = PBXBuildFile; fileRef = 134716662EF97E71004DDC43 /* keygen_animation.riv */; };
+		134716B92EF99530004DDC43 /* keygen_animation_haptic.ahap in Resources */ = {isa = PBXBuildFile; fileRef = 134716B82EF99530004DDC43 /* keygen_animation_haptic.ahap */; };
 		1348561D2EB511C8003D10BE /* BondTransactionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134856182EB511C8003D10BE /* BondTransactionScreen.swift */; };
 		1348561E2EB511C8003D10BE /* FunctionTransactionType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1348561A2EB511C8003D10BE /* FunctionTransactionType.swift */; };
 		134856212EB511DB003D10BE /* FunctionTransactionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134856202EB511D7003D10BE /* FunctionTransactionScreen.swift */; };
@@ -1418,6 +1419,7 @@
 		1345D13A2EA8148600FC7BFD /* BondMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondMetrics.swift; sourceTree = "<group>"; };
 		1345D13C2EA81A2D00FC7BFD /* NetworkBondInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkBondInfo.swift; sourceTree = "<group>"; };
 		134716662EF97E71004DDC43 /* keygen_animation.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = keygen_animation.riv; sourceTree = "<group>"; };
+		134716B82EF99530004DDC43 /* keygen_animation_haptic.ahap */ = {isa = PBXFileReference; lastKnownFileType = text; path = keygen_animation_haptic.ahap; sourceTree = "<group>"; };
 		134856182EB511C8003D10BE /* BondTransactionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondTransactionScreen.swift; sourceTree = "<group>"; };
 		1348561A2EB511C8003D10BE /* FunctionTransactionType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionTransactionType.swift; sourceTree = "<group>"; };
 		134856202EB511D7003D10BE /* FunctionTransactionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionTransactionScreen.swift; sourceTree = "<group>"; };
@@ -3184,6 +3186,14 @@
 				A5D0C9342BEE77190022D421 /* SwapPayload.swift */,
 			);
 			path = Swap;
+			sourceTree = "<group>";
+		};
+		134716B72EF99519004DDC43 /* HapticFeedback */ = {
+			isa = PBXGroup;
+			children = (
+				134716B82EF99530004DDC43 /* keygen_animation_haptic.ahap */,
+			);
+			path = HapticFeedback;
 			sourceTree = "<group>";
 		};
 		134856192EB511C8003D10BE /* Bond */ = {
@@ -5141,6 +5151,7 @@
 		A633B11D2B993BCD003D1738 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				134716B72EF99519004DDC43 /* HapticFeedback */,
 				A6F7B6702D42BDB700AC8104 /* Animations */,
 				A633B11E2B993BDC003D1738 /* Fonts */,
 			);
@@ -6634,6 +6645,7 @@
 				DE49A16D2B65F6DB000F3AFB /* Assets.xcassets in Resources */,
 				A53065FC2D5AA5D3000B82E6 /* securevault_overview.riv in Resources */,
 				A6C58D822D7AD81D000D2833 /* securevault_summary.riv in Resources */,
+				134716B92EF99530004DDC43 /* keygen_animation_haptic.ahap in Resources */,
 				A6C58D7E2D7AD7F6000D2833 /* fastvault_summary.riv in Resources */,
 				A6BB9BC52DA9AA320085E117 /* upgrade_animation.riv in Resources */,
 			);

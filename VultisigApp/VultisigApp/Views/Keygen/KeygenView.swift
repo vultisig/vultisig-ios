@@ -141,6 +141,16 @@ struct KeygenView: View {
                         let progessPercentage = keygenAnimationVMInstance?.numberProperty(fromPath: "progessPercentage")
                         progessPercentage?.value = newValue
                     }
+                    .onAppear {
+                        #if os(iOS)
+                        HapticFeedbackManager.shared.playAHAPFile(named: "keygen_animation_haptic", looping: true)
+                        #endif
+                    }
+                    .onDisappear {
+                        #if os(iOS)
+                        HapticFeedbackManager.shared.stopAHAPPlayback()
+                        #endif
+                    }
             case .KeygenFinished:
                 doneText
             case .KeygenFailed:
