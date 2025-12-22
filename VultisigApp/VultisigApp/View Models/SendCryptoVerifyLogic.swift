@@ -97,7 +97,12 @@ struct SendCryptoVerifyLogic {
         let rawAmount = amountDecimal * multiplier
         
         // Convert to BigInt safely using string representation to avoid overflow
-        let rawAmountString = NSDecimalNumber(decimal: rawAmount).stringValue
+        // Convert to BigInt safely using NSDecimalNumber to handle rounding and string conversion
+        let rawAmountNumber = NSDecimalNumber(decimal: rawAmount)
+        let behavior = NSDecimalNumberHandler(roundingMode: .down, scale: 0, raiseOnExactness: false, raiseOnOverflow: false, raiseOnUnderflow: false, raiseOnDivideByZero: false)
+        let roundedRawAmount = rawAmountNumber.rounding(accordingToBehavior: behavior)
+        let rawAmountString = roundedRawAmount.stringValue
+        
         guard let actualAmount = BigInt(rawAmountString) else {
             throw HelperError.runtimeError("Invalid amount for fee calculation")
         }
@@ -154,10 +159,41 @@ struct SendCryptoVerifyLogic {
     }
     
     func validateBalanceWithFee(tx: SendTransaction) -> BalanceValidationResult {
-        let totalAmount = tx.amount.toBigInt(decimals: tx.coin.decimals) + tx.fee
-        if totalAmount > tx.coin.rawBalance.toBigInt(decimals: tx.coin.decimals) {
-            return BalanceValidationResult(isValid: false, errorMessage: "walletBalanceExceededError")
+        let amount = tx.amountInRaw
+        let balance = tx.coin.rawBalance.toBigInt(decimals: tx.coin.decimals)
+        
+        if tx.coin.isNativeToken {
+            if tx.sendMaxAmount {
+                if tx.fee > balance {
+                    return BalanceValidationResult(isValid: false, errorMessage: "walletBalanceExceededError")
+                }
+            } else {
+                let totalAmount = amount + tx.fee
+                if totalAmount > balance {
+                    return BalanceValidationResult(isValid: false, errorMessage: "walletBalanceExceededError")
+                }
+            }
+        } else {
+            if amount > balance {
+                return BalanceValidationResult(isValid: false, errorMessage: "walletBalanceExceededError")
+            }
+            
+            // Validate gas balance for non-native tokens
+            if let vault = tx.vault ?? AppViewModel.shared.selectedVault {
+                if let nativeToken = vault.coins.nativeCoin(chain: tx.coin.chain) {
+                    let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
+                    if tx.fee > nativeBalance {
+                        // Using a generic error message since checking gas specifically might require a new error string key 
+                        // or we can reuse existing logic if available. 
+                        // The user complained about "walletBalanceExceededError" being shown wrongly, 
+                        // so returning it for actual insufficient gas is acceptable or we can use "notEnoughGas" if it exists.
+                        // But keeping it consistent with the function signature.
+                        return BalanceValidationResult(isValid: false, errorMessage: "insufficientGasTokenError")
+                    }
+                }
+            }
         }
+        
         return BalanceValidationResult(isValid: true, errorMessage: nil)
     }
     
