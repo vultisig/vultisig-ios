@@ -23,7 +23,7 @@ struct KeyImportOverviewScreen: View {
     @Environment(\.router) var router
     
     var buttonTitle: String {
-        scrollPosition == .multisig ? "continue".localized : "backupNow".localized
+        "next".localized
     }
     
     var body: some View {
@@ -32,20 +32,16 @@ struct KeyImportOverviewScreen: View {
                 Spacer()
                 ZStack {
                     if scrollPosition == .multisig {
-                        Image("seed-phrase-vault-setup")
+                        Image("seed-phrase-overview-multisig")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .scaleEffect(1.2)
-                            .offset(x: -20)
                     } else {
-                        Image("seed-phrase-vault-shares")
+                        Image("seed-phrase-overview-vault-shares")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .offset(x: 0, y: -20)
                     }
                 }
                 .frame(maxWidth: 600, maxHeight: .infinity)
-                .offset(y: 50)
                 .animation(.interpolatingSpring, value: scrollPosition)
                 Spacer()
                 VStack(spacing: 32) {
