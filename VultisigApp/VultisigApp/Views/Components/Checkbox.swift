@@ -48,15 +48,23 @@ struct Checkbox: View {
     var check: some View {
         Image(systemName: "checkmark")
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.alertSuccess)
+            .foregroundColor(color)
             .frame(width: 24, height: 24)
-            .background(Theme.colors.bgSuccess)
+            .background(bgColor)
             .cornerRadius(20)
             .opacity(isChecked ? 1 : 0)
             .overlay(
                 Circle()
-                    .stroke(isChecked ? Theme.colors.alertSuccess : Theme.colors.border, lineWidth: 1)
+                    .stroke(color, lineWidth: 1)
             )
+    }
+    
+    var color: Color {
+        isChecked ? Theme.colors.alertSuccess : Theme.colors.border
+    }
+    
+    var bgColor: Color {
+        isChecked ? Theme.colors.bgSuccess : Theme.colors.bgSecondary
     }
     
     @ViewBuilder
@@ -71,8 +79,10 @@ struct Checkbox: View {
 }
 
 #Preview {
-    VStack {
+    VStack(spacing: 16) {
         Checkbox(isChecked: .constant(true), text: "sendingRightAddressCheck")
         Checkbox(isChecked: .constant(false), text: "sendingRightAddressCheck")
     }
+    .frame(maxHeight: .infinity)
+    .background(Theme.colors.bgPrimary)
 }
