@@ -18,9 +18,5 @@ extension KeygenView {
                 }
             }
     }
-    
-    var progressContainer: some View {
-        KeygenProgressContainer(progressCounter: progressCounter)
-    }
 }
 #endif
