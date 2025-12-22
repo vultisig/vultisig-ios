@@ -176,7 +176,7 @@ final class DKLSKeygen {
                     break
                 }
                 let receiverString = String(bytes:receiverArray,encoding: .utf8)!
-                print("sending message from \(self.localPartyID) to: \(receiverString)")
+                print("sending message from \(self.localPartyID) to: \(receiverString) , length:\(outboundMessage.count)")
                 try await self.messenger.send(self.localPartyID, to: receiverString, body: encodedOutboundMessage)
             }
         } while 1 > 0
@@ -239,7 +239,7 @@ final class DKLSKeygen {
                 print("message with key:\(key) has been applied before")
                 continue
             }
-            print("Got message from: \(msg.from), to: \(msg.to), key:\(key) , seq: \(msg.sequence_no)")
+            //print("Got message from: \(msg.from), to: \(msg.to), key:\(key) , seq: \(msg.sequence_no)")
             guard let decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex) else {
                 throw HelperError.runtimeError("fail to decrypted message body")
             }
@@ -262,7 +262,7 @@ final class DKLSKeygen {
             if result != DKLS_LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
             } else {
-                print("successfully applied inbound message to dkls, isFinished:\(isFinished), hash:\(msg.hash)")
+                print("successfully applied inbound message to dkls, isFinished:\(isFinished), hash:\(msg.hash), from:\(msg.from), to:\(msg.to) , length:\(decodedMsg.count)")
             }
             self.cache.setObject(NSObject(), forKey: key)
             try await Task.sleep(for: .milliseconds(50))

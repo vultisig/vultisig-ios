@@ -238,7 +238,7 @@ final class SchnorrKeygen {
             if result != LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
             } else {
-                print("successfully applied inbound message to schnorr, isFinished:\(isFinished), hash:\(msg.hash) ,sequence_no:\(msg.sequence_no)")
+                print("successfully applied inbound message to schnorr, isFinished:\(isFinished), hash:\(msg.hash) ,sequence_no:\(msg.sequence_no), from: \(msg.from) , to: \(msg.to) , size: \(decodedMsg.count) ")
             }
             self.cache.setObject(NSObject(), forKey: key)
             try await Task.sleep(for: .milliseconds(50))
