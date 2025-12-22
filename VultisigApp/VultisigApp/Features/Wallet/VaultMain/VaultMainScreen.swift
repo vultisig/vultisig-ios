@@ -169,8 +169,7 @@ struct VaultMainScreen: View {
             VaultMainChainListView(
                 vault: vault,
                 onCopy: onCopy,
-                onCustomizeChains: onCustomizeChains,
-                onCamera: onCamera
+                onCustomizeChains: onCustomizeChains
             )
             .background(
                 // Reference to scroll when search gets presented

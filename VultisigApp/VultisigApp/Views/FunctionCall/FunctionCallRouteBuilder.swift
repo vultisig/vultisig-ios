@@ -46,4 +46,12 @@ struct FunctionCallRouteBuilder {
     func buildKeysignScreen(input: KeysignInput, tx: SendTransaction) -> some View {
         SendKeysignScreen(input: input, tx: tx)
     }
+
+    @ViewBuilder
+    func buildFunctionTransactionScreen(
+        vault: Vault,
+        transactionType: FunctionTransactionType
+    ) -> some View {
+        FunctionTransactionScreen(vault: vault, transactionType: transactionType)
+    }
 }

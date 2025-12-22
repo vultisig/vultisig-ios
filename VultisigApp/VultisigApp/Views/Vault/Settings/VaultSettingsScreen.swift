@@ -15,16 +15,13 @@ struct VaultSettingsScreen: View {
     @Query var folders: [Folder]
     
     @Environment(\.dismiss) var dismiss
-    
+    @Environment(\.router) var router
+
     @State var devicesInfo: [DeviceInfo] = []
     @State var showUpgradeYourVaultSheet = false
-    @State var upgradeYourVaultLinkActive = false
     @State var presentBackupSheet = false
-    @State var presentSingleDeviceBackup = false
-    @State var presentMultipleDeviceBackup = false
-    @State var presentServerBackup = false
     @State var presentFastSigningBiometricsSheet = false
-    
+
     @State var isFastSigningBiometricsEnabled: Bool = false
     @StateObject var viewModel = SettingsBiometryViewModel()
     
@@ -67,17 +64,15 @@ struct VaultSettingsScreen: View {
             }
         }
         .onLoad(perform: onLoad)
-        .navigationDestination(isPresented: $upgradeYourVaultLinkActive) {
-            if vault.isFastVault {
-                VaultShareBackupsView(vault: vault)
-            } else {
-                AllDevicesUpgradeView(vault: vault)
-            }
-        }
         .crossPlatformSheet(isPresented: $showUpgradeYourVaultSheet) {
             UpgradeYourVaultView(
                 showSheet: $showUpgradeYourVaultSheet,
-                navigationLinkActive: $upgradeYourVaultLinkActive
+                onUpgrade: {
+                    router.navigate(to: VaultRoute.upgradeVault(
+                        vault: vault,
+                        isFastVault: vault.isFastVault
+                    ))
+                }
             )
         }
         .bottomSheet(isPresented: $presentBackupSheet) {
@@ -86,17 +81,8 @@ struct VaultSettingsScreen: View {
                 onDeviceBackup()
             } onServerBackup: {
                 presentBackupSheet = false
-                presentServerBackup = true
+                router.navigate(to: VaultRoute.serverBackup(vault: vault))
             }
-        }
-        .navigationDestination(isPresented: $presentServerBackup) {
-            VaultServerBackupScreen(vault: vault)
-        }
-        .navigationDestination(isPresented: $presentSingleDeviceBackup) {
-            VaultBackupPasswordOptionsScreen(tssType: .Keygen, backupType: .single(vault: vault))
-        }
-        .navigationDestination(isPresented: $presentMultipleDeviceBackup) {
-            VaultBackupSelectionScreen(selectedVault: vault)
         }
         .onChange(of: presentFastSigningBiometricsSheet) { _, isPresented in
             if !isPresented {
@@ -126,16 +112,16 @@ struct VaultSettingsScreen: View {
     }
     
     var passwordHint: some View {
-        NavigationLink {
-            SettingsPasswordHintScreen(vault: vault, viewModel: viewModel)
+        Button {
+            router.navigate(to: VaultRoute.passwordHint(vault: vault))
         } label: {
             SettingsCommonOptionView(icon: "message-square-lock", title: "passwordHint".localized, subtitle: "setOrUpdateHint".localized)
         }
     }
     
     var vaultDetails: some View {
-        NavigationLink {
-            VaultPairDetailView(vault: vault, devicesInfo: devicesInfo)
+        Button {
+            router.navigate(to: VaultRoute.vaultDetails(vault: vault, devicesInfo: devicesInfo))
         } label: {
             SettingsCommonOptionView(icon: "circle-info", title: "vaultDetailsTitle".localized, subtitle: "vaultDetailsDescription".localized)
         }
@@ -159,8 +145,8 @@ struct VaultSettingsScreen: View {
     }
     
     var editVault: some View {
-        NavigationLink {
-            RenameVaultView(vaults: vaults, folders: folders, vault: vault)
+        Button {
+            router.navigate(to: VaultRoute.renameVault(vault: vault, vaults: vaults, folders: folders))
         } label: {
             SettingsCommonOptionView(
                 icon: "pencil",
@@ -172,8 +158,8 @@ struct VaultSettingsScreen: View {
     }
     
     var deleteVault: some View {
-        NavigationLink {
-            VaultDeletionConfirmView(vault: vault, devicesInfo: devicesInfo)
+        Button {
+            router.navigate(to: VaultRoute.deleteVault(vault: vault, devicesInfo: devicesInfo))
         } label: {
             SettingsCommonOptionView(
                 icon: "trash",
@@ -183,7 +169,7 @@ struct VaultSettingsScreen: View {
                 showSeparator: false
             )
         }
-        
+
     }
 
     var migrateVault: some View {
@@ -199,8 +185,8 @@ struct VaultSettingsScreen: View {
     }
     
     var advancedSettings: some View {
-        NavigationLink {
-            VaultAdvancedSettingsScreen(vault: vault)
+        Button {
+            router.navigate(to: VaultRoute.advancedSettings(vault: vault))
         } label: {
             SettingsCommonOptionView(
                 icon: "folder-key",
@@ -220,9 +206,13 @@ struct VaultSettingsScreen: View {
     
     func onDeviceBackup() {
         if vaults.count > 1 {
-            presentMultipleDeviceBackup = true
+            router.navigate(to: VaultRoute.backupSelection(vault: vault))
         } else {
-            presentSingleDeviceBackup = true
+            router.navigate(to: VaultRoute.backupPasswordOptions(
+                tssType: .Keygen,
+                backupType: .single(vault: vault),
+                isNewVault: false
+            ))
         }
     }
     

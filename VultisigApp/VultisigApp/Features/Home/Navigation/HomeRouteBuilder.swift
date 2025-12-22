@@ -1,13 +1,19 @@
 //
-//  VaultActionRouteBuilder.swift
+//  HomeRouteBuilder.swift
 //  VultisigApp
 //
-//  Created by Gaston Mazzeo on 25/09/2025.
+//  Created by Gaston Mazzeo on 18/12/2025.
 //
 
 import SwiftUI
 
-struct VaultActionRouteBuilder {
+struct HomeRouteBuilder {
+    
+    @ViewBuilder
+    func buildHome(showingVaultSelector: Bool) -> some View {
+        HomeScreen(showingVaultSelector: showingVaultSelector)
+    }
+    
     @ViewBuilder
     func buildActionRoute(action: VaultAction, sendTx: SendTransaction, vault: Vault) -> some View {
         switch action {

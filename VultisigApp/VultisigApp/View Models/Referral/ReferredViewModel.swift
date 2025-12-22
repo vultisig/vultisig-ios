@@ -11,10 +11,7 @@ import SwiftData
 @MainActor
 class ReferredViewModel: ObservableObject {
     @AppStorage("showReferralCodeOnboarding") var showReferralCodeOnboarding: Bool = true
-    @Published var showReferralBannerSheet: Bool = false
-    @Published var navigationToReferralOverview: Bool = false
-    @Published var navigationToReferralsView: Bool = false
-    
+
     @Published var isLoading: Bool = false
     
     @Published var referredCode: String = ""
@@ -43,17 +40,6 @@ class ReferredViewModel: ObservableObject {
     
     var hasReferredCode: Bool {
         savedReferredCode.isNotEmpty
-    }
-    
-    func closeBannerSheet() {
-        showReferralBannerSheet = false
-        navigationToReferralOverview = true
-    }
-    
-    func showReferralDashboard() {
-        navigationToReferralOverview = false
-        navigationToReferralsView = true
-        showReferralCodeOnboarding = false
     }
     
     func setData() {

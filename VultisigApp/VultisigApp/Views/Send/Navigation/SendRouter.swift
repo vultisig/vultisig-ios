@@ -8,13 +8,8 @@
 import SwiftUI
 
 struct SendRouter {
-    private let navigationRouter: NavigationRouter
     private let viewBuilder = SendRouteBuilder()
-    
-    init(navigationRouter: NavigationRouter) {
-        self.navigationRouter = navigationRouter
-    }
-    
+
     @ViewBuilder
     func build(_ route: SendRoute) -> some View {
         switch route {
@@ -43,6 +38,10 @@ struct SendRouter {
                 chain: chain,
                 tx: tx
             )
+        case .coinPicker(let coins, let tx):
+            viewBuilder.buildCoinPickerScreen(coins: coins, tx: tx)
+        case .transactionDetails(let input):
+            viewBuilder.buildTransactionDetailsScreen(input: input)
         }
     }
 }

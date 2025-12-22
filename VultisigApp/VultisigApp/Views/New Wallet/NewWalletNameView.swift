@@ -9,14 +9,14 @@ import SwiftUI
 import SwiftData
 
 struct NewWalletNameView: View {
+    @Environment(\.router) var router
     let tssType: TssType
     let selectedTab: SetupVaultState
 
     @State var name: String
-    @State var isLinkActive = false
     @FocusState private var isNameFocused: Bool
     @State var errorMessage: String = ""
-    
+
     @Query var vaults: [Vault]
     
     var body: some View {
@@ -88,18 +88,6 @@ struct NewWalletNameView: View {
         }
         .padding(.vertical, 40)
         .padding(.horizontal, 24)
-        .navigationDestination(isPresented: $isLinkActive) {
-            if selectedTab.isFastVault {
-                FastVaultEmailView(tssType: tssType, vault: Vault(name: name), selectedTab: selectedTab)
-            } else {
-                PeerDiscoveryView(
-                    tssType: tssType,
-                    vault: Vault(name: name),
-                    selectedTab: selectedTab,
-                    fastSignConfig: nil
-                )
-            }
-        }
     }
     
     var fields: some View {
@@ -131,7 +119,24 @@ struct NewWalletNameView: View {
             }
         }
         errorMessage = ""
-        isLinkActive = true
+        
+        let vault = Vault(name: name)
+        if selectedTab.isFastVault {
+            router.navigate(to: KeygenRoute.fastVaultEmail(
+                tssType: tssType,
+                vault: vault,
+                selectedTab: selectedTab,
+                fastVaultExist: false
+            ))
+        } else {
+            router.navigate(to: KeygenRoute.peerDiscovery(
+                tssType: tssType,
+                vault: vault,
+                selectedTab: selectedTab,
+                fastSignConfig: nil,
+                keyImportInput: nil
+            ))
+        }
     }
     
     private func getVaultName() -> String {

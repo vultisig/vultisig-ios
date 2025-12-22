@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ReferredOnboardingView: View {
-    @ObservedObject var referredViewModel: ReferredViewModel
+    @Environment(\.router) var router
     
     var body: some View {
         Screen(title: "referral".localized) {
@@ -36,7 +36,7 @@ struct ReferredOnboardingView: View {
     
     var button: some View {
         PrimaryButton(title: "getStarted") {
-            referredViewModel.showReferralDashboard()
+            router.navigate(to: ReferralRoute.initial)
         }
     }
     
@@ -124,5 +124,5 @@ struct ReferredOnboardingView: View {
 }
 
 #Preview {
-    ReferredOnboardingView(referredViewModel: ReferredViewModel())
+    ReferredOnboardingView()
 }

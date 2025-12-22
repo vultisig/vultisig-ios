@@ -21,9 +21,6 @@ extension FastVaultSetHintView {
     
     var main: some View {
         view
-            .navigationDestination(isPresented: $isLinkActive) {
-                PeerDiscoveryView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastSignConfig: fastSignConfig)
-            }
     }
     
     var view: some View {

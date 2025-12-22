@@ -13,9 +13,6 @@ extension FastVaultEmailView {
         ZStack {
             Background()
             view
-                .navigationDestination(isPresented: $isLinkActive) {
-                    FastVaultSetPasswordView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: email, fastVaultExist: fastVaultExist)
-                }
         }
         .crossPlatformToolbar(showsBackButton: !backButtonHidden)
     }
