@@ -13,13 +13,13 @@ import VultisigCommonData
 struct CircleDepositView: View {
     let vault: Vault
     @Environment(\.dismiss) var dismiss
+    @Environment(\.router) var router
     
     @StateObject var tx = SendTransaction()
     @StateObject var sendCryptoViewModel = SendCryptoViewModel()
     @State var amount: String = ""
     @State var percentage: Double = 0.0
     @State var usdcCoin: Coin?
-    @State var navigateToVerify = false
     @State var error: Error?
     @State var isLoading = false
     
@@ -210,7 +210,7 @@ struct CircleDepositView: View {
         
         await MainActor.run {
             isLoading = false
-            navigateToVerify = true
+            router.navigate(to: SendRoute.verify(tx: tx, vault: vault))
         }
     }
 }

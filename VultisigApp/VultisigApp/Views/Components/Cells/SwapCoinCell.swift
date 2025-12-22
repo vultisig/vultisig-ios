@@ -49,7 +49,7 @@ struct SwapCoinCell: View {
             logo: coin.logo,
             size: CGSize(width: 32, height: 32),
             ticker: coin.ticker,
-            tokenChainLogo: coin.chain.logo
+            tokenChainLogo: !coin.isNativeToken ? coin.chain.logo : nil
         )
     }
     

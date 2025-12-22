@@ -11,8 +11,13 @@ import SwiftUI
 extension CreateVaultView {
     var main: some View {
         view
-            .navigationDestination(isPresented: $shouldJoinKeygen) {
-                JoinKeygenView(vault: createVault(), selectedVault: selectedVault)
+            .onChange(of: shouldJoinKeygen) { _, shouldNavigate in
+                guard shouldNavigate else { return }
+                router.navigate(to: OnboardingRoute.joinKeygen(
+                    vault: createVault(),
+                    selectedVault: selectedVault
+                ))
+                shouldJoinKeygen = false
             }
             .crossPlatformSheet(isPresented: $showSheet) {
                 GeneralCodeScannerView(
@@ -43,8 +48,8 @@ extension CreateVaultView {
     }
     
     var scanMacButton: some View {
-        PrimaryNavigationButton(title: "scanQRStartScreen", leadingIcon: "qr-code", type: .secondary) {
-            GeneralQRImportMacView(type: .NewVault, selectedVault: nil) { _ in }
+        PrimaryButton(title: "scanQRStartScreen", leadingIcon: "qr-code", type: .secondary) {
+            navigateToGeneralQRImport = true
         }
     }
 }

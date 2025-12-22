@@ -12,8 +12,8 @@ struct KeyImportOnboardingScreen: View {
     @State var animationVM: RiveViewModel? = nil
     @State var showInformation: Bool = false
     @State var informationOpacity: CGFloat = 0
-    @State private var showImportSeedPhrase = false
-    
+    @Environment(\.router) var router
+
     var body: some View {
         Screen {
             VStack(spacing: .zero) {
@@ -27,7 +27,11 @@ struct KeyImportOnboardingScreen: View {
                         informationView
                         Spacer().frame(maxHeight: 65)
                         PrimaryButton(title: "getStarted") {
-                            showImportSeedPhrase = true
+                            router.navigate(
+                                to: OnboardingRoute.importSeedphrase(
+                                    keyImportInput: nil
+                                )
+                            )
                         }
                     }
                     .opacity(informationOpacity)
@@ -43,9 +47,6 @@ struct KeyImportOnboardingScreen: View {
         .onDisappear {
             animationVM?.stop()
             animationVM = nil
-        }
-        .navigationDestination(isPresented: $showImportSeedPhrase) {
-            ImportSeedphraseScreen()
         }
     }
     

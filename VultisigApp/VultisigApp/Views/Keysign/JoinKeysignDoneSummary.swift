@@ -94,7 +94,7 @@ struct JoinKeysignDoneSummary: View {
                     isSend: true,
                     fromAddress: keysignPayload.coin.address,
                     toAddress: keysignPayload.toAddress,
-                    fee: (fees.feeCrypto, fees.feeFiat)
+                    fee: FeeDisplay(crypto: fees.feeCrypto, fiat: fees.feeFiat)
                 ),
                 showAlert: $showAlert
             )

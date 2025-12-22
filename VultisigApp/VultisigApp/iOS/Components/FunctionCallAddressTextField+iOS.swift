@@ -24,6 +24,17 @@ extension FunctionCallAddressTextField {
             .sheet(isPresented: $showImagePicker, onDismiss: processImage) {
                 ImagePicker(selectedImage: $selectedImage)
             }
+            .crossPlatformSheet(isPresented: $showAddressBookSheet) {
+                AddressBookView(returnAddress: Binding<String>(
+                    get: { memo.addressFields[addressKey] ?? "" },
+                    set: { newValue in
+                        memo.addressFields[addressKey] = newValue
+                        DebounceHelper.shared.debounce {
+                            validateAddress(newValue)
+                        }
+                    }
+                ))
+            }
     }
     
     var field: some View {

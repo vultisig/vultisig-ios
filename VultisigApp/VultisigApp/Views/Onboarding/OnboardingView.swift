@@ -11,7 +11,7 @@ import RiveRuntime
 struct OnboardingView: View {
     
     @EnvironmentObject var appViewModel: AppViewModel
-    
+    @Environment(\.router) var router
     @State var tabIndex = 0
     
     @State var showOnboarding = false
@@ -59,6 +59,7 @@ struct OnboardingView: View {
         .crossPlatformSheet(isPresented: $showSummary) {
             OnboardingSummaryView(kind: .initial, isPresented: $showSummary, onDismiss: {
                 appViewModel.showOnboarding = false
+                router.navigate(to: OnboardingRoute.setupQRCode(tssType: .Keygen, vault: nil))
             })
         }
     }

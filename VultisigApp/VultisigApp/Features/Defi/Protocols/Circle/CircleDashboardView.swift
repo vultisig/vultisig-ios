@@ -11,7 +11,8 @@ struct CircleDashboardView: View {
     let vault: Vault
     @ObservedObject var model: CircleViewModel
     @Environment(\.dismiss) var dismiss
-    
+    @Environment(\.router) var router
+
     @State var showInfoBanner = true
     
     var walletUSDCBalance: Decimal {
@@ -121,15 +122,15 @@ struct CircleDashboardView: View {
                     icon: "arrow.down",
                     type: .outline,
                     isSystemIcon: true,
-                    action: { model.showWithdraw = true }
+                    action: { router.navigate(to: CircleRoute.withdraw(vault: vault, model: model)) }
                 )
                 .disabled(model.balance <= 0)
-                
+
                 DefiButton(
                     title: NSLocalizedString("circleDashboardDepositUSDC", comment: "Deposit"),
                     icon: "arrow.up",
                     isSystemIcon: true,
-                    action: { model.showDeposit = true }
+                    action: { router.navigate(to: CircleRoute.deposit(vault: vault)) }
                 )
             }
         }

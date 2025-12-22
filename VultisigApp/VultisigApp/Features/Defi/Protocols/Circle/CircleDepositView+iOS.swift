@@ -18,9 +18,6 @@ extension CircleDepositView {
         .onAppear {
             Task { await loadData() }
         }
-        .navigationDestination(isPresented: $navigateToVerify) {
-            SendRouteBuilder().buildVerifyScreen(tx: tx, vault: vault)
-        }
     }
     
     var scrollView: some View {

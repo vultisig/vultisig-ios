@@ -20,7 +20,8 @@ struct FunctionCallAddressTextField<MemoType: FunctionCallAddressable>: View {
     @State var showScanner = false
     @State var showImagePicker = false
     @State var isUploading: Bool = false
-    
+    @State var showAddressBookSheet: Bool = false
+
     @State var chain: Chain? = nil
     
 #if os(iOS)
@@ -112,16 +113,8 @@ struct FunctionCallAddressTextField<MemoType: FunctionCallAddressable>: View {
     }
     
     var addressBookButton: some View {
-        NavigationLink {
-            AddressBookView(returnAddress: Binding<String>(
-                get: { memo.addressFields[addressKey] ?? "" },
-                set: { newValue in
-                    memo.addressFields[addressKey] = newValue
-                    DebounceHelper.shared.debounce {
-                        validateAddress(newValue)
-                    }
-                }
-            ))
+        Button {
+            showAddressBookSheet.toggle()
         } label: {
             Image(systemName: "text.book.closed")
                 .font(Theme.fonts.bodyMRegular)

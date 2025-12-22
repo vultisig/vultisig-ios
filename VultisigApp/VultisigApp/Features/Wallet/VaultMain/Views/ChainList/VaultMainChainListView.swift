@@ -13,7 +13,6 @@ struct VaultMainChainListView: View {
     
     var onCopy: (GroupedChain) -> Void
     var onCustomizeChains: () -> Void
-    var onCamera: () -> Void
     
     var body: some View {
         Group {
@@ -29,11 +28,11 @@ struct VaultMainChainListView: View {
         ForEach(Array(viewModel.filteredGroups.enumerated()), id: \.element.id) { index, group in
             VaultChainCellView(group: group, vault: vault) {
                 onCopy(group)
-            } onCamera: { onCamera() }
-                .commonListItemContainer(
-                    index: index,
-                    itemsCount: viewModel.filteredGroups.count
-                )
+            }
+            .commonListItemContainer(
+                index: index,
+                itemsCount: viewModel.filteredGroups.count
+            )
         }
     }
 }
@@ -42,6 +41,5 @@ struct VaultMainChainListView: View {
     VaultMainChainListView(vault: .example)
     { _ in }
     onCustomizeChains: {}
-    onCamera: {}
-        .environmentObject(VaultDetailViewModel())
+    .environmentObject(VaultDetailViewModel())
 }

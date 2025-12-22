@@ -10,7 +10,7 @@ import SwiftUI
 
 extension BackupNowDisclaimer {
     var container: some View {
-        navigationCell
+        content
     }
 }
 #endif

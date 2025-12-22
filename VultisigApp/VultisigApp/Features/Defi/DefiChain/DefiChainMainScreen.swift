@@ -8,9 +8,10 @@
 import SwiftUI
 
 struct DefiChainMainScreen: View {
+    @Environment(\.router) var router
     @ObservedObject var vault: Vault
     let group: GroupedChain
-    
+
     @StateObject var viewModel: DefiChainMainViewModel
     @StateObject var bondViewModel: DefiChainBondViewModel
     @StateObject var lpsViewModel: DefiChainLPsViewModel
@@ -18,8 +19,6 @@ struct DefiChainMainScreen: View {
     @State private var showPositionSelection = false
     @State private var isLoading = false
     @State private var error: HelperError?
-    
-    @State private var transactionToPresent: FunctionTransactionType?
     
     init(vault: Vault, group: GroupedChain) {
         self.vault = vault
@@ -63,9 +62,6 @@ struct DefiChainMainScreen: View {
             )
         }
         .crossPlatformToolbar(ignoresTopEdge: true) {}
-        .navigationDestination(item: $transactionToPresent) { transaction in
-            FunctionTransactionScreen(vault: vault, transactionType: transaction)
-        }
         .withLoading(isLoading: $isLoading)
         .alert(item: $error) { error in
             Alert(
@@ -193,7 +189,10 @@ struct DefiChainMainScreen: View {
                 isLoading = false
             }
             
-            transactionToPresent = type
+            router.navigate(to: FunctionCallRoute.functionTransaction(
+                vault: vault,
+                transactionType: type
+            ))
         }
     }
 }

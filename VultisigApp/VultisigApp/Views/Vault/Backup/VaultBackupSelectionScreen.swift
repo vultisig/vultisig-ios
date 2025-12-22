@@ -8,7 +8,7 @@
 import SwiftData
 import SwiftUI
 
-enum VaultBackupType {
+enum VaultBackupType: Hashable {
     case single(vault: Vault)
     case multiple(vaults: [Vault], selectedVault: Vault)
     
@@ -34,12 +34,14 @@ enum VaultBackupType {
 
 struct VaultBackupSelectionScreen: View {
     @Query var vaults: [Vault]
-    
+
+    @Environment(\.router) var router
+
     let selectedVault: Vault
-    
+
     var vaultsToShow: Int { 5 }
     var moreVaultsCount: Int { vaults.count - vaultsToShow }
-    
+
     var body: some View {
         Screen {
             ScrollView {
@@ -54,7 +56,7 @@ struct VaultBackupSelectionScreen: View {
                             .multilineTextAlignment(.leading)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    
+
                     VStack(spacing: 16) {
                         backupTypeContainer(type: .single(vault: selectedVault))
                         backupTypeContainer(type: .multiple(vaults: vaults, selectedVault: selectedVault))
@@ -63,10 +65,14 @@ struct VaultBackupSelectionScreen: View {
             }
         }
     }
-    
+
     func backupTypeContainer(type: VaultBackupType) -> some View {
-        NavigationLink {
-            VaultBackupPasswordOptionsScreen(tssType: .Keygen, backupType: type)
+        Button {
+            router.navigate(to: VaultRoute.backupPasswordOptions(
+                tssType: .Keygen,
+                backupType: type,
+                isNewVault: false
+            ))
         } label: {
             backupTypeRow(type: type)
         }

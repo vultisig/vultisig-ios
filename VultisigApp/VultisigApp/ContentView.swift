@@ -27,10 +27,17 @@ struct ContentView: View {
     var body: some View {
         NavigationStack(path: $navigationRouter.navPath) {
             container
+                .navigationDestination(for: HomeRoute.self) { router.homeRouter.build($0) }
                 .navigationDestination(for: SendRoute.self) { router.sendRouter.build($0) }
+                .navigationDestination(for: KeygenRoute.self) { router.keygenRouter.build($0) }
+                .navigationDestination(for: VaultRoute.self) { router.vaultRouter.build($0) }
+                .navigationDestination(for: OnboardingRoute.self) { router.onboardingRouter.build($0) }
+                .navigationDestination(for: ReferralRoute.self) { router.referralRouter.build($0) }
+                .navigationDestination(for: FunctionCallRoute.self) { router.functionCallRouter.build($0) }
+                .navigationDestination(for: SettingsRoute.self) { router.settingsRouter.build($0) }
+                .navigationDestination(for: CircleRoute.self) { router.circleRouter.build($0) }
         }
         .environment(\.router, router.navigationRouter)
-        .id(appViewModel.referenceID)
         .colorScheme(.dark)
         .accentColor(.white)
         .sheetPresentedStyle()
@@ -44,24 +51,30 @@ struct ContentView: View {
             }
         }
         .onLoad {
-            appViewModel.loadSelectedVault(for: vaults)
+            if vaults.isEmpty {
+                navigationRouter.replace(to: VaultRoute.createVault(showBackButton: false))
+            } else {
+                appViewModel.loadSelectedVault(for: vaults)
+            }
+        }
+        .overlay(appViewModel.showCover ? CoverView().ignoresSafeArea() : nil)
+        .onChange(of: appViewModel.selectedVault) { _, _ in
+            guard appViewModel.restartNavigation else { return }
+            navigateToHome()
+        }
+        .onChange(of: appViewModel.restartNavigation) { oldValue, newValue in
+            guard newValue else { return }
+            navigateToHome()
+            appViewModel.restartNavigation = false
         }
     }
     
+    func navigateToHome() {
+        navigationRouter.replace(to: HomeRoute.home(showingVaultSelector: appViewModel.showingVaultSelector))
+    }
+    
     var content: some View {
-        Group {
-            if appViewModel.showSplashView {
-                splashView
-            } else if appViewModel.showCover {
-                CoverView()
-            } else if vaults.count == 0 {
-                CreateVaultView(showBackButton: false)
-            } else if appViewModel.selectedVault != nil {
-                HomeScreen(showingVaultSelector: appViewModel.showingVaultSelector)
-            }
-        }
-        .transition(.opacity)
-        .animation(.interpolatingSpring, value: appViewModel.referenceID)
+        splashView
     }
     
     var splashView: some View {

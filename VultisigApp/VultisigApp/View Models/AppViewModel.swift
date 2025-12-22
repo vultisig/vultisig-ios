@@ -26,7 +26,8 @@ class AppViewModel: ObservableObject {
     // Properties to manage global navigation
     @Published private(set) var selectedVault: Vault?
     @Published private(set) var showingVaultSelector: Bool = false
-    @Published private(set) var referenceID = UUID()
+    @Published var restartNavigation: Bool = false
+    @Published var showCamera: Bool = false
     
     private let logic = AccountLogic()
     
@@ -42,9 +43,7 @@ class AppViewModel: ObservableObject {
         self.selectedPubKeyECDSA = selectedVault?.pubKeyECDSA ?? ""
         
         self.showingVaultSelector = showingVaultSelector
-        if restartNavigation {
-            self.referenceID = UUID()
-        }
+        self.restartNavigation = restartNavigation
     }
     
     func loadSelectedVault(for vaults: [Vault]) {
@@ -173,7 +172,6 @@ class AppViewModel: ObservableObject {
     }
     
     private func resetLogin() {
-        referenceID = UUID()
         guard !showOnboarding || isAuthenticationEnabled else {
             return
         }

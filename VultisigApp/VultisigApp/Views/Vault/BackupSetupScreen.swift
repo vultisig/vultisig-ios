@@ -14,9 +14,10 @@ struct VaultBackupNowScreen: View {
     var isNewVault = false
 
     @State var navigationLinkActive = false
+    @Environment(\.router) var router
 
     @State var animation: RiveViewModel?
-   
+
     var body: some View {
         Screen {
             VStack {
@@ -28,8 +29,13 @@ struct VaultBackupNowScreen: View {
                 }
             }
         }
-        .navigationDestination(isPresented: $navigationLinkActive) {
-            VaultBackupPasswordOptionsScreen(tssType: tssType, vault: vault, isNewVault: isNewVault)
+        .onChange(of: navigationLinkActive) { _, isActive in
+            guard isActive else { return }
+            router.navigate(to: VaultRoute.backupPasswordOptions(
+                tssType: tssType,
+                backupType: .single(vault: vault),
+                isNewVault: isNewVault
+            ))
         }
         .onLoad {
             animation = RiveViewModel(fileName: "backupvault_splash", autoPlay: true)

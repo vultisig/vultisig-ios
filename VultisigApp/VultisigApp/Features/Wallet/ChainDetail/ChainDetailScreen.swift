@@ -8,13 +8,12 @@
 import SwiftUI
 
 struct ChainDetailScreen: View {
+    @Environment(\.router) var router
     @ObservedObject var group: GroupedChain
     let vault: Vault
-    @Binding var vaultAction: VaultAction?
-    @Binding var showAction: Bool
-    
+
     @StateObject var viewModel: ChainDetailViewModel
-    
+
     @State private var addressToCopy: Coin?
     @State var showManageTokens: Bool = false
     @State var showSearchHeader: Bool = false
@@ -22,25 +21,21 @@ struct ChainDetailScreen: View {
     @State var focusSearch: Bool = false
     @State var showReceiveSheet: Bool = false
     @State var scrollProxy: ScrollViewProxy?
-    
+
     @StateObject var sendTx = SendTransaction()
-    
+
     private let scrollReferenceId = "chainDetailScreenBottomContentId"
-    
+
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
     
     init(
         group: GroupedChain,
-        vault: Vault,
-        vaultAction: Binding<VaultAction?>,
-        showAction: Binding<Bool>
+        vault: Vault
     ) {
         self.group = group
         self.vault = vault
-        self._vaultAction = vaultAction
-        self._showAction = showAction
         self._viewModel = StateObject(wrappedValue: ChainDetailViewModel(vault: vault, group: group))
     }
     
@@ -267,8 +262,8 @@ private extension ChainDetailScreen {
         }
         
         guard let vaultAction else { return }
-        self.vaultAction = vaultAction
-        self.showAction = true
+
+        navigateToAction(action: vaultAction)
     }
     
     func onCopy() {
@@ -277,16 +272,17 @@ private extension ChainDetailScreen {
     
     func onCoinAction(_ action: VaultAction) {
         coinToShow = nil
-        self.vaultAction = action
-        self.showAction = true
+        navigateToAction(action: action)
+    }
+    
+    func navigateToAction(action: VaultAction) {
+        router.navigate(to: HomeRoute.vaultAction(action: action, sendTx: sendTx, vault: vault))
     }
 }
 
 #Preview {
     ChainDetailScreen(
         group: .example,
-        vault: .example,
-        vaultAction: .constant(nil),
-        showAction: .constant(false)
+        vault: .example
     )
 }

@@ -17,12 +17,10 @@ struct KeyImportOverviewScreen: View {
         case vaultShares
     }
     
-    @State private var presentBackupNowScreen: Bool = false
     @State private var scrollPosition: Page? = .multisig
     
     @State private var isVerificationLinkActive = false
-    @State private var isBackupLinkActive = false
-    @State private var goBackToEmailSetup = false
+    @Environment(\.router) var router
     
     var buttonTitle: String {
         scrollPosition == .multisig ? "continue".localized : "backupNow".localized
@@ -59,7 +57,11 @@ struct KeyImportOverviewScreen: View {
                                 scrollPosition = .vaultShares
                             }
                         } else {
-                            presentBackupNowScreen = true
+                            router.navigate(to: KeygenRoute.backupNow(
+                                tssType: .KeyImport,
+                                backupType: .single(vault: vault),
+                                isNewVault: true
+                            ))
                         }
                     }
                     .padding(.horizontal, 16)
@@ -72,16 +74,15 @@ struct KeyImportOverviewScreen: View {
                 vault: vault,
                 email: email ?? .empty,
                 isPresented: $isVerificationLinkActive,
-                isBackupLinkActive: .constant(false),
                 tabIndex: .constant(0),
-                goBackToEmailSetup: $goBackToEmailSetup
+                onBackup: { },
+                onBackToEmailSetup: {
+                    router.navigate(to: OnboardingRoute.vaultSetup(
+                        tssType: .KeyImport,
+                        keyImportInput: keyImportInput
+                    ))
+                }
             )
-        }
-        .navigationDestination(isPresented: $presentBackupNowScreen) {
-            VaultBackupNowScreen(tssType: .KeyImport, backupType: .single(vault: vault), isNewVault: true)
-        }
-        .navigationDestination(isPresented: $goBackToEmailSetup) {
-            VaultSetupScreen(tssType: .KeyImport, keyImportInput: keyImportInput)
         }
         .onLoad {
             if email != nil {

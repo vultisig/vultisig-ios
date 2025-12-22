@@ -5,7 +5,7 @@
 //  Created by Gaston Mazzeo on 05/08/2025.
 //
 
-struct THORName: Decodable {
+struct THORName: Decodable, Hashable {
     private enum CodingKeys: String, CodingKey {
         case name
         case expireBlockHeight = "expire_block_height"
@@ -39,7 +39,7 @@ struct THORName: Decodable {
     )
 }
 
-struct THORNameAlias: Decodable {
+struct THORNameAlias: Decodable, Hashable {
     let chain: String
     let address: String?
 }
