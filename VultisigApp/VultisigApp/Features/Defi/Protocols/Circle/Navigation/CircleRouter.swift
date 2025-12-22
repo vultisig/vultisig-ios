@@ -17,8 +17,8 @@ struct CircleRouter {
             viewBuilder.buildMainScreen(vault: vault)
         case .deposit(let vault):
             viewBuilder.buildDepositScreen(vault: vault)
-        case .withdraw(let vault):
-            viewBuilder.buildWithdrawScreen(vault: vault)
+        case .withdraw(let vault, let model):
+            viewBuilder.buildWithdrawScreen(vault: vault, model: model)
         }
     }
 }

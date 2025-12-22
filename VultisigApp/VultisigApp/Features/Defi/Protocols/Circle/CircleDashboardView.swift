@@ -122,7 +122,7 @@ struct CircleDashboardView: View {
                     icon: "arrow.down",
                     type: .outline,
                     isSystemIcon: true,
-                    action: { router.navigate(to: CircleRoute.withdraw(vault: vault)) }
+                    action: { router.navigate(to: CircleRoute.withdraw(vault: vault, model: model)) }
                 )
                 .disabled(model.balance <= 0)
 

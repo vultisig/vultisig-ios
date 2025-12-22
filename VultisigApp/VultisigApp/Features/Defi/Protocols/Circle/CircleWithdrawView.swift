@@ -12,7 +12,7 @@ import VultisigCommonData
 
 struct CircleWithdrawView: View {
     let vault: Vault
-    @StateObject private var model = CircleViewModel()
+    @StateObject private var model: CircleViewModel
     @Environment(\.dismiss) var dismiss
     @Environment(\.router) var router
     
@@ -25,6 +25,11 @@ struct CircleWithdrawView: View {
     @State var fastVaultPassword: String = ""
     
     @StateObject var sendTransaction = SendTransaction()
+    
+    init(vault: Vault, model: CircleViewModel) {
+        self.vault = vault
+        self._model = StateObject(wrappedValue: model)
+    }
     
     var body: some View {
         main

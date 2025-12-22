@@ -8,5 +8,5 @@
 enum CircleRoute: Hashable {
     case main(vault: Vault)
     case deposit(vault: Vault)
-    case withdraw(vault: Vault)
+    case withdraw(vault: Vault, model: CircleViewModel)
 }

@@ -20,7 +20,7 @@ struct CircleRouteBuilder {
     }
 
     @ViewBuilder
-    func buildWithdrawScreen(vault: Vault) -> some View {
-        CircleWithdrawView(vault: vault)
+    func buildWithdrawScreen(vault: Vault, model: CircleViewModel) -> some View {
+        CircleWithdrawView(vault: vault, model: model)
     }
 }
