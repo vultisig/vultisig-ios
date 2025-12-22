@@ -30,6 +30,9 @@ struct JoinKeygenView: View {
     
     var body: some View {
         content
+            .if(viewModel.status == .KeygenStarted) {
+                $0.ignoresSafeArea()
+            }
             .onAppear {
                 setData()
             }
@@ -64,19 +67,25 @@ struct JoinKeygenView: View {
                 cameraErrorView
             }
         }
-        .padding()
-        .cornerRadius(10)
+        .if(viewModel.status != .KeygenStarted) {
+            $0
+                .padding()
+                .cornerRadius(10)
+        }        
     }
     
+    @ViewBuilder
     var keygenStarted: some View {
-        HStack {
-            if viewModel.serverAddress != nil && self.viewModel.sessionID != nil {
-                keygenView
-            } else {
-                keygenErrorText
-            }
+        if viewModel.serverAddress != nil && self.viewModel.sessionID != nil {
+            keygenView
+                .ignoresSafeArea()
+            #if os(iOS)
+                .toolbar(.hidden, for: .navigationBar)
+            #endif
+        } else {
+            keygenErrorText
+                .padding(.vertical, 30)
         }
-        .padding(.vertical, 30)
     }
     
     var keygenView: some View {
