@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CoinPickerView: View {
-    
+
     @State var searchText: String = .empty
     @State var isSearching = false
 
@@ -17,7 +17,14 @@ struct CoinPickerView: View {
     @Environment(\.dismiss) var dismiss
 
     let coins: [Coin]
+    let tx: SendTransaction?
     let onSelect: ((Coin) -> Void)?
+
+    init(coins: [Coin], tx: SendTransaction? = nil, onSelect: ((Coin) -> Void)? = nil) {
+        self.coins = coins
+        self.tx = tx
+        self.onSelect = onSelect
+    }
 
     var filtered: [Coin] {
         return coins.filter {
@@ -77,7 +84,11 @@ struct CoinPickerView: View {
 
     func row(for coin: Coin) -> some View {
         Button {
-            onSelect?(coin)
+            if let tx = tx {
+                tx.reset(coin: coin)
+            } else {
+                onSelect?(coin)
+            }
             dismiss()
         } label: {
             CoinPickerCell(coin: coin)

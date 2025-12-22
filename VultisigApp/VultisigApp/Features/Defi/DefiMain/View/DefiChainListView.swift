@@ -10,9 +10,11 @@ import SwiftUI
 struct DefiChainListView: View {
     @ObservedObject var vault: Vault
     @ObservedObject var viewModel: DefiMainViewModel
-    
+
+    @Environment(\.router) var router
+
     var onCustomizeChains: () -> Void
-    
+
     var body: some View {
         Group {
             if !viewModel.filteredGroups.isEmpty {
@@ -25,12 +27,12 @@ struct DefiChainListView: View {
     
     var chainList: some View {
         ForEach(Array(viewModel.filteredGroups.enumerated()), id: \.element.id) { index, group in
-            NavigationLink {
+            Button {
                 switch group.chain {
                 case .thorChain, .mayaChain:
-                    DefiChainMainScreen(vault: vault, group: group)
+                    router.navigate(to: VaultRoute.defiChain(group: group, vault: vault))
                 default:
-                    EmptyView()
+                    break
                 }
             } label: {
                 DefiChainCellView(group: group, vault: vault)

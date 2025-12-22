@@ -13,13 +13,15 @@ import CodeScanner
 #endif
 
 struct AddressFieldAccessoryStack: View {
+    @Environment(\.router) var router
     let coin: Coin
     var onResult: (AddressResult?) -> Void
-    
+
     @State var showScanner = false
     @State var showImagePicker = false
     @State var isUploading: Bool = false
     @State var showAddressBookSheet: Bool = false
+    @State var scannerResultId: UUID? = nil
     
 #if os(iOS)
     @State var selectedImage: UIImage?
@@ -74,12 +76,20 @@ struct AddressFieldAccessoryStack: View {
         .onDrop(of: [.image], isTargeted: $isUploading) { providers -> Bool in
             OnDropQRUtils.handleOnDrop(providers: providers, handleImageQrCode: handleImageQrCode)
         }
-        .navigationDestination(isPresented: $showScanner) {
-            MacAddressScannerView(
-                showCameraScanView: $showScanner,
-                selectedVault: nil
-            ) {
-               onResult($0)
+        .onChange(of: showScanner) { _, shouldNavigate in
+            if shouldNavigate {
+                let resultId = UUID()
+                scannerResultId = resultId
+                router.navigate(to: KeygenRoute.macAddressScanner(
+                    selectedVault: nil,
+                    resultId: resultId
+                ))
+                showScanner = false
+            } else if let resultId = scannerResultId,
+                      let result = ScannerResultManager.shared.getResult(for: resultId) {
+                onResult(result)
+                ScannerResultManager.shared.clearResult(for: resultId)
+                scannerResultId = nil
             }
         }
         #endif

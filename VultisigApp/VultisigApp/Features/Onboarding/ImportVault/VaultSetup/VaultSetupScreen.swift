@@ -16,13 +16,13 @@ struct VaultSetupScreen: View {
     }
     
     @StateObject var viewModel = VaultSetupViewModel()
-    
+
     @State var scrollViewProxy: ScrollViewProxy?
     @State var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?
-    @State var presentNewVaultSetupScreen = false
     @State var hintExpanded = false
     @State var referralExpanded = false
+    @Environment(\.router) var router
     
     init(tssType: TssType, keyImportInput: KeyImportInput?) {
         self.tssType = tssType
@@ -48,13 +48,6 @@ struct VaultSetupScreen: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 focusedField = newValue
             }
-        }
-        .navigationDestination(isPresented: $presentNewVaultSetupScreen) {
-            KeyImportNewVaultSetupScreen(
-                vault: viewModel.getVault(keyImportInput: keyImportInput),
-                keyImportInput: keyImportInput,
-                fastSignConfig: viewModel.fastConfig
-            )
         }
         .onSubmit {
             onContinue()
@@ -217,7 +210,11 @@ struct VaultSetupScreen: View {
         }
         
         guard viewModel.validForm else { return }
-        presentNewVaultSetupScreen = true
+        router.navigate(to: OnboardingRoute.keyImportNewVaultSetup(
+            vault: viewModel.getVault(keyImportInput: keyImportInput),
+            keyImportInput: keyImportInput,
+            fastSignConfig: viewModel.fastConfig
+        ))
     }
 }
 

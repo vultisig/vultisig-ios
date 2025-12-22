@@ -33,6 +33,17 @@ extension FunctionCallAddressTextField {
             .onDrop(of: [.image], isTargeted: $isUploading) { providers -> Bool in
                 OnDropQRUtils.handleOnDrop(providers: providers, handleImageQrCode: handleImageQrCode)
             }
+            .crossPlatformSheet(isPresented: $showAddressBookSheet) {
+                AddressBookView(returnAddress: Binding<String>(
+                    get: { memo.addressFields[addressKey] ?? "" },
+                    set: { newValue in
+                        memo.addressFields[addressKey] = newValue
+                        DebounceHelper.shared.debounce {
+                            validateAddress(newValue)
+                        }
+                    }
+                ))
+            }
     }
     
     var field: some View {

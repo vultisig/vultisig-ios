@@ -21,9 +21,6 @@ extension FastVaultEmailView {
     
     var main: some View {
         view
-            .navigationDestination(isPresented: $isLinkActive) {
-                FastVaultSetPasswordView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: email, fastVaultExist: fastVaultExist)
-            }
     }
     
     var view: some View {

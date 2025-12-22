@@ -41,37 +41,16 @@ struct KeygenView: View {
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var context
-    
+    @Environment(\.router) var router
+
     var body: some View {
         content
             .sensoryFeedback(.success, trigger: showDoneText)
             .sensoryFeedback(.error, trigger: showError)
             .sensoryFeedback(.impact(weight: .heavy), trigger: viewModel.status)
-            .navigationDestination(isPresented: $viewModel.isLinkActive) {
-                switch tssType {
-                case .Keygen, .Reshare:
-                    if let fastSignConfig, showVerificationView {
-                        FastBackupVaultOverview(
-                            tssType: tssType,
-                            vault: vault,
-                            email: fastSignConfig.email
-                        )
-                    } else {
-                        SecureBackupVaultOverview(vault: vault)
-                    }
-                case .Migrate:
-                    VaultBackupNowScreen(
-                        tssType: tssType,
-                        backupType: .single(vault: vault),
-                        isNewVault: true
-                    )
-                case .KeyImport:
-                    KeyImportOverviewScreen(
-                        vault: vault,
-                        email: fastSignConfig?.email,
-                        keyImportInput: keyImportInput
-                    )
-                }
+            .onChange(of: viewModel.isLinkActive) { _, isActive in
+                guard isActive else { return }
+                handleNavigation()
             }
             .onAppear {
                 hideBackButton = true
@@ -81,6 +60,33 @@ struct KeygenView: View {
             .onDisappear {
                 vaultCreatedAnimationVM?.stop()
             }
+    }
+
+    private func handleNavigation() {
+        switch tssType {
+        case .Keygen, .Reshare:
+            if let fastSignConfig, showVerificationView {
+                router.navigate(to: KeygenRoute.fastBackupOverview(
+                    tssType: tssType,
+                    vault: vault,
+                    email: fastSignConfig.email
+                ))
+            } else {
+                router.navigate(to: KeygenRoute.secureBackupOverview(vault: vault))
+            }
+        case .Migrate:
+            router.navigate(to: KeygenRoute.backupNow(
+                tssType: tssType,
+                backupType: .single(vault: vault),
+                isNewVault: true
+            ))
+        case .KeyImport:
+            router.navigate(to: KeygenRoute.keyImportOverview(
+                vault: vault,
+                email: fastSignConfig?.email,
+                keyImportInput: keyImportInput
+            ))
+        }
     }
     
     var container: some View {

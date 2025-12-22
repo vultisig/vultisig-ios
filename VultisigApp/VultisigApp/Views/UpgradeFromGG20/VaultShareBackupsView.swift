@@ -9,7 +9,9 @@ import SwiftUI
 
 struct VaultShareBackupsView: View {
     let vault: Vault
-    
+
+    @Environment(\.router) var router
+
     var body: some View {
         ZStack {
             Background()
@@ -49,24 +51,26 @@ struct VaultShareBackupsView: View {
     }
     
     var migrateSecureVault: some View {
-        PrimaryNavigationButton(title: "next") {
-            PeerDiscoveryView(
+        PrimaryButton(title: "next") {
+            router.navigate(to: KeygenRoute.peerDiscovery(
                 tssType: .Migrate,
                 vault: vault,
                 selectedTab: .secure,
-                fastSignConfig: nil
-            )
-        }.frame(width: 120)
+                fastSignConfig: nil,
+                keyImportInput: nil
+            ))
+        }
+        .frame(width: 120)
     }
     
     var migrateFastVault: some View {
-        PrimaryNavigationButton(title: "next") {
-            FastVaultEmailView(
+        PrimaryButton(title: "next") {
+            router.navigate(to: KeygenRoute.fastVaultEmail(
                 tssType: .Migrate,
                 vault: vault,
                 selectedTab: vault.signers.count == 2 ? .fast : .active,
                 fastVaultExist: true
-            )
+            ))
         }
     }
 }

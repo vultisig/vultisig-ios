@@ -12,7 +12,7 @@ struct ReferralVaultSelectionScreen: View {
     @Query var vaults: [Vault]
     @Environment(\.dismiss) var dismiss
     
-    @Binding var selectedVault: Vault?
+    @ObservedObject var viewModel: VaultSelectedViewModel
     
     var body: some View {
         Screen(title: "referral".localized) {
@@ -25,7 +25,7 @@ struct ReferralVaultSelectionScreen: View {
                     VStack(spacing: 0) {
                         ForEach(vaults) { vault in
                             Button {
-                                selectedVault = vault
+                                viewModel.selectedVault = vault
                                 dismiss()
                             } label: {
                                 vaultRow(vault: vault)
@@ -68,6 +68,6 @@ struct ReferralVaultSelectionScreen: View {
     }
     
     func isSelected(vault: Vault) -> Bool {
-        vault == selectedVault
+        vault == viewModel.selectedVault
     }
 }

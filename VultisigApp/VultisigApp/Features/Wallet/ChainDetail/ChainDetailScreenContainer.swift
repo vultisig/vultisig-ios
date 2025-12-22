@@ -10,19 +10,15 @@ import SwiftUI
 struct ChainDetailScreenContainer: View {
     @ObservedObject var group: GroupedChain
     let vault: Vault
-    @Binding var showCamera: Bool
     
     @State private var selectedTab: HomeTab = .wallet
     private let tabs: [HomeTab]
     
-    @State private var showAction: Bool = false
-    @State private var vaultAction: VaultAction? = nil
-    @StateObject var sendTx = SendTransaction()
+    @EnvironmentObject var appViewModel: AppViewModel
     
-    init(group: GroupedChain, vault: Vault, showCamera: Binding<Bool>) {
+    init(group: GroupedChain, vault: Vault) {
         self.group = group
         self.vault = vault
-        self._showCamera = showCamera
         let supportsDefiTab = CoinAction.defiChains.contains(group.chain)
         tabs = supportsDefiTab ? [.wallet, .defi] : [.wallet]
     }
@@ -38,9 +34,7 @@ struct ChainDetailScreenContainer: View {
                 case .wallet:
                     ChainDetailScreen(
                         group: group,
-                        vault: vault,
-                        vaultAction: $vaultAction,
-                        showAction: $showAction
+                        vault: vault
                     )
                 case .defi:
                     DefiChainMainScreen(vault: vault, group: group)
@@ -52,20 +46,11 @@ struct ChainDetailScreenContainer: View {
             .navigationBarBackButtonHidden()
 #endif
         } onAccessory: {
-            showCamera = true
+            appViewModel.showCamera = true
         }
         .onChange(of: selectedTab) { _, tab in
             guard tab == .camera else { return }
-            showCamera = true
-        }
-        .navigationDestination(isPresented: $showAction) {
-            if let vaultAction {
-                VaultActionRouteBuilder().buildActionRoute(
-                    action: vaultAction,
-                    sendTx: sendTx,
-                    vault: vault
-                )
-            }
+            appViewModel.showCamera = true
         }
     }
 }
@@ -73,7 +58,7 @@ struct ChainDetailScreenContainer: View {
 #Preview {
     ChainDetailScreenContainer(
         group: .example,
-        vault: .example,
-        showCamera: .constant(false)
+        vault: .example
     )
+    .environmentObject(AppViewModel())
 }

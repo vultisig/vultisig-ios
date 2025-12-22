@@ -14,11 +14,11 @@ struct VaultBackupNowScreen: View {
     var isNewVault = false
 
     @StateObject var backupViewModel = EncryptedBackupViewModel()
-    @State var presentBackupOptions = false
     @State var animation: RiveViewModel?
     @State var fileModel: FileExporterModel<EncryptedDataFile>?
     @State var presentFileExporter = false
-   
+    @Environment(\.router) var router
+
     var body: some View {
         VaultBackupContainerView(
             presentFileExporter: $presentFileExporter,
@@ -38,9 +38,6 @@ struct VaultBackupNowScreen: View {
                     }
                 }
             }
-        }
-        .navigationDestination(isPresented: $presentBackupOptions) {
-            VaultBackupPasswordOptionsScreen(tssType: tssType, backupType: backupType, isNewVault: isNewVault)
         }
         .onLoad(perform: onLoad)
     }
@@ -82,7 +79,11 @@ struct VaultBackupNowScreen: View {
     func onBackupNow() {
         // Only export backup directly if it's fast vault during creation
         guard backupType.vault.isFastVault, isNewVault, fileModel != nil else {
-            presentBackupOptions = true
+            router.navigate(to: VaultRoute.backupPasswordOptions(
+                tssType: tssType,
+                backupType: backupType,
+                isNewVault: isNewVault
+            ))
             return
         }
         
