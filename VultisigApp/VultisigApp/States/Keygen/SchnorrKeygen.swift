@@ -27,6 +27,8 @@ final class SchnorrKeygen {
     let publicKeyEdDSA: String
     let localPrivateSecret: String?
     let hexChainCode: String
+    var hasProcessInitiativeDeviceMessage = false
+    let lock = NSLock()
     
     init(vault: Vault,
          tssType: TssType,
@@ -56,7 +58,27 @@ final class SchnorrKeygen {
         self.localPrivateSecret = localUI
         self.hexChainCode = vault.hexChainCode
     }
-    
+    func setHasProcessInitiativeDeviceMessage() {
+        self.lock.lock()
+        defer {
+            self.lock.unlock()
+        }
+        self.hasProcessInitiativeDeviceMessage = true
+    }
+    func getHasProcessInitiativeDeviceMessage() -> Bool {
+        self.lock.lock()
+        defer {
+            self.lock.unlock()
+        }
+        return self.hasProcessInitiativeDeviceMessage
+    }
+    func resetHasProcessInitiativeDeviceMessage() {
+        self.lock.lock()
+        defer {
+            self.lock.unlock()
+        }
+        self.hasProcessInitiativeDeviceMessage = false
+    }
     func getKeyshare() -> DKLSKeyshare? {
         return self.keyshare
     }
@@ -160,6 +182,7 @@ final class SchnorrKeygen {
     }
     
     func pullInboundMessages(handle: goschnorr.Handle) async throws -> Bool {
+        resetHasProcessInitiativeDeviceMessage()
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(self.localPartyID)"
         print("start pulling inbound messages from:\(urlString)")
         guard let url = URL(string: urlString) else {
@@ -215,7 +238,13 @@ final class SchnorrKeygen {
                 print("message with key:\(key) has been applied before")
                 continue
             }
-            print("Got message from: \(msg.from), to: \(msg.to), key:\(key)")
+            if !self.isInitiateDevice {
+                if !self.getHasProcessInitiativeDeviceMessage() && msg.from != self.keygenCommittee[0] {
+                    continue
+                } else {
+                    self.setHasProcessInitiativeDeviceMessage()
+                }
+            }
             guard let decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex) else {
                 throw HelperError.runtimeError("fail to decrypted message body")
             }
@@ -238,7 +267,7 @@ final class SchnorrKeygen {
             if result != LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
             } else {
-                print("successfully applied inbound message to schnorr, isFinished:\(isFinished), hash:\(msg.hash) ,sequence_no:\(msg.sequence_no)")
+                print("successfully applied inbound message to schnorr, isFinished:\(isFinished), hash:\(msg.hash) ,sequence_no:\(msg.sequence_no), from: \(msg.from) , to: \(msg.to) , size: \(decodedMsg.count) ")
             }
             self.cache.setObject(NSObject(), forKey: key)
             try await Task.sleep(for: .milliseconds(50))
