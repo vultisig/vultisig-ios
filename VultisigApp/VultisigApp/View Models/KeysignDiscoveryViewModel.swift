@@ -52,7 +52,9 @@ class KeysignDiscoveryViewModel: ObservableObject {
             vaultLocalPartyID: vault.localPartyID,
             libType: LibType.DKLS.toString(),
             wasmExecuteContractPayload: nil,
-            skipBroadcast: false
+            skipBroadcast: false,
+            signDirect: nil,
+            signAmino: nil
         )
         self.participantDiscovery = nil
         self.encryptionKeyHex = Encryption.getEncryptionKey()

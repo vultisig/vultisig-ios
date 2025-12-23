@@ -58,7 +58,9 @@ final class ERC20ChainsHelperTest: XCTestCase {
             vaultLocalPartyID: "localPartyID",
             libType: LibType.DKLS.toString(),
             wasmExecuteContractPayload: nil,
-            skipBroadcast: false
+            skipBroadcast: false,
+            signDirect: nil,
+            signAmino: nil
         )
         let eRC20Helper = ERC20Helper(coinType: .ethereum)
         let preImageHashes = try eRC20Helper.getPreSignedImageHash(keysignPayload: keysignPayload)

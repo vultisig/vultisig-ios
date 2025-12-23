@@ -20,6 +20,8 @@ struct KeysignPayload: Codable, Hashable {
     let libType: String
     let wasmExecuteContractPayload: WasmExecuteContractPayload?
     let skipBroadcast: Bool
+    let signDirect: SignDirect?
+    let signAmino: SignAmino?
     
     var fromAmountString: String {
         let decimalAmount = Decimal(string: swapPayload?.fromAmount.description ?? "") ?? Decimal.zero
@@ -69,6 +71,8 @@ struct KeysignPayload: Codable, Hashable {
         vaultLocalPartyID: "iPhone-100",
         libType: LibType.DKLS.toString(),
         wasmExecuteContractPayload: nil,
-        skipBroadcast: false
+        skipBroadcast: false,
+        signDirect: nil,
+        signAmino: nil
     )
 }

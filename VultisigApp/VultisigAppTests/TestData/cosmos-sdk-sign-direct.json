@@ -1,0 +1,85 @@
+[
+  {
+    "name": "SignDirect - THORChain Secure asset: LTC transaction",
+    "keysign_payload": {
+      "coin": {
+        "chain": "THORChain",
+        "ticker": "LTC",
+        "address": "thor1zgmsl5g25mfrtyuyrgdxh7r35wyyreh3p89jgq",
+        "decimals": 8,
+        "price_provider_id": "litecoin",
+        "is_native_token": false,
+        "hex_public_key": "03d0fa17aba7cb57c2bfe4308ea7a7e55227e2efd9d5ddb5bd73e33357cb66e1ea",
+        "contract_address": "LTC-LTC",
+        "logo": "ltc"
+      },
+      "to_address": "",
+      "to_amount": "3000000",
+      "BlockchainSpecific": {
+        "ThorchainSpecific": {
+          "account_number": 139521,
+          "fee": 2000000,
+          "isDeposit": false,
+          "sequence": 392,
+          "transaction_type": 0
+        }
+      },
+      "sign_data": {
+        "sign_direct": {
+          "body_bytes": "CoQBChEvdHlwZXMuTXNnRGVwb3NpdBJvCiIKFQoDTFRDEgNMVEMaA0xUQyAAKAAwARIHMzAwMDAwMBgAEjNzZWN1cmUtOmx0YzFxYzU2cTk5MHZ6ajNhODlkNTQ0ZHZqMjhncnJweHFxMHB3NjRocTQaFBI3D9EKptI1k4QaGmv4caOIQebx",
+          "auth_info_bytes": "ClEKRgofL2Nvc21vcy5jcnlwdG8uc2VjcDI1NmsxLlB1YktleRIjCiED0PoXq6fLV8K/5DCOp6flUifi79nV3bW9c+MzV8tm4eoSBAoCCAEYiAMSEgoMCgRydW5lEgQxMDAwEMCaDA==",
+          "chain_id": "thorchain-1",
+          "account_number": "139521"
+        }
+      },
+      "utxo_info": [],
+      "SwapPayload": null,
+      "vault_public_key_ecdsa": "03a4d9b5d643f9a08846295e3010b26fe37c12611020853d526b96cdd0e09d12af",
+      "lib_type": "DKLS"
+    },
+    "expected_image_hash": [
+      "78a50364c4bbd5c5df8407215a8161044ff07ac00a90fee5b1a7770f8291f0d1"
+    ]
+  },
+  {
+    "name": "SignDirect - ATOM transaction (multi-send)",
+    "keysign_payload": {
+      "coin": {
+        "chain": "Cosmos",
+        "ticker": "ATOM",
+        "address": "cosmos1g9na87hc34r90spqdfeu3m2rxswkv7qhalylas",
+        "decimals": 6,
+        "price_provider_id": "cosmos",
+        "is_native_token": true,
+        "hex_public_key": "0335289d889fc92e41418ed543eb8a1607944e3cbcc0b9c551de0377690e041241",
+        "contract_address": "",
+        "logo": "atom"
+      },
+      "to_address": "cosmos1g9na87hc34r90spqdfeu3m2rxswkv7qhalylas",
+      "to_amount": "1000",
+      "BlockchainSpecific": {
+        "CosmosSpecific": {
+          "account_number": 3367086,
+          "gas": 7500,
+          "sequence": 43,
+          "transaction_type": 0
+        }
+      },
+      "sign_data": {
+        "sign_direct": {
+          "body_bytes": "Co0BChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEm0KLWNvc21vczFnOW5hODdoYzM0cjkwc3BxZGZldTNtMnJ4c3drdjdxaGFseWxhcxItY29zbW9zMWc5bmE4N2hjMzRyOTBzcHFkZmV1M20ycnhzd2t2N3FoYWx5bGFzGg0KBXVhdG9tEgQxMDAwCo0BChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEm0KLWNvc21vczFnOW5hODdoYzM0cjkwc3BxZGZldTNtMnJ4c3drdjdxaGFseWxhcxItY29zbW9zMWc5bmE4N2hjMzRyOTBzcHFkZmV1M20ycnhzd2t2N3FoYWx5bGFzGg0KBXVhdG9tEgQyMDAwCo0BChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEm0KLWNvc21vczFnOW5hODdoYzM0cjkwc3BxZGZldTNtMnJ4c3drdjdxaGFseWxhcxItY29zbW9zMWc5bmE4N2hjMzRyOTBzcHFkZmV1M20ycnhzd2t2N3FoYWx5bGFzGg0KBXVhdG9tEgQzMDAw",
+          "auth_info_bytes": "ClAKRgofL2Nvc21vcy5jcnlwdG8uc2VjcDI1NmsxLlB1YktleRIjCiEDNSidiJ/JLkFBjtVD64oWB5ROPLzAucVR3gN3aQ4EEkESBAoCCAEYKxITCg0KBXVhdG9tEgQxMDAwEMCaDA==",
+          "chain_id": "cosmoshub-4",
+          "account_number": "3367086"
+        }
+      },
+      "utxo_info": [],
+      "SwapPayload": null,
+      "vault_public_key_ecdsa": "03a4d9b5d643f9a08846295e3010b26fe37c12611020853d526b96cdd0e09d12af",
+      "lib_type": "DKLS"
+    },
+    "expected_image_hash": [
+      "0825e16751db438777a64fef44b213ed788d3ef6da6217ea0f1b6b990ee835c2"
+    ]
+  }
+]

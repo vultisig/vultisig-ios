@@ -22,7 +22,7 @@ struct DydxHelperStruct {
         }
         let coin = CoinType.dydx
         
-        var message = [CosmosMessage()]
+        var message = [WalletCore.CosmosMessage()]
         
         var transactionType: VSTransactionType = .unspecified
         if let vsTransactionType = VSTransactionType(rawValue: transactionTypeRawValue) {
@@ -39,8 +39,8 @@ struct DydxHelperStruct {
                 throw HelperError.runtimeError("The vote option is invalid")
             }
             
-            message = [CosmosMessage.with {
-                $0.msgVote = CosmosMessage.MsgVote.with {
+            message = [WalletCore.CosmosMessage.with {
+                $0.msgVote = WalletCore.CosmosMessage.MsgVote.with {
                     $0.proposalID = UInt64(proposalID)
                     $0.voter = keysignPayload.coin.address
                     $0.option = voteOption
@@ -51,8 +51,8 @@ struct DydxHelperStruct {
                 throw HelperError.runtimeError("\(keysignPayload.toAddress) is invalid")
             }
             
-            message = [CosmosMessage.with {
-                $0.sendCoinsMessage = CosmosMessage.Send.with{
+            message = [WalletCore.CosmosMessage.with {
+                $0.sendCoinsMessage = WalletCore.CosmosMessage.Send.with{
                     $0.fromAddress = keysignPayload.coin.address
                     $0.amounts = [CosmosAmount.with {
                         $0.denom = "adydx"
@@ -75,7 +75,7 @@ struct DydxHelperStruct {
             }
             $0.messages = message
             
-            $0.fee = CosmosFee.with {
+            $0.fee = WalletCore.CosmosFee.with {
                 $0.gas = 200000 // gas limit
                 $0.amounts = [CosmosAmount.with {
                     $0.denom = "adydx"

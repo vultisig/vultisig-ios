@@ -1,0 +1,90 @@
+[
+  {
+    "name": "SignAmino - ATOM transaction with multiple messages",
+    "keysign_payload": {
+      "coin": {
+        "chain": "Cosmos",
+        "ticker": "ATOM",
+        "address": "cosmos1g9na87hc34r90spqdfeu3m2rxswkv7qhalylas",
+        "decimals": 6,
+        "price_provider_id": "cosmos",
+        "is_native_token": true,
+        "hex_public_key": "0335289d889fc92e41418ed543eb8a1607944e3cbcc0b9c551de0377690e041241",
+        "contract_address": "",
+        "logo": "atom"
+      },
+      "to_address": "cosmos1g9na87hc34r90spqdfeu3m2rxswkv7qhalylas",
+      "to_amount": "0",
+      "skipBroadcast": true,
+      "BlockchainSpecific": {
+        "CosmosSpecific": {
+          "account_number": 3367086,
+          "gas": 7500,
+          "sequence": 42,
+          "transaction_type": 0
+        }
+      },
+      "sign_data": {
+        "sign_amino": {
+          "fee": {
+            "amount": [
+              {
+                "denom": "uatom",
+                "amount": "1000"
+              }
+            ],
+            "gas": "200000"
+          },
+          "msgs": [
+            {
+              "type": "cosmos-sdk/MsgSend",
+              "value": {
+                "amount": [
+                  {
+                    "amount": "1000",
+                    "denom": "uatom"
+                  }
+                ],
+                "from_address": "cosmos1g9na87hc34r90spqdfeu3m2rxswkv7qhalylas",
+                "to_address": "cosmos1g9na87hc34r90spqdfeu3m2rxswkv7qhalylas"
+              }
+            },
+            {
+              "type": "cosmos-sdk/MsgSend",
+              "value": {
+                "amount": [
+                  {
+                    "amount": "2000",
+                    "denom": "uatom"
+                  }
+                ],
+                "from_address": "cosmos1g9na87hc34r90spqdfeu3m2rxswkv7qhalylas",
+                "to_address": "cosmos1g9na87hc34r90spqdfeu3m2rxswkv7qhalylas"
+              }
+            },
+            {
+              "type": "cosmos-sdk/MsgSend",
+              "value": {
+                "amount": [
+                  {
+                    "amount": "3000",
+                    "denom": "uatom"
+                  }
+                ],
+                "from_address": "cosmos1g9na87hc34r90spqdfeu3m2rxswkv7qhalylas",
+                "to_address": "cosmos1g9na87hc34r90spqdfeu3m2rxswkv7qhalylas"
+              }
+            }
+          ]
+        }
+      },
+      "utxo_info": [],
+      "SwapPayload": null,
+      "vault_public_key_ecdsa": "03a4d9b5d643f9a08846295e3010b26fe37c12611020853d526b96cdd0e09d12af",
+      "lib_type": "DKLS"
+    },
+    "expected_image_hash": [
+      "235ed1789c6acd39f020c4b4ef80565bb154d97fb52fc8e76d3fa0253762c653"
+    ]
+  }
+]

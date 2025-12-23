@@ -40,8 +40,8 @@ struct TerraHelperStruct {
                 if let memo = keysignPayload.memo {
                     $0.memo = memo
                 }
-                $0.messages = [CosmosMessage.with {
-                    $0.sendCoinsMessage = CosmosMessage.Send.with{
+                $0.messages = [WalletCore.CosmosMessage.with {
+                    $0.sendCoinsMessage = WalletCore.CosmosMessage.Send.with{
                         $0.fromAddress = keysignPayload.coin.address
                         $0.amounts = [CosmosAmount.with {
                             $0.denom = keysignPayload.coin.isNativeToken ? denom : keysignPayload.coin.contractAddress
@@ -51,7 +51,7 @@ struct TerraHelperStruct {
                     }
                 }]
                 
-                $0.fee = CosmosFee.with {
+                $0.fee = WalletCore.CosmosFee.with {
                     $0.gas = GasLimit
                     $0.amounts = [CosmosAmount.with {
                         $0.denom = denom
@@ -78,8 +78,8 @@ struct TerraHelperStruct {
                         $0.memo = memo
                     }
 
-                    $0.messages = [CosmosMessage.with {
-                        $0.sendCoinsMessage = CosmosMessage.Send.with {
+                    $0.messages = [WalletCore.CosmosMessage.with {
+                        $0.sendCoinsMessage = WalletCore.CosmosMessage.Send.with {
                             $0.fromAddress = keysignPayload.coin.address
                             $0.amounts = [CosmosAmount.with {
                                 $0.denom = keysignPayload.coin.contractAddress
@@ -89,7 +89,7 @@ struct TerraHelperStruct {
                         }
                     }]
 
-                    $0.fee = CosmosFee.with {
+                    $0.fee = WalletCore.CosmosFee.with {
                         $0.gas = 1000000
                         $0.amounts = [
                             CosmosAmount.with {
@@ -115,7 +115,7 @@ struct TerraHelperStruct {
                     throw HelperError.runtimeError("\(keysignPayload.coin.address) is invalid")
                 }
                 
-                let wasmGenericMessage = CosmosMessage.WasmExecuteContractGeneric.with {
+                let wasmGenericMessage = WalletCore.CosmosMessage.WasmExecuteContractGeneric.with {
                     $0.senderAddress = fromAddr.description
                     $0.contractAddress = keysignPayload.coin.contractAddress.description
                     $0.executeMsg = """
@@ -123,11 +123,11 @@ struct TerraHelperStruct {
                                     """
                 }
 
-                let message = CosmosMessage.with {
+                let message = WalletCore.CosmosMessage.with {
                     $0.wasmExecuteContractGeneric = wasmGenericMessage
                 }
                                
-                let fee = CosmosFee.with {
+                let fee = WalletCore.CosmosFee.with {
                     $0.gas = GasLimit
                     $0.amounts = [CosmosAmount.with {
                         $0.amount = String(gas)

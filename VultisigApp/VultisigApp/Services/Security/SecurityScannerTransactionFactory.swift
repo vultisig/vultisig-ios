@@ -112,7 +112,9 @@ private extension SecurityScannerTransactionFactory {
             vaultLocalPartyID: "", // no need for SOL prehash
             libType: .empty, // no need for SOL prehash
             wasmExecuteContractPayload: nil,
-            skipBroadcast: false
+            skipBroadcast: false,
+            signDirect: nil,
+            signAmino: nil
         )
         
         let transactionZeroX = try SolanaHelper.getZeroSignedTransaction(keysignPayload: keysignPayload)

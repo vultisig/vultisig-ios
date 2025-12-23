@@ -44,8 +44,8 @@ struct CosmosHelperStruct {
             $0.signingMode = .protobuf
             $0.chainID = config.coinType.chainId
             $0.memo = memo
-            $0.messages = [CosmosMessage.with {
-                $0.sendCoinsMessage = CosmosMessage.Send.with {
+            $0.messages = [WalletCore.CosmosMessage.with {
+                $0.sendCoinsMessage = WalletCore.CosmosMessage.Send.with {
                     $0.fromAddress = thorChainSwapPayload.fromAddress
                     $0.toAddress = thorChainSwapPayload.vaultAddress
                     $0.amounts = [CosmosAmount.with {
@@ -88,7 +88,7 @@ struct CosmosHelperStruct {
             
             let timeouts = ibcDenomTrace?.height?.split(separator: "_") ?? []
             let timeout = UInt64(timeouts.last ?? "0") ?? 0
-            let transferMessage = CosmosMessage.Transfer.with {
+            let transferMessage = WalletCore.CosmosMessage.Transfer.with {
                 $0.sourcePort = "transfer"
                 $0.sourceChannel = String(sourceChannel)
                 $0.sender = keysignPayload.coin.address
@@ -114,7 +114,7 @@ struct CosmosHelperStruct {
                 if !memo.isEmpty {
                     $0.memo = memo
                 }
-                $0.messages = [CosmosMessage.with { $0.transferTokensMessage = transferMessage }]
+                $0.messages = [WalletCore.CosmosMessage.with { $0.transferTokensMessage = transferMessage }]
                 $0.fee = buildCosmosFee(gas: gas)
             }
             
@@ -151,8 +151,8 @@ struct CosmosHelperStruct {
                 if let memo = keysignPayload.memo {
                     $0.memo = memo
                 }
-                $0.messages = [CosmosMessage.with {
-                    $0.sendCoinsMessage = CosmosMessage.Send.with{
+                $0.messages = [WalletCore.CosmosMessage.with {
+                    $0.sendCoinsMessage = WalletCore.CosmosMessage.Send.with{
                         $0.fromAddress = keysignPayload.coin.address
                         $0.amounts = [CosmosAmount.with {
                             $0.denom = keysignPayload.coin.isNativeToken ? config.denom : keysignPayload.coin.contractAddress
@@ -235,8 +235,8 @@ struct CosmosHelperStruct {
         }
     }
     
-    private func buildCosmosFee(gas: UInt64) -> CosmosFee {
-        return CosmosFee.with {
+    private func buildCosmosFee(gas: UInt64) -> WalletCore.CosmosFee {
+        return WalletCore.CosmosFee.with {
             $0.gas = config.gasLimit
             $0.amounts = [CosmosAmount.with {
                 $0.denom = config.denom
@@ -245,7 +245,7 @@ struct CosmosHelperStruct {
         }
     }
     
-    private func buildCosmosWasmGenericMsg(keysignPayload: KeysignPayload) throws -> CosmosMessage {
+    private func buildCosmosWasmGenericMsg(keysignPayload: KeysignPayload) throws -> WalletCore.CosmosMessage {
         let coinType = keysignPayload.coin.chain.coinType
         
         guard coinType.validate(address: keysignPayload.coin.address) else {
@@ -263,8 +263,8 @@ struct CosmosHelperStruct {
             }
         }
         
-        return CosmosMessage.with {
-            $0.wasmExecuteContractGeneric = CosmosMessage.WasmExecuteContractGeneric.with {
+        return WalletCore.CosmosMessage.with {
+            $0.wasmExecuteContractGeneric = WalletCore.CosmosMessage.WasmExecuteContractGeneric.with {
                 $0.senderAddress = contractPayload.senderAddress
                 $0.contractAddress = contractPayload.contractAddress
                 $0.executeMsg = contractPayload.executeMsg

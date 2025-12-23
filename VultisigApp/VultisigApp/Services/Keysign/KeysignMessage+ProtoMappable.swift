@@ -93,6 +93,8 @@ extension KeysignPayload: ProtoMappable {
         self.libType = proto.libType
         self.wasmExecuteContractPayload = try? WasmExecuteContractPayload(proto: proto.wasmExecuteContractPayload)
         self.skipBroadcast = proto.skipBroadcast
+        self.signAmino = SignAmino(proto: proto.signAmino)
+        self.signDirect = SignDirect(proto: proto.signDirect)
     }
     
     func mapToProtobuff() -> VSKeysignPayload {
@@ -112,6 +114,8 @@ extension KeysignPayload: ProtoMappable {
             }
             $0.wasmExecuteContractPayload = wasmExecuteContractPayload?.mapToProtobuff() ?? .init()
             $0.skipBroadcast = skipBroadcast
+            $0.signDirect = signDirect?.mapToProtobuff() ?? .init()
+            $0.signAmino = signAmino?.mapToProtobuff() ?? .init()
         }
     }
 }
