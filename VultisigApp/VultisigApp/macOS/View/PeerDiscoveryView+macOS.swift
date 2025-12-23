@@ -47,6 +47,7 @@ extension PeerDiscoveryView {
             viewModel: viewModel,
             shareSheetViewModel: shareSheetViewModel
         )
+        .showIf(viewModel.status != .Keygen)
     }
     
     var portraitContent: some View {
