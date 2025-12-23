@@ -41,6 +41,20 @@ class SendCryptoVerifyViewModel: ObservableObject {
             
             tx.fee = feeResult.fee
             tx.gas = feeResult.gas
+            
+            // Adjust amount for max send if fee changed (only for native tokens where fee is deducted from balance)
+            if tx.sendMaxAmount && tx.coin.isNativeToken {
+                let balance = tx.coin.rawBalance.toBigInt(decimals: tx.coin.decimals)
+                let newAmount = balance - tx.fee
+                
+                if newAmount > 0 {
+                    let decimals = tx.coin.decimals
+                    let amountDecimal = Decimal(string: String(newAmount)) ?? 0
+                    let formattedAmount = amountDecimal / pow(10, decimals)
+                    tx.amount = "\(formattedAmount)"
+                }
+            }
+            
             tx.isCalculatingFee = false
             isLoading = false
             
