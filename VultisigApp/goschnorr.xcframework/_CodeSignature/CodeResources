@@ -18,7 +18,7 @@
 		</data>
 		<key>ios-arm64/goschnorr.framework/goschnorr</key>
 		<data>
-		Jtk1uzdGyxWjmFBx4y3XyBnB5Ss=
+		llqCAh5qga9Uqgap46giOH3YU7Q=
 		</data>
 		<key>ios-arm64_x86_64-simulator/goschnorr.framework/Headers/goschnorr.h</key>
 		<data>
@@ -34,7 +34,7 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/goschnorr.framework/goschnorr</key>
 		<data>
-		EUwFtLanqmtmMNxrSbhvDQ5JTK0=
+		kovy9l415EHqbKKgip58I5I/6hQ=
 		</data>
 		<key>macos-arm64_x86_64/goschnorr.framework/Modules/module.modulemap</key>
 		<data>
@@ -50,7 +50,7 @@
 		</data>
 		<key>macos-arm64_x86_64/goschnorr.framework/Versions/A/goschnorr</key>
 		<data>
-		MKEINcrDr0HcZHdrsXwsvo660pc=
+		MA+rmKFzC0XEAQ9yo/uKghLwr+4=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -80,7 +80,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			scZdu2Rkha4Lpv6aXURRpEyh1iiRi4XDJdYbuHaSG3s=
+			Scb/ngIJwNktzs6G5NJgQ+Cpj2K2s6zKQhJxWJ74Ojw=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/goschnorr.framework/Headers/goschnorr.h</key>
@@ -108,7 +108,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			MugKAfqeZlzJJxg8/+S2tWGMkt6cmAoHlavVoprUMAk=
+			3SR7s49ucAimZ2hBJ2f1H9TVRFi/0NIlhTlXiZ4Ks8w=
 			</data>
 		</dict>
 		<key>macos-arm64_x86_64/goschnorr.framework/Headers</key>
@@ -146,7 +146,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			odFnpCEC0OYrOgmjbisvtnLMz65WMpvsacUuWcQhboI=
+			lKXLo2qaZ76i6KWxFmWeNBQnnXeNKLM3lwZs1e+ESDA=
 			</data>
 		</dict>
 		<key>macos-arm64_x86_64/goschnorr.framework/Versions/Current</key>
