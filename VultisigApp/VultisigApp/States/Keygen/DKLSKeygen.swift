@@ -75,6 +75,13 @@ final class DKLSKeygen {
         }
         return self.hasProcessInitiativeDeviceMessage
     }
+    func resetHasProcessInitiativeDeviceMessage() {
+        self.lock.lock()
+        defer {
+            self.lock.unlock()
+        }
+        self.hasProcessInitiativeDeviceMessage = false
+    }
     func getSetupMessage() -> [UInt8] {
         return self.setupMessage
     }
@@ -199,6 +206,7 @@ final class DKLSKeygen {
     }
     
     func pullInboundMessages(handle: godkls.Handle) async throws -> Bool {
+        resetHasProcessInitiativeDeviceMessage()
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(self.localPartyID)"
         print("start pulling inbound messages from:\(urlString)")
         guard let url = URL(string: urlString) else {

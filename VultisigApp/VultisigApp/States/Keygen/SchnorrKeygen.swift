@@ -72,6 +72,13 @@ final class SchnorrKeygen {
         }
         return self.hasProcessInitiativeDeviceMessage
     }
+    func resetHasProcessInitiativeDeviceMessage() {
+        self.lock.lock()
+        defer {
+            self.lock.unlock()
+        }
+        self.hasProcessInitiativeDeviceMessage = false
+    }
     func getKeyshare() -> DKLSKeyshare? {
         return self.keyshare
     }
@@ -175,6 +182,7 @@ final class SchnorrKeygen {
     }
     
     func pullInboundMessages(handle: goschnorr.Handle) async throws -> Bool {
+        resetHasProcessInitiativeDeviceMessage()
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(self.localPartyID)"
         print("start pulling inbound messages from:\(urlString)")
         guard let url = URL(string: urlString) else {
