@@ -27,6 +27,8 @@ final class SchnorrKeygen {
     let publicKeyEdDSA: String
     let localPrivateSecret: String?
     let hexChainCode: String
+    var hasProcessInitiativeDeviceMessage = false
+    let lock = NSLock()
     
     init(vault: Vault,
          tssType: TssType,
@@ -56,7 +58,20 @@ final class SchnorrKeygen {
         self.localPrivateSecret = localUI
         self.hexChainCode = vault.hexChainCode
     }
-    
+    func setHasProcessInitiativeDeviceMessage() {
+        self.lock.lock()
+        defer {
+            self.lock.unlock()
+        }
+        self.hasProcessInitiativeDeviceMessage = true
+    }
+    func getHasProcessInitiativeDeviceMessage() -> Bool {
+        self.lock.lock()
+        defer {
+            self.lock.unlock()
+        }
+        return self.hasProcessInitiativeDeviceMessage
+    }
     func getKeyshare() -> DKLSKeyshare? {
         return self.keyshare
     }
@@ -215,7 +230,13 @@ final class SchnorrKeygen {
                 print("message with key:\(key) has been applied before")
                 continue
             }
-            print("Got message from: \(msg.from), to: \(msg.to), key:\(key)")
+            if !self.isInitiateDevice {
+                if !self.getHasProcessInitiativeDeviceMessage() && msg.from != self.keygenCommittee[0] {
+                    continue
+                } else {
+                    self.setHasProcessInitiativeDeviceMessage()
+                }
+            }
             guard let decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex) else {
                 throw HelperError.runtimeError("fail to decrypted message body")
             }
