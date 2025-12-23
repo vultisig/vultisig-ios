@@ -43,6 +43,7 @@ struct Checkbox: View {
             .contentShape(Rectangle())
         }
         .sensoryFeedback(.selection, trigger: isChecked)
+        .buttonStyle(.plain)
     }
     
     var check: some View {

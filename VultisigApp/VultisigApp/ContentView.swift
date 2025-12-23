@@ -18,6 +18,7 @@ struct ContentView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
+    @State var activeSummary: OnboardingSummaryView.Kind? = nil
     
     init(navigationRouter: NavigationRouter) {
         self.navigationRouter = navigationRouter
@@ -56,6 +57,7 @@ struct ContentView: View {
             } else {
                 appViewModel.loadSelectedVault(for: vaults)
             }
+            activeSummary = .secure
         }
         .overlay(appViewModel.showCover ? CoverView().ignoresSafeArea() : nil)
         .onChange(of: appViewModel.selectedVault) { _, _ in
@@ -66,6 +68,17 @@ struct ContentView: View {
             guard newValue else { return }
             navigateToHome()
             appViewModel.restartNavigation = false
+        }
+        .crossPlatformSheet(item: $activeSummary) { activeSummary in
+            OnboardingSummaryView(
+                kind: activeSummary,
+                isPresented: Binding(
+                    get: { true },
+                    set: { self.activeSummary = $0 ? activeSummary : nil }
+                ),
+                onDismiss: { },
+                vault: .example
+            )
         }
     }
     
