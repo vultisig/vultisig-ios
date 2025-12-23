@@ -33,6 +33,8 @@ final class DKLSKeygen {
     let localPrivateSecret: String?
     let hexChainCode: String
     let DKLS_LIB_OK: godkls.lib_error = .init(0)
+    var hasProcessInitiativeDeviceMessage = false
+    let lock = NSLock()
     
     init(vault: Vault,
          tssType: TssType,
@@ -59,10 +61,31 @@ final class DKLSKeygen {
         self.hexChainCode = vault.hexChainCode
     }
     
-    
+    func setHasProcessInitiativeDeviceMessage() {
+        self.lock.lock()
+        defer {
+            self.lock.unlock()
+        }
+        self.hasProcessInitiativeDeviceMessage = true
+    }
+    func getHasProcessInitiativeDeviceMessage() -> Bool {
+        self.lock.lock()
+        defer {
+            self.lock.unlock()
+        }
+        return self.hasProcessInitiativeDeviceMessage
+    }
+    func resetHasProcessInitiativeDeviceMessage() {
+        self.lock.lock()
+        defer {
+            self.lock.unlock()
+        }
+        self.hasProcessInitiativeDeviceMessage = false
+    }
     func getSetupMessage() -> [UInt8] {
         return self.setupMessage
     }
+    
     func getKeyshare() -> DKLSKeyshare? {
         return self.keyshare
     }
@@ -176,13 +199,14 @@ final class DKLSKeygen {
                     break
                 }
                 let receiverString = String(bytes:receiverArray,encoding: .utf8)!
-                print("sending message from \(self.localPartyID) to: \(receiverString)")
+                print("sending message from \(self.localPartyID) to: \(receiverString) , length:\(outboundMessage.count)")
                 try await self.messenger.send(self.localPartyID, to: receiverString, body: encodedOutboundMessage)
             }
         } while 1 > 0
     }
     
     func pullInboundMessages(handle: godkls.Handle) async throws -> Bool {
+        resetHasProcessInitiativeDeviceMessage()
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(self.localPartyID)"
         print("start pulling inbound messages from:\(urlString)")
         guard let url = URL(string: urlString) else {
@@ -232,14 +256,21 @@ final class DKLSKeygen {
         let decoder = JSONDecoder()
         let msgs = try decoder.decode([Message].self, from: data)
         let sortedMsgs = msgs.sorted(by: { $0.sequence_no < $1.sequence_no })
-        
         for msg in sortedMsgs {
             let key = "\(self.sessionID)-\(self.localPartyID)-\(msg.hash)" as NSString
             if self.cache.object(forKey: key) != nil {
                 print("message with key:\(key) has been applied before")
                 continue
             }
-            print("Got message from: \(msg.from), to: \(msg.to), key:\(key) , seq: \(msg.sequence_no)")
+            if !self.isInitiateDevice {
+                if !self.getHasProcessInitiativeDeviceMessage() && msg.from != self.keygenCommittee[0] {
+                    continue
+                } else {
+                    self.setHasProcessInitiativeDeviceMessage()
+                }
+            }
+            
+            //print("Got message from: \(msg.from), to: \(msg.to), key:\(key) , seq: \(msg.sequence_no)")
             guard let decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex) else {
                 throw HelperError.runtimeError("fail to decrypted message body")
             }
@@ -262,7 +293,7 @@ final class DKLSKeygen {
             if result != DKLS_LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
             } else {
-                print("successfully applied inbound message to dkls, isFinished:\(isFinished), hash:\(msg.hash)")
+                print("successfully applied inbound message to dkls, isFinished:\(isFinished), hash:\(msg.hash), from:\(msg.from), to:\(msg.to) , length:\(decodedMsg.count)")
             }
             self.cache.setObject(NSObject(), forKey: key)
             try await Task.sleep(for: .milliseconds(50))
