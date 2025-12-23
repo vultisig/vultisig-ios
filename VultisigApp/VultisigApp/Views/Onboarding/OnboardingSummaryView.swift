@@ -68,7 +68,7 @@ struct OnboardingSummaryView: View {
                 .disabled(!didAgree)
                 
             }
-            .padding(.top, 32)
+            .padding(.top, isMacOS ? 0 : 32)
             .background(BlurredBackground())
             .onAppear {
                 setData()
@@ -86,7 +86,7 @@ struct OnboardingSummaryView: View {
                 }
             }
         }
-        .applySheetSize(700, kind == .keyImport ? 750 : 650)
+        .applySheetSize(700, kind == .fast ? 650 : 750)
     }
     
     var animation: some View {
