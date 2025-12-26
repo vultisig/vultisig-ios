@@ -298,6 +298,8 @@
 		139880502E39007C00EC5D3F /* Cosmos+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1398804F2E39007900EC5D3F /* Cosmos+ProtoMappable.swift */; };
 		13988BA02EFEDDF9005AD1C8 /* CosmosSignDirectParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13988B9F2EFEDDF9005AD1C8 /* CosmosSignDirectParser.swift */; };
 		13988BA22EFEE486005AD1C8 /* CosmosSignDataBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13988BA12EFEE480005AD1C8 /* CosmosSignDataBuilder.swift */; };
+		13988BA62EFEF07C005AD1C8 /* SignDirectDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13988BA42EFEF07C005AD1C8 /* SignDirectDisplayView.swift */; };
+		13988BA72EFEF07C005AD1C8 /* SignAminoDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13988BA32EFEF07C005AD1C8 /* SignAminoDisplayView.swift */; };
 		1399516E2ECCC55500BFD0A7 /* YVaultConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1399516D2ECCC55400BFD0A7 /* YVaultConstants.swift */; };
 		139B2ACC2EC284ED00A12466 /* SendCryptoAmountTextField+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139B2ACB2EC284ED00A12466 /* SendCryptoAmountTextField+macOS.swift */; };
 		139B400C2E42466F00238C2C /* MacOSOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139B400B2E42466800238C2C /* MacOSOverlay.swift */; };
@@ -1581,6 +1583,8 @@
 		1398804F2E39007900EC5D3F /* Cosmos+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Cosmos+ProtoMappable.swift"; sourceTree = "<group>"; };
 		13988B9F2EFEDDF9005AD1C8 /* CosmosSignDirectParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosSignDirectParser.swift; sourceTree = "<group>"; };
 		13988BA12EFEE480005AD1C8 /* CosmosSignDataBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosSignDataBuilder.swift; sourceTree = "<group>"; };
+		13988BA32EFEF07C005AD1C8 /* SignAminoDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignAminoDisplayView.swift; sourceTree = "<group>"; };
+		13988BA42EFEF07C005AD1C8 /* SignDirectDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignDirectDisplayView.swift; sourceTree = "<group>"; };
 		1399516D2ECCC55400BFD0A7 /* YVaultConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YVaultConstants.swift; sourceTree = "<group>"; };
 		139B2ACB2EC284ED00A12466 /* SendCryptoAmountTextField+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SendCryptoAmountTextField+macOS.swift"; sourceTree = "<group>"; };
 		139B400B2E42466800238C2C /* MacOSOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSOverlay.swift; sourceTree = "<group>"; };
@@ -3774,6 +3778,15 @@
 				139716212EE897B700F85588 /* ImportVaultSelectionSheet.swift */,
 			);
 			path = ImportVaultSelectionSheet;
+			sourceTree = "<group>";
+		};
+		13988BA52EFEF07C005AD1C8 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				13988BA32EFEF07C005AD1C8 /* SignAminoDisplayView.swift */,
+				13988BA42EFEF07C005AD1C8 /* SignDirectDisplayView.swift */,
+			);
+			path = Components;
 			sourceTree = "<group>";
 		};
 		139B400A2E42466400238C2C /* Covers */ = {
@@ -6191,6 +6204,7 @@
 		D9AD8EEE2B6731480009F8D5 /* Send */ = {
 			isa = PBXGroup;
 			children = (
+				13988BA52EFEF07C005AD1C8 /* Components */,
 				13AF0D252E4CEA31004D4FD2 /* Screens */,
 				13AF0D1B2E4CE731004D4FD2 /* Navigation */,
 				1334C7422E301E3000CBAA3E /* SendCryptoDone */,
@@ -7625,6 +7639,8 @@
 				B547A3FF2DF3F9220052164D /* CardanoService.swift in Sources */,
 				A6BFE1BF2D94663E000B73C0 /* SwapChainPickerView.swift in Sources */,
 				130C05A32EE9FFC200A7303A /* AssetSelectionContainerView.swift in Sources */,
+				13988BA62EFEF07C005AD1C8 /* SignDirectDisplayView.swift in Sources */,
+				13988BA72EFEF07C005AD1C8 /* SignAminoDisplayView.swift in Sources */,
 				134856342EB525D6003D10BE /* PercentageSliderView.swift in Sources */,
 				A6C670CF2C9E8D3F00F59B6A /* SetupQRCodeView+macOS.swift in Sources */,
 				A622C8562C9BCCB800908332 /* JoinKeygenView+iOS.swift in Sources */,
