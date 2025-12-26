@@ -35,12 +35,12 @@ struct CosmosHelperStruct {
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
             throw HelperError.runtimeError("invalid hex public key")
         }
-        let input = CosmosSigningInput.with {
+        let input = try CosmosSigningInput.with {
             $0.publicKey = pubKeyData
             $0.accountNumber = accountNumber
             $0.sequence = sequence
             $0.mode = .sync
-            $0.fee = buildCosmosFee(gas: gas, keysignPayload: keysignPayload)
+            $0.fee = try buildCosmosFee(gas: gas, keysignPayload: keysignPayload)
             $0.signingMode = getSigningMode(keysignPayload: keysignPayload)
             $0.chainID = config.coinType.chainId
             $0.memo = memo
@@ -104,7 +104,7 @@ struct CosmosHelperStruct {
                 $0.timeoutTimestamp = timeout
             }
             
-            let input = CosmosSigningInput.with {
+            let input = try CosmosSigningInput.with {
                 $0.publicKey = pubKeyData
                 $0.signingMode = getSigningMode(keysignPayload: keysignPayload)
                 $0.chainID = coin.chainId
@@ -115,29 +115,12 @@ struct CosmosHelperStruct {
                     $0.memo = memo
                 }
                 $0.messages = [WalletCore.CosmosMessage.with { $0.transferTokensMessage = transferMessage }]
-                $0.fee = buildCosmosFee(gas: gas, keysignPayload: keysignPayload)
+                $0.fee = try buildCosmosFee(gas: gas, keysignPayload: keysignPayload)
             }
             
             return try input.serializedData()
         case .genericContract:
             let (messages, memo) = try buildCosmosMessage(keysignPayload: keysignPayload)
-            
-            // For SignDirect, bodyBytes and authInfoBytes contain ALL the transaction data
-            if keysignPayload.signDirect != nil {
-                print("🔍 Building SignDirect CosmosSigningInput for genericContract (memo and fee are in the protobuf bytes)")
-                return try CosmosSigningInput.with {
-                    $0.publicKey = pubKeyData
-                    $0.signingMode = .protobuf
-                    $0.chainID = coin.chainId
-                    $0.accountNumber = accountNumber
-                    $0.sequence = 0  // Sequence is in authInfoBytes for SignDirect
-                    $0.mode = .sync
-                    $0.messages = messages
-                    // DO NOT set memo or fee - they're in the SignDirect bytes
-                }.serializedData()
-            }
-            
-            // For SignAmino or other types, build normally
             return try CosmosSigningInput.with {
                 $0.publicKey = pubKeyData
                 $0.signingMode = getSigningMode(keysignPayload: keysignPayload)
@@ -145,33 +128,16 @@ struct CosmosHelperStruct {
                 $0.accountNumber = accountNumber
                 $0.sequence = sequence
                 $0.mode = .sync
-                if let memo {
+                if let memo = keysignPayload.memo ?? memo {
                     $0.memo = memo
                 }
                 $0.messages = messages
-                $0.fee = buildCosmosFee(gas: gas, keysignPayload: keysignPayload)
+                $0.fee = try buildCosmosFee(gas: gas, keysignPayload: keysignPayload)
             }.serializedData()
         case .unspecified:
             if keysignPayload.signData != nil {
                 let (messages, memo) = try buildCosmosMessage(keysignPayload: keysignPayload)
                 
-                // For SignDirect, bodyBytes and authInfoBytes contain ALL the transaction data
-                // We should NOT set memo or fee separately, as they're already embedded
-                if keysignPayload.signDirect != nil {
-                    print("🔍 Building SignDirect CosmosSigningInput (memo and fee are in the protobuf bytes)")
-                    return try CosmosSigningInput.with {
-                        $0.publicKey = pubKeyData
-                        $0.signingMode = .protobuf
-                        $0.chainID = coin.chainId
-                        $0.accountNumber = accountNumber
-                        $0.sequence = 0  // Sequence is in authInfoBytes for SignDirect
-                        $0.mode = .sync
-                        $0.messages = messages
-                        // DO NOT set memo or fee - they're in the SignDirect bytes
-                    }.serializedData()
-                }
-                
-                // For SignAmino or other types, build normally
                 return try CosmosSigningInput.with {
                     $0.publicKey = pubKeyData
                     $0.signingMode = getSigningMode(keysignPayload: keysignPayload)
@@ -179,11 +145,11 @@ struct CosmosHelperStruct {
                     $0.accountNumber = accountNumber
                     $0.sequence = sequence
                     $0.mode = .sync
-                    if let memo {
+                    if let memo = keysignPayload.memo ?? memo {
                         $0.memo = memo
                     }
                     $0.messages = messages
-                    $0.fee = buildCosmosFee(gas: gas, keysignPayload: keysignPayload)
+                    $0.fee = try buildCosmosFee(gas: gas, keysignPayload: keysignPayload)
                 }.serializedData()
             }
         default:
@@ -196,7 +162,8 @@ struct CosmosHelperStruct {
             || keysignPayload.coin.contractAddress.lowercased().starts(with: "u")
             || (keysignPayload.memo?.lowercased().starts(with: "switch:") == true)
         {
-            
+         
+            let fee = try buildCosmosFee(gas: gas, keysignPayload: keysignPayload)
             let input = CosmosSigningInput.with {
                 $0.publicKey = pubKeyData
                 $0.signingMode = getSigningMode(keysignPayload: keysignPayload)
@@ -218,7 +185,7 @@ struct CosmosHelperStruct {
                     }
                 }]
                 
-                $0.fee = buildCosmosFee(gas: gas, keysignPayload: keysignPayload)
+                $0.fee = fee
             }
             
             return try input.serializedData()
@@ -298,38 +265,11 @@ struct CosmosHelperStruct {
         }
     }
     
-    private func buildCosmosFee(gas: UInt64, keysignPayload: KeysignPayload) -> WalletCore.CosmosFee {
-        if let signAmino = keysignPayload.signAmino {
-            return WalletCore.CosmosFee.with {
-                $0.gas = UInt64(signAmino.fee.gas) ?? 0
-                $0.amounts = signAmino.fee.amount.map { amount in
-                    WalletCore.CosmosAmount.with {
-                        $0.denom = amount.denom
-                        $0.amount = amount.amount
-                    }
-                }
-            }
+    private func buildCosmosFee(gas: UInt64, keysignPayload: KeysignPayload) throws -> WalletCore.CosmosFee {
+        if let signDataFee = try CosmosSignDataBuilder.getFee(keysignPayload: keysignPayload) {
+            return signDataFee
         }
-        
-        if let signDirect = keysignPayload.signDirect {
-            // Try to extract fee from authInfoBytes
-            if let authInfoBytes = signDirect.authInfoBytes.fromBase64(),
-               let feeInfo = CosmosSignDirectParser.extractFee(from: authInfoBytes) {
-                print("✅ Successfully extracted fee from AuthInfo, gasLimit = \(feeInfo.gasLimit)")
-                return WalletCore.CosmosFee.with {
-                    $0.gas = feeInfo.gasLimit
-                    $0.amounts = feeInfo.amounts.map { coin in
-                        WalletCore.CosmosAmount.with {
-                            $0.denom = coin.denom
-                            $0.amount = coin.amount
-                        }
-                    }
-                }
-            }
-            // If parsing failed, return empty fee (will be filled from protobuf bytes)
-            return WalletCore.CosmosFee.with { _ in }
-        }
-        
+
         return defaultFee(gas: gas)
     }
     
@@ -372,48 +312,15 @@ struct CosmosHelperStruct {
     }
     
     func buildCosmosMessage(keysignPayload: KeysignPayload) throws -> (messages: [WalletCore.CosmosMessage], memo: String?) {
-        if let signAmino = keysignPayload.signAmino {
-            let messages = signAmino.msgs.map { msg in
-                WalletCore.CosmosMessage.with {
-                    $0.rawJsonMessage = .with {
-                        $0.type = msg.type
-                        $0.value = msg.value
-                    }
-                }
-            }
-            return (messages: messages, memo: nil)
-        }
-        
-        if let signDirect = keysignPayload.signDirect {
-            // Decode bodyBytes and authInfoBytes from base64
-            guard let bodyBytes = signDirect.bodyBytes.fromBase64(),
-                  let authInfoBytes = signDirect.authInfoBytes.fromBase64() else {
-                throw HelperError.runtimeError("Failed to decode signDirect bytes from base64")
-            }
-
-            // Parse protobuf to extract memo
-            let extractedMemo = CosmosSignDirectParser.extractMemo(from: bodyBytes)
-            if let memo = extractedMemo, !memo.isEmpty {
-                print("✅ Successfully extracted memo from TxBody: '\(memo)'")
-            }
-
-            // Create SignDirect message with raw protobuf bytes
-            let messages = [WalletCore.CosmosMessage.with {
-                $0.signDirectMessage = .with {
-                    $0.bodyBytes = bodyBytes
-                    $0.authInfoBytes = authInfoBytes
-                }
-            }]
-
-            // Use extracted memo if available, otherwise fall back to keysignPayload.memo
-            return (messages: messages, memo: extractedMemo ?? keysignPayload.memo)
+        if let messagesResult = try CosmosSignDataBuilder.getMessages(keysignPayload: keysignPayload) {
+            return messagesResult
         }
         
         return (messages: [try buildCosmosWasmGenericMsg(keysignPayload: keysignPayload)], memo: nil)
     }
     
     func getSigningMode(keysignPayload: KeysignPayload) -> WalletCore.CosmosSigningMode {
-        keysignPayload.signAmino != nil ? .json : .protobuf
+        CosmosSignDataBuilder.getSigningMode(keysignPayload: keysignPayload)
     }
 }
 

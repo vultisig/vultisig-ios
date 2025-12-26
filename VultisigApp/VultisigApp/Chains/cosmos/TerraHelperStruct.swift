@@ -25,7 +25,28 @@ struct TerraHelperStruct {
         let coinType = chain.coinType
         let denom = "uluna"
         
-        if keysignPayload.coin.isNativeToken
+        if
+            let signDataMessages = try CosmosSignDataBuilder.getMessages(keysignPayload: keysignPayload),
+            let signDataFee = try CosmosSignDataBuilder.getFee(keysignPayload: keysignPayload)
+        {
+            
+            let input = CosmosSigningInput.with {
+                $0.publicKey = pubKeyData
+                $0.signingMode = CosmosSignDataBuilder.getSigningMode(keysignPayload: keysignPayload)
+                $0.chainID = coinType.chainId
+                $0.accountNumber = accountNumber
+                $0.sequence = sequence
+                $0.mode = .sync
+                if let memo = signDataMessages.memo ?? keysignPayload.memo {
+                    $0.memo = memo
+                }
+                $0.messages = signDataMessages.messages
+                $0.fee = signDataFee
+            }
+            
+            return try input.serializedData()
+            
+        } else if keysignPayload.coin.isNativeToken
             || keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/")
             || keysignPayload.coin.contractAddress.lowercased().starts(with: "factory/")
         {

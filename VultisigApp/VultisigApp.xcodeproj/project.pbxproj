@@ -297,6 +297,7 @@
 		139716222EE897BE00F85588 /* ImportVaultSelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139716212EE897B700F85588 /* ImportVaultSelectionSheet.swift */; };
 		139880502E39007C00EC5D3F /* Cosmos+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1398804F2E39007900EC5D3F /* Cosmos+ProtoMappable.swift */; };
 		13988BA02EFEDDF9005AD1C8 /* CosmosSignDirectParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13988B9F2EFEDDF9005AD1C8 /* CosmosSignDirectParser.swift */; };
+		13988BA22EFEE486005AD1C8 /* CosmosSignDataBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13988BA12EFEE480005AD1C8 /* CosmosSignDataBuilder.swift */; };
 		1399516E2ECCC55500BFD0A7 /* YVaultConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1399516D2ECCC55400BFD0A7 /* YVaultConstants.swift */; };
 		139B2ACC2EC284ED00A12466 /* SendCryptoAmountTextField+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139B2ACB2EC284ED00A12466 /* SendCryptoAmountTextField+macOS.swift */; };
 		139B400C2E42466F00238C2C /* MacOSOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139B400B2E42466800238C2C /* MacOSOverlay.swift */; };
@@ -1579,6 +1580,7 @@
 		139716212EE897B700F85588 /* ImportVaultSelectionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportVaultSelectionSheet.swift; sourceTree = "<group>"; };
 		1398804F2E39007900EC5D3F /* Cosmos+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Cosmos+ProtoMappable.swift"; sourceTree = "<group>"; };
 		13988B9F2EFEDDF9005AD1C8 /* CosmosSignDirectParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosSignDirectParser.swift; sourceTree = "<group>"; };
+		13988BA12EFEE480005AD1C8 /* CosmosSignDataBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosSignDataBuilder.swift; sourceTree = "<group>"; };
 		1399516D2ECCC55400BFD0A7 /* YVaultConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YVaultConstants.swift; sourceTree = "<group>"; };
 		139B2ACB2EC284ED00A12466 /* SendCryptoAmountTextField+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SendCryptoAmountTextField+macOS.swift"; sourceTree = "<group>"; };
 		139B400B2E42466800238C2C /* MacOSOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSOverlay.swift; sourceTree = "<group>"; };
@@ -6050,6 +6052,7 @@
 		B5BC37572CECF21D005A1C76 /* cosmos */ = {
 			isa = PBXGroup;
 			children = (
+				13988BA12EFEE480005AD1C8 /* CosmosSignDataBuilder.swift */,
 				13988B9F2EFEDDF9005AD1C8 /* CosmosSignDirectParser.swift */,
 				138BB6082EFC8341007BE7B9 /* CosmosTxTypes.swift */,
 				B5BCC2692EC26DAD007B5A2F /* CosmosHelper.swift */,
@@ -6912,6 +6915,7 @@
 				DEFF58FE2BD13E5D005DFDF9 /* ThreadSafeDictionary.swift in Sources */,
 				13A899022E43CEF3006F75F0 /* THORChainTokenMetadataFactory.swift in Sources */,
 				DE64A4CC2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift in Sources */,
+				13988BA22EFEE486005AD1C8 /* CosmosSignDataBuilder.swift in Sources */,
 				13DACCCB2EDF6C4500BE0F97 /* KeyImportScanningForChainsView.swift in Sources */,
 				A65618032CB6500A00E9CF19 /* RegisterVaultView.swift in Sources */,
 				A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */,
