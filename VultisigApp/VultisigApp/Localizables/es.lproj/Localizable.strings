@@ -1178,3 +1178,5 @@
 "appStoreReady" = "Listo para App Store";
 "appStoreReadyDescription" = "¡Esta bóveda está lista para usar las primeras aplicaciones de autocustodia que automatizan tus fondos de forma segura!";
 "noBarcodesFound" = "No se encontraron códigos de barras";
+"aminoSign" = "Firma Amino";
+"directSign" = "Firma Directa";

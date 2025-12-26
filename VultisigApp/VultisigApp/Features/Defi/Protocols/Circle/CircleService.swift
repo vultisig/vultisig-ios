@@ -65,7 +65,8 @@ struct CircleService {
             vaultLocalPartyID: vault.localPartyID,
             libType: (vault.libType ?? .GG20) == .DKLS ? "dkls" : "gg20",
             wasmExecuteContractPayload: nil,
-            skipBroadcast: false
+            skipBroadcast: false,
+            signData: nil
         )
         
         return KeysignMessage(
