@@ -99,8 +99,7 @@ final class UTXOChainsHelperTest: XCTestCase {
                 libType: LibType.DKLS.toString(),
                 wasmExecuteContractPayload: nil,
                 skipBroadcast: false,
-                signDirect: nil,
-                signAmino: nil
+                signData: nil
             )
         )
         
@@ -137,8 +136,7 @@ final class UTXOChainsHelperTest: XCTestCase {
                 libType: LibType.DKLS.toString(),
                 wasmExecuteContractPayload: nil,
                 skipBroadcast: false,
-                signDirect: nil,
-                signAmino: nil
+                signData: nil
             )
         )
         
@@ -164,8 +162,7 @@ final class UTXOChainsHelperTest: XCTestCase {
                 libType: LibType.DKLS.toString(),
                 wasmExecuteContractPayload: nil,
                 skipBroadcast: false,
-                signDirect: nil,
-                signAmino: nil
+                signData: nil
             ),
             signatures: signature
         )

@@ -7,6 +7,29 @@
 
 import VultisigCommonData
 
+enum SignData: Codable, Hashable {
+    case signAmino(SignAmino)
+    case signDirect(SignDirect)
+    
+    init(proto: VSKeysignPayload.OneOf_SignData) {
+        switch proto {
+        case .signAmino(let vSSignAmino):
+            self = .signAmino(SignAmino(proto: vSSignAmino))
+        case .signDirect(let vSSignDirect):
+            self = .signDirect(SignDirect(proto: vSSignDirect))
+        }
+    }
+    
+    func mapToProtobuff() -> VSKeysignPayload.OneOf_SignData {
+        switch self {
+        case .signAmino(let vSSignAmino):
+            return .signAmino(vSSignAmino.mapToProtobuff())
+        case .signDirect(let vSSignDirect):
+            return .signDirect(vSSignDirect.mapToProtobuff())
+        }
+    }
+}
+
 struct CosmosCoin: Codable, Hashable {
     let amount: String
     let denom: String

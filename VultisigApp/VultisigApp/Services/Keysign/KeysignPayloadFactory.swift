@@ -59,8 +59,7 @@ struct KeysignPayloadFactory {
                 libType: (vault.libType ?? .GG20).toString(),
                 wasmExecuteContractPayload: wasmExecuteContractPayload,
                 skipBroadcast: false,
-                signDirect: nil,
-                signAmino: nil
+                signData: nil
             )
             
             // Select appropriate UTXO selection method based on chain
@@ -89,8 +88,7 @@ struct KeysignPayloadFactory {
             libType: (vault.libType ?? .GG20).toString(),
             wasmExecuteContractPayload: wasmExecuteContractPayload,
             skipBroadcast: false,
-            signDirect: nil,
-            signAmino: nil
+            signData: nil
         )
     }
     
@@ -129,8 +127,7 @@ struct KeysignPayloadFactory {
             libType: keysignPayload.libType,
             wasmExecuteContractPayload: keysignPayload.wasmExecuteContractPayload,
             skipBroadcast: keysignPayload.skipBroadcast,
-            signDirect: nil,
-            signAmino: nil
+            signData: nil
         )
         
         let plan = try utxoHelper.getBitcoinTransactionPlan(keysignPayload: tmpKeysignPayload)
@@ -169,8 +166,7 @@ struct KeysignPayloadFactory {
             libType: keysignPayload.libType,
             wasmExecuteContractPayload: keysignPayload.wasmExecuteContractPayload,
             skipBroadcast: keysignPayload.skipBroadcast,
-            signDirect: nil,
-            signAmino: nil
+            signData: nil
         )
         
         // Use WalletCore's Cardano transaction planning to select optimal UTXOs

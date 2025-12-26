@@ -49,7 +49,7 @@ enum THORChainHelper {
             $0.accountNumber = accountNumber
             $0.sequence = sequence
             $0.mode = .sync
-            $0.signingMode = .protobuf
+            $0.signingMode = getSigningMode(keysignPayload: keysignPayload)
             $0.messages = [WalletCore.CosmosMessage.with {
                 $0.thorchainDepositMessage = WalletCore.CosmosMessage.THORChainDeposit.with {
                     $0.signer = fromAddr.data
@@ -67,9 +67,7 @@ enum THORChainHelper {
                     }]
                 }
             }]
-            $0.fee = WalletCore.CosmosFee.with {
-                $0.gas = 20000000
-            }
+            $0.fee = getFee(keysignPayload: keysignPayload)
         }
         
         return try input.serializedData()
@@ -97,43 +95,71 @@ enum THORChainHelper {
         }
                 
         let transactionType = VSTransactionType(rawValue: transactionTypeRawValue) ?? .unspecified
-        let message: WalletCore.CosmosMessage
-        
-        if isDeposit {
+        let messages: [WalletCore.CosmosMessage]
+        var memo = keysignPayload.memo
+
+        if let signAmino = keysignPayload.signAmino {
+            messages = signAmino.msgs.map { msg in
+                WalletCore.CosmosMessage.with {
+                    $0.rawJsonMessage = .with {
+                        $0.type = msg.type
+                        $0.value = msg.value
+                    }
+                }
+            }
+        } else if let signDirect = keysignPayload.signDirect {
+            // Decode bodyBytes and authInfoBytes from base64
+            guard let bodyBytes = signDirect.bodyBytes.fromBase64(),
+                  let authInfoBytes = signDirect.authInfoBytes.fromBase64() else {
+                throw HelperError.runtimeError("Failed to decode signDirect bytes from base64")
+            }
+
+            // Parse protobuf to extract memo
+            if let extractedMemo = CosmosSignDirectParser.extractMemo(from: bodyBytes), !extractedMemo.isEmpty {
+                print("✅ Successfully extracted memo from TxBody: '\(extractedMemo)'")
+                memo = extractedMemo
+            }
+
+            // Create SignDirect message with raw protobuf bytes
+            messages = [WalletCore.CosmosMessage.with {
+                $0.signDirectMessage = .with {
+                    $0.bodyBytes = bodyBytes
+                    $0.authInfoBytes = authInfoBytes
+                }
+            }]
+        } else if isDeposit {
             // This should invoke the wasm contract for RUJI merge/unmerge
             if transactionType.isGenericWasmMessage {
-                message = try WalletCore.CosmosMessage.with {
+                messages = [try WalletCore.CosmosMessage.with {
                     $0.wasmExecuteContractGeneric = try buildThorchainWasmGenericMessage(keysignPayload: keysignPayload, transactionType: transactionType)
-                }
+                }]
             } else {
-                message = buildThorchainDepositMessage(keysignPayload: keysignPayload, fromAddress: fromAddr)
+                messages = [buildThorchainDepositMessage(keysignPayload: keysignPayload, fromAddress: fromAddr)]
             }
             
         } else {
             if transactionType == .genericContract {
-                message = try WalletCore.CosmosMessage.with {
+                messages = [try WalletCore.CosmosMessage.with {
                     $0.wasmExecuteContractGeneric =
                     try buildThorchainWasmGenericMessage(keysignPayload: keysignPayload, transactionType: transactionType)
-                }
+                }]
             } else {
-                message = try buildThorchainSendMessage(keysignPayload: keysignPayload, fromAddress: fromAddr)
+                messages = [try buildThorchainSendMessage(keysignPayload: keysignPayload, fromAddress: fromAddr)]
             }
         }
         
         let input = CosmosSigningInput.with {
             $0.publicKey = pubKeyData
-            $0.signingMode = .protobuf
+            $0.signingMode = getSigningMode(keysignPayload: keysignPayload)
             $0.chainID = chainID
             $0.accountNumber = accountNumber
             $0.sequence = sequence
             $0.mode = .sync
-            if let memo = keysignPayload.memo {
+            if let memo {
                 $0.memo = memo
             }
-            $0.messages = [message]
-            $0.fee = WalletCore.CosmosFee.with {
-                $0.gas = 20_000_000
-            }
+            $0.messages = messages
+            $0.fee = getFee(keysignPayload: keysignPayload)
         }
         return try input.serializedData()
     }
@@ -332,6 +358,57 @@ enum THORChainHelper {
         
         // For other secured assets, use the coin's chain ticker
         return coin.chain.ticker.uppercased()
+    }
+    
+    static func getSigningMode(keysignPayload: KeysignPayload) -> WalletCore.TW_Cosmos_Proto_SigningMode {
+        switch keysignPayload.signData {
+        case .signAmino:
+            return .json
+        case .signDirect:
+            return .protobuf
+        default:
+            break
+        }
+        return .protobuf
+    }
+    
+    static func getFee(keysignPayload: KeysignPayload) -> WalletCore.CosmosFee {
+        switch keysignPayload.signData {
+        case .signAmino(let signAmino):
+            return WalletCore.CosmosFee.with {
+                $0.gas = UInt64(signAmino.fee.gas) ?? 0
+                $0.amounts = signAmino.fee.amount.map { amount in
+                    WalletCore.CosmosAmount.with {
+                        $0.denom = amount.denom
+                        $0.amount = amount.amount
+                    }
+                }
+            }
+        case .signDirect(let signDirect):
+            // Try to extract fee from authInfoBytes
+            if let authInfoBytes = signDirect.authInfoBytes.fromBase64(),
+               let feeInfo = CosmosSignDirectParser.extractFee(from: authInfoBytes) {
+                print("✅ Successfully extracted fee from AuthInfo, gasLimit = \(feeInfo.gasLimit)")
+                return WalletCore.CosmosFee.with {
+                    $0.gas = feeInfo.gasLimit
+                    $0.amounts = feeInfo.amounts.map { coin in
+                        WalletCore.CosmosAmount.with {
+                            $0.denom = coin.denom
+                            $0.amount = coin.amount
+                        }
+                    }
+                }
+            }
+            // If parsing failed, fall through to use default fee
+            break
+
+        default:
+            break
+        }
+    
+        return WalletCore.CosmosFee.with {
+            $0.gas = 20_000_000
+        }
     }
 }
 

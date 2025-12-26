@@ -53,8 +53,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             libType: LibType.DKLS.toString(),
             wasmExecuteContractPayload: nil,
             skipBroadcast: false,
-            signDirect: nil,
-            signAmino: nil
+            signData: nil
         )
         self.participantDiscovery = nil
         self.encryptionKeyHex = Encryption.getEncryptionKey()

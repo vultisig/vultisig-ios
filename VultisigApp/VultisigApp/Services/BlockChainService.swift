@@ -103,8 +103,7 @@ final class BlockChainService {
             libType: payload.libType,
             wasmExecuteContractPayload: payload.wasmExecuteContractPayload,
             skipBroadcast: payload.skipBroadcast,
-            signDirect: nil,
-            signAmino: nil
+            signData: nil
         )
     }
     
@@ -446,8 +445,7 @@ private extension BlockChainService {
                     libType: "", // Not used for simulation
                     wasmExecuteContractPayload: nil,
                     skipBroadcast: false,
-                    signDirect: nil,
-                    signAmino: nil
+                    signData: nil
                 )
                 
                 do {

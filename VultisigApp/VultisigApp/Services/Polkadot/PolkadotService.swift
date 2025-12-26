@@ -199,8 +199,7 @@ class PolkadotService: RpcService {
             libType: "",
             wasmExecuteContractPayload: nil,
             skipBroadcast: false,
-            signDirect: nil,
-            signAmino: nil
+            signData: nil
         )
         
         let serializedTransaction: String

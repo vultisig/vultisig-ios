@@ -142,7 +142,7 @@ extension VSTHORChainSpecific: @retroactive Codable {
         isDeposit = try container.decode(Bool.self, forKey: .isDeposit)
         if container.contains(.transactionType) {
             let transactionTypeRaw = try container.decode(Int.self, forKey: .transactionType)
-                transactionType = VSTransactionType(rawValue: transactionTypeRaw) ?? .unspecified
+            transactionType = VSTransactionType(rawValue: transactionTypeRaw) ?? .unspecified
         }
     }
 }
@@ -747,7 +747,7 @@ extension VSCosmosCoin: @retroactive Codable {
         denom = try container.decode(String.self, forKey: .denom)
         amount = try container.decode(String.self, forKey: .amount)
     }
-   
+    
 }
 extension VSWasmExecuteContractPayload: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
@@ -791,6 +791,43 @@ struct DynamicCodingKey: CodingKey {
     }
 }
 
+extension VSKeysignPayload.OneOf_SignData: @retroactive Codable {
+    enum CodingKeys: String, CodingKey {
+        case signDirect = "sign_direct"
+        case signAmino = "sign_amino"
+    }
+    
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // Try to decode signAmino first
+        if container.contains(.signAmino) {
+            let signAmino = try container.decode(VSSignAmino.self, forKey: .signAmino)
+            self = .signAmino(signAmino)
+        } else if container.contains(.signDirect) {
+            let signDirect = try container.decode(VSSignDirect.self, forKey: .signDirect)
+            self = .signDirect(signDirect)
+        } else {
+            throw DecodingError.dataCorrupted(
+                DecodingError.Context(
+                    codingPath: decoder.codingPath,
+                    debugDescription: "Unable to decode VSKeysignPayload.OneOf_SignData: no valid case found. Available keys: \(container.allKeys)"
+                )
+            )
+        }
+    }
+    
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .signAmino(let vSSignAmino):
+            try container.encode(vSSignAmino, forKey: .signAmino)
+        case .signDirect(let vSSignDirect):
+            try container.encode(vSSignDirect, forKey: .signDirect)
+        }
+    }
+}
+
 extension VSKeysignPayload: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case coin
@@ -805,6 +842,7 @@ extension VSKeysignPayload: @retroactive Codable {
         case vaultLocalPartyID = "vault_local_party_id"
         case libType = "lib_type"
         case wasmExecuteContractPayload = "wasm_execute_contract_payload"
+        case signData = "sign_data"
     }
     
     public func encode(to encoder: any Encoder) throws {
@@ -854,7 +892,6 @@ extension VSKeysignPayload: @retroactive Codable {
             try swapPayloadContainer.encode(payload, forKey: DynamicCodingKey("OneinchSwapPayload"))
         case .mayachainSwapPayload(let payload):
             try swapPayloadContainer.encode(payload, forKey: DynamicCodingKey("MayachainSwapPayload"))
-            
         case .none:
             print("No swap payload to encode")
         }
@@ -864,6 +901,7 @@ extension VSKeysignPayload: @retroactive Codable {
         try container.encode(vaultPublicKeyEcdsa, forKey: .vaultPubKeyECDSA)
         try container.encode(vaultLocalPartyID, forKey: .vaultLocalPartyID)
         try container.encode(libType, forKey: .libType)
+        try container.encode(signData, forKey: .signData)
     }
     
     public init(from decoder: any Decoder) throws {
@@ -930,5 +968,183 @@ extension VSKeysignPayload: @retroactive Codable {
         if container.contains(.wasmExecuteContractPayload) {
             wasmExecuteContractPayload = try container.decode(VSWasmExecuteContractPayload.self, forKey: .wasmExecuteContractPayload)
         }
+        
+        if container.contains(.signData) {
+            signData = try container.decode(VSKeysignPayload.OneOf_SignData.self, forKey: .signData)
+        } else {
+            signData = .none
+        }
+    }
+}
+
+extension VSSignDirect: @retroactive Codable {
+    enum CodingKeys: String, CodingKey {
+        case bodyBytes = "body_bytes"
+        case authInfoBytes = "auth_info_bytes"
+        case chainID = "chain_id"
+        case accountNumber = "account_number"
+    }
+    
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(bodyBytes, forKey: .bodyBytes)
+        try container.encode(authInfoBytes, forKey: .authInfoBytes)
+        try container.encode(chainID, forKey: .chainID)
+        try container.encode(accountNumber, forKey: .accountNumber)
+    }
+    
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        
+        bodyBytes = try container.decode(String.self, forKey: .bodyBytes)
+        authInfoBytes = try container.decode(String.self, forKey: .authInfoBytes)
+        chainID = try container.decode(String.self, forKey: .chainID)
+        accountNumber = try container.decode(String.self, forKey: .accountNumber)
+    }
+}
+
+extension VSSignAmino: @retroactive Codable {
+    enum CodingKeys: String, CodingKey {
+        case fee = "fee"
+        case msgs = "msgs"
+    }
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(fee, forKey: .fee)
+        try container.encode(msgs, forKey: .msgs)
+    }
+    
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        fee = try container.decode(VSCosmosFee.self, forKey: .fee)
+        msgs = try container.decode([VSCosmosMsg].self, forKey: .msgs)
+    }
+}
+
+// Helper struct to decode any JSON value
+private struct AnyCodableValue: Codable {
+    let value: Any
+    
+    init(_ value: Any) {
+        self.value = value
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        
+        if let bool = try? container.decode(Bool.self) {
+            value = bool
+        } else if let int = try? container.decode(Int.self) {
+            value = int
+        } else if let double = try? container.decode(Double.self) {
+            value = double
+        } else if let string = try? container.decode(String.self) {
+            value = string
+        } else if let array = try? container.decode([AnyCodableValue].self) {
+            value = array.map { $0.value }
+        } else if let dictionary = try? container.decode([String: AnyCodableValue].self) {
+            value = dictionary.mapValues { $0.value }
+        } else {
+            value = NSNull()
+        }
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        
+        switch value {
+        case let bool as Bool:
+            try container.encode(bool)
+        case let int as Int:
+            try container.encode(int)
+        case let double as Double:
+            try container.encode(double)
+        case let string as String:
+            try container.encode(string)
+        case let array as [Any]:
+            try container.encode(array.map { AnyCodableValue($0) })
+        case let dictionary as [String: Any]:
+            try container.encode(dictionary.mapValues { AnyCodableValue($0) })
+        default:
+            try container.encodeNil()
+        }
+    }
+}
+
+extension VSCosmosMsg: @retroactive Codable {
+    enum CodingKeys: String, CodingKey {
+        case type
+        case value
+        
+    }
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        try container.encode(type, forKey: .type)
+        
+        // Try to encode as JSON string if value contains JSON data
+        if let jsonData = value.data(using: .utf8),
+           let jsonObject = try? JSONSerialization.jsonObject(with: jsonData) {
+            let anyValue = AnyCodableValue(jsonObject)
+            try container.encode(anyValue, forKey: .value)
+        } else {
+            try container.encode(value, forKey: .value)
+        }
+    }
+    
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        
+        type = try container.decode(String.self, forKey: .type)
+        
+        // Try to decode as AnyCodableValue first to handle both dictionaries and strings
+        if let anyValue = try? container.decode(AnyCodableValue.self, forKey: .value) {
+            // Convert to JSON string
+            if let jsonData = try? JSONSerialization.data(withJSONObject: anyValue.value, options: [.sortedKeys]),
+               let jsonString = String(data: jsonData, encoding: .utf8) {
+                value = jsonString
+            } else if let stringValue = anyValue.value as? String {
+                value = stringValue
+            } else {
+                value = "{}"
+            }
+        } else {
+            value = "{}"
+        }
+    }
+}
+
+extension VSCosmosFee: @retroactive Codable {
+    enum CodingKeys: String, CodingKey {
+        case payer
+        case granter
+        case feePayer = "fee_payer"
+        case amount
+        case gas
+        
+    }
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        try container.encode(payer, forKey: .payer)
+        try container.encode(granter, forKey: .granter)
+        try container.encode(feePayer, forKey: .feePayer)
+        try container.encode(amount, forKey: .amount)
+        try container.encode(gas, forKey: .gas)
+        
+    }
+    
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        
+        payer = try container.decodeIfPresent(String.self, forKey: .payer) ?? String()
+        granter = try container.decodeIfPresent(String.self, forKey: .granter) ?? String()
+        feePayer = try container.decodeIfPresent(String.self, forKey: .feePayer) ?? String()
+        amount = try container.decodeIfPresent([VSCosmosCoin].self, forKey: .amount) ?? []
+        gas = try container.decode(String.self, forKey: .gas)
     }
 }

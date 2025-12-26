@@ -59,8 +59,7 @@ final class EVMChainsHelperTest: XCTestCase {
             libType: LibType.DKLS.toString(),
             wasmExecuteContractPayload: nil,
             skipBroadcast: false,
-            signDirect: nil,
-            signAmino: nil
+            signData: nil
         )
         let evmHelper = EVMHelper(coinType: .ethereum)
         let preImageHashes = try evmHelper.getPreSignedImageHash(keysignPayload: keysignPayload)

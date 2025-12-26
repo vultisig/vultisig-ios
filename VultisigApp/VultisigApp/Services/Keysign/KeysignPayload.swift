@@ -20,8 +20,21 @@ struct KeysignPayload: Codable, Hashable {
     let libType: String
     let wasmExecuteContractPayload: WasmExecuteContractPayload?
     let skipBroadcast: Bool
-    let signDirect: SignDirect?
-    let signAmino: SignAmino?
+    let signData: SignData?
+    
+    var signAmino: SignAmino? {
+        guard case let .signAmino(amino) = signData else {
+            return nil
+        }
+        return amino
+    }
+    
+    var signDirect: SignDirect? {
+        guard case let .signDirect(direct) = signData else {
+            return nil
+        }
+        return direct
+    }
     
     var fromAmountString: String {
         let decimalAmount = Decimal(string: swapPayload?.fromAmount.description ?? "") ?? Decimal.zero
@@ -72,7 +85,6 @@ struct KeysignPayload: Codable, Hashable {
         libType: LibType.DKLS.toString(),
         wasmExecuteContractPayload: nil,
         skipBroadcast: false,
-        signDirect: nil,
-        signAmino: nil
+        signData: nil
     )
 }
