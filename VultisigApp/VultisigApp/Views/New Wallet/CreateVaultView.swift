@@ -54,13 +54,15 @@ struct CreateVaultView: View {
             navigateToGeneralQRImport = false
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ProcessDeeplink"))) { _ in
-            if showSheet {
-                showSheet = false
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            DispatchQueue.main.async {
+                if showSheet {
+                    showSheet = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        processDeeplink()
+                    }
+                } else {
                     processDeeplink()
                 }
-            } else {
-                processDeeplink()
             }
         }
         .crossPlatformSheet(isPresented: $showImportSelectionSheet) {
