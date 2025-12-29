@@ -164,4 +164,5 @@ struct CreateVaultView: View {
 #Preview {
     CreateVaultView(selectedVault: Vault.example)
         .environmentObject(AppViewModel())
+        .environmentObject(DeeplinkViewModel())
 }
