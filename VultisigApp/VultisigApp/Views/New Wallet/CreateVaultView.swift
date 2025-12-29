@@ -53,14 +53,6 @@ struct CreateVaultView: View {
             ))
             navigateToGeneralQRImport = false
         }
-        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ProcessDeeplink"))) { _ in
-            DispatchQueue.main.async {
-                showSheet = false
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    processDeeplink()
-                }
-            }
-        }
         .crossPlatformSheet(isPresented: $showImportSelectionSheet) {
             ImportVaultSelectionSheet(isPresented: $showImportSelectionSheet) {
                 showImportSelectionSheet = false
@@ -72,18 +64,6 @@ struct CreateVaultView: View {
         }
         .onLoad {
             setData()
-        }
-    }
-    
-    private func processDeeplink() {
-        guard let type = deeplinkViewModel.type else { return }
-        
-        switch type {
-        case .NewVault:
-            shouldJoinKeygen = true
-            deeplinkViewModel.type = nil
-        default:
-            break
         }
     }
     

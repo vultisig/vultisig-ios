@@ -29,6 +29,16 @@ extension CreateVaultView {
                     sendTX: SendTransaction()                   // -
                 )
             }
+            .onChange(of: showSheet) { _, isShowing in
+                if !isShowing {
+                    // Sheet just closed, check for pending keygen deeplink
+                    // Note: We check tssType/jsonData instead of type because HomeScreen's
+                    // ProcessDeeplink listener resets type to nil before we can read it
+                    if deeplinkViewModel.tssType != nil && deeplinkViewModel.jsonData != nil {
+                        shouldJoinKeygen = true
+                    }
+                }
+            }
     }
     
     var scanButton: some View {
