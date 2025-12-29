@@ -55,12 +55,8 @@ struct CreateVaultView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ProcessDeeplink"))) { _ in
             DispatchQueue.main.async {
-                if showSheet {
-                    showSheet = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        processDeeplink()
-                    }
-                } else {
+                showSheet = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     processDeeplink()
                 }
             }

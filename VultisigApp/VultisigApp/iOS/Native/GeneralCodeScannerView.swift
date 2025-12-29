@@ -40,7 +40,9 @@ struct GeneralCodeScannerView: View {
         }
         let validDeeplink = deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
         if validDeeplink {
-            showSheet = false
+            DispatchQueue.main.async {
+                showSheet = false
+            }
         }
     }
 }
