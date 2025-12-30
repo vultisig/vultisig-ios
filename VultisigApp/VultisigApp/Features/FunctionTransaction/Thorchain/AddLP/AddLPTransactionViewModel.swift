@@ -59,7 +59,15 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
             coin2.address
         }
     }
-    
+
+    var showAsymmetricDepositInfo: Bool {
+        coin.chain == .mayaChain
+    }
+
+    var asymmetricDepositMessage: String {
+        "asymmetricDepositInfo".localized
+    }
+
     func onPercentage(_ percentage: Double) {
         isMaxAmount = percentage == 100
     }

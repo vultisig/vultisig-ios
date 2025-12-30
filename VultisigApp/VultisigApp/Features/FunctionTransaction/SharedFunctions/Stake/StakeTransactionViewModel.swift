@@ -12,11 +12,11 @@ final class StakeTransactionViewModel: ObservableObject, Form {
     let coin: Coin
     let vault: Vault
     let defaultAutocompound: Bool
-    
+
     var supportsAutocompound: Bool {
         coin.supportsAutocompound
     }
-    
+
     @Published var isAutocompound: Bool = false
     @Published var validForm: Bool = false
     @Published private(set) var stakedAmount: Decimal = 0
@@ -25,14 +25,35 @@ final class StakeTransactionViewModel: ObservableObject, Form {
         placeholder: "0",
         validators: [RequiredValidator(errorMessage: "emptyAmountField".localized)]
     )
-    
+
     private(set) var isMaxAmount: Bool = false
     private(set) lazy var form: [FormField] = [
         amountField
     ]
-    
+
     var formCancellable: AnyCancellable?
     var cancellables = Set<AnyCancellable>()
+
+    private let mayaAPIService = MayaChainAPIService()
+
+    /// Maximum stakeable amount (accounting for gas fees for CACAO)
+    var maxStakeableAmount: Decimal {
+        if coin.ticker.uppercased() == "CACAO" {
+            return mayaAPIService.getStakeableCacaoAmount(walletBalance: coin.balanceDecimal)
+        }
+        return coin.balanceDecimal
+    }
+
+    /// Gas reservation message for CACAO
+    var gasReservationMessage: String? {
+        if coin.ticker.uppercased() == "CACAO" {
+            let reserved = coin.balanceDecimal - maxStakeableAmount
+            if reserved > 0 {
+                return String(format: "reservesForGas".localized, reserved.formatted(), "CACAO")
+            }
+        }
+        return nil
+    }
     
     init(coin: Coin, vault: Vault, defaultAutocompound: Bool) {
         self.coin = coin

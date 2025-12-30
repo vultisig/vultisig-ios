@@ -19,8 +19,6 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
          vote,
          stake,
          unstake,
-         addPool,
-         removePool,
          cosmosIBC,
          merge,
          unmerge,
@@ -39,10 +37,6 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return NSLocalizedString("Bond", comment: "")
         case .unbondMaya:
             return NSLocalizedString("Unbond", comment: "")
-        case .addPool:
-            return NSLocalizedString("Add Pool", comment: "")
-        case .removePool:
-            return NSLocalizedString("Remove Pool", comment: "")
         case .leave:
             return NSLocalizedString("Leave", comment: "")
         case .custom:
@@ -92,9 +86,7 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return [.bondMaya,
                     .unbondMaya,
                     .leave,
-                    .custom,
-                    .addPool,
-                    .removePool]
+                    .custom]
         case .dydx:
             return [.vote]
         case .ton:

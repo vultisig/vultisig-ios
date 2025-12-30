@@ -139,15 +139,7 @@ struct FunctionCallDetailsScreen: View {
                 
             case .unstake:
                 fnCallInstance = .unstake(FunctionCallUnstake())
-            case .addPool:
-                fnCallInstance = .addPool(
-                    FunctionCallAddLiquidityMaya()
-                )
-            case .removePool:
-                fnCallInstance = .removePool(
-                    FunctionCallRemoveLiquidityMaya()
-                )
-                
+
             case .cosmosIBC:
                 fnCallInstance = .cosmosIBC(FunctionCallCosmosIBC(tx: tx, vault: vault))
             case .merge:

@@ -111,6 +111,43 @@ enum SettingsCurrency: String, CaseIterable {
     }
 }
 
+enum SettingsAPRPeriod: String, CaseIterable {
+    case oneDay = "1d"
+    case oneWeek = "7d"
+    case oneMonth = "30d"
+    case oneHundredDays = "100d"
+    case oneYear = "365d"
+
+    func description() -> String {
+        switch self {
+        case .oneDay:
+            return "apr1Day".localized
+        case .oneWeek:
+            return "apr1Week".localized
+        case .oneMonth:
+            return "apr1Month".localized
+        case .oneHundredDays:
+            return "apr100Days".localized
+        case .oneYear:
+            return "apr1Year".localized
+        }
+    }
+
+    static var current: SettingsAPRPeriod {
+        get {
+            if let periodString = UserDefaults.standard.string(forKey: "aprPeriod"),
+               let period = SettingsAPRPeriod(rawValue: periodString) {
+                return period
+            } else {
+                return .oneMonth  // Default to 30d (industry standard)
+            }
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: "aprPeriod")
+        }
+    }
+}
+
 class SettingsOptionsStore {
     static let FAQData : [(question: String, answer: String)] = Range(1...9).map {
         (question: "faqQuestion\($0)", answer: "faqAnswer\($0)")

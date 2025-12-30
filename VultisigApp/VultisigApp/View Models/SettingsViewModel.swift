@@ -20,7 +20,13 @@ class SettingsViewModel: ObservableObject {
             SettingsCurrency.current = selectedCurrency
         }
     }
-    
+
+    @Published var selectedAPRPeriod: SettingsAPRPeriod {
+        didSet {
+            SettingsAPRPeriod.current = selectedAPRPeriod
+        }
+    }
+
     @AppStorage("isDKLSEnabled") var isDKLSEnabled: Bool = false
     @AppStorage("allowSwap") var allowSwap: Bool = false
     @AppStorage("BuyEnabled") var buyEnabled: Bool = false
@@ -31,6 +37,7 @@ class SettingsViewModel: ObservableObject {
     init() {
         self.selectedCurrency = SettingsCurrency.current
         self.selectedLanguage = SettingsLanguage.current
+        self.selectedAPRPeriod = SettingsAPRPeriod.current
     }
     
     static let shared = SettingsViewModel()

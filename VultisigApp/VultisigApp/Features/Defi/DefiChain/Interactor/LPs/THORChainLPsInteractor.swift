@@ -15,7 +15,9 @@ struct THORChainLPsInteractor: LPsInteractor {
     /// - "30d": Monthly average, balanced view (DEFAULT, matches thorchain.org)
     /// - "100d": Longer-term average, more stable
     /// Default is 30d to match thorchain.org and the API default
-    var aprPeriod: String = "100d"
+    var aprPeriod: String {
+        SettingsAPRPeriod.current.rawValue
+    }
     
     func fetchLPPositions(vault: Vault) async -> [LPPosition] {
         guard let runeCoin = vault.runeCoin else { return [] }

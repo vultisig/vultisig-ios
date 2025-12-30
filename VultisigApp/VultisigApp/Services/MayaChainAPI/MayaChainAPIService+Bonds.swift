@@ -124,4 +124,60 @@ extension MayaChainAPIService {
 
         return Date(timeIntervalSince1970: currentTimestamp).addingTimeInterval(etaSeconds)
     }
+
+    // MARK: - Bond Validation Methods
+
+    /// Calculate CACAO value of LP units for a pool
+    /// - Parameters:
+    ///   - lpUnits: Amount of LP units to convert
+    ///   - poolAsset: Pool asset identifier (e.g., "BTC.BTC", "ETH.ETH")
+    /// - Returns: Estimated CACAO value in decimal format
+    func calculateLPUnitsCacaoValue(
+        lpUnits: UInt64,
+        poolAsset: String
+    ) async throws -> Decimal {
+        let poolStats = try await getPoolStats()
+        guard let pool = poolStats.first(where: { $0.asset == poolAsset }) else {
+            throw MayaChainAPIError.invalidResponse
+        }
+
+        let totalPoolUnits = Decimal(string: pool.liquidityUnits) ?? 0
+        let cacaoDepth = Decimal(string: pool.runeDepth) ?? 0
+
+        guard totalPoolUnits > 0 else { return 0 }
+
+        // Calculate: (lpUnits / totalPoolUnits) * cacaoDepth
+        let cacaoValue = (Decimal(lpUnits) / totalPoolUnits) * cacaoDepth
+        return cacaoValue / pow(10, 10) // Convert from base units to CACAO
+    }
+
+    /// Calculate minimum LP units needed to meet the 35K CACAO bond requirement
+    /// - Parameter poolAsset: Pool asset identifier (e.g., "BTC.BTC", "ETH.ETH")
+    /// - Returns: Minimum LP units needed to bond
+    func calculateMinimumLPUnits(poolAsset: String) async throws -> UInt64 {
+        let minBondCacao: Decimal = 35000 // Minimum bond requirement in CACAO
+        let poolStats = try await getPoolStats()
+        guard let pool = poolStats.first(where: { $0.asset == poolAsset }) else {
+            throw MayaChainAPIError.invalidResponse
+        }
+
+        let totalPoolUnits = Decimal(string: pool.liquidityUnits) ?? 0
+        let cacaoDepth = Decimal(string: pool.runeDepth) ?? 0
+
+        guard cacaoDepth > 0 else { return 0 }
+
+        // Calculate: (minBondCacao * 1e10 * totalPoolUnits) / cacaoDepth
+        let minLPUnits = (minBondCacao * pow(10, 10) * totalPoolUnits) / cacaoDepth
+        return UInt64(truncating: minLPUnits as NSNumber)
+    }
+
+    /// Validate if a node can accept more bond providers
+    /// - Parameter nodeAddress: Maya node address
+    /// - Returns: True if node has capacity for more bond providers
+    func validateNodeBondCapacity(nodeAddress: String) async throws -> Bool {
+        let nodeDetails = try await getNodeDetails(nodeAddress: nodeAddress)
+        let currentProviders = nodeDetails.bondProviders.providers.count
+        let maxProviders = 10 // Maximum bond providers per node (Mimir: MAXBONDPROVIDERS)
+        return currentProviders < maxProviders
+    }
 }

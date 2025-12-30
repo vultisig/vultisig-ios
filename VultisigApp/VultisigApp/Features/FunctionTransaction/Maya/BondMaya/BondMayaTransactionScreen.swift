@@ -70,6 +70,98 @@ struct BondMayaTransactionScreen: View {
 #if os(iOS)
                     .keyboardType(.decimalPad)
 #endif
+
+                    // Available LP units display
+                    if let availableUnits = viewModel.availableLPUnits {
+                        HStack {
+                            Text("availableLPUnits".localized)
+                                .font(Theme.fonts.caption12)
+                                .foregroundColor(Theme.colors.textExtraLight)
+                            Spacer()
+                            Text(availableUnits)
+                                .font(Theme.fonts.caption12)
+                                .foregroundColor(Theme.colors.textPrimary)
+                        }
+                    }
+
+                    // Minimum LP units suggestion
+                    if let minUnits = viewModel.minimumLPUnitsNeeded {
+                        HStack {
+                            Text("minimumLPUnitsNeeded".localized)
+                                .font(Theme.fonts.caption12)
+                                .foregroundColor(Theme.colors.textExtraLight)
+                            Spacer()
+                            Text("\(minUnits)")
+                                .font(Theme.fonts.caption12)
+                                .foregroundColor(Theme.colors.alertWarning)
+
+                            Button(action: {
+                                viewModel.lpUnitsField.value = "\(minUnits)"
+                            }) {
+                                Text("use".localized)
+                                    .font(Theme.fonts.caption12)
+                                    .foregroundColor(Theme.colors.alertInfo)
+                            }
+                        }
+                    }
+
+                    // Estimated CACAO value
+                    if let cacaoValue = viewModel.estimatedCacaoValue {
+                        HStack {
+                            Text("estimatedBondValue".localized)
+                                .font(Theme.fonts.caption12)
+                                .foregroundColor(Theme.colors.textExtraLight)
+                            Spacer()
+                            Text("\(cacaoValue.formatted()) CACAO")
+                                .font(Theme.fonts.caption12)
+                                .foregroundColor(
+                                    cacaoValue >= viewModel.minimumBondRequired
+                                        ? Theme.colors.alertSuccess
+                                        : Theme.colors.alertWarning
+                                )
+                        }
+                    }
+
+                    // Minimum requirement display
+                    HStack {
+                        Text("minimumBondRequired".localized)
+                            .font(Theme.fonts.caption12)
+                            .foregroundColor(Theme.colors.textExtraLight)
+                        Spacer()
+                        Text("\(viewModel.minimumBondRequired.formatted()) CACAO")
+                            .font(Theme.fonts.caption12)
+                            .foregroundColor(Theme.colors.textExtraLight)
+                    }
+
+                    // HARD VALIDATION ERROR (blocks transaction)
+                    if let error = viewModel.bondValidationError {
+                        HStack(spacing: 8) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(Theme.colors.alertError)
+                            Text(error)
+                                .font(Theme.fonts.caption12)
+                                .foregroundColor(Theme.colors.textPrimary)
+                            Spacer()
+                        }
+                        .padding(12)
+                        .background(Theme.colors.bgError)
+                        .cornerRadius(8)
+                    }
+
+                    // SOFT VALIDATION WARNING (doesn't block)
+                    if let warning = viewModel.bondValidationWarning {
+                        HStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(Theme.colors.alertWarning)
+                            Text(warning)
+                                .font(Theme.fonts.caption12)
+                                .foregroundColor(Theme.colors.textPrimary)
+                            Spacer()
+                        }
+                        .padding(12)
+                        .background(Theme.colors.bgAlert)
+                        .cornerRadius(8)
+                    }
                 }
             }
         }

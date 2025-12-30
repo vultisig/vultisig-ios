@@ -19,8 +19,6 @@ enum FunctionCallInstance {
     case vote(FunctionCallVote)
     case stake(FunctionCallStake)
     case unstake(FunctionCallUnstake)
-    case addPool(FunctionCallAddLiquidityMaya)
-    case removePool(FunctionCallRemoveLiquidityMaya)
     case cosmosIBC(FunctionCallCosmosIBC)
     case merge(FunctionCallCosmosMerge)
     case unmerge(FunctionCallCosmosUnmerge)
@@ -46,10 +44,6 @@ enum FunctionCallInstance {
         case .stake(let memo):
             return memo.getView()
         case .unstake(let memo):
-            return memo.getView()
-        case .addPool(let memo):
-            return memo.getView()
-        case .removePool(let memo):
             return memo.getView()
         case .cosmosIBC(let memo):
             return memo.getView()
@@ -86,10 +80,6 @@ enum FunctionCallInstance {
             return memo.description
         case .unstake(let memo):
             return memo.description
-        case .addPool(let memo):
-            return memo.description
-        case .removePool(let memo):
-            return memo.description
         case .cosmosIBC(let memo):
             return memo.description
         case .merge(let memo):
@@ -125,10 +115,6 @@ enum FunctionCallInstance {
             return memo.amount
         case .unstake(let memo):
             return memo.amount  // You must send 1 TON to unstake with a "w" memo
-        case .addPool(let memo):
-            return memo.amount
-        case .removePool(_):
-            return .zero
         case .cosmosIBC(let memo):
             return memo.amount
         case .merge(let memo):
@@ -192,10 +178,6 @@ enum FunctionCallInstance {
             return memo.toDictionary()
         case .unstake(let memo):
             return memo.toDictionary()
-        case .addPool(let memo):
-            return memo.toDictionary()
-        case .removePool(let memo):
-            return memo.toDictionary()
         case .cosmosIBC(let memo):
             return memo.toDictionary()
         case .merge(let memo):
@@ -245,10 +227,6 @@ enum FunctionCallInstance {
         case .stake(let memo):
             return memo.isTheFormValid
         case .unstake(let memo):
-            return memo.isTheFormValid
-        case .addPool(let memo):
-            return memo.isTheFormValid
-        case .removePool(let memo):
             return memo.isTheFormValid
         case .cosmosIBC(let memo):
             return memo.isTheFormValid
