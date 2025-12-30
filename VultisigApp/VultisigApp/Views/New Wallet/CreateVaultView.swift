@@ -23,6 +23,7 @@ struct CreateVaultView: View {
 
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var appViewModel: AppViewModel
+    @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     
     init(selectedVault: Vault? = nil, showBackButton: Bool = false) {
         self.selectedVault = selectedVault
@@ -163,4 +164,5 @@ struct CreateVaultView: View {
 #Preview {
     CreateVaultView(selectedVault: Vault.example)
         .environmentObject(AppViewModel())
+        .environmentObject(DeeplinkViewModel())
 }
