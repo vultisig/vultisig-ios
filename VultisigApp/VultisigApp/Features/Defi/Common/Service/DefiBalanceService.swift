@@ -35,25 +35,21 @@ struct DefiBalanceService {
 
 private extension DefiBalanceService {
     func thorChainTotalBalanceFiatDecimal(for vault: Vault) -> Decimal {
-        guard
-            let runeCoin = vault.runeCoin,
-            let enabledPositions = vault.defiPositions.first(where: { $0.chain == .thorChain })
-        else { return .zero }
+        guard let enabledPositions = vault.defiPositions.first(where: { $0.chain == .thorChain }) else {
+            return .zero
+        }
         
         let bondsBalance = getBondsBalance(for: vault, chain: .thorChain)
         let stakedBalances = getStakedBalances(for: vault, chain: .thorChain)
         let lpBalances: Decimal = getLPBalances(for: vault, chain: .thorChain)
-        
-        
         return bondsBalance + stakedBalances + lpBalances
     }
     
     func mayaChainTotalBalanceFiatDecimal(for vault: Vault) -> Decimal {
-        guard
-            let nativeCoin = vault.nativeCoin(for: .mayaChain),
-            let enabledPositions = vault.defiPositions.first(where: { $0.chain == .mayaChain })  else {
+        guard let enabledPositions = vault.defiPositions.first(where: { $0.chain == .mayaChain })  else {
             return .zero
         }
+        
         let bondsBalance = getBondsBalance(for: vault, chain: .mayaChain)
         let stakedBalances = getStakedBalances(for: vault, chain: .mayaChain)
         let lpBalances = getLPBalances(for: vault, chain: .mayaChain)
