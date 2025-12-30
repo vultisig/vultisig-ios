@@ -98,7 +98,7 @@ struct FastVaultSetPasswordView: View {
     var migrateDescription: some View {
         Text(NSLocalizedString("migratePasswordDescription", comment: ""))
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textExtraLight)
+            .foregroundColor(Theme.colors.textTertiary)
     }
     
     var disclaimer: some View {

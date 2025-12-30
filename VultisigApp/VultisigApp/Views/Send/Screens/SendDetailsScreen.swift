@@ -299,7 +299,7 @@ struct SendDetailsScreen: View {
             .foregroundColor(Theme.colors.textPrimary)
             .padding(.vertical, 6)
             .padding(.horizontal, 20)
-            .background(Theme.colors.bgSecondary)
+            .background(Theme.colors.bgSurface1)
             .cornerRadius(6)
     }
     

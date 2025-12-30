@@ -46,9 +46,9 @@ struct InfoBannerView: View {
             if let onClose {
                 Spacer()
                 Button(action: onClose) {
-                    Icon(named: "x", color: Theme.colors.textLight, size: 12)
+                    Icon(named: "x", color: Theme.colors.textSecondary, size: 12)
                         .padding(8)
-                        .background(Circle().fill(Theme.colors.bgTertiary))
+                        .background(Circle().fill(Theme.colors.bgSurface2))
                 }
             }
         }
@@ -65,7 +65,7 @@ struct InfoBannerView: View {
     var fontColor: Color {
         switch type {
         case .info:
-            Theme.colors.textLight
+            Theme.colors.textSecondary
         case .warning:
             Theme.colors.alertWarning
         case .error:
@@ -91,7 +91,7 @@ struct InfoBannerView: View {
     var borderColor: Color {
         switch type {
         case .info:
-            Theme.colors.bgTertiary
+            Theme.colors.bgSurface2
         case .warning:
             Theme.colors.alertWarning.opacity(0.35)
         case .error:

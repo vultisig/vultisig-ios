@@ -19,7 +19,7 @@ struct ContainerView<Content: View>: View {
         content()
             .font(Theme.fonts.bodyMMedium)
             .padding(16)
-            .background(Theme.colors.bgSecondary)
+            .background(Theme.colors.bgSurface1)
             .containerStyle()
     }
 }

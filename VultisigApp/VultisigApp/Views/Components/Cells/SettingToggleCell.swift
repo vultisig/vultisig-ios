@@ -22,7 +22,7 @@ struct SettingToggleCell: View {
             toggle
         }
         .padding(12)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(10)
         .onTapGesture {
             isEnabled.toggle()

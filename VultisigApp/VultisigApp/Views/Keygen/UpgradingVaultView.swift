@@ -53,7 +53,7 @@ struct UpgradingVaultView: View {
     var appVersion: some View {
         Text(Bundle.main.appVersionString)
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textExtraLight)
+            .foregroundColor(Theme.colors.textTertiary)
             .padding(.bottom, 30)
     }
     

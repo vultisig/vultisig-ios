@@ -59,7 +59,7 @@ struct ReferralMainScreen: View {
                         highlightedText: referralSavePercentage
                     ) {
                         $0.font = Theme.fonts.caption12
-                        $0.foregroundColor = Theme.colors.textExtraLight
+                        $0.foregroundColor = Theme.colors.textTertiary
                     } highlightedTextStyle: {
                         $0.foregroundColor = Theme.colors.primaryAccent4
                     }
@@ -98,7 +98,7 @@ struct ReferralMainScreen: View {
         VStack(spacing: 20) {
             Icon(named: "file-question", color: Theme.colors.primaryAccent4, size: 24)
                 .padding(7)
-                .background(RoundedRectangle(cornerRadius: 8).fill(Theme.colors.bgSecondary))
+                .background(RoundedRectangle(cornerRadius: 8).fill(Theme.colors.bgSurface1))
                 .padding(.top, 24)
             
             VStack(spacing: 8) {
@@ -107,7 +107,7 @@ struct ReferralMainScreen: View {
                     .foregroundStyle(Theme.colors.textPrimary)
                 Text("noReferralYetDescription".localized)
                     .font(Theme.fonts.footnote)
-                    .foregroundStyle(Theme.colors.textLight)
+                    .foregroundStyle(Theme.colors.textSecondary)
                     .multilineTextAlignment(.center)
             }
             
@@ -136,7 +136,7 @@ struct ReferralMainScreen: View {
                 Icon(named: "trophy")
                     .padding(.bottom, 10)
                 Text("collectedRewards".localized)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
                 RedactedText(
                     referralViewModel.collectedRewards,
@@ -153,7 +153,7 @@ struct ReferralMainScreen: View {
     var expiresOnView: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text("expiresOn".localized)
-                .foregroundStyle(Theme.colors.textExtraLight)
+                .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.bodySMedium)
             RedactedText(
                 referralViewModel.expiresOn,

@@ -27,7 +27,7 @@ struct PercentageSliderView: View {
         HStack(spacing: 12) {
             Text((minimumValue / 100).formatted(.percent))
                 .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textExtraLight)
+                .foregroundStyle(Theme.colors.textTertiary)
             
             ZStack(alignment: .leading) {
                 // Background track
@@ -54,7 +54,7 @@ struct PercentageSliderView: View {
             
             Text(100.formatted(.percent))
                 .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textExtraLight)
+                .foregroundStyle(Theme.colors.textTertiary)
         }
     }
 }

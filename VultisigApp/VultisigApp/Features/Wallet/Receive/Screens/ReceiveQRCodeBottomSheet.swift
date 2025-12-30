@@ -42,8 +42,8 @@ struct ReceiveQRCodeBottomSheet: View {
             .background(ModalBackgroundView(width: proxy.size.width))
         }
         .presentationDetents([.height(465)])
-        .presentationBackground(Theme.colors.bgSecondary)
-        .background(Theme.colors.bgSecondary)
+        .presentationBackground(Theme.colors.bgSurface1)
+        .background(Theme.colors.bgSurface1)
         .presentationDragIndicator(.visible)
         .applySheetSize(700, 450)
         .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
@@ -79,7 +79,7 @@ struct ReceiveQRCodeBottomSheet: View {
     var topSection: some View {
         VStack(spacing: 8) {
             RoundedRectangle(cornerRadius: 24)
-                .fill(Theme.colors.bgSecondary)
+                .fill(Theme.colors.bgSurface1)
                 .overlay(
                     qrCodeImage?
                         .resizable()

@@ -28,7 +28,7 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(banner.title)
                         .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textExtraLight)
+                        .foregroundStyle(Theme.colors.textTertiary)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: true, vertical: false)
                     Text(banner.subtitle)

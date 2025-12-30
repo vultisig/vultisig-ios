@@ -103,7 +103,7 @@ struct CommonTextField<TrailingView: View>: View {
                 .frame(height: height)
                 .font(Theme.fonts.bodyMMedium)
                 .padding(.horizontal, 12)
-                .background(Theme.colors.bgSecondary)
+                .background(Theme.colors.bgSurface1)
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
@@ -131,7 +131,7 @@ struct CommonTextField<TrailingView: View>: View {
         } label: {
             Icon(
                 named: "circle-x-fill",
-                color: Theme.colors.textExtraLight,
+                color: Theme.colors.textTertiary,
                 size: 16
             )
         }
@@ -185,7 +185,7 @@ struct CommonTextField<TrailingView: View>: View {
         case .primary:
             Theme.colors.textPrimary
         case .secondary:
-            Theme.colors.textExtraLight
+            Theme.colors.textTertiary
         }
     }
     

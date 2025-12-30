@@ -49,7 +49,7 @@ struct FastVaultEmailView: View {
             
             Text(NSLocalizedString("enterYourEmailDescription", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
             
             textfield(title: NSLocalizedString("email", comment: ""),text: $email)
         }
@@ -101,7 +101,7 @@ struct FastVaultEmailView: View {
             isEmptyEmail = true
         } label: {
             Image(systemName: "xmark.circle.fill")
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
         }
     }
     

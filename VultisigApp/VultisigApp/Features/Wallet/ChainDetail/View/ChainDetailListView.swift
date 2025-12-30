@@ -42,7 +42,7 @@ struct ChainDetailListView: View {
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.subtitle)
                 Text("noTokensFoundSubtitle")
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.footnote)
             }
             .frame(maxWidth: 263)
@@ -54,7 +54,7 @@ struct ChainDetailListView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 32)
         .frame(maxWidth: .infinity)
-        .background(RoundedRectangle(cornerRadius: 12).fill(Theme.colors.bgSecondary))
+        .background(RoundedRectangle(cornerRadius: 12).fill(Theme.colors.bgSurface1))
     }
 }
 

@@ -36,7 +36,7 @@ struct KeysignCustomMessageConfirmView: View {
                 Separator()
             }
             .padding(16)
-            .background(Theme.colors.bgSecondary)
+            .background(Theme.colors.bgSurface1)
             .cornerRadius(10)
             .padding(16)
         }

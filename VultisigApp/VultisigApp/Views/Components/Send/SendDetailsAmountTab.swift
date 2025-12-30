@@ -123,7 +123,7 @@ struct SendDetailsAmountTab: View {
         .foregroundColor(Theme.colors.textPrimary)
         .padding(12)
         .padding(.vertical, 8)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(12)
     }
     
