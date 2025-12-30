@@ -24,9 +24,8 @@ extension MayaChainAPIService {
             for node in allNodes {
                 // Check if this node has bond providers with our address
                 for provider in node.bondProviders.providers where provider.bondAddress == address {
-                    guard let providerBond = Decimal(string: provider.bond) else {
-                        continue
-                    }
+                    // Calculate total bond from pools
+                    let providerBond = provider.totalBond
 
                     let mayaNode = MayaBondNode(
                         status: node.status,
@@ -72,12 +71,12 @@ extension MayaChainAPIService {
         let nodeData = try await getNodeDetails(nodeAddress: nodeAddress)
         let bondProviders = nodeData.bondProviders.providers
 
-        // 2. Calculate my bond and total bond
+        // 2. Calculate my bond and total bond from pools
         var myBond: Decimal = 0
         var totalBond: Decimal = 0
 
         for provider in bondProviders {
-            let providerBond = Decimal(string: provider.bond) ?? 0
+            let providerBond = provider.totalBond
             if provider.bondAddress == myBondAddress {
                 myBond = providerBond
             }
