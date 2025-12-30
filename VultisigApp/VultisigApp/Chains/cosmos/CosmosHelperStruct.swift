@@ -197,20 +197,14 @@ struct CosmosHelperStruct {
     
     func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
-        
-        // Debug: Print the input data
-        print("🔍 getPreSignedImageHash inputData size: \(inputData.count) bytes")
-        print("🔍 inputData (hex): \(inputData.map { String(format: "%02x", $0) }.joined())")
-        
+
         let hashes = TransactionCompiler.preImageHashes(coinType: config.coinType, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
             print("Error getPreSignedImageHash: \(preSigningOutput.errorMessage)")
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
-        
-        print("🔍 Computed hash: \(preSigningOutput.dataHash.hexString)")
-        
+
         return [preSigningOutput.dataHash.hexString]
     }
     

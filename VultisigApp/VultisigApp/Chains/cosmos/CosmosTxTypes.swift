@@ -21,7 +21,7 @@ struct CosmosTx: Codable {
     /// signatures is a list of signatures that matches the length and order of
     /// AuthInfo's signer_infos to allow connecting signature meta information like
     /// public key and signing mode by position.
-    let signatures: [Data]
+    let signatures: [Base64Data]
 
     enum CodingKeys: String, CodingKey {
         case body
@@ -39,16 +39,16 @@ struct CosmosTx: Codable {
 struct TxRaw: Codable {
     /// body_bytes is a protobuf serialization of a TxBody that matches the
     /// representation in SignDoc.
-    let bodyBytes: Data
+    let bodyBytes: Base64Data
 
     /// auth_info_bytes is a protobuf serialization of an AuthInfo that matches the
     /// representation in SignDoc.
-    let authInfoBytes: Data
+    let authInfoBytes: Base64Data
 
     /// signatures is a list of signatures that matches the length and order of
     /// AuthInfo's signer_infos to allow connecting signature meta information like
     /// public key and signing mode by position.
-    let signatures: [Data]
+    let signatures: [Base64Data]
 
     enum CodingKeys: String, CodingKey {
         case bodyBytes = "body_bytes"
@@ -62,11 +62,11 @@ struct TxRaw: Codable {
 struct SignDoc: Codable {
     /// body_bytes is protobuf serialization of a TxBody that matches the
     /// representation in TxRaw.
-    let bodyBytes: Data
+    let bodyBytes: Base64Data
 
     /// auth_info_bytes is a protobuf serialization of an AuthInfo that matches the
     /// representation in TxRaw.
-    let authInfoBytes: Data
+    let authInfoBytes: Base64Data
 
     /// chain_id is the unique identifier of the chain this transaction targets.
     /// It prevents signed transactions from being used on another chain by an
@@ -90,7 +90,7 @@ struct SignDoc: Codable {
 struct SignDocDirectAux: Codable {
     /// body_bytes is protobuf serialization of a TxBody that matches the
     /// representation in TxRaw.
-    let bodyBytes: Data
+    let bodyBytes: Base64Data
 
     /// public_key is the public key of the signing account.
     let publicKey: CosmosAny?
@@ -321,7 +321,7 @@ struct AuxSignerData: Codable {
     let mode: SignMode
 
     /// sig is the signature of the sign doc.
-    let sig: Data
+    let sig: Base64Data
 
     enum CodingKeys: String, CodingKey {
         case address
@@ -340,7 +340,7 @@ struct CosmosAny: Codable {
     let typeUrl: String
 
     /// Must be a valid serialized protocol buffer of the above specified type.
-    let value: Data
+    let value: Base64Data
 
     enum CodingKeys: String, CodingKey {
         case typeUrl = "type_url"
@@ -353,7 +353,7 @@ struct CosmosAny: Codable {
 /// space after proto encoding.
 struct CompactBitArray: Codable {
     let extraBitsStored: UInt32
-    let elems: Data
+    let elems: Base64Data
 
     enum CodingKeys: String, CodingKey {
         case extraBitsStored = "extra_bits_stored"
@@ -361,10 +361,17 @@ struct CompactBitArray: Codable {
     }
 }
 
-// MARK: - Extensions for Data encoding
+// MARK: - Base64Data Wrapper
 
-extension Data {
-    /// Custom encoder for Data to base64 string
+/// A dedicated wrapper type for Data that should be encoded/decoded as base64 strings.
+/// This avoids the pitfalls of a global Data extension that affects all Data instances.
+struct Base64Data: Codable, Hashable {
+    let data: Data
+
+    init(_ data: Data) {
+        self.data = data
+    }
+
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let base64String = try container.decode(String.self)
@@ -376,12 +383,11 @@ extension Data {
             )
         }
 
-        self = data
+        self.data = data
     }
 
-    /// Custom decoder for Data from base64 string
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
-        try container.encode(self.base64EncodedString())
+        try container.encode(data.base64EncodedString())
     }
 }
