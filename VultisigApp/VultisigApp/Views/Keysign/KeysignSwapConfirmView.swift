@@ -42,7 +42,7 @@ struct KeysignSwapConfirmView: View {
             getValueCell(for: "NetworkFee", with: viewModel.getJoinedCalculatedNetworkFee())
         }
         .padding(16)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(10)
     }
 
@@ -56,7 +56,7 @@ struct KeysignSwapConfirmView: View {
     var summaryTitle: some View {
         Text(NSLocalizedString("youreSwapping", comment: ""))
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textLight)
+            .foregroundColor(Theme.colors.textSecondary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
@@ -80,7 +80,7 @@ struct KeysignSwapConfirmView: View {
     var verticalSeparator: some View {
         Rectangle()
             .frame(width: 1, height: 12)
-            .foregroundColor(Theme.colors.bgTertiary)
+            .foregroundColor(Theme.colors.bgSurface2)
     }
     
     var summaryFromTo: some View {
@@ -114,7 +114,7 @@ struct KeysignSwapConfirmView: View {
             .font(Theme.fonts.caption12)
             .foregroundColor(Theme.colors.primaryAccent4)
             .padding(6)
-            .background(Theme.colors.bgTertiary)
+            .background(Theme.colors.bgSurface2)
             .cornerRadius(32)
             .bold()
     }
@@ -127,7 +127,7 @@ struct KeysignSwapConfirmView: View {
     ) -> some View {
         HStack(spacing: 4) {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
             
             Spacer()
             
@@ -142,7 +142,7 @@ struct KeysignSwapConfirmView: View {
             
             if let bracketValue {
                 Text(bracketValue)
-                    .foregroundColor(Theme.colors.textExtraLight)
+                    .foregroundColor(Theme.colors.textTertiary)
             }
             
         }
@@ -165,7 +165,7 @@ struct KeysignSwapConfirmView: View {
             if let chain {
                 HStack(spacing: 2) {
                     Text(NSLocalizedString("on", comment: ""))
-                        .foregroundColor(Theme.colors.textExtraLight)
+                        .foregroundColor(Theme.colors.textTertiary)
                         .padding(.trailing, 4)
                     
                     Image(chain.logo)
@@ -193,7 +193,7 @@ struct KeysignSwapConfirmView: View {
         )
         .overlay(
             Circle()
-                .stroke(Theme.colors.bgTertiary, lineWidth: 2)
+                .stroke(Theme.colors.bgSurface2, lineWidth: 2)
         )
     }
 }

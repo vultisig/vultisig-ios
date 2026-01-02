@@ -16,11 +16,11 @@ struct MemoTextField: View {
         container
             .font(Theme.fonts.bodyMMedium)
             .padding(16)
-            .background(Theme.colors.bgSecondary)
+            .background(Theme.colors.bgSurface1)
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Theme.colors.bgTertiary, lineWidth: 1)
+                    .stroke(Theme.colors.bgSurface2, lineWidth: 1)
             )
             .padding(1)
     }
@@ -39,7 +39,7 @@ struct MemoTextField: View {
             .submitLabel(.next)
             .disableAutocorrection(true)
             .textFieldStyle(TappableTextFieldStyle())
-            .foregroundColor(isEnabled ? Theme.colors.textPrimary : Theme.colors.textLight)
+            .foregroundColor(isEnabled ? Theme.colors.textPrimary : Theme.colors.textSecondary)
     }
     
     var pasteButton: some View {

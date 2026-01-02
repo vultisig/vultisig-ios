@@ -38,7 +38,7 @@ struct DefiChainActiveNodeView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Text(String(format: "nodeAddress".localized, activeNode.node.address.truncatedAddress))
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
                 Spacer()
                 BondNodeStateView(state: activeNode.node.state)
@@ -52,7 +52,7 @@ struct DefiChainActiveNodeView: View {
                 
                 HiddenBalanceText(fiatAmount)
                     .font(Theme.fonts.title3)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
             }
             .lineLimit(1)
             
@@ -60,7 +60,7 @@ struct DefiChainActiveNodeView: View {
                 Icon(named: "percent", size: 16)
                 Text("apy".localized)
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                 Spacer()
                 
                 Text(activeNode.apy.formatted(.percent.precision(.fractionLength(2))))
@@ -80,7 +80,7 @@ struct DefiChainActiveNodeView: View {
                 bondButtonsView
                 Text("waitChurnedOutNode".localized)
                     .font(Theme.fonts.caption10)
-                    .foregroundStyle(Theme.colors.textLight)
+                    .foregroundStyle(Theme.colors.textSecondary)
                     .showIf(unbondDisabled)
             }
         }
@@ -89,28 +89,28 @@ struct DefiChainActiveNodeView: View {
     var nextChurnView: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
-                Icon(named: "calendar-days", color: Theme.colors.textExtraLight, size: 16)
+                Icon(named: "calendar-days", color: Theme.colors.textTertiary, size: 16)
                 Text("nextChurn".localized)
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
             }
             Text(formattedChurnDate)
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundStyle(Theme.colors.textLight)
+                .foregroundStyle(Theme.colors.textSecondary)
         }
     }
     
     var nextAwardView: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
-                Icon(named: "trophy", color: Theme.colors.textExtraLight, size: 16)
+                Icon(named: "trophy", color: Theme.colors.textTertiary, size: 16)
                 Text("nextAward".localized)
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
             }
             HiddenBalanceText(coin.formatWithTicker(value: activeNode.nextReward))
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundStyle(Theme.colors.textLight)
+                .foregroundStyle(Theme.colors.textSecondary)
         }
     }
     

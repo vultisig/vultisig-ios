@@ -44,7 +44,7 @@ struct DefiChainLPPositionView: View {
             VStack(alignment: .leading, spacing: .zero) {
                 Text(title)
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                 
                 HiddenBalanceText(fiatAmount)
                     .font(Theme.fonts.priceTitle1)
@@ -61,7 +61,7 @@ struct DefiChainLPPositionView: View {
             Icon(named: "percent", size: 16)
             Text("apr".localized)
                 .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textExtraLight)
+                .foregroundStyle(Theme.colors.textTertiary)
             Spacer()
             
             Text(position.apr.formatted(.percent.precision(.fractionLength(2))))
@@ -79,10 +79,10 @@ struct DefiChainLPPositionView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("position".localized)
                 .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textExtraLight)
+                .foregroundStyle(Theme.colors.textTertiary)
             HiddenBalanceText(lpTitle)
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundStyle(Theme.colors.textLight)
+                .foregroundStyle(Theme.colors.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

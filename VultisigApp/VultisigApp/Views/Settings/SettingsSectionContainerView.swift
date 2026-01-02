@@ -14,7 +14,7 @@ struct SettingsSectionContainerView<Content: View>: View {
         content()
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Theme.colors.bgSecondary)
+                    .fill(Theme.colors.bgSurface1)
             )
             .clipShape(RoundedRectangle(cornerRadius: 12))
     }

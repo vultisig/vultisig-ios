@@ -45,7 +45,7 @@ struct ReshareView: View {
 
             Text(NSLocalizedString("reshareLabelSubtitle", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textLight)
+                .foregroundColor(Theme.colors.textSecondary)
                 .multilineTextAlignment(.center)
         }
         .padding(.horizontal, 36)

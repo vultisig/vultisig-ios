@@ -49,7 +49,7 @@ struct ImportSeedphraseScreen: View {
                             highlight: "enterYourSeedphraseSubtitleHighlight".localized,
                             style: Theme.colors.textPrimary,
                         )
-                        .foregroundStyle(Theme.colors.textExtraLight)
+                        .foregroundStyle(Theme.colors.textTertiary)
                         .font(Theme.fonts.bodySMedium)
                         .frame(maxWidth: 300)
                         .multilineTextAlignment(.center)

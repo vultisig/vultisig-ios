@@ -20,7 +20,7 @@ extension SwapPercentageButtons {
     var separator: some View {
         Rectangle()
             .frame(height: 1)
-            .foregroundColor(Theme.colors.bgTertiary)
+            .foregroundColor(Theme.colors.bgSurface2)
     }
     
     var buttons: some View {
@@ -47,7 +47,7 @@ extension SwapPercentageButtons {
             .foregroundColor(isSelected ? Color.white : Theme.colors.textPrimary)
             .padding(.vertical, 8)
             .frame(maxWidth: .infinity)
-            .background(isSelected ? Theme.colors.bgPrimary : Theme.colors.bgSecondary)
+            .background(isSelected ? Theme.colors.bgPrimary : Theme.colors.bgSurface1)
             .cornerRadius(32)
     }
 }

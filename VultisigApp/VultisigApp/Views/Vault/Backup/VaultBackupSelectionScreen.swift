@@ -52,7 +52,7 @@ struct VaultBackupSelectionScreen: View {
                             .foregroundStyle(Theme.colors.textPrimary)
                         Text("selectVaultsToBackUpSubtitle".localized)
                             .font(Theme.fonts.bodySMedium)
-                            .foregroundStyle(Theme.colors.textExtraLight)
+                            .foregroundStyle(Theme.colors.textTertiary)
                             .multilineTextAlignment(.leading)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -83,14 +83,14 @@ struct VaultBackupSelectionScreen: View {
             HStack {
                 Text(title(for: type))
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                 Spacer()
-                Icon(named: "chevron-right", color: Theme.colors.textExtraLight)
+                Icon(named: "chevron-right", color: Theme.colors.textTertiary)
             }
             switch type {
             case .single(let vault):
                 vaultRow(vault: vault)
-                    .background(Theme.colors.bgSecondary)
+                    .background(Theme.colors.bgSurface1)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             case .multiple(let vaults, _):
                 VStack(alignment: .center, spacing: 12) {
@@ -101,7 +101,7 @@ struct VaultBackupSelectionScreen: View {
                                 .showIf(vault != vaults.last)
                         }
                     }
-                    .background(Theme.colors.bgSecondary)
+                    .background(Theme.colors.bgSurface1)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     
                     Text(String(format: "plusMore".localized, moreVaultsCount))

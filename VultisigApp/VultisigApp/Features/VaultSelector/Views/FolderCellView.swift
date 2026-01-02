@@ -23,7 +23,7 @@ struct FolderCellView: View {
                 HStack {
                     Icon(named: isSelected ? "folder-fill" : "folder", color: Theme.colors.alertInfo, size: 16)
                         .padding(12)
-                        .background(Circle().fill(Theme.colors.bgTertiary))
+                        .background(Circle().fill(Theme.colors.bgSurface2))
                         .overlay(
                             Circle()
                                 .inset(by: 0.5)
@@ -65,7 +65,7 @@ struct FolderCellView: View {
         let subtitle = "\(folder.containedVaultNames.count) \(vaultsText)"
     
         Text(subtitle)
-            .foregroundStyle(Theme.colors.textLight)
+            .foregroundStyle(Theme.colors.textSecondary)
             .font(Theme.fonts.footnote)
     }
     
@@ -85,7 +85,7 @@ struct FolderCellView: View {
     
     var selectedBackground: some View {
         RoundedRectangle(cornerRadius: 12)
-            .fill(Theme.colors.bgSecondary)
+            .fill(Theme.colors.bgSurface1)
     }
 }
 

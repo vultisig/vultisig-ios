@@ -84,12 +84,12 @@ struct SwapChainPickerView: View {
         HStack {
             Text(NSLocalizedString("chain", comment: ""))
                 .font(Theme.fonts.caption12)
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Spacer()
             Text(NSLocalizedString("balance", comment: ""))
                 .font(Theme.fonts.caption12)
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
                 .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(.horizontal, 24)

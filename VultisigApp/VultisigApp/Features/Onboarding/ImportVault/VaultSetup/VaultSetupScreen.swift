@@ -72,7 +72,7 @@ struct VaultSetupScreen: View {
                         .foregroundStyle(Theme.colors.textPrimary)
                     Text("newWalletNameDescription".localized)
                         .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textExtraLight)
+                        .foregroundStyle(Theme.colors.textTertiary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
@@ -114,7 +114,7 @@ struct VaultSetupScreen: View {
                     .foregroundStyle(Theme.colors.textPrimary)
                 Text("enterVaultEmail".localized)
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                 
                 CommonTextField(
                     text: $viewModel.emailField.value,
@@ -184,7 +184,7 @@ struct VaultSetupScreen: View {
         } label: {
             HStack {
                 Text(label)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.footnote)
                 Spacer()
                 Icon(named: "chevron-down-small", color: Theme.colors.textPrimary, size: 16)

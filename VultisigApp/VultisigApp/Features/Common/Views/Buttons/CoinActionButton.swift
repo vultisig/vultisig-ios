@@ -16,7 +16,7 @@ struct CoinActionButton: View {
     var action: () -> Void
     
     var bgColor: Color {
-        return isHighlighted ? Theme.colors.bgButtonTertiary : Theme.colors.bgTertiary
+        return isHighlighted ? Theme.colors.bgButtonTertiary : Theme.colors.bgSurface2
     }
     
     var body: some View {

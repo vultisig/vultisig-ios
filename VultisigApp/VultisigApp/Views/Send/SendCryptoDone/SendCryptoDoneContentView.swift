@@ -46,12 +46,12 @@ struct SendCryptoDoneContentView: View {
                     .font(Theme.fonts.bodySMedium)
                     .padding(.horizontal, 24)
                     .padding(.vertical, 16)
-                    .foregroundColor(Theme.colors.textLight)
-                    .background(Theme.colors.bgSecondary)
+                    .foregroundColor(Theme.colors.textSecondary)
+                    .background(Theme.colors.bgSurface1)
                     .cornerRadius(16)
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
-                            .stroke(Theme.colors.bgTertiary, lineWidth: 1)
+                            .stroke(Theme.colors.bgSurface2, lineWidth: 1)
                     )
                 }
             }

@@ -22,7 +22,7 @@ struct VaultDetailQRCode: View {
         .padding(24)
         .background(
             RoundedRectangle(cornerRadius: 24)
-                .fill(Theme.colors.bgSecondary.opacity(0.6))
+                .fill(Theme.colors.bgSurface1.opacity(0.6))
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -68,7 +68,7 @@ struct VaultDetailQRCode: View {
     var uid: some View {
         Text("UID: \(viewModel.getId(for: vault))")
             .font(Theme.fonts.footnote)
-            .foregroundColor(Theme.colors.textLight)
+            .foregroundColor(Theme.colors.textSecondary)
             .multilineTextAlignment(.center)
     }
     

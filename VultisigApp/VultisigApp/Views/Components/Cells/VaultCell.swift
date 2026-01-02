@@ -29,7 +29,7 @@ struct VaultCell: View {
         }
         .frame(height: 48)
         .padding(.horizontal, 16)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(10)
         .padding(.horizontal, 16)
         .animation(.easeInOut, value: isEditing)
@@ -68,13 +68,13 @@ struct VaultCell: View {
             Text("\(viewModel.totalSigners)")
         }
         .font(Theme.fonts.bodySRegular)
-        .foregroundColor(Theme.colors.textLight)
+        .foregroundColor(Theme.colors.textSecondary)
     }
     
     var fastVaultLabel: some View {
         Text(NSLocalizedString("fastModeTitle", comment: "").capitalized)
             .font(Theme.fonts.bodySRegular)
-            .foregroundColor(Theme.colors.textLight)
+            .foregroundColor(Theme.colors.textSecondary)
             .padding(4)
             .padding(.horizontal, 2)
             .background(Theme.colors.border)

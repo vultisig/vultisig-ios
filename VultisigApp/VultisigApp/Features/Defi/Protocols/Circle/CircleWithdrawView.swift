@@ -106,10 +106,10 @@ struct CircleWithdrawView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(NSLocalizedString("circleWithdrawAmount", comment: "Amount"))
                         .font(CircleConstants.Fonts.subtitle)
-                        .foregroundStyle(Theme.colors.textLight)
+                        .foregroundStyle(Theme.colors.textSecondary)
                     
                     Divider()
-                        .background(Theme.colors.textExtraLight.opacity(0.2))
+                        .background(Theme.colors.textTertiary.opacity(0.2))
                 }
                 
                 Spacer()
@@ -120,13 +120,13 @@ struct CircleWithdrawView: View {
                         
                         Text("USDC")
                             .font(Theme.fonts.bodyLMedium)
-                            .foregroundStyle(Theme.colors.textLight)
+                            .foregroundStyle(Theme.colors.textSecondary)
                     }
                     .frame(maxWidth: .infinity)
                     
                     Text("\(Int(percentage))%")
                         .font(CircleConstants.Fonts.subtitle)
-                        .foregroundStyle(Theme.colors.textLight)
+                        .foregroundStyle(Theme.colors.textSecondary)
                 }
                 
                 Spacer()
@@ -144,7 +144,7 @@ struct CircleWithdrawView: View {
                     HStack {
                         Text(NSLocalizedString("circleDepositBalanceAvailable", comment: "Balance available:"))
                             .font(CircleConstants.Fonts.subtitle)
-                            .foregroundStyle(Theme.colors.textLight)
+                            .foregroundStyle(Theme.colors.textSecondary)
                         
                         Spacer()
                         
@@ -180,7 +180,7 @@ struct CircleWithdrawView: View {
         if isFastVault {
             VStack {
                 Text(NSLocalizedString("holdForPairedSign", comment: ""))
-                    .foregroundColor(Theme.colors.textExtraLight)
+                    .foregroundColor(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
                 
                 LongPressPrimaryButton(title: NSLocalizedString("circleWithdrawConfirm", comment: "Continue")) {

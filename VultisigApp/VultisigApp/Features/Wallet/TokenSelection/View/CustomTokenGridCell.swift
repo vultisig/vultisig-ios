@@ -19,7 +19,7 @@ struct CustomTokenGridCell: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(
                     RoundedRectangle(cornerRadius: 24)
-                        .fill(Theme.colors.bgSecondary)
+                        .fill(Theme.colors.bgSurface1)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 24)

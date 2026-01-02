@@ -122,7 +122,7 @@ struct JoinSwapDoneSummary: View {
             .font(Theme.fonts.caption12)
             .bold()
             .frame(width: 24, height: 24)
-            .background(Theme.colors.bgSecondary)
+            .background(Theme.colors.bgSurface1)
             .cornerRadius(60)
             .padding(8)
             .background(Theme.colors.bgPrimary)
@@ -174,7 +174,7 @@ struct JoinSwapDoneSummary: View {
             )
         }
         .padding(24)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
@@ -190,7 +190,7 @@ struct JoinSwapDoneSummary: View {
     private func getFromToCard(coin: Coin?, title: String, description: String?, isFrom: Bool) -> some View {
         VStack(spacing: 8) {
             Text(isFrom ? "from".localized : "to".localized)
-                .foregroundStyle(Theme.colors.textExtraLight)
+                .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption10)
             
             if let coin {
@@ -210,12 +210,12 @@ struct JoinSwapDoneSummary: View {
                 
                 Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
                     .font(Theme.fonts.caption10)
-                    .foregroundColor(Theme.colors.textExtraLight)
+                    .foregroundColor(Theme.colors.textTertiary)
             }
         }
         .frame(height: 130)
         .frame(maxWidth: .infinity)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
@@ -233,7 +233,7 @@ struct JoinSwapDoneSummary: View {
     ) -> some View {
         HStack {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
             
             Spacer()
             
@@ -249,7 +249,7 @@ struct JoinSwapDoneSummary: View {
                     Text(bracketValue) +
                     Text(")")
                 }
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
                 .frame(maxWidth: bracketMaxWidth)
                 .truncationMode(.middle)
                 .lineLimit(1)
