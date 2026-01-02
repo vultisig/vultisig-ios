@@ -140,7 +140,7 @@ private extension VultiTabBar {
             HStack(spacing: 0) {
                 ForEach(Array(items.enumerated()), id: \.offset) { index, item in
                     Button { selectedItem = item } label: {
-                        let color = item == selectedItem ? Theme.colors.textPrimary : Theme.colors.textExtraLight
+                        let color = item == selectedItem ? Theme.colors.textPrimary : Theme.colors.textTertiary
                         VStack(spacing: 4) {
                             Icon(
                                 named: item.icon,

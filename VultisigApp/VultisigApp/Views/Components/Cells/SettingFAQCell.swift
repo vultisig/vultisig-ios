@@ -37,7 +37,7 @@ struct SettingFAQCell: View {
     var title: some View {
         Text(NSLocalizedString(question, comment: "Question"))
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textLight)
+            .foregroundColor(Theme.colors.textSecondary)
     }
     
     var description: some View {
@@ -49,7 +49,7 @@ struct SettingFAQCell: View {
     var chevron: some View {
         Icon(
             named: "chevron-down",
-            color: Theme.colors.textExtraLight,
+            color: Theme.colors.textTertiary,
             size: 16
         )
         .rotationEffect(.degrees(isExpanded ? 180 : 0))

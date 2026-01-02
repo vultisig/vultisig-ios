@@ -109,12 +109,12 @@ struct SwapDetailsSummary: View {
     private func getSummaryCell(leadingText: String, trailingText: String) -> some View {
         HStack {
             Text(NSLocalizedString(leadingText, comment: ""))
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
             
             Spacer()
             
             Text(trailingText)
-                .foregroundColor(Theme.colors.textLight)
+                .foregroundColor(Theme.colors.textSecondary)
                 .redacted(reason: swapViewModel.isLoading ? .placeholder : [])
         }
         .font(Theme.fonts.caption12)

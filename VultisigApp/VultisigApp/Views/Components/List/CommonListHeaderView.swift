@@ -19,7 +19,7 @@ struct CommonListHeaderView: View {
     var body: some View {
         Text(title)
             .font(Theme.fonts.caption12)
-            .foregroundStyle(Theme.colors.textExtraLight)
+            .foregroundStyle(Theme.colors.textTertiary)
             .background(Theme.colors.bgPrimary)
             .padding(.top, paddingTop ?? 16)
             .padding(.bottom, 8)

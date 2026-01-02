@@ -46,7 +46,7 @@ struct CounterView: View {
                 Image(systemName: icon)
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
-                    .background(Theme.colors.bgSecondary)
+                    .background(Theme.colors.bgSurface1)
                     .font(Theme.fonts.title2)
             }
         }

@@ -99,7 +99,7 @@ struct AmountTextField<CustomView: View>: View {
                 if let percentage {
                     Text((Double(percentage) / 100).formatted(.percent))
                         .font(Theme.fonts.subtitle)
-                        .foregroundStyle(Theme.colors.textExtraLight)
+                        .foregroundStyle(Theme.colors.textTertiary)
                 }
             }
             Spacer()
@@ -158,7 +158,7 @@ struct AmountTextField<CustomView: View>: View {
                 .foregroundStyle(Theme.colors.textPrimary)
             Spacer()
             Text("\(availableAmount.formatted(.number.precision(.fractionLength(4)))) \(ticker)")
-                .foregroundStyle(Theme.colors.textLight)
+                .foregroundStyle(Theme.colors.textSecondary)
         }
         .font(Theme.fonts.bodySMedium)
     }

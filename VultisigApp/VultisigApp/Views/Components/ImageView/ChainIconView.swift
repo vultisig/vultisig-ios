@@ -18,6 +18,6 @@ struct ChainIconView: View {
             .frame(width: size)
             .padding(size / 2)
             .background(Circle().fill(Theme.colors.textPrimary))
-            .overlay(Circle().inset(by: -1).stroke(Theme.colors.bgSecondary, lineWidth: 2))
+            .overlay(Circle().inset(by: -1).stroke(Theme.colors.bgSurface1, lineWidth: 2))
     }
 }

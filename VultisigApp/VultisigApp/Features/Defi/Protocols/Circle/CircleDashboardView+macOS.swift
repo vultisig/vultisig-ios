@@ -59,7 +59,7 @@ extension CircleDashboardView {
             
             Text(NSLocalizedString("circleDashboardDepositDescription", comment: "Deposit your $USDC..."))
                 .font(.body)
-                .foregroundStyle(Theme.colors.textLight)
+                .foregroundStyle(Theme.colors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

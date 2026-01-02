@@ -75,7 +75,7 @@ struct VultDiscountTierBottomSheet: View {
                     highlightedText: highlightedDescriptionText
                 ) { attrString in
                     attrString.font = Theme.fonts.bodySRegular
-                    attrString.foregroundColor = Theme.colors.textLight
+                    attrString.foregroundColor = Theme.colors.textSecondary
                 } highlightedTextStyle: { attrString in
                     attrString.font = Theme.fonts.bodySMedium
                     attrString.foregroundColor = Theme.colors.textPrimary
@@ -96,7 +96,7 @@ struct VultDiscountTierBottomSheet: View {
         .applySheetSize(400, 300)
         #endif
         .background(ModalBackgroundView(width: width))
-        .presentationBackground(Theme.colors.bgSecondary)
+        .presentationBackground(Theme.colors.bgSurface1)
         .presentationDetents([.height(300)])
         .presentationDragIndicator(.visible)
         .readSize {

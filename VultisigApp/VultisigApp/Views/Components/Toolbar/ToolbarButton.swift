@@ -43,7 +43,7 @@ struct ToolbarButton<IconContent: View>: View {
     var tintColor: Color {
         switch type {
         case .outline:
-            isNativeToolbarItem ? Color.white.opacity(0.05) : Theme.colors.bgSecondary
+            isNativeToolbarItem ? Color.white.opacity(0.05) : Theme.colors.bgSurface1
         case .confirmation:
             Theme.colors.primaryAccent3
         case .destructive:

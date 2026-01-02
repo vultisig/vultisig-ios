@@ -26,7 +26,7 @@ struct SendDetailsAddressFields: View {
         VStack(spacing: 12) {
             Text("from".localized)
                 .font(Theme.fonts.caption12)
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             fromDetailsField
         }
@@ -40,18 +40,18 @@ struct SendDetailsAddressFields: View {
             }
             
             Text(tx.fromAddress)
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
                 .lineLimit(1)
                 .truncationMode(.middle)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .font(Theme.fonts.caption12).padding(.vertical, 10)
         .padding(.horizontal, 16)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
+                .stroke(Theme.colors.bgSurface2, lineWidth: 1)
         )
         .padding(1)
     }

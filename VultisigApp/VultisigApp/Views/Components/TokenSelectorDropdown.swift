@@ -32,7 +32,7 @@ struct TokenSelectorDropdown: View {
         .foregroundColor(Theme.colors.textPrimary)
         .frame(height: 48)
         .padding(.horizontal, 12)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(10)
     }
     
@@ -70,7 +70,7 @@ struct TokenSelectorDropdown: View {
             }
         }
         .font(Theme.fonts.caption12)
-        .foregroundColor(Theme.colors.textLight)
+        .foregroundColor(Theme.colors.textSecondary)
     }
     
 }

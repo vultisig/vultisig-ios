@@ -82,9 +82,9 @@ struct CoinDetailScreen: View {
             await refresh()
         }
         .presentationDetents([isIPadOS ? .large : .medium])
-        .presentationBackground(Theme.colors.bgSecondary)
+        .presentationBackground(Theme.colors.bgSurface1)
         .presentationDragIndicator(.visible)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .readSize { size = $0.width }
         .crossPlatformSheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(

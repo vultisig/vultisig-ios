@@ -108,7 +108,7 @@ struct SendGasSettingsView: View {
             HStack {
                 Text(text.isEmpty ? title : text)
                     .font(Theme.fonts.bodyMRegular)
-                    .foregroundColor(Theme.colors.textLight)
+                    .foregroundColor(Theme.colors.textSecondary)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 16)
 
@@ -118,7 +118,7 @@ struct SendGasSettingsView: View {
         }
         .background(
             RoundedRectangle(cornerSize: .init(width: 5, height: 5))
-                .foregroundColor(Theme.colors.bgSecondary)
+                .foregroundColor(Theme.colors.bgSurface1)
         )
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 16)

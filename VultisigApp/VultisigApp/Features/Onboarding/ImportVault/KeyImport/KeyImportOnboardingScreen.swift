@@ -54,7 +54,7 @@ struct KeyImportOnboardingScreen: View {
         VStack(alignment: .leading, spacing: 32) {
             VStack(alignment: .leading, spacing: 12) {
                 Text("beforeYouStart".localized)
-                    .foregroundStyle(Theme.colors.textLight)
+                    .foregroundStyle(Theme.colors.textSecondary)
                     .font(Theme.fonts.caption12)
                 
                 CustomHighlightText(

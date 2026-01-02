@@ -38,7 +38,7 @@ struct CircleView: View {
 
                     Text(NSLocalizedString("circleEthereumRequiredDescription", comment: "Please add Ethereum..."))
                         .font(.body)
-                        .foregroundStyle(Theme.colors.textLight)
+                        .foregroundStyle(Theme.colors.textSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
                 }

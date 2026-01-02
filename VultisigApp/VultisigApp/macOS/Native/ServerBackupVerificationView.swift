@@ -69,7 +69,7 @@ struct ServerBackupVerificationView: View {
     var description: some View {
         Text(NSLocalizedString("enter5DigitVerificationCodeDescription", comment: ""))
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textExtraLight)
+            .foregroundColor(Theme.colors.textTertiary)
     }
 
     private var cancelButton: some View {
@@ -79,11 +79,11 @@ struct ServerBackupVerificationView: View {
             VStack(spacing: 12) {
                 Text(String(format: NSLocalizedString("emailSentTo", comment: ""), email))
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(Theme.colors.textExtraLight)
+                    .foregroundColor(Theme.colors.textTertiary)
 
                 Text(NSLocalizedString("changeEmailAndRestart", comment: ""))
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(Theme.colors.textLight)
+                    .foregroundColor(Theme.colors.textSecondary)
                     .underline()
             }
         }
@@ -111,7 +111,7 @@ struct ServerBackupVerificationView: View {
         if showAlert {
             return Theme.colors.alertError
         } else {
-            return focusedField == index ? Theme.colors.border : Theme.colors.bgTertiary
+            return focusedField == index ? Theme.colors.border : Theme.colors.bgSurface2
         }
     }
 
@@ -124,7 +124,7 @@ struct ServerBackupVerificationView: View {
                 .frame(height: 46)
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(Theme.colors.textPrimary)
-                .background(Theme.colors.bgSecondary)
+                .background(Theme.colors.bgSurface1)
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)

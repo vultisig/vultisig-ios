@@ -51,7 +51,7 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
             .padding(4)
             .background(
                 RoundedRectangle(cornerRadius: 99)
-                    .fill(Theme.colors.bgTertiary)
+                    .fill(Theme.colors.bgSurface2)
             )
         }
         .frame(height: 60)

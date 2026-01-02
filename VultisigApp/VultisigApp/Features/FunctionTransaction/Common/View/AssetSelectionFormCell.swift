@@ -27,7 +27,7 @@ struct AssetSelectionFormCell: View {
                     
                     Text("native".localized)
                         .font(Theme.fonts.caption10)
-                        .foregroundStyle(Theme.colors.textExtraLight)
+                        .foregroundStyle(Theme.colors.textTertiary)
                         .showIf(coin.isNativeToken)
                 }
                 
@@ -40,7 +40,7 @@ struct AssetSelectionFormCell: View {
             .padding(.vertical, 6)
             .padding(.leading, 6)
             .padding(.trailing, 12)
-            .background(RoundedRectangle(cornerRadius: 99).fill(Theme.colors.bgSecondary))
+            .background(RoundedRectangle(cornerRadius: 99).fill(Theme.colors.bgSurface1))
         }
     }
 }

@@ -25,7 +25,7 @@ struct VaultDetailMacQRCode: View {
         .frame(width: 960, height: 1400)
         .background(
             RoundedRectangle(cornerRadius: 24)
-                .fill(Theme.colors.bgSecondary.opacity(0.6))
+                .fill(Theme.colors.bgSurface1.opacity(0.6))
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
     }
