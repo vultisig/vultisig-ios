@@ -20,7 +20,7 @@ struct SettingsSectionView<Content: View>: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title.localized)
                 .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textExtraLight)
+                .foregroundStyle(Theme.colors.textTertiary)
             
             SettingsSectionContainerView {
                 VStack(spacing: .zero) {

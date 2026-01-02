@@ -35,7 +35,7 @@ struct SendCryptoTransactionDetailsRow<AccessoryView: View>: View {
         VStack(alignment: .trailing, spacing: 16) {
             HStack(spacing: 2) {
                 Text(NSLocalizedString(title, comment: ""))
-                    .foregroundColor(Theme.colors.textExtraLight)
+                    .foregroundColor(Theme.colors.textTertiary)
                     .lineLimit(1)
                     .truncationMode(.tail)
                 
@@ -57,7 +57,7 @@ struct SendCryptoTransactionDetailsRow<AccessoryView: View>: View {
                         
                         if let bracketValue {
                             Text("(\(bracketValue))")
-                                .foregroundColor(Theme.colors.textExtraLight)
+                                .foregroundColor(Theme.colors.textTertiary)
                                 .lineLimit(1)
                                 .truncationMode(.middle)
                         }
@@ -65,7 +65,7 @@ struct SendCryptoTransactionDetailsRow<AccessoryView: View>: View {
                     
                     if let secondaryDescription {
                         Text(secondaryDescription)
-                            .foregroundColor(Theme.colors.textExtraLight)
+                            .foregroundColor(Theme.colors.textTertiary)
                             .lineLimit(1)
                     }
                     

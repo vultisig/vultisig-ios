@@ -387,7 +387,7 @@ struct FunctionCallAddThorLPView: View {
                 ApprovalInfoSection()
                     .padding(.vertical, 12)
                     .padding(.horizontal, 16)
-                    .background(Theme.colors.bgSecondary.opacity(0.1))
+                    .background(Theme.colors.bgSurface1.opacity(0.1))
                     .cornerRadius(10)
             }
             
@@ -439,7 +439,7 @@ struct PoolSelectorSection: View {
         }
         .frame(height: 48)
         .padding(.horizontal, 12)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(10)
     }
     
@@ -470,7 +470,7 @@ struct PoolSelectorSection: View {
             .frame(minHeight: 48)
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(Theme.colors.bgSecondary)
+            .background(Theme.colors.bgSurface1)
             .cornerRadius(10)
         }
     }

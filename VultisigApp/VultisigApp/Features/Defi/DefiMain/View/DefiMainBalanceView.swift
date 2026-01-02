@@ -33,7 +33,7 @@ struct DefiMainBalanceView: View {
         }
         .frame(height: 135)
         .background(
-            Theme.colors.bgSecondary
+            Theme.colors.bgSurface1
                 .overlay(gradientBackground.clipped())
         )
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.colors.border))

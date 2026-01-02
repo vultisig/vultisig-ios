@@ -21,7 +21,7 @@ struct DefiChainActiveNodesView: View {
             ExpandableView(isExpanded: $isExpanded) {
                 HStack {
                     Text("activeNodes".localized)
-                        .foregroundStyle(Theme.colors.textLight)
+                        .foregroundStyle(Theme.colors.textSecondary)
                         .font(Theme.fonts.bodySMedium)
                     Spacer()
                     

@@ -13,14 +13,14 @@ struct AddressFieldAccessoryButton: View {
     
     var body: some View {
         Button(action: action) {
-            Icon(named: icon, color: Theme.colors.textLight, size: 20)
+            Icon(named: icon, color: Theme.colors.textSecondary, size: 20)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
                 .frame(maxWidth: .infinity)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
                         .inset(by: 0.5)
-                        .fill(Theme.colors.bgSecondary)
+                        .fill(Theme.colors.bgSurface1)
                         .stroke(Theme.colors.borderLight)
                 )
         }

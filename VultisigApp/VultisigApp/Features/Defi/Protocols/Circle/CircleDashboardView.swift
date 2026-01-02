@@ -28,7 +28,7 @@ struct CircleDashboardView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(NSLocalizedString("circleSetupAccountTitle", comment: "Circle USDC Account"))
                     .font(CircleConstants.Fonts.title)
-                    .foregroundStyle(Theme.colors.textLight)
+                    .foregroundStyle(Theme.colors.textSecondary)
                 
                 Text("$\(walletUSDCBalance.formatted())")
                     .font(CircleConstants.Fonts.balance)
@@ -103,7 +103,7 @@ struct CircleDashboardView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(NSLocalizedString("circleDashboardUSDCDeposited", comment: "USDC deposited"))
                         .font(CircleConstants.Fonts.subtitle)
-                        .foregroundStyle(Theme.colors.textLight)
+                        .foregroundStyle(Theme.colors.textSecondary)
                     
                     Text("\(model.balance.formatted()) USDC")
                         .font(Theme.fonts.priceBodyL)
@@ -111,7 +111,7 @@ struct CircleDashboardView: View {
                     
                     Text("$\(model.balance.formatted())")
                         .font(CircleConstants.Fonts.subtitle)
-                        .foregroundStyle(Theme.colors.textLight)
+                        .foregroundStyle(Theme.colors.textSecondary)
                 }
                 Spacer()
             }

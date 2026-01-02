@@ -61,7 +61,7 @@ struct HomeMainHeaderView: View {
         VStack(spacing: 4) {
             Text("portfolioBalance".localized)
                 .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textExtraLight)
+                .foregroundStyle(Theme.colors.textTertiary)
             Text(balanceText)
                 .font(Theme.fonts.priceBodyS)
                 .foregroundStyle(Theme.colors.textPrimary)

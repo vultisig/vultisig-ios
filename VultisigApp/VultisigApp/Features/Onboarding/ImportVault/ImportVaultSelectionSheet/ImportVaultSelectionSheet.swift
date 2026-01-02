@@ -71,18 +71,18 @@ struct ImportVaultSelectionSheet: View {
                 }
                 VStack(alignment: .leading, spacing: 8) {
                     Text(subtitle)
-                        .foregroundStyle(Theme.colors.textLight)
+                        .foregroundStyle(Theme.colors.textSecondary)
                         .font(Theme.fonts.footnote)
                     if let caption {
                         Text(caption)
-                            .foregroundStyle(Theme.colors.textExtraLight)
+                            .foregroundStyle(Theme.colors.textTertiary)
                             .font(Theme.fonts.caption10)
                     }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(24)
-            .background(RoundedRectangle(cornerRadius: 16).fill(Theme.colors.bgSecondary))
+            .background(RoundedRectangle(cornerRadius: 16).fill(Theme.colors.bgSurface1))
         }
         .buttonStyle(.plain)
     }

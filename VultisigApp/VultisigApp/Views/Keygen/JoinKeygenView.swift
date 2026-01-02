@@ -181,7 +181,7 @@ struct JoinKeygenView: View {
             Text(NSLocalizedString("discoveringMediator", comment: "Discovering mediator service, please wait..."))
         }
         .padding(22)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(12)
     }
     
@@ -287,7 +287,7 @@ struct JoinKeygenView: View {
                 .font(Theme.fonts.title1)
             
             Text(NSLocalizedString("joinKeygenViewDescription", comment: ""))
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
                 .font(Theme.fonts.bodySMedium)
         }
         .multilineTextAlignment(.center)

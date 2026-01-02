@@ -61,7 +61,7 @@ struct AddressBookView: View {
                 .multilineTextAlignment(.center)
             Text("addressBookEmptySubtitle".localized)
                 .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textExtraLight)
+                .foregroundStyle(Theme.colors.textTertiary)
                 .multilineTextAlignment(.center)
             
             addAddressButton

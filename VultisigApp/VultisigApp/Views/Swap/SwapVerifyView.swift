@@ -120,7 +120,7 @@ struct SwapVerifyView: View {
                 )
             }
             .padding(16)
-            .background(Theme.colors.bgSecondary)
+            .background(Theme.colors.bgSurface1)
             .cornerRadius(10)
         }
     }
@@ -145,7 +145,7 @@ struct SwapVerifyView: View {
     var verticalSeparator: some View {
         Rectangle()
             .frame(width: 1, height: 12)
-            .foregroundColor(Theme.colors.bgTertiary)
+            .foregroundColor(Theme.colors.bgSurface2)
     }
     
     var summaryFromTo: some View {
@@ -172,7 +172,7 @@ struct SwapVerifyView: View {
             .font(Theme.fonts.caption12)
             .foregroundColor(Theme.colors.primaryAccent4)
             .padding(6)
-            .background(Theme.colors.bgTertiary)
+            .background(Theme.colors.bgSurface2)
             .cornerRadius(32)
             .bold()
     }
@@ -180,7 +180,7 @@ struct SwapVerifyView: View {
     var summaryTitle: some View {
         Text(NSLocalizedString("youreSwapping", comment: ""))
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textLight)
+            .foregroundColor(Theme.colors.textSecondary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
@@ -198,7 +198,7 @@ struct SwapVerifyView: View {
     var signButton: some View {
         if tx.isFastVault {
             Text(NSLocalizedString("holdForPairedSign", comment: ""))
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
                 .font(Theme.fonts.bodySMedium)
             
             LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
@@ -261,7 +261,7 @@ struct SwapVerifyView: View {
     ) -> some View {
         HStack(spacing: 4) {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
             
             Spacer()
             
@@ -280,7 +280,7 @@ struct SwapVerifyView: View {
                     Text(bracketValue) +
                     Text(")")
                 }
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
             }
             
         }
@@ -299,14 +299,14 @@ struct SwapVerifyView: View {
                     .foregroundColor(Theme.colors.textPrimary) +
                 Text(" ") +
                 Text(ticker)
-                    .foregroundColor(Theme.colors.textExtraLight)
+                    .foregroundColor(Theme.colors.textTertiary)
             }
             .font(Theme.fonts.bodyLMedium)
             
             if let chain {
                 HStack(spacing: 2) {
                     Text(NSLocalizedString("on", comment: ""))
-                        .foregroundColor(Theme.colors.textExtraLight)
+                        .foregroundColor(Theme.colors.textTertiary)
                         .padding(.trailing, 4)
                     
                     Image(chain.logo)
@@ -334,7 +334,7 @@ struct SwapVerifyView: View {
         )
         .overlay(
             Circle()
-                .stroke(Theme.colors.bgTertiary, lineWidth: 2)
+                .stroke(Theme.colors.bgSurface2, lineWidth: 2)
         )
     }
 }

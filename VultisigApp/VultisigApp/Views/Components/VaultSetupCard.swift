@@ -19,7 +19,7 @@ struct VaultSetupCard: View {
             button
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(20)
     }
     

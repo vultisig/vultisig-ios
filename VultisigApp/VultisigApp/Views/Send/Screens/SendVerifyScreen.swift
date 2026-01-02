@@ -127,7 +127,7 @@ struct SendVerifyScreen: View {
         VStack {
             if tx.isFastVault {
                 Text(NSLocalizedString("holdForPairedSign", comment: ""))
-                    .foregroundColor(Theme.colors.textExtraLight)
+                    .foregroundColor(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
                 
                 LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {

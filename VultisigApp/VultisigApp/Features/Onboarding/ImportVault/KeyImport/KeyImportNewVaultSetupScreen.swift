@@ -77,7 +77,7 @@ struct KeyImportNewVaultSetupScreen: View {
                     .font(Theme.fonts.subtitle)
                 
                 Text("appStoreReadyDescription".localized)
-                    .foregroundStyle(Theme.colors.textLight)
+                    .foregroundStyle(Theme.colors.textSecondary)
                     .font(Theme.fonts.footnote)
             }
         }

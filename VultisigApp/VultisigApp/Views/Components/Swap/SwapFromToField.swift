@@ -58,13 +58,13 @@ struct SwapFromToField: View {
     var fromToLabel: some View {
         Text(NSLocalizedString(title, comment: ""))
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textExtraLight)
+            .foregroundColor(Theme.colors.textTertiary)
     }
     
     var balance: some View {
         Text("\(coin.balanceString) \(coin.ticker)")
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textExtraLight)
+            .foregroundColor(Theme.colors.textTertiary)
     }
     
     var unevenRectangle: some View {
@@ -76,7 +76,7 @@ struct SwapFromToField: View {
                 topTrailing: 24
             )
         )
-        .foregroundColor(Theme.colors.bgSecondary)
+        .foregroundColor(Theme.colors.bgSurface1)
         .rotationEffect(.degrees(title=="from" ? 0 : 180))
     }
     
@@ -89,7 +89,7 @@ struct SwapFromToField: View {
                 topTrailing: 24
             )
         )
-        .stroke(Theme.colors.bgTertiary, lineWidth: 1)
+        .stroke(Theme.colors.bgSurface2, lineWidth: 1)
         .rotationEffect(.degrees(title=="from" ? 0 : 180))
     }
     
@@ -129,7 +129,7 @@ struct SwapFromToField: View {
     var fiatBalance: some View {
         Text(fiatAmount.formatToFiat(includeCurrencySymbol: true))
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textExtraLight)
+            .foregroundColor(Theme.colors.textTertiary)
             .frame(maxWidth: .infinity, alignment: .trailing)
             .opacity(isFiatVisible() ? 1 : 0)
             .redacted(reason: title == "to" && swapViewModel.isLoadingQuotes ? .placeholder : [])

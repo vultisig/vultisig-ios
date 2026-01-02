@@ -37,7 +37,7 @@ struct SendCryptoAmountTextField: View {
         .font(Theme.fonts.largeTitle)
         .disableAutocorrection(true)
         .textFieldStyle(TappableTextFieldStyle())
-        .foregroundColor(isEnabled ? Theme.colors.textPrimary : Theme.colors.textLight)
+        .foregroundColor(isEnabled ? Theme.colors.textPrimary : Theme.colors.textSecondary)
         .maxLength(Binding<String>(
             get: { amount },
             set: {

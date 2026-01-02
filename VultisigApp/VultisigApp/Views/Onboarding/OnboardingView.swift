@@ -93,7 +93,7 @@ struct OnboardingView: View {
                 Rectangle()
                     .frame(height: 2)
                     .frame(maxWidth: .infinity)
-                    .foregroundColor(index <= tabIndex ? Theme.colors.bgButtonPrimary : Theme.colors.bgTertiary)
+                    .foregroundColor(index <= tabIndex ? Theme.colors.bgButtonPrimary : Theme.colors.bgSurface2)
                     .animation(.easeInOut, value: tabIndex)
             }
         }
@@ -113,7 +113,7 @@ struct OnboardingView: View {
             skipTapped()
         } label: {
             Text(NSLocalizedString("skip", comment: ""))
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
                 .font(Theme.fonts.bodySMedium)
         }
     }

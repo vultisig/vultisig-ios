@@ -25,7 +25,7 @@ struct OnboardingInformationRowView: View {
                     .font(Theme.fonts.subtitle)
                 
                 Text(subtitle)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.footnote)
             }
         }

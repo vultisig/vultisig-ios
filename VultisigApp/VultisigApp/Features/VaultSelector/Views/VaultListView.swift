@@ -112,7 +112,7 @@ struct VaultListView: View {
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.title3)
                 Text(headerSubtitle)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.caption12)
             }
             Spacer()

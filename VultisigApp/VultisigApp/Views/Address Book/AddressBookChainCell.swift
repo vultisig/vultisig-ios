@@ -28,7 +28,7 @@ struct AddressBookChainCell: View {
             }
             .padding(.horizontal, 22)
             .padding(.vertical, 12)
-            .background(isSelected ? Theme.colors.bgTertiary : Theme.colors.bgSecondary)
+            .background(isSelected ? Theme.colors.bgSurface2 : Theme.colors.bgSurface1)
         }
         .buttonStyle(.plain)
     }

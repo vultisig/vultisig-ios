@@ -61,7 +61,7 @@ struct NewWalletNameView: View {
         }
         .frame(height: 56)
         .padding(.horizontal, 12)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(12)
         .colorScheme(.dark)
         .borderlessTextFieldStyle()
@@ -78,7 +78,7 @@ struct NewWalletNameView: View {
             resetPlaceholderName()
         } label: {
             Image(systemName: "xmark.circle.fill")
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
         }
     }
     
@@ -99,7 +99,7 @@ struct NewWalletNameView: View {
             
             Text(NSLocalizedString("newWalletNameDescription", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
             
             textfield
         }

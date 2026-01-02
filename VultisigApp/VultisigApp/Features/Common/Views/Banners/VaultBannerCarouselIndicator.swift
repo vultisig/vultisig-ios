@@ -21,7 +21,7 @@ struct VaultBannerCarouselIndicator: View {
     
     var body: some View {
         Capsule()
-            .fill(Theme.colors.bgTertiary)
+            .fill(Theme.colors.bgSurface2)
             .frame(width: isActive ? capsuleWidth : capsuleHeight, height: capsuleHeight)
             .padding(.horizontal, 0.1)
             .overlay(isActive ? overlayView : nil, alignment: .leading)
@@ -35,7 +35,7 @@ struct VaultBannerCarouselIndicator: View {
     
     var overlayView: some View {
         Capsule()
-            .fill(Theme.colors.textLight)
+            .fill(Theme.colors.textSecondary)
             .frame(width: progress, height: capsuleHeight + 0.1)
             .offset(x: -1)
             .onAppear {

@@ -23,14 +23,14 @@ struct VaultBannerBackground: View {
     
     var upgradeVaultView: some View {
         ZStack(alignment: .trailing) {
-            Theme.colors.bgSecondary
+            Theme.colors.bgSurface1
             image
         }
     }
     
     var backupVaultView: some View {
         ZStack(alignment: .trailing) {
-            Theme.colors.bgSecondary
+            Theme.colors.bgSurface1
             EllipticalGradient(
                 stops: [
                     Gradient.Stop(color: Color(red: 0.28, green: 0.48, blue: 0.99), location: 0.00),

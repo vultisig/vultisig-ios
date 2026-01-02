@@ -24,8 +24,8 @@ public protocol ColorSystemProtocol {
     var textButtonDisabled: Color { get }
     
     var bgPrimary: Color { get }
-    var bgSecondary: Color { get }
-    var bgTertiary: Color { get }
+    var bgSurface1: Color { get }
+    var bgSurface2: Color { get }
 
     var bgSuccess: Color { get }
     var bgAlert: Color { get }
@@ -38,8 +38,8 @@ public protocol ColorSystemProtocol {
     var primaryAccent4: Color { get }
     
     var textPrimary: Color { get }
-    var textLight: Color { get }
-    var textExtraLight: Color { get }
+    var textSecondary: Color { get }
+    var textTertiary: Color { get }
     var textDark: Color { get }
     
     var border: Color { get }

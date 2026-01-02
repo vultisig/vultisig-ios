@@ -45,7 +45,7 @@ struct ThisDevicePeerCell: View {
     var description: some View {
         Text(NSLocalizedString("thisDevice", comment: ""))
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textLight)
+            .foregroundColor(Theme.colors.textSecondary)
             .lineLimit(2)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
