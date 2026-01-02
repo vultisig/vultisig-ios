@@ -46,7 +46,6 @@ struct DefiMainScreen: View {
                         DefiMainBalanceView(vault: vault)
                         Separator(color: Theme.colors.borderLight, opacity: 1)
                         bottomContentSection
-                        
                     }
                     .padding(.bottom, 32)
                     .padding(.horizontal, horizontalPadding)
