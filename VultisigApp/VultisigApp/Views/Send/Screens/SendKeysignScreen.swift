@@ -43,7 +43,8 @@ struct SendKeysignScreen: View {
                 vault: input.vault,
                 hash: hash,
                 chain: chain,
-                tx: tx
+                tx: tx,
+                keysignPayload: input.keysignPayload
             ))
         }
     }

@@ -1179,3 +1179,5 @@
 "appStoreReady" = "App Store就绪";
 "appStoreReadyDescription" = "此保险库已准备好使用第一批可安全自动化管理您资金的自托管应用程序！";
 "noBarcodesFound" = "未找到条形码";
+"aminoSign" = "Amino 签名";
+"directSign" = "直接签名";
