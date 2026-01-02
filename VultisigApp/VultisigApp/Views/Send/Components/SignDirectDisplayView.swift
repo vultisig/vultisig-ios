@@ -22,9 +22,9 @@ struct SignDirectDisplayView: View {
                 HStack(alignment: .center) {
                     Text("directSign".localized)
                         .font(Theme.fonts.bodySMedium)
-                        .foregroundColor(Theme.colors.textExtraLight)
+                        .foregroundColor(Theme.colors.textTertiary)
                     Spacer()
-                    Icon(named: "chevron-down", color: Theme.colors.textExtraLight, size: 16)
+                    Icon(named: "chevron-down", color: Theme.colors.textTertiary, size: 16)
                         .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 }
             }
@@ -44,7 +44,7 @@ struct SignDirectDisplayView: View {
                     .padding(16)
                 }
                 .frame(maxHeight: 300)
-                .background(RoundedRectangle(cornerRadius: 16).fill(Theme.colors.bgTertiary))
+                .background(RoundedRectangle(cornerRadius: 16).fill(Theme.colors.bgSurface2))
             }
         }
     }
