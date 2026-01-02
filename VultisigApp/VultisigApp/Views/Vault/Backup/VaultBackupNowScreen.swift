@@ -52,13 +52,13 @@ struct VaultBackupNowScreen: View {
 
             Text(NSLocalizedString("backupSetupSubtitle", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
                 .multilineTextAlignment(.center)
 
             Link(destination: StaticURL.VultBackupURL) {
                 Text(NSLocalizedString("learnMore", comment: ""))
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(Theme.colors.textLight)
+                    .foregroundColor(Theme.colors.textSecondary)
                     .underline()
             }
         }

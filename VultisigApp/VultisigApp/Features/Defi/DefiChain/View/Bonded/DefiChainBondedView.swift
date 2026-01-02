@@ -41,7 +41,7 @@ struct DefiChainBondedView<EmptyStateView: View>: View {
                     VStack(alignment: .leading, spacing: .zero) {
                         Text(String(format: "bondedCoin".localized, coin.ticker))
                             .font(Theme.fonts.footnote)
-                            .foregroundStyle(Theme.colors.textExtraLight)
+                            .foregroundStyle(Theme.colors.textTertiary)
                         
                         HiddenBalanceText(viewModel.totalBondedBalance)
                             .font(Theme.fonts.priceTitle1)
@@ -51,7 +51,7 @@ struct DefiChainBondedView<EmptyStateView: View>: View {
                         
                         HiddenBalanceText(viewModel.totalBondedBalanceFiat)
                             .font(Theme.fonts.priceCaption)
-                            .foregroundStyle(Theme.colors.textExtraLight)
+                            .foregroundStyle(Theme.colors.textTertiary)
                     }
                     Spacer()
                 }

@@ -70,7 +70,7 @@ struct VaultDeletionDetails: View {
         cellContainer {
             VStack(alignment: .leading, spacing: 0) {
                 title(for: "vaultType".localized)
-                    .foregroundStyle(Theme.colors.textLight)
+                    .foregroundStyle(Theme.colors.textSecondary)
                 Text(titlePartText())
             }
         }
@@ -80,7 +80,7 @@ struct VaultDeletionDetails: View {
         cellContainer {
             VStack(alignment: .leading, spacing: 0) {
                 title(for: "deviceID".localized)
-                    .foregroundStyle(Theme.colors.textLight)
+                    .foregroundStyle(Theme.colors.textSecondary)
                 Text(vault.localPartyID)
             }
         }
@@ -90,7 +90,7 @@ struct VaultDeletionDetails: View {
         cellContainer {
             VStack(alignment: .leading, spacing: 0) {
                 title(for: "ECDSAKey".localized)
-                    .foregroundStyle(Theme.colors.textLight)
+                    .foregroundStyle(Theme.colors.textSecondary)
                 Text(vault.pubKeyECDSA)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -101,7 +101,7 @@ struct VaultDeletionDetails: View {
         cellContainer {
             VStack(alignment: .leading, spacing: 0) {
                 title(for: "EdDSAKey".localized)
-                    .foregroundStyle(Theme.colors.textLight)
+                    .foregroundStyle(Theme.colors.textSecondary)
                 Text(vault.pubKeyEdDSA)
                     .fixedSize(horizontal: false, vertical: true)
             }

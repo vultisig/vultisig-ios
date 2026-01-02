@@ -44,7 +44,7 @@ struct NotificationBannerView: View {
             .background(RoundedRectangle(cornerRadius: 24)
                 .inset(by: 0.5)
                 .stroke(Theme.colors.border, lineWidth: 1)
-                .fill(Theme.colors.bgSecondary)
+                .fill(Theme.colors.bgSurface1)
             )
             .scaleEffect(isVisibleInternal ? 1.0 : 0.8)
             .opacity(isVisibleInternal ? 1.0 : 0.0)

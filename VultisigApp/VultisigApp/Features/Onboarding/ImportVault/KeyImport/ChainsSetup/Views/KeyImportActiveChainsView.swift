@@ -35,7 +35,7 @@ struct KeyImportActiveChainsView: View {
                     .foregroundStyle(Theme.colors.textPrimary)
                 Text("foundActiveChainsSubtitle".localized)
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .frame(maxWidth: 330)
                     .multilineTextAlignment(.center)
             }
@@ -65,7 +65,7 @@ struct KeyImportActiveChainsView: View {
                                 RoundedRectangle(cornerRadius: 20)
                                     .inset(by: 0.5)
                                     .stroke(Theme.colors.borderLight, lineWidth: 1)
-                                    .fill(Theme.colors.bgSecondary.opacity(0.7))
+                                    .fill(Theme.colors.bgSurface1.opacity(0.7))
                             )
                         }
                     }

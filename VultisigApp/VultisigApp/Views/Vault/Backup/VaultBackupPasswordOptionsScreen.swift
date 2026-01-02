@@ -45,7 +45,7 @@ struct VaultBackupPasswordOptionsScreen: View {
             .font(Theme.fonts.title1)
             .foregroundColor(Theme.colors.textPrimary)
             .frame(width: 64, height: 64)
-            .background(Theme.colors.bgTertiary)
+            .background(Theme.colors.bgSurface2)
             .cornerRadius(16)
     }
     
@@ -68,7 +68,7 @@ struct VaultBackupPasswordOptionsScreen: View {
         HStack(spacing: 12) {
             Icon(named: icon, color: Theme.colors.primaryAccent4, size: 24)
             HighlightedText(text: String(format: text.localized, highlighted), highlightedText: highlighted) {
-                $0.foregroundColor = Theme.colors.textExtraLight
+                $0.foregroundColor = Theme.colors.textTertiary
                 $0.font = Theme.fonts.footnote
             } highlightedTextStyle: {
                 $0.foregroundColor = Theme.colors.textPrimary
@@ -76,7 +76,7 @@ struct VaultBackupPasswordOptionsScreen: View {
             }
         }
         .frame(maxWidth: 325)
-        .containerStyle(padding: 16, bgColor: Theme.colors.bgSecondary)
+        .containerStyle(padding: 16, bgColor: Theme.colors.bgSurface1)
         
     }
     

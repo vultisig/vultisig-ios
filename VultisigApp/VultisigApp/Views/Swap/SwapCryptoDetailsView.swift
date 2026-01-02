@@ -161,7 +161,7 @@ struct SwapCryptoDetailsView: View {
             swapLabel
         }
         .background(Circle().fill(Theme.colors.bgPrimary))
-        .overlay(Circle().stroke(Theme.colors.bgTertiary))
+        .overlay(Circle().stroke(Theme.colors.bgSurface2))
     }
     
     var swapLabel: some View {

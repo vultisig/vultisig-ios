@@ -54,8 +54,8 @@ struct GroupedChainCellView: View {
                             HStack(spacing: 4) {
                                 Text(group.truncatedAddress)
                                     .font(Theme.fonts.caption12)
-                                    .foregroundStyle(Theme.colors.textExtraLight)
-                                Icon(named: "copy", color: Theme.colors.textExtraLight, size: 12)
+                                    .foregroundStyle(Theme.colors.textTertiary)
+                                Icon(named: "copy", color: Theme.colors.textTertiary, size: 12)
                             }
                         }.buttonStyle(.plain)
                     }
@@ -73,7 +73,7 @@ struct GroupedChainCellView: View {
                         }
                     Text(trailingSubtitle)
                         .font(trailingSubtitleFont)
-                        .foregroundStyle(Theme.colors.textExtraLight)
+                        .foregroundStyle(Theme.colors.textTertiary)
                         .if(hasLoaded) {
                             $0.contentTransition(.numericText())
                         }
@@ -83,7 +83,7 @@ struct GroupedChainCellView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .buttonStyle(.plain)
         .onLoad(perform: updateTexts)
         .onChange(of: group.coins.totalBalanceInFiatDecimal) { _, _ in

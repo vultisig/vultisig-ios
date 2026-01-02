@@ -16,7 +16,7 @@ extension FunctionCallAddressTextField {
             .foregroundColor(Theme.colors.textPrimary)
             .frame(height: 48)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Theme.colors.bgSecondary)
+            .background(Theme.colors.bgSurface1)
             .cornerRadius(10)
             .fileImporter(
                 isPresented: $showImagePicker,

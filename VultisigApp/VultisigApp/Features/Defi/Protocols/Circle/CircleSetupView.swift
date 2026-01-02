@@ -110,7 +110,7 @@ struct CircleSetupView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(NSLocalizedString("circleSetupAccountTitle", comment: "Circle USDC Account"))
                     .font(CircleConstants.Fonts.title)
-                    .foregroundStyle(Theme.colors.textLight)
+                    .foregroundStyle(Theme.colors.textSecondary)
                 
                 Text("$\(walletUSDCBalance.formatted())")
                     .font(CircleConstants.Fonts.balance)
@@ -156,7 +156,7 @@ struct CircleSetupView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(bottomCardLabel)
                         .font(CircleConstants.Fonts.subtitle)
-                        .foregroundStyle(Theme.colors.textLight)
+                        .foregroundStyle(Theme.colors.textSecondary)
                     
                     Text("\(model.balance.formatted()) USDC")
                         .font(Theme.fonts.priceBodyL)

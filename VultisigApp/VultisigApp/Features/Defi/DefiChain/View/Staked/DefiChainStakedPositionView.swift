@@ -77,7 +77,7 @@ struct DefiChainStakedPositionView: View {
             VStack(alignment: .leading, spacing: .zero) {
                 Text(title)
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                 
                 HiddenBalanceText(stakedAmount)
                     .font(Theme.fonts.priceTitle1)
@@ -87,7 +87,7 @@ struct DefiChainStakedPositionView: View {
                 
                 HiddenBalanceText(fiatAmount)
                     .font(Theme.fonts.priceCaption)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .contentTransition(.numericText())
                     .animation(.interpolatingSpring, value: fiatAmount)
             }
@@ -102,7 +102,7 @@ struct DefiChainStakedPositionView: View {
                 Icon(named: "percent", size: 16)
                 Text("apr".localized)
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                 Spacer()
 
                 Text(apr.formatted(.percent.precision(.fractionLength(2))))
@@ -128,15 +128,15 @@ struct DefiChainStakedPositionView: View {
     var nextPayoutView: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
-                Icon(named: "calendar-days", color: Theme.colors.textExtraLight, size: 16)
+                Icon(named: "calendar-days", color: Theme.colors.textTertiary, size: 16)
                 Text("nextPayout".localized)
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
             }
             if let payoutDate = formattedPayoutDate {
                 Text(payoutDate)
                     .font(Theme.fonts.bodyMMedium)
-                    .foregroundStyle(Theme.colors.textLight)
+                    .foregroundStyle(Theme.colors.textSecondary)
             }
         }
     }
@@ -144,15 +144,15 @@ struct DefiChainStakedPositionView: View {
     var estimatedRewardView: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
-                Icon(named: "trophy", color: Theme.colors.textExtraLight, size: 16)
+                Icon(named: "trophy", color: Theme.colors.textTertiary, size: 16)
                 Text("estimatedReward".localized)
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
             }
             if let estimatedReward = position.estimatedReward, let rewardCoin = position.rewardCoin {
                 HiddenBalanceText(AmountFormatter.formatCryptoAmount(value: estimatedReward, coin: rewardCoin))
                     .font(Theme.fonts.bodyMMedium)
-                    .foregroundStyle(Theme.colors.textLight)
+                    .foregroundStyle(Theme.colors.textSecondary)
             }
         }
     }
@@ -169,7 +169,7 @@ struct DefiChainStakedPositionView: View {
                 if let unstakeMessage = position.unstakeMessage {
                     Text(unstakeMessage)
                         .font(Theme.fonts.caption10)
-                        .foregroundStyle(Theme.colors.textLight)
+                        .foregroundStyle(Theme.colors.textSecondary)
                 }
             }
         case .index:

@@ -89,10 +89,10 @@ struct CircleDepositView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(NSLocalizedString("circleDepositAmount", comment: "Amount"))
                         .font(CircleConstants.Fonts.subtitle)
-                        .foregroundStyle(Theme.colors.textLight)
+                        .foregroundStyle(Theme.colors.textSecondary)
                     
                     Divider()
-                        .background(Theme.colors.textExtraLight.opacity(0.2))
+                        .background(Theme.colors.textTertiary.opacity(0.2))
                 }
                 
                 Spacer()
@@ -103,13 +103,13 @@ struct CircleDepositView: View {
                         
                         Text("USDC")
                             .font(Theme.fonts.bodyLMedium)
-                            .foregroundStyle(Theme.colors.textLight)
+                            .foregroundStyle(Theme.colors.textSecondary)
                     }
                     .frame(maxWidth: .infinity)
                     
                     Text("\(Int(percentage))%")
                         .font(CircleConstants.Fonts.subtitle)
-                        .foregroundStyle(Theme.colors.textLight)
+                        .foregroundStyle(Theme.colors.textSecondary)
                 }
                 
                 Spacer()
@@ -127,7 +127,7 @@ struct CircleDepositView: View {
                     HStack {
                         Text(NSLocalizedString("circleDepositBalanceAvailable", comment: "Balance available:"))
                             .font(CircleConstants.Fonts.subtitle)
-                            .foregroundStyle(Theme.colors.textLight)
+                            .foregroundStyle(Theme.colors.textSecondary)
                         
                         Spacer()
                         

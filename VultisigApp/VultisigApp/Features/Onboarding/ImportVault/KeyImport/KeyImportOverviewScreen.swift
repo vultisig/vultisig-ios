@@ -115,7 +115,7 @@ struct KeyImportOverviewScreen: View {
             ForEach(Page.allCases, id: \.self) { page in
                 let size: CGFloat = page == scrollPosition ? 5 : 4
                 let color = page == scrollPosition
-                ? Theme.colors.textPrimary : Theme.colors.textExtraLight
+                ? Theme.colors.textPrimary : Theme.colors.textTertiary
                 Circle()
                     .fill(color)
                     .frame(width: size, height: size)
@@ -166,7 +166,7 @@ struct KeyImportOverviewScreen: View {
                 
                 VStack(alignment: .leading, spacing: 0) {
                     Text("whatAreVaultSharesDescription".localized)
-                        .foregroundStyle(Theme.colors.textExtraLight)
+                        .foregroundStyle(Theme.colors.textTertiary)
                     Text("whatAreVaultSharesDescription2".localized)
                         .foregroundStyle(Theme.colors.textPrimary)
                 }

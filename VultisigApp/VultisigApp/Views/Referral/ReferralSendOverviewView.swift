@@ -26,7 +26,7 @@ struct ReferralSendOverviewView: View {
             overview
         }
         .padding(24)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(16)
     }
     
@@ -34,7 +34,7 @@ struct ReferralSendOverviewView: View {
         Text(NSLocalizedString("youreSending", comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(Theme.colors.textLight)
+            .foregroundColor(Theme.colors.textSecondary)
     }
     
     var assetDetail: some View {
@@ -48,7 +48,7 @@ struct ReferralSendOverviewView: View {
                 .foregroundColor(Theme.colors.textPrimary)
             
             Text("RUNE")
-                .foregroundColor(Theme.colors.textLight)
+                .foregroundColor(Theme.colors.textSecondary)
             
             Spacer()
         }
@@ -97,7 +97,7 @@ struct ReferralSendOverviewView: View {
     private func getCell(title: String, description: String, bracketValue: String? = nil, icon: String? = nil, isForMemo: Bool = false) -> some View {
         HStack(spacing: 2) {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
                 .lineLimit(1)
                 .truncationMode(.tail)
             
@@ -111,13 +111,13 @@ struct ReferralSendOverviewView: View {
             }
             
             Text(description)
-                .foregroundColor(isForMemo ? Theme.colors.textExtraLight : Theme.colors.textPrimary)
+                .foregroundColor(isForMemo ? Theme.colors.textTertiary : Theme.colors.textPrimary)
                 .lineLimit(isForMemo ? 2 : 1)
                 .truncationMode(.tail)
             
             if let bracketValue {
                 Text("(\(bracketValue))")
-                    .foregroundColor(Theme.colors.textExtraLight)
+                    .foregroundColor(Theme.colors.textTertiary)
                     .lineLimit(1)
                     .truncationMode(.middle)
             }

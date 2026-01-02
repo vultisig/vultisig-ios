@@ -89,7 +89,7 @@ struct VaultServerBackupScreen: View {
             VStack(alignment: .leading, spacing: 20) {
                 Text("enterVaultEmail".localized)
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                 
                 CommonTextField(
                     text: $viewModel.email,
@@ -119,7 +119,7 @@ struct VaultServerBackupScreen: View {
             VStack(alignment: .leading, spacing: 20) {
                 Text("enterVaultPassword".localized)
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                 
                 SecureTextField(
                     value: $viewModel.password,

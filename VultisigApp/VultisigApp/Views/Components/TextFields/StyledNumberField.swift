@@ -41,7 +41,7 @@ struct StyledIntegerField<Value: BinaryInteger & Codable>: View {
             .foregroundColor(foregroundColor)
             .submitLabel(.done)
             .padding(12)
-            .background(Theme.colors.bgSecondary)
+            .background(Theme.colors.bgSurface1)
             .cornerRadius(12)
             .borderlessTextFieldStyle()
             .onAppear {
@@ -52,7 +52,7 @@ struct StyledIntegerField<Value: BinaryInteger & Codable>: View {
     }
 
     var foregroundColor: Color {
-        isEnabled ? Theme.colors.textPrimary : Theme.colors.textExtraLight
+        isEnabled ? Theme.colors.textPrimary : Theme.colors.textTertiary
     }
 
     var customBinding: Binding<Value> {

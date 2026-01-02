@@ -19,7 +19,7 @@ struct SendCryptoTransactionHashRowView: View {
     var body: some View {
         HStack(spacing: 32) {
             Text(NSLocalizedString("transactionHash", comment: ""))
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
                 .lineLimit(1)
                 .truncationMode(.tail)
             

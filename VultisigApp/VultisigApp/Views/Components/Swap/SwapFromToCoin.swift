@@ -17,7 +17,7 @@ struct SwapFromToCoin: View {
             chevron
         }
         .padding(6)
-        .background(Theme.colors.bgTertiary)
+        .background(Theme.colors.bgSurface2)
         .cornerRadius(60)
     }
     
@@ -39,7 +39,7 @@ struct SwapFromToCoin: View {
             if coin.isNativeToken {
                 Text("Native")
                     .font(Theme.fonts.caption10)
-                    .foregroundColor(Theme.colors.textExtraLight)
+                    .foregroundColor(Theme.colors.textTertiary)
             }
         }
     }

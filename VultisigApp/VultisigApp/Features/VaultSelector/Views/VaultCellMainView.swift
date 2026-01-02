@@ -16,7 +16,7 @@ struct VaultCellMainView: View {
         HStack(spacing: 12) {
             VaultIconTypeView(isFastVault: vault.isFastVault)
                 .padding(12)
-                .background(Circle().fill(Theme.colors.bgTertiary))
+                .background(Circle().fill(Theme.colors.bgSurface2))
                 .overlay(
                     Circle()
                         .inset(by: 0.5)
@@ -29,7 +29,7 @@ struct VaultCellMainView: View {
                     .lineLimit(1)
                 
                 Text(homeViewModel.balanceText(for: vault))
-                    .foregroundStyle(Theme.colors.textLight)
+                    .foregroundStyle(Theme.colors.textSecondary)
                     .font(Theme.fonts.priceFootnote)
             }
         }

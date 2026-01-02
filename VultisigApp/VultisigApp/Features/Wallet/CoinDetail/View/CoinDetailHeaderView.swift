@@ -45,7 +45,7 @@ struct CoinDetailHeaderView: View {
     var chainFiatBalanceView: some View {
         Text(homeViewModel.hideVaultBalance ? String.hideBalanceText : coin.balanceStringWithTicker)
             .font(Theme.fonts.subtitle)
-            .foregroundStyle(Theme.colors.textExtraLight)
+            .foregroundStyle(Theme.colors.textTertiary)
             .frame(height: 18)
     }
 }

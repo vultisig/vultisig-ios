@@ -31,11 +31,11 @@ struct DefiCircleRow: View {
                     if let address = vault.circleWalletAddress {
                         Text(address.truncatedMiddle)
                             .font(Theme.fonts.caption12)
-                            .foregroundStyle(Theme.colors.textExtraLight)
+                            .foregroundStyle(Theme.colors.textTertiary)
                     } else {
                         Text(NSLocalizedString("circleRowCreateWallet", comment: "Create Wallet"))
                             .font(Theme.fonts.caption12)
-                            .foregroundStyle(Theme.colors.textExtraLight)
+                            .foregroundStyle(Theme.colors.textTertiary)
                     }
                 }
             }
@@ -50,7 +50,7 @@ struct DefiCircleRow: View {
                             .foregroundStyle(Theme.colors.textPrimary)
                         Text(NSLocalizedString("circleRowYieldAccount", comment: "Yield Account"))
                             .font(Theme.fonts.caption12)
-                            .foregroundStyle(Theme.colors.textExtraLight)
+                            .foregroundStyle(Theme.colors.textTertiary)
                     } else {
                         Text(NSLocalizedString("circleRowGetStarted", comment: "Get Started"))
                             .font(Theme.fonts.priceBodyS)
@@ -62,7 +62,7 @@ struct DefiCircleRow: View {
         }
         .padding(.vertical, 12)
         .padding(.horizontal, CircleConstants.Design.horizontalPadding)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(10)
         .buttonStyle(.plain)
     }

@@ -64,7 +64,7 @@ struct Checkbox: View {
     }
     
     var bgColor: Color {
-        isChecked ? Theme.colors.bgSuccess : Theme.colors.bgSecondary
+        isChecked ? Theme.colors.bgSuccess : Theme.colors.bgSurface1
     }
     
     @ViewBuilder
@@ -72,7 +72,7 @@ struct Checkbox: View {
         if let text {
             Text(NSLocalizedString(text, comment: "Checkbox description"))
                 .font(font)
-                .foregroundColor(Theme.colors.textLight)
+                .foregroundColor(Theme.colors.textSecondary)
                 .multilineTextAlignment(alignment)
         }
     }

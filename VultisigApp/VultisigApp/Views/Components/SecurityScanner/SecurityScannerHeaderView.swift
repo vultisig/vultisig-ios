@@ -26,7 +26,7 @@ struct SecurityScannerHeaderView: View {
             }
         }
         .font(Theme.fonts.bodySMedium)
-        .foregroundStyle(Theme.colors.textLight)
+        .foregroundStyle(Theme.colors.textSecondary)
         .frame(height: 20)
         .transition(.opacity)
         .animation(.easeOut, value: state)
@@ -64,7 +64,7 @@ struct SecurityScannerHeaderView: View {
         Image(provider)
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .tint(Theme.colors.textLight)
+            .tint(Theme.colors.textSecondary)
             .frame(height: 10)
     }
 }
