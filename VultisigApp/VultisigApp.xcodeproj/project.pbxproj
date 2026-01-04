@@ -1141,6 +1141,8 @@
 		B5CDB87C2DDD8715007DF355 /* AccountRootData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CDB87D2DDD86FA007DF355 /* AccountRootData.swift */; };
 		B5D1B9FC2DF66B4400D82EFB /* CoinFactory+Cardano.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5D1B9FB2DF66B4400D82EFB /* CoinFactory+Cardano.swift */; };
 		B5E654EB2D277CE2003A037C /* TronService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E654EA2D277CE0003A037C /* TronService.swift */; };
+		B5E654EF2D277CE4003A037C /* TronAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E654EE2D277CE3003A037C /* TronAPI.swift */; };
+		B5E654F12D277CE6003A037C /* TronAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E654F02D277CE5003A037C /* TronAPIService.swift */; };
 		B5E654ED2D2788CC003A037C /* Tron.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E654EC2D2788CC003A037C /* Tron.swift */; };
 		B5E762652DF925F0006DF95D /* String+ExtensionMemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E762642DF925F0006DF95D /* String+ExtensionMemo.swift */; };
 		B5E95E092BED84D9003778F0 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E95E082BED84D9003778F0 /* ImagePicker.swift */; };
@@ -2422,6 +2424,8 @@
 		B5CDB87D2DDD86FA007DF355 /* AccountRootData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountRootData.swift; sourceTree = "<group>"; };
 		B5D1B9FB2DF66B4400D82EFB /* CoinFactory+Cardano.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoinFactory+Cardano.swift"; sourceTree = "<group>"; };
 		B5E654EA2D277CE0003A037C /* TronService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronService.swift; sourceTree = "<group>"; };
+		B5E654EE2D277CE3003A037C /* TronAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronAPI.swift; sourceTree = "<group>"; };
+		B5E654F02D277CE5003A037C /* TronAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronAPIService.swift; sourceTree = "<group>"; };
 		B5E654EC2D2788CC003A037C /* Tron.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tron.swift; sourceTree = "<group>"; };
 		B5E762642DF925F0006DF95D /* String+ExtensionMemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+ExtensionMemo.swift"; sourceTree = "<group>"; };
 		B5E95E082BED84D9003778F0 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
@@ -6056,6 +6060,8 @@
 		B5E654E92D277CD5003A037C /* Tron */ = {
 			isa = PBXGroup;
 			children = (
+				B5E654EE2D277CE3003A037C /* TronAPI.swift */,
+				B5E654F02D277CE5003A037C /* TronAPIService.swift */,
 				B5E654EA2D277CE0003A037C /* TronService.swift */,
 			);
 			path = Tron;
@@ -6804,6 +6810,8 @@
 				A601D3A52DB96995004B6A0A /* JoinSwapDoneSummary.swift in Sources */,
 				A6F9F7DF2B9BAA9F00790258 /* Separator.swift in Sources */,
 				B5E654EB2D277CE2003A037C /* TronService.swift in Sources */,
+				B5E654EF2D277CE4003A037C /* TronAPI.swift in Sources */,
+				B5E654F12D277CE6003A037C /* TronAPIService.swift in Sources */,
 				13C286712EE8B828004D8AC8 /* KeyImportOnboardingScreen.swift in Sources */,
 				A6F9F7DB2B9BA2DE00790258 /* ChainCell.swift in Sources */,
 				13A0786A2E846EB50093496F /* CommonListHeaderView.swift in Sources */,
