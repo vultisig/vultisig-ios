@@ -55,60 +55,38 @@ struct SignDirectDisplayView: View {
             return nil
         }
 
-        // Extract memo from TxBody
-        let memo = CosmosSignDirectParser.extractMemo(from: bodyData)
-
-        // Extract fee from AuthInfo
+        // Extract data from protobuf
+        let memo = CosmosSignDirectParser.extractMemo(from: bodyData) ?? ""
+        let messages = CosmosSignDirectParser.extractMessages(from: bodyData)
         let feeInfo = CosmosSignDirectParser.extractFee(from: authInfoData)
+        let sequence = CosmosSignDirectParser.extractSequence(from: authInfoData) ?? 0
 
-        // Build display struct
-        let display = SignDirectDisplayData(
-            chainId: signDirect.chainID,
-            accountNumber: signDirect.accountNumber,
-            memo: memo,
-            fee: feeInfo.map { info in
-                SignDirectFeeDisplay(
-                    gasLimit: String(info.gasLimit),
-                    amount: info.amounts.map { CoinDisplay(denom: $0.denom, amount: $0.amount) }
-                )
-            },
-            bodyBytes: signDirect.bodyBytes.count > 100
-                ? String(signDirect.bodyBytes.prefix(100)) + "..."
-                : signDirect.bodyBytes,
-            authInfoBytes: signDirect.authInfoBytes.count > 100
-                ? String(signDirect.authInfoBytes.prefix(100)) + "..."
-                : signDirect.authInfoBytes
-        )
+        // Build dictionary
+        var dict: [String: Any] = [
+            "chainId": signDirect.chainID,
+            "accountNumber": signDirect.accountNumber,
+            "sequence": String(sequence),
+            "memo": memo
+        ]
 
-        // Encode to JSON
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        // Add messages
+        dict["messages"] = messages.map { msg -> [String: Any] in
+            ["typeUrl": msg.typeUrl, "value": msg.value]
+        }
 
-        guard let jsonData = try? encoder.encode(display),
+        // Add fee
+        if let fee = feeInfo {
+            dict["fee"] = [
+                "amount": fee.amounts.map { ["denom": $0.denom, "amount": $0.amount] },
+                "gasLimit": String(fee.gasLimit)
+            ]
+        }
+
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: [.prettyPrinted, .sortedKeys]),
               let jsonString = String(data: jsonData, encoding: .utf8) else {
             return nil
         }
 
         return jsonString
     }
-}
-
-// MARK: - Display Models
-private struct SignDirectDisplayData: Codable {
-    let chainId: String
-    let accountNumber: String
-    let memo: String?
-    let fee: SignDirectFeeDisplay?
-    let bodyBytes: String
-    let authInfoBytes: String
-}
-
-private struct SignDirectFeeDisplay: Codable {
-    let gasLimit: String
-    let amount: [CoinDisplay]
-}
-
-private struct CoinDisplay: Codable {
-    let denom: String
-    let amount: String
 }

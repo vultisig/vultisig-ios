@@ -251,8 +251,8 @@ struct CosmosHelperStruct {
             }
             
             let serializedData = output.serialized
-            let sig = try JSONDecoder().decode(CosmosSignature.self, from: serializedData.data(using: .utf8) ?? Data())
-            let result = SignedTransactionResult(rawTransaction: serializedData, transactionHash:sig.getTransactionHash())
+            let transactionHash = CosmosSerializedParser.getTransactionHash(from: serializedData)
+            let result = SignedTransactionResult(rawTransaction: serializedData, transactionHash: transactionHash)
             return result
         } catch {
             throw HelperError.runtimeError("fail to get signed transaction,error:\(error.localizedDescription)")

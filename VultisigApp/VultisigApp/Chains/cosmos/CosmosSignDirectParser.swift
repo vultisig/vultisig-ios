@@ -26,6 +26,49 @@ enum CosmosSignDirectParser {
         return nil
     }
 
+    /// Extracts messages from TxBody protobuf bytes
+    /// TxBody field 1 is repeated Any (messages)
+    /// Each Any has: field 1 = type_url (string), field 2 = value (bytes)
+    static func extractMessages(from bodyBytes: Data) -> [(typeUrl: String, value: String)] {
+        var parser = ProtobufFieldParser(data: bodyBytes)
+        var messages: [(typeUrl: String, value: String)] = []
+
+        while let (fieldNumber, value) = parser.readField() {
+            if fieldNumber == 1, case .lengthDelimited(let msgData) = value {
+                if let msg = parseAnyMessage(from: msgData) {
+                    messages.append(msg)
+                }
+            }
+        }
+
+        return messages
+    }
+
+    /// Parses Any message (type_url + value)
+    private static func parseAnyMessage(from data: Data) -> (typeUrl: String, value: String)? {
+        var parser = ProtobufFieldParser(data: data)
+        var typeUrl = ""
+        var valueData = Data()
+
+        while let (fieldNumber, value) = parser.readField() {
+            switch fieldNumber {
+            case 1: // type_url (string)
+                if case .lengthDelimited(let data) = value {
+                    typeUrl = String(data: data, encoding: .utf8) ?? ""
+                }
+            case 2: // value (bytes)
+                if case .lengthDelimited(let data) = value {
+                    valueData = data
+                }
+            default:
+                break
+            }
+        }
+
+        guard !typeUrl.isEmpty else { return nil }
+        return (typeUrl: typeUrl, value: valueData.base64EncodedString())
+    }
+
     /// Extracts fee information from AuthInfo protobuf bytes
     /// AuthInfo field 2 is Fee message
     /// Fee field 1 is repeated Coin, field 2 is gas_limit (uint64)
@@ -36,6 +79,34 @@ enum CosmosSignDirectParser {
         while let (fieldNumber, value) = parser.readField() {
             if fieldNumber == 2, case .lengthDelimited(let feeData) = value {
                 return parseFee(from: feeData)
+            }
+        }
+
+        return nil
+    }
+
+    /// Extracts sequence from AuthInfo protobuf bytes
+    /// AuthInfo field 1 is repeated SignerInfo, SignerInfo field 3 is sequence (uint64)
+    static func extractSequence(from authInfoBytes: Data) -> UInt64? {
+        var parser = ProtobufFieldParser(data: authInfoBytes)
+
+        // Find field 1 (first SignerInfo) in AuthInfo
+        while let (fieldNumber, value) = parser.readField() {
+            if fieldNumber == 1, case .lengthDelimited(let signerInfoData) = value {
+                return parseSequenceFromSignerInfo(from: signerInfoData)
+            }
+        }
+
+        return nil
+    }
+
+    /// Parses sequence from SignerInfo message
+    private static func parseSequenceFromSignerInfo(from data: Data) -> UInt64? {
+        var parser = ProtobufFieldParser(data: data)
+
+        while let (fieldNumber, value) = parser.readField() {
+            if fieldNumber == 3, case .varint(let sequence) = value {
+                return sequence
             }
         }
 

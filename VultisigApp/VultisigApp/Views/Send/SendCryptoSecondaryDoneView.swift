@@ -80,15 +80,16 @@ struct SendCryptoSecondaryDoneView: View {
     
     var summary: some View {
         VStack(spacing: 18) {
-            SendCryptoTransactionHashRowView(
-                hash: input.hash,
-                explorerLink: input.explorerLink,
-                showCopy: false,
-                showAlert: .constant(false)
-            )
+            Group {
+                SendCryptoTransactionHashRowView(
+                    hash: input.hash,
+                    explorerLink: input.explorerLink,
+                    showCopy: false,
+                    showAlert: .constant(false)
+                )
+                separator
+            }
             .showIf(input.hash.isNotEmpty)
-            
-            separator
             
             if let vaultName = appViewModel.selectedVault?.name, vaultName.isNotEmpty {
                 SendCryptoTransactionDetailsRow(

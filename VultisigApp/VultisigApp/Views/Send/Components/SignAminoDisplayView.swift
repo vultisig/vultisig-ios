@@ -20,7 +20,7 @@ struct SignAminoDisplayView: View {
                 }
             } label: {
                 HStack(alignment: .center) {
-                    Text("directSign".localized)
+                    Text("aminoSign".localized)
                         .font(Theme.fonts.bodySMedium)
                         .foregroundColor(Theme.colors.textTertiary)
                     Spacer()
@@ -46,58 +46,34 @@ struct SignAminoDisplayView: View {
     }
 
     private func formatSignAminoData() -> String {
-        // Build display struct
-        let display = SignAminoDisplayData(
-            msgs: signAmino.msgs.map { msg in
-                MessageDisplay(
-                    type: msg.type,
-                    value: msg.value
-                )
-            },
-            fee: SignAminoFeeDisplay(
-                gas: signAmino.fee.gas,
-                amount: signAmino.fee.amount.map { coin in
-                    CoinDisplay(denom: coin.denom, amount: coin.amount)
-                },
-                payer: signAmino.fee.payer.isEmpty ? nil : signAmino.fee.payer,
-                granter: signAmino.fee.granter.isEmpty ? nil : signAmino.fee.granter,
-                feePayer: signAmino.fee.feePayer.isEmpty ? nil : signAmino.fee.feePayer
-            )
-        )
+        // Build dictionary with parsed msg.value as JSON objects
+        var dict: [String: Any] = [:]
 
-        // Encode to JSON
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        dict["msgs"] = signAmino.msgs.map { msg -> [String: Any] in
+            var msgDict: [String: Any] = ["type": msg.type]
+            if let data = msg.value.data(using: .utf8),
+               let value = try? JSONSerialization.jsonObject(with: data) {
+                msgDict["value"] = value
+            } else {
+                msgDict["value"] = msg.value
+            }
+            return msgDict
+        }
 
-        guard let jsonData = try? encoder.encode(display),
+        var feeDict: [String: Any] = [
+            "gas": signAmino.fee.gas,
+            "amount": signAmino.fee.amount.map { ["denom": $0.denom, "amount": $0.amount] }
+        ]
+        if !signAmino.fee.payer.isEmpty { feeDict["payer"] = signAmino.fee.payer }
+        if !signAmino.fee.granter.isEmpty { feeDict["granter"] = signAmino.fee.granter }
+        if !signAmino.fee.feePayer.isEmpty { feeDict["feePayer"] = signAmino.fee.feePayer }
+        dict["fee"] = feeDict
+
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: [.prettyPrinted, .sortedKeys]),
               let jsonString = String(data: jsonData, encoding: .utf8) else {
             return "{}"
         }
 
         return jsonString
     }
-}
-
-// MARK: - Display Models
-private struct SignAminoDisplayData: Codable {
-    let msgs: [MessageDisplay]
-    let fee: SignAminoFeeDisplay
-}
-
-private struct MessageDisplay: Codable {
-    let type: String
-    let value: String
-}
-
-private struct SignAminoFeeDisplay: Codable {
-    let gas: String
-    let amount: [CoinDisplay]
-    let payer: String?
-    let granter: String?
-    let feePayer: String?
-}
-
-private struct CoinDisplay: Codable {
-    let denom: String
-    let amount: String
 }
