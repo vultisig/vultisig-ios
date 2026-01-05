@@ -1177,3 +1177,5 @@
 "appStoreReady" = "Pronto per App Store";
 "appStoreReadyDescription" = "Questo vault è pronto per utilizzare le prime app di autocustodia che automatizzano i tuoi fondi in sicurezza!";
 "noBarcodesFound" = "Nessun codice a barre trovato";
+"aminoSign" = "Firma Amino";
+"directSign" = "Firma Diretta";

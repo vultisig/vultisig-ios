@@ -183,6 +183,7 @@ struct VaultListView: View {
         for (index, item) in filteredVaults.enumerated() {
             item.order = index
         }
+        try? modelContext.save()
     }
     
     func moveFolder(from: IndexSet, to: Int) {
@@ -191,7 +192,7 @@ struct VaultListView: View {
         for (index, item) in s.enumerated() {
             item.order = index
         }
-        try? self.modelContext.save()
+        try? modelContext.save()
     }
 }
 

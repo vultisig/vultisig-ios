@@ -102,7 +102,8 @@ final class BlockChainService {
             vaultLocalPartyID: payload.vaultLocalPartyID,
             libType: payload.libType,
             wasmExecuteContractPayload: payload.wasmExecuteContractPayload,
-            skipBroadcast: payload.skipBroadcast
+            skipBroadcast: payload.skipBroadcast,
+            signData: nil
         )
     }
     
@@ -443,7 +444,8 @@ private extension BlockChainService {
                     vaultLocalPartyID: "",
                     libType: "", // Not used for simulation
                     wasmExecuteContractPayload: nil,
-                    skipBroadcast: false
+                    skipBroadcast: false,
+                    signData: nil
                 )
                 
                 do {

@@ -58,7 +58,8 @@ final class EVMChainsHelperTest: XCTestCase {
             vaultLocalPartyID: "localPartyID",
             libType: LibType.DKLS.toString(),
             wasmExecuteContractPayload: nil,
-            skipBroadcast: false
+            skipBroadcast: false,
+            signData: nil
         )
         let evmHelper = EVMHelper(coinType: .ethereum)
         let preImageHashes = try evmHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
