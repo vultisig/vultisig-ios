@@ -8,7 +8,6 @@
 import Foundation
 import SwiftData
 
-
 class VaultDefaultCoinService {
     let context: ModelContext
     private let semaphore = DispatchSemaphore(value: 1)
@@ -59,7 +58,7 @@ class VaultDefaultCoinService {
             }
             
             // Enable default Defi chains
-            vault.defiChains = coins.map(\.chain).filter { CoinAction.defiChains.contains($0) }
+            vault.defiChains = Array(Set(coins.map(\.chain).filter { CoinAction.defiChains.contains($0) }))
         }
     }
     
