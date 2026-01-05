@@ -30,8 +30,11 @@ struct ChainDetailScreen: View {
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
     
+    var coins: [Coin] {
+        vault.coins(for: nativeCoin.chain)
+    }
+    
     var groupedChain: GroupedChain {
-        let coins = vault.coins(for: nativeCoin.chain)
         return GroupedChain(
             chain: nativeCoin.chain,
             address: nativeCoin.address,
@@ -113,8 +116,7 @@ struct ChainDetailScreen: View {
                 ToolbarButton(image: "square-3d", action: onExplorer)
             }
         }
-        .onChange(of: showManageTokens) { _, isPresented in
-            guard !isPresented else { return }
+        .onChange(of: coins) { _, _ in
             refresh()
         }
     }
