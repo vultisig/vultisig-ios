@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ChainDetailScreen: View {
     @Environment(\.router) var router
-    @ObservedObject var group: GroupedChain
+    let nativeCoin: Coin
     let vault: Vault
 
     @StateObject var viewModel: ChainDetailViewModel
@@ -30,13 +30,24 @@ struct ChainDetailScreen: View {
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
     
+    var groupedChain: GroupedChain {
+        let coins = vault.coins(for: nativeCoin.chain)
+        return GroupedChain(
+            chain: nativeCoin.chain,
+            address: nativeCoin.address,
+            logo: nativeCoin.chain.logo,
+            count: coins.count,
+            coins: coins
+        )
+    }
+    
     init(
-        group: GroupedChain,
+        nativeCoin: Coin,
         vault: Vault
     ) {
-        self.group = group
+        self.nativeCoin = nativeCoin
         self.vault = vault
-        self._viewModel = StateObject(wrappedValue: ChainDetailViewModel(vault: vault, group: group))
+        self._viewModel = StateObject(wrappedValue: ChainDetailViewModel(vault: vault, nativeCoin: nativeCoin))
     }
     
     var body: some View {
@@ -61,7 +72,7 @@ struct ChainDetailScreen: View {
         .withAddressCopy(coin: $addressToCopy)
         .crossPlatformSheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(
-                coin: group.nativeCoin,
+                coin: nativeCoin,
                 isNativeCoin: true,
                 onClose: { showReceiveSheet = false }
             ) { coin in
@@ -74,19 +85,18 @@ struct ChainDetailScreen: View {
         .crossPlatformSheet(isPresented: $showManageTokens) {
             TokenSelectionContainerScreen(
                 vault: vault,
-                group: group,
+                group: groupedChain,
                 isPresented: $showManageTokens
             )
         }
         .onLoad {
-            viewModel.refresh(group: group)
+            viewModel.refresh()
             refresh()
         }
         .crossPlatformSheet(item: $coinToShow) {
             CoinDetailScreen(
                 coin: $0,
                 vault: vault,
-                group: group,
                 sendTx: sendTx,
                 isPresented: Binding(get: { coinToShow != nil}, set: { _ in coinToShow = nil }),
                 onCoinAction: onCoinAction
@@ -103,11 +113,20 @@ struct ChainDetailScreen: View {
                 ToolbarButton(image: "square-3d", action: onExplorer)
             }
         }
+        .onChange(of: showManageTokens) { _, isPresented in
+            guard !isPresented else { return }
+            refresh()
+        }
     }
     
     var topContentSection: some View {
         VStack(spacing: 32) {
-            ChainDetailHeaderView(vault: vault, group: group, onCopy: onCopy)
+            ChainDetailHeaderView(
+                vault: vault,
+                nativeCoin: nativeCoin,
+                coins: vault.coins(for: nativeCoin.chain),
+                onCopy: onCopy
+            )
             CoinActionsView(
                 actions: viewModel.availableActions,
                 onAction: onAction
@@ -178,7 +197,7 @@ struct ChainDetailScreen: View {
     
     func onExplorer() {
         if
-            let url = Endpoint.getExplorerByAddressURLByGroup(chain: group.coins.first?.chain, address: group.address),
+            let url = Endpoint.getExplorerByAddressURLByGroup(chain: nativeCoin.chain, address: nativeCoin.address),
             let linkURL = URL(string: url)
         {
             openURL(linkURL)
@@ -198,15 +217,15 @@ private extension ChainDetailScreen {
                 coinSelectionViewModel.setData(for: vault)
                 // Notify viewModel and group to update the tokens list
                 viewModel.objectWillChange.send()
-                group.objectWillChange.send()
             }
         }
     }
 
     func updateBalances() async {
         let vault = self.vault // Capture on main actor
+        let coins = vault.coins.filter { $0.chain == nativeCoin.chain }
         await withTaskGroup(of: Void.self) { taskGroup in
-            for coin in group.coins {
+            for coin in coins {
                 taskGroup.addTask {
                     await coinSelectionViewModel.loadData(coin: coin)
                     if coin.isNativeToken {
@@ -233,14 +252,14 @@ private extension ChainDetailScreen {
     }
     
     func onAction(_ action: CoinAction) {
-        sendTx.reset(coin: group.nativeCoin)
+        sendTx.reset(coin: nativeCoin)
         var vaultAction: VaultAction?
         switch action {
         case .receive:
             showReceiveSheet = true
             return
         case .send:
-            vaultAction = .send(coin: group.nativeCoin, hasPreselectedCoin: false)
+            vaultAction = .send(coin: nativeCoin, hasPreselectedCoin: false)
         case .swap:
             guard let fromCoin = viewModel.tokens.first else { return }
             vaultAction = .swap(fromCoin: fromCoin)
@@ -250,12 +269,12 @@ private extension ChainDetailScreen {
             } else if let firstCoin = viewModel.tokens.first {
                 sendTx.reset(coin: firstCoin)
             }
-            vaultAction = .function(coin: group.nativeCoin)
+            vaultAction = .function(coin: nativeCoin)
         case .buy:
             vaultAction = .buy(
-                address: group.nativeCoin.address,
-                blockChainCode: group.nativeCoin.chain.banxaBlockchainCode,
-                coinType: group.nativeCoin.ticker
+                address: nativeCoin.address,
+                blockChainCode: nativeCoin.chain.banxaBlockchainCode,
+                coinType: nativeCoin.ticker
             )
         case .sell:
             // TODO: - To add
@@ -268,7 +287,7 @@ private extension ChainDetailScreen {
     }
     
     func onCopy() {
-        addressToCopy = group.nativeCoin
+        addressToCopy = nativeCoin
     }
     
     func onCoinAction(_ action: VaultAction) {
@@ -283,7 +302,7 @@ private extension ChainDetailScreen {
 
 #Preview {
     ChainDetailScreen(
-        group: .example,
+        nativeCoin: .example,
         vault: .example
     )
 }

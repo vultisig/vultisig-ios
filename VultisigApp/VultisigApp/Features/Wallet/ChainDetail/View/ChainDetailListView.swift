@@ -60,7 +60,7 @@ struct ChainDetailListView: View {
 
 #Preview {
     ChainDetailListView(
-        viewModel: ChainDetailViewModel(vault: .example, group: .example),
+        viewModel: ChainDetailViewModel(vault: .example, nativeCoin: .example),
         onPress: { _ in },
         onManageTokens: {}
     )
