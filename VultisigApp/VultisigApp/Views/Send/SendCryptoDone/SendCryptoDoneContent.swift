@@ -18,8 +18,9 @@ struct SendCryptoContent: Hashable {
     let explorerLink: String
     let memo: String
     let isSend: Bool
-    
+
     let fromAddress: String
     let toAddress: String
     let fee: FeeDisplay
+    let keysignPayload: KeysignPayload?
 }

@@ -1201,3 +1201,5 @@
 "appStoreReady" = "App Store Ready";
 "appStoreReadyDescription" = "This Vault is ready to use the first self-custodial Apps to securely automate your funds!";
 "noBarcodesFound" = "No barcodes found";
+"aminoSign" = "Amino Sign";
+"directSign" = "Direct Sign";

@@ -1177,3 +1177,5 @@
 "appStoreReady" = "Spremno za App Store";
 "appStoreReadyDescription" = "Ovaj trezor je spreman koristiti prve aplikacije s autocustody opcijom koje sigurno automatiziraju vaša sredstva!";
 "noBarcodesFound" = "Nisu pronađeni barkodovi";
+"aminoSign" = "Amino Potpis";
+"directSign" = "Izravni Potpis";

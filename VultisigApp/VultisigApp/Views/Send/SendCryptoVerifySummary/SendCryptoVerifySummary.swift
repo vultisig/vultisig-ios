@@ -21,7 +21,8 @@ struct SendCryptoVerifySummary {
     let coinImage: String
     let amount: String
     let coinTicker: String
-    
+    let keysignPayload: KeysignPayload?
+
     init(
         fromName: String,
         fromAddress: String,
@@ -38,7 +39,8 @@ struct SendCryptoVerifySummary {
         isCalculatingFee: Bool = false,
         coinImage: String,
         amount: String,
-        coinTicker: String
+        coinTicker: String,
+        keysignPayload: KeysignPayload? = nil
     ) {
         self.fromName = fromName
         self.fromAddress = fromAddress
@@ -55,5 +57,6 @@ struct SendCryptoVerifySummary {
         self.coinImage = coinImage
         self.amount = amount
         self.coinTicker = coinTicker
+        self.keysignPayload = keysignPayload
     }
 }

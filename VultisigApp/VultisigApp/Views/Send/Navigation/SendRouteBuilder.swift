@@ -54,9 +54,10 @@ struct SendRouteBuilder {
         vault: Vault,
         hash: String,
         chain: Chain,
-        tx: SendTransaction
+        tx: SendTransaction,
+        keysignPayload: KeysignPayload?
     ) -> some View {
-        SendDoneScreen(vault: vault, hash: hash, chain: chain, tx: tx)
+        SendDoneScreen(vault: vault, hash: hash, chain: chain, tx: tx, keysignPayload: keysignPayload)
     }
 
     @ViewBuilder
