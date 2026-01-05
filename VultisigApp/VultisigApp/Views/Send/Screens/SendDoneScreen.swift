@@ -12,7 +12,8 @@ struct SendDoneScreen: View {
     let hash: String
     let chain: Chain
     let tx: SendTransaction
-    
+    let keysignPayload: KeysignPayload?
+
     var body: some View {
         Screen(title: "done".localized) {
             SendCryptoDoneView(
@@ -23,7 +24,8 @@ struct SendDoneScreen: View {
                 sendTransaction: tx,
                 swapTransaction: nil,
                 isSend: true,
-                contentPadding: 0
+                contentPadding: 0,
+                keysignPayload: keysignPayload
             )
         }
         .navigationBarBackButtonHidden(true)

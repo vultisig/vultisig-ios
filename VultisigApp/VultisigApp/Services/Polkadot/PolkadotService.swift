@@ -198,7 +198,8 @@ class PolkadotService: RpcService {
             vaultLocalPartyID: "",
             libType: "",
             wasmExecuteContractPayload: nil,
-            skipBroadcast: false
+            skipBroadcast: false,
+            signData: nil
         )
         
         let serializedTransaction: String

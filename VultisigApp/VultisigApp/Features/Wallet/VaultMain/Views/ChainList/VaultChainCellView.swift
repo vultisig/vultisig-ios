@@ -23,8 +23,8 @@ struct VaultChainCellView: View {
             GroupedChainCellView(
                 group: group,
                 vault: vault,
-                fiatBalance: { group.totalBalanceInFiatString },
-                cryptoBalance: { group.nativeCoin.balanceStringWithTicker },
+                fiatBalance: group.totalBalanceInFiatString,
+                cryptoBalance: group.nativeCoin.balanceStringWithTicker,
                 onCopy: onCopy
             )
             .contentShape(Rectangle())
