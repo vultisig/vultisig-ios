@@ -12,9 +12,8 @@ struct DefiMainBalanceView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     private let defiBalanceService = DefiBalanceService()
-    var balance: String {
-        defiBalanceService.totalBalanceInFiatString(for: vault.defiChains, vault: vault)
-    }
+    
+    @State var balance: String = ""
     
     var body: some View {
         ZStack {
@@ -38,6 +37,10 @@ struct DefiMainBalanceView: View {
         )
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.colors.border))
         .clipShape(RoundedRectangle(cornerRadius: 16))
+        .onAppear { updateBalance() }
+        .onChange(of: vault.defiPositions) { _, _ in
+            updateBalance()
+        }
     }
     
     var gradientBackground: some View {
@@ -106,6 +109,10 @@ struct DefiMainBalanceView: View {
                     y: geometry.size.height - 25
                 )
         }
+    }
+    
+    func updateBalance() {
+        balance = defiBalanceService.totalBalanceInFiatString(for: vault.defiChains, vault: vault)
     }
 }
 
