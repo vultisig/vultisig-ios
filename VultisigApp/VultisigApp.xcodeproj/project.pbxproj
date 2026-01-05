@@ -258,6 +258,7 @@
 		1385E63D2EC271F200CE634F /* DefiPositionsStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1385E63C2EC271F100CE634F /* DefiPositionsStorageService.swift */; };
 		1387E24B2E565A540033F92C /* BlurredBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1387E24A2E565A4F0033F92C /* BlurredBackground.swift */; };
 		1387FDA82E32C2CC007ECDB4 /* QRScanner.riv in Resources */ = {isa = PBXBuildFile; fileRef = 1387FDA72E32C2CC007ECDB4 /* QRScanner.riv */; };
+		138BB6092EFC8341007BE7B9 /* CosmosTxTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138BB6082EFC8341007BE7B9 /* CosmosTxTypes.swift */; };
 		138C5E642E79DE3300C559C7 /* VaultSelectChainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138C5E632E79DE2E00C559C7 /* VaultSelectChainScreen.swift */; };
 		138C5E672E79E86B00C559C7 /* GlassEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138C5E662E79E85A00C559C7 /* GlassEffect.swift */; };
 		138C5E6A2E79EDDC00C559C7 /* ToolbarStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138C5E692E79EDDA00C559C7 /* ToolbarStyle.swift */; };
@@ -294,7 +295,11 @@
 		139642382E79951E00CFEFAF /* VaultManagementSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139642372E79951900CFEFAF /* VaultManagementSheet.swift */; };
 		1396423E2E79A78A00CFEFAF /* VaultCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1396423D2E79A78400CFEFAF /* VaultCellView.swift */; };
 		139716222EE897BE00F85588 /* ImportVaultSelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139716212EE897B700F85588 /* ImportVaultSelectionSheet.swift */; };
-		139880502E39007C00EC5D3F /* CosmosCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1398804F2E39007900EC5D3F /* CosmosCoin.swift */; };
+		139880502E39007C00EC5D3F /* Cosmos+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1398804F2E39007900EC5D3F /* Cosmos+ProtoMappable.swift */; };
+		13988BA02EFEDDF9005AD1C8 /* CosmosSignDirectParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13988B9F2EFEDDF9005AD1C8 /* CosmosSignDirectParser.swift */; };
+		13988BA22EFEE486005AD1C8 /* CosmosSignDataBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13988BA12EFEE480005AD1C8 /* CosmosSignDataBuilder.swift */; };
+		13988BA62EFEF07C005AD1C8 /* SignDirectDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13988BA42EFEF07C005AD1C8 /* SignDirectDisplayView.swift */; };
+		13988BA72EFEF07C005AD1C8 /* SignAminoDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13988BA32EFEF07C005AD1C8 /* SignAminoDisplayView.swift */; };
 		1399516E2ECCC55500BFD0A7 /* YVaultConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1399516D2ECCC55400BFD0A7 /* YVaultConstants.swift */; };
 		139B2ACC2EC284ED00A12466 /* SendCryptoAmountTextField+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139B2ACB2EC284ED00A12466 /* SendCryptoAmountTextField+macOS.swift */; };
 		139B400C2E42466F00238C2C /* MacOSOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139B400B2E42466800238C2C /* MacOSOverlay.swift */; };
@@ -1181,6 +1186,7 @@
 		DE320E6E2C846C610068D0E1 /* ReshareRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE320E6D2C846C610068D0E1 /* ReshareRequest.swift */; };
 		DE3D44AD2BD2445100BD64CD /* CryptoSwift in Frameworks */ = {isa = PBXBuildFile; productRef = DE3D44AC2BD2445100BD64CD /* CryptoSwift */; };
 		DE3D44AF2BD2487900BD64CD /* CosmosSignature.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE3D44AE2BD2487900BD64CD /* CosmosSignature.swift */; };
+		DE3D44B02BD2487900BD64CD /* CosmosSerializedParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE3D44B12BD2487900BD64CD /* CosmosSerializedParser.swift */; };
 		DE491CEF2B708260007C88D5 /* KeygenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE491CEE2B708260007C88D5 /* KeygenView.swift */; };
 		DE49A1672B65F6D9000F3AFB /* VultisigApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE49A1662B65F6D9000F3AFB /* VultisigApp.swift */; };
 		DE49A16D2B65F6DB000F3AFB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DE49A16C2B65F6DB000F3AFB /* Assets.xcassets */; };
@@ -1540,6 +1546,7 @@
 		1385E63C2EC271F100CE634F /* DefiPositionsStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiPositionsStorageService.swift; sourceTree = "<group>"; };
 		1387E24A2E565A4F0033F92C /* BlurredBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurredBackground.swift; sourceTree = "<group>"; };
 		1387FDA72E32C2CC007ECDB4 /* QRScanner.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = QRScanner.riv; sourceTree = "<group>"; };
+		138BB6082EFC8341007BE7B9 /* CosmosTxTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosTxTypes.swift; sourceTree = "<group>"; };
 		138C5E632E79DE2E00C559C7 /* VaultSelectChainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultSelectChainScreen.swift; sourceTree = "<group>"; };
 		138C5E662E79E85A00C559C7 /* GlassEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassEffect.swift; sourceTree = "<group>"; };
 		138C5E692E79EDDA00C559C7 /* ToolbarStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarStyle.swift; sourceTree = "<group>"; };
@@ -1576,7 +1583,11 @@
 		139642372E79951900CFEFAF /* VaultManagementSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultManagementSheet.swift; sourceTree = "<group>"; };
 		1396423D2E79A78400CFEFAF /* VaultCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultCellView.swift; sourceTree = "<group>"; };
 		139716212EE897B700F85588 /* ImportVaultSelectionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportVaultSelectionSheet.swift; sourceTree = "<group>"; };
-		1398804F2E39007900EC5D3F /* CosmosCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosCoin.swift; sourceTree = "<group>"; };
+		1398804F2E39007900EC5D3F /* Cosmos+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Cosmos+ProtoMappable.swift"; sourceTree = "<group>"; };
+		13988B9F2EFEDDF9005AD1C8 /* CosmosSignDirectParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosSignDirectParser.swift; sourceTree = "<group>"; };
+		13988BA12EFEE480005AD1C8 /* CosmosSignDataBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosSignDataBuilder.swift; sourceTree = "<group>"; };
+		13988BA32EFEF07C005AD1C8 /* SignAminoDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignAminoDisplayView.swift; sourceTree = "<group>"; };
+		13988BA42EFEF07C005AD1C8 /* SignDirectDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignDirectDisplayView.swift; sourceTree = "<group>"; };
 		1399516D2ECCC55400BFD0A7 /* YVaultConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YVaultConstants.swift; sourceTree = "<group>"; };
 		139B2ACB2EC284ED00A12466 /* SendCryptoAmountTextField+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SendCryptoAmountTextField+macOS.swift"; sourceTree = "<group>"; };
 		139B400B2E42466800238C2C /* MacOSOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSOverlay.swift; sourceTree = "<group>"; };
@@ -2464,6 +2475,7 @@
 		DE2B4E4A2C97DA9200FF4C49 /* VultisigApp.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = VultisigApp.xctestplan; sourceTree = "<group>"; };
 		DE320E6D2C846C610068D0E1 /* ReshareRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReshareRequest.swift; sourceTree = "<group>"; };
 		DE3D44AE2BD2487900BD64CD /* CosmosSignature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosSignature.swift; sourceTree = "<group>"; };
+		DE3D44B12BD2487900BD64CD /* CosmosSerializedParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosSerializedParser.swift; sourceTree = "<group>"; };
 		DE491CEE2B708260007C88D5 /* KeygenView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeygenView.swift; sourceTree = "<group>"; };
 		DE49A1632B65F6D9000F3AFB /* VultisigApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VultisigApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DE49A1662B65F6D9000F3AFB /* VultisigApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultisigApp.swift; sourceTree = "<group>"; };
@@ -2561,6 +2573,8 @@
 			membershipExceptions = (
 				arb.json,
 				bsc.json,
+				"cosmos-sdk-sign-amino.json",
+				"cosmos-sdk-sign-direct.json",
 				cosmos.json,
 				dot.json,
 				evm.json,
@@ -3772,6 +3786,15 @@
 			path = ImportVaultSelectionSheet;
 			sourceTree = "<group>";
 		};
+		13988BA52EFEF07C005AD1C8 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				13988BA32EFEF07C005AD1C8 /* SignAminoDisplayView.swift */,
+				13988BA42EFEF07C005AD1C8 /* SignDirectDisplayView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		139B400A2E42466400238C2C /* Covers */ = {
 			isa = PBXGroup;
 			children = (
@@ -4792,6 +4815,7 @@
 				46F8F71F2B99FDAC0099454E /* TransactionManager */,
 				469ED39E2B98F5A9008D4951 /* AccountManager */,
 				469ED3972B98E885008D4951 /* BalanceManager */,
+				DE3D44B12BD2487900BD64CD /* CosmosSerializedParser.swift */,
 				DE3D44AE2BD2487900BD64CD /* CosmosSignature.swift */,
 			);
 			path = Cosmos;
@@ -5009,7 +5033,7 @@
 			isa = PBXGroup;
 			children = (
 				1344BD1A2E4B9D7900CBD493 /* Swap */,
-				1398804F2E39007900EC5D3F /* CosmosCoin.swift */,
+				1398804F2E39007900EC5D3F /* Cosmos+ProtoMappable.swift */,
 				1369C2202E34006D0002D815 /* WasmExecuteContractPayload.swift */,
 				A55BCEBA2BC59E8100D35917 /* KeysignPayloadFactory.swift */,
 				DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */,
@@ -6048,6 +6072,9 @@
 		B5BC37572CECF21D005A1C76 /* cosmos */ = {
 			isa = PBXGroup;
 			children = (
+				13988BA12EFEE480005AD1C8 /* CosmosSignDataBuilder.swift */,
+				13988B9F2EFEDDF9005AD1C8 /* CosmosSignDirectParser.swift */,
+				138BB6082EFC8341007BE7B9 /* CosmosTxTypes.swift */,
 				B5BCC2692EC26DAD007B5A2F /* CosmosHelper.swift */,
 				B5BCC26B2EC26DAF007B5A2F /* CosmosHelperConfig.swift */,
 				B5BCC26D2EC26DB1007B5A2F /* CosmosHelperStruct.swift */,
@@ -6186,6 +6213,7 @@
 		D9AD8EEE2B6731480009F8D5 /* Send */ = {
 			isa = PBXGroup;
 			children = (
+				13988BA52EFEF07C005AD1C8 /* Components */,
 				13AF0D252E4CEA31004D4FD2 /* Screens */,
 				13AF0D1B2E4CE731004D4FD2 /* Navigation */,
 				1334C7422E301E3000CBAA3E /* SendCryptoDone */,
@@ -6912,6 +6940,7 @@
 				DEFF58FE2BD13E5D005DFDF9 /* ThreadSafeDictionary.swift in Sources */,
 				13A899022E43CEF3006F75F0 /* THORChainTokenMetadataFactory.swift in Sources */,
 				DE64A4CC2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift in Sources */,
+				13988BA22EFEE486005AD1C8 /* CosmosSignDataBuilder.swift in Sources */,
 				13DACCCB2EDF6C4500BE0F97 /* KeyImportScanningForChainsView.swift in Sources */,
 				A65618032CB6500A00E9CF19 /* RegisterVaultView.swift in Sources */,
 				A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */,
@@ -7008,6 +7037,7 @@
 				A6C670D72C9E8EFE00F59B6A /* SwapCryptoView+macOS.swift in Sources */,
 				135C7AE42EA14359002F879A /* VaultDefiChainsService.swift in Sources */,
 				DE3D44AF2BD2487900BD64CD /* CosmosSignature.swift in Sources */,
+				DE3D44B02BD2487900BD64CD /* CosmosSerializedParser.swift in Sources */,
 				1390D8CC2E394778003F3E20 /* SecurityScannerServiceFactory.swift in Sources */,
 				A623A09F2BF09FEE00AA2F8D /* NewWalletNameView.swift in Sources */,
 				13A9641C2EBBEB020025FB7A /* RUJIWithdrawRewardsTransactionBuilder.swift in Sources */,
@@ -7621,6 +7651,8 @@
 				B547A3FF2DF3F9220052164D /* CardanoService.swift in Sources */,
 				A6BFE1BF2D94663E000B73C0 /* SwapChainPickerView.swift in Sources */,
 				130C05A32EE9FFC200A7303A /* AssetSelectionContainerView.swift in Sources */,
+				13988BA62EFEF07C005AD1C8 /* SignDirectDisplayView.swift in Sources */,
+				13988BA72EFEF07C005AD1C8 /* SignAminoDisplayView.swift in Sources */,
 				134856342EB525D6003D10BE /* PercentageSliderView.swift in Sources */,
 				A6C670CF2C9E8D3F00F59B6A /* SetupQRCodeView+macOS.swift in Sources */,
 				A622C8562C9BCCB800908332 /* JoinKeygenView+iOS.swift in Sources */,
@@ -7754,6 +7786,7 @@
 				A685245F2DFCD47E00FEE2E4 /* ReferralViewModel.swift in Sources */,
 				A594EC2B2D00BE6C00B74EBC /* SettingsCustomMessageViewModel.swift in Sources */,
 				A6F7B6772D42F64D00AC8104 /* OnboardingTextCard.swift in Sources */,
+				138BB6092EFC8341007BE7B9 /* CosmosTxTypes.swift in Sources */,
 				13B26D3F2E32B506000D3B3A /* SendFormExpandableSection.swift in Sources */,
 				139D15B62E9D50E2006F671C /* VultDiscountTierIcon.swift in Sources */,
 				1363B4FC2EA6901600818DF7 /* DateFormatter.swift in Sources */,
@@ -7773,6 +7806,7 @@
 				B596B2B02CC6F22E0068FCC8 /* SolanaJupiterTokenInfo.swift in Sources */,
 				B5BEB1ED2E137FBA00372170 /* ThorchainMergeTokens.swift in Sources */,
 				A6C670EB2C9E95E600F59B6A /* TransactionsView+macOS.swift in Sources */,
+				13988BA02EFEDDF9005AD1C8 /* CosmosSignDirectParser.swift in Sources */,
 				13E428142ED494DE0097AD11 /* UnbondMayaTransactionScreen.swift in Sources */,
 				13E428152ED494DE0097AD11 /* UnbondMayaTransactionViewModel.swift in Sources */,
 				131603482E60A450001ED972 /* VaultBackupPasswordScreen.swift in Sources */,
@@ -7820,7 +7854,7 @@
 				DE49A1672B65F6D9000F3AFB /* VultisigApp.swift in Sources */,
 				A58CC3462C32EE120086D16B /* KeysignMessageFactory.swift in Sources */,
 				B2ADDDC52E5D63AD00DB3B98 /* BanxaDisclaimer.swift in Sources */,
-				139880502E39007C00EC5D3F /* CosmosCoin.swift in Sources */,
+				139880502E39007C00EC5D3F /* Cosmos+ProtoMappable.swift in Sources */,
 				A60CA7E72BB0EC6100FDEB5C /* AppViewModel.swift in Sources */,
 				135B9FD72E7C8DC60087D85D /* View+PlainListItem.swift in Sources */,
 				13C7C1EA2E86F71800A529FD /* TokenSelectionContainerScreen.swift in Sources */,
