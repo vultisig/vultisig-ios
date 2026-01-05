@@ -25,7 +25,7 @@ enum MayaChainHelper {
         }
         
         var mayaChainCoin = TW_Cosmos_Proto_THORChainCoin()
-        var message = [CosmosMessage()]
+        var message = [WalletCore.CosmosMessage()]
         
         if isDeposit {
             mayaChainCoin = TW_Cosmos_Proto_THORChainCoin.with {
@@ -40,8 +40,8 @@ enum MayaChainHelper {
                     $0.decimals = Int64(keysignPayload.coin.decimals)
                 }
             }
-            message = [CosmosMessage.with {
-                $0.thorchainDepositMessage = CosmosMessage.THORChainDeposit.with {
+            message = [WalletCore.CosmosMessage.with {
+                $0.thorchainDepositMessage = WalletCore.CosmosMessage.THORChainDeposit.with {
                     $0.signer = fromAddr.data
                     $0.memo = keysignPayload.memo ?? ""
                     $0.coins = [mayaChainCoin]
@@ -52,8 +52,8 @@ enum MayaChainHelper {
                 throw HelperError.runtimeError("\(keysignPayload.toAddress) is invalid")
             }
             
-            message = [CosmosMessage.with {
-                $0.thorchainSendMessage = CosmosMessage.THORChainSend.with {
+            message = [WalletCore.CosmosMessage.with {
+                $0.thorchainSendMessage = WalletCore.CosmosMessage.THORChainSend.with {
                     $0.fromAddress = fromAddr.data
                     $0.amounts = [CosmosAmount.with {
                         $0.denom = keysignPayload.coin.ticker.lowercased()
@@ -76,7 +76,7 @@ enum MayaChainHelper {
             }
             $0.messages = message
             // MAYAChain fee is 0.02 CACAO
-            $0.fee = CosmosFee.with {
+            $0.fee = WalletCore.CosmosFee.with {
                 $0.gas = MayaChainGas
             }
         }
@@ -131,11 +131,11 @@ enum MayaChainHelper {
                                                                                  publicKeys: publicKeys)
             let output = try CosmosSigningOutput(serializedBytes: compileWithSignature)
             let serializedData = output.serialized
-            let sig = try JSONDecoder().decode(CosmosSignature.self, from: serializedData.data(using: .utf8) ?? Data())
-            let result = SignedTransactionResult(rawTransaction: serializedData, transactionHash:sig.getTransactionHash())
+            let transactionHash = CosmosSerializedParser.getTransactionHash(from: serializedData)
+            let result = SignedTransactionResult(rawTransaction: serializedData, transactionHash: transactionHash)
             return result
         } catch {
-            throw HelperError.runtimeError("fail to get signed ethereum transaction,error:\(error.localizedDescription)")
+            throw HelperError.runtimeError("fail to get signed maya transaction,error:\(error.localizedDescription)")
         }
     }
 }
