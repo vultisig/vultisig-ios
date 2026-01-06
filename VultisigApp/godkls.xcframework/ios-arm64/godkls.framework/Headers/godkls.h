@@ -30,6 +30,7 @@ typedef enum lib_error {
   LIB_INVALID_PARTY_LIST,
   LIB_INVALID_OLD_PARTY_LIST,
   LIB_INVALID_NEW_PARTY_LIST,
+  LIB_INVALID_PUBLIC_KEY,
   LIB_ABORT_PROTOCOL_AND_BAN_PARTY_1 = 100,
   LIB_ABORT_PROTOCOL_AND_BAN_PARTY_2,
   LIB_ABORT_PROTOCOL_AND_BAN_PARTY_3,
@@ -96,6 +97,32 @@ enum lib_error dkls_keygen_setupmsg_new(uint32_t threshold,
                                         const struct go_slice *key_id,
                                         const struct go_slice *ids,
                                         struct tss_buffer *setup_msg);
+
+/*
+ Generates a new DKG setup message with ranks for DKLS
+
+ # Arguments
+
+ * `threshold` - t parameter for the MPC threshold protocol: t minimum nodes are needed to sign. t-1 degree polynomial
+ * `key_id` - unique identifier of all keyshares: currently hash of public key
+ * `ids` - human readable party identifiers.
+ * `ranks` - rank of each party.
+ * `setup_msg` - The returned setup msg as a tss_buffer
+
+ # Returns
+
+ * A `lib_error` indicating success or type of error.
+
+ # Errors
+
+ * `LIB_NULL_PTR` - if one of passed pointers is NULL.
+ * `LIB_SETUP_MESSAGE_VALIDATION` - if setup message validation failed.
+ */
+enum lib_error dkls_keygen_setupmsg_new_with_rank(uint32_t threshold,
+                                                  const struct go_slice *key_id,
+                                                  const struct go_slice *ids,
+                                                  const struct go_slice *ranks,
+                                                  struct tss_buffer *setup_msg);
 
 /*
  Creates a key generation session from a encoded setup message.
@@ -420,8 +447,8 @@ enum lib_error dkls_key_exporter(struct Handle share,
                                  struct tss_buffer *receiver);
 
 /*
- Creates a key export receiver session and generate setup message for
- key exporters.
+ Creates a key import receiver session and generate setup message for
+ key importers.
 
  # Arguments
 
@@ -529,6 +556,14 @@ enum lib_error dkls_qc_setupmsg_new(struct Handle keyshare,
                                     uint32_t new_threshold,
                                     const struct go_slice *new_parties,
                                     struct tss_buffer *setup_msg);
+
+enum lib_error dkls_qc_setupmsg_from_key_id(const struct go_slice *key_id,
+                                            const struct go_slice *pk,
+                                            const struct go_slice *ids,
+                                            const struct go_slice *old_parties,
+                                            uint32_t new_threshold,
+                                            const struct go_slice *new_parties,
+                                            struct tss_buffer *setup_msg);
 
 /*
  Creates a QC session from a encoded setup message.
@@ -714,7 +749,7 @@ enum lib_error dkls_finish_setupmsg_new(const struct go_slice *session_id,
  * `share_or_presign`: Key share or PreSign handle. Depending of type of
    passed object, the function will create a different type of session.
 
- * `party_sk`: Party's message signing key handle.
+ * `id`: Party's human readable ID.
 
  * `hnd`: Output pointer to the allocated key generation session handle.
 
