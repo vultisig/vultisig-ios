@@ -34,8 +34,9 @@ final class DefiMainViewModel: ObservableObject {
         
         // Add Circle Group
         var allGroups = groups
-        let circleAddress = vault.circleWalletAddress ?? ""
-        allGroups.insert(createCircleGroup(address: circleAddress), at: 0)
+        if let circleAddress = vault.circleWalletAddress, !circleAddress.isEmpty {
+            allGroups.insert(createCircleGroup(address: circleAddress), at: 0)
+        }
         
         self.groups = allGroups
     }
