@@ -33,8 +33,6 @@ final class DKLSKeygen {
     let localPrivateSecret: String?
     let hexChainCode: String
     let DKLS_LIB_OK: godkls.lib_error = .init(0)
-    var hasProcessInitiativeDeviceMessage = false
-    let lock = NSLock()
     
     init(vault: Vault,
          tssType: TssType,
@@ -61,27 +59,6 @@ final class DKLSKeygen {
         self.hexChainCode = vault.hexChainCode
     }
     
-    func setHasProcessInitiativeDeviceMessage() {
-        self.lock.lock()
-        defer {
-            self.lock.unlock()
-        }
-        self.hasProcessInitiativeDeviceMessage = true
-    }
-    func getHasProcessInitiativeDeviceMessage() -> Bool {
-        self.lock.lock()
-        defer {
-            self.lock.unlock()
-        }
-        return self.hasProcessInitiativeDeviceMessage
-    }
-    func resetHasProcessInitiativeDeviceMessage() {
-        self.lock.lock()
-        defer {
-            self.lock.unlock()
-        }
-        self.hasProcessInitiativeDeviceMessage = false
-    }
     func getSetupMessage() -> [UInt8] {
         return self.setupMessage
     }
@@ -206,7 +183,6 @@ final class DKLSKeygen {
     }
     
     func pullInboundMessages(handle: godkls.Handle) async throws -> Bool {
-        resetHasProcessInitiativeDeviceMessage()
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(self.localPartyID)"
         print("start pulling inbound messages from:\(urlString)")
         guard let url = URL(string: urlString) else {
@@ -261,13 +237,6 @@ final class DKLSKeygen {
             if self.cache.object(forKey: key) != nil {
                 print("message with key:\(key) has been applied before")
                 continue
-            }
-            if !self.isInitiateDevice {
-                if !self.getHasProcessInitiativeDeviceMessage() && msg.from != self.keygenCommittee[0] {
-                    continue
-                } else {
-                    self.setHasProcessInitiativeDeviceMessage()
-                }
             }
             
             //print("Got message from: \(msg.from), to: \(msg.to), key:\(key) , seq: \(msg.sequence_no)")
