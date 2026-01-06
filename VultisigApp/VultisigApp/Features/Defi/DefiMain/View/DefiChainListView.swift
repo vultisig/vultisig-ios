@@ -28,11 +28,15 @@ struct DefiChainListView: View {
     var chainList: some View {
         ForEach(Array(viewModel.filteredGroups.enumerated()), id: \.element.id) { index, group in
             Button {
-                switch group.chain {
-                case .thorChain, .mayaChain:
-                    router.navigate(to: VaultRoute.defiChain(group: group, vault: vault))
-                default:
-                    break
+                if group.name == "Circle" {
+                    router.navigate(to: CircleRoute.main(vault: vault))
+                } else {
+                    switch group.chain {
+                    case .thorChain, .mayaChain:
+                        router.navigate(to: VaultRoute.defiChain(group: group, vault: vault))
+                    default:
+                        break
+                    }
                 }
             } label: {
                 DefiChainCellView(group: group, vault: vault)

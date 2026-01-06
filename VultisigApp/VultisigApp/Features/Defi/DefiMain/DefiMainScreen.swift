@@ -99,16 +99,8 @@ struct DefiMainScreen: View {
             .frame(height: 42)
             .padding(.bottom, 16)
             
-            // Circle Protocol Entry
-            if isCircleEnabled {
-                Button {
-                    router.navigate(to: CircleRoute.main(vault: vault))
-                } label: {
-                    DefiCircleRow(vault: vault)
-                        .padding(.vertical, 4) // Spacing to match list style
-                }
-                .buttonStyle(.plain)
-            }
+            // Circle Protocol Entry Removed - moved to list
+
             
             DefiChainListView(
                 vault: vault,
