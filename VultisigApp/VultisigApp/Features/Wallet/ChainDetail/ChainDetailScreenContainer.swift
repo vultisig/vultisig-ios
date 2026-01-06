@@ -39,6 +39,16 @@ struct ChainDetailScreenContainer: View {
                         vault: vault,
                         refreshTrigger: $refreshTrigger
                     )
+                    #if os(macOS)
+                    .crossPlatformToolbar(ignoresTopEdge: true) {
+                        CustomToolbarItem(placement: .trailing) {
+                            RefreshToolbarButton(onRefresh: { refreshTrigger.toggle() })
+                        }
+                        CustomToolbarItem(placement: .trailing) {
+                            ToolbarButton(image: "square-3d", action: onExplorer)
+                        }
+                    }
+                    #endif
                 case .defi:
                     DefiChainMainScreen(vault: vault, group: group)
                 case .camera:
@@ -55,17 +65,13 @@ struct ChainDetailScreenContainer: View {
             guard tab == .camera else { return }
             appViewModel.showCamera = true
         }
+        #if os(iOS)
         .crossPlatformToolbar(ignoresTopEdge: true) {
-            #if os(macOS)
-            CustomToolbarItem(placement: .trailing) {
-                RefreshToolbarButton(onRefresh: { refreshTrigger.toggle() })
-            }
-            #endif
-            
             CustomToolbarItem(placement: .trailing) {
                 ToolbarButton(image: "square-3d", action: onExplorer)
             }
         }
+        #endif
     }
     
     func onExplorer() {
