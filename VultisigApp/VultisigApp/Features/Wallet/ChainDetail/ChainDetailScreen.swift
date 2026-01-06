@@ -11,6 +11,7 @@ struct ChainDetailScreen: View {
     @Environment(\.router) var router
     let nativeCoin: Coin
     let vault: Vault
+    @Binding var refreshTrigger: Bool
 
     @StateObject var viewModel: ChainDetailViewModel
 
@@ -27,7 +28,6 @@ struct ChainDetailScreen: View {
     private let scrollReferenceId = "chainDetailScreenBottomContentId"
 
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
-    @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
     
     var coins: [Coin] {
@@ -46,10 +46,12 @@ struct ChainDetailScreen: View {
     
     init(
         nativeCoin: Coin,
-        vault: Vault
+        vault: Vault,
+        refreshTrigger: Binding<Bool> = .constant(false)
     ) {
         self.nativeCoin = nativeCoin
         self.vault = vault
+        self._refreshTrigger = refreshTrigger
         self._viewModel = StateObject(wrappedValue: ChainDetailViewModel(vault: vault, nativeCoin: nativeCoin))
     }
     
@@ -96,6 +98,9 @@ struct ChainDetailScreen: View {
             viewModel.refresh()
             refresh()
         }
+        .onChange(of: refreshTrigger) { _, _ in
+            refresh()
+        }
         .crossPlatformSheet(item: $coinToShow) {
             CoinDetailScreen(
                 coin: $0,
@@ -104,17 +109,6 @@ struct ChainDetailScreen: View {
                 isPresented: Binding(get: { coinToShow != nil}, set: { _ in coinToShow = nil }),
                 onCoinAction: onCoinAction
             )
-        }
-        .crossPlatformToolbar(ignoresTopEdge: true) {
-            #if os(macOS)
-            CustomToolbarItem(placement: .trailing) {
-                RefreshToolbarButton(onRefresh: onRefreshButton)
-            }
-            #endif
-            
-            CustomToolbarItem(placement: .trailing) {
-                ToolbarButton(image: "square-3d", action: onExplorer)
-            }
         }
         .onChange(of: coins) { _, _ in
             refresh()
@@ -194,15 +188,6 @@ struct ChainDetailScreen: View {
             }
             .buttonStyle(.plain)
             .transition(.opacity)
-        }
-    }
-    
-    func onExplorer() {
-        if
-            let url = Endpoint.getExplorerByAddressURLByGroup(chain: nativeCoin.chain, address: nativeCoin.address),
-            let linkURL = URL(string: url)
-        {
-            openURL(linkURL)
         }
     }
 }
