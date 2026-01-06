@@ -40,6 +40,8 @@ struct KeygenView: View {
     @State var checkmarkAnimationVM: RiveViewModel? = nil
     @State var keygenAnimationVM: RiveViewModel? = nil
     @State var keygenAnimationVMInstance: RiveDataBindingViewModel.Instance?
+    @State var displayedProgress: Float = 0
+    @State var progressAnimationTimer: Timer?
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var context
@@ -70,6 +72,8 @@ struct KeygenView: View {
             }
             .onDisappear {
                 vaultCreatedAnimationVM?.stop()
+                progressAnimationTimer?.invalidate()
+                progressAnimationTimer = nil
             }
             .onChange(of: keygenAnimationVMInstance) { oldValue, instance in
                 let connected = instance?.booleanProperty(fromPath: "Connected")
@@ -138,8 +142,7 @@ struct KeygenView: View {
                         posXcircles?.value = Float(size.width / 2)
                     }
                     .onChange(of: viewModel.progress) { _, newValue in
-                        let progessPercentage = keygenAnimationVMInstance?.numberProperty(fromPath: "progessPercentage")
-                        progessPercentage?.value = newValue
+                        animateProgress(to: newValue)
                     }
                     .onAppear {
                         #if os(iOS)
@@ -311,6 +314,47 @@ struct KeygenView: View {
         if fastSignConfig != nil {
             showVerificationView = true
         }
+    }
+
+    private func animateProgress(to targetValue: Float) {
+        progressAnimationTimer?.invalidate()
+
+        let duration: TimeInterval = 3.0
+        let frameRate: TimeInterval = 1.0 / 60.0
+        let totalSteps = Int(duration / frameRate)
+        let startValue = displayedProgress
+        let delta = targetValue - startValue
+
+        guard delta != 0, totalSteps > 0 else {
+            displayedProgress = targetValue
+            updateRiveProgress(targetValue)
+            return
+        }
+
+        var currentStep = 0
+
+        progressAnimationTimer = Timer.scheduledTimer(withTimeInterval: frameRate, repeats: true) { timer in
+            currentStep += 1
+            let progress = Float(currentStep) / Float(totalSteps)
+            // Ease-out curve for smoother deceleration
+            let easedProgress = 1 - pow(1 - progress, 3)
+            let newValue = startValue + delta * easedProgress
+
+            displayedProgress = newValue
+            updateRiveProgress(newValue)
+
+            if currentStep >= totalSteps {
+                timer.invalidate()
+                progressAnimationTimer = nil
+                displayedProgress = targetValue
+                updateRiveProgress(targetValue)
+            }
+        }
+    }
+
+    private func updateRiveProgress(_ value: Float) {
+        let progressProperty = keygenAnimationVMInstance?.numberProperty(fromPath: "progessPercentage")
+        progressProperty?.value = value
     }
 }
 

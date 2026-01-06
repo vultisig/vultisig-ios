@@ -446,11 +446,10 @@ struct SwapCryptoLogic {
     }
     
     func swapFeeString(tx: SwapTransaction) -> String {
-        guard let inboundFeeDecimal = tx.inboundFeeDecimal else { return .empty }
+        guard let inboundFeeDecimal = tx.inboundFeeDecimal, !inboundFeeDecimal.isZero else { return .empty }
         
-        let fromCoin = feeCoin(tx: tx)
         let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
-        let fee = tx.toCoin.fiat(value: inboundFee) + fromCoin.fiat(value: tx.fee)
+        let fee = tx.toCoin.fiat(value: inboundFee)
         return fee.formatToFiat(includeCurrencySymbol: true)
     }
     

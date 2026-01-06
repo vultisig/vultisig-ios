@@ -35,7 +35,7 @@ struct ChainDetailScreenContainer: View {
                 switch tab {
                 case .wallet:
                     ChainDetailScreen(
-                        group: group,
+                        nativeCoin: group.nativeCoin,
                         vault: vault,
                         refreshTrigger: $refreshTrigger
                     )

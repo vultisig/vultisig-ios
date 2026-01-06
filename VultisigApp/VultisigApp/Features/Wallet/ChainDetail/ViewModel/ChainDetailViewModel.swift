@@ -8,7 +8,7 @@
 import Foundation
 
 final class ChainDetailViewModel: ObservableObject {
-    private let group: GroupedChain
+    private let nativeCoin: Coin
     private let vault: Vault
     
     @Published var searchText: String = ""
@@ -22,19 +22,19 @@ final class ChainDetailViewModel: ObservableObject {
     
     @Published var availableActions: [CoinAction] = []
     
-    init(vault: Vault, group: GroupedChain) {
+    init(vault: Vault, nativeCoin: Coin) {
         self.vault = vault
-        self.group = group
+        self.nativeCoin = nativeCoin
     }
     
-    func refresh(group: GroupedChain) {
+    func refresh() {
         Task { @MainActor in
-            availableActions = await actionResolver.resolveActions(for: group.chain).filtered
+            availableActions = await actionResolver.resolveActions(for: nativeCoin.chain).filtered
         }
     }
     
     var tokens: [Coin] {
-        return vault.coins.filter { $0.chain == group.chain }
+        return vault.coins.filter { $0.chain == nativeCoin.chain }
             .sorted {
                 if $0.isNativeToken != $1.isNativeToken {
                     return $0.isNativeToken
