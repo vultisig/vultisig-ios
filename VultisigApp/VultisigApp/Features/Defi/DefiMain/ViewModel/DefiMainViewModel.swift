@@ -29,7 +29,7 @@ final class DefiMainViewModel: ObservableObject {
         let groups = self.groupedChainListBuilder
             .groupChains(
                 for: vault,
-                sortedBy: \.totalBalanceInFiatDecimal
+                sortedBy: \.defiBalanceInFiatDecimal
             ) { vault.defiChains.contains($0.nativeCoin.chain) && CoinAction.defiChains.contains($0.nativeCoin.chain) }
         self.groups = groups
     }

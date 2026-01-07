@@ -25,6 +25,7 @@ struct BackupGuideAnimationView: View {
             } header: {
                 animationHeader
             }
+            .padding(.top, isMacOS ? 0 : 32)
         }
     }
     
@@ -65,12 +66,12 @@ struct BackupGuideAnimationView: View {
         HStack {
             Icon(named: "shield", color: Theme.colors.alertSuccess, size: 16)
             Text(NSLocalizedString("secureVault", comment: ""))
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption12)
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .clipShape(
             UnevenRoundedRectangle(
                 topLeadingRadius: 0,

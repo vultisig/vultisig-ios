@@ -30,7 +30,7 @@ struct PeerCell: View {
         }
         .padding(16)
         .frame(height: 70)
-        .background(isSelected ? Theme.colors.bgSuccess : Theme.colors.bgSecondary)
+        .background(isSelected ? Theme.colors.bgSuccess : Theme.colors.bgSurface1)
         .cornerRadius(16)
         .overlay (
             RoundedRectangle(cornerRadius: 16)
@@ -50,7 +50,7 @@ struct PeerCell: View {
     var description: some View {
         Text(id)
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textLight)
+            .foregroundColor(Theme.colors.textSecondary)
             .lineLimit(1)
             .frame(maxWidth: .infinity, alignment: .leading)
     }

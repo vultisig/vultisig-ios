@@ -48,7 +48,7 @@ struct AssetSelectionGridCell: View {
                 .padding(22)
                 .background(
                     RoundedRectangle(cornerRadius: 24)
-                        .fill(isSelected ? Theme.colors.bgSecondary : Theme.colors.bgButtonDisabled)
+                        .fill(isSelected ? Theme.colors.bgSurface1 : Theme.colors.bgButtonDisabled)
                 )
                 .overlay(isSelected ? selectedOverlay : nil)
                 .clipShape(RoundedRectangle(cornerRadius: 24))

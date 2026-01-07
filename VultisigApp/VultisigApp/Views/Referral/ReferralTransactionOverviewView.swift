@@ -27,7 +27,8 @@ struct ReferralTransactionOverviewView: View {
                     isSend: false,
                     fromAddress: sendTx.fromAddress,
                     toAddress: sendTx.toAddress,
-                    fee: (sendTx.gasInReadable, referralViewModel.totalFeeFiat)
+                    fee: FeeDisplay(crypto: sendTx.gasInReadable, fiat: referralViewModel.totalFeeFiat),
+                    keysignPayload: nil
                 ),
                 showAlert: .constant(false)
             )

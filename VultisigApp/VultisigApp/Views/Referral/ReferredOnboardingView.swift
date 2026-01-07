@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ReferredOnboardingView: View {
-    @ObservedObject var referredViewModel: ReferredViewModel
+    @Environment(\.router) var router
     
     var body: some View {
         Screen(title: "referral".localized) {
@@ -36,7 +36,7 @@ struct ReferredOnboardingView: View {
     
     var button: some View {
         PrimaryButton(title: "getStarted") {
-            referredViewModel.showReferralDashboard()
+            router.navigate(to: ReferralRoute.initial)
         }
     }
     
@@ -95,12 +95,12 @@ struct ReferredOnboardingView: View {
             Image(systemName: "horn")
                 .foregroundColor(Theme.colors.alertInfo)
             Text(NSLocalizedString("referralProgram", comment: ""))
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption12)
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .clipShape(
             UnevenRoundedRectangle(
                 topLeadingRadius: 0,
@@ -124,5 +124,5 @@ struct ReferredOnboardingView: View {
 }
 
 #Preview {
-    ReferredOnboardingView(referredViewModel: ReferredViewModel())
+    ReferredOnboardingView()
 }

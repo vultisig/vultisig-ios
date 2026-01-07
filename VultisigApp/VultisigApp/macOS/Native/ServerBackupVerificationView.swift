@@ -15,9 +15,9 @@ struct ServerBackupVerificationView: View {
     let email: String
 
     @Binding var isPresented: Bool
-    @Binding var isBackupLinkActive: Bool
     @Binding var tabIndex: Int
-    @Binding var goBackToEmailSetup: Bool
+    let onBackup: () -> Void
+    let onBackToEmailSetup: () -> Void
 
     @FocusState var focusedField: Int?
 
@@ -69,7 +69,7 @@ struct ServerBackupVerificationView: View {
     var description: some View {
         Text(NSLocalizedString("enter5DigitVerificationCodeDescription", comment: ""))
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textExtraLight)
+            .foregroundColor(Theme.colors.textTertiary)
     }
 
     private var cancelButton: some View {
@@ -79,11 +79,11 @@ struct ServerBackupVerificationView: View {
             VStack(spacing: 12) {
                 Text(String(format: NSLocalizedString("emailSentTo", comment: ""), email))
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(Theme.colors.textExtraLight)
+                    .foregroundColor(Theme.colors.textTertiary)
 
                 Text(NSLocalizedString("changeEmailAndRestart", comment: ""))
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(Theme.colors.textLight)
+                    .foregroundColor(Theme.colors.textSecondary)
                     .underline()
             }
         }
@@ -111,7 +111,7 @@ struct ServerBackupVerificationView: View {
         if showAlert {
             return Theme.colors.alertError
         } else {
-            return focusedField == index ? Theme.colors.border : Theme.colors.bgTertiary
+            return focusedField == index ? Theme.colors.border : Theme.colors.bgSurface2
         }
     }
 
@@ -124,7 +124,7 @@ struct ServerBackupVerificationView: View {
                 .frame(height: 46)
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(Theme.colors.textPrimary)
-                .background(Theme.colors.bgSecondary)
+                .background(Theme.colors.bgSurface1)
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
@@ -176,7 +176,7 @@ struct ServerBackupVerificationView: View {
                 isPresented = false
                 
                 if tssType == .Migrate {
-                    isBackupLinkActive = true
+                    onBackup()
                 }
             } else {
                 showAlert = true
@@ -194,7 +194,7 @@ struct ServerBackupVerificationView: View {
             try modelContext.save()
             isLoading = false
             isPresented = false
-            goBackToEmailSetup = true
+            onBackToEmailSetup()
         } catch {
             print("Error: \(error)")
         }
@@ -207,8 +207,8 @@ struct ServerBackupVerificationView: View {
         vault: Vault.example,
         email: "mail@email.com",
         isPresented: .constant(false),
-        isBackupLinkActive: .constant(false),
         tabIndex: .constant(2),
-        goBackToEmailSetup: .constant(false)
+        onBackup: {},
+        onBackToEmailSetup: {}
     )
 }

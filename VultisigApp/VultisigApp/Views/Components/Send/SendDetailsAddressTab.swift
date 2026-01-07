@@ -61,7 +61,7 @@ struct SendDetailsAddressTab: View {
     var selectedAddress: some View {
         Text("\(tx.toAddress)")
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textExtraLight)
+            .foregroundColor(Theme.colors.textTertiary)
             .lineLimit(1)
             .truncationMode(.middle)
     }

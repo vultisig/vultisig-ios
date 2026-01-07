@@ -21,7 +21,7 @@ struct SendDetailsAmountTextField: View {
             textFieldSection
             inFocusSelector
         }
-        .frame(height: 180)
+        .frame(idealHeight: 100, maxHeight: 180)
         .animation(.easeInOut, value: isCryptoSelected)
         .onChange(of: focusedField) { oldValue, newValue in
             // Sync the visual state with the focus state
@@ -52,7 +52,7 @@ struct SendDetailsAmountTextField: View {
             }
         }
         .padding(3)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(32)
     }
     
@@ -154,7 +154,7 @@ struct SendDetailsAmountTextField: View {
     private func getDescriptionText(for value: String) -> some View {
         Text(value)
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textExtraLight)
+            .foregroundColor(Theme.colors.textTertiary)
             .padding(.top, 8)
     }
     

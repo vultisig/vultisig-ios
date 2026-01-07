@@ -25,7 +25,7 @@ struct UTXOTransactionCell: View {
             summary
         }
         .padding(16)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(10)
         .padding(.horizontal, 16)
     }

@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-struct DeviceInfo {
+struct DeviceInfo: Hashable {
     var Index: Int
     var Signer: String
 

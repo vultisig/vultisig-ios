@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CoinPickerView: View {
-    
+
     @State var searchText: String = .empty
     @State var isSearching = false
 
@@ -17,7 +17,14 @@ struct CoinPickerView: View {
     @Environment(\.dismiss) var dismiss
 
     let coins: [Coin]
+    let tx: SendTransaction?
     let onSelect: ((Coin) -> Void)?
+
+    init(coins: [Coin], tx: SendTransaction? = nil, onSelect: ((Coin) -> Void)? = nil) {
+        self.coins = coins
+        self.tx = tx
+        self.onSelect = onSelect
+    }
 
     var filtered: [Coin] {
         return coins.filter {
@@ -37,11 +44,11 @@ struct CoinPickerView: View {
         HStack(spacing: 0) {
             Image(systemName: "magnifyingglass")
                 .font(Theme.fonts.bodyLMedium)
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
             
             TextField(NSLocalizedString("search...", comment: "Search...").toFormattedTitleCase(), text: $searchText)
                 .font(Theme.fonts.caption12)
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
                 .submitLabel(.next)
                 .disableAutocorrection(true)
                 .textContentType(.oneTimeCode)
@@ -57,7 +64,7 @@ struct CoinPickerView: View {
                     isSearching = false
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(Theme.colors.textExtraLight)
+                        .foregroundColor(Theme.colors.textTertiary)
                 }
                 .foregroundColor(.blue)
                 .font(Theme.fonts.caption12)
@@ -71,13 +78,17 @@ struct CoinPickerView: View {
         .onChange(of: searchText) { oldValue, newValue in
             isSearching = !newValue.isEmpty
         }
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(12)
     }
 
     func row(for coin: Coin) -> some View {
         Button {
-            onSelect?(coin)
+            if let tx = tx {
+                tx.reset(coin: coin)
+            } else {
+                onSelect?(coin)
+            }
             dismiss()
         } label: {
             CoinPickerCell(coin: coin)

@@ -31,15 +31,22 @@ struct VultiTabBar<Item: TabBarItem, Content: View>: View {
     }
     
     var body: some View {
-        #if os(macOS)
-        legacyTabBar
-        #else
-        if #available(iOS 26.0, *), !isIPadOS {
-            glassTabBar
-        } else {
+        Group {
+#if os(macOS)
             legacyTabBar
+#else
+            if #available(iOS 26.0, *), !isIPadOS {
+                glassTabBar
+            } else {
+                legacyTabBar
+            }
+#endif
+        }.onChange(of: selectedItem) { oldValue, newValue in
+            if newValue == accessory {
+                selectedItem = oldValue
+                onAccessory?()
+            }
         }
-        #endif
     }
 }
 
@@ -133,7 +140,7 @@ private extension VultiTabBar {
             HStack(spacing: 0) {
                 ForEach(Array(items.enumerated()), id: \.offset) { index, item in
                     Button { selectedItem = item } label: {
-                        let color = item == selectedItem ? Theme.colors.textPrimary : Theme.colors.textExtraLight
+                        let color = item == selectedItem ? Theme.colors.textPrimary : Theme.colors.textTertiary
                         VStack(spacing: 4) {
                             Icon(
                                 named: item.icon,

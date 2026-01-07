@@ -39,10 +39,10 @@ struct CoinPriceNetworkView: View {
             Spacer()
             Text(description)
                 .font(Theme.fonts.priceFootnote)
-                .foregroundStyle(Theme.colors.textLight)
+                .foregroundStyle(Theme.colors.textSecondary)
                 .padding(.vertical, 3)
                 .padding(.horizontal, 8)
-                .background(RoundedRectangle(cornerRadius: 8).fill(Theme.colors.bgTertiary))
+                .background(RoundedRectangle(cornerRadius: 8).fill(Theme.colors.bgSurface2))
         }
         .padding(16)
     }

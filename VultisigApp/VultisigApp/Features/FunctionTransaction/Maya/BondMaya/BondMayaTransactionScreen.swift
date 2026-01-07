@@ -76,7 +76,7 @@ struct BondMayaTransactionScreen: View {
                         HStack {
                             Text("availableLPUnits".localized)
                                 .font(Theme.fonts.caption12)
-                                .foregroundColor(Theme.colors.textExtraLight)
+                                .foregroundColor(Theme.colors.textTertiary)
                             Spacer()
                             Text(availableUnits)
                                 .font(Theme.fonts.caption12)
@@ -89,12 +89,11 @@ struct BondMayaTransactionScreen: View {
                         HStack {
                             Text("minimumLPUnitsNeeded".localized)
                                 .font(Theme.fonts.caption12)
-                                .foregroundColor(Theme.colors.textExtraLight)
+                                .foregroundColor(Theme.colors.textTertiary)
                             Spacer()
                             Text("\(minUnits)")
                                 .font(Theme.fonts.caption12)
                                 .foregroundColor(Theme.colors.alertWarning)
-
                             Button(action: {
                                 viewModel.lpUnitsField.value = "\(minUnits)"
                             }) {
@@ -110,7 +109,7 @@ struct BondMayaTransactionScreen: View {
                         HStack {
                             Text("estimatedBondValue".localized)
                                 .font(Theme.fonts.caption12)
-                                .foregroundColor(Theme.colors.textExtraLight)
+                                .foregroundColor(Theme.colors.textTertiary)
                             Spacer()
                             Text("\(cacaoValue.formatted()) CACAO")
                                 .font(Theme.fonts.caption12)
@@ -126,11 +125,11 @@ struct BondMayaTransactionScreen: View {
                     HStack {
                         Text("minimumBondRequired".localized)
                             .font(Theme.fonts.caption12)
-                            .foregroundColor(Theme.colors.textExtraLight)
+                            .foregroundColor(Theme.colors.textTertiary)
                         Spacer()
                         Text("\(viewModel.minimumBondRequired.formatted()) CACAO")
                             .font(Theme.fonts.caption12)
-                            .foregroundColor(Theme.colors.textExtraLight)
+                            .foregroundColor(Theme.colors.textTertiary)
                     }
 
                     // HARD VALIDATION ERROR (blocks transaction)

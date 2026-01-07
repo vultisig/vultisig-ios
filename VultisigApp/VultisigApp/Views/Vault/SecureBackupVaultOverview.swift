@@ -13,8 +13,8 @@ struct SecureBackupVaultOverview: View {
     
     @State var tabIndex = 0
     @State var isVerificationLinkActive = false
-    @State var isBackupLinkActive = false
     @State var animationVM: RiveViewModel? = nil
+    @Environment(\.router) var router
 
     let totalTabCount = 2
 
@@ -23,9 +23,6 @@ struct SecureBackupVaultOverview: View {
             Background()
             animation
             container
-        }
-        .navigationDestination(isPresented: $isBackupLinkActive) {
-            VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: vault), isNewVault: true)
         }
         .onAppear {
             animationVM = RiveViewModel(fileName: "securevault_overview", autoPlay: true)
@@ -68,7 +65,7 @@ struct SecureBackupVaultOverview: View {
                 Rectangle()
                     .frame(height: 2)
                     .frame(maxWidth: .infinity)
-                    .foregroundColor(index <= tabIndex ? Theme.colors.bgButtonPrimary : Theme.colors.bgTertiary)
+                    .foregroundColor(index <= tabIndex ? Theme.colors.bgButtonPrimary : Theme.colors.bgSurface2)
                     .animation(.easeInOut, value: tabIndex)
             }
         }
@@ -92,7 +89,11 @@ struct SecureBackupVaultOverview: View {
     }
     
     private func moveToBackupView() {
-        isBackupLinkActive = true
+        router.navigate(to: KeygenRoute.backupNow(
+            tssType: .Keygen,
+            backupType: .single(vault: vault),
+            isNewVault: true
+        ))
     }
     
     private func animate(index: Int) {

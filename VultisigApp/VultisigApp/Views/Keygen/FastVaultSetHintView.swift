@@ -16,12 +16,12 @@ struct FastVaultSetHintView: View {
     let fastVaultExist: Bool
     
     @State var hint: String = ""
-    @State var isLinkActive = false
     @FocusState var isFocused: Bool
-    
+    @Environment(\.router) var router
+
     var body: some View {
         content
-            .onAppear(){
+            .onAppear {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     isFocused = true
                 }
@@ -37,7 +37,7 @@ struct FastVaultSetHintView: View {
             
             Text(NSLocalizedString("setPasswordHintSubtitle", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
             
             hintTextfield
         }
@@ -53,7 +53,7 @@ struct FastVaultSetHintView: View {
         ) {
             let hasInput = !hint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             if hasInput {
-                isLinkActive = true
+                onLinkActive()
             }
         }
     }
@@ -65,10 +65,10 @@ struct FastVaultSetHintView: View {
                 type: .secondary
             ) {
                 hint = .empty
-                isLinkActive = true
+                onLinkActive()
             }
             PrimaryButton(title: "next") {
-                isLinkActive = true
+                onLinkActive()
             }
             .disabled(hint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             .opacity(hint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.5 : 1)
@@ -85,5 +85,15 @@ struct FastVaultSetHintView: View {
             hint: hint.nilIfEmpty,
             isExist: fastVaultExist
         )
+    }
+    
+    func onLinkActive() {
+        router.navigate(to: KeygenRoute.peerDiscovery(
+            tssType: tssType,
+            vault: vault,
+            selectedTab: selectedTab,
+            fastSignConfig: fastSignConfig,
+            keyImportInput: nil
+        ))
     }
 }

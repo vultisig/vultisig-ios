@@ -16,12 +16,12 @@ struct FastVaultEmailView: View {
     var backButtonHidden: Bool = false
 
     @State var email: String = ""
-    @State var isLinkActive = false
     
     @State var isEmptyEmail: Bool = false
     @State var isInvalidEmail: Bool = false
     @FocusState var isEmailFocused: Bool
-    
+    @Environment(\.router) var router
+
     var body: some View {
         content
             .onChange(of: email) { _ ,newValue in
@@ -49,7 +49,7 @@ struct FastVaultEmailView: View {
             
             Text(NSLocalizedString("enterYourEmailDescription", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
             
             textfield(title: NSLocalizedString("email", comment: ""),text: $email)
         }
@@ -101,7 +101,7 @@ struct FastVaultEmailView: View {
             isEmptyEmail = true
         } label: {
             Image(systemName: "xmark.circle.fill")
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
         }
     }
     
@@ -118,7 +118,14 @@ struct FastVaultEmailView: View {
         }
         
         isInvalidEmail = false
-        isLinkActive = true
+        
+        router.navigate(to: KeygenRoute.fastVaultSetPassword(
+            tssType: tssType,
+            vault: vault,
+            selectedTab: selectedTab,
+            fastVaultEmail: email,
+            fastVaultExist: fastVaultExist
+        ))
     }
     
     private func isEmptyEmailCheck() -> Bool {

@@ -9,14 +9,12 @@ import SwiftUI
 import SwiftData
 
 struct AddressBookCell: View {
-    
+    @Environment(\.router) var router
     let address: AddressBookItem
     let shouldReturnAddress: Bool
     let isEditing: Bool
     @Binding var returnAddress: String
-    
-    @State var isNavigationEnabled = false
-    
+
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
     
@@ -32,9 +30,6 @@ struct AddressBookCell: View {
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
         .padding(.vertical, 8)
-        .navigationDestination(isPresented: $isNavigationEnabled) {
-            EditAddressBookScreen(addressBookItem: address)
-        }
     }
     
     var label: some View {
@@ -89,7 +84,7 @@ struct AddressBookCell: View {
     }
     
     var rearrangeIcon: some View {
-        Icon(named: "grip-vertical", color: Theme.colors.textLight)
+        Icon(named: "grip-vertical", color: Theme.colors.textSecondary)
             .scaleEffect(isEditing ? 1 : 0)
             .frame(width: isEditing ? nil : 0)
     }
@@ -103,7 +98,7 @@ struct AddressBookCell: View {
     }
     
     var deleteIconLabel: some View {
-        Icon(named: "trash", color: Theme.colors.textExtraLight)
+        Icon(named: "trash", color: Theme.colors.textTertiary)
             .scaleEffect(isEditing ? 1 : 0)
             .frame(width: isEditing ? nil : 0)
     }
@@ -113,7 +108,7 @@ struct AddressBookCell: View {
             returnAddress = address.address
             dismiss()
         } else {
-            isNavigationEnabled = true
+            router.navigate(to: SettingsRoute.editAddressBook(addressBookItem: address))
         }
     }
 }

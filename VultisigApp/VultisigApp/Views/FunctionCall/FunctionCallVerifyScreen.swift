@@ -9,16 +9,16 @@ import Foundation
 import SwiftUI
 
 struct FunctionCallVerifyScreen: View {
+    @Environment(\.router) var router
     @StateObject var depositViewModel = FunctionCallViewModel()
     @StateObject var depositVerifyViewModel = FunctionCallVerifyViewModel()
     @ObservedObject var tx: SendTransaction
     let vault: Vault
-    
+
     @EnvironmentObject var settingsViewModel: SettingsViewModel
-    
+
     @State var fastPasswordPresented = false
     @State var isForReferral = false
-    @State private var keysignPayload: VerifyKeysignPayload?
     @State private var error: HelperError?
     
     var body: some View {
@@ -39,8 +39,8 @@ struct FunctionCallVerifyScreen: View {
         .onDisappear {
             depositVerifyViewModel.isLoading = false
             // Clear password if navigating back (not forward to keysign)
-            if keysignPayload == nil {
-                tx.fastVaultPassword = .empty
+            if tx.isFastVault {
+                tx.fastVaultPassword =  .empty
             }
         }
         .alert(item: $error) { error in
@@ -63,14 +63,6 @@ struct FunctionCallVerifyScreen: View {
             } onDismissRequest: {
                 depositVerifyViewModel.showSecurityScannerSheet = false
             }
-        }
-        .navigationDestination(item: $keysignPayload) { payload in
-            FunctionCallRouteBuilder().buildPairScreen(
-                vault: vault,
-                tx: tx,
-                keysignPayload: payload.payload,
-                fastVaultPassword: tx.fastVaultPassword.nilIfEmpty
-            )
         }
     }
     
@@ -98,7 +90,7 @@ struct FunctionCallVerifyScreen: View {
         VStack {
             if tx.isFastVault {
                 Text(NSLocalizedString("holdForPairedSign", comment: ""))
-                    .foregroundColor(Theme.colors.textExtraLight)
+                    .foregroundColor(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
                 
                 LongPressPrimaryButton(
@@ -157,7 +149,12 @@ struct FunctionCallVerifyScreen: View {
                     vault: vault
                 )
                 await MainActor.run {
-                    self.keysignPayload = .init(payload: result)
+                    router.navigate(to: FunctionCallRoute.pair(
+                        vault: vault,
+                        tx: tx,
+                        keysignPayload: result,
+                        fastVaultPassword: tx.fastVaultPassword.nilIfEmpty
+                    ))
                 }
             } catch {
                 await MainActor.run {

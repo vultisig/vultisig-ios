@@ -51,7 +51,7 @@ struct VultDiscountTierView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("hold".localized)
                         .font(Theme.fonts.footnote)
-                        .foregroundStyle(Theme.colors.textExtraLight)
+                        .foregroundStyle(Theme.colors.textTertiary)
                     HStack {
                         Text(holdAmountText)
                             .font(Theme.fonts.priceBodyS)
@@ -86,7 +86,7 @@ struct VultDiscountTierView: View {
     var backgroundView: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 16)
-                .fill(Theme.colors.bgSecondary)
+                .fill(Theme.colors.bgSurface1)
             
             // Inner shadow with gradient
             innerShadow
@@ -138,7 +138,7 @@ struct VultDiscountTierView: View {
             .foregroundStyle(Theme.colors.textPrimary)
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
-            .background(Capsule().fill(Theme.colors.bgTertiary))
+            .background(Capsule().fill(Theme.colors.bgSurface2))
             .overlay(Capsule().stroke(Theme.colors.border, lineWidth: 1))
             .fixedSize(horizontal: true, vertical: true)
     }

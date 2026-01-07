@@ -15,11 +15,11 @@ struct VaultPartView: View {
             VaultIconTypeView(isFastVault: vault.isFastVault)
             Text(vault.signerPartDescription)
                 .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textExtraLight)
+                .foregroundStyle(Theme.colors.textTertiary)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(99)
         .overlay(
             RoundedRectangle(cornerRadius: 99)

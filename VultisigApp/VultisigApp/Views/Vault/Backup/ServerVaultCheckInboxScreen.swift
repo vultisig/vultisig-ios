@@ -30,7 +30,7 @@ struct ServerVaultCheckInboxScreen: View {
                             .foregroundStyle(Theme.colors.textPrimary)
                             .font(Theme.fonts.title1)
                         Text("weJustSentYourBackupShare")
-                            .foregroundStyle(Theme.colors.textExtraLight)
+                            .foregroundStyle(Theme.colors.textTertiary)
                             .font(Theme.fonts.bodySMedium)
                             .multilineTextAlignment(.center)
                         Button {

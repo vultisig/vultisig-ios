@@ -310,7 +310,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                 qrStringData: qrCodeData,
                 size: CGSize(width: size, height: size),
                 scale: displayScale,
-                bgColor: Theme.colors.bgSecondary
+                bgColor: Theme.colors.bgSurface1
             )
         else {
             return nil

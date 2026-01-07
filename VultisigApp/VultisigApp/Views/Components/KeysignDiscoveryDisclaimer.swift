@@ -19,7 +19,7 @@ struct KeysignDiscoveryDisclaimer: View {
         }
         .foregroundColor(Theme.colors.textPrimary)
         .padding(12)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)

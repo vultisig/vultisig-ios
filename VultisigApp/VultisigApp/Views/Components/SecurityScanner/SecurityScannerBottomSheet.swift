@@ -44,7 +44,7 @@ struct SecurityScannerBottomSheetContent: View {
                     .multilineTextAlignment(.center)
                 
                 Text(contentStyle.description)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
                     .multilineTextAlignment(.center)
                     .frame(height: 60)
@@ -54,10 +54,10 @@ struct SecurityScannerBottomSheetContent: View {
                 HStack(spacing: 4) {
                     Spacer()
                     Text("securityScannerPoweredBy".localized)
-                        .foregroundStyle(Theme.colors.textExtraLight)
+                        .foregroundStyle(Theme.colors.textTertiary)
                         .font(Theme.fonts.bodySMedium)
                     Image(securityScannerProvider)
-                        .foregroundStyle(Theme.colors.textExtraLight)
+                        .foregroundStyle(Theme.colors.textTertiary)
                     Spacer()
                 }
             }

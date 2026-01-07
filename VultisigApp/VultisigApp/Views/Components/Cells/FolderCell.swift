@@ -21,7 +21,7 @@ struct FolderCell: View {
         }
         .frame(height: 48)
         .padding(.horizontal, 16)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(10)
         .padding(.horizontal, 16)
         .animation(.easeInOut, value: isEditing)

@@ -197,7 +197,7 @@ struct EditReferralDetailsView: View {
     ) -> some View {
         HStack {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
             
             Spacer()
             
@@ -207,7 +207,7 @@ struct EditReferralDetailsView: View {
                 
                 if !description2.isEmpty {
                     RedactedText(description2, redactedText: redactedDesc2, isLoading: isPlaceholder)
-                        .foregroundColor(Theme.colors.textExtraLight)
+                        .foregroundColor(Theme.colors.textTertiary)
                 }
             }
         }

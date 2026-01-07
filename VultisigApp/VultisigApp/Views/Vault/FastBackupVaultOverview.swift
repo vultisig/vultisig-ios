@@ -17,12 +17,11 @@ struct FastBackupVaultOverview: View {
     
     @State var tabIndex = 0
     @State var isVerificationLinkActive = false
-    @State var isBackupLinkActive = false
-    @State var goBackToEmailSetup = false
     
     @State var animationVM: RiveViewModel? = nil
     @State var backupVaultAnimationVM: RiveViewModel? = nil
-    
+    @Environment(\.router) var router
+
     var body: some View {
         ZStack {
             Background()
@@ -35,17 +34,18 @@ struct FastBackupVaultOverview: View {
                 vault: vault,
                 email: email,
                 isPresented: $isVerificationLinkActive,
-                isBackupLinkActive: $isBackupLinkActive,
                 tabIndex: $tabIndex,
-                goBackToEmailSetup: $goBackToEmailSetup
+                onBackup: {
+                    onBackup()
+                }, onBackToEmailSetup: {
+                    router.navigate(to: KeygenRoute.newWalletName(
+                        tssType: .Keygen,
+                        selectedTab: .fast,
+                        name: ""
+                    ))
+                }
             )
         }
-        .navigationDestination(isPresented: $isBackupLinkActive) {
-            VaultBackupNowScreen(tssType: tssType, backupType: .single(vault: vault), isNewVault: true)
-        }
-        .navigationDestination(isPresented: $goBackToEmailSetup, destination: {
-            NewWalletNameView(tssType: .Keygen,selectedTab: .fast, name: "")
-        })
         .onAppear {
             setData()
         }
@@ -103,7 +103,7 @@ struct FastBackupVaultOverview: View {
                 Rectangle()
                     .frame(height: 2)
                     .frame(maxWidth: .infinity)
-                    .foregroundColor(index <= tabIndex ? Theme.colors.bgButtonPrimary : Theme.colors.bgTertiary)
+                    .foregroundColor(index <= tabIndex ? Theme.colors.bgButtonPrimary : Theme.colors.bgSurface2)
                     .animation(.easeInOut, value: tabIndex)
             }
         }
@@ -138,11 +138,19 @@ struct FastBackupVaultOverview: View {
         }
         
         if tabIndex == 3 {
-            isBackupLinkActive = true
+            onBackup()
             return
         }
         
         tabIndex += 1
+    }
+    
+    func onBackup() {
+        router.navigate(to: KeygenRoute.backupNow(
+            tssType: tssType,
+            backupType: .single(vault: vault),
+            isNewVault: true
+        ))
     }
     
     private func moveToBackupView() {

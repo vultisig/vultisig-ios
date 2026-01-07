@@ -163,35 +163,7 @@ class RpcEvmService: RpcService {
         
         return try await intRpcCall(method: "eth_call", params: params)
     }
-    
-    func fetchTRC20TokenBalance(contractAddress: String, walletAddress: String) async throws -> BigInt {
-        
-        // Add "41" prefix after padding with zeros
-        let paddedWalletAddress = "0000000000000000000000" + walletAddress.dropFirst(2)
-        
-        // Prepare the data field using the function signature of `balanceOf(address)`
-        let data = "0x70a08231" + paddedWalletAddress
-        
-        // Build the params for the RPC call
-        let fromAddress = "0x" + walletAddress.dropFirst(4) // Keep "0x", remove "41"
-        let toAddress = "0x" + contractAddress.dropFirst(4) // Keep "0x", remove "41"
-        
-        let params: [Any] = [
-            [
-                "from": fromAddress,
-                "to": toAddress,
-                "gas": "0x0",
-                "gasPrice": "0x0",
-                "value": "0x0",
-                "data": data
-            ],
-            "latest"
-        ]
-        
-        // Call the RPC method
-        return try await intRpcCall(method: "eth_call", params: params)
-    }
-    
+
     func fetchAllowance(contractAddress: String, owner: String, spender: String) async throws -> BigInt {
         let paddedOwner = String(owner.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")
         let paddedSpender = String(spender.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")

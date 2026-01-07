@@ -11,6 +11,7 @@ final class Vault: ObservableObject, Codable {
     @Attribute(.unique) var name: String
     @Attribute(.unique) var pubKeyECDSA: String = ""
     @Attribute(.unique) var pubKeyEdDSA: String = ""
+    var circleWalletAddress: String?
     
     var signers: [String] = []
     var createdAt: Date = Date.now
@@ -48,6 +49,7 @@ final class Vault: ObservableObject, Codable {
         case keyshares
         case localPartyID
         case resharePrefix
+        case circleWalletAddress
         case libType
         case defiChains
         case defiPositions
@@ -67,6 +69,7 @@ final class Vault: ObservableObject, Codable {
         keyshares = try container.decode([KeyShare].self, forKey: .keyshares)
         localPartyID = try container.decode(String.self, forKey: .localPartyID)
         resharePrefix = try container.decodeIfPresent(String.self, forKey: .resharePrefix)
+        circleWalletAddress = try container.decodeIfPresent(String.self, forKey: .circleWalletAddress)
         libType = try container.decodeIfPresent(LibType.self, forKey: .libType) ?? .DKLS
         defiChains = try container.decodeIfPresent([Chain].self, forKey: .defiChains) ?? []
         defiPositions = try container.decodeIfPresent([DefiPositions].self, forKey: .defiPositions) ?? []
@@ -111,6 +114,7 @@ final class Vault: ObservableObject, Codable {
         try container.encode(keyshares, forKey: .keyshares)
         try container.encode(localPartyID, forKey: .localPartyID)
         try container.encodeIfPresent(resharePrefix, forKey: .resharePrefix)
+        try container.encodeIfPresent(circleWalletAddress, forKey: .circleWalletAddress)
         try container.encodeIfPresent(libType, forKey: .libType)
         try container.encodeIfPresent(defiChains, forKey: .defiChains)
         try container.encodeIfPresent(defiPositions, forKey: .defiPositions)
@@ -175,6 +179,10 @@ final class Vault: ObservableObject, Codable {
             .filter { $0.isNativeToken }
             .map { $0.chain }
             .uniqueBy { $0 }
+    }
+    
+    func coins(for chain: Chain) -> [Coin] {
+        coins.filter { $0.chain == chain }
     }
     
     func getKeyshare(pubKey: String) -> String? {

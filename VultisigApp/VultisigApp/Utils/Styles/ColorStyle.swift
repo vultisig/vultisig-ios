@@ -20,7 +20,7 @@ extension LinearGradient {
     static let cancelRed = LinearGradient(colors: [Color.red], startPoint: .topLeading, endPoint: .bottomTrailing)
     static let solidBlue = LinearGradient(colors: [Theme.colors.bgButtonTertiary], startPoint: .topLeading, endPoint: .bottomTrailing)
     static let solidWhite = LinearGradient(colors: [Theme.colors.textPrimary], startPoint: .topLeading, endPoint: .bottomTrailing)
-    static let solidGray = LinearGradient(colors: [Theme.colors.textLight], startPoint: .topLeading, endPoint: .bottomTrailing)
+    static let solidGray = LinearGradient(colors: [Theme.colors.textSecondary], startPoint: .topLeading, endPoint: .bottomTrailing)
     static let borderGreen = LinearGradient(colors: [Color(hex: "0FBF93"), Color(hex: "0FBF93").opacity(0)], startPoint: .top, endPoint: .bottom)
 }
 

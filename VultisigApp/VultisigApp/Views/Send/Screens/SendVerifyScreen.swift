@@ -17,7 +17,6 @@ struct SendVerifyScreen: View {
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @Environment(\.router) var router
     
-    @State private var keysignPayload: VerifyKeysignPayload?
     @State private var error: HelperError?
     
     var body: some View {
@@ -51,17 +50,9 @@ struct SendVerifyScreen: View {
         .onDisappear {
             sendCryptoVerifyViewModel.isLoading = false
             // Clear password if navigating back (not forward to keysign)
-            if keysignPayload == nil {
+            if tx.fastVaultPassword.isNotEmpty {
                 tx.fastVaultPassword = .empty
             }
-        }
-        .navigationDestination(item: $keysignPayload) { payload in
-            SendRouteBuilder().buildPairScreen(
-                vault: vault,
-                tx: tx,
-                keysignPayload: payload.payload,
-                fastVaultPassword: tx.fastVaultPassword.nilIfEmpty
-            )
         }
     }
     
@@ -117,7 +108,12 @@ struct SendVerifyScreen: View {
                     vault: vault
                 )
                 await MainActor.run {
-                    self.keysignPayload = .init(payload: result)
+                    router.navigate(to: SendRoute.pairing(
+                        vault: vault,
+                        tx: tx,
+                        keysignPayload: result,
+                        fastVaultPassword: tx.fastVaultPassword.nilIfEmpty
+                    ))
                 }
             } catch {
                 await MainActor.run {
@@ -131,7 +127,7 @@ struct SendVerifyScreen: View {
         VStack {
             if tx.isFastVault {
                 Text(NSLocalizedString("holdForPairedSign", comment: ""))
-                    .foregroundColor(Theme.colors.textExtraLight)
+                    .foregroundColor(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
                 
                 LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {

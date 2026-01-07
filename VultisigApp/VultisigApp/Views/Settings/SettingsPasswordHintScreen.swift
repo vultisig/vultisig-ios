@@ -26,7 +26,7 @@ struct SettingsPasswordHintScreen: View {
                         
                         Text("editPasswordHintSubtitle".localized)
                             .font(Theme.fonts.bodySMedium)
-                            .foregroundColor(Theme.colors.textExtraLight)
+                            .foregroundColor(Theme.colors.textTertiary)
                         
                         CommonTextEditor(
                             value: $viewModel.hint,

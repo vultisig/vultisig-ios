@@ -51,7 +51,7 @@ struct SettingsCommonOptionView: View {
         
         Icon(
             named: "chevron-right",
-            color: Theme.colors.textExtraLight,
+            color: Theme.colors.textTertiary,
             size: 16
         )
     }

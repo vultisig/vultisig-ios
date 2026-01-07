@@ -10,10 +10,7 @@ import SwiftUI
 
 extension BackupNowDisclaimer {
     var container: some View {
-        ZStack {
-            content
-            navigationCell.opacity(0)
-        }
+        content
     }
 }
 #endif

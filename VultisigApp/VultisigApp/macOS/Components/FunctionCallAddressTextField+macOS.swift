@@ -16,7 +16,7 @@ extension FunctionCallAddressTextField {
             .foregroundColor(Theme.colors.textPrimary)
             .frame(height: 48)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Theme.colors.bgSecondary)
+            .background(Theme.colors.bgSurface1)
             .cornerRadius(10)
             .fileImporter(
                 isPresented: $showImagePicker,
@@ -32,6 +32,17 @@ extension FunctionCallAddressTextField {
             }
             .onDrop(of: [.image], isTargeted: $isUploading) { providers -> Bool in
                 OnDropQRUtils.handleOnDrop(providers: providers, handleImageQrCode: handleImageQrCode)
+            }
+            .crossPlatformSheet(isPresented: $showAddressBookSheet) {
+                AddressBookView(returnAddress: Binding<String>(
+                    get: { memo.addressFields[addressKey] ?? "" },
+                    set: { newValue in
+                        memo.addressFields[addressKey] = newValue
+                        DebounceHelper.shared.debounce {
+                            validateAddress(newValue)
+                        }
+                    }
+                ))
             }
     }
     

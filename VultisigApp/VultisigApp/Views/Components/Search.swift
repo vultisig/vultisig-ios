@@ -24,7 +24,7 @@ struct Search: View {
             }
         }
         .padding(18)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(cornerRadius)
         .colorScheme(.dark)
     }
@@ -33,7 +33,7 @@ struct Search: View {
         Image(systemName: "magnifyingglass")
             .resizable()
             .frame(width: 24, height: 24)
-            .foregroundColor(Theme.colors.textExtraLight)
+            .foregroundColor(Theme.colors.textTertiary)
     }
 
     var closeButton: some View {
@@ -43,7 +43,7 @@ struct Search: View {
             Image(systemName: "xmark.circle.fill")
                 .resizable()
                 .frame(width: 20, height: 20)
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
         }
     }
 

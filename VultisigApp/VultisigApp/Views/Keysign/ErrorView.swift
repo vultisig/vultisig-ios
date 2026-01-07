@@ -30,7 +30,7 @@ struct ErrorView: View {
                     .font(Theme.fonts.title2)
                     .multilineTextAlignment(.center)
                 Text(description)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
                     .frame(maxWidth: .infinity, maxHeight: description.isNotEmpty ? 40 : 0, alignment: .top)
                 PrimaryButton(
@@ -41,7 +41,7 @@ struct ErrorView: View {
             }
             Spacer()
             Text(Bundle.main.appVersionString)
-                .foregroundStyle(Theme.colors.textExtraLight)
+                .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption12)
         }
         .padding(.vertical, 12)

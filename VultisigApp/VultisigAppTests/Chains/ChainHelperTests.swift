@@ -39,7 +39,7 @@ final class ChainHelperTests: XCTestCase {
         let resourceURL = URL(fileURLWithPath: resourcePath)
         let jsonFiles = try fileManager.contentsOfDirectory(at: resourceURL, includingPropertiesForKeys: nil)
             .filter { $0.pathExtension == "json" }
-        
+
         // Iterate through each JSON file
         for jsonFile in jsonFiles {
             let data = try Data(contentsOf: jsonFile)

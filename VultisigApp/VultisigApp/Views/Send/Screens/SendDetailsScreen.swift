@@ -29,9 +29,7 @@ struct SendDetailsScreen: View {
     @State var nativeTokenBalance = ""
     @State var coinBalance: String? = nil
     @State var showMemoField = false
-    
-    @State var isCoinPickerActive = false
-    
+        
     @StateObject var keyboardObserver = KeyboardObserver()
     
     @FocusState var focusedField: Field?
@@ -39,9 +37,10 @@ struct SendDetailsScreen: View {
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
-    @State var navigateToVerify: Bool = false
     @State var countdownTimer: Timer?
-    
+
+    @Environment(\.router) var router
+
     var body: some View {
         container
             .disabled(sendCryptoViewModel.showLoader)
@@ -105,12 +104,6 @@ struct SendDetailsScreen: View {
                     output: self
                 )
             }
-            .navigationDestination(isPresented: $navigateToVerify) {
-                SendRouteBuilder().buildVerifyScreen(
-                    tx: tx,
-                    vault: vault
-                )
-            }
             .crossPlatformSheet(isPresented: $sendDetailsViewModel.showChainPickerSheet) {
                 SwapChainPickerView(
                     vault: vault,
@@ -140,11 +133,6 @@ struct SendDetailsScreen: View {
             }
             .alert(isPresented: $sendCryptoViewModel.showAlert) {
                 alert
-            }
-            .navigationDestination(isPresented: $isCoinPickerActive) {
-                CoinPickerView(coins: sendCryptoViewModel.pickerCoins(vault: vault, tx: tx)) { coin in
-                    tx.reset(coin: coin)
-                }
             }
     }
     
@@ -271,14 +259,15 @@ struct SendDetailsScreen: View {
     func handleScroll(newValue: SendDetailsFocusedTab?, oldValue: SendDetailsFocusedTab?, delay: Double = 0.7) {
         // This delay is necessary when the screen starts
         DispatchQueue.main.asyncAfter(deadline: .now() + (oldValue == nil ? 0.2 : 0)) {
-            scrollProxy?.scrollTo(SendDetailsFocusedTab.amount.rawValue, anchor: .top)
-            
-            // If it's .amount, there is no need to scroll again
-            guard newValue != .amount else { return }
+            if newValue != .amount {
+                withAnimation(.easeInOut) {
+                    scrollProxy?.scrollTo(SendDetailsFocusedTab.amount.rawValue, anchor: .top)
+                }
+            }
             
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 withAnimation(.easeInOut) {
-                    scrollProxy?.scrollTo(newValue?.rawValue, anchor: .top)
+                    scrollProxy?.scrollTo(newValue?.rawValue, anchor: .bottom)
                 }
             }
         }
@@ -310,7 +299,7 @@ struct SendDetailsScreen: View {
             .foregroundColor(Theme.colors.textPrimary)
             .padding(.vertical, 6)
             .padding(.horizontal, 20)
-            .background(Theme.colors.bgSecondary)
+            .background(Theme.colors.bgSurface1)
             .cornerRadius(6)
     }
     
@@ -333,7 +322,7 @@ struct SendDetailsScreen: View {
             
             if await sendCryptoViewModel.validateForm(tx: tx) {
                 await MainActor.run {
-                    navigateToVerify = true
+                    router.navigate(to: SendRoute.verify(tx: tx, vault: vault))
                 }
             }
         }

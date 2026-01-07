@@ -39,7 +39,7 @@ struct UpdateCheckUpToDateView: View {
     var upToDateDescription: some View {
         Text(currentVersion)
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textExtraLight)
+            .foregroundColor(Theme.colors.textTertiary)
     }
 }
 

@@ -10,4 +10,5 @@ enum ButtonType {
     case secondary
     case alert
     case primarySuccess
+    case outline
 }

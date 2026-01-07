@@ -15,7 +15,6 @@ struct SendPairScreen: View {
     let tx: SendTransaction
     let keysignPayload: KeysignPayload
     let fastVaultPassword: String?
-    @State var keysignInput: KeysignInput?
     
     var body: some View {
         Screen(showNavigationBar: false) {
@@ -28,11 +27,8 @@ struct SendPairScreen: View {
                 previewType: .Send,
                 contentPadding: 0
             ) { input in
-                self.keysignInput = input
+                router.navigate(to: SendRoute.keysign(input: input, tx: tx))
             }
-        }
-        .navigationDestination(item: $keysignInput) { input in
-            SendRouteBuilder().buildKeysignScreen(input: input, tx: tx)
         }
         .crossPlatformToolbar("pair".localized) {
             CustomToolbarItem(placement: .trailing) {

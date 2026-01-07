@@ -58,7 +58,7 @@ extension ServerBackupVerificationView {
                 .borderlessTextFieldStyle()
                 .font(Theme.fonts.bodyMMedium)
                 .frame(width: 46, height: 46)
-                .background(Theme.colors.bgSecondary)
+                .background(Theme.colors.bgSurface1)
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)

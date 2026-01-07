@@ -106,7 +106,7 @@ final class DKLSMessenger {
         throw HelperError.runtimeError("fail to decrypt setup message")
     }
     
-    func send(_ fromParty: String?, to: String?, body: String?) throws {
+    func send(_ fromParty: String?, to: String?, body: String?) async throws {
         guard let fromParty else {
             logger.error("from is nil")
             return
@@ -152,25 +152,21 @@ final class DKLSMessenger {
             logger.error("fail to encode body into json string,\(error)")
             return
         }
-        let retry = 3
-        self.sendWithRetry(req: req, msg: msg, retry: retry)
-    }
-    
-    func sendWithRetry(req: URLRequest, msg: Message, retry: Int) {
-        URLSession.shared.dataTask(with: req) { _, resp, err in
-            if let err {
-                logger.error("fail to send message,error:\(err)")
-                if retry == 0 {
-                    return
-                } else {
-                    self.sendWithRetry(req: req, msg: msg, retry: retry - 1)
+        for _ in 0...3 {
+            do {
+                let (_,resp) = try await URLSession.shared.data(for: req)
+                if let httpResponse = resp as? HTTPURLResponse {
+                    if !(200...299).contains(httpResponse.statusCode) {
+                        logger.error("fail to send message to relay server,status:\(httpResponse.statusCode)")
+                        continue // retry
+                    }
                 }
-            }
-            guard let resp = resp as? HTTPURLResponse, (200 ... 299).contains(resp.statusCode) else {
-                logger.error("invalid response code")
+                logger.info("send message (\(msg.hash) to (\(msg.to)) successfully, sequenceNo:\(msg.sequence_no)")
                 return
             }
-            logger.info("send message (\(msg.hash) to (\(msg.to)) successfully")
-        }.resume()
+            catch {
+                logger.error("fail to send message,error:\(error)")
+            }
+        }
     }
 }

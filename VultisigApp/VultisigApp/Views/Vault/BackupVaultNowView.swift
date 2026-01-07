@@ -10,6 +10,8 @@ import SwiftUI
 struct BackupVaultNowView: View {
     let vault: Vault
     @State var isHomeAfterSkipShown = false
+    @State var navigateToBackup = false
+    @Environment(\.router) var router
 
     var body: some View {
         ZStack {
@@ -18,11 +20,25 @@ struct BackupVaultNowView: View {
         }
         .navigationBarBackButtonHidden(true)
     }
-    
+
     var view: some View {
         container
-            .navigationDestination(isPresented: $isHomeAfterSkipShown) {
-                HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
+            .onChange(of: isHomeAfterSkipShown) { _, isActive in
+                guard isActive else { return }
+                router.navigate(to: VaultRoute.home(
+                    vault: vault,
+                    showVaultsList: false,
+                    shouldJoinKeygen: false
+                ))
+            }
+            .onChange(of: navigateToBackup) { _, shouldNavigate in
+                guard shouldNavigate else { return }
+                router.navigate(to: KeygenRoute.backupNow(
+                    tssType: .Keygen,
+                    backupType: .secure,
+                    isNewVault: true
+                ))
+                navigateToBackup = false
             }
     }
     
@@ -74,8 +90,8 @@ struct BackupVaultNowView: View {
     }
     
     var backupButton: some View {
-        PrimaryNavigationButton(title: "Backup") {
-            VaultBackupNowScreen(tssType: .Keygen, vault: vault, isNewVault: true)
+        PrimaryButton(title: "Backup") {
+            navigateToBackup = true
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 40)

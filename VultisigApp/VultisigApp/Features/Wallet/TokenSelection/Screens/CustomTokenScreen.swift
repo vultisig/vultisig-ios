@@ -119,7 +119,7 @@ struct CustomTokenScreen: View {
                             .font(Theme.fonts.bodyMMedium)
                         
                         Text(token?.chain.name ?? .empty)
-                            .foregroundStyle(Theme.colors.textLight)
+                            .foregroundStyle(Theme.colors.textSecondary)
                             .font(Theme.fonts.caption10)
                             .padding(.vertical, 8)
                             .padding(.horizontal, 12)
@@ -127,7 +127,7 @@ struct CustomTokenScreen: View {
                     }
                     
                     Text(token?.contractAddress ?? .empty)
-                        .foregroundStyle(Theme.colors.textExtraLight)
+                        .foregroundStyle(Theme.colors.textTertiary)
                         .font(Theme.fonts.caption12)
                         .lineLimit(1)
                 }
@@ -135,7 +135,7 @@ struct CustomTokenScreen: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, 12)
             .padding(.horizontal, 16)
-            .background(RoundedRectangle(cornerRadius: 12).fill(Theme.colors.bgSecondary))
+            .background(RoundedRectangle(cornerRadius: 12).fill(Theme.colors.bgSurface1))
             GradientListSeparator()
         }
         .clipShape(RoundedRectangle(cornerRadius: 12))

@@ -15,21 +15,22 @@ struct SendCryptoDoneView: View {
     let isSend: Bool
 
     var progressLink: String? = nil
-    
+
     let sendTransaction: SendTransaction?
     let swapTransaction: SwapTransaction?
     let contentPadding: CGFloat
-    
+    let keysignPayload: KeysignPayload?
+
     @StateObject private var sendSummaryViewModel = SendSummaryViewModel()
     @StateObject private var swapSummaryViewModel = SwapCryptoViewModel()
 
     @State var showAlert = false
     @State var alertTitle = "hashCopied"
-    
+
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var appViewModel: AppViewModel
-    
+
     init(
         vault: Vault,
         hash: String,
@@ -39,7 +40,8 @@ struct SendCryptoDoneView: View {
         sendTransaction: SendTransaction?,
         swapTransaction: SwapTransaction?,
         isSend: Bool,
-        contentPadding: CGFloat = 16
+        contentPadding: CGFloat = 16,
+        keysignPayload: KeysignPayload? = nil
     ) {
         self.vault = vault
         self.hash = hash
@@ -50,6 +52,7 @@ struct SendCryptoDoneView: View {
         self.swapTransaction = swapTransaction
         self.isSend = isSend
         self.contentPadding = contentPadding
+        self.keysignPayload = keysignPayload
     }
     
     var body: some View {
@@ -77,7 +80,8 @@ struct SendCryptoDoneView: View {
                 isSend: isSend,
                 fromAddress: tx.fromAddress,
                 toAddress: tx.toAddress,
-                fee: (tx.gasInReadable, sendSummaryViewModel.feesInReadable(tx: tx, vault: vault))
+                fee: FeeDisplay(crypto: tx.gasInReadable, fiat: sendSummaryViewModel.feesInReadable(tx: tx, vault: vault)),
+                keysignPayload: keysignPayload
             ),
             showAlert: $showAlert
         ) {

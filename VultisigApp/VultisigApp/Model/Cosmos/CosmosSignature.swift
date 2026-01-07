@@ -7,11 +7,12 @@
 
 import Foundation
 
-struct CosmosSignature : Codable{
+struct CosmosSignature: Codable {
     let mode: String
     let tx_bytes: String
+
     func getTransactionHash() -> String {
-        return Data(base64Encoded: tx_bytes)?.sha256().toHexString() ?? ""
+        return Data(base64Encoded: tx_bytes)?.sha256().toHexString().uppercased() ?? ""
     }
 }
 

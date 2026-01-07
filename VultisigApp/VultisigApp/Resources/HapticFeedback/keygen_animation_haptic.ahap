@@ -1,0 +1,179 @@
+{
+  "Version": 1.0,
+  "Pattern": [
+    {
+      "Event": {
+        "Time": 0.0,
+        "EventType": "HapticContinuous",
+        "EventDuration": 1.5,
+        "EventParameters": [
+          {
+            "ParameterID": "HapticIntensity",
+            "ParameterValue": 0.8
+          },
+          {
+            "ParameterID": "HapticSharpness",
+            "ParameterValue": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "ParameterCurve": {
+        "Time": 0.0,
+        "ParameterID": "HapticIntensityControl",
+        "ParameterCurveControlPoints": [
+          {
+            "Time": 0.0,
+            "ParameterValue": 0.01
+          },
+          {
+            "Time": 0.24,
+            "ParameterValue": 0.05
+          },
+          {
+            "Time": 0.48,
+            "ParameterValue": 0.15
+          },
+          {
+            "Time": 0.8,
+            "ParameterValue": 0.5
+          },
+          {
+            "Time": 1.04,
+            "ParameterValue": 0.7
+          },
+          {
+            "Time": 1.2,
+            "ParameterValue": 0.8
+          },
+          {
+            "Time": 1.21,
+            "ParameterValue": 0.01
+          },
+          {
+            "Time": 1.5,
+            "ParameterValue": 0.01
+          }
+        ]
+      }
+    },
+    {
+      "ParameterCurve": {
+        "Time": 0.0,
+        "ParameterID": "HapticSharpnessControl",
+        "ParameterCurveControlPoints": [
+          {
+            "Time": 0.0,
+            "ParameterValue": 1.0
+          },
+          {
+            "Time": 0.6,
+            "ParameterValue": 0.9
+          },
+          {
+            "Time": 0.9,
+            "ParameterValue": 0.5
+          },
+          {
+            "Time": 1.0,
+            "ParameterValue": 0.2
+          },
+          {
+            "Time": 1.5,
+            "ParameterValue": 0.2
+          }
+        ]
+      }
+    },
+    {
+      "Event": {
+        "Time": 2.0,
+        "EventType": "HapticContinuous",
+        "EventDuration": 1.3,
+        "EventParameters": [
+          {
+            "ParameterID": "HapticIntensity",
+            "ParameterValue": 0.8
+          },
+          {
+            "ParameterID": "HapticSharpness",
+            "ParameterValue": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "ParameterCurve": {
+        "Time": 2.35,
+        "ParameterID": "HapticIntensityControl",
+        "ParameterCurveControlPoints": [
+          {
+            "Time": 0.0,
+            "ParameterValue": 0.8
+          },
+          {
+            "Time": 0.24,
+            "ParameterValue": 0.7
+          },
+          {
+            "Time": 0.48,
+            "ParameterValue": 0.5
+          },
+          {
+            "Time": 0.8,
+            "ParameterValue": 0.3
+          },
+          {
+            "Time": 1.04,
+            "ParameterValue": 0.15
+          },
+          {
+            "Time": 1.2,
+            "ParameterValue": 0.05
+          },
+          {
+            "Time": 1.21,
+            "ParameterValue": 0.01
+          },
+          {
+            "Time": 1.5,
+            "ParameterValue": 0.01
+          }
+        ]
+      }
+    },
+    {
+      "ParameterCurve": {
+        "Time": 2.35,
+        "ParameterID": "HapticSharpnessControl",
+        "ParameterCurveControlPoints": [
+          {
+            "Time": 0.0,
+            "ParameterValue": 0.2
+          },
+          {
+            "Time": 0.4,
+            "ParameterValue": 0.5
+          },
+          {
+            "Time": 0.7,
+            "ParameterValue": 0.9
+          },
+          {
+            "Time": 1.0,
+            "ParameterValue": 1.0
+          },
+          {
+            "Time": 1.5,
+            "ParameterValue": 1.0
+          }
+        ]
+      }
+    }
+  ],
+  "Metadata": {
+    "Project": "Mirrored Blocks \u2013 Perfect Mirror \u2013 Shifted -150ms",
+    "Notes": "Block B intensity mirrors Block A (same timestamps, inverse ramp with abrupt drop near ~1.21s). Timing preserved: Block B at 2.35s."
+  }
+}

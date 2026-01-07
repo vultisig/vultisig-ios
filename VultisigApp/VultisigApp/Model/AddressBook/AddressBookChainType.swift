@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum AddressBookChainType: Identifiable, Equatable {
+enum AddressBookChainType: Identifiable, Equatable, Hashable {
     case evm
     case chain(coin: CoinMeta)
     

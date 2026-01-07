@@ -85,7 +85,7 @@ private struct RemoveLPAmountSection: View {
                 .foregroundStyle(Theme.colors.textPrimary)
             Text((Double(formattedPercentage) / 100).formatted(.percent))
                 .font(Theme.fonts.subtitle)
-                .foregroundStyle(Theme.colors.textExtraLight)
+                .foregroundStyle(Theme.colors.textTertiary)
         }
     }
 }

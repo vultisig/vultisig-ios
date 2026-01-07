@@ -25,10 +25,18 @@ extension ReshareView {
                     .resizable()
                     .frame(width: 140, height: 32)
             }
-            
+
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationHelpButton()
             }
+        }
+        .onChange(of: shouldJoinKeygen) { _, shouldNavigate in
+            guard shouldNavigate else { return }
+            router.navigate(to: OnboardingRoute.joinKeygen(
+                vault: vault,
+                selectedVault: nil
+            ))
+            shouldJoinKeygen = false
         }
         .crossPlatformSheet(isPresented: $showJoinReshare) {
             GeneralCodeScannerView(
@@ -45,9 +53,6 @@ extension ReshareView {
     var joinReshareButton: some View {
         PrimaryButton(title: "joinReshare", type: .secondary) {
             showJoinReshare = true
-        }
-        .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: vault, selectedVault: nil)
         }
         .padding(.bottom, 16)
     }

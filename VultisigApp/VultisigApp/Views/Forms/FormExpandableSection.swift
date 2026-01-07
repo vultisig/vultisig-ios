@@ -39,7 +39,7 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
             valueView: {
                 AnyView(Text(value)
                     .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .lineLimit(1)
                     .truncationMode(.middle))
             }
@@ -67,7 +67,7 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
             valueView: {
                 AnyView(Text(value)
                     .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .lineLimit(1)
                     .truncationMode(.middle))
             }

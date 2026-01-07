@@ -29,7 +29,7 @@ struct RuneBondCell: View {
             contentView
         }
         .padding(16)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
     }
     
     var logoView: some View {
@@ -86,7 +86,7 @@ struct RuneBondCell: View {
         case "disabled":
             return Theme.colors.alertError
         default:
-            return Theme.colors.textLight
+            return Theme.colors.textSecondary
         }
     }
     

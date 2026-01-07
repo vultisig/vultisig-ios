@@ -1,0 +1,320 @@
+//
+//  CircleWithdrawView.swift
+//  VultisigApp
+//
+//  Created by Enrique Souza on 2025-12-13.
+//
+
+import SwiftUI
+import BigInt
+import WalletCore
+import VultisigCommonData
+
+struct CircleWithdrawView: View {
+    let vault: Vault
+    @StateObject private var model: CircleViewModel
+    @Environment(\.dismiss) var dismiss
+    @Environment(\.router) var router
+    
+    @State var amount: String = ""
+    @State var percentage: Double = 0.0
+    @State var isLoading = false
+    @State var error: Error?
+    @State var isFastVault = false
+    @State var fastPasswordPresented = false
+    @State var fastVaultPassword: String = ""
+    
+    @StateObject var sendTransaction = SendTransaction()
+    
+    init(vault: Vault, model: CircleViewModel) {
+        self.vault = vault
+        self._model = StateObject(wrappedValue: model)
+    }
+    
+    var body: some View {
+        main
+    }
+    
+    var content: some View {
+        ZStack {
+            VStack(spacing: 0) {
+                headerView
+                scrollableContent
+                footerView
+            }
+            
+            if isLoading {
+                Color.black.opacity(0.5).ignoresSafeArea()
+                ProgressView()
+            }
+        }
+        .task {
+            await loadFastVaultStatus()
+        }
+    }
+    
+    var headerView: some View {
+        HStack {
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "chevron.left")
+                    .font(.title3)
+                    .foregroundColor(Theme.colors.textPrimary)
+                    .frame(width: 40, height: 40)
+                    .background(Circle().fill(Color.white.opacity(0.1)))
+            }
+            
+            Spacer()
+            
+            Text(NSLocalizedString("circleWithdrawTitle", comment: "Withdraw from Circle"))
+                .font(Theme.fonts.bodyLMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+            
+            Spacer()
+            
+            Color.clear.frame(width: 40, height: 40)
+        }
+        .padding(CircleConstants.Design.horizontalPadding)
+    }
+    
+    var footerView: some View {
+        VStack(spacing: 12) {
+            if let error = error {
+                Text(error.localizedDescription)
+                    .foregroundStyle(Theme.colors.alertError)
+                    .font(.caption)
+            }
+            
+            if vaultEthBalance <= 0 {
+                Text(NSLocalizedString("circleDashboardETHRequired", comment: "ETH is required..."))
+                    .font(.caption)
+                    .foregroundStyle(Theme.colors.alertWarning)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            
+            withdrawButton
+        }
+        .padding(CircleConstants.Design.horizontalPadding)
+        .background(Theme.colors.bgPrimary)
+    }
+    
+    var scrollableContent: some View {
+        VStack(spacing: CircleConstants.Design.verticalSpacing) {
+            VStack(spacing: 0) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(NSLocalizedString("circleWithdrawAmount", comment: "Amount"))
+                        .font(CircleConstants.Fonts.subtitle)
+                        .foregroundStyle(Theme.colors.textSecondary)
+                    
+                    Divider()
+                        .background(Theme.colors.textTertiary.opacity(0.2))
+                }
+                
+                Spacer()
+                
+                VStack(spacing: 8) {
+                    HStack(spacing: 4) {
+                        amountTextField
+                        
+                        Text("USDC")
+                            .font(Theme.fonts.bodyLMedium)
+                            .foregroundStyle(Theme.colors.textSecondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    
+                    Text("\(Int(percentage))%")
+                        .font(CircleConstants.Fonts.subtitle)
+                        .foregroundStyle(Theme.colors.textSecondary)
+                }
+                
+                Spacer()
+                
+                VStack(spacing: CircleConstants.Design.verticalSpacing) {
+                    Slider(value: Binding(
+                        get: { percentage },
+                        set: { newValue in
+                            percentage = newValue
+                            updateAmount(from: newValue)
+                        }
+                    ), in: 0...100)
+                    .accentColor(Theme.colors.primaryAccent1)
+                    
+                    HStack {
+                        Text(NSLocalizedString("circleDepositBalanceAvailable", comment: "Balance available:"))
+                            .font(CircleConstants.Fonts.subtitle)
+                            .foregroundStyle(Theme.colors.textSecondary)
+                        
+                        Spacer()
+                        
+                        Text("\(model.balance.formatted()) USDC")
+                            .font(CircleConstants.Fonts.subtitle)
+                            .bold()
+                            .foregroundStyle(Theme.colors.textPrimary)
+                    }
+                }
+            }
+            .padding(CircleConstants.Design.cardPadding)
+            .padding(.horizontal, CircleConstants.Design.horizontalPadding)
+        }
+        .padding(.top, CircleConstants.Design.verticalSpacing)
+        .frame(maxHeight: .infinity)
+    }
+    
+    var amountTextField: some View {
+        TextField("0", text: $amount)
+            .font(.system(size: 40, weight: .bold))
+            .foregroundStyle(Theme.colors.textPrimary)
+            .multilineTextAlignment(.center)
+            #if os(macOS)
+            .textFieldStyle(.plain)
+            #endif
+            .onChange(of: amount) { newValue in
+                updatePercentage(from: newValue)
+            }
+    }
+    
+    @ViewBuilder
+    var withdrawButton: some View {
+        if isFastVault {
+            VStack {
+                Text(NSLocalizedString("holdForPairedSign", comment: ""))
+                    .foregroundColor(Theme.colors.textTertiary)
+                    .font(Theme.fonts.bodySMedium)
+                
+                LongPressPrimaryButton(title: NSLocalizedString("circleWithdrawConfirm", comment: "Continue")) {
+                    fastPasswordPresented = true
+                } longPressAction: {
+                    fastVaultPassword = ""
+                    Task { await handleWithdraw() }
+                }
+            }
+            .disabled(isButtonDisabled)
+        } else {
+            PrimaryButton(title: NSLocalizedString("circleWithdrawConfirm", comment: "Continue")) {
+                Task { await handleWithdraw() }
+            }
+            .disabled(isButtonDisabled)
+        }
+    }
+    
+    var vaultEthBalance: Decimal {
+        let (chain, _) = CircleViewLogic.getChainDetails(vault: vault)
+        return vault.coins.first(where: { $0.chain == chain && $0.isNativeToken })?.balanceDecimal ?? 0
+    }
+    
+    var isButtonDisabled: Bool {
+        amount.isEmpty || (Decimal(string: amount) ?? 0) <= 0 || (Decimal(string: amount) ?? 0) > model.balance || vaultEthBalance <= 0 || isLoading
+    }
+    
+    func loadFastVaultStatus() async {
+        let isExist = await FastVaultService.shared.exist(pubKeyECDSA: vault.pubKeyECDSA)
+        let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
+        
+        await MainActor.run {
+            isFastVault = isExist && !isLocalBackup
+        }
+    }
+    
+    func updatePercentage(from amountStr: String) {
+        let balance = model.balance
+        guard let amountDec = Decimal(string: amountStr), balance > 0 else {
+            return
+        }
+        let percent = (amountDec / balance) * 100
+        if abs(self.percentage - Double(truncating: percent as NSNumber)) > 0.1 {
+            self.percentage = Double(truncating: percent as NSNumber)
+        }
+    }
+    
+    func updateAmount(from percent: Double) {
+        let balance = model.balance
+        guard balance > 0 else { return }
+        let amountDec = balance * Decimal(percent) / 100
+        let newAmount = amountDec.truncated(toPlaces: 6).description
+        if self.amount != newAmount {
+            self.amount = newAmount
+        }
+    }
+    
+    func handleWithdraw() async {
+        guard let amountDecimal = Decimal(string: amount) else {
+            await MainActor.run {
+                isLoading = false
+            }
+            return
+        }
+        
+        await MainActor.run {
+            isLoading = true
+            error = nil
+        }
+        
+        do {
+            let decimals = 6
+            let amountUnits = (amountDecimal * pow(10, decimals)).description
+            let cleanAmountUnits = amountUnits.components(separatedBy: ".").first ?? amountUnits
+            let amountVal = BigInt(cleanAmountUnits) ?? BigInt(0)
+            
+            let (chain, _) = CircleViewLogic.getChainDetails(vault: vault)
+            guard let recipientCoin = vault.coins.first(where: { $0.chain == chain }) else {
+                throw NSError(domain: "CircleWithdraw", code: 404, userInfo: [NSLocalizedDescriptionKey: "ETH address not found"])
+            }
+            
+            func attemptPayload() async throws -> KeysignPayload {
+                return try await model.logic.getWithdrawalPayload(
+                    vault: vault,
+                    recipient: recipientCoin.address,
+                    amount: amountVal
+                )
+            }
+            
+            let payload: KeysignPayload
+            do {
+                payload = try await attemptPayload()
+            } catch let err as CircleServiceError {
+                if case .walletNotDeployed = err {
+                    do {
+                        let _ = try await CircleApiService.shared.createWallet(
+                            ethAddress: recipientCoin.address
+                        )
+                    } catch {
+                        print("Circle create wallet error: \(error.localizedDescription)")
+                    }
+                    payload = try await attemptPayload()
+                } else {
+                    throw err
+                }
+            } catch {
+                throw error
+            }
+            
+            let coinToUse = recipientCoin
+            
+            await MainActor.run {
+                self.sendTransaction.reset(coin: coinToUse)
+                self.sendTransaction.isFastVault = isFastVault
+                self.sendTransaction.fastVaultPassword = fastVaultPassword
+                
+                router.navigate(
+                    to: SendRoute.pairing(
+                        vault: vault,
+                        tx: sendTransaction,
+                        keysignPayload: payload,
+                        fastVaultPassword: fastVaultPassword.nilIfEmpty
+                    )
+                )
+                
+                isLoading = false
+            }
+            
+        } catch {
+            await MainActor.run {
+                self.error = error
+                self.isLoading = false
+            }
+        }
+    }
+}
+

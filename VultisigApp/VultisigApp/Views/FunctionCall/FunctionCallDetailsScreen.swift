@@ -3,14 +3,14 @@ import OSLog
 import SwiftUI
 
 struct FunctionCallDetailsScreen: View {
+    @Environment(\.router) var router
     @ObservedObject var tx: SendTransaction
     @StateObject var functionCallViewModel = FunctionCallViewModel()
     @ObservedObject var vault: Vault
-    
+
     @State private var selectedFunctionMemoType: FunctionCallType = .custom
     @State private var selectedContractMemoType: FunctionCallContractType = .thorChainMessageDeposit
     @State private var showInvalidFormAlert = false
-    @State private var navigateToVerify = false
     @State private var hasCompletedInitialSetup = false
     
     @State var fnCallInstance: FunctionCallInstance?
@@ -48,9 +48,6 @@ struct FunctionCallDetailsScreen: View {
                 }
                 button
             }
-        }
-        .navigationDestination(isPresented: $navigateToVerify) {
-            FunctionCallRouteBuilder().buildVerifyScreen(tx: tx, vault: vault)
         }
         .alert(isPresented: $functionCallViewModel.showAlert) {
             alert
@@ -243,7 +240,7 @@ struct FunctionCallDetailsScreen: View {
                         tx.toAddress = toAddress
                     }
                     
-                    navigateToVerify = true
+                    router.navigate(to: FunctionCallRoute.verify(tx: tx, vault: vault))
                     
                 } else {
                     showInvalidFormAlert = true

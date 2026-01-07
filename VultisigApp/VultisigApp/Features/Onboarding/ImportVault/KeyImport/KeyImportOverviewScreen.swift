@@ -17,26 +17,48 @@ struct KeyImportOverviewScreen: View {
         case vaultShares
     }
     
-    @State private var presentBackupNowScreen: Bool = false
     @State private var scrollPosition: Page? = .multisig
     
     @State private var isVerificationLinkActive = false
-    @State private var isBackupLinkActive = false
-    @State private var goBackToEmailSetup = false
+    @Environment(\.router) var router
+    
+    var buttonTitle: String {
+        "next".localized
+    }
     
     var body: some View {
         Screen(edgeInsets: .init(leading: 0, trailing: 0)) {
             VStack(spacing: 0) {
                 Spacer()
-                Image("seed-phrase-vault-setup")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
+                ZStack {
+                    if scrollPosition == .multisig {
+                        Image("seed-phrase-overview-multisig")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    } else {
+                        Image("seed-phrase-overview-vault-shares")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    }
+                }
+                .frame(maxWidth: 600, maxHeight: .infinity)
+                .animation(.interpolatingSpring, value: scrollPosition)
                 Spacer()
                 VStack(spacing: 32) {
                     pages
                     pagesIndicator
-                    PrimaryButton(title: "backupNow".localized) {
-                        presentBackupNowScreen = true
+                    PrimaryButton(title: buttonTitle) {
+                        if scrollPosition == .multisig {
+                            withAnimation(.interpolatingSpring) {
+                                scrollPosition = .vaultShares
+                            }
+                        } else {
+                            router.navigate(to: KeygenRoute.backupNow(
+                                tssType: .KeyImport,
+                                backupType: .single(vault: vault),
+                                isNewVault: true
+                            ))
+                        }
                     }
                     .padding(.horizontal, 16)
                 }
@@ -48,16 +70,15 @@ struct KeyImportOverviewScreen: View {
                 vault: vault,
                 email: email ?? .empty,
                 isPresented: $isVerificationLinkActive,
-                isBackupLinkActive: .constant(false),
                 tabIndex: .constant(0),
-                goBackToEmailSetup: $goBackToEmailSetup
+                onBackup: { },
+                onBackToEmailSetup: {
+                    router.navigate(to: OnboardingRoute.vaultSetup(
+                        tssType: .KeyImport,
+                        keyImportInput: keyImportInput
+                    ))
+                }
             )
-        }
-        .navigationDestination(isPresented: $presentBackupNowScreen) {
-            VaultBackupNowScreen(tssType: .KeyImport, backupType: .single(vault: vault), isNewVault: true)
-        }
-        .navigationDestination(isPresented: $goBackToEmailSetup) {
-            VaultSetupScreen(tssType: .KeyImport, keyImportInput: keyImportInput)
         }
         .onLoad {
             if email != nil {
@@ -94,7 +115,7 @@ struct KeyImportOverviewScreen: View {
             ForEach(Page.allCases, id: \.self) { page in
                 let size: CGFloat = page == scrollPosition ? 5 : 4
                 let color = page == scrollPosition
-                ? Theme.colors.textPrimary : Theme.colors.textExtraLight
+                ? Theme.colors.textPrimary : Theme.colors.textTertiary
                 Circle()
                     .fill(color)
                     .frame(width: size, height: size)
@@ -102,7 +123,7 @@ struct KeyImportOverviewScreen: View {
             }
         }
     }
-
+    
     var multisigPageContent: some View {
         VStack(alignment: .leading, spacing: 24) {
             CustomHighlightText(
@@ -143,12 +164,12 @@ struct KeyImportOverviewScreen: View {
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.subtitle)
                 
-                CustomHighlightText(
-                    "whatAreVaultSharesDescription".localized,
-                    highlight: "whatAreVaultSharesDescriptionHighlight".localized,
-                    style: Theme.colors.textPrimary
-                )
-                .foregroundStyle(Theme.colors.textExtraLight)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("whatAreVaultSharesDescription".localized)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                    Text("whatAreVaultSharesDescription2".localized)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                }
                 .font(Theme.fonts.footnote)
             }
         }

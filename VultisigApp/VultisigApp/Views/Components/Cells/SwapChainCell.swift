@@ -33,7 +33,7 @@ struct SwapChainCell: View {
             content
             GradientListSeparator()
         }
-        .background(isSelected ? Theme.colors.bgTertiary : Theme.colors.bgSecondary)
+        .background(isSelected ? Theme.colors.bgSurface2 : Theme.colors.bgSurface1)
     }
     
     var content: some View {

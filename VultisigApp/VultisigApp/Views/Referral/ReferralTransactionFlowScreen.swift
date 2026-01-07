@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct ReferralTransactionFlowScreen: View {
-    @ObservedObject var referralViewModel: ReferralViewModel
-    let isEdit: Bool
+    @StateObject var referralViewModel: ReferralViewModel
+    @ObservedObject var vaultSelectionViewModel: VaultSelectedViewModel
     
     @StateObject var sendTx = SendTransaction()
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
@@ -19,9 +19,23 @@ struct ReferralTransactionFlowScreen: View {
     @State var keysignPayload: KeysignPayload? = nil
     @State var keysignView: KeysignView? = nil
     @State var isLoading = false
-    @State var navigateToVerify = false
+    @Environment(\.router) var router
+
+    @EnvironmentObject var appViewModel: AppViewModel
     
-    @EnvironmentObject var homeViewModel: HomeViewModel
+    init(viewModel: VaultSelectedViewModel, thornameDetails: THORName?, currentBlockHeight: UInt64) {
+        self.vaultSelectionViewModel = viewModel
+        self._referralViewModel = StateObject(
+            wrappedValue: ReferralViewModel(
+                thornameDetails: thornameDetails,
+                currentBlockheight: currentBlockHeight
+            )
+        )
+    }
+    
+    var vault: Vault? {
+        vaultSelectionViewModel.selectedVault ?? referralViewModel.currentVault
+    }
     
     var body: some View {
         detailsView
@@ -29,7 +43,7 @@ struct ReferralTransactionFlowScreen: View {
             .frame(maxHeight: .infinity)
             .onLoad {
                 isLoading = true
-                referralViewModel.setup(tx: sendTx)
+                referralViewModel.setup(tx: sendTx, defaultVault: appViewModel.selectedVault)
                 isLoading = false
                 
                 Task {
@@ -38,21 +52,11 @@ struct ReferralTransactionFlowScreen: View {
                     }
                 }
             }
-            .navigationDestination(isPresented: $navigateToVerify) {
-                if let vault {
-                    FunctionCallRouteBuilder().buildVerifyScreen(tx: sendTx, vault: vault)
-                }
-            }
-    }
-    
-    var vault: Vault? {
-        referralViewModel.currentVault
     }
     
     @ViewBuilder
     var detailsView: some View {
-        if isEdit,
-           let details = referralViewModel.thornameDetails,
+        if let details = referralViewModel.thornameDetails,
            let nativeCoin = referralViewModel.nativeCoin,
            let vault
         {
@@ -76,11 +80,12 @@ struct ReferralTransactionFlowScreen: View {
     }
     
     func moveToNext() {
-        navigateToVerify = true
+        guard let vault else { return }
+        router.navigate(to: FunctionCallRoute.verify(tx: sendTx, vault: vault))
     }
 }
 
 #Preview {
-    ReferralTransactionFlowScreen(referralViewModel: ReferralViewModel(), isEdit: false)
-        .environmentObject(HomeViewModel())
+    ReferralTransactionFlowScreen(viewModel: VaultSelectedViewModel(), thornameDetails: nil, currentBlockHeight: 0)
+        .environmentObject(AppViewModel())
 }

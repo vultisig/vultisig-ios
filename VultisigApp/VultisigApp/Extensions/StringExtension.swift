@@ -222,4 +222,26 @@ extension String {
     var localized: String {
         NSLocalizedString(self, comment: "")
     }
+
+    var truncatedMiddle: String {
+        guard count > 10 else { return self }
+        return "\(self.prefix(4))...\(self.suffix(4))"
+    }
+}
+
+// MARK: - Base64 Encoding/Decoding
+extension String {
+    /// Converts a base64-encoded string to Data (byte array)
+    /// Equivalent to CosmJS's fromBase64 function
+    /// - Returns: Data if decoding succeeds, nil otherwise
+    func fromBase64() -> Data? {
+        return Data(base64Encoded: self)
+    }
+
+    /// Converts a base64-encoded string to a byte array ([UInt8])
+    /// - Returns: Array of bytes if decoding succeeds, nil otherwise
+    func fromBase64Bytes() -> [UInt8]? {
+        guard let data = fromBase64() else { return nil }
+        return Array(data)
+    }
 }

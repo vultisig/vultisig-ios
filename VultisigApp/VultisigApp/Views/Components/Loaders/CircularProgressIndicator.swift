@@ -10,7 +10,7 @@ import SwiftUI
 struct CircularProgressIndicator: View {
     var size: CGFloat = 24
     var lineWidth: CGFloat = 2
-    var tint: Color = Theme.colors.textLight
+    var tint: Color = Theme.colors.textSecondary
     var speed: Double = 1.0 // <1 slower, >1 faster
 
     // Material-ish constants

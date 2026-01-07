@@ -61,7 +61,7 @@ struct PickReferralCode: View {
         if let status = referralViewModel.availabilityStatus {
             HStack {
                 Text(NSLocalizedString("status", comment: ""))
-                    .foregroundColor(Theme.colors.textExtraLight)
+                    .foregroundColor(Theme.colors.textTertiary)
                 
                 Spacer()
                 

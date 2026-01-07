@@ -18,7 +18,7 @@ struct VaultEditCellContainer<Content: View>: View {
                 .showIf(showDragIndicator)
             content()
         }
-        .background(isEditing ? Capsule().fill(Theme.colors.bgSecondary.opacity(0.75)) : nil)
+        .background(isEditing ? Capsule().fill(Theme.colors.bgSurface1.opacity(0.75)) : nil)
         .padding(.vertical, 4)
         .animation(.easeInOut, value: isEditing)
     }
@@ -26,7 +26,7 @@ struct VaultEditCellContainer<Content: View>: View {
     var icon: some View {
         Icon(
             named: "line-3-horizontal",
-            color: Theme.colors.textExtraLight,
+            color: Theme.colors.textTertiary,
             size: 16
         )
         .padding(.leading, 16)

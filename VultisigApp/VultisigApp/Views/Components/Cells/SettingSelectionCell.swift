@@ -64,7 +64,7 @@ struct SettingSelectionCell: View {
     private func getDescriptionBlock(_ value: String) -> some View {
         Text(value)
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textLight)
+            .foregroundColor(Theme.colors.textSecondary)
     }
 }
 

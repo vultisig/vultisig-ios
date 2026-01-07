@@ -43,15 +43,15 @@ enum THORChainHelper {
         if chainID != service.network && !service.network.isEmpty {
             chainID = service.network
         }
-        let input = CosmosSigningInput.with {
+        let input = try CosmosSigningInput.with {
             $0.chainID = chainID
             $0.publicKey = pubKeyData
             $0.accountNumber = accountNumber
             $0.sequence = sequence
             $0.mode = .sync
-            $0.signingMode = .protobuf
-            $0.messages = [CosmosMessage.with {
-                $0.thorchainDepositMessage = CosmosMessage.THORChainDeposit.with {
+            $0.signingMode = CosmosSignDataBuilder.getSigningMode(keysignPayload: keysignPayload)
+            $0.messages = [WalletCore.CosmosMessage.with {
+                $0.thorchainDepositMessage = WalletCore.CosmosMessage.THORChainDeposit.with {
                     $0.signer = fromAddr.data
                     $0.memo = keysignPayload.memo ?? ""
                     $0.coins = [TW_Cosmos_Proto_THORChainCoin.with {
@@ -67,9 +67,7 @@ enum THORChainHelper {
                     }]
                 }
             }]
-            $0.fee = CosmosFee.with {
-                $0.gas = 20000000
-            }
+            $0.fee = try getFee(keysignPayload: keysignPayload)
         }
         
         return try input.serializedData()
@@ -97,43 +95,45 @@ enum THORChainHelper {
         }
                 
         let transactionType = VSTransactionType(rawValue: transactionTypeRawValue) ?? .unspecified
-        let message: CosmosMessage
-        
-        if isDeposit {
+        let messages: [WalletCore.CosmosMessage]
+        var memo = keysignPayload.memo
+
+        if let signDataMessagesResult = try CosmosSignDataBuilder.getMessages(keysignPayload: keysignPayload) {
+            messages = signDataMessagesResult.messages
+            memo = signDataMessagesResult.memo
+        } else if isDeposit {
             // This should invoke the wasm contract for RUJI merge/unmerge
             if transactionType.isGenericWasmMessage {
-                message = try CosmosMessage.with {
+                messages = [try WalletCore.CosmosMessage.with {
                     $0.wasmExecuteContractGeneric = try buildThorchainWasmGenericMessage(keysignPayload: keysignPayload, transactionType: transactionType)
-                }
+                }]
             } else {
-                message = buildThorchainDepositMessage(keysignPayload: keysignPayload, fromAddress: fromAddr)
+                messages = [buildThorchainDepositMessage(keysignPayload: keysignPayload, fromAddress: fromAddr)]
             }
             
         } else {
             if transactionType == .genericContract {
-                message = try CosmosMessage.with {
+                messages = [try WalletCore.CosmosMessage.with {
                     $0.wasmExecuteContractGeneric =
                     try buildThorchainWasmGenericMessage(keysignPayload: keysignPayload, transactionType: transactionType)
-                }
+                }]
             } else {
-                message = try buildThorchainSendMessage(keysignPayload: keysignPayload, fromAddress: fromAddr)
+                messages = [try buildThorchainSendMessage(keysignPayload: keysignPayload, fromAddress: fromAddr)]
             }
         }
         
-        let input = CosmosSigningInput.with {
+        let input = try CosmosSigningInput.with {
             $0.publicKey = pubKeyData
-            $0.signingMode = .protobuf
+            $0.signingMode = CosmosSignDataBuilder.getSigningMode(keysignPayload: keysignPayload)
             $0.chainID = chainID
             $0.accountNumber = accountNumber
             $0.sequence = sequence
             $0.mode = .sync
-            if let memo = keysignPayload.memo {
+            if let memo {
                 $0.memo = memo
             }
-            $0.messages = [message]
-            $0.fee = CosmosFee.with {
-                $0.gas = 20_000_000
-            }
+            $0.messages = messages
+            $0.fee = try getFee(keysignPayload: keysignPayload)
         }
         return try input.serializedData()
     }
@@ -188,18 +188,18 @@ enum THORChainHelper {
                                                                                  publicKeys: publicKeys)
             let output = try CosmosSigningOutput(serializedBytes: compileWithSignature)
             let serializedData = output.serialized
-            let sig = try JSONDecoder().decode(CosmosSignature.self, from: serializedData.data(using: .utf8) ?? Data())
-            let result = SignedTransactionResult(rawTransaction: serializedData, transactionHash:sig.getTransactionHash())
+            let transactionHash = CosmosSerializedParser.getTransactionHash(from: serializedData)
+            let result = SignedTransactionResult(rawTransaction: serializedData, transactionHash: transactionHash)
             return result
         } catch {
-            throw HelperError.runtimeError("fail to get signed ethereum transaction,error:\(error.localizedDescription)")
+            throw HelperError.runtimeError("fail to get signed thorchain transaction,error:\(error.localizedDescription)")
         }
     }
     
-    private static func buildThorchainWasmGenericMessage(keysignPayload: KeysignPayload, transactionType: VSTransactionType) throws -> CosmosMessage.WasmExecuteContractGeneric {
+    private static func buildThorchainWasmGenericMessage(keysignPayload: KeysignPayload, transactionType: VSTransactionType) throws -> WalletCore.CosmosMessage.WasmExecuteContractGeneric {
         let fromAddr = try validateThorchainAddress(keysignPayload.coin.address, chain: keysignPayload.coin.chain)
         
-        let wasmGenericMessage = try CosmosMessage.WasmExecuteContractGeneric.with {
+        let wasmGenericMessage = try WalletCore.CosmosMessage.WasmExecuteContractGeneric.with {
             $0.senderAddress = fromAddr.description
             $0.contractAddress = keysignPayload.toAddress
             switch transactionType {
@@ -250,7 +250,7 @@ enum THORChainHelper {
         return wasmGenericMessage
     }
     
-    private static func buildThorchainDepositMessage(keysignPayload: KeysignPayload, fromAddress: AnyAddress) -> CosmosMessage {
+    private static func buildThorchainDepositMessage(keysignPayload: KeysignPayload, fromAddress: AnyAddress) -> WalletCore.CosmosMessage {
         let symbol = getTicker(coin: keysignPayload.coin)
         let assetTicker = getTicker(coin: keysignPayload.coin)
         let chainName = getChainName(coin: keysignPayload.coin)
@@ -270,8 +270,8 @@ enum THORChainHelper {
             }
         }
         
-        return CosmosMessage.with {
-            $0.thorchainDepositMessage = CosmosMessage.THORChainDeposit.with {
+        return WalletCore.CosmosMessage.with {
+            $0.thorchainDepositMessage = WalletCore.CosmosMessage.THORChainDeposit.with {
                 $0.signer = fromAddress.data
                 if let memo = keysignPayload.memo {
                     $0.memo = memo
@@ -281,11 +281,11 @@ enum THORChainHelper {
         }
     }
     
-    private static func buildThorchainSendMessage(keysignPayload: KeysignPayload, fromAddress: AnyAddress) throws -> CosmosMessage {
+    private static func buildThorchainSendMessage(keysignPayload: KeysignPayload, fromAddress: AnyAddress) throws -> WalletCore.CosmosMessage {
         let toAddress = try validateThorchainAddress(keysignPayload.toAddress, chain: keysignPayload.coin.chain)
         
-        return CosmosMessage.with {
-            $0.thorchainSendMessage = CosmosMessage.THORChainSend.with {
+        return WalletCore.CosmosMessage.with {
+            $0.thorchainSendMessage = WalletCore.CosmosMessage.THORChainSend.with {
                 $0.fromAddress = fromAddress.data
                 $0.amounts = [CosmosAmount.with {
                     $0.denom = (keysignPayload.coin.isNativeToken ? keysignPayload.coin.ticker : keysignPayload.coin.contractAddress).lowercased()
@@ -330,8 +330,18 @@ enum THORChainHelper {
             return "BSC"
         }
         
-        // For other secured assets, use the coin's chain ticker
-        return coin.chain.ticker.uppercased()
+        // For other secured assets, use the coin's ticker THOR-DOGE will return DOGE
+        return ticker
+    }
+    
+    static func getFee(keysignPayload: KeysignPayload) throws -> WalletCore.CosmosFee {
+        if let signDataFee = try CosmosSignDataBuilder.getFee(keysignPayload: keysignPayload) {
+            return signDataFee
+        }
+    
+        return WalletCore.CosmosFee.with {
+            $0.gas = 20_000_000
+        }
     }
 }
 

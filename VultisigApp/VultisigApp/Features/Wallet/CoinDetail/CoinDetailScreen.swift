@@ -10,7 +10,6 @@ import SwiftUI
 struct CoinDetailScreen: View {
     let coin: Coin
     let vault: Vault
-    @ObservedObject var group: GroupedChain
     @ObservedObject var sendTx: SendTransaction
     @Binding var isPresented: Bool
     var onCoinAction: (VaultAction) -> Void
@@ -26,14 +25,12 @@ struct CoinDetailScreen: View {
     init(
         coin: Coin,
         vault: Vault,
-        group: GroupedChain,
         sendTx: SendTransaction,
         isPresented: Binding<Bool>,
         onCoinAction: @escaping (VaultAction) -> Void
     ) {
         self.coin = coin
         self.vault = vault
-        self.group = group
         self.sendTx = sendTx
         self._isPresented = isPresented
         self._viewModel = StateObject(wrappedValue: .init(coin: coin))
@@ -67,7 +64,7 @@ struct CoinDetailScreen: View {
                 )
                 .padding(.bottom, 8)
                 CoinPriceNetworkView(
-                    chainName: group.name,
+                    chainName: coin.chain.name,
                     price: Decimal(coin.price).formatToFiat()
                 )
             }
@@ -82,9 +79,9 @@ struct CoinDetailScreen: View {
             await refresh()
         }
         .presentationDetents([isIPadOS ? .large : .medium])
-        .presentationBackground(Theme.colors.bgSecondary)
+        .presentationBackground(Theme.colors.bgSurface1)
         .presentationDragIndicator(.visible)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .readSize { size = $0.width }
         .crossPlatformSheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(
@@ -176,7 +173,6 @@ private extension CoinDetailScreen {
     CoinDetailScreen(
         coin: .example,
         vault: .example,
-        group: .example,
         sendTx: .init(),
         isPresented: .constant(true),
         onCoinAction: { _ in}

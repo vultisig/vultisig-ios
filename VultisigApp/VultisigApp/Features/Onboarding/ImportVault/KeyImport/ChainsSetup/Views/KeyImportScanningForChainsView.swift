@@ -27,7 +27,7 @@ struct KeyImportScanningForChainsView: View {
                 style: Theme.colors.textPrimary
             )
             .font(Theme.fonts.bodySMedium)
-            .foregroundStyle(Theme.colors.textExtraLight)
+            .foregroundStyle(Theme.colors.textTertiary)
             .frame(maxWidth: 330)
             .multilineTextAlignment(.center)
             Spacer()

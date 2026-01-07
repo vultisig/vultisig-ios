@@ -28,8 +28,12 @@ extension ReshareView {
     }
 
     var joinReshareButton: some View {
-        PrimaryNavigationButton(title: "joinReshare", type: .secondary) {
-            MacScannerView(type: .NewVault, sendTx: SendTransaction(), selectedVault: nil)
+        PrimaryButton(title: "joinReshare", type: .secondary) {
+            router.navigate(to: KeygenRoute.macScanner(
+                type: .NewVault,
+                sendTx: SendTransaction(),
+                selectedVault: nil
+            ))
         }
     }
 }

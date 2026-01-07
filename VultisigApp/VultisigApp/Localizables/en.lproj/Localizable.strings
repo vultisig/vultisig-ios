@@ -1092,8 +1092,7 @@
 "scanningForChainsSubtitleHighlight" = "This process can take up to 2 minutes.";
 "importTheseChains" = "Import these chains";
 "foundActiveChainsTitle" = "We found %d active chains";
-"foundActiveChainsSubtitle" = "Each extra chain roughly doubles the time to generate your vault. Estimated time for all selected chains: %d minutes";
-"foundActiveChainsSubtitleHighlight" = "%d minutes";
+"foundActiveChainsSubtitle" = "Each extra chain increases the time to generate your vault and possibility of an timeout.";
 "selectChainsToImport" = "Select %d chains or more you want to import.";
 "addOtherChains" = "Add other chains";
 "youCanSelectXChains" = "You can only select %d chains at a time";
@@ -1115,17 +1114,80 @@
 "yourSeedphrase" = "Your seedphrase";
 "yourSeedphraseSubtitle" = "Enter it, create a vault, never look back";
 "twoDevices" = "2 devices";
-"twoDevicesSubtitle" = "You'll need 2 devices (a phone, laptop, a browser, an iPad, etc...)";
+"twoDevicesSubtitle" = "Any device that can run Vultisig will work.";
 "mnemonicPlaceholder" = "Enter the 12 or 24 words of your seedphrase";
 "enterYourSeedphrase" = "Enter your seedphrase";
 "enterYourSeedphraseSubtitle" = "Leave a space between each word. Seed phrases of 12 or 24 words are supported.";
 "enterYourSeedphraseSubtitleHighlight" = "12 or 24";
 "seedPhraseWordCountError" = "You entered %d words. Seed phrase must be 12 or 24 words.";
 "seedPhraseInvalidError" = "Invalid seed phrase. Please double-check your words.";
+// Circle
+"circleTitle" = "Circle";
+"circleWithdrawTitle" = "Withdraw USDC";
+"circleWithdrawToAddress" = "To Address";
+"circleWithdrawAddressPlaceholder" = "0x...";
+"circleWithdrawAmount" = "Amount (USDC)";
+"circleWithdrawConfirm" = "Continue";
+
+"circleDepositTitle" = "Deposit USDC";
+"circleDepositInstruction" = "Send Ethereum USDC to this address";
+"circleDepositAddressLabel" = "Circle Wallet Address";
+"circleDepositCopy" = "Copy"; 
+"circleSetupTitle" = "Setup Circle Wallet";
+"circleSetupDescription" = "Create a Circle Multi-Signature Contract Account (MSCA) to enable advanced DeFi features.";
+"circleCreateAccount" = "Create Account";
+
+"circleDashboardDeposit" = "Deposit";
+"circleDashboardWithdraw" = "Withdraw";
+"circleDashboardTotalBalance" = "Total Balance";
+"circleDashboardAPY" = "APY";
+"circleDashboardLifetimeEarnings" = "Lifetime Earnings";
+
+"circleSetupDeposited" = "Deposited";
+"circleSetupDepositDescription" = "Deposit your $USDC into a Circle account and earn yield securely within your Vultisig vault.";
+"circleSetupInfoText" = "Funds remain fully under your vault’s control. Circle accounts are self-custodial and yield is generated through secure off-chain treasuries.";
+"circleSetupAccountTitle" = "Circle USDC Account";
+"circleSetupUSDCDeposited" = "USDC deposited";
+"circleSetupAccountBalance" = "Circle Account Balance";
+"circleSetupOpenAccount" = "Open Account";
+
+"circleDashboardCircleUSDCAccount" = "Circle USDC Account";
+"circleDashboardDeposited" = "Deposited";
+"circleDashboardDepositDescription" = "Deposit your $USDC into a Circle account and earn yield securely within your Vultisig vault.";
+"circleDashboardInfoText" = "Funds remain fully under your vault’s control. Circle accounts are self-custodial and yield is generated through secure off-chain treasuries.";
+"circleDashboardUSDCDeposited" = "USDC deposited";
+"circleDashboardDepositUSDC" = "Deposit USDC";
+"circleDashboardYieldDetails" = "Circle Yield Details";
+"circleDashboardTotalRewards" = "Total Rewards";
+"circleDashboardCurrentRewards" = "Current Rewards";
+"circleDashboardETHRequired" = "ETH is required for network fees.\nAdd ETH to your deposit account to continue.";
+
+"circleDepositAmount" = "Amount";
+"circleDepositBalanceAvailable" = "Balance available:";
+"circleDepositContinue" = "Continue";
+"circleWithdrawAmount" = "Amount";
+
+"circleDepositETHTitle" = "Deposit ETH";
+"circleWithdrawETHTitle" = "Withdraw ETH";
+"circleDashboardETHandGas" = "ETH & Gas";
+"circleDashboardDepositETH" = "Deposit";
+"circleDashboardETHDeposited" = "ETH & Gas Deposited";
+"circleTransactionSuccess" = "Transaction Successful";
+"circleRowYieldAccount" = "Yield Account";
+"circleRowCreateWallet" = "Create Wallet";
+"circleRowGetStarted" = "Get Started";
+
+// Circle Error Messages
+"circleEthereumRequired" = "Ethereum Required";
+"circleEthereumRequiredDescription" = "Please add Ethereum to your vault to use Circle.";
+"circleErrorInvalidDetails" = "Invalid details";
+"circleErrorWalletNotDeployed" = "Circle wallet not yet deployed. Please try again later.";
+
 "selectChainsManually" = "Select chains manually";
 "noActiveChainsFound" = "No active chains found";
-"noActiveChainsFoundSubtitle" = "We didn’t detect any assets on this seedphrase. You can still continue and select chains manually.";
+"noActiveChainsFoundSubtitle" = "We didn’t detect any assets on this seed phrase.\nEach extra chain increases the time to generate your vault and possibility of an timeout.";
 "addCustomChains" = "Add custom chains";
+
 "yourNewVaultSetup" = "Your new vault setup";
 "yourNewVaultSetupHighlight" = "vault setup";
 "twoDevicesPlusServer" = "2 devices + server";
@@ -1142,9 +1204,13 @@
 "vaultSharesTitle" = "Vault shares, keep these safe to access your vault";
 "vaultSharesTitleHighlight" = "Vault shares";
 "whatAreVaultShares" = "What are vault shares?";
-"whatAreVaultSharesDescription" = "Instead of one seed phrase, your vault is split into pieces called vault shares. Each device holds one vault share. A single share does nothing on its own, but combining these shares gives you access to your vault. That’s why backing them up is important. Each device has one vault share, also the server, we’ll do that now.";
-"whatAreVaultSharesDescriptionHighlight" = "Each device has one vault share, also the server, we’ll do that now.";
-
+"whatAreVaultSharesDescription" = "Instead of one seed phrase, your vault is split into pieces called vault shares. Each device holds one vault share. A single share does nothing on its own, but combining these shares gives you access to your vault. That’s why backing them up is important.";
+"whatAreVaultSharesDescription2" = "Each device has one vault share, also the server, we’ll do that now.";
+"appStoreReady" = "App Store Ready";
+"appStoreReadyDescription" = "This Vault is ready to use the first self-custodial Apps to securely automate your funds!";
+"noBarcodesFound" = "No barcodes found";
+"aminoSign" = "Amino Sign";
+"directSign" = "Direct Sign";
 // LP Units Validation (Maya Bond)
 "availableLPUnits" = "Available LP Units";
 "minimumLPUnitsNeeded" = "Minimum LP Units Needed";

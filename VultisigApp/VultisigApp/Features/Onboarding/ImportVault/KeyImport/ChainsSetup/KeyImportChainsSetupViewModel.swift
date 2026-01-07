@@ -137,10 +137,8 @@ private extension KeyImportChainsSetupViewModel {
         for (chain, tokens) in groupedByChain {
             guard !Task.isCancelled else { return [] }
             
-            guard let address = generateAddress(for: chain, wallet: wallet) else {
-                continue
-            }
-
+            let address = wallet.getAddressForCoin(coin: chain.coinType).description
+            
             // Merge discovered tokens with static tokens
             let allTokens = await mergeWithDiscoveredTokens(tokens: tokens, address: address)
 

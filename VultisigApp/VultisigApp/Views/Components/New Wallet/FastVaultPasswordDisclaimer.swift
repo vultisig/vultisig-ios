@@ -74,7 +74,7 @@ struct FastVaultPasswordDisclaimer: View {
             description
         }
         .padding(16)
-        .background(Theme.colors.textLight)
+        .background(Theme.colors.textSecondary)
         .cornerRadius(12)
     }
     
@@ -100,7 +100,7 @@ struct FastVaultPasswordDisclaimer: View {
     
     var description: some View {
         Text(NSLocalizedString("moreInfoDescription", comment: ""))
-            .foregroundColor(Theme.colors.textExtraLight)
+            .foregroundColor(Theme.colors.textTertiary)
             .font(Theme.fonts.bodySMedium)
             .multilineTextAlignment(.leading)
             .lineLimit(nil)

@@ -12,7 +12,7 @@ struct ReferralVaultSelectionScreen: View {
     @Query var vaults: [Vault]
     @Environment(\.dismiss) var dismiss
     
-    @Binding var selectedVault: Vault?
+    @ObservedObject var viewModel: VaultSelectedViewModel
     
     var body: some View {
         Screen(title: "referral".localized) {
@@ -20,12 +20,12 @@ struct ReferralVaultSelectionScreen: View {
                 VStack(alignment: .leading, spacing: 14) {
                     Text("vaults".localized)
                         .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textExtraLight)
+                        .foregroundStyle(Theme.colors.textTertiary)
                     
                     VStack(spacing: 0) {
                         ForEach(vaults) { vault in
                             Button {
-                                selectedVault = vault
+                                viewModel.selectedVault = vault
                                 dismiss()
                             } label: {
                                 vaultRow(vault: vault)
@@ -34,7 +34,7 @@ struct ReferralVaultSelectionScreen: View {
                                 .showIf(vault != vaults.last)
                         }
                     }
-                    .background(Theme.colors.bgSecondary)
+                    .background(Theme.colors.bgSurface1)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
             }
@@ -54,7 +54,7 @@ struct ReferralVaultSelectionScreen: View {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
-        .background(isSelected(vault: vault) ? Theme.colors.bgTertiary : Theme.colors.bgSecondary)
+        .background(isSelected(vault: vault) ? Theme.colors.bgSurface2 : Theme.colors.bgSurface1)
     }
     
     
@@ -68,6 +68,6 @@ struct ReferralVaultSelectionScreen: View {
     }
     
     func isSelected(vault: Vault) -> Bool {
-        vault == selectedVault
+        vault == viewModel.selectedVault
     }
 }

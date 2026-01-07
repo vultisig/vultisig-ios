@@ -68,7 +68,8 @@ struct OnboardingSummaryView: View {
                 .disabled(!didAgree)
                 
             }
-            .background(BlurredBackground().opacity(0.5))
+            .padding(.top, isMacOS ? 0 : 32)
+            .background(BlurredBackground())
             .onAppear {
                 setData()
             }
@@ -85,7 +86,7 @@ struct OnboardingSummaryView: View {
                 }
             }
         }
-        .applySheetSize(700, kind == .keyImport ? 750 : 650)
+        .applySheetSize(700, kind == .fast ? 650 : 750)
     }
     
     var animation: some View {
@@ -114,8 +115,7 @@ struct OnboardingSummaryView: View {
 
     var disclaimerLabel: some View {
         HStack(spacing: 8) {
-            Image(systemName: didAgree ? "checkmark.circle" : "circle")
-                .foregroundColor(Theme.colors.alertInfo)
+            Checkbox(isChecked: $didAgree, isExtended: false)
 
             Text(NSLocalizedString("secureVaultSummaryDiscalimer", comment: ""))
                 .foregroundColor(Theme.colors.textPrimary)
@@ -155,6 +155,7 @@ struct OnboardingSummaryView: View {
     private func setData() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             animationVM = RiveViewModel(fileName: kind.animation)
+            animationVM?.fit = .layout
         }
     }
 }

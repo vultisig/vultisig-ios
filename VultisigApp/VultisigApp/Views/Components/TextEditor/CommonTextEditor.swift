@@ -64,7 +64,7 @@ struct CommonTextEditor: View {
                 }
                 if value.isEmpty {
                     Text(placeholder)
-                        .foregroundColor(Theme.colors.textExtraLight)
+                        .foregroundColor(Theme.colors.textTertiary)
                         .font(Theme.fonts.bodyMMedium)
                         .padding(.leading, 6)
                         .padding(.top, isMacOS ? 0 : 8)
@@ -76,7 +76,7 @@ struct CommonTextEditor: View {
                         HStack {
                             Spacer()
                             Text(accessory)
-                                .foregroundColor(Theme.colors.textExtraLight)
+                                .foregroundColor(Theme.colors.textTertiary)
                                 .font(Theme.fonts.caption12)
                         }
                     }
@@ -85,7 +85,7 @@ struct CommonTextEditor: View {
             .frame(height: 120)
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(Theme.colors.bgSecondary)
+            .background(Theme.colors.bgSurface1)
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
@@ -118,7 +118,7 @@ struct CommonTextEditor: View {
             value = ""
         } label: {
             Image(systemName: "xmark.circle.fill")
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
         }
     }
 }

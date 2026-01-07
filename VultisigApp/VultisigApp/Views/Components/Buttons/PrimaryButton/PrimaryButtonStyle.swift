@@ -115,6 +115,8 @@ private extension PrimaryButtonStyle {
             } else {
                 return Theme.colors.bgButtonPrimary.opacity(isPressed ? 0.7 : 1)
             }
+        case .outline:
+            return .clear
         }
     }
     
@@ -125,6 +127,8 @@ private extension PrimaryButtonStyle {
         switch type {
         case .primarySuccess:
             return Theme.colors.textButtonDark
+        case .outline:
+            return Theme.colors.textPrimary
         default:
             return Theme.colors.textPrimary
         }
@@ -141,6 +145,12 @@ private extension PrimaryButtonStyle {
             } else {
                 return Theme.colors.bgButtonTertiary
             }
+        case .outline:
+             if !isEnabled {
+                 return Theme.colors.bgButtonTertiary.opacity(0.6)
+             } else {
+                 return Theme.colors.bgButtonTertiary
+             }
         }
     }
     
@@ -148,6 +158,7 @@ private extension PrimaryButtonStyle {
         switch type {
         case .primary, .alert, .primarySuccess: return 0
         case .secondary: return 1
+        case .outline: return 1
         }
     }
 }

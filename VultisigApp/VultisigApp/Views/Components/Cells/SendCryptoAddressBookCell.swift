@@ -44,7 +44,7 @@ struct SendCryptoAddressBookCell: View {
             
             Text(description)
                 .font(Theme.fonts.caption12)
-                .foregroundColor(Theme.colors.textLight)
+                .foregroundColor(Theme.colors.textSecondary)
                 .lineLimit(1)
                 .truncationMode(.middle)
         }

@@ -54,11 +54,12 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
     @ViewBuilder
     var rectangle: some View {
         let height = contentHeight - cellHeight / 2 + 1.5
-        Rectangle()
-            .frame(width: 3, height: height)
-            .foregroundColor(Theme.colors.borderLight)
-            .offset(x: 1)
-            .showIf(height.isFinite && height > 0)
+        if height.isFinite && height > 0 {
+            Rectangle()
+                .frame(width: 3, height: height)
+                .foregroundColor(Theme.colors.borderLight)
+                .offset(x: 1)
+        }
     }
 
     var content: some View {
@@ -120,7 +121,7 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
             cellContent(index)
                 .padding(16)
                 .frame(height: cellHeight)
-                .background(Theme.colors.bgSecondary)
+                .background(Theme.colors.bgSurface1)
                 .cornerRadius(16)
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)

@@ -76,7 +76,7 @@ struct LookingForDevicesLoader: View {
             Text(NSLocalizedString("shouldOnlyTakeAMinute...", comment: ""))
                 .font(Theme.fonts.bodySMedium)
         }
-        .foregroundColor(Theme.colors.textLight)
+        .foregroundColor(Theme.colors.textSecondary)
     }
     
     var loader: some View {

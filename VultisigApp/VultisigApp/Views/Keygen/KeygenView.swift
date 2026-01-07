@@ -25,7 +25,7 @@ struct KeygenView: View {
     let keyImportInput: KeyImportInput?
     let isInitiateDevice: Bool
     @Binding var hideBackButton: Bool
-        
+    
     @StateObject var viewModel = KeygenViewModel()
     
     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
@@ -38,54 +38,79 @@ struct KeygenView: View {
     @State var showVerificationView = false
     @State var vaultCreatedAnimationVM: RiveViewModel? = nil
     @State var checkmarkAnimationVM: RiveViewModel? = nil
+    @State var keygenAnimationVM: RiveViewModel? = nil
+    @State var keygenAnimationVMInstance: RiveDataBindingViewModel.Instance?
+    @State var displayedProgress: Float = 0
+    @State var progressAnimationTimer: Timer?
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var context
+    @Environment(\.router) var router
     
     var body: some View {
         content
             .sensoryFeedback(.success, trigger: showDoneText)
             .sensoryFeedback(.error, trigger: showError)
             .sensoryFeedback(.impact(weight: .heavy), trigger: viewModel.status)
-            .navigationDestination(isPresented: $viewModel.isLinkActive) {
-                switch tssType {
-                case .Keygen, .Reshare:
-                    if let fastSignConfig, showVerificationView {
-                        FastBackupVaultOverview(
-                            tssType: tssType,
-                            vault: vault,
-                            email: fastSignConfig.email
-                        )
-                    } else {
-                        SecureBackupVaultOverview(vault: vault)
-                    }
-                case .Migrate:
-                    VaultBackupNowScreen(
-                        tssType: tssType,
-                        backupType: .single(vault: vault),
-                        isNewVault: true
-                    )
-                case .KeyImport:
-                    KeyImportOverviewScreen(
-                        vault: vault,
-                        email: fastSignConfig?.email,
-                        keyImportInput: keyImportInput
-                    )
-                }
+            .onChange(of: viewModel.isLinkActive) { _, isActive in
+                guard isActive else { return }
+                handleNavigation()
             }
             .onAppear {
                 hideBackButton = true
                 vaultCreatedAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
                 checkmarkAnimationVM = RiveViewModel(fileName: "CreatingVaultCheckmark", autoPlay: true)
+                keygenAnimationVM = RiveViewModel(
+                    fileName: "keygen_animation",
+                    autoPlay: true,
+                )
+                keygenAnimationVM?.fit = .layout
+                keygenAnimationVM?.layoutScaleFactor = RiveViewModel.layoutScaleFactorAutomatic
+                keygenAnimationVM?.riveModel?.enableAutoBind { instance in
+                    keygenAnimationVMInstance = instance
+                }
             }
             .onDisappear {
                 vaultCreatedAnimationVM?.stop()
+                progressAnimationTimer?.invalidate()
+                progressAnimationTimer = nil
             }
+            .onChange(of: keygenAnimationVMInstance) { oldValue, instance in
+                let connected = instance?.booleanProperty(fromPath: "Connected")
+                connected?.value = true
+            }
+    }
+    
+    private func handleNavigation() {
+        switch tssType {
+        case .Keygen, .Reshare:
+            if let fastSignConfig, showVerificationView {
+                router.navigate(to: KeygenRoute.fastBackupOverview(
+                    tssType: tssType,
+                    vault: vault,
+                    email: fastSignConfig.email
+                ))
+            } else {
+                router.navigate(to: KeygenRoute.secureBackupOverview(vault: vault))
+            }
+        case .Migrate:
+            router.navigate(to: KeygenRoute.backupNow(
+                tssType: tssType,
+                backupType: .single(vault: vault),
+                isNewVault: true
+            ))
+        case .KeyImport:
+            router.navigate(to: KeygenRoute.keyImportOverview(
+                vault: vault,
+                email: fastSignConfig?.email,
+                keyImportInput: keyImportInput
+            ))
+        }
     }
     
     var container: some View {
         ZStack {
-            fields
+            states
                 .opacity(tssType == .Migrate ? 0 : 1)
             
             if tssType == .Migrate {
@@ -98,35 +123,6 @@ struct KeygenView: View {
         }
     }
     
-    var fields: some View {
-        VStack(spacing: 12) {
-            Spacer()
-            if showProgressRing {
-                if progressCounter<4 {
-                    title
-                }
-                states
-            }
-            Spacer()
-            
-            if progressCounter < 4 {
-                if viewModel.status == .KeygenFailed {
-                    ErrorView(
-                        type: .alert,
-                        title: "keygenFailedErrorMessage".localized,
-                        description: "",
-                        buttonTitle: "tryAgain".localized
-                    ) {
-                        dismiss()
-                    }
-                    .padding(.horizontal, isMacOS ? 40 : 20)
-                } else {
-                    progressContainer
-                }
-            }
-        }
-    }
-    
     var migrateView: some View {
         UpgradingVaultView()
     }
@@ -134,77 +130,35 @@ struct KeygenView: View {
     var states: some View {
         ZStack {
             switch viewModel.status {
-            case .CreatingInstance:
-                preparingVaultText
-            case .KeygenECDSA:
-                generatingECDSAText
-            case .KeygenEdDSA:
-                generatingEdDSAText
-            case .ReshareECDSA:
-                reshareECDSAText
-            case .ReshareEdDSA:
-                reshareEdDSAText
+            case .CreatingInstance,
+                    .KeygenECDSA,
+                    .KeygenEdDSA,
+                    .ReshareECDSA,
+                    .ReshareEdDSA:
+                keygenAnimationVM?.view()
+                    .ignoresSafeArea()
+                    .readSize { size in
+                        let posXcircles = keygenAnimationVMInstance?.numberProperty(fromPath: "posXcircles")
+                        posXcircles?.value = Float(size.width / 2)
+                    }
+                    .onChange(of: viewModel.progress) { _, newValue in
+                        animateProgress(to: newValue)
+                    }
+                    .onAppear {
+                        #if os(iOS)
+                        HapticFeedbackManager.shared.playAHAPFile(named: "keygen_animation_haptic", looping: true)
+                        #endif
+                    }
+                    .onDisappear {
+                        #if os(iOS)
+                        HapticFeedbackManager.shared.stopAHAPPlayback()
+                        #endif
+                    }
             case .KeygenFinished:
                 doneText
             case .KeygenFailed:
                 keygenFailedView
             }
-        }
-    }
-    
-    var title: some View {
-        Text(NSLocalizedString("whileYouWait", comment: "KEYGEN"))
-            .foregroundColor(Theme.colors.textExtraLight)
-            .font(Theme.fonts.bodyMMedium)
-    }
-    
-    var preparingVaultText: some View {
-        KeygenStatusText(
-            gradientText: "preparingVaultText1",
-            plainText: "preparingVaultText2"
-        )
-        .onAppear {
-            progressCounter = 1
-        }
-    }
-    
-    var generatingECDSAText: some View {
-        KeygenStatusText(
-            gradientText: "generatingECDSAText1",
-            plainText: "generatingECDSAText2"
-        )
-        .onAppear {
-            progressCounter = 2
-        }
-    }
-    
-    var generatingEdDSAText: some View {
-        KeygenStatusText(
-            gradientText: "generatingEdDSAText1",
-            plainText: "generatingEdDSAText2"
-        )
-        .onAppear {
-            progressCounter = 3
-        }
-    }
-    
-    var reshareECDSAText: some View {
-        KeygenStatusText(
-            gradientText: "",
-            plainText: "reshareECDSA"
-        )
-        .onAppear {
-            progressCounter = 2
-        }
-    }
-    
-    var reshareEdDSAText: some View {
-        KeygenStatusText(
-            gradientText: "",
-            plainText: "reshareEdDSA"
-        )
-        .onAppear {
-            progressCounter = 3
         }
     }
     
@@ -360,6 +314,47 @@ struct KeygenView: View {
         if fastSignConfig != nil {
             showVerificationView = true
         }
+    }
+
+    private func animateProgress(to targetValue: Float) {
+        progressAnimationTimer?.invalidate()
+
+        let duration: TimeInterval = 3.0
+        let frameRate: TimeInterval = 1.0 / 60.0
+        let totalSteps = Int(duration / frameRate)
+        let startValue = displayedProgress
+        let delta = targetValue - startValue
+
+        guard delta != 0, totalSteps > 0 else {
+            displayedProgress = targetValue
+            updateRiveProgress(targetValue)
+            return
+        }
+
+        var currentStep = 0
+
+        progressAnimationTimer = Timer.scheduledTimer(withTimeInterval: frameRate, repeats: true) { timer in
+            currentStep += 1
+            let progress = Float(currentStep) / Float(totalSteps)
+            // Ease-out curve for smoother deceleration
+            let easedProgress = 1 - pow(1 - progress, 3)
+            let newValue = startValue + delta * easedProgress
+
+            displayedProgress = newValue
+            updateRiveProgress(newValue)
+
+            if currentStep >= totalSteps {
+                timer.invalidate()
+                progressAnimationTimer = nil
+                displayedProgress = targetValue
+                updateRiveProgress(targetValue)
+            }
+        }
+    }
+
+    private func updateRiveProgress(_ value: Float) {
+        let progressProperty = keygenAnimationVMInstance?.numberProperty(fromPath: "progessPercentage")
+        progressProperty?.value = value
     }
 }
 

@@ -10,8 +10,8 @@ import SwiftUI
 struct GroupedChainCellView: View {
     @ObservedObject var group: GroupedChain
     let vault: Vault
-    var fiatBalance: () -> String
-    var cryptoBalance: () -> String
+    let fiatBalance: String
+    let cryptoBalance: String
     var onCopy: (() -> Void)?
     
     @State private var trailingSubtitle: String = ""
@@ -24,8 +24,8 @@ struct GroupedChainCellView: View {
     init(
         group: GroupedChain,
         vault: Vault,
-        fiatBalance: @escaping () -> String,
-        cryptoBalance: @escaping () -> String,
+        fiatBalance: String,
+        cryptoBalance: String,
         onCopy: (() -> Void)? = nil
     ) {
         self.group = group
@@ -54,8 +54,8 @@ struct GroupedChainCellView: View {
                             HStack(spacing: 4) {
                                 Text(group.truncatedAddress)
                                     .font(Theme.fonts.caption12)
-                                    .foregroundStyle(Theme.colors.textExtraLight)
-                                Icon(named: "copy", color: Theme.colors.textExtraLight, size: 12)
+                                    .foregroundStyle(Theme.colors.textTertiary)
+                                Icon(named: "copy", color: Theme.colors.textTertiary, size: 12)
                             }
                         }.buttonStyle(.plain)
                     }
@@ -73,7 +73,7 @@ struct GroupedChainCellView: View {
                         }
                     Text(trailingSubtitle)
                         .font(trailingSubtitleFont)
-                        .foregroundStyle(Theme.colors.textExtraLight)
+                        .foregroundStyle(Theme.colors.textTertiary)
                         .if(hasLoaded) {
                             $0.contentTransition(.numericText())
                         }
@@ -83,10 +83,10 @@ struct GroupedChainCellView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .buttonStyle(.plain)
         .onLoad(perform: updateTexts)
-        .onChange(of: group.coins.totalBalanceInFiatDecimal) { _, _ in
+        .onChange(of: fiatBalance) { _, _ in
             updateTexts()
         }
         .onChange(of: homeViewModel.hideVaultBalance) { _, _ in
@@ -108,7 +108,7 @@ private extension GroupedChainCellView {
     
     func updateTrailingSubtitle() {
         let showPrice = group.coins.count > 1
-        let trailingSubtitle = showPrice ? "\(group.coins.count) \("assets".localized)" : cryptoBalance()
+        let trailingSubtitle = showPrice ? "\(group.coins.count) \("assets".localized)" : cryptoBalance
         withAnimation(.interpolatingSpring) {
             self.trailingSubtitle = homeViewModel.hideVaultBalance ? String.hideBalanceText : trailingSubtitle
             self.trailingSubtitleFont = (showPrice && !homeViewModel.hideVaultBalance) ? Theme.fonts.priceCaption : Theme.fonts.caption12
@@ -117,7 +117,7 @@ private extension GroupedChainCellView {
     
     func updateFiatBalanceText() {
         withAnimation(.interpolatingSpring) {
-            fiatBalanceText = homeViewModel.hideVaultBalance ? String.hideBalanceText : fiatBalance()
+            fiatBalanceText = homeViewModel.hideVaultBalance ? String.hideBalanceText : fiatBalance
         }
     }
 }
@@ -126,8 +126,8 @@ private extension GroupedChainCellView {
     GroupedChainCellView(
         group: .example,
         vault: .example,
-        fiatBalance: { "" },
-        cryptoBalance: { "" },
+        fiatBalance: "",
+        cryptoBalance: "",
         onCopy: {}
     ).environmentObject(HomeViewModel())
 }

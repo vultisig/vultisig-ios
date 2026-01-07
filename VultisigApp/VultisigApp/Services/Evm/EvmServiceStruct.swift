@@ -31,6 +31,46 @@ struct EvmServiceStruct {
             return String(balance)
         }
     }
+
+    func getCode(address: String) async throws -> String {
+        return try await rpcService.strRpcCall(method: "eth_getCode", params: [address, "latest"])
+    }
+    
+    /// Fetches the owner of a contract using ERC-173 owner() function
+    /// Returns nil if the contract doesn't implement owner() or call fails
+    func fetchContractOwner(contractAddress: String) async -> String? {
+        // owner() function selector: 0x8da5cb5b
+        let data = "0x8da5cb5b"
+        
+        let params: [Any] = [
+            ["to": contractAddress, "data": data],
+            "latest"
+        ]
+        
+        do {
+            let result = try await rpcService.strRpcCall(method: "eth_call", params: params)
+            
+            // Result should be a 32-byte hex string (64 chars + 0x prefix)
+            // The address is in the last 20 bytes (40 chars)
+            let cleanedHex = result.stripHexPrefix()
+            
+            guard cleanedHex.count >= 40 else {
+                return nil
+            }
+            
+            // Extract the last 40 characters (20 bytes = address)
+            let addressHex = String(cleanedHex.suffix(40))
+            
+            // Check if it's a zero address
+            if addressHex == String(repeating: "0", count: 40) {
+                return "0x0000000000000000000000000000000000000000"
+            }
+            
+            return "0x" + addressHex
+        } catch {
+            return nil
+        }
+    }
     
     // MARK: - Gas Operations
     
@@ -173,34 +213,7 @@ struct EvmServiceStruct {
         
         return try await rpcService.intRpcCall(method: "eth_call", params: params)
     }
-    
-    func fetchTRC20TokenBalance(contractAddress: String, walletAddress: String) async throws -> BigInt {
-        // Add "41" prefix after padding with zeros
-        let paddedWalletAddress = "0000000000000000000000" + walletAddress.dropFirst(2)
-        
-        // Prepare the data field using the function signature of `balanceOf(address)`
-        let data = "0x70a08231" + paddedWalletAddress
-        
-        // Build the params for the RPC call
-        let fromAddress = "0x" + walletAddress.dropFirst(4) // Keep "0x", remove "41"
-        let toAddress = "0x" + contractAddress.dropFirst(4) // Keep "0x", remove "41"
-        
-        let params: [Any] = [
-            [
-                "from": fromAddress,
-                "to": toAddress,
-                "gas": "0x0",
-                "gasPrice": "0x0",
-                "value": "0x0",
-                "data": data
-            ],
-            "latest"
-        ]
-        
-        // Call the RPC method
-        return try await rpcService.intRpcCall(method: "eth_call", params: params)
-    }
-    
+
     func fetchAllowance(contractAddress: String, owner: String, spender: String) async throws -> BigInt {
         let paddedOwner = String(owner.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")
         let paddedSpender = String(spender.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")

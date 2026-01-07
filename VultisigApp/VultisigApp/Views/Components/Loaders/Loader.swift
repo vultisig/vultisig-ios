@@ -31,7 +31,7 @@ struct Loader: View {
                 .foregroundColor(Theme.colors.textPrimary)
         }
         .frame(width: 180, height: 120)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(10)
     }
 }
@@ -53,7 +53,7 @@ struct SpinningLineLoader: View {
         ZStack {
             // Blue background circle
             Circle()
-                .fill(Theme.colors.bgSecondary) // Using hex value for blue600
+                .fill(Theme.colors.bgSurface1) // Using hex value for blue600
                 .frame(width: 32, height: 32)
             
             // White spinning arc - much shorter like in SwapRefreshQuoteCounter
@@ -86,7 +86,7 @@ struct SwapLoader: View {
         SpinningLineLoader()
             .scaleEffect(1.2)
             .frame(width: 60, height: 60)
-            .background(Theme.colors.bgSecondary.opacity(0.9))
+            .background(Theme.colors.bgSurface1.opacity(0.9))
             .cornerRadius(12)
     }
 }

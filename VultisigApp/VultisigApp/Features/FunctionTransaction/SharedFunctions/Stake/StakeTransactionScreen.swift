@@ -50,15 +50,15 @@ struct StakeTransactionScreen: View {
         if let message = viewModel.gasReservationMessage {
             HStack(spacing: 8) {
                 Image(systemName: "info.circle")
-                    .foregroundColor(Theme.colors.textExtraLight)
+                    .foregroundColor(Theme.colors.textTertiary)
                     .font(Theme.fonts.caption12)
                 Text(message)
                     .font(Theme.fonts.caption12)
-                    .foregroundColor(Theme.colors.textExtraLight)
+                    .foregroundColor(Theme.colors.textTertiary)
                 Spacer()
             }
             .padding(12)
-            .background(Theme.colors.bgSecondary)
+            .background(Theme.colors.bgSurface1)
             .cornerRadius(8)
         }
     }

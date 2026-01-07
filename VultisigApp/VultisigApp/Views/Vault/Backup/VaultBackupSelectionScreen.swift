@@ -8,7 +8,7 @@
 import SwiftData
 import SwiftUI
 
-enum VaultBackupType {
+enum VaultBackupType: Hashable {
     case single(vault: Vault)
     case multiple(vaults: [Vault], selectedVault: Vault)
     
@@ -34,12 +34,14 @@ enum VaultBackupType {
 
 struct VaultBackupSelectionScreen: View {
     @Query var vaults: [Vault]
-    
+
+    @Environment(\.router) var router
+
     let selectedVault: Vault
-    
+
     var vaultsToShow: Int { 5 }
     var moreVaultsCount: Int { vaults.count - vaultsToShow }
-    
+
     var body: some View {
         Screen {
             ScrollView {
@@ -50,11 +52,11 @@ struct VaultBackupSelectionScreen: View {
                             .foregroundStyle(Theme.colors.textPrimary)
                         Text("selectVaultsToBackUpSubtitle".localized)
                             .font(Theme.fonts.bodySMedium)
-                            .foregroundStyle(Theme.colors.textExtraLight)
+                            .foregroundStyle(Theme.colors.textTertiary)
                             .multilineTextAlignment(.leading)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    
+
                     VStack(spacing: 16) {
                         backupTypeContainer(type: .single(vault: selectedVault))
                         backupTypeContainer(type: .multiple(vaults: vaults, selectedVault: selectedVault))
@@ -63,10 +65,14 @@ struct VaultBackupSelectionScreen: View {
             }
         }
     }
-    
+
     func backupTypeContainer(type: VaultBackupType) -> some View {
-        NavigationLink {
-            VaultBackupPasswordOptionsScreen(tssType: .Keygen, backupType: type)
+        Button {
+            router.navigate(to: VaultRoute.backupPasswordOptions(
+                tssType: .Keygen,
+                backupType: type,
+                isNewVault: false
+            ))
         } label: {
             backupTypeRow(type: type)
         }
@@ -77,14 +83,14 @@ struct VaultBackupSelectionScreen: View {
             HStack {
                 Text(title(for: type))
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                 Spacer()
-                Icon(named: "chevron-right", color: Theme.colors.textExtraLight)
+                Icon(named: "chevron-right", color: Theme.colors.textTertiary)
             }
             switch type {
             case .single(let vault):
                 vaultRow(vault: vault)
-                    .background(Theme.colors.bgSecondary)
+                    .background(Theme.colors.bgSurface1)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             case .multiple(let vaults, _):
                 VStack(alignment: .center, spacing: 12) {
@@ -95,7 +101,7 @@ struct VaultBackupSelectionScreen: View {
                                 .showIf(vault != vaults.last)
                         }
                     }
-                    .background(Theme.colors.bgSecondary)
+                    .background(Theme.colors.bgSurface1)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     
                     Text(String(format: "plusMore".localized, moreVaultsCount))

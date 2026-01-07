@@ -25,11 +25,11 @@ struct OpenButton: View {
         HStack(spacing: 10) {
             Image(systemName: buttonIcon)
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.bgSecondary)
+                .foregroundColor(Theme.colors.bgSurface1)
             
             Text(NSLocalizedString(buttonLabel, comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.bgSecondary)
+                .foregroundColor(Theme.colors.bgSurface1)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
         }

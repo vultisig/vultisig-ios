@@ -13,13 +13,15 @@ import CodeScanner
 #endif
 
 struct AddressFieldAccessoryStack: View {
+    @Environment(\.router) var router
     let coin: Coin
     var onResult: (AddressResult?) -> Void
-    
+
     @State var showScanner = false
     @State var showImagePicker = false
     @State var isUploading: Bool = false
     @State var showAddressBookSheet: Bool = false
+    @State var scannerResultId: UUID? = nil
     
 #if os(iOS)
     @State var selectedImage: UIImage?
@@ -55,8 +57,7 @@ struct AddressFieldAccessoryStack: View {
         .crossPlatformSheet(isPresented: $showScanner) {
             AddressQRCodeScannerView(
                 showScanner: $showScanner,
-                onAddress: { onResult(.init(address: $0)) },
-                handleScan: handleScan
+                onAddress: { handleScan(result: $0) }
             )
         }
         #else
@@ -75,12 +76,20 @@ struct AddressFieldAccessoryStack: View {
         .onDrop(of: [.image], isTargeted: $isUploading) { providers -> Bool in
             OnDropQRUtils.handleOnDrop(providers: providers, handleImageQrCode: handleImageQrCode)
         }
-        .navigationDestination(isPresented: $showScanner) {
-            MacAddressScannerView(
-                showCameraScanView: $showScanner,
-                selectedVault: nil
-            ) {
-               onResult($0)
+        .onChange(of: showScanner) { _, shouldNavigate in
+            if shouldNavigate {
+                let resultId = UUID()
+                scannerResultId = resultId
+                router.navigate(to: KeygenRoute.macAddressScanner(
+                    selectedVault: nil,
+                    resultId: resultId
+                ))
+                showScanner = false
+            } else if let resultId = scannerResultId,
+                      let result = ScannerResultManager.shared.getResult(for: resultId) {
+                onResult(result)
+                ScannerResultManager.shared.clearResult(for: resultId)
+                scannerResultId = nil
             }
         }
         #endif
@@ -95,15 +104,9 @@ struct AddressFieldAccessoryStack: View {
 
 #if os(iOS)
 private extension AddressFieldAccessoryStack {
-    func handleScan(result: Result<ScanResult, ScanError>) {
-        switch result {
-        case .success(let result):
-            onResult(.fromURI(result.string))
-            showScanner = false
-        case .failure(let err):
-            print("fail to scan QR code,error:\(err.localizedDescription)")
-            break
-        }
+    func handleScan(result: String) {
+        onResult(.fromURI(result))
+        showScanner = false
     }
     
     func processImage() {

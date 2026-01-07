@@ -54,10 +54,10 @@ struct ChooseBackupSheetView: View, BottomSheetProperties {
                         .foregroundStyle(Theme.colors.textPrimary)
                     Text(subtitle)
                         .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textLight)
+                        .foregroundStyle(Theme.colors.textSecondary)
                 }
                 Spacer()
-                Icon(named: "chevron-right", color: Theme.colors.textLight, size: 16)
+                Icon(named: "chevron-right", color: Theme.colors.textSecondary, size: 16)
             }
             .containerStyle(padding: 16)
         }

@@ -16,7 +16,7 @@ extension KeygenView {
             .navigationTitle(NSLocalizedString(tssType == .Migrate ? "" : "creatingVault", comment: ""))
             .navigationBarTitleDisplayMode(.inline)
             .onLoad {
-                Task{
+                Task {
                     await setData()
                     await viewModel.startKeygen(context: context)
                 }
@@ -27,11 +27,6 @@ extension KeygenView {
             .onDisappear {
                 UIApplication.shared.isIdleTimerDisabled = false
             }
-    }
-    
-    var progressContainer: some View {
-        KeygenProgressContainer(progressCounter: progressCounter)
-            .padding(.bottom, idiom == .phone ? 10 : 50)
     }
 }
 #endif

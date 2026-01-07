@@ -511,6 +511,27 @@ class Endpoint {
         return "\(vultisigApiProxy)/coingeicko/api/v3/onchain/networks/\(network)/tokens/multi/\(addresses)"
     }
     
+    static func fetchEthereumTransactions(_ userAddress: String) -> String {
+        "https://sepolia.etherscan.io/tx/\(userAddress)"
+    }
+    
+    // MARK: - Circle MSCA Endpoints
+    
+    static let circleApiBase = "\(vultisigApiProxy)/circle"
+    
+    // GET /wallet?refId=...
+    static func fetchCircleWallets(refId: String) -> String {
+        "\(circleApiBase)/wallet?refId=\(refId)"
+    }
+    
+    // POST /create
+    static func createCircleWallet() -> String {
+        "\(circleApiBase)/create" 
+    }
+    
+    // Note: Balance and Yield are not available via this proxy.
+    // We must use standard EVM RPC calls to the wallet address.
+    
     static func fetchBitcoinTransactions(_ userAddress: String) -> String {
         "https://mempool.space/api/address/\(userAddress)/txs"
     }
@@ -683,37 +704,7 @@ class Endpoint {
         return "https://scan.li.fi/tx/\(txid)"
     }
     
-    static let tronServiceRpc = "https://tron-rpc.publicnode.com"
-    
-    static let broadcastTransactionTron = "https://tron-rpc.publicnode.com/wallet/broadcasttransaction"
-    
-    static let fetchBlockNowInfoTron = "https://tron-rpc.publicnode.com/wallet/getnowblock"
-    
-    static func fetchAccountInfoTron() -> String {
-        "https://tron-rpc.publicnode.com/wallet/getaccount"
-    }
-    
-    static func triggerConstantContractTron() -> String {
-        "https://api.vultisig.com/tron/wallet/triggerconstantcontract"
-    }
-    
-    static func triggerSolidityConstantContractTron() -> String {
-        "https://api.vultisig.com/tron/walletsolidity/triggerconstantcontract"
-    }
-    
     static let tronEvmServiceRpc = "https://api.vultisig.com/tron/jsonrpc"
-    
-    static func getChainParametersTron() -> String {
-        "\(tronServiceRpc)/wallet/getchainparameters"
-    }
-    
-    static func getAccountResourceTron() -> String {
-        "\(tronServiceRpc)/wallet/getaccountresource"
-    }
-    
-    static func getAccountTron() -> String {
-        "\(tronServiceRpc)/wallet/getaccount"
-    }
     
     // Cardano endpoints - Using Koios API (free, open source, no API key required)
     static let cardanoServiceRpc = "https://api.koios.rest/api/v1"

@@ -8,26 +8,23 @@
 import SwiftUI
 
 struct UpgradeVaultViewModifier: ViewModifier {
+    @Environment(\.router) var router
     let vault: Vault
     @Binding var shouldShow: Bool
-    
-    @State var upgradeYourVaultLinkActive: Bool = false
-    
+
     func body(content: Content) -> some View {
         content
             .crossPlatformSheet(isPresented: $shouldShow) {
                 UpgradeYourVaultView(
                     showSheet: $shouldShow,
-                    navigationLinkActive: $upgradeYourVaultLinkActive
+                    onUpgrade: {
+                        router.navigate(to: VaultRoute.upgradeVault(
+                            vault: vault,
+                            isFastVault: vault.isFastVault
+                        ))
+                    }
                 )
             }
-            .navigationDestination(isPresented: $upgradeYourVaultLinkActive, destination: {
-                if vault.isFastVault {
-                    VaultShareBackupsView(vault: vault)
-                } else {
-                    AllDevicesUpgradeView(vault: vault)
-                }
-            })
     }
 }
 

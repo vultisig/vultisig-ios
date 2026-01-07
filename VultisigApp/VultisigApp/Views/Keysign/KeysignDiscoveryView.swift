@@ -61,6 +61,8 @@ struct KeysignDiscoveryView: View {
         GridItem(.adaptive(minimum: 300, maximum: 500), spacing: 8)
     ]
     
+    var localModeAvailable: Bool { vault.libType != .KeyImport }
+    
     var body: some View {
         container
     }
@@ -111,13 +113,10 @@ struct KeysignDiscoveryView: View {
     var waitingForDevices: some View {
         ZStack(alignment: .bottom) {
             orientedContent
-            button
+            switchLink
+                .background(Theme.colors.bgPrimary)
+                .showIf(localModeAvailable)
         }
-    }
-    
-    var button: some View {
-        switchLink
-            .background(Theme.colors.bgPrimary)
     }
     
     var portraitContent: some View {

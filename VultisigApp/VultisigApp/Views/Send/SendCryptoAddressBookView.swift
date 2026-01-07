@@ -129,14 +129,14 @@ struct SendCryptoAddressBookView: View {
     var errorMessage: some View {
         Text(NSLocalizedString("noSavedAddresses", comment: ""))
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textLight)
+            .foregroundColor(Theme.colors.textSecondary)
             .padding(.top, 32)
     }
     
     private func getCell(for title: String, isSelected: Bool) -> some View {
         Text(NSLocalizedString(title, comment: ""))
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textLight)
+            .foregroundColor(Theme.colors.textSecondary)
             .frame(maxWidth: .infinity)
             .frame(height: 42)
             .background(isSelected ? Theme.colors.bgButtonTertiary : .clear)

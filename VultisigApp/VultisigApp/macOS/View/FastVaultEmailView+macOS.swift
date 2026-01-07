@@ -13,9 +13,6 @@ extension FastVaultEmailView {
         ZStack {
             Background()
             view
-                .navigationDestination(isPresented: $isLinkActive) {
-                    FastVaultSetPasswordView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: email, fastVaultExist: fastVaultExist)
-                }
         }
         .crossPlatformToolbar(showsBackButton: !backButtonHidden)
     }
@@ -39,7 +36,7 @@ extension FastVaultEmailView {
     func textfield(title: String, text: Binding<String>) -> some View {
         HStack {
             TextField("", text: text, prompt: Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption12)
             )
             .font(Theme.fonts.bodyMRegular)
@@ -55,7 +52,7 @@ extension FastVaultEmailView {
             }
         }
         .padding(12)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(12)
         .autocorrectionDisabled()
         .borderlessTextFieldStyle()

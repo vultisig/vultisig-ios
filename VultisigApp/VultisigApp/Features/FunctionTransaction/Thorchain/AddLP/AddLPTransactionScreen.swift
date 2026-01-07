@@ -47,7 +47,7 @@ struct AddLPTransactionScreen: View {
                         .foregroundColor(Theme.colors.textPrimary)
                     Text(viewModel.asymmetricDepositMessage)
                         .font(Theme.fonts.caption12)
-                        .foregroundColor(Theme.colors.textExtraLight)
+                        .foregroundColor(Theme.colors.textTertiary)
                 }
                 Spacer()
             }

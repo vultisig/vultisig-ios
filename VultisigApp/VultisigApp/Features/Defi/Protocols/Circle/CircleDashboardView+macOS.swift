@@ -1,0 +1,81 @@
+//
+//  CircleDashboardView+macOS.swift
+//  VultisigApp
+//
+//  Created by Enrique Souza on 2025-12-11.
+//
+
+import SwiftUI
+
+#if os(macOS)
+extension CircleDashboardView {
+    var content: some View {
+        ZStack {
+            VaultMainScreenBackground()
+            
+            VStack(spacing: 0) {
+                headerView
+                
+                ScrollView {
+                    VStack(spacing: CircleConstants.Design.verticalSpacing) {
+                        topBanner
+                        
+                        headerDescription
+                        
+                        if showInfoBanner {
+                            infoBanner
+                        }
+                        
+                        if let error = model.error {
+                            InfoBannerView(
+                                description: error.localizedDescription,
+                                type: .error,
+                                leadingIcon: nil,
+                                onClose: {
+                                    withAnimation { model.error = nil }
+                                }
+                            )
+                        }
+                        
+                        usdcDepositedCard
+                    }
+                    .padding(.top, CircleConstants.Design.mainViewTopPadding)
+                    .padding(.bottom, CircleConstants.Design.mainViewBottomPadding)
+                    .padding(.horizontal, CircleConstants.Design.horizontalPadding)
+                }
+            }
+        }
+        .onAppear {
+            Task { await loadData() }
+        }
+        .navigationBarBackButtonHidden(true)
+    }
+    
+    var headerDescription: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(NSLocalizedString("circleDashboardDeposited", comment: "Deposited"))
+                .font(.headline)
+                .foregroundStyle(Theme.colors.textPrimary)
+            
+            Text(NSLocalizedString("circleDashboardDepositDescription", comment: "Deposit your $USDC..."))
+                .font(.body)
+                .foregroundStyle(Theme.colors.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+
+    }
+    
+    var infoBanner: some View {
+        InfoBannerView(
+            description: NSLocalizedString("circleDashboardInfoText", comment: "Funds remain..."),
+            type: .info,
+            leadingIcon: nil,
+            onClose: {
+                withAnimation { showInfoBanner = false }
+            }
+        )
+
+    }
+}
+#endif

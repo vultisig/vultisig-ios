@@ -1,5 +1,5 @@
 //
-//  ReferralLaunchView.swift
+//  ReferralInitialScreen.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2025-05-29.
@@ -7,14 +7,15 @@
 
 import SwiftUI
 
-struct ReferralLaunchView: View {
-    @ObservedObject var referredViewModel: ReferredViewModel
-    @ObservedObject var referralViewModel: ReferralViewModel
+struct ReferralInitialScreen: View {
+    @StateObject var referredViewModel = ReferredViewModel()
+    @StateObject var referralViewModel = ReferralViewModel()
     
     @StateObject var keyboardObserver = KeyboardObserver()
     @State var scrollViewProxy: ScrollViewProxy?
     @State var screenHeight: CGFloat = 0
-    
+    @Environment(\.router) var router
+
     private let referralSavePercentage: String = "10%"
     private let referralSavePercentage2: String = "20%"
     private let scrollToReferenceId = "scrollTo"
@@ -126,7 +127,7 @@ struct ReferralLaunchView: View {
 
 // MARK: - Referred
 
-private extension ReferralLaunchView {
+private extension ReferralInitialScreen {
     var referredCodeButton: some View {
         PrimaryButton(title: referredViewModel.referredButtonTitle, type: .secondary) {
             Task { @MainActor in
@@ -148,7 +149,7 @@ private extension ReferralLaunchView {
 
 // MARK: - Referral
 
-private extension ReferralLaunchView {
+private extension ReferralInitialScreen {
     var referralContent: some View {
         VStack(spacing: 16) {
             referralTitle
@@ -175,19 +176,19 @@ private extension ReferralLaunchView {
     }
     
     var createReferralButton: some View {
-        PrimaryNavigationButton(title: "createReferral") {
-            ReferralTransactionFlowScreen(referralViewModel: referralViewModel, isEdit: false)
+        PrimaryButton(title: "createReferral") {
+            router.navigate(to: ReferralRoute.createReferral(selectedVaultViewModel: VaultSelectedViewModel()))
         }
     }
     
     var editReferralButton: some View {
-        PrimaryNavigationButton(title: "editReferral") {
-            ReferralMainScreen(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
+        PrimaryButton(title: "editReferral") {
+            router.navigate(to: ReferralRoute.main)
         }
     }
 }
 
 #Preview {
-    ReferralLaunchView(referredViewModel: ReferredViewModel(), referralViewModel: ReferralViewModel())
+    ReferralInitialScreen()
         .environmentObject(AppViewModel())
 }

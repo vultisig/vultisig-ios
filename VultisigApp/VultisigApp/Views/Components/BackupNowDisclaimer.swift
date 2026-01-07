@@ -9,20 +9,22 @@ import SwiftUI
 
 struct BackupNowDisclaimer: View {
     let vault: Vault
-    
+
+    @Environment(\.router) var router
+
     var body: some View {
-        container
-            .listRowInsets(EdgeInsets())
-            .listRowSeparator(.hidden)
-            .padding(1)
-    }
-    
-    var navigationCell: some View {
-        NavigationLink {
-            VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: vault))
+        Button {
+            router.navigate(to: VaultRoute.backupPasswordOptions(
+                tssType: .Keygen,
+                backupType: .single(vault: vault),
+                isNewVault: false
+            ))
         } label: {
-            content
-        }
+            container
+                .listRowInsets(EdgeInsets())
+                .listRowSeparator(.hidden)
+                .padding(1)
+        }.buttonStyle(.plain)   
     }
     
     var content: some View {

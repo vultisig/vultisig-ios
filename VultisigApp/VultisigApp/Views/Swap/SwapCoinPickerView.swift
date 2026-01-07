@@ -79,7 +79,7 @@ struct SwapCoinPickerView: View {
                 GradientListSeparator()
                 Text("selectChain".localized)
                     .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .showIf(showSelectChainHeader)
                     .animation(.easeInOut.delay(0.4), value: showSelectChainHeader)
                 chainCarousel
@@ -114,7 +114,7 @@ struct SwapCoinPickerView: View {
             
             Text(NSLocalizedString("loading", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.top, 48)
@@ -191,7 +191,7 @@ struct SwapCoinPickerView: View {
                             .frame(height: 28)
                         Text(chain.name)
                             .font(Theme.fonts.caption12)
-                            .foregroundColor(isSelected ? Theme.colors.textPrimary : Theme.colors.textExtraLight)
+                            .foregroundColor(isSelected ? Theme.colors.textPrimary : Theme.colors.textTertiary)
                             .fixedSize(horizontal: true, vertical: false)
                             .minimumScaleFactor(0.5)
                     }
@@ -199,7 +199,7 @@ struct SwapCoinPickerView: View {
                     .frame(width: itemSize)
                     .background(
                         Capsule()
-                            .strokeBorder(Theme.colors.bgTertiary, lineWidth: 1)
+                            .strokeBorder(Theme.colors.bgSurface2, lineWidth: 1)
                             .fill(Theme.colors.bgPrimary)
                     )
                     .padding(.horizontal, 4)

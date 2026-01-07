@@ -86,7 +86,7 @@ struct ReceiveChainSelectionScreen: View {
             }
             .padding(.horizontal, 22)
             .padding(.vertical, 12)
-            .background(Theme.colors.bgSecondary)
+            .background(Theme.colors.bgSurface1)
         }
     }
     

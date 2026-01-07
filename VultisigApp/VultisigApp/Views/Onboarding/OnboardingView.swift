@@ -11,7 +11,7 @@ import RiveRuntime
 struct OnboardingView: View {
     
     @EnvironmentObject var appViewModel: AppViewModel
-    
+    @Environment(\.router) var router
     @State var tabIndex = 0
     
     @State var showOnboarding = false
@@ -59,6 +59,7 @@ struct OnboardingView: View {
         .crossPlatformSheet(isPresented: $showSummary) {
             OnboardingSummaryView(kind: .initial, isPresented: $showSummary, onDismiss: {
                 appViewModel.showOnboarding = false
+                router.navigate(to: OnboardingRoute.setupQRCode(tssType: .Keygen, vault: nil))
             })
         }
     }
@@ -92,7 +93,7 @@ struct OnboardingView: View {
                 Rectangle()
                     .frame(height: 2)
                     .frame(maxWidth: .infinity)
-                    .foregroundColor(index <= tabIndex ? Theme.colors.bgButtonPrimary : Theme.colors.bgTertiary)
+                    .foregroundColor(index <= tabIndex ? Theme.colors.bgButtonPrimary : Theme.colors.bgSurface2)
                     .animation(.easeInOut, value: tabIndex)
             }
         }
@@ -112,7 +113,7 @@ struct OnboardingView: View {
             skipTapped()
         } label: {
             Text(NSLocalizedString("skip", comment: ""))
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
                 .font(Theme.fonts.bodySMedium)
         }
     }

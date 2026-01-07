@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ReshareView: View {
+    @Environment(\.router) var router
     let vault: Vault
 
     @State var showJoinReshare = false
@@ -44,7 +45,7 @@ struct ReshareView: View {
 
             Text(NSLocalizedString("reshareLabelSubtitle", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textLight)
+                .foregroundColor(Theme.colors.textSecondary)
                 .multilineTextAlignment(.center)
         }
         .padding(.horizontal, 36)
@@ -63,24 +64,25 @@ struct ReshareView: View {
     }
     
     var startReshareButton: some View {
-        PrimaryNavigationButton(title: "startReshare") {
-            PeerDiscoveryView(
+        PrimaryButton(title: "startReshare") {
+            router.navigate(to: KeygenRoute.peerDiscovery(
                 tssType: .Reshare,
                 vault: vault,
                 selectedTab: .secure,
-                fastSignConfig: nil
-            )
+                fastSignConfig: nil,
+                keyImportInput: nil
+            ))
         }
     }
     
     var startReshareVultisignerButton: some View {
-        PrimaryNavigationButton(title: "startFastVaultReshare", type: .secondary) {
-            FastVaultEmailView(
+        PrimaryButton(title: "startFastVaultReshare", type: .secondary) {
+            router.navigate(to: KeygenRoute.fastVaultEmail(
                 tssType: .Reshare,
                 vault: vault,
                 selectedTab: .secure,
                 fastVaultExist: viewModel.isFastVault
-            )
+            ))
         }
     }
 }

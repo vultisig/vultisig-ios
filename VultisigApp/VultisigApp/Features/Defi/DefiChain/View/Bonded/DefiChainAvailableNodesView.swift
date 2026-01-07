@@ -18,7 +18,7 @@ struct DefiChainAvailableNodesView: View {
             ExpandableView(isExpanded: $isExpanded) {
                 HStack {
                     Text("availableNodes".localized)
-                        .foregroundStyle(Theme.colors.textLight)
+                        .foregroundStyle(Theme.colors.textSecondary)
                         .font(Theme.fonts.bodySMedium)
                     Spacer()
                     
@@ -49,7 +49,7 @@ struct DefiChainAvailableNodesView: View {
         VStack(spacing: 14) {
             HStack {
                 Text(String(format: "nodeAddress".localized, node.address.truncatedAddress))
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
                 Spacer()
                 BondNodeStateView(state: node.state)

@@ -21,7 +21,7 @@ enum KeygenStatus {
     case KeygenFailed
 }
 
-struct KeyImportInput {
+struct KeyImportInput: Hashable {
     let mnemonic: String
     let chains: [Chain]
 }
@@ -44,6 +44,7 @@ class KeygenViewModel: ObservableObject {
     @Published var isLinkActive = false
     @Published var keygenError: String = ""
     @Published var status = KeygenStatus.CreatingInstance
+    @Published var progress: Float = 0.0
     
     private var tssService: TssServiceImpl? = nil
     private var tssMessenger: TssMessengerImpl? = nil
@@ -168,9 +169,13 @@ class KeygenViewModel: ObservableObject {
         }
     }
     
-    // TODO: - Update UI state to show current progress
     func startKeyImportKeygen(modelContext: ModelContext) async throws {
         var wallet: HDWallet?
+        
+        let steps = 2 + (keyImportInput?.chains.count ?? 0)
+        let stepPercentage: Float = 100.0 / Float(steps)
+        
+        await addProgress(stepPercentage)
         if self.isInitiateDevice {
             guard let keyImportInput else {
                 throw HelperError.runtimeError("Key import keygen should have keyImportInput")
@@ -190,6 +195,7 @@ class KeygenViewModel: ObservableObject {
         }
         
         for chain in chains {
+            await addProgress(stepPercentage)
             var chainKey: Data?
             if isInitiateDevice {
                 chainKey = wallet?.getKeyForCoin(coin: chain.coinType).data
@@ -231,6 +237,7 @@ class KeygenViewModel: ObservableObject {
             )
         }
         
+        await addProgress(stepPercentage)
         self.vault.signers = self.keygenCommittee
         // ensure all party created vault successfully
         let keygenVerify = KeygenVerify(serverAddr: self.mediatorURL,
@@ -323,7 +330,8 @@ class KeygenViewModel: ObservableObject {
     // Create DKLS vault via keygen or reshare
     // This function is also used for private key import , but mostly for import root private keys(both ECDSA and EdDSA)
     func startKeygenDKLS(context: ModelContext, localUIEcdsa: String? = nil, localUIEddsa: String? = nil) async {
-        do{
+        await updateProgress(50)
+        do {
             let dklsKeygen = DKLSKeygen(vault: self.vault,
                                         tssType: self.tssType,
                                         keygenCommittee: self.keygenCommittee,
@@ -345,6 +353,7 @@ class KeygenViewModel: ObservableObject {
                 try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0)
             }
             
+            await updateProgress(80)
             
             let schnorrKeygen = SchnorrKeygen(vault: self.vault,
                                               tssType: self.tssType,
@@ -367,6 +376,8 @@ class KeygenViewModel: ObservableObject {
                 self.status = .KeygenEdDSA
                 try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0)
             }
+            
+            await updateProgress(100)
             
             self.vault.signers = self.keygenCommittee
             let keyshareECDSA = dklsKeygen.getKeyshare()
@@ -607,4 +618,15 @@ class KeygenViewModel: ObservableObject {
         return try await t.value
     }
     
+    private func updateProgress(_ value: Float) async {
+        await MainActor.run {
+            self.progress = value
+        }
+    }
+    
+    private func addProgress(_ value: Float) async {
+        await MainActor.run {
+            self.progress += value
+        }
+    }
 }

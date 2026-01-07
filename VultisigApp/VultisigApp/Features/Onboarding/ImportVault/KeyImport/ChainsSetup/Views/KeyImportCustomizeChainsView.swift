@@ -29,7 +29,7 @@ struct KeyImportCustomizeChainsView: View {
         }
         .onLoad { items = Chain.enabledChains }
         .onChange(of: searchText) { _, newValue in
-            items = Chain.enabledChains.filter {
+            items = newValue.isEmpty ? Chain.enabledChains : Chain.enabledChains.filter {
                 $0.name.localizedCaseInsensitiveContains(newValue) || $0.ticker.localizedCaseInsensitiveContains(newValue)
             }
         }

@@ -46,7 +46,7 @@ struct HiddenTextField: View {
         }
         .frame(height: 56)
         .padding(.horizontal, 16)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -59,7 +59,7 @@ struct HiddenTextField: View {
             if password.isEmpty {
                 HStack {
                     Text(NSLocalizedString(placeholder, comment: ""))
-                        .foregroundColor(Theme.colors.textExtraLight)
+                        .foregroundColor(Theme.colors.textTertiary)
                     Spacer()
                 }
             }

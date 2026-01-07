@@ -78,6 +78,8 @@ private extension IconButtonStyle {
             } else {
                 return Theme.colors.bgButtonDisabled
             }
+        case .outline:
+            return .clear
         }
     }
     
@@ -90,6 +92,12 @@ private extension IconButtonStyle {
                 return Theme.colors.textButtonDark
             }
         case .secondary:
+            if !isEnabled {
+                return Theme.colors.textButtonDisabled
+            } else {
+                return Theme.colors.textPrimary
+            }
+        case .outline:
             if !isEnabled {
                 return Theme.colors.textButtonDisabled
             } else {
@@ -108,6 +116,12 @@ private extension IconButtonStyle {
             } else {
                 return Theme.colors.bgButtonTertiary
             }
+        case .outline:
+            if !isEnabled {
+                return Theme.colors.bgButtonTertiary.opacity(0.6)
+            } else {
+                return Theme.colors.bgButtonTertiary
+            }
         }
     }
     
@@ -115,6 +129,7 @@ private extension IconButtonStyle {
         switch type {
         case .primary, .alert, .primarySuccess: return 0
         case .secondary: return 1
+        case .outline: return 1
         }
     }
 }

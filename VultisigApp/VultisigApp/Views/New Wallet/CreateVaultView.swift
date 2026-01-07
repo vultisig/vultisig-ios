@@ -8,20 +8,22 @@
 import SwiftUI
 
 struct CreateVaultView: View {
+    @Environment(\.router) var router
     let selectedVault: Vault?
     var showBackButton = false
-    
+
     @State var showNewVaultButton = false
     @State var showSeparator = false
     @State var showButtonStack = false
     @State var showSheet = false
     @State var shouldJoinKeygen = false
     @State var showImportSelectionSheet: Bool = false
-    @State var showImportSeedphrase: Bool = false
-    @State var showImportVaultShare: Bool = false
-    
+    @State var navigateToScanQR = false
+    @State var navigateToGeneralQRImport = false
+
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var appViewModel: AppViewModel
+    @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     
     init(selectedVault: Vault? = nil, showBackButton: Bool = false) {
         self.selectedVault = selectedVault
@@ -33,19 +35,31 @@ struct CreateVaultView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(PrimaryBackgroundWithGradient())
         .navigationBarBackButtonHidden(showBackButton ? false : true)
-        .navigationDestination(isPresented: $showImportSeedphrase) {
-            KeyImportOnboardingScreen()
+        .onChange(of: navigateToScanQR) { _, shouldNavigate in
+            guard shouldNavigate else { return }
+            router.navigate(to: KeygenRoute.macScanner(
+                type: .NewVault,
+                sendTx: SendTransaction(),
+                selectedVault: selectedVault
+            ))
+            navigateToScanQR = false
         }
-        .navigationDestination(isPresented: $showImportVaultShare) {
-            ImportVaultShareScreen()
+        .onChange(of: navigateToGeneralQRImport) { _, shouldNavigate in
+            guard shouldNavigate else { return }
+            router.navigate(to: KeygenRoute.generalQRImport(
+                type: .NewVault,
+                selectedVault: nil,
+                sendTx: nil
+            ))
+            navigateToGeneralQRImport = false
         }
         .crossPlatformSheet(isPresented: $showImportSelectionSheet) {
             ImportVaultSelectionSheet(isPresented: $showImportSelectionSheet) {
                 showImportSelectionSheet = false
-                showImportSeedphrase = true
+                router.navigate(to: OnboardingRoute.keyImportOnboarding)
             } onVaultShare: {
                 showImportSelectionSheet = false
-                showImportVaultShare = true
+                router.navigate(to: OnboardingRoute.importVaultShare)
             }
         }
         .onLoad {
@@ -85,11 +99,11 @@ struct CreateVaultView: View {
     }
     
     var newVaultButton: some View {
-        PrimaryNavigationButton(title: "getStarted") {
+        PrimaryButton(title: "getStarted") {
             if appViewModel.showOnboarding {
-                OnboardingView()
+                router.navigate(to: OnboardingRoute.onboarding)
             } else {
-                SetupQRCodeView(tssType: .Keygen, vault: nil)
+                router.navigate(to: OnboardingRoute.setupQRCode(tssType: .Keygen, vault: nil))
             }
         }
         .opacity(showNewVaultButton ? 1 : 0)
@@ -106,19 +120,11 @@ struct CreateVaultView: View {
                 type: .secondary,
                 reserveTrailingIconSpace: true
             ) {
-                // TODO: - Remove before seed phrase import release
-                #if DEBUG
                 showImportSelectionSheet = true
-                #else
-                showImportVaultShare = true
-                #endif
             }
             
-            // TODO: - Remove before seed phrase import release
-            #if DEBUG
             newTag
                 .offset(x: 48)
-            #endif
         }
     }
     
@@ -158,4 +164,5 @@ struct CreateVaultView: View {
 #Preview {
     CreateVaultView(selectedVault: Vault.example)
         .environmentObject(AppViewModel())
+        .environmentObject(DeeplinkViewModel())
 }

@@ -11,8 +11,13 @@ import SwiftUI
 extension CreateVaultView {
     var main: some View {
         view
-            .navigationDestination(isPresented: $shouldJoinKeygen) {
-                JoinKeygenView(vault: createVault(), selectedVault: selectedVault)
+            .onChange(of: shouldJoinKeygen) { _, shouldNavigate in
+                guard shouldNavigate else { return }
+                router.navigate(to: OnboardingRoute.joinKeygen(
+                    vault: createVault(),
+                    selectedVault: selectedVault
+                ))
+                shouldJoinKeygen = false
             }
             .crossPlatformSheet(isPresented: $showSheet) {
                 GeneralCodeScannerView(
@@ -23,6 +28,19 @@ extension CreateVaultView {
                     selectedChain: .constant(nil),              // -
                     sendTX: SendTransaction()                   // -
                 )
+            }
+            .onChange(of: showSheet) { _, isShowing in
+                if !isShowing {
+                    // Sheet just closed, check for pending keygen deeplink
+                    // Note: We check tssType/jsonData instead of type because HomeScreen's
+                    // ProcessDeeplink listener resets type to nil before we can read it
+                    if deeplinkViewModel.tssType == .Keygen && deeplinkViewModel.jsonData != nil {
+                        shouldJoinKeygen = true
+                        // Clear the deeplink state to prevent unintended repeated navigation
+                        deeplinkViewModel.tssType = nil
+                        deeplinkViewModel.jsonData = nil
+                    }
+                }
             }
     }
     
@@ -43,8 +61,8 @@ extension CreateVaultView {
     }
     
     var scanMacButton: some View {
-        PrimaryNavigationButton(title: "scanQRStartScreen", leadingIcon: "qr-code", type: .secondary) {
-            GeneralQRImportMacView(type: .NewVault, selectedVault: nil) { _ in }
+        PrimaryButton(title: "scanQRStartScreen", leadingIcon: "qr-code", type: .secondary) {
+            navigateToGeneralQRImport = true
         }
     }
 }

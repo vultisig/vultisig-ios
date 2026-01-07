@@ -23,8 +23,6 @@ final class DKLSKeysign {
     let chainPath: String
     let publicKeyECDSA: String
     var messenger: DKLSMessenger? = nil
-    var keysignDoneIndicator = false
-    let keySignLock = NSLock()
     var cache = NSCache<NSString, AnyObject>()
     var signatures = [String: TssKeysignResponse]()
     let DKLS_LIB_OK: godkls.lib_error = .init(0)
@@ -52,22 +50,6 @@ final class DKLSKeysign {
     
     func getSignatures() -> [String: TssKeysignResponse] {
         return self.signatures
-    }
-    
-    func isKeysignDone() -> Bool {
-        self.keySignLock.lock()
-        defer {
-            self.keySignLock.unlock()
-        }
-        return self.keysignDoneIndicator
-    }
-    
-    func setKeysignDone(status: Bool){
-        self.keySignLock.lock()
-        defer {
-            self.keySignLock.unlock()
-        }
-        self.keysignDoneIndicator = status
     }
     
     func getKeyshareString() -> String? {
@@ -203,13 +185,7 @@ final class DKLSKeysign {
                 print("fail to get outbound message,\(result)")
             }
             if outboundMessage.count == 0 {
-                if self.isKeysignDone() {
-                    print("DKLS ECDSA keysign finished")
-                    return
-                }
-                // back off 100ms and continue
-                try await Task.sleep(for: .milliseconds(100))
-                continue
+                return
             }
             let message = outboundMessage.to_dkls_goslice()
             let encodedOutboundMessage = outboundMessage.toBase64()
@@ -223,7 +199,7 @@ final class DKLSKeysign {
                 }
                 let receiverString = String(bytes:receiverArray,encoding: .utf8)!
                 print("sending message from \(self.localPartyID) to: \(receiverString), content length:\(encodedOutboundMessage.count)")
-                try self.messenger?.send(self.localPartyID,
+                try await self.messenger?.send(self.localPartyID,
                                          to: receiverString,
                                          body: encodedOutboundMessage)
             }
@@ -308,6 +284,7 @@ final class DKLSKeysign {
             
             self.cache.setObject(NSObject(), forKey: key)
             try await deleteMessageFromServer(hash: msg.hash,messageID:messageID)
+            try await self.processDKLSOutboundMessage(handle: handle)
             // local party keysign finished
             if isFinished != 0 {
                 return true
@@ -328,12 +305,7 @@ final class DKLSKeysign {
     }
     
     func DKLSKeysignOneMessageWithRetry(attempt: UInt8, messageToSign: String) async throws {
-        setKeysignDone(status: false)
         self.cache.removeAllObjects()
-        defer {
-            setKeysignDone(status: true)
-        }
-        var task: Task<(),any Error>? = nil
         let msgHash = Utils.getMessageBodyHash(msg: messageToSign)
         let localMessenger = DKLSMessenger(mediatorUrl: self.mediatorURL,
                                            sessionID: self.sessionID,
@@ -386,14 +358,10 @@ final class DKLSKeysign {
                 dkls_sign_session_free(&handler)
             }
             let h = handler
-            task = Task{
-                try await processDKLSOutboundMessage(handle: h)
-            }
-            defer {
-                task?.cancel()
-            }
+            try await processDKLSOutboundMessage(handle: h)
             let isFinished = try await pullInboundMessages(handle: h, messageID: msgHash)
             if isFinished {
+                try await processDKLSOutboundMessage(handle: h)
                 let sig = try dklsSignSessionFinish(handle: h)
                 let resp = TssKeysignResponse()
                 resp.msg = messageToSign

@@ -10,14 +10,14 @@ import WalletCore
 
 struct ImportSeedphraseScreen: View {
     let wordsCountType = [12, 24]
-    
-    @State private var presentChainsSetup: Bool = false
+
     @State private var validationTask: Task<Void, Never>?
-    
+
     @FocusState var isFocused: Bool
     @State var mnemonicInput: String = ""
     @State var validMnemonic: Bool? = false
     @State var errorMessage: String?
+    @Environment(\.router) var router
     
     var importButtonDisabled: Bool {
         validMnemonic == false
@@ -49,7 +49,7 @@ struct ImportSeedphraseScreen: View {
                             highlight: "enterYourSeedphraseSubtitleHighlight".localized,
                             style: Theme.colors.textPrimary,
                         )
-                        .foregroundStyle(Theme.colors.textExtraLight)
+                        .foregroundStyle(Theme.colors.textTertiary)
                         .font(Theme.fonts.bodySMedium)
                         .frame(maxWidth: 300)
                         .multilineTextAlignment(.center)
@@ -105,9 +105,6 @@ struct ImportSeedphraseScreen: View {
                 validateMnemonic(cleaned)
             }
         }
-        .navigationDestination(isPresented: $presentChainsSetup) {
-            KeyImportChainsSetupScreen(mnemonic: cleanMnemonic(text: mnemonicInput))
-        }
     }
     
     func cleanMnemonic(text: String) -> String {
@@ -123,7 +120,9 @@ struct ImportSeedphraseScreen: View {
     
     func onImport() {
         guard validMnemonic == true else { return }
-        presentChainsSetup = true
+        router.navigate(to: OnboardingRoute.chainsSetup(
+            mnemonic: cleanMnemonic(text: mnemonicInput)
+        ))
     }
     
     @MainActor

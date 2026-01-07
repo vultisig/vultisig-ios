@@ -72,11 +72,11 @@ struct VaultCellView<TrailingView: View>: View {
                     Icon(named: "checkmark-2-small", color: Theme.colors.alertSuccess, size: 24)
                         .showIf(isSelected)
                     Text(vault.signerPartDescription)
-                        .foregroundStyle(Theme.colors.textExtraLight)
+                        .foregroundStyle(Theme.colors.textTertiary)
                         .font(Theme.fonts.caption12)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
-                        .background(RoundedRectangle(cornerRadius: 8).stroke(isEditing ? Theme.colors.textExtraLight : Theme.colors.borderLight))
+                        .background(RoundedRectangle(cornerRadius: 8).stroke(isEditing ? Theme.colors.textTertiary : Theme.colors.borderLight))
                         .fixedSize()
                 }
                 .showIf(showTrailingDetails && !isEditing)
@@ -90,7 +90,7 @@ struct VaultCellView<TrailingView: View>: View {
     
     var selectedBackground: some View {
         RoundedRectangle(cornerRadius: 12)
-            .fill(Theme.colors.bgSecondary)
+            .fill(Theme.colors.bgSurface1)
     }
 }
 

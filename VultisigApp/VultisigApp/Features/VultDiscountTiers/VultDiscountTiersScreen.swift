@@ -9,13 +9,13 @@ import BigInt
 import SwiftUI
 
 struct VultDiscountTiersScreen: View {
+    @Environment(\.router) var router
     @ObservedObject var vault: Vault
-    
+
     @State private var activeTier: VultDiscountTier?
     @State private var vultToken: Coin?
     @State private var showTierSheet: VultDiscountTier?
     @State private var scrollProxy: ScrollViewProxy?
-    @State private var showSwapScreen: Bool = false
     @Environment(\.openURL) var openURL
     
     private let service = VultTierService()
@@ -71,7 +71,11 @@ struct VultDiscountTiersScreen: View {
                 isPresented: Binding(get: { showTierSheet != nil }, set: { _ in showTierSheet = nil })
             ) {
                 showTierSheet = nil
-                showSwapScreen = true
+                router.navigate(to: VaultRoute.swap(
+                    fromCoin: vault.nativeCoin(for: .ethereum),
+                    toCoin: service.getVultToken(for: vault),
+                    vault: vault
+                ))
             }
         }
         .onLoad {
@@ -81,13 +85,6 @@ struct VultDiscountTiersScreen: View {
         }
         .refreshable {
             fetchVultTier()
-        }
-        .navigationDestination(isPresented: $showSwapScreen) {
-            SwapCryptoView(
-                fromCoin: vault.nativeCoin(for: .ethereum),
-                toCoin: service.getVultToken(for: vault),
-                vault: vault
-            )
         }
     }
 }

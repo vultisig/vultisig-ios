@@ -27,7 +27,7 @@ struct TabBarAccessoryButton: View {
     
     var button: some View {
         Button(action: action) {
-            Icon(named: icon, color: Theme.colors.textLight, size: 24)
+            Icon(named: icon, color: Theme.colors.textSecondary, size: 24)
                 .padding(padding ?? 20)
                 .background(Circle().fill(bgColor ?? Theme.colors.primaryAccent3))
         }

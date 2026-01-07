@@ -35,7 +35,7 @@ struct StyledTextField: View {
                 .foregroundColor(Theme.colors.textPrimary)
                 .submitLabel(.done)
                 .padding(12)
-                .background(Theme.colors.bgSecondary)
+                .background(Theme.colors.bgSurface1)
                 .cornerRadius(12)
                 .borderlessTextFieldStyle()
                 .maxLength(customBinding, maxLengthSize)

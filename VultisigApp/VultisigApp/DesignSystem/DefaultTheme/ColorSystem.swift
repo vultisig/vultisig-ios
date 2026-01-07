@@ -24,8 +24,8 @@ struct ColorSystem: ColorSystemProtocol {
     var textButtonDisabled: Color { .init(hex: "718096") }
     
     var bgPrimary: Color { .init(hex: "02122B") }
-    var bgSecondary: Color { .init(hex: "061B3A") }
-    var bgTertiary: Color { .init(hex: "11284A") }
+    var bgSurface1: Color { .init(hex: "061B3A") }
+    var bgSurface2: Color { .init(hex: "11284A") }
 
     var bgSuccess: Color { .init(hex: "042436") }
     var bgAlert: Color { .init(hex: "362B17") }
@@ -38,8 +38,8 @@ struct ColorSystem: ColorSystemProtocol {
     var primaryAccent4: Color { .init(hex: "4879FD") }
     
     var textPrimary: Color { .init(hex: "F0F4FC") }
-    var textLight: Color { .init(hex: "C9D6E8") }
-    var textExtraLight: Color { .init(hex: "8295AE") }
+    var textSecondary: Color { .init(hex: "C9D6E8") }
+    var textTertiary: Color { .init(hex: "8295AE") }
     var textDark: Color { .init(hex: "02122B") }
     
     var border: Color { .init(hex: "1B3F73") }

@@ -39,7 +39,7 @@ extension SwapPercentageButtons {
             .foregroundColor(isSelected ? Color.white : Theme.colors.textPrimary)
             .padding(.horizontal, 8)
             .padding(.vertical, 10)
-            .background(isSelected ? Theme.colors.bgPrimary : Theme.colors.bgSecondary)
+            .background(isSelected ? Theme.colors.bgPrimary : Theme.colors.bgSurface1)
             .cornerRadius(16)
     }
 }

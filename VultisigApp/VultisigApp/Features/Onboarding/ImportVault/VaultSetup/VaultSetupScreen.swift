@@ -16,13 +16,13 @@ struct VaultSetupScreen: View {
     }
     
     @StateObject var viewModel = VaultSetupViewModel()
-    
+
     @State var scrollViewProxy: ScrollViewProxy?
     @State var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?
-    @State var presentNewVaultSetupScreen = false
     @State var hintExpanded = false
     @State var referralExpanded = false
+    @Environment(\.router) var router
     
     init(tssType: TssType, keyImportInput: KeyImportInput?) {
         self.tssType = tssType
@@ -39,7 +39,6 @@ struct VaultSetupScreen: View {
             nameSection
             emailSection
             passwordSection
-                .padding(.bottom, 300)
         }
         .onLoad {
             focusedFieldBinding = .name
@@ -50,12 +49,8 @@ struct VaultSetupScreen: View {
                 focusedField = newValue
             }
         }
-        .navigationDestination(isPresented: $presentNewVaultSetupScreen) {
-            KeyImportNewVaultSetupScreen(
-                vault: viewModel.getVault(keyImportInput: keyImportInput),
-                keyImportInput: keyImportInput,
-                fastSignConfig: viewModel.fastConfig
-            )
+        .onSubmit {
+            onContinue()
         }
     }
     
@@ -77,7 +72,7 @@ struct VaultSetupScreen: View {
                         .foregroundStyle(Theme.colors.textPrimary)
                     Text("newWalletNameDescription".localized)
                         .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textExtraLight)
+                        .foregroundStyle(Theme.colors.textTertiary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
@@ -119,7 +114,7 @@ struct VaultSetupScreen: View {
                     .foregroundStyle(Theme.colors.textPrimary)
                 Text("enterVaultEmail".localized)
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                 
                 CommonTextField(
                     text: $viewModel.emailField.value,
@@ -178,9 +173,6 @@ struct VaultSetupScreen: View {
                     .focused($focusedField, equals: .hint)
                 }
             }
-            .onSubmit {
-                onContinue()
-            }
         }
     }
     
@@ -192,7 +184,7 @@ struct VaultSetupScreen: View {
         } label: {
             HStack {
                 Text(label)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.footnote)
                 Spacer()
                 Icon(named: "chevron-down-small", color: Theme.colors.textPrimary, size: 16)
@@ -218,7 +210,11 @@ struct VaultSetupScreen: View {
         }
         
         guard viewModel.validForm else { return }
-        presentNewVaultSetupScreen = true
+        router.navigate(to: OnboardingRoute.keyImportNewVaultSetup(
+            vault: viewModel.getVault(keyImportInput: keyImportInput),
+            keyImportInput: keyImportInput,
+            fastSignConfig: viewModel.fastConfig
+        ))
     }
 }
 

@@ -15,18 +15,24 @@ struct DefiChainCellView: View {
     
     private let service = DefiBalanceService()
     
-    var balanceFiat: String {
-        service.totalBalanceInFiatString(for: group.chain, vault: vault)
-    }
+    @State var balanceFiat: String = ""
     
     var body: some View {
         GroupedChainCellView(
             group: group,
             vault: vault,
-            fiatBalance: { balanceFiat },
-            cryptoBalance: { group.nativeCoin.defiBalanceStringWithTicker }
+            fiatBalance: balanceFiat,
+            cryptoBalance: group.nativeCoin.defiBalanceStringWithTicker
         )
         .buttonStyle(.plain)
+        .onAppear { updateBalance() }
+        .onChange(of: group.defiBalanceInFiatDecimal) { _, _ in
+            updateBalance()
+        }
+    }
+    
+    func updateBalance() {
+        balanceFiat = service.totalBalanceInFiatString(for: group.chain, vault: vault)
     }
 }
 

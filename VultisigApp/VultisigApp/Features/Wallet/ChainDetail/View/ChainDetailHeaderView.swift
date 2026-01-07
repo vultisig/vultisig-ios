@@ -9,7 +9,8 @@ import SwiftUI
 
 struct ChainDetailHeaderView: View {
     @ObservedObject var vault: Vault
-    @ObservedObject var group: GroupedChain
+    let nativeCoin: Coin
+    let coins: [Coin]
     var onCopy: () -> Void
     
     @EnvironmentObject var homeViewModel: HomeViewModel
@@ -25,31 +26,31 @@ struct ChainDetailHeaderView: View {
     var chainNameView: some View {
         HStack(spacing: 4) {
             AsyncImageView(
-                logo: group.logo,
+                logo: nativeCoin.chain.logo,
                 size: CGSize(width: 24, height: 24),
-                ticker: group.chain.ticker,
-                tokenChainLogo: group.chain.logo
+                ticker: nativeCoin.chain.ticker,
+                tokenChainLogo: nativeCoin.chain.logo
             )
             
-            Text(group.name)
+            Text(nativeCoin.chain.name)
                 .font(Theme.fonts.footnote)
                 .foregroundStyle(Theme.colors.textPrimary)
         }
     }
     
     var chainBalanceView: some View {
-        Text(homeViewModel.hideVaultBalance ? String.hideBalanceText : group.totalBalanceInFiatString)
+        Text(homeViewModel.hideVaultBalance ? String.hideBalanceText : coins.totalBalanceInFiatString)
             .font(Theme.fonts.priceTitle1)
             .foregroundStyle(Theme.colors.textPrimary)
             .frame(height: 47)
             .contentTransition(.numericText())
-            .animation(.interpolatingSpring, value: group.totalBalanceInFiatString)
+            .animation(.interpolatingSpring, value: coins.totalBalanceInFiatString)
     }
     
     var chainAddressView: some View {
         Button(action: onCopy) {
             HStack(spacing: 4) {
-                Text(group.truncatedAddress)
+                Text(nativeCoin.address.truncatedAddress)
                     .foregroundStyle(Color(hex: "5180FC"))
                     .font(Theme.fonts.caption12)
                 Icon(
@@ -66,5 +67,5 @@ struct ChainDetailHeaderView: View {
 }
 
 #Preview {
-    ChainDetailHeaderView(vault: .example, group: .example, onCopy: {})
+    ChainDetailHeaderView(vault: .example, nativeCoin: .example, coins: [], onCopy: {})
 }

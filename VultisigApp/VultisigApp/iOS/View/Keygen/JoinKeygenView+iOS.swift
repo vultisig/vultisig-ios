@@ -32,7 +32,7 @@ extension JoinKeygenView {
     }
     
     var main: some View {
-        VStack {
+        VStack(spacing: .zero) {
             Spacer()
             states
             Spacer()

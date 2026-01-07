@@ -31,7 +31,7 @@ struct IconCapsule: View {
     
     var titleContent: some View {
         Text(NSLocalizedString(title, comment: ""))
-            .foregroundColor(Theme.colors.textLight)
+            .foregroundColor(Theme.colors.textSecondary)
             .font(Theme.fonts.caption12)
     }
     

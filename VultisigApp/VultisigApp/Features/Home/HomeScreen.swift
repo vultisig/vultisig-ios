@@ -10,16 +10,17 @@ import SwiftUI
 import WalletCore
 
 struct HomeScreen: View {
+    @Environment(\.router) var router
     let showingVaultSelector: Bool
-    
+
     @State var showVaultSelector: Bool = false
     @State var addressToCopy: Coin?
     @State var showUpgradeVaultSheet: Bool = false
-    
+
     @State var vaults: [Vault] = []
     @State private var selectedTab: HomeTab = .wallet
     @State var vaultRoute: VaultMainRoute?
-    
+
     @State var showScanner: Bool = false
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
@@ -136,7 +137,8 @@ struct HomeScreen: View {
                                 showUpgradeVaultSheet: $showUpgradeVaultSheet,
                                 showBackupNow: $showBackupNow,
                                 showBalanceInHeader: $walletShowPortfolioHeader,
-                                shouldRefresh: $shouldRefresh
+                                shouldRefresh: $shouldRefresh,
+                                onCamera: onCamera
                             )
                         case .defi:
                             DefiMainScreen(
@@ -188,12 +190,27 @@ struct HomeScreen: View {
             .onChange(of: selectedTab) { oldValue, newValue in
                 updateHeader()
                 if newValue == .camera {
-                    selectedTab = oldValue
                     onCamera()
                 }
             }
-            .navigationDestination(item: $vaultRoute) { route in
-                buildVaultRoute(route: route, vault: selectedVault)
+            .onChange(of: appViewModel.showCamera) { _, newValue in
+                guard newValue else { return }
+                onCamera()
+                appViewModel.showCamera = false
+            }
+            .onChange(of: vaultRoute) { _, route in
+                guard let route else { return }
+
+                switch route {
+                case .settings:
+                    router.navigate(to: SettingsRoute.main(vault: selectedVault))
+                case .createVault:
+                    router.navigate(to: VaultRoute.createVault(showBackButton: true))
+                case .mainAction(let action):
+                    router.navigate(to: HomeRoute.vaultAction(action: action, sendTx: sendTx, vault: selectedVault))
+                }
+
+                vaultRoute = nil
             }
 
         applyNavigationModifiers(to: withBasicModifiers, selectedVault: selectedVault)
@@ -203,9 +220,14 @@ struct HomeScreen: View {
     private func applyNavigationModifiers<V: View>(to view: V, selectedVault: Vault) -> some View {
         view
 #if os(macOS)
-            .navigationDestination(isPresented: $showScanner) {
-                    MacScannerView(
-                        type: .SignTransaction, sendTx: sendTx, selectedVault: selectedVault)
+            .onChange(of: showScanner) { _, shouldNavigate in
+                guard shouldNavigate else { return }
+                router.navigate(to: KeygenRoute.macScanner(
+                    type: .SignTransaction,
+                    sendTx: sendTx,
+                    selectedVault: selectedVault
+                ))
+                showScanner = false
             }
 #else
             .crossPlatformSheet(isPresented: $showScanner) {
@@ -228,8 +250,13 @@ struct HomeScreen: View {
                 }
             }
 #endif
-            .navigationDestination(isPresented: $shouldJoinKeygen) {
-                JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: selectedVault)
+            .onChange(of: shouldJoinKeygen) { _, shouldNavigate in
+                guard shouldNavigate else { return }
+                router.navigate(to: OnboardingRoute.joinKeygen(
+                    vault: Vault(name: "Main Vault"),
+                    selectedVault: selectedVault
+                ))
+                shouldJoinKeygen = false
             }
             .onChange(of: shouldSendCrypto) { _, newValue in
                 guard newValue else { return }
@@ -242,18 +269,24 @@ struct HomeScreen: View {
                         coin: deeplinkChain ?? vaultDetailViewModel.selectedGroup?.nativeCoin,
                         hasPreselectedCoin: true))
             }
-            .navigationDestination(isPresented: $shouldKeysignTransaction) {
-                if let vault = appViewModel.selectedVault {
-                    JoinKeysignView(vault: vault)
-                }
+            .onChange(of: shouldKeysignTransaction) { _, shouldNavigate in
+                guard shouldNavigate, let vault = appViewModel.selectedVault else { return }
+                router.navigate(to: KeygenRoute.joinKeysign(vault: vault))
+                shouldKeysignTransaction = false
             }
-            .navigationDestination(isPresented: $shouldImportBackup) {
-                ImportVaultShareScreen()
+            .onChange(of: shouldImportBackup) { _, shouldNavigate in
+                guard shouldNavigate else { return }
+                router.navigate(to: OnboardingRoute.importVaultShare)
+                shouldImportBackup = false
             }
-            .navigationDestination(isPresented: $showBackupNow) {
-                if let vault = appViewModel.selectedVault {
-                    VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: vault))
-                }
+            .onChange(of: showBackupNow) { _, shouldNavigate in
+                guard shouldNavigate, let vault = appViewModel.selectedVault else { return }
+                router.navigate(to: KeygenRoute.backupNow(
+                    tssType: .Keygen,
+                    backupType: .single(vault: vault),
+                    isNewVault: false
+                ))
+                showBackupNow = false
             }
             .crossPlatformSheet(isPresented: $showVaultSelector) {
                 VaultManagementSheet(
@@ -315,7 +348,7 @@ extension HomeScreen {
             return
         }
         
-        appViewModel.set(selectedVault: vault,restartNavigation: false)
+        appViewModel.set(selectedVault: vault, restartNavigation: false)
         showVaultSelector = false
         // Reset first to ensure SwiftUI detects the change
         shouldKeysignTransaction = false
@@ -574,20 +607,6 @@ extension HomeScreen {
             }
         } else {
             completion()
-        }
-    }
-}
-
-extension HomeScreen {
-    @ViewBuilder
-    func buildVaultRoute(route: VaultMainRoute, vault: Vault) -> some View {
-        switch route {
-        case .settings:
-            SettingsMainScreen(vault: vault)
-        case .createVault:
-            CreateVaultView(selectedVault: appViewModel.selectedVault, showBackButton: true)
-        case .mainAction(let action):
-            VaultActionRouteBuilder().buildActionRoute(action: action, sendTx: sendTx, vault: vault)
         }
     }
 }

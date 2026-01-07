@@ -15,7 +15,7 @@ struct SendCryptoDoneHeaderView: View {
     var body: some View {
         VStack(spacing: 8) {
             Text("sent".localized)
-                .foregroundStyle(Theme.colors.textExtraLight)
+                .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption10)
             
             if let coin {
@@ -33,16 +33,16 @@ struct SendCryptoDoneHeaderView: View {
                     .foregroundColor(Theme.colors.textPrimary)
                 Text(fiatAmount)
                     .font(Theme.fonts.caption10)
-                    .foregroundColor(Theme.colors.textExtraLight)
+                    .foregroundColor(Theme.colors.textTertiary)
             }
         }
         .padding(16)
         .frame(maxWidth: .infinity)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
+                .stroke(Theme.colors.bgSurface2, lineWidth: 1)
         )
     }
 }

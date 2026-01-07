@@ -54,16 +54,27 @@ struct SendRouteBuilder {
         vault: Vault,
         hash: String,
         chain: Chain,
-        tx: SendTransaction
+        tx: SendTransaction,
+        keysignPayload: KeysignPayload?
     ) -> some View {
-        SendDoneScreen(vault: vault, hash: hash, chain: chain, tx: tx)
+        SendDoneScreen(vault: vault, hash: hash, chain: chain, tx: tx, keysignPayload: keysignPayload)
     }
-    
+
+    @ViewBuilder
+    func buildCoinPickerScreen(coins: [Coin], tx: SendTransaction) -> some View {
+        CoinPickerView(coins: coins, tx: tx)
+    }
+
+    @ViewBuilder
+    func buildTransactionDetailsScreen(input: SendCryptoContent) -> some View {
+        SendCryptoSecondaryDoneView(input: input)
+    }
+
     @ViewBuilder
     func buildBuyScreen(address: String, blockChainCode: String, coinType: String) -> some View {
         BanxaDisclaimer(url:getBuyURL(address:address, blockChainCode: blockChainCode, coinType: coinType))
     }
-    
+
     func getBuyURL(address: String, blockChainCode: String, coinType: String) -> URL {
         var components = URLComponents(string: "https://vultisig.banxa.com/")!
         components.queryItems = [
@@ -73,5 +84,5 @@ struct SendRouteBuilder {
         ]
         return components.url!
     }
-    
+
 }

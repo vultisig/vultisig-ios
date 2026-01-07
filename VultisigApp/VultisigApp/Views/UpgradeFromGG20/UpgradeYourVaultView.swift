@@ -10,7 +10,7 @@ import RiveRuntime
 
 struct UpgradeYourVaultView: View {
     @Binding var showSheet: Bool
-    @Binding var navigationLinkActive: Bool
+    let onUpgrade: () -> Void
     
     @State var animationVM: RiveViewModel? = nil
     
@@ -62,7 +62,7 @@ struct UpgradeYourVaultView: View {
     var button: some View {
         PrimaryButton(title: "upgradeNow") {
             showSheet = false
-            navigationLinkActive = true
+            onUpgrade()
         }
         .frame(width: 180)
         .padding(.vertical, 36)
@@ -78,6 +78,6 @@ struct UpgradeYourVaultView: View {
 #Preview {
     UpgradeYourVaultView(
         showSheet: .constant(true),
-        navigationLinkActive: .constant(false)
+        onUpgrade: {}
     )
 }

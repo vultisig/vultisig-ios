@@ -11,7 +11,7 @@ import SwiftUI
 extension Search {
     var textField: some View {
         TextField(NSLocalizedString("search", comment: ""), text: $searchText)
-            .foregroundColor(Theme.colors.textExtraLight)
+            .foregroundColor(Theme.colors.textTertiary)
             .font(Theme.fonts.bodySRegular)
             .borderlessTextFieldStyle()
     }

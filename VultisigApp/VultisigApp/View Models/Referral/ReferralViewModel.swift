@@ -60,10 +60,18 @@ class ReferralViewModel: ObservableObject {
     let blockchainService = BlockChainService.shared
     private let thorchainReferralService = THORChainAPIService()
     
-    private(set) var thornameDetails: THORName?
-    private(set) var currentBlockheight: UInt64 = 0
+    var thornameDetails: THORName?
+    var currentBlockheight: UInt64 = 0
     
     @Published var currentVault: Vault?
+    
+    init(
+        thornameDetails: THORName? = nil,
+        currentBlockheight: UInt64 = 0
+    ) {
+        self.thornameDetails = thornameDetails
+        self.currentBlockheight = currentBlockheight
+    }
     
     var createReferralButtonEnabled: Bool {
         availabilityStatus == .available && !isLoading
@@ -373,7 +381,8 @@ class ReferralViewModel: ObservableObject {
         return "\(collectedAssetAmount.formatForDisplay()) \(assetTicker)"
     }
     
-    func setup(tx: SendTransaction) {
+    func setup(tx: SendTransaction, defaultVault: Vault?) {
+        self.currentVault = currentVault ?? defaultVault
         let newValueFiat = tx.amountDecimal * Decimal(tx.coin.price)
         let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2) // Assuming 2 decimal places for fiat
         tx.amountInFiat = truncatedValueFiat.formatToDecimal(digits: tx.coin.decimals)

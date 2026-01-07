@@ -9,9 +9,9 @@ import SwiftUI
 
 struct KeyImportChainsSetupScreen: View {
     let mnemonic: String
-    
+
     @StateObject var viewModel = KeyImportChainsSetupViewModel()
-    @State var presentVaultSetup: Bool = false
+    @Environment(\.router) var router
     
     var body: some View {
         Screen(
@@ -27,7 +27,7 @@ struct KeyImportChainsSetupScreen: View {
                 case .activeChains:
                     KeyImportActiveChainsView(
                         activeChains: viewModel.activeChains,
-                        onImport: { presentVaultSetup = true },
+                        onImport: { presentVaultSetup() },
                         onCustomize: onCustomizeChains
                     )
                 case .noActiveChains:
@@ -35,7 +35,7 @@ struct KeyImportChainsSetupScreen: View {
                 case .customizeChains:
                     KeyImportCustomizeChainsView(
                         viewModel: viewModel,
-                        onImport: { presentVaultSetup = true }
+                        onImport: { presentVaultSetup() }
                     )
                 }
             }
@@ -43,19 +43,20 @@ struct KeyImportChainsSetupScreen: View {
         }
         .animation(.interpolatingSpring, value: viewModel.state)
         .onLoad(perform: { await viewModel.onLoad(mnemonic: mnemonic) })
-        .navigationDestination(isPresented: $presentVaultSetup) {
-            VaultSetupScreen(
-                tssType: .KeyImport,
-                keyImportInput: KeyImportInput(
-                    mnemonic: mnemonic,
-                    chains: viewModel.chainsToImport
-                )
-            )
-        }
     }
     
     func onCustomizeChains() {
         viewModel.state = .customizeChains
+    }
+    
+    func presentVaultSetup() {
+        router.navigate(to: OnboardingRoute.vaultSetup(
+            tssType: .KeyImport,
+            keyImportInput: KeyImportInput(
+                mnemonic: mnemonic,
+                chains: viewModel.chainsToImport
+            )
+        ))
     }
 }
 

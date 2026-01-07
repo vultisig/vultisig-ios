@@ -49,15 +49,15 @@ struct ReferralTransactionDetailsView: View {
             
             Text("\(referralViewModel.totalFeeFiat)")
                 .font(Theme.fonts.caption10)
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
         }
         .frame(maxWidth: .infinity)
         .padding(16)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
+                .stroke(Theme.colors.bgSurface2, lineWidth: 1)
         )
     }
     
@@ -89,11 +89,11 @@ struct ReferralTransactionDetailsView: View {
             )
         }
         .padding(24)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
+                .stroke(Theme.colors.bgSurface2, lineWidth: 1)
         )
     }
     
@@ -141,7 +141,7 @@ struct ReferralTransactionDetailsView: View {
     private func getCell(title: String, description: String, bracketValue: String? = nil, icon: String? = nil) -> some View {
         HStack(spacing: 2) {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(Theme.colors.textExtraLight)
+                .foregroundColor(Theme.colors.textTertiary)
                 .lineLimit(1)
                 .truncationMode(.tail)
             
@@ -161,7 +161,7 @@ struct ReferralTransactionDetailsView: View {
             
             if let bracketValue {
                 Text("(\(bracketValue))")
-                    .foregroundColor(Theme.colors.textExtraLight)
+                    .foregroundColor(Theme.colors.textTertiary)
                     .lineLimit(1)
                     .truncationMode(.middle)
             }

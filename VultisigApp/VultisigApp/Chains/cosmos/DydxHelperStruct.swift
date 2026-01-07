@@ -22,7 +22,8 @@ struct DydxHelperStruct {
         }
         let coin = CoinType.dydx
         
-        var message = [CosmosMessage()]
+        var messages = [WalletCore.CosmosMessage()]
+        var memo: String? = keysignPayload.memo
         
         var transactionType: VSTransactionType = .unspecified
         if let vsTransactionType = VSTransactionType(rawValue: transactionTypeRawValue) {
@@ -39,8 +40,8 @@ struct DydxHelperStruct {
                 throw HelperError.runtimeError("The vote option is invalid")
             }
             
-            message = [CosmosMessage.with {
-                $0.msgVote = CosmosMessage.MsgVote.with {
+            messages = [WalletCore.CosmosMessage.with {
+                $0.msgVote = WalletCore.CosmosMessage.MsgVote.with {
                     $0.proposalID = UInt64(proposalID)
                     $0.voter = keysignPayload.coin.address
                     $0.option = voteOption
@@ -51,37 +52,49 @@ struct DydxHelperStruct {
                 throw HelperError.runtimeError("\(keysignPayload.toAddress) is invalid")
             }
             
-            message = [CosmosMessage.with {
-                $0.sendCoinsMessage = CosmosMessage.Send.with{
-                    $0.fromAddress = keysignPayload.coin.address
-                    $0.amounts = [CosmosAmount.with {
-                        $0.denom = "adydx"
-                        $0.amount = String(keysignPayload.toAmount)
-                    }]
-                    $0.toAddress = keysignPayload.toAddress
-                }
-            }]
+            if let signDataMessagesResult = try CosmosSignDataBuilder.getMessages(keysignPayload: keysignPayload) {
+                messages = signDataMessagesResult.messages
+                memo = signDataMessagesResult.memo
+            } else {
+                messages = [WalletCore.CosmosMessage.with {
+                    $0.sendCoinsMessage = WalletCore.CosmosMessage.Send.with{
+                        $0.fromAddress = keysignPayload.coin.address
+                        $0.amounts = [CosmosAmount.with {
+                            $0.denom = "adydx"
+                            $0.amount = String(keysignPayload.toAmount)
+                        }]
+                        $0.toAddress = keysignPayload.toAddress
+                    }
+                }]
+            }
         }
         
-        let input = CosmosSigningInput.with {
-            $0.publicKey = pubKeyData
-            $0.signingMode = .protobuf
-            $0.chainID = coin.chainId
-            $0.accountNumber = accountNumber
-            $0.sequence = sequence
-            $0.mode = .sync
-            if let memo = keysignPayload.memo, transactionType != .vote {
-                $0.memo = memo
-            }
-            $0.messages = message
-            
-            $0.fee = CosmosFee.with {
+        let fee: WalletCore.CosmosFee
+        
+        if let signDataFee = try CosmosSignDataBuilder.getFee(keysignPayload: keysignPayload) {
+            fee = signDataFee
+        } else {
+            fee = WalletCore.CosmosFee.with {
                 $0.gas = 200000 // gas limit
                 $0.amounts = [CosmosAmount.with {
                     $0.denom = "adydx"
                     $0.amount = String(gas)
                 }]
             }
+        }
+        
+        let input = CosmosSigningInput.with {
+            $0.publicKey = pubKeyData
+            $0.signingMode = CosmosSignDataBuilder.getSigningMode(keysignPayload: keysignPayload)
+            $0.chainID = coin.chainId
+            $0.accountNumber = accountNumber
+            $0.sequence = sequence
+            $0.mode = .sync
+            if let memo, transactionType != .vote {
+                $0.memo = memo
+            }
+            $0.messages = messages
+            $0.fee = fee
         }
         
         return try input.serializedData()
@@ -134,11 +147,11 @@ struct DydxHelperStruct {
                                                                                  publicKeys: publicKeys)
             let output = try CosmosSigningOutput(serializedBytes: compileWithSignature)
             let serializedData = output.serialized
-            let sig = try JSONDecoder().decode(CosmosSignature.self, from: serializedData.data(using: .utf8) ?? Data())
-            let result = SignedTransactionResult(rawTransaction: serializedData, transactionHash:sig.getTransactionHash())
+            let transactionHash = CosmosSerializedParser.getTransactionHash(from: serializedData)
+            let result = SignedTransactionResult(rawTransaction: serializedData, transactionHash: transactionHash)
             return result
         } catch {
-            throw HelperError.runtimeError("fail to get signed transaction,error:\(error.localizedDescription)")
+            throw HelperError.runtimeError("fail to get signed dydx transaction,error:\(error.localizedDescription)")
         }
     }
 }

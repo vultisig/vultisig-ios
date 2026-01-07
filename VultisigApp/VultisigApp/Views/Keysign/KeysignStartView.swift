@@ -65,7 +65,7 @@ struct KeysignStartView: View {
                 .padding(.leading)
         }
         .font(Theme.fonts.bodySMedium)
-        .foregroundColor(Theme.colors.textExtraLight)
+        .foregroundColor(Theme.colors.textTertiary)
     }
 }
 

@@ -10,9 +10,10 @@ import RiveRuntime
 
 struct AllDevicesUpgradeView: View {
     let vault: Vault
-    
+
     @State var animationVM: RiveViewModel? = nil
-    
+    @Environment(\.router) var router
+
     var body: some View {
         ZStack {
             Background()
@@ -41,8 +42,8 @@ struct AllDevicesUpgradeView: View {
     }
     
     var button: some View {
-        PrimaryNavigationButton(title: "next") {
-            VaultShareBackupsView(vault: vault)
+        PrimaryButton(title: "next") {
+            router.navigate(to: VaultRoute.vaultShareBackups(vault: vault))
         }
         .frame(width: 120)
         .padding(.vertical, 36)

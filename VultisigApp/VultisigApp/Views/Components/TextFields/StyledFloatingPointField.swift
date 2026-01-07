@@ -48,7 +48,7 @@ struct StyledFloatingPointField: View {
             .foregroundColor(Theme.colors.textPrimary)
             .submitLabel(.done)
             .padding(12)
-            .background(Theme.colors.bgSecondary)
+            .background(Theme.colors.bgSurface1)
             .cornerRadius(12)
             .borderlessTextFieldStyle()
             .onChange(of: textFieldValue) { oldValue, newValue in

@@ -29,7 +29,7 @@ struct SwapCoinCell: View {
             content
             GradientListSeparator()
         }
-        .background(isSelected ? Theme.colors.bgTertiary : Theme.colors.bgSecondary)
+        .background(isSelected ? Theme.colors.bgSurface2 : Theme.colors.bgSurface1)
     }
     
     var content: some View {
@@ -49,7 +49,7 @@ struct SwapCoinCell: View {
             logo: coin.logo,
             size: CGSize(width: 32, height: 32),
             ticker: coin.ticker,
-            tokenChainLogo: coin.chain.logo
+            tokenChainLogo: !coin.isNativeToken ? coin.chain.logo : nil
         )
     }
     
@@ -61,13 +61,13 @@ struct SwapCoinCell: View {
     
     var chain: some View {
         Text(coin.chain.name)
-            .foregroundColor(Theme.colors.textLight)
+            .foregroundColor(Theme.colors.textSecondary)
             .font(Theme.fonts.caption10)
             .padding(.vertical, 8)
             .padding(.horizontal, 12)
             .overlay(
                 RoundedRectangle(cornerRadius: 24)
-                    .stroke(Theme.colors.bgTertiary, lineWidth: 1)
+                    .stroke(Theme.colors.bgSurface2, lineWidth: 1)
             )
     }
     
@@ -79,7 +79,7 @@ struct SwapCoinCell: View {
                     .foregroundColor(Theme.colors.textPrimary)
                 
                 Text(balanceFiat)
-                    .foregroundColor(Theme.colors.textExtraLight)
+                    .foregroundColor(Theme.colors.textTertiary)
             }
             .font(Theme.fonts.caption12)
         }

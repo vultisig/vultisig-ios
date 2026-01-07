@@ -9,17 +9,17 @@ import SwiftUI
 import SwiftData
 
 struct AddressBookView: View {
+    @Environment(\.router) var router
     var shouldReturnAddress = true
     @Binding var returnAddress: String
-    
+
     @Query var savedAddresses: [AddressBookItem]
-    
-    @State var showAddAddress = false
+
     @State var title: String = ""
     @State var address: String = ""
     @State var isEditing = false
     @State var coin: Coin?
-    
+
     @Environment(\.modelContext) var modelContext
     
     var savedAddressesEmpty: Bool { savedAddresses.isEmpty }
@@ -46,9 +46,6 @@ struct AddressBookView: View {
                     .showIf(!savedAddressesEmpty)
             }
         }
-        .navigationDestination(isPresented: $showAddAddress) {
-            AddAddressBookScreen()
-        }
         .onDisappear {
             withAnimation {
                 isEditing = false
@@ -64,7 +61,7 @@ struct AddressBookView: View {
                 .multilineTextAlignment(.center)
             Text("addressBookEmptySubtitle".localized)
                 .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textExtraLight)
+                .foregroundStyle(Theme.colors.textTertiary)
                 .multilineTextAlignment(.center)
             
             addAddressButton
@@ -108,7 +105,7 @@ struct AddressBookView: View {
     
     var addAddressButton: some View {
         PrimaryButton(title: "addAddress".localized) {
-            showAddAddress = true
+            router.navigate(to: SettingsRoute.addAddressBook())
         }
     }
     

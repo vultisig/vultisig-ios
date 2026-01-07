@@ -23,8 +23,6 @@ final class SchnorrKeysign {
     let localPartyID: String
     let publicKeyEdDSA: String
     var messenger: DKLSMessenger? = nil
-    var keysignDoneIndicator = false
-    let keySignLock = NSLock()
     var cache = NSCache<NSString, AnyObject>()
     var signatures = [String: TssKeysignResponse]()
     var keyshare:[UInt8] = []
@@ -50,22 +48,6 @@ final class SchnorrKeysign {
     
     func getSignatures() -> [String: TssKeysignResponse] {
         return self.signatures
-    }
-    
-    func isKeysignDone() -> Bool {
-        self.keySignLock.lock()
-        defer {
-            self.keySignLock.unlock()
-        }
-        return self.keysignDoneIndicator
-    }
-    
-    func setKeysignDone(status: Bool){
-        self.keySignLock.lock()
-        defer {
-            self.keySignLock.unlock()
-        }
-        self.keysignDoneIndicator = status
     }
     
     func getKeyshareString() -> String? {
@@ -182,13 +164,7 @@ final class SchnorrKeysign {
                 print("fail to get outbound message")
             }
             if outboundMessage.count == 0 {
-                if self.isKeysignDone() {
-                    print("EdDSA keysign finished")
-                    return
-                }
-                // back off 100ms and continue
-                try await Task.sleep(for: .milliseconds(100))
-                continue
+                return
             }
             let message = outboundMessage.to_dkls_goslice()
             let encodedOutboundMessage = outboundMessage.toBase64()
@@ -202,7 +178,7 @@ final class SchnorrKeysign {
                 }
                 let receiverString = String(bytes:receiverArray,encoding: .utf8)!
                 print("sending message from \(self.localPartyID) to: \(receiverString), content length:\(encodedOutboundMessage.count)")
-                try self.messenger?.send(self.localPartyID,
+                try await self.messenger?.send(self.localPartyID,
                                          to: receiverString,
                                          body: encodedOutboundMessage)
             }
@@ -297,6 +273,7 @@ final class SchnorrKeysign {
             }
             self.cache.setObject(NSObject(), forKey: key)
             try await deleteMessageFromServer(hash: msg.hash,messageID:messageID)
+            try await self.processSchnorrOutboundMessage(handle:handle)
             // local party keysign finished
             if isFinished != 0 {
                 return true
@@ -317,12 +294,7 @@ final class SchnorrKeysign {
     }
     
     func KeysignOneMessageWithRetry(attempt: UInt8, messageToSign: String) async throws {
-        setKeysignDone(status: false)
         self.cache.removeAllObjects()
-        defer {
-            self.setKeysignDone(status: true)
-        }
-        var task: Task<(),any Error>? = nil
         let msgHash = Utils.getMessageBodyHash(msg: messageToSign)
         let localMessenger = DKLSMessenger(mediatorUrl: self.mediatorURL,
                                            sessionID: self.sessionID,
@@ -372,14 +344,11 @@ final class SchnorrKeysign {
                 schnorr_sign_session_free(&handler)
             }
             let h = handler
-            task = Task{
-                try await processSchnorrOutboundMessage(handle: h)
-            }
-            defer {
-                task?.cancel()
-            }
+            
+            try await processSchnorrOutboundMessage(handle: h)
             let isFinished = try await pullInboundMessages(handle: h, messageID: msgHash)
             if isFinished {
+                try await processSchnorrOutboundMessage(handle: h)
                 let sig = try SignSessionFinish(handle: h)
                 let resp = TssKeysignResponse()
                 resp.msg = messageToSign
@@ -396,7 +365,6 @@ final class SchnorrKeysign {
                                                   sessionID: self.sessionID)
                 await keySignVerify.markLocalPartyKeysignComplete(message: msgHash, sig:resp)
                 self.signatures[messageToSign] = resp
-                try await Task.sleep(for: .milliseconds(500))
             }
         }
         catch {

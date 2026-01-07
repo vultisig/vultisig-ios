@@ -90,7 +90,7 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
             
             if let subtitle {
                 Text(subtitle)
-                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
                     .multilineTextAlignment(.leading)
             }
@@ -121,7 +121,7 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
             VStack(alignment: .leading, spacing: 8) {
                 if let title = section.title, !section.assets.isEmpty {
                     Text(title)
-                        .foregroundStyle(Theme.colors.textExtraLight)
+                        .foregroundStyle(Theme.colors.textTertiary)
                         .font(Theme.fonts.footnote)
                 }
                 LazyVGrid(columns: Array.init(repeating: gridItem, count: 4), spacing: spacing) {

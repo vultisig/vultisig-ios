@@ -72,7 +72,7 @@ struct SendDetailsAdditionalSection: View {
     private func getFieldTitle(_ title: String) -> some View {
         Text(NSLocalizedString(title, comment: ""))
             .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textExtraLight)
+            .foregroundColor(Theme.colors.textTertiary)
     }
 }
 

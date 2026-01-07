@@ -55,7 +55,7 @@ struct VaultPairDetailCard: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("vaultInfo".localized)
                 .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textExtraLight)
+                .foregroundStyle(Theme.colors.textTertiary)
 
             vaultInfoRow(title: "vaultName".localized, description: vault.name)
             vaultInfoRow(title: "vaultPart".localized, description: titlePartText())
@@ -67,7 +67,7 @@ struct VaultPairDetailCard: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("keys".localized)
                 .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textExtraLight)
+                .foregroundStyle(Theme.colors.textTertiary)
 
             vaultKeyRow(title: "ECDSA".localized, description: vault.pubKeyECDSA)
             vaultKeyRow(title: "EdDSA".localized, description: vault.pubKeyEdDSA)
@@ -80,7 +80,7 @@ struct VaultPairDetailCard: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
                 .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textExtraLight)
+                .foregroundStyle(Theme.colors.textTertiary)
 
             LazyVGrid(
                 columns: [
@@ -124,7 +124,7 @@ struct VaultPairDetailCard: View {
                             .foregroundStyle(Theme.colors.textPrimary)
                         Text(description)
                             .font(Theme.fonts.caption12)
-                            .foregroundStyle(Theme.colors.textExtraLight)
+                            .foregroundStyle(Theme.colors.textTertiary)
                             .multilineTextAlignment(.leading)
                     }
                     Spacer()
@@ -148,7 +148,7 @@ struct VaultPairDetailCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(signerTitle)
                         .font(Theme.fonts.footnote)
-                        .foregroundStyle(Theme.colors.textLight)
+                        .foregroundStyle(Theme.colors.textSecondary)
 
                     Text(signer)
                         .font(Theme.fonts.bodySMedium)
@@ -156,13 +156,13 @@ struct VaultPairDetailCard: View {
 
                     Text("thisDevice".localized)
                         .font(Theme.fonts.footnote)
-                        .foregroundStyle(Theme.colors.textLight)
+                        .foregroundStyle(Theme.colors.textSecondary)
                         .showIf(isLocalPary)
                 }
                 Spacer()
                 Icon(
                     named: iconName(for: signer),
-                    color: Theme.colors.textExtraLight,
+                    color: Theme.colors.textTertiary,
                     size: 24
                 )
             }

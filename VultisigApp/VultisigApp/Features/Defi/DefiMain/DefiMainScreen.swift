@@ -12,9 +12,16 @@ struct DefiMainScreen: View {
     @ObservedObject var vault: Vault
     @Binding var showBalanceInHeader: Bool
     
+    // Logic/State for Circle presence check
+    private var isCircleEnabled: Bool {
+        // Feature flag or simply always enabled as per requirements
+        return true
+    }
+    
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var settingsViewModel: SettingsViewModel
-    
+    @Environment(\.router) var router
+
     @State var scrollProxy: ScrollViewProxy?
     @State var showSearchHeader: Bool = false
     @State var focusSearch: Bool = false
@@ -39,7 +46,6 @@ struct DefiMainScreen: View {
                         DefiMainBalanceView(vault: vault)
                         Separator(color: Theme.colors.borderLight, opacity: 1)
                         bottomContentSection
-                        
                     }
                     .padding(.bottom, 32)
                     .padding(.horizontal, horizontalPadding)
@@ -92,6 +98,17 @@ struct DefiMainScreen: View {
             .transition(.opacity)
             .frame(height: 42)
             .padding(.bottom, 16)
+            
+            // Circle Protocol Entry
+            if isCircleEnabled {
+                Button {
+                    router.navigate(to: CircleRoute.main(vault: vault))
+                } label: {
+                    DefiCircleRow(vault: vault)
+                        .padding(.vertical, 4) // Spacing to match list style
+                }
+                .buttonStyle(.plain)
+            }
             
             DefiChainListView(
                 vault: vault,

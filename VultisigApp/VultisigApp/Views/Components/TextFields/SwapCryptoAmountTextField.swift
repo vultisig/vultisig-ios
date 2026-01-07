@@ -17,7 +17,7 @@ struct SwapCryptoAmountTextField: View {
     var body: some View {
         content
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Theme.colors.bgSecondary)
+            .background(Theme.colors.bgSurface1)
     }
     
     var content: some View {
@@ -53,7 +53,7 @@ struct SwapCryptoAmountTextField: View {
             .disableAutocorrection(true)
             .textFieldStyle(TappableTextFieldStyle())
             .borderlessTextFieldStyle()
-            .foregroundColor(isEnabled ? Theme.colors.textPrimary : Theme.colors.textLight)
+            .foregroundColor(isEnabled ? Theme.colors.textPrimary : Theme.colors.textSecondary)
             .multilineTextAlignment(.trailing)
     }
 }

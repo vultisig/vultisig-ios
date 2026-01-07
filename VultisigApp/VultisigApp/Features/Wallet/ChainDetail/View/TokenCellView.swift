@@ -27,10 +27,10 @@ struct TokenCellView: View {
                         .foregroundStyle(Theme.colors.textPrimary)
                     Text(Decimal(coin.price).formatToFiat())
                         .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textLight)
+                        .foregroundStyle(Theme.colors.textSecondary)
                         .padding(.vertical, 3)
                         .padding(.horizontal, 8)
-                        .background(RoundedRectangle(cornerRadius: 8).fill(Theme.colors.bgTertiary))
+                        .background(RoundedRectangle(cornerRadius: 8).fill(Theme.colors.bgSurface2))
                         .fixedSize()
                         .contentTransition(.numericText())
                         .animation(.interpolatingSpring, value: coin.price)
@@ -46,7 +46,7 @@ struct TokenCellView: View {
                         .animation(.interpolatingSpring, value: coin.balanceInFiat)
                     Text(homeViewModel.hideVaultBalance ? String.hideBalanceText : coin.balanceStringWithTicker)
                         .font(Theme.fonts.priceCaption)
-                        .foregroundStyle(Theme.colors.textExtraLight)
+                        .foregroundStyle(Theme.colors.textTertiary)
                         .contentTransition(.numericText())
                         .animation(.interpolatingSpring, value: coin.balanceStringWithTicker)
                 }
@@ -55,7 +55,7 @@ struct TokenCellView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(Theme.colors.bgSecondary)
+        .background(Theme.colors.bgSurface1)
     }
 }
 

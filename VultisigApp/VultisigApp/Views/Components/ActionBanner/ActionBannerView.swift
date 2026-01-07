@@ -42,7 +42,7 @@ struct ActionBannerView: View {
                         .font(Theme.fonts.subtitle)
                         .multilineTextAlignment(.center)
                     Text(subtitle)
-                        .foregroundStyle(Theme.colors.textExtraLight)
+                        .foregroundStyle(Theme.colors.textTertiary)
                         .font(Theme.fonts.footnote)
                         .multilineTextAlignment(.center)
                 }
@@ -54,7 +54,7 @@ struct ActionBannerView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 32)
             .frame(maxWidth: .infinity)
-            .background(RoundedRectangle(cornerRadius: 12).fill(Theme.colors.bgSecondary))
+            .background(RoundedRectangle(cornerRadius: 12).fill(Theme.colors.bgSurface1))
         }
         .clipShape(
             .rect(

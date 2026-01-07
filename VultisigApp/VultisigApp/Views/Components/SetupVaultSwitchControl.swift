@@ -26,14 +26,14 @@ struct SetupVaultSwitchControl: View {
             }
         }
         .padding(6)
-        .background(Theme.colors.bgTertiary)
+        .background(Theme.colors.bgSurface2)
         .cornerRadius(100)
         .frame(height: 56)
     }
     
     func capsule(width: CGFloat) -> some View {
         RoundedRectangle(cornerRadius: 100)
-            .foregroundColor(Theme.colors.bgSecondary)
+            .foregroundColor(Theme.colors.bgSurface1)
             .frame(width: width / 2)
             .offset(x: selectedTab == .fast ? 0 : width / 2)
     }
