@@ -18,16 +18,20 @@ struct DefiChainCellView: View {
     @State var balanceFiat: String = ""
     
     var body: some View {
-        GroupedChainCellView(
-            group: group,
-            vault: vault,
-            fiatBalance: balanceFiat,
-            cryptoBalance: group.nativeCoin.defiBalanceStringWithTicker
-        )
-        .buttonStyle(.plain)
-        .onAppear { updateBalance() }
-        .onChange(of: group.defiBalanceInFiatDecimal) { _, _ in
-            updateBalance()
+        if group.name == "Circle" {
+             DefiCircleRow(vault: vault)
+        } else {
+            GroupedChainCellView(
+                group: group,
+                vault: vault,
+                fiatBalance: balanceFiat,
+                cryptoBalance: group.nativeCoin.defiBalanceStringWithTicker
+            )
+            .buttonStyle(.plain)
+            .onAppear { updateBalance() }
+            .onChange(of: group.defiBalanceInFiatDecimal) { _, _ in
+                updateBalance()
+            }
         }
     }
     
