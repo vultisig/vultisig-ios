@@ -32,6 +32,7 @@ final class DefiMainViewModel: ObservableObject {
                 sortedBy: \.defiBalanceInFiatDecimal
             ) { vault.defiChains.contains($0.nativeCoin.chain) && CoinAction.defiChains.contains($0.nativeCoin.chain) }
         
+        self.groups = groups
         createCircleGroup(vault: vault, groups: groups)
     }
     
@@ -49,21 +50,27 @@ final class DefiMainViewModel: ObservableObject {
             isNativeToken: false
         )
         
-        // Use CoinFactory to create the coin with correct hexPublicKey and hexChainCode
-        let circleCoin = try? CoinFactory.create(
-            asset: circleAsset,
-            publicKeyECDSA: vault.pubKeyECDSA,
-            publicKeyEdDSA: vault.pubKeyEdDSA,
-            hexChainCode: vault.hexChainCode,
-            isDerived: false
-        )
+        var circleCoin: Coin?
+        do {
+            // Use CoinFactory to create the coin with correct hexPublicKey and hexChainCode
+            circleCoin = try CoinFactory.create(
+                asset: circleAsset,
+                publicKeyECDSA: vault.pubKeyECDSA,
+                publicKeyEdDSA: vault.pubKeyEdDSA,
+                hexChainCode: vault.hexChainCode,
+                isDerived: false
+            )
+        } catch(let error) {
+            print("Error creating Circle Coin: \(error.localizedDescription)")
+            return
+        }
         
         if let circleCoin = circleCoin, !address.isEmpty {
             circleCoin.address = address
         }
         
         guard let circleCoin else {
-            self.groups = groups
+            print("Error creating Circle Coin")
             return
         }
         
