@@ -330,8 +330,8 @@ enum THORChainHelper {
             return "BSC"
         }
         
-        // For other secured assets, use the coin's chain ticker
-        return coin.chain.ticker.uppercased()
+        // For other secured assets, use the coin's ticker THOR-DOGE will return DOGE
+        return ticker
     }
     
     static func getFee(keysignPayload: KeysignPayload) throws -> WalletCore.CosmosFee {
