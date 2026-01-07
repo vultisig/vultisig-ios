@@ -39,7 +39,7 @@ final class DefiMainViewModel: ObservableObject {
         let chain: Chain = .ethereum
         let address = vault.circleWalletAddress ?? "" // If there is no address you will be able to create one, after refresh it will be updated
         
-        let circleAsset = TokensStore.TokenSelectionAssets.first(where: { $0.chain == chain && $0.contractAddress.lowercased() == CircleConstants.usdcMainnet.lowercased() }) ?? CoinMeta(
+        let circleAsset = CoinMeta(
             chain: chain,
             ticker: "USDC",
             logo: "usdc",
