@@ -52,13 +52,23 @@ final class DefiMainViewModel: ObservableObject {
         
         var circleCoin: Coin?
         do {
+            var pubKeyECDSA = vault.pubKeyECDSA
+            var isDerived = false
+            
+            if vault.libType == .KeyImport {
+                if let ethKey = vault.chainPublicKeys.first(where: { $0.chain == .ethereum })?.publicKeyHex {
+                    pubKeyECDSA = ethKey
+                    isDerived = true
+                }
+            }
+            
             // Use CoinFactory to create the coin with correct hexPublicKey and hexChainCode
             circleCoin = try CoinFactory.create(
                 asset: circleAsset,
-                publicKeyECDSA: vault.pubKeyECDSA,
+                publicKeyECDSA: pubKeyECDSA,
                 publicKeyEdDSA: vault.pubKeyEdDSA,
                 hexChainCode: vault.hexChainCode,
-                isDerived: false
+                isDerived: isDerived
             )
         } catch(let error) {
             print("Error creating Circle Coin: \(error.localizedDescription)")
