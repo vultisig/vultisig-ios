@@ -32,27 +32,20 @@ final class DefiMainViewModel: ObservableObject {
                 sortedBy: \.defiBalanceInFiatDecimal
             ) { vault.defiChains.contains($0.nativeCoin.chain) && CoinAction.defiChains.contains($0.nativeCoin.chain) }
         
-        // Add Circle Group
-        var allGroups = groups
-        let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
-        let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
-        let address = vault.circleWalletAddress ?? ""
-        
-        allGroups.insert(createCircleGroup(address: address, vault: vault, chain: chain), at: 0)
-        
-        self.groups = allGroups
+        createCircleGroup(vault: vault, groups: groups)
     }
     
-    private func createCircleGroup(address: String, vault: Vault, chain: Chain) -> GroupedChain {
-        let usdcContract = chain == .ethereumSepolia ? CircleConstants.usdcSepolia : CircleConstants.usdcMainnet
+    private func createCircleGroup(vault: Vault, groups: [GroupedChain]) {
+        let chain: Chain = .ethereum
+        let address = vault.circleWalletAddress ?? ""
         
-        let circleAsset = TokensStore.TokenSelectionAssets.first(where: { $0.chain == chain && $0.contractAddress.lowercased() == usdcContract.lowercased() }) ?? CoinMeta(
+        let circleAsset = TokensStore.TokenSelectionAssets.first(where: { $0.chain == chain && $0.contractAddress.lowercased() == CircleConstants.usdcMainnet.lowercased() }) ?? CoinMeta(
             chain: chain,
             ticker: "USDC",
             logo: "usdc",
             decimals: 6,
             priceProviderId: "usd-coin",
-            contractAddress: usdcContract,
+            contractAddress: CircleConstants.usdcMainnet,
             isNativeToken: false
         )
         
@@ -69,13 +62,22 @@ final class DefiMainViewModel: ObservableObject {
             circleCoin.address = address
         }
         
-        return GroupedChain(
+        guard let circleCoin else {
+            self.groups = groups
+            return
+        }
+        
+        let group = GroupedChain(
             chain: chain,
             address: address,
             logo: "circle-logo",
             count: 1,
-            coins: [circleCoin!],
+            coins: [circleCoin],
             name: "Circle"
         )
+        
+        var allGroups = groups
+        allGroups.insert(group, at: 0)
+        self.groups = allGroups
     }
 }
