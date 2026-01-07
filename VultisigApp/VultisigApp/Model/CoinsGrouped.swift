@@ -50,21 +50,20 @@ class GroupedChain: ObservableObject, Identifiable, Hashable {
         return defiBalanceInFiatDecimal.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
     }
 
-    var name: String {
-        return chain.name
-    }
-
+    var name: String
+    
     var nativeCoin: Coin {
         return coins.first(where: { $0.isNativeToken }) ?? coins[0]
     }
-
-    init(chain: Chain, address: String, logo: String, count: Int = 0, coins: [Coin]) {
+    
+    init(chain: Chain, address: String, logo: String, count: Int = 0, coins: [Coin], name: String? = nil) {
         self.id = chain.name + "-" + address
         self.chain = chain
         self.address = address
         self.logo = logo
         self.count = count
         self.coins = coins
+        self.name = name ?? chain.name
     }
     
     static var example = GroupedChain(chain: .bitcoin, address: "bc1psrjtwm7682v6nhx2...uwfgcfelrennd7pcvq", logo: "btc", count: 3, coins: [Coin.example])
