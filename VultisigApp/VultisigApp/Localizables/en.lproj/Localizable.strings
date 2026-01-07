@@ -1223,3 +1223,8 @@
 "invalidLPUnits" = "Invalid LP units";
 "lpUnitsExceeded" = "Exceeds available LP units (%@)";
 "lpUnitsCannotBeZero" = "LP units cannot be zero";
+// Unbond Validation (Maya Unbond)
+"bondedLPUnits" = "Bonded LP Units";
+"estimatedCacaoValue" = "Estimated Value";
+"noBondFoundForNode" = "No bond found for this node and address";
+"failedToFetchBondInfo" = "Failed to fetch bond info";
