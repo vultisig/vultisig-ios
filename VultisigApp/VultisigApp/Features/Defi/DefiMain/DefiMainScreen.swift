@@ -21,7 +21,7 @@ struct DefiMainScreen: View {
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @Environment(\.router) var router
-
+    
     @State var scrollProxy: ScrollViewProxy?
     @State var showSearchHeader: Bool = false
     @State var focusSearch: Bool = false
@@ -98,9 +98,6 @@ struct DefiMainScreen: View {
             .transition(.opacity)
             .frame(height: 42)
             .padding(.bottom, 16)
-            
-            // Circle Protocol Entry Removed - moved to list
-
             
             DefiChainListView(
                 vault: vault,
