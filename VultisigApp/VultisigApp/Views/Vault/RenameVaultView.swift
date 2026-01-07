@@ -13,11 +13,11 @@ struct RenameVaultView: View {
     let vault: Vault
     
     @State var name = ""
-    @Environment(\.dismiss) var dismiss
     @State var showAlert: Bool = false
     @State var errorMessage: String = ""
     
     @EnvironmentObject var appViewModel: AppViewModel
+    @Environment(\.router) var router
     
     var body: some View {
         Screen(title: "renameVaultTitle".localized) {
@@ -65,10 +65,10 @@ struct RenameVaultView: View {
         let oldName = vault.name
         
         vault.name = name
-        appViewModel.set(selectedVault: vault)
+        appViewModel.set(selectedVault: vault, restartNavigation: false)
         
         checkForFolder(oldName: oldName, newName: name)
-        dismiss()
+        router.navigateBack()
     }
     
     private func checkForFolder(oldName: String, newName: String) {

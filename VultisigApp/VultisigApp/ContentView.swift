@@ -8,9 +8,14 @@
 import SwiftUI
 import SwiftData
 
+enum RootRoute {
+    case home(showingVaultSelector: Bool)
+    case createVault
+}
+
 struct ContentView: View {
     @Query var vaults: [Vault]
-    
+
     @ObservedObject var navigationRouter: NavigationRouter
     @StateObject var router: VultisigRouter
     @EnvironmentObject var appViewModel: AppViewModel
@@ -18,7 +23,9 @@ struct ContentView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
-    
+
+    @State private var rootRoute: RootRoute?
+
     init(navigationRouter: NavigationRouter) {
         self.navigationRouter = navigationRouter
         self._router = StateObject(wrappedValue: VultisigRouter(navigationRouter: navigationRouter))
@@ -26,16 +33,22 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack(path: $navigationRouter.navPath) {
-            container
-                .navigationDestination(for: HomeRoute.self) { router.homeRouter.build($0) }
-                .navigationDestination(for: SendRoute.self) { router.sendRouter.build($0) }
-                .navigationDestination(for: KeygenRoute.self) { router.keygenRouter.build($0) }
-                .navigationDestination(for: VaultRoute.self) { router.vaultRouter.build($0) }
-                .navigationDestination(for: OnboardingRoute.self) { router.onboardingRouter.build($0) }
-                .navigationDestination(for: ReferralRoute.self) { router.referralRouter.build($0) }
-                .navigationDestination(for: FunctionCallRoute.self) { router.functionCallRouter.build($0) }
-                .navigationDestination(for: SettingsRoute.self) { router.settingsRouter.build($0) }
-                .navigationDestination(for: CircleRoute.self) { router.circleRouter.build($0) }
+            ZStack {
+                if appViewModel.showSplashView {
+                    splashView
+                } else {
+                    container
+                }
+            }
+            .navigationDestination(for: HomeRoute.self) { router.homeRouter.build($0) }
+            .navigationDestination(for: SendRoute.self) { router.sendRouter.build($0) }
+            .navigationDestination(for: KeygenRoute.self) { router.keygenRouter.build($0) }
+            .navigationDestination(for: VaultRoute.self) { router.vaultRouter.build($0) }
+            .navigationDestination(for: OnboardingRoute.self) { router.onboardingRouter.build($0) }
+            .navigationDestination(for: ReferralRoute.self) { router.referralRouter.build($0) }
+            .navigationDestination(for: FunctionCallRoute.self) { router.functionCallRouter.build($0) }
+            .navigationDestination(for: SettingsRoute.self) { router.settingsRouter.build($0) }
+            .navigationDestination(for: CircleRoute.self) { router.circleRouter.build($0) }
         }
         .environment(\.router, router.navigationRouter)
         .colorScheme(.dark)
@@ -50,14 +63,15 @@ struct ContentView: View {
                 handleDeeplink(incomingURL)
             }
         }
+        .overlay(appViewModel.showCover ? CoverView().ignoresSafeArea() : nil)
         .onLoad {
             if vaults.isEmpty {
-                navigationRouter.replace(to: VaultRoute.createVault(showBackButton: false))
+                appViewModel.showSplashView = false
+                rootRoute = .createVault
             } else {
                 appViewModel.loadSelectedVault(for: vaults)
             }
         }
-        .overlay(appViewModel.showCover ? CoverView().ignoresSafeArea() : nil)
         .onChange(of: appViewModel.selectedVault) { _, _ in
             guard appViewModel.restartNavigation else { return }
             navigateToHome()
@@ -68,15 +82,25 @@ struct ContentView: View {
             appViewModel.restartNavigation = false
         }
     }
-    
+
     func navigateToHome() {
-        navigationRouter.replace(to: HomeRoute.home(showingVaultSelector: appViewModel.showingVaultSelector))
+        appViewModel.showSplashView = false
+        rootRoute = .home(showingVaultSelector: appViewModel.showingVaultSelector)
+        navigationRouter.navPath = NavigationPath()
     }
-    
+
+    @ViewBuilder
     var content: some View {
-        splashView
+        switch rootRoute {
+        case .home(let showingVaultSelector):
+            router.homeRouter.build(.home(showingVaultSelector: showingVaultSelector))
+        case .createVault:
+            router.vaultRouter.build(.createVault(showBackButton: false))
+        case .none:
+            CoverView().ignoresSafeArea()
+        }
     }
-    
+
     var splashView: some View {
         WelcomeView()
             .onAppear {
