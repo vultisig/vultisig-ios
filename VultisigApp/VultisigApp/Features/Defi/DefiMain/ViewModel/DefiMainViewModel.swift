@@ -34,32 +34,47 @@ final class DefiMainViewModel: ObservableObject {
         
         // Add Circle Group
         var allGroups = groups
-        if let circleAddress = vault.circleWalletAddress, !circleAddress.isEmpty {
-            allGroups.insert(createCircleGroup(address: circleAddress), at: 0)
-        }
+        let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
+        let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
+        let address = vault.circleWalletAddress ?? ""
+        
+        allGroups.insert(createCircleGroup(address: address, vault: vault, chain: chain), at: 0)
         
         self.groups = allGroups
     }
     
-    private func createCircleGroup(address: String) -> GroupedChain {
-        let circleAsset = TokensStore.TokenSelectionAssets.first(where: { $0.chain == .ethereum && $0.ticker == "USDC" }) ?? CoinMeta(
-            chain: .ethereum,
+    private func createCircleGroup(address: String, vault: Vault, chain: Chain) -> GroupedChain {
+        let usdcContract = chain == .ethereumSepolia ? CircleConstants.usdcSepolia : CircleConstants.usdcMainnet
+        
+        let circleAsset = TokensStore.TokenSelectionAssets.first(where: { $0.chain == chain && $0.contractAddress.lowercased() == usdcContract.lowercased() }) ?? CoinMeta(
+            chain: chain,
             ticker: "USDC",
             logo: "usdc",
             decimals: 6,
             priceProviderId: "usd-coin",
-            contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            contractAddress: usdcContract,
             isNativeToken: false
         )
         
-        let circleCoin = Coin(asset: circleAsset, address: address, hexPublicKey: "")
+        // Use CoinFactory to create the coin with correct hexPublicKey and hexChainCode
+        let circleCoin = try? CoinFactory.create(
+            asset: circleAsset,
+            publicKeyECDSA: vault.pubKeyECDSA,
+            publicKeyEdDSA: vault.pubKeyEdDSA,
+            hexChainCode: vault.hexChainCode,
+            isDerived: false
+        )
+        
+        if let circleCoin = circleCoin, !address.isEmpty {
+            circleCoin.address = address
+        }
         
         return GroupedChain(
-            chain: .ethereum,
+            chain: chain,
             address: address,
             logo: "circle-logo",
             count: 1,
-            coins: [circleCoin],
+            coins: [circleCoin!],
             name: "Circle"
         )
     }
