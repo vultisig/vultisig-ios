@@ -12,10 +12,9 @@ struct ChainDetailScreen: View {
     let nativeCoin: Coin
     let vault: Vault
     @Binding var refreshTrigger: Bool
+    var onAddressCopy: ((Coin) -> Void)?
 
     @StateObject var viewModel: ChainDetailViewModel
-
-    @State private var addressToCopy: Coin?
     @State var showManageTokens: Bool = false
     @State var showSearchHeader: Bool = false
     @State var coinToShow: Coin?
@@ -47,11 +46,13 @@ struct ChainDetailScreen: View {
     init(
         nativeCoin: Coin,
         vault: Vault,
-        refreshTrigger: Binding<Bool> = .constant(false)
+        refreshTrigger: Binding<Bool> = .constant(false),
+        onAddressCopy: ((Coin) -> Void)? = nil
     ) {
         self.nativeCoin = nativeCoin
         self.vault = vault
         self._refreshTrigger = refreshTrigger
+        self.onAddressCopy = onAddressCopy
         self._viewModel = StateObject(wrappedValue: ChainDetailViewModel(vault: vault, nativeCoin: nativeCoin))
     }
     
@@ -74,7 +75,6 @@ struct ChainDetailScreen: View {
             refresh()
         }
         .background(VaultMainScreenBackground())
-        .withAddressCopy(coin: $addressToCopy)
         .crossPlatformSheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(
                 coin: nativeCoin,
@@ -83,7 +83,7 @@ struct ChainDetailScreen: View {
             ) { coin in
                 showReceiveSheet = false
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                    addressToCopy = coin
+                    onAddressCopy?(coin)
                 }
             }
         }
@@ -274,7 +274,7 @@ private extension ChainDetailScreen {
     }
     
     func onCopy() {
-        addressToCopy = nativeCoin
+        onAddressCopy?(nativeCoin)
     }
     
     func onCoinAction(_ action: VaultAction) {
