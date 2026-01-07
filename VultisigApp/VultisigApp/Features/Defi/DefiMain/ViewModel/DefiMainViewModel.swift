@@ -37,7 +37,7 @@ final class DefiMainViewModel: ObservableObject {
     
     private func createCircleGroup(vault: Vault, groups: [GroupedChain]) {
         let chain: Chain = .ethereum
-        let address = vault.circleWalletAddress ?? ""
+        let address = vault.circleWalletAddress ?? "" // If there is no address you will be able to create one, after refresh it will be updated
         
         let circleAsset = TokensStore.TokenSelectionAssets.first(where: { $0.chain == chain && $0.contractAddress.lowercased() == CircleConstants.usdcMainnet.lowercased() }) ?? CoinMeta(
             chain: chain,
