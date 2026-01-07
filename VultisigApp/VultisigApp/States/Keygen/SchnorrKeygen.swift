@@ -27,8 +27,6 @@ final class SchnorrKeygen {
     let publicKeyEdDSA: String
     let localPrivateSecret: String?
     let hexChainCode: String
-    var hasProcessInitiativeDeviceMessage = false
-    let lock = NSLock()
     
     init(vault: Vault,
          tssType: TssType,
@@ -58,27 +56,7 @@ final class SchnorrKeygen {
         self.localPrivateSecret = localUI
         self.hexChainCode = vault.hexChainCode
     }
-    func setHasProcessInitiativeDeviceMessage() {
-        self.lock.lock()
-        defer {
-            self.lock.unlock()
-        }
-        self.hasProcessInitiativeDeviceMessage = true
-    }
-    func getHasProcessInitiativeDeviceMessage() -> Bool {
-        self.lock.lock()
-        defer {
-            self.lock.unlock()
-        }
-        return self.hasProcessInitiativeDeviceMessage
-    }
-    func resetHasProcessInitiativeDeviceMessage() {
-        self.lock.lock()
-        defer {
-            self.lock.unlock()
-        }
-        self.hasProcessInitiativeDeviceMessage = false
-    }
+    
     func getKeyshare() -> DKLSKeyshare? {
         return self.keyshare
     }
@@ -182,7 +160,6 @@ final class SchnorrKeygen {
     }
     
     func pullInboundMessages(handle: goschnorr.Handle) async throws -> Bool {
-        resetHasProcessInitiativeDeviceMessage()
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(self.localPartyID)"
         print("start pulling inbound messages from:\(urlString)")
         guard let url = URL(string: urlString) else {
@@ -237,13 +214,6 @@ final class SchnorrKeygen {
             if self.cache.object(forKey: key) != nil {
                 print("message with key:\(key) has been applied before")
                 continue
-            }
-            if !self.isInitiateDevice {
-                if !self.getHasProcessInitiativeDeviceMessage() && msg.from != self.keygenCommittee[0] {
-                    continue
-                } else {
-                    self.setHasProcessInitiativeDeviceMessage()
-                }
             }
             guard let decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex) else {
                 throw HelperError.runtimeError("fail to decrypted message body")
