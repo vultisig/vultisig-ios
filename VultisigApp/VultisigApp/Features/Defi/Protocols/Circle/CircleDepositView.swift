@@ -107,7 +107,7 @@ struct CircleDepositView: View {
                     }
                     .frame(maxWidth: .infinity)
                     
-                    Text("\(Int(percentage))%")
+                    Text("\(Int(min(percentage, 100)))%")
                         .font(CircleConstants.Fonts.subtitle)
                         .foregroundStyle(Theme.colors.textSecondary)
                 }
@@ -149,16 +149,10 @@ struct CircleDepositView: View {
 
 
     var amountTextField: some View {
-        TextField("0", text: $amount)
-            .font(.system(size: 40, weight: .bold))
-            .foregroundStyle(Theme.colors.textPrimary)
-            .multilineTextAlignment(.center)
-            #if os(macOS)
-            .textFieldStyle(.plain)
-            #endif
-            .onChange(of: amount) { newValue in
-                updatePercentage(from: newValue)
-            }
+        SendCryptoAmountTextField(
+            amount: $amount,
+            onChange: { await updatePercentage(from: $0) }
+        )
     }
     
     func loadData() async {
@@ -175,13 +169,17 @@ struct CircleDepositView: View {
         }
     }
     
-    func updatePercentage(from amountStr: String) {
+    func updatePercentage(from amountStr: String) async {
         guard let coin = usdcCoin, let amountDec = Decimal(string: amountStr), coin.balanceDecimal > 0 else {
             return
         }
         let percent = (amountDec / coin.balanceDecimal) * 100
-        if abs(self.percentage - Double(truncating: percent as NSNumber)) > 0.1 {
-            self.percentage = Double(truncating: percent as NSNumber)
+        let cappedPercent = min(Double(truncating: percent as NSNumber), 100.0)
+        
+        if abs(self.percentage - cappedPercent) > 0.1 {
+            await MainActor.run {
+                self.percentage = cappedPercent
+            }
         }
     }
     
