@@ -152,7 +152,11 @@ struct DefiChainMainScreen: View {
         switch position.type {
         case .stake, .compound:
             onTransactionToPresent(
-                .unstake(coin: position.coin, defaultAutocompound: false)
+                .unstake(
+                    coin: position.coin,
+                    defaultAutocompound: false,
+                    availableToUnstake: position.availableToUnstake
+                )
             )
         case .index:
             onTransactionToPresent(.redeem(coin: coin(for: position.coin), yCoin: position.coin))

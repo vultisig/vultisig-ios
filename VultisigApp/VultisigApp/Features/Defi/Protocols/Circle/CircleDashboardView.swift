@@ -13,7 +13,13 @@ struct CircleDashboardView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.router) var router
 
-    @State var showInfoBanner = true
+    @AppStorage("appClosedBanners") var appClosedBanners: [String] = []
+    
+    let circleDashboardBannerId = "circleDashboardInfoBanner"
+    
+    var showInfoBanner: Bool {
+        !appClosedBanners.contains(circleDashboardBannerId)
+    }
     
     var walletUSDCBalance: Decimal {
         return CircleViewLogic.getWalletUSDCBalance(vault: vault)

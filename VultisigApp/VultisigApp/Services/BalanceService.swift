@@ -28,7 +28,6 @@ class BalanceService {
     private let cryptoPriceService = CryptoPriceService.shared
     
     func updateBalances(vault: Vault) async {
-        
         do {
             try await cryptoPriceService.fetchPrices(vault: vault)
         } catch {
@@ -244,12 +243,51 @@ private extension BalanceService {
 
 private extension BalanceService {
     func updateBondedIfNeeded(for coin: Coin) async throws {
-        guard coin.ticker.caseInsensitiveCompare("RUNE") == .orderedSame else {
+        switch coin.chain {
+        case .thorChain, .thorChainStagenet:
+            // Handle RUNE bonds
+            guard coin.ticker.caseInsensitiveCompare("RUNE") == .orderedSame else {
+                return
+            }
+
+            let bondedNodes = try await thorchainAPIService.getBondedNodes(address: coin.address)
+            await MainActor.run {
+                coin.bondedNodes = bondedNodes.nodes
+            }
+            try await updateCoin(coin, stakedBalance: bondedNodes.totalBonded.description)
+
+        case .mayaChain:
+            // Handle CACAO bonds - Maya uses LP units bonded to nodes
+            guard coin.isNativeToken, coin.ticker.caseInsensitiveCompare("CACAO") == .orderedSame else {
+                return
+            }
+
+            do {
+                let bondedNodes = try await mayaChainAPIService.getBondedNodes(address: coin.address)
+
+                // Convert Maya bonds to the same format as THORChain for consistency
+                let nodes = bondedNodes.nodes.map { mayaNode in
+                    RuneBondNode(
+                        status: mayaNode.status,
+                        address: mayaNode.address,
+                        bond: mayaNode.bond
+                    )
+                }
+
+                await MainActor.run {
+                    coin.bondedNodes = nodes
+                }
+
+                // Note: For Maya, staked balance already includes CACAO pool staking
+                // Bond value is in LP units which represent CACAO value, but we don't
+                // add it to stakedBalance to avoid double counting with CACAO pool staking
+            } catch {
+                print("Error fetching MayaChain bonded nodes: \(error.localizedDescription)")
+            }
+
+        default:
+            // Other chains don't support bonding
             return
         }
-        
-        let bondedNodes = try await thorchainAPIService.getBondedNodes(address: coin.address)
-        coin.bondedNodes = bondedNodes.nodes
-        try await updateCoin(coin, stakedBalance: bondedNodes.totalBonded.description)
     }
 }

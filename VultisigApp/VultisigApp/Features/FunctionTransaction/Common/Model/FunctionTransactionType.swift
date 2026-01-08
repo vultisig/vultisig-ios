@@ -11,7 +11,7 @@ enum FunctionTransactionType: Hashable {
     case bond(coin: CoinMeta, node: String?)
     case unbond(node: BondNode)
     case stake(coin: CoinMeta, defaultAutocompound: Bool)
-    case unstake(coin: CoinMeta, defaultAutocompound: Bool)
+    case unstake(coin: CoinMeta, defaultAutocompound: Bool, availableToUnstake: Decimal? = nil)
     case withdrawRewards(coin: CoinMeta, rewards: Decimal, rewardsCoin: CoinMeta)
     case mint(coin: CoinMeta, yCoin: CoinMeta)
     case redeem(coin: CoinMeta, yCoin: CoinMeta)
@@ -26,7 +26,7 @@ enum FunctionTransactionType: Hashable {
             return [node.coin]
         case .stake(let coin, _):
             return [coin]
-        case .unstake(let coin, _):
+        case .unstake(let coin, _, _):
             return [coin]
         case .withdrawRewards(let coin, _, let rewardsCoin):
             return [coin, rewardsCoin]

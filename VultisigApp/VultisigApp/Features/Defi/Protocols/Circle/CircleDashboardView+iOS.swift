@@ -35,12 +35,12 @@ extension CircleDashboardView {
                             type: .info,
                             leadingIcon: nil,
                             onClose: {
-                                withAnimation { showInfoBanner = false }
+                                withAnimation { appClosedBanners.append(circleDashboardBannerId) }
                             }
                         )
                         .showIf(showInfoBanner)
                         
-                        if let error = model.error {
+                        if let error = model.error, error.localizedDescription.lowercased() != "cancelled" {
                             InfoBannerView(
                                 description: error.localizedDescription,
                                 type: .error,

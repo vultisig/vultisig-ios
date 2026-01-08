@@ -1181,3 +1181,36 @@
 "noBarcodesFound" = "未找到条形码";
 "aminoSign" = "Amino 签名";
 "directSign" = "直接签名";
+
+// LP Units Validation (Maya Bond)
+"availableLPUnits" = "可用 LP 单位";
+"minimumLPUnitsNeeded" = "最低所需 LP 单位";
+"estimatedBondValue" = "预估绑定价值";
+"minimumBondRequired" = "最低要求";
+"noLPPositionForPool" = "您在此池中没有 LP 仓位";
+"bondValueBelowMinimum" = "绑定价值 (%@ CACAO) 低于最低要求 (%@ CACAO)。如果是添加到现有绑定，您可以继续。";
+"failedToCalculateBondValue" = "无法计算绑定价值";
+"invalidLPUnits" = "无效的 LP 单位";
+"lpUnitsExceeded" = "超过可用 LP 单位 (%@)";
+"lpUnitsCannotBeZero" = "LP 单位不能为零";
+
+// Unbond Validation (Maya Unbond)
+"bondedLPUnits" = "已绑定 LP 单位";
+"estimatedCacaoValue" = "预估价值";
+"noBondFoundForNode" = "未找到此节点和地址的绑定";
+"failedToFetchBondInfo" = "获取绑定信息失败";
+
+// Maya Bond Eligibility
+"checkingNodeEligibility" = "正在检查节点资格...";
+"nodeStatus" = "节点状态";
+"bondProviders" = "绑定提供者";
+"whitelisted" = "已列入白名单";
+"notEligible" = "不符合资格";
+"notWhitelistedOnNode" = "您不在此节点的白名单中";
+"nodeAtMaxCapacity" = "节点已达到最大容量 (8/8)";
+"noLPPositionsForBonding" = "没有可用于绑定的 LP 仓位";
+"noBondedAssetsOnNode" = "此节点上未找到已绑定资产";
+
+// Maya Unbond Node Status
+"nodeActiveCannotUnbond" = "节点状态为 %@ - 活跃时无法解绑";
+"nodeChurnedCanUnbond" = "节点已轮换 - 可以解绑";
