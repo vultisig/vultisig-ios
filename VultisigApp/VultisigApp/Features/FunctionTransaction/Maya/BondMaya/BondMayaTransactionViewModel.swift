@@ -24,12 +24,11 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
     @Published var isLoading: Bool = false
 
     // Validation state
-    @Published var bondValidationWarning: String?  // Soft validation warning
-    @Published var bondValidationError: String?    // Hard validation error (blocks)
     @Published var availableLPUnits: String?
     @Published var estimatedCacaoValue: Decimal?
-    @Published var minimumLPUnitsNeeded: UInt64?
-    @Published var minimumBondRequired: Decimal = 35000
+
+    // Track if user can bond (whitelist check result)
+    private var canBondToNode: Bool = true
 
     private(set) lazy var form: [FormField] = [
         addressViewModel.field,
@@ -39,13 +38,18 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
     var formCancellable: AnyCancellable?
     var cancellables = Set<AnyCancellable>()
 
-    let assetsDataSource = MayaAssetsDataSource()
+    // Use user LP positions data source - shows only pools where user has LP
+    let assetsDataSource: MayaUserLPAssetsDataSource
     private let mayaAPIService = MayaChainAPIService()
+
+    // Cache user's LP positions for quick lookup
+    private var userLPPositions: [String: String] = [:] // poolName -> lpUnits
     
     init(coin: Coin, vault: Vault, initialBondAddress: String?) {
         self.coin = coin
         self.vault = vault
         self.initialBondAddress = initialBondAddress
+        self.assetsDataSource = MayaUserLPAssetsDataSource(userAddress: coin.address)
         self.addressViewModel = AddressViewModel(
             coin: coin,
             additionalValidators: [RequiredValidator(errorMessage: "emptyAddressField".localized)]
@@ -65,15 +69,32 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
         }
 
         Task {
-            let assets = await assetsDataSource.fetchAssets()
-            await MainActor.run { isLoading = false }
+            // Fetch user's LP positions and cache them
+            await fetchAndCacheUserLPPositions()
 
-            if let firstAsset = assets.first {
-                await MainActor.run {
+            let assets = await assetsDataSource.fetchAssets()
+            await MainActor.run {
+                isLoading = false
+
+                if let firstAsset = assets.first {
                     selectedAsset = firstAsset
                 }
             }
         }
+
+        // Watch for node address changes - check whitelist eligibility
+        addressViewModel.field.$valid
+            .combineLatest(addressViewModel.field.$value)
+            .debounce(for: 0.5, scheduler: RunLoop.main)
+            .sink { [weak self] isValid, address in
+                guard let self else { return }
+                if isValid && !address.isEmpty {
+                    self.checkWhitelistEligibility(nodeAddress: address)
+                } else {
+                    self.canBondToNode = true
+                }
+            }
+            .store(in: &cancellables)
 
         // Watch for asset changes
         $selectedAsset
@@ -91,15 +112,62 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
             }
             .store(in: &cancellables)
     }
+
+    /// Check if user is whitelisted on the specified node
+    private func checkWhitelistEligibility(nodeAddress: String) {
+        Task {
+            do {
+                let isWhitelisted = try await mayaAPIService.isAddressWhitelisted(
+                    nodeAddress: nodeAddress,
+                    bondAddress: coin.address
+                )
+
+                await MainActor.run {
+                    canBondToNode = isWhitelisted
+
+                    if !isWhitelisted {
+                        addressViewModel.field.error = "notWhitelistedOnNode".localized
+                        addressViewModel.field.valid = false
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    // On error, allow bonding attempt (server will reject if not whitelisted)
+                    canBondToNode = true
+                }
+                print("Error checking whitelist: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    /// Fetch user's LP positions from Maya API and cache for quick lookup
+    private func fetchAndCacheUserLPPositions() async {
+        do {
+            let memberDetails = try await mayaAPIService.getMemberDetails(address: coin.address)
+
+            var positions: [String: String] = [:]
+            for pool in memberDetails.pools {
+                let units = pool.liquidityUnits
+                if let unitsInt = Int64(units), unitsInt > 0 {
+                    positions[pool.pool] = units
+                }
+            }
+
+            await MainActor.run {
+                userLPPositions = positions
+            }
+        } catch {
+            print("Error fetching user LP positions: \(error.localizedDescription)")
+        }
+    }
     
     var transactionBuilder: TransactionBuilder? {
         validateErrors()
 
-        // HARD VALIDATION: Block if critical errors
-        guard bondValidationError == nil else { return nil }
-        guard validForm, let selectedAsset, let lpUnits = UInt64(lpUnitsField.value) else { return nil }
+        // Block if not whitelisted on node
+        guard canBondToNode else { return nil }
 
-        // Soft validation warning doesn't block
+        guard validForm, let selectedAsset, let lpUnits = UInt64(lpUnitsField.value) else { return nil }
 
         return BondMayaTransactionBuilder(
             coin: coin,
@@ -113,48 +181,27 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
     // MARK: - Validation Methods
 
     private func onAssetSelected(_ asset: THORChainAsset) {
-        Task {
-            // 1. Find LP position for this pool
-            let lpPosition = vault.lpPositions.first { position in
-                position.poolName == asset.thorchainAsset
-            }
-
-            guard let position = lpPosition, let units = position.poolUnits else {
-                await MainActor.run {
-                    availableLPUnits = nil
-                    bondValidationError = "noLPPositionForPool".localized
-                    minimumLPUnitsNeeded = nil
-                }
-                return
-            }
-
-            // 2. Calculate minimum LP units needed
-            let minUnits = try? await mayaAPIService.calculateMinimumLPUnits(
-                poolAsset: asset.thorchainAsset
-            )
-
-            await MainActor.run {
-                availableLPUnits = units
-                minimumLPUnitsNeeded = minUnits
-                bondValidationError = nil
-
-                // Update validator with available units
-                lpUnitsField.validators = [
-                    RequiredValidator(errorMessage: "emptyLPsField".localized),
-                    IntValidator(),
-                    LPUnitsValidator(availableUnits: units)
-                ]
-            }
+        // Look up LP units from cached positions (fetched from Maya API)
+        guard let units = userLPPositions[asset.thorchainAsset] else {
+            availableLPUnits = nil
+            return
         }
+
+        availableLPUnits = units
+
+        // Update validator with available units
+        lpUnitsField.validators = [
+            RequiredValidator(errorMessage: "emptyLPsField".localized),
+            IntValidator(),
+            LPUnitsValidator(availableUnits: units)
+        ]
     }
 
     private func validateLPUnits() {
         guard let selectedAsset,
-              let availableUnits = availableLPUnits,
               let lpUnitsValue = UInt64(lpUnitsField.value),
               lpUnitsValue > 0 else {
             estimatedCacaoValue = nil
-            bondValidationWarning = nil
             return
         }
 
@@ -167,21 +214,9 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
 
                 await MainActor.run {
                     estimatedCacaoValue = cacaoValue
-
-                    // SOFT VALIDATION: Warn if below minimum
-                    if cacaoValue < minimumBondRequired {
-                        bondValidationWarning = String(
-                            format: "bondValueBelowMinimum".localized,
-                            cacaoValue.formatted(),
-                            minimumBondRequired.formatted()
-                        )
-                    } else {
-                        bondValidationWarning = nil
-                    }
                 }
             } catch {
                 await MainActor.run {
-                    bondValidationWarning = "failedToCalculateBondValue".localized
                     estimatedCacaoValue = nil
                 }
             }

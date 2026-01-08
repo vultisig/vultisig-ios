@@ -39,7 +39,7 @@ struct BondMayaTransactionScreen: View {
                 FunctionAddressField(viewModel: viewModel.addressViewModel)
                     .focused($focusedField, equals: .address)
             }
-            
+
             FormExpandableSection(
                 title: "asset".localized,
                 isValid: viewModel.lpUnitsField.valid,
@@ -81,23 +81,10 @@ struct BondMayaTransactionScreen: View {
                             Text(availableUnits)
                                 .font(Theme.fonts.caption12)
                                 .foregroundColor(Theme.colors.textPrimary)
-                        }
-                    }
-
-                    // Minimum LP units suggestion
-                    if let minUnits = viewModel.minimumLPUnitsNeeded {
-                        HStack {
-                            Text("minimumLPUnitsNeeded".localized)
-                                .font(Theme.fonts.caption12)
-                                .foregroundColor(Theme.colors.textTertiary)
-                            Spacer()
-                            Text("\(minUnits)")
-                                .font(Theme.fonts.caption12)
-                                .foregroundColor(Theme.colors.alertWarning)
                             Button(action: {
-                                viewModel.lpUnitsField.value = "\(minUnits)"
+                                viewModel.lpUnitsField.value = availableUnits
                             }) {
-                                Text("use".localized)
+                                Text("max".localized)
                                     .font(Theme.fonts.caption12)
                                     .foregroundColor(Theme.colors.alertInfo)
                             }
@@ -113,53 +100,8 @@ struct BondMayaTransactionScreen: View {
                             Spacer()
                             Text("\(cacaoValue.formatted()) CACAO")
                                 .font(Theme.fonts.caption12)
-                                .foregroundColor(
-                                    cacaoValue >= viewModel.minimumBondRequired
-                                        ? Theme.colors.alertSuccess
-                                        : Theme.colors.alertWarning
-                                )
-                        }
-                    }
-
-                    // Minimum requirement display
-                    HStack {
-                        Text("minimumBondRequired".localized)
-                            .font(Theme.fonts.caption12)
-                            .foregroundColor(Theme.colors.textTertiary)
-                        Spacer()
-                        Text("\(viewModel.minimumBondRequired.formatted()) CACAO")
-                            .font(Theme.fonts.caption12)
-                            .foregroundColor(Theme.colors.textTertiary)
-                    }
-
-                    // HARD VALIDATION ERROR (blocks transaction)
-                    if let error = viewModel.bondValidationError {
-                        HStack(spacing: 8) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(Theme.colors.alertError)
-                            Text(error)
-                                .font(Theme.fonts.caption12)
                                 .foregroundColor(Theme.colors.textPrimary)
-                            Spacer()
                         }
-                        .padding(12)
-                        .background(Theme.colors.bgError)
-                        .cornerRadius(8)
-                    }
-
-                    // SOFT VALIDATION WARNING (doesn't block)
-                    if let warning = viewModel.bondValidationWarning {
-                        HStack(spacing: 8) {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundColor(Theme.colors.alertWarning)
-                            Text(warning)
-                                .font(Theme.fonts.caption12)
-                                .foregroundColor(Theme.colors.textPrimary)
-                            Spacer()
-                        }
-                        .padding(12)
-                        .background(Theme.colors.bgAlert)
-                        .cornerRadius(8)
                     }
                 }
             }

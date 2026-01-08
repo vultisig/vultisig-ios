@@ -1228,3 +1228,18 @@
 "estimatedCacaoValue" = "Estimated Value";
 "noBondFoundForNode" = "No bond found for this node and address";
 "failedToFetchBondInfo" = "Failed to fetch bond info";
+
+// Maya Bond Eligibility
+"checkingNodeEligibility" = "Checking node eligibility...";
+"nodeStatus" = "Node Status";
+"bondProviders" = "Bond Providers";
+"whitelisted" = "Whitelisted";
+"notEligible" = "Not Eligible";
+"notWhitelistedOnNode" = "You are not whitelisted on this node";
+"nodeAtMaxCapacity" = "Node has reached maximum capacity (8/8)";
+"noLPPositionsForBonding" = "No LP positions available for bonding";
+"noBondedAssetsOnNode" = "No bonded assets found on this node";
+
+// Maya Unbond Node Status
+"nodeActiveCannotUnbond" = "Node is %@ - cannot unbond while active";
+"nodeChurnedCanUnbond" = "Node is churned out - unbonding available";

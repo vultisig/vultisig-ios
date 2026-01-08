@@ -1180,3 +1180,36 @@
 "noBarcodesFound" = "No se encontraron códigos de barras";
 "aminoSign" = "Firma Amino";
 "directSign" = "Firma Directa";
+
+// LP Units Validation (Maya Bond)
+"availableLPUnits" = "Unidades LP Disponibles";
+"minimumLPUnitsNeeded" = "Unidades LP Mínimas Necesarias";
+"estimatedBondValue" = "Valor Estimado del Bond";
+"minimumBondRequired" = "Mínimo Requerido";
+"noLPPositionForPool" = "No tienes una posición LP en este pool";
+"bondValueBelowMinimum" = "El valor del bond (%@ CACAO) está por debajo del mínimo (%@ CACAO). Puedes continuar si estás agregando a un bond existente.";
+"failedToCalculateBondValue" = "Error al calcular el valor del bond";
+"invalidLPUnits" = "Unidades LP inválidas";
+"lpUnitsExceeded" = "Excede las unidades LP disponibles (%@)";
+"lpUnitsCannotBeZero" = "Las unidades LP no pueden ser cero";
+
+// Unbond Validation (Maya Unbond)
+"bondedLPUnits" = "Unidades LP en Bond";
+"estimatedCacaoValue" = "Valor Estimado";
+"noBondFoundForNode" = "No se encontró bond para este nodo y dirección";
+"failedToFetchBondInfo" = "Error al obtener información del bond";
+
+// Maya Bond Eligibility
+"checkingNodeEligibility" = "Verificando elegibilidad del nodo...";
+"nodeStatus" = "Estado del Nodo";
+"bondProviders" = "Proveedores de Bond";
+"whitelisted" = "En Lista Blanca";
+"notEligible" = "No Elegible";
+"notWhitelistedOnNode" = "No estás en la lista blanca de este nodo";
+"nodeAtMaxCapacity" = "El nodo alcanzó la capacidad máxima (8/8)";
+"noLPPositionsForBonding" = "No hay posiciones LP disponibles para bonding";
+"noBondedAssetsOnNode" = "No se encontraron activos en bond en este nodo";
+
+// Maya Unbond Node Status
+"nodeActiveCannotUnbond" = "El nodo está %@ - no se puede hacer unbond mientras está activo";
+"nodeChurnedCanUnbond" = "El nodo está rotado - unbond disponible";

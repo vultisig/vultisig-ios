@@ -151,33 +151,134 @@ extension MayaChainAPIService {
         return cacaoValue / pow(10, 10) // Convert from base units to CACAO
     }
 
-    /// Calculate minimum LP units needed to meet the 35K CACAO bond requirement
-    /// - Parameter poolAsset: Pool asset identifier (e.g., "BTC.BTC", "ETH.ETH")
-    /// - Returns: Minimum LP units needed to bond
-    func calculateMinimumLPUnits(poolAsset: String) async throws -> UInt64 {
-        let minBondCacao: Decimal = 35000 // Minimum bond requirement in CACAO
-        let poolStats = try await getPoolStats()
-        guard let pool = poolStats.first(where: { $0.asset == poolAsset }) else {
-            throw MayaChainAPIError.invalidResponse
-        }
-
-        let totalPoolUnits = Decimal(string: pool.liquidityUnits) ?? 0
-        let cacaoDepth = Decimal(string: pool.runeDepth) ?? 0
-
-        guard cacaoDepth > 0 else { return 0 }
-
-        // Calculate: (minBondCacao * 1e10 * totalPoolUnits) / cacaoDepth
-        let minLPUnits = (minBondCacao * pow(10, 10) * totalPoolUnits) / cacaoDepth
-        return UInt64(truncating: minLPUnits as NSNumber)
-    }
-
     /// Validate if a node can accept more bond providers
     /// - Parameter nodeAddress: Maya node address
     /// - Returns: True if node has capacity for more bond providers
     func validateNodeBondCapacity(nodeAddress: String) async throws -> Bool {
         let nodeDetails = try await getNodeDetails(nodeAddress: nodeAddress)
         let currentProviders = nodeDetails.bondProviders.providers.count
-        let maxProviders = 10 // Maximum bond providers per node (Mimir: MAXBONDPROVIDERS)
+        let maxProviders = 8 // Maximum bond providers per node (per Maya docs)
         return currentProviders < maxProviders
+    }
+
+    /// Check if a bond address is whitelisted on a node
+    /// - Parameters:
+    ///   - nodeAddress: Maya node address
+    ///   - bondAddress: The potential bond provider's address
+    /// - Returns: True if the address is whitelisted (present in bond_providers)
+    func isAddressWhitelisted(nodeAddress: String, bondAddress: String) async throws -> Bool {
+        let nodeDetails = try await getNodeDetails(nodeAddress: nodeAddress)
+        return nodeDetails.bondProviders.providers.contains { $0.bondAddress == bondAddress }
+    }
+
+    /// Comprehensive bond eligibility check
+    /// - Parameters:
+    ///   - nodeAddress: Maya node address
+    ///   - bondAddress: The potential bond provider's address
+    /// - Returns: BondEligibility result with status and error message if ineligible
+    func checkBondEligibility(nodeAddress: String, bondAddress: String) async throws -> MayaBondEligibility {
+        let nodeDetails = try await getNodeDetails(nodeAddress: nodeAddress)
+
+        // Check 1: Is user whitelisted?
+        let isWhitelisted = nodeDetails.bondProviders.providers.contains { $0.bondAddress == bondAddress }
+        guard isWhitelisted else {
+            return MayaBondEligibility(
+                canBond: false,
+                reason: .notWhitelisted,
+                nodeStatus: nodeDetails.status,
+                currentProviders: nodeDetails.bondProviders.providers.count
+            )
+        }
+
+        // Check 2: Does node have capacity?
+        let maxProviders = 8
+        let currentProviders = nodeDetails.bondProviders.providers.count
+        guard currentProviders < maxProviders else {
+            return MayaBondEligibility(
+                canBond: false,
+                reason: .nodeAtCapacity,
+                nodeStatus: nodeDetails.status,
+                currentProviders: currentProviders
+            )
+        }
+
+        // All checks passed
+        return MayaBondEligibility(
+            canBond: true,
+            reason: nil,
+            nodeStatus: nodeDetails.status,
+            currentProviders: currentProviders
+        )
+    }
+
+    /// Get node status for unbond eligibility
+    /// - Parameter nodeAddress: Maya node address
+    /// - Returns: Node status info for unbonding
+    func getNodeStatusForUnbond(nodeAddress: String) async throws -> MayaNodeUnbondStatus {
+        let nodeDetails = try await getNodeDetails(nodeAddress: nodeAddress)
+        let canUnbond = nodeDetails.status != "Active" // Can only unbond when node is churned out
+
+        return MayaNodeUnbondStatus(
+            nodeStatus: nodeDetails.status,
+            canUnbond: canUnbond
+        )
+    }
+
+    /// Get bonded LP units for a specific node, bond address, and pool asset
+    /// - Parameters:
+    ///   - nodeAddress: Maya node address
+    ///   - bondAddress: The bond provider's address
+    ///   - poolAsset: Pool asset identifier (e.g., "BTC.BTC", "ETH.ETH")
+    /// - Returns: LP units bonded to this node for the specified pool, or nil if not found
+    func getBondedLPUnits(
+        nodeAddress: String,
+        bondAddress: String,
+        poolAsset: String
+    ) async throws -> UInt64? {
+        let nodeDetails = try await getNodeDetails(nodeAddress: nodeAddress)
+
+        // Find the bond provider matching our address
+        guard let provider = nodeDetails.bondProviders.providers.first(where: {
+            $0.bondAddress == bondAddress
+        }) else {
+            return nil
+        }
+
+        // Get LP units for the specified pool
+        guard let lpUnitsString = provider.pools[poolAsset],
+              let lpUnits = UInt64(lpUnitsString) else {
+            return nil
+        }
+
+        return lpUnits
+    }
+
+    /// Get all bonded LP positions for a bond address on a specific node
+    /// - Parameters:
+    ///   - nodeAddress: Maya node address
+    ///   - bondAddress: The bond provider's address
+    /// - Returns: Dictionary of pool asset to LP units, or nil if not a provider
+    func getAllBondedLPUnits(
+        nodeAddress: String,
+        bondAddress: String
+    ) async throws -> [String: UInt64]? {
+        let nodeDetails = try await getNodeDetails(nodeAddress: nodeAddress)
+
+        // Find the bond provider matching our address
+        guard let provider = nodeDetails.bondProviders.providers.first(where: {
+            $0.bondAddress == bondAddress
+        }) else {
+            return nil
+        }
+
+        // Convert string values to UInt64
+        var result: [String: UInt64] = [:]
+        for (asset, unitsString) in provider.pools {
+            if let units = UInt64(unitsString) {
+                result[asset] = units
+            }
+        }
+
+        return result.isEmpty ? nil : result
     }
 }

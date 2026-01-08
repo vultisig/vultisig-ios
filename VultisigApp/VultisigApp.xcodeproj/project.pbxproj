@@ -484,6 +484,8 @@
 		13E4281B2ED497010097AD11 /* AssetSelectionListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E4281A2ED496FC0097AD11 /* AssetSelectionListScreen.swift */; };
 		13E4281D2ED4970D0097AD11 /* AssetSelectionListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E4281C2ED497030097AD11 /* AssetSelectionListViewModel.swift */; };
 		13E4281F2ED498830097AD11 /* MayaAssetsDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E4281E2ED4987C0097AD11 /* MayaAssetsDataSource.swift */; };
+		13E428302F0498840097AD11 /* MayaUserLPAssetsDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E4282F2F04987D0097AD11 /* MayaUserLPAssetsDataSource.swift */; };
+		13E428322F0498850097AD11 /* MayaBondedAssetsDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E428312F04987E0097AD11 /* MayaBondedAssetsDataSource.swift */; };
 		13E428222ED49AB50097AD11 /* AssetSelectionFormCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E428212ED49AB10097AD11 /* AssetSelectionFormCell.swift */; };
 		13E428242ED4A0200097AD11 /* BondMayaTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E428232ED4A01C0097AD11 /* BondMayaTransactionBuilder.swift */; };
 		13E428262ED4A2A80097AD11 /* IntValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E428252ED4A2A80097AD11 /* IntValidator.swift */; };
@@ -1770,6 +1772,8 @@
 		13E4281A2ED496FC0097AD11 /* AssetSelectionListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetSelectionListScreen.swift; sourceTree = "<group>"; };
 		13E4281C2ED497030097AD11 /* AssetSelectionListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetSelectionListViewModel.swift; sourceTree = "<group>"; };
 		13E4281E2ED4987C0097AD11 /* MayaAssetsDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaAssetsDataSource.swift; sourceTree = "<group>"; };
+		13E4282F2F04987D0097AD11 /* MayaUserLPAssetsDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaUserLPAssetsDataSource.swift; sourceTree = "<group>"; };
+		13E428312F04987E0097AD11 /* MayaBondedAssetsDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaBondedAssetsDataSource.swift; sourceTree = "<group>"; };
 		13E428212ED49AB10097AD11 /* AssetSelectionFormCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetSelectionFormCell.swift; sourceTree = "<group>"; };
 		13E428232ED4A01C0097AD11 /* BondMayaTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondMayaTransactionBuilder.swift; sourceTree = "<group>"; };
 		13E428252ED4A2A80097AD11 /* IntValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntValidator.swift; sourceTree = "<group>"; };
@@ -4644,6 +4648,8 @@
 			isa = PBXGroup;
 			children = (
 				13E4281E2ED4987C0097AD11 /* MayaAssetsDataSource.swift */,
+				13E4282F2F04987D0097AD11 /* MayaUserLPAssetsDataSource.swift */,
+				13E428312F04987E0097AD11 /* MayaBondedAssetsDataSource.swift */,
 				13E4281C2ED497030097AD11 /* AssetSelectionListViewModel.swift */,
 				13E4281A2ED496FC0097AD11 /* AssetSelectionListScreen.swift */,
 			);
@@ -6975,6 +6981,8 @@
 				A6ECA1962C93F99700456110 /* InstructionPrompt+macOS.swift in Sources */,
 				DE1572972B70F254009BC7C5 /* LocalStateAccessorImp.swift in Sources */,
 				13E4281F2ED498830097AD11 /* MayaAssetsDataSource.swift in Sources */,
+				13E428302F0498840097AD11 /* MayaUserLPAssetsDataSource.swift in Sources */,
+				13E428322F0498850097AD11 /* MayaBondedAssetsDataSource.swift in Sources */,
 				A6833D8D2C65D2A1002029E1 /* AddressQRCodeHeader.swift in Sources */,
 				A617B67C2CEC641B006E5122 /* SendCryptoDoneSummary.swift in Sources */,
 				A65BA9962BAD460600B2D8AA /* KeysignStartView.swift in Sources */,
