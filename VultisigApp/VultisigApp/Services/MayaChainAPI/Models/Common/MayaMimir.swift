@@ -33,6 +33,6 @@ struct MayaMimir: Codable {
 
     /// Maximum number of bond providers allowed per node
     var maxProviders: Int {
-        maxBondProviders ?? 10
+        maxBondProviders ?? 8
     }
 }
