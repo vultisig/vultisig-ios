@@ -925,7 +925,7 @@
 "standby" = "待机";
 "ready" = "就绪";
 "disabled" = "已禁用";
-"nodeAddress" = "节点地址：%@";
+"bondNodeAddress" = "节点地址：%@";
 "requestToBond" = "请求绑定";
 "bondToNode" = "绑定到节点";
 "waitChurnedOutNode"= "等待节点被淘汰";

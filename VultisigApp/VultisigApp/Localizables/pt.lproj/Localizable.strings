@@ -919,7 +919,7 @@
 "availableNodes" = "Nós Disponíveis";
 "activeNodes" = "Nós Ativos";
 "churnedOut" = "Excluído";
-"nodeAddress" = "Endereço do Nó: %@";
+"bondNodeAddress" = "Endereço do Nó: %@";
 "requestToBond" = "Solicitação de Vínculo";
 "bondToNode" = "Vincular ao Nó";
 "waitChurnedOutNode" = "Aguarde até que o Nó seja excluído";
