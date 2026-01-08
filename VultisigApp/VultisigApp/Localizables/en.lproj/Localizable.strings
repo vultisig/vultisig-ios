@@ -940,6 +940,11 @@
 "stakedCoin" = "Staked %@";
 "compoundedCoin" = "Compounded %@";
 "apr" = "APR";
+"apr1Day" = "1 Day";
+"apr1Week" = "1 Week";
+"apr1Month" = "1 Month";
+"apr100Days" = "100 Days";
+"apr1Year" = "1 Year";
 "nextPayout" = "Next payout";
 "estimatedReward" = "Estimated reward";
 "stake" = "Stake";
@@ -949,6 +954,7 @@
 "actions" = "Actions";
 "unstakeCoin" = "Unstake %@";
 "stakeCoin" = "Stake %@";
+"reservesForGas" = "Reserves %@ %@ for gas";
 "coinPool" = "%@ Pool";
 "position" = "Position";
 "remove" = "Remove";
@@ -978,6 +984,8 @@
 "chooseYourChains" = "Choose your chains";
 "addCoinLP" = "Add %@ LP";
 "removeCoinLP" = "Remove %@ LP";
+"asymmetricDeposit" = "Asymmetric Deposit";
+"asymmetricDepositInfo" = "You can deposit just CACAO or just the asset. Maya will automatically balance your position.";
 "functionTransactionScreenErrorTitle" = "Function Error";
 "functionTransactionScreenErrorSubtitle" = "An error occurred while redirecting to function";
 "removeLPDustAmountError" = "You need at least %@ to cover fees";
@@ -1203,3 +1211,35 @@
 "noBarcodesFound" = "No barcodes found";
 "aminoSign" = "Amino Sign";
 "directSign" = "Direct Sign";
+// LP Units Validation (Maya Bond)
+"availableLPUnits" = "Available LP Units";
+"minimumLPUnitsNeeded" = "Minimum LP Units Needed";
+"estimatedBondValue" = "Estimated Bond Value";
+"minimumBondRequired" = "Minimum Required";
+"use" = "Use";
+"noLPPositionForPool" = "You don't have an LP position in this pool";
+"bondValueBelowMinimum" = "Bond value (%@ CACAO) is below minimum (%@ CACAO). You may still proceed if adding to existing bond.";
+"failedToCalculateBondValue" = "Failed to calculate bond value";
+"invalidLPUnits" = "Invalid LP units";
+"lpUnitsExceeded" = "Exceeds available LP units (%@)";
+"lpUnitsCannotBeZero" = "LP units cannot be zero";
+// Unbond Validation (Maya Unbond)
+"bondedLPUnits" = "Bonded LP Units";
+"estimatedCacaoValue" = "Estimated Value";
+"noBondFoundForNode" = "No bond found for this node and address";
+"failedToFetchBondInfo" = "Failed to fetch bond info";
+
+// Maya Bond Eligibility
+"checkingNodeEligibility" = "Checking node eligibility...";
+"nodeStatus" = "Node Status";
+"bondProviders" = "Bond Providers";
+"whitelisted" = "Whitelisted";
+"notEligible" = "Not Eligible";
+"notWhitelistedOnNode" = "You are not whitelisted on this node";
+"nodeAtMaxCapacity" = "Node has reached maximum capacity (8/8)";
+"noLPPositionsForBonding" = "No LP positions available for bonding";
+"noBondedAssetsOnNode" = "No bonded assets found on this node";
+
+// Maya Unbond Node Status
+"nodeActiveCannotUnbond" = "Node is %@ - cannot unbond while active";
+"nodeChurnedCanUnbond" = "Node is churned out - unbonding available";

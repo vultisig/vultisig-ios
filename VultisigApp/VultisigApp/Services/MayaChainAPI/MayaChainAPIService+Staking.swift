@@ -14,18 +14,20 @@ extension MayaChainAPIService {
             MayaChainStakingAPI.getCacaoPoolMember(address: address),
             responseType: MayaCacaoPoolMemberResponse.self
         )
-        
+
         let member = response.data
         // Calculate net deposit
         let cacaoDeposit = Decimal(string: member.depositAmount) ?? 0
         let cacaoWithdrawn = Decimal(string: member.withdrawAmount) ?? 0
         let userUnits = Decimal(string: member.units) ?? 0
+        let currentValue = Decimal(string: member.value) ?? 0
 
         let netDeposit = cacaoDeposit - cacaoWithdrawn
 
         return MayaCacaoPoolPosition(
             address: address,
-            stakedAmount: netDeposit,
+            stakedAmount: currentValue,  // Use value for display (includes earnings)
+            availableUnits: userUnits,   // Units available for unstaking
             userUnits: userUnits,
             netDeposit: netDeposit,
             lastWithdrawHeight: member.lastWithdrawHeight,
@@ -121,7 +123,8 @@ extension MayaChainAPIService {
 
 struct MayaCacaoPoolPosition {
     let address: String
-    let stakedAmount: Decimal     // Current value in CACAO
+    let stakedAmount: Decimal      // Current value in CACAO (for display)
+    let availableUnits: Decimal    // Units available for unstaking
     let userUnits: Decimal         // User's pool units
     let netDeposit: Decimal        // Deposit - Withdrawn
     let lastWithdrawHeight: Int64
