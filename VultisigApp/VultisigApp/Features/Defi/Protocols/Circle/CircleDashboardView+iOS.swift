@@ -40,7 +40,7 @@ extension CircleDashboardView {
                         )
                         .showIf(showInfoBanner)
                         
-                        if let error = model.error {
+                        if let error = model.error, error.localizedDescription.lowercased() != "cancelled" {
                             InfoBannerView(
                                 description: error.localizedDescription,
                                 type: .error,
