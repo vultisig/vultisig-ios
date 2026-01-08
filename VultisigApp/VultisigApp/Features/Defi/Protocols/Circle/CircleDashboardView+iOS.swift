@@ -37,7 +37,7 @@ extension CircleDashboardView {
                             type: .info,
                             leadingIcon: nil,
                             onClose: {
-                                withAnimation { showInfoBanner = false }
+                                withAnimation { appClosedBanners.append(circleDashboardBannerId) }
                             }
                         )
                         .showIf(showInfoBanner)
