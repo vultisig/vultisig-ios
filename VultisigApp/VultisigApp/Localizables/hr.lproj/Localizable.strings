@@ -1179,3 +1179,36 @@
 "noBarcodesFound" = "Nisu pronađeni barkodovi";
 "aminoSign" = "Amino Potpis";
 "directSign" = "Izravni Potpis";
+
+// LP Units Validation (Maya Bond)
+"availableLPUnits" = "Dostupne LP Jedinice";
+"minimumLPUnitsNeeded" = "Minimalno Potrebne LP Jedinice";
+"estimatedBondValue" = "Procijenjena Vrijednost Bonda";
+"minimumBondRequired" = "Minimalno Potrebno";
+"noLPPositionForPool" = "Nemate LP poziciju u ovom poolu";
+"bondValueBelowMinimum" = "Vrijednost bonda (%@ CACAO) je ispod minimuma (%@ CACAO). Možete nastaviti ako dodajete postojećem bondu.";
+"failedToCalculateBondValue" = "Nije moguće izračunati vrijednost bonda";
+"invalidLPUnits" = "Nevažeće LP jedinice";
+"lpUnitsExceeded" = "Prelazi dostupne LP jedinice (%@)";
+"lpUnitsCannotBeZero" = "LP jedinice ne mogu biti nula";
+
+// Unbond Validation (Maya Unbond)
+"bondedLPUnits" = "LP Jedinice u Bondu";
+"estimatedCacaoValue" = "Procijenjena Vrijednost";
+"noBondFoundForNode" = "Nije pronađen bond za ovaj čvor i adresu";
+"failedToFetchBondInfo" = "Nije moguće dohvatiti informacije o bondu";
+
+// Maya Bond Eligibility
+"checkingNodeEligibility" = "Provjera podobnosti čvora...";
+"nodeStatus" = "Status Čvora";
+"bondProviders" = "Pružatelji Bonda";
+"whitelisted" = "Na Bijeloj Listi";
+"notEligible" = "Nije Podoban";
+"notWhitelistedOnNode" = "Niste na bijeloj listi ovog čvora";
+"nodeAtMaxCapacity" = "Čvor je dosegao maksimalni kapacitet (8/8)";
+"noLPPositionsForBonding" = "Nema dostupnih LP pozicija za bonding";
+"noBondedAssetsOnNode" = "Nisu pronađena bondana sredstva na ovom čvoru";
+
+// Maya Unbond Node Status
+"nodeActiveCannotUnbond" = "Čvor je %@ - nije moguć unbond dok je aktivan";
+"nodeChurnedCanUnbond" = "Čvor je rotiran - unbond dostupan";
