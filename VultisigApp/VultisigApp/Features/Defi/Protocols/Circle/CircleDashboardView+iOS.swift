@@ -14,8 +14,6 @@ extension CircleDashboardView {
             VaultMainScreenBackground()
             
             VStack(spacing: 0) {
-                headerView
-                
                 ScrollView {
                     VStack(spacing: CircleConstants.Design.verticalSpacing) {
                         topBanner
@@ -67,8 +65,6 @@ extension CircleDashboardView {
         .onAppear {
             Task { await loadData() }
         }
-        .navigationBarBackButtonHidden(true)
-        .navigationBarHidden(true)
     }
 }
 #endif

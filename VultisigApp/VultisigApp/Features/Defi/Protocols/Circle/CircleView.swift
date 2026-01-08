@@ -13,47 +13,42 @@ import VultisigCommonData
 struct CircleView: View {
     let vault: Vault
 
-    @StateObject var model = CircleViewModel()
+    @StateObject private var model = CircleViewModel()
     @State private var hasCheckedBackend = false
 
-    @Environment(\.dismiss) var dismiss
-
     var content: some View {
-        ZStack {
-            Theme.colors.bgPrimary.ignoresSafeArea()
-
+        Screen(
+            title: NSLocalizedString("circleTitle", comment: "Circle"),
+            showNavigationBar: true,
+            backgroundType: .plain
+        ) {
             if !hasCheckedBackend {
                 // Show loading while checking backend
                 ProgressView()
                     .progressViewStyle(.circular)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if model.missingEth {
                 // Show warning to add ETH
-                VStack(spacing: 0) {
-                    #if os(macOS)
-                    headerView
-                    #endif
-                    
+                VStack(spacing: 24) {
                     Spacer()
                     
-                    VStack(spacing: 24) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.system(size: 60))
-                            .foregroundStyle(.orange)
-                        
-                        Text(NSLocalizedString("circleEthereumRequired", comment: "Ethereum Required"))
-                            .font(.title2)
-                            .bold()
-                            .foregroundStyle(Theme.colors.textPrimary)
-                        
-                        Text(NSLocalizedString("circleEthereumRequiredDescription", comment: "Please add Ethereum..."))
-                            .font(.body)
-                            .foregroundStyle(Theme.colors.textSecondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 32)
-                    }
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 60))
+                        .foregroundStyle(Theme.colors.alertWarning)
+                    
+                    Text(NSLocalizedString("circleEthereumRequired", comment: "Ethereum Required"))
+                        .font(Theme.fonts.title2)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                    
+                    Text(NSLocalizedString("circleEthereumRequiredDescription", comment: "Please add Ethereum..."))
+                        .font(Theme.fonts.bodyMRegular)
+                        .foregroundStyle(Theme.colors.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 32)
                     
                     Spacer()
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 VStack {
                     if let address = vault.circleWalletAddress, !address.isEmpty {
@@ -67,7 +62,6 @@ struct CircleView: View {
         .onAppear {
             Task { await checkExistingWallet() }
         }
-        .navigationTitle(NSLocalizedString("circleTitle", comment: "Circle"))
     }
     
     private func checkExistingWallet() async {
@@ -97,30 +91,5 @@ struct CircleView: View {
             }
         }
     }
-    
-    var headerView: some View {
-        HStack {
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.title3)
-                    .foregroundColor(Theme.colors.textPrimary)
-                    .frame(width: 40, height: 40)
-                    .background(Circle().fill(Color.white.opacity(0.1)))
-            }
-            
-            Spacer()
-            
-            Text(NSLocalizedString("circleTitle", comment: "Circle"))
-                .font(Theme.fonts.bodyLMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
-            
-            Spacer()
-            
-            Color.clear.frame(width: 40, height: 40)
-        }
-        .padding(CircleConstants.Design.horizontalPadding)
-    }
-
 }
+
