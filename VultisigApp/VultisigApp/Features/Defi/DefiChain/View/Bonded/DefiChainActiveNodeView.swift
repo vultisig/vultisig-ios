@@ -37,7 +37,7 @@ struct DefiChainActiveNodeView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text(String(format: "nodeAddress".localized, activeNode.node.address.truncatedAddress))
+                Text(String(format: "bondNodeAddress".localized, activeNode.node.address.truncatedAddress))
                     .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
                 Spacer()
