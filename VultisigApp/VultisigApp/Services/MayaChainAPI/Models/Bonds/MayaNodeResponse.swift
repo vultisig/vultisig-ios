@@ -20,7 +20,7 @@ struct MayaNodeResponse: Decodable {
         case status
         case bond
         case bondProviders = "bond_providers"
-        case currentAward = "current_award"
+        case currentAward = "reward"
     }
 
     struct BondProvidersInfo: Decodable {
@@ -35,13 +35,22 @@ struct MayaNodeResponse: Decodable {
 
     struct BondProvider: Decodable {
         let bondAddress: String
-        let bond: String
-        let pools: [String: String]  // asset -> LP units
+        let bonded: Bool
+        let reward: String
+        let pools: [String: String]  // asset -> LP units (bond amounts)
 
         enum CodingKeys: String, CodingKey {
             case bondAddress = "bond_address"
-            case bond
+            case bonded
+            case reward
             case pools
+        }
+
+        /// Calculate total bond amount by summing all pool values
+        var totalBond: Decimal {
+            pools.values.reduce(Decimal.zero) { sum, value in
+                sum + (Decimal(string: value) ?? 0)
+            }
         }
     }
 }

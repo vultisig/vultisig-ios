@@ -919,7 +919,7 @@
 "availableNodes" = "Verfügbare Knoten";
 "activeNodes" = "Aktive Knoten";
 "churnedOut" = "Ausgeschieden";
-"nodeAddress" = "Knotenadresse: %@";
+"bondNodeAddress" = "Knotenadresse: %@";
 "requestToBond" = "Bindungsanfrage";
 "bondToNode" = "An Knoten binden";
 "waitChurnedOutNode" = "Warten Sie, bis der Knoten ausgeschieden ist";
@@ -1179,3 +1179,36 @@
 "noBarcodesFound" = "Keine Barcodes gefunden";
 "aminoSign" = "Amino Signatur";
 "directSign" = "Direkte Signatur";
+
+// LP Units Validation (Maya Bond)
+"availableLPUnits" = "Verfügbare LP-Einheiten";
+"minimumLPUnitsNeeded" = "Mindest-LP-Einheiten erforderlich";
+"estimatedBondValue" = "Geschätzter Bond-Wert";
+"minimumBondRequired" = "Mindestanforderung";
+"noLPPositionForPool" = "Sie haben keine LP-Position in diesem Pool";
+"bondValueBelowMinimum" = "Bond-Wert (%@ CACAO) liegt unter dem Minimum (%@ CACAO). Sie können fortfahren, wenn Sie zu einem bestehenden Bond hinzufügen.";
+"failedToCalculateBondValue" = "Bond-Wert konnte nicht berechnet werden";
+"invalidLPUnits" = "Ungültige LP-Einheiten";
+"lpUnitsExceeded" = "Überschreitet verfügbare LP-Einheiten (%@)";
+"lpUnitsCannotBeZero" = "LP-Einheiten dürfen nicht null sein";
+
+// Unbond Validation (Maya Unbond)
+"bondedLPUnits" = "Gebondete LP-Einheiten";
+"estimatedCacaoValue" = "Geschätzter Wert";
+"noBondFoundForNode" = "Kein Bond für diesen Knoten und diese Adresse gefunden";
+"failedToFetchBondInfo" = "Bond-Informationen konnten nicht abgerufen werden";
+
+// Maya Bond Eligibility
+"checkingNodeEligibility" = "Überprüfe Knoten-Berechtigung...";
+"nodeStatus" = "Knoten-Status";
+"bondProviders" = "Bond-Anbieter";
+"whitelisted" = "Auf der Whitelist";
+"notEligible" = "Nicht berechtigt";
+"notWhitelistedOnNode" = "Sie sind nicht auf der Whitelist dieses Knotens";
+"nodeAtMaxCapacity" = "Knoten hat maximale Kapazität erreicht (8/8)";
+"noLPPositionsForBonding" = "Keine LP-Positionen für Bonding verfügbar";
+"noBondedAssetsOnNode" = "Keine gebondeten Assets auf diesem Knoten gefunden";
+
+// Maya Unbond Node Status
+"nodeActiveCannotUnbond" = "Knoten ist %@ - Unbond nicht möglich während aktiv";
+"nodeChurnedCanUnbond" = "Knoten wurde rotiert - Unbond verfügbar";

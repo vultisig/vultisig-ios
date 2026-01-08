@@ -9,9 +9,11 @@ import Foundation
 
 struct MayaChainLPsInteractor: LPsInteractor {
     private let mayaAPIService = MayaChainAPIService()
-    
-    var aprPeriod: String = "100d"
-    
+
+    var aprPeriod: String {
+        SettingsAPRPeriod.current.rawValue
+    }
+
     func fetchLPPositions(vault: Vault) async -> [LPPosition] {
         guard let mayaCoin = vault.nativeCoin(for: .mayaChain) else { return [] }
         let vaultLPPositions = vault.defiPositions.first { $0.chain == .mayaChain }?.lps ?? []

@@ -39,7 +39,7 @@ struct BondMayaTransactionScreen: View {
                 FunctionAddressField(viewModel: viewModel.addressViewModel)
                     .focused($focusedField, equals: .address)
             }
-            
+
             FormExpandableSection(
                 title: "asset".localized,
                 isValid: viewModel.lpUnitsField.valid,
@@ -70,6 +70,39 @@ struct BondMayaTransactionScreen: View {
 #if os(iOS)
                     .keyboardType(.decimalPad)
 #endif
+
+                    // Available LP units display
+                    if let availableUnits = viewModel.availableLPUnits {
+                        HStack {
+                            Text("availableLPUnits".localized)
+                                .font(Theme.fonts.caption12)
+                                .foregroundColor(Theme.colors.textTertiary)
+                            Spacer()
+                            Text(availableUnits)
+                                .font(Theme.fonts.caption12)
+                                .foregroundColor(Theme.colors.textPrimary)
+                            Button(action: {
+                                viewModel.lpUnitsField.value = availableUnits
+                            }) {
+                                Text("max".localized)
+                                    .font(Theme.fonts.caption12)
+                                    .foregroundColor(Theme.colors.alertInfo)
+                            }
+                        }
+                    }
+
+                    // Estimated CACAO value
+                    if let cacaoValue = viewModel.estimatedCacaoValue {
+                        HStack {
+                            Text("estimatedBondValue".localized)
+                                .font(Theme.fonts.caption12)
+                                .foregroundColor(Theme.colors.textTertiary)
+                            Spacer()
+                            Text("\(cacaoValue.formatted()) CACAO")
+                                .font(Theme.fonts.caption12)
+                                .foregroundColor(Theme.colors.textPrimary)
+                        }
+                    }
                 }
             }
         }

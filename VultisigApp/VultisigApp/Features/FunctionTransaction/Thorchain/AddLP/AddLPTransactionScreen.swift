@@ -25,12 +25,35 @@ struct AddLPTransactionScreen: View {
             guard let transactionBuilder = viewModel.transactionBuilder else { return }
             onVerify(transactionBuilder)
         } customView: {
-            EmptyView()
+            asymmetricDepositInfo
         }
         .onLoad { viewModel.onLoad() }
         .onChange(of: viewModel.percentageSelected) { _, newValue in
             guard let newValue else { return }
             viewModel.onPercentage(newValue)
+        }
+    }
+
+    @ViewBuilder
+    var asymmetricDepositInfo: some View {
+        if viewModel.showAsymmetricDepositInfo {
+            HStack(spacing: 8) {
+                Image(systemName: "info.circle")
+                    .foregroundColor(Theme.colors.alertInfo)
+                    .font(Theme.fonts.caption12)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("asymmetricDeposit".localized)
+                        .font(Theme.fonts.caption12)
+                        .foregroundColor(Theme.colors.textPrimary)
+                    Text(viewModel.asymmetricDepositMessage)
+                        .font(Theme.fonts.caption12)
+                        .foregroundColor(Theme.colors.textTertiary)
+                }
+                Spacer()
+            }
+            .padding(12)
+            .background(Theme.colors.bgNeutral)
+            .cornerRadius(8)
         }
     }
 }

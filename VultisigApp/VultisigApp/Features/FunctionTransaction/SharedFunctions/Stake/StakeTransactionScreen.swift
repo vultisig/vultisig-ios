@@ -17,7 +17,7 @@ struct StakeTransactionScreen: View {
         AmountFunctionTransactionScreen(
             title: String(format: "stakeCoin".localized, viewModel.coin.ticker),
             coin: viewModel.coin.toCoinMeta(),
-            availableAmount: viewModel.coin.balanceDecimal,
+            availableAmount: viewModel.maxStakeableAmount,
             percentageSelected: $percentageSelected,
             percentageFieldType: .button,
             amountField: viewModel.amountField,
@@ -26,7 +26,10 @@ struct StakeTransactionScreen: View {
             guard let transactionBuilder = viewModel.transactionBuilder else { return }
             onVerify(transactionBuilder)
         } customView: {
-            autocompoundToggle
+            VStack(spacing: 12) {
+                autocompoundToggle
+                gasReservationInfo
+            }
         }
         .onLoad { viewModel.onLoad() }
         .onChange(of: percentageSelected) { _, newValue in
@@ -39,6 +42,24 @@ struct StakeTransactionScreen: View {
     var autocompoundToggle: some View {
         if viewModel.supportsAutocompound {
             AutocompoundToggle(isEnabled: $viewModel.isAutocompound)
+        }
+    }
+
+    @ViewBuilder
+    var gasReservationInfo: some View {
+        if let message = viewModel.gasReservationMessage {
+            HStack(spacing: 8) {
+                Image(systemName: "info.circle")
+                    .foregroundColor(Theme.colors.textTertiary)
+                    .font(Theme.fonts.caption12)
+                Text(message)
+                    .font(Theme.fonts.caption12)
+                    .foregroundColor(Theme.colors.textTertiary)
+                Spacer()
+            }
+            .padding(12)
+            .background(Theme.colors.bgSurface1)
+            .cornerRadius(8)
         }
     }
 }

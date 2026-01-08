@@ -48,7 +48,7 @@ struct DefiPositionsService {
             let coins = pools.compactMap { THORChainAssetFactory.createCoin(from: $0.asset) }
             return coins
         case .mayaChain:
-            let pools = (try? await MayaChainAPIService().getPools()) ?? []
+            let pools = (try? await MayaChainAPIService().getPoolStats(period: SettingsAPRPeriod.current.rawValue)) ?? []
             let coins = pools.compactMap { THORChainAssetFactory.createCoin(from: $0.asset) }
             return coins
         default:

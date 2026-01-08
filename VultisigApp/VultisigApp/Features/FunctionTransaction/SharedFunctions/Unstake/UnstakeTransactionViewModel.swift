@@ -12,38 +12,41 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
     let coin: Coin
     let vault: Vault
     let defaultAutocompound: Bool
-    
+    let availableToUnstake: Decimal?
+
     var supportsAutocompound: Bool {
         coin.supportsAutocompound
     }
-    
+
     @Published var percentageSelected: Double? = 100
     @Published var availableAmount: Decimal = 0
     var autocompoundBalance: Decimal = 0
     @Published var isAutocompound: Bool = false
     @Published var validForm: Bool = false
     @Published var amountField = FormField(label: "amount".localized)
-    
+
     private(set) var isMaxAmount: Bool = false
     private(set) lazy var form: [FormField] = [
         amountField
     ]
-    
+
     var formCancellable: AnyCancellable?
     var cancellables = Set<AnyCancellable>()
-    
-    init(coin: Coin, vault: Vault, defaultAutocompound: Bool) {
+
+    init(coin: Coin, vault: Vault, defaultAutocompound: Bool, availableToUnstake: Decimal? = nil) {
         self.coin = coin
         self.vault = vault
         self.defaultAutocompound = defaultAutocompound
+        self.availableToUnstake = availableToUnstake
     }
     
     
     func onLoad() {
         setupForm()
-        availableAmount = coin.stakedBalanceDecimal
+        // Use availableToUnstake if provided, otherwise fall back to stakedBalanceDecimal
+        availableAmount = availableToUnstake ?? coin.stakedBalanceDecimal
         setupAmountField()
-        
+
         $isAutocompound
             .receive(on: DispatchQueue.main)
             .sink(weak: self) { viewModel, isAutoCompound in
@@ -98,8 +101,10 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
             if autocompoundBalance == .zero {
                 await fetchAutocompoundBalance()
             }
-            
-            self.availableAmount = isAutocompound ? autocompoundBalance : coin.stakedBalanceDecimal
+
+            // Use availableToUnstake if provided, otherwise fall back to stakedBalanceDecimal
+            let defaultBalance = availableToUnstake ?? coin.stakedBalanceDecimal
+            self.availableAmount = isAutocompound ? autocompoundBalance : defaultBalance
             self.setupAmountField()
         }
     }

@@ -919,7 +919,7 @@
 "availableNodes" = "Nós Disponíveis";
 "activeNodes" = "Nós Ativos";
 "churnedOut" = "Excluído";
-"nodeAddress" = "Endereço do Nó: %@";
+"bondNodeAddress" = "Endereço do Nó: %@";
 "requestToBond" = "Solicitação de Vínculo";
 "bondToNode" = "Vincular ao Nó";
 "waitChurnedOutNode" = "Aguarde até que o Nó seja excluído";
@@ -1179,3 +1179,36 @@
 "noBarcodesFound" = "Nenhum código de barras encontrado";
 "aminoSign" = "Assinatura Amino";
 "directSign" = "Assinatura Direta";
+
+// LP Units Validation (Maya Bond)
+"availableLPUnits" = "Unidades LP Disponíveis";
+"minimumLPUnitsNeeded" = "Unidades LP Mínimas Necessárias";
+"estimatedBondValue" = "Valor Estimado do Bond";
+"minimumBondRequired" = "Mínimo Requerido";
+"noLPPositionForPool" = "Você não tem uma posição LP neste pool";
+"bondValueBelowMinimum" = "O valor do bond (%@ CACAO) está abaixo do mínimo (%@ CACAO). Você pode continuar se estiver adicionando a um bond existente.";
+"failedToCalculateBondValue" = "Falha ao calcular o valor do bond";
+"invalidLPUnits" = "Unidades LP inválidas";
+"lpUnitsExceeded" = "Excede as unidades LP disponíveis (%@)";
+"lpUnitsCannotBeZero" = "As unidades LP não podem ser zero";
+
+// Unbond Validation (Maya Unbond)
+"bondedLPUnits" = "Unidades LP em Bond";
+"estimatedCacaoValue" = "Valor Estimado";
+"noBondFoundForNode" = "Nenhum bond encontrado para este nó e endereço";
+"failedToFetchBondInfo" = "Falha ao buscar informações do bond";
+
+// Maya Bond Eligibility
+"checkingNodeEligibility" = "Verificando elegibilidade do nó...";
+"nodeStatus" = "Status do Nó";
+"bondProviders" = "Provedores de Bond";
+"whitelisted" = "Na Lista Branca";
+"notEligible" = "Não Elegível";
+"notWhitelistedOnNode" = "Você não está na lista branca deste nó";
+"nodeAtMaxCapacity" = "O nó atingiu a capacidade máxima (8/8)";
+"noLPPositionsForBonding" = "Nenhuma posição LP disponível para bonding";
+"noBondedAssetsOnNode" = "Nenhum ativo em bond encontrado neste nó";
+
+// Maya Unbond Node Status
+"nodeActiveCannotUnbond" = "O nó está %@ - não é possível fazer unbond enquanto ativo";
+"nodeChurnedCanUnbond" = "O nó foi rotacionado - unbond disponível";
