@@ -69,13 +69,17 @@ struct MayaCacaoPoolMemberResponse: Codable {
     let depositAmount: String
     let withdrawAmount: String
     let units: String
+    let value: String
+    let pnl: String
     let lastWithdrawHeight: Int64
     let lastDepositHeight: Int64
 
     enum CodingKeys: String, CodingKey {
         case depositAmount = "deposit_amount"
         case withdrawAmount = "withdraw_amount"
-        case units = "units"
+        case units
+        case value
+        case pnl
         case lastWithdrawHeight = "last_withdraw_height"
         case lastDepositHeight = "last_deposit_height"
     }

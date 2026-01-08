@@ -11,31 +11,34 @@ import SwiftData
 @Model
 final class StakePosition {
     @Attribute(.unique) var id: String
-    
+
     var coin: CoinMeta
     var type: StakePositionType
     var amount: Decimal
+    var availableToUnstake: Decimal?
     var apr: Double?
     var estimatedReward: Decimal?
     var nextPayout: TimeInterval?
     var rewards: Decimal?
     var rewardCoin: CoinMeta?
     var unstakeMetadata: UnstakeMetadata?
-    
+
     var canUnstake: Bool {
-        !amount.isZero && (unstakeMetadata?.canUnstake ?? true)
+        let unstakeAmount = availableToUnstake ?? amount
+        return !unstakeAmount.isZero && (unstakeMetadata?.canUnstake ?? true)
     }
-    
+
     var unstakeMessage: String? {
         unstakeMetadata?.unstakeMessage(for: coin)
     }
-    
+
     @Relationship(inverse: \Vault.stakePositions) var vault: Vault?
-    
+
     init(
         coin: CoinMeta,
         type: StakePositionType,
         amount: Decimal,
+        availableToUnstake: Decimal? = nil,
         apr: Double? = nil,
         estimatedReward: Decimal? = nil,
         nextPayout: TimeInterval? = nil,
@@ -47,6 +50,7 @@ final class StakePosition {
         self.coin = coin
         self.type = type
         self.amount = amount
+        self.availableToUnstake = availableToUnstake
         self.apr = apr
         self.estimatedReward = estimatedReward
         self.nextPayout = nextPayout

@@ -39,7 +39,7 @@ struct UnbondMayaTransactionScreen: View {
                 FunctionAddressField(viewModel: viewModel.addressViewModel)
                     .focused($focusedField, equals: .address)
             }
-            
+
             FormExpandableSection(
                 title: "asset".localized,
                 isValid: viewModel.lpUnitsField.valid,
@@ -58,7 +58,7 @@ struct UnbondMayaTransactionScreen: View {
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    
+
                     CommonTextField(
                         text: $viewModel.lpUnitsField.value,
                         label: viewModel.lpUnitsField.label,
@@ -70,6 +70,39 @@ struct UnbondMayaTransactionScreen: View {
 #if os(iOS)
                     .keyboardType(.decimalPad)
 #endif
+
+                    // Bonded LP units display
+                    if let bondedUnits = viewModel.bondedLPUnits {
+                        HStack {
+                            Text("bondedLPUnits".localized)
+                                .font(Theme.fonts.caption12)
+                                .foregroundColor(Theme.colors.textTertiary)
+                            Spacer()
+                            Text(bondedUnits)
+                                .font(Theme.fonts.caption12)
+                                .foregroundColor(Theme.colors.textPrimary)
+                            Button(action: {
+                                viewModel.lpUnitsField.value = bondedUnits
+                            }) {
+                                Text("max".localized)
+                                    .font(Theme.fonts.caption12)
+                                    .foregroundColor(Theme.colors.alertInfo)
+                            }
+                        }
+                    }
+
+                    // Estimated CACAO value
+                    if let cacaoValue = viewModel.estimatedCacaoValue {
+                        HStack {
+                            Text("estimatedCacaoValue".localized)
+                                .font(Theme.fonts.caption12)
+                                .foregroundColor(Theme.colors.textTertiary)
+                            Spacer()
+                            Text("\(cacaoValue.formatted()) CACAO")
+                                .font(Theme.fonts.caption12)
+                                .foregroundColor(Theme.colors.textPrimary)
+                        }
+                    }
                 }
             }
         }

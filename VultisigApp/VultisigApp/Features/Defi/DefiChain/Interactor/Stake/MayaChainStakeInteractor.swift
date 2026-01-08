@@ -36,10 +36,14 @@ struct MayaChainStakeInteractor: StakeInteractor {
             // Fetch CACAO pool position
             let position = try await mayaChainAPIService.getCacaoPoolPosition(address: cacaoCoin.address)
 
-            let stakedAmount = position.userUnits / pow(10, cacaoCoin.decimals)
+            // Use value for display amount (includes earnings)
+            let stakedAmount = position.stakedAmount / pow(10, cacaoCoin.decimals)
+            // Use units for unstake amount (what can actually be withdrawn)
+            let availableToUnstake = position.availableUnits / pow(10, cacaoCoin.decimals)
+
             // Fetch APR/APY
             let aprData = try? await mayaChainAPIService.getCacaoPoolAPR()
-            
+
             // Check for withdrawal date
             let unstakeMetadata = calculateUnstakeMetadata(
                 currentHeight: health.lastMayaNode.height,
@@ -52,6 +56,7 @@ struct MayaChainStakeInteractor: StakeInteractor {
                 coin: cacaoCoin.toCoinMeta(),
                 type: .stake,
                 amount: stakedAmount,
+                availableToUnstake: availableToUnstake,
                 apr: aprData?.apr ?? 0,
                 estimatedReward: nil,  // CACAO pool doesn't show estimated rewards separately
                 nextPayout: nil,  // CACAO pool rewards are continuously accrued
