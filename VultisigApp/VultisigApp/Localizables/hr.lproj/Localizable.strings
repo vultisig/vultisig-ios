@@ -919,7 +919,7 @@
 "availableNodes" = "Dostupni Čvorovi";
 "activeNodes" = "Aktivni Čvorovi";
 "churnedOut" = "Isključen";
-"nodeAddress" = "Adresa Čvora: %@";
+"bondNodeAddress" = "Adresa Čvora: %@";
 "requestToBond" = "Zahtjev za Vezivanje";
 "bondToNode" = "Veži na Čvor";
 "waitChurnedOutNode" = "Pričekajte dok čvor ne bude isključen";

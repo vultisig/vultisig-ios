@@ -21,7 +21,7 @@ struct DefiMainScreen: View {
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @Environment(\.router) var router
-
+    
     @State var scrollProxy: ScrollViewProxy?
     @State var showSearchHeader: Bool = false
     @State var focusSearch: Bool = false
@@ -98,17 +98,6 @@ struct DefiMainScreen: View {
             .transition(.opacity)
             .frame(height: 42)
             .padding(.bottom, 16)
-            
-            // Circle Protocol Entry
-            if isCircleEnabled {
-                Button {
-                    router.navigate(to: CircleRoute.main(vault: vault))
-                } label: {
-                    DefiCircleRow(vault: vault)
-                        .padding(.vertical, 4) // Spacing to match list style
-                }
-                .buttonStyle(.plain)
-            }
             
             DefiChainListView(
                 vault: vault,

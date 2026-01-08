@@ -927,7 +927,7 @@
 "standby" = "Standby";
 "ready" = "Ready";
 "disabled" = "Disabled";
-"nodeAddress" = "Node Address: %@";
+"bondNodeAddress" = "Node Address: %@";
 "requestToBond" = "Request to Bond";
 "bondToNode" = "Bond to Node";
 "waitChurnedOutNode"= "Wait until Node is churned out";

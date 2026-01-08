@@ -923,7 +923,7 @@
 "standby" = "En Espera";
 "ready" = "Listo";
 "disabled" = "Deshabilitado";
-"nodeAddress" = "Dirección del Nodo: %@";
+"bondNodeAddress" = "Dirección del Nodo: %@";
 "requestToBond" = "Solicitud de Vinculación";
 "bondToNode" = "Vincular al Nodo";
 "waitChurnedOutNode" = "Espera hasta que el Nodo sea desvinculado";

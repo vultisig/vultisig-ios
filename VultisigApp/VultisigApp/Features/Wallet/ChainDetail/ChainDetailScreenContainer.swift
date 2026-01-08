@@ -13,6 +13,7 @@ struct ChainDetailScreenContainer: View {
 
     @State private var selectedTab: HomeTab = .wallet
     @State private var refreshTrigger: Bool = false
+    @State private var addressToCopy: Coin?
     private let tabs: [HomeTab]
 
     @EnvironmentObject var appViewModel: AppViewModel
@@ -37,7 +38,8 @@ struct ChainDetailScreenContainer: View {
                     ChainDetailScreen(
                         nativeCoin: group.nativeCoin,
                         vault: vault,
-                        refreshTrigger: $refreshTrigger
+                        refreshTrigger: $refreshTrigger,
+                        onAddressCopy: { addressToCopy = $0 }
                     )
                     #if os(macOS)
                     .crossPlatformToolbar(ignoresTopEdge: true) {
@@ -72,6 +74,7 @@ struct ChainDetailScreenContainer: View {
             }
         }
         #endif
+        .withAddressCopy(coin: $addressToCopy)
     }
     
     func onExplorer() {

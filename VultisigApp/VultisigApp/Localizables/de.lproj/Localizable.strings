@@ -919,7 +919,7 @@
 "availableNodes" = "Verfügbare Knoten";
 "activeNodes" = "Aktive Knoten";
 "churnedOut" = "Ausgeschieden";
-"nodeAddress" = "Knotenadresse: %@";
+"bondNodeAddress" = "Knotenadresse: %@";
 "requestToBond" = "Bindungsanfrage";
 "bondToNode" = "An Knoten binden";
 "waitChurnedOutNode" = "Warten Sie, bis der Knoten ausgeschieden ist";
