@@ -11,12 +11,12 @@ import Combine
 
 class FunctionCallUnstake: FunctionCallAddressable, ObservableObject {
     @Published var amount: Decimal = 1
-    @Published var nodeAddress: String = "Ef8t6cZkqFuHjJ_a_ydEK_tu3LHWRA4JZXRyewLY4j8FZ6B5"
+    @Published var nodeAddress: String = ""
     
     // Internal
     @Published var amountValid: Bool = true
-    @Published var nodeAddressValid: Bool = true
-    @Published var isTheFormValid: Bool = true
+    @Published var nodeAddressValid: Bool = false
+    @Published var isTheFormValid: Bool = false
     @Published var customErrorMessage: String? = nil
     
     var addressFields: [String: String] {
