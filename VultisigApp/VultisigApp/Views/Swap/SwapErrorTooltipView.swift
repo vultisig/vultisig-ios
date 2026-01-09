@@ -83,56 +83,6 @@ struct SwapErrorTooltipView: View {
     }
 }
 
-struct RoundedTriangle: Shape {
-    let cornerRadius: CGFloat
-    
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        
-        let topPoint = CGPoint(x: rect.midX, y: rect.minY)
-        let bottomLeft = CGPoint(x: rect.minX, y: rect.maxY)
-        let bottomRight = CGPoint(x: rect.maxX, y: rect.maxY)
-        
-        path.move(to: CGPoint(x: rect.midX, y: rect.minY + cornerRadius))
-        
-        // Top point with rounded corner
-        path.addQuadCurve(
-            to: CGPoint(x: rect.midX + cornerRadius, y: rect.minY + cornerRadius * 1.5),
-            control: topPoint
-        )
-        
-        // Line to bottom right
-        path.addLine(to: CGPoint(x: rect.maxX - cornerRadius, y: rect.maxY))
-        
-        // Bottom right corner
-        path.addQuadCurve(
-            to: CGPoint(x: rect.maxX, y: rect.maxY),
-            control: bottomRight
-        )
-        
-        // Bottom edge
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
-        
-        // Bottom left corner
-        path.addQuadCurve(
-            to: CGPoint(x: rect.minX + cornerRadius, y: rect.maxY),
-            control: bottomLeft
-        )
-        
-        // Line back to top
-        path.addLine(to: CGPoint(x: rect.midX - cornerRadius, y: rect.minY + cornerRadius * 1.5))
-        
-        // Close to top point
-        path.addQuadCurve(
-            to: CGPoint(x: rect.midX, y: rect.minY + cornerRadius),
-            control: topPoint
-        )
-        
-        path.closeSubpath()
-        return path
-    }
-}
-
 struct TooltipShape: Shape {
     let cornerRadius: CGFloat = 16
     let topRightRadius: CGFloat = 4
