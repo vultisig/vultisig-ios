@@ -32,11 +32,13 @@ extension SwapCryptoDetailsView {
         ScrollView {
             VStack(spacing: 8) {
                 swapContent
+                    .zIndex(1)
                 percentageButtons
                 summary
             }
             .padding(.horizontal, 16)
         }
+        .scrollClipDisabled()
     }
     
     func closeSheets() {
