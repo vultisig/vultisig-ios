@@ -73,7 +73,7 @@ struct MayaChainBondInteractor: BondInteractor {
             let finalActiveNodes = activeNodes
             let finalAvailableNodes = Array(availableNodesList)
 
-            await savePositions(positions: finalActiveNodes)
+            await savePositions(positions: finalActiveNodes, vault: vault)
             return (finalActiveNodes, finalAvailableNodes)
         } catch {
             print("Error fetching Maya bond positions: \(error)")
@@ -90,9 +90,9 @@ struct MayaChainBondInteractor: BondInteractor {
 
 private extension MayaChainBondInteractor {
     @MainActor
-    func savePositions(positions: [BondPosition]) async {
+    func savePositions(positions: [BondPosition], vault: Vault) async {
         do {
-            try DefiPositionsStorageService().upsert(positions)
+            try DefiPositionsStorageService().upsert(positions, for: vault)
         } catch {
             print("An error occurred while saving bonded positions: \(error)")
         }
