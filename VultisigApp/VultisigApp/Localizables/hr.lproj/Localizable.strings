@@ -745,6 +745,14 @@
 "swapRouteNotAvailable" = "Ruta zamjene nije dostupna";
 "swapAmountTooSmall" = "Iznos zamjene je premali";
 "swapAmountTooSmallRecommended" = "Iznos zamjene je premali. Preporučeni iznos %@";
+"swapErrorUnexpectedTitle" = "Neočekivana Greška";
+"swapErrorUnexpectedDescription" = "Došlo je do neočekivane greške. Molimo pokušajte ponovo.";
+"swapErrorInsufficientFundsTitle" = "Nedovoljna Sredstva";
+"swapErrorInsufficientFundsDescription" = "Nedovoljna sredstva za izvršenje zamjene. Molimo dopunite novčanik.";
+"swapErrorAmountTooSmallTitle" = "Iznos Premali";
+"swapErrorAmountTooSmallDescription" = "Iznos zamjene je premali. Molimo povećajte iznos.";
+"swapErrorInboundAddressTitle" = "Nevažeća Adresa";
+"swapErrorInboundAddressDescription" = "Ulazna adresa je nevažeća. Molimo pokušajte ponovo.";
 "noLiquidityPool" = "Nema dostupnog pool likvidnosti za ovaj par tokena. Ovaj asset možda nije podržan.";
 "switchBackToInternetMode" = "Vrati se na internetski način rada";
 "switchToLocalMode" = "Prijeđi na lokalni način rada";

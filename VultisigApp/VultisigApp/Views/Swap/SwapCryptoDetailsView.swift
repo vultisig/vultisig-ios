@@ -12,7 +12,8 @@ struct SwapCryptoDetailsView: View {
     @ObservedObject var swapViewModel: SwapCryptoViewModel
     
     @State var buttonRotated = false
-    
+    @State var showErrorTooltip = false
+
     @StateObject var referredViewModel = ReferredViewModel()
     @StateObject var keyboardObserver = KeyboardObserver()
     
@@ -41,6 +42,16 @@ struct SwapCryptoDetailsView: View {
             }
             .onChange(of: swapViewModel.toChain) { _, _ in
                 swapViewModel.handleToChainUpdate(tx: tx, vault: vault)
+            }
+            .onChange(of: swapViewModel.error?.localizedDescription) { _, newError in
+                if newError != nil {
+                    showErrorTooltip = true
+                } else {
+                    showErrorTooltip = false
+                }
+            }
+            .onChange(of: tx.fromAmount) { _, _ in
+                swapViewModel.error = nil
             }
     }
     
@@ -105,11 +116,22 @@ struct SwapCryptoDetailsView: View {
     var swapContent: some View {
         ZStack {
             amountFields
-            swapButton
-            
+
+            if let error = swapViewModel.error {
+                SwapErrorTooltipView(
+                    error: error,
+                    showTooltip: $showErrorTooltip,
+                    onDismissTooltip: {
+                        showErrorTooltip = false
+                    }
+                )
+            } else {
+                swapButton
+            }
+
             filler
                 .offset(x: -28)
-            
+
             filler
                 .offset(x: 28)
         }

@@ -745,6 +745,14 @@
 "swapRouteNotAvailable" = "Tauschroute nicht verfügbar";
 "swapAmountTooSmall" = "Tauschbetrag zu klein";
 "swapAmountTooSmallRecommended" = "Tauschbetrag zu klein. Empfohlener Betrag %@";
+"swapErrorUnexpectedTitle" = "Unerwarteter Fehler";
+"swapErrorUnexpectedDescription" = "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.";
+"swapErrorInsufficientFundsTitle" = "Unzureichendes Guthaben";
+"swapErrorInsufficientFundsDescription" = "Unzureichendes Guthaben für den Tausch. Bitte laden Sie Ihr Wallet auf.";
+"swapErrorAmountTooSmallTitle" = "Betrag zu klein";
+"swapErrorAmountTooSmallDescription" = "Der Tauschbetrag ist zu klein. Bitte erhöhen Sie den Betrag.";
+"swapErrorInboundAddressTitle" = "Ungültige Adresse";
+"swapErrorInboundAddressDescription" = "Die Eingangsadresse ist ungültig. Bitte versuchen Sie es erneut.";
 "noLiquidityPool" = "Kein Liquiditätspool für dieses Token-Paar verfügbar. Dieser Asset wird möglicherweise nicht unterstützt.";
 "switchBackToInternetMode" = "Wechsle zurück in den Internetmodus";
 "switchToLocalMode" = "Wechsle in den lokalen Modus";
