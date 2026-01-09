@@ -40,18 +40,40 @@ struct DefiPositionsStorageService {
     }
     
     /// Upserts bond positions - updates existing ones or inserts new ones based on their unique ID
+    /// Also removes stale positions that are no longer present in the new positions array
     @MainActor
-    func upsert(_ positions: [BondPosition]) throws {
-        let positionIDs = positions.map { $0.id }
-        let fetchDescriptor = FetchDescriptor<BondPosition>(
+    func upsert(_ positions: [BondPosition], for vault: Vault) throws {
+        let vaultPubKey = vault.pubKeyECDSA
+
+        // Fetch all existing bond positions for this vault
+        let allVaultPositionsDescriptor = FetchDescriptor<BondPosition>(
             predicate: #Predicate<BondPosition> { position in
-                positionIDs.contains(position.id)
+                position.id.contains(vaultPubKey)
             }
         )
-        
-        let existingPositions = try Storage.shared.modelContext.fetch(fetchDescriptor)
-        let existingPositionsByID = Dictionary(uniqueKeysWithValues: existingPositions.map { ($0.id, $0) })
-        
+        let allExistingPositions = try Storage.shared.modelContext.fetch(allVaultPositionsDescriptor)
+
+        // If no new positions, delete all existing ones for this vault
+        if positions.isEmpty {
+            for existingPosition in allExistingPositions {
+                Storage.shared.modelContext.delete(existingPosition)
+            }
+            try Storage.shared.save()
+            return
+        }
+
+        // Create lookup for existing positions
+        let existingPositionsByID = Dictionary(uniqueKeysWithValues: allExistingPositions.map { ($0.id, $0) })
+        let newPositionIDs = Set(positions.map { $0.id })
+
+        // Delete positions that are no longer present
+        for existingPosition in allExistingPositions {
+            if !newPositionIDs.contains(existingPosition.id) {
+                Storage.shared.modelContext.delete(existingPosition)
+            }
+        }
+
+        // Update or insert new positions
         for position in positions {
             if let existing = existingPositionsByID[position.id] {
                 // Update existing position
@@ -64,7 +86,7 @@ struct DefiPositionsStorageService {
                 Storage.shared.modelContext.insert(position)
             }
         }
-        
+
         try Storage.shared.save()
     }
     

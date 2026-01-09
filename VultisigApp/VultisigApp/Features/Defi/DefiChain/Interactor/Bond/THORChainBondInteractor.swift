@@ -73,7 +73,7 @@ struct THORChainBondInteractor: BondInteractor {
             let finalActiveNodes = activeNodes
             let finalAvailableNodes = Array(availableNodesList)
             
-            await savePositions(positions: finalActiveNodes)
+            await savePositions(positions: finalActiveNodes, vault: vault)
             return (finalActiveNodes, finalAvailableNodes)
         } catch {
             return ([], [])
@@ -81,15 +81,18 @@ struct THORChainBondInteractor: BondInteractor {
     }
     
     func canUnbond() async -> Bool {
-        (try? await thorchainAPIService.getNetwork().vaults_migrating) ?? false
+        guard let network = try? await thorchainAPIService.getNetwork() else {
+            return false // Fail-safe: don't allow unbond if can't verify network status
+        }
+        return !network.vaults_migrating
     }
 }
 
 private extension THORChainBondInteractor {
     @MainActor
-    func savePositions(positions: [BondPosition]) async {
+    func savePositions(positions: [BondPosition], vault: Vault) async {
         do {
-            try DefiPositionsStorageService().upsert(positions)
+            try DefiPositionsStorageService().upsert(positions, for: vault)
         } catch {
             print("An error occured while saving staked positions: \(error)")
         }
