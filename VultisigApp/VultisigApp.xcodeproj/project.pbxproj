@@ -847,6 +847,7 @@
 		A6966D2D2BA402A900903CA4 /* TokenSelectorDropdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D2C2BA402A900903CA4 /* TokenSelectorDropdown.swift */; };
 		A6966D2F2BA4045C00903CA4 /* SwapCryptoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D2E2BA4045C00903CA4 /* SwapCryptoView.swift */; };
 		A6966D312BA4048800903CA4 /* SwapCryptoDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D302BA4048800903CA4 /* SwapCryptoDetailsView.swift */; };
+		A6966D322BA4049900903CA4 /* SwapErrorTooltipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D332BA4049900903CA4 /* SwapErrorTooltipView.swift */; };
 		A6980C242BC0836300F452AB /* SettingsMainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C232BC0836300F452AB /* SettingsMainScreen.swift */; };
 		A6980C262BC0848F00F452AB /* SettingCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C252BC0848F00F452AB /* SettingCell.swift */; };
 		A6980C282BC086BC00F452AB /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C272BC086BC00F452AB /* SettingsViewModel.swift */; };
@@ -2142,6 +2143,7 @@
 		A6966D2C2BA402A900903CA4 /* TokenSelectorDropdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectorDropdown.swift; sourceTree = "<group>"; };
 		A6966D2E2BA4045C00903CA4 /* SwapCryptoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoView.swift; sourceTree = "<group>"; };
 		A6966D302BA4048800903CA4 /* SwapCryptoDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoDetailsView.swift; sourceTree = "<group>"; };
+		A6966D332BA4049900903CA4 /* SwapErrorTooltipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapErrorTooltipView.swift; sourceTree = "<group>"; };
 		A6980C232BC0836300F452AB /* SettingsMainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsMainScreen.swift; sourceTree = "<group>"; };
 		A6980C252BC0848F00F452AB /* SettingCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingCell.swift; sourceTree = "<group>"; };
 		A6980C272BC086BC00F452AB /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
@@ -6240,6 +6242,7 @@
 				A543B3A12BEA93D4003FB989 /* SwapQuote.swift */,
 				A564ED3F2BC34B690056FDC0 /* SwapVerifyView.swift */,
 				A6966D302BA4048800903CA4 /* SwapCryptoDetailsView.swift */,
+				A6966D332BA4049900903CA4 /* SwapErrorTooltipView.swift */,
 				A6BFE1BE2D94663E000B73C0 /* SwapChainPickerView.swift */,
 				A6BFE1C62D95F3C9000B73C0 /* SwapCoinPickerView.swift */,
 				A60F29AC2DA08C5300C24765 /* SwapCryptoDoneView.swift */,
@@ -7266,6 +7269,7 @@
 				B57DD59A2C3DA5EA00934CBB /* SolanaFmTokenInfo.swift in Sources */,
 				13155A302ED4AE5D0042549B /* CacaoUnstakeTransactionBuilder.swift in Sources */,
 				A6966D312BA4048800903CA4 /* SwapCryptoDetailsView.swift in Sources */,
+				A6966D322BA4049900903CA4 /* SwapErrorTooltipView.swift in Sources */,
 				139450602EC37BAE006AEE94 /* RemoveLPTransactionBuilder.swift in Sources */,
 				13C0F79F2EC60FE500C2A3B8 /* DefiPositionsService.swift in Sources */,
 				A5F97C8E2BBF0BCF000C30DF /* BalanceService.swift in Sources */,

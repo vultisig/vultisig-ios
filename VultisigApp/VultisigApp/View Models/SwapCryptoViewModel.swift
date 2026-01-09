@@ -343,17 +343,30 @@ struct SwapCryptoLogic {
         case insufficientFunds
         case swapAmountTooSmall
         case inboundAddress
-        
+
+        var errorTitle: String {
+            switch self {
+            case .unexpectedError:
+                return "swapErrorUnexpectedTitle".localized
+            case .insufficientFunds:
+                return "swapErrorInsufficientFundsTitle".localized
+            case .swapAmountTooSmall:
+                return "swapErrorAmountTooSmallTitle".localized
+            case .inboundAddress:
+                return "swapErrorInboundAddressTitle".localized
+            }
+        }
+
         var errorDescription: String? {
             switch self {
             case .unexpectedError:
-                return "Unexpected swap error"
+                return "swapErrorUnexpectedDescription".localized
             case .insufficientFunds:
-                return "Insufficient funds"
+                return "swapErrorInsufficientFundsDescription".localized
             case .swapAmountTooSmall:
-                return "Swap amount too small"
+                return "swapErrorAmountTooSmallDescription".localized
             case .inboundAddress:
-                return "Inbound address is invalid"
+                return "swapErrorInboundAddressDescription".localized
             }
         }
     }

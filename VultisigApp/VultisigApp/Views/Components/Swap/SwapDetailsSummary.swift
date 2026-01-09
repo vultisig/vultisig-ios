@@ -33,11 +33,6 @@ struct SwapDetailsSummary: View {
             }
             
             otherFees
-            
-            if let error = swapViewModel.error {
-                Separator()
-                getErrorCell(text: error.localizedDescription)
-            }
         }
         .padding(.top, 8)
     }

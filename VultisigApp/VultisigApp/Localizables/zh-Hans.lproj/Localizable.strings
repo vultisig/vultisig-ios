@@ -746,6 +746,14 @@
 "swapRouteNotAvailable" = "交换路由不可用";
 "swapAmountTooSmall" = "交换金额太小";
 "swapAmountTooSmallRecommended" = "交换金额太小。推荐金额 %@";
+"swapErrorUnexpectedTitle" = "意外错误";
+"swapErrorUnexpectedDescription" = "发生意外错误。请重试。";
+"swapErrorInsufficientFundsTitle" = "余额不足";
+"swapErrorInsufficientFundsDescription" = "余额不足以执行交换。请为钱包充值。";
+"swapErrorAmountTooSmallTitle" = "金额太小";
+"swapErrorAmountTooSmallDescription" = "交换金额太小。请增加金额。";
+"swapErrorInboundAddressTitle" = "地址无效";
+"swapErrorInboundAddressDescription" = "入站地址无效。请重试。";
 "noLiquidityPool" = "此代币对没有可用的流动性池。此资产可能不受支持";
 "switchBackToInternetMode" = " 切换回互联网模式";
 "switchToLocalMode" = "切换到本地模式";
