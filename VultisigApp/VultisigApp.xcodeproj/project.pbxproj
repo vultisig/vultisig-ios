@@ -349,7 +349,6 @@
 		13AB73722EB923CD00DA106B /* RequiredValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AB73712EB923CA00DA106B /* RequiredValidator.swift */; };
 		13AB73742EB9240300DA106B /* ClosureValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AB73732EB923FD00DA106B /* ClosureValidator.swift */; };
 		13AB73762EB925A100DA106B /* AmountBalanceValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AB73752EB9259A00DA106B /* AmountBalanceValidator.swift */; };
-		CCD4367C48BE63087AD4736C /* LPUnitsValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C3E3E97CE3E3775F004F4EE /* LPUnitsValidator.swift */; };
 		13AC28082E61E294001CB9AA /* ScreenEdgeInsets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AC28072E61E293001CB9AA /* ScreenEdgeInsets.swift */; };
 		13AC84032EA8518700C1399E /* THORChainAPICache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AC84022EA8518700C1399E /* THORChainAPICache.swift */; };
 		13AF0D182E4CE655004D4FD2 /* NavigationRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AF0D172E4CE652004D4FD2 /* NavigationRouter.swift */; };
@@ -483,11 +482,11 @@
 		13E4281B2ED497010097AD11 /* AssetSelectionListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E4281A2ED496FC0097AD11 /* AssetSelectionListScreen.swift */; };
 		13E4281D2ED4970D0097AD11 /* AssetSelectionListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E4281C2ED497030097AD11 /* AssetSelectionListViewModel.swift */; };
 		13E4281F2ED498830097AD11 /* MayaAssetsDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E4281E2ED4987C0097AD11 /* MayaAssetsDataSource.swift */; };
-		13E428302F0498840097AD11 /* MayaUserLPAssetsDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E4282F2F04987D0097AD11 /* MayaUserLPAssetsDataSource.swift */; };
-		13E428322F0498850097AD11 /* MayaBondedAssetsDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E428312F04987E0097AD11 /* MayaBondedAssetsDataSource.swift */; };
 		13E428222ED49AB50097AD11 /* AssetSelectionFormCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E428212ED49AB10097AD11 /* AssetSelectionFormCell.swift */; };
 		13E428242ED4A0200097AD11 /* BondMayaTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E428232ED4A01C0097AD11 /* BondMayaTransactionBuilder.swift */; };
 		13E428262ED4A2A80097AD11 /* IntValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E428252ED4A2A80097AD11 /* IntValidator.swift */; };
+		13E428302F0498840097AD11 /* MayaUserLPAssetsDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E4282F2F04987D0097AD11 /* MayaUserLPAssetsDataSource.swift */; };
+		13E428322F0498850097AD11 /* MayaBondedAssetsDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E428312F04987E0097AD11 /* MayaBondedAssetsDataSource.swift */; };
 		13EF20B72EC3675E00CEB7DA /* AddLPTransactionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EF20B52EC3675E00CEB7DA /* AddLPTransactionViewModel.swift */; };
 		13EF20B82EC3675E00CEB7DA /* AddLPTransactionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EF20B62EC3675E00CEB7DA /* AddLPTransactionScreen.swift */; };
 		13EF20BB2EC3692200CEB7DA /* AddLPTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EF20BA2EC3692200CEB7DA /* AddLPTransactionBuilder.swift */; };
@@ -1158,6 +1157,7 @@
 		B5FF07032ED9424E00B0FD55 /* SendCryptoVerifyLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5FF07022ED9424E00B0FD55 /* SendCryptoVerifyLogic.swift */; };
 		B5FFB0F42E7858EB0062F63C /* PendingTransactionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5FFB0F32E7858E90062F63C /* PendingTransactionManager.swift */; };
 		BU61YTK5IM2CA6CN47V4L8BG /* FunctionCallAddThorLP.swift in Sources */ = {isa = PBXBuildFile; fileRef = BWXBB99J8F32LB10N1PT9BIH /* FunctionCallAddThorLP.swift */; };
+		CCD4367C48BE63087AD4736C /* LPUnitsValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C3E3E97CE3E3775F004F4EE /* LPUnitsValidator.swift */; };
 		CF711D753DDB0FC62425A9DA /* KyberSwapQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7878748BB9E16298184860 /* KyberSwapQuote.swift */; };
 		D70D65FC2DF48824001C4492 /* RuneBondCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D70D65FB2DF48824001C4492 /* RuneBondCell.swift */; };
 		D7620B1D2DF6BFD700294396 /* FunctionCallNodeMaintenance.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7620B1C2DF6BFD700294396 /* FunctionCallNodeMaintenance.swift */; };
@@ -1638,7 +1638,6 @@
 		13AB73712EB923CA00DA106B /* RequiredValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequiredValidator.swift; sourceTree = "<group>"; };
 		13AB73732EB923FD00DA106B /* ClosureValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClosureValidator.swift; sourceTree = "<group>"; };
 		13AB73752EB9259A00DA106B /* AmountBalanceValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountBalanceValidator.swift; sourceTree = "<group>"; };
-		9C3E3E97CE3E3775F004F4EE /* LPUnitsValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LPUnitsValidator.swift; sourceTree = "<group>"; };
 		13AC28072E61E293001CB9AA /* ScreenEdgeInsets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenEdgeInsets.swift; sourceTree = "<group>"; };
 		13AC84022EA8518700C1399E /* THORChainAPICache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainAPICache.swift; sourceTree = "<group>"; };
 		13AF0D172E4CE652004D4FD2 /* NavigationRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationRouter.swift; sourceTree = "<group>"; };
@@ -1771,11 +1770,11 @@
 		13E4281A2ED496FC0097AD11 /* AssetSelectionListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetSelectionListScreen.swift; sourceTree = "<group>"; };
 		13E4281C2ED497030097AD11 /* AssetSelectionListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetSelectionListViewModel.swift; sourceTree = "<group>"; };
 		13E4281E2ED4987C0097AD11 /* MayaAssetsDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaAssetsDataSource.swift; sourceTree = "<group>"; };
-		13E4282F2F04987D0097AD11 /* MayaUserLPAssetsDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaUserLPAssetsDataSource.swift; sourceTree = "<group>"; };
-		13E428312F04987E0097AD11 /* MayaBondedAssetsDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaBondedAssetsDataSource.swift; sourceTree = "<group>"; };
 		13E428212ED49AB10097AD11 /* AssetSelectionFormCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetSelectionFormCell.swift; sourceTree = "<group>"; };
 		13E428232ED4A01C0097AD11 /* BondMayaTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondMayaTransactionBuilder.swift; sourceTree = "<group>"; };
 		13E428252ED4A2A80097AD11 /* IntValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntValidator.swift; sourceTree = "<group>"; };
+		13E4282F2F04987D0097AD11 /* MayaUserLPAssetsDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaUserLPAssetsDataSource.swift; sourceTree = "<group>"; };
+		13E428312F04987E0097AD11 /* MayaBondedAssetsDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaBondedAssetsDataSource.swift; sourceTree = "<group>"; };
 		13EF20B52EC3675E00CEB7DA /* AddLPTransactionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddLPTransactionViewModel.swift; sourceTree = "<group>"; };
 		13EF20B62EC3675E00CEB7DA /* AddLPTransactionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddLPTransactionScreen.swift; sourceTree = "<group>"; };
 		13EF20BA2EC3692200CEB7DA /* AddLPTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddLPTransactionBuilder.swift; sourceTree = "<group>"; };
@@ -1839,6 +1838,7 @@
 		8BE8825D6F0DBD6E8F28CB49 /* DefiCircleRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DefiCircleRow.swift; sourceTree = "<group>"; };
 		8F55CD3A2DC382E400B53E85 /* TokensStore+Token.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TokensStore+Token.swift"; sourceTree = "<group>"; };
 		927BE27A46C4476AA7DA2902 /* Services/SuiTokenPriceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SuiTokenPriceTests.swift; sourceTree = "<group>"; };
+		9C3E3E97CE3E3775F004F4EE /* LPUnitsValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LPUnitsValidator.swift; sourceTree = "<group>"; };
 		A500603E2C10E3EA008237D9 /* ThorchainSwapProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainSwapProvider.swift; sourceTree = "<group>"; };
 		A506B59C2D3AB77A00490BEB /* LifiQuoteResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifiQuoteResponse.swift; sourceTree = "<group>"; };
 		A506B59E2D3AD1DB00490BEB /* SolanaSwaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaSwaps.swift; sourceTree = "<group>"; };
@@ -8110,7 +8110,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 36;
+				CURRENT_PROJECT_VERSION = 37;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
@@ -8175,7 +8175,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 36;
+				CURRENT_PROJECT_VERSION = 37;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
@@ -8235,7 +8235,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 36;
+				CURRENT_PROJECT_VERSION = 37;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -8261,7 +8261,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 36;
+				CURRENT_PROJECT_VERSION = 37;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
 				ENABLE_TESTABILITY = NO;
@@ -8287,7 +8287,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 36;
+				CURRENT_PROJECT_VERSION = 37;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
@@ -8308,7 +8308,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 36;
+				CURRENT_PROJECT_VERSION = 37;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
