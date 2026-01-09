@@ -745,6 +745,14 @@
 "swapRouteNotAvailable" = "Ruta de intercambio no disponible";
 "swapAmountTooSmall" = "Cantidad de intercambio demasiado pequeña";
 "swapAmountTooSmallRecommended" = "Cantidad de intercambio demasiado pequeña. Cantidad recomendada %@";
+"swapErrorUnexpectedTitle" = "Error Inesperado";
+"swapErrorUnexpectedDescription" = "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.";
+"swapErrorInsufficientFundsTitle" = "Fondos Insuficientes";
+"swapErrorInsufficientFundsDescription" = "Fondos insuficientes para ejecutar el intercambio. Por favor, recarga tu billetera.";
+"swapErrorAmountTooSmallTitle" = "Cantidad Muy Pequeña";
+"swapErrorAmountTooSmallDescription" = "La cantidad del intercambio es muy pequeña. Por favor, aumenta la cantidad.";
+"swapErrorInboundAddressTitle" = "Dirección Inválida";
+"swapErrorInboundAddressDescription" = "La dirección de entrada es inválida. Por favor, inténtalo de nuevo.";
 "noLiquidityPool" = "No hay pool de liquidez disponible para este par de tokens. Este activo puede no estar soportado.";
 "switchBackToInternetMode" = "Volver al modo internet";
 "switchToLocalMode" = "Cambiar al modo local";

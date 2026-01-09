@@ -744,6 +744,14 @@
 "swapRouteNotAvailable" = "Swap route not available";
 "swapAmountTooSmall" = "Swap amount too small";
 "swapAmountTooSmallRecommended" = "Swap amount too small. Recommended amount %@";
+"swapErrorUnexpectedTitle" = "Unexpected Error";
+"swapErrorUnexpectedDescription" = "An unexpected error occurred. Please try again.";
+"swapErrorInsufficientFundsTitle" = "Insufficient Funds";
+"swapErrorInsufficientFundsDescription" = "Insufficient funds to execute the swap. Please fund the wallet.";
+"swapErrorAmountTooSmallTitle" = "Amount Too Small";
+"swapErrorAmountTooSmallDescription" = "The swap amount is too small. Please increase the amount.";
+"swapErrorInboundAddressTitle" = "Invalid Address";
+"swapErrorInboundAddressDescription" = "The inbound address is invalid. Please try again.";
 "noLiquidityPool" = "No liquidity pool available for this token pair. This asset may not be supported.";
 "switchBackToInternetMode" = " Switch back to internet mode";
 "switchToLocalMode" = "Switch to local mode";
