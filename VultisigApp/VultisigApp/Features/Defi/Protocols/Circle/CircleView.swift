@@ -17,31 +17,38 @@ struct CircleView: View {
     @State private var hasCheckedBackend = false
 
     var content: some View {
-        ZStack {
-            Theme.colors.bgPrimary.ignoresSafeArea()
-
+        Screen(
+            title: NSLocalizedString("circleTitle", comment: "Circle"),
+            showNavigationBar: true,
+            backgroundType: .plain
+        ) {
             if !hasCheckedBackend {
                 // Show loading while checking backend
                 ProgressView()
                     .progressViewStyle(.circular)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if model.missingEth {
                 // Show warning to add ETH
                 VStack(spacing: 24) {
+                    Spacer()
+                    
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 60))
-                        .foregroundStyle(.orange)
-
+                        .foregroundStyle(Theme.colors.alertWarning)
+                    
                     Text(NSLocalizedString("circleEthereumRequired", comment: "Ethereum Required"))
-                        .font(.title2)
-                        .bold()
+                        .font(Theme.fonts.title2)
                         .foregroundStyle(Theme.colors.textPrimary)
-
+                    
                     Text(NSLocalizedString("circleEthereumRequiredDescription", comment: "Please add Ethereum..."))
-                        .font(.body)
+                        .font(Theme.fonts.bodyMRegular)
                         .foregroundStyle(Theme.colors.textSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
+                    
+                    Spacer()
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 VStack {
                     if let address = vault.circleWalletAddress, !address.isEmpty {
@@ -55,7 +62,6 @@ struct CircleView: View {
         .onAppear {
             Task { await checkExistingWallet() }
         }
-        .navigationTitle(NSLocalizedString("circleTitle", comment: "Circle"))
     }
     
     private func checkExistingWallet() async {
@@ -86,3 +92,4 @@ struct CircleView: View {
         }
     }
 }
+

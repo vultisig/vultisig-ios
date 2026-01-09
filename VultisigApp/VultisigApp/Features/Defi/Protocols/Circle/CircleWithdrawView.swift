@@ -124,7 +124,7 @@ struct CircleWithdrawView: View {
                     }
                     .frame(maxWidth: .infinity)
                     
-                    Text("\(Int(percentage))%")
+                    Text("\(Int(min(percentage, 100)))%")
                         .font(CircleConstants.Fonts.subtitle)
                         .foregroundStyle(Theme.colors.textSecondary)
                 }
@@ -163,16 +163,10 @@ struct CircleWithdrawView: View {
     }
     
     var amountTextField: some View {
-        TextField("0", text: $amount)
-            .font(.system(size: 40, weight: .bold))
-            .foregroundStyle(Theme.colors.textPrimary)
-            .multilineTextAlignment(.center)
-            #if os(macOS)
-            .textFieldStyle(.plain)
-            #endif
-            .onChange(of: amount) { newValue in
-                updatePercentage(from: newValue)
-            }
+        SendCryptoAmountTextField(
+            amount: $amount,
+            onChange: { await updatePercentage(from: $0) }
+        )
     }
     
     @ViewBuilder
@@ -217,14 +211,18 @@ struct CircleWithdrawView: View {
         }
     }
     
-    func updatePercentage(from amountStr: String) {
+    func updatePercentage(from amountStr: String) async {
         let balance = model.balance
         guard let amountDec = Decimal(string: amountStr), balance > 0 else {
             return
         }
         let percent = (amountDec / balance) * 100
-        if abs(self.percentage - Double(truncating: percent as NSNumber)) > 0.1 {
-            self.percentage = Double(truncating: percent as NSNumber)
+        let cappedPercent = min(Double(truncating: percent as NSNumber), 100.0)
+        
+        if abs(self.percentage - cappedPercent) > 0.1 {
+            await MainActor.run {
+                self.percentage = cappedPercent
+            }
         }
     }
     

@@ -57,30 +57,6 @@ struct CircleDashboardView: View {
         .background(cardBackground)
     }
     
-    var headerView: some View {
-        HStack {
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.title3)
-                    .foregroundColor(Theme.colors.textPrimary)
-                    .frame(width: 40, height: 40)
-                    .background(Circle().fill(Color.white.opacity(0.1)))
-            }
-            
-            Spacer()
-            
-            Text(NSLocalizedString("circleTitle", comment: "Circle"))
-                .font(Theme.fonts.bodyLMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
-            
-            Spacer()
-            
-            Color.clear.frame(width: 40, height: 40)
-        }
-        .padding(CircleConstants.Design.horizontalPadding)
-    }
     
     var cardBackground: some View {
         RoundedRectangle(cornerRadius: CircleConstants.Design.cornerRadius)

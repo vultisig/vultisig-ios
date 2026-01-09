@@ -21,7 +21,6 @@ struct CircleSetupView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            headerView
             ScrollView {
                 VStack(spacing: CircleConstants.Design.verticalSpacing) {
                     topBanner
@@ -65,10 +64,6 @@ struct CircleSetupView: View {
             }
         }
         .background(VaultMainScreenBackground())
-        .navigationBarBackButtonHidden(true)
-        #if os(iOS)
-        .navigationBarHidden(true)
-        #endif
         .alert(isPresented: $showError) {
             Alert(
                 title: Text(NSLocalizedString("error", comment: "Error")),
@@ -78,31 +73,6 @@ struct CircleSetupView: View {
                 }
             )
         }
-    }
-    
-    var headerView: some View {
-        HStack {
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.title3)
-                    .foregroundColor(Theme.colors.textPrimary)
-                    .frame(width: 40, height: 40)
-                    .background(Circle().fill(Color.white.opacity(0.1)))
-            }
-            
-            Spacer()
-            
-            Text(NSLocalizedString("circleTitle", comment: "Circle"))
-                .font(Theme.fonts.bodyLMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
-            
-            Spacer()
-            
-            Color.clear.frame(width: 40, height: 40)
-        }
-        .padding(CircleConstants.Design.horizontalPadding)
     }
     
     var topBanner: some View {
