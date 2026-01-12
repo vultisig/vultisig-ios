@@ -198,6 +198,9 @@ class PolkadotService: RpcService {
             vaultLocalPartyID: "",
             libType: "",
             wasmExecuteContractPayload: nil,
+            tronTransferContractPayload: nil,
+            tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil,
             skipBroadcast: false,
             signData: nil
         )

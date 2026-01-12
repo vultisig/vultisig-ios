@@ -52,6 +52,9 @@ class KeysignDiscoveryViewModel: ObservableObject {
             vaultLocalPartyID: vault.localPartyID,
             libType: LibType.DKLS.toString(),
             wasmExecuteContractPayload: nil,
+            tronTransferContractPayload: nil,
+            tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil,
             skipBroadcast: false,
             signData: nil
         )

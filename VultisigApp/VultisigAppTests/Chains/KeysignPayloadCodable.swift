@@ -481,6 +481,99 @@ extension VSTronSpecific: @retroactive Codable {
     }
 }
 
+// MARK: - Tron Contract Payloads
+
+extension VSTronTransferContractPayload: @retroactive Codable {
+    enum CodingKeys: String, CodingKey {
+        case toAddress = "to_address"
+        case ownerAddress = "owner_address"
+        case amount
+    }
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(toAddress, forKey: .toAddress)
+        try container.encode(ownerAddress, forKey: .ownerAddress)
+        try container.encode(amount, forKey: .amount)
+    }
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        toAddress = try container.decode(String.self, forKey: .toAddress)
+        ownerAddress = try container.decode(String.self, forKey: .ownerAddress)
+        amount = try container.decode(String.self, forKey: .amount)
+    }
+}
+
+extension VSTronTriggerSmartContractPayload: @retroactive Codable {
+    enum CodingKeys: String, CodingKey {
+        case ownerAddress = "owner_address"
+        case contractAddress = "contract_address"
+        case callValue = "call_value"
+        case callTokenValue = "call_token_value"
+        case tokenId = "token_id"
+        case data
+    }
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(ownerAddress, forKey: .ownerAddress)
+        try container.encode(contractAddress, forKey: .contractAddress)
+        if hasCallValue {
+            try container.encode(callValue, forKey: .callValue)
+        }
+        if hasCallTokenValue {
+            try container.encode(callTokenValue, forKey: .callTokenValue)
+        }
+        if hasTokenID {
+            try container.encode(tokenID, forKey: .tokenId)
+        }
+        if hasData {
+            try container.encode(data, forKey: .data)
+        }
+    }
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        ownerAddress = try container.decode(String.self, forKey: .ownerAddress)
+        contractAddress = try container.decode(String.self, forKey: .contractAddress)
+        if let v = try container.decodeIfPresent(String.self, forKey: .callValue) {
+            callValue = v
+        }
+        if let v = try container.decodeIfPresent(String.self, forKey: .callTokenValue) {
+            callTokenValue = v
+        }
+        if let v = try container.decodeIfPresent(Int32.self, forKey: .tokenId) {
+            tokenID = v
+        }
+        if let v = try container.decodeIfPresent(String.self, forKey: .data) {
+            data = v
+        }
+    }
+}
+
+extension VSTronTransferAssetContractPayload: @retroactive Codable {
+    enum CodingKeys: String, CodingKey {
+        case toAddress = "to_address"
+        case ownerAddress = "owner_address"
+        case amount
+        case assetName = "asset_name"
+    }
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(toAddress, forKey: .toAddress)
+        try container.encode(ownerAddress, forKey: .ownerAddress)
+        try container.encode(amount, forKey: .amount)
+        try container.encode(assetName, forKey: .assetName)
+    }
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        toAddress = try container.decode(String.self, forKey: .toAddress)
+        ownerAddress = try container.decode(String.self, forKey: .ownerAddress)
+        amount = try container.decode(String.self, forKey: .amount)
+        assetName = try container.decode(String.self, forKey: .assetName)
+    }
+}
+
 extension VSUtxoInfo: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case hash
@@ -842,6 +935,10 @@ extension VSKeysignPayload: @retroactive Codable {
         case vaultLocalPartyID = "vault_local_party_id"
         case libType = "lib_type"
         case wasmExecuteContractPayload = "wasm_execute_contract_payload"
+        case tronTransferContractPayload = "transfer_contract_payload"
+        case tronTriggerSmartContractPayload = "trigger_smart_contract_payload"
+        case tronTransferAssetContractPayload = "transfer_asset_contract_payload"
+        case skipBroadcast
         case signData = "sign_data"
     }
     
@@ -901,6 +998,21 @@ extension VSKeysignPayload: @retroactive Codable {
         try container.encode(vaultPublicKeyEcdsa, forKey: .vaultPubKeyECDSA)
         try container.encode(vaultLocalPartyID, forKey: .vaultLocalPartyID)
         try container.encode(libType, forKey: .libType)
+
+        // Encode Tron contract payloads
+        switch contractPayload {
+        case .tronTransferContractPayload(let payload):
+            try container.encode(payload, forKey: .tronTransferContractPayload)
+        case .tronTriggerSmartContractPayload(let payload):
+            try container.encode(payload, forKey: .tronTriggerSmartContractPayload)
+        case .tronTransferAssetContractPayload(let payload):
+            try container.encode(payload, forKey: .tronTransferAssetContractPayload)
+            // TODO: - Check
+        case .none, .some(.wasmExecuteContractPayload(_)):
+            break
+        }
+
+        try container.encode(skipBroadcast, forKey: .skipBroadcast)
         try container.encode(signData, forKey: .signData)
     }
     
@@ -968,7 +1080,21 @@ extension VSKeysignPayload: @retroactive Codable {
         if container.contains(.wasmExecuteContractPayload) {
             wasmExecuteContractPayload = try container.decode(VSWasmExecuteContractPayload.self, forKey: .wasmExecuteContractPayload)
         }
-        
+
+        // Decode Tron contract payloads (oneof)
+        if container.contains(.tronTransferContractPayload) {
+            let payload = try container.decode(VSTronTransferContractPayload.self, forKey: .tronTransferContractPayload)
+            contractPayload = .tronTransferContractPayload(payload)
+        } else if container.contains(.tronTriggerSmartContractPayload) {
+            let payload = try container.decode(VSTronTriggerSmartContractPayload.self, forKey: .tronTriggerSmartContractPayload)
+            contractPayload = .tronTriggerSmartContractPayload(payload)
+        } else if container.contains(.tronTransferAssetContractPayload) {
+            let payload = try container.decode(VSTronTransferAssetContractPayload.self, forKey: .tronTransferAssetContractPayload)
+            contractPayload = .tronTransferAssetContractPayload(payload)
+        }
+
+        skipBroadcast = try container.decodeIfPresent(Bool.self, forKey: .skipBroadcast) ?? false
+
         if container.contains(.signData) {
             signData = try container.decode(VSKeysignPayload.OneOf_SignData.self, forKey: .signData)
         } else {

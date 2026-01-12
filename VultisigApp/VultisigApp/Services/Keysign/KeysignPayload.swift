@@ -19,6 +19,9 @@ struct KeysignPayload: Codable, Hashable {
     let vaultLocalPartyID: String
     let libType: String
     let wasmExecuteContractPayload: WasmExecuteContractPayload?
+    let tronTransferContractPayload: TronTransferContractPayload?
+    let tronTriggerSmartContractPayload: TronTriggerSmartContractPayload?
+    let tronTransferAssetContractPayload: TronTransferAssetContractPayload?
     let skipBroadcast: Bool
     let signData: SignData?
     
@@ -84,6 +87,9 @@ struct KeysignPayload: Codable, Hashable {
         vaultLocalPartyID: "iPhone-100",
         libType: LibType.DKLS.toString(),
         wasmExecuteContractPayload: nil,
+        tronTransferContractPayload: nil,
+        tronTriggerSmartContractPayload: nil,
+        tronTransferAssetContractPayload: nil,
         skipBroadcast: false,
         signData: nil
     )
