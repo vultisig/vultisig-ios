@@ -18,19 +18,19 @@ enum TronHelper {
     }
     
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-
+        
         guard keysignPayload.coin.chain.ticker == "TRX" else {
             throw HelperError.runtimeError("coin is not TRX")
         }
-
+        
         guard case .Tron(let timestamp, let expiration, let blockHeaderTimestamp, let blockHeaderNumber, let blockHeaderVersion, let blockHeaderTxTrieRoot, let blockHeaderParentHash, let blockHeaderWitnessAddress, let gasEstimation) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get Tron chain specific")
         }
-
+        
         guard Data(hexString: keysignPayload.coin.hexPublicKey) != nil else {
             throw HelperError.runtimeError("invalid hex public key")
         }
-
+        
         // Dispatch based on contract payload type (dApp integration)
         if let transferPayload = keysignPayload.tronTransferContractPayload {
             return try buildTronTransferContractInput(
@@ -42,7 +42,7 @@ enum TronHelper {
                 memo: keysignPayload.memo
             )
         }
-
+        
         if let smartContractPayload = keysignPayload.tronTriggerSmartContractPayload {
             return try buildTronSmartContractInput(
                 payload: smartContractPayload,
@@ -53,7 +53,7 @@ enum TronHelper {
                 memo: keysignPayload.memo
             )
         }
-
+        
         if let assetPayload = keysignPayload.tronTransferAssetContractPayload {
             return try buildTronTransferAssetInput(
                 payload: assetPayload,
@@ -64,31 +64,31 @@ enum TronHelper {
                 memo: keysignPayload.memo
             )
         }
-
+        
         // Fallback: validate toAddress for regular transfers
         guard AnyAddress(string: keysignPayload.toAddress, coin: .tron) != nil else {
             throw HelperError.runtimeError("fail to get to address")
         }
-
+        
         // Existing native/TRC20 transfer logic
         if keysignPayload.coin.isNativeToken {
-
+            
             let contract = TronTransferContract.with {
                 $0.ownerAddress = keysignPayload.coin.address
                 $0.toAddress = keysignPayload.toAddress
                 $0.amount = Int64(keysignPayload.toAmount)
             }
-
-            let input = TronSigningInput.with {
-                $0.transaction = TronTransaction.with {
+            
+            let input = try TronSigningInput.with {
+                $0.transaction = try TronTransaction.with {
                     $0.contractOneof = .transfer(contract)
                     $0.timestamp = Int64(timestamp)
-
+                    
                     if let memo = keysignPayload.memo {
                         $0.memo = memo
                     }
-
-                    $0.blockHeader = buildBlockHeader(
+                    
+                    $0.blockHeader = try buildBlockHeader(
                         timestamp: blockHeaderTimestamp, number: blockHeaderNumber,
                         version: blockHeaderVersion, txTrieRoot: blockHeaderTxTrieRoot,
                         parentHash: blockHeaderParentHash, witnessAddress: blockHeaderWitnessAddress
@@ -96,24 +96,24 @@ enum TronHelper {
                     $0.expiration = Int64(expiration)
                 }
             }
-
+            
             return try input.serializedData()
-
+            
         } else {
-
+            
             let contract = TronTransferTRC20Contract.with {
                 $0.toAddress = keysignPayload.toAddress
                 $0.contractAddress = keysignPayload.coin.contractAddress
                 $0.ownerAddress = keysignPayload.coin.address
                 $0.amount = keysignPayload.toAmount.serialize()
             }
-
-            let input = TronSigningInput.with {
-                $0.transaction = TronTransaction.with {
+            
+            let input = try TronSigningInput.with {
+                $0.transaction = try TronTransaction.with {
                     $0.feeLimit = Int64(gasEstimation)
                     $0.transferTrc20Contract = contract
                     $0.timestamp = Int64(timestamp)
-                    $0.blockHeader = buildBlockHeader(
+                    $0.blockHeader = try buildBlockHeader(
                         timestamp: blockHeaderTimestamp, number: blockHeaderNumber,
                         version: blockHeaderVersion, txTrieRoot: blockHeaderTxTrieRoot,
                         parentHash: blockHeaderParentHash, witnessAddress: blockHeaderWitnessAddress
@@ -124,31 +124,36 @@ enum TronHelper {
                     }
                 }
             }
-
+            
             return try input.serializedData()
-
+            
         }
-
+        
     }
-
+    
     // MARK: - Block Header Helper
-
+    
     private static func buildBlockHeader(
         timestamp: UInt64, number: UInt64, version: UInt64,
         txTrieRoot: String, parentHash: String, witnessAddress: String
-    ) -> TronBlockHeader {
+    ) throws -> TronBlockHeader {
+        guard let txTrieRootData = Data(hexString: txTrieRoot),
+              let parentHashData = Data(hexString: parentHash),
+              let witnessAddressData = Data(hexString: witnessAddress) else {
+            throw HelperError.runtimeError("Invalid block header hex data")
+        }
         return TronBlockHeader.with {
             $0.timestamp = Int64(timestamp)
             $0.number = Int64(number)
             $0.version = Int32(version)
-            $0.txTrieRoot = Data(hexString: txTrieRoot)!
-            $0.parentHash = Data(hexString: parentHash)!
-            $0.witnessAddress = Data(hexString: witnessAddress)!
+            $0.txTrieRoot = txTrieRootData
+            $0.parentHash = parentHashData
+            $0.witnessAddress = witnessAddressData
         }
     }
-
+    
     // MARK: - Contract Payload Builders (dApp Integration)
-
+    
     private static func buildTronTransferContractInput(
         payload: TronTransferContractPayload,
         timestamp: UInt64, expiration: UInt64,
@@ -157,18 +162,21 @@ enum TronHelper {
         blockHeaderParentHash: String, blockHeaderWitnessAddress: String,
         memo: String?
     ) throws -> Data {
+        guard let amount = Int64(payload.amount) else {
+            throw HelperError.runtimeError("Invalid transfer amount: \(payload.amount)")
+        }
         let contract = TronTransferContract.with {
             $0.ownerAddress = payload.ownerAddress
             $0.toAddress = payload.toAddress
-            $0.amount = Int64(payload.amount) ?? 0
+            $0.amount = amount
         }
-
-        let input = TronSigningInput.with {
-            $0.transaction = TronTransaction.with {
+        
+        let input = try TronSigningInput.with {
+            $0.transaction = try TronTransaction.with {
                 $0.contractOneof = .transfer(contract)
                 $0.timestamp = Int64(timestamp)
                 $0.expiration = Int64(expiration)
-                $0.blockHeader = buildBlockHeader(
+                $0.blockHeader = try buildBlockHeader(
                     timestamp: blockHeaderTimestamp, number: blockHeaderNumber,
                     version: blockHeaderVersion, txTrieRoot: blockHeaderTxTrieRoot,
                     parentHash: blockHeaderParentHash, witnessAddress: blockHeaderWitnessAddress
@@ -178,7 +186,7 @@ enum TronHelper {
         }
         return try input.serializedData()
     }
-
+    
     private static func buildTronSmartContractInput(
         payload: TronTriggerSmartContractPayload,
         timestamp: UInt64, expiration: UInt64, gasEstimation: UInt64,
@@ -210,14 +218,14 @@ enum TronHelper {
                 }
             }
         }
-
-        let input = TronSigningInput.with {
-            $0.transaction = TronTransaction.with {
+        
+        let input = try TronSigningInput.with {
+            $0.transaction = try TronTransaction.with {
                 $0.contractOneof = .triggerSmartContract(contract)
                 $0.feeLimit = Int64(gasEstimation)
                 $0.timestamp = Int64(timestamp)
                 $0.expiration = Int64(expiration)
-                $0.blockHeader = buildBlockHeader(
+                $0.blockHeader = try buildBlockHeader(
                     timestamp: blockHeaderTimestamp, number: blockHeaderNumber,
                     version: blockHeaderVersion, txTrieRoot: blockHeaderTxTrieRoot,
                     parentHash: blockHeaderParentHash, witnessAddress: blockHeaderWitnessAddress
@@ -227,7 +235,7 @@ enum TronHelper {
         }
         return try input.serializedData()
     }
-
+    
     private static func buildTronTransferAssetInput(
         payload: TronTransferAssetContractPayload,
         timestamp: UInt64, expiration: UInt64, gasEstimation: UInt64,
@@ -242,14 +250,14 @@ enum TronHelper {
             $0.amount = Int64(payload.amount) ?? 0
             $0.assetName = payload.assetName
         }
-
-        let input = TronSigningInput.with {
-            $0.transaction = TronTransaction.with {
+        
+        let input = try TronSigningInput.with {
+            $0.transaction = try TronTransaction.with {
                 $0.contractOneof = .transferAsset(contract)
                 $0.feeLimit = Int64(gasEstimation)
                 $0.timestamp = Int64(timestamp)
                 $0.expiration = Int64(expiration)
-                $0.blockHeader = buildBlockHeader(
+                $0.blockHeader = try buildBlockHeader(
                     timestamp: blockHeaderTimestamp, number: blockHeaderNumber,
                     version: blockHeaderVersion, txTrieRoot: blockHeaderTxTrieRoot,
                     parentHash: blockHeaderParentHash, witnessAddress: blockHeaderWitnessAddress
