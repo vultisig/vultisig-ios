@@ -46,7 +46,12 @@ struct ImportVaultShareScreen: View {
         VStack(spacing: 15) {
             Spacer()
             uploadSection
-            instruction
+            HStack(spacing: 0) {
+                instruction
+                Spacer()
+                resetButton
+                    .showIf(backupViewModel.isFileUploaded)
+            }
             Spacer()
             continueButton
         }
@@ -57,6 +62,16 @@ struct ImportVaultShareScreen: View {
             .font(Theme.fonts.caption12)
             .foregroundColor(Theme.colors.textTertiary)
             .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    var resetButton: some View {
+        Button {
+            resetData()
+        } label: {
+            Icon(named: "x", color: Theme.colors.textPrimary, size: 16)
+                .padding(6)
+                .background(Circle().fill(Theme.colors.bgSurface2))
+        }
     }
     
     var uploadSection: some View {
