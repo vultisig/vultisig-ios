@@ -1078,12 +1078,12 @@ extension VSKeysignPayload: @retroactive Codable {
         vaultPublicKeyEcdsa = try container.decode(String.self, forKey: .vaultPubKeyECDSA)
         vaultLocalPartyID = try container.decodeIfPresent(String.self, forKey: .vaultLocalPartyID) ?? String()
         libType = try container.decodeIfPresent(String.self, forKey: .libType) ?? "DKLS"
-        if container.contains(.wasmExecuteContractPayload) {
-            wasmExecuteContractPayload = try container.decode(VSWasmExecuteContractPayload.self, forKey: .wasmExecuteContractPayload)
-        }
 
-        // Decode Tron contract payloads (oneof)
-        if container.contains(.tronTransferContractPayload) {
+        // Decode contract payloads (oneof)
+        if container.contains(.wasmExecuteContractPayload) {
+            let payload = try container.decode(VSWasmExecuteContractPayload.self, forKey: .wasmExecuteContractPayload)
+            contractPayload = .wasmExecuteContractPayload(payload)
+        } else if container.contains(.tronTransferContractPayload) {
             let payload = try container.decode(VSTronTransferContractPayload.self, forKey: .tronTransferContractPayload)
             contractPayload = .tronTransferContractPayload(payload)
         } else if container.contains(.tronTriggerSmartContractPayload) {
