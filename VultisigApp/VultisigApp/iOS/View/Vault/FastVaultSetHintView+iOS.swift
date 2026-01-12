@@ -1,5 +1,5 @@
 //
-//  FastVaultSetPasswordView+iOS.swift
+//  FastVaultSetHintView+iOS.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2024-09-18.
