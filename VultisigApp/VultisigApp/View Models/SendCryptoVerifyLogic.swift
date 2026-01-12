@@ -33,10 +33,10 @@ struct SendCryptoVerifyLogic {
     private func calculateEVMFee(tx: SendTransaction) async throws -> FeeResult {
         let service = try EthereumFeeService(chain: tx.coin.chain)
         
-        let gasLimit = tx.coin.isNativeToken ? 
-            BigInt(EVMHelper.defaultETHTransferGasUnit) : 
-            BigInt(EVMHelper.defaultERC20TransferGasUnit)
-            
+        let gasLimit = tx.coin.isNativeToken ?
+        BigInt(EVMHelper.defaultETHTransferGasUnit) :
+        BigInt(EVMHelper.defaultERC20TransferGasUnit)
+        
         let feeInfo = try await service.calculateFees(
             chain: tx.coin.chain,
             limit: gasLimit,
@@ -183,12 +183,14 @@ struct SendCryptoVerifyLogic {
                 if let nativeToken = vault.coins.nativeCoin(chain: tx.coin.chain) {
                     let nativeBalance = nativeToken.rawBalance.toBigInt(decimals: nativeToken.decimals)
                     if tx.fee > nativeBalance {
-                        // Using a generic error message since checking gas specifically might require a new error string key 
-                        // or we can reuse existing logic if available. 
-                        // The user complained about "walletBalanceExceededError" being shown wrongly, 
+                        // Using a generic error message since checking gas specifically might require a new error string key
+                        // or we can reuse existing logic if available.
+                        // The user complained about "walletBalanceExceededError" being shown wrongly,
                         // so returning it for actual insufficient gas is acceptable or we can use "notEnoughGas" if it exists.
                         // But keeping it consistent with the function signature.
-                        return BalanceValidationResult(isValid: false, errorMessage: "insufficientGasTokenError")
+                        let nativeToken = vault.coins.nativeCoin(chain: tx.coin.chain)
+                        let errorMessage = String(format: "insufficientGasTokenError".localized, nativeToken?.ticker ?? "Native Token", tx.coin.ticker)
+                        return BalanceValidationResult(isValid: false, errorMessage: errorMessage)
                     }
                 }
             }
