@@ -81,8 +81,11 @@ struct FastVaultSetPasswordView: View {
                 textfield
             } else {
                 disclaimer
-                textfield
-                verifyTextfield
+                    .zIndex(1)
+                Group {
+                    textfield
+                    verifyTextfield
+                }.zIndex(0)
             }
         }
         .padding(.horizontal, 16)
