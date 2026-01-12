@@ -254,6 +254,9 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 vaultLocalPartyID: "iPhone-100",
                 libType: LibType.DKLS.toString(),
                 wasmExecuteContractPayload: nil,
+                tronTransferContractPayload: nil,
+                tronTriggerSmartContractPayload: nil,
+                tronTransferAssetContractPayload: nil,
                 skipBroadcast: false,
                 signData: .signDirect(SignDirect(
                     bodyBytes: "CoQBChEvdHlwZXMuTXNnRGVwb3NpdBJvCiIKFQoDTFRDEgNMVEMaA0xUQyAAKAAwARIHMzAwMDAwMBgAEjNzZWN1cmUtOmx0YzFxYzU2cTk5MHZ6ajNhODlkNTQ0ZHZqMjhncnJweHFxMHB3NjRocTQaFBI3D9EKptI1k4QaGmv4caOIQebx",
@@ -294,6 +297,9 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 vaultLocalPartyID: "iPhone-100",
                 libType: LibType.DKLS.toString(),
                 wasmExecuteContractPayload: nil,
+                tronTransferContractPayload: nil,
+                tronTriggerSmartContractPayload: nil,
+                tronTransferAssetContractPayload: nil,
                 skipBroadcast: true,
                 signData: .signAmino(SignAmino(
                     fee: CosmosFee(

@@ -1242,6 +1242,7 @@
 		DEA1C7022DB0CD9900424466 /* THORChainTokenMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C7012DB0CD9300424466 /* THORChainTokenMetadata.swift */; };
 		DEA1C7042DB0CE0100424466 /* NetworkInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C7032DB0CDFE00424466 /* NetworkInfo.swift */; };
 		DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */; };
+		13A9B8C7D6E5F4A3B2C1D0EA /* TronContractPayloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A9B8C7D6E5F4A3B2C1D0E9 /* TronContractPayloads.swift */; };
 		DED05FE42BBB824D00E0496C /* ThorchainAccountValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED05FE32BBB824D00E0496C /* ThorchainAccountValue.swift */; };
 		DED05FE62BBB82F300E0496C /* CosmosAccountsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */; };
 		DEDB62D72E45B61E00722F74 /* OneInchQuoteError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEDB62D62E45B61500722F74 /* OneInchQuoteError.swift */; };
@@ -2536,6 +2537,7 @@
 		DEA1C7012DB0CD9300424466 /* THORChainTokenMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainTokenMetadata.swift; sourceTree = "<group>"; };
 		DEA1C7032DB0CDFE00424466 /* NetworkInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkInfo.swift; sourceTree = "<group>"; };
 		DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignPayload.swift; sourceTree = "<group>"; };
+		13A9B8C7D6E5F4A3B2C1D0E9 /* TronContractPayloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronContractPayloads.swift; sourceTree = "<group>"; };
 		DED05FE32BBB824D00E0496C /* ThorchainAccountValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountValue.swift; sourceTree = "<group>"; };
 		DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosAccountsResponse.swift; sourceTree = "<group>"; };
 		DEDB62D62E45B61500722F74 /* OneInchQuoteError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneInchQuoteError.swift; sourceTree = "<group>"; };
@@ -5049,6 +5051,7 @@
 				A5D8A3432CF8D5B0005A20A8 /* CustomMessagePayload.swift */,
 				A56386852C3A21B8008B848E /* KeysignMessage+ProtoMappable.swift */,
 				A5D00E402BD65CE7009E025F /* ERC20ApprovePayload.swift */,
+				13A9B8C7D6E5F4A3B2C1D0E9 /* TronContractPayloads.swift */,
 			);
 			path = Keysign;
 			sourceTree = "<group>";
@@ -7298,6 +7301,7 @@
 				A6725D432C40C45800D47716 /* AddressBookCell.swift in Sources */,
 				A6A816402CBCB018009EE114 /* FileQRCodeImporterMac+macOS.swift in Sources */,
 				DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */,
+				13A9B8C7D6E5F4A3B2C1D0EA /* TronContractPayloads.swift in Sources */,
 				A6C670D32C9E8E2B00F59B6A /* NewWalletNameView+macOS.swift in Sources */,
 				A69069B72BCF53B600F28A8B /* NetworkPromptType.swift in Sources */,
 				A5340A6B2CECF099002ADD35 /* MonthlyBackupView+macOS.swift in Sources */,

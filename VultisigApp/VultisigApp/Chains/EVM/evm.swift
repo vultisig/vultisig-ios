@@ -243,7 +243,6 @@ class EVMHelper {
             $0.toAddress = keysignPayload.toAddress
             $0.transaction = EthereumTransaction.with {
                 $0.transfer = EthereumTransaction.Transfer.with {
-                    print("EVM transfer AMOUNT: \(keysignPayload.toAmount.description)")
                     $0.amount = keysignPayload.toAmount.serializeForEvm()
                     if let memo = keysignPayload.memo {
                         if memo.hasPrefix("0x") {

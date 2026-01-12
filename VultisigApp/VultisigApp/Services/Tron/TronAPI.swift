@@ -16,7 +16,7 @@ enum TronAPI: TargetType {
     case triggerConstantContract(ownerAddress: String, contractAddress: String, functionSelector: String, parameter: String)
 
     var baseURL: URL {
-        URL(string: "https://tron-rpc.publicnode.com")!
+        URL(string: "https://api.vultisig.com/tron")!
     }
 
     var path: String {

@@ -58,6 +58,9 @@ struct KeysignPayloadFactory {
                 vaultLocalPartyID: vault.localPartyID,
                 libType: (vault.libType ?? .GG20).toString(),
                 wasmExecuteContractPayload: wasmExecuteContractPayload,
+                tronTransferContractPayload: nil,
+                tronTriggerSmartContractPayload: nil,
+                tronTransferAssetContractPayload: nil,
                 skipBroadcast: false,
                 signData: nil
             )
@@ -87,6 +90,9 @@ struct KeysignPayloadFactory {
             vaultLocalPartyID: vault.localPartyID,
             libType: (vault.libType ?? .GG20).toString(),
             wasmExecuteContractPayload: wasmExecuteContractPayload,
+            tronTransferContractPayload: nil,
+            tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil,
             skipBroadcast: false,
             signData: nil
         )
@@ -126,6 +132,9 @@ struct KeysignPayloadFactory {
             vaultLocalPartyID: keysignPayload.vaultLocalPartyID,
             libType: keysignPayload.libType,
             wasmExecuteContractPayload: keysignPayload.wasmExecuteContractPayload,
+            tronTransferContractPayload: nil,
+            tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil,
             skipBroadcast: keysignPayload.skipBroadcast,
             signData: nil
         )
@@ -165,6 +174,9 @@ struct KeysignPayloadFactory {
             vaultLocalPartyID: keysignPayload.vaultLocalPartyID,
             libType: keysignPayload.libType,
             wasmExecuteContractPayload: keysignPayload.wasmExecuteContractPayload,
+            tronTransferContractPayload: nil,
+            tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil,
             skipBroadcast: keysignPayload.skipBroadcast,
             signData: nil
         )

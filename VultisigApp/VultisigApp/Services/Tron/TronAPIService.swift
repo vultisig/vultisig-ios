@@ -44,11 +44,18 @@ struct TronAPIService {
 
     // MARK: - Broadcast
 
+    private static let DUP_TRANSACTION_ERROR_CODE = "DUP_TRANSACTION_ERROR"
+
     func broadcastTransaction(jsonString: String) async throws -> String {
         let response = try await httpClient.request(TronAPI.broadcastTransaction(jsonString: jsonString), responseType: TronBroadcastResponse.self)
 
-        guard response.data.result == true, let txid = response.data.txid else {
-            let errorMessage = response.data.message ?? "Unknown error"
+        // Accept success (result == true) OR duplicate transaction error (already broadcast)
+        // This matches Android behavior where DUP_TRANSACTION_ERROR is treated as success
+        let isSuccess = response.data.result == true
+        let isDuplicateTransaction = response.data.code == Self.DUP_TRANSACTION_ERROR_CODE
+
+        guard let txid = response.data.txid, isSuccess || isDuplicateTransaction else {
+            let errorMessage = response.data.message ?? response.data.code ?? "Unknown error"
             throw TronAPIError.broadcastFailed(errorMessage)
         }
 

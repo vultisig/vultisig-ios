@@ -112,6 +112,9 @@ private extension SecurityScannerTransactionFactory {
             vaultLocalPartyID: "", // no need for SOL prehash
             libType: .empty, // no need for SOL prehash
             wasmExecuteContractPayload: nil,
+            tronTransferContractPayload: nil,
+            tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil,
             skipBroadcast: false,
             signData: nil
         )
