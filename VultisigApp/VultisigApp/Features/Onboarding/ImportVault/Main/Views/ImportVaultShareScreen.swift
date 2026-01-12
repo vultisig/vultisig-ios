@@ -50,7 +50,7 @@ struct ImportVaultShareScreen: View {
                 instruction
                 Spacer()
                 resetButton
-                    .showIf(backupViewModel.isFileUploaded)
+                    .showIf(backupViewModel.isFileUploaded && !backupViewModel.showAlert)
             }
             Spacer()
             continueButton
