@@ -102,9 +102,9 @@ final class BlockChainService {
             vaultLocalPartyID: payload.vaultLocalPartyID,
             libType: payload.libType,
             wasmExecuteContractPayload: payload.wasmExecuteContractPayload,
-            tronTransferContractPayload: nil,
-            tronTriggerSmartContractPayload: nil,
-            tronTransferAssetContractPayload: nil,
+            tronTransferContractPayload: payload.tronTransferContractPayload,
+            tronTriggerSmartContractPayload: payload.tronTriggerSmartContractPayload,
+            tronTransferAssetContractPayload: payload.tronTransferAssetContractPayload,
             skipBroadcast: payload.skipBroadcast,
             signData: nil
         )

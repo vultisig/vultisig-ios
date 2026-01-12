@@ -999,16 +999,17 @@ extension VSKeysignPayload: @retroactive Codable {
         try container.encode(vaultLocalPartyID, forKey: .vaultLocalPartyID)
         try container.encode(libType, forKey: .libType)
 
-        // Encode Tron contract payloads
+        // Encode contract payloads (oneof)
         switch contractPayload {
+        case .wasmExecuteContractPayload(let payload):
+            try container.encode(payload, forKey: .wasmExecuteContractPayload)
         case .tronTransferContractPayload(let payload):
             try container.encode(payload, forKey: .tronTransferContractPayload)
         case .tronTriggerSmartContractPayload(let payload):
             try container.encode(payload, forKey: .tronTriggerSmartContractPayload)
         case .tronTransferAssetContractPayload(let payload):
             try container.encode(payload, forKey: .tronTransferAssetContractPayload)
-            // TODO: - Check
-        case .none, .some(.wasmExecuteContractPayload(_)):
+        case .none:
             break
         }
 
