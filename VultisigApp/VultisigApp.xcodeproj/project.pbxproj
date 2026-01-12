@@ -341,6 +341,7 @@
 		13A964182EBBD8F60025FB7A /* TCYUnstakeTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A964172EBBD8F60025FB7A /* TCYUnstakeTransactionBuilder.swift */; };
 		13A9641A2EBBDA090025FB7A /* RUJIUnstakeTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A964192EBBDA090025FB7A /* RUJIUnstakeTransactionBuilder.swift */; };
 		13A9641C2EBBEB020025FB7A /* RUJIWithdrawRewardsTransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A9641B2EBBEAF90025FB7A /* RUJIWithdrawRewardsTransactionBuilder.swift */; };
+		13A9B8C7D6E5F4A3B2C1D0EA /* TronContractPayloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A9B8C7D6E5F4A3B2C1D0E9 /* TronContractPayloads.swift */; };
 		13AA6CDE2EA8742100760C8D /* THORChainLPsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AA6CDC2EA8742100760C8D /* THORChainLPsAPI.swift */; };
 		13AA6CE02EA8743F00760C8D /* THORChainPoolStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AA6CDF2EA8743F00760C8D /* THORChainPoolStats.swift */; };
 		13AA6CE32EA8746300760C8D /* THORChainAPIService+LPs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AA6CE22EA8746300760C8D /* THORChainAPIService+LPs.swift */; };
@@ -1242,7 +1243,6 @@
 		DEA1C7022DB0CD9900424466 /* THORChainTokenMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C7012DB0CD9300424466 /* THORChainTokenMetadata.swift */; };
 		DEA1C7042DB0CE0100424466 /* NetworkInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C7032DB0CDFE00424466 /* NetworkInfo.swift */; };
 		DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */; };
-		13A9B8C7D6E5F4A3B2C1D0EA /* TronContractPayloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A9B8C7D6E5F4A3B2C1D0E9 /* TronContractPayloads.swift */; };
 		DED05FE42BBB824D00E0496C /* ThorchainAccountValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED05FE32BBB824D00E0496C /* ThorchainAccountValue.swift */; };
 		DED05FE62BBB82F300E0496C /* CosmosAccountsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */; };
 		DEDB62D72E45B61E00722F74 /* OneInchQuoteError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEDB62D62E45B61500722F74 /* OneInchQuoteError.swift */; };
@@ -1632,6 +1632,7 @@
 		13A964172EBBD8F60025FB7A /* TCYUnstakeTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TCYUnstakeTransactionBuilder.swift; sourceTree = "<group>"; };
 		13A964192EBBDA090025FB7A /* RUJIUnstakeTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUJIUnstakeTransactionBuilder.swift; sourceTree = "<group>"; };
 		13A9641B2EBBEAF90025FB7A /* RUJIWithdrawRewardsTransactionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUJIWithdrawRewardsTransactionBuilder.swift; sourceTree = "<group>"; };
+		13A9B8C7D6E5F4A3B2C1D0E9 /* TronContractPayloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronContractPayloads.swift; sourceTree = "<group>"; };
 		13AA6CDC2EA8742100760C8D /* THORChainLPsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainLPsAPI.swift; sourceTree = "<group>"; };
 		13AA6CDF2EA8743F00760C8D /* THORChainPoolStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainPoolStats.swift; sourceTree = "<group>"; };
 		13AA6CE22EA8746300760C8D /* THORChainAPIService+LPs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "THORChainAPIService+LPs.swift"; sourceTree = "<group>"; };
@@ -2537,7 +2538,6 @@
 		DEA1C7012DB0CD9300424466 /* THORChainTokenMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainTokenMetadata.swift; sourceTree = "<group>"; };
 		DEA1C7032DB0CDFE00424466 /* NetworkInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkInfo.swift; sourceTree = "<group>"; };
 		DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignPayload.swift; sourceTree = "<group>"; };
-		13A9B8C7D6E5F4A3B2C1D0E9 /* TronContractPayloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronContractPayloads.swift; sourceTree = "<group>"; };
 		DED05FE32BBB824D00E0496C /* ThorchainAccountValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountValue.swift; sourceTree = "<group>"; };
 		DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosAccountsResponse.swift; sourceTree = "<group>"; };
 		DEDB62D62E45B61500722F74 /* OneInchQuoteError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneInchQuoteError.swift; sourceTree = "<group>"; };
@@ -8118,7 +8118,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 37;
+				CURRENT_PROJECT_VERSION = 38;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
@@ -8183,7 +8183,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 37;
+				CURRENT_PROJECT_VERSION = 38;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
@@ -8243,7 +8243,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 37;
+				CURRENT_PROJECT_VERSION = 38;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -8269,7 +8269,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 37;
+				CURRENT_PROJECT_VERSION = 38;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
 				ENABLE_TESTABILITY = NO;
@@ -8295,7 +8295,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 37;
+				CURRENT_PROJECT_VERSION = 38;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
@@ -8316,7 +8316,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 37;
+				CURRENT_PROJECT_VERSION = 38;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
