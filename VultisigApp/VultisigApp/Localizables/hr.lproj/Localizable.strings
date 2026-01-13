@@ -704,6 +704,7 @@
 "shouldBackupVaultsSeparateLocations" = "Trebali biste napraviti sigurnosnu kopiju svih dijelova spremišta na različitim lokacijama.";
 "shouldOnlyTakeAMinute..." = "Ovo bi trebalo trajati samo sekundu";
 "showBalance" = "Prikaži saldo";
+"showHint" = "Prikaži hint";
 "sign" = "Potpiši";
 "signer" = "Potpisnik";
 "signers" = "Potpisnici";
