@@ -704,6 +704,7 @@
 "shouldBackupVaultsSeparateLocations" = "Dovresti eseguire il backup di tutte le quote del caveau in luoghi separati.";
 "shouldOnlyTakeAMinute..." = "Dovrebbe richiedere solo un secondo";
 "showBalance" = "Mostra saldo";
+"showHint" = "Mostra suggerimento";
 "sign" = "Firma";
 "signer" = "Firmatario";
 "signers" = "Firmatari";
@@ -734,6 +735,7 @@
 "supportedFileTypesUpload" = "Tipi di file supportati: .bak & .vult";
 "swap" = "Scambio";
 "swapFee" = "Commissione di scambio";
+"minPayout" = "pagamento min.";
 "swapFrom" = "Scambio da";
 "swapOverview" = "Panoramica dello scambio";
 "swapProgress" = "Progresso dello scambio";
