@@ -704,6 +704,7 @@
 "shouldBackupVaultsSeparateLocations" = "Você deve fazer backup de todas as ações do cofre em locais separados.";
 "shouldOnlyTakeAMinute..." = "Isso deve levar apenas um segundo";
 "showBalance" = "Mostrar saldo";
+"showHint" = "Mostrar dica";
 "sign" = "Assinar";
 "signer" = "Assinante";
 "signers" = "Signatários";

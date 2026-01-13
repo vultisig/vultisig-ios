@@ -704,6 +704,7 @@
 "shouldBackupVaultsSeparateLocations" = "Du solltest alle Tresoranteile an verschiedenen Orten sichern.";
 "shouldOnlyTakeAMinute..." = "Das sollte nur eine Sekunde dauern";
 "showBalance" = "Guthaben anzeigen";
+"showHint" = "Hinweis anzeigen";
 "sign" = "Unterschreiben";
 "signer" = "Unterzeichner";
 "signers" = "Unterzeichner";

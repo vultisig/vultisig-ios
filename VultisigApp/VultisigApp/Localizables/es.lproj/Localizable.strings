@@ -704,6 +704,7 @@
 "shouldBackupVaultsSeparateLocations" = "Debes respaldar todas las acciones del almacén en ubicaciones separadas.";
 "shouldOnlyTakeAMinute..." = "Esto debería tardar solo un segundo";
 "showBalance" = "Mostrar saldo";
+"showHint" = "Mostrar pista";
 "sign" = "Firmar";
 "signer" = "Firmante";
 "signers" = "Firmantes";

@@ -705,6 +705,7 @@
 "shouldBackupVaultsSeparateLocations" = "您应该在不同位置备份所有保险库份额";
 "shouldOnlyTakeAMinute..." = "这应该只需要一秒钟";
 "showBalance" = "显示余额";
+"showHint" = "显示提示";
 "sign" = "签名";
 "signer" = "签名者";
 "signers" = "签名者";
