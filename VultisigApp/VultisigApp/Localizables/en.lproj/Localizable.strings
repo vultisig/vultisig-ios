@@ -703,6 +703,7 @@
 "shouldBackupVaultsSeparateLocations" = "You should backup all vault shares in separate locations.";
 "shouldOnlyTakeAMinute..." = "This should only take a second";
 "showBalance" = "Show balance";
+"showHint" = "Show hint";
 "sign" = "Sign";
 "signer" = "Signer";
 "signers" = "Signers";
@@ -733,6 +734,7 @@
 "supportedFileTypesUpload" = "Supported file types: .bak & .vult";
 "swap" = "Swap";
 "swapFee" = "Swap Fee";
+"minPayout" = "min. payout";
 "swapFrom" = "Swapping From";
 "swapOverview" = "Swap overview";
 "swapProgress" = "Swap progress";

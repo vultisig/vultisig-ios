@@ -705,6 +705,7 @@
 "shouldBackupVaultsSeparateLocations" = "您应该在不同位置备份所有保险库份额";
 "shouldOnlyTakeAMinute..." = "这应该只需要一秒钟";
 "showBalance" = "显示余额";
+"showHint" = "显示提示";
 "sign" = "签名";
 "signer" = "签名者";
 "signers" = "签名者";
@@ -735,6 +736,7 @@
 "supportedFileTypesUpload" = "支持的文件类型：.bak 和 .vult";
 "swap" = "交换";
 "swapFee" = "交换费用";
+"minPayout" = "最小支付";
 "swapFrom" = "从此交换";
 "swapOverview" = "交换概览";
 "swapProgress" = "交换进度";
