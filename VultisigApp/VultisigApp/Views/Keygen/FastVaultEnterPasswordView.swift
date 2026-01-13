@@ -134,25 +134,25 @@ struct FastVaultEnterPasswordView: View {
     }
     
     func tryAuthenticate() {
-        //        guard let fastPassword = keychain.getFastPassword(pubKeyECDSA: vault.pubKeyECDSA) else {
-        //            return
-        //        }
-        //
-        //        guard !fastPassword.isEmpty, isBiometryEnabled else {
-        //            return
-        //        }
-        //
-        //        biometryService.authenticate(
-        //            reason: "Authenticate to fill FastServer password",
-        //            onSuccess: {
-        //                password = fastPassword
-        //                onSubmit?()
-        //                dismiss()
-        //            },
-        //            onError: { error in
-        //                // Log authentication error - don't fail silently
-        //                print("Fast Vault authentication error: \(error.localizedDescription)")
-        //                // Error is shown by system dialog, no need to show another alert
-        //            })
+        guard let fastPassword = keychain.getFastPassword(pubKeyECDSA: vault.pubKeyECDSA) else {
+            return
+        }
+
+        guard !fastPassword.isEmpty, isBiometryEnabled else {
+            return
+        }
+
+        biometryService.authenticate(
+            reason: "Authenticate to fill FastServer password",
+            onSuccess: {
+                password = fastPassword
+                onSubmit?()
+                dismiss()
+            },
+            onError: { error in
+                // Log authentication error - don't fail silently
+                print("Fast Vault authentication error: \(error.localizedDescription)")
+                // Error is shown by system dialog, no need to show another alert
+            })
     }
 }

@@ -294,6 +294,7 @@ extension SwapPayload {
                         $0.value = payload.quote.tx.value
                         $0.gasPrice = payload.quote.tx.gasPrice
                         $0.gas = payload.quote.tx.gas
+                        $0.swapFee = payload.quote.tx.sw
                     }
                 }
                 $0.provider = payload.provider.rawValue
