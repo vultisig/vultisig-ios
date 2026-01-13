@@ -54,7 +54,8 @@ struct KeyImportChainsSetupScreen: View {
             tssType: .KeyImport,
             keyImportInput: KeyImportInput(
                 mnemonic: mnemonic,
-                chains: viewModel.chainsToImport
+                chains: viewModel.chainsToImport,
+                solanaDerivationType: viewModel.solanaDerivationType
             )
         ))
     }

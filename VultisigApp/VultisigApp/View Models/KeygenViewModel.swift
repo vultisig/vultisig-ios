@@ -24,11 +24,29 @@ enum KeygenStatus {
 struct KeyImportInput: Hashable {
     let mnemonic: String
     let chains: [Chain]
+    let solanaDerivationType: DerivationType
+
+    func derivationType(for chain: Chain) -> DerivationType? {
+        switch chain {
+        case .solana: return solanaDerivationType
+        default: return nil
+        }
+    }
 }
 
 @MainActor
 class KeygenViewModel: ObservableObject {
     private let logger = Logger(subsystem: "keygen-viewmodel", category: "tss")
+
+    /// Maps DerivationType to WalletCore Derivation for each chain.
+    /// Add new chains/derivations here to support additional derivation types.
+    private let walletCoreDerivations: [Chain: [DerivationType: Derivation]] = [
+        .solana: [
+            .phantom: .solanaSolana
+            // Add more Solana derivations here in the future, e.g.:
+            // .ledger: .someLedgerDerivation
+        ]
+    ]
     
     var vault: Vault
     var tssType: TssType // keygen or reshare
@@ -198,9 +216,9 @@ class KeygenViewModel: ObservableObject {
             await addProgress(stepPercentage)
             var chainKey: Data?
             if isInitiateDevice {
-                chainKey = wallet?.getKeyForCoin(coin: chain.coinType).data
+                chainKey = getChainKey(for: chain, wallet: wallet)
             }
-            
+
             let keyshare: DKLSKeyshare
             if chain.isECDSA {
                 self.logger.info("Starting DKLS process for chain \(chain.name)")
@@ -218,7 +236,7 @@ class KeygenViewModel: ObservableObject {
                     }
                     chainSeed = serializedChainSeed
                 }
-                
+
                 self.logger.info("Starting Schnorr process for chain \(chain.name)")
                 keyshare = try await importSchnorrKey(
                     context: modelContext,
@@ -228,11 +246,15 @@ class KeygenViewModel: ObservableObject {
                 self.logger.info("Finished Schnorr process for chain \(chain.name). Generated pub key: \(keyshare.PubKey)")
             }
             self.vault.keyshares.append(KeyShare(pubkey: keyshare.PubKey, keyshare: keyshare.Keyshare))
+
+            // Store derivation type if this chain uses an alternative derivation
+            let derivationType = keyImportInput?.derivationType(for: chain)
             self.vault.chainPublicKeys.append(
                 ChainPublicKey(
                     chain: chain,
                     publicKeyHex: keyshare.PubKey,
-                    isEddsa: !chain.isECDSA
+                    isEddsa: !chain.isECDSA,
+                    derivationType: derivationType
                 )
             )
         }
@@ -257,12 +279,12 @@ class KeygenViewModel: ObservableObject {
     
     func startRootKeyImportKeygen(modelContext: ModelContext, wallet: HDWallet?) async throws {
         self.logger.info("Starting Root Key import process")
-        
+
         self.logger.info("Starting DKLS process for root key")
         let ecDSAKey = wallet?.getMasterKey(curve: .secp256k1)
         let keyshareECDSA = try await importDklsKey(context: modelContext, ecdsaPrivateKeyHex: ecDSAKey?.data.hexString, chain: nil)
         self.logger.info("Finished DKLS process for root key. Generated pub key: \(keyshareECDSA.PubKey)")
-        
+
         self.logger.info("Starting Schnorr process for root key")
         let edDSAKey = wallet?.getMasterKey(curve: .ed25519)
         var edDSAKeySerialized: Data?
@@ -271,10 +293,24 @@ class KeygenViewModel: ObservableObject {
         }
         let keyshareEdDSA = try await importSchnorrKey(context: modelContext, eddsaPrivateKeyHex: edDSAKeySerialized?.hexString, chain: nil)
         self.logger.info("Finished Schnorr process for root key. Generated pub key: \(keyshareEdDSA.PubKey)")
-        
+
         self.vault.pubKeyECDSA = keyshareECDSA.PubKey
         self.vault.pubKeyEdDSA = keyshareEdDSA.PubKey
         self.vault.hexChainCode = keyshareECDSA.chaincode
+    }
+
+    /// Gets the chain key using the appropriate derivation based on KeyImportInput settings.
+    private func getChainKey(for chain: Chain, wallet: HDWallet?) -> Data? {
+        guard let wallet else { return nil }
+
+        // Check if this chain has an alternative derivation configured
+        if let derivationType = keyImportInput?.derivationType(for: chain),
+           let walletCoreDerivation = walletCoreDerivations[chain]?[derivationType] {
+            return wallet.getKeyDerivation(coin: chain.coinType, derivation: walletCoreDerivation).data
+        }
+
+        // Use default derivation
+        return wallet.getKeyForCoin(coin: chain.coinType).data
     }
     
     // Import existing ECDSA private key to DKLS vault
