@@ -1158,6 +1158,7 @@
 "circleSetupUSDCDeposited" = "USDC deposited";
 "circleSetupAccountBalance" = "Circle Account Balance";
 "circleSetupOpenAccount" = "Open Account";
+"circleCreatingAccount" = "Creating account...";
 
 "circleDashboardCircleUSDCAccount" = "Circle USDC Account";
 "circleDashboardDeposited" = "Deposited";

@@ -1132,6 +1132,7 @@
 "circleSetupAccountTitle" = "Circle USDC 账户";
 "circleSetupUSDCDeposited" = "USDC 已存入";
 "circleSetupOpenAccount" = "开设账户";
+"circleCreatingAccount" = "正在创建账户...";
 "circleDashboardCircleUSDCAccount" = "Circle USDC 账户";
 "circleDashboardDeposited" = "已存入";
 "circleDashboardDepositDescription" = "将您的 $USDC 存入 Circle 账户，在 Vultisig 保险库中安全赚取收益。";

@@ -115,6 +115,12 @@ struct CircleSetupView: View {
         }
     }
     
+    private var buttonTitle: String {
+        model.isLoading 
+            ? NSLocalizedString("circleCreatingAccount", comment: "Creating account...")
+            : NSLocalizedString("circleSetupOpenAccount", comment: "Open Account")
+    }
+    
     var bottomCard: some View {
         VStack(spacing: CircleConstants.Design.cardPadding) {
             HStack(spacing: 12) {
@@ -135,13 +141,14 @@ struct CircleSetupView: View {
                 Spacer()
             }
             
-            DefiButton(
-                title: NSLocalizedString("circleSetupOpenAccount", comment: "Open Account"),
-                icon: nil,
-                action: {
-                    Task { await createWallet() }
-                }
-            )
+            PrimaryButton(
+                title: buttonTitle,
+                isLoading: model.isLoading,
+                type: .primary,
+                size: .medium
+            ) {
+                Task { await createWallet() }
+            }
             .disabled(model.isLoading)
         }
         .padding(CircleConstants.Design.cardPadding)
