@@ -132,48 +132,6 @@ struct CircleWithdrawView: View {
                 Spacer()
                 
                 VStack(spacing: CircleConstants.Design.verticalSpacing) {
-                    HStack(spacing: 12) {
-                        Text("0%")
-                            .font(CircleConstants.Fonts.subtitle)
-                            .foregroundStyle(Theme.colors.textSecondary)
-                        
-                        ZStack(alignment: .center) {
-                            // Tick marks at 25%, 50%, 75%
-                            GeometryReader { geometry in
-                                ZStack {
-                                    Circle()
-                                        .fill(Theme.colors.textTertiary)
-                                        .frame(width: 6, height: 6)
-                                        .position(x: geometry.size.width * 0.25, y: geometry.size.height / 2)
-                                    
-                                    Circle()
-                                        .fill(Theme.colors.textTertiary)
-                                        .frame(width: 6, height: 6)
-                                        .position(x: geometry.size.width * 0.5, y: geometry.size.height / 2)
-                                    
-                                    Circle()
-                                        .fill(Theme.colors.textTertiary)
-                                        .frame(width: 6, height: 6)
-                                        .position(x: geometry.size.width * 0.75, y: geometry.size.height / 2)
-                                }
-                            }
-                            .frame(height: 20)
-                            
-                            Slider(value: Binding(
-                                get: { percentage },
-                                set: { newValue in
-                                    percentage = newValue
-                                    updateAmount(from: newValue)
-                                }
-                            ), in: 0...100)
-                            .accentColor(Theme.colors.primaryAccent1)
-                        }
-                        
-                        Text("100%")
-                            .font(CircleConstants.Fonts.subtitle)
-                            .foregroundStyle(Theme.colors.textSecondary)
-                    }
-                    
                     percentageCheckpoints
                     
                     HStack {
