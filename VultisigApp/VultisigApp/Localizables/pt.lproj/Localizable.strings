@@ -1132,6 +1132,7 @@
 "circleSetupAccountTitle" = "Conta Circle USDC";
 "circleSetupUSDCDeposited" = "USDC depositado";
 "circleSetupOpenAccount" = "Abrir Conta";
+"circleCreatingAccount" = "Criando conta...";
 "circleDashboardCircleUSDCAccount" = "Conta Circle USDC";
 "circleDashboardDeposited" = "Depositado";
 "circleDashboardDepositDescription" = "Deposite seus $USDC em uma conta Circle e ganhe rendimento de forma segura dentro do seu cofre Vultisig.";

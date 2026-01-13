@@ -1132,6 +1132,7 @@
 "circleSetupAccountTitle" = "Circle USDC Račun";
 "circleSetupUSDCDeposited" = "USDC deponiran";
 "circleSetupOpenAccount" = "Otvori Račun";
+"circleCreatingAccount" = "Kreiranje računa...";
 "circleDashboardCircleUSDCAccount" = "Circle USDC Račun";
 "circleDashboardDeposited" = "Deponirano";
 "circleDashboardDepositDescription" = "Deponirajte svoje $USDC na Circle račun i zarađujte prinos sigurno unutar vašeg Vultisig trezora.";
