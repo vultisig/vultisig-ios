@@ -735,6 +735,7 @@
 "supportedFileTypesUpload" = "Unterstützte Dateitypen: .bak & .vult";
 "swap" = "Tausch";
 "swapFee" = "Tauschgebühr";
+"minPayout" = "Min. Auszahlung";
 "swapFrom" = "Tausche von";
 "swapOverview" = "Tauschübersicht";
 "swapProgress" = "Tauschfortschritt";

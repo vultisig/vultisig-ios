@@ -734,6 +734,7 @@
 "supportedFileTypesUpload" = "Supported file types: .bak & .vult";
 "swap" = "Swap";
 "swapFee" = "Swap Fee";
+"minPayout" = "min. payout";
 "swapFrom" = "Swapping From";
 "swapOverview" = "Swap overview";
 "swapProgress" = "Swap progress";

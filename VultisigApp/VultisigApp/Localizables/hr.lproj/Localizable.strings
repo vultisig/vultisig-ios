@@ -735,6 +735,7 @@
 "supportedFileTypesUpload" = "Podržane vrste datoteka: .bak & .vult";
 "swap" = "Zamjena";
 "swapFee" = "Naknada za zamjenu";
+"minPayout" = "min. isplata";
 "swapFrom" = "Zamjena iz";
 "swapOverview" = "Pregled zamjene";
 "swapProgress" = "Napredak zamjene";

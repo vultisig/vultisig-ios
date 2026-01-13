@@ -736,6 +736,7 @@
 "supportedFileTypesUpload" = "支持的文件类型：.bak 和 .vult";
 "swap" = "交换";
 "swapFee" = "交换费用";
+"minPayout" = "最小支付";
 "swapFrom" = "从此交换";
 "swapOverview" = "交换概览";
 "swapProgress" = "交换进度";
