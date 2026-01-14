@@ -1191,6 +1191,41 @@
 "circleErrorInvalidDetails" = "Invalid details";
 "circleErrorWalletNotDeployed" = "Circle wallet not yet deployed. Please try again later.";
 
+// TRON Staking (Freeze/Unfreeze)
+"tronTitle" = "TRON Staking";
+"tronDashboardTitle" = "TRON Staking";
+"tronDashboardStaking" = "Staking";
+"tronDashboardStakingDescription" = "Freeze your TRX to gain bandwidth and energy for free transactions.";
+"tronDashboardInfoText" = "Frozen TRX provides bandwidth and energy resources. You can unfreeze at any time to get your TRX back.";
+"tronFrozenBalance" = "Frozen TRX";
+"tronAvailableBalance" = "Available TRX";
+"tronBandwidth" = "Bandwidth";
+"tronEnergy" = "Energy";
+"tronFreezeButton" = "Freeze";
+"tronUnfreezeButton" = "Unfreeze";
+"tronFreezeTitle" = "Freeze TRX";
+"tronFreezeAmount" = "Amount";
+"tronFreezeBalanceAvailable" = "Balance available:";
+"tronFreezeContinue" = "Continue";
+"tronUnfreezeTitle" = "Unfreeze TRX";
+"tronUnfreezeAmount" = "Amount";
+"tronUnfreezeBalanceAvailable" = "Frozen balance:";
+"tronUnfreezeConfirm" = "Continue";
+"tronResourceType" = "Resource Type";
+"tronResourceBandwidth" = "Bandwidth";
+"tronResourceEnergy" = "Energy";
+"tronRowFrozenBalance" = "Frozen Balance";
+"tronRowFrozen" = "Frozen";
+"tronRowAvailable" = "Available";
+"tronRowAddTRX" = "Add TRX";
+"tronRowGetStarted" = "Get Started";
+"tronTrxRequired" = "TRX Required";
+"tronTrxRequiredDescription" = "Please add TRX to your vault to use TRON staking.";
+"tronErrorNoTrxCoin" = "No TRX coin found in vault. Please add TRX first.";
+"tronErrorInvalidBlockInfo" = "Failed to get TRON block info. Please try again.";
+"tronErrorFreezeFailed" = "Freeze failed: %@";
+"tronErrorUnfreezeFailed" = "Unfreeze failed: %@";
+
 "selectChainsManually" = "Select chains manually";
 "noActiveChainsFound" = "No active chains found";
 "noActiveChainsFoundSubtitle" = "We didn’t detect any assets on this seed phrase.\nEach extra chain increases the time to generate your vault and possibility of an timeout.";

@@ -1070,6 +1070,25 @@
 		B505BF8F2E686D1700A5698B /* FeeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B505BF8E2E686D1500A5698B /* FeeService.swift */; };
 		B50E399B2BF5AB2100B9A269 /* FunctionCallAddressable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E399A2BF5AB2100B9A269 /* FunctionCallAddressable.swift */; };
 		B50E399D2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E399C2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift */; };
+		B50F26502F182DBE0015DCCB /* TronView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F264C2F182DBE0015DCCB /* TronView+macOS.swift */; };
+		B50F26512F182DBE0015DCCB /* TronUnfreezeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F26472F182DBE0015DCCB /* TronUnfreezeView.swift */; };
+		B50F26522F182DBE0015DCCB /* TronViewLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F264D2F182DBE0015DCCB /* TronViewLogic.swift */; };
+		B50F26532F182DBE0015DCCB /* DefiTronRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F263F2F182DBE0015DCCB /* DefiTronRow.swift */; };
+		B50F26542F182DBE0015DCCB /* TronUnfreezeView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F26492F182DBE0015DCCB /* TronUnfreezeView+macOS.swift */; };
+		B50F26552F182DBE0015DCCB /* TronDashboardView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F26422F182DBE0015DCCB /* TronDashboardView+iOS.swift */; };
+		B50F26562F182DBE0015DCCB /* TronView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F264B2F182DBE0015DCCB /* TronView+iOS.swift */; };
+		B50F26572F182DBE0015DCCB /* TronDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F26412F182DBE0015DCCB /* TronDashboardView.swift */; };
+		B50F26582F182DBE0015DCCB /* TronRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F263B2F182DBE0015DCCB /* TronRoute.swift */; };
+		B50F26592F182DBE0015DCCB /* TronRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F263D2F182DBE0015DCCB /* TronRouter.swift */; };
+		B50F265A2F182DBE0015DCCB /* TronView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F264A2F182DBE0015DCCB /* TronView.swift */; };
+		B50F265B2F182DBE0015DCCB /* TronFreezeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F26442F182DBE0015DCCB /* TronFreezeView.swift */; };
+		B50F265C2F182DBE0015DCCB /* TronUnfreezeView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F26482F182DBE0015DCCB /* TronUnfreezeView+iOS.swift */; };
+		B50F265D2F182DBE0015DCCB /* TronConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F26402F182DBE0015DCCB /* TronConstants.swift */; };
+		B50F265E2F182DBE0015DCCB /* TronFreezeView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F26462F182DBE0015DCCB /* TronFreezeView+macOS.swift */; };
+		B50F265F2F182DBE0015DCCB /* TronRouteBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F263C2F182DBE0015DCCB /* TronRouteBuilder.swift */; };
+		B50F26602F182DBE0015DCCB /* TronFreezeView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F26452F182DBE0015DCCB /* TronFreezeView+iOS.swift */; };
+		B50F26612F182DBE0015DCCB /* TronDashboardView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F26432F182DBE0015DCCB /* TronDashboardView+macOS.swift */; };
+		B50F26622F182DBE0015DCCB /* TronViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F264E2F182DBE0015DCCB /* TronViewModel.swift */; };
 		B50F46752DA9A308007B16DE /* Chain+ibc.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F46742DA9A308007B16DE /* Chain+ibc.swift */; };
 		B51119332C0072620020B711 /* FunctionCallCustom.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51119322C0072620020B711 /* FunctionCallCustom.swift */; };
 		B51160132E62879900534A43 /* TonService+Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51160122E62879100534A43 /* TonService+Models.swift */; };
@@ -2363,6 +2382,25 @@
 		B505BF8E2E686D1500A5698B /* FeeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeService.swift; sourceTree = "<group>"; };
 		B50E399A2BF5AB2100B9A269 /* FunctionCallAddressable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallAddressable.swift; sourceTree = "<group>"; };
 		B50E399C2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallContractTypeEnum.swift; sourceTree = "<group>"; };
+		B50F263B2F182DBE0015DCCB /* TronRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronRoute.swift; sourceTree = "<group>"; };
+		B50F263C2F182DBE0015DCCB /* TronRouteBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronRouteBuilder.swift; sourceTree = "<group>"; };
+		B50F263D2F182DBE0015DCCB /* TronRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronRouter.swift; sourceTree = "<group>"; };
+		B50F263F2F182DBE0015DCCB /* DefiTronRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTronRow.swift; sourceTree = "<group>"; };
+		B50F26402F182DBE0015DCCB /* TronConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronConstants.swift; sourceTree = "<group>"; };
+		B50F26412F182DBE0015DCCB /* TronDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronDashboardView.swift; sourceTree = "<group>"; };
+		B50F26422F182DBE0015DCCB /* TronDashboardView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TronDashboardView+iOS.swift"; sourceTree = "<group>"; };
+		B50F26432F182DBE0015DCCB /* TronDashboardView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TronDashboardView+macOS.swift"; sourceTree = "<group>"; };
+		B50F26442F182DBE0015DCCB /* TronFreezeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronFreezeView.swift; sourceTree = "<group>"; };
+		B50F26452F182DBE0015DCCB /* TronFreezeView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TronFreezeView+iOS.swift"; sourceTree = "<group>"; };
+		B50F26462F182DBE0015DCCB /* TronFreezeView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TronFreezeView+macOS.swift"; sourceTree = "<group>"; };
+		B50F26472F182DBE0015DCCB /* TronUnfreezeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronUnfreezeView.swift; sourceTree = "<group>"; };
+		B50F26482F182DBE0015DCCB /* TronUnfreezeView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TronUnfreezeView+iOS.swift"; sourceTree = "<group>"; };
+		B50F26492F182DBE0015DCCB /* TronUnfreezeView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TronUnfreezeView+macOS.swift"; sourceTree = "<group>"; };
+		B50F264A2F182DBE0015DCCB /* TronView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronView.swift; sourceTree = "<group>"; };
+		B50F264B2F182DBE0015DCCB /* TronView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TronView+iOS.swift"; sourceTree = "<group>"; };
+		B50F264C2F182DBE0015DCCB /* TronView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TronView+macOS.swift"; sourceTree = "<group>"; };
+		B50F264D2F182DBE0015DCCB /* TronViewLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronViewLogic.swift; sourceTree = "<group>"; };
+		B50F264E2F182DBE0015DCCB /* TronViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronViewModel.swift; sourceTree = "<group>"; };
 		B50F46742DA9A308007B16DE /* Chain+ibc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Chain+ibc.swift"; sourceTree = "<group>"; };
 		B51119322C0072620020B711 /* FunctionCallCustom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallCustom.swift; sourceTree = "<group>"; };
 		B51160122E62879100534A43 /* TonService+Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TonService+Models.swift"; sourceTree = "<group>"; };
@@ -5978,6 +6016,40 @@
 			path = banxa;
 			sourceTree = "<group>";
 		};
+		B50F263E2F182DBE0015DCCB /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				B50F263B2F182DBE0015DCCB /* TronRoute.swift */,
+				B50F263C2F182DBE0015DCCB /* TronRouteBuilder.swift */,
+				B50F263D2F182DBE0015DCCB /* TronRouter.swift */,
+			);
+			path = Navigation;
+			sourceTree = "<group>";
+		};
+		B50F264F2F182DBE0015DCCB /* Tron */ = {
+			isa = PBXGroup;
+			children = (
+				B50F263E2F182DBE0015DCCB /* Navigation */,
+				B50F263F2F182DBE0015DCCB /* DefiTronRow.swift */,
+				B50F26402F182DBE0015DCCB /* TronConstants.swift */,
+				B50F26412F182DBE0015DCCB /* TronDashboardView.swift */,
+				B50F26422F182DBE0015DCCB /* TronDashboardView+iOS.swift */,
+				B50F26432F182DBE0015DCCB /* TronDashboardView+macOS.swift */,
+				B50F26442F182DBE0015DCCB /* TronFreezeView.swift */,
+				B50F26452F182DBE0015DCCB /* TronFreezeView+iOS.swift */,
+				B50F26462F182DBE0015DCCB /* TronFreezeView+macOS.swift */,
+				B50F26472F182DBE0015DCCB /* TronUnfreezeView.swift */,
+				B50F26482F182DBE0015DCCB /* TronUnfreezeView+iOS.swift */,
+				B50F26492F182DBE0015DCCB /* TronUnfreezeView+macOS.swift */,
+				B50F264A2F182DBE0015DCCB /* TronView.swift */,
+				B50F264B2F182DBE0015DCCB /* TronView+iOS.swift */,
+				B50F264C2F182DBE0015DCCB /* TronView+macOS.swift */,
+				B50F264D2F182DBE0015DCCB /* TronViewLogic.swift */,
+				B50F264E2F182DBE0015DCCB /* TronViewModel.swift */,
+			);
+			path = Tron;
+			sourceTree = "<group>";
+		};
 		B51160112E62878A00534A43 /* Ton */ = {
 			isa = PBXGroup;
 			children = (
@@ -6112,6 +6184,7 @@
 		C91E9A67BFDFD073DCB7DB22 /* Protocols */ = {
 			isa = PBXGroup;
 			children = (
+				B50F264F2F182DBE0015DCCB /* Tron */,
 				9690397CDD1E0CE7CD6E2A18 /* Circle */,
 			);
 			path = Protocols;
@@ -7892,6 +7965,25 @@
 				13C7C1ED2E87040700A529FD /* LoadingOverlayViewModifier.swift in Sources */,
 				8EE0EF7FEAA0B5C09FF9C79D /* KyberSwapPayload.swift in Sources */,
 				A6725D3E2C3FB61900D47716 /* AddressBookItem.swift in Sources */,
+				B50F26502F182DBE0015DCCB /* TronView+macOS.swift in Sources */,
+				B50F26512F182DBE0015DCCB /* TronUnfreezeView.swift in Sources */,
+				B50F26522F182DBE0015DCCB /* TronViewLogic.swift in Sources */,
+				B50F26532F182DBE0015DCCB /* DefiTronRow.swift in Sources */,
+				B50F26542F182DBE0015DCCB /* TronUnfreezeView+macOS.swift in Sources */,
+				B50F26552F182DBE0015DCCB /* TronDashboardView+iOS.swift in Sources */,
+				B50F26562F182DBE0015DCCB /* TronView+iOS.swift in Sources */,
+				B50F26572F182DBE0015DCCB /* TronDashboardView.swift in Sources */,
+				B50F26582F182DBE0015DCCB /* TronRoute.swift in Sources */,
+				B50F26592F182DBE0015DCCB /* TronRouter.swift in Sources */,
+				B50F265A2F182DBE0015DCCB /* TronView.swift in Sources */,
+				B50F265B2F182DBE0015DCCB /* TronFreezeView.swift in Sources */,
+				B50F265C2F182DBE0015DCCB /* TronUnfreezeView+iOS.swift in Sources */,
+				B50F265D2F182DBE0015DCCB /* TronConstants.swift in Sources */,
+				B50F265E2F182DBE0015DCCB /* TronFreezeView+macOS.swift in Sources */,
+				B50F265F2F182DBE0015DCCB /* TronRouteBuilder.swift in Sources */,
+				B50F26602F182DBE0015DCCB /* TronFreezeView+iOS.swift in Sources */,
+				B50F26612F182DBE0015DCCB /* TronDashboardView+macOS.swift in Sources */,
+				B50F26622F182DBE0015DCCB /* TronViewModel.swift in Sources */,
 				13C7C1E72E86EEBE00A529FD /* CustomTokenGridCell.swift in Sources */,
 				A6C671272CA3C0FF00F59B6A /* FunctionCallAddressTextField+iOS.swift in Sources */,
 				A6F9E7A52BED6BC800BA36E1 /* SetupVaultTabView.swift in Sources */,

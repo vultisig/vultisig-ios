@@ -20,6 +20,8 @@ struct DefiChainCellView: View {
     var body: some View {
         if group.name == "Circle" {
              DefiCircleRow(vault: vault)
+        } else if group.chain == .tron {
+            DefiTronRow(vault: vault)
         } else {
             GroupedChainCellView(
                 group: group,
