@@ -28,7 +28,13 @@ extension Vault: ProtoMappable {
             guard let chain = Chain(name: $0.chain) else {
                 throw HelperError.runtimeError("Invalid chain name in proto: \($0.chain)")
             }
-            return ChainPublicKey( chain: chain,publicKeyHex: $0.publicKey, isEddsa: $0.isEddsa)
+            let derivationType: DerivationType? = DerivationType(rawValue: $0.derivationType) ?? .default
+            return ChainPublicKey(
+                chain: chain,
+                publicKeyHex: $0.publicKey,
+                isEddsa: $0.isEddsa,
+                derivationType: derivationType
+            )
         }
     }
     
@@ -54,6 +60,7 @@ extension Vault: ProtoMappable {
                 cp.publicKey = c.publicKeyHex
                 cp.chain = c.chain.name
                 cp.isEddsa = c.isEddsa
+                cp.derivationType = c.derivationType?.rawValue ?? ""
                 return cp
             }
         }
