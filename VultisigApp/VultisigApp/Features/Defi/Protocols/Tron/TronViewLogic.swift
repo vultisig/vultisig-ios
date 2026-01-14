@@ -81,8 +81,8 @@ struct TronViewLogic {
             gasFeeEstimation: gasFeeEstimation
         )
         
-        // Create freeze payload - using memo to encode resource type
-        let memo = "FREEZE:\(resourceType.rawValue)"
+        // Use memo to encode freeze operation - TronHelper will parse it
+        let memo = "FREEZE:\(resourceType.tronResourceString)"
         
         let payload = KeysignPayload(
             coin: trxCoin,
@@ -135,8 +135,8 @@ struct TronViewLogic {
             gasFeeEstimation: gasFeeEstimation
         )
         
-        // Create unfreeze payload - using memo to encode resource type
-        let memo = "UNFREEZE:\(resourceType.rawValue)"
+        // Use memo to encode unfreeze operation - TronHelper will parse it
+        let memo = "UNFREEZE:\(resourceType.tronResourceString)"
         
         let payload = KeysignPayload(
             coin: trxCoin,

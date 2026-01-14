@@ -65,6 +65,34 @@ enum TronHelper {
             )
         }
         
+        // FreezeBalanceV2 (Stake 2.0) - detect from memo
+        if let memo = keysignPayload.memo, memo.hasPrefix("FREEZE:") {
+            let resourceString = String(memo.dropFirst("FREEZE:".count))
+            return try buildTronFreezeBalanceV2Input(
+                ownerAddress: keysignPayload.coin.address,
+                frozenBalance: keysignPayload.toAmount,
+                resource: resourceString,
+                timestamp: timestamp, expiration: expiration,
+                blockHeaderTimestamp: blockHeaderTimestamp, blockHeaderNumber: blockHeaderNumber,
+                blockHeaderVersion: blockHeaderVersion, blockHeaderTxTrieRoot: blockHeaderTxTrieRoot,
+                blockHeaderParentHash: blockHeaderParentHash, blockHeaderWitnessAddress: blockHeaderWitnessAddress
+            )
+        }
+        
+        // UnfreezeBalanceV2 (Stake 2.0) - detect from memo
+        if let memo = keysignPayload.memo, memo.hasPrefix("UNFREEZE:") {
+            let resourceString = String(memo.dropFirst("UNFREEZE:".count))
+            return try buildTronUnfreezeBalanceV2Input(
+                ownerAddress: keysignPayload.coin.address,
+                unfreezeBalance: keysignPayload.toAmount,
+                resource: resourceString,
+                timestamp: timestamp, expiration: expiration,
+                blockHeaderTimestamp: blockHeaderTimestamp, blockHeaderNumber: blockHeaderNumber,
+                blockHeaderVersion: blockHeaderVersion, blockHeaderTxTrieRoot: blockHeaderTxTrieRoot,
+                blockHeaderParentHash: blockHeaderParentHash, blockHeaderWitnessAddress: blockHeaderWitnessAddress
+            )
+        }
+        
         // Fallback: validate toAddress for regular transfers
         guard AnyAddress(string: keysignPayload.toAddress, coin: .tron) != nil else {
             throw HelperError.runtimeError("fail to get to address")
@@ -263,6 +291,70 @@ enum TronHelper {
                     parentHash: blockHeaderParentHash, witnessAddress: blockHeaderWitnessAddress
                 )
                 if let memo { $0.memo = memo }
+            }
+        }
+        return try input.serializedData()
+    }
+    
+    // MARK: - FreezeBalanceV2 (Stake 2.0)
+    
+    private static func buildTronFreezeBalanceV2Input(
+        ownerAddress: String,
+        frozenBalance: BigInt,
+        resource: String,
+        timestamp: UInt64, expiration: UInt64,
+        blockHeaderTimestamp: UInt64, blockHeaderNumber: UInt64,
+        blockHeaderVersion: UInt64, blockHeaderTxTrieRoot: String,
+        blockHeaderParentHash: String, blockHeaderWitnessAddress: String
+    ) throws -> Data {
+        let contract = TronFreezeBalanceV2Contract.with {
+            $0.ownerAddress = ownerAddress
+            $0.frozenBalance = Int64(frozenBalance)
+            $0.resource = resource
+        }
+        
+        let input = try TronSigningInput.with {
+            $0.transaction = try TronTransaction.with {
+                $0.contractOneof = .freezeBalanceV2(contract)
+                $0.timestamp = Int64(timestamp)
+                $0.expiration = Int64(expiration)
+                $0.blockHeader = try buildBlockHeader(
+                    timestamp: blockHeaderTimestamp, number: blockHeaderNumber,
+                    version: blockHeaderVersion, txTrieRoot: blockHeaderTxTrieRoot,
+                    parentHash: blockHeaderParentHash, witnessAddress: blockHeaderWitnessAddress
+                )
+            }
+        }
+        return try input.serializedData()
+    }
+    
+    // MARK: - UnfreezeBalanceV2 (Stake 2.0)
+    
+    private static func buildTronUnfreezeBalanceV2Input(
+        ownerAddress: String,
+        unfreezeBalance: BigInt,
+        resource: String,
+        timestamp: UInt64, expiration: UInt64,
+        blockHeaderTimestamp: UInt64, blockHeaderNumber: UInt64,
+        blockHeaderVersion: UInt64, blockHeaderTxTrieRoot: String,
+        blockHeaderParentHash: String, blockHeaderWitnessAddress: String
+    ) throws -> Data {
+        let contract = TronUnfreezeBalanceV2Contract.with {
+            $0.ownerAddress = ownerAddress
+            $0.unfreezeBalance = Int64(unfreezeBalance)
+            $0.resource = resource
+        }
+        
+        let input = try TronSigningInput.with {
+            $0.transaction = try TronTransaction.with {
+                $0.contractOneof = .unfreezeBalanceV2(contract)
+                $0.timestamp = Int64(timestamp)
+                $0.expiration = Int64(expiration)
+                $0.blockHeader = try buildBlockHeader(
+                    timestamp: blockHeaderTimestamp, number: blockHeaderNumber,
+                    version: blockHeaderVersion, txTrieRoot: blockHeaderTxTrieRoot,
+                    parentHash: blockHeaderParentHash, witnessAddress: blockHeaderWitnessAddress
+                )
             }
         }
         return try input.serializedData()

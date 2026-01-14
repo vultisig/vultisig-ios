@@ -10,10 +10,29 @@ import SwiftUI
 #if os(iOS)
 extension TronUnfreezeView {
     var main: some View {
-        content
-            .background(Theme.colors.bgPrimary)
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarBackButtonHidden(true)
+        ZStack {
+            VaultMainScreenBackground()
+            content
+        }
+        .navigationBarBackButtonHidden(true)
+        .onAppear {
+            Task {
+                await loadFastVaultStatus()
+            }
+        }
+        .crossPlatformSheet(isPresented: $fastPasswordPresented) {
+            FastVaultEnterPasswordView(
+                password: $fastVaultPassword,
+                vault: vault,
+                onSubmit: { Task { await handleUnfreeze() } }
+            )
+        }
+    }
+    
+    var scrollView: some View {
+        ScrollView {
+            scrollableContent
+        }
     }
 }
 #endif

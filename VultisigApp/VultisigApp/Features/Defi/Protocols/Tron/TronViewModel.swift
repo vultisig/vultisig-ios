@@ -22,6 +22,11 @@ enum TronResourceType: String, CaseIterable, Identifiable {
             return NSLocalizedString("tronResourceEnergy", comment: "Energy")
         }
     }
+    
+    /// Returns the resource string for TRON protocol (FreezeBalanceV2/UnfreezeBalanceV2)
+    var tronResourceString: String {
+        return rawValue  // "BANDWIDTH" or "ENERGY"
+    }
 }
 
 // MARK: - View Model (State Only)
