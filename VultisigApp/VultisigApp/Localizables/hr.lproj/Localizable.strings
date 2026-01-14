@@ -704,6 +704,7 @@
 "shouldBackupVaultsSeparateLocations" = "Trebali biste napraviti sigurnosnu kopiju svih dijelova spremišta na različitim lokacijama.";
 "shouldOnlyTakeAMinute..." = "Ovo bi trebalo trajati samo sekundu";
 "showBalance" = "Prikaži saldo";
+"showHint" = "Prikaži hint";
 "sign" = "Potpiši";
 "signer" = "Potpisnik";
 "signers" = "Potpisnici";
@@ -734,6 +735,7 @@
 "supportedFileTypesUpload" = "Podržane vrste datoteka: .bak & .vult";
 "swap" = "Zamjena";
 "swapFee" = "Naknada za zamjenu";
+"minPayout" = "min. isplata";
 "swapFrom" = "Zamjena iz";
 "swapOverview" = "Pregled zamjene";
 "swapProgress" = "Napredak zamjene";
@@ -1130,6 +1132,7 @@
 "circleSetupAccountTitle" = "Circle USDC Račun";
 "circleSetupUSDCDeposited" = "USDC deponiran";
 "circleSetupOpenAccount" = "Otvori Račun";
+"circleCreatingAccount" = "Kreiranje računa...";
 "circleDashboardCircleUSDCAccount" = "Circle USDC Račun";
 "circleDashboardDeposited" = "Deponirano";
 "circleDashboardDepositDescription" = "Deponirajte svoje $USDC na Circle račun i zarađujte prinos sigurno unutar vašeg Vultisig trezora.";

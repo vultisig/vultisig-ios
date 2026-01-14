@@ -73,7 +73,7 @@ struct SwapVerifyView: View {
             
             VStack(spacing: 16) {
                 summaryTitle
-                summaryFromToContent
+                summaryFromTo
                 
                 if let providerName = tx.quote?.displayName {
                     separator
@@ -86,10 +86,9 @@ struct SwapVerifyView: View {
                 
                 if swapViewModel.showGas(tx: tx) {
                     separator
-                    getValueCell(
-                        for: "networkFee",
-                        with: swapViewModel.swapGasString(tx: tx),
-                        bracketValue: swapViewModel.approveFeeString(tx: tx)
+                    getNetworkFeeCell(
+                        cryptoAmount: swapViewModel.swapGasString(tx: tx),
+                        fiatAmount: swapViewModel.approveFeeString(tx: tx)
                     )
                     .blur(radius: swapViewModel.isLoadingFees ? 1 : 0)
                 }
@@ -125,44 +124,47 @@ struct SwapVerifyView: View {
         }
     }
     
-    var summaryFromToContent: some View {
-        HStack {
-            summaryFromToIcons
-            summaryFromTo
-        }
-    }
-    
     var summaryFromToIcons: some View {
-        VStack(spacing: 0) {
-            getCoinIcon(for: tx.fromCoin)
-            verticalSeparator
-            chevronIcon
-            verticalSeparator
-            getCoinIcon(for: tx.toCoin)
+        HStack(spacing: 10) {
+            ZStack {
+                verticalSeparator
+                chevronIcon
+            }
+            
+            Text("to".localized)
+                .font(Theme.fonts.caption10)
+                .foregroundStyle(Theme.colors.textTertiary)
+            separator
         }
     }
     
     var verticalSeparator: some View {
         Rectangle()
-            .frame(width: 1, height: 12)
+            .frame(width: 1)
+            .frame(idealHeight: 80, maxHeight: 100)
             .foregroundColor(Theme.colors.bgSurface2)
     }
     
     var summaryFromTo: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 0) {
             getSwapAssetCell(
                 for: tx.fromAmountDecimal.formatForDisplay(),
                 with: tx.fromCoin.ticker,
-                on: tx.fromCoin.chain
+                fiatValue: swapViewModel.fromFiatAmount(tx: tx).formatToFiat(includeCurrencySymbol: true),
+                on: tx.fromCoin.chain,
+                coin: tx.fromCoin,
+                isTo: false
             )
             
-            separator
-                .padding(.leading, 12)
+            summaryFromToIcons
             
             getSwapAssetCell(
                 for: tx.toAmountDecimal.formatForDisplay(),
                 with: tx.toCoin.ticker,
-                on: tx.toCoin.chain
+                fiatValue: swapViewModel.toFiatAmount(tx: tx).formatToFiat(includeCurrencySymbol: true),
+                on: tx.toCoin.chain,
+                coin: tx.toCoin,
+                isTo: true
             )
         }
     }
@@ -288,41 +290,82 @@ struct SwapVerifyView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
     
-    private func getSwapAssetCell(
-        for amount: String,
-        with ticker: String,
-        on chain: Chain? = nil
+    private func getNetworkFeeCell(
+        cryptoAmount: String,
+        fiatAmount: String
     ) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Group {
-                Text(amount)
-                    .foregroundColor(Theme.colors.textPrimary) +
-                Text(" ") +
-                Text(ticker)
-                    .foregroundColor(Theme.colors.textTertiary)
-            }
-            .font(Theme.fonts.bodyLMedium)
+        HStack(spacing: 4) {
+            Text(NSLocalizedString("networkFee", comment: ""))
+                .foregroundColor(Theme.colors.textTertiary)
+                .font(Theme.fonts.bodySMedium)
             
-            if let chain {
-                HStack(spacing: 2) {
-                    Text(NSLocalizedString("on", comment: ""))
-                        .foregroundColor(Theme.colors.textTertiary)
-                        .padding(.trailing, 4)
-                    
-                    Image(chain.logo)
-                        .resizable()
-                        .frame(width: 12, height: 12)
-                    
-                    Text(chain.name)
-                        .foregroundColor(Theme.colors.textPrimary)
-                    
-                    Spacer()
-                }
-                .font(Theme.fonts.caption10)
-                .offset(x: 2)
+            Spacer()
+            
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(cryptoAmount)
+                    .foregroundColor(Theme.colors.textPrimary)
+                    .font(Theme.fonts.bodySMedium)
+                
+                Text(fiatAmount)
+                    .foregroundColor(Theme.colors.textTertiary)
+                    .font(Theme.fonts.caption12)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    private func getSwapAssetCell(
+        for amount: String,
+        with ticker: String,
+        fiatValue: String,
+        on chain: Chain? = nil,
+        coin: Coin,
+        isTo: Bool
+    ) -> some View {
+        HStack(spacing: 8) {
+            getCoinIcon(for: coin)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("minPayout".localized)
+                    .font(Theme.fonts.caption12)
+                    .foregroundColor(Theme.colors.textTertiary)
+                    .opacity(isTo ? 1 : 0)
+                Group {
+                    Text(amount)
+                        .foregroundColor(Theme.colors.textPrimary) +
+                    Text(" ") +
+                    Text(ticker)
+                        .foregroundColor(Theme.colors.textTertiary)
+                }
+                .font(Theme.fonts.bodyLMedium)
+                
+                HStack(spacing: 0) {
+                    Text(fiatValue)
+                        .font(Theme.fonts.caption12)
+                        .foregroundColor(Theme.colors.textTertiary)
+                    Spacer()
+                    if let chain {
+                        HStack(spacing: 2) {
+                            Spacer()
+                            
+                            Text(NSLocalizedString("on", comment: ""))
+                                .foregroundColor(Theme.colors.textTertiary)
+                                .padding(.trailing, 4)
+                            
+                            Image(chain.logo)
+                                .resizable()
+                                .frame(width: 12, height: 12)
+                            
+                            Text(chain.name)
+                                .foregroundColor(Theme.colors.textPrimary)
+                        }
+                        .font(Theme.fonts.caption10)
+                        .offset(x: 2)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
     }
     
     private func getCoinIcon(for coin: Coin) -> some View {
