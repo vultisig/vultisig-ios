@@ -34,7 +34,7 @@ extension KeysignMessage: ProtoMappable {
     }
     
     func mapToProtobuff() -> VSKeysignMessage {
-        return .with {
+        let message = VSKeysignMessage.with {
             $0.sessionID = sessionID
             $0.serviceName = serviceName
             if let payload {
@@ -49,6 +49,10 @@ extension KeysignMessage: ProtoMappable {
             $0.encryptionKeyHex = encryptionKeyHex
             $0.useVultisigRelay = useVultisigRelay
         }
+        
+        print("VSKeysignMessage ", message)
+        
+        return message
     }
 }
 
@@ -132,7 +136,9 @@ extension KeysignPayload: ProtoMappable {
             $0.toAmount = String(toAmount)
             $0.blockchainSpecific = chainSpecific.mapToProtobuff()
             $0.utxoInfo = utxos.map { $0.mapToProtobuff() }
-            $0.memo = memo ?? .empty
+            if let memo {
+                $0.memo = memo
+            }
             $0.vaultPublicKeyEcdsa = vaultPubKeyECDSA
             $0.vaultLocalPartyID = vaultLocalPartyID
             $0.swapPayload = swapPayload?.mapToProtobuff()
@@ -220,7 +226,9 @@ extension SwapPayload {
                         data: value.quote.tx.data,
                         value: value.quote.tx.value,
                         gasPrice: value.quote.tx.gasPrice,
-                        gas: value.quote.tx.gas
+                        gas: value.quote.tx.gas,
+                        swapFee: value.quote.tx.swapFee,
+                        swapFeeTokenContract: ""
                     )
                 ),
                 provider: SwapProviderId(rawValue: value.provider) ?? .oneInch
@@ -239,7 +247,9 @@ extension SwapPayload {
                         data: value.quote.tx.data,
                         value: value.quote.tx.value,
                         gasPrice: value.quote.tx.gasPrice,
-                        gas: value.quote.tx.gas
+                        gas: value.quote.tx.gas,
+                        swapFee: "0",
+                        swapFeeTokenContract: ""
                     )
                 ),
                 provider: .kyberSwap
@@ -294,6 +304,9 @@ extension SwapPayload {
                         $0.value = payload.quote.tx.value
                         $0.gasPrice = payload.quote.tx.gasPrice
                         $0.gas = payload.quote.tx.gas
+                        if payload.quote.tx.swapFee != "0" {
+                            $0.swapFee = payload.quote.tx.swapFee
+                        }
                     }
                 }
                 $0.provider = payload.provider.rawValue

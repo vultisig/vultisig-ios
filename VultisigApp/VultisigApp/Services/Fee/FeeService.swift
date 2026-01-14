@@ -108,7 +108,8 @@ class EthereumFeeService: FeeService {
     }
     
     func inflatedGasLimit(_ gasLimit: BigInt) -> BigInt {
-        return gasLimit + (gasLimit / 2) // add 50%
+        // TODO: - Remove
+        return gasLimit
     }
 }
 

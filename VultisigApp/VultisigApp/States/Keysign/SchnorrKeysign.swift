@@ -345,10 +345,8 @@ final class SchnorrKeysign {
             }
             let h = handler
             
-            try await processSchnorrOutboundMessage(handle: h)
             let isFinished = try await pullInboundMessages(handle: h, messageID: msgHash)
             if isFinished {
-                try await processSchnorrOutboundMessage(handle: h)
                 let sig = try SignSessionFinish(handle: h)
                 let resp = TssKeysignResponse()
                 resp.msg = messageToSign
@@ -366,6 +364,7 @@ final class SchnorrKeysign {
                 await keySignVerify.markLocalPartyKeysignComplete(message: msgHash, sig:resp)
                 self.signatures[messageToSign] = resp
             }
+            try await processSchnorrOutboundMessage(handle: h)
         }
         catch {
             print("Failed to sign message (\(messageToSign)), error: \(error.localizedDescription)")

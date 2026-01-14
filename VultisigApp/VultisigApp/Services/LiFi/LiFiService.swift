@@ -67,6 +67,9 @@ struct LiFiService {
 
             let normalizedGas = gas == 0 ? EVMHelper.defaultETHSwapGasUnit : gas
 
+            // Extract swap fee and token contract from LiFi response
+            let (swapFee, swapFeeTokenContract) = extractSwapFee(from: quote)
+
             let quote = EVMQuote(
                 dstAmount: quote.estimate.toAmount,
                 tx: EVMQuote.Transaction(
@@ -75,7 +78,9 @@ struct LiFiService {
                     data: quote.transactionRequest.data,
                     value: String(value),
                     gasPrice: String(gasPrice),
-                    gas: normalizedGas
+                    gas: normalizedGas,
+                    swapFee: swapFee,
+                    swapFeeTokenContract: swapFeeTokenContract
                 )
             )
 
@@ -85,7 +90,7 @@ struct LiFiService {
             if quote.estimate.gasCosts.count > 0  {
                 gas = Int64(quote.estimate.gasCosts[0].estimate) ?? 0
             }
-                
+
             let quote = EVMQuote(
                 dstAmount: quote.estimate.toAmount,
                 tx: EVMQuote.Transaction(
@@ -94,7 +99,9 @@ struct LiFiService {
                     data: quote.transactionRequest.data,
                     value: .empty,
                     gasPrice: .empty,
-                    gas: gas
+                    gas: gas,
+                    swapFee: "0",
+                    swapFeeTokenContract: ""
                 )
             )
 
@@ -108,10 +115,32 @@ private extension LiFiService {
     enum Errors: Error {
         case unexpectedError
     }
-    
+
     func bps(for discount: Int) -> Decimal {
         let feeInt = max(0, LiFiService.integratorFeeBps - discount)
         let formattedFee: Decimal = Decimal(feeInt) / 10_000
         return formattedFee
+    }
+
+    func extractSwapFee(from response: LifiQuoteResponse.EvmQuoteResponse) -> (fee: String, tokenContract: String) {
+        // Find "LIFI Fixed Fee" in feeCosts array (case-insensitive)
+        guard let feeCosts = response.estimate.feeCosts,
+              let swapFeeCost = feeCosts.first(where: { $0.name.lowercased() == "lifi fixed fee" }) else {
+            return ("0", "")
+        }
+
+        let feeAmount = swapFeeCost.amount
+
+        // Extract token contract if present and non-empty
+        let tokenContract: String
+        if let address = swapFeeCost.token?.address,
+           !address.isEmpty,
+           address.lowercased() != "0x0000000000000000000000000000000000000000" {
+            tokenContract = address
+        } else {
+            tokenContract = ""
+        }
+
+        return (feeAmount, tokenContract)
     }
 }

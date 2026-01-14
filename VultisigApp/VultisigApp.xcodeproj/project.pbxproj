@@ -2574,8 +2574,6 @@
 			membershipExceptions = (
 				arb.json,
 				bsc.json,
-				"cosmos-sdk-sign-amino.json",
-				"cosmos-sdk-sign-direct.json",
 				cosmos.json,
 				dot.json,
 				evm.json,

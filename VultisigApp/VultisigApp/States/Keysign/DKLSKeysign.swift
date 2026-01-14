@@ -358,10 +358,9 @@ final class DKLSKeysign {
                 dkls_sign_session_free(&handler)
             }
             let h = handler
-            try await processDKLSOutboundMessage(handle: h)
+            
             let isFinished = try await pullInboundMessages(handle: h, messageID: msgHash)
             if isFinished {
-                try await processDKLSOutboundMessage(handle: h)
                 let sig = try dklsSignSessionFinish(handle: h)
                 let resp = TssKeysignResponse()
                 resp.msg = messageToSign
@@ -377,6 +376,7 @@ final class DKLSKeysign {
                 self.signatures[messageToSign] = resp
                 try await Task.sleep(for: .milliseconds(500))
             }
+            try await processDKLSOutboundMessage(handle: h)
         }
         catch {
             print("Failed to sign message (\(messageToSign)), error: \(error.localizedDescription)")
