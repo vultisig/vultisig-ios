@@ -132,12 +132,12 @@ struct TronAccountResponse: Codable {
     /// Returns frozen TRX for bandwidth (in SUN)
     var frozenBandwidthSun: Int64 {
         // TRON API: type is nil or "BANDWIDTH" for bandwidth, only non-empty entries have amounts
-        return frozenV2?.first(where: { $0.type == nil || $0.type == "BANDWIDTH" })?.amount ?? 0
+        return frozenV2?.first(where: { $0.type == nil || $0.type == TronResourceType.bandwidth.rawValue })?.amount ?? 0
     }
     
     /// Returns frozen TRX for energy (in SUN)
     var frozenEnergySun: Int64 {
-        return frozenV2?.first(where: { $0.type == "ENERGY" })?.amount ?? 0
+        return frozenV2?.first(where: { $0.type == TronResourceType.energy.rawValue })?.amount ?? 0
     }
 }
 
