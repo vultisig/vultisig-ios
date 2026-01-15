@@ -48,6 +48,7 @@ struct TronUnfreezeView: View {
             }
         }
         .task {
+            await loadData()
             await loadFastVaultStatus()
         }
     }
@@ -61,7 +62,7 @@ struct TronUnfreezeView: View {
                     .font(.title3)
                     .foregroundColor(Theme.colors.textPrimary)
                     .frame(width: 40, height: 40)
-                    .background(Circle().fill(Color.white.opacity(0.1)))
+                    .background(Circle().fill(Theme.colors.bgSurface1))
             }
             
             Spacer()
@@ -96,7 +97,7 @@ struct TronUnfreezeView: View {
             // Resource Type Picker
             VStack(alignment: .leading, spacing: 8) {
                 Text(NSLocalizedString("tronResourceType", comment: "Resource Type"))
-                    .font(TronConstants.Fonts.subtitle)
+                    .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textSecondary)
                 
                 Picker("", selection: $selectedResourceType) {
@@ -111,7 +112,7 @@ struct TronUnfreezeView: View {
             VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(NSLocalizedString("tronUnfreezeAmount", comment: "Amount"))
-                        .font(TronConstants.Fonts.subtitle)
+                        .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textSecondary)
                     
                     Divider()
@@ -248,9 +249,6 @@ struct TronUnfreezeView: View {
     
     func handleUnfreeze() async {
         guard let amountDecimal = Decimal(string: amount) else {
-            await MainActor.run {
-                isLoading = false
-            }
             return
         }
         

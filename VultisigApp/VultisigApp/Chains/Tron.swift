@@ -72,7 +72,7 @@ enum TronHelper {
                 ownerAddress: keysignPayload.coin.address,
                 frozenBalance: keysignPayload.toAmount,
                 resource: resourceString,
-                timestamp: timestamp, expiration: expiration,
+                timestamp: timestamp, expiration: expiration, gasEstimation: gasEstimation,
                 blockHeaderTimestamp: blockHeaderTimestamp, blockHeaderNumber: blockHeaderNumber,
                 blockHeaderVersion: blockHeaderVersion, blockHeaderTxTrieRoot: blockHeaderTxTrieRoot,
                 blockHeaderParentHash: blockHeaderParentHash, blockHeaderWitnessAddress: blockHeaderWitnessAddress
@@ -86,7 +86,7 @@ enum TronHelper {
                 ownerAddress: keysignPayload.coin.address,
                 unfreezeBalance: keysignPayload.toAmount,
                 resource: resourceString,
-                timestamp: timestamp, expiration: expiration,
+                timestamp: timestamp, expiration: expiration, gasEstimation: gasEstimation,
                 blockHeaderTimestamp: blockHeaderTimestamp, blockHeaderNumber: blockHeaderNumber,
                 blockHeaderVersion: blockHeaderVersion, blockHeaderTxTrieRoot: blockHeaderTxTrieRoot,
                 blockHeaderParentHash: blockHeaderParentHash, blockHeaderWitnessAddress: blockHeaderWitnessAddress
@@ -302,11 +302,16 @@ enum TronHelper {
         ownerAddress: String,
         frozenBalance: BigInt,
         resource: String,
-        timestamp: UInt64, expiration: UInt64,
+        timestamp: UInt64, expiration: UInt64, gasEstimation: UInt64,
         blockHeaderTimestamp: UInt64, blockHeaderNumber: UInt64,
         blockHeaderVersion: UInt64, blockHeaderTxTrieRoot: String,
         blockHeaderParentHash: String, blockHeaderWitnessAddress: String
     ) throws -> Data {
+        // Validate frozenBalance is positive and fits in Int64
+        guard frozenBalance > 0 else {
+            throw HelperError.runtimeError("Invalid frozen balance: must be greater than 0")
+        }
+        
         let contract = TronFreezeBalanceV2Contract.with {
             $0.ownerAddress = ownerAddress
             $0.frozenBalance = Int64(frozenBalance)
@@ -318,6 +323,7 @@ enum TronHelper {
                 $0.contractOneof = .freezeBalanceV2(contract)
                 $0.timestamp = Int64(timestamp)
                 $0.expiration = Int64(expiration)
+                $0.feeLimit = Int64(gasEstimation)
                 $0.blockHeader = try buildBlockHeader(
                     timestamp: blockHeaderTimestamp, number: blockHeaderNumber,
                     version: blockHeaderVersion, txTrieRoot: blockHeaderTxTrieRoot,
@@ -334,11 +340,16 @@ enum TronHelper {
         ownerAddress: String,
         unfreezeBalance: BigInt,
         resource: String,
-        timestamp: UInt64, expiration: UInt64,
+        timestamp: UInt64, expiration: UInt64, gasEstimation: UInt64,
         blockHeaderTimestamp: UInt64, blockHeaderNumber: UInt64,
         blockHeaderVersion: UInt64, blockHeaderTxTrieRoot: String,
         blockHeaderParentHash: String, blockHeaderWitnessAddress: String
     ) throws -> Data {
+        // Validate unfreezeBalance is positive
+        guard unfreezeBalance > 0 else {
+            throw HelperError.runtimeError("Invalid unfreeze balance: must be greater than 0")
+        }
+        
         let contract = TronUnfreezeBalanceV2Contract.with {
             $0.ownerAddress = ownerAddress
             $0.unfreezeBalance = Int64(unfreezeBalance)
@@ -350,6 +361,7 @@ enum TronHelper {
                 $0.contractOneof = .unfreezeBalanceV2(contract)
                 $0.timestamp = Int64(timestamp)
                 $0.expiration = Int64(expiration)
+                $0.feeLimit = Int64(gasEstimation)
                 $0.blockHeader = try buildBlockHeader(
                     timestamp: blockHeaderTimestamp, number: blockHeaderNumber,
                     version: blockHeaderVersion, txTrieRoot: blockHeaderTxTrieRoot,

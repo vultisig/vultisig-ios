@@ -43,6 +43,7 @@ struct TronFreezeView: View {
             }
         }
         .task {
+            await loadData()
             await loadFastVaultStatus()
         }
     }
@@ -56,7 +57,7 @@ struct TronFreezeView: View {
                     .font(.title3)
                     .foregroundColor(Theme.colors.textPrimary)
                     .frame(width: 40, height: 40)
-                    .background(Circle().fill(Color.white.opacity(0.1)))
+                    .background(Circle().fill(Theme.colors.bgSurface1))
             }
             
             Spacer()

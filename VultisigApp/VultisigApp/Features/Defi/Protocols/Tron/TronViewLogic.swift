@@ -12,6 +12,7 @@ import BigInt
 struct TronViewLogic {
     
     private let tronService = TronService.shared
+    private let tronAPIService = TronAPIService(httpClient: HTTPClient())
     
     /// Fetches account data including frozen balances and resources
     /// Returns: (availableBalance, frozenBandwidth, frozenEnergy, accountResource)
@@ -22,9 +23,9 @@ struct TronViewLogic {
         
         let address = trxCoin.address
         
-        // Fetch account info and resources in parallel
-        async let accountTask = TronAPIService(httpClient: HTTPClient()).getAccount(address: address)
-        async let resourceTask = TronAPIService(httpClient: HTTPClient()).getAccountResource(address: address)
+        // Fetch account info and resources in parallel using shared service
+        async let accountTask = tronAPIService.getAccount(address: address)
+        async let resourceTask = tronAPIService.getAccountResource(address: address)
         
         let (account, resource) = try await (accountTask, resourceTask)
         
