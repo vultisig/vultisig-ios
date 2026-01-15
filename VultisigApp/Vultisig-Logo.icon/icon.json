@@ -1,0 +1,42 @@
+{
+  "fill" : {
+    "solid" : "display-p3:0.02353,0.10588,0.22745,1.00000"
+  },
+  "groups" : [
+    {
+      "blend-mode" : "normal",
+      "blur-material" : null,
+      "hidden" : false,
+      "layers" : [
+        {
+          "glass" : true,
+          "image-name" : "Logo (1).svg",
+          "name" : "Logo (1)",
+          "position" : {
+            "scale" : 1.21,
+            "translation-in-points" : [
+              0,
+              25
+            ]
+          }
+        }
+      ],
+      "lighting" : "combined",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0
+      },
+      "specular" : true,
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}
