@@ -58,11 +58,11 @@ extension Coin {
                 return [.oneinch(chain), .lifi,.kyberswap(chain)]
             }
         case .arbitrum:
-//            if mayaArbTokens.contains(ticker) {
-//                return [.mayachain, .oneinch(chain), .lifi, .kyberswap(chain), ]
-//            } else {
+            if mayaArbTokens.contains(ticker) {
+                return [.mayachain, .oneinch(chain), .lifi, .kyberswap(chain), ]
+            } else {
                 return [.oneinch(chain), .lifi, .kyberswap(chain), ]
-//            }
+            }
         case .base:
             if thorBaseTokens.contains(ticker) {
                 return [.thorchain, .thorchainStagenet, .oneinch(chain), .lifi] // KyberSwap not supported

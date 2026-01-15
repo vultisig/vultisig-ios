@@ -56,7 +56,6 @@ struct KeysignMessageFactory {
         }
 
         if !messages.isEmpty {
-            print("Messages are: \(messages.joined(separator: ", "))")
             return messages
         }
 

@@ -48,10 +48,7 @@ extension KeysignMessage: ProtoMappable {
             }
             $0.encryptionKeyHex = encryptionKeyHex
             $0.useVultisigRelay = useVultisigRelay
-        }
-        
-        print("VSKeysignMessage ", message)
-        
+        }        
         return message
     }
 }
