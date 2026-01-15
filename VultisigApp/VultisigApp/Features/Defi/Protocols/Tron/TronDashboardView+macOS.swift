@@ -37,6 +37,8 @@ extension TronDashboardView {
                         
                         frozenBalanceCard
                         
+                        resourcesCard
+                        
                         pendingWithdrawalsCard
                     }
                     .padding(.top, TronConstants.Design.mainViewTopPadding)

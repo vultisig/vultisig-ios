@@ -94,21 +94,6 @@ struct TronDashboardView: View {
                 Spacer()
             }
             
-            // Resource info
-            VStack(spacing: 8) {
-                resourceRow(
-                    title: NSLocalizedString("tronBandwidth", comment: "Bandwidth"),
-                    available: model.availableBandwidth,
-                    total: model.totalBandwidth
-                )
-                
-                resourceRow(
-                    title: NSLocalizedString("tronEnergy", comment: "Energy"),
-                    available: model.availableEnergy,
-                    total: model.totalEnergy
-                )
-            }
-            
             VStack {
                 DefiButton(
                     title: NSLocalizedString("tronUnfreezeButton", comment: "Unfreeze"),
@@ -131,18 +116,99 @@ struct TronDashboardView: View {
         .background(cardBackground)
     }
     
-    func resourceRow(title: String, available: Int64, total: Int64) -> some View {
-        HStack {
+    // MARK: - Resources Card (Bandwidth & Energy)
+    
+    var resourcesCard: some View {
+        HStack(spacing: 12) {
+            // Bandwidth Section (Green)
+            resourceSection(
+                title: NSLocalizedString("tronBandwidth", comment: "Bandwidth"),
+                icon: "arrow.up.arrow.down",
+                available: model.availableBandwidth,
+                total: max(model.totalBandwidth, 1),  // Avoid division by zero
+                accentColor: Theme.colors.alertSuccess
+            )
+            
+            // Energy Section (Yellow/Orange)
+            resourceSection(
+                title: NSLocalizedString("tronEnergy", comment: "Energy"),
+                icon: "bolt.fill",
+                available: model.availableEnergy,
+                total: max(model.totalEnergy, 1),  // Avoid division by zero
+                accentColor: Theme.colors.alertWarning
+            )
+        }
+        .padding(TronConstants.Design.cardPadding)
+        .background(
+            RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+                .fill(Theme.colors.bgSurface1)
+        )
+    }
+    
+    func resourceSection(title: String, icon: String, available: Int64, total: Int64, accentColor: Color) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            // Title Label
             Text(title)
-                .font(TronConstants.Fonts.subtitle)
+                .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textSecondary)
             
-            Spacer()
-            
-            Text("\(available) / \(total)")
-                .font(TronConstants.Fonts.subtitle)
-                .foregroundStyle(Theme.colors.textPrimary)
+            // Content box with accent color
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    // Icon
+                    Image(systemName: icon)
+                        .font(.system(size: 16))
+                        .foregroundStyle(accentColor)
+                        .frame(width: 24, height: 24)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        // Value display
+                        Text(formatResourceValue(available: available, total: total))
+                            .font(Theme.fonts.bodyMMedium)
+                            .foregroundStyle(Theme.colors.textPrimary)
+                        
+                        // Progress bar
+                        GeometryReader { geometry in
+                            ZStack(alignment: .leading) {
+                                // Background track
+                                RoundedRectangle(cornerRadius: 2)
+                                    .fill(Theme.colors.bgSurface1)
+                                    .frame(height: 4)
+                                
+                                // Progress fill
+                                RoundedRectangle(cornerRadius: 2)
+                                    .fill(accentColor)
+                                    .frame(width: geometry.size.width * progressValue(available: available, total: total), height: 4)
+                            }
+                        }
+                        .frame(height: 4)
+                    }
+                }
+            }
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(accentColor.opacity(0.1))
+            )
         }
+        .frame(maxWidth: .infinity)
+    }
+    
+    func formatResourceValue(available: Int64, total: Int64) -> String {
+        // Format as KB for bandwidth if large enough
+        if total >= 1000 {
+            let availableKB = Double(available) / 1000.0
+            let totalKB = Double(total) / 1000.0
+            return String(format: "%.2f/%.2fKB", availableKB, totalKB)
+        }
+        return "\(available)/\(total)"
+    }
+    
+    func progressValue(available: Int64, total: Int64) -> CGFloat {
+        guard total > 0 else { return 0 }
+        // Progress is "used" percentage, so we show (total - available) / total
+        let used = total - available
+        return min(CGFloat(used) / CGFloat(total), 1.0)
     }
     
     @ViewBuilder
