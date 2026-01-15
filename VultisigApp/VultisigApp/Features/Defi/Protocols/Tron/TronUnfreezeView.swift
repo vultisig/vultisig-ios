@@ -213,6 +213,19 @@ struct TronUnfreezeView: View {
         amount.isEmpty || (Decimal(string: amount) ?? 0) <= 0 || (Decimal(string: amount) ?? 0) > frozenBalanceForSelectedType || isLoading
     }
     
+    func loadData() async {
+        do {
+            let (available, frozenBandwidth, frozenEnergy, _) = try await model.logic.fetchData(vault: vault)
+            await MainActor.run {
+                model.availableBalance = available
+                model.frozenBandwidthBalance = frozenBandwidth
+                model.frozenEnergyBalance = frozenEnergy
+            }
+        } catch {
+            print("TronUnfreezeView: Error loading data: \(error.localizedDescription)")
+        }
+    }
+    
     func loadFastVaultStatus() async {
         let isExist = await FastVaultService.shared.exist(pubKeyECDSA: vault.pubKeyECDSA)
         let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
