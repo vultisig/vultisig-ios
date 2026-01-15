@@ -1057,6 +1057,7 @@
 		A6SEC0012E1234567890AB01 /* SecurityScannerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0012E1234567890AB02 /* SecurityScannerService.swift */; };
 		A6SEC0072E1234567890AB01 /* BlockaidScannerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0072E1234567890AB02 /* BlockaidScannerService.swift */; };
 		A6SEC0132E1234567890AB01 /* SecurityScannerBottomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0132E1234567890AB02 /* SecurityScannerBottomSheet.swift */; };
+		B21561E02F18A5D90052C892 /* Vultisig-Logo.icon in Resources */ = {isa = PBXBuildFile; fileRef = B21561DF2F18A5D90052C892 /* Vultisig-Logo.icon */; };
 		B217CEA92ED5A01B00503503 /* ChainPublicKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = B217CEA82ED5A00800503503 /* ChainPublicKey.swift */; };
 		B217D44E2EDE80B700503503 /* KeyImportRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B217D44D2EDE80B300503503 /* KeyImportRequest.swift */; };
 		B23481202E6E7DCF00AA655D /* WalletCore in Frameworks */ = {isa = PBXBuildFile; productRef = B2482ADF2E6E47D900B29B6F /* WalletCore */; };
@@ -2350,6 +2351,7 @@
 		A6SEC0072E1234567890AB02 /* BlockaidScannerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockaidScannerService.swift; sourceTree = "<group>"; };
 		A6SEC0132E1234567890AB02 /* SecurityScannerBottomSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerBottomSheet.swift; sourceTree = "<group>"; };
 		ADA7840E8472A961595D3663 /* KyberSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapPayload.swift; sourceTree = "<group>"; };
+		B21561DF2F18A5D90052C892 /* Vultisig-Logo.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = "Vultisig-Logo.icon"; sourceTree = "<group>"; };
 		B217CEA82ED5A00800503503 /* ChainPublicKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainPublicKey.swift; sourceTree = "<group>"; };
 		B217D44D2EDE80B300503503 /* KeyImportRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyImportRequest.swift; sourceTree = "<group>"; };
 		B2ADDD772E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChainDetailActionButtons+macOS.swift"; sourceTree = "<group>"; };
@@ -6361,6 +6363,7 @@
 		DE49A15A2B65F6D9000F3AFB = {
 			isa = PBXGroup;
 			children = (
+				B21561DF2F18A5D90052C892 /* Vultisig-Logo.icon */,
 				DE03EA0C2D0D3C7700AA4BB0 /* goschnorr.xcframework */,
 				DE03EA0A2D0D3C6B00AA4BB0 /* godkls.xcframework */,
 				DE2B4E4A2C97DA9200FF4C49 /* VultisigApp.xctestplan */,
@@ -6659,6 +6662,7 @@
 				A6F7B6BE2D4975E900AC8104 /* QRCodeScanned.riv in Resources */,
 				A65505152D66918200EDEB8C /* SecureVaultBackupSuccess.riv in Resources */,
 				A6F7B6C82D4ABA5A00AC8104 /* WaitingForDevice.riv in Resources */,
+				B21561E02F18A5D90052C892 /* Vultisig-Logo.icon in Resources */,
 				A6621B852D67D98900757B43 /* vaultCreatedAnimation.riv in Resources */,
 				A65F8A172D42224100CF4DDB /* Brockmann-SemiBold.otf in Resources */,
 				A53065FA2D5A9FEF000B82E6 /* fastvault_overview.riv in Resources */,
@@ -8102,8 +8106,7 @@
 		DE49A18B2B65F6DB000F3AFB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				"ASSETCATALOG_COMPILER_APPICON_NAME[sdk=macosx*]" = AppIconMacOS;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "Vultisig-Logo";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = VultisigApp/VultisigApp.entitlements;
@@ -8167,8 +8170,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				"ASSETCATALOG_COMPILER_APPICON_NAME[sdk=macosx*]" = AppIconMacOS;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "Vultisig-Logo";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = VultisigApp/VultisigApp.entitlements;
