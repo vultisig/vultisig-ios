@@ -18,11 +18,9 @@ extension TronDashboardView {
                     VStack(spacing: TronConstants.Design.verticalSpacing) {
                         topBanner
                         
-                        headerDescription
+                        resourcesCard
                         
-                        if showInfoBanner {
-                            infoBanner
-                        }
+                        actionsCard
                         
                         if let error = model.error, error.localizedDescription.lowercased() != "cancelled" {
                             InfoBannerView(
@@ -35,10 +33,6 @@ extension TronDashboardView {
                             )
                         }
                         
-                        frozenBalanceCard
-                        
-                        resourcesCard
-                        
                         pendingWithdrawalsCard
                     }
                     .padding(.top, TronConstants.Design.mainViewTopPadding)
@@ -50,32 +44,6 @@ extension TronDashboardView {
         .onAppear {
             Task { await loadData() }
         }
-    }
-    
-    var headerDescription: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(NSLocalizedString("tronDashboardStaking", comment: "Staking"))
-                .font(.headline)
-                .foregroundStyle(Theme.colors.textPrimary)
-            
-            Text(NSLocalizedString("tronDashboardStakingDescription", comment: "Freeze your TRX to gain bandwidth and energy for free transactions."))
-                .font(.body)
-                .foregroundStyle(Theme.colors.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-
-    }
-    
-    var infoBanner: some View {
-        InfoBannerView(
-            description: NSLocalizedString("tronDashboardInfoText", comment: "Frozen TRX provides bandwidth and energy resources..."),
-            type: .info,
-            leadingIcon: nil,
-            onClose: {
-                withAnimation { appClosedBanners.append(tronDashboardBannerId) }
-            }
-        )
     }
 }
 #endif

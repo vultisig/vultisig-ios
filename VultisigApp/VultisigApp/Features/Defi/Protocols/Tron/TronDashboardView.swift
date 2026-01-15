@@ -32,7 +32,7 @@ struct TronDashboardView: View {
     var topBanner: some View {
         HStack {
             VStack(alignment: .leading, spacing: 8) {
-                Text(NSLocalizedString("tronDashboardTitle", comment: "TRON Staking"))
+                Text("TRON")
                     .font(TronConstants.Fonts.title)
                     .foregroundStyle(Theme.colors.textSecondary)
                 
@@ -41,17 +41,11 @@ struct TronDashboardView: View {
                     .foregroundStyle(Theme.colors.textPrimary)
             }
             Spacer()
-            Image("tron-logo")
+            Image("tron")
                 .resizable()
                 .scaledToFit()
                 .frame(width: 60, height: 60)
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [Theme.colors.primaryAccent1, Theme.colors.primaryAccent4],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .clipShape(Circle())
         }
         .padding(TronConstants.Design.cardPadding)
         .background(cardBackground)
@@ -74,10 +68,11 @@ struct TronDashboardView: View {
             )
     }
     
-    var frozenBalanceCard: some View {
-        VStack(spacing: 24) {
+    var actionsCard: some View {
+        VStack(spacing: 16) {
+            // Frozen Balance Header
             HStack(spacing: 12) {
-                Image("tron-logo")
+                Image("tron")
                     .resizable()
                     .frame(width: 39, height: 39)
                     .clipShape(Circle())
@@ -94,7 +89,8 @@ struct TronDashboardView: View {
                 Spacer()
             }
             
-            VStack {
+            // Action Buttons
+            VStack(spacing: 12) {
                 DefiButton(
                     title: NSLocalizedString("tronUnfreezeButton", comment: "Unfreeze"),
                     icon: "arrow.down",
@@ -113,7 +109,10 @@ struct TronDashboardView: View {
             }
         }
         .padding(TronConstants.Design.cardPadding)
-        .background(cardBackground)
+        .background(
+            RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+                .fill(Theme.colors.bgSurface1)
+        )
     }
     
     // MARK: - Resources Card (Bandwidth & Energy)
