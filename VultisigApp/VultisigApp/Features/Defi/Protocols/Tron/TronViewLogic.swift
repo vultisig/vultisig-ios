@@ -15,8 +15,8 @@ struct TronViewLogic {
     private let tronAPIService = TronAPIService(httpClient: HTTPClient())
     
     /// Fetches account data including frozen balances and resources
-    /// Returns: (availableBalance, frozenBandwidth, frozenEnergy, unfreezing, accountResource)
-    func fetchData(vault: Vault) async throws -> (Decimal, Decimal, Decimal, Decimal, TronAccountResourceResponse?) {
+    /// Returns: (availableBalance, frozenBandwidth, frozenEnergy, unfreezing, pendingWithdrawals, accountResource)
+    func fetchData(vault: Vault) async throws -> (Decimal, Decimal, Decimal, Decimal, [TronPendingWithdrawal], TronAccountResourceResponse?) {
         guard let trxCoin = vault.coins.first(where: { $0.chain == .tron && $0.isNativeToken }) else {
             throw TronStakingError.noTrxCoin
         }
@@ -41,9 +41,17 @@ struct TronViewLogic {
         // Parse unfreezing balance (pending withdrawal)
         let unfreezing = Decimal(account.unfreezingTotalSun) / Decimal(1_000_000)
         
-        print("[DEBUG] TRON: frozen BW=\(frozenBandwidth), frozen E=\(frozenEnergy), unfreezing=\(unfreezing)")
+        // Parse individual pending withdrawals
+        let pendingWithdrawals: [TronPendingWithdrawal] = (account.unfrozenV2 ?? []).compactMap { entry in
+            guard let amountSun = entry.unfreeze_amount, let expireTime = entry.unfreeze_expire_time else {
+                return nil
+            }
+            let amountTrx = Decimal(amountSun) / Decimal(1_000_000)
+            let expirationDate = Date(timeIntervalSince1970: TimeInterval(expireTime / 1000))
+            return TronPendingWithdrawal(amount: amountTrx, expirationDate: expirationDate)
+        }.sorted { $0.expirationDate < $1.expirationDate }
         
-        return (availableBalance, frozenBandwidth, frozenEnergy, unfreezing, resource)
+        return (availableBalance, frozenBandwidth, frozenEnergy, unfreezing, pendingWithdrawals, resource)
     }
     
     /// Gets the TRX coin from vault

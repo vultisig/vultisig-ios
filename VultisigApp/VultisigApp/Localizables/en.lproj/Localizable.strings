@@ -1228,6 +1228,10 @@
 "tronErrorInvalidBlockInfo" = "Failed to get TRON block info. Please try again.";
 "tronErrorFreezeFailed" = "Freeze failed: %@";
 "tronErrorUnfreezeFailed" = "Unfreeze failed: %@";
+"tronPendingWithdrawals" = "Pending Withdrawals";
+"tronReadyToClaim" = "Ready to claim";
+"tronTimeRemainingDays" = "%d days, %d hours remaining";
+"tronTimeRemainingHours" = "%d hours, %d minutes remaining";
 
 "selectChainsManually" = "Select chains manually";
 "noActiveChainsFound" = "No active chains found";

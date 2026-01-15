@@ -29,6 +29,17 @@ enum TronResourceType: String, CaseIterable, Identifiable {
     }
 }
 
+// MARK: - Pending Withdrawal (for unfreezing entries)
+struct TronPendingWithdrawal: Identifiable {
+    let id = UUID()
+    let amount: Decimal  // In TRX
+    let expirationDate: Date
+    
+    var isClaimable: Bool {
+        Date() >= expirationDate
+    }
+}
+
 // MARK: - View Model (State Only)
 final class TronViewModel: ObservableObject, Hashable, Equatable {
     static func == (lhs: TronViewModel, rhs: TronViewModel) -> Bool {
@@ -48,7 +59,8 @@ final class TronViewModel: ObservableObject, Hashable, Equatable {
     @Published var availableBalance: Decimal = .zero
     @Published var frozenBandwidthBalance: Decimal = .zero
     @Published var frozenEnergyBalance: Decimal = .zero
-    @Published var unfreezingBalance: Decimal = .zero  // Pending unfreeze
+    @Published var unfreezingBalance: Decimal = .zero  // Total pending unfreeze
+    @Published var pendingWithdrawals: [TronPendingWithdrawal] = []  // Individual entries
     
     // Resources
     @Published var availableBandwidth: Int64 = 0
@@ -65,5 +77,10 @@ final class TronViewModel: ObservableObject, Hashable, Equatable {
     /// Total frozen + unfreezing balance
     var totalFrozenBalance: Decimal {
         frozenBandwidthBalance + frozenEnergyBalance + unfreezingBalance
+    }
+    
+    /// Has pending withdrawals waiting
+    var hasPendingWithdrawals: Bool {
+        !pendingWithdrawals.isEmpty
     }
 }

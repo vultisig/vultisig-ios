@@ -71,12 +71,13 @@ struct TronView: View {
         }
         
         do {
-            let (available, frozenBandwidth, frozenEnergy, unfreezing, resource) = try await model.logic.fetchData(vault: vault)
+            let (available, frozenBandwidth, frozenEnergy, unfreezing, pendingWithdrawals, resource) = try await model.logic.fetchData(vault: vault)
             await MainActor.run {
                 model.availableBalance = available
                 model.frozenBandwidthBalance = frozenBandwidth
                 model.frozenEnergyBalance = frozenEnergy
                 model.unfreezingBalance = unfreezing
+                model.pendingWithdrawals = pendingWithdrawals
                 
                 if let resource = resource {
                     model.availableBandwidth = resource.calculateAvailableBandwidth()

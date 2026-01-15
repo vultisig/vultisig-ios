@@ -145,18 +145,99 @@ struct TronDashboardView: View {
         }
     }
     
+    @ViewBuilder
+    var pendingWithdrawalsCard: some View {
+        if model.hasPendingWithdrawals {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Image(systemName: "clock.arrow.circlepath")
+                        .foregroundStyle(Theme.colors.alertWarning)
+                    
+                    Text(NSLocalizedString("tronPendingWithdrawals", comment: "Pending Withdrawals"))
+                        .font(Theme.fonts.bodyLMedium)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                    
+                    Spacer()
+                    
+                    Text("\(model.unfreezingBalance.formatted()) TRX")
+                        .font(Theme.fonts.bodyLMedium)
+                        .foregroundStyle(Theme.colors.alertWarning)
+                }
+                
+                Divider()
+                    .overlay(Theme.colors.textSecondary.opacity(0.3))
+                
+                ForEach(model.pendingWithdrawals) { withdrawal in
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("\(withdrawal.amount.formatted()) TRX")
+                                .font(Theme.fonts.bodyMRegular)
+                                .foregroundStyle(Theme.colors.textPrimary)
+                            
+                            if withdrawal.isClaimable {
+                                Text(NSLocalizedString("tronReadyToClaim", comment: "Ready to claim"))
+                                    .font(Theme.fonts.caption12)
+                                    .foregroundStyle(Theme.colors.alertSuccess)
+                            } else {
+                                Text(withdrawalTimeRemaining(withdrawal.expirationDate))
+                                    .font(Theme.fonts.caption12)
+                                    .foregroundStyle(Theme.colors.textSecondary)
+                            }
+                        }
+                        
+                        Spacer()
+                        
+                        if withdrawal.isClaimable {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(Theme.colors.alertSuccess)
+                        } else {
+                            Image(systemName: "hourglass")
+                                .foregroundStyle(Theme.colors.alertWarning)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+            .padding(TronConstants.Design.cardPadding)
+            .background(
+                RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+                    .fill(Theme.colors.bgSurface1)
+            )
+        }
+    }
+    
+    func withdrawalTimeRemaining(_ date: Date) -> String {
+        let now = Date()
+        let remaining = date.timeIntervalSince(now)
+        
+        if remaining <= 0 {
+            return NSLocalizedString("tronReadyToClaim", comment: "Ready to claim")
+        }
+        
+        let days = Int(remaining / 86400)
+        let hours = Int((remaining.truncatingRemainder(dividingBy: 86400)) / 3600)
+        
+        if days > 0 {
+            return String(format: NSLocalizedString("tronTimeRemainingDays", comment: "%d days, %d hours"), days, hours)
+        } else {
+            let minutes = Int((remaining.truncatingRemainder(dividingBy: 3600)) / 60)
+            return String(format: NSLocalizedString("tronTimeRemainingHours", comment: "%d hours, %d minutes"), hours, minutes)
+        }
+    }
+    
     func loadData() async {
         guard let trxCoin = TronViewLogic.getTrxCoin(vault: vault) else { return }
         
         await BalanceService.shared.updateBalance(for: trxCoin)
         
         do {
-            let (available, frozenBandwidth, frozenEnergy, unfreezing, resource) = try await model.logic.fetchData(vault: vault)
+            let (available, frozenBandwidth, frozenEnergy, unfreezing, pendingWithdrawals, resource) = try await model.logic.fetchData(vault: vault)
             await MainActor.run {
                 model.availableBalance = available
                 model.frozenBandwidthBalance = frozenBandwidth
                 model.frozenEnergyBalance = frozenEnergy
                 model.unfreezingBalance = unfreezing
+                model.pendingWithdrawals = pendingWithdrawals
                 
                 if let resource = resource {
                     model.availableBandwidth = resource.calculateAvailableBandwidth()
