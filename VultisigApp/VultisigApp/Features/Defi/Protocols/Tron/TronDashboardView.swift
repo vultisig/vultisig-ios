@@ -151,11 +151,12 @@ struct TronDashboardView: View {
         await BalanceService.shared.updateBalance(for: trxCoin)
         
         do {
-            let (available, frozenBandwidth, frozenEnergy, resource) = try await model.logic.fetchData(vault: vault)
+            let (available, frozenBandwidth, frozenEnergy, unfreezing, resource) = try await model.logic.fetchData(vault: vault)
             await MainActor.run {
                 model.availableBalance = available
                 model.frozenBandwidthBalance = frozenBandwidth
                 model.frozenEnergyBalance = frozenEnergy
+                model.unfreezingBalance = unfreezing
                 
                 if let resource = resource {
                     model.availableBandwidth = resource.calculateAvailableBandwidth()

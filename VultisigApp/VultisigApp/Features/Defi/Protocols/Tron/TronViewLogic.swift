@@ -15,8 +15,8 @@ struct TronViewLogic {
     private let tronAPIService = TronAPIService(httpClient: HTTPClient())
     
     /// Fetches account data including frozen balances and resources
-    /// Returns: (availableBalance, frozenBandwidth, frozenEnergy, accountResource)
-    func fetchData(vault: Vault) async throws -> (Decimal, Decimal, Decimal, TronAccountResourceResponse?) {
+    /// Returns: (availableBalance, frozenBandwidth, frozenEnergy, unfreezing, accountResource)
+    func fetchData(vault: Vault) async throws -> (Decimal, Decimal, Decimal, Decimal, TronAccountResourceResponse?) {
         guard let trxCoin = vault.coins.first(where: { $0.chain == .tron && $0.isNativeToken }) else {
             throw TronStakingError.noTrxCoin
         }
@@ -38,7 +38,12 @@ struct TronViewLogic {
         let frozenBandwidth = Decimal(account.frozenBandwidthSun) / Decimal(1_000_000)
         let frozenEnergy = Decimal(account.frozenEnergySun) / Decimal(1_000_000)
         
-        return (availableBalance, frozenBandwidth, frozenEnergy, resource)
+        // Parse unfreezing balance (pending withdrawal)
+        let unfreezing = Decimal(account.unfreezingTotalSun) / Decimal(1_000_000)
+        
+        print("[DEBUG] TRON: frozen BW=\(frozenBandwidth), frozen E=\(frozenEnergy), unfreezing=\(unfreezing)")
+        
+        return (availableBalance, frozenBandwidth, frozenEnergy, unfreezing, resource)
     }
     
     /// Gets the TRX coin from vault

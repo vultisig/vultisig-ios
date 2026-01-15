@@ -48,6 +48,7 @@ final class TronViewModel: ObservableObject, Hashable, Equatable {
     @Published var availableBalance: Decimal = .zero
     @Published var frozenBandwidthBalance: Decimal = .zero
     @Published var frozenEnergyBalance: Decimal = .zero
+    @Published var unfreezingBalance: Decimal = .zero  // Pending unfreeze
     
     // Resources
     @Published var availableBandwidth: Int64 = 0
@@ -61,7 +62,8 @@ final class TronViewModel: ObservableObject, Hashable, Equatable {
     
     let logic = TronViewLogic()
     
+    /// Total frozen + unfreezing balance
     var totalFrozenBalance: Decimal {
-        frozenBandwidthBalance + frozenEnergyBalance
+        frozenBandwidthBalance + frozenEnergyBalance + unfreezingBalance
     }
 }

@@ -1072,7 +1072,6 @@
 		B50F26502F182DBE0015DCCB /* TronView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F264C2F182DBE0015DCCB /* TronView+macOS.swift */; };
 		B50F26512F182DBE0015DCCB /* TronUnfreezeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F26472F182DBE0015DCCB /* TronUnfreezeView.swift */; };
 		B50F26522F182DBE0015DCCB /* TronViewLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F264D2F182DBE0015DCCB /* TronViewLogic.swift */; };
-		B50F26532F182DBE0015DCCB /* DefiTronRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F263F2F182DBE0015DCCB /* DefiTronRow.swift */; };
 		B50F26542F182DBE0015DCCB /* TronUnfreezeView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F26492F182DBE0015DCCB /* TronUnfreezeView+macOS.swift */; };
 		B50F26552F182DBE0015DCCB /* TronDashboardView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F26422F182DBE0015DCCB /* TronDashboardView+iOS.swift */; };
 		B50F26562F182DBE0015DCCB /* TronView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F264B2F182DBE0015DCCB /* TronView+iOS.swift */; };
@@ -2383,7 +2382,6 @@
 		B50F263B2F182DBE0015DCCB /* TronRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronRoute.swift; sourceTree = "<group>"; };
 		B50F263C2F182DBE0015DCCB /* TronRouteBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronRouteBuilder.swift; sourceTree = "<group>"; };
 		B50F263D2F182DBE0015DCCB /* TronRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronRouter.swift; sourceTree = "<group>"; };
-		B50F263F2F182DBE0015DCCB /* DefiTronRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiTronRow.swift; sourceTree = "<group>"; };
 		B50F26402F182DBE0015DCCB /* TronConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronConstants.swift; sourceTree = "<group>"; };
 		B50F26412F182DBE0015DCCB /* TronDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronDashboardView.swift; sourceTree = "<group>"; };
 		B50F26422F182DBE0015DCCB /* TronDashboardView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TronDashboardView+iOS.swift"; sourceTree = "<group>"; };
@@ -6026,7 +6024,6 @@
 			isa = PBXGroup;
 			children = (
 				B50F263E2F182DBE0015DCCB /* Navigation */,
-				B50F263F2F182DBE0015DCCB /* DefiTronRow.swift */,
 				B50F26402F182DBE0015DCCB /* TronConstants.swift */,
 				B50F26412F182DBE0015DCCB /* TronDashboardView.swift */,
 				B50F26422F182DBE0015DCCB /* TronDashboardView+iOS.swift */,
@@ -7964,7 +7961,6 @@
 				B50F26502F182DBE0015DCCB /* TronView+macOS.swift in Sources */,
 				B50F26512F182DBE0015DCCB /* TronUnfreezeView.swift in Sources */,
 				B50F26522F182DBE0015DCCB /* TronViewLogic.swift in Sources */,
-				B50F26532F182DBE0015DCCB /* DefiTronRow.swift in Sources */,
 				B50F26542F182DBE0015DCCB /* TronUnfreezeView+macOS.swift in Sources */,
 				B50F26552F182DBE0015DCCB /* TronDashboardView+iOS.swift in Sources */,
 				B50F26562F182DBE0015DCCB /* TronView+iOS.swift in Sources */,

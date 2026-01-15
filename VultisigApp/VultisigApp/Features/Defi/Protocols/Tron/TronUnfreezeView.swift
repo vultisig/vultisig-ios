@@ -215,11 +215,12 @@ struct TronUnfreezeView: View {
     
     func loadData() async {
         do {
-            let (available, frozenBandwidth, frozenEnergy, _) = try await model.logic.fetchData(vault: vault)
+            let (available, frozenBandwidth, frozenEnergy, unfreezing, _) = try await model.logic.fetchData(vault: vault)
             await MainActor.run {
                 model.availableBalance = available
                 model.frozenBandwidthBalance = frozenBandwidth
                 model.frozenEnergyBalance = frozenEnergy
+                model.unfreezingBalance = unfreezing
             }
         } catch {
             print("TronUnfreezeView: Error loading data: \(error.localizedDescription)")
