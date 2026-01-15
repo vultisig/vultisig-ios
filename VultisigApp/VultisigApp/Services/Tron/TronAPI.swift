@@ -109,16 +109,35 @@ struct TronNowBlockResponse: Codable {
 struct TronAccountResponse: Codable {
     let address: String
     let balance: Int64?
+    let frozenV2: [TronFrozenV2]?
+    
+    struct TronFrozenV2: Codable {
+        let type: String?  // nil or "BANDWIDTH" = bandwidth, "ENERGY" = energy
+        let amount: Int64?
+    }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.address = (try? container.decode(String.self, forKey: .address)) ?? ""
         self.balance = try? container.decode(Int64.self, forKey: .balance)
+        self.frozenV2 = try? container.decode([TronFrozenV2].self, forKey: .frozenV2)
     }
 
     private enum CodingKeys: String, CodingKey {
         case address
         case balance
+        case frozenV2
+    }
+    
+    /// Returns frozen TRX for bandwidth (in SUN)
+    var frozenBandwidthSun: Int64 {
+        // TRON API: type is nil or "BANDWIDTH" for bandwidth, only non-empty entries have amounts
+        return frozenV2?.first(where: { $0.type == nil || $0.type == "BANDWIDTH" })?.amount ?? 0
+    }
+    
+    /// Returns frozen TRX for energy (in SUN)
+    var frozenEnergySun: Int64 {
+        return frozenV2?.first(where: { $0.type == "ENERGY" })?.amount ?? 0
     }
 }
 

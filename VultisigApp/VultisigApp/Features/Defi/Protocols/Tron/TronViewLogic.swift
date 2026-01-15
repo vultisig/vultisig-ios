@@ -32,10 +32,10 @@ struct TronViewLogic {
         let balanceSun = account.balance ?? 0
         let availableBalance = Decimal(balanceSun) / Decimal(1_000_000)
         
-        // TODO: Parse frozen balances from account response when API provides them
-        // For now, return zero for frozen balances - will be updated when freeze API is integrated
-        let frozenBandwidth: Decimal = .zero
-        let frozenEnergy: Decimal = .zero
+        // Parse frozen balances from frozenV2 array (Stake 2.0)
+        // Convert from SUN to TRX
+        let frozenBandwidth = Decimal(account.frozenBandwidthSun) / Decimal(1_000_000)
+        let frozenEnergy = Decimal(account.frozenEnergySun) / Decimal(1_000_000)
         
         return (availableBalance, frozenBandwidth, frozenEnergy, resource)
     }
