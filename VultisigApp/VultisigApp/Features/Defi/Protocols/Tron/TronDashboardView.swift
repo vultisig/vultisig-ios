@@ -36,7 +36,7 @@ struct TronDashboardView: View {
                     .font(TronConstants.Fonts.title)
                     .foregroundStyle(Theme.colors.textSecondary)
                 
-                Text("\(walletTrxBalance.formatted()) TRX")
+                Text("\(model.availableBalance.formatted()) TRX")
                     .font(TronConstants.Fonts.balance)
                     .foregroundStyle(Theme.colors.textPrimary)
             }
