@@ -25,6 +25,15 @@ struct TronDashboardView: View {
         return TronViewLogic.getWalletTrxBalance(vault: vault)
     }
     
+    /// Frozen balance in fiat (using TRX coin price)
+    var frozenBalanceFiat: String {
+        guard let trxCoin = vault.coins.first(where: { $0.chain == .tron && $0.isNativeToken }) else {
+            return "$0.00"
+        }
+        let fiatValue = model.totalFrozenBalance * Decimal(trxCoin.price)
+        return fiatValue.formatToFiat(includeCurrencySymbol: true)
+    }
+    
     var body: some View {
         content
     }
@@ -70,30 +79,47 @@ struct TronDashboardView: View {
     
     var actionsCard: some View {
         VStack(spacing: 16) {
-            // Frozen Balance Header
+            // Header: Logo + Title + Fiat Balance
             HStack(spacing: 12) {
                 Image("tron")
                     .resizable()
-                    .frame(width: 39, height: 39)
+                    .frame(width: 48, height: 48)
                     .clipShape(Circle())
                 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(NSLocalizedString("tronFrozenBalance", comment: "Frozen TRX"))
-                        .font(TronConstants.Fonts.subtitle)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(NSLocalizedString("tronFreezeTitle", comment: "TRON Freeze"))
+                        .font(Theme.fonts.bodyMMedium)
                         .foregroundStyle(Theme.colors.textSecondary)
                     
-                    Text("\(model.totalFrozenBalance.formatted()) TRX")
-                        .font(Theme.fonts.priceBodyL)
+                    Text(frozenBalanceFiat)
+                        .font(Theme.fonts.title2)
                         .foregroundStyle(Theme.colors.textPrimary)
                 }
+                
                 Spacer()
             }
             
-            // Action Buttons
-            VStack(spacing: 12) {
+            // Divider
+            Divider()
+                .overlay(Theme.colors.textSecondary.opacity(0.2))
+            
+            // Frozen Balance Section
+            VStack(alignment: .leading, spacing: 4) {
+                Text(NSLocalizedString("tronFrozenLabel", comment: "Frozen"))
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textSecondary)
+                
+                Text("\(model.totalFrozenBalance.formatted()) TRX")
+                    .font(Theme.fonts.title2)
+                    .foregroundStyle(Theme.colors.textPrimary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            
+            // Action Buttons - Side by side
+            HStack(spacing: 12) {
                 DefiButton(
                     title: NSLocalizedString("tronUnfreezeButton", comment: "Unfreeze"),
-                    icon: "arrow.down",
+                    icon: "minus",
                     type: .outline,
                     isSystemIcon: true,
                     action: { router.navigate(to: TronRoute.unfreeze(vault: vault, model: model)) }
@@ -102,7 +128,7 @@ struct TronDashboardView: View {
 
                 DefiButton(
                     title: NSLocalizedString("tronFreezeButton", comment: "Freeze"),
-                    icon: "arrow.up",
+                    icon: "plus",
                     isSystemIcon: true,
                     action: { router.navigate(to: TronRoute.freeze(vault: vault)) }
                 )
@@ -205,9 +231,8 @@ struct TronDashboardView: View {
     
     func progressValue(available: Int64, total: Int64) -> CGFloat {
         guard total > 0 else { return 0 }
-        // Progress is "used" percentage, so we show (total - available) / total
-        let used = total - available
-        return min(CGFloat(used) / CGFloat(total), 1.0)
+        // Progress shows available percentage - full bar = all resources available
+        return min(CGFloat(available) / CGFloat(total), 1.0)
     }
     
     @ViewBuilder

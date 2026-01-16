@@ -1206,7 +1206,8 @@
 "tronEnergy" = "Energy";
 "tronFreezeButton" = "Freeze";
 "tronUnfreezeButton" = "Unfreeze";
-"tronFreezeTitle" = "Freeze TRX";
+"tronFreezeTitle" = "TRON Freeze";
+"tronFrozenLabel" = "Frozen";
 "tronFreezeAmount" = "Amount";
 "tronFreezeBalanceAvailable" = "Balance available:";
 "tronFreezeContinue" = "Continue";
