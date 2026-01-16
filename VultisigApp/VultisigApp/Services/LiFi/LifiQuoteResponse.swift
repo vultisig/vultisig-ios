@@ -33,10 +33,20 @@ enum LifiQuoteResponse: Codable {
         struct GasCosts: Codable {
             let estimate: String
         }
+        struct FeeCost: Codable {
+            struct Token: Codable {
+                let address: String
+            }
+            let name: String
+            let amount: String
+            let included: Bool
+            let token: Token?
+        }
         let toAmount: String
         let toAmountMin: String
         let executionDuration: Decimal
         let gasCosts: [GasCosts]
+        let feeCosts: [FeeCost]?
     }
 
     case evm(EvmQuoteResponse)

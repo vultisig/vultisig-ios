@@ -358,6 +358,7 @@ final class DKLSKeysign {
                 dkls_sign_session_free(&handler)
             }
             let h = handler
+            
             try await processDKLSOutboundMessage(handle: h)
             let isFinished = try await pullInboundMessages(handle: h, messageID: msgHash)
             if isFinished {

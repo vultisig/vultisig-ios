@@ -182,7 +182,9 @@ struct KyberSwapService {
                 data: buildResponse.data.data,
                 value: buildResponse.tx.value,
                 gasPrice: buildResponse.tx.gasPrice,
-                gas: buildResponse.tx.gas
+                gas: buildResponse.tx.gas,
+                swapFee: "0",
+                swapFeeTokenContract: ""
             )
         )
         
