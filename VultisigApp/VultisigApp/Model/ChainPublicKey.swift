@@ -14,15 +14,13 @@ final class ChainPublicKey {
     var chain: Chain
     var publicKeyHex: String
     var isEddsa: Bool
-    var derivationType: DerivationType?
 
     @Relationship(inverse: \Vault.chainPublicKeys) var vault: Vault?
 
-    init(chain: Chain, publicKeyHex: String, isEddsa: Bool, derivationType: DerivationType? = nil) {
+    init(chain: Chain, publicKeyHex: String, isEddsa: Bool) {
         self.id = "\(chain.name)-\(publicKeyHex)"
         self.chain = chain
         self.publicKeyHex = publicKeyHex
         self.isEddsa = isEddsa
-        self.derivationType = derivationType
     }
 }

@@ -247,14 +247,11 @@ class KeygenViewModel: ObservableObject {
             }
             self.vault.keyshares.append(KeyShare(pubkey: keyshare.PubKey, keyshare: keyshare.Keyshare))
 
-            // Store derivation type if this chain uses an alternative derivation
-            let derivationType = keyImportInput?.derivationType(for: chain)
             self.vault.chainPublicKeys.append(
                 ChainPublicKey(
                     chain: chain,
                     publicKeyHex: keyshare.PubKey,
-                    isEddsa: !chain.isECDSA,
-                    derivationType: derivationType
+                    isEddsa: !chain.isECDSA
                 )
             )
         }

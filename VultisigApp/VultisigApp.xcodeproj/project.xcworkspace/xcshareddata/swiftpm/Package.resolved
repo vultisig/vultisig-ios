@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vultisig/commondata",
       "state" : {
-        "branch" : "feat/chain-pub-keys-derivation",
-        "revision" : "3bf323e8b309b9f43874991aa3c37462a40a89a1"
+        "branch" : "main",
+        "revision" : "60524665961c432927253db0a25a8f168eb27ad4"
       }
     },
     {

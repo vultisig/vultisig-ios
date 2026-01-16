@@ -8386,7 +8386,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/vultisig/commondata";
 			requirement = {
-				branch = "feat/chain-pub-keys-derivation";
+				branch = main;
 				kind = branch;
 			};
 		};
