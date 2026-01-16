@@ -21,16 +21,36 @@ enum KeygenStatus {
     case KeygenFailed
 }
 
+/// Represents a chain to import with its optional custom derivation.
+struct ChainImportSetting: Hashable {
+    let chain: Chain
+    let derivationType: DerivationType?
+
+    /// Creates a chain import setting with default derivation
+    init(chain: Chain) {
+        self.chain = chain
+        self.derivationType = nil
+    }
+
+    /// Creates a chain import setting with custom derivation
+    init(chain: Chain, derivationType: DerivationType) {
+        self.chain = chain
+        self.derivationType = derivationType
+    }
+}
+
 struct KeyImportInput: Hashable {
     let mnemonic: String
-    let chains: [Chain]
-    let solanaDerivationType: DerivationType
+    let chainSettings: [ChainImportSetting]
 
+    /// Gets the derivation type for a specific chain
     func derivationType(for chain: Chain) -> DerivationType? {
-        switch chain {
-        case .solana: return solanaDerivationType
-        default: return nil
-        }
+        chainSettings.first { $0.chain == chain }?.derivationType
+    }
+
+    /// Gets all chains being imported (computed property for backward compatibility)
+    var chains: [Chain] {
+        chainSettings.map { $0.chain }
     }
 }
 

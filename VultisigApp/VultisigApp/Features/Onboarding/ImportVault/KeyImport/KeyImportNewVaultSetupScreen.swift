@@ -107,8 +107,7 @@ struct KeyImportNewVaultSetupScreen: View {
         vault: .example,
         keyImportInput: .init(
             mnemonic: "",
-            chains: [],
-            solanaDerivationType: .default
+            chainSettings: []
         ),
         fastSignConfig: .init(
             email: "",
