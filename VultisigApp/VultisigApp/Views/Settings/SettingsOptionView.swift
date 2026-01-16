@@ -25,7 +25,6 @@ struct SettingsOptionView<TrailingView: View>: View {
         icon: String?,
         title: String,
         subtitle: String? = nil,
-        description: String? = nil,
         type: SettingsOptionViewType = .normal,
         showSeparator: Bool = true,
         @ViewBuilder trailingView: @escaping () -> TrailingView

@@ -14,7 +14,6 @@ struct VaultSettingsScreen: View {
     @Query var vaults: [Vault]
     @Query var folders: [Folder]
     
-    @Environment(\.dismiss) var dismiss
     @Environment(\.router) var router
 
     @State var devicesInfo: [DeviceInfo] = []
