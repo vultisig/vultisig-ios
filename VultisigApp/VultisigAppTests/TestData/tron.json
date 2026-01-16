@@ -108,5 +108,50 @@
         "expected_image_hash": [
             "26e3a2a424d552a1f7fb6b9767d55fcbcb24fa670b2ed03451bec8000dcf40ae"
         ]
+    },
+    {
+        "name": "Smart Contract Execution",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Tron",
+                "ticker": "TRX",
+                "address": "TE7Pscrifgt2z3hMbJ1UqabnE6mowPanYq",
+                "decimals": 6,
+                "price_provider_id": "tron",
+                "is_native_token": true,
+                "hex_public_key": "0456cf2da05780a015f507d38e2c78ada793ba5bfec0a4b88e48e7cdc4ad3749391a1f6855bfdf875962abb1396806436a4520fbcd28262096951aca4d1a060584",
+                "contract_address": "",
+                "logo": "tron"
+            },
+            "to_address": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+            "to_amount": "0",
+            "BlockchainSpecific": {
+                "TronSpecific": {
+                    "timestamp": 1767697539738,
+                    "expiration": 1767697599000,
+                    "block_header_timestamp": 1767697485000,
+                    "block_header_number": 79011482,
+                    "block_header_version": 32,
+                    "block_header_tx_trie_root": "f1dca09f10530450d7cbc6b1126a143b3162cdb5a9a2153a3053bd7a1a0d4af9",
+                    "block_header_parent_hash": "0000000004b59e995a6da5e837d9c7efb734f454a28857e04010f2f261deb373",
+                    "block_header_witness_address": "414e4e68d51df137837ffda057af5efc587e01aac0",
+                    "gas_estimation": 1000000000
+                }
+            },
+            "trigger_smart_contract_payload": {
+                "owner_address": "TE7Pscrifgt2z3hMbJ1UqabnE6mowPanYq",
+                "contract_address": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+                "data": "095ea7b30000000000000000000000004ab38f7ae7eadad03981b2a7d7883760aa63e564ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+            },
+            "skipBroadcast": true,
+            "memo": "helloworld",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "0268d0ff9b55ae2562e1a7e954af45ea374e153676d0ed3caf028b7da53cba0b72",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": [
+            "4151a6177167727eda18db471a392f91bd20954b9cfff2e0e08ff5a2fc3c984a"
+        ]
     }
 ]

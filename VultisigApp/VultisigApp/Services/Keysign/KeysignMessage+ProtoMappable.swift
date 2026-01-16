@@ -34,7 +34,7 @@ extension KeysignMessage: ProtoMappable {
     }
     
     func mapToProtobuff() -> VSKeysignMessage {
-        return .with {
+        let message = VSKeysignMessage.with {
             $0.sessionID = sessionID
             $0.serviceName = serviceName
             if let payload {
@@ -48,7 +48,8 @@ extension KeysignMessage: ProtoMappable {
             }
             $0.encryptionKeyHex = encryptionKeyHex
             $0.useVultisigRelay = useVultisigRelay
-        }
+        }        
+        return message
     }
 }
 
@@ -91,7 +92,36 @@ extension KeysignPayload: ProtoMappable {
         self.swapPayload = try proto.swapPayload.map { try SwapPayload(proto: $0) }
         self.approvePayload = proto.hasErc20ApprovePayload ? ERC20ApprovePayload(proto: proto.erc20ApprovePayload) : nil
         self.libType = proto.libType
-        self.wasmExecuteContractPayload = try? WasmExecuteContractPayload(proto: proto.wasmExecuteContractPayload)
+
+        // Handle contract_payload oneof
+        switch proto.contractPayload {
+        case .wasmExecuteContractPayload(let value):
+            self.wasmExecuteContractPayload = try? WasmExecuteContractPayload(proto: value)
+            self.tronTransferContractPayload = nil
+            self.tronTriggerSmartContractPayload = nil
+            self.tronTransferAssetContractPayload = nil
+        case .tronTransferContractPayload(let value):
+            self.wasmExecuteContractPayload = nil
+            self.tronTransferContractPayload = TronTransferContractPayload(proto: value)
+            self.tronTriggerSmartContractPayload = nil
+            self.tronTransferAssetContractPayload = nil
+        case .tronTriggerSmartContractPayload(let value):
+            self.wasmExecuteContractPayload = nil
+            self.tronTransferContractPayload = nil
+            self.tronTriggerSmartContractPayload = TronTriggerSmartContractPayload(proto: value)
+            self.tronTransferAssetContractPayload = nil
+        case .tronTransferAssetContractPayload(let value):
+            self.wasmExecuteContractPayload = nil
+            self.tronTransferContractPayload = nil
+            self.tronTriggerSmartContractPayload = nil
+            self.tronTransferAssetContractPayload = TronTransferAssetContractPayload(proto: value)
+        case .none:
+            self.wasmExecuteContractPayload = nil
+            self.tronTransferContractPayload = nil
+            self.tronTriggerSmartContractPayload = nil
+            self.tronTransferAssetContractPayload = nil
+        }
+
         self.skipBroadcast = proto.skipBroadcast
         self.signData = proto.signData.flatMap { SignData(proto: $0) }
     }
@@ -103,7 +133,9 @@ extension KeysignPayload: ProtoMappable {
             $0.toAmount = String(toAmount)
             $0.blockchainSpecific = chainSpecific.mapToProtobuff()
             $0.utxoInfo = utxos.map { $0.mapToProtobuff() }
-            $0.memo = memo ?? .empty
+            if let memo {
+                $0.memo = memo
+            }
             $0.vaultPublicKeyEcdsa = vaultPubKeyECDSA
             $0.vaultLocalPartyID = vaultLocalPartyID
             $0.swapPayload = swapPayload?.mapToProtobuff()
@@ -111,7 +143,18 @@ extension KeysignPayload: ProtoMappable {
             if let approvePayload {
                 $0.erc20ApprovePayload = approvePayload.mapToProtobuff()
             }
-            $0.wasmExecuteContractPayload = wasmExecuteContractPayload?.mapToProtobuff() ?? .init()
+
+            // Handle contract_payload oneof
+            if let wasmExecuteContractPayload {
+                $0.contractPayload = .wasmExecuteContractPayload(wasmExecuteContractPayload.mapToProtobuff())
+            } else if let tronTransferContractPayload {
+                $0.contractPayload = .tronTransferContractPayload(tronTransferContractPayload.mapToProtobuff())
+            } else if let tronTriggerSmartContractPayload {
+                $0.contractPayload = .tronTriggerSmartContractPayload(tronTriggerSmartContractPayload.mapToProtobuff())
+            } else if let tronTransferAssetContractPayload {
+                $0.contractPayload = .tronTransferAssetContractPayload(tronTransferAssetContractPayload.mapToProtobuff())
+            }
+
             $0.skipBroadcast = skipBroadcast
             $0.signData = signData?.mapToProtobuff()
         }
@@ -180,7 +223,9 @@ extension SwapPayload {
                         data: value.quote.tx.data,
                         value: value.quote.tx.value,
                         gasPrice: value.quote.tx.gasPrice,
-                        gas: value.quote.tx.gas
+                        gas: value.quote.tx.gas,
+                        swapFee: value.quote.tx.swapFee,
+                        swapFeeTokenContract: ""
                     )
                 ),
                 provider: SwapProviderId(rawValue: value.provider) ?? .oneInch
@@ -199,7 +244,9 @@ extension SwapPayload {
                         data: value.quote.tx.data,
                         value: value.quote.tx.value,
                         gasPrice: value.quote.tx.gasPrice,
-                        gas: value.quote.tx.gas
+                        gas: value.quote.tx.gas,
+                        swapFee: "0",
+                        swapFeeTokenContract: ""
                     )
                 ),
                 provider: .kyberSwap
@@ -254,6 +301,9 @@ extension SwapPayload {
                         $0.value = payload.quote.tx.value
                         $0.gasPrice = payload.quote.tx.gasPrice
                         $0.gas = payload.quote.tx.gas
+                        if payload.quote.tx.swapFee != "0" {
+                            $0.swapFee = payload.quote.tx.swapFee
+                        }
                     }
                 }
                 $0.provider = payload.provider.rawValue
@@ -500,18 +550,79 @@ extension BlockChainSpecific {
 }
 
 extension UtxoInfo {
-    
+
     init(proto: VSUtxoInfo) throws {
         self.amount = proto.amount
         self.hash = proto.hash
         self.index = proto.index
     }
-    
+
     func mapToProtobuff() -> VSUtxoInfo {
         return .with {
             $0.amount = amount
             $0.hash = hash
             $0.index = index
+        }
+    }
+}
+
+// MARK: - Tron Contract Payloads ProtoMappable
+
+extension TronTransferContractPayload {
+
+    init(proto: VSTronTransferContractPayload) {
+        self.toAddress = proto.toAddress
+        self.ownerAddress = proto.ownerAddress
+        self.amount = proto.amount
+    }
+
+    func mapToProtobuff() -> VSTronTransferContractPayload {
+        return .with {
+            $0.toAddress = toAddress
+            $0.ownerAddress = ownerAddress
+            $0.amount = amount
+        }
+    }
+}
+
+extension TronTriggerSmartContractPayload {
+
+    init(proto: VSTronTriggerSmartContractPayload) {
+        self.ownerAddress = proto.ownerAddress
+        self.contractAddress = proto.contractAddress
+        self.callValue = proto.hasCallValue ? proto.callValue : nil
+        self.callTokenValue = proto.hasCallTokenValue ? proto.callTokenValue : nil
+        self.tokenId = proto.hasTokenID ? proto.tokenID : nil
+        self.data = proto.hasData ? proto.data : nil
+    }
+
+    func mapToProtobuff() -> VSTronTriggerSmartContractPayload {
+        return .with {
+            $0.ownerAddress = ownerAddress
+            $0.contractAddress = contractAddress
+            if let callValue { $0.callValue = callValue }
+            if let callTokenValue { $0.callTokenValue = callTokenValue }
+            if let tokenId { $0.tokenID = tokenId }
+            if let data { $0.data = data }
+        }
+    }
+}
+
+extension TronTransferAssetContractPayload {
+
+    init(proto: VSTronTransferAssetContractPayload) {
+        self.toAddress = proto.toAddress
+        self.ownerAddress = proto.ownerAddress
+        self.amount = proto.amount
+        self.assetName = proto.assetName
+    }
+
+    func mapToProtobuff() -> VSTronTransferAssetContractPayload {
+        return .with {
+            $0.toAddress = toAddress
+            $0.ownerAddress = ownerAddress
+            $0.amount = amount
+            $0.assetName = assetName
         }
     }
 }

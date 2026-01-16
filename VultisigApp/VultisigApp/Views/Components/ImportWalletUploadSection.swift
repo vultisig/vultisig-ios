@@ -43,6 +43,7 @@ struct ImportWalletUploadSection: View {
                 getUploadedFileContent(filename)
             } else {
                 importFileContent
+                    .onAppear  { backgroundColor = Theme.colors.border }
             }
         }
         .animation(.none, value: isUploading)

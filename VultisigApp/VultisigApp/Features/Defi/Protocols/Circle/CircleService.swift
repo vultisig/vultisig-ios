@@ -65,6 +65,9 @@ struct CircleService {
             vaultLocalPartyID: vault.localPartyID,
             libType: (vault.libType ?? .GG20) == .DKLS ? "dkls" : "gg20",
             wasmExecuteContractPayload: nil,
+            tronTransferContractPayload: nil,
+            tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil,
             skipBroadcast: false,
             signData: nil
         )

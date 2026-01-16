@@ -704,6 +704,7 @@
 "shouldBackupVaultsSeparateLocations" = "Du solltest alle Tresoranteile an verschiedenen Orten sichern.";
 "shouldOnlyTakeAMinute..." = "Das sollte nur eine Sekunde dauern";
 "showBalance" = "Guthaben anzeigen";
+"showHint" = "Hinweis anzeigen";
 "sign" = "Unterschreiben";
 "signer" = "Unterzeichner";
 "signers" = "Unterzeichner";
@@ -734,6 +735,7 @@
 "supportedFileTypesUpload" = "Unterstützte Dateitypen: .bak & .vult";
 "swap" = "Tausch";
 "swapFee" = "Tauschgebühr";
+"minPayout" = "Min. Auszahlung";
 "swapFrom" = "Tausche von";
 "swapOverview" = "Tauschübersicht";
 "swapProgress" = "Tauschfortschritt";
@@ -1130,6 +1132,7 @@
 "circleSetupAccountTitle" = "Circle USDC Konto";
 "circleSetupUSDCDeposited" = "USDC eingezahlt";
 "circleSetupOpenAccount" = "Konto eröffnen";
+"circleCreatingAccount" = "Konto wird erstellt...";
 "circleDashboardCircleUSDCAccount" = "Circle USDC Konto";
 "circleDashboardDeposited" = "Eingezahlt";
 "circleDashboardDepositDescription" = "Zahlen Sie Ihre $USDC auf ein Circle-Konto ein und verdienen Sie sicher in Ihrem Vultisig-Tresor.";

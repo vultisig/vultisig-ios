@@ -436,4 +436,17 @@ class JoinKeysignViewModel: ObservableObject {
         guard let keysignPayload else { return "" }
         return gasViewModel.getJoinedCalculatedNetworkFee(payload: keysignPayload)
     }
+
+    func getFromFiatAmount() -> String {
+        guard let payload = keysignPayload?.swapPayload else { return .empty }
+        let amount = payload.fromCoin.decimal(for: payload.fromAmount)
+        let fiatDecimal = payload.fromCoin.fiat(decimal: amount)
+        return fiatDecimal.formatToFiat(includeCurrencySymbol: true)
+    }
+
+    func getToFiatAmount() -> String {
+        guard let payload = keysignPayload?.swapPayload else { return .empty }
+        let fiatDecimal = payload.toCoin.fiat(decimal: payload.toAmountDecimal)
+        return fiatDecimal.formatToFiat(includeCurrencySymbol: true)
+    }
 }

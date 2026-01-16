@@ -11,10 +11,8 @@ struct FastVaultPasswordDisclaimer: View {
     @Binding var showTooltip: Bool
     
     var body: some View {
-        VStack {
-            content
-            tooltip
-        }
+        content
+            .overlay(tooltip.offset(y: 60), alignment: .top)
     }
     
     var content: some View {

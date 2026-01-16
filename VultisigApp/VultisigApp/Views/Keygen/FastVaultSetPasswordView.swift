@@ -16,7 +16,6 @@ struct FastVaultSetPasswordView: View {
     
     @State var password: String = ""
     @State var verifyPassword: String = ""
-    @State var isLinkActive = false
     @State var isLoading: Bool = false
     @State var isWrongPassword: Bool = false
     @State var showTooltip = false
@@ -33,10 +32,6 @@ struct FastVaultSetPasswordView: View {
             .animation(.easeInOut, value: showTooltip)
             .alert(NSLocalizedString("wrongPassword", comment: ""), isPresented: $isWrongPassword) {
                 Button("OK", role: .cancel) { }
-            }
-            .onChange(of: isLinkActive) { _, isActive in
-                guard isActive else { return }
-                handleNavigation()
             }
             .onLoad {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -81,8 +76,11 @@ struct FastVaultSetPasswordView: View {
                 textfield
             } else {
                 disclaimer
-                textfield
-                verifyTextfield
+                    .zIndex(1)
+                Group {
+                    textfield
+                    verifyTextfield
+                }.zIndex(0)
             }
         }
         .padding(.horizontal, 16)
@@ -170,8 +168,7 @@ struct FastVaultSetPasswordView: View {
             password = .empty
             return
         }
-        
-        isLinkActive = true
+        handleNavigation()
     }
     func validatePassword()->Bool {
         guard !password.isEmpty else {
@@ -196,7 +193,9 @@ struct FastVaultSetPasswordView: View {
         return true
     }
     private func handleTap() {
-        isLinkActive = validatePassword()
+        if validatePassword() {
+            handleNavigation()
+        }
     }
 }
 

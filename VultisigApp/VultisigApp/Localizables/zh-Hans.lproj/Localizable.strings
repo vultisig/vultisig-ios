@@ -705,6 +705,7 @@
 "shouldBackupVaultsSeparateLocations" = "您应该在不同位置备份所有保险库份额";
 "shouldOnlyTakeAMinute..." = "这应该只需要一秒钟";
 "showBalance" = "显示余额";
+"showHint" = "显示提示";
 "sign" = "签名";
 "signer" = "签名者";
 "signers" = "签名者";
@@ -735,6 +736,7 @@
 "supportedFileTypesUpload" = "支持的文件类型：.bak 和 .vult";
 "swap" = "交换";
 "swapFee" = "交换费用";
+"minPayout" = "最小支付";
 "swapFrom" = "从此交换";
 "swapOverview" = "交换概览";
 "swapProgress" = "交换进度";
@@ -1132,6 +1134,7 @@
 "circleSetupAccountTitle" = "Circle USDC 账户";
 "circleSetupUSDCDeposited" = "USDC 已存入";
 "circleSetupOpenAccount" = "开设账户";
+"circleCreatingAccount" = "正在创建账户...";
 "circleDashboardCircleUSDCAccount" = "Circle USDC 账户";
 "circleDashboardDeposited" = "已存入";
 "circleDashboardDepositDescription" = "将您的 $USDC 存入 Circle 账户，在 Vultisig 保险库中安全赚取收益。";

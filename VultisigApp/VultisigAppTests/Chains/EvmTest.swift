@@ -58,6 +58,9 @@ final class EVMChainsHelperTest: XCTestCase {
             vaultLocalPartyID: "localPartyID",
             libType: LibType.DKLS.toString(),
             wasmExecuteContractPayload: nil,
+            tronTransferContractPayload: nil,
+            tronTriggerSmartContractPayload: nil,
+            tronTransferAssetContractPayload: nil,
             skipBroadcast: false,
             signData: nil
         )

@@ -704,6 +704,7 @@
 "shouldBackupVaultsSeparateLocations" = "Você deve fazer backup de todas as ações do cofre em locais separados.";
 "shouldOnlyTakeAMinute..." = "Isso deve levar apenas um segundo";
 "showBalance" = "Mostrar saldo";
+"showHint" = "Mostrar dica";
 "sign" = "Assinar";
 "signer" = "Assinante";
 "signers" = "Signatários";
@@ -734,6 +735,7 @@
 "supportedFileTypesUpload" = "Tipos de arquivos suportados: .bak & .vult";
 "swap" = "Troca";
 "swapFee" = "Taxa de troca";
+"minPayout" = "pagamento mín.";
 "swapFrom" = "Trocando de";
 "swapOverview" = "Visão geral da troca";
 "swapProgress" = "Progresso da troca";
@@ -1130,6 +1132,7 @@
 "circleSetupAccountTitle" = "Conta Circle USDC";
 "circleSetupUSDCDeposited" = "USDC depositado";
 "circleSetupOpenAccount" = "Abrir Conta";
+"circleCreatingAccount" = "Criando conta...";
 "circleDashboardCircleUSDCAccount" = "Conta Circle USDC";
 "circleDashboardDeposited" = "Depositado";
 "circleDashboardDepositDescription" = "Deposite seus $USDC em uma conta Circle e ganhe rendimento de forma segura dentro do seu cofre Vultisig.";
