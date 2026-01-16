@@ -9,8 +9,6 @@
 import SwiftUI
 
 extension KeygenView {
-    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-    
     var content: some View {
         container
             .navigationTitle(NSLocalizedString(tssType == .Migrate ? "" : "creatingVault", comment: ""))
