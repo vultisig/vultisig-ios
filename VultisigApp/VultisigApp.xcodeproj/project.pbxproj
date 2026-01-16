@@ -2590,6 +2590,7 @@
 				sui.json,
 				terra.json,
 				thorchain.json,
+				thorchainswap.json,
 				ton.json,
 				tron.json,
 				utxo.json,
