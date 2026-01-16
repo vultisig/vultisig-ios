@@ -23,20 +23,20 @@ struct CoinMetaBalance {
 struct ChainBalanceResult {
     let chain: Chain
     let tokens: [CoinMetaBalance]
-    let derivationType: DerivationType?
+    let derivationPath: DerivationPath?
 }
 
-/// Maps a derivation path to its DerivationType identifier
+/// Maps a derivation path to its derivationPath identifier
 struct DerivationOption {
     let derivation: Derivation
-    let derivationType: DerivationType
+    let derivationPath: DerivationPath
 }
 
 /// Result of fetching balances for a specific derivation
 struct DerivationBalanceResult {
     let tokens: [CoinMetaBalance]
     let fiatBalance: Decimal
-    let derivationType: DerivationType?
+    let derivationPath: DerivationPath?
 }
 
 final class KeyImportChainsSetupViewModel: ObservableObject {
@@ -52,9 +52,9 @@ final class KeyImportChainsSetupViewModel: ObservableObject {
     /// Add new chains/derivations here to support additional derivation types in the future.
     private let alternativeDerivations: [Chain: [DerivationOption]] = [
         .solana: [
-            DerivationOption(derivation: .solanaSolana, derivationType: .phantom)
+            DerivationOption(derivation: .solanaSolana, derivationPath: .phantom)
             // Add more Solana derivations here in the future, e.g.:
-            // DerivationOption(derivation: .someLedgerDerivation, derivationType: .ledger)
+            // DerivationOption(derivation: .someLedgerDerivation, derivationPath: .ledger)
         ]
     ]
 
@@ -64,12 +64,12 @@ final class KeyImportChainsSetupViewModel: ObservableObject {
         selectedChains.isEmpty ? activeChains.map(\.chain) : selectedChains
     }
 
-    func derivationType(for chain: Chain) -> DerivationType {
-        chainBalanceResults.first { $0.chain == chain }?.derivationType ?? .default
+    func derivationPath(for chain: Chain) -> DerivationPath {
+        chainBalanceResults.first { $0.chain == chain }?.derivationPath ?? .default
     }
 
-    var solanaDerivationType: DerivationType {
-        derivationType(for: .solana)
+    var solanaderivationPath: DerivationPath {
+        derivationPath(for: .solana)
     }
     
     var screenTitle: String {
@@ -203,7 +203,7 @@ private extension KeyImportChainsSetupViewModel {
         let defaultResult = await fetchBalancesForDerivation(
             address: defaultAddress,
             tokens: tokens,
-            derivationType: nil
+            derivationPath: nil
         )
         derivationResults.append(defaultResult)
 
@@ -214,7 +214,7 @@ private extension KeyImportChainsSetupViewModel {
                 let result = await fetchBalancesForDerivation(
                     address: address,
                     tokens: tokens,
-                    derivationType: option.derivationType
+                    derivationPath: option.derivationPath
                 )
                 derivationResults.append(result)
             }
@@ -224,27 +224,27 @@ private extension KeyImportChainsSetupViewModel {
         let bestResult = derivationResults.max { $0.fiatBalance < $1.fiatBalance }
 
         guard let best = bestResult else {
-            return ChainBalanceResult(chain: chain, tokens: [], derivationType: nil)
+            return ChainBalanceResult(chain: chain, tokens: [], derivationPath: nil)
         }
 
         // If best has balance, use it; otherwise check if any has balance
         if best.fiatBalance > 0 {
-            return ChainBalanceResult(chain: chain, tokens: best.tokens, derivationType: best.derivationType)
+            return ChainBalanceResult(chain: chain, tokens: best.tokens, derivationPath: best.derivationPath)
         }
 
         // No balance on any derivation - return default
-        return ChainBalanceResult(chain: chain, tokens: [], derivationType: nil)
+        return ChainBalanceResult(chain: chain, tokens: [], derivationPath: nil)
     }
 
     func fetchBalancesForDerivation(
         address: String,
         tokens: [CoinMeta],
-        derivationType: DerivationType?
+        derivationPath: DerivationPath?
     ) async -> DerivationBalanceResult {
         let mergedTokens = await mergeWithDiscoveredTokens(tokens: tokens, address: address)
         let balances = await fetchBalancesForTokens(tokens: mergedTokens, address: address)
         let totalFiat = calculateTotalFiatBalance(for: balances)
-        return DerivationBalanceResult(tokens: balances, fiatBalance: totalFiat, derivationType: derivationType)
+        return DerivationBalanceResult(tokens: balances, fiatBalance: totalFiat, derivationPath: derivationPath)
     }
 
     func mergeWithDiscoveredTokens(tokens: [CoinMeta], address: String) async -> [CoinMeta] {

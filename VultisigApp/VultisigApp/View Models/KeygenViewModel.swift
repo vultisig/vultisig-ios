@@ -24,18 +24,18 @@ enum KeygenStatus {
 /// Represents a chain to import with its optional custom derivation.
 struct ChainImportSetting: Hashable {
     let chain: Chain
-    let derivationType: DerivationType?
+    let derivationPath: DerivationPath?
 
     /// Creates a chain import setting with default derivation
     init(chain: Chain) {
         self.chain = chain
-        self.derivationType = nil
+        self.derivationPath = nil
     }
 
     /// Creates a chain import setting with custom derivation
-    init(chain: Chain, derivationType: DerivationType) {
+    init(chain: Chain, derivationPath: DerivationPath) {
         self.chain = chain
-        self.derivationType = derivationType
+        self.derivationPath = derivationPath
     }
 }
 
@@ -44,8 +44,8 @@ struct KeyImportInput: Hashable {
     let chainSettings: [ChainImportSetting]
 
     /// Gets the derivation type for a specific chain
-    func derivationType(for chain: Chain) -> DerivationType? {
-        chainSettings.first { $0.chain == chain }?.derivationType
+    func derivationPath(for chain: Chain) -> DerivationPath? {
+        chainSettings.first { $0.chain == chain }?.derivationPath
     }
 
     /// Gets all chains being imported (computed property for backward compatibility)
@@ -58,9 +58,9 @@ struct KeyImportInput: Hashable {
 class KeygenViewModel: ObservableObject {
     private let logger = Logger(subsystem: "keygen-viewmodel", category: "tss")
 
-    /// Maps DerivationType to WalletCore Derivation for each chain.
+    /// Maps derivationPath to WalletCore Derivation for each chain.
     /// Add new chains/derivations here to support additional derivation types.
-    private let walletCoreDerivations: [Chain: [DerivationType: Derivation]] = [
+    private let walletCoreDerivations: [Chain: [DerivationPath: Derivation]] = [
         .solana: [
             .phantom: .solanaSolana
             // Add more Solana derivations here in the future, e.g.:
@@ -321,8 +321,8 @@ class KeygenViewModel: ObservableObject {
         guard let wallet else { return nil }
 
         // Check if this chain has an alternative derivation configured
-        if let derivationType = keyImportInput?.derivationType(for: chain),
-           let walletCoreDerivation = walletCoreDerivations[chain]?[derivationType] {
+        if let derivationPath = keyImportInput?.derivationPath(for: chain),
+           let walletCoreDerivation = walletCoreDerivations[chain]?[derivationPath] {
             return wallet.getKeyDerivation(coin: chain.coinType, derivation: walletCoreDerivation).data
         }
 

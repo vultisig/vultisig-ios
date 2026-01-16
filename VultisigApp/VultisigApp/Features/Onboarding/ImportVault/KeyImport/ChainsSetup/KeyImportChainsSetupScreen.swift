@@ -52,10 +52,10 @@ struct KeyImportChainsSetupScreen: View {
     func presentVaultSetup() {
         // Build chain settings with derivations
         let chainSettings = viewModel.chainsToImport.map { chain -> ChainImportSetting in
-            let derivationType = viewModel.derivationType(for: chain)
+            let derivationPath = viewModel.derivationPath(for: chain)
             // Only store non-default derivations
-            if derivationType != .default {
-                return ChainImportSetting(chain: chain, derivationType: derivationType)
+            if derivationPath != .default {
+                return ChainImportSetting(chain: chain, derivationPath: derivationPath)
             }
             return ChainImportSetting(chain: chain)
         }
