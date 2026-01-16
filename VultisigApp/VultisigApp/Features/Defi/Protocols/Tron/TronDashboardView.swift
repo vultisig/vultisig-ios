@@ -10,6 +10,7 @@ import SwiftUI
 struct TronDashboardView: View {
     let vault: Vault
     @ObservedObject var model: TronViewModel
+    let onRefresh: () async -> Void  // Callback for refresh
     @Environment(\.dismiss) var dismiss
     @Environment(\.router) var router
 
@@ -312,35 +313,6 @@ struct TronDashboardView: View {
         } else {
             let minutes = Int((remaining.truncatingRemainder(dividingBy: 3600)) / 60)
             return String(format: NSLocalizedString("tronTimeRemainingHours", comment: "%d hours, %d minutes"), hours, minutes)
-        }
-    }
-    
-    func loadData() async {
-        guard let trxCoin = TronViewLogic.getTrxCoin(vault: vault) else { return }
-        
-        await BalanceService.shared.updateBalance(for: trxCoin)
-        
-        do {
-            let (available, frozenBandwidth, frozenEnergy, unfreezing, pendingWithdrawals, resource) = try await model.logic.fetchData(vault: vault)
-            await MainActor.run {
-                model.availableBalance = available
-                model.frozenBandwidthBalance = frozenBandwidth
-                model.frozenEnergyBalance = frozenEnergy
-                model.unfreezingBalance = unfreezing
-                model.pendingWithdrawals = pendingWithdrawals
-                
-                if let resource = resource {
-                    model.availableBandwidth = resource.calculateAvailableBandwidth()
-                    model.totalBandwidth = resource.freeNetLimit + resource.NetLimit
-                    model.availableEnergy = resource.EnergyLimit - resource.EnergyUsed
-                    model.totalEnergy = resource.EnergyLimit
-                }
-            }
-        } catch {
-            print("Error loading TRON data: \(error.localizedDescription)")
-            await MainActor.run {
-                model.error = error
-            }
         }
     }
 }

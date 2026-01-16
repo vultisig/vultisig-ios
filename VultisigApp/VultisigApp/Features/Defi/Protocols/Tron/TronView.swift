@@ -12,7 +12,6 @@ struct TronView: View {
     let vault: Vault
 
     @StateObject private var model = TronViewModel()
-    @State private var hasCheckedData = false
 
     var content: some View {
         Screen(
@@ -20,12 +19,7 @@ struct TronView: View {
             showNavigationBar: true,
             backgroundType: .plain
         ) {
-            if !hasCheckedData {
-                // Show loading while checking data
-                ProgressView()
-                    .progressViewStyle(.circular)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if model.missingTrx {
+            if model.missingTrx {
                 // Show warning to add TRX
                 VStack(spacing: 24) {
                     Spacer()
@@ -48,8 +42,8 @@ struct TronView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                // No setup needed - go directly to dashboard
-                TronDashboardView(vault: vault, model: model)
+                // Show dashboard immediately (cards show their own loading states)
+                TronDashboardView(vault: vault, model: model, onRefresh: loadData)
             }
         }
         .onAppear {
@@ -65,7 +59,6 @@ struct TronView: View {
             await MainActor.run {
                 model.missingTrx = true
                 model.isLoading = false
-                hasCheckedData = true
             }
             return
         }
@@ -87,13 +80,11 @@ struct TronView: View {
                 }
                 
                 model.isLoading = false
-                hasCheckedData = true
             }
         } catch {
             await MainActor.run {
                 model.error = error
                 model.isLoading = false
-                hasCheckedData = true
             }
         }
     }

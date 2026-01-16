@@ -1159,6 +1159,46 @@
 "circleErrorInvalidDetails" = "Detalles inválidos";
 "circleErrorWalletNotDeployed" = "Cartera Circle aún no desplegada. Por favor intente más tarde.";
 
+// TRON Staking (Freeze/Unfreeze)
+"tronTitle" = "TRON Staking";
+"tronDashboardTitle" = "TRON Staking";
+"tronDashboardStaking" = "Staking";
+"tronDashboardStakingDescription" = "Congela tu TRX para obtener ancho de banda y energía para transacciones gratuitas.";
+"tronDashboardInfoText" = "El TRX congelado proporciona recursos de ancho de banda y energía. Puedes descongelar en cualquier momento para recuperar tu TRX.";
+"tronFrozenBalance" = "TRX Congelado";
+"tronAvailableBalance" = "TRX Disponible";
+"tronBandwidth" = "Ancho de Banda";
+"tronEnergy" = "Energía";
+"tronFreezeButton" = "Congelar";
+"tronUnfreezeButton" = "Descongelar";
+"tronFreezeTitle" = "TRON Congelar";
+"tronFrozenLabel" = "Congelado";
+"tronFreezeAmount" = "Cantidad";
+"tronFreezeBalanceAvailable" = "Saldo disponible:";
+"tronFreezeContinue" = "Continuar";
+"tronUnfreezeTitle" = "Descongelar TRX";
+"tronUnfreezeAmount" = "Cantidad";
+"tronUnfreezeBalanceAvailable" = "Saldo congelado:";
+"tronUnfreezeConfirm" = "Continuar";
+"tronResourceType" = "Tipo de Recurso";
+"tronResourceBandwidth" = "Ancho de Banda";
+"tronResourceEnergy" = "Energía";
+"tronRowFrozenBalance" = "Saldo Congelado";
+"tronRowFrozen" = "Congelado";
+"tronRowAvailable" = "Disponible";
+"tronRowAddTRX" = "Agregar TRX";
+"tronRowGetStarted" = "Comenzar";
+"tronTrxRequired" = "TRX Requerido";
+"tronTrxRequiredDescription" = "Por favor agrega TRX a tu bóveda para usar TRON staking.";
+"tronErrorNoTrxCoin" = "No se encontró moneda TRX en la bóveda. Por favor agrega TRX primero.";
+"tronErrorInvalidBlockInfo" = "Error al obtener información del bloque TRON. Por favor intenta de nuevo.";
+"tronErrorFreezeFailed" = "Congelación fallida: %@";
+"tronErrorUnfreezeFailed" = "Descongelación fallida: %@";
+"tronPendingWithdrawals" = "Retiros Pendientes";
+"tronReadyToClaim" = "Listo para reclamar";
+"tronTimeRemainingDays" = "%d días, %d horas restantes";
+"tronTimeRemainingHours" = "%d horas, %d minutos restantes";
+
 "scanningForChainsSubtitle" = "Estamos verificando qué cadenas de bloques tienen direcciones activas asociadas con tu frase semilla. Este proceso puede tardar hasta 2 minutos.";
 "scanningForChainsSubtitleHighlight" = "Este proceso puede tardar hasta 2 minutos.";
 "selectChainsManually" = "Seleccionar cadenas manualmente";

@@ -41,9 +41,6 @@ extension TronDashboardView {
                 }
             }
         }
-        .onAppear {
-            Task { await loadData() }
-        }
     }
 }
 #endif

@@ -51,7 +51,9 @@ final class TronViewModel: ObservableObject, Hashable, Equatable {
     }
     
     private let id = UUID()
-    @Published var isLoading = false
+    @Published var isLoading = false  // General loading (for initial load)
+    @Published var isLoadingBalance = false  // Loading frozen balance
+    @Published var isLoadingResources = false  // Loading bandwidth/energy
     @Published var error: Error?
     @Published var missingTrx = false
     

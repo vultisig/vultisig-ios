@@ -40,12 +40,9 @@ extension TronDashboardView {
                     .padding(.horizontal, TronConstants.Design.horizontalPadding)
                 }
                 .refreshable {
-                    await loadData()
+                    await onRefresh()
                 }
             }
-        }
-        .onAppear {
-            Task { await loadData() }
         }
     }
 }

@@ -1158,6 +1158,46 @@
 "circleErrorInvalidDetails" = "Detalhes inválidos";
 "circleErrorWalletNotDeployed" = "Carteira Circle ainda não implantada. Por favor tente novamente mais tarde.";
 
+// TRON Staking (Freeze/Unfreeze)
+"tronTitle" = "TRON Staking";
+"tronDashboardTitle" = "TRON Staking";
+"tronDashboardStaking" = "Staking";
+"tronDashboardStakingDescription" = "Congele seu TRX para ganhar largura de banda e energia para transações gratuitas.";
+"tronDashboardInfoText" = "O TRX congelado fornece recursos de largura de banda e energia. Você pode descongelar a qualquer momento para recuperar seu TRX.";
+"tronFrozenBalance" = "TRX Congelado";
+"tronAvailableBalance" = "TRX Disponível";
+"tronBandwidth" = "Largura de Banda";
+"tronEnergy" = "Energia";
+"tronFreezeButton" = "Congelar";
+"tronUnfreezeButton" = "Descongelar";
+"tronFreezeTitle" = "TRON Congelar";
+"tronFrozenLabel" = "Congelado";
+"tronFreezeAmount" = "Quantidade";
+"tronFreezeBalanceAvailable" = "Saldo disponível:";
+"tronFreezeContinue" = "Continuar";
+"tronUnfreezeTitle" = "Descongelar TRX";
+"tronUnfreezeAmount" = "Quantidade";
+"tronUnfreezeBalanceAvailable" = "Saldo congelado:";
+"tronUnfreezeConfirm" = "Continuar";
+"tronResourceType" = "Tipo de Recurso";
+"tronResourceBandwidth" = "Largura de Banda";
+"tronResourceEnergy" = "Energia";
+"tronRowFrozenBalance" = "Saldo Congelado";
+"tronRowFrozen" = "Congelado";
+"tronRowAvailable" = "Disponível";
+"tronRowAddTRX" = "Adicionar TRX";
+"tronRowGetStarted" = "Começar";
+"tronTrxRequired" = "TRX Necessário";
+"tronTrxRequiredDescription" = "Por favor adicione TRX ao seu cofre para usar o TRON staking.";
+"tronErrorNoTrxCoin" = "Token TRX não encontrado no cofre. Por favor adicione TRX primeiro.";
+"tronErrorInvalidBlockInfo" = "Falha ao obter informações do bloco TRON. Por favor tente novamente.";
+"tronErrorFreezeFailed" = "Congelamento falhou: %@";
+"tronErrorUnfreezeFailed" = "Descongelamento falhou: %@";
+"tronPendingWithdrawals" = "Saques Pendentes";
+"tronReadyToClaim" = "Pronto para resgatar";
+"tronTimeRemainingDays" = "%d dias, %d horas restantes";
+"tronTimeRemainingHours" = "%d horas, %d minutos restantes";
+
 "scanningForChainsSubtitle" = "Estamos verificando quais blockchains têm endereços ativos associados à sua frase semente. Este processo pode levar até 2 minutos.";
 "scanningForChainsSubtitleHighlight" = "Este processo pode levar até 2 minutos.";
 "selectChainsManually" = "Selecionar chains manualmente";
