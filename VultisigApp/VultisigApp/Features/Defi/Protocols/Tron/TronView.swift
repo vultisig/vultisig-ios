@@ -25,7 +25,7 @@ struct TronView: View {
                     Spacer()
                     
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 60))
+                        .font(Theme.fonts.largeTitle)
                         .foregroundStyle(Theme.colors.alertWarning)
                     
                     Text(NSLocalizedString("tronTrxRequired", comment: "TRX Required"))
@@ -52,40 +52,87 @@ struct TronView: View {
     }
     
     private func loadData() async {
-        await MainActor.run { model.isLoading = true }
+        // Set all loading states upfront so skeletons appear
+        await MainActor.run {
+            model.isLoading = true
+            model.isLoadingBalance = true
+            model.isLoadingResources = true
+        }
         
         // Check if vault has TRX
-        guard let _ = TronViewLogic.getTrxCoin(vault: vault) else {
+        guard let trxCoin = TronViewLogic.getTrxCoin(vault: vault) else {
             await MainActor.run {
                 model.missingTrx = true
                 model.isLoading = false
+                model.isLoadingBalance = false
+                model.isLoadingResources = false
             }
             return
         }
         
-        do {
-            let (available, frozenBandwidth, frozenEnergy, unfreezing, pendingWithdrawals, resource) = try await model.logic.fetchData(vault: vault)
-            await MainActor.run {
-                model.availableBalance = available
-                model.frozenBandwidthBalance = frozenBandwidth
-                model.frozenEnergyBalance = frozenEnergy
-                model.unfreezingBalance = unfreezing
-                model.pendingWithdrawals = pendingWithdrawals
-                
-                if let resource = resource {
+        let address = trxCoin.address
+        let tronAPIService = TronAPIService(httpClient: HTTPClient())
+        
+        // Fetch account info (balance data) - update UI as soon as it returns
+        Task {
+            do {
+                let account = try await tronAPIService.getAccount(address: address)
+                await MainActor.run {
+                    // Calculate available balance (in TRX, not SUN)
+                    let balanceSun = account.balance ?? 0
+                    model.availableBalance = Decimal(balanceSun) / Decimal(1_000_000)
+                    
+                    // Parse frozen balances from frozenV2 array (Stake 2.0)
+                    model.frozenBandwidthBalance = Decimal(account.frozenBandwidthSun) / Decimal(1_000_000)
+                    model.frozenEnergyBalance = Decimal(account.frozenEnergySun) / Decimal(1_000_000)
+                    
+                    // Parse unfreezing balance
+                    model.unfreezingBalance = Decimal(account.unfreezingTotalSun) / Decimal(1_000_000)
+                    
+                    // Parse pending withdrawals
+                    model.pendingWithdrawals = (account.unfrozenV2 ?? []).compactMap { entry in
+                        guard let amountSun = entry.unfreeze_amount, let expireTime = entry.unfreeze_expire_time else {
+                            return nil
+                        }
+                        let amountTrx = Decimal(amountSun) / Decimal(1_000_000)
+                        let expirationDate = Date(timeIntervalSince1970: TimeInterval(expireTime / 1000))
+                        return TronPendingWithdrawal(amount: amountTrx, expirationDate: expirationDate)
+                    }.sorted { $0.expirationDate < $1.expirationDate }
+                    
+                    model.isLoadingBalance = false
+                }
+            } catch {
+                if !(error is CancellationError) {
+                    await MainActor.run {
+                        model.error = error
+                        model.isLoadingBalance = false
+                    }
+                }
+            }
+        }
+        
+        // Fetch resource info (bandwidth/energy) - update UI as soon as it returns
+        Task {
+            do {
+                let resource = try await tronAPIService.getAccountResource(address: address)
+                await MainActor.run {
                     model.availableBandwidth = resource.calculateAvailableBandwidth()
                     model.totalBandwidth = resource.freeNetLimit + resource.NetLimit
                     model.availableEnergy = resource.EnergyLimit - resource.EnergyUsed
                     model.totalEnergy = resource.EnergyLimit
+                    model.isLoadingResources = false
                 }
-                
-                model.isLoading = false
-            }
-        } catch {
-            await MainActor.run {
-                model.error = error
-                model.isLoading = false
+            } catch {
+                if !(error is CancellationError) {
+                    await MainActor.run {
+                        model.error = error
+                        model.isLoadingResources = false
+                    }
+                }
             }
         }
+        
+        // Clear global loading state after a short delay (UI updates come from individual states)
+        await MainActor.run { model.isLoading = false }
     }
 }

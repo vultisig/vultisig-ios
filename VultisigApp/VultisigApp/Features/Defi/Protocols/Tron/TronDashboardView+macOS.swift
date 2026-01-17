@@ -22,7 +22,7 @@ extension TronDashboardView {
                         
                         actionsCard
                         
-                        if let error = model.error, error.localizedDescription.lowercased() != "cancelled" {
+                        if let error = model.error, !(error is CancellationError) && error.localizedDescription.lowercased() != "cancelled" {
                             InfoBannerView(
                                 description: error.localizedDescription,
                                 type: .error,

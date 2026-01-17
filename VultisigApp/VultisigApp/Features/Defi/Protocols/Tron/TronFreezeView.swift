@@ -38,7 +38,7 @@ struct TronFreezeView: View {
             }
             
             if isLoading {
-                Color.black.opacity(0.5).ignoresSafeArea()
+                Theme.colors.bgPrimary.opacity(0.8).ignoresSafeArea()
                 ProgressView()
             }
         }

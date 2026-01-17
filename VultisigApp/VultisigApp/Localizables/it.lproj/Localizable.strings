@@ -1170,7 +1170,7 @@
 "tronEnergy" = "Energia";
 "tronFreezeButton" = "Congela";
 "tronUnfreezeButton" = "Scongela";
-"tronFreezeTitle" = "TRON Congela";
+"tronFreezeTitle" = "Congela TRX";
 "tronFrozenLabel" = "Congelato";
 "tronFreezeAmount" = "Importo";
 "tronFreezeBalanceAvailable" = "Saldo disponibile:";

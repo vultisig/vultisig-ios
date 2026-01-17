@@ -46,9 +46,17 @@ struct TronDashboardView: View {
                     .font(TronConstants.Fonts.title)
                     .foregroundStyle(Theme.colors.textSecondary)
                 
-                Text("\(model.availableBalance.formatted()) TRX")
-                    .font(TronConstants.Fonts.balance)
-                    .foregroundStyle(Theme.colors.textPrimary)
+                if model.isLoadingBalance {
+                    // Skeleton placeholder
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Theme.colors.bgSurface1)
+                        .frame(width: 120, height: 24)
+                        .shimmer()
+                } else {
+                    Text("\(model.availableBalance.formatted()) TRX")
+                        .font(TronConstants.Fonts.balance)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                }
             }
             Spacer()
             Image("tron")
@@ -92,9 +100,16 @@ struct TronDashboardView: View {
                         .font(Theme.fonts.bodyMMedium)
                         .foregroundStyle(Theme.colors.textSecondary)
                     
-                    Text(frozenBalanceFiat)
-                        .font(Theme.fonts.title2)
-                        .foregroundStyle(Theme.colors.textPrimary)
+                    if model.isLoadingBalance {
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Theme.colors.bgSurface1)
+                            .frame(width: 80, height: 20)
+                            .shimmer()
+                    } else {
+                        Text(frozenBalanceFiat)
+                            .font(Theme.fonts.title2)
+                            .foregroundStyle(Theme.colors.textPrimary)
+                    }
                 }
                 
                 Spacer()
@@ -110,9 +125,16 @@ struct TronDashboardView: View {
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textSecondary)
                 
-                Text("\(model.totalFrozenBalance.formatted()) TRX")
-                    .font(Theme.fonts.title2)
-                    .foregroundStyle(Theme.colors.textPrimary)
+                if model.isLoadingBalance {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Theme.colors.bgSurface1)
+                        .frame(width: 100, height: 20)
+                        .shimmer()
+                } else {
+                    Text("\(model.totalFrozenBalance.formatted()) TRX")
+                        .font(Theme.fonts.title2)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             
@@ -152,7 +174,8 @@ struct TronDashboardView: View {
                 icon: "arrow.up.arrow.down",
                 available: model.availableBandwidth,
                 total: max(model.totalBandwidth, 1),  // Avoid division by zero
-                accentColor: Theme.colors.alertSuccess
+                accentColor: Theme.colors.alertSuccess,
+                unit: "KB"
             )
             
             // Energy Section (Yellow/Orange)
@@ -161,7 +184,8 @@ struct TronDashboardView: View {
                 icon: "bolt.fill",
                 available: model.availableEnergy,
                 total: max(model.totalEnergy, 1),  // Avoid division by zero
-                accentColor: Theme.colors.alertWarning
+                accentColor: Theme.colors.alertWarning,
+                unit: ""
             )
         }
         .padding(TronConstants.Design.cardPadding)
@@ -171,7 +195,7 @@ struct TronDashboardView: View {
         )
     }
     
-    func resourceSection(title: String, icon: String, available: Int64, total: Int64, accentColor: Color) -> some View {
+    func resourceSection(title: String, icon: String, available: Int64, total: Int64, accentColor: Color, unit: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             // Title Label
             Text(title)
@@ -183,15 +207,22 @@ struct TronDashboardView: View {
                 HStack(spacing: 8) {
                     // Icon
                     Image(systemName: icon)
-                        .font(.system(size: 16))
+                        .font(Theme.fonts.bodyMRegular)
                         .foregroundStyle(accentColor)
                         .frame(width: 24, height: 24)
                     
                     VStack(alignment: .leading, spacing: 4) {
                         // Value display
-                        Text(formatResourceValue(available: available, total: total))
-                            .font(Theme.fonts.bodyMMedium)
-                            .foregroundStyle(Theme.colors.textPrimary)
+                        if model.isLoadingResources {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Theme.colors.bgSurface1)
+                                .frame(width: 80, height: 16)
+                                .shimmer()
+                        } else {
+                            Text(formatResourceValue(available: available, total: total, unit: unit))
+                                .font(Theme.fonts.bodyMMedium)
+                                .foregroundStyle(Theme.colors.textPrimary)
+                        }
                         
                         // Progress bar
                         GeometryReader { geometry in
@@ -201,10 +232,18 @@ struct TronDashboardView: View {
                                     .fill(Theme.colors.bgSurface1)
                                     .frame(height: 4)
                                 
-                                // Progress fill
-                                RoundedRectangle(cornerRadius: 2)
-                                    .fill(accentColor)
-                                    .frame(width: geometry.size.width * progressValue(available: available, total: total), height: 4)
+                                if model.isLoadingResources {
+                                    // Shimmer loading state
+                                    RoundedRectangle(cornerRadius: 2)
+                                        .fill(accentColor.opacity(0.3))
+                                        .frame(width: geometry.size.width * 0.5, height: 4)
+                                        .shimmer()
+                                } else {
+                                    // Progress fill
+                                    RoundedRectangle(cornerRadius: 2)
+                                        .fill(accentColor)
+                                        .frame(width: geometry.size.width * progressValue(available: available, total: total), height: 4)
+                                }
                             }
                         }
                         .frame(height: 4)
@@ -220,12 +259,16 @@ struct TronDashboardView: View {
         .frame(maxWidth: .infinity)
     }
     
-    func formatResourceValue(available: Int64, total: Int64) -> String {
-        // Format as KB for bandwidth if large enough
-        if total >= 1000 {
-            let availableKB = Double(available) / 1000.0
-            let totalKB = Double(total) / 1000.0
-            return String(format: "%.2f/%.2fKB", availableKB, totalKB)
+    func formatResourceValue(available: Int64, total: Int64, unit: String) -> String {
+        // Format as K if large enough and unit is provided
+        if total >= 1000 && !unit.isEmpty {
+            let availableK = Double(available) / 1000.0
+            let totalK = Double(total) / 1000.0
+            return String(format: "%.2f/%.2f%@", availableK, totalK, unit)
+        } else if total >= 1000 {
+            let availableK = Double(available) / 1000.0
+            let totalK = Double(total) / 1000.0
+            return String(format: "%.2fK/%.2fK", availableK, totalK)
         }
         return "\(available)/\(total)"
     }
@@ -314,5 +357,39 @@ struct TronDashboardView: View {
             let minutes = Int((remaining.truncatingRemainder(dividingBy: 3600)) / 60)
             return String(format: NSLocalizedString("tronTimeRemainingHours", comment: "%d hours, %d minutes"), hours, minutes)
         }
+    }
+}
+
+// MARK: - Shimmer Effect
+
+private struct ShimmerModifier: ViewModifier {
+    @State private var phase: CGFloat = 0
+    
+    func body(content: Content) -> some View {
+        content
+            .overlay(
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color.clear,
+                        Color.white.opacity(0.4),
+                        Color.clear
+                    ]),
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+                .offset(x: phase)
+                .mask(content)
+            )
+            .onAppear {
+                withAnimation(.linear(duration: 1.2).repeatForever(autoreverses: false)) {
+                    phase = 200
+                }
+            }
+    }
+}
+
+extension View {
+    func shimmer() -> some View {
+        modifier(ShimmerModifier())
     }
 }

@@ -1199,7 +1199,7 @@
 "tronDashboardTitle" = "TRON Staking";
 "tronDashboardStaking" = "Staking";
 "tronDashboardStakingDescription" = "Freeze your TRX to gain bandwidth and energy for free transactions.";
-"tronDashboardInfoText" = "Frozen TRX provides bandwidth and energy resources. You can unfreeze at any time to get your TRX back.";
+"tronDashboardInfoText" = "Frozen TRX provides bandwidth and energy resources. Unfreezing starts a 14-day waiting period. After 14 days, claim your TRX from the pending withdrawals.";
 "tronFrozenBalance" = "Frozen TRX";
 "tronAvailableBalance" = "Available TRX";
 "tronBandwidth" = "Bandwidth";
