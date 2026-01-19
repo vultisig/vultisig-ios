@@ -78,21 +78,11 @@ struct TronViewLogic {
         
         let blockInfo = try await tronService.getBlockInfo(coin: trxCoin)
         
-        guard case let .Tron(timestamp, expiration, blockHeaderTimestamp, blockHeaderNumber, blockHeaderVersion, blockHeaderTxTrieRoot, blockHeaderParentHash, blockHeaderWitnessAddress, gasFeeEstimation) = blockInfo else {
+        guard case .Tron = blockInfo else {
             throw TronStakingError.invalidBlockInfo
         }
         
-        let chainSpecific = BlockChainSpecific.Tron(
-            timestamp: timestamp,
-            expiration: expiration,
-            blockHeaderTimestamp: blockHeaderTimestamp,
-            blockHeaderNumber: blockHeaderNumber,
-            blockHeaderVersion: blockHeaderVersion,
-            blockHeaderTxTrieRoot: blockHeaderTxTrieRoot,
-            blockHeaderParentHash: blockHeaderParentHash,
-            blockHeaderWitnessAddress: blockHeaderWitnessAddress,
-            gasFeeEstimation: gasFeeEstimation
-        )
+        // Use blockInfo directly - no need to destructure and rebuild
         
         // Use memo to encode freeze operation - TronHelper will parse it
         let memo = "FREEZE:\(resourceType.tronResourceString)"
@@ -101,7 +91,7 @@ struct TronViewLogic {
             coin: trxCoin,
             toAddress: trxCoin.address, // Freeze goes to self
             toAmount: amount,
-            chainSpecific: chainSpecific,
+            chainSpecific: blockInfo,
             utxos: [],
             memo: memo,
             swapPayload: nil,
@@ -132,21 +122,11 @@ struct TronViewLogic {
         
         let blockInfo = try await tronService.getBlockInfo(coin: trxCoin)
         
-        guard case let .Tron(timestamp, expiration, blockHeaderTimestamp, blockHeaderNumber, blockHeaderVersion, blockHeaderTxTrieRoot, blockHeaderParentHash, blockHeaderWitnessAddress, gasFeeEstimation) = blockInfo else {
+        guard case .Tron = blockInfo else {
             throw TronStakingError.invalidBlockInfo
         }
         
-        let chainSpecific = BlockChainSpecific.Tron(
-            timestamp: timestamp,
-            expiration: expiration,
-            blockHeaderTimestamp: blockHeaderTimestamp,
-            blockHeaderNumber: blockHeaderNumber,
-            blockHeaderVersion: blockHeaderVersion,
-            blockHeaderTxTrieRoot: blockHeaderTxTrieRoot,
-            blockHeaderParentHash: blockHeaderParentHash,
-            blockHeaderWitnessAddress: blockHeaderWitnessAddress,
-            gasFeeEstimation: gasFeeEstimation
-        )
+        // Use blockInfo directly - no need to destructure and rebuild
         
         // Use memo to encode unfreeze operation - TronHelper will parse it
         let memo = "UNFREEZE:\(resourceType.tronResourceString)"
@@ -155,7 +135,7 @@ struct TronViewLogic {
             coin: trxCoin,
             toAddress: trxCoin.address, // Unfreeze returns to self
             toAmount: amount,
-            chainSpecific: chainSpecific,
+            chainSpecific: blockInfo,
             utxos: [],
             memo: memo,
             swapPayload: nil,

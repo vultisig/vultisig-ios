@@ -71,12 +71,12 @@ struct TronView: View {
         }
         
         let address = trxCoin.address
-        let tronAPIService = TronAPIService(httpClient: HTTPClient())
+        let tronService = TronService.shared
         
         // Fetch account info (balance data) - update UI as soon as it returns
         Task {
             do {
-                let account = try await tronAPIService.getAccount(address: address)
+                let account = try await tronService.getAccount(address: address)
                 await MainActor.run {
                     // Calculate available balance (in TRX, not SUN)
                     let balanceSun = account.balance ?? 0
@@ -114,7 +114,7 @@ struct TronView: View {
         // Fetch resource info (bandwidth/energy) - update UI as soon as it returns
         Task {
             do {
-                let resource = try await tronAPIService.getAccountResource(address: address)
+                let resource = try await tronService.getAccountResource(address: address)
                 await MainActor.run {
                     model.availableBandwidth = resource.calculateAvailableBandwidth()
                     model.totalBandwidth = resource.freeNetLimit + resource.NetLimit
