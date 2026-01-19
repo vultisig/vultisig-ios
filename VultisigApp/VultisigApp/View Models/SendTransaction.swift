@@ -227,6 +227,7 @@ class SendTransaction: ObservableObject, Hashable {
         self.transactionType = .unspecified  // Reset transaction type
         self.memoFunctionDictionary = ThreadSafeDictionary()  // Clear memo functions
         self.fastVaultPassword = .empty  // Clear password state
+        self.isStakingOperation = false // Reset staking operation flag
     }
     
     func parseCryptoURI(_ uri: String) {

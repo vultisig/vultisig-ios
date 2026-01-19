@@ -302,14 +302,16 @@ struct TronUnfreezeView: View {
         // The memo encodes the unfreeze operation type for TronHelper
         let memo = "UNFREEZE:\(selectedResourceType.tronResourceString)"
         
-        sendTransaction.coin = trxCoin
-        sendTransaction.fromAddress = trxCoin.address
-        sendTransaction.toAddress = trxCoin.address  // Unfreeze returns to self
-        sendTransaction.amount = amountDecimal.description
-        sendTransaction.memo = memo
-        sendTransaction.isFastVault = isFastVault
-        sendTransaction.fastVaultPassword = fastVaultPassword
-        sendTransaction.isStakingOperation = true
+        await MainActor.run {
+            sendTransaction.coin = trxCoin
+            sendTransaction.fromAddress = trxCoin.address
+            sendTransaction.toAddress = trxCoin.address  // Unfreeze returns to self
+            sendTransaction.amount = amountDecimal.description
+            sendTransaction.memo = memo
+            sendTransaction.isFastVault = isFastVault
+            sendTransaction.fastVaultPassword = fastVaultPassword
+            sendTransaction.isStakingOperation = true
+        }
         
         await sendCryptoViewModel.loadFastVault(tx: sendTransaction, vault: vault)
         
