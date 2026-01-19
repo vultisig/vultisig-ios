@@ -81,16 +81,15 @@ struct TronViewLogic {
             throw TronStakingError.noTrxCoin
         }
         
-        let blockInfo = try await tronService.getBlockInfo(coin: trxCoin)
+        // Build memo first so fee calculation includes memo cost
+        let memo = "FREEZE:\(resourceType.tronResourceString)"
+        
+        // Get block info with to address and memo for correct fee estimation
+        let blockInfo = try await tronService.getBlockInfo(coin: trxCoin, to: trxCoin.address, memo: memo)
         
         guard case .Tron = blockInfo else {
             throw TronStakingError.invalidBlockInfo
         }
-        
-        // Use blockInfo directly - no need to destructure and rebuild
-        
-        // Use memo to encode freeze operation - TronHelper will parse it
-        let memo = "FREEZE:\(resourceType.tronResourceString)"
         
         let payload = KeysignPayload(
             coin: trxCoin,
@@ -125,16 +124,15 @@ struct TronViewLogic {
             throw TronStakingError.noTrxCoin
         }
         
-        let blockInfo = try await tronService.getBlockInfo(coin: trxCoin)
+        // Build memo first so fee calculation includes memo cost
+        let memo = "UNFREEZE:\(resourceType.tronResourceString)"
+        
+        // Get block info with to address and memo for correct fee estimation
+        let blockInfo = try await tronService.getBlockInfo(coin: trxCoin, to: trxCoin.address, memo: memo)
         
         guard case .Tron = blockInfo else {
             throw TronStakingError.invalidBlockInfo
         }
-        
-        // Use blockInfo directly - no need to destructure and rebuild
-        
-        // Use memo to encode unfreeze operation - TronHelper will parse it
-        let memo = "UNFREEZE:\(resourceType.tronResourceString)"
         
         let payload = KeysignPayload(
             coin: trxCoin,

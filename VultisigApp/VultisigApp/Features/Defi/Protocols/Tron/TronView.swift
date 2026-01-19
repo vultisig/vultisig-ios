@@ -70,69 +70,77 @@ struct TronView: View {
             return
         }
         
+        // Clear missingTrx flag when TRX is found
+        await MainActor.run {
+            model.missingTrx = false
+        }
+        
         let address = trxCoin.address
         let tronService = TronService.shared
         
-        // Fetch account info (balance data) - update UI as soon as it returns
-        Task {
-            do {
-                let account = try await tronService.getAccount(address: address)
-                await MainActor.run {
-                    // Calculate available balance (in TRX, not SUN)
-                    let balanceSun = account.balance ?? 0
-                    model.availableBalance = Decimal(balanceSun) / Decimal(1_000_000)
-                    
-                    // Parse frozen balances from frozenV2 array (Stake 2.0)
-                    model.frozenBandwidthBalance = Decimal(account.frozenBandwidthSun) / Decimal(1_000_000)
-                    model.frozenEnergyBalance = Decimal(account.frozenEnergySun) / Decimal(1_000_000)
-                    
-                    // Parse unfreezing balance
-                    model.unfreezingBalance = Decimal(account.unfreezingTotalSun) / Decimal(1_000_000)
-                    
-                    // Parse pending withdrawals
-                    model.pendingWithdrawals = (account.unfrozenV2 ?? []).compactMap { entry in
-                        guard let amountSun = entry.unfreeze_amount, let expireTime = entry.unfreeze_expire_time else {
-                            return nil
+        // Use structured concurrency for proper cancellation handling
+        await withTaskGroup(of: Void.self) { group in
+            // Task 1: Fetch account info (balance data)
+            group.addTask {
+                do {
+                    let account = try await tronService.getAccount(address: address)
+                    await MainActor.run {
+                        // Calculate available balance (in TRX, not SUN)
+                        let balanceSun = account.balance ?? 0
+                        self.model.availableBalance = Decimal(balanceSun) / Decimal(1_000_000)
+                        
+                        // Parse frozen balances from frozenV2 array (Stake 2.0)
+                        self.model.frozenBandwidthBalance = Decimal(account.frozenBandwidthSun) / Decimal(1_000_000)
+                        self.model.frozenEnergyBalance = Decimal(account.frozenEnergySun) / Decimal(1_000_000)
+                        
+                        // Parse unfreezing balance
+                        self.model.unfreezingBalance = Decimal(account.unfreezingTotalSun) / Decimal(1_000_000)
+                        
+                        // Parse pending withdrawals
+                        self.model.pendingWithdrawals = (account.unfrozenV2 ?? []).compactMap { entry in
+                            guard let amountSun = entry.unfreeze_amount, let expireTime = entry.unfreeze_expire_time else {
+                                return nil
+                            }
+                            let amountTrx = Decimal(amountSun) / Decimal(1_000_000)
+                            let expirationDate = Date(timeIntervalSince1970: TimeInterval(expireTime / 1000))
+                            return TronPendingWithdrawal(amount: amountTrx, expirationDate: expirationDate)
+                        }.sorted { $0.expirationDate < $1.expirationDate }
+                        
+                        self.model.isLoadingBalance = false
+                    }
+                } catch {
+                    if !(error is CancellationError) {
+                        await MainActor.run {
+                            self.model.error = error
+                            self.model.isLoadingBalance = false
                         }
-                        let amountTrx = Decimal(amountSun) / Decimal(1_000_000)
-                        let expirationDate = Date(timeIntervalSince1970: TimeInterval(expireTime / 1000))
-                        return TronPendingWithdrawal(amount: amountTrx, expirationDate: expirationDate)
-                    }.sorted { $0.expirationDate < $1.expirationDate }
-                    
-                    model.isLoadingBalance = false
+                    }
                 }
-            } catch {
-                if !(error is CancellationError) {
+            }
+            
+            // Task 2: Fetch resource info (bandwidth/energy)
+            group.addTask {
+                do {
+                    let resource = try await tronService.getAccountResource(address: address)
                     await MainActor.run {
-                        model.error = error
-                        model.isLoadingBalance = false
+                        self.model.availableBandwidth = resource.calculateAvailableBandwidth()
+                        self.model.totalBandwidth = resource.freeNetLimit + resource.NetLimit
+                        self.model.availableEnergy = resource.EnergyLimit - resource.EnergyUsed
+                        self.model.totalEnergy = resource.EnergyLimit
+                        self.model.isLoadingResources = false
+                    }
+                } catch {
+                    if !(error is CancellationError) {
+                        await MainActor.run {
+                            self.model.error = error
+                            self.model.isLoadingResources = false
+                        }
                     }
                 }
             }
         }
         
-        // Fetch resource info (bandwidth/energy) - update UI as soon as it returns
-        Task {
-            do {
-                let resource = try await tronService.getAccountResource(address: address)
-                await MainActor.run {
-                    model.availableBandwidth = resource.calculateAvailableBandwidth()
-                    model.totalBandwidth = resource.freeNetLimit + resource.NetLimit
-                    model.availableEnergy = resource.EnergyLimit - resource.EnergyUsed
-                    model.totalEnergy = resource.EnergyLimit
-                    model.isLoadingResources = false
-                }
-            } catch {
-                if !(error is CancellationError) {
-                    await MainActor.run {
-                        model.error = error
-                        model.isLoadingResources = false
-                    }
-                }
-            }
-        }
-        
-        // Clear global loading state after a short delay (UI updates come from individual states)
+        // Clear global loading state after task group completes
         await MainActor.run { model.isLoading = false }
     }
 }
