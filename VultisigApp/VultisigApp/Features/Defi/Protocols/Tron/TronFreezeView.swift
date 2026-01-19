@@ -265,39 +265,23 @@ struct TronFreezeView: View {
         
         await MainActor.run { isLoading = true }
         
-        do {
-            let decimals: Int16 = 6 // TRX uses 6 decimals
-            // Use NSDecimalNumber for locale-safe conversion
-            let scaledNumber = NSDecimalNumber(decimal: amountDec).multiplying(byPowerOf10: decimals)
-            let cleanAmountUnits = scaledNumber.stringValue.components(separatedBy: ".").first ?? scaledNumber.stringValue
-            let amountVal = BigInt(cleanAmountUnits) ?? BigInt(0)
-            
-            let payload = try await TronViewLogic().getFreezePayload(
-                vault: vault,
-                amount: amountVal,
-                resourceType: selectedResourceType
-            )
-            
-            await MainActor.run {
-                tx.reset(coin: coin)
-                tx.isFastVault = isFastVault
-                tx.fastVaultPassword = fastVaultPassword
-                
-                router.navigate(
-                    to: SendRoute.pairing(
-                        vault: vault,
-                        tx: tx,
-                        keysignPayload: payload,
-                        fastVaultPassword: fastVaultPassword.nilIfEmpty
-                    )
-                )
-                isLoading = false
-            }
-        } catch {
-            await MainActor.run {
-                self.error = error
-                self.isLoading = false
-            }
+        // Configure SendTransaction for the freeze operation
+        // The memo encodes the freeze operation type for TronHelper
+        let memo = "FREEZE:\(selectedResourceType.tronResourceString)"
+        
+        tx.coin = coin
+        tx.fromAddress = coin.address
+        tx.toAddress = coin.address  // Freeze goes to self
+        tx.amount = amountDec.description
+        tx.memo = memo
+        tx.isFastVault = isFastVault
+        tx.fastVaultPassword = fastVaultPassword
+        
+        await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
+        
+        await MainActor.run {
+            isLoading = false
+            router.navigate(to: SendRoute.verify(tx: tx, vault: vault))
         }
     }
 }

@@ -42,6 +42,15 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var isAmountExceeded: Bool {
+        // TRON staking operations: skip validation entirely
+        // The balance is already validated in TronFreezeView/TronUnfreezeView
+        let isTronStaking = coin.chain == .tron && 
+            (memo.hasPrefix("FREEZE:") || memo.hasPrefix("UNFREEZE:"))
+        
+        if isTronStaking {
+            return false
+        }
+        
         if (sendMaxAmount && (coin.chainType == .UTXO || coin.chainType == .Cardano || coin.chainType == .Ton)) || !coin.isNativeToken {
             let comparison = amountInRaw > coin.rawBalance.toBigInt(decimals: coin.decimals)
             return comparison

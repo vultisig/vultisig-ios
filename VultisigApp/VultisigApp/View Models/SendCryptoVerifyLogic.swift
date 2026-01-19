@@ -162,6 +162,17 @@ struct SendCryptoVerifyLogic {
         let amount = tx.amountInRaw
         let balance = tx.coin.rawBalance.toBigInt(decimals: tx.coin.decimals)
         
+        // TRON staking operations: skip balance validation entirely
+        // The balance is already validated in TronFreezeView/TronUnfreezeView
+        // and the user sees the available balance on the screen
+        let isTronStaking = tx.coin.chain == .tron && 
+            (tx.memo.hasPrefix("FREEZE:") || tx.memo.hasPrefix("UNFREEZE:"))
+        
+        if isTronStaking {
+            print("DEBUG TRON staking: skipping balance validation")
+            return BalanceValidationResult(isValid: true, errorMessage: nil)
+        }
+        
         if tx.coin.isNativeToken {
             if tx.sendMaxAmount {
                 if tx.fee > balance {

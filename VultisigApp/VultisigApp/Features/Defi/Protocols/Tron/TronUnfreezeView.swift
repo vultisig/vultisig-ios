@@ -24,6 +24,7 @@ struct TronUnfreezeView: View {
     @State var selectedResourceType: TronResourceType = .bandwidth
     
     @StateObject var sendTransaction = SendTransaction()
+    @StateObject var sendCryptoViewModel = SendCryptoViewModel()
     
     init(vault: Vault, model: TronViewModel) {
         self.vault = vault
@@ -279,50 +280,33 @@ struct TronUnfreezeView: View {
             return
         }
         
+        guard let trxCoin = TronViewLogic.getTrxCoin(vault: vault) else {
+            await MainActor.run { self.error = TronStakingError.noTrxCoin }
+            return
+        }
+        
         await MainActor.run {
             isLoading = true
             error = nil
         }
         
-        do {
-            let decimals: Int16 = 6
-            // Use NSDecimalNumber for locale-safe conversion
-            let scaledNumber = NSDecimalNumber(decimal: amountDecimal).multiplying(byPowerOf10: decimals)
-            let cleanAmountUnits = scaledNumber.stringValue.components(separatedBy: ".").first ?? scaledNumber.stringValue
-            let amountVal = BigInt(cleanAmountUnits) ?? BigInt(0)
-            
-            let payload = try await model.logic.getUnfreezePayload(
-                vault: vault,
-                amount: amountVal,
-                resourceType: selectedResourceType
-            )
-            
-            guard let trxCoin = TronViewLogic.getTrxCoin(vault: vault) else {
-                throw TronStakingError.noTrxCoin
-            }
-            
-            await MainActor.run {
-                self.sendTransaction.reset(coin: trxCoin)
-                self.sendTransaction.isFastVault = isFastVault
-                self.sendTransaction.fastVaultPassword = fastVaultPassword
-                
-                router.navigate(
-                    to: SendRoute.pairing(
-                        vault: vault,
-                        tx: sendTransaction,
-                        keysignPayload: payload,
-                        fastVaultPassword: fastVaultPassword.nilIfEmpty
-                    )
-                )
-                
-                isLoading = false
-            }
-            
-        } catch {
-            await MainActor.run {
-                self.error = error
-                self.isLoading = false
-            }
+        // Configure SendTransaction for the unfreeze operation
+        // The memo encodes the unfreeze operation type for TronHelper
+        let memo = "UNFREEZE:\(selectedResourceType.tronResourceString)"
+        
+        sendTransaction.coin = trxCoin
+        sendTransaction.fromAddress = trxCoin.address
+        sendTransaction.toAddress = trxCoin.address  // Unfreeze returns to self
+        sendTransaction.amount = amountDecimal.description
+        sendTransaction.memo = memo
+        sendTransaction.isFastVault = isFastVault
+        sendTransaction.fastVaultPassword = fastVaultPassword
+        
+        await sendCryptoViewModel.loadFastVault(tx: sendTransaction, vault: vault)
+        
+        await MainActor.run {
+            isLoading = false
+            router.navigate(to: SendRoute.verify(tx: sendTransaction, vault: vault))
         }
     }
 }
