@@ -52,11 +52,12 @@ struct TronView: View {
     }
     
     private func loadData() async {
-        // Set all loading states upfront so skeletons appear
+        // Set all loading states upfront so skeletons appear and clear previous errors
         await MainActor.run {
             model.isLoading = true
             model.isLoadingBalance = true
             model.isLoadingResources = true
+            model.error = nil
         }
         
         // Check if vault has TRX

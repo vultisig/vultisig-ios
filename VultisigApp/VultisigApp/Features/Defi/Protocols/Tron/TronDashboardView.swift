@@ -164,6 +164,7 @@ struct TronDashboardView: View {
                     isSystemIcon: true,
                     action: { router.navigate(to: TronRoute.freeze(vault: vault)) }
                 )
+                .disabled(model.availableBalance <= 0)
             }
         }
         .padding(TronConstants.Design.cardPadding)
