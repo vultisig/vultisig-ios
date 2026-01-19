@@ -150,6 +150,13 @@
 "devicesOnSameNetwork" = "Connect all devices to the same\nNetwork with Vultisig App open.";
 "devicesOnSameWifi" = "Keep devices on the same network with Vultisig open.";
 "devicesOnSameWifiNoHotel" = "Keep all devices on same network with Vultisig App open. (May not work on hotel/airport wifi).";
+"deviceSetup" = "Device Setup";
+"howManyDevicesTitle" = "How many devices will you use?";
+"howManyDevicesSubtitle" = "Select the number of devices you'll use to secure your vault";
+"oneDevicePlusServer" = "1 Device + Server";
+"oneDevicePlusServerSubtitle" = "Fast setup with server backup for quick access";
+"nDevicesSetup" = "%d Devices";
+"nDevicesSetupSubtitle" = "Secure multi-device setup for enhanced protection";
 "discord" = "Discord";
 "discoveringMediator" = "Discovering mediator service, please wait...";
 "dismiss" = "Dismiss";
@@ -514,6 +521,7 @@
 "peerDiscoveryInfoTitle2" = "QR code";
 "peerDiscoveryScanDeviceDisclaimer" = "Scan QR with other device. 3-device setup recommended, 2 is sufficient.";
 "pendingRewards" = "Pending Rewards";
+"phantomWallet" = "Phantom wallet";
 "photoLibrary" = "Photo Library";
 "pickPayoutAsset" = "Please pick a payout asset option from the selection";
 "pickReferralCode" = "Pick Referral Code";
@@ -720,6 +728,7 @@
 "somethingWentWrongTryAgain" = "Something went wrong, please try again.";
 "soon" = "SOON";
 "Spanish" = "Spanish";
+"standardSolanaWallet" = "Standard Solana wallet";
 "start" = "Start";
 "startFastVaultReshare" = "Start Reshare with Vultiserver";
 "startFromOneDevice" = "START from one device";
@@ -1254,3 +1263,6 @@
 // Maya Unbond Node Status
 "nodeActiveCannotUnbond" = "Node is %@ - cannot unbond while active";
 "nodeChurnedCanUnbond" = "Node is churned out - unbonding available";
+
+"seedPhraseImportTip" = "Tip: You can use a browser as a device";
+"whereDoYouMigrateFrom" = "Where do you migrate from";

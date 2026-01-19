@@ -28,7 +28,8 @@ struct KeyImportChainsSetupScreen: View {
                     KeyImportActiveChainsView(
                         activeChains: viewModel.activeChains,
                         onImport: { presentVaultSetup() },
-                        onCustomize: onCustomizeChains
+                        onCustomize: onCustomizeChains,
+                        viewModel: viewModel
                     )
                 case .noActiveChains:
                     KeyImportNoActiveChainsView(onAddCustomChains: viewModel.onSelectChainsManually)
@@ -60,12 +61,10 @@ struct KeyImportChainsSetupScreen: View {
             return ChainImportSetting(chain: chain)
         }
 
-        router.navigate(to: OnboardingRoute.vaultSetup(
-            tssType: .KeyImport,
-            keyImportInput: KeyImportInput(
-                mnemonic: mnemonic,
-                chainSettings: chainSettings
-            )
+        // Navigate to device count selection screen
+        router.navigate(to: OnboardingRoute.keyImportDeviceCount(
+            mnemonic: mnemonic,
+            chainSettings: chainSettings
         ))
     }
 }

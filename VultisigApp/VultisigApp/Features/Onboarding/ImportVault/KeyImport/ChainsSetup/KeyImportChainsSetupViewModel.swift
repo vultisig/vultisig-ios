@@ -44,6 +44,7 @@ final class KeyImportChainsSetupViewModel: ObservableObject {
     @Published var selectedChains = [Chain]()
     @Published var activeChains = [KeyImportChain]()
     @Published var otherChains = [KeyImportChain]()
+    @Published var selectedDerivationPath: DerivationPath = .default
 
     private var chainBalanceResults = [ChainBalanceResult]()
 
@@ -71,7 +72,28 @@ final class KeyImportChainsSetupViewModel: ObservableObject {
     var solanaderivationPath: DerivationPath {
         derivationPath(for: .solana)
     }
-    
+
+    /// Checks if a chain has multiple derivation options with balances
+    func hasMultipleDerivations(for chain: Chain) -> Bool {
+        guard let _ = alternativeDerivations[chain] else {
+            return false
+        }
+        // Check if we found multiple balance results for this chain during scanning
+        return chainBalanceResults.filter { $0.chain == chain }.count > 1
+    }
+
+    /// Updates the derivation path for a specific chain
+    func selectDerivationPath(_ path: DerivationPath, for chain: Chain) {
+        // Find the chain balance result and update it
+        if let index = chainBalanceResults.firstIndex(where: { $0.chain == chain && $0.derivationPath == path }) {
+            // Move this result to be the primary one by ensuring it's first
+            let result = chainBalanceResults[index]
+            chainBalanceResults.removeAll { $0.chain == chain }
+            chainBalanceResults.insert(result, at: 0)
+        }
+        selectedDerivationPath = path
+    }
+
     var screenTitle: String {
         switch state {
         case .scanningChains:

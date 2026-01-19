@@ -514,6 +514,7 @@
 "peerDiscoveryInfoTitle2" = "código QR";
 "peerDiscoveryScanDeviceDisclaimer" = "Escaneie o QR com outro dispositivo. Configuração com 3 dispositivos recomendada, 2 são suficientes.";
 "pendingRewards" = "Recompensas pendentes";
+"phantomWallet" = "Phantom wallet";
 "photoLibrary" = "Biblioteca de fotos";
 "pickPayoutAsset" = "Escolha uma opção de ativo para pagamento";
 "pickReferralCode" = "Escolha o código de indicação";
@@ -721,6 +722,7 @@
 "somethingWentWrongTryAgain" = "Algo deu errado, por favor tente novamente.";
 "soon" = "Em breve";
 "Spanish" = "Espanhol";
+"standardSolanaWallet" = "Standard Solana wallet";
 "start" = "Iniciar";
 "startFastVaultReshare" = "Iniciar compartilhamento com Vultiserver";
 "startFromOneDevice" = "Comece de um dispositivo";

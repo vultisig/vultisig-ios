@@ -6,36 +6,93 @@
 //
 
 import SwiftUI
+import RiveRuntime
 
 struct KeyImportNewVaultSetupScreen: View {
     let vault: Vault
     let keyImportInput: KeyImportInput?
-    let fastSignConfig: FastSignConfig
+    let fastSignConfig: FastSignConfig?
+    let setupType: KeyImportSetupType
+
+    @State private var animationVM: RiveViewModel? = nil
+    @State private var showAnimation = false
+    @State private var showContent = false
 
     @Environment(\.router) var router
+
+    var selectedTab: SetupVaultState {
+        setupType == .fast ? .fast : .secure
+    }
+
+    var deviceCountText: String {
+        switch setupType {
+        case .fast:
+            return "oneDevicePlusServer".localized
+        case .secure(let count):
+            return String(format: "nDevicesSetup".localized, count)
+        }
+    }
+
+    var deviceCountSubtitle: String {
+        switch setupType {
+        case .fast:
+            return "oneDevicePlusServerSubtitle".localized
+        case .secure(let count):
+            return String(format: "nDevicesSetupSubtitle".localized, count)
+        }
+    }
     
     var body: some View {
         Screen(edgeInsets: .init(leading: 0, trailing: 0)) {
             VStack(spacing: 0) {
                 Spacer()
-                Image("seed-phrase-vault-setup")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
+
+                animation
+                    .opacity(showAnimation ? 1 : 0)
+                    .blur(radius: showAnimation ? 0 : 10)
+                    .animation(.easeInOut, value: showAnimation)
+
                 Spacer()
+
                 VStack(spacing: 0) {
                     informationView
+                        .opacity(showContent ? 1 : 0)
+                        .offset(y: showContent ? 0 : 20)
+                        .blur(radius: showContent ? 0 : 10)
+                        .animation(.spring, value: showContent)
+
                     Spacer().frame(maxHeight: 64)
+
                     PrimaryButton(title: "setup") {
                         router.navigate(to: KeygenRoute.peerDiscovery(
                             tssType: .KeyImport,
                             vault: vault,
-                            selectedTab: .secure,
+                            selectedTab: selectedTab,
                             fastSignConfig: fastSignConfig,
                             keyImportInput: keyImportInput
                         ))
                     }
+                    .opacity(showContent ? 1 : 0)
+                    .offset(y: showContent ? 0 : 20)
+                    .blur(radius: showContent ? 0 : 10)
+                    .animation(.spring.delay(0.1), value: showContent)
                 }
                 .padding(.horizontal, 16)
+            }
+        }
+        .onLoad {
+            setData()
+        }
+        .onDisappear {
+            animationVM?.reset()
+        }
+    }
+
+    var animation: some View {
+        Group {
+            if let animationVM = animationVM {
+                animationVM.view()
+                    .frame(height: 300)
             }
         }
     }
@@ -51,8 +108,8 @@ struct KeyImportNewVaultSetupScreen: View {
             .font(Theme.fonts.title2)
             
             OnboardingInformationRowView(
-                title: "twoDevicesPlusServer".localized,
-                subtitle: "twoDevicesPlusServerSubtitle".localized,
+                title: deviceCountText,
+                subtitle: deviceCountSubtitle,
                 icon: "devices"
             )
             
@@ -99,7 +156,17 @@ struct KeyImportNewVaultSetupScreen: View {
         )
         .background(Color(hex: "376499").opacity(0.3).clipShape(RoundedRectangle(cornerRadius: 12)))
     }
-    
+
+    private func setData() {
+        if animationVM == nil {
+            animationVM = RiveViewModel(fileName: setupType.vaultSetupAnimationName)
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            showAnimation = true
+            showContent = true
+        }
+    }
 }
 
 #Preview {
@@ -114,6 +181,7 @@ struct KeyImportNewVaultSetupScreen: View {
             password: "",
             hint: nil,
             isExist: false
-        )
+        ),
+        setupType: .secure(numberOfDevices: 2)
     )
 }

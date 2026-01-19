@@ -514,6 +514,7 @@
 "peerDiscoveryInfoTitle2" = "QR kod";
 "peerDiscoveryScanDeviceDisclaimer" = "Skenirajte QR kod s drugim uređajem. Preporučena je konfiguracija s 3 uređaja, 2 su dovoljna.";
 "pendingRewards" = "Nagrade na čekanju";
+"phantomWallet" = "Phantom wallet";
 "photoLibrary" = "Biblioteka fotografija";
 "pickPayoutAsset" = "Odaberi način isplate s popisa";
 "pickReferralCode" = "Odaberi referalni kod";
@@ -721,6 +722,7 @@
 "somethingWentWrongTryAgain" = "Nešto je pošlo po zlu, pokušajte ponovo.";
 "soon" = "Uskoro";
 "Spanish" = "Španjolski";
+"standardSolanaWallet" = "Standard Solana wallet";
 "start" = "Početak";
 "startFastVaultReshare" = "Započni ponovno dijeljenje s Vultiserverom";
 "startFromOneDevice" = "Krenite od jednog uređaja";

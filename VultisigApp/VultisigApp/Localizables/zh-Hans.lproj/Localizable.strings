@@ -516,6 +516,7 @@
 "peerDiscoveryInfoTitle2" = "二维码";
 "peerDiscoveryScanDeviceDisclaimer" = "使用其他设备扫描二维码。建议使用 3 个设备设置，2 个也足够";
 "pendingRewards" = "待领取奖励";
+"phantomWallet" = "Phantom wallet";
 "photoLibrary" = "照片库";
 "pickPayoutAsset" = "请从选择中选择支付资产选项";
 "pickReferralCode" = "选择推荐码";
@@ -722,6 +723,7 @@
 "somethingWentWrongTryAgain" = "出了点问题，请重试";
 "soon" = "即将推出";
 "Spanish" = "西班牙语";
+"standardSolanaWallet" = "Standard Solana wallet";
 "start" = "开始";
 "startFastVaultReshare" = "使用 Vultiserver 开始重新共享";
 "startFromOneDevice" = "从一个设备开始";

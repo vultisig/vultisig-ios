@@ -165,7 +165,22 @@ struct PeerDiscoveryView: View {
         case .Migrate:
             return Set(viewModel.selections) != Set(viewModel.vault.signers)
         case .KeyImport:
-            return viewModel.selections.count != 3
+            // Check if required number of devices are selected
+            let hasRequiredDevices: Bool
+            switch selectedTab {
+            case .fast:
+                hasRequiredDevices = viewModel.selections.count == 2
+            case .secure, .active:
+                hasRequiredDevices = viewModel.selections.count >= 2
+            }
+
+            // Check if any selection contains "server" (case-insensitive)
+            let hasServerSelection = viewModel.selections.contains { selection in
+                selection.lowercased().contains("server")
+            }
+
+            // Disable if required devices not met OR if server is selected
+            return !hasRequiredDevices || hasServerSelection
         }
     }
     
