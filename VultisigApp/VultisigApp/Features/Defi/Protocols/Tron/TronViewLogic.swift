@@ -11,7 +11,12 @@ import BigInt
 // MARK: - Logic (Methods)
 struct TronViewLogic {
     
-    private let tronService = TronService.shared
+    private let tronService: TronService
+    
+    /// Initialize with optional dependency injection for testing
+    init(tronService: TronService = .shared) {
+        self.tronService = tronService
+    }
     
     /// Fetches account data including frozen balances and resources
     /// Returns: (availableBalance, frozenBandwidth, frozenEnergy, unfreezing, pendingWithdrawals, accountResource)
