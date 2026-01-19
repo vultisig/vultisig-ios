@@ -36,6 +36,17 @@ class SendCryptoVerifyViewModel: ObservableObject {
         isLoading = true
         errorMessage = ""
         
+        // Ensure balance is loaded before validation (protects against stale/empty balances)
+        await BalanceService.shared.updateBalance(for: tx.coin)
+        
+        // For non-native tokens, also update native token balance (needed for gas validation)
+        if !tx.coin.isNativeToken {
+            if let vault = tx.vault ?? AppViewModel.shared.selectedVault,
+               let nativeToken = vault.coins.nativeCoin(chain: tx.coin.chain) {
+                await BalanceService.shared.updateBalance(for: nativeToken)
+            }
+        }
+        
         do {
             let feeResult = try await logic.calculateFee(tx: tx)
             
