@@ -139,14 +139,7 @@ struct TronUnfreezeView: View {
                 Spacer()
                 
                 VStack(spacing: TronConstants.Design.verticalSpacing) {
-                    Slider(value: Binding(
-                        get: { percentage },
-                        set: { newValue in
-                            percentage = newValue
-                            updateAmount(from: newValue)
-                        }
-                    ), in: 0...100)
-                    .accentColor(Theme.colors.primaryAccent1)
+                    percentageCheckpoints
                     
                     HStack {
                         Text(NSLocalizedString("tronUnfreezeBalanceAvailable", comment: "Frozen balance:"))
@@ -174,6 +167,25 @@ struct TronUnfreezeView: View {
             amount: $amount,
             onChange: { await updatePercentage(from: $0) }
         )
+    }
+    
+    var percentageCheckpoints: some View {
+        HStack(spacing: 8) {
+            ForEach([25, 50, 75, 100], id: \.self) { value in
+                PrimaryButton(
+                    title: "\(value)%",
+                    type: isPercentageSelected(value) ? .primary : .secondary,
+                    size: .mini
+                ) {
+                    percentage = Double(value)
+                    updateAmount(from: Double(value))
+                }
+            }
+        }
+    }
+    
+    func isPercentageSelected(_ value: Int) -> Bool {
+        abs(percentage - Double(value)) < 1.0
     }
     
     @ViewBuilder

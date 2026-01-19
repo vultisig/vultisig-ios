@@ -300,7 +300,7 @@ struct TronDashboardView: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Image(systemName: "clock.arrow.circlepath")
-                        .foregroundStyle(Theme.colors.alertWarning)
+                        .foregroundStyle(Theme.colors.textSecondary)
                     
                     Text(NSLocalizedString("tronPendingWithdrawals", comment: "Pending Withdrawals"))
                         .font(Theme.fonts.bodyLMedium)
@@ -310,7 +310,7 @@ struct TronDashboardView: View {
                     
                     Text("\(model.unfreezingBalance.formatted()) TRX")
                         .font(Theme.fonts.bodyLMedium)
-                        .foregroundStyle(Theme.colors.alertWarning)
+                        .foregroundStyle(Theme.colors.textSecondary)
                 }
                 
                 Divider()
@@ -326,7 +326,7 @@ struct TronDashboardView: View {
                             if withdrawal.isClaimable {
                                 Text(NSLocalizedString("tronReadyToClaim", comment: "Ready to claim"))
                                     .font(Theme.fonts.caption12)
-                                    .foregroundStyle(Theme.colors.alertSuccess)
+                                    .foregroundStyle(Theme.colors.textSecondary)
                             } else {
                                 Text(withdrawalTimeRemaining(withdrawal.expirationDate))
                                     .font(Theme.fonts.caption12)
@@ -338,10 +338,10 @@ struct TronDashboardView: View {
                         
                         if withdrawal.isClaimable {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(Theme.colors.alertSuccess)
+                                .foregroundStyle(Theme.colors.textSecondary)
                         } else {
                             Image(systemName: "hourglass")
-                                .foregroundStyle(Theme.colors.alertWarning)
+                                .foregroundStyle(Theme.colors.textSecondary)
                         }
                     }
                     .padding(.vertical, 4)
