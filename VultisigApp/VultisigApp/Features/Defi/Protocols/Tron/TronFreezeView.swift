@@ -120,7 +120,7 @@ struct TronFreezeView: View {
             // Resource Type Picker
             VStack(alignment: .leading, spacing: 8) {
                 Text(NSLocalizedString("tronResourceType", comment: "Resource Type"))
-                    .font(TronConstants.Fonts.subtitle)
+                    .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textSecondary)
                 
                 Picker("", selection: $selectedResourceType) {
@@ -135,7 +135,7 @@ struct TronFreezeView: View {
             VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(NSLocalizedString("tronFreezeAmount", comment: "Amount"))
-                        .font(TronConstants.Fonts.subtitle)
+                        .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textSecondary)
                     
                     Divider()
@@ -155,7 +155,7 @@ struct TronFreezeView: View {
                     .frame(maxWidth: .infinity)
                     
                     Text("\(Int(min(percentage, 100)))%")
-                        .font(TronConstants.Fonts.subtitle)
+                        .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textSecondary)
                 }
                 
@@ -173,13 +173,13 @@ struct TronFreezeView: View {
                     
                     HStack {
                         Text(NSLocalizedString("tronFreezeBalanceAvailable", comment: "Balance available:"))
-                            .font(TronConstants.Fonts.subtitle)
+                            .font(Theme.fonts.caption12)
                             .foregroundStyle(Theme.colors.textSecondary)
                         
                         Spacer()
                         
                         Text("\(trxCoin?.balanceString ?? "0") TRX")
-                            .font(TronConstants.Fonts.subtitle)
+                            .font(Theme.fonts.caption12)
                             .bold()
                             .foregroundStyle(Theme.colors.textPrimary)
                     }

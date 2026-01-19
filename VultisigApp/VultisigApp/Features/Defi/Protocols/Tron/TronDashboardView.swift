@@ -52,7 +52,7 @@ struct TronDashboardView: View {
         HStack {
             VStack(alignment: .leading, spacing: 8) {
                 Text("TRON")
-                    .font(TronConstants.Fonts.title)
+                    .font(Theme.fonts.headline)
                     .foregroundStyle(Theme.colors.textSecondary)
                 
                 if model.isLoadingBalance {
@@ -63,7 +63,7 @@ struct TronDashboardView: View {
                         .shimmer()
                 } else {
                     Text(availableBalanceFiat)
-                        .font(TronConstants.Fonts.balance)
+                        .font(Theme.fonts.title2)
                         .foregroundStyle(Theme.colors.textPrimary)
                 }
             }

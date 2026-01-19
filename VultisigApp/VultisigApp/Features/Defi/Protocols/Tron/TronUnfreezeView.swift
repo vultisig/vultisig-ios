@@ -132,7 +132,7 @@ struct TronUnfreezeView: View {
                     .frame(maxWidth: .infinity)
                     
                     Text("\(Int(min(percentage, 100)))%")
-                        .font(TronConstants.Fonts.subtitle)
+                        .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textSecondary)
                 }
                 
@@ -150,13 +150,13 @@ struct TronUnfreezeView: View {
                     
                     HStack {
                         Text(NSLocalizedString("tronUnfreezeBalanceAvailable", comment: "Frozen balance:"))
-                            .font(TronConstants.Fonts.subtitle)
+                            .font(Theme.fonts.caption12)
                             .foregroundStyle(Theme.colors.textSecondary)
                         
                         Spacer()
                         
                         Text("\(frozenBalanceForSelectedType.formatted()) TRX")
-                            .font(TronConstants.Fonts.subtitle)
+                            .font(Theme.fonts.caption12)
                             .bold()
                             .foregroundStyle(Theme.colors.textPrimary)
                     }
