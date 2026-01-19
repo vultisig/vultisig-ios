@@ -60,7 +60,7 @@ struct TronUnfreezeView: View {
                 dismiss()
             } label: {
                 Image(systemName: "chevron.left")
-                    .font(.title3)
+                    .font(Theme.fonts.title3)
                     .foregroundColor(Theme.colors.textPrimary)
                     .frame(width: 40, height: 40)
                     .background(Circle().fill(Theme.colors.bgSurface1))
@@ -107,6 +107,11 @@ struct TronUnfreezeView: View {
                     }
                 }
                 .pickerStyle(.segmented)
+                .onChange(of: selectedResourceType) { _ in
+                    Task {
+                        await updatePercentage(from: amount)
+                    }
+                }
             }
             .padding(.horizontal, TronConstants.Design.horizontalPadding)
             
@@ -253,6 +258,9 @@ struct TronUnfreezeView: View {
     func updatePercentage(from amountStr: String) async {
         let balance = frozenBalanceForSelectedType
         guard let amountDec = Decimal(string: amountStr), balance > 0 else {
+            await MainActor.run {
+                self.percentage = 0
+            }
             return
         }
         let percent = (amountDec / balance) * 100
@@ -301,6 +309,7 @@ struct TronUnfreezeView: View {
         sendTransaction.memo = memo
         sendTransaction.isFastVault = isFastVault
         sendTransaction.fastVaultPassword = fastVaultPassword
+        sendTransaction.isStakingOperation = true
         
         await sendCryptoViewModel.loadFastVault(tx: sendTransaction, vault: vault)
         

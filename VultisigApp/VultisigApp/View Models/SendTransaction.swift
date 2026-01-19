@@ -24,6 +24,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var sendMaxAmount: Bool = false
     @Published var isFastVault: Bool = false
     @Published var fastVaultPassword: String = .empty
+    @Published var isStakingOperation: Bool = false
     @Published var memoFunctionDictionary: ThreadSafeDictionary<String, String> = ThreadSafeDictionary()
     var wasmContractPayload: WasmExecuteContractPayload?
     
@@ -44,8 +45,7 @@ class SendTransaction: ObservableObject, Hashable {
     var isAmountExceeded: Bool {
         // TRON staking operations: skip validation entirely
         // The balance is already validated in TronFreezeView/TronUnfreezeView
-        let isTronStaking = coin.chain == .tron && 
-            (memo.hasPrefix("FREEZE:") || memo.hasPrefix("UNFREEZE:"))
+        let isTronStaking = coin.chain == .tron && isStakingOperation
         
         if isTronStaking {
             return false

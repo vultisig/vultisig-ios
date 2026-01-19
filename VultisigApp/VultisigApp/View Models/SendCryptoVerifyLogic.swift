@@ -165,8 +165,7 @@ struct SendCryptoVerifyLogic {
         // TRON staking operations: skip balance validation entirely
         // The balance is already validated in TronFreezeView/TronUnfreezeView
         // and the user sees the available balance on the screen
-        let isTronStaking = tx.coin.chain == .tron && 
-            (tx.memo.hasPrefix("FREEZE:") || tx.memo.hasPrefix("UNFREEZE:"))
+        let isTronStaking = tx.coin.chain == .tron && tx.isStakingOperation
         
         if isTronStaking {
             print("DEBUG TRON staking: skipping balance validation")

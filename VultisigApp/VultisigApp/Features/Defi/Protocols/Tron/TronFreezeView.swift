@@ -112,7 +112,7 @@ struct TronFreezeView: View {
     }
     
     var isButtonDisabled: Bool {
-        amount.isEmpty || (Decimal(string: amount) ?? 0) <= 0 || (Decimal(string: amount) ?? 0) > (trxCoin?.balanceDecimal ?? 0) || isLoading
+        amount.isEmpty || amount.toDecimal() <= 0 || amount.toDecimal() > (trxCoin?.balanceDecimal ?? 0) || isLoading
     }
     
     var scrollableContent: some View {
@@ -236,9 +236,10 @@ struct TronFreezeView: View {
     }
     
     func updatePercentage(from amountStr: String) async {
-        guard let coin = trxCoin, let amountDec = Decimal(string: amountStr), coin.balanceDecimal > 0 else {
+        guard let coin = trxCoin, coin.balanceDecimal > 0 else {
             return
         }
+        let amountDec = amountStr.toDecimal()
         let percent = (amountDec / coin.balanceDecimal) * 100
         let cappedPercent = min(Double(truncating: percent as NSNumber), 100.0)
         
@@ -259,7 +260,8 @@ struct TronFreezeView: View {
     }
     
     func handleContinue() async {
-        guard let coin = trxCoin, let amountDec = Decimal(string: amount) else {
+        let amountDec = amount.toDecimal()
+        guard let coin = trxCoin, amountDec > 0 else {
             return
         }
         
@@ -276,6 +278,7 @@ struct TronFreezeView: View {
         tx.memo = memo
         tx.isFastVault = isFastVault
         tx.fastVaultPassword = fastVaultPassword
+        tx.isStakingOperation = true
         
         await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
         
