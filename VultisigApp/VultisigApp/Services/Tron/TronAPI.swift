@@ -16,7 +16,8 @@ enum TronAPI: TargetType {
     case triggerConstantContract(ownerAddress: String, contractAddress: String, functionSelector: String, parameter: String)
 
     var baseURL: URL {
-        URL(string: "https://api.vultisig.com/tron")!
+        // Using TronGrid directly for testing (api.vultisig.com/tron is timing out)
+        URL(string: "https://api.trongrid.io")!
     }
 
     var path: String {
