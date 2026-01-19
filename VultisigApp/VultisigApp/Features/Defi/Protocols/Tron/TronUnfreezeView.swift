@@ -81,7 +81,7 @@ struct TronUnfreezeView: View {
     
     var footerView: some View {
         VStack(spacing: 12) {
-            if let error = error {
+            if let error = error ?? model.error {
                 Text(error.localizedDescription)
                     .foregroundStyle(Theme.colors.alertError)
                     .font(Theme.fonts.caption12)
@@ -240,9 +240,13 @@ struct TronUnfreezeView: View {
                 model.frozenEnergyBalance = frozenEnergy
                 model.unfreezingBalance = unfreezing
                 model.pendingWithdrawals = pendingWithdrawals
+                model.error = nil // Clear error on success
             }
         } catch {
-            print("TronUnfreezeView: Error loading data: \(error.localizedDescription)")
+            await MainActor.run {
+                model.error = error
+                self.isLoading = false
+            }
         }
     }
     
