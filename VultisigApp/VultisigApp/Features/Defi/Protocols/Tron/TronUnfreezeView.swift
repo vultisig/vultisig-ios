@@ -273,9 +273,10 @@ struct TronUnfreezeView: View {
         }
         
         do {
-            let decimals = 6
-            let amountUnits = (amountDecimal * pow(10, decimals)).description
-            let cleanAmountUnits = amountUnits.components(separatedBy: ".").first ?? amountUnits
+            let decimals: Int16 = 6
+            // Use NSDecimalNumber for locale-safe conversion
+            let scaledNumber = NSDecimalNumber(decimal: amountDecimal).multiplying(byPowerOf10: decimals)
+            let cleanAmountUnits = scaledNumber.stringValue.components(separatedBy: ".").first ?? scaledNumber.stringValue
             let amountVal = BigInt(cleanAmountUnits) ?? BigInt(0)
             
             let payload = try await model.logic.getUnfreezePayload(

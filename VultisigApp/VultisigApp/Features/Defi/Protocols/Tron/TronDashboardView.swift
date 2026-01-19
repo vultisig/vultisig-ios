@@ -221,7 +221,7 @@ struct TronDashboardView: View {
                             .frame(width: 36, height: 36)
                         
                         Image(systemName: icon)
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(Theme.fonts.bodySMedium)
                             .foregroundStyle(accentColor)
                     }
                     
@@ -385,7 +385,7 @@ private struct ShimmerModifier: ViewModifier {
                 LinearGradient(
                     gradient: Gradient(colors: [
                         Color.clear,
-                        Color.white.opacity(0.4),
+                        Theme.colors.textPrimary.opacity(0.4),
                         Color.clear
                     ]),
                     startPoint: .leading,

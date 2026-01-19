@@ -78,7 +78,7 @@ struct TronFreezeView: View {
             if let error = error {
                 Text(error.localizedDescription)
                     .foregroundStyle(Theme.colors.alertError)
-                    .font(.caption)
+                    .font(Theme.fonts.caption12)
             }
             
             freezeButton
@@ -254,9 +254,10 @@ struct TronFreezeView: View {
         await MainActor.run { isLoading = true }
         
         do {
-            let decimals = 6 // TRX uses 6 decimals
-            let amountUnits = (amountDec * pow(10, decimals)).description
-            let cleanAmountUnits = amountUnits.components(separatedBy: ".").first ?? amountUnits
+            let decimals: Int16 = 6 // TRX uses 6 decimals
+            // Use NSDecimalNumber for locale-safe conversion
+            let scaledNumber = NSDecimalNumber(decimal: amountDec).multiplying(byPowerOf10: decimals)
+            let cleanAmountUnits = scaledNumber.stringValue.components(separatedBy: ".").first ?? scaledNumber.stringValue
             let amountVal = BigInt(cleanAmountUnits) ?? BigInt(0)
             
             let payload = try await TronViewLogic().getFreezePayload(
