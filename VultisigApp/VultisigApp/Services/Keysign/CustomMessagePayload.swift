@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import WalletCore
 
 struct CustomMessagePayload: Codable, Hashable {
     let method: String
@@ -31,9 +32,22 @@ struct CustomMessagePayload: Codable, Hashable {
         if method == "personal_sign" || (method != "sign_message" && chain.lowercased() != "solana") {
             let hash = data.sha3(.keccak256)
             return [hash.hexString]
+        } else if method == "eth_signTypedData_v4" {
+            // Handle eth_signTypedData_v4 (EIP-712)
+            return keysignMessagesForTypedData()
         } else {
             // For Solana and other chains that don't use keccak256, use the message directly
             return [data.hexString]
         }
+    }
+
+    /// Handles EIP-712 typed data signing
+    private func keysignMessagesForTypedData() -> [String] {
+        // Use wallet-core's EthereumAbi.encodeTyped to compute the EIP-712 hash
+        // This handles all edge cases: BigInt, arrays, nested structs, etc.
+        let hash = EthereumAbi.encodeTyped(messageJson: message)
+
+        // Return hex string without 0x prefix (matching the Windows implementation)
+        return [hash.hexString.stripHexPrefix()]
     }
 }

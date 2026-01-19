@@ -22,15 +22,11 @@ extension String {
     }
     
     func stripHexPrefix() -> String {
-        if hasPrefix("0x") {
-            return String(dropFirst(2))
-        }
-        
-        return self
+        return hasPrefix("0x") ? String(dropFirst(2)) : self
     }
     
     var add0x: String {
-        "0x" + self
+        hasPrefix("0x") ? self : "0x" + self
     }
     
     var isZero: Bool {
