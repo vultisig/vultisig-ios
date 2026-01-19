@@ -35,6 +35,15 @@ struct TronDashboardView: View {
         return fiatValue.formatToFiat(includeCurrencySymbol: true)
     }
     
+    /// Available balance in fiat (using TRX coin price)
+    var availableBalanceFiat: String {
+        guard let trxCoin = vault.coins.first(where: { $0.chain == .tron && $0.isNativeToken }) else {
+            return "$0.00"
+        }
+        let fiatValue = model.availableBalance * Decimal(trxCoin.price)
+        return fiatValue.formatToFiat(includeCurrencySymbol: true)
+    }
+    
     var body: some View {
         content
     }
@@ -53,7 +62,7 @@ struct TronDashboardView: View {
                         .frame(width: 120, height: 24)
                         .shimmer()
                 } else {
-                    Text("\(model.availableBalance.formatted()) TRX")
+                    Text(availableBalanceFiat)
                         .font(TronConstants.Fonts.balance)
                         .foregroundStyle(Theme.colors.textPrimary)
                 }
@@ -171,7 +180,7 @@ struct TronDashboardView: View {
             // Bandwidth Section (Green)
             resourceSection(
                 title: NSLocalizedString("tronBandwidth", comment: "Bandwidth"),
-                icon: "arrow.up.arrow.down",
+                icon: "gauge.with.needle",
                 available: model.availableBandwidth,
                 total: max(model.totalBandwidth, 1),  // Avoid division by zero
                 accentColor: Theme.colors.alertSuccess,
@@ -205,11 +214,16 @@ struct TronDashboardView: View {
             // Content box with accent color
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 8) {
-                    // Icon
-                    Image(systemName: icon)
-                        .font(Theme.fonts.bodyMRegular)
-                        .foregroundStyle(accentColor)
-                        .frame(width: 24, height: 24)
+                    // Icon with dark background
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Theme.colors.bgPrimary)
+                            .frame(width: 36, height: 36)
+                        
+                        Image(systemName: icon)
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(accentColor)
+                    }
                     
                     VStack(alignment: .leading, spacing: 4) {
                         // Value display
