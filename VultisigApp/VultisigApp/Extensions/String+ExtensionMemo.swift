@@ -472,7 +472,7 @@ private extension Dictionary where Key == String, Value == Any {
     var formattedContractInteraction: String {
         if let method = self["method"] as? String {
             var details = "Contract: \(method)"
-            
+
             if let params = self["params"] as? [String: Any], !params.isEmpty {
                 let paramStrings = params.compactMap { key, value in
                     "\(key): \(value)"
@@ -481,10 +481,16 @@ private extension Dictionary where Key == String, Value == Any {
                     details += "\nParameters: \(paramStrings.joined(separator: ", "))"
                 }
             }
-            
+
             return details
         }
-        
+
+        // e.g. for eth_signTypedData_v4
+        if let jsonData = try? JSONSerialization.data(withJSONObject: self, options: [.prettyPrinted, .sortedKeys]),
+           let jsonString = String(data: jsonData, encoding: .utf8) {
+            return jsonString
+        }
+
         return "Contract Interaction"
     }
 }
