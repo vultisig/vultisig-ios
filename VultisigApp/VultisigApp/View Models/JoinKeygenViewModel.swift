@@ -30,7 +30,10 @@ class JoinKeygenViewModel: ObservableObject {
     private var keyImportChains: [Chain] = []
     var keyImportInput: KeyImportInput? {
         guard tssType == .KeyImport else { return nil }
-        return KeyImportInput(mnemonic: "", chains: keyImportChains)
+        // Joining device doesn't have the mnemonic, so derivation is determined by initiating device
+        // Create chain settings with default derivation (actual derivation comes from initiating device)
+        let chainSettings = keyImportChains.map { ChainImportSetting(chain: $0) }
+        return KeyImportInput(mnemonic: "", chainSettings: chainSettings)
     }
     
     @Published var tssType: TssType = .Keygen
