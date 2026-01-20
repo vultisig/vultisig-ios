@@ -76,10 +76,6 @@ private extension ServerVaultCheckInboxScreen {
     
     var showCheckInboxButton: Bool { true }
     
-    func canOpenURL(_ url: URL) -> Bool {
-        return NSWorkspace.shared.urlForApplication(toOpen: url) != nil
-    }
-    
     func openApp(url: URL) {
         NSWorkspace.shared.open(url)
     }

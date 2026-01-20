@@ -153,10 +153,6 @@ struct FastBackupVaultOverview: View {
         ))
     }
     
-    private func moveToBackupView() {
-        isVerificationLinkActive = true
-    }
-    
     private func animate(index: Int) {
         animationVM?.setInput("Index", value: Double(index))
     }

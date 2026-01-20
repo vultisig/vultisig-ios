@@ -138,8 +138,6 @@ struct CircleDepositView: View {
         .padding(.top, CircleConstants.Design.verticalSpacing)
         .frame(maxHeight: .infinity)
     }
-    
-
 
     var amountTextField: some View {
         SendCryptoAmountTextField(

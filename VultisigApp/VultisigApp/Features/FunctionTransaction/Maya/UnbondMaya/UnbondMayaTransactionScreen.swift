@@ -110,10 +110,10 @@ struct UnbondMayaTransactionScreen: View {
             viewModel.onLoad()
             onAddressFill()
         }
-        .onChange(of: viewModel.addressViewModel.field.valid) { _, isValid in
+        .onChange(of: viewModel.addressViewModel.field.valid) { _, _ in
             onAddressFill()
         }
-        .onChange(of: focusedFieldBinding) { oldValue, newValue in
+        .onChange(of: focusedFieldBinding) { _, newValue in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 focusedField = newValue
             }

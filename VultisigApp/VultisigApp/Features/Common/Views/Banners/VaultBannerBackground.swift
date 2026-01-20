@@ -34,7 +34,7 @@ struct VaultBannerBackground: View {
             EllipticalGradient(
                 stops: [
                     Gradient.Stop(color: Color(red: 0.28, green: 0.48, blue: 0.99), location: 0.00),
-                    Gradient.Stop(color: Color(red: 0.13, green: 0.33, blue: 0.87).opacity(0.19), location: 1.00),
+                    Gradient.Stop(color: Color(red: 0.13, green: 0.33, blue: 0.87).opacity(0.19), location: 1.00)
                 ],
                 center: UnitPoint(x: 0.5, y: 0.5)
             )
@@ -54,7 +54,7 @@ struct VaultBannerBackground: View {
         LinearGradient(
             stops: [
                 Gradient.Stop(color: Color(red: 0.02, green: 0.11, blue: 0.23), location: 0.00),
-                Gradient.Stop(color: Color(red: 0.13, green: 0.33, blue: 0.87), location: 1.00),
+                Gradient.Stop(color: Color(red: 0.13, green: 0.33, blue: 0.87), location: 1.00)
             ],
             startPoint: UnitPoint(x: 0.4, y: 0.93),
             endPoint: UnitPoint(x: 0.73, y: -0.35)

@@ -51,15 +51,6 @@ extension KeysignDiscoveryView {
             .frame(width: getMinSize(), height: getMinSize())
     }
     
-    var QRCodeContent: some View {
-        VStack {
-            paringQRCode
-            disclaimer
-        }
-        .padding(60)
-        .offset(y: -32)
-    }
-    
     var deviceList: some View {
         VStack {
             listTitle

@@ -28,7 +28,11 @@ extension Vault: ProtoMappable {
             guard let chain = Chain(name: $0.chain) else {
                 throw HelperError.runtimeError("Invalid chain name in proto: \($0.chain)")
             }
-            return ChainPublicKey( chain: chain,publicKeyHex: $0.publicKey, isEddsa: $0.isEddsa)
+            return ChainPublicKey(
+                chain: chain,
+                publicKeyHex: $0.publicKey,
+                isEddsa: $0.isEddsa
+            )
         }
     }
     

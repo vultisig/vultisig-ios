@@ -228,7 +228,7 @@ private extension DefiChainMainScreen {
             stops: [
                 Gradient.Stop(color: Theme.colors.bgPrimary, location: 0.3),
                 Gradient.Stop(color: Theme.colors.bgPrimary.opacity(0.5), location: 0.6),
-                Gradient.Stop(color: Theme.colors.bgPrimary.opacity(0), location: 1.00),
+                Gradient.Stop(color: Theme.colors.bgPrimary.opacity(0), location: 1.00)
             ],
             startPoint: UnitPoint(x: 0.5, y: 1),
             endPoint: UnitPoint(x: 0.5, y: 0)

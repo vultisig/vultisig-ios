@@ -11,7 +11,7 @@ extension UTXOTransactionMempool {
     var opReturnData: String? {
         for output in vout {
             let asm = output.scriptpubkey_asm
-            
+           
             if asm.hasPrefix("OP_RETURN") {
                 let components = asm.components(separatedBy: " ")
                 
@@ -46,3 +46,4 @@ extension UTXOTransactionMempool {
         return String(data: data, encoding: .utf8)
     }
 }
+

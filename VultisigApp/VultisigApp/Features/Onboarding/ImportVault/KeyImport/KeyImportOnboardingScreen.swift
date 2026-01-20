@@ -9,7 +9,7 @@ import SwiftUI
 import RiveRuntime
 
 struct KeyImportOnboardingScreen: View {
-    @State var animationVM: RiveViewModel? = nil
+    @State var animationVM: RiveViewModel?
     @State var showInformation: Bool = false
     @State var informationOpacity: CGFloat = 0
     @Environment(\.router) var router

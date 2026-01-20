@@ -40,7 +40,6 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
         self.availableToUnstake = availableToUnstake
     }
     
-    
     func onLoad() {
         setupForm()
         // Use availableToUnstake if provided, otherwise fall back to stakedBalanceDecimal
@@ -49,7 +48,7 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
 
         $isAutocompound
             .receive(on: DispatchQueue.main)
-            .sink(weak: self) { viewModel, isAutoCompound in
+            .sink(weak: self) { viewModel, _ in
                 viewModel.updateAvailableBalance()
             }
             .store(in: &cancellables)
