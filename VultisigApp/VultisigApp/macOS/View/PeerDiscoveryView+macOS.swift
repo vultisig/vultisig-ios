@@ -79,6 +79,7 @@ extension PeerDiscoveryView {
                 ThisDevicePeerCell(deviceName: "Mac")
                 devices
                 EmptyPeerCell()
+                    .showIf(showWaitingOnDevice)
             }
             .animation(.easeInOut(duration: 0.2), value: viewModel.selections)
         }

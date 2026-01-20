@@ -168,20 +168,24 @@ struct PeerDiscoveryView: View {
         case .Migrate:
             return Set(viewModel.selections) != Set(viewModel.vault.signers)
         case .KeyImport:
-            // Key import requires setupType, and this screen shouldn't be shown for fast
-            guard
-                let setupType,
-                case let .secure(numberOfDevices) = setupType
-            else {
-                return false
-            }
-            
-            switch numberOfDevices {
-            case 0...3:
-                return viewModel.selections.count != numberOfDevices
-            default:
-                return viewModel.selections.count < numberOfDevices
-            }
+            return showWaitingOnDevice
+        }
+    }
+    
+    var showWaitingOnDevice: Bool {
+        // Key import requires setupType, and this screen shouldn't be shown for fast
+        guard
+            let setupType,
+            case let .secure(numberOfDevices) = setupType
+        else {
+            return false
+        }
+        
+        switch numberOfDevices {
+        case 0...3:
+            return viewModel.selections.count != numberOfDevices
+        default:
+            return viewModel.selections.count < numberOfDevices
         }
     }
     
