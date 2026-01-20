@@ -1316,3 +1316,4 @@
 "backupsTitleHighlight" = "Backups";
 "storeBackupsSeparately" = "Store backups separately";
 "storeBackupsSeparatelyDescription" = "Keep each backup in a different place. If one is compromised, your funds stay safe.";
+"message" = "Message";
