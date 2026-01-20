@@ -1225,3 +1225,49 @@
 // Maya Unbond Node Status
 "nodeActiveCannotUnbond" = "Knoten ist %@ - Unbond nicht möglich während aktiv";
 "nodeChurnedCanUnbond" = "Knoten wurde rotiert - Unbond verfügbar";
+
+"seedPhraseImportTip" = "Tipp: Sie können einen Browser als Gerät verwenden";
+"whereDoYouMigrateFrom" = "Von wo migrierst du?";
+
+// Vault Setup Screens
+"yourVaultSetup" = "Ihre Tresor-Einrichtung";
+
+// Screen 1 - Fast Vault (2-device setup)
+"vaultSetup1Title" = "Schneller Tresor";
+"vaultSetup1Subtitle" = "2-Geräte-Einrichtung";
+"vaultSetup1Feature1Title" = "1-Geräte-Signierung";
+"vaultSetup1Feature1Description" = "Bequeme Ein-Gerät-Signierung unterwegs. Perfekt für tägliche Transaktionen oder kleinere Handelsbeträge.";
+"vaultSetup1Feature2Title" = "Schnelle und sichere Einrichtung";
+"vaultSetup1Feature2Description" = "Keine lange Einrichtung. Nur Ihre E-Mail und Ihr Passwort, plus zwei Backups.";
+"vaultSetup1Feature3Title" = "Sie behalten die Kontrolle";
+"vaultSetup1Feature3Description" = "Ein Mitunterzeichner kann niemals Transaktionen initiieren; er hilft nur beim Signieren.";
+
+// Screen 2 - Secure Vault (2-device vault)
+"vaultSetup2Title" = "Sicherer Tresor";
+"vaultSetup2Subtitle" = "2-Geräte-Tresor";
+"vaultSetup2Feature1Title" = "2-Geräte-Signierung";
+"vaultSetup2Feature1Description" = "Jede Transaktion benötigt Genehmigungen von beiden Ihrer 2 Geräte.";
+"vaultSetup2Feature2Title" = "Kein einzelner Fehlerpunkt";
+"vaultSetup2Feature2Description" = "Ein Gerät allein kann keine Gelder bewegen. Wenn ein Gerät verloren geht oder kompromittiert wird, kann es nicht alleine genehmigen.";
+"vaultSetup2Feature3Title" = "Ideal für einfache Kühllagerung";
+"vaultSetup2Feature3Description" = "Perfekte Einrichtung für Benutzer mit nur 2 Geräten.";
+
+// Screen 3 - Secure Vault (3-device vault)
+"vaultSetup3Title" = "Sicherer Tresor";
+"vaultSetup3Subtitle" = "3-Geräte-Tresor";
+"vaultSetup3Feature1Title" = "2-Geräte-Signierung";
+"vaultSetup3Feature1Description" = "Jede Transaktion benötigt Genehmigungen von 2 Ihrer 3 Geräte.";
+"vaultSetup3Feature2Title" = "Kein einzelner Fehlerpunkt";
+"vaultSetup3Feature2Description" = "Ein Gerät allein kann keine Gelder bewegen. Wenn ein Gerät verloren geht oder kompromittiert wird, kann es nicht alleine genehmigen.";
+"vaultSetup3Feature3Title" = "Ideal für Kühllagerung";
+"vaultSetup3Feature3Description" = "Perfekte Balance für die meisten Benutzer. 2 Unterzeichner und 1 Backup-Gerät. Vermögenswerte ohne Stress lagern.";
+
+// Screen 4 - Secure Vault (4-device vault)
+"vaultSetup4Title" = "Sicherer Tresor";
+"vaultSetup4Subtitle" = "4+-Geräte-Tresor";
+"vaultSetup4Feature1Title" = "3-Geräte oder mehr Signierung";
+"vaultSetup4Feature1Description" = "Tresore benötigen 67% der Geräte, um eine Transaktion zu signieren. Haben Sie so viele Unterzeichner wie Sie möchten";
+"vaultSetup4Feature2Title" = "Dynamische Geräteverwaltung";
+"vaultSetup4Feature2Description" = "Fügen Sie so viele Geräte hinzu, wie Sie möchten, und erhalten Sie institutionelle Sicherheit.";
+"vaultSetup4Feature3Title" = "Gebaut für Teams und Treasuries";
+"vaultSetup4Feature3Description" = "Ideal für Teams, die gemeinsame Mittel und höherwertige Tresore verwalten, die mehr Unterzeichner erfordern.";

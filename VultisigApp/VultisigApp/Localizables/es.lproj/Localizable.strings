@@ -1226,3 +1226,49 @@
 // Maya Unbond Node Status
 "nodeActiveCannotUnbond" = "El nodo está %@ - no se puede hacer unbond mientras está activo";
 "nodeChurnedCanUnbond" = "El nodo está rotado - unbond disponible";
+
+"seedPhraseImportTip" = "Consejo: Puedes usar un navegador como dispositivo";
+"whereDoYouMigrateFrom" = "¿De dónde migras?";
+
+// Vault Setup Screens
+"yourVaultSetup" = "Tu configuración de bóveda";
+
+// Screen 1 - Fast Vault (2-device setup)
+"vaultSetup1Title" = "Bóveda rápida";
+"vaultSetup1Subtitle" = "Configuración de 2 dispositivos";
+"vaultSetup1Feature1Title" = "Firma de 1 dispositivo";
+"vaultSetup1Feature1Description" = "Firma conveniente con un dispositivo sobre la marcha. Perfecto para transacciones diarias o pequeñas cantidades de trading.";
+"vaultSetup1Feature2Title" = "Configuración rápida y segura";
+"vaultSetup1Feature2Description" = "Sin configuración larga. Solo tu correo y contraseña, más dos copias de seguridad.";
+"vaultSetup1Feature3Title" = "Tú mantienes el control";
+"vaultSetup1Feature3Description" = "Un co-firmante nunca puede iniciar transacciones; solo ayuda a firmarlas.";
+
+// Screen 2 - Secure Vault (2-device vault)
+"vaultSetup2Title" = "Bóveda segura";
+"vaultSetup2Subtitle" = "Bóveda de 2 dispositivos";
+"vaultSetup2Feature1Title" = "Firma de 2 dispositivos";
+"vaultSetup2Feature1Description" = "Cada transacción necesita aprobaciones de ambos dispositivos.";
+"vaultSetup2Feature2Title" = "Sin punto único de fallo";
+"vaultSetup2Feature2Description" = "Un dispositivo solo no puede mover fondos. Si un dispositivo se pierde o se ve comprometido, no puede aprobar por sí solo.";
+"vaultSetup2Feature3Title" = "Ideal para almacenamiento en frío simple";
+"vaultSetup2Feature3Description" = "Configuración perfecta para usuarios con solo 2 dispositivos.";
+
+// Screen 3 - Secure Vault (3-device vault)
+"vaultSetup3Title" = "Bóveda segura";
+"vaultSetup3Subtitle" = "Bóveda de 3 dispositivos";
+"vaultSetup3Feature1Title" = "Firma de 2 dispositivos";
+"vaultSetup3Feature1Description" = "Cada transacción necesita aprobaciones de 2 de tus 3 dispositivos.";
+"vaultSetup3Feature2Title" = "Sin punto único de fallo";
+"vaultSetup3Feature2Description" = "Un dispositivo solo no puede mover fondos. Si un dispositivo se pierde o se ve comprometido, no puede aprobar por sí solo.";
+"vaultSetup3Feature3Title" = "Ideal para almacenamiento en frío";
+"vaultSetup3Feature3Description" = "Balance perfecto para la mayoría de usuarios. 2 firmantes y 1 dispositivo de respaldo. Almacena activos sin estrés.";
+
+// Screen 4 - Secure Vault (4-device vault)
+"vaultSetup4Title" = "Bóveda segura";
+"vaultSetup4Subtitle" = "Bóveda de 4+ dispositivos";
+"vaultSetup4Feature1Title" = "Firma de 3 dispositivos o más";
+"vaultSetup4Feature1Description" = "Las bóvedas necesitan el 67% de los dispositivos para firmar una transacción. Ten tantos firmantes como quieras";
+"vaultSetup4Feature2Title" = "Gestión dinámica de dispositivos";
+"vaultSetup4Feature2Description" = "Agrega tantos dispositivos como quieras y recibe seguridad de grado institucional.";
+"vaultSetup4Feature3Title" = "Construido para equipos y tesorerías";
+"vaultSetup4Feature3Description" = "Ideal para equipos que gestionan fondos compartidos y bóvedas de alto valor, que requieren más firmantes.";

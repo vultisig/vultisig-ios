@@ -1225,3 +1225,49 @@
 // Maya Unbond Node Status
 "nodeActiveCannotUnbond" = "O nó está %@ - não é possível fazer unbond enquanto ativo";
 "nodeChurnedCanUnbond" = "O nó foi rotacionado - unbond disponível";
+
+"seedPhraseImportTip" = "Dica: Você pode usar um navegador como dispositivo";
+"whereDoYouMigrateFrom" = "De onde você está migrando?";
+
+// Vault Setup Screens
+"yourVaultSetup" = "Sua configuração de cofre";
+
+// Screen 1 - Fast Vault (2-device setup)
+"vaultSetup1Title" = "Cofre rápido";
+"vaultSetup1Subtitle" = "Configuração de 2 dispositivos";
+"vaultSetup1Feature1Title" = "Assinatura com 1 dispositivo";
+"vaultSetup1Feature1Description" = "Assinatura conveniente com um dispositivo em movimento. Perfeito para transações diárias ou pequenas quantidades de negociação.";
+"vaultSetup1Feature2Title" = "Configuração rápida e segura";
+"vaultSetup1Feature2Description" = "Sem configuração longa. Apenas seu e-mail e senha, mais dois backups.";
+"vaultSetup1Feature3Title" = "Você mantém o controle";
+"vaultSetup1Feature3Description" = "Um co-signatário nunca pode iniciar transações; apenas ajuda a assiná-las.";
+
+// Screen 2 - Secure Vault (2-device vault)
+"vaultSetup2Title" = "Cofre seguro";
+"vaultSetup2Subtitle" = "Cofre de 2 dispositivos";
+"vaultSetup2Feature1Title" = "Assinatura com 2 dispositivos";
+"vaultSetup2Feature1Description" = "Cada transação precisa de aprovações de ambos os seus 2 dispositivos.";
+"vaultSetup2Feature2Title" = "Sem ponto único de falha";
+"vaultSetup2Feature2Description" = "Um dispositivo sozinho não pode mover fundos. Se um dispositivo for perdido ou comprometido, não pode aprovar sozinho.";
+"vaultSetup2Feature3Title" = "Ideal para armazenamento frio simples";
+"vaultSetup2Feature3Description" = "Configuração perfeita para usuários com apenas 2 dispositivos.";
+
+// Screen 3 - Secure Vault (3-device vault)
+"vaultSetup3Title" = "Cofre seguro";
+"vaultSetup3Subtitle" = "Cofre de 3 dispositivos";
+"vaultSetup3Feature1Title" = "Assinatura com 2 dispositivos";
+"vaultSetup3Feature1Description" = "Cada transação precisa de aprovações de 2 dos seus 3 dispositivos.";
+"vaultSetup3Feature2Title" = "Sem ponto único de falha";
+"vaultSetup3Feature2Description" = "Um dispositivo sozinho não pode mover fundos. Se um dispositivo for perdido ou comprometido, não pode aprovar sozinho.";
+"vaultSetup3Feature3Title" = "Ideal para armazenamento frio";
+"vaultSetup3Feature3Description" = "Equilíbrio perfeito para a maioria dos usuários. 2 signatários e 1 dispositivo de backup. Armazene ativos sem estresse.";
+
+// Screen 4 - Secure Vault (4-device vault)
+"vaultSetup4Title" = "Cofre seguro";
+"vaultSetup4Subtitle" = "Cofre de 4+ dispositivos";
+"vaultSetup4Feature1Title" = "Assinatura com 3 ou mais dispositivos";
+"vaultSetup4Feature1Description" = "Cofres precisam de 67% dos dispositivos para assinar uma transação. Tenha quantos signatários quiser";
+"vaultSetup4Feature2Title" = "Gerenciamento dinâmico de dispositivos";
+"vaultSetup4Feature2Description" = "Adicione quantos dispositivos quiser e receba segurança de nível institucional.";
+"vaultSetup4Feature3Title" = "Construído para equipes e tesourarias";
+"vaultSetup4Feature3Description" = "Ideal para equipes que gerenciam fundos compartilhados e cofres de alto valor, que exigem mais signatários.";

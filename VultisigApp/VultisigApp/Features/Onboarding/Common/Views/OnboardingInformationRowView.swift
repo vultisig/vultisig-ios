@@ -19,7 +19,7 @@ struct OnboardingInformationRowView: View {
                 color: Theme.colors.alertInfo,
                 size: 20
             )
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text(title)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.subtitle)

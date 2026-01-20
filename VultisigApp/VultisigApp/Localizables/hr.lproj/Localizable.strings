@@ -1225,3 +1225,49 @@
 // Maya Unbond Node Status
 "nodeActiveCannotUnbond" = "Čvor je %@ - nije moguć unbond dok je aktivan";
 "nodeChurnedCanUnbond" = "Čvor je rotiran - unbond dostupan";
+
+"seedPhraseImportTip" = "Savjet: Možete koristiti preglednik kao uređaj";
+"whereDoYouMigrateFrom" = "Odakle migrirate?";
+
+// Vault Setup Screens
+"yourVaultSetup" = "Vaša postavka trezora";
+
+// Screen 1 - Fast Vault (2-device setup)
+"vaultSetup1Title" = "Brzi trezor";
+"vaultSetup1Subtitle" = "Postava s 2 uređaja";
+"vaultSetup1Feature1Title" = "Potpisivanje s 1 uređajem";
+"vaultSetup1Feature1Description" = "Praktično potpisivanje s jednim uređajem u pokretu. Savršeno za dnevne transakcije ili trgovanje manjim iznosima.";
+"vaultSetup1Feature2Title" = "Brza i sigurna postava";
+"vaultSetup1Feature2Description" = "Bez dugog postavljanja. Samo vaš email i lozinka, plus dvije sigurnosne kopije.";
+"vaultSetup1Feature3Title" = "Vi zadržavate kontrolu";
+"vaultSetup1Feature3Description" = "Suopotpisnik nikada ne može pokrenuti transakcije; samo pomaže pri potpisivanju.";
+
+// Screen 2 - Secure Vault (2-device vault)
+"vaultSetup2Title" = "Siguran trezor";
+"vaultSetup2Subtitle" = "Trezor s 2 uređaja";
+"vaultSetup2Feature1Title" = "Potpisivanje s 2 uređaja";
+"vaultSetup2Feature1Description" = "Svaka transakcija zahtijeva odobrenje s oba vaša uređaja.";
+"vaultSetup2Feature2Title" = "Bez jedinstvene točke neuspjeha";
+"vaultSetup2Feature2Description" = "Jedan uređaj sam ne može premjestiti sredstva. Ako se uređaj izgubi ili kompromitira, ne može samostalno odobriti.";
+"vaultSetup2Feature3Title" = "Idealno za jednostavno hladno skladištenje";
+"vaultSetup2Feature3Description" = "Savršena postava za korisnike sa samo 2 uređaja.";
+
+// Screen 3 - Secure Vault (3-device vault)
+"vaultSetup3Title" = "Siguran trezor";
+"vaultSetup3Subtitle" = "Trezor s 3 uređaja";
+"vaultSetup3Feature1Title" = "Potpisivanje s 2 uređaja";
+"vaultSetup3Feature1Description" = "Svaka transakcija zahtijeva odobrenje od 2 od vaša 3 uređaja.";
+"vaultSetup3Feature2Title" = "Bez jedinstvene točke neuspjeha";
+"vaultSetup3Feature2Description" = "Jedan uređaj sam ne može premjestiti sredstva. Ako se uređaj izgubi ili kompromitira, ne može samostalno odobriti.";
+"vaultSetup3Feature3Title" = "Idealno za hladno skladištenje";
+"vaultSetup3Feature3Description" = "Savršena ravnoteža za većinu korisnika. 2 potpisnika i 1 sigurnosni uređaj. Pohranite imovinu bez stresa.";
+
+// Screen 4 - Secure Vault (4-device vault)
+"vaultSetup4Title" = "Siguran trezor";
+"vaultSetup4Subtitle" = "Trezor s 4+ uređaja";
+"vaultSetup4Feature1Title" = "Potpisivanje s 3 ili više uređaja";
+"vaultSetup4Feature1Description" = "Trezori trebaju 67% uređaja za potpisivanje transakcije. Imajte koliko god potpisnika želite";
+"vaultSetup4Feature2Title" = "Dinamičko upravljanje uređajima";
+"vaultSetup4Feature2Description" = "Dodajte koliko god uređaja želite i dobijte institucionalnu razinu sigurnosti.";
+"vaultSetup4Feature3Title" = "Izrađeno za timove i riznice";
+"vaultSetup4Feature3Description" = "Idealno za timove koji upravljaju zajedničkim sredstvima i trezorima veće vrijednosti, koji zahtijevaju više potpisnika.";

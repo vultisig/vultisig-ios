@@ -1227,3 +1227,49 @@
 // Maya Unbond Node Status
 "nodeActiveCannotUnbond" = "节点状态为 %@ - 活跃时无法解绑";
 "nodeChurnedCanUnbond" = "节点已轮换 - 可以解绑";
+
+"seedPhraseImportTip" = "提示：您可以使用浏览器作为设备";
+"whereDoYouMigrateFrom" = "您从哪里迁移？";
+
+// Vault Setup Screens
+"yourVaultSetup" = "您的保险库设置";
+
+// Screen 1 - Fast Vault (2-device setup)
+"vaultSetup1Title" = "快速保险库";
+"vaultSetup1Subtitle" = "2设备设置";
+"vaultSetup1Feature1Title" = "1设备签名";
+"vaultSetup1Feature1Description" = "随时随地方便的单设备签名。适合日常交易或小额交易。";
+"vaultSetup1Feature2Title" = "快速安全设置";
+"vaultSetup1Feature2Description" = "无需冗长设置。只需您的电子邮件和密码，加上两个备份。";
+"vaultSetup1Feature3Title" = "您保持控制";
+"vaultSetup1Feature3Description" = "共同签名者永远无法发起交易；只能协助签名。";
+
+// Screen 2 - Secure Vault (2-device vault)
+"vaultSetup2Title" = "安全保险库";
+"vaultSetup2Subtitle" = "2设备保险库";
+"vaultSetup2Feature1Title" = "2设备签名";
+"vaultSetup2Feature1Description" = "每笔交易都需要两个设备的批准。";
+"vaultSetup2Feature2Title" = "无单点故障";
+"vaultSetup2Feature2Description" = "单个设备无法转移资金。如果一个设备丢失或被泄露，它无法单独批准。";
+"vaultSetup2Feature3Title" = "适合简单冷存储";
+"vaultSetup2Feature3Description" = "适合只有2个设备的用户的完美设置。";
+
+// Screen 3 - Secure Vault (3-device vault)
+"vaultSetup3Title" = "安全保险库";
+"vaultSetup3Subtitle" = "3设备保险库";
+"vaultSetup3Feature1Title" = "2设备签名";
+"vaultSetup3Feature1Description" = "每笔交易需要您3个设备中的2个批准。";
+"vaultSetup3Feature2Title" = "无单点故障";
+"vaultSetup3Feature2Description" = "单个设备无法转移资金。如果一个设备丢失或被泄露，它无法单独批准。";
+"vaultSetup3Feature3Title" = "适合冷存储";
+"vaultSetup3Feature3Description" = "适合大多数用户的完美平衡。2个签名者和1个备份设备。无压力存储资产。";
+
+// Screen 4 - Secure Vault (4-device vault)
+"vaultSetup4Title" = "安全保险库";
+"vaultSetup4Subtitle" = "4+设备保险库";
+"vaultSetup4Feature1Title" = "3设备或更多签名";
+"vaultSetup4Feature1Description" = "保险库需要67%的设备来签署交易。想要多少签名者就有多少";
+"vaultSetup4Feature2Title" = "动态设备管理";
+"vaultSetup4Feature2Description" = "添加任意数量的设备，获得机构级安全性。";
+"vaultSetup4Feature3Title" = "为团队和财务构建";
+"vaultSetup4Feature3Description" = "适合管理共享资金和高价值保险库的团队，需要更多签名者。";
