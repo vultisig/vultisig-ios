@@ -252,7 +252,7 @@ struct PeerDiscoveryView: View {
         } else if tssType == .Migrate {
             return ""
         } else {
-            return "creatingVault"
+            return ""
         }
     }
 }

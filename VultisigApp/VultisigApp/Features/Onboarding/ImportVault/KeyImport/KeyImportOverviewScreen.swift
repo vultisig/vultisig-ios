@@ -29,15 +29,12 @@ struct KeyImportOverviewScreen: View {
     
     var body: some View {
         Screen(edgeInsets: .init(leading: 24, trailing: 24)) {
-            VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 0) {
                 Spacer()
-
                 animation
-
                 Spacer()
-
                 VStack(spacing: 0) {
-                    contentView
+                    informationView
 
                     Spacer().frame(maxHeight: 32)
 
@@ -77,10 +74,11 @@ struct KeyImportOverviewScreen: View {
     
     var animation: some View {
         animationVM?.view()
+            .frame(width: 350, height: 240)
             .offset(x: -48)
     }
 
-    var contentView: some View {
+    var informationView: some View {
         VStack(alignment: .leading, spacing: 32) {
             VStack(alignment: .leading, spacing: 16) {
                 CustomHighlightText(
@@ -117,7 +115,7 @@ struct KeyImportOverviewScreen: View {
 
     private func onLoad() {
         animationVM = RiveViewModel(fileName: animationFileName)
-        animationVM?.fit = .fitWidth
+        animationVM?.fit = .fitHeight
     }
 }
 
@@ -126,6 +124,7 @@ struct KeyImportOverviewScreen: View {
         vault: .example,
         email: nil,
         keyImportInput: nil,
-        setupType: .fast
+        setupType: .secure(numberOfDevices: 1)
     )
+    .frame(maxHeight: isMacOS ? 600 : nil)
 }

@@ -13,7 +13,6 @@ extension KeygenView {
     
     var content: some View {
         container
-            .navigationTitle(NSLocalizedString(tssType == .Migrate ? "" : "creatingVault", comment: ""))
             .navigationBarTitleDisplayMode(.inline)
             .onLoad {
                 Task {

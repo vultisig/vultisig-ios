@@ -124,7 +124,6 @@
 "createReferralCode" = "Crea codice di riferimento";
 "createYourCodeAndEarn" = "Crea il tuo codice e guadagna 10 bps sugli swap";
 "creatingTssInstance" = "CREANDO ISTANZA TSS...";
-"creatingVault" = "Creazione del Vault";
 "Croatian" = "Croato";
 "Chinese" = "Cinese";
 "currency" = "Valuta";
@@ -1164,7 +1163,7 @@
 "scanningForChainsSubtitleHighlight" = "Questo processo può richiedere fino a 2 minuti.";
 "selectChainsManually" = "Seleziona chain manualmente";
 "noActiveChainsFound" = "Nessuna chain attiva trovata";
-"noActiveChainsFoundSubtitle" = "Non abbiamo rilevato alcun asset su questa seed phrase.\nOgni chain aggiuntiva aumenta il tempo per generare il tuo vault e la possibilità di un timeout.";
+"noActiveChainsFoundSubtitle" = "Non abbiamo rilevato alcun asset su questa seed phrase.\n\nOgni chain aggiuntiva aumenta il tempo per generare il tuo vault e la possibilità di un timeout.";
 "addCustomChains" = "Aggiungi chain personalizzate";
 "foundActiveChainsTitle" = "Abbiamo trovato %d chain attive";
 "foundActiveChainsSubtitle" = "Ogni chain aggiuntiva raddoppia approssimativamente il tempo per generare il tuo vault. Tempo stimato per tutte le chain selezionate: %d minuti";

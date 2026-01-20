@@ -124,7 +124,6 @@
 "createReferralCode" = "Stvorite referalni kod";
 "createYourCodeAndEarn" = "Kreiraj vlastiti kod i zaradi 10 bps na swapovima";
 "creatingTssInstance" = "STVARANJE TSS INSTANCE...";
-"creatingVault" = "Stvaranje Trezora";
 "Croatian" = "Hrvatski";
 "Chinese" = "Kineski";
 "currency" = "Valuta";
@@ -1164,7 +1163,7 @@
 "scanningForChainsSubtitleHighlight" = "Ovaj proces može potrajati do 2 minute.";
 "selectChainsManually" = "Odaberi chainove ručno";
 "noActiveChainsFound" = "Nisu pronađeni aktivni chainovi";
-"noActiveChainsFoundSubtitle" = "Nismo otkrili nikakvu imovinu na ovoj seed frazi.\nSvaki dodatni chain povećava vrijeme za generiranje vašeg trezora i mogućnost isteka vremena.";
+"noActiveChainsFoundSubtitle" = "Nismo otkrili nikakvu imovinu na ovoj seed frazi.\n\nSvaki dodatni chain povećava vrijeme za generiranje vašeg trezora i mogućnost isteka vremena.";
 "addCustomChains" = "Dodaj prilagođene chainove";
 "foundActiveChainsTitle" = "Pronašli smo %d aktivnih chainova";
 "foundActiveChainsSubtitle" = "Svaki dodatni chain otprilike udvostručuje vrijeme za generiranje vašeg trezora. Procijenjeno vrijeme za sve odabrane chainove: %d minuta";

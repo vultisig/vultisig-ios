@@ -13,6 +13,7 @@ extension JoinKeygenView {
         ZStack {
             Background()
             shadow
+                .showIf(viewModel.status != .KeygenStarted)
             main
         }
     }

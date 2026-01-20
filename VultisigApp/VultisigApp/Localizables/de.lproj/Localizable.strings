@@ -124,7 +124,6 @@
 "createReferralCode" = "Empfehlungscode erstellen";
 "createYourCodeAndEarn" = "Erstelle deinen eigenen Code und verdiene 10 Bps beim Swappen";
 "creatingTssInstance" = "TSS-INSTANZ ERSTELLEN...";
-"creatingVault" = "Tresor wird erstellt";
 "Croatian" = "Kroatisch";
 "Chinese" = "Chinesisch";
 "currency" = "Währung";
@@ -1164,7 +1163,7 @@
 "scanningForChainsSubtitleHighlight" = "Dieser Vorgang kann bis zu 2 Minuten dauern.";
 "selectChainsManually" = "Chains manuell auswählen";
 "noActiveChainsFound" = "Keine aktiven Chains gefunden";
-"noActiveChainsFoundSubtitle" = "Wir haben keine Assets auf dieser Seed-Phrase erkannt.\nJede zusätzliche Chain erhöht die Zeit zur Generierung Ihres Tresors und die Möglichkeit einer Zeitüberschreitung.";
+"noActiveChainsFoundSubtitle" = "Wir haben keine Assets auf dieser Seed-Phrase erkannt.\n\nJede zusätzliche Chain erhöht die Zeit zur Generierung Ihres Tresors und die Möglichkeit einer Zeitüberschreitung.";
 "addCustomChains" = "Benutzerdefinierte Chains hinzufügen";
 "foundActiveChainsTitle" = "Wir haben %d aktive Chains gefunden";
 "foundActiveChainsSubtitle" = "Jede zusätzliche Chain verdoppelt ungefähr die Zeit zur Generierung Ihres Tresors. Geschätzte Zeit für alle ausgewählten Chains: %d Minuten";

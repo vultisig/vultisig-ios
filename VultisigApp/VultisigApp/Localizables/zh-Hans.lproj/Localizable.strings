@@ -126,7 +126,6 @@
 "createReferralCode" = "创建推荐码";
 "createYourCodeAndEarn" = "创建您自己的代码并在推荐交换中赚取 %@";
 "creatingTssInstance" = "正在创建 TSS 实例...";
-"creatingVault" = "正在创建保险库";
 "Croatian" = "克罗地亚语";
 "Chinese" = "中文";
 "currency" = "货币";
@@ -1166,7 +1165,7 @@
 "scanningForChainsSubtitleHighlight" = "此过程可能需要长达2分钟。";
 "selectChainsManually" = "手动选择链";
 "noActiveChainsFound" = "未找到活跃链";
-"noActiveChainsFoundSubtitle" = "我们未在此助记词中检测到任何资产。\n每增加一条链都会增加生成保险库的时间和超时的可能性。";
+"noActiveChainsFoundSubtitle" = "我们未在此助记词中检测到任何资产。\n\n每增加一条链都会增加生成保险库的时间和超时的可能性。";
 "addCustomChains" = "添加自定义链";
 "foundActiveChainsTitle" = "我们找到了%d条活跃链";
 "foundActiveChainsSubtitle" = "每增加一条链大约会使生成保险库的时间翻倍。所有选定链的预计时间：%d分钟";

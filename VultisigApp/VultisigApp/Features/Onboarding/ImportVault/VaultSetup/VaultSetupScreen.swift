@@ -10,13 +10,13 @@ import SwiftUI
 struct VaultSetupScreen: View {
     let tssType: TssType
     let keyImportInput: KeyImportInput?
-    let setupType: KeyImportSetupType?
+    let setupType: KeyImportSetupType
 
     enum FocusedField {
         case name, referral, email, password, passwordConfirm, hint
     }
 
-    @StateObject var viewModel = VaultSetupViewModel()
+    @StateObject var viewModel: VaultSetupViewModel
 
     @State var scrollViewProxy: ScrollViewProxy?
     @State var focusedFieldBinding: FocusedField? = .none
@@ -25,16 +25,11 @@ struct VaultSetupScreen: View {
     @State var referralExpanded = false
     @Environment(\.router) var router
 
-    /// Whether to show FastSign fields (email and password)
-    var showFastSignFields: Bool {
-        // Show if setupType is nil (backward compat) or .fast
-        setupType?.requiresFastSign ?? true
-    }
-
     init(tssType: TssType, keyImportInput: KeyImportInput?, setupType: KeyImportSetupType? = nil) {
         self.tssType = tssType
         self.keyImportInput = keyImportInput
-        self.setupType = setupType
+        self.setupType = setupType ?? .fast
+        _viewModel = StateObject(wrappedValue: VaultSetupViewModel(setupType: setupType ?? .fast))
     }
     
     var body: some View {
@@ -46,7 +41,7 @@ struct VaultSetupScreen: View {
         ) {
             nameSection
 
-            if showFastSignFields {
+            if viewModel.showFastSignFields {
                 emailSection
                 passwordSection
             }
@@ -207,7 +202,7 @@ struct VaultSetupScreen: View {
     }
     
     func onContinue() {
-        if showFastSignFields {
+        if viewModel.showFastSignFields {
             switch focusedField {
             case .name, .referral:
                 focusedFieldBinding = .email
@@ -226,8 +221,8 @@ struct VaultSetupScreen: View {
         router.navigate(to: OnboardingRoute.keyImportNewVaultSetup(
             vault: viewModel.getVault(keyImportInput: keyImportInput),
             keyImportInput: keyImportInput,
-            fastSignConfig: showFastSignFields ? viewModel.fastConfig : nil,
-            setupType: setupType ?? .fast
+            fastSignConfig: viewModel.showFastSignFields ? viewModel.fastConfig : nil,
+            setupType: setupType
         ))
     }
 }

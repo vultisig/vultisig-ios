@@ -25,7 +25,7 @@ struct KeyImportCustomizeChainsView: View {
             )
             
             PrimaryButton(title: "continue".localized, action: {
-                if viewModel.selectedChains.contains(.solana) {
+                if viewModel.selectedChains.contains(.solana) && viewModel.hasMultipleDerivations(for: .solana) {
                     showDerivationSheet = true
                 } else {
                     onImport()
