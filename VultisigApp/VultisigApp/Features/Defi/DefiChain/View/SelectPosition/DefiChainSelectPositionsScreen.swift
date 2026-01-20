@@ -60,7 +60,7 @@ struct DefiChainSelectPositionsScreen: View {
         selection = [
             defiPositions?.bonds ?? [],
             defiPositions?.staking ?? [],
-            defiPositions?.lps ?? [],
+            defiPositions?.lps ?? []
         ]
     }
     

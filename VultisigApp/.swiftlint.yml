@@ -12,3 +12,4 @@ disabled_rules:
   - force_cast
   - function_parameter_count
   - large_tuple
+  - implicit_optional_initialization
