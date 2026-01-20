@@ -1157,6 +1157,7 @@
 		B5F7581D2BD8FDA20097B5B9 /* SuiCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F7581C2BD8FDA20097B5B9 /* SuiCoin.swift */; };
 		B5FF07032ED9424E00B0FD55 /* SendCryptoVerifyLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5FF07022ED9424E00B0FD55 /* SendCryptoVerifyLogic.swift */; };
 		B5FFB0F42E7858EB0062F63C /* PendingTransactionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5FFB0F32E7858E90062F63C /* PendingTransactionManager.swift */; };
+		B8EE4E5E8A055C8FC1733C12 /* DerivationPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C1F4585DF366BFCCCC513A9 /* DerivationPath.swift */; };
 		BU61YTK5IM2CA6CN47V4L8BG /* FunctionCallAddThorLP.swift in Sources */ = {isa = PBXBuildFile; fileRef = BWXBB99J8F32LB10N1PT9BIH /* FunctionCallAddThorLP.swift */; };
 		CCD4367C48BE63087AD4736C /* LPUnitsValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C3E3E97CE3E3775F004F4EE /* LPUnitsValidator.swift */; };
 		CF711D753DDB0FC62425A9DA /* KyberSwapQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7878748BB9E16298184860 /* KyberSwapQuote.swift */; };
@@ -1833,6 +1834,7 @@
 		46F8F7202B99FDB70099454E /* TransactionBroadcastResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionBroadcastResponse.swift; sourceTree = "<group>"; };
 		46F8F7252B99FEEC0099454E /* CosmosErrorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosErrorResponse.swift; sourceTree = "<group>"; };
 		46F8F7272B9A011B0099454E /* ThorchainBroadcastTransactionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainBroadcastTransactionService.swift; sourceTree = "<group>"; };
+		5C1F4585DF366BFCCCC513A9 /* DerivationPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivationPath.swift; sourceTree = "<group>"; };
 		5E7878748BB9E16298184860 /* KyberSwapQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapQuote.swift; sourceTree = "<group>"; };
 		6B96312D2493F377B159E118 /* CircleDepositView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CircleDepositView.swift; sourceTree = "<group>"; };
 		6B96312D2493F377B159E119 /* CircleDepositView+iOS.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "CircleDepositView+iOS.swift"; sourceTree = "<group>"; };
@@ -6165,6 +6167,7 @@
 				A65649E92B96690400E4B329 /* KeyShare.swift */,
 				DE49A19B2B67133D000F3AFB /* Vault.swift */,
 				B217CEA82ED5A00800503503 /* ChainPublicKey.swift */,
+				5C1F4585DF366BFCCCC513A9 /* DerivationPath.swift */,
 				DE8BDCCA2C47E34300A1EDA6 /* Vault+ProtoMappable.swift */,
 				A5BDC7BD2C32FF4A004DBBE7 /* CoinsGrouped.swift */,
 				DE49A19F2B67143B000F3AFB /* Chain.swift */,
@@ -7398,6 +7401,7 @@
 				A56386862C3A21B8008B848E /* KeysignMessage+ProtoMappable.swift in Sources */,
 				A675305E2CAFB2CE00B1E344 /* FolderVaultCell.swift in Sources */,
 				B217CEA92ED5A01B00503503 /* ChainPublicKey.swift in Sources */,
+				B8EE4E5E8A055C8FC1733C12 /* DerivationPath.swift in Sources */,
 				13A078702E8484280093496F /* ListBottomSection.swift in Sources */,
 				A6505AF72CA678B30002FBF4 /* OnDropQRUtils.swift in Sources */,
 				132354552ECB5C9500BAFE7C /* ThrottledOnAppearModifier.swift in Sources */,

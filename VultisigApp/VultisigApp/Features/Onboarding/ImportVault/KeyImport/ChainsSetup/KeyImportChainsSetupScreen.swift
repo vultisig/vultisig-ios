@@ -50,11 +50,21 @@ struct KeyImportChainsSetupScreen: View {
     }
     
     func presentVaultSetup() {
+        // Build chain settings with derivations
+        let chainSettings = viewModel.chainsToImport.map { chain -> ChainImportSetting in
+            let derivationPath = viewModel.derivationPath(for: chain)
+            // Only store non-default derivations
+            if derivationPath != .default {
+                return ChainImportSetting(chain: chain, derivationPath: derivationPath)
+            }
+            return ChainImportSetting(chain: chain)
+        }
+
         router.navigate(to: OnboardingRoute.vaultSetup(
             tssType: .KeyImport,
             keyImportInput: KeyImportInput(
                 mnemonic: mnemonic,
-                chains: viewModel.chainsToImport
+                chainSettings: chainSettings
             )
         ))
     }

@@ -155,25 +155,25 @@ struct JoinKeysignDoneSummary: View {
             if isVerticalStacked {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(NSLocalizedString(title, comment: ""))
-                        .font(Theme.fonts.bodyLMedium)
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundColor(Theme.colors.textTertiary)
                     
                     Text(description)
-                        .foregroundColor(Theme.colors.bgButtonPrimary)
-                        .font(Theme.fonts.footnote)
+                        .foregroundColor(Theme.colors.textPrimary)
+                        .font(Theme.fonts.bodySMedium)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             } else {
                 HStack {
                     Text(NSLocalizedString(title, comment: ""))
-                    
+                        .foregroundColor(Theme.colors.textTertiary)
                     Spacer()
-                    
                     Text(description)
+                        .foregroundColor(Theme.colors.textPrimary)
                 }
-                .font(Theme.fonts.bodyMMedium)
+                .font(Theme.fonts.bodySMedium)
             }
         }
-        .foregroundColor(Theme.colors.textPrimary)
     }
     
     private func card(title: String, txid: String) -> some View {
@@ -182,7 +182,7 @@ struct JoinKeysignDoneSummary: View {
             
             Text(txid)
                 .font(Theme.fonts.footnote)
-                .foregroundColor(Theme.colors.bgButtonPrimary)
+                .foregroundColor(Theme.colors.textPrimary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
@@ -195,7 +195,7 @@ struct JoinKeysignDoneSummary: View {
         HStack(spacing: 12) {
             Text(title)
                 .font(Theme.fonts.bodyLMedium)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundColor(Theme.colors.textTertiary)
             
             copyButton(txid: txid)
             linkButton(txid: txid)

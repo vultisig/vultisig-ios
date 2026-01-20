@@ -1254,3 +1254,4 @@
 // Maya Unbond Node Status
 "nodeActiveCannotUnbond" = "Node is %@ - cannot unbond while active";
 "nodeChurnedCanUnbond" = "Node is churned out - unbonding available";
+"message" = "Message";
