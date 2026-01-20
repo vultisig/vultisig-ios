@@ -43,7 +43,8 @@ struct KeyImportNewVaultSetupScreen: View {
                             vault: vault,
                             selectedTab: selectedTab,
                             fastSignConfig: fastSignConfig,
-                            keyImportInput: keyImportInput
+                            keyImportInput: keyImportInput,
+                            setupType: setupType
                         ))
                     }
                 }

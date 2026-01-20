@@ -12,19 +12,22 @@ struct PeerDiscoveryView: View {
     let selectedTab: SetupVaultState
     let fastSignConfig: FastSignConfig?
     let keyImportInput: KeyImportInput?
-    
+    let setupType: KeyImportSetupType?
+
     init(
         tssType: TssType,
         vault: Vault,
         selectedTab: SetupVaultState,
         fastSignConfig: FastSignConfig?,
-        keyImportInput: KeyImportInput? = nil
+        keyImportInput: KeyImportInput? = nil,
+        setupType: KeyImportSetupType? = nil
     ) {
         self.tssType = tssType
         self.vault = vault
         self.selectedTab = selectedTab
         self.fastSignConfig = fastSignConfig
         self.keyImportInput = keyImportInput
+        self.setupType = setupType
     }
 
     @StateObject var viewModel = KeygenPeerDiscoveryViewModel()
@@ -165,22 +168,20 @@ struct PeerDiscoveryView: View {
         case .Migrate:
             return Set(viewModel.selections) != Set(viewModel.vault.signers)
         case .KeyImport:
-            // Check if required number of devices are selected
-            let hasRequiredDevices: Bool
-            switch selectedTab {
-            case .fast:
-                hasRequiredDevices = viewModel.selections.count == 2
-            case .secure, .active:
-                hasRequiredDevices = viewModel.selections.count >= 2
+            // Key import requires setupType, and this screen shouldn't be shown for fast
+            guard
+                let setupType,
+                case let .secure(numberOfDevices) = setupType
+            else {
+                return false
             }
-
-            // Check if any selection contains "server" (case-insensitive)
-            let hasServerSelection = viewModel.selections.contains { selection in
-                selection.lowercased().contains("server")
+            
+            switch numberOfDevices {
+            case 0...3:
+                return viewModel.selections.count != numberOfDevices
+            default:
+                return viewModel.selections.count < numberOfDevices
             }
-
-            // Disable if required devices not met OR if server is selected
-            return !hasRequiredDevices || hasServerSelection
         }
     }
     

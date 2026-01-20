@@ -70,7 +70,8 @@ struct ReshareView: View {
                 vault: vault,
                 selectedTab: .secure,
                 fastSignConfig: nil,
-                keyImportInput: nil
+                keyImportInput: nil,
+                setupType: nil
             ))
         }
     }

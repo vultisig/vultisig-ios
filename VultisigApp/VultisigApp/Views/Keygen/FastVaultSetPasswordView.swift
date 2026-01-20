@@ -53,7 +53,8 @@ struct FastVaultSetPasswordView: View {
                 vault: vault,
                 selectedTab: selectedTab,
                 fastSignConfig: fastSignConfig,
-                keyImportInput: nil
+                keyImportInput: nil,
+                setupType: nil
             ))
         } else {
             router.navigate(to: KeygenRoute.fastVaultSetHint(
