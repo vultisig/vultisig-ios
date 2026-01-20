@@ -12,7 +12,7 @@ struct EditFolderScreen: View {
     let folder: Folder
     var onDelete: (Folder) -> Void
     var onClose: () -> Void
-    
+
     @Query var folders: [Folder]
     @Query var vaults: [Vault]
     

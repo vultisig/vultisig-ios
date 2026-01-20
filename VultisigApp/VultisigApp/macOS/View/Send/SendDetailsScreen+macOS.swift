@@ -28,10 +28,5 @@ extension SendDetailsScreen {
             await getBalance()
         }
     }
-    
-    func closeSheets() {
-        sendDetailsViewModel.showCoinPickerSheet = false
-        sendDetailsViewModel.showChainPickerSheet = false
-    }
 }
 #endif

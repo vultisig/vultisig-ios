@@ -92,4 +92,3 @@ struct CircleView: View {
         }
     }
 }
-

@@ -9,11 +9,6 @@
 import SwiftUI
 
 extension SwapCryptoDetailsView {
-   var overlay: some View {
-        MacOSOverlay()
-            .onTapGesture(perform: closeSheets)
-    }
-    
     var view: some View {
        content
             .padding(.horizontal, 25)
@@ -39,13 +34,6 @@ extension SwapCryptoDetailsView {
             .padding(.horizontal, 16)
         }
         .scrollClipDisabled()
-    }
-    
-    func closeSheets() {
-        swapViewModel.showFromChainSelector = false
-        swapViewModel.showToChainSelector = false
-        swapViewModel.showFromCoinSelector = false
-        swapViewModel.showToCoinSelector = false
     }
 }
 #endif

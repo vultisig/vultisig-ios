@@ -87,11 +87,6 @@ extension PeerDiscoveryView {
         .padding(.top, 8)
     }
     
-    var networkPrompts: some View {
-        NetworkPrompts(selectedNetwork: $viewModel.selectedNetwork)
-            .padding(.top, 10)
-    }
-    
     var devices: some View {
         ForEach(participantDiscovery.peersFound, id: \.self) { peer in
             Button {

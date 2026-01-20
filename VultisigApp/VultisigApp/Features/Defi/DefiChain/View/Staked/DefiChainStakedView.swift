@@ -31,7 +31,6 @@ struct DefiChainStakedView<EmptyStateView: View>: View {
         .map { ($0.position, $0.fiatAmount.formatToFiat(includeCurrencySymbol: true))}
     }
     
-    
     var body: some View {
         LazyVStack(spacing: 14) {
             if showLoading {

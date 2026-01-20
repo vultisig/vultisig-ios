@@ -89,7 +89,7 @@ struct KeyImportNewVaultSetupScreen: View {
                     LinearGradient(
                         stops: [
                             Gradient.Stop(color: Color(red: 0.04, green: 0.07, blue: 0.18), location: 0.00),
-                            Gradient.Stop(color: Color(red: 0.22, green: 0.39, blue: 0.6).opacity(0), location: 1.00),
+                            Gradient.Stop(color: Color(red: 0.22, green: 0.39, blue: 0.6).opacity(0), location: 1.00)
                         ],
                         startPoint: .bottom,
                         endPoint: .top

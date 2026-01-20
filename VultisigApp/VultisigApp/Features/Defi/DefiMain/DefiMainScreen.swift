@@ -81,7 +81,7 @@ struct DefiMainScreen: View {
             }
         }
         .throttledOnAppear(interval: 15.0, action: refresh)
-        .onChange(of: vault) { oldValue, newValue in
+        .onChange(of: vault) { _, _ in
             refresh()
         }
     }
