@@ -1272,3 +1272,11 @@
 "vaultSetup4Feature2Description" = "Agrega tantos dispositivos como quieras y recibe seguridad de grado institucional.";
 "vaultSetup4Feature3Title" = "Construido para equipos y tesorerías";
 "vaultSetup4Feature3Description" = "Ideal para equipos que gestionan fondos compartidos y bóvedas de alto valor, que requieren más firmantes.";
+
+"backupEachDevice" = "Respalda cada dispositivo";
+"backupEachDeviceDescription" = "Este es solo 1 respaldo de tu bóveda, repite este proceso para los otros dispositivos.";
+"backupsDescription" = "En lugar de una sola frase semilla, tu bóveda está asegurada por múltiples dispositivos. Cada dispositivo tiene su propio respaldo. Un respaldo solo no puede mover fondos. Los respaldos son solo para recuperación.";
+"backupsTitle" = "Respaldos, tu nuevo método de recuperación";
+"backupsTitleHighlight" = "Respaldos";
+"storeBackupsSeparately" = "Almacena los respaldos por separado";
+"storeBackupsSeparatelyDescription" = "Guarda cada respaldo en un lugar diferente. Si uno se ve comprometido, tus fondos permanecen seguros.";

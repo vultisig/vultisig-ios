@@ -1271,3 +1271,11 @@
 "vaultSetup4Feature2Description" = "Dodajte koliko god uređaja želite i dobijte institucionalnu razinu sigurnosti.";
 "vaultSetup4Feature3Title" = "Izrađeno za timove i riznice";
 "vaultSetup4Feature3Description" = "Idealno za timove koji upravljaju zajedničkim sredstvima i trezorima veće vrijednosti, koji zahtijevaju više potpisnika.";
+
+"backupEachDevice" = "Napravite sigurnosnu kopiju svakog uređaja";
+"backupEachDeviceDescription" = "Ovo je samo 1 sigurnosna kopija vašeg trezora, ponovite ovaj postupak za ostale uređaje.";
+"backupsDescription" = "Umjesto jedne seed fraze, vaš trezor je osiguran s više uređaja. Svaki uređaj ima svoju sigurnosnu kopiju. Sigurnosna kopija sama ne može premjestiti sredstva. Sigurnosne kopije su samo za oporavak.";
+"backupsTitle" = "Sigurnosne kopije, vaša nova metoda oporavka";
+"backupsTitleHighlight" = "Sigurnosne kopije";
+"storeBackupsSeparately" = "Čuvajte sigurnosne kopije odvojeno";
+"storeBackupsSeparatelyDescription" = "Čuvajte svaku sigurnosnu kopiju na drugom mjestu. Ako je jedna kompromitirana, vaša sredstva ostaju sigurna.";

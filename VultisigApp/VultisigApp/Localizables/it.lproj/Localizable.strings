@@ -1271,3 +1271,11 @@
 "vaultSetup4Feature2Description" = "Aggiungi quanti dispositivi vuoi e ricevi sicurezza di livello istituzionale.";
 "vaultSetup4Feature3Title" = "Costruito per team e tesorerie";
 "vaultSetup4Feature3Description" = "Ideale per team che gestiscono fondi condivisi e vault di alto valore, che richiedono più firmatari.";
+
+"backupEachDevice" = "Esegui il backup di ogni dispositivo";
+"backupEachDeviceDescription" = "Questo è solo 1 backup del tuo vault, ripeti questo processo per gli altri dispositivi.";
+"backupsDescription" = "Invece di una singola frase seed, il tuo vault è protetto da più dispositivi. Ogni dispositivo ha il proprio backup. Un backup da solo non può spostare fondi. I backup sono solo per il recupero.";
+"backupsTitle" = "Backup, il tuo nuovo metodo di recupero";
+"backupsTitleHighlight" = "Backup";
+"storeBackupsSeparately" = "Conserva i backup separatamente";
+"storeBackupsSeparatelyDescription" = "Conserva ogni backup in un luogo diverso. Se uno viene compromesso, i tuoi fondi rimangono al sicuro.";

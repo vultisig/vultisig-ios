@@ -27,11 +27,12 @@ struct KeygenRouter {
                 backupType: backupType,
                 isNewVault: isNewVault
             )
-        case .keyImportOverview(let vault, let email, let keyImportInput):
+        case .keyImportOverview(let vault, let email, let keyImportInput, let setupType):
             viewBuilder.buildKeyImportOverviewScreen(
                 vault: vault,
                 email: email,
-                keyImportInput: keyImportInput
+                keyImportInput: keyImportInput,
+                setupType: setupType
             )
         case .peerDiscovery(let tssType, let vault, let selectedTab, let fastSignConfig, let keyImportInput):
             viewBuilder.buildPeerDiscoveryScreen(

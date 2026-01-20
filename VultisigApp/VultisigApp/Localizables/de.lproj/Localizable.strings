@@ -1271,3 +1271,11 @@
 "vaultSetup4Feature2Description" = "Fügen Sie so viele Geräte hinzu, wie Sie möchten, und erhalten Sie institutionelle Sicherheit.";
 "vaultSetup4Feature3Title" = "Gebaut für Teams und Treasuries";
 "vaultSetup4Feature3Description" = "Ideal für Teams, die gemeinsame Mittel und höherwertige Tresore verwalten, die mehr Unterzeichner erfordern.";
+
+"backupEachDevice" = "Jedes Gerät sichern";
+"backupEachDeviceDescription" = "Dies ist nur 1 Backup Ihres Tresors, wiederholen Sie diesen Vorgang für die anderen Geräte.";
+"backupsDescription" = "Anstelle einer einzelnen Seed-Phrase ist Ihr Tresor durch mehrere Geräte gesichert. Jedes Gerät hat sein eigenes Backup. Ein Backup allein kann keine Gelder bewegen. Backups sind nur für die Wiederherstellung.";
+"backupsTitle" = "Backups, Ihre neue Wiederherstellungsmethode";
+"backupsTitleHighlight" = "Backups";
+"storeBackupsSeparately" = "Backups getrennt speichern";
+"storeBackupsSeparatelyDescription" = "Bewahren Sie jedes Backup an einem anderen Ort auf. Wenn eines kompromittiert wird, bleiben Ihre Gelder sicher.";

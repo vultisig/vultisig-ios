@@ -11,7 +11,7 @@ enum KeygenRoute: Hashable {
     case fastBackupOverview(tssType: TssType, vault: Vault, email: String)
     case secureBackupOverview(vault: Vault)
     case backupNow(tssType: TssType, backupType: VaultBackupType, isNewVault: Bool)
-    case keyImportOverview(vault: Vault, email: String?, keyImportInput: KeyImportInput?)
+    case keyImportOverview(vault: Vault, email: String?, keyImportInput: KeyImportInput?, setupType: KeyImportSetupType)
     case peerDiscovery(tssType: TssType, vault: Vault, selectedTab: SetupVaultState, fastSignConfig: FastSignConfig?, keyImportInput: KeyImportInput?)
     case fastVaultEmail(tssType: TssType, vault: Vault, selectedTab: SetupVaultState, fastVaultExist: Bool)
     case fastVaultSetHint(tssType: TssType, vault: Vault, selectedTab: SetupVaultState, fastVaultEmail: String, fastVaultPassword: String, fastVaultExist: Bool)

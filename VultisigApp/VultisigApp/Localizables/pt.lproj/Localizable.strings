@@ -1271,3 +1271,11 @@
 "vaultSetup4Feature2Description" = "Adicione quantos dispositivos quiser e receba segurança de nível institucional.";
 "vaultSetup4Feature3Title" = "Construído para equipes e tesourarias";
 "vaultSetup4Feature3Description" = "Ideal para equipes que gerenciam fundos compartilhados e cofres de alto valor, que exigem mais signatários.";
+
+"backupEachDevice" = "Faça backup de cada dispositivo";
+"backupEachDeviceDescription" = "Este é apenas 1 backup do seu cofre, repita este processo para os outros dispositivos.";
+"backupsDescription" = "Em vez de uma única frase semente, seu cofre é protegido por vários dispositivos. Cada dispositivo tem seu próprio backup. Um backup sozinho não pode mover fundos. Backups são apenas para recuperação.";
+"backupsTitle" = "Backups, seu novo método de recuperação";
+"backupsTitleHighlight" = "Backups";
+"storeBackupsSeparately" = "Armazene backups separadamente";
+"storeBackupsSeparatelyDescription" = "Mantenha cada backup em um local diferente. Se um for comprometido, seus fundos permanecem seguros.";

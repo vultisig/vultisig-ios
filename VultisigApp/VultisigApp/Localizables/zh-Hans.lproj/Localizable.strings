@@ -1273,3 +1273,11 @@
 "vaultSetup4Feature2Description" = "添加任意数量的设备，获得机构级安全性。";
 "vaultSetup4Feature3Title" = "为团队和财务构建";
 "vaultSetup4Feature3Description" = "适合管理共享资金和高价值保险库的团队，需要更多签名者。";
+
+"backupEachDevice" = "备份每个设备";
+"backupEachDeviceDescription" = "这只是您保险库的1个备份，请对其他设备重复此过程。";
+"backupsDescription" = "您的保险库不是由单个助记词保护，而是由多个设备保护。每个设备都有自己的备份。单个备份无法转移资金。备份仅用于恢复。";
+"backupsTitle" = "备份，您的新恢复方法";
+"backupsTitleHighlight" = "备份";
+"storeBackupsSeparately" = "分别存储备份";
+"storeBackupsSeparatelyDescription" = "将每个备份保存在不同的地方。如果一个被泄露，您的资金仍然安全。";

@@ -17,7 +17,7 @@ struct OnboardingInformationRowView: View {
             Icon(
                 named: icon,
                 color: Theme.colors.alertInfo,
-                size: 20
+                size: 24
             )
             VStack(alignment: .leading, spacing: 8) {
                 Text(title)

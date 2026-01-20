@@ -44,12 +44,14 @@ struct KeygenRouteBuilder {
     func buildKeyImportOverviewScreen(
         vault: Vault,
         email: String?,
-        keyImportInput: KeyImportInput?
+        keyImportInput: KeyImportInput?,
+        setupType: KeyImportSetupType
     ) -> some View {
         KeyImportOverviewScreen(
             vault: vault,
             email: email,
-            keyImportInput: keyImportInput
+            keyImportInput: keyImportInput,
+            setupType: setupType
         )
     }
 

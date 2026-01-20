@@ -237,6 +237,10 @@
 		137561DC2EF05CDB00FBCEC3 /* ChainDetailScreenContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137561DB2EF05CD400FBCEC3 /* ChainDetailScreenContainer.swift */; };
 		137587032E56151B0048C795 /* SettingsOptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137587022E56151B0048C795 /* SettingsOptionView.swift */; };
 		137650832E8DC1060012C60A /* VaultMainScreenScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137650822E8DC0FE0012C60A /* VaultMainScreenScrollView.swift */; };
+		137709302F1FC57E00970668 /* backup_device4.riv in Resources */ = {isa = PBXBuildFile; fileRef = 1377092F2F1FC57D00970668 /* backup_device4.riv */; };
+		137709312F1FC57E00970668 /* backup_device1.riv in Resources */ = {isa = PBXBuildFile; fileRef = 1377092C2F1FC57D00970668 /* backup_device1.riv */; };
+		137709322F1FC57E00970668 /* backup_device2.riv in Resources */ = {isa = PBXBuildFile; fileRef = 1377092D2F1FC57D00970668 /* backup_device2.riv */; };
+		137709332F1FC57E00970668 /* backup_device3.riv in Resources */ = {isa = PBXBuildFile; fileRef = 1377092E2F1FC57D00970668 /* backup_device3.riv */; };
 		1377C8DE2E5F9855006DC969 /* VaultBackupSelectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1377C8DD2E5F984C006DC969 /* VaultBackupSelectionScreen.swift */; };
 		1377FE412F02A5DF00EF3B85 /* keygen_animation.riv in Resources */ = {isa = PBXBuildFile; fileRef = 1377FE402F02A5DF00EF3B85 /* keygen_animation.riv */; };
 		1378B04B2E462ADB005CC32D /* CircularProgressIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1378B04A2E462AD6005CC32D /* CircularProgressIndicator.swift */; };
@@ -1535,6 +1539,10 @@
 		137561DB2EF05CD400FBCEC3 /* ChainDetailScreenContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailScreenContainer.swift; sourceTree = "<group>"; };
 		137587022E56151B0048C795 /* SettingsOptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsOptionView.swift; sourceTree = "<group>"; };
 		137650822E8DC0FE0012C60A /* VaultMainScreenScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainScreenScrollView.swift; sourceTree = "<group>"; };
+		1377092C2F1FC57D00970668 /* backup_device1.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = backup_device1.riv; sourceTree = "<group>"; };
+		1377092D2F1FC57D00970668 /* backup_device2.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = backup_device2.riv; sourceTree = "<group>"; };
+		1377092E2F1FC57D00970668 /* backup_device3.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = backup_device3.riv; sourceTree = "<group>"; };
+		1377092F2F1FC57D00970668 /* backup_device4.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = backup_device4.riv; sourceTree = "<group>"; };
 		1377C8DD2E5F984C006DC969 /* VaultBackupSelectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBackupSelectionScreen.swift; sourceTree = "<group>"; };
 		1377FE402F02A5DF00EF3B85 /* keygen_animation.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = keygen_animation.riv; sourceTree = "<group>"; };
 		1378B04A2E462AD6005CC32D /* CircularProgressIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularProgressIndicator.swift; sourceTree = "<group>"; };
@@ -5900,6 +5908,10 @@
 		A6F7B6702D42BDB700AC8104 /* Animations */ = {
 			isa = PBXGroup;
 			children = (
+				1377092C2F1FC57D00970668 /* backup_device1.riv */,
+				1377092D2F1FC57D00970668 /* backup_device2.riv */,
+				1377092E2F1FC57D00970668 /* backup_device3.riv */,
+				1377092F2F1FC57D00970668 /* backup_device4.riv */,
 				132E01622F1AA2FA007E717C /* devices_component.riv */,
 				132E01632F1AA2FA007E717C /* vault_setup_device1.riv */,
 				132E01642F1AA2FA007E717C /* vault_setup_device2.riv */,
@@ -6723,6 +6735,10 @@
 				A6CBF2DF2C268D1400FD8080 /* Montserrat.ttf in Resources */,
 				DE49A1942B65F7B6000F3AFB /* Mediator in Resources */,
 				132E01672F1AA2FA007E717C /* vault_setup_device4.riv in Resources */,
+				137709302F1FC57E00970668 /* backup_device4.riv in Resources */,
+				137709312F1FC57E00970668 /* backup_device1.riv in Resources */,
+				137709322F1FC57E00970668 /* backup_device2.riv in Resources */,
+				137709332F1FC57E00970668 /* backup_device3.riv in Resources */,
 				132E01682F1AA2FA007E717C /* vault_setup_device3.riv in Resources */,
 				132E01692F1AA2FA007E717C /* devices_component.riv in Resources */,
 				132E016A2F1AA2FA007E717C /* vault_setup_device2.riv in Resources */,

@@ -1309,3 +1309,11 @@
 "vaultSetup4Feature2Description" = "Add as many devices you want and receive institutional grade security.";
 "vaultSetup4Feature3Title" = "Built for teams and treasuries";
 "vaultSetup4Feature3Description" = "Ideal for teams managing shared funds and higher-value vaults, which require more signers.";
+
+"backupEachDevice" = "Back up each device";
+"backupEachDeviceDescription" = "This is only 1 backup of your vault, repeat this process for the other devices.";
+"backupsDescription" = "Instead of a single seed phrase, your vault is secured by multiple devices. Each device has its own backup. A backup on its own can't move funds. Backups are only for recovery.";
+"backupsTitle" = "Backups, your new recovery method";
+"backupsTitleHighlight" = "Backups";
+"storeBackupsSeparately" = "Store backups separately";
+"storeBackupsSeparatelyDescription" = "Keep each backup in a different place. If one is compromised, your funds stay safe.";

@@ -100,10 +100,15 @@ struct KeygenView: View {
                 isNewVault: true
             ))
         case .KeyImport:
+            let setupType: KeyImportSetupType = fastSignConfig != nil
+                ? .fast
+                : .secure(numberOfDevices: keygenCommittee.count)
+
             router.navigate(to: KeygenRoute.keyImportOverview(
                 vault: vault,
                 email: fastSignConfig?.email,
-                keyImportInput: keyImportInput
+                keyImportInput: keyImportInput,
+                setupType: setupType
             ))
         }
     }
