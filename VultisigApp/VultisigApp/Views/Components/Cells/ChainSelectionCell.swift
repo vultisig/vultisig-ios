@@ -20,7 +20,7 @@ struct ChainSelectionCell: View {
             .onAppear {
                 setData()
             }
-            .onChange(of: tokenSelectionViewModel.selection) { oldValue, newValue in
+            .onChange(of: tokenSelectionViewModel.selection) { _, _ in
                 setData()
             }
     }
@@ -41,7 +41,6 @@ struct ChainSelectionCell: View {
     var cell: some View {
         let nativeAsset = assets[0]
         return CoinSelectionCell(asset: nativeAsset)
-            //.redacted(reason: nativeAsset==nil ? .placeholder : [])
     }
     
     private func setData() {

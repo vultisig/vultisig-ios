@@ -46,7 +46,6 @@ struct VaultCell: View {
             .clipped()
     }
     
-    
     var title: some View {
         Text(vault.name.capitalized)
             .font(Theme.fonts.bodyMMedium)

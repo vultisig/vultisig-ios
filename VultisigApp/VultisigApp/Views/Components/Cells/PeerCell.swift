@@ -73,11 +73,9 @@ struct PeerCell: View {
             deviceName = "iPad"
         } else if idString.contains("server-") {
             deviceName = "Server"
-        }
-        else if idString.contains("extension-") {
+        } else if idString.contains("extension-") {
             deviceName = "Extension"
-        }
-        else if idString.contains("windows-") {
+        } else if idString.contains("windows-") {
             deviceName = "Windows"
         } else {
             // likely it will be android device , let's treat it as phone
@@ -91,7 +89,7 @@ struct PeerCell: View {
 #Preview {
     let columns = [
         GridItem(.adaptive(minimum: 200)),
-        GridItem(.adaptive(minimum: 200)),
+        GridItem(.adaptive(minimum: 200))
     ]
     
     return ZStack {

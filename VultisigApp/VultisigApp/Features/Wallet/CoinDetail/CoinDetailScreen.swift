@@ -134,8 +134,7 @@ private extension CoinDetailScreen {
     func onExplorer() {
         if
             let url = Endpoint.getExplorerByCoinURL(coin: coin),
-            let linkURL = URL(string: url)
-        {
+            let linkURL = URL(string: url) {
             openURL(linkURL)
         }
     }

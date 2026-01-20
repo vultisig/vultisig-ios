@@ -5,7 +5,6 @@
 //  Created by Johnny Luo on 30/4/2025.
 //
 
-
 import SwiftUI
 
 struct KeysignWrongVaultTypeErrorView: View {

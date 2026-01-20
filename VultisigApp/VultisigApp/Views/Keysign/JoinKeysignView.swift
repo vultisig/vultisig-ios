@@ -20,7 +20,7 @@ struct JoinKeysignView: View {
                 setData()
             }
             .task {
-                do{
+                do {
                     _ = try await ThorchainService.shared.getTHORChainChainID()
                 } catch {
                     print("fail to get thorchain network id, \(error.localizedDescription)")
@@ -113,8 +113,7 @@ struct JoinKeysignView: View {
         ZStack {
             if viewModel.keysignPayload?.swapPayload != nil {
                 // Check if it's an LP operation by looking at the memo
-                if let memo = viewModel.keysignPayload?.memo,
-                   (memo.starts(with: "+:") || memo.starts(with: "-:")) {
+                if let memo = viewModel.keysignPayload?.memo, memo.starts(with: "+:") || memo.starts(with: "-:") {
                     // LP operation - show regular message confirm instead of swap
                     KeysignMessageConfirmView(viewModel: viewModel)
                 } else {

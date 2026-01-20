@@ -162,8 +162,7 @@ struct HomeScreen: View {
     
     @ViewBuilder
     private func applyModifiers<V: View>(to view: V, selectedVault: Vault, geo: GeometryProxy)
-    -> some View
-    {
+    -> some View {
         let withBasicModifiers =
         view
             .onAppear {
@@ -187,7 +186,7 @@ struct HomeScreen: View {
             }
             .onChange(of: walletShowPortfolioHeader) { _, _ in updateHeader() }
             .onChange(of: defiShowPortfolioHeader) { _, _ in updateHeader() }
-            .onChange(of: selectedTab) { oldValue, newValue in
+            .onChange(of: selectedTab) { _, newValue in
                 updateHeader()
                 if newValue == .camera {
                     onCamera()
@@ -232,8 +231,7 @@ struct HomeScreen: View {
 #else
             .crossPlatformSheet(isPresented: $showScanner) {
                 if ProcessInfo.processInfo.isiOSAppOnMac {
-                    GeneralQRImportMacView(type: .SignTransaction, selectedVault: selectedVault)
-                    {
+                    GeneralQRImportMacView(type: .SignTransaction, selectedVault: selectedVault) {
                         guard let url = URL(string: $0) else { return }
                         deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
                         presetValuesForDeeplink()

@@ -112,10 +112,10 @@ struct VaultMainScreen: View {
         .onLoad {
             refresh()
         }
-        .onChange(of: vault) { oldValue, newValue in
+        .onChange(of: vault) { _, _ in
             refresh()
         }
-        .onChange(of: shouldRefresh) { oldValue, newValue in
+        .onChange(of: shouldRefresh) { _, newValue in
             guard newValue else { return }
             shouldRefresh = false
             refresh()
@@ -275,7 +275,6 @@ struct VaultMainScreen: View {
                 coinType: viewModel.selectedGroup?.nativeCoin.ticker ?? ""
             )
         case .sell:
-            // TODO: - To add
             break
         case .receive:
             showReceiveList = true

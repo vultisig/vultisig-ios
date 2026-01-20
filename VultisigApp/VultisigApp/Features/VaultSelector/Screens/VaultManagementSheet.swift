@@ -8,7 +8,7 @@
 import SwiftData
 import SwiftUI
 
-fileprivate enum VaultSheetType: Equatable {
+private enum VaultSheetType: Equatable {
     case main
     case editFolder
     case addFolder
@@ -129,16 +129,12 @@ private extension VaultManagementSheet {
         switch elementsCount {
         case 1:
             stateDetents = [.height(214)] + whileAnimationDetents
-            break
         case 2:
             stateDetents = [.height(278)] + whileAnimationDetents
-            break
         case 3:
             stateDetents = [.medium] + whileAnimationDetents
-            break
         default:
             stateDetents = isIPadOS ? [.large] : [.medium, .large] + whileAnimationDetents
-            break
         }
         
         self.detents = stateDetents + whileAnimationDetents

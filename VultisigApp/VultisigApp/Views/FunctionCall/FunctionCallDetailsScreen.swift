@@ -83,10 +83,8 @@ struct FunctionCallDetailsScreen: View {
                 
                 fnCallInstance = .rebond(rebondInstance)
             case .bondMaya:
-                
                 DispatchQueue.main.async {
-                    MayachainService.shared.getDepositAssets {
-                        assetsResponse in
+                    MayachainService.shared.getDepositAssets {assetsResponse in
                         let assets = assetsResponse.map {
                             IdentifiableString(value: $0)
                         }
@@ -99,10 +97,8 @@ struct FunctionCallDetailsScreen: View {
                 }
                 
             case .unbondMaya:
-                
                 DispatchQueue.main.async {
-                    MayachainService.shared.getDepositAssets {
-                        assetsResponse in
+                    MayachainService.shared.getDepositAssets {assetsResponse in
                         let assets = assetsResponse.map {
                             IdentifiableString(value: $0)
                         }

@@ -46,7 +46,6 @@ struct AddLPTransactionBuilder: TransactionBuilder {
         nil
     }
     
-    // TODO: - Add inbound address for L1/EVM chains in the future
     var toAddress: String {
         // For addThorLP, return the inbound address that was set by fetchInboundAddress()
         // This is essential for Bitcoin and other chains to know where to send funds

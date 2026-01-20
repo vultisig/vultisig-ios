@@ -82,7 +82,7 @@ struct FolderDetailView: View {
                 stops: [
                     Gradient.Stop(color: Theme.colors.bgPrimary, location: 0.50),
                     Gradient.Stop(color: Theme.colors.bgPrimary.opacity(0.5), location: 0.85),
-                    Gradient.Stop(color: Theme.colors.bgPrimary.opacity(0), location: 1.00),
+                    Gradient.Stop(color: Theme.colors.bgPrimary.opacity(0), location: 1.00)
                 ],
                 startPoint: UnitPoint(x: 0.5, y: 0),
                 endPoint: UnitPoint(x: 0.5, y: 1)

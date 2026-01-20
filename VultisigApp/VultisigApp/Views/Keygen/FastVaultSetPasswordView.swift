@@ -38,10 +38,10 @@ struct FastVaultSetPasswordView: View {
                     isPasswordFieldFocused = true
                 }
             }
-            .onChange(of: password) { oldValue, newValue in
+            .onChange(of: password) { _, _ in
                 _ = validatePassword()
             }
-            .onChange(of: verifyPassword) { oldValue, newValue in
+            .onChange(of: verifyPassword) { _, _ in
                 _ = validatePassword()
             }
     }

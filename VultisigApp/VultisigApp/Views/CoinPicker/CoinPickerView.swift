@@ -75,7 +75,7 @@ struct CoinPickerView: View {
         .padding(.horizontal, 12)
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
-        .onChange(of: searchText) { oldValue, newValue in
+        .onChange(of: searchText) { _, newValue in
             isSearching = !newValue.isEmpty
         }
         .background(Theme.colors.bgSurface1)

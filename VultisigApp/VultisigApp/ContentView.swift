@@ -76,7 +76,7 @@ struct ContentView: View {
             guard appViewModel.restartNavigation else { return }
             navigateToHome()
         }
-        .onChange(of: appViewModel.restartNavigation) { oldValue, newValue in
+        .onChange(of: appViewModel.restartNavigation) { _, newValue in
             guard newValue else { return }
             navigateToHome()
             appViewModel.restartNavigation = false
@@ -106,7 +106,7 @@ struct ContentView: View {
             .onAppear {
                 setData()
             }
-            .onChange(of: appViewModel.canLogin) { oldValue, newValue in
+            .onChange(of: appViewModel.canLogin) { _, newValue in
                 if newValue {
                     authenticateUser()
                 }

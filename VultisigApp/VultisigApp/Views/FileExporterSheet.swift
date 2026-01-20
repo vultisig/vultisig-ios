@@ -35,7 +35,7 @@ extension FileExporterSheet {
     func fileExporter(content: Content) -> some View {
         content
             .unwrap(fileModel) { view, fileModel in
-                view.shareSheet(isPresented: $isPresented, activityItems: [fileModel.url])  { didSave in
+                view.shareSheet(isPresented: $isPresented, activityItems: [fileModel.url]) { didSave in
                     completion(.success(didSave))
                 }
             }

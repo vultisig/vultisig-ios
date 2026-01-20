@@ -113,7 +113,7 @@ struct JoinKeygenView: View {
     }
     
     var failToStartKeygen: some View {
-        VStack{
+        VStack {
             Text(viewModel.errorMessage)
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(Theme.colors.textPrimary)

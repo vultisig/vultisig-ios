@@ -186,7 +186,6 @@ struct CustomTokenScreen: View {
                     
                 }
                 
-                
             } else if ChainType.Solana == group.chain.chainType {
                 
                 let jupiterTokenInfos = try await SolanaService.shared.fetchTokensInfos(for: [contractAddress])

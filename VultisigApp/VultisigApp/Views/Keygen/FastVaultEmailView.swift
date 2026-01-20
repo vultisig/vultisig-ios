@@ -33,7 +33,7 @@ struct FastVaultEmailView: View {
                     isInvalidEmail = false
                 }
             }
-            .onAppear(){
+            .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 isEmailFocused = true
             }

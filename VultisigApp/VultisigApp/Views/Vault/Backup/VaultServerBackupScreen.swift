@@ -58,12 +58,12 @@ struct VaultServerBackupScreen: View {
             focusedFieldBinding = .email
             viewModel.onLoad()
         }
-        .onChange(of: viewModel.showAlert) { oldValue, newValue in
+        .onChange(of: viewModel.showAlert) { _, newValue in
             withAnimation(.easeInOut(duration: 0.3)) {
                 showAlert = newValue
             }
         }
-        .onChange(of: focusedFieldBinding) { oldValue, newValue in
+        .onChange(of: focusedFieldBinding) { _, newValue in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 focusedField = newValue
             }

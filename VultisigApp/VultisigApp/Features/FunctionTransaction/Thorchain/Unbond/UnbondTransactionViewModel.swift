@@ -27,7 +27,7 @@ final class UnbondTransactionViewModel: ObservableObject, Form {
     private(set) var isMaxAmount: Bool = false
     private(set) lazy var form: [FormField] = [
         addressViewModel.field,
-        amountField,
+        amountField
     ]
     
     var formCancellable: AnyCancellable?

@@ -286,7 +286,7 @@ struct CircleWithdrawView: View {
             } catch let err as CircleServiceError {
                 if case .walletNotDeployed = err {
                     do {
-                        let _ = try await CircleApiService.shared.createWallet(
+                        _ = try await CircleApiService.shared.createWallet(
                             ethAddress: recipientCoin.address
                         )
                     } catch {

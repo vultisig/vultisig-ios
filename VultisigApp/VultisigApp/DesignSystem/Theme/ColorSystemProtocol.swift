@@ -53,4 +53,3 @@ public protocol ColorSystemProtocol {
     
     var turquoise: Color { get }
 }
-

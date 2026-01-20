@@ -24,7 +24,7 @@ class KeysignVerify: ObservableObject {
     func markLocalPartyKeysignComplete(message: String, sig: TssKeysignResponse) async {
         do {
             let jsonData = try sig.getJson()
-            let header = ["message_id" : message]
+            let header = ["message_id": message]
             _ = try await Utils.asyncPostRequest(urlString: urlString, headers: header, body: jsonData)
         } catch {
             self.logger.error("Failed to send request to mediator, error:\(error)")
@@ -33,7 +33,7 @@ class KeysignVerify: ObservableObject {
     
     func checkKeySignComplete(message: String) async -> TssKeysignResponse? {
         do {
-            let result = try await Utils.asyncGetRequest(urlString: urlString, headers: ["message_id":message])
+            let result = try await Utils.asyncGetRequest(urlString: urlString, headers: ["message_id": message])
             if !result.isEmpty {
                 let resp = try TssKeysignResponse().fromJson(json: result)
                 return resp
@@ -44,4 +44,3 @@ class KeysignVerify: ObservableObject {
         return nil
     }
 }
-
