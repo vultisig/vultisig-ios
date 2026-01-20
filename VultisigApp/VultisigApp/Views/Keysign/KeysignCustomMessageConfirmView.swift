@@ -49,13 +49,13 @@ struct KeysignCustomMessageConfirmView: View {
     var message: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(NSLocalizedString("message", comment: "") + ":")
-                .font(Theme.fonts.bodyLMedium)
-                .foregroundColor(Theme.colors.textPrimary)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textTertiary)
             
             ScrollView(.horizontal, showsIndicators: false) {
                 Text(formattedMessage)
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(Theme.colors.turquoise)
+                    .foregroundColor(Theme.colors.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -103,11 +103,11 @@ struct KeysignCustomMessageConfirmView: View {
     private func getPrimaryCell(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(NSLocalizedString(title, comment: "") + ":")
-                .font(Theme.fonts.bodyLMedium)
-                .foregroundColor(Theme.colors.textPrimary)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textTertiary)
             Text(value)
-                .font(Theme.fonts.caption12)
-                .foregroundColor(Theme.colors.bgButtonPrimary)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textPrimary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
