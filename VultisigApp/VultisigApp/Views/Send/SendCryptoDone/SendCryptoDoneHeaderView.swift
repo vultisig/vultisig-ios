@@ -11,13 +11,13 @@ struct SendCryptoDoneHeaderView: View {
     let coin: Coin?
     let cryptoAmount: String
     let fiatAmount: String
-    
+
     var body: some View {
         VStack(spacing: 8) {
             Text("sent".localized)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption10)
-            
+
             if let coin {
                 AsyncImageView(
                     logo: coin.logo,
@@ -26,7 +26,7 @@ struct SendCryptoDoneHeaderView: View {
                     tokenChainLogo: coin.tokenChainLogo
                 )
             }
-            
+
             VStack(spacing: 4) {
                 Text(cryptoAmount)
                     .font(Theme.fonts.bodySMedium)

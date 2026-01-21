@@ -13,9 +13,9 @@ struct SwapChainCell: View {
     let balance: String
     @Binding var selectedChain: Chain?
     @Binding var showSheet: Bool
-    
+
     @State var isSelected = false
-    
+
     var body: some View {
         Button {
             handleTap()
@@ -27,7 +27,7 @@ struct SwapChainCell: View {
             setData()
         }
     }
-    
+
     var label: some View {
         VStack(spacing: 0) {
             content
@@ -35,7 +35,7 @@ struct SwapChainCell: View {
         }
         .background(isSelected ? Theme.colors.bgSurface2 : Theme.colors.bgSurface1)
     }
-    
+
     var content: some View {
         HStack {
             icon
@@ -46,29 +46,29 @@ struct SwapChainCell: View {
         .padding(.horizontal, 22)
         .padding(.vertical, 12)
     }
-    
+
     var icon: some View {
         Image(chain.logo)
             .resizable()
             .frame(width: 32, height: 32)
     }
-    
+
     var title: some View {
         Text(chain.name)
             .font(Theme.fonts.bodySMedium)
             .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     var balanceInfo: some View {
         Text(balance)
             .font(Theme.fonts.caption12)
             .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     private func setData() {
         isSelected = chain == selectedChain
     }
-    
+
     private func handleTap() {
         selectedChain = chain
         showSheet = false

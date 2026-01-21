@@ -78,10 +78,10 @@ extension THORChainAPIService {
         let network = try await getNetworkInfo()
         let apy = Double(network.bondingAPY ?? "0") ?? 0
         let nextChurnDate = try await estimateNextChurnETA(network: network)
-        
+
         return NetworkBondInfo(apy: apy, nextChurnDate: nextChurnDate)
     }
-    
+
     /// Calculate bond metrics for a specific node and bond address
     /// Based on the JavaScript implementation - calculates APY per node
     func calculateBondMetrics(
@@ -143,7 +143,7 @@ extension THORChainAPIService {
             nodeStatus: nodeData.status
         )
     }
-    
+
     func estimateNextChurnETA(network: THORChainNetworkInfo) async throws -> Date? {
         let health = try await getHealth()
         let churns = try await getChurns()
@@ -162,7 +162,7 @@ extension THORChainAPIService {
 
         return Date(timeIntervalSince1970: currentTimestamp).addingTimeInterval(etaSeconds)
     }
-    
+
     /// Derive a weighted average block time (seconds) from recent churn pairs.
     /// Uses totalSeconds / totalBlocks across the last `pairs` intervals.
     private func averageBlockTimeFromChurns(_ churns: [ChurnEntry], pairs: Int = 6) -> Double? {

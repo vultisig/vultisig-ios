@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ReferredOnboardingView: View {
     @Environment(\.router) var router
-    
+
     var body: some View {
         Screen(title: "referral".localized) {
             VStack {
@@ -19,13 +19,13 @@ struct ReferredOnboardingView: View {
                         animationHeader
                     }
                 }
-                
+
                 button
             }
             .background(shadow)
         }
     }
-    
+
     var shadow: some View {
         Circle()
             .frame(width: 360, height: 360)
@@ -33,13 +33,13 @@ struct ReferredOnboardingView: View {
             .opacity(0.05)
             .blur(radius: 20)
     }
-    
+
     var button: some View {
         PrimaryButton(title: "getStarted") {
             router.navigate(to: ReferralRoute.initial)
         }
     }
-    
+
     @ViewBuilder
     func animationCell(index: Int) -> some View {
         switch index {
@@ -71,17 +71,17 @@ struct ReferredOnboardingView: View {
             EmptyView()
         }
     }
-    
+
     func cellView(icon: String, title: String, description: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .foregroundColor(Theme.colors.primaryAccent4)
                 .font(Theme.fonts.bodyLMedium)
-            
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(NSLocalizedString(title, comment: ""))
                     .font(Theme.fonts.bodySMedium)
-                
+
                 Text(NSLocalizedString(description, comment: ""))
                     .font(Theme.fonts.caption10)
             }
@@ -89,7 +89,7 @@ struct ReferredOnboardingView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
-    
+
     var animationHeader: some View {
         HStack {
             Image(systemName: "horn")

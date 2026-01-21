@@ -6,14 +6,14 @@ import SwiftUI
 
 struct JoinKeysignView: View {
     let vault: Vault
-    
+
     @StateObject private var serviceDelegate = ServiceDelegate()
     @StateObject var viewModel = JoinKeysignViewModel()
-    
+
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var appViewModel: ApplicationState
     @EnvironmentObject var globalStateViewModel: GlobalStateViewModel
-    
+
     var body: some View {
         content
             .onLoad {
@@ -27,7 +27,7 @@ struct JoinKeysignView: View {
                 }
             }
     }
-    
+
     var states: some View {
         ZStack {
             switch viewModel.status {
@@ -52,12 +52,12 @@ struct JoinKeysignView: View {
             case .VaultTypeDoesntMatch:
                 KeysignWrongVaultTypeErrorView()
             }
-            
+
         }
         .padding()
         .cornerRadius(10)
     }
-    
+
     var keysignStartedView: some View {
         ZStack {
             if viewModel.serverAddress != nil && !viewModel.sessionID.isEmpty {
@@ -71,7 +71,7 @@ struct JoinKeysignView: View {
             }
         }
     }
-    
+
     var keysignView: some View {
         let keysignType: KeyType
         if let keysignPayload = viewModel.keysignPayload {
@@ -82,7 +82,7 @@ struct JoinKeysignView: View {
         } else {
             keysignType = .ECDSA
         }
-        
+
         return KeysignView(
             vault: viewModel.vault,
             keysignCommittee: viewModel.keysignCommittee,
@@ -90,14 +90,14 @@ struct JoinKeysignView: View {
             sessionID: viewModel.sessionID,
             keysignType: keysignType,
             messsageToSign: viewModel.keysignMessages,
-            keysignPayload: viewModel.keysignPayload, 
+            keysignPayload: viewModel.keysignPayload,
             customMessagePayload: viewModel.customMessagePayload,
             transferViewModel: nil,
             encryptionKeyHex: viewModel.encryptionKeyHex,
             isInitiateDevice: false
         )
     }
-    
+
     var keysignFailedText: some View {
         VStack(spacing: 8) {
             Text(NSLocalizedString("keysignFail", comment: "Failed to start the keysign process"))
@@ -108,7 +108,7 @@ struct JoinKeysignView: View {
         .multilineTextAlignment(.center)
         .padding(.horizontal, 30)
     }
-    
+
     var keysignMessageConfirm: some View {
         ZStack {
             if viewModel.keysignPayload?.swapPayload != nil {
@@ -127,31 +127,31 @@ struct JoinKeysignView: View {
             }
         }
     }
-    
+
     var waitingForKeySignStart: some View {
         KeysignStartView(viewModel: viewModel)
     }
-    
+
     var discoveringSignMessage: some View {
         Loader()
             .onLoad {
                 viewModel.startScan()
             }
     }
-    
+
     var discoverService: some View {
         KeysignDiscoverServiceView(viewModel: viewModel, serviceDelegate: serviceDelegate)
     }
-    
+
     private func setData() {
         appViewModel.checkCameraPermission()
-        
+
         viewModel.setData(
             vault: vault,
-            serviceDelegate: serviceDelegate, 
+            serviceDelegate: serviceDelegate,
             isCameraPermissionGranted: appViewModel.isCameraPermissionGranted
         )
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             viewModel.isShowingScanner = false
             viewModel.handleDeeplinkScan(deeplinkViewModel.receivedUrl)

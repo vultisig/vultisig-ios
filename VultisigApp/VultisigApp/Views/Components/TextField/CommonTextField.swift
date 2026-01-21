@@ -23,9 +23,9 @@ struct CommonTextField<TrailingView: View>: View {
     let isScrollable: Bool
     let labelStyle: TextFieldLabelStyle
     let size: CommonTextFieldSize
-    
+
     let trailingView: () -> TrailingView
-    
+
     init(
         text: Binding<String>,
         label: String? = nil,
@@ -51,7 +51,7 @@ struct CommonTextField<TrailingView: View>: View {
         self.size = size
         self._isValid = isValid
     }
-    
+
     init(
         text: Binding<String>,
         label: String? = nil,
@@ -78,7 +78,7 @@ struct CommonTextField<TrailingView: View>: View {
             trailingView: { EmptyView() }
         )
     }
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if let label {
@@ -86,7 +86,7 @@ struct CommonTextField<TrailingView: View>: View {
                     .foregroundColor(labelColor)
                     .font(labelFont)
             }
-            
+
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     textFieldContainer
@@ -95,7 +95,7 @@ struct CommonTextField<TrailingView: View>: View {
                         .submitLabel(.done)
                         .colorScheme(.dark)
                         .frame(maxWidth: .infinity)
-                    
+
                     clearButton
                         .showIf(isEnabled)
                     trailingView()
@@ -112,7 +112,7 @@ struct CommonTextField<TrailingView: View>: View {
                 .autocorrectionDisabled()
                 .borderlessTextFieldStyle()
                 .padding(1)
-                
+
                 if let error, showErrorText {
                     Text(error.localized)
                         .foregroundColor(Theme.colors.alertError)
@@ -124,7 +124,7 @@ struct CommonTextField<TrailingView: View>: View {
         }
         .animation(.easeInOut, value: error)
     }
-    
+
     var clearButton: some View {
         Button {
             text = ""
@@ -138,15 +138,15 @@ struct CommonTextField<TrailingView: View>: View {
         .buttonStyle(.plain)
         .opacity(text.isEmpty ? 0 : 1)
     }
-    
+
     var borderColor: Color {
         if let isValid, isValid {
             return Theme.colors.alertSuccess
         }
-        
+
         return (error != nil && error != .empty) ? Theme.colors.alertError : Theme.colors.border
     }
-    
+
     @ViewBuilder
     var textFieldContainer: some View {
         if isScrollable {
@@ -158,7 +158,7 @@ struct CommonTextField<TrailingView: View>: View {
             textField
         }
     }
-    
+
     @ViewBuilder
     var textField: some View {
         Group {
@@ -170,7 +170,7 @@ struct CommonTextField<TrailingView: View>: View {
         }
         .frame(height: height)
     }
-    
+
     var labelFont: Font {
         switch labelStyle {
         case .primary:
@@ -179,7 +179,7 @@ struct CommonTextField<TrailingView: View>: View {
             Theme.fonts.footnote
         }
     }
-    
+
     var labelColor: Color {
         switch labelStyle {
         case .primary:
@@ -188,12 +188,12 @@ struct CommonTextField<TrailingView: View>: View {
             Theme.colors.textTertiary
         }
     }
-    
+
     enum TextFieldLabelStyle {
         case primary
         case secondary
     }
-    
+
     var height: CGFloat {
         switch size {
         case .normal:

@@ -63,7 +63,7 @@ struct SettingsMainScreen: View {
             ]
         )
     ]
-    
+
     var body: some View {
         Screen(showNavigationBar: false, edgeInsets: ScreenEdgeInsets(bottom: 0)) {
             ScrollView(showsIndicators: false) {
@@ -93,7 +93,7 @@ struct SettingsMainScreen: View {
             }.presentationDetents([.height(400)])
         }
     }
-    
+
     func groupView(for group: SettingsOptionGroup) -> some View {
         SettingsSectionView(title: group.title.localized) {
             ForEach(group.options, id: \.self) { option in
@@ -105,7 +105,7 @@ struct SettingsMainScreen: View {
             }
         }
     }
-    
+
     @ViewBuilder
     func optionView(for option: SettingsOption, shouldHighlight: Bool, showSeparator: Bool) -> some View {
         optionContainerView(for: option) {
@@ -118,7 +118,7 @@ struct SettingsMainScreen: View {
             )
         }
     }
-    
+
     @ViewBuilder
     func optionContainerView<Content: View>(for option: SettingsOption, content: () -> Content) -> some View {
         switch option.type {
@@ -163,7 +163,7 @@ struct SettingsMainScreen: View {
             break
         }
     }
-    
+
     func description(for option: SettingsOption) -> String? {
         switch option {
         case .language:
@@ -174,7 +174,7 @@ struct SettingsMainScreen: View {
             return nil
         }
     }
-    
+
     var appVersion: some View {
         Text(Bundle.main.appVersionString)
             .font(Theme.fonts.caption12)
@@ -184,30 +184,30 @@ struct SettingsMainScreen: View {
                 handleVersionTap()
             }
     }
-    
+
     private func handleVersionTap() {
         tapCount += 1
-        
+
         withAnimation(.spring(duration: 0.1)) {
             scale = 1.1
         }
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             withAnimation(.easeInOut) {
                 scale = 1.0
             }
-            
+
             if tapCount > 4 {
                 tapCount = 0
                 router.navigate(to: SettingsRoute.advancedSettings)
             }
         }
     }
-    
+
     var checkUpdateView: some View {
         PhoneCheckUpdateView()
     }
-    
+
     func onOption(_ option: SettingsOption) {
         switch option {
         case .referralCode:

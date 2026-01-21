@@ -19,9 +19,9 @@ struct SwapFromToField: View {
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
     let handlePercentageSelection: ((Int) -> Void)?
-    
+
     @StateObject var referredViewModel = ReferredViewModel()
-    
+
     var body: some View {
         VStack(spacing: 16) {
             header
@@ -34,7 +34,7 @@ struct SwapFromToField: View {
             referredViewModel.setData()
         }
     }
-    
+
     var header: some View {
         HStack(spacing: 8) {
             fromToLabel
@@ -43,7 +43,7 @@ struct SwapFromToField: View {
             balance
         }
     }
-    
+
     var content: some View {
         HStack {
             fromToCoin
@@ -54,19 +54,19 @@ struct SwapFromToField: View {
             }
         }
     }
-    
+
     var fromToLabel: some View {
         Text(NSLocalizedString(title, comment: ""))
             .font(Theme.fonts.caption12)
             .foregroundColor(Theme.colors.textTertiary)
     }
-    
+
     var balance: some View {
         Text("\(coin.balanceString) \(coin.ticker)")
             .font(Theme.fonts.caption12)
             .foregroundColor(Theme.colors.textTertiary)
     }
-    
+
     var unevenRectangle: some View {
         UnevenRoundedRectangle(
             cornerRadii: .init(
@@ -79,7 +79,7 @@ struct SwapFromToField: View {
         .foregroundColor(Theme.colors.bgSurface1)
         .rotationEffect(.degrees(title=="from" ? 0 : 180))
     }
-    
+
     var unevenRectangleBorder: some View {
         UnevenRoundedRectangle(
             cornerRadii: .init(
@@ -92,7 +92,7 @@ struct SwapFromToField: View {
         .stroke(Theme.colors.bgSurface2, lineWidth: 1)
         .rotationEffect(.degrees(title=="from" ? 0 : 180))
     }
-    
+
     var fromToChain: some View {
         Button {
             showNetworkSelectSheet = true
@@ -100,7 +100,7 @@ struct SwapFromToField: View {
             SwapFromToChain(chain: selectedChain)
         }
     }
-    
+
     var fromToCoin: some View {
         Button {
             showCoinSelectSheet = true
@@ -108,11 +108,11 @@ struct SwapFromToField: View {
             fromToCoinLabel
         }
     }
-    
+
     var fromToCoinLabel: some View {
         SwapFromToCoin(coin: coin)
     }
-    
+
     var fromToAmountField: some View {
         Group {
             SwapCryptoAmountTextField(amount: $amount) { _ in
@@ -125,7 +125,7 @@ struct SwapFromToField: View {
         }
         .redacted(reason: title == "to" && swapViewModel.isLoadingQuotes ? .placeholder : [])
     }
-    
+
     var fiatBalance: some View {
         Text(fiatAmount.formatToFiat(includeCurrencySymbol: true))
             .font(Theme.fonts.caption12)
@@ -134,7 +134,7 @@ struct SwapFromToField: View {
             .opacity(isFiatVisible() ? 1 : 0)
             .redacted(reason: title == "to" && swapViewModel.isLoadingQuotes ? .placeholder : [])
     }
-    
+
     private func isFiatVisible() -> Bool {
         !amount.isEmpty && amount != "0"
     }

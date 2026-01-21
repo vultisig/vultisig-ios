@@ -14,7 +14,7 @@ extension GeneralQRImportMacView {
             if let url = urls.first {
                 _ = url.startAccessingSecurityScopedResource()
                 fileName = url.lastPathComponent
-                
+
                 let imageData = try Data(contentsOf: url)
                 if let uiImage = UIImage(data: imageData) {
                     selectedImage = uiImage

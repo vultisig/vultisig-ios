@@ -14,12 +14,12 @@ struct JoinSwapDoneSummary: View {
     let keysignViewModel: KeysignViewModel
     let summaryViewModel: JoinKeysignSummaryViewModel
     @Binding var showAlert: Bool
-    
+
     @State var animationVM: RiveViewModel? = nil
-    
+
     @Environment(\.openURL) var openURL
     @EnvironmentObject var appViewModel: AppViewModel
-    
+
     var body: some View {
         VStack(spacing: 0) {
             cards
@@ -30,7 +30,7 @@ struct JoinSwapDoneSummary: View {
             animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
         }
     }
-    
+
     var cards: some View {
         ScrollView {
             VStack {
@@ -40,7 +40,7 @@ struct JoinSwapDoneSummary: View {
             }
         }
     }
-    
+
     var buttons: some View {
         HStack(spacing: 8) {
             trackButton
@@ -48,7 +48,7 @@ struct JoinSwapDoneSummary: View {
         }
         .padding(.vertical)
     }
-    
+
     var trackButton: some View {
         PrimaryButton(title: "track", type: .secondary) {
             if let link = keysignViewModel.getSwapProgressURL(txid: keysignViewModel.txid) {
@@ -58,29 +58,29 @@ struct JoinSwapDoneSummary: View {
             }
         }
     }
-    
+
     var doneButton: some View {
         PrimaryButton(title: "done") {
             appViewModel.restart()
         }
     }
-    
+
     var animation: some View {
         ZStack {
             animationVM?.view()
                 .frame(width: 280, height: 280)
-            
+
             animationText
                 .offset(y: 50)
         }
     }
-    
+
     var animationText: some View {
         Text(NSLocalizedString("transactionSuccessful", comment: ""))
             .foregroundStyle(LinearGradient.primaryGradient)
             .font(Theme.fonts.bodyLMedium)
     }
-    
+
     var fromToCards: some View {
         ZStack {
             HStack(spacing: 8) {
@@ -90,7 +90,7 @@ struct JoinSwapDoneSummary: View {
                     description: keysignViewModel.keysignPayload?.fromAmountFiatString,
                     isFrom: true
                 )
-                
+
                 getFromToCard(
                     coin: summaryViewModel.getToCoin(keysignViewModel.keysignPayload),
                     title: summaryViewModel.getToAmount(keysignViewModel.keysignPayload),
@@ -98,24 +98,24 @@ struct JoinSwapDoneSummary: View {
                     isFrom: false
                 )
             }
-            
+
             chevronContent
         }
     }
-    
+
     var chevronContent: some View {
         ZStack {
             chevronIcon
-            
+
             filler
                 .offset(y: -24)
-            
+
             filler
                 .offset(y: 24)
-            
+
         }
     }
-    
+
     var chevronIcon: some View {
         Image(systemName: "chevron.right")
             .foregroundColor(Theme.colors.textButtonDisabled)
@@ -132,13 +132,13 @@ struct JoinSwapDoneSummary: View {
                     .stroke(Theme.colors.border, lineWidth: 1)
             )
     }
-    
+
     var filler: some View {
         Rectangle()
             .frame(width: 6, height: 18)
             .foregroundColor(Theme.colors.bgPrimary)
     }
-    
+
     var summary: some View {
         VStack(spacing: 0) {
             getCell(
@@ -147,7 +147,7 @@ struct JoinSwapDoneSummary: View {
                 valueMaxWidth: 120,
                 showCopyButton: true
             )
-            
+
             if let fromAddress = summaryViewModel.getFromCoin(keysignViewModel.keysignPayload)?.address, !fromAddress.isEmpty {
                 separator
                 getCell(
@@ -157,7 +157,7 @@ struct JoinSwapDoneSummary: View {
                     bracketMaxWidth: 120
                 )
             }
-            
+
             if let toAddress = summaryViewModel.getToCoin(keysignViewModel.keysignPayload)?.address, !toAddress.isEmpty {
                 separator
                 getCell(
@@ -166,7 +166,7 @@ struct JoinSwapDoneSummary: View {
                     valueMaxWidth: 120
                 )
             }
-            
+
             separator
             getCell(
                 title: "networkFee",
@@ -181,18 +181,18 @@ struct JoinSwapDoneSummary: View {
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
-    
+
     var separator: some View {
         Separator()
             .opacity(0.2)
     }
-    
+
     private func getFromToCard(coin: Coin?, title: String, description: String?, isFrom: Bool) -> some View {
         VStack(spacing: 8) {
             Text(isFrom ? "from".localized : "to".localized)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption10)
-            
+
             if let coin {
                 AsyncImageView(
                     logo: coin.logo,
@@ -202,12 +202,12 @@ struct JoinSwapDoneSummary: View {
                 )
                 .padding(.bottom, 8)
             }
-            
+
             VStack(spacing: 4) {
                 Text(title)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundColor(Theme.colors.textPrimary)
-                
+
                 Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
                     .font(Theme.fonts.caption10)
                     .foregroundColor(Theme.colors.textTertiary)
@@ -222,7 +222,7 @@ struct JoinSwapDoneSummary: View {
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
-    
+
     private func getCell(
         title: String,
         value: String?,
@@ -234,15 +234,15 @@ struct JoinSwapDoneSummary: View {
         HStack {
             Text(NSLocalizedString(title, comment: ""))
                 .foregroundColor(Theme.colors.textTertiary)
-            
+
             Spacer()
-            
+
             Text(value ?? "")
                 .lineLimit(1)
                 .truncationMode(.middle)
                 .foregroundColor(Theme.colors.textPrimary)
                 .frame(maxWidth: valueMaxWidth, alignment: .trailing)
-            
+
             if let bracketValue {
                 Group {
                     Text("(") +
@@ -254,7 +254,7 @@ struct JoinSwapDoneSummary: View {
                 .truncationMode(.middle)
                 .lineLimit(1)
             }
-            
+
             if showCopyButton {
                 getCopyButton(for: value)
             }
@@ -262,7 +262,7 @@ struct JoinSwapDoneSummary: View {
         .padding(.vertical)
         .font(Theme.fonts.bodySMedium)
     }
-    
+
     @ViewBuilder
     private func getCopyButton(for value: String?) -> some View {
         Button {
@@ -273,77 +273,77 @@ struct JoinSwapDoneSummary: View {
                 .font(Theme.fonts.bodySMedium)
         }
     }
-    
+
     func copy(hash: String?) {
         guard let hash else { return }
-        
+
         let explorerLink = keysignViewModel.getTransactionExplorerURL(txid: hash)
         showAlert = true
         ClipboardManager.copyToClipboard(explorerLink)
     }
-    
+
     func getCalculatedNetworkFee() -> String {
         guard let payload = keysignViewModel.keysignPayload else {
             return .zero
         }
-        
+
         guard let nativeToken = TokensStore.TokenSelectionAssets.first(where: {
             $0.isNativeToken && $0.chain == payload.coin.chain
         }) else {
             return .zero
         }
-        
+
         if payload.coin.chainType == .EVM {
             let gas = payload.chainSpecific.gas
-            
+
             guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description),
                   let gasDecimal = Decimal(string: gas.description) else {
                 return .empty
             }
-            
+
             let gasGwei = gasDecimal / weiPerGWeiDecimal
             let gasInReadable = gasGwei.formatToDecimal(digits: nativeToken.decimals)
-            
+
             var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.fee)
             feeInReadable = feeInReadable.nilIfEmpty.map { " (~\($0))" } ?? ""
-            
+
             return "\(gasInReadable) \(payload.coin.chain.feeUnit)\(feeInReadable)"
         }
-        
+
         let gasAmount = Decimal(payload.chainSpecific.gas) / pow(10, nativeToken.decimals)
         let gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
-        
+
         var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.gas)
         feeInReadable = feeInReadable.nilIfEmpty.map { " (~\($0))" } ?? ""
-        
+
         return "\(gasInReadable) \(nativeToken.ticker)\(feeInReadable)"
     }
-    
+
     func feesInReadable(coin: Coin, fee: BigInt) -> String {
         var nativeCoinAux: Coin?
-        
+
         if coin.isNativeToken {
             nativeCoinAux = coin
         } else {
             nativeCoinAux = appViewModel.selectedVault?.coins.first(where: { $0.chain == coin.chain && $0.isNativeToken })
         }
-        
+
         guard let nativeCoin = nativeCoinAux else {
             return ""
         }
-        
+
         let feeDecimal = nativeCoin.decimal(for: fee)
         // Use fee-specific formatting with more decimal places (5 instead of 2)
         return RateProvider.shared.fiatFeeString(value: feeDecimal, coin: nativeCoin)
     }
-    
+
     private func shareLink(txid: String) {
         let urlString = keysignViewModel.getTransactionExplorerURL(txid: txid)
         if !urlString.isEmpty, let url = URL(string: urlString) {
             openURL(url)
         }
     }
-    
+
     private func progressLink(link: String) {
         if !link.isEmpty, let url = URL(string: link) {
             openURL(url)

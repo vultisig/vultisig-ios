@@ -9,7 +9,7 @@ import Foundation
 
 class CosmosTransactionBroadcastResponse: Codable {
     var txResponse: CosmosTransactionBroadcastTx?
-    
+
     enum CodingKeys: String, CodingKey {
         case txResponse = "tx_response"
     }
@@ -17,7 +17,7 @@ class CosmosTransactionBroadcastResponse: Codable {
 
 class CosmosTransactionBroadcastTx: Codable {
     var txhash: String?
-    var code: Int?    
+    var code: Int?
     enum CodingKeys: String, CodingKey {
         case txhash, code
     }

@@ -78,7 +78,7 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
             logger.error("fail to encrypt message body")
             return
         }
-        let msg = Message(session_id: sessionID, 
+        let msg = Message(session_id: sessionID,
                           from: fromParty,
                           to: [to],
                           body: encryptedBody,

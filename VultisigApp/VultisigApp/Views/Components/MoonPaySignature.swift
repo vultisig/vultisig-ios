@@ -20,7 +20,7 @@ struct MoonPaySignatureHelper {
             request.addValue("application/json", forHTTPHeaderField: "Content-Type")
             let result = try JSONEncoder().encode(req)
             request.httpBody = result
-            let (data,resp) = try await URLSession.shared.data(for: request)
+            let (data, resp) = try await URLSession.shared.data(for: request)
             if let resp = resp as? HTTPURLResponse, resp.statusCode == 200 {
                 let res = try JSONDecoder().decode(MoonPaySignatureResp.self, from: data)
                 return res.signature

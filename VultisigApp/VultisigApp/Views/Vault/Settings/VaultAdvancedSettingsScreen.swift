@@ -26,7 +26,7 @@ struct VaultAdvancedSettingsScreen: View {
             }
         }
     }
-    
+
     @ViewBuilder
     var reshareVaultRow: some View {
         if !vault.isFastVault {

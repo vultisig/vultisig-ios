@@ -25,7 +25,7 @@ final class SchnorrKeysign {
     var cache = NSCache<NSString, AnyObject>()
     var signatures = [String: TssKeysignResponse]()
     var keyshare: [UInt8] = []
-    
+
     init(keysignCommittee: [String],
          mediatorURL: String,
          sessionID: String,
@@ -44,11 +44,11 @@ final class SchnorrKeysign {
         self.localPartyID = vault.localPartyID
         self.publicKeyEdDSA = publicKeyEdDSA
     }
-    
+
     func getSignatures() -> [String: TssKeysignResponse] {
         return self.signatures
     }
-    
+
     func getKeyshareString() -> String? {
         for ks in vault.keyshares {
             if ks.pubkey == self.publicKeyEdDSA {
@@ -57,7 +57,7 @@ final class SchnorrKeysign {
         }
         return nil
     }
-    
+
     func getKeyshareBytes() throws -> [UInt8] {
         guard let localKeyshare = getKeyshareString() else {
             throw HelperError.runtimeError("fail to get local keyshare")
@@ -68,7 +68,7 @@ final class SchnorrKeysign {
         }
         return [UInt8](keyshareData)
     }
-    
+
     func getKeyshareID() throws -> [UInt8] {
         var buf = goschnorr.tss_buffer()
         defer {
@@ -77,7 +77,7 @@ final class SchnorrKeysign {
         let keyShareBytes = try getKeyshareBytes()
         var keyshareSlice = keyShareBytes.to_dkls_goslice()
         var h = goschnorr.Handle()
-        let result = schnorr_keyshare_from_bytes(&keyshareSlice,&h)
+        let result = schnorr_keyshare_from_bytes(&keyshareSlice, &h)
         if result != LIB_OK {
             throw HelperError.runtimeError("fail to create keyshare handle from bytes, \(result)")
         }
@@ -87,7 +87,7 @@ final class SchnorrKeysign {
         }
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
-    
+
     func getKeysignSetupMessage(message: String) throws -> [UInt8] {
         var buf = goschnorr.tss_buffer()
         defer {
@@ -95,40 +95,40 @@ final class SchnorrKeysign {
         }
         let keyIdArr = try getKeyshareID()
         var keyIdSlice = keyIdArr.to_dkls_goslice()
-        
+
         // create setup message and upload it to relay server
         let byteArray = DKLSHelper.arrayToBytes(parties: self.keysignCommittee)
         var ids = byteArray.to_dkls_goslice()
-           
+
         let decodedMsgData = Data(hexString: message)
         guard let decodedMsgData else {
             throw HelperError.runtimeError("fail to hex decoded the message to sign")
         }
         let msgArr = [UInt8](decodedMsgData)
         var msgSlice = msgArr.to_dkls_goslice()
-        
+
         let err = schnorr_sign_setupmsg_new(&keyIdSlice, nil, &msgSlice, &ids, &buf)
         if err != LIB_OK {
             throw HelperError.runtimeError("fail to setup keysign message, error:\(err)")
         }
-        
+
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
-    
+
     func DKLSDecodeMessage(setupMsg: [UInt8]) throws -> String {
         var buf = goschnorr.tss_buffer()
         defer {
             goschnorr.tss_buffer_free(&buf)
         }
         var setupMsgSlice = setupMsg.to_dkls_goslice()
-        let result = schnorr_decode_message(&setupMsgSlice,&buf)
+        let result = schnorr_decode_message(&setupMsgSlice, &buf)
         if result != LIB_OK {
             throw HelperError.runtimeError("fail to extract message from setup message:\(result)")
         }
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len))).toHexString()
     }
-    
-    func getOutboundMessageReceiver(handle: goschnorr.Handle,message: goschnorr.go_slice,idx: UInt32) -> [UInt8] {
+
+    func getOutboundMessageReceiver(handle: goschnorr.Handle, message: goschnorr.go_slice, idx: UInt32) -> [UInt8] {
         var buf_receiver = goschnorr.tss_buffer()
         defer {
             goschnorr.tss_buffer_free(&buf_receiver)
@@ -141,23 +141,23 @@ final class SchnorrKeysign {
         }
         return Array(UnsafeBufferPointer(start: buf_receiver.ptr, count: Int(buf_receiver.len)))
     }
-    
-    func GetSchnorrOutboundMessage(handle: goschnorr.Handle) -> (goschnorr.schnorr_lib_error,[UInt8]) {
+
+    func GetSchnorrOutboundMessage(handle: goschnorr.Handle) -> (goschnorr.schnorr_lib_error, [UInt8]) {
         var buf = goschnorr.tss_buffer()
         defer {
             goschnorr.tss_buffer_free(&buf)
         }
-        let result = schnorr_sign_session_output_message(handle,&buf)
+        let result = schnorr_sign_session_output_message(handle, &buf)
         if result != LIB_OK {
             print("fail to get outbound message: \(result)")
-            return (result,[])
+            return (result, [])
         }
-        return (result,Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len))))
+        return (result, Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len))))
     }
-    
+
     func processSchnorrOutboundMessage(handle: goschnorr.Handle) async throws {
         repeat {
-            let (result,outboundMessage) = GetSchnorrOutboundMessage(handle: handle)
+            let (result, outboundMessage) = GetSchnorrOutboundMessage(handle: handle)
             if result != LIB_OK {
                 print("fail to get outbound message")
             }
@@ -170,35 +170,35 @@ final class SchnorrKeysign {
                 let receiverArray = getOutboundMessageReceiver(handle: handle,
                                                                message: message,
                                                                idx: UInt32(i))
-                
+
                 if receiverArray.count == 0 {
                     break
                 }
-                let receiverString = String(bytes: receiverArray,encoding: .utf8)!
+                let receiverString = String(bytes: receiverArray, encoding: .utf8)!
                 print("sending message from \(self.localPartyID) to: \(receiverString), content length:\(encodedOutboundMessage.count)")
                 try await self.messenger?.send(self.localPartyID,
                                          to: receiverString,
                                          body: encodedOutboundMessage)
             }
         } while 1 > 0
-        
+
     }
-    
-    func pullInboundMessages(handle: goschnorr.Handle,messageID: String) async throws -> Bool {
+
+    func pullInboundMessages(handle: goschnorr.Handle, messageID: String) async throws -> Bool {
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(self.localPartyID)"
         print("start pulling inbound messages from:\(urlString)")
         guard let url = URL(string: urlString) else {
             throw HelperError.runtimeError("invalid url string: \(urlString)")
         }
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(messageID,forHTTPHeaderField: "message_id")
+        request.setValue(messageID, forHTTPHeaderField: "message_id")
         var isFinished = false
         let start = DispatchTime.now()
         repeat {
-            let (data,resp) = try await URLSession.shared.data(for: request)
+            let (data, resp) = try await URLSession.shared.data(for: request)
             guard let httpResp = resp as? HTTPURLResponse else {
                 throw HelperError.runtimeError("fail to convert resp to http url response")
             }
@@ -226,11 +226,11 @@ final class SchnorrKeysign {
                 throw HelperError.runtimeError("timeout: failed to keysign within 60 seconds")
             }
         } while !isFinished
-        
+
         return false
     }
-    
-    func processInboundMessage(handle: goschnorr.Handle,data: Data,messageID: String) async throws -> Bool {
+
+    func processInboundMessage(handle: goschnorr.Handle, data: Data, messageID: String) async throws -> Bool {
         let decoder = JSONDecoder()
         let msgs = try decoder.decode([Message].self, from: data)
         let sortedMsgs = msgs.sorted(by: { $0.sequence_no < $1.sequence_no })
@@ -244,33 +244,33 @@ final class SchnorrKeysign {
             guard let decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex) else {
                 throw HelperError.runtimeError("fail to decrypted message body")
             }
-            
+
             // need to have a variable to save the array , otherwise dkls function can't access the memory
             guard let decodedMsg = Data(base64Encoded: decryptedBody) else {
                 throw HelperError.runtimeError("fail to decrypted inbound message")
             }
-            
+
             let descryptedBodyArr = [UInt8](decodedMsg)
-            
+
             // Validate message data before passing to Rust to prevent panic
             guard !descryptedBodyArr.isEmpty else {
                 throw HelperError.runtimeError("Empty decrypted message body")
             }
-            
+
             var decryptedBodySlice = descryptedBodyArr.to_dkls_goslice()
-            
+
             // Validate the slice is properly constructed
             guard decryptedBodySlice.len > 0 else {
                 throw HelperError.runtimeError("Invalid message slice: length is 0")
             }
-            
+
             var isFinished: UInt32 = 0
             let result = schnorr_sign_session_input_message(handle, &decryptedBodySlice, &isFinished)
             if result != LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to schnorr session, error code: \(result)")
             }
             self.cache.setObject(NSObject(), forKey: key)
-            try await deleteMessageFromServer(hash: msg.hash,messageID: messageID)
+            try await deleteMessageFromServer(hash: msg.hash, messageID: messageID)
             try await self.processSchnorrOutboundMessage(handle: handle)
             // local party keysign finished
             if isFinished != 0 {
@@ -279,8 +279,8 @@ final class SchnorrKeysign {
         }
         return false
     }
-    
-    func deleteMessageFromServer(hash: String,messageID: String) async throws {
+
+    func deleteMessageFromServer(hash: String, messageID: String) async throws {
         let urlString = "\(mediatorURL)/message/\(self.sessionID)/\(self.localPartyID)/\(hash)"
         guard let url = URL(string: urlString) else {
             throw HelperError.runtimeError("invalid url string: \(urlString)")
@@ -288,9 +288,9 @@ final class SchnorrKeysign {
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         request.addValue(messageID, forHTTPHeaderField: "message_id")
-        let (_,_) = try await URLSession.shared.data(for: request)
+        let (_, _) = try await URLSession.shared.data(for: request)
     }
-    
+
     func KeysignOneMessageWithRetry(attempt: UInt8, messageToSign: String) async throws {
         self.cache.removeAllObjects()
         let msgHash = Utils.getMessageBodyHash(msg: messageToSign)
@@ -303,33 +303,33 @@ final class SchnorrKeysign {
             var keysignSetupMsg: [UInt8]
             if self.isInitiateDevice && attempt == 0 {
                 keysignSetupMsg = try getKeysignSetupMessage(message: messageToSign)
-                try await localMessenger.uploadSetupMessage(message: keysignSetupMsg.toBase64(),nil)
+                try await localMessenger.uploadSetupMessage(message: keysignSetupMsg.toBase64(), nil)
             } else {
                 // download the setup message from relay server
                 let strKeysignSetupMsg = try await localMessenger.downloadSetupMessageWithRetry(nil)
                 keysignSetupMsg = Array(base64: strKeysignSetupMsg)
             }
-            
+
             let signingMsg = try DKLSDecodeMessage(setupMsg: keysignSetupMsg)
             if signingMsg != messageToSign {
                 throw HelperError.runtimeError("message doesn't match (\(messageToSign)) vs  (\(signingMsg))")
             }
             let finalSetupMsgArr = keysignSetupMsg
             var decodedSetupMsg = finalSetupMsgArr.to_dkls_goslice()
-            
+
             var handler = goschnorr.Handle()
-            
+
             let localPartyIDArr = self.localPartyID.toArray()
             var localPartySlice = localPartyIDArr.to_dkls_goslice()
-            
+
             let keyShareBytes = try getKeyshareBytes()
             var keyshareSlice = keyShareBytes.to_dkls_goslice()
             var keyshareHandle = goschnorr.Handle()
-            let result = schnorr_keyshare_from_bytes(&keyshareSlice,&keyshareHandle)
+            let result = schnorr_keyshare_from_bytes(&keyshareSlice, &keyshareHandle)
             if result != LIB_OK {
                 throw HelperError.runtimeError("fail to create keyshare handle from bytes, \(result)")
             }
-            
+
             let sessionResult = schnorr_sign_session_from_setup(&decodedSetupMsg,
                                                              &localPartySlice,
                                                              keyshareHandle,
@@ -342,7 +342,7 @@ final class SchnorrKeysign {
                 schnorr_sign_session_free(&handler)
             }
             let h = handler
-            
+
             try await processSchnorrOutboundMessage(handle: h)
             let isFinished = try await pullInboundMessages(handle: h, messageID: msgHash)
             if isFinished {
@@ -358,7 +358,7 @@ final class SchnorrKeysign {
                 resp.r = r.toHexString()
                 resp.s = s.toHexString()
                 resp.derSignature = encodeCanonicalDERSignature(r: r, s: s).toHexString()
-                
+
                 let keySignVerify = KeysignVerify(serverAddr: self.mediatorURL,
                                                   sessionID: self.sessionID)
                 await keySignVerify.markLocalPartyKeysignComplete(message: msgHash, sig: resp)
@@ -371,24 +371,24 @@ final class SchnorrKeysign {
             }
         }
     }
-    
+
     func SignSessionFinish(handle: goschnorr.Handle) throws -> [UInt8] {
         var buf = goschnorr.tss_buffer()
         defer {
             goschnorr.tss_buffer_free(&buf)
         }
-        let result = schnorr_sign_session_finish(handle,&buf)
+        let result = schnorr_sign_session_finish(handle, &buf)
         if result != LIB_OK {
             throw HelperError.runtimeError("fail to get keysign signature \(result)")
         }
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
-    
+
     func KeysignWithRetry() async throws {
         // get keyshare
         for msg in self.messsageToSign {
             try await KeysignOneMessageWithRetry(attempt: 0, messageToSign: msg)
         }
     }
-    
+
 }

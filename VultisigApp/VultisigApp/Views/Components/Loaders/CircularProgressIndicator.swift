@@ -58,7 +58,7 @@ struct CircularProgressIndicator: View {
         }
         .onAppear { startTime = Date() }
     }
-    
+
     // Smooth easing (close to cubic-bezier(0.4,0,0.2,1), but simpler)
     func smooth(_ x: Double) -> Double { x*x*(3 - 2*x) } // smoothstep
 }

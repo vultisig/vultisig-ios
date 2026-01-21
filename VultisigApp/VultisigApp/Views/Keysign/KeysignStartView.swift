@@ -10,16 +10,16 @@ import RiveRuntime
 
 struct KeysignStartView: View {
     @ObservedObject var viewModel: JoinKeysignViewModel
-    
+
     @State var loadingAnimationVM: RiveViewModel? = nil
-    
+
     var body: some View {
         ZStack {
             shadow
             content
         }
     }
-    
+
     var shadow: some View {
         Circle()
             .frame(width: 360, height: 360)
@@ -28,7 +28,7 @@ struct KeysignStartView: View {
             .blur(radius: 20)
             .padding(-15)
     }
-    
+
     var content: some View {
         VStack(spacing: 16) {
             loader
@@ -44,19 +44,19 @@ struct KeysignStartView: View {
             await viewModel.waitForKeysignStart()
         }
     }
-    
+
     var title: some View {
         Text(NSLocalizedString("waitingForKeySignStart", comment: "Waiting for the keysign process to start"))
             .preferredColorScheme(.dark)
             .font(Theme.fonts.title2)
             .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     var loader: some View {
         loadingAnimationVM?.view()
             .frame(width: 24, height: 24)
     }
-    
+
     var deviceID: some View {
         HStack(spacing: 0) {
             Text(NSLocalizedString("thisDevice", comment: ""))

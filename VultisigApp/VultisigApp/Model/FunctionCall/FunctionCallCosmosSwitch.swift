@@ -29,17 +29,17 @@ class FunctionCallCosmosSwitch: FunctionCallAddressable, ObservableObject {
     @Published var amount: Decimal = 0.0
     @Published var destinationAddress: String = ""
     @Published var thorAddress: String = ""
-    
+
     @Published var amountValid: Bool = false
     @Published var destinationAddressValid: Bool = false
     @Published var thorchainAddressValid: Bool = false
-    
+
     @Published var isTheFormValid: Bool = false
     @Published var customErrorMessage: String? = nil
-    
+
     private var tx: SendTransaction
     private var vault: Vault
-    
+
     var addressFields: [String: String] {
         get {
             let fields = ["destinationAddress": destinationAddress, "thorchainAddress": thorAddress]
@@ -54,26 +54,26 @@ class FunctionCallCosmosSwitch: FunctionCallAddressable, ObservableObject {
             }
         }
     }
-    
+
     private var cancellables = Set<AnyCancellable>()
-    
+
     required init(tx: SendTransaction, vault: Vault) {
         self.tx = tx
         self.vault = vault
         self.amount = tx.coin.balanceDecimal
-        
+
         let thorchainCoin = self.vault.coins.first { $0.chain == .thorChain && $0.isNativeToken }
         if let thorchainCoin = thorchainCoin {
             self.thorAddress = thorchainCoin.address
             self.thorchainAddressValid = true
         }
     }
-    
+
     func initialize() {
         setupValidation()
         fetchInboundAddress()
     }
-    
+
     private func fetchInboundAddress() {
         Task { @MainActor in
             let addresses = await ThorchainService.shared.fetchThorchainInboundAddress()
@@ -81,39 +81,39 @@ class FunctionCallCosmosSwitch: FunctionCallAddressable, ObservableObject {
                 let halted = match.halted
                 let globalPaused = match.global_trading_paused
                 let chainPaused = match.chain_trading_paused
-                
+
                 if halted || globalPaused || chainPaused {
                     print("Chain is halted or paused. Cannot proceed with switch.")
                     return
                 }
                 self.destinationAddress = match.address
                 self.destinationAddressValid = true
-                
+
             }
         }
     }
-    
+
     var balance: String {
         let balance = tx.coin.balanceDecimal.description
         return String(format: NSLocalizedString("balanceInParentheses", comment: ""), balance, tx.coin.ticker.uppercased())
     }
-    
+
     private func setupValidation() {
         Publishers.CombineLatest3($amountValid, $destinationAddressValid, $thorchainAddressValid)
             .map { $0 && $1 && $2 }
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }
-    
+
     var description: String {
         return toString()
     }
-    
+
     func toString() -> String {
         let memo = "SWITCH:\(self.thorAddress)"
         return memo
     }
-    
+
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("destinationAddress", self.destinationAddress)
@@ -121,10 +121,10 @@ class FunctionCallCosmosSwitch: FunctionCallAddressable, ObservableObject {
         dict.set("memo", self.toString())
         return dict
     }
-    
+
     func getView() -> AnyView {
         AnyView(VStack {
-            
+
             FunctionCallAddressTextField(
                 memo: self,
                 addressKey: "destinationAddress",
@@ -134,7 +134,7 @@ class FunctionCallCosmosSwitch: FunctionCallAddressable, ObservableObject {
                 ),
                 chain: tx.coin.chain
             )
-            
+
             FunctionCallAddressTextField(
                 memo: self,
                 addressKey: "thorchainAddress",
@@ -143,7 +143,7 @@ class FunctionCallCosmosSwitch: FunctionCallAddressable, ObservableObject {
                     set: { self.thorchainAddressValid = $0 }
                 )
             )
-            
+
             StyledFloatingPointField(
                 label: "\(NSLocalizedString("amount", comment: "")) \(self.balance)",
                 placeholder: NSLocalizedString("enterAmount", comment: ""),
@@ -156,7 +156,7 @@ class FunctionCallCosmosSwitch: FunctionCallAddressable, ObservableObject {
                     set: { self.amountValid = $0 }
                 )
             )
-            
+
         }.onAppear {
             self.initialize()
         })

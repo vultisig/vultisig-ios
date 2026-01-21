@@ -26,7 +26,7 @@ struct ListBottomSection<Content: View>: View {
             )
             .edgesIgnoringSafeArea(.bottom)
     }
-    
+
     var bottomPadding: CGFloat {
         #if os(macOS)
         16

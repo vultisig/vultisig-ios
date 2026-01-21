@@ -9,11 +9,11 @@ import SwiftUI
 
 struct CoinPickerCell: View {
     let coin: Coin
-    
+
     var body: some View {
         content
     }
-    
+
     var content: some View {
         HStack(spacing: 16) {
             AsyncImageView(
@@ -22,14 +22,14 @@ struct CoinPickerCell: View {
                 ticker: coin.ticker,
                 tokenChainLogo: coin.chain.logo
             )
-            
+
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 12) {
                     Text(coin.ticker)
                     Spacer()
                     Text(coin.balanceString)
                         .font(Theme.fonts.caption12)
-                    
+
                     Text(coin.balanceInFiat)
                 }
                 .font(Theme.fonts.bodyMMedium)

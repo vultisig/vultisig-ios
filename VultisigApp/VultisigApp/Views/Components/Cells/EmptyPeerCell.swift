@@ -10,7 +10,7 @@ import RiveRuntime
 
 struct EmptyPeerCell: View {
     @State var animationVM: RiveViewModel? = nil
-    
+
     var body: some View {
         cell
             .onAppear {
@@ -20,7 +20,7 @@ struct EmptyPeerCell: View {
                 animationVM?.stop()
             }
     }
-    
+
     var cell: some View {
         HStack(spacing: 8) {
             animation
@@ -36,7 +36,7 @@ struct EmptyPeerCell: View {
         )
         .padding(1)
     }
-    
+
     var text: some View {
         Text(NSLocalizedString("waitingOnDevice", comment: ""))
             .font(Theme.fonts.bodySMedium)
@@ -44,12 +44,12 @@ struct EmptyPeerCell: View {
             .lineLimit(2)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     var animation: some View {
         animationVM?.view()
             .frame(width: 24, height: 24)
     }
-    
+
 }
 
 #Preview {

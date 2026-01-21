@@ -14,7 +14,7 @@ struct CustomTokenScreen: View {
     @ObservedObject var group: GroupedChain
     @Binding var isPresented: Bool
     var onClose: () -> Void
-    
+
     @State private var contractAddress: String = ""
     @State private var tokenName: String = ""
     @State private var tokenSymbol: String = ""
@@ -23,15 +23,15 @@ struct CustomTokenScreen: View {
     @State var isAddingToken: Bool = false
     @State var isLoading: Bool = false
     @State var error: Error?
-    
+
     @State private var isValidAddress: Bool = false
     @State private var token: CoinMeta? = nil
-    
+
     @StateObject var tokenViewModel = TokenSelectionViewModel()
     @EnvironmentObject var coinViewModel: CoinSelectionViewModel
-    
+
     @Environment(\.dismiss) var dismiss
-    
+
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
@@ -51,15 +51,15 @@ struct CustomTokenScreen: View {
                             }
                         }
                     }
-                    
+
                     if let error = error {
                         errorView(error: error)
                             .transition(.opacity)
                     }
-                    
+
                     if showTokenInfo {
                         tokenInfoView
-                        
+
                         PrimaryButton(title: "Add \(tokenSymbol) token") {
                             saveAssets()
                         }
@@ -91,7 +91,7 @@ struct CustomTokenScreen: View {
         .withLoading(text: "pleaseWait".localized, isLoading: $isLoading)
         .withLoading(text: "addingToken".localized, isLoading: $isAddingToken)
     }
-    
+
     func errorView(error: Error) -> some View {
         ActionBannerView(
             title: error.localizedDescription,
@@ -102,7 +102,7 @@ struct CustomTokenScreen: View {
             Task { await fetchTokenInfo() }
         }
     }
-    
+
     var tokenInfoView: some View {
         ZStack(alignment: .top) {
             HStack(spacing: 12) {
@@ -117,7 +117,7 @@ struct CustomTokenScreen: View {
                         Text(token?.ticker ?? .empty)
                             .foregroundStyle(Theme.colors.textPrimary)
                             .font(Theme.fonts.bodyMMedium)
-                        
+
                         Text(token?.chain.name ?? .empty)
                             .foregroundStyle(Theme.colors.textSecondary)
                             .font(Theme.fonts.caption10)
@@ -125,7 +125,7 @@ struct CustomTokenScreen: View {
                             .padding(.horizontal, 12)
                             .overlay(RoundedRectangle(cornerRadius: 99).stroke(Theme.colors.borderLight))
                     }
-                    
+
                     Text(token?.contractAddress ?? .empty)
                         .foregroundStyle(Theme.colors.textTertiary)
                         .font(Theme.fonts.caption12)
@@ -140,26 +140,26 @@ struct CustomTokenScreen: View {
         }
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
-    
+
     private func fetchTokenInfo() async {
         guard !contractAddress.isEmpty else { return }
-        
+
         // Validate address format before making API calls
         guard isValidAddress else {
             error = InvalidAddressError()
             return
         }
-        
+
         isLoading = true
         showTokenInfo = false
         error = nil
-        
+
         do {
             if ChainType.EVM == group.chain.chainType {
-                
+
                 let service = try EvmService.getService(forChain: group.chain)
                 let (name, symbol, decimals) = try await service.getTokenInfo(contractAddress: contractAddress)
-                
+
                 if !name.isEmpty, !symbol.isEmpty, decimals > 0 {
                     let nativeTokenOptional = group.coins.first(where: {$0.isNativeToken})
                     if let nativeToken = nativeTokenOptional {
@@ -178,36 +178,36 @@ struct CustomTokenScreen: View {
                         self.showTokenInfo = true
                         self.isLoading = false
                     }
-                    
+
                 } else {
-                    
+
                     self.error = TokenNotFoundError()
                     self.isLoading = false
-                    
+
                 }
-                
+
             } else if ChainType.Solana == group.chain.chainType {
-                
+
                 let jupiterTokenInfos = try await SolanaService.shared.fetchTokensInfos(for: [contractAddress])
-                
+
                 if let jupiterTokenInfo = jupiterTokenInfos.first(where: {$0.contractAddress == contractAddress}) {
-                    
+
                     self.token = jupiterTokenInfo
                     self.tokenName = jupiterTokenInfo.ticker
                     self.tokenSymbol = jupiterTokenInfo.ticker
                     self.tokenDecimals = jupiterTokenInfo.decimals
                     self.showTokenInfo = true
                     self.isLoading = false
-                    
+
                 } else {
-                    
+
                     self.error = TokenNotFoundError()
                     self.isLoading = false
-                    
+
                 }
-                
+
             }
-            
+
         } catch let error as NSError {
             // Check for rate limit error
             if error.code == 429 {
@@ -221,41 +221,41 @@ struct CustomTokenScreen: View {
             self.isLoading = false
         }
     }
-    
+
     private func validateAddress(_ address: String) {
         isValidAddress = AddressService.validateAddress(address: address, group: group)
     }
-    
+
     private func saveAssets() {
         if let customToken = self.token {
             isAddingToken = true
             Task {
                 coinViewModel.handleSelection(isSelected: true, asset: customToken)
                 await CoinService.saveAssets(for: vault, selection: coinViewModel.selection)
-                
+
                 try await Task.sleep(nanoseconds: 1_000_000_000)
                 isAddingToken = false
                 dismiss()
             }
         }
     }
-    
+
     private struct TokenNotFoundError: LocalizedError {
         var errorDescription: String? {
             return NSLocalizedString("Token Not Found", comment: "Token not found error")
         }
     }
-    
+
     private struct RateLimitError: LocalizedError {
         var errorDescription: String? {
             return NSLocalizedString("Too many requests. Please close this screen and try again later.", comment: "Rate limit error")
         }
     }
-    
+
     private struct InvalidAddressError: LocalizedError {
         var errorDescription: String? {
             return NSLocalizedString("invalidAddress", comment: "Invalid address error")
         }
     }
-    
+
 }

@@ -15,26 +15,26 @@ extension ServerBackupVerificationView {
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarBackButtonHidden(true)
     }
-    
+
     var content: some View {
         VStack(alignment: .leading, spacing: 12) {
             title
             description
             textField
-            
+
             if isLoading {
                 loadingText
             }
-            
+
             if showAlert {
                 alertText
             }
-            
+
             Spacer()
         }
         .padding(.horizontal, 16)
     }
-    
+
     var textField: some View {
         HStack(spacing: 8) {
             field
@@ -45,7 +45,7 @@ extension ServerBackupVerificationView {
         .colorScheme(.dark)
         .padding(.top, 32)
     }
-    
+
     var field: some View {
         HStack(spacing: 8) {
             ForEach(0 ..< Self.codeLength, id: \.self) { index in
@@ -70,7 +70,7 @@ extension ServerBackupVerificationView {
             }
         }
     }
-    
+
     func pasteCode() {
         guard
             let raw = UIPasteboard.general.string?.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -79,9 +79,9 @@ extension ServerBackupVerificationView {
         else {
             return
         }
-        
+
         otp = raw.map(String.init)
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             focusedField = Self.codeLength - 1
         }

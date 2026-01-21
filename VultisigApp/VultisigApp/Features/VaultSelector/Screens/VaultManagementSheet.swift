@@ -17,25 +17,25 @@ private enum VaultSheetType: Equatable {
 struct VaultManagementSheet: View {
     @Query(sort: \Vault.order, order: .forward) var vaults: [Vault]
     @Query(sort: \Folder.order, order: .forward) var folders: [Folder]
-    
+
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var homeViewModel: HomeViewModel
-    
+
     @State var isEditing: Bool = false
     @State var selectedFolder: Folder?
     @State var folderToEdit: Folder?
     @State var showAddFolder: Bool = false
     @State var detents: [PresentationDetent] = [.medium, .large]
     @State var detentSelection = PresentationDetent.medium
-    
+
     @State private var sheetType = VaultSheetType.main
     @State private var shouldUseMoveTransition = true
-    
+
     @Binding var isPresented: Bool
     let availableHeight: CGFloat
     var onAddVault: () -> Void
     var onSelectVault: (Vault) -> Void
-    
+
     var body: some View {
         VStack {
             Group {
@@ -71,7 +71,7 @@ struct VaultManagementSheet: View {
             detentSelection = detents[safe: 0] ?? .medium
         }
     }
-    
+
     var mainSheetView: some View {
         ZStack {
             Group {
@@ -118,12 +118,12 @@ private extension VaultManagementSheet {
     func updateDetents(whileAnimation: Bool) {
         let whileAnimationDetents: [PresentationDetent] = whileAnimation ? [.large, .medium] + detents : []
         let stateDetents: [PresentationDetent]
-        
+
         if isEditing || sheetType != .main {
             self.detents = [.large] + whileAnimationDetents
             return
         }
-        
+
         let vaults = homeViewModel.getFilteredVaults(vaults: vaults, folders: folders)
         let elementsCount = vaults.count + folders.count
         switch elementsCount {
@@ -136,22 +136,22 @@ private extension VaultManagementSheet {
         default:
             stateDetents = isIPadOS ? [.large] : [.medium, .large] + whileAnimationDetents
         }
-        
+
         self.detents = stateDetents + whileAnimationDetents
     }
-    
+
     func onEditFolder() {
         folderToEdit = selectedFolder
         updateSheet(.editFolder)
     }
-    
+
     func onFolderBack() {
         shouldUseMoveTransition = true
         withAnimation(.interpolatingSpring) {
             selectedFolder = nil
         }
     }
-    
+
     func onDelete(_ folder: Folder) {
         selectedFolder = nil
         modelContext.delete(folder)
@@ -162,7 +162,7 @@ private extension VaultManagementSheet {
             print("Error while deleting folder: \(error)")
         }
     }
-    
+
     func updateSheet(_ sheetType: VaultSheetType) {
         shouldUseMoveTransition = false
         DispatchQueue.main.async {
@@ -176,7 +176,7 @@ private extension VaultManagementSheet {
 #Preview {
     struct PreviewContainer: View {
         @State var isPresented: Bool = false
-        
+
         var body: some View {
             VStack {
                 Button("Open Sheet") {
@@ -194,7 +194,7 @@ private extension VaultManagementSheet {
             .background(Theme.colors.bgPrimary)
         }
     }
-    
+
     return PreviewContainer()
         .environmentObject(HomeViewModel())
 }

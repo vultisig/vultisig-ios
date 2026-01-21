@@ -24,7 +24,7 @@ struct PrimaryBackgroundWithGradient: View {
             }
         }
     }
-    
+
     var radialGradient: some View {
         EllipticalGradient(
             stops: [
@@ -36,7 +36,7 @@ struct PrimaryBackgroundWithGradient: View {
         .blur(radius: 36)
         .opacity(0.8)
     }
-    
+
     var linearGradient: some View {
         LinearGradient(
             stops: [

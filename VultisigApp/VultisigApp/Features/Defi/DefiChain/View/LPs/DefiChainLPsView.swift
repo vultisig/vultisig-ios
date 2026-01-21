@@ -13,24 +13,24 @@ struct DefiChainLPsView<EmptyStateView: View>: View {
     var onRemove: (LPPosition) -> Void
     var onAdd: (LPPosition) -> Void
     var emptyStateView: () -> EmptyStateView
-    
+
     var showLoading: Bool {
         !viewModel.initialLoadingDone
     }
-    
+
     var formattedLPs: [(position: LPPosition, fiatAmount: String)] {
         viewModel.lpPositions.compactMap { position -> (position: LPPosition, fiatAmount: Decimal)? in
             guard let coin = vault.coins.first(where: { $0.toCoinMeta() == position.coin1 }) else {
                 return nil
             }
-            
+
             let fiatAmount = coin.fiat(decimal: position.coin1Amount)
             return (position, fiatAmount)
         }
         .sorted { $0.fiatAmount > $1.fiatAmount }
         .map { ($0.position, $0.fiatAmount.formatToFiat(includeCurrencySymbol: true))}
     }
-    
+
     var body: some View {
         LazyVStack(spacing: 14) {
             if showLoading {
@@ -46,7 +46,7 @@ struct DefiChainLPsView<EmptyStateView: View>: View {
                         onRemove: { onRemove(position) },
                         onAdd: { onAdd(position) }
                     )
-                }                
+                }
             } else {
                 emptyStateView()
             }

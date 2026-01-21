@@ -13,13 +13,13 @@ struct DefiSelectChainScreen: View {
     var onSave: () -> Void
     @State var searchBarFocused: Bool = false
     @State var isLoading: Bool = false
-        
+
     @StateObject var viewModel = DefiSelectChainViewModel()
-    
+
     var sections: [AssetSection<Int, Chain>] {
         !viewModel.filteredChains.isEmpty ? [AssetSection(assets: viewModel.filteredChains)] : []
     }
-    
+
     var body: some View {
         AssetSelectionContainerSheet(
             title: "selectChains".localized,
@@ -56,11 +56,11 @@ private extension DefiSelectChainScreen {
             }
         }
     }
-    
+
     func onSelection(_ chainSelection: DefiChainSelection) {
         viewModel.handleSelection(isSelected: chainSelection.selected, chain: chainSelection.chain)
     }
-    
+
     func saveAssets() async {
         await viewModel.save(for: vault)
     }

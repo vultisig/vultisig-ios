@@ -8,7 +8,7 @@
 import Foundation
 enum FeatureFlag: String {
     case EncryptGCM
-    
+
     var name: String {
         switch self {
         case .EncryptGCM: return "encrypt-gcm"
@@ -25,13 +25,13 @@ final class FeatureFlagService {
             } else {
                 print("Feature flag for \(feature) is not a boolean value")
             }
-            
+
         } catch {
             print("fail to get features \(error)")
         }
         return false
     }
-    
+
     private func getFeatureFlagFromServer() async throws -> [String: Any] {
 #if DEBUG
         let url =  URL(string: "https://api.vultisig.com/feature/debug.json")!

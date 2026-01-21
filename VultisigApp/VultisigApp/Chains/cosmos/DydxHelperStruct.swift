@@ -12,34 +12,34 @@ import VultisigCommonData
 
 struct DydxHelperStruct {
     static let DydxGasLimit: UInt64 = 2500000000000000
-    
+
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        guard case .Cosmos(let accountNumber, let sequence , let gas, let transactionTypeRawValue, _) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence, let gas, let transactionTypeRawValue, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
             throw HelperError.runtimeError("invalid hex public key")
         }
         let coin = CoinType.dydx
-        
+
         var messages = [WalletCore.CosmosMessage()]
         var memo: String? = keysignPayload.memo
-        
+
         var transactionType: VSTransactionType = .unspecified
         if let vsTransactionType = VSTransactionType(rawValue: transactionTypeRawValue) {
             transactionType = vsTransactionType
         }
-        
+
         if transactionType == .vote {
             let selectedOption = keysignPayload.memo?.replacingOccurrences(of: "DYDX_VOTE:", with: "") ?? ""
             let components = selectedOption.split(separator: ":")
-            
+
             guard components.count == 2,
                   let proposalID = Int(components[1]),
                   let voteOption = TW_Cosmos_Proto_Message.VoteOption.allCases.first(where: { $0.description == String(components[0]) }) else {
                 throw HelperError.runtimeError("The vote option is invalid")
             }
-            
+
             messages = [WalletCore.CosmosMessage.with {
                 $0.msgVote = WalletCore.CosmosMessage.MsgVote.with {
                     $0.proposalID = UInt64(proposalID)
@@ -51,7 +51,7 @@ struct DydxHelperStruct {
             guard AnyAddress(string: keysignPayload.toAddress, coin: coin) != nil else {
                 throw HelperError.runtimeError("\(keysignPayload.toAddress) is invalid")
             }
-            
+
             if let signDataMessagesResult = try CosmosSignDataBuilder.getMessages(keysignPayload: keysignPayload) {
                 messages = signDataMessagesResult.messages
                 memo = signDataMessagesResult.memo
@@ -68,9 +68,9 @@ struct DydxHelperStruct {
                 }]
             }
         }
-        
+
         let fee: WalletCore.CosmosFee
-        
+
         if let signDataFee = try CosmosSignDataBuilder.getFee(keysignPayload: keysignPayload) {
             fee = signDataFee
         } else {
@@ -82,7 +82,7 @@ struct DydxHelperStruct {
                 }]
             }
         }
-        
+
         let input = CosmosSigningInput.with {
             $0.publicKey = pubKeyData
             $0.signingMode = CosmosSignDataBuilder.getSigningMode(keysignPayload: keysignPayload)
@@ -96,10 +96,10 @@ struct DydxHelperStruct {
             $0.messages = messages
             $0.fee = fee
         }
-        
+
         return try input.serializedData()
     }
-    
+
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .dydx, txInputData: inputData)
@@ -109,14 +109,14 @@ struct DydxHelperStruct {
         }
         return [preSigningOutput.dataHash.hexString]
     }
-    
+
     static func getSignedTransaction(keysignPayload: KeysignPayload,
                                      signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let signedTransaction = try getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
         return signedTransaction
     }
-    
+
     static func getSignedTransaction(coinHexPublicKey: String,
                                      inputData: Data,
                                      signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
@@ -125,7 +125,7 @@ struct DydxHelperStruct {
         else {
             throw HelperError.runtimeError("public key \(coinHexPublicKey) is invalid")
         }
-        
+
         do {
             let hashes = TransactionCompiler.preImageHashes(coinType: .dydx, txInputData: inputData)
             let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
@@ -136,7 +136,7 @@ struct DydxHelperStruct {
             guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
                 throw HelperError.runtimeError("fail to verify signature")
             }
-            
+
             allSignatures.add(data: signature)
             publicKeys.add(data: pubkeyData)
             let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .dydx,

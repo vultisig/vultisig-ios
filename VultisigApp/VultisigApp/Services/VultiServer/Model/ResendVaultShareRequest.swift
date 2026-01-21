@@ -11,7 +11,7 @@ struct ResendVaultShareRequest: Codable {
         case email
         case password
     }
-    
+
     let pubKeyECDSA: String
     let email: String
     let password: String

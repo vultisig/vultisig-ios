@@ -14,7 +14,7 @@ public struct FlatPicker<ItemView: View, Item: Equatable & Hashable>: View {
     let itemViewBuilder: (Item) -> ItemView
     let itemSize: CGFloat
     let axis: Axis.Set
-    
+
     var enumerated: [(Int, Item)] {
         Array(items.enumerated())
     }
@@ -35,7 +35,7 @@ public struct FlatPicker<ItemView: View, Item: Equatable & Hashable>: View {
 #if os(iOS)
     private let impactGenerator = UIImpactFeedbackGenerator(style: .light)
 #endif
-    
+
     public var body: some View {
         GeometryReader { geometry in
             let containerSize = axis == .vertical ? geometry.size.height : geometry.size.width
@@ -52,7 +52,7 @@ public struct FlatPicker<ItemView: View, Item: Equatable & Hashable>: View {
                     .onChange(of: scrollOffset) { _, newOffset in
                         // Calculate current visible index for haptic feedback
                         let newIndex = calculateIndex(newOffset: newOffset, containerSize: containerSize)
-                        
+
                         // Trigger haptic feedback when passing through a new item
                         if newIndex != currentVisibleIndex {
                             #if os(iOS)
@@ -60,7 +60,7 @@ public struct FlatPicker<ItemView: View, Item: Equatable & Hashable>: View {
                             #endif
                             currentVisibleIndex = newIndex
                         }
-                        
+
                         scrollCheckWorkItem?.cancel()
 
                         // Updates lastOffset only if the user stops scrolling
@@ -73,11 +73,11 @@ public struct FlatPicker<ItemView: View, Item: Equatable & Hashable>: View {
                     }
                     .onChange(of: lastOffset) { _, lastOffset in
                         let newItemIndex = calculateIndex(newOffset: lastOffset, containerSize: containerSize)
-                        
+
                         if selectedItem != items[newItemIndex] {
                             selectedItem = items[newItemIndex]
                         }
-                            
+
                         updateSelectedItem(animated: true)
                     }
                     .onLoad {
@@ -103,7 +103,7 @@ private extension FlatPicker {
         let clampedIndex = min(max(index, 0), items.count - 1)
         return clampedIndex
     }
-    
+
     func updateCurrentVisibilityIndex(animated: Bool) {
         guard let selectedItem else { return }
         if let initialIndex = items.firstIndex(of: selectedItem) {
@@ -112,7 +112,7 @@ private extension FlatPicker {
         // Scroll to selected item on load
         updateSelectedItem(animated: animated)
     }
-    
+
     func updateSelectedItem(animated: Bool) {
         if animated {
             withAnimation(.easeInOut(duration: 0.2)) {
@@ -133,7 +133,7 @@ private extension FlatPicker {
         }
         .allowsHitTesting(false)
     }
-    
+
     @ViewBuilder
     func gradientContainer<Gradients: View>(@ViewBuilder content: () -> Gradients) -> some View {
         if axis == .vertical {
@@ -153,7 +153,7 @@ private extension FlatPicker {
         )
         .frame(width: axis == .horizontal ? size : nil, height: axis == .vertical ? size : nil)
     }
-    
+
     func gradientStartPoint(isStart: Bool) -> UnitPoint {
         switch axis {
         case .vertical:
@@ -164,7 +164,7 @@ private extension FlatPicker {
             return .top
         }
     }
-    
+
     func gradientEndPoint(isStart: Bool) -> UnitPoint {
         switch axis {
         case .vertical:
@@ -175,7 +175,7 @@ private extension FlatPicker {
             return .top
         }
     }
-    
+
     @ViewBuilder
     func itemsContainer<Items: View>(@ViewBuilder content: () -> Items) -> some View {
         switch axis {

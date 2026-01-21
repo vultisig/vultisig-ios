@@ -15,7 +15,7 @@ struct OTPCharTextField: UIViewRepresentable {
 
     class OTPTextField: UITextField {
         var onDeleteWhenEmpty: (() -> Void)?
-        
+
         override func deleteBackward() {
             if text?.isEmpty ?? true {
                 onDeleteWhenEmpty?()
@@ -36,17 +36,17 @@ struct OTPCharTextField: UIViewRepresentable {
             if string.isEmpty {
                 return true
             }
-            
+
             // Only allow digits
             guard string.allSatisfy({ $0.isNumber }) else {
                 return false
             }
-            
+
             // If field is empty, allow the digit
             if textField.text?.isEmpty ?? true {
                 return string.count == 1
             }
-            
+
             // If field has text, replace it with the new digit
             textField.text = string
             parent.text = string

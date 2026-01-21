@@ -23,7 +23,7 @@ struct MayaChainStakeInteractor: StakeInteractor {
         guard vaultStakePositions.contains(where: { $0.ticker == cacaoCoin.ticker }) else {
             return []
         }
-        
+
         guard
             let health = try? await mayaChainAPIService.getHealth(shouldCache: false),
             let mimir = try? await mayaChainAPIService.getMimir()

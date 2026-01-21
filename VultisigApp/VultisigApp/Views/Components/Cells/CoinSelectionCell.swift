@@ -11,7 +11,7 @@ struct CoinSelectionCell: View {
     let asset: CoinMeta
     @State var isSelected = false
     @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
-    
+
     var body: some View {
         HStack(spacing: 16) {
             image
@@ -33,7 +33,7 @@ struct CoinSelectionCell: View {
             isSelected.toggle()
         }
     }
-    
+
     var image: some View {
         AsyncImageView(logo: asset.chain.logo, size: CGSize(width: 32, height: 32), ticker: asset.ticker, tokenChainLogo: nil)
     }
@@ -43,23 +43,23 @@ struct CoinSelectionCell: View {
             Text(asset.ticker)
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(Theme.colors.textPrimary)
-            
+
             Text(asset.chain.name)
                 .font(Theme.fonts.caption12)
                 .foregroundColor(Theme.colors.textPrimary)
         }
     }
-    
+
     var toggle: some View {
         container
     }
-    
+
     var content: some View {
         Toggle("Is selected", isOn: $isSelected)
             .labelsHidden()
             .scaleEffect(0.6)
     }
-    
+
     private func setData() {
         if tokenSelectionViewModel.selection.contains(where: { $0.chain == asset.chain && $0.ticker == asset.ticker }) {
             isSelected = true
@@ -67,7 +67,7 @@ struct CoinSelectionCell: View {
             isSelected = false
         }
     }
-    
+
     private func handleSelection(_ isSelected: Bool) {
         tokenSelectionViewModel.handleSelection(isSelected: isSelected, asset: asset)
     }

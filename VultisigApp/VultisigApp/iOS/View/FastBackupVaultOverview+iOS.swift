@@ -13,7 +13,7 @@ extension FastBackupVaultOverview {
         content
             .navigationBarBackButtonHidden(true)
     }
-    
+
     var textTabView: some View {
         text
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
@@ -21,13 +21,13 @@ extension FastBackupVaultOverview {
                   UIScrollView.appearance().isScrollEnabled = false
             }
     }
-    
+
     var button: some View {
         nextButton
             .padding(.horizontal, 40)
             .padding(.bottom, 100)
     }
-    
+
     var text: some View {
         TabView(selection: $tabIndex) {
             ForEach(0..<totalTabCount, id: \.self) { index in
@@ -43,7 +43,7 @@ extension FastBackupVaultOverview {
         }
         .frame(maxWidth: .infinity)
     }
-    
+
     var animation: some View {
         ZStack {
             if tabIndex>2 {

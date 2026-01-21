@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct KeyImportRequest: Hashable,Codable {
+struct KeyImportRequest: Hashable, Codable {
     let name: String
     let session_id: String
     let hex_encryption_key: String

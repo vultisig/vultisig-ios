@@ -12,7 +12,7 @@ extension OnboardingView {
     var container: some View {
         content
     }
-    
+
     var view: some View {
         VStack(spacing: 0) {
             header
@@ -22,7 +22,7 @@ extension OnboardingView {
             button
         }
     }
-    
+
     var text: some View {
         OnboardingTextCard(
             index: tabIndex,
@@ -31,7 +31,7 @@ extension OnboardingView {
         .frame(maxWidth: .infinity)
         .frame(height: 100)
     }
-    
+
     var button: some View {
         HStack {
             nextButton
@@ -39,11 +39,11 @@ extension OnboardingView {
         .padding(.horizontal, 40)
         .padding(.bottom, 10)
     }
-    
+
     var animation: some View {
         animationVM?.view()
     }
-    
+
     func getBottomPadding() -> CGFloat {
         50
     }

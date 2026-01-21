@@ -10,10 +10,10 @@ import SwiftUI
 struct OnChainSecurityScreen: View {
     let title = "vaultSettingsSecurityTitle".localized
     let service = SecurityScannerSettingsService()
-    
+
     @State var securityScannerEnabled: Bool = false
     @State var showSecurityScannerSheet: Bool = false
-    
+
     var body: some View {
         Screen(title: title) {
             ScrollView {
@@ -35,7 +35,7 @@ struct OnChainSecurityScreen: View {
             onSecurityScannerToggle()
         }
     }
-    
+
     var securityScannerCell: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text("vaultSettingsSecurityScreenTitleSwitch".localized)
@@ -51,16 +51,16 @@ struct OnChainSecurityScreen: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())
     }
-    
+
     func onSecurityScannerToggle() {
         guard !securityScannerEnabled else {
             toggleSecurityScanner(true)
             return
         }
-        
+
         showSecurityScannerSheet = true
     }
-    
+
     func toggleSecurityScanner(_ enabled: Bool) {
         securityScannerEnabled = enabled
         service.saveSecurityScannerStatus(enable: enabled)

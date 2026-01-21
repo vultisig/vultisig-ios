@@ -9,7 +9,7 @@ import Foundation
 import BigInt
 
 struct LiFiService {
-    
+
     static let shared = LiFiService()
     static let integratorFeeBps: Int = 50
 
@@ -33,7 +33,7 @@ struct LiFiService {
         if let integratorFee {
             integratorFeeString = String(format: "%.3f", NSDecimalNumber(decimal: integratorFee).doubleValue)
         }
-        
+
         let endpoint = Endpoint.fetchLiFiQuote(
             fromChain: String(fromChain),
             toChain: String(toChain),

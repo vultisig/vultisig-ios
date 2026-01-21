@@ -10,22 +10,22 @@ import SwiftUI
 struct PeerCell: View {
     let id: String
     let isSelected: Bool
-    
+
     @State var isPhone: Bool = false
-    
+
     var body: some View {
         cell
     }
-    
+
     var cell: some View {
         HStack(spacing: 8) {
             VStack(alignment: .leading, spacing: 2) {
                 deviceId
                 description
             }
-            
+
             Spacer()
-            
+
             check
         }
         .padding(16)
@@ -38,7 +38,7 @@ struct PeerCell: View {
         )
         .padding(1)
     }
-    
+
     var deviceId: some View {
         Text(getDeviceName())
             .font(Theme.fonts.bodySMedium)
@@ -46,7 +46,7 @@ struct PeerCell: View {
             .lineLimit(1)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     var description: some View {
         Text(id)
             .font(Theme.fonts.caption12)
@@ -54,17 +54,17 @@ struct PeerCell: View {
             .lineLimit(1)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     var check: some View {
         Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
             .font(Theme.fonts.title2)
             .foregroundColor(isSelected ? Theme.colors.alertSuccess : Theme.colors.borderLight)
     }
-    
+
     private func getDeviceName() -> String {
         let idString = id.lowercased()
         let deviceName: String
-        
+
         if idString.contains("mac") {
             deviceName = "Mac"
         } else if idString.contains("iphone") {
@@ -91,7 +91,7 @@ struct PeerCell: View {
         GridItem(.adaptive(minimum: 200)),
         GridItem(.adaptive(minimum: 200))
     ]
-    
+
     return ZStack {
         Background()
         LazyVGrid(columns: columns, spacing: 30) {

@@ -1,11 +1,9 @@
 disabled_rules:
-  - trailing_whitespace
   - line_length
   - identifier_name
   - shorthand_operator
   - type_body_length
   - cyclomatic_complexity
-  - comma
   - function_body_length
   - type_name
   - file_length

@@ -9,10 +9,10 @@ import SwiftUI
 
 struct UTXOTransactionsView: View {
     let coin: Coin?
-    
+
     @State var tx: SendTransaction? = nil
     @StateObject var utxoTransactionsService: UTXOTransactionsService = .init()
-    
+
     var body: some View {
         view
             .onAppear {
@@ -21,7 +21,7 @@ struct UTXOTransactionsView: View {
                 }
             }
     }
-    
+
     var view: some View {
         ZStack {
             if let transactions = utxoTransactionsService.walletData, let tx = tx {
@@ -37,19 +37,19 @@ struct UTXOTransactionsView: View {
             }
         }
     }
-    
+
     var loader: some View {
         ProgressView()
             .preferredColorScheme(.dark)
     }
-    
+
     private func setData() async {
         guard let coin else {
             return
         }
-        
+
         tx = SendTransaction(coin: coin)
-        
+
         guard let tx else {
             return
         }
@@ -60,14 +60,14 @@ struct UTXOTransactionsView: View {
             await utxoTransactionsService.fetchTransactions(tx.coin.address, endpointUrl: Endpoint.fetchLitecoinTransactions(tx.coin.address))
         }
     }
-    
+
     private func getErrorMessage(_ error: String) -> some View {
         VStack(spacing: 12) {
             ErrorMessage(text: "errorFetchingTransactions")
             Text(error)
         }
     }
-    
+
     private func getList(for transactions: [UTXOTransactionMempool], tx: SendTransaction) -> some View {
         ScrollView {
             VStack(spacing: 16) {

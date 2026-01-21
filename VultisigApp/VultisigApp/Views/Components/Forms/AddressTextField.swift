@@ -13,7 +13,7 @@ struct AddressTextField: View {
     let coin: Coin
     @Binding var error: String?
     var onAddressResult: (AddressResult?) -> Void
-    
+
     var body: some View {
         VStack(spacing: 16) {
             CommonTextField(
@@ -27,7 +27,7 @@ struct AddressTextField: View {
             .submitLabel(.next)
             .disableAutocorrection(true)
             .maxLength($address)
-            
+
             AddressFieldAccessoryStack(
                 coin: coin,
                 onResult: onAddressResult

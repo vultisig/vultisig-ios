@@ -10,14 +10,14 @@ import SwiftUI
 import BigInt
 
 extension Decimal {
-    
+
     func truncated(toPlaces places: Int) -> Decimal {
         var original = self
         var truncated = Decimal()
         NSDecimalRound(&truncated, &original, places, .down)
         return truncated
     }
-    
+
     /// Base method for formatting fiat values with configurable decimal places
     private func formatToFiat(includeCurrencySymbol: Bool = true, useAbbreviation: Bool = false, maximumFractionDigits: Int) -> String {
         let formatter = NumberFormatter()
@@ -32,21 +32,21 @@ extension Decimal {
         formatter.decimalSeparator = Locale.current.decimalSeparator ?? "."
         formatter.groupingSeparator = Locale.current.groupingSeparator ?? ","
         formatter.roundingMode = .down
-        
+
         let number = NSDecimalNumber(decimal: self)
         return formatter.string(from: number) ?? ""
     }
-    
+
     /// Format fiat value with standard 2 decimal places
     func formatToFiat(includeCurrencySymbol: Bool = true, useAbbreviation: Bool = false) -> String {
         return formatToFiat(includeCurrencySymbol: includeCurrencySymbol, useAbbreviation: useAbbreviation, maximumFractionDigits: 2)
     }
-    
+
     /// Format fiat value for fee display with more decimal places to show small fees
     func formatToFiatForFee(includeCurrencySymbol: Bool = true) -> String {
         return formatToFiat(includeCurrencySymbol: includeCurrencySymbol, useAbbreviation: false, maximumFractionDigits: 5)
     }
-    
+
     func formatDecimalToLocale(locale: Locale = Locale.current) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
@@ -56,19 +56,19 @@ extension Decimal {
         formatter.roundingMode = .down
         return formatter.string(from: self as NSDecimalNumber) ?? ""
     }
-    
+
     /// Format large numbers with abbreviations (M, B, T) for DISPLAY ONLY
     /// ⚠️ NEVER use in input fields - only for displaying values
     func formatWithAbbreviation(maxDecimals: Int = 2) -> String {
         let absValue = abs(self)
         let isNegative = self < 0
         let prefix = isNegative ? "-" : ""
-        
+
         let trillion = Decimal(1_000_000_000_000)
         let billion = Decimal(1_000_000_000)
         let million = Decimal(1_000_000)
         let thousand = Decimal(1_000)
-        
+
         if absValue >= trillion {
             let value = (absValue / trillion).truncated(toPlaces: maxDecimals)
             return "\(prefix)\(value.formatToDecimal(digits: maxDecimals))T"
@@ -85,7 +85,7 @@ extension Decimal {
             return "\(prefix)\(absValue.formatToDecimal(digits: maxDecimals))"
         }
     }
-    
+
     func formatToDecimal(digits: Int) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
@@ -94,31 +94,31 @@ extension Decimal {
         formatter.decimalSeparator = Locale.current.decimalSeparator ?? "."
         formatter.groupingSeparator = Locale.current.groupingSeparator ?? ","
         formatter.roundingMode = .down
-        
+
         // Convert Decimal to NSDecimalNumber before using with NumberFormatter
         let number = NSDecimalNumber(decimal: self)
-        
+
         return formatter.string(from: number) ?? ""
     }
-    
+
     /// Format values ​​for display, automatically using abbreviations for large values
     /// For values ​​>= 1M, use abbreviations (K, M, B, T)
     /// For values ​​< 1M, use standard decimal formatting with locale
     /// ⚠️ ONLY for display - never use in input fields
     func formatForDisplay(maxDecimals: Int = 2, locale: Locale = Locale.current, skipAbbreviation: Bool = false) -> String {
         let million = Decimal(1_000_000)
-        
+
         if abs(self) >= million, !skipAbbreviation {
             return formatWithAbbreviation(maxDecimals: maxDecimals)
         } else {
             return formatDecimalToLocale(locale: locale)
         }
     }
-    
+
     init(_ bigInt: BigInt) {
         self = .init(string: bigInt.description) ?? 0
     }
-    
+
     func toInt() -> Int {
         return NSDecimalNumber(decimal: self).intValue
     }

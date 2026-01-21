@@ -12,12 +12,12 @@ struct EvmServiceConfig {
     let chain: Chain
     let rpcEndpoint: String
     let tokenProvider: TokenProvider
-    
+
     enum TokenProvider {
         case standard
         case custom([CoinMeta])
         case sepolia
-        
+
         func getTokens(nativeToken: CoinMeta, address: String, rpcService: RpcServiceStruct) async -> [CoinMeta] {
             switch self {
             case .standard:
@@ -33,7 +33,7 @@ struct EvmServiceConfig {
             }
         }
     }
-    
+
     static let configurations: [Chain: EvmServiceConfig] = [
         .ethereum: EvmServiceConfig(
             chain: .ethereum,
@@ -116,7 +116,7 @@ struct EvmServiceConfig {
             tokenProvider: .standard
         )
     ]
-    
+
     static func getConfig(forChain chain: Chain) throws -> EvmServiceConfig {
         guard let config = configurations[chain] else {
             throw RpcEvmServiceError.rpcError(code: 500, message: "EVM service not found")

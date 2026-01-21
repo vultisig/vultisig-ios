@@ -9,9 +9,9 @@ import SwiftUI
 
 struct MemoTextField: View {
     @Binding var memo: String
-    
+
     @Environment(\.isEnabled) private var isEnabled
-    
+
     var body: some View {
         container
             .font(Theme.fonts.bodyMMedium)
@@ -24,7 +24,7 @@ struct MemoTextField: View {
             )
             .padding(1)
     }
-    
+
     var content: some View {
         HStack(spacing: 0) {
             textField
@@ -32,7 +32,7 @@ struct MemoTextField: View {
             pasteButton
         }
     }
-    
+
     var textField: some View {
         TextField(NSLocalizedString("enterMemo", comment: "").capitalized, text: $memo)
             .borderlessTextFieldStyle()
@@ -41,7 +41,7 @@ struct MemoTextField: View {
             .textFieldStyle(TappableTextFieldStyle())
             .foregroundColor(isEnabled ? Theme.colors.textPrimary : Theme.colors.textSecondary)
     }
-    
+
     var pasteButton: some View {
         Button {
             pasteAddress()
@@ -49,7 +49,7 @@ struct MemoTextField: View {
             pasteLabel
         }
     }
-    
+
     var pasteLabel: some View {
         Image(systemName: "square.on.square")
     }

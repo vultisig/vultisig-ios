@@ -11,7 +11,7 @@ enum ResendVaultShareError: Error, LocalizedError {
     case tooManyRequests
     case badRequest
     case unknown
-    
+
     var errorDescription: String? {
         switch self {
         case .tooManyRequests:
@@ -27,11 +27,11 @@ enum ResendVaultShareError: Error, LocalizedError {
 struct VultiServerService {
     private let httpClient: HTTPClientProtocol
     private let decoder = JSONDecoder()
-    
+
     init(httpClient: HTTPClientProtocol = HTTPClient()) {
         self.httpClient = httpClient
     }
-    
+
     func resendVaultShare(request: ResendVaultShareRequest) async throws {
         do {
             _ = try await httpClient.request(VultiServerAPI.resendVaultShare(request: request))

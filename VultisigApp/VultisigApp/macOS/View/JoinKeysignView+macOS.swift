@@ -15,7 +15,7 @@ extension JoinKeysignView {
             main
         }
     }
-    
+
     var main: some View {
         VStack {
             headerMac
@@ -24,7 +24,7 @@ extension JoinKeysignView {
             Spacer()
         }
     }
-    
+
     var headerMac: some View {
         JoinKeygenHeader(title: globalStateViewModel.showKeysignDoneView ? "transactionComplete" : "joinKeysign", hideBackButton: globalStateViewModel.showKeysignDoneView)
     }

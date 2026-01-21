@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SwapFromToChain: View {
     let chain: Chain?
-    
+
     var body: some View {
         HStack(spacing: 4) {
             icon
@@ -17,19 +17,19 @@ struct SwapFromToChain: View {
             chevron
         }
     }
-    
+
     var icon: some View {
         Image(chain?.logo ?? "")
             .resizable()
             .frame(width: 16, height: 16)
     }
-    
+
     var title: some View {
         Text(chain?.name ?? "")
             .font(Theme.fonts.caption12)
             .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     var chevron: some View {
         Image(systemName: "chevron.down")
             .font(Theme.fonts.caption10)

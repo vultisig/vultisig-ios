@@ -13,7 +13,7 @@ struct SendDetailsAddressTab: View {
     @ObservedObject var viewModel: SendDetailsViewModel
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @FocusState.Binding var focusedField: Field?
-    
+
     var body: some View {
         content
             .onChange(of: isExpanded) { oldValue, newValue in
@@ -22,7 +22,7 @@ struct SendDetailsAddressTab: View {
                 }
             }
     }
-    
+
     var content: some View {
         SendFormExpandableSection(isExpanded: isExpanded) {
             titleSection
@@ -33,13 +33,13 @@ struct SendDetailsAddressTab: View {
             }
         }
     }
-    
+
     var titleSection: some View {
         HStack {
             Text(NSLocalizedString("address", comment: ""))
                 .font(Theme.fonts.bodySMedium)
                 .foregroundColor(Theme.colors.textPrimary)
-            
+
             if viewModel.addressSetupDone {
                 selectedAddress
                 Spacer()
@@ -53,11 +53,11 @@ struct SendDetailsAddressTab: View {
             viewModel.onSelect(tab: .address)
         }
     }
-    
+
     var separator: some View {
         LinearSeparator()
     }
-    
+
     var selectedAddress: some View {
         Text("\(tx.toAddress)")
             .font(Theme.fonts.caption12)
@@ -65,15 +65,15 @@ struct SendDetailsAddressTab: View {
             .lineLimit(1)
             .truncationMode(.middle)
     }
-    
+
     var doneEditTools: some View {
         SendDetailsTabEditTools(forTab: .address, viewModel: viewModel)
     }
-    
+
     var fields: some View {
         SendDetailsAddressFields(tx: tx, viewModel: viewModel, sendCryptoViewModel: sendCryptoViewModel, focusedField: $focusedField)
     }
-    
+
     private func handleClose(_ oldValue: Bool, _ newValue: Bool) async {
         guard oldValue != newValue, !newValue else {
             return

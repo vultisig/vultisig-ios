@@ -9,14 +9,14 @@ import SwiftUI
 
 struct RegisterVaultView: View {
     let vault: Vault
-    
+
     @StateObject var viewModel = VaultDetailQRCodeViewModel()
-    
+
     @State var imageName = ""
     @State var isExporting: Bool = false
-    
+
     @Environment(\.displayScale) var displayScale
-    
+
     var body: some View {
         Screen(title: "registerVault".localized) {
             VStack {
@@ -49,7 +49,7 @@ struct RegisterVaultView: View {
         }
         .onLoad(perform: setData)
     }
-    
+
     @ViewBuilder
     func animationCell(for index: Int) -> some View {
         let attrString = text(for: index)
@@ -68,14 +68,14 @@ struct RegisterVaultView: View {
             EmptyView()
         }
     }
-    
+
     func text(for index: Int) -> AttributedString {
         var attrString = AttributedString("registerVaultText\(index + 1)".localized)
         attrString.font = Theme.fonts.footnote
         attrString.foregroundColor = Theme.colors.textPrimary
         return attrString
     }
-    
+
     var websiteText: AttributedString {
         var attrString = AttributedString("Vultisig Web")
         attrString.font = Theme.fonts.footnote
@@ -83,7 +83,7 @@ struct RegisterVaultView: View {
         attrString.foregroundColor = Theme.colors.alertSuccess
         return attrString
     }
-    
+
     func commonCell(icon: String, title: AttributedString) -> some View {
         HStack(spacing: 12) {
             Icon(named: icon, size: 24)
@@ -93,7 +93,7 @@ struct RegisterVaultView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     private func setData() {
         imageName = viewModel.generateName(vault: vault)
         viewModel.render(vault: vault, displayScale: displayScale)

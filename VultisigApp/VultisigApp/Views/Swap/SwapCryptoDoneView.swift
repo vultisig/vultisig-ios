@@ -18,14 +18,14 @@ struct SwapCryptoDoneView: View {
     let swapSummaryViewModel: SwapCryptoViewModel
     @Binding var showAlert: Bool
     @Binding var alertTitle: String
-    
+
     @State var showFees: Bool = false
     @State var animationVM: RiveViewModel? = nil
-    
+
     @Environment(\.openURL) var openURL
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @EnvironmentObject var appViewModel: AppViewModel
-    
+
     var body: some View {
         VStack(spacing: 0) {
             cards
@@ -36,7 +36,7 @@ struct SwapCryptoDoneView: View {
             animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
         }
     }
-    
+
     var cards: some View {
         ScrollView {
             VStack {
@@ -47,7 +47,7 @@ struct SwapCryptoDoneView: View {
             .padding(.horizontal)
         }
     }
-    
+
     var trackButton: some View {
         PrimaryButton(title: "track", type: .secondary) {
             if let progressLink, let url = URL(string: progressLink) {
@@ -55,29 +55,29 @@ struct SwapCryptoDoneView: View {
             }
         }
     }
-    
+
     var doneButton: some View {
         PrimaryButton(title: "done") {
             appViewModel.restart()
         }
     }
-    
+
     var animation: some View {
         ZStack {
             animationVM?.view()
                 .frame(width: 280, height: 280)
-            
+
             animationText
                 .offset(y: 50)
         }
     }
-    
+
     var animationText: some View {
         Text(NSLocalizedString("transactionSuccessful", comment: ""))
             .foregroundStyle(LinearGradient.primaryGradient)
             .font(Theme.fonts.bodyLMedium)
     }
-    
+
     var fromToCards: some View {
         ZStack {
             HStack(spacing: 8) {
@@ -90,7 +90,7 @@ struct SwapCryptoDoneView: View {
                     description: swapSummaryViewModel.fromFiatAmount(tx: tx),
                     isFrom: true
                 )
-                
+
                 getFromToCard(
                     coin: tx.toCoin,
                     title: sendSummaryViewModel.getToAmount(
@@ -101,24 +101,24 @@ struct SwapCryptoDoneView: View {
                     isFrom: false
                 )
             }
-            
+
             chevronContent
         }
     }
-    
+
     var chevronContent: some View {
         ZStack {
             chevronIcon
-            
+
             filler
                 .offset(y: -24)
-            
+
             filler
                 .offset(y: 24)
-            
+
         }
     }
-    
+
     var chevronIcon: some View {
         Image(systemName: "chevron.right")
             .foregroundColor(Theme.colors.textButtonDisabled)
@@ -135,13 +135,13 @@ struct SwapCryptoDoneView: View {
                     .stroke(Theme.colors.border, lineWidth: 1)
             )
     }
-    
+
     var filler: some View {
         Rectangle()
             .frame(width: 6, height: 18)
             .foregroundColor(Theme.colors.bgPrimary)
     }
-    
+
     var summary: some View {
         VStack(spacing: 0) {
             getCell(
@@ -150,7 +150,7 @@ struct SwapCryptoDoneView: View {
                 valueMaxWidth: 120,
                 showCopyButton: true
             )
-            
+
             if let approveHash {
                 separator
                 getCell(
@@ -160,7 +160,7 @@ struct SwapCryptoDoneView: View {
                     showCopyButton: true
                 )
             }
-            
+
             separator
             getCell(
                 title: "from",
@@ -168,19 +168,19 @@ struct SwapCryptoDoneView: View {
                 bracketValue: tx.fromCoin.address,
                 bracketMaxWidth: 120
             )
-            
+
             separator
             getCell(
                 title: "to",
                 value: tx.toCoin.address,
                 valueMaxWidth: 120
             )
-            
+
             if swapSummaryViewModel.showTotalFees(tx: tx) {
                 separator
                 totalFees
             }
-            
+
             otherFees
         }
         .padding(.horizontal, 24)
@@ -191,12 +191,12 @@ struct SwapCryptoDoneView: View {
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
-    
+
     var separator: some View {
         Separator()
             .opacity(0.2)
     }
-    
+
     var totalFees: some View {
         Button {
             showFees.toggle()
@@ -204,69 +204,69 @@ struct SwapCryptoDoneView: View {
             totalFeesLabel
         }
     }
-    
+
     var totalFeesLabel: some View {
         HStack {
             getCell(
                 title: "totalFee",
                 value: "\(swapSummaryViewModel.totalFeeString(tx: tx))"
             )
-            
+
             chevron
         }
     }
-    
+
     var chevron: some View {
         Image(systemName: "chevron.up")
             .font(Theme.fonts.caption12)
             .foregroundColor(Theme.colors.textPrimary)
             .rotationEffect(Angle(degrees: showFees ? 0 : 180))
     }
-    
+
     var otherFees: some View {
         HStack {
             Rectangle()
                 .frame(width: 1)
                 .foregroundColor(Theme.colors.primaryAccent4)
-            
+
             expandableFees
         }
         .frame(maxHeight: showFees ? nil : 0)
         .clipped()
     }
-    
+
     var expandableFees: some View {
         VStack(spacing: 4) {
             if swapSummaryViewModel.showFees(tx: tx) {
                 swapFees
             }
-            
+
             if swapSummaryViewModel.showGas(tx: tx) {
                 swapGas
             }
         }
     }
-    
+
     var swapFees: some View {
         getCell(
             title: "swapFee",
             value: swapSummaryViewModel.swapFeeString(tx: tx)
         )
     }
-    
+
     var swapGas: some View {
         getCell(
             title: "networkFee",
             value: "\(swapSummaryViewModel.swapGasString(tx: tx))(\(swapSummaryViewModel.approveFeeString(tx: tx)))"
         )
     }
-    
+
     private func getFromToCard(coin: Coin, title: String, description: String, isFrom: Bool) -> some View {
         VStack(spacing: 8) {
             Text(isFrom ? "from".localized : "to".localized)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption10)
-            
+
             AsyncImageView(
                 logo: coin.logo,
                 size: CGSize(width: 32, height: 32),
@@ -274,12 +274,12 @@ struct SwapCryptoDoneView: View {
                 tokenChainLogo: coin.tokenChainLogo
             )
             .padding(.bottom, 8)
-            
+
             VStack(spacing: 4) {
                 Text(title)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundColor(Theme.colors.textPrimary)
-                
+
                 Text(description.formatToFiat(includeCurrencySymbol: true))
                     .font(Theme.fonts.caption10)
                     .foregroundColor(Theme.colors.textTertiary)
@@ -294,7 +294,7 @@ struct SwapCryptoDoneView: View {
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
-    
+
     private func getCell(
         title: String,
         value: String,
@@ -306,15 +306,15 @@ struct SwapCryptoDoneView: View {
         HStack {
             Text(NSLocalizedString(title, comment: ""))
                 .foregroundColor(Theme.colors.textTertiary)
-            
+
             Spacer()
-            
+
             Text(value)
                 .lineLimit(1)
                 .truncationMode(.middle)
                 .foregroundColor(Theme.colors.textPrimary)
                 .frame(maxWidth: valueMaxWidth, alignment: .trailing)
-            
+
             if let bracketValue {
                 Group {
                     Text("(") +
@@ -326,7 +326,7 @@ struct SwapCryptoDoneView: View {
                 .truncationMode(.middle)
                 .lineLimit(1)
             }
-            
+
             if showCopyButton {
                 getCopyButton(for: value)
             }
@@ -334,7 +334,7 @@ struct SwapCryptoDoneView: View {
         .padding(.vertical)
         .font(Theme.fonts.bodySMedium)
     }
-    
+
     private func getCopyButton(for value: String) -> some View {
         Button {
             copy(hash: value)
@@ -344,11 +344,11 @@ struct SwapCryptoDoneView: View {
                 .font(Theme.fonts.bodySMedium)
         }
     }
-    
+
     private func copy(hash: String) {
         alertTitle = "hashCopied"
         showAlert = true
-        
+
         let explorerLink = Endpoint.getExplorerURL(chain: tx.fromCoin.chain, txid: hash)
         ClipboardManager.copyToClipboard(explorerLink)
     }

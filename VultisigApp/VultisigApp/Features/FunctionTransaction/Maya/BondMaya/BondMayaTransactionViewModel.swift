@@ -44,7 +44,7 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
 
     // Cache user's LP positions for quick lookup
     private var userLPPositions: [String: String] = [:] // poolName -> lpUnits
-    
+
     init(coin: Coin, vault: Vault, initialBondAddress: String?) {
         self.coin = coin
         self.vault = vault
@@ -55,7 +55,7 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
             additionalValidators: [RequiredValidator(errorMessage: "emptyAddressField".localized)]
         )
     }
-    
+
     func onLoad() {
         isLoading = true
         setupForm()
@@ -160,7 +160,7 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
             print("Error fetching user LP positions: \(error.localizedDescription)")
         }
     }
-    
+
     var transactionBuilder: TransactionBuilder? {
         validateErrors()
 

@@ -11,7 +11,7 @@ enum THORChainAPIError: Error, LocalizedError {
     case invalidResponse
     case thornameNotFound
     case addressNotFound
-    
+
     var errorDescription: String? {
         switch self {
         case .invalidResponse:

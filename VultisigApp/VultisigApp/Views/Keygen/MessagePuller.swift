@@ -14,7 +14,7 @@ class MessagePuller: ObservableObject {
     var cache = NSCache<NSString, AnyObject>()
     private var pollingInboundMessages = true
     private let logger = Logger(subsystem: "message-puller", category: "communication")
-    private var currentTask: Task<Void,Error>? = nil
+    private var currentTask: Task<Void, Error>? = nil
     let encryptGCM: Bool
     init(encryptionKeyHex: String,
          pubKey: String,
@@ -23,13 +23,13 @@ class MessagePuller: ObservableObject {
         self.vaultPubKey = pubKey
         self.encryptGCM = encryptGCM
     }
-    
+
     func stop() {
         pollingInboundMessages = false
         cache.removeAllObjects()
         currentTask?.cancel()
     }
-    
+
     func pollMessages(mediatorURL: String,
                       sessionID: String,
                       localPartyKey: String,
@@ -52,7 +52,7 @@ class MessagePuller: ObservableObject {
             } while self.pollingInboundMessages
         }
     }
-    
+
     func getHeaders(messageID: String?) -> [String: String] {
         var header = [String: String]()
         // for keygen message id will be nil
@@ -64,12 +64,12 @@ class MessagePuller: ObservableObject {
     }
     private func pollInboundMessages(mediatorURL: String, sessionID: String, localPartyKey: String, tssService: TssServiceImpl, messageID: String?) {
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(localPartyKey)"
-        
+
         Utils.getRequest(urlString: urlString, headers: getHeaders(messageID: messageID), completion: { result in
             switch result {
             case .success(let data):
                 do {
-                    print("Response: \(String(data: data,encoding: .utf8) ?? "")")
+                    print("Response: \(String(data: data, encoding: .utf8) ?? "")")
                     let decoder = JSONDecoder()
                     let msgs = try decoder.decode([Message].self, from: data)
                     let sortedMsgs = msgs.sorted(by: { $0.sequence_no < $1.sequence_no })
@@ -114,7 +114,7 @@ class MessagePuller: ObservableObject {
             }
         })
     }
-    
+
     private func deleteMessageFromServer(
         mediatorURL: String,
         sessionID: String,
@@ -123,6 +123,6 @@ class MessagePuller: ObservableObject {
         headers: [String: String]
     ) {
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(localPartyKey)/\(hash)"
-        Utils.deleteFromServer(urlString: urlString,headers: headers)
+        Utils.deleteFromServer(urlString: urlString, headers: headers)
     }
 }

@@ -13,16 +13,16 @@ extension BigInt {
     /// The serialization is big-endian without any sign indicator.
     func serializeForEvm() -> Data {
         let magnitudeData = self.magnitude.serialize()
-        
+
         // Ensure the resulting Data is exactly 32 bytes
         var data = Data(repeating: 0, count: 32 - magnitudeData.count)
         data.append(magnitudeData)
-        
+
         // If for any reason it's more than 32 bytes, truncate to the last 32 bytes
         if data.count > 32 {
             data = data.suffix(32)
         }
-        
+
         return data
     }
 
@@ -30,7 +30,7 @@ extension BigInt {
     func toDecimal(decimals: Int) -> Decimal {
         self.description.toDecimal().truncated(toPlaces: decimals)
     }
-    
+
     func toDisplayDecimal(decimals: Int) -> Decimal {
         self.description.toDecimal() / pow(10, decimals)
     }

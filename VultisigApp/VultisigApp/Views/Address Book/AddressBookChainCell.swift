@@ -11,13 +11,13 @@ struct AddressBookChainCell: View {
     let chain: AddressBookChainType
     let isSelected: Bool
     var onSelect: () -> Void
-    
+
     init(chain: AddressBookChainType, isSelected: Bool = false, onSelect: @escaping () -> Void = {}) {
         self.chain = chain
         self.isSelected = isSelected
         self.onSelect = onSelect
     }
-    
+
     var body: some View {
         Button {
             onSelect()

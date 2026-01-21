@@ -63,11 +63,11 @@ struct VaultBackupNowScreen: View {
             }
         }
     }
-    
+
     func onLoad() {
         FileManager.default.clearTmpDirectory()
         animation = RiveViewModel(fileName: "backupvault_splash", autoPlay: true)
-        
+
         Task {
             if backupType.vault.isFastVault, isNewVault {
                 let fileModel = await backupViewModel.exportFileWithVaultPassword(backupType)
@@ -75,7 +75,7 @@ struct VaultBackupNowScreen: View {
             }
         }
     }
-    
+
     func onBackupNow() {
         // Only export backup directly if it's fast vault during creation
         guard backupType.vault.isFastVault, isNewVault, fileModel != nil else {
@@ -86,7 +86,7 @@ struct VaultBackupNowScreen: View {
             ))
             return
         }
-        
+
         presentFileExporter = true
     }
 }

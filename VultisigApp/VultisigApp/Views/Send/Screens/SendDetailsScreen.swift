@@ -24,17 +24,17 @@ struct SendDetailsScreen: View {
     @StateObject var sendDetailsViewModel: SendDetailsViewModel
     let vault: Vault
     @State var settingsPresented: Bool = false
-    
+
     @State var amount = ""
     @State var nativeTokenBalance = ""
     @State var coinBalance: String? = nil
     @State var showMemoField = false
-        
+
     @StateObject var keyboardObserver = KeyboardObserver()
-    
+
     @FocusState var focusedField: Field?
     @State var scrollProxy: ScrollViewProxy?
-    
+
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @State var countdownTimer: Timer?
@@ -58,7 +58,7 @@ struct SendDetailsScreen: View {
                     await setMainData()
                     // Fee calculation moved to Verify screen
                     await checkPendingTransactions()
-                    
+
                     // Start polling for current chain if there are pending transactions
                     PendingTransactionManager.shared.startPollingForChain(tx.coin.chain)
                 }
@@ -67,14 +67,14 @@ struct SendDetailsScreen: View {
             .onChange(of: tx.coin) { oldValue, newValue in
                 // Initialize button state immediately for new chain
                 sendCryptoViewModel.initializePendingTransactionState(for: newValue.chain)
-                
+
                 Task {
                     // SEMPRE para o polling da chain anterior
                     PendingTransactionManager.shared.stopPollingForChain(oldValue.chain)
-                    
+
                     // Fee calculation moved to Verify screen
                     await checkPendingTransactions()
-                    
+
                     // Só inicia polling se a NOVA chain suportar pending transactions
                     if newValue.chain.supportsPendingTransactions {
                         PendingTransactionManager.shared.startPollingForChain(newValue.chain)
@@ -87,7 +87,7 @@ struct SendDetailsScreen: View {
             .onDisappear {
                 sendCryptoViewModel.stopMediator()
                 countdownTimer?.invalidate()
-                
+
                 // Stop all polling when leaving Send screen
                 PendingTransactionManager.shared.stopAllPolling()
             }
@@ -122,7 +122,7 @@ struct SendDetailsScreen: View {
                 .environmentObject(coinSelectionViewModel)
             }
     }
-    
+
     var content: some View {
         view
             .onChange(of: tx.coin) { _, _ in
@@ -135,7 +135,7 @@ struct SendDetailsScreen: View {
                 alert
             }
     }
-    
+
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString(sendCryptoViewModel.errorTitle, comment: "")),
@@ -143,7 +143,7 @@ struct SendDetailsScreen: View {
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
-    
+
     var button: some View {
         PrimaryButton(
             title: getButtonTitle(),
@@ -155,30 +155,30 @@ struct SendDetailsScreen: View {
         }
         .disabled(getButtonDisabled())
     }
-    
+
     private func getButtonDisabled() -> Bool {
         // Always disabled while loading normal operations
         if sendCryptoViewModel.continueButtonDisabled {
             return true
         }
-        
+
         // Only check pending transactions for supported chains
         if tx.coin.chain.supportsPendingTransactions {
             // Disabled while checking for pending transactions (prevents flickering)
             if sendCryptoViewModel.isCheckingPendingTransactions {
                 return true
             }
-            
+
             // Disabled if there are confirmed pending transactions
             if sendCryptoViewModel.hasPendingTransaction {
                 return true
             }
         }
-        
+
         // For non-supported chains or no pending transactions, button is enabled
         return false
     }
-    
+
     private func getButtonTitle() -> String {
         // Only show pending states for supported chains
         if tx.coin.chain.supportsPendingTransactions {
@@ -188,7 +188,7 @@ struct SendDetailsScreen: View {
                 let elapsed = sendCryptoViewModel.pendingTransactionCountdown
                 let minutes = elapsed / 60
                 let seconds = elapsed % 60
-                
+
                 if minutes > 0 {
                     return "Pending transaction (\(minutes)m \(seconds)s)"
                 } else {
@@ -196,7 +196,7 @@ struct SendDetailsScreen: View {
                 }
             }
         }
-        
+
         // Default states for all chains
         if sendCryptoViewModel.isLoading {
             return "loadingDetails"
@@ -204,7 +204,7 @@ struct SendDetailsScreen: View {
             return "continue"
         }
     }
-    
+
     var tabs: some View {
         ScrollViewReader { proxy in
             ScrollView {
@@ -216,7 +216,7 @@ struct SendDetailsScreen: View {
                         sendCryptoViewModel: sendCryptoViewModel
                     )
                     .id(SendDetailsFocusedTab.asset.rawValue)
-                    
+
                     SendDetailsAddressTab(
                         isExpanded: sendDetailsViewModel.selectedTab == .address,
                         tx: tx,
@@ -225,7 +225,7 @@ struct SendDetailsScreen: View {
                         focusedField: $focusedField
                     )
                     .id(SendDetailsFocusedTab.address.rawValue)
-                    
+
                     SendDetailsAmountTab(
                         isExpanded: sendDetailsViewModel.selectedTab == .amount,
                         tx: tx,
@@ -249,13 +249,13 @@ struct SendDetailsScreen: View {
             }
         }
     }
-    
+
     func onChange(focusedField: Field?) {
         if focusedField == .toAddress {
             handleScroll(newValue: .address, oldValue: .asset, delay: 0.2)
         }
     }
-    
+
     func handleScroll(newValue: SendDetailsFocusedTab?, oldValue: SendDetailsFocusedTab?, delay: Double = 0.7) {
         // This delay is necessary when the screen starts
         DispatchQueue.main.asyncAfter(deadline: .now() + (oldValue == nil ? 0.2 : 0)) {
@@ -264,7 +264,7 @@ struct SendDetailsScreen: View {
                     scrollProxy?.scrollTo(SendDetailsFocusedTab.amount.rawValue, anchor: .top)
                 }
             }
-            
+
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 withAnimation(.easeInOut) {
                     scrollProxy?.scrollTo(newValue?.rawValue, anchor: .bottom)
@@ -272,7 +272,7 @@ struct SendDetailsScreen: View {
             }
         }
     }
-    
+
     func getSummaryCell(leadingText: String, trailingText: String) -> some View {
         HStack {
             Text(leadingText)
@@ -282,7 +282,7 @@ struct SendDetailsScreen: View {
         .font(Theme.fonts.bodySMedium)
         .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     private func getTitle(for text: String, isExpanded: Bool = true) -> some View {
         Text(
             NSLocalizedString(text, comment: "")
@@ -292,7 +292,7 @@ struct SendDetailsScreen: View {
         .foregroundColor(Theme.colors.textPrimary)
         .frame(maxWidth: isExpanded ? .infinity : nil, alignment: .leading)
     }
-    
+
     private func getPercentageCell(for text: String) -> some View {
         Text(text + "%")
             .font(Theme.fonts.caption12)
@@ -302,7 +302,7 @@ struct SendDetailsScreen: View {
             .background(Theme.colors.bgSurface1)
             .cornerRadius(6)
     }
-    
+
     func validateForm() async {
         switch sendDetailsViewModel.selectedTab {
         case .none:
@@ -319,19 +319,19 @@ struct SendDetailsScreen: View {
                 sendCryptoViewModel.isValidatingForm = true
             }
             sendCryptoViewModel.validateAmount(amount: tx.amount.description)
-            
+
             if await sendCryptoViewModel.validateForm(tx: tx) {
                 await MainActor.run {
                     router.navigate(to: SendRoute.verify(tx: tx, vault: vault))
                 }
             }
         }
-        
+
         await MainActor.run {
             sendCryptoViewModel.isValidatingForm = false
         }
     }
-    
+
     func getBalance() async {
         await BalanceService.shared.updateBalance(for: tx.coin)
         if Task.isCancelled { return }
@@ -339,7 +339,7 @@ struct SendDetailsScreen: View {
             coinBalance = tx.coin.balanceString
         }
     }
-    
+
     private func onRefresh() async {
         // Fee calculation moved to Verify screen
         async let bal: Void = BalanceService.shared.updateBalance(for: tx.coin)
@@ -354,7 +354,7 @@ struct SendDetailsScreen: View {
 }
 
 extension SendDetailsScreen: SendGasSettingsOutput {
-    
+
     func didSetFeeSettings(chain: Chain, mode: FeeMode, gasLimit: BigInt?, byteFee: BigInt?) {
         switch chain.chainType {
         case .EVM:
@@ -364,7 +364,7 @@ extension SendDetailsScreen: SendGasSettingsOutput {
         default:
             return
         }
-        
+
         tx.feeMode = mode
     }
 }
@@ -372,21 +372,21 @@ extension SendDetailsScreen: SendGasSettingsOutput {
 extension SendDetailsScreen {
 private func setMainData() async {
         guard !sendCryptoViewModel.isLoading else { return }
-        
+
         if let coin = coin {
             // Store toAddress before reset if it's not empty
             let savedToAddress = tx.toAddress.isEmpty ? nil : tx.toAddress
-            
+
             // Reset clears all state including fee
             tx.reset(coin: coin)
-            
+
             // Restore or set toAddress
             if let saved = savedToAddress {
                 tx.toAddress = saved
             } else if tx.toAddress.isEmpty {
                 tx.toAddress = deeplinkViewModel.address ?? ""
             }
-            
+
             deeplinkViewModel.address = nil
             self.coin = nil
             selectedChain = coin.chain
@@ -397,19 +397,19 @@ private func setMainData() async {
                 deeplinkViewModel.address = nil
             }
         }
-        
+
         if !tx.toAddress.isEmpty {
             sendCryptoViewModel.validateAddress(tx: tx, address: tx.toAddress)
             validateAddress()
         }
-        
+
         await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
     }
-    
+
     private func validateAddress(_ newValue: String) {
         sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
     }
-    
+
     private func validateAddress() {
         Task {
             guard await sendCryptoViewModel.validateToAddress(tx: tx) else {
@@ -420,7 +420,7 @@ private func setMainData() async {
             sendDetailsViewModel.onSelect(tab: .amount)
         }
     }
-    
+
     @MainActor
     private func checkPendingTransactions() async {
         guard tx.coin.chain.supportsPendingTransactions else {
@@ -431,20 +431,20 @@ private func setMainData() async {
             stopCountdownTimer()
             return
         }
-        
+
         // Set checking state first for Cosmos chains
         sendCryptoViewModel.isCheckingPendingTransactions = true
         let pendingTxManager = PendingTransactionManager.shared
-        
+
         // Get current pending transactions (polling automatically updates them)
         let hasPending = pendingTxManager.hasPendingTransactions(for: tx.coin.address, chain: tx.coin.chain)
-        
+
         // Update SendCryptoViewModel properties and start/stop countdown timer
         if hasPending {
             sendCryptoViewModel.hasPendingTransaction = true
             sendCryptoViewModel.isCheckingPendingTransactions = false
             startCountdownTimer()
-            
+
             // Start polling APENAS se for chain que suporta pending transactions
             if tx.coin.chain.supportsPendingTransactions {
                 PendingTransactionManager.shared.startPollingForChain(tx.coin.chain)
@@ -454,44 +454,44 @@ private func setMainData() async {
             sendCryptoViewModel.pendingTransactionCountdown = 0
             sendCryptoViewModel.isCheckingPendingTransactions = false
             stopCountdownTimer()
-            
+
             // SEMPRE para polling quando não há pendentes (qualquer chain)
             PendingTransactionManager.shared.stopPollingForChain(tx.coin.chain)
         }
-        
+
     }
-    
+
     private func startCountdownTimer() {
         stopCountdownTimer() // Stop any existing timer
         countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             updateCountdown()
         }
     }
-    
+
     private func stopCountdownTimer() {
         countdownTimer?.invalidate()
         countdownTimer = nil
     }
-    
+
     private func updateCountdown() {
         guard tx.coin.chain.supportsPendingTransactions else {
             return
         }
-        
+
         let pendingTxManager = PendingTransactionManager.shared
-        
+
         if let oldestPending = pendingTxManager.getOldestPendingTransaction(for: tx.coin.address, chain: tx.coin.chain) {
             let elapsedSeconds = Int(Date().timeIntervalSince(oldestPending.timestamp))
             sendCryptoViewModel.pendingTransactionCountdown = elapsedSeconds
             // Keep transaction as pending - only confirmation should release it
             sendCryptoViewModel.hasPendingTransaction = true
-            
+
         } else {
             // No more pending transactions - they were confirmed and removed
             sendCryptoViewModel.hasPendingTransaction = false
             sendCryptoViewModel.pendingTransactionCountdown = 0
             stopCountdownTimer()
-            
+
         }
     }
 }

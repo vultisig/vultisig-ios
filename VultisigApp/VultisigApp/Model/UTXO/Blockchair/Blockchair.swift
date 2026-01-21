@@ -15,7 +15,7 @@ struct BlockchairResponse: Codable {
 struct Blockchair: Codable {
 	let address: BlockchairAddress?
 	let utxo: [BlockchairUtxo]?
-	
+
     struct BlockchairAddress: Codable {
 		let scriptHex: String?
 		let balance: Int?
@@ -29,7 +29,7 @@ struct Blockchair: Codable {
             return btcValue.formatToDecimal(digits: 8)
 		}
 	}
-	
+
     struct BlockchairUtxo: Codable {
         let transactionHash: String?
         let index: Int?

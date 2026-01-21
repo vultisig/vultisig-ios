@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SwapRefreshQuoteCounter: View {
     let timer: Int
-    
+
     var body: some View {
         HStack(spacing: 8) {
             label
@@ -21,7 +21,7 @@ struct SwapRefreshQuoteCounter: View {
         .background(Theme.colors.bgSurface2)
         .cornerRadius(24)
     }
-    
+
     var label: some View {
         Group {
             Text("0:") +
@@ -30,7 +30,7 @@ struct SwapRefreshQuoteCounter: View {
         .font(Theme.fonts.caption12)
         .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     var loader: some View {
         ZStack {
             Circle()
@@ -38,7 +38,7 @@ struct SwapRefreshQuoteCounter: View {
                     Theme.colors.border,
                     lineWidth: 2
                 )
-            
+
             Circle()
                 .trim(from: 0, to: Double(timer)/60)
                 .stroke(

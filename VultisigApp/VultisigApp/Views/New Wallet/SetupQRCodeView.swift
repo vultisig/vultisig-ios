@@ -23,24 +23,24 @@ struct SetupQRCodeView: View {
         content
             .sensoryFeedback(.selection, trigger: selectedTab)
     }
-    
+
     var view: some View {
         VStack {
             tabView
             button
         }
     }
-    
+
     var tabView: some View {
         SetupVaultTabView(selectedTab: $selectedTab)
     }
-    
+
     var button: some View {
         startButton
             .padding(.horizontal, 24)
             .padding(.bottom, 24)
     }
-    
+
     var startButton: some View {
         PrimaryButton(title: "next") {
             if tssType == .Keygen {
@@ -73,7 +73,7 @@ struct SetupQRCodeView: View {
 
 #Preview {
     SetupQRCodeView(
-        tssType: .Keygen, 
+        tssType: .Keygen,
         vault: Vault.example
     )
     .environmentObject(HomeViewModel())

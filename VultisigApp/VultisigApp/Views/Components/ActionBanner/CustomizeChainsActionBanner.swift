@@ -9,7 +9,7 @@ import SwiftUI
 
 struct CustomizeChainsActionBanner: View {
     var onCustomizeChains: () -> Void
-    
+
     var body: some View {
         ActionBannerView(
             title: "noChainsFound".localized,

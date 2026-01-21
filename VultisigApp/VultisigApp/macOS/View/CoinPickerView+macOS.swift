@@ -17,7 +17,7 @@ extension CoinPickerView {
         .navigationBarBackButtonHidden(true)
         .crossPlatformToolbar("chains".localized)
     }
-    
+
     var view: some View {
         VStack(alignment: .leading, spacing: 0) {
             searchBar
@@ -25,7 +25,7 @@ extension CoinPickerView {
                 .padding(.horizontal, 46)
 
             Separator()
-            
+
             ScrollView {
                 scrollView
                     .padding(.horizontal, 52)

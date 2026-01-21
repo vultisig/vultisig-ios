@@ -11,14 +11,14 @@ struct VaultBannerCarouselIndicator: View {
     let indicatorIndex: Int
     @Binding var currentIndex: Int
     let bannersCount: Int
-    
+
     @State var isActive: Bool = false
     @State var progress: CGFloat = 0
-    
+
     let capsuleWidth: CGFloat = 20
     let capsuleHeight: CGFloat = BannerLayoutProperties.indicatorsHeight
     let animation: Animation = .interpolatingSpring(mass: 1, stiffness: 100, damping: 15)
-    
+
     var body: some View {
         Capsule()
             .fill(Theme.colors.bgSurface2)
@@ -32,7 +32,7 @@ struct VaultBannerCarouselIndicator: View {
                 updateIsActive()
             }
     }
-    
+
     var overlayView: some View {
         Capsule()
             .fill(Theme.colors.textSecondary)
@@ -44,7 +44,7 @@ struct VaultBannerCarouselIndicator: View {
                 }
             }
     }
-    
+
     func updateIsActive() {
         withAnimation(animation) {
             isActive = currentIndex == indicatorIndex

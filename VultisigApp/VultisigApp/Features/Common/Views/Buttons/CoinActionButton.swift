@@ -9,16 +9,16 @@ import SwiftUI
 
 struct CoinActionButton: View {
     @Environment(\.isEnabled) var isEnabled
-    
+
     let title: String
     let icon: String
     let isHighlighted: Bool
     var action: () -> Void
-    
+
     var bgColor: Color {
         return isHighlighted ? Theme.colors.bgButtonTertiary : Theme.colors.bgSurface2
     }
-    
+
     var body: some View {
         Button(action: action) {
             VStack(spacing: 8) {
@@ -35,7 +35,7 @@ struct CoinActionButton: View {
                         .inset(by: 0.5)
                         .stroke(.white.opacity(0.03), lineWidth: 1)
                 )
-                
+
                 Text(title)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.caption12)

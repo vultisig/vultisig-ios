@@ -54,7 +54,7 @@ struct SendCryptoDoneView: View {
         self.contentPadding = contentPadding
         self.keysignPayload = keysignPayload
     }
-    
+
     var body: some View {
         ZStack {
             Background()
@@ -62,12 +62,12 @@ struct SendCryptoDoneView: View {
             PopupCapsule(text: alertTitle, showPopup: $showAlert)
         }
     }
-    
+
     func sendView(tx: SendTransaction) -> some View {
         sendContent(tx: tx)
             .padding(contentPadding)
     }
-    
+
     func sendContent(tx: SendTransaction) -> some View {
         SendCryptoDoneContentView(
             input: SendCryptoContent(
@@ -102,7 +102,7 @@ struct SendCryptoDoneView: View {
             swapSummaryViewModel: swapSummaryViewModel
         )
     }
-    
+
     var view: some View {
         ZStack {
             if let tx = swapTransaction {
@@ -112,7 +112,7 @@ struct SendCryptoDoneView: View {
             }
         }
     }
-    
+
     private func getSwapDoneView(_ tx: SwapTransaction) -> some View {
         SwapCryptoDoneView(
             tx: tx,

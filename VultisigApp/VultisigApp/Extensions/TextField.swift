@@ -13,7 +13,7 @@ import Combine
 struct MaxLengthModifier: ViewModifier {
     @Binding var text: String
     var maxLength: Int = 108
-    
+
     func body(content: Content) -> some View {
         content
             .onChange(of: text) { _, newValue in

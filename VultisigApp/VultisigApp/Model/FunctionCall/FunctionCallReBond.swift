@@ -13,18 +13,18 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
     @Published var rebondAmount: Decimal = 0.0  // Amount to rebond (goes in memo only)
     @Published var nodeAddress: String = ""
     @Published var newAddress: String = ""
-    
+
     // Internal
     @Published var rebondAmountValid: Bool = true  // Optional field, defaults to all
     @Published var nodeAddressValid: Bool = false
     @Published var newAddressValid: Bool = false
-    
+
     @Published var isTheFormValid: Bool = false
     @Published var customErrorMessage: String? = nil
-    
+
     private var tx: SendTransaction
     private var vault: Vault
-    
+
     var addressFields: [String: String] {
         get {
             return [
@@ -41,14 +41,14 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
             }
         }
     }
-    
+
     private var cancellables = Set<AnyCancellable>()
-    
+
     required init(tx: SendTransaction, vault: Vault) {
         self.tx = tx
         self.vault = vault
     }
-    
+
     func initialize() {
         // Ensure RUNE token is selected for REBOND operations on THORChain
         DispatchQueue.main.async {
@@ -59,36 +59,36 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
         setupValidation()
         validateRuneToken()
     }
-    
+
     // IMPORTANT: For REBOND, the actual transaction amount must be 0
     // The rebondAmount is only used in the memo
     var amount: Decimal {
         return 0  // REBOND transactions must send 0 RUNE
     }
-    
+
     var balance: String {
         let balance = tx.coin.balanceDecimal.formatForDisplay()
-        
+
         return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
     }
-    
+
     private func setupValidation() {
         // Combine validators
         Publishers.CombineLatest3($rebondAmountValid, $nodeAddressValid, $newAddressValid)
             .map { amountValid, nodeValid, newValid in
                 // Check all validations
                 let basicValid = amountValid && nodeValid && newValid
-                
+
                 // Clear error if validation passes
                 if basicValid {
                     self.customErrorMessage = nil
                 }
-                
+
                 return basicValid
             }
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
-        
+
         // Watch for rebond amount changes - just validate it's a positive number or 0
         $rebondAmount
             .sink { [weak self] newAmount in
@@ -102,7 +102,7 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
             }
             .store(in: &cancellables)
     }
-    
+
     private func validateRuneToken() {
         // Ensure we're using RUNE for rebond operations
         if tx.coin.chain != .thorChain || !tx.coin.isNativeToken {
@@ -110,11 +110,11 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
             isTheFormValid = false
         }
     }
-    
+
     var description: String {
         return toString()
     }
-    
+
     func toString() -> String {
         var memo = "REBOND:\(self.nodeAddress):\(self.newAddress)"
         // Amount is optional - if zero or equal to full bond, it will transfer all
@@ -128,7 +128,7 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
         }
         return memo
     }
-    
+
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("nodeAddress", self.nodeAddress)
@@ -139,7 +139,7 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
         dict.set("memo", self.toString())
         return dict
     }
-    
+
     func getView() -> AnyView {
         AnyView(VStack {
             // Node Address field
@@ -151,7 +151,7 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
                     set: { self.nodeAddressValid = $0 }
                 )
             )
-            
+
             // New Address field (required)
             FunctionCallAddressTextField(
                 memo: self,
@@ -161,7 +161,7 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
                     set: { self.newAddressValid = $0 }
                 )
             )
-            
+
             // Rebond Amount field (optional - if empty, transfers all bonded RUNE)
             // Note: This amount goes in the memo only, not in the transaction
             StyledFloatingPointField(
@@ -180,13 +180,13 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
                 ),
                 isOptional: true
             )
-            
+
             // Info message about transaction amount
             Text("rebondNote".localized)
                 .font(.caption)
                 .foregroundColor(.orange)
                 .padding(.horizontal)
-            
+
             // Show error message if any
             if let errorMessage = self.customErrorMessage {
                 Text(errorMessage)
@@ -194,7 +194,7 @@ class FunctionCallReBond: FunctionCallAddressable, ObservableObject {
                     .foregroundColor(.red)
                     .padding(.horizontal)
             }
-            
+
         }.onAppear {
             self.initialize()
         })

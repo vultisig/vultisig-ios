@@ -12,7 +12,7 @@ extension FileQRCodeImporterMac {
     var container: some View {
         VStack {
             button
-            
+
             if let name = fileName {
                 fileCell(name)
             }
@@ -24,7 +24,7 @@ extension FileQRCodeImporterMac {
             return true
         }
     }
-    
+
     func getPreviewImage(_ image: NSImage) -> some View {
         Image(nsImage: image)
             .resizable()

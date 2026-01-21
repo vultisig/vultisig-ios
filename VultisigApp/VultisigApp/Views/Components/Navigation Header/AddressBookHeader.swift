@@ -10,7 +10,7 @@ import SwiftUI
 struct AddressBookHeader: View {
     let count: Int
     @Binding var isEditing: Bool
-    
+
     var body: some View {
         HStack {
             leadingAction
@@ -23,17 +23,17 @@ struct AddressBookHeader: View {
         .padding(.horizontal, 40)
         .padding(.top, 8)
     }
-    
+
     var leadingAction: some View {
         NavigationBackButton()
     }
-    
+
     var text: some View {
         Text(NSLocalizedString("addressBook", comment: ""))
             .foregroundColor(Theme.colors.textPrimary)
             .font(.title3)
     }
-    
+
     var trailingAction: some View {
         ZStack {
             if count != 0 {
@@ -41,7 +41,7 @@ struct AddressBookHeader: View {
             }
         }
     }
-    
+
     var navigationButton: some View {
         Button {
             toggleEdit()
@@ -49,7 +49,7 @@ struct AddressBookHeader: View {
             navigationEditButton
         }
     }
-    
+
     var navigationEditButton: some View {
         ZStack(alignment: .trailing) {
             if isEditing {
@@ -60,13 +60,13 @@ struct AddressBookHeader: View {
         }
         .frame(width: 50)
     }
-    
+
     var doneButton: some View {
         Text(NSLocalizedString("done", comment: ""))
             .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodyLRegular)
     }
-    
+
     private func toggleEdit() {
         withAnimation {
             isEditing.toggle()

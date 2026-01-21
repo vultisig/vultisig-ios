@@ -15,7 +15,7 @@ struct THORName: Decodable, Hashable {
         case affiliateCollectorRune = "affiliate_collector_rune"
         case aliases
     }
-    
+
     let name: String
     let expireBlockHeight: UInt64
     let owner: String
@@ -23,11 +23,11 @@ struct THORName: Decodable, Hashable {
     let preferredAssetSwapThresholdRune: String
     let affiliateCollectorRune: String
     let aliases: [THORNameAlias]
-    
+
     var isDefaultPreferredAsset: Bool {
         preferredAsset == "."
     }
-    
+
     static let example = THORName(
         name: "",
         expireBlockHeight: 0,

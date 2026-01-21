@@ -28,10 +28,10 @@ struct KeysignDiscoveryView: View {
     var swapTransaction: SwapTransaction = SwapTransaction()
     var contentPadding: CGFloat?
     var onKeysignInput: (KeysignInput) -> Void
-    
+
     @StateObject var participantDiscovery = ParticipantDiscovery()
     @StateObject var viewModel = KeysignDiscoveryViewModel()
-    
+
     @State var isPhoneSE = false
     @State var isLoading = false
     @State var isiOSAppOnMac = false
@@ -39,38 +39,38 @@ struct KeysignDiscoveryView: View {
     @State var screenHeight: CGFloat = 0
     @State var qrCodeImage: Image? = nil
     @State var selectedNetwork = VultisigRelay.IsRelayEnabled ? NetworkPromptType.Internet : NetworkPromptType.Local
-    
+
     @State var qrSize: CGFloat = .zero
     @State var qrOutlineSize: CGFloat = .zero
     @State var showDisclaimer: Bool = true
-    
+
     @State var qrScannedAnimation: RiveViewModel? = nil
-    
+
 #if os(iOS)
     @State var orientation = UIDevice.current.orientation
 #endif
-    
+
     @Environment(\.displayScale) var displayScale
-    
+
     let adaptiveColumns = [
         GridItem(.adaptive(minimum: 150, maximum: 300), spacing: 16)
     ]
-    
+
     let adaptiveColumnsMac = [
         GridItem(.adaptive(minimum: 300, maximum: 500), spacing: 8)
     ]
-    
+
     var localModeAvailable: Bool { vault.libType != .KeyImport }
-    
+
     var body: some View {
         container
     }
-    
+
     var content: some View {
         ZStack {
             background
             view
-            
+
             if isLoading {
                 loader
             }
@@ -89,26 +89,26 @@ struct KeysignDiscoveryView: View {
         }
         .onChange(of: selectedNetwork) { _, newValue in
             VultisigRelay.IsRelayEnabled = newValue == .Internet
-            
+
             viewModel.restartParticipantDiscovery()
             Task {
                 await setData()
             }
         }
     }
-    
+
     var loader: some View {
         Loader()
     }
-    
+
     var errorText: some View {
         SendCryptoStartErrorView(errorText: viewModel.errorMessage)
     }
-    
+
     var list: some View {
         deviceList
     }
-    
+
     var waitingForDevices: some View {
         ZStack(alignment: .bottom) {
             orientedContent
@@ -117,7 +117,7 @@ struct KeysignDiscoveryView: View {
                 .showIf(localModeAvailable)
         }
     }
-    
+
     var portraitContent: some View {
         ScrollView(showsIndicators: false) {
             paringQRCode
@@ -126,7 +126,7 @@ struct KeysignDiscoveryView: View {
         }
         .padding(.horizontal, contentPadding ?? 16)
     }
-    
+
     @ViewBuilder
     var paringQRCode: some View {
         ZStack {
@@ -135,15 +135,15 @@ struct KeysignDiscoveryView: View {
         }
         .padding(.bottom)
     }
-    
+
     var disclaimer: some View {
         ZStack {
             if selectedNetwork == .Local {
                 LocalModeDisclaimer()
-            } 
+            }
         }
     }
-    
+
     var listTitle: some View {
         HStack(spacing: 8) {
             Text(NSLocalizedString("devices", comment: ""))
@@ -155,24 +155,24 @@ struct KeysignDiscoveryView: View {
         .padding(.bottom, 8)
         .padding(.horizontal, 8)
     }
-    
+
     var lookingForDevices: some View {
         LookingForDevicesLoader(selectedTab: keysignState)
     }
-    
+
     var keysignState: SetupVaultState {
         return fastVaultPassword == nil ? .secure : .fast
     }
-    
+
     func setData() async {
         isiOSAppOnMac = ProcessInfo.processInfo.isiOSAppOnMac
-        
+
         if VultisigRelay.IsRelayEnabled {
             self.selectedNetwork = .Internet
         } else {
             self.selectedNetwork = .Local
         }
-        
+
         await viewModel.setData(
             vault: vault,
             keysignPayload: keysignPayload,
@@ -181,11 +181,11 @@ struct KeysignDiscoveryView: View {
             fastVaultPassword: fastVaultPassword,
             onFastKeysign: { startKeysign() }
         )
-        
+
         guard let (qrCodeData, qrCodeImage) = await viewModel.getQrImage(size: 100) else {
             return
         }
-        
+
         self.qrCodeImage = qrCodeImage
         if let keysignPayload {
             shareSheetViewModel.render(
@@ -201,37 +201,37 @@ struct KeysignDiscoveryView: View {
             )
         }
     }
-    
+
     func getSwapFromAmount() -> String {
         let tx = swapTransaction
-        
+
         if tx.fromCoin.chain == tx.toCoin.chain {
             return "\(tx.fromAmount) \(tx.fromCoin.ticker)"
         } else {
             return "\(tx.fromAmount) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
         }
     }
-    
+
     func getSwapToAmount() -> String {
         let tx = swapTransaction
-        
+
         if tx.fromCoin.chain == tx.toCoin.chain {
             return "\(tx.toAmountDecimal.description) \(tx.toCoin.ticker)"
         } else {
             return "\(tx.toAmountDecimal.description) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
         }
     }
-    
+
     func startKeysign() {
         if viewModel.isValidPeers(vault: vault) {
             let keysignInput = viewModel.startKeysign(vault: vault)
             onKeysignInput(keysignInput)
         }
     }
-    
+
     func handleSelection(_ peer: String) {
         isLoading = true
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now()) {
             if viewModel.selections.contains(peer) {
                 // Don't remove itself

@@ -10,11 +10,11 @@ import SwiftUI
 
 enum VaultBannerType: String, CarouselBannerType, CaseIterable {
     case upgradeVault, backupVault, followVultisig
-    
+
     var id: String {
         rawValue
     }
-    
+
     var isAppBanner: Bool {
         switch self {
         case .upgradeVault, .backupVault:
@@ -44,7 +44,7 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
             "followVultisigBannerSubtitle".localized
         }
     }
-    
+
     var buttonTitle: String {
         switch self {
         case .upgradeVault:
@@ -55,7 +55,7 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
             "followVultisigBannerButtonTitle".localized
         }
     }
-    
+
     var image: String {
         switch self {
         case .upgradeVault:
@@ -66,7 +66,7 @@ enum VaultBannerType: String, CarouselBannerType, CaseIterable {
             "follow-vultisig-banner-icon"
         }
     }
-    
+
     var background: String? {
         switch self {
         case .upgradeVault:

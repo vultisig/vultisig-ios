@@ -23,7 +23,7 @@ struct VaultMainScreenBackground: View {
             }
         }
     }
-    
+
     var radialGradient: some View {
         EllipticalGradient(
             stops: [
@@ -35,7 +35,7 @@ struct VaultMainScreenBackground: View {
         .blur(radius: 36)
         .opacity(0.3)
     }
-    
+
     var linearGradient: some View {
         LinearGradient(
             stops: [

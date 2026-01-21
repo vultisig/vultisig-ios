@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct KeysignRequest: Hashable,Codable {
+struct KeysignRequest: Hashable, Codable {
     let public_key: String // always use ecdsa
     let messages: [String]
     let session: String

@@ -16,7 +16,7 @@ extension QRShareSheetImage {
         }
         .frame(width: 900, height: 1500)
     }
-    
+
     var qrCode: some View {
         image
             .resizable()
@@ -32,13 +32,13 @@ extension QRShareSheetImage {
             .offset(x: 20, y: 20)
             .padding(.bottom, 50)
     }
-    
+
     var logo: some View {
         VStack(spacing: 16) {
             Image("VultisigLogo")
                 .resizable()
                 .frame(width: 110, height: 110)
-            
+
             Text("vultisig.com")
         }
         .offset(y: -20)

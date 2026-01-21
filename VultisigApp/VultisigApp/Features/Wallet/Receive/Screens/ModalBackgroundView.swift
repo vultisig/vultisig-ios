@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ModalBackgroundView: View {
     let width: CGFloat
-    
+
     var body: some View {
         let cornerRadius: CGFloat = 34
         ZStack(alignment: .bottom) {
@@ -28,7 +28,7 @@ struct ModalBackgroundView: View {
             .frame(height: 230)
         }
     }
-    
+
     var magicPattern: some View {
         Image("magic-pattern")
             .resizable()

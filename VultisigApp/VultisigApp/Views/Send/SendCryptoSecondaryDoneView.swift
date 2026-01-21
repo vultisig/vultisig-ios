@@ -19,11 +19,11 @@ struct SendCryptoSecondaryDoneView: View {
 
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var appViewModel: AppViewModel
-    
+
     var showAddressBookButton: Bool {
         input.isSend && canShowAddressBook
     }
-    
+
     var body: some View {
         Screen(title: "transactionDetails".localized) {
             VStack {
@@ -34,7 +34,7 @@ struct SendCryptoSecondaryDoneView: View {
                     }
                     .padding(.vertical, 24)
                 }
-                
+
                 continueButton
             }
         }
@@ -69,7 +69,7 @@ struct SendCryptoSecondaryDoneView: View {
             }
         }
     }
-    
+
     var header: some View {
         SendCryptoDoneHeaderView(
             coin: input.coin,
@@ -77,7 +77,7 @@ struct SendCryptoSecondaryDoneView: View {
             fiatAmount: input.amountFiat.formatToFiat(includeCurrencySymbol: true)
         )
     }
-    
+
     var summary: some View {
         VStack(spacing: 18) {
             Group {
@@ -90,7 +90,7 @@ struct SendCryptoSecondaryDoneView: View {
                 separator
             }
             .showIf(input.hash.isNotEmpty)
-            
+
             if let vaultName = appViewModel.selectedVault?.name, vaultName.isNotEmpty {
                 SendCryptoTransactionDetailsRow(
                     title: "from",
@@ -99,7 +99,7 @@ struct SendCryptoSecondaryDoneView: View {
                 )
                 separator
             }
-            
+
             Group {
                 SendCryptoTransactionDetailsRow(
                     title: "to",
@@ -111,7 +111,7 @@ struct SendCryptoSecondaryDoneView: View {
                 separator
             }
             .showIf(input.toAddress.isNotEmpty)
-            
+
             Group {
                 SendCryptoTransactionDetailsRow(
                     title: "memo",
@@ -126,9 +126,9 @@ struct SendCryptoSecondaryDoneView: View {
                 description: input.coin.chain.name,
                 icon: input.coin.chain.logo
             )
-            
+
             separator
-            
+
             SendCryptoTransactionDetailsRow(
                 title: "estNetworkFee",
                 description: input.fee.crypto,
@@ -152,25 +152,25 @@ struct SendCryptoSecondaryDoneView: View {
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
-    
+
     var separator: some View {
         Separator()
             .opacity(0.8)
     }
-    
+
     var continueButton: some View {
         PrimaryButton(title: "done") {
             appViewModel.restart()
         }
     }
-    
+
     var addToAddressBookButton: some View {
         Button {
             navigateToAddressBook = true
         } label: {
             HStack(spacing: 6) {
                 Icon(named: "plus", color: Theme.colors.alertSuccess, size: 16)
-                
+
                 Text("addToAddressBook".localized)
                     .font(Theme.fonts.caption10)
                     .foregroundStyle(Theme.colors.alertSuccess)
@@ -181,7 +181,7 @@ struct SendCryptoSecondaryDoneView: View {
             .fixedSize()
         }
     }
-    
+
     func openLink() {
         if let url = URL(string: input.explorerLink) {
             openURL(url)

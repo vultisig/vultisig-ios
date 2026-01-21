@@ -11,9 +11,9 @@ struct SettingsPasswordHintScreen: View {
     @Environment(\.dismiss) var dismiss
     let vault: Vault
     @ObservedObject var viewModel: SettingsBiometryViewModel
-    
+
     @FocusState var isFocused
-    
+
     var body: some View {
         Screen {
             VStack {
@@ -23,11 +23,11 @@ struct SettingsPasswordHintScreen: View {
                             .font(Theme.fonts.largeTitle)
                             .foregroundColor(Theme.colors.textPrimary)
                             .padding(.top, 12)
-                        
+
                         Text("editPasswordHintSubtitle".localized)
                             .font(Theme.fonts.bodySMedium)
                             .foregroundColor(Theme.colors.textTertiary)
-                        
+
                         CommonTextEditor(
                             value: $viewModel.hint,
                             placeholder: "enterHint".localized,
@@ -35,7 +35,7 @@ struct SettingsPasswordHintScreen: View {
                         ) {}
                     }
                 }
-                
+
                 PrimaryButton(title: "save".localized) {
                     viewModel.saveHint(vault: vault)
                     dismiss()
@@ -45,7 +45,7 @@ struct SettingsPasswordHintScreen: View {
         }
         .onAppear(perform: onAppear)
     }
-    
+
     func onAppear() {
         viewModel.resetHintData(vault: vault)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {

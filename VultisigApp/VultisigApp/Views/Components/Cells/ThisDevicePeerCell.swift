@@ -9,18 +9,18 @@ import SwiftUI
 
 struct ThisDevicePeerCell: View {
     let deviceName: String
-    
+
     var body: some View {
         cell
     }
-    
+
     var cell: some View {
         HStack(spacing: 8) {
             VStack(alignment: .leading, spacing: 2) {
                 deviceId
                 description
             }
-            
+
             Spacer()
         }
         .padding(16)
@@ -33,7 +33,7 @@ struct ThisDevicePeerCell: View {
         )
         .padding(1)
     }
-    
+
     var deviceId: some View {
         Text(deviceName)
             .font(Theme.fonts.bodySMedium)
@@ -41,7 +41,7 @@ struct ThisDevicePeerCell: View {
             .lineLimit(2)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     var description: some View {
         Text(NSLocalizedString("thisDevice", comment: ""))
             .font(Theme.fonts.caption12)

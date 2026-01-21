@@ -10,7 +10,7 @@ import SwiftUI
 
 extension AddressQRCodeView {
     private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-    
+
     var content: some View {
         ZStack {
             Background()
@@ -33,7 +33,7 @@ extension AddressQRCodeView {
             }
         }
     }
-    
+
     var main: some View {
         view
     }

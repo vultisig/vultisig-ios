@@ -11,13 +11,13 @@ struct AddressBookChainSelectionScreen: View {
     @Binding var selectedChain: AddressBookChainType
     @Binding var isPresented: Bool
     @StateObject var viewModel: AddressBookChainSelectionViewModel
-    
+
     init(selectedChain: Binding<AddressBookChainType>, isPresented: Binding<Bool>, vaultChains: [CoinMeta]) {
         self._selectedChain = selectedChain
         self._isPresented = isPresented
         self._viewModel = StateObject(wrappedValue: AddressBookChainSelectionViewModel(vaultChains: vaultChains))
     }
-    
+
     var body: some View {
         Screen(showNavigationBar: false) {
             VStack(spacing: 12) {
@@ -42,7 +42,7 @@ struct AddressBookChainSelectionScreen: View {
             }
         }
     }
-    
+
     var list: some View {
         LazyVStack(spacing: 0) {
             ForEach(viewModel.filteredChains) { chain in
@@ -58,7 +58,7 @@ struct AddressBookChainSelectionScreen: View {
             }
         }
     }
-    
+
     var emptyMessage: some View {
         ErrorMessage(text: "noResultFound")
             .padding(.top, 48)

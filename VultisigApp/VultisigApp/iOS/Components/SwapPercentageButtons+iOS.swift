@@ -14,7 +14,7 @@ extension SwapPercentageButtons {
             .padding(.horizontal, 8)
             .padding(.vertical, 8)
     }
-    
+
     var buttons: some View {
         HStack {
             ForEach(buttonOptions, id: \.self) { option in
@@ -22,7 +22,7 @@ extension SwapPercentageButtons {
             }
         }
     }
-    
+
     func getPercentageButton(for option: Int) -> some View {
         Button(
             action: {
@@ -35,7 +35,7 @@ extension SwapPercentageButtons {
         )
         .disabled(self.selectedPercentage == option && !self.showAllPercentageButtons)
     }
-    
+
     func getPercentageCell(for text: String, isSelected: Bool) -> some View {
         Text(text + "%")
             .font(Theme.fonts.caption12)

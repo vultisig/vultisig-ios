@@ -23,7 +23,7 @@ class DeeplinkViewModel: ObservableObject {
     @Published var receivedUrl: URL? = nil
     @Published var viewID = UUID()
     @Published var address: String? = nil
-    
+
     // Properties for Send deeplink flow
     @Published var assetChain: String? = nil
     @Published var assetTicker: String? = nil
@@ -31,45 +31,45 @@ class DeeplinkViewModel: ObservableObject {
     @Published var sendMemo: String? = nil
     @Published var pendingSendDeeplink: Bool = false
     @Published var isInternalDeeplink: Bool = false
-    
+
     private let logic = DeeplinkLogic()
-    
+
     @discardableResult
     func extractParameters(_ url: URL, vaults: [Vault], isInternal: Bool = false) -> Bool {
         resetFieldsForExtraction()
         isInternalDeeplink = isInternal
         viewID = UUID()
         receivedUrl = url
-        
+
         let result = logic.extractParameters(url, vaults: vaults)
         apply(result: result)
-        
+
         if result.shouldNotify {
             NotificationCenter.default.post(name: NSNotification.Name("ProcessDeeplink"), object: nil)
             return true
         }
-        
+
         return false
     }
-    
+
     static func getJsonData(_ url: URL?) -> String? {
         DeeplinkLogic.getJsonData(url)
     }
-    
+
     static func getTssType(_ url: URL?) -> String? {
         DeeplinkLogic.getTssType(url)
     }
-    
+
     func resetData() {
         type = nil
         resetFieldsForExtraction()
         isInternalDeeplink = false
     }
-    
+
     func findCoin(in vault: Vault) -> Coin? {
         logic.findCoin(in: vault, assetChain: assetChain, assetTicker: assetTicker)
     }
-    
+
     private func resetFieldsForExtraction() {
         selectedVault = nil
         tssType = nil
@@ -82,7 +82,7 @@ class DeeplinkViewModel: ObservableObject {
         sendMemo = nil
         pendingSendDeeplink = false
     }
-    
+
     private func apply(result: DeeplinkLogic.DeeplinkResult) {
         type = result.type
         selectedVault = result.selectedVault
@@ -111,25 +111,25 @@ struct DeeplinkLogic {
         var pendingSendDeeplink: Bool = false
         var shouldNotify: Bool = false
     }
-    
+
     func extractParameters(_ url: URL, vaults: [Vault]) -> DeeplinkResult {
         guard let urlComponents = URLComponents(string: url.absoluteString) else {
             return buildAddressOnlyResult(url: url)
         }
-        
+
         let queryItems = urlComponents.queryItems
         let path = urlComponents.path.lowercased()
         let host = urlComponents.host?.lowercased() ?? ""
         let urlString = url.absoluteString.lowercased()
         let pathComponents = path.split(separator: "/").map { String($0) }
-        
+
         let isSendPath = path.contains("send") ||
             pathComponents.contains("send") ||
             host == "send" ||
             host.contains("send") ||
             urlString.contains("://send") ||
             urlString.hasPrefix("vultisig://send")
-        
+
         if isSendPath {
             return processSendDeeplink(queryItems: queryItems, vaults: vaults)
         } else if queryItems == nil {
@@ -142,24 +142,24 @@ struct DeeplinkLogic {
             return result
         }
     }
-    
+
     func findCoin(in vault: Vault, assetChain: String?, assetTicker: String?) -> Coin? {
         guard let assetChain = assetChain,
               let assetTicker = assetTicker else {
             return nil
         }
-        
+
         let chainString = assetChain.lowercased()
         guard let chain = Chain.allCases.first(where: { $0.rawValue.lowercased() == chainString }) else {
             return nil
         }
-        
+
         let tickerUpper = assetTicker.uppercased()
         return vault.coins.first { coin in
             coin.chain == chain && coin.ticker.uppercased() == tickerUpper
         }
     }
-    
+
     static func getJsonData(_ url: URL?) -> String? {
         guard let url,
               let components = URLComponents(string: url.absoluteString) else {
@@ -167,7 +167,7 @@ struct DeeplinkLogic {
         }
         return components.queryItems?.first(where: { $0.name == "jsonData" })?.value
     }
-    
+
     static func getTssType(_ url: URL?) -> String? {
         guard let url,
               let components = URLComponents(string: url.absoluteString) else {
@@ -175,7 +175,7 @@ struct DeeplinkLogic {
         }
         return components.queryItems?.first(where: { $0.name == "tssType" })?.value
     }
-    
+
     private func buildAddressOnlyResult(url: URL) -> DeeplinkResult {
         var result = DeeplinkResult()
         let addressString = url.absoluteString.replacingOccurrences(of: "vultisig://", with: "")
@@ -184,7 +184,7 @@ struct DeeplinkLogic {
         result.shouldNotify = true
         return result
     }
-    
+
     private func processSendDeeplink(queryItems: [URLQueryItem]?, vaults: [Vault]) -> DeeplinkResult {
         var result = DeeplinkResult()
         result.type = .Send
@@ -194,12 +194,12 @@ struct DeeplinkLogic {
         result.sendAmount = queryItems?.first(where: { $0.name == "amount" })?.value?.removingPercentEncoding
         result.sendMemo = queryItems?.first(where: { $0.name == "memo" })?.value?.removingPercentEncoding
         result.pendingSendDeeplink = true
-        
+
         if result.address == nil || result.address?.isEmpty == true {
             result.type = .Unknown
             return result
         }
-        
+
         if let chainName = result.assetChain {
             result.selectedVault = vaults.first { vault in
                 vault.coins.contains { $0.chain.name.lowercased() == chainName.lowercased() }
@@ -209,23 +209,23 @@ struct DeeplinkLogic {
         result.shouldNotify = true
         return result
     }
-    
+
     private func processKeygenOrKeysignDeeplink(queryItems: [URLQueryItem]?, vaults: [Vault]) -> DeeplinkResult {
         var result = DeeplinkResult()
-        
+
         let typeData = queryItems?.first(where: { $0.name == "type" })?.value
         result.type = parseFlowType(typeData)
-        
+
         let tssData = queryItems?.first(where: { $0.name == "tssType" })?.value
         result.tssType = parseTssType(tssData)
-        
+
         let vaultPubKey = queryItems?.first(where: { $0.name == "vault" })?.value
         result.selectedVault = getVault(for: vaultPubKey, vaults: vaults)
-        
+
         result.jsonData = queryItems?.first(where: { $0.name == "jsonData" })?.value
         return result
     }
-    
+
     private func parseFlowType(_ value: String?) -> DeeplinkFlowType? {
         switch value {
         case "NewVault":
@@ -238,7 +238,7 @@ struct DeeplinkLogic {
             return .Unknown
         }
     }
-    
+
     private func parseTssType(_ value: String?) -> TssType? {
         switch value {
         case "Reshare":
@@ -247,7 +247,7 @@ struct DeeplinkLogic {
             return .Keygen
         }
     }
-    
+
     private func getVault(for vaultPubKey: String?, vaults: [Vault]) -> Vault? {
         guard let vaultPubKey else {
             return nil

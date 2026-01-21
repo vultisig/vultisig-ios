@@ -14,28 +14,28 @@ struct CircleDashboardView: View {
     @Environment(\.router) var router
 
     @AppStorage("appClosedBanners") var appClosedBanners: [String] = []
-    
+
     let circleDashboardBannerId = "circleDashboardInfoBanner"
-    
+
     var showInfoBanner: Bool {
         !appClosedBanners.contains(circleDashboardBannerId)
     }
-    
+
     var walletUSDCBalance: Decimal {
         return CircleViewLogic.getWalletUSDCBalance(vault: vault)
     }
-    
+
     var body: some View {
         content
     }
-    
+
     var topBanner: some View {
         HStack {
             VStack(alignment: .leading, spacing: 8) {
                 Text(NSLocalizedString("circleSetupAccountTitle", comment: "Circle USDC Account"))
                     .font(CircleConstants.Fonts.title)
                     .foregroundStyle(Theme.colors.textSecondary)
-                
+
                 Text("$\(walletUSDCBalance.formatted())")
                     .font(CircleConstants.Fonts.balance)
                     .foregroundStyle(Theme.colors.textPrimary)
@@ -56,7 +56,7 @@ struct CircleDashboardView: View {
         .padding(CircleConstants.Design.cardPadding)
         .background(cardBackground)
     }
-    
+
     var cardBackground: some View {
         RoundedRectangle(cornerRadius: CircleConstants.Design.cornerRadius)
             .inset(by: 0.5)
@@ -72,7 +72,7 @@ struct CircleDashboardView: View {
                 ).opacity(0.09)
             )
     }
-    
+
     var usdcDepositedCard: some View {
         VStack(spacing: 24) {
             HStack(spacing: 12) {
@@ -80,23 +80,23 @@ struct CircleDashboardView: View {
                     .resizable()
                     .frame(width: 39, height: 39)
                     .clipShape(Circle())
-                
+
                 VStack(alignment: .leading, spacing: 2) {
                     Text(NSLocalizedString("circleDashboardUSDCDeposited", comment: "USDC deposited"))
                         .font(CircleConstants.Fonts.subtitle)
                         .foregroundStyle(Theme.colors.textSecondary)
-                    
+
                     Text("\(model.balance.formatted()) USDC")
                         .font(Theme.fonts.priceBodyL)
                         .foregroundStyle(Theme.colors.textPrimary)
-                    
+
                     Text("$\(model.balance.formatted())")
                         .font(CircleConstants.Fonts.subtitle)
                         .foregroundStyle(Theme.colors.textSecondary)
                 }
                 Spacer()
             }
-            
+
             VStack {
                 DefiButton(
                     title: NSLocalizedString("circleDashboardWithdraw", comment: "Withdraw"),
@@ -118,20 +118,20 @@ struct CircleDashboardView: View {
         .padding(CircleConstants.Design.cardPadding)
         .background(cardBackground)
     }
-    
+
     func loadData() async {
         guard let mscaAddress = vault.circleWalletAddress else { return }
-        
+
         let (chain, _) = CircleViewLogic.getChainDetails(vault: vault)
-        
+
         let coinsToRefresh = vault.coins.filter { coin in
             coin.chain == chain && (coin.ticker == "USDC" || coin.isNativeToken)
         }
-        
+
         for coin in coinsToRefresh {
             await BalanceService.shared.updateBalance(for: coin)
         }
-        
+
         do {
             let (balance, ethBalance) = try await model.logic.fetchData(address: mscaAddress, vault: vault)
             await MainActor.run {

@@ -11,14 +11,14 @@ struct BondTransactionScreen: View {
     enum FocusedField {
         case address, amount
     }
-    
+
     @StateObject var viewModel: BondTransactionViewModel
     var onVerify: (TransactionBuilder) -> Void
-    
+
     @State var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?
     @State var percentageSelected: Double?
-    
+
     var body: some View {
         FormScreen(
             title: "bondRune".localized,
@@ -41,7 +41,7 @@ struct BondTransactionScreen: View {
                     FunctionAddressField(viewModel: viewModel.providerViewModel)
                 }
             }
-            
+
             FormExpandableSection(
                 title: viewModel.amountField.label ?? .empty,
                 isValid: viewModel.amountField.valid,
@@ -62,7 +62,7 @@ struct BondTransactionScreen: View {
                         decimals: 4, // keep 4 decimals
                         percentage: $percentageSelected,
                     ).focused($focusedField, equals: .amount)
-                    
+
                     CommonTextField(
                         text: $viewModel.operatorFeeField.value,
                         label: viewModel.operatorFeeField.label,
@@ -96,7 +96,7 @@ struct BondTransactionScreen: View {
             }
         }
     }
-    
+
     func onContinue() {
         switch focusedFieldBinding {
         case .address:
@@ -106,12 +106,12 @@ struct BondTransactionScreen: View {
                 focusedField = .address
                 return
             }
-            
+
             guard let transactionBuilder = viewModel.transactionBuilder else { return }
             onVerify(transactionBuilder)
         }
     }
-    
+
     func onAddressFill() {
         focusedFieldBinding = viewModel.addressViewModel.field.valid ? .amount : .address
     }

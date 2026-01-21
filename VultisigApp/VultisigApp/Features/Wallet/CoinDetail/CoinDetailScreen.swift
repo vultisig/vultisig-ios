@@ -21,7 +21,7 @@ struct CoinDetailScreen: View {
     @StateObject var viewModel: CoinDetailViewModel
 
     @Environment(\.openURL) var openURL
-    
+
     init(
         coin: Coin,
         vault: Vault,
@@ -36,11 +36,11 @@ struct CoinDetailScreen: View {
         self._viewModel = StateObject(wrappedValue: .init(coin: coin))
         self.onCoinAction = onCoinAction
     }
-    
+
     var body: some View {
         container
     }
-    
+
     var container: some View {
 #if os(iOS)
         NavigationStack {
@@ -53,7 +53,7 @@ struct CoinDetailScreen: View {
             .transaction { $0.disablesAnimations = true }
 #endif
     }
-    
+
     var content: some View {
         ScrollView {
             VStack(spacing: 32) {
@@ -139,7 +139,7 @@ private extension CoinDetailScreen {
             openURL(linkURL)
         }
     }
-    
+
     func onAction(_ action: CoinAction) {
         sendTx.reset(coin: coin)
         var vaultAction: VaultAction?
@@ -162,7 +162,7 @@ private extension CoinDetailScreen {
         case .sell:
             break
         }
-        
+
         guard let vaultAction else { return }
         onCoinAction(vaultAction)
     }

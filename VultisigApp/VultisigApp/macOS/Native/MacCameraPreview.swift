@@ -10,7 +10,7 @@ import AVFoundation
 
 struct MacCameraPreview: NSViewRepresentable {
     var session: AVCaptureSession
-    
+
     func makeNSView(context: Context) -> NSView {
         let view = NSView(frame: .zero)
         let previewLayer = AVCaptureVideoPreviewLayer(session: session)
@@ -19,7 +19,7 @@ struct MacCameraPreview: NSViewRepresentable {
         view.layer = previewLayer
         return view
     }
-    
+
     func updateNSView(_ nsView: NSView, context: Context) {
         if let layer = nsView.layer as? AVCaptureVideoPreviewLayer {
             layer.session = session

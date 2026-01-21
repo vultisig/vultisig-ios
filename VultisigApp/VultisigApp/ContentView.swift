@@ -112,51 +112,51 @@ struct ContentView: View {
                 }
             }
     }
-    
+
     private func setData() {
         authenticateUser()
     }
-    
+
     private func authenticateUser() {
         guard appViewModel.canLogin else {
             return
         }
-        
+
         guard !appViewModel.showOnboarding && vaults.count>0 else {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 appViewModel.showSplashView = false
             }
             return
         }
-        
+
         appViewModel.authenticateUser()
     }
-    
+
     private func handleDeeplink(_ incomingURL: URL) {
         guard let deeplinkType = incomingURL.absoluteString.split(separator: ":").first else {
             return
         }
-        
+
         if deeplinkType == "file" {
             vultExtensionViewModel.documentUrl = incomingURL
             vultExtensionViewModel.showImportView = true
         } else if deeplinkType == "https" {
             let updatedURL = incomingURL.absoluteString.replacingOccurrences(of: "https", with: "vultisig")
-            
+
             guard let url = URL(string: updatedURL) else {
                 return
             }
-            
+
             deeplinkViewModel.extractParameters(url, vaults: vaults)
         } else {
             deeplinkViewModel.extractParameters(incomingURL, vaults: vaults)
         }
-        
+
         NotificationCenter.default.post(name: NSNotification.Name("ProcessDeeplink"), object: nil)
-        
+
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: 100_000_000)
-            
+
             if deeplinkViewModel.type != nil {
                 NotificationCenter.default.post(name: NSNotification.Name("ProcessDeeplink"), object: nil)
             }

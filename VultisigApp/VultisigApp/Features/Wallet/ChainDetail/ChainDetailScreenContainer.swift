@@ -18,14 +18,14 @@ struct ChainDetailScreenContainer: View {
 
     @EnvironmentObject var appViewModel: AppViewModel
     @Environment(\.openURL) var openURL
-    
+
     init(group: GroupedChain, vault: Vault) {
         self.group = group
         self.vault = vault
         let supportsDefiTab = CoinAction.defiChains.contains(group.chain)
         tabs = supportsDefiTab ? [.wallet, .defi] : [.wallet]
     }
-    
+
     var body: some View {
         VultiTabBar(
             selectedItem: $selectedTab,
@@ -76,7 +76,7 @@ struct ChainDetailScreenContainer: View {
         #endif
         .withAddressCopy(coin: $addressToCopy)
     }
-    
+
     func onExplorer() {
         if
             let url = Endpoint.getExplorerByAddressURLByGroup(chain: group.coins.first?.chain, address: group.address),

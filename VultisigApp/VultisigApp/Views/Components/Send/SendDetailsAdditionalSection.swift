@@ -11,11 +11,11 @@ struct SendDetailsAdditionalSection: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var viewModel: SendDetailsViewModel
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
-    
+
     @State var isMemoExpanded = false
-    
+
     @EnvironmentObject var appViewModel: AppViewModel
-    
+
     var body: some View {
         VStack(spacing: 14) {
             addMemoField
@@ -26,7 +26,7 @@ struct SendDetailsAdditionalSection: View {
             }
         }
     }
-    
+
     var addMemoTitle: some View {
         HStack {
             getFieldTitle("addMemo")
@@ -37,7 +37,7 @@ struct SendDetailsAdditionalSection: View {
             isMemoExpanded.toggle()
         }
     }
-    
+
     var chevronIcon: some View {
         Image(systemName: "chevron.down")
             .foregroundColor(Theme.colors.textPrimary)
@@ -45,7 +45,7 @@ struct SendDetailsAdditionalSection: View {
             .rotationEffect(.degrees(isMemoExpanded ? 180 : 0))
             .animation(.easeInOut, value: isMemoExpanded)
     }
-    
+
     var addMemoField: some View {
         VStack(alignment: .leading, spacing: 8) {
             Button {
@@ -55,18 +55,18 @@ struct SendDetailsAdditionalSection: View {
             } label: {
                 addMemoTitle
             }
-            
+
             MemoTextField(memo: $tx.memo)
                 .frame(height: isMemoExpanded ? nil : 0, alignment: .top)
                 .clipped()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     var separator: some View {
         LinearSeparator()
     }
-    
+
     private func getFieldTitle(_ title: String) -> some View {
         Text(NSLocalizedString(title, comment: ""))
             .font(Theme.fonts.caption12)

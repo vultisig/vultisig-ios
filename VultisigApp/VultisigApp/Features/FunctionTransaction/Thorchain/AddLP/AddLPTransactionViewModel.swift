@@ -18,25 +18,25 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
     @Published var slippage: Double? = 1
     @Published var validForm: Bool = false
     @Published var amountField = FormField(label: "amount".localized)
-    
+
     private(set) var isMaxAmount: Bool = false
     private(set) lazy var form: [FormField] = [amountField]
-    
+
     var formCancellable: AnyCancellable?
     var cancellables = Set<AnyCancellable>()
-    
+
     init(coin: Coin, coin2: Coin, vault: Vault, position: LPPosition) {
         self.coin = coin
         self.coin2 = coin2
         self.vault = vault
         self.position = position
     }
-    
+
     func onLoad() {
         setupForm()
         setupAmountField()
     }
-    
+
     var transactionBuilder: TransactionBuilder? {
         guard validForm, let poolName = position.poolName else { return nil }
         return AddLPTransactionBuilder(
@@ -47,7 +47,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
             sendMaxAmount: isMaxAmount
         )
     }
-    
+
     var pairedAddress: String? {
         switch coin.chain {
         case .thorChain:
@@ -71,7 +71,7 @@ final class AddLPTransactionViewModel: ObservableObject, Form {
     func onPercentage(_ percentage: Double) {
         isMaxAmount = percentage == 100
     }
-    
+
     func setupAmountField() {
         self.amountField.validators = [
             AmountBalanceValidator(balance: coin.balanceDecimal)

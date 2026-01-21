@@ -38,7 +38,7 @@ extension Chain {
             return []
         }
     }
-    
+
     func ibcChannel(to destination: Chain?) -> String? {
         if destination == nil {
             return nil

@@ -10,7 +10,7 @@ import SwiftUI
 struct IconButtonView: View {
     let icon: String
     let isLoading: Bool
-    
+
     init(
         icon: String,
         isLoading: Bool = false
@@ -18,7 +18,7 @@ struct IconButtonView: View {
         self.icon = icon
         self.isLoading = isLoading
     }
-    
+
     var body: some View {
         if isLoading {
             ProgressView()

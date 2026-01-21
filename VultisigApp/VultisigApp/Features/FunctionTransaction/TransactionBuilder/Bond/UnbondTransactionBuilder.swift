@@ -14,14 +14,14 @@ struct UnbondTransactionBuilder: TransactionBuilder {
     let sendMaxAmount: Bool
     let nodeAddress: String
     let providerAddress: String
-    
+
     var amount: String { "0" }
-    
+
     var amountInUnits: String {
         let amountInSats = coin.decimalToCrypto(value: unbondAmount.toDecimal())
         return amountInSats.description
     }
-    
+
     var memo: String {
         var memo = "UNBOND:\(nodeAddress):\(amountInUnits)"
         if providerAddress.isNotEmpty {
@@ -29,7 +29,7 @@ struct UnbondTransactionBuilder: TransactionBuilder {
         }
         return memo
     }
-    
+
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("nodeAddress", nodeAddress)
@@ -38,7 +38,7 @@ struct UnbondTransactionBuilder: TransactionBuilder {
         dict.set("memo", memo)
         return dict
     }
-    
+
     var transactionType: VSTransactionType { .unspecified }
     var wasmContractPayload: WasmExecuteContractPayload? { nil }
     var toAddress: String { "" }

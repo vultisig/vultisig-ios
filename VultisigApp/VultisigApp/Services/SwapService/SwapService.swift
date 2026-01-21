@@ -10,7 +10,7 @@ import Foundation
 struct SwapService {
 
     static let shared = SwapService()
-    
+
     func fetchQuote(
         amount: Decimal,
         fromCoin: Coin,
@@ -21,13 +21,13 @@ struct SwapService {
     ) async throws -> SwapQuote {
 
         let providers = SwapCoinsResolver.resolveAllProviders(fromCoin: fromCoin, toCoin: toCoin)
-        
+
         guard !providers.isEmpty else {
             throw SwapError.routeUnavailable
         }
 
         var lastError: Error?
-        
+
         // Try each provider in order until one succeeds
         for provider in providers {
             do {
@@ -45,11 +45,11 @@ struct SwapService {
                 continue
             }
         }
-        
+
         // If all providers failed, throw the last error
         throw lastError ?? SwapError.routeUnavailable
     }
-    
+
     private func fetchQuoteForProvider(
         provider: SwapProvider,
         amount: Decimal,
@@ -62,7 +62,7 @@ struct SwapService {
         switch provider {
         case .thorchain:
             return try await fetchCrossChainQuote(
-                service: ThorchainService.shared, 
+                service: ThorchainService.shared,
                 provider: provider,
                 amount: amount,
                 fromCoin: fromCoin,
@@ -72,7 +72,7 @@ struct SwapService {
             )
         case .thorchainStagenet:
             return try await fetchCrossChainQuote(
-                service: ThorchainStagenetService.shared, 
+                service: ThorchainStagenetService.shared,
                 provider: provider,
                 amount: amount,
                 fromCoin: fromCoin,
@@ -144,7 +144,7 @@ private extension SwapService {
         do {
             /// https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
             let normalizedAmount = amount * fromCoin.thorswapMultiplier
-            
+
             let quote = try await service.fetchSwapQuotes(
                 address: toCoin.address,
                 fromAsset: fromCoin.swapAsset,
@@ -220,7 +220,7 @@ private extension SwapService {
         )
         return .oneinch(response.quote, fee: response.fee)
     }
-    
+
     func fetchKyberSwapQuote(
         service: KyberSwapService,
         chain: String,
@@ -240,7 +240,7 @@ private extension SwapService {
         )
         return .kyberswap(quote, fee: fee)
     }
-    
+
     func fetchLiFiQuote(
         service: LiFiService,
         amount: Decimal,

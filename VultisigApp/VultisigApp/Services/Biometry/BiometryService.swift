@@ -46,7 +46,7 @@ struct BiometryService {
 }
 
 private extension BiometryService {
-    
+
     enum Errors: Error {
         case cantEvaluatePolicy
         case wrongBiometryType

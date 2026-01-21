@@ -12,13 +12,13 @@ struct HiddenTextField: View {
     @Binding var password: String
     var showHideOption: Bool = true
     var errorMessage: String
-    
+
     @State var isPasswordVisible: Bool = false
-    
+
     var body: some View {
         VStack {
             field
-            
+
             if !errorMessage.isEmpty {
                 error
             }
@@ -28,18 +28,18 @@ struct HiddenTextField: View {
             setData()
         }
     }
-    
+
     var error: some View {
         Text(NSLocalizedString(errorMessage, comment: ""))
             .font(Theme.fonts.bodySMedium)
             .foregroundColor(Theme.colors.alertError)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     var field: some View {
         HStack {
             textfield
-            
+
             if showHideOption {
                 button
             }
@@ -53,7 +53,7 @@ struct HiddenTextField: View {
                 .stroke(errorMessage.isEmpty ? Theme.colors.border : Theme.colors.alertError, lineWidth: 1)
         )
     }
-    
+
     var textfield: some View {
         ZStack(alignment: .leading) {
             if password.isEmpty {
@@ -63,7 +63,7 @@ struct HiddenTextField: View {
                     Spacer()
                 }
             }
-            
+
             if isPasswordVisible {
                  TextField(NSLocalizedString("", comment: ""), text: $password)
                     .borderlessTextFieldStyle()
@@ -77,7 +77,7 @@ struct HiddenTextField: View {
         .font(Theme.fonts.bodyMMedium)
         .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     var button: some View {
         Button(
             action: {
@@ -93,7 +93,7 @@ struct HiddenTextField: View {
         .buttonStyle(.plain)
         .contentTransition(.symbolEffect(.replace))
     }
-    
+
     private func setData() {
         if !showHideOption {
             isPasswordVisible = true

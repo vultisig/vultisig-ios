@@ -42,12 +42,12 @@ extension AddressBookTextField {
             onAddress: { handleScan(result: $0) }
         )
     }
-    
+
     func handleScan(result: String) {
         text = Utils.sanitizeAddress(address: result)
         showScanner = false
     }
-    
+
     func pasteAddress() {
         if let clipboardContent = UIPasteboard.general.string {
             text = clipboardContent

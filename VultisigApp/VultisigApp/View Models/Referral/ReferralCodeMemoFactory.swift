@@ -13,7 +13,7 @@ enum ReferralCodeMemoFactory {
             preferredAssetAddressPart = ":\(preferredAsset.asset.chain.swapAsset):\(preferredAssetCoin.address)"
             preferredAssetPart =  preferredAsset.thorchainAsset.isNotEmpty ? ":\(preferredAsset.thorchainAsset)" : .empty
         }
-        
+
         return "~:\(referralCode.uppercased())\(preferredAssetAddressPart):\(nativeCoin.address)\(preferredAssetPart)"
     }
 }

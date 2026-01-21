@@ -12,7 +12,7 @@ class GroupedChain {
     let address: String
     var count: Int
     var coins: [Coin]
-    
+
     init(name: String, address: String, count: Int = 0, coins: [Coin]) {
         self.name = name
         self.address = address

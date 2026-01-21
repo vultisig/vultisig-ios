@@ -9,32 +9,32 @@ import Foundation
 
 struct CosmosServiceConfig {
     let chain: Chain
-    
+
     // URL builders
     func balanceURL(forAddress address: String) -> URL? {
         return URL(string: balanceURLString(forAddress: address))
     }
-    
+
     func accountNumberURL(forAddress address: String) -> URL? {
         return URL(string: accountNumberURLString(forAddress: address))
     }
-    
+
     func transactionURL() -> URL? {
         return URL(string: transactionURLString())
     }
-    
+
     func wasmTokenBalanceURL(contractAddress: String, base64Payload: String) -> URL? {
         return URL(string: wasmTokenBalanceURLString(contractAddress: contractAddress, base64Payload: base64Payload))
     }
-    
+
     func ibcDenomTraceURL(hash: String) -> URL? {
         return URL(string: ibcDenomTraceURLString(hash: hash))
     }
-    
+
     func latestBlockURL() -> URL? {
         return URL(string: latestBlockURLString())
     }
-    
+
     // Private URL string builders
     private func balanceURLString(forAddress address: String) -> String {
         switch chain {
@@ -58,7 +58,7 @@ struct CosmosServiceConfig {
             return ""
         }
     }
-    
+
     private func accountNumberURLString(forAddress address: String) -> String {
         switch chain {
         case .gaiaChain:
@@ -81,7 +81,7 @@ struct CosmosServiceConfig {
             return ""
         }
     }
-    
+
     private func transactionURLString() -> String {
         switch chain {
         case .gaiaChain:
@@ -104,7 +104,7 @@ struct CosmosServiceConfig {
             return ""
         }
     }
-    
+
     private func wasmTokenBalanceURLString(contractAddress: String, base64Payload: String) -> String {
         switch chain {
         case .gaiaChain:
@@ -121,7 +121,7 @@ struct CosmosServiceConfig {
             return ""
         }
     }
-    
+
     private func ibcDenomTraceURLString(hash: String) -> String {
         switch chain {
         case .gaiaChain:
@@ -138,7 +138,7 @@ struct CosmosServiceConfig {
             return ""
         }
     }
-    
+
     private func latestBlockURLString() -> String {
         switch chain {
         case .gaiaChain:
@@ -155,7 +155,7 @@ struct CosmosServiceConfig {
             return ""
         }
     }
-    
+
     static func getConfig(forChain chain: Chain) throws -> CosmosServiceConfig {
         switch chain {
         case .gaiaChain, .dydx, .kujira, .osmosis, .terra, .terraClassic, .noble, .akash:
@@ -168,7 +168,7 @@ struct CosmosServiceConfig {
 
 enum CosmosServiceError: Error, LocalizedError {
     case unsupportedChain
-    
+
     var errorDescription: String? {
         switch self {
         case .unsupportedChain:

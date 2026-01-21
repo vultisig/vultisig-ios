@@ -15,9 +15,9 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
     var cellBuilder: (Asset, SectionType) -> CellView
     var emptyStateBuilder: () -> EmptyStateView
     let insets: EdgeInsets
-    
+
     @State var searchBarFocused: Bool = false
-    
+
     init(
         title: String? = nil,
         subtitle: String? = nil,
@@ -35,15 +35,15 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
         self.emptyStateBuilder = emptyStateBuilder
         self.insets = insets
     }
-    
+
     var body: some View {
         content
     }
-    
+
     var showEmptyState: Bool {
         searchText.isNotEmpty && elements.isEmpty
     }
-    
+
     var content: some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 24) {
@@ -61,12 +61,12 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
             }
             .padding(.top, insets.top)
             .padding(.horizontal, insets.leading)
-            
+
             gradientOverlay
         }
         .ignoresSafeArea(.container, edges: .bottom)
     }
-    
+
     var gradientOverlay: some View {
         LinearGradient(
             stops: [
@@ -78,7 +78,7 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
         )
         .frame(height: 60)
     }
-    
+
     var textfield: some View {
         VStack(alignment: .leading, spacing: 16) {
             if let title {
@@ -87,14 +87,14 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
                     .font(Theme.fonts.title2)
                     .multilineTextAlignment(.leading)
             }
-            
+
             if let subtitle {
                 Text(subtitle)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
                     .multilineTextAlignment(.leading)
             }
-            
+
             HStack(spacing: 12) {
                 SearchTextField(value: $searchText, isFocused: $searchBarFocused)
                 Button {
@@ -112,7 +112,7 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
             .animation(.easeInOut, value: searchBarFocused)
         }
     }
-    
+
     @ViewBuilder
     var grid: some View {
         let spacing: CGFloat = 16

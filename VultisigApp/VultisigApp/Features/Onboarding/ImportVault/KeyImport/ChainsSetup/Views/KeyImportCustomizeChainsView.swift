@@ -10,11 +10,11 @@ import SwiftUI
 struct KeyImportCustomizeChainsView: View {
     @ObservedObject var viewModel: KeyImportChainsSetupViewModel
     let onImport: () -> Void
-    
+
     @State var searchText: String = ""
-    
+
     @State var items: [Chain] = []
-    
+
     var body: some View {
         ZStack(alignment: .bottom) {
             AssetSelectionContainerView(
@@ -23,7 +23,7 @@ struct KeyImportCustomizeChainsView: View {
                 cellBuilder: { chain, _ in cell(for: chain) },
                 emptyStateBuilder: { EmptyView() }
             )
-            
+
             PrimaryButton(title: "continue".localized, action: onImport)
                 .disabled(viewModel.buttonDisabled)
         }
@@ -34,7 +34,7 @@ struct KeyImportCustomizeChainsView: View {
             }
         }
     }
-    
+
     func cell(for chain: Chain) -> some View {
         AssetSelectionGridCell(
             name: chain.name,

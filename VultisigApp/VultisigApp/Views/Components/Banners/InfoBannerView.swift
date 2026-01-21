@@ -20,7 +20,7 @@ struct InfoBannerView: View {
     let leadingIcon: String?
     let iconColor: Color?
     let onClose: (() -> Void)?
-    
+
     init(description: String, type: InfoBannerType, leadingIcon: String?, iconColor: Color? = nil, onClose: (() -> Void)? = nil) {
         self.description = description
         self.type = type
@@ -28,20 +28,20 @@ struct InfoBannerView: View {
         self.iconColor = iconColor
         self.onClose = onClose
     }
-    
+
     var body: some View {
         HStack(spacing: 12) {
             if let leadingIcon {
                 Icon(named: leadingIcon, color: iconColor ?? fontColor, size: 16)
             }
-            
+
             Text(description)
                 .font(Theme.fonts.footnote)
                 .foregroundStyle(fontColor)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
-            
+
             if let onClose {
                 Spacer()
                 Button(action: onClose) {
@@ -60,7 +60,7 @@ struct InfoBannerView: View {
         )
         .frame(maxWidth: .infinity)
     }
-    
+
     var fontColor: Color {
         switch type {
         case .info:
@@ -73,7 +73,7 @@ struct InfoBannerView: View {
             Theme.colors.alertSuccess
         }
     }
-    
+
     var bgColor: Color {
         switch type {
         case .info:
@@ -86,7 +86,7 @@ struct InfoBannerView: View {
             Theme.colors.bgSuccess
         }
     }
-    
+
     var borderColor: Color {
         switch type {
         case .info:

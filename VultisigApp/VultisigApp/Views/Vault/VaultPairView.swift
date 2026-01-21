@@ -9,7 +9,7 @@ import SwiftUI
 
 struct VaultPartView: View {
     let vault: Vault
-    
+
     var body: some View {
         HStack(alignment: .center, spacing: 4) {
             VaultIconTypeView(isFastVault: vault.isFastVault)

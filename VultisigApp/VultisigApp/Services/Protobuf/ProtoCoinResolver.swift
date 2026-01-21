@@ -16,7 +16,7 @@ struct ProtoCoinResolver {
         guard let chain = Chain(name: coin.chain) else {
             throw ProtoMappableError.chainNotSupport
         }
-        let cm = CoinMeta(chain: chain, 
+        let cm = CoinMeta(chain: chain,
                           ticker: coin.ticker,
                           logo: coin.logo,
                           decimals: Int(coin.decimals),

@@ -10,7 +10,7 @@ import Foundation
 class CosmosBalance: Codable {
     var denom: String
     var amount: String
-    
+
     init(denom: String, amount: String) {
         self.denom = denom
         self.amount = amount

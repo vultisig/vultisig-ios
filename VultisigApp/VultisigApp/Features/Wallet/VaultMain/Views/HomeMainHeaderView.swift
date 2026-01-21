@@ -9,20 +9,20 @@ import SwiftUI
 
 struct HomeMainHeaderView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
-    
+
     let vault: Vault
     @Binding var activeTab: HomeTab
     @Binding var showBalance: Bool
     var vaultSelectorAction: () -> Void
     var settingsAction: () -> Void
     var onRefresh: () -> Void
-    
+
     @State private var showBalanceInternal = false
-    
+
     var balanceText: String {
         activeTab == .defi ? homeViewModel.defiBalanceText(for: vault) : homeViewModel.balanceText(for: vault)
     }
-    
+
     var body: some View {
         HStack(spacing: 32) {
             VaultSelectorView(
@@ -30,7 +30,7 @@ struct HomeMainHeaderView: View {
                 isFastVault: vault.isFastVault,
                 action: vaultSelectorAction
             )
-            
+
             HStack {
                 Spacer()
                 trailingView
@@ -47,7 +47,7 @@ struct HomeMainHeaderView: View {
             }
         }
     }
-    
+
     @ViewBuilder
     var trailingView: some View {
         if showBalanceInternal {
@@ -56,7 +56,7 @@ struct HomeMainHeaderView: View {
             buttonsStack
         }
     }
-    
+
     var balanceView: some View {
         VStack(spacing: 4) {
             Text("portfolioBalance".localized)
@@ -71,7 +71,7 @@ struct HomeMainHeaderView: View {
         }
         .scaledToFit()
     }
-    
+
     var buttonsStack: some View {
         HStack(spacing: 8) {
             #if os(macOS)
@@ -81,7 +81,7 @@ struct HomeMainHeaderView: View {
             ToolbarButton(image: "settings", action: settingsAction)
         }
     }
-    
+
     var backgroundView: some View {
         VStack(spacing: 0) {
             Theme.colors.bgPrimary

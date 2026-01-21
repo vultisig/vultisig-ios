@@ -16,7 +16,7 @@ struct FastVaultEmailView: View {
     var backButtonHidden: Bool = false
 
     @State var email: String = ""
-    
+
     @State var isEmptyEmail: Bool = false
     @State var isInvalidEmail: Bool = false
     @FocusState var isEmailFocused: Bool
@@ -24,11 +24,11 @@ struct FastVaultEmailView: View {
 
     var body: some View {
         content
-            .onChange(of: email) { _ ,newValue in
+            .onChange(of: email) { _, newValue in
                 if !newValue.isEmpty {
                     isEmptyEmail = false
                 }
-                
+
                 if isInvalidEmail && newValue.isValidEmail {
                     isInvalidEmail = false
                 }
@@ -46,17 +46,17 @@ struct FastVaultEmailView: View {
                 .font(Theme.fonts.largeTitle)
                 .foregroundColor(Theme.colors.textPrimary)
                 .padding(.top, 16)
-            
+
             Text(NSLocalizedString("enterYourEmailDescription", comment: ""))
                 .font(Theme.fonts.bodySMedium)
                 .foregroundColor(Theme.colors.textTertiary)
-            
-            textfield(title: NSLocalizedString("email", comment: ""),text: $email)
+
+            textfield(title: NSLocalizedString("email", comment: ""), text: $email)
         }
         .padding(.horizontal, 16)
         .animation(.easeInOut, value: isEmptyEmail)
         .animation(.easeInOut, value: isInvalidEmail)
-        
+
     }
 
     var emptyEmailLabel: some View {
@@ -69,7 +69,7 @@ struct FastVaultEmailView: View {
         }
         .padding(.horizontal, 16)
     }
-    
+
     var validEmailLabel: some View {
         HStack {
             Text(NSLocalizedString("invalidEmailPleaseCheck", comment: ""))
@@ -93,7 +93,7 @@ struct FastVaultEmailView: View {
             handleTap()
         }
     }
-    
+
     var clearButton: some View {
         Button {
             isEmailFocused = false
@@ -104,21 +104,21 @@ struct FastVaultEmailView: View {
                 .foregroundColor(Theme.colors.textTertiary)
         }
     }
-    
+
     func handleTap() {
         guard isEmptyEmailCheck() else {
             isEmptyEmail = true
             return
         }
-        
+
         isEmptyEmail = false
         guard isValidEmailCheck() else {
             isInvalidEmail = true
             return
         }
-        
+
         isInvalidEmail = false
-        
+
         router.navigate(to: KeygenRoute.fastVaultSetPassword(
             tssType: tssType,
             vault: vault,
@@ -127,7 +127,7 @@ struct FastVaultEmailView: View {
             fastVaultExist: fastVaultExist
         ))
     }
-    
+
     private func isEmptyEmailCheck() -> Bool {
         return !email.isEmpty
     }
@@ -137,7 +137,7 @@ struct FastVaultEmailView: View {
                !email.isEmpty &&
                 email.isValidEmail
     }
-    
+
     func getBorderColor() -> Color {
         if isEmptyEmail || isInvalidEmail {
             return Theme.colors.alertError

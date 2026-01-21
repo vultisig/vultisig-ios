@@ -13,7 +13,7 @@ struct Checkbox: View {
     var font: Font
     var alignment: TextAlignment
     var isExtended: Bool
-    
+
     init(
         isChecked: Binding<Bool>,
         text: String? = nil,
@@ -27,7 +27,7 @@ struct Checkbox: View {
         self.alignment = alignment
         self.isExtended = isExtended
     }
-    
+
     var body: some View {
         Button {
             isChecked.toggle()
@@ -35,7 +35,7 @@ struct Checkbox: View {
             HStack(spacing: 10) {
                 check
                 description
-                
+
                 if isExtended {
                     Spacer()
                 }
@@ -45,7 +45,7 @@ struct Checkbox: View {
         .sensoryFeedback(.selection, trigger: isChecked)
         .buttonStyle(.plain)
     }
-    
+
     var check: some View {
         Image(systemName: "checkmark")
             .font(Theme.fonts.caption12)
@@ -59,15 +59,15 @@ struct Checkbox: View {
                     .stroke(color, lineWidth: 1)
             )
     }
-    
+
     var color: Color {
         isChecked ? Theme.colors.alertSuccess : Theme.colors.border
     }
-    
+
     var bgColor: Color {
         isChecked ? Theme.colors.bgSuccess : Theme.colors.bgSurface1
     }
-    
+
     @ViewBuilder
     var description: some View {
         if let text {

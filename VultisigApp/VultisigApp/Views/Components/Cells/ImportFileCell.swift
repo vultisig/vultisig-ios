@@ -8,10 +8,10 @@
 import SwiftUI
 
 struct ImportFileCell: View {
-    
+
     let name: String
     let resetData: () -> Void
-    
+
     var body: some View {
         HStack {
             fileImage
@@ -21,19 +21,19 @@ struct ImportFileCell: View {
         }
         .padding(12)
     }
-    
+
     var fileImage: some View {
         Image("FileIcon")
             .resizable()
             .frame(width: 24, height: 24)
     }
-    
+
     func fileName(_ name: String) -> some View {
         Text(name)
             .font(Theme.fonts.caption12)
             .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     var closeButton: some View {
         Button {
             resetData()
@@ -52,6 +52,6 @@ struct ImportFileCell: View {
     func reset() {
         print("RESET")
     }
-    
+
     return ImportFileCell(name: "File", resetData: reset)
 }

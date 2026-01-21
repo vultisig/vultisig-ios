@@ -11,13 +11,13 @@ struct NavigationButton: View {
     var font = Theme.fonts.title1
     var tint = Theme.colors.textSecondary
     var isLeft: Bool = false
-    
+
     var body: some View {
         container
             .opacity(0.5)
             .rotationEffect(.degrees(isLeft ? 180 : 0))
     }
-    
+
     var content: some View {
         Image(systemName: "arrow.right.circle.fill")
             .font(font)

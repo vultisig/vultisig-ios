@@ -13,7 +13,7 @@ struct PrimaryButtonStyle: ButtonStyle {
     let supportsLongPress: Bool
     @Binding var progress: CGFloat
     @Environment(\.isEnabled) var isEnabled
-    
+
     init(
         type: ButtonType = .primary,
         size: ButtonSize = .medium,
@@ -25,7 +25,7 @@ struct PrimaryButtonStyle: ButtonStyle {
         self.supportsLongPress = supportsLongPress
         self._progress = progress
     }
-    
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(font(for: size))
@@ -64,7 +64,7 @@ private extension PrimaryButtonStyle {
             return EdgeInsets(top: 20, leading: 12, bottom: 20, trailing: 12)
         }
     }
-    
+
     func font(for size: ButtonSize) -> Font {
         switch size {
         case .medium, .small: return Theme.fonts.buttonRegularSemibold
@@ -72,14 +72,14 @@ private extension PrimaryButtonStyle {
         case .squared: return Theme.fonts.buttonSSemibold
         }
     }
-    
+
     func cornerRadius(for size: ButtonSize) -> CGFloat {
         switch size {
         case .medium, .small, .mini: 99
         case .squared: 12
         }
     }
-    
+
     // MARK: - Type Configuration with State-Based Colors
     func backgroundColor(for type: ButtonType, isPressed: Bool, isEnabled: Bool) -> Color {
         let shouldHighlight = isPressed && !supportsLongPress
@@ -100,7 +100,7 @@ private extension PrimaryButtonStyle {
             } else {
                 return Theme.colors.bgButtonTertiary
             }
-            
+
         case .secondary:
             if !isEnabled {
                 return .clear
@@ -119,7 +119,7 @@ private extension PrimaryButtonStyle {
             return .clear
         }
     }
-    
+
     func foregroundColor(for type: ButtonType, isPressed: Bool, isEnabled: Bool) -> Color {
         if !isEnabled {
             return Theme.colors.textButtonDisabled
@@ -134,7 +134,7 @@ private extension PrimaryButtonStyle {
         }
 
     }
-    
+
     func borderColor(for type: ButtonType, isPressed: Bool, isEnabled: Bool) -> Color {
         switch type {
         case .primary, .alert, .primarySuccess:
@@ -153,7 +153,7 @@ private extension PrimaryButtonStyle {
              }
         }
     }
-    
+
     func borderWidth(for type: ButtonType) -> CGFloat {
         switch type {
         case .primary, .alert, .primarySuccess: return 0

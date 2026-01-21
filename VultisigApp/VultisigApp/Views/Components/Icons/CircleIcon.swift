@@ -10,7 +10,7 @@ import SwiftUI
 struct CircleIcon: View {
     let icon: String
     let color: Color
-    
+
     var body: some View {
         Icon(
             named: icon,

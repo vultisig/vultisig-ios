@@ -19,7 +19,7 @@ enum ChainType: Codable, CustomStringConvertible {
     case Ton
     case Ripple
     case Tron
-    
+
     var description: String {
         switch self {
         case .UTXO:

@@ -10,20 +10,20 @@ import WalletCore
 
 struct EditAddressBookScreen: View {
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
-    
+
     let addressBookItem: AddressBookItem
-    
+
     @State var title = ""
     @State var address = ""
     @State var selectedChain: AddressBookChainType = .evm
-    
+
     @State var alertTitle = ""
     @State var alertMessage = ""
     @State var showAlert = false
     @State var presentSelector = false
-    
+
     @Environment(\.dismiss) var dismiss
-    
+
     var body: some View {
         Screen(title: "editAddress".localized) {
             VStack {
@@ -46,7 +46,7 @@ struct EditAddressBookScreen: View {
             )
         }
     }
-    
+
     var fields: some View {
         ScrollView {
             VStack(spacing: 12) {
@@ -56,16 +56,16 @@ struct EditAddressBookScreen: View {
             }
         }
     }
-    
+
     @ViewBuilder
     var tokenSelector: some View {
         AddressBookChainSelector(selectedChain: $selectedChain, presentSelector: $presentSelector)
     }
-    
+
     var titleField: some View {
         AddressBookTextField(title: "title", text: $title)
     }
-    
+
     var addressField: some View {
         AddressBookTextField(
             title: "address",
@@ -74,13 +74,13 @@ struct EditAddressBookScreen: View {
             isScrollable: true
         )
     }
-    
+
     var button: some View {
         PrimaryButton(title: "saveAddress") {
             saveAddress()
         }
     }
-    
+
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString(alertTitle, comment: "")),
@@ -88,40 +88,40 @@ struct EditAddressBookScreen: View {
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
-    
+
     private func setData() {
         title = addressBookItem.title
         address = addressBookItem.address
         selectedChain = .init(coinMeta: addressBookItem.coinMeta)
     }
-    
+
     private func saveAddress() {
         guard !title.isEmpty && !address.isEmpty else {
             toggleAlert()
             return
         }
-        
+
         guard AddressService.validateAddress(address: address, chain: selectedChain.chain) else {
             toggleAlertInvalidAddress()
             return
         }
-        
+
         let coin = coinSelectionViewModel.groupedAssets[selectedChain.chain]?.first
         guard let coin else { return }
-        
+
         addressBookItem.title = title
         addressBookItem.address = address
         addressBookItem.coinMeta = coin
-        
+
         dismiss()
     }
-    
+
     private func toggleAlert() {
         alertTitle = "emptyField"
         alertMessage = "checkEmptyField"
         showAlert = true
     }
-    
+
     private func toggleAlertInvalidAddress() {
         alertTitle = "error"
         alertMessage = "invalidAddressChain"

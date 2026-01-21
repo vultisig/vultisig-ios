@@ -9,7 +9,7 @@ import WalletCore
 import VultisigCommonData
 
 enum THORChainHelper {
-    
+
     /// Validates and returns an AnyAddress for THORChain or Stagenet based on the chain type
     private static func validateThorchainAddress(_ address: String, chain: Chain) throws -> AnyAddress {
         if chain == .thorChainStagenet {
@@ -24,7 +24,7 @@ enum THORChainHelper {
             return addr
         }
     }
-    
+
     static func getSwapPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard case .THORChain(let accountNumber, let sequence, _, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number, sequence, or fee")
@@ -35,9 +35,9 @@ enum THORChainHelper {
         guard let swapPayload = keysignPayload.swapPayload else {
             throw HelperError.runtimeError("swap payload is missing")
         }
-        
+
         let fromAddr = try validateThorchainAddress(keysignPayload.coin.address, chain: keysignPayload.coin.chain)
-        
+
         var chainID = keysignPayload.coin.coinType.chainId
         let service = ThorchainServiceFactory.getService(for: keysignPayload.coin.chain)
         if chainID != service.network && !service.network.isEmpty {
@@ -69,10 +69,10 @@ enum THORChainHelper {
             }]
             $0.fee = try getFee(keysignPayload: keysignPayload)
         }
-        
+
         return try input.serializedData()
     }
-    
+
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         switch keysignPayload.coin.chain {
         case .thorChain, .thorChainStagenet:
@@ -93,11 +93,11 @@ enum THORChainHelper {
         if chainID != service.network && !service.network.isEmpty {
             chainID = service.network
         }
-        
+
         let transactionType = VSTransactionType(rawValue: transactionTypeRawValue) ?? .unspecified
         let messages: [WalletCore.CosmosMessage]
         var memo = keysignPayload.memo
-        
+
         if let signDataMessagesResult = try CosmosSignDataBuilder.getMessages(keysignPayload: keysignPayload) {
             messages = signDataMessagesResult.messages
             memo = signDataMessagesResult.memo
@@ -110,7 +110,7 @@ enum THORChainHelper {
             } else {
                 messages = [buildThorchainDepositMessage(keysignPayload: keysignPayload, fromAddress: fromAddr)]
             }
-            
+
         } else {
             if transactionType == .genericContract {
                 messages = [try WalletCore.CosmosMessage.with {
@@ -121,7 +121,7 @@ enum THORChainHelper {
                 messages = [try buildThorchainSendMessage(keysignPayload: keysignPayload, fromAddress: fromAddr)]
             }
         }
-        
+
         let input = try CosmosSigningInput.with {
             $0.publicKey = pubKeyData
             $0.signingMode = CosmosSignDataBuilder.getSigningMode(keysignPayload: keysignPayload)
@@ -137,7 +137,7 @@ enum THORChainHelper {
         }
         return try input.serializedData()
     }
-    
+
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .thorchain, txInputData: inputData)
@@ -147,14 +147,14 @@ enum THORChainHelper {
         }
         return [preSigningOutput.dataHash.hexString]
     }
-    
+
     static func getSignedTransaction(keysignPayload: KeysignPayload,
                                      signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let signedTransaction = try getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
         return signedTransaction
     }
-    
+
     static func getSignedTransaction(
         coinHexPublicKey: String,
         inputData: Data,
@@ -165,7 +165,7 @@ enum THORChainHelper {
         else {
             throw HelperError.runtimeError("public key \(coinHexPublicKey) is invalid")
         }
-        
+
         do {
             let hashes = TransactionCompiler.preImageHashes(coinType: .thorchain, txInputData: inputData)
             let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
@@ -176,7 +176,7 @@ enum THORChainHelper {
             guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
                 throw HelperError.runtimeError("fail to verify signature")
             }
-            
+
             allSignatures.add(data: signature)
             publicKeys.add(data: pubkeyData)
             let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .thorchain,
@@ -192,10 +192,10 @@ enum THORChainHelper {
             throw HelperError.runtimeError("fail to get signed thorchain transaction,error:\(error.localizedDescription)")
         }
     }
-    
+
     private static func buildThorchainWasmGenericMessage(keysignPayload: KeysignPayload, transactionType: VSTransactionType) throws -> WalletCore.CosmosMessage.WasmExecuteContractGeneric {
         let fromAddr = try validateThorchainAddress(keysignPayload.coin.address, chain: keysignPayload.coin.chain)
-        
+
         let wasmGenericMessage = try WalletCore.CosmosMessage.WasmExecuteContractGeneric.with {
             $0.senderAddress = fromAddr.description
             $0.contractAddress = keysignPayload.toAddress
@@ -204,7 +204,7 @@ enum THORChainHelper {
                 guard let memo = keysignPayload.memo?.lowercased() else {
                     throw HelperError.runtimeError("Missing memo for \(transactionType.rawValue)")
                 }
-                
+
                 $0.executeMsg = """
                     { "deposit": {} }
                     """
@@ -228,7 +228,7 @@ enum THORChainHelper {
                 guard let contractPayload = keysignPayload.wasmExecuteContractPayload else {
                     throw HelperError.runtimeError("Invalid empty WasmExecuteContractPayload")
                 }
-                
+
                 let coins = contractPayload.coins.map { coin in
                     CosmosAmount.with {
                         $0.denom = coin.denom
@@ -243,16 +243,16 @@ enum THORChainHelper {
                 throw HelperError.runtimeError("Invalid tx type for WasmGenericMessage: \(transactionType.rawValue)")
             }
         }
-        
+
         return wasmGenericMessage
     }
-    
+
     private static func buildThorchainDepositMessage(keysignPayload: KeysignPayload, fromAddress: AnyAddress) -> WalletCore.CosmosMessage {
         let symbol = getTicker(coin: keysignPayload.coin)
         let assetTicker = getTicker(coin: keysignPayload.coin)
         let chainName = getChainName(coin: keysignPayload.coin)
         let isSecured = isSecuredAsset(coin: keysignPayload.coin)
-        
+
         let coin = CosmosTHORChainCoin.with {
             $0.asset = TW_Cosmos_Proto_THORChainAsset.with {
                 $0.chain = chainName
@@ -266,7 +266,7 @@ enum THORChainHelper {
                 $0.decimals = Int64(keysignPayload.coin.decimals)
             }
         }
-        
+
         return WalletCore.CosmosMessage.with {
             $0.thorchainDepositMessage = WalletCore.CosmosMessage.THORChainDeposit.with {
                 $0.signer = fromAddress.data
@@ -277,10 +277,10 @@ enum THORChainHelper {
             }
         }
     }
-    
+
     private static func buildThorchainSendMessage(keysignPayload: KeysignPayload, fromAddress: AnyAddress) throws -> WalletCore.CosmosMessage {
         let toAddress = try validateThorchainAddress(keysignPayload.toAddress, chain: keysignPayload.coin.chain)
-        
+
         return WalletCore.CosmosMessage.with {
             $0.thorchainSendMessage = WalletCore.CosmosMessage.THORChainSend.with {
                 $0.fromAddress = fromAddress.data
@@ -292,25 +292,25 @@ enum THORChainHelper {
             }
         }
     }
-    
+
     private static func getTicker(coin: Coin) -> String {
         coin.isNativeToken ? "RUNE" : getNotNativeTicker(coin: coin)
     }
-    
+
     private static func getNotNativeTicker(coin: Coin) -> String {
         return coin.ticker.uppercased().replacingOccurrences(of: "X/", with: "")
     }
-    
+
     /// Returns the list of secured asset tickers
     private static var securedAssetsTickers: [String] {
         return ["BTC", "ETH", "BCH", "LTC", "DOGE", "AVAX", "BNB"]
     }
-    
+
     /// Checks if a coin is a secured asset
     private static func isSecuredAsset(coin: Coin) -> Bool {
         return securedAssetsTickers.contains(coin.ticker.uppercased()) && !coin.isNativeToken
     }
-    
+
     /// Gets the appropriate chain name for a coin in THORChain context
     /// - For secured assets: returns the chain ticker (e.g., "BTC", "ETH", "DOGE")
     /// - For BNB secured assets: returns "BSC"
@@ -319,23 +319,23 @@ enum THORChainHelper {
         guard isSecuredAsset(coin: coin) else {
             return "THOR"
         }
-        
+
         let ticker = coin.ticker.uppercased()
-        
+
         // BNB uses BSC chain
         if ticker == "BNB" {
             return "BSC"
         }
-        
+
         // For other secured assets, use the coin's ticker THOR-DOGE will return DOGE
         return ticker
     }
-    
+
     static func getFee(keysignPayload: KeysignPayload) throws -> WalletCore.CosmosFee {
         if let signDataFee = try CosmosSignDataBuilder.getFee(keysignPayload: keysignPayload) {
             return signDataFee
         }
-        
+
         return WalletCore.CosmosFee.with {
             $0.gas = 20_000_000
         }
@@ -346,7 +346,7 @@ private extension VSTransactionType {
     var isGenericWasmMessage: Bool {
         isMergeOrUnMerge || self == .genericContract
     }
-    
+
     var isMergeOrUnMerge: Bool {
         self == .thorMerge  || self == .thorUnmerge
     }

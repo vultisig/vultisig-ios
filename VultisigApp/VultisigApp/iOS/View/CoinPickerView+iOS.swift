@@ -32,17 +32,17 @@ extension CoinPickerView {
             }
         }
     }
-    
+
     var main: some View {
         view
     }
-    
+
     var view: some View {
         VStack(alignment: .leading, spacing: 0) {
             searchBar
                 .padding(.horizontal, 12)
                 .padding(.top, 24)
-            
+
             ScrollView {
                 scrollView
                     .padding(.horizontal, 12)

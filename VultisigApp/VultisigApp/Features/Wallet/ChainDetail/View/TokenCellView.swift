@@ -10,7 +10,7 @@ import SwiftUI
 struct TokenCellView: View {
     @ObservedObject var coin: Coin
     @EnvironmentObject var homeViewModel: HomeViewModel
-        
+
     var body: some View {
         HStack {
             HStack(spacing: 12) {
@@ -20,7 +20,7 @@ struct TokenCellView: View {
                     ticker: coin.chain.ticker,
                     tokenChainLogo: coin.chain.logo
                 )
-                
+
                 VStack(alignment: .leading, spacing: 4) {
                     Text(coin.ticker)
                         .font(Theme.fonts.bodySMedium)

@@ -10,9 +10,9 @@ import SwiftUI
 struct DefiChainAvailableNodesView: View {
     let availableNodes: [BondNode]
     var onBond: (BondNode) -> Void
-    
+
     @State private var isExpanded = false
-    
+
     var body: some View {
         ContainerView {
             ExpandableView(isExpanded: $isExpanded) {
@@ -21,7 +21,7 @@ struct DefiChainAvailableNodesView: View {
                         .foregroundStyle(Theme.colors.textSecondary)
                         .font(Theme.fonts.bodySMedium)
                     Spacer()
-                    
+
                     Icon(named: "chevron-down", color: Theme.colors.textPrimary, size: 20)
                         .rotationEffect(.radians(isExpanded ? .pi : .zero))
                         .animation(.interpolatingSpring, value: isExpanded)
@@ -44,7 +44,7 @@ struct DefiChainAvailableNodesView: View {
             }
         }
     }
-    
+
     func nodeView(for node: BondNode) -> some View {
         VStack(spacing: 14) {
             HStack {

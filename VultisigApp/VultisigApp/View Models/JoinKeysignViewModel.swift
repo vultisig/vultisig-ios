@@ -24,12 +24,12 @@ enum JoinKeysignStatus {
 
 @MainActor
 class JoinKeysignViewModel: ObservableObject {
-    
+
     private let logger = Logger(subsystem: "join-keysign", category: "viewmodel")
-    
+
     var vault: Vault
     var serviceDelegate: ServiceDelegate?
-    
+
     @Published var isShowingScanner = false
     @Published var sessionID: String = ""
     @Published var keysignMessages = [String]()
@@ -44,24 +44,24 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var serverAddress: String? = nil
     @Published var useVultisigRelay = false
     @Published var isCameraPermissionGranted: Bool? = nil
-    
+
     @Published var decodedMemo: String?
     @Published var decodedFunctionSignature: String?
     @Published var decodedFunctionArguments: String?
-        
+
     var encryptionKeyHex: String = ""
     var payloadID: String = ""
-    
+
     var memo: String? {
         guard let decodedMemo = decodedMemo, !decodedMemo.isEmpty else {
             return keysignPayload?.memo
         }
-        
+
         return decodedMemo
     }
-    
+
     private let gasViewModel = JoinKeysignGasViewModel()
-    
+
     init() {
         self.vault = Vault(name: "Main Vault")
         self.isShowingScanner = false
@@ -79,7 +79,7 @@ class JoinKeysignViewModel: ObservableObject {
         let decimalAmount = fromCoin.decimal(for: amount)
         return "\(decimalAmount.formatForDisplay()) \(fromCoin.ticker)"
     }
-    
+
     private func fetchVaults() -> [Vault] {
         let fetchVaultDescriptor = FetchDescriptor<Vault>()
         do {
@@ -89,27 +89,27 @@ class JoinKeysignViewModel: ObservableObject {
             return []
         }
     }
-    
+
     func setData(vault: Vault, serviceDelegate: ServiceDelegate, isCameraPermissionGranted: Bool) {
         self.vault = vault
         self.serviceDelegate = serviceDelegate
         self.isCameraPermissionGranted = isCameraPermissionGranted
-        
+
         if !self.vault.localPartyID.isEmpty {
             self.localPartyID = self.vault.localPartyID
         } else {
             self.localPartyID = Utils.getLocalDeviceIdentity()
         }
-        
+
         if let isAllowed = self.isCameraPermissionGranted, !isAllowed {
             status = .KeysignNoCameraAccess
         }
     }
-    
+
     func startScan() {
         self.isShowingScanner = true
     }
-    
+
     func joinKeysignCommittee() {
         guard let serverURL = serverAddress else {
             return logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
@@ -117,7 +117,7 @@ class JoinKeysignViewModel: ObservableObject {
         guard !sessionID.isEmpty else {
             return logger.error("Session ID has not been acquired. Please scan the QR code again.")
         }
-        
+
         Utils.sendRequest(
             urlString: "\(serverURL)/\(sessionID)",
             method: "POST",
@@ -135,21 +135,21 @@ class JoinKeysignViewModel: ObservableObject {
             }
         }
     }
-    
+
     func setStatus(status: JoinKeysignStatus) {
         self.status = status
     }
-    
+
     func discoverService() {
         self.netService = NetService(domain: "local.", type: "_http._tcp.", name: self.serviceName)
         self.netService?.delegate = self.serviceDelegate
         self.netService?.resolve(withTimeout: 10)
     }
-    
+
     func stopJoiningKeysign() {
         self.status = .DiscoverSigningMsg
     }
-    
+
     func waitForKeysignStart() async {
         do {
             let t = Task {
@@ -163,7 +163,7 @@ class JoinKeysignViewModel: ObservableObject {
             self.logger.error("Failed to wait for keysign to start.")
         }
     }
-    
+
     private func checkKeysignStarted() {
         guard let serverURL = serverAddress else {
             self.logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
@@ -173,7 +173,7 @@ class JoinKeysignViewModel: ObservableObject {
             self.logger.error("Session ID has not been acquired. Please scan the QR code again.")
             return
         }
-        
+
         let urlString = "\(serverURL)/start/\(sessionID)"
         Utils.getRequest(urlString: urlString,
                          headers: nil,
@@ -208,7 +208,7 @@ class JoinKeysignViewModel: ObservableObject {
             }
         })
     }
-    
+
     func prepareKeysignMessages(keysignPayload: KeysignPayload) {
         do {
             let keysignFactory = KeysignMessageFactory(payload: keysignPayload)
@@ -224,16 +224,16 @@ class JoinKeysignViewModel: ObservableObject {
             self.status = .FailedToStart
         }
     }
-    
+
     func prepareKeysignMessages(customMessagePayload: CustomMessagePayload) {
         self.keysignMessages = customMessagePayload.keysignMessages
     }
-    
+
     func handleQrCodeSuccessResult(data: String?) async {
         guard let data else {
             return
         }
-        
+
         do {
             let keysignMsg: KeysignMessage = try ProtoSerializer.deserialize(base64EncodedString: data)
             self.sessionID = keysignMsg.sessionID
@@ -242,7 +242,7 @@ class JoinKeysignViewModel: ObservableObject {
             self.serviceName = keysignMsg.serviceName
             self.encryptionKeyHex = keysignMsg.encryptionKeyHex
             self.logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")
-            
+
             var vaultPublicKeyECDSAInQrCode: String = .empty
             // Decode custom message if present
             if let customMessage = keysignMsg.customMessagePayload {
@@ -253,7 +253,7 @@ class JoinKeysignViewModel: ObservableObject {
                     vaultPublicKeyECDSAInQrCode = customMessage.vaultPublicKeyECDSA
                 }
             }
-            
+
             if let keysignPayload = keysignMsg.payload {
                 vaultPublicKeyECDSAInQrCode = keysignPayload.vaultPubKeyECDSA
             }
@@ -268,35 +268,35 @@ class JoinKeysignViewModel: ObservableObject {
                     logger.info("Auto-selected correct vault: \(correctVault.name) with pubKey: \(correctVault.pubKeyECDSA)")
                 }
             }
-            
+
             if let payload = keysignMsg.payload {
                 self.prepareKeysignMessages(keysignPayload: payload)
             }
             if let payload = keysignMsg.customMessagePayload {
                 self.prepareKeysignMessages(customMessagePayload: payload)
             }
-            
+
             self.payloadID = keysignMsg.payloadID
             self.useVultisigRelay = keysignMsg.useVultisigRelay
-            
+
             if useVultisigRelay {
                 self.serverAddress = Endpoint.vultisigRelay
             }
-            
+
             await ensureKeysignPayload()
         } catch {
             self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
             self.status = .FailedToStart
         }
     }
-    
+
     func manageQrCodeStates() {
         if let keysignPayload {
             if vault.pubKeyECDSA != keysignPayload.vaultPubKeyECDSA {
                 self.status = .VaultMismatch
                 return
             }
-            
+
             if vault.localPartyID == keysignPayload.vaultLocalPartyID {
                 self.status = .KeysignSameDeviceShare
                 return
@@ -317,7 +317,7 @@ class JoinKeysignViewModel: ObservableObject {
             self.status = .DiscoverService
         }
     }
-    
+
     func ensureKeysignPayload() async {
         if self.payloadID.isEmpty || self.keysignPayload != nil {
             return
@@ -325,7 +325,7 @@ class JoinKeysignViewModel: ObservableObject {
         guard let serverAddress else {
             return
         }
-        
+
         let payloadService = PayloadService(serverURL: serverAddress)
         do {
             let payload = try await payloadService.getPayload(hash: self.payloadID)
@@ -337,12 +337,12 @@ class JoinKeysignViewModel: ObservableObject {
             self.status = .FailedToStart
         }
     }
-    
+
     func handleDeeplinkScan(_ url: URL?) {
         guard let url else {
             return
         }
-        
+
         guard let data = DeeplinkViewModel.getJsonData(url) else {
             return
         }
@@ -352,9 +352,9 @@ class JoinKeysignViewModel: ObservableObject {
                 self.manageQrCodeStates()
             }
         }
-        
+
     }
-    
+
     func loadThorchainID() async {
         do {
             _ = try await ThorchainService.shared.getTHORChainChainID()
@@ -362,26 +362,26 @@ class JoinKeysignViewModel: ObservableObject {
             logger.error("fail to get thorchain network id, \(error.localizedDescription)")
         }
     }
-    
+
     func loadFunctionName() async {
         guard let memo = keysignPayload?.memo, !memo.isEmpty else {
             return
         }
-        
+
         // 1. Attempt to get structured parameters (Generic 4byte path)
         var parsedParams: ParsedMemoParams? = nil
         if keysignPayload?.coin.chainType == .EVM, memo.hasPrefix("0x") {
              parsedParams = await MemoDecodingService.shared.getParsedMemo(memo: memo)
         }
-        
+
         // 2. Get the full string representation from the existing extension service
         // This handles known selectors (Transfer, Approve), Kyber, etc.
         let extensionDecoded = await memo.decodedExtensionMemoAsync()
-        
+
         DispatchQueue.main.async {
             // Default to showing the extension decoded string as the Memo
             self.decodedMemo = extensionDecoded
-            
+
             // 3. Decide if we should show the enhanced Split View (Signature + Arguments)
             if let p = parsedParams, let extStr = extensionDecoded {
                 // Heuristic: If the extension string contains "Parameters:", it likely came from
@@ -409,11 +409,11 @@ class JoinKeysignViewModel: ObservableObject {
             }
         }
     }
-    
+
     var providerName: String {
         keysignPayload?.swapPayload?.providerName ?? .empty
     }
-    
+
     func getFromAmount() -> String {
         guard let payload = keysignPayload?.swapPayload else { return .empty }
         let amount = payload.fromCoin.decimal(for: payload.fromAmount)
@@ -424,14 +424,14 @@ class JoinKeysignViewModel: ObservableObject {
         guard let payload = keysignPayload?.swapPayload else { return .empty }
         let amount = payload.toAmountDecimal
         return "\(amount.formatForDisplay()) \(payload.toCoin.ticker)"
-        
+
     }
-    
+
     func getCalculatedNetworkFee() -> (feeCrypto: String, feeFiat: String) {
         guard let keysignPayload else { return (.empty, .empty) }
         return gasViewModel.getCalculatedNetworkFee(payload: keysignPayload)
     }
-    
+
     func getJoinedCalculatedNetworkFee() -> String {
         guard let keysignPayload else { return "" }
         return gasViewModel.getJoinedCalculatedNetworkFee(payload: keysignPayload)

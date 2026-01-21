@@ -12,9 +12,9 @@ struct Screen<Content: View>: View {
     let edgeInsets: ScreenEdgeInsets
     let showNavigationBar: Bool
     let backgroundType: BackgroundType
-    
+
     let content: () -> Content
-    
+
     init(
         title: String = "",
         showNavigationBar: Bool = true,
@@ -28,13 +28,13 @@ struct Screen<Content: View>: View {
         self.backgroundType = backgroundType
         self.content = content
     }
-    
+
     var body: some View {
         container
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(backgroundView.ignoresSafeArea())
     }
-    
+
     @ViewBuilder
     var container: some View {
 #if os(macOS)
@@ -51,7 +51,7 @@ struct Screen<Content: View>: View {
             }
 #endif
     }
-    
+
     var contentContainer: some View {
         content()
             .padding(.top, edgeInsets.top ?? verticalPadding)
@@ -59,7 +59,7 @@ struct Screen<Content: View>: View {
             .padding(.leading, edgeInsets.leading ?? horizontalPadding)
             .padding(.trailing, edgeInsets.trailing ?? horizontalPadding)
     }
-    
+
     var horizontalPadding: CGFloat {
         #if os(iOS)
             return 16
@@ -67,9 +67,9 @@ struct Screen<Content: View>: View {
             return 40
         #endif
     }
-    
+
     var verticalPadding: CGFloat { 12 }
-    
+
     @ViewBuilder
     var backgroundView: some View {
         switch backgroundType {
@@ -79,7 +79,7 @@ struct Screen<Content: View>: View {
             VaultMainScreenBackground()
         }
     }
-    
+
     enum BackgroundType {
         case plain
         case gradient

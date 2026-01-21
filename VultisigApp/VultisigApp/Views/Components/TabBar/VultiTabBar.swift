@@ -13,9 +13,9 @@ struct VultiTabBar<Item: TabBarItem, Content: View>: View {
     var content: (Item) -> Content
     var accessory: Item?
     var onAccessory: (() -> Void)?
-    
+
     private let tabWidth: CGFloat = 88
-    
+
     init(
         selectedItem: Binding<Item>,
         items: [Item],
@@ -29,7 +29,7 @@ struct VultiTabBar<Item: TabBarItem, Content: View>: View {
         self.accessory = accessory
         self.onAccessory = onAccessory
     }
-    
+
     var body: some View {
         Group {
 #if os(macOS)
@@ -64,7 +64,7 @@ private extension VultiTabBar {
                         tabBarItem(for: item)
                     }
                 }
-                
+
                 if let accessory {
                     Tab(value: accessory, role: .search) {
                         EmptyView()
@@ -83,7 +83,7 @@ private extension VultiTabBar {
     var selectedTabIndex: Int {
         items.firstIndex(where: { $0.id == selectedItem.id }) ?? 0
     }
-    
+
     var legacyTabBar: some View {
         ZStack(alignment: .bottom) {
             TabView(selection: $selectedItem) {
@@ -93,7 +93,7 @@ private extension VultiTabBar {
                         #if os(iOS)
                         .tabItem { tabBarItem(for: item) }
                         #endif
-                        
+
                 }
                 #if os(iOS)
                 .toolbar(.hidden, for: .tabBar)
@@ -117,7 +117,7 @@ private extension VultiTabBar {
         }
         .ignoresSafeArea(.all)
     }
-    
+
     var bottomGradient: some View {
         LinearGradient(
             stops: [
@@ -132,11 +132,11 @@ private extension VultiTabBar {
         .frame(height: 80)
         .ignoresSafeArea(.all)
     }
-    
+
     var customTabBar: some View {
         ZStack(alignment: .leading) {
             selectedTabPill
-            
+
             HStack(spacing: 0) {
                 ForEach(Array(items.enumerated()), id: \.offset) { _, item in
                     Button { selectedItem = item } label: {
@@ -163,14 +163,14 @@ private extension VultiTabBar {
         .background(tabsBackground)
         .frame(height: 64)
     }
-    
+
     var selectedTabPill: some View {
         Group {
             if #available(iOS 26.0, macOS 26.0, *) {
                 Capsule()
                     .glassEffectTransition(.materialize)
                     .glassEffect(.regular.interactive())
-                    
+
             } else {
                 RoundedRectangle(cornerRadius: 99)
                     .fill(.white.opacity(0.06))
@@ -180,7 +180,7 @@ private extension VultiTabBar {
         .offset(x: CGFloat(selectedTabIndex) * tabWidth)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: selectedItem)
     }
-    
+
     var tabsBackground: some View {
         Group {
             if #available(iOS 26.0, macOS 26.0, *) {
@@ -198,7 +198,7 @@ private extension VultiTabBar {
             }
         }
     }
-    
+
     func tabBarItem(for tab: Item) -> some View {
         Label {
             Text(tab.name)
@@ -207,12 +207,12 @@ private extension VultiTabBar {
             Image(tab.icon)
         }
     }
-    
+
 }
 
 #Preview {
     let items = [HomeTab.wallet, .defi]
-    
+
     VultiTabBar(
         selectedItem: .constant(HomeTab.wallet),
         items: items,

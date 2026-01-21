@@ -17,46 +17,46 @@ final class VaultSetupViewModel: ObservableObject, Form {
         passwordConfirmField,
         hintField
     ]
-    
+
     @Published var emailField = FormField(
         label: "email".localized,
         placeholder: "enterYourEmail".localized,
         validators: [EmailValidator()]
     )
-    
+
     @Published var nameField = FormField(
         label: "vaultName".localized,
         placeholder: "enterVaultName".localized,
         validators: [VaultNameValidator()]
     )
-    
+
     @Published var passwordField = FormField(
         label: "password".localized,
         placeholder: "enterPassword".localized,
         validators: [RequiredValidator(errorMessage: "passwordIsRequired".localized)]
     )
-    
+
     @Published var passwordConfirmField = FormField(
         placeholder: "reEnterPassword".localized,
         validators: []
     )
-    
+
     @Published var hintField = FormField(
         placeholder: "enterHint".localized
     )
-    
+
     @Published var referralField = FormField(
         placeholder: "addFriendsReferral".localized
     )
-    
+
     var formCancellable: AnyCancellable?
     var cancellables = Set<AnyCancellable>()
     var task: Task<Void, Error>?
-    
+
     var vaultName: String {
         nameField.value
     }
-    
+
     var fastConfig: FastSignConfig {
         FastSignConfig(
             email: emailField.value,
@@ -65,10 +65,10 @@ final class VaultSetupViewModel: ObservableObject, Form {
             isExist: false
         )
     }
-    
+
     func onLoad() {
         setupForm()
-        
+
         passwordConfirmField.validators = [
             ClosureValidator(action: { [weak self] value in
                 guard let self else { return }
@@ -77,7 +77,7 @@ final class VaultSetupViewModel: ObservableObject, Form {
                 }
             })
         ]
-        
+
         referralField.$value
             .debounce(for: 0.3, scheduler: DispatchQueue.main)
             .sink(weak: self) { viewModel, value in
@@ -85,12 +85,12 @@ final class VaultSetupViewModel: ObservableObject, Form {
                     viewModel.referralField.error = nil
                     return
                 }
-                
+
                 guard value.count <= 4 else {
                     viewModel.referralField.error = "referralLaunchCodeLengthError".localized
                     return
                 }
-                
+
                 viewModel.task?.cancel()
                 viewModel.task = Task {
                     do {
@@ -104,23 +104,23 @@ final class VaultSetupViewModel: ObservableObject, Form {
                 }
             }
             .store(in: &cancellables)
-        
+
     }
-    
+
     func isPasswordConfirmValid(value: String) -> Bool {
         passwordField.value.isNotEmpty && value == passwordField.value
     }
-    
+
     func getVault(keyImportInput: KeyImportInput?) -> Vault {
         let vault = Vault(
             name: vaultName,
             libType: keyImportInput != nil ? .KeyImport : nil,
         )
-        
+
         if referralField.value.isNotEmpty, referralField.valid {
             vault.referredCode = ReferredCode(code: referralField.value, vault: vault)
         }
-        
+
         return vault
     }
 }

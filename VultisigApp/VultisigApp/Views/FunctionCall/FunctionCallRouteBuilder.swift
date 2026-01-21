@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct FunctionCallRouteBuilder {
-    
+
     @ViewBuilder
     func buildDetailsScreen(
         defaultCoin: Coin?,
@@ -21,12 +21,12 @@ struct FunctionCallRouteBuilder {
             defaultCoin: defaultCoin
         )
     }
-    
+
     @ViewBuilder
     func buildVerifyScreen(tx: SendTransaction, vault: Vault) -> some View {
         FunctionCallVerifyScreen(tx: tx, vault: vault)
     }
-    
+
     @ViewBuilder
     func buildPairScreen(
         vault: Vault,
@@ -41,7 +41,7 @@ struct FunctionCallRouteBuilder {
             fastVaultPassword: fastVaultPassword
         )
     }
-    
+
     @ViewBuilder
     func buildKeysignScreen(input: KeysignInput, tx: SendTransaction) -> some View {
         SendKeysignScreen(input: input, tx: tx)

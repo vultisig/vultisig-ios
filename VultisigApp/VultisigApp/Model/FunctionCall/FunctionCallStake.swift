@@ -11,13 +11,13 @@ import Combine
 class FunctionCallStake: FunctionCallAddressable, ObservableObject {
     @Published var amount: Decimal = 0
     @Published var nodeAddress: String = ""
-    
+
     // Internal
     @Published var amountValid: Bool = false
     @Published var nodeAddressValid: Bool = false
     @Published var isTheFormValid: Bool = false
     @Published var customErrorMessage: String? = nil
-    
+
     var addressFields: [String: String] {
         get {
             let fields = ["nodeAddress": nodeAddress]
@@ -29,29 +29,29 @@ class FunctionCallStake: FunctionCallAddressable, ObservableObject {
             }
         }
     }
-    
+
     private var cancellables = Set<AnyCancellable>()
     private var tx: SendTransaction?
-    
+
     required init() {
     }
-    
+
     convenience init(tx: SendTransaction) {
         self.init()
         self.tx = tx
         self.amount = tx.coin.balanceDecimal
     }
-    
+
     func initialize() {
         setupValidation()
     }
-    
+
     var balance: String {
         guard let tx = tx else { return "( Balance: 0 TON )" }
         let balance = tx.coin.balanceDecimal.formatForDisplay()
         return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
     }
-    
+
     private func setupValidation() {
         $amount
             .removeDuplicates()
@@ -60,24 +60,24 @@ class FunctionCallStake: FunctionCallAddressable, ObservableObject {
                 self?.validateAmount()
             }
             .store(in: &cancellables)
-        
+
         Publishers.CombineLatest($amountValid, $nodeAddressValid)
             .map { $0 && $1 && !self.amount.isZero }
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }
-    
+
     private func validateAmount() {
         guard let tx = tx else {
             amountValid = false
             customErrorMessage = "Transaction not available"
             return
         }
-        
+
         let balance = tx.coin.balanceDecimal
         let isValidAmount = amount > 0 && amount <= balance
         amountValid = isValidAmount
-        
+
         if amount <= 0 {
             amountValid = false
             self.customErrorMessage = NSLocalizedString("insufficientBalanceForFunctions", comment: "Error message when amount is invalid")
@@ -88,22 +88,22 @@ class FunctionCallStake: FunctionCallAddressable, ObservableObject {
             self.customErrorMessage = nil
         }
     }
-    
+
     var description: String {
         return toString()
     }
-    
+
     func toString() -> String {
         return "d"
     }
-    
+
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("nodeAddress", self.nodeAddress)
         dict.set("memo", self.toString())
         return dict
     }
-    
+
     func getView() -> AnyView {
         AnyView(VStack(alignment: .leading, spacing: 12) {
             FunctionCallAddressTextField(
@@ -114,7 +114,7 @@ class FunctionCallStake: FunctionCallAddressable, ObservableObject {
                     set: { self.nodeAddressValid = $0 }
                 )
             )
-            
+
             VStack(alignment: .leading, spacing: 8) {
                 StyledFloatingPointField(
                     label: NSLocalizedString("amount", comment: ""),
@@ -127,11 +127,11 @@ class FunctionCallStake: FunctionCallAddressable, ObservableObject {
                         get: { self.amountValid },
                         set: { self.amountValid = $0 }
                     ))
-                
+
                 Text(balance)
                     .font(.caption)
                     .foregroundColor(.secondary)
-                
+
                 if let errorMessage = customErrorMessage {
                     Text(errorMessage)
                         .font(.caption)

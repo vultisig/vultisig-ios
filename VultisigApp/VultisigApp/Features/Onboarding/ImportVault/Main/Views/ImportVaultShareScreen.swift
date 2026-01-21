@@ -11,13 +11,13 @@ import SwiftData
 struct ImportVaultShareScreen: View {
     @Environment(\.modelContext) private var context
     @StateObject var backupViewModel = EncryptedBackupViewModel()
-    
+
     @State var isUploading: Bool = false
-    
+
     @Query var vaults: [Vault]
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
     @EnvironmentObject var appViewModel: AppViewModel
-    
+
     var body: some View {
         Screen(title: "importVault".localized) {
             content
@@ -41,7 +41,7 @@ struct ImportVaultShareScreen: View {
             resetData()
         }
     }
-    
+
     var view: some View {
         VStack(spacing: 15) {
             Spacer()
@@ -56,14 +56,14 @@ struct ImportVaultShareScreen: View {
             continueButton
         }
     }
-    
+
     var instruction: some View {
         Text(NSLocalizedString("supportedFileTypesUpload", comment: ""))
             .font(Theme.fonts.caption12)
             .foregroundColor(Theme.colors.textTertiary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     var resetButton: some View {
         Button {
             resetData()
@@ -73,7 +73,7 @@ struct ImportVaultShareScreen: View {
                 .background(Circle().fill(Theme.colors.bgSurface2))
         }
     }
-    
+
     var uploadSection: some View {
         Button {
             backupViewModel.showVaultImporter.toggle()
@@ -86,32 +86,32 @@ struct ImportVaultShareScreen: View {
         .buttonStyle(PlainButtonStyle())
         .background(Color.clear)
     }
-    
+
     var continueButton: some View {
         PrimaryButton(title: "continue") {
             handleButtonTap()
         }
         .disabled(!backupViewModel.isFileUploaded)
     }
-    
+
     private func setData() {
         resetData()
-        
+
         if let data = vultExtensionViewModel.documentData, let url = data.fileURL {
             backupViewModel.handleFileDocument(url)
             vultExtensionViewModel.documentData = nil
         }
-        
+
         if let url = vultExtensionViewModel.documentUrl {
             backupViewModel.handleFileDocument(url)
             vultExtensionViewModel.documentUrl = nil
         }
     }
-    
+
     private func resetData() {
         backupViewModel.resetData()
     }
-    
+
     private func handleButtonTap() {
         // Check if this is a multiple vault import from zip
         if backupViewModel.isMultipleVaultImport {
@@ -126,7 +126,7 @@ struct ImportVaultShareScreen: View {
                 vaults: vaults
             )
         }
-        
+
         if !backupViewModel.showAlert {
             vultExtensionViewModel.showImportView = false
         }

@@ -33,7 +33,7 @@ public extension String {
         let base64Data = encrypt.base64EncodedData()
         return String(data: base64Data, encoding: .utf8)
     }
-    
+
     func aesDecrypt(key: String) -> String? {
         guard
             let data = Data(base64Encoded: self),
@@ -80,10 +80,10 @@ public extension Data {
         }
         return iv + cliphertext
     }
-    
+
     /// Decrypts self, where self is the IV then the ciphertext.
     /// Key can be 128/192/256 bits.
-    func decryptAES256(key: Data,  options: Int = kCCOptionPKCS7Padding) -> Data? {
+    func decryptAES256(key: Data, options: Int = kCCOptionPKCS7Padding) -> Data? {
         guard count > kCCBlockSizeAES128 else { return nil }
         let iv = prefix(kCCBlockSizeAES128)
         let ciphertext = suffix(from: kCCBlockSizeAES128)
@@ -94,7 +94,7 @@ public extension Data {
                         initializationVector: iv,
                         dataIn: ciphertext)
     }
-    
+
     // swiftlint:disable:next function_parameter_count
     private func aesCrypt(operation: Int,
                           algorithm: Int,
@@ -124,7 +124,7 @@ public extension Data {
             }
         }
     }
-    
+
     func aesGCMEncrypt(key: Data) throws -> Data? {
         let symmetricKey = SymmetricKey(data: SHA256.hash(data: key))
         let nonce = AES.GCM.Nonce()
@@ -133,7 +133,7 @@ public extension Data {
         }
         return sealedBox.combined
     }
-    
+
     func aesGCMDecrypt(key: Data) throws -> Data {
         let symmetricKey = SymmetricKey(data: SHA256.hash(data: key))
         let sealedBox = try AES.GCM.SealedBox(combined: self)

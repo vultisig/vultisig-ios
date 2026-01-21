@@ -34,7 +34,7 @@ final class ServiceDelegate: NSObject, NetServiceDelegate, ObservableObject {
         logger.info("Service found: \(sender.name), \(sender.hostName ?? ""), port \(sender.port) in domain \(sender.domain)")
         serverURL = "http://\(ipAddress ?? sender.hostName ?? ""):\(sender.port)"
     }
-    
+
     public func netService(_ sender: NetService, didNotResolve errorDict: [String: NSNumber]) {
         logger.error("Failed to resolve service: \(sender.name) with error: \(errorDict)")
     }

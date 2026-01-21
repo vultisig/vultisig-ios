@@ -15,13 +15,13 @@ struct NavigationHomeEditButton: View {
     @Binding var isEditingVaults: Bool
     @Binding var isEditingFolders: Bool
     @Binding var showFolderDetails: Bool
-    
+
     var tint: Color = Theme.colors.textPrimary
-    
+
     @Query var folders: [Folder]
-    
+
     @Environment(\.modelContext) private var modelContext
-    
+
     var body: some View {
         ZStack {
             if showFolderDetails {
@@ -31,17 +31,17 @@ struct NavigationHomeEditButton: View {
             }
         }
     }
-    
+
     var folderHomeEditButton: some View {
         foldersListEditButton
             .showIf(showVaultsList)
     }
-    
+
     var vaultHomeEditButton: some View {
         vaultsListEditButton
             .showIf(showVaultsList)
     }
-    
+
     var vaultsListEditButton: some View {
         Button {
             withAnimation(.easeInOut) {
@@ -55,7 +55,7 @@ struct NavigationHomeEditButton: View {
             }
         }
     }
-    
+
     var foldersListEditButton: some View {
         ZStack {
             if isEditingFolders {
@@ -65,11 +65,11 @@ struct NavigationHomeEditButton: View {
             }
         }
     }
-    
+
     var editButton: some View {
         NavigationEditButton()
     }
-    
+
     var editFolderButton: some View {
         Button {
             withAnimation(.easeInOut) {
@@ -79,7 +79,7 @@ struct NavigationHomeEditButton: View {
             NavigationEditButton()
         }
     }
-    
+
     var deleteFolderButton: some View {
         Button {
             deleteFolder()
@@ -89,13 +89,13 @@ struct NavigationHomeEditButton: View {
                 .foregroundColor(Theme.colors.textPrimary)
         }
     }
-    
+
     var doneButton: some View {
         Text(NSLocalizedString("done", comment: ""))
             .foregroundColor(tint)
             .font(Theme.fonts.bodyLMedium)
     }
-    
+
     private func deleteFolder() {
         for folder in folders where folder == selectedFolder {
                 modelContext.delete(folder)
@@ -123,7 +123,7 @@ struct NavigationHomeEditButton: View {
                 isEditingFolders: .constant(true),
                 showFolderDetails: .constant(true)
             )
-            
+
             NavigationHomeEditButton(
                 vault: Vault.example,
                 showVaultsList: true,

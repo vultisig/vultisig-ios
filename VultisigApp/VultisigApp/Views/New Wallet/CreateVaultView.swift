@@ -24,7 +24,7 @@ struct CreateVaultView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var appViewModel: AppViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
-    
+
     init(selectedVault: Vault? = nil, showBackButton: Bool = false) {
         self.selectedVault = selectedVault
         self.showBackButton = showBackButton
@@ -66,11 +66,11 @@ struct CreateVaultView: View {
             setData()
         }
     }
-    
+
     var headerMac: some View {
         CreateVaultHeader(showBackButton: showBackButton)
     }
-    
+
     var view: some View {
         VStack(spacing: 0) {
             Spacer()
@@ -80,7 +80,7 @@ struct CreateVaultView: View {
             buttons
         }
     }
-    
+
     var buttons: some View {
         VStack(spacing: 16) {
             HStack(spacing: 8) {
@@ -97,7 +97,7 @@ struct CreateVaultView: View {
         .padding(.horizontal, 24)
         .padding(.vertical, 40)
     }
-    
+
     var newVaultButton: some View {
         PrimaryButton(title: "getStarted") {
             if appViewModel.showOnboarding {
@@ -111,7 +111,7 @@ struct CreateVaultView: View {
         .scaleEffect(showNewVaultButton ? 1 : 0.8)
         .animation(.spring(duration: 0.3), value: showNewVaultButton)
     }
-    
+
     var importVaultButton: some View {
         ZStack(alignment: .center) {
             PrimaryButton(
@@ -126,14 +126,14 @@ struct CreateVaultView: View {
                     router.navigate(to: OnboardingRoute.importVaultShare)
                 #endif
             }
-            
+
             #if DEBUG
                 newTag
                     .offset(x: 48)
             #endif
         }
     }
-    
+
     private var newTag: some View {
         HStack(spacing: 2) {
             Icon(
@@ -146,21 +146,21 @@ struct CreateVaultView: View {
                 .font(FontStyle.brockmanMedium.size(8))
         }
     }
-    
+
     private func setData() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             showNewVaultButton = true
         }
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             showSeparator = true
         }
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             showButtonStack = true
         }
     }
-    
+
     func createVault() -> Vault {
         let vaultName = Vault.getUniqueVaultName(modelContext: modelContext)
         return Vault(name: vaultName)

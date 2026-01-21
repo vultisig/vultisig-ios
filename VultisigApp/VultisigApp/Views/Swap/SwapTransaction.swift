@@ -20,7 +20,7 @@ class SwapTransaction: ObservableObject {
     @Published var fromCoin: Coin = .example
     @Published var toCoin: Coin = .example
     @Published var fromCoins: [Coin] = []
-    @Published var toCoins: [Coin] = [] 
+    @Published var toCoins: [Coin] = []
 
     func load(fromCoin: Coin, toCoin: Coin, fromCoins: [Coin], toCoins: [Coin]) {
         self.fromCoin = fromCoin
@@ -38,7 +38,7 @@ class SwapTransaction: ObservableObject {
         if fromCoin.chain == .mayaChain {
             return true
         }
-        
+
         return false
     }
 
@@ -46,7 +46,7 @@ class SwapTransaction: ObservableObject {
         switch quote {
         case .thorchain, .thorchainStagenet, .mayachain:
             return thorchainFee
-        case .oneinch(_ , let fee), .kyberswap(_, let fee), .lifi(_, let fee, _):
+        case .oneinch(_, let fee), .kyberswap(_, let fee), .lifi(_, let fee, _):
             return fee ?? 0
         case nil:
             return .zero
@@ -90,7 +90,7 @@ class SwapTransaction: ObservableObject {
 }
 
 extension SwapTransaction {
-    
+
     var fromAmountDecimal: Decimal {
         return fromAmount.toDecimal()
     }

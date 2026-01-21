@@ -22,7 +22,7 @@ extension JoinKeysignView {
             }
         }
     }
-    
+
     var main: some View {
         VStack {
             Spacer()

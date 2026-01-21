@@ -17,7 +17,7 @@ struct CommonTextEditor: View {
     @Binding var isValid: Bool?
     let showErrorText: Bool
     let accessory: String?
-    
+
     init(
         value: Binding<String>,
         placeholder: String,
@@ -37,7 +37,7 @@ struct CommonTextEditor: View {
         self.showErrorText = showErrorText
         self.accessory = accessory
     }
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             ZStack(alignment: .topLeading) {
@@ -53,7 +53,7 @@ struct CommonTextEditor: View {
                         .onSubmit {
                             onSubmit()
                         }
-                    
+
                     if !value.isEmpty {
                         VStack {
                             clearButton
@@ -69,7 +69,7 @@ struct CommonTextEditor: View {
                         .padding(.leading, 6)
                         .padding(.top, isMacOS ? 0 : 8)
                 }
-                
+
                 if let accessory {
                     VStack {
                         Spacer()
@@ -92,7 +92,7 @@ struct CommonTextEditor: View {
                     .stroke(borderColor, lineWidth: 1)
             )
             .padding(1)
-            
+
             if let error, showErrorText {
                 Text(error.localized)
                     .foregroundColor(Theme.colors.alertError)
@@ -104,15 +104,15 @@ struct CommonTextEditor: View {
         .animation(.easeInOut, value: error)
         .animation(.easeInOut, value: isValid)
     }
-    
+
     var borderColor: Color {
         if let isValid, isValid {
             return Theme.colors.alertSuccess
         }
-        
+
         return (error != nil && error != .empty) ? Theme.colors.alertError : Theme.colors.border
     }
-    
+
     var clearButton: some View {
         Button {
             value = ""

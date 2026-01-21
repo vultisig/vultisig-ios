@@ -26,7 +26,7 @@ enum FunctionCallInstance {
     case addThorLP(FunctionCallAddThorLP)
     case securedAsset(FunctionCallSecuredAsset)
     case withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset)
-    
+
     var view: AnyView {
         switch self {
         case .rebond(let memo):
@@ -61,7 +61,7 @@ enum FunctionCallInstance {
             return memo.getView()
         }
     }
-    
+
     var description: String {
         switch self {
         case .rebond(let memo):
@@ -96,7 +96,7 @@ enum FunctionCallInstance {
             return memo.description
         }
     }
-    
+
     var amount: Decimal {
         switch self {
         case .rebond:
@@ -131,7 +131,7 @@ enum FunctionCallInstance {
             return memo.amount
         }
     }
-    
+
     var toAddress: String? {
         switch self {
         case .stake(let memo):
@@ -159,7 +159,7 @@ enum FunctionCallInstance {
             return nil
         }
     }
-    
+
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         switch self {
         case .rebond(let memo):
@@ -194,7 +194,7 @@ enum FunctionCallInstance {
             return memo.toDictionary()
         }
     }
-    
+
     func getTransactionType() -> VSTransactionType {
         switch self {
         case .vote:
@@ -209,7 +209,7 @@ enum FunctionCallInstance {
             return .unspecified
         }
     }
-    
+
     var isTheFormValid: Bool {
         switch self {
         case .rebond(let memo):
@@ -244,7 +244,7 @@ enum FunctionCallInstance {
             return memo.isTheFormValid
         }
     }
-    
+
     var customErrorMessage: String? {
         switch self {
         case .rebond(let memo):
@@ -259,7 +259,7 @@ enum FunctionCallInstance {
             return nil
         }
     }
-    
+
     static func getDefault(for coin: Coin, tx: SendTransaction, vault: Vault) -> FunctionCallInstance {
         switch coin.chain {
         case .thorChain:
@@ -283,7 +283,7 @@ enum FunctionCallInstance {
             return .custom(FunctionCallCustom(tx: tx, vault: vault))
         }
     }
-    
+
     var wasmContractPayload: WasmExecuteContractPayload? {
         switch self {
         case .securedAsset:

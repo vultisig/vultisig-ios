@@ -15,14 +15,14 @@ final class VaultServerBackupViewModel: ObservableObject {
     @Published var passwordError: String?
     @Published var requestError: String?
     @Published var isLoading = false
-    
+
     @Published var showSuccess = false
     @Published var showAlert: Bool = false
     @Published private var alertError: ResendVaultShareError?
-    
+
     @AppStorage("lastServerBackupRequestDate") private var lastServerBackupRequestDate: Double?
     private let waitingPeriodInSeconds: TimeInterval = 180
-    
+
     @Published var currentTime = Date()
     private var timer: Timer?
 
@@ -32,7 +32,7 @@ final class VaultServerBackupViewModel: ObservableObject {
         guard isInWaitPeriod else { return "next".localized }
         return String(format: "pleaseWaitMinutes".localized, arguments: [formattedRemainingWaitTime])
     }
-    
+
     var alertErrorDescription: String? {
         guard let alertError else { return nil }
         switch alertError {
@@ -50,22 +50,22 @@ final class VaultServerBackupViewModel: ObservableObject {
         passwordError == nil &&
         !isLoading && !isInWaitPeriod
     }
-    
+
     var validEmail: Bool {
         emailError == nil && email.isNotEmpty
     }
-    
+
     var validPassword: Bool {
         passwordError == nil && password.isNotEmpty
     }
-    
+
     let service = VultiServerService()
-    
+
     func onLoad() {
         // Start timer if we're already in a wait period
         if isInWaitPeriod {
             startTimer()
-            
+
             alertError = .tooManyRequests
             showAlert = true
         }
@@ -88,7 +88,7 @@ final class VaultServerBackupViewModel: ObservableObject {
             }
             .store(in: &cancellables)
     }
-    
+
     func validate(email: String) {
         if email.isEmpty || email.trimmingCharacters(in: .whitespaces).isEmpty {
             emailError = nil
@@ -98,7 +98,7 @@ final class VaultServerBackupViewModel: ObservableObject {
             emailError = nil
         }
     }
-    
+
     func validate(password: String) {
         if password.isEmpty {
             passwordError = "passwordIsRequired".localized
@@ -106,16 +106,16 @@ final class VaultServerBackupViewModel: ObservableObject {
             passwordError = nil
         }
     }
-    
+
     func requestServerVaultShare(vault: Vault) async {
         await MainActor.run {
             showAlert = false
             isLoading = true
         }
-        
+
         do {
             try await service.resendVaultShare(request: ResendVaultShareRequest(pubKeyECDSA: vault.pubKeyECDSA, email: email, password: password))
-            
+
             await MainActor.run {
                 isLoading = false
                 alertError = nil
@@ -154,14 +154,14 @@ private extension VaultServerBackupViewModel {
         let elapsed = currentTime.timeIntervalSince1970 - lastRequestDate
         return max(0, waitingPeriodInSeconds - elapsed)
     }
-    
+
     var formattedRemainingWaitTime: String {
         let remaining = remainingWaitTime
         let minutes = Int(remaining) / 60
         let seconds = Int(remaining) % 60
         return "\(minutes):\(String(format: "%02d", seconds))"
     }
-    
+
     func startTimer() {
         stopTimer()
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in

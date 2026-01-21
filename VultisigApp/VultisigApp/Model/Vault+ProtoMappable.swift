@@ -7,7 +7,7 @@
 
 import Foundation
 import VultisigCommonData
-import SwiftProtobuf 
+import SwiftProtobuf
 
 extension Vault: ProtoMappable {
     convenience init(proto: VSVault) throws {
@@ -35,7 +35,7 @@ extension Vault: ProtoMappable {
             )
         }
     }
-    
+
     func mapToProtobuff() -> VSVault {
         return VSVault.with {
             $0.name = name

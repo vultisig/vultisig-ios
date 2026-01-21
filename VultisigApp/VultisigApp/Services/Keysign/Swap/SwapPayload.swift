@@ -67,7 +67,7 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
             return false
         }
     }
-    
+
     var providerName: String {
         switch self {
         case .thorchain:

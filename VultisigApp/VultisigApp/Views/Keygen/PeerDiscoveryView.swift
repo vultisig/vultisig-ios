@@ -12,7 +12,7 @@ struct PeerDiscoveryView: View {
     let selectedTab: SetupVaultState
     let fastSignConfig: FastSignConfig?
     let keyImportInput: KeyImportInput?
-    
+
     init(
         tssType: TssType,
         vault: Vault,
@@ -30,41 +30,41 @@ struct PeerDiscoveryView: View {
     @StateObject var viewModel = KeygenPeerDiscoveryViewModel()
     @StateObject var participantDiscovery = ParticipantDiscovery()
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
-    
+
     @State var qrCodeImage: Image? = nil
-    
+
     @State var showInfoSheet: Bool = false
     @State var hideBackButton: Bool = false
-    
+
     @State var screenWidth: CGFloat = .zero
     @State var screenHeight: CGFloat = .zero
-    
+
     @Environment(\.displayScale) var displayScale
-    
+
 #if os(iOS)
     @State var orientation = UIDevice.current.orientation
 #endif
-    
+
     @State var animationVM: RiveViewModel? = nil
-    
+
     let adaptiveColumns = [
         GridItem(.adaptive(minimum: 350, maximum: 500), spacing: 12),
         GridItem(.adaptive(minimum: 350, maximum: 500), spacing: 12)
     ]
-    
+
     let adaptiveColumnsMac = [
         GridItem(.adaptive(minimum: 400, maximum: 800), spacing: 12)
     ]
-    
+
     var localModeAvailable: Bool { tssType != .KeyImport }
-    
+
     var body: some View {
         content
             .onLoad {
                 animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
                 viewModel.setData(
                     vault: vault,
-                    tssType: tssType, 
+                    tssType: tssType,
                     state: selectedTab,
                     participantDiscovery: participantDiscovery,
                     fastSignConfig: fastSignConfig,
@@ -92,11 +92,11 @@ struct PeerDiscoveryView: View {
                 setData()
             }
     }
-    
+
     var states: some View {
         VStack {
             switch (viewModel.status, selectedTab.hasOtherDevices) {
-            case (.WaitingForDevices, false): 
+            case (.WaitingForDevices, false):
                 if viewModel.isLookingForDevices {
                     /// Wait until server join to go to keygen view
                     lookingForDevices
@@ -125,29 +125,29 @@ struct PeerDiscoveryView: View {
                 .showIf(localModeAvailable)
         }
     }
-    
+
     var views: some View {
         portraitContent
     }
-    
+
     var qrCode: some View {
         VStack(spacing: 16) {
             paringBarcode
         }
     }
-    
+
     var list: some View {
         scrollList
             .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    
+
     var lookingForDevices: some View {
         LookingForDevicesLoader(
             tssType: tssType,
             selectedTab: selectedTab
         )
     }
-    
+
     func disableContinueButton() -> Bool {
         switch viewModel.tssType {
         case .Keygen:
@@ -168,7 +168,7 @@ struct PeerDiscoveryView: View {
             return viewModel.selections.count != 3
         }
     }
-    
+
     var keygenView: some View {
         KeygenView(
             vault: viewModel.vault,
@@ -185,7 +185,7 @@ struct PeerDiscoveryView: View {
             hideBackButton: $hideBackButton
         )
     }
-    
+
     var failureText: some View {
         VStack {
             Text(self.viewModel.errorMessage)
@@ -194,11 +194,11 @@ struct PeerDiscoveryView: View {
                 .foregroundColor(.red)
         }
     }
-    
+
     var listTitle: some View {
         HStack(spacing: 8) {
             Text(NSLocalizedString("devices", comment: ""))
-            
+
             if tssType == .Migrate {
                 Text("(\(viewModel.selections.count)/\(vault.signers.count))")
             } else {
@@ -210,13 +210,13 @@ struct PeerDiscoveryView: View {
         .foregroundColor(Theme.colors.textPrimary)
         .animation(.easeInOut, value: viewModel.selections)
     }
-    
+
     private func showInfo() {
         guard selectedTab == .secure else {
             showInfoSheet = false
             return
         }
-        
+
         switch self.tssType {
         case .Keygen:
             showInfoSheet = true

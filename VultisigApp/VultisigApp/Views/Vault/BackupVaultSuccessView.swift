@@ -9,16 +9,16 @@ import SwiftUI
 import RiveRuntime
 
 struct BackupVaultSuccessView: View {
-    
+
     let tssType: TssType
     let vault: Vault
-    
+
     @State var secureAnimationVM: RiveViewModel? = nil
     @State var fastAnimationVM: RiveViewModel? = nil
     @State var upgradeAnimationVM: RiveViewModel? = nil
 
     @State var activeSummary: OnboardingSummaryView.Kind? = nil
-    
+
     @EnvironmentObject var appViewModel: AppViewModel
 
     var body: some View {
@@ -43,18 +43,18 @@ struct BackupVaultSuccessView: View {
                 upgradeAnimationVM?.stop()
             }
     }
-    
+
     var main: some View {
         ZStack {
             Background()
             content
         }
     }
-    
+
     var content: some View {
         VStack {
             animation
-            
+
             if tssType == .Migrate {
                 migrateText
                 migrateButton
@@ -64,7 +64,7 @@ struct BackupVaultSuccessView: View {
             }
         }
     }
-    
+
     var animation: some View {
         ZStack {
             if let fastAnimationVM {
@@ -78,12 +78,12 @@ struct BackupVaultSuccessView: View {
             }
         }
     }
-    
+
     var migrateText: some View {
         VStack(spacing: 2) {
             Text(NSLocalizedString("vaultUpgraded", comment: ""))
                 .foregroundColor(Theme.colors.textPrimary)
-            
+
             Text(NSLocalizedString("successfully", comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient)
         }
@@ -92,12 +92,12 @@ struct BackupVaultSuccessView: View {
         .padding(.bottom, 32)
         .multilineTextAlignment(.center)
     }
-    
+
     var text: some View {
         VStack(spacing: 2) {
             Text(NSLocalizedString("wellDone.", comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient)
-            
+
             Text(NSLocalizedString("readyToUseNewWalletStandard.", comment: ""))
                 .foregroundColor(Theme.colors.textPrimary)
         }
@@ -105,7 +105,7 @@ struct BackupVaultSuccessView: View {
         .padding(.horizontal, 32)
         .multilineTextAlignment(.center)
     }
-    
+
     var migrateButton: some View {
         PrimaryButton(title: "goToWallet") {
             goToHome()
@@ -113,13 +113,13 @@ struct BackupVaultSuccessView: View {
         .padding(.horizontal, 40)
         .padding(.bottom, 40)
     }
-    
+
     var button: some View {
         nextButton
             .padding(.horizontal, 40)
             .padding(.bottom, 40)
     }
-    
+
     var nextButton: some View {
         IconButton(icon: "chevron-right") {
             nextTapped()
@@ -127,7 +127,7 @@ struct BackupVaultSuccessView: View {
         .frame(width: 80)
         .padding(.bottom, 50)
     }
-    
+
     private func setData() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             if tssType == .Migrate {
@@ -141,7 +141,7 @@ struct BackupVaultSuccessView: View {
             }
         }
     }
-    
+
     private func nextTapped() {
         switch vault.libType {
         case .GG20, .DKLS, .none:
@@ -150,7 +150,7 @@ struct BackupVaultSuccessView: View {
             activeSummary = .keyImport
         }
     }
-    
+
     func goToHome() {
         appViewModel.set(selectedVault: vault)
     }

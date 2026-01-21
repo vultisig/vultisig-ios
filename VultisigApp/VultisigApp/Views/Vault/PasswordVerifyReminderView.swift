@@ -12,21 +12,21 @@ struct PasswordVerifyReminderView: View {
     @Binding var isSheetPresented: Bool
 
     @AppStorage("biweeklyPasswordVerifyDate") var biweeklyPasswordVerifyDate: Double?
-    
+
     @State var showError = false
     @State var errorText = ""
-    
+
     @State var isLoading = false
     @State var verifyPassword = ""
     @State var isPasswordVisible = false
-    
+
     private let fastVaultService: FastVaultService = .shared
-    
+
     var body: some View {
         ZStack {
             Background()
             view
-            
+
             if isLoading {
                 loader
             }
@@ -36,16 +36,16 @@ struct PasswordVerifyReminderView: View {
             handleCloseTap()
         }
     }
-    
+
     var loader: some View {
         ZStack {
             overlay
-            
+
             ProgressView()
                 .preferredColorScheme(.dark)
         }
     }
-    
+
     var overlay: some View {
         Color.black
             .ignoresSafeArea()
@@ -66,7 +66,7 @@ struct PasswordVerifyReminderView: View {
         .padding(.bottom, 12)
         .blur(radius: isLoading ? 1 : 0)
     }
-    
+
     var separator: some View {
         LinearSeparator()
             .opacity(0.8)
@@ -78,7 +78,7 @@ struct PasswordVerifyReminderView: View {
             .foregroundColor(Theme.colors.textSecondary)
             .font(Theme.fonts.bodySMedium)
     }
-    
+
     var description: some View {
         Text(NSLocalizedString("biweeklyPasswordVerifyDescription", comment: ""))
             .multilineTextAlignment(.center)
@@ -86,11 +86,11 @@ struct PasswordVerifyReminderView: View {
             .font(Theme.fonts.caption12)
             .padding(.horizontal, 28)
     }
-    
+
     var field: some View {
         ZStack {
             textField
-            
+
             if showError {
                 errorContent
                     .offset(y: 48)
@@ -98,7 +98,7 @@ struct PasswordVerifyReminderView: View {
         }
         .padding(.bottom)
     }
-    
+
     var textField: some View {
         HStack {
             if isPasswordVisible {
@@ -108,7 +108,7 @@ struct PasswordVerifyReminderView: View {
                 SecureField(NSLocalizedString("verifyPassword", comment: "").capitalized, text: $verifyPassword)
                     .borderlessTextFieldStyle()
             }
-            
+
             hideButton
         }
         .colorScheme(.dark)
@@ -124,7 +124,7 @@ struct PasswordVerifyReminderView: View {
                 .stroke(showError ? Theme.colors.alertError : Color.clear, lineWidth: 1)
         )
     }
-    
+
     var hideButton: some View {
         Button(
             action: {
@@ -146,14 +146,14 @@ struct PasswordVerifyReminderView: View {
             handleButtonTap()
         }
     }
-    
+
     var errorContent: some View {
         Text(NSLocalizedString(errorText, comment: ""))
             .font(Theme.fonts.bodySMedium)
             .foregroundColor(Theme.colors.alertError)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     private func verifyPasswordIsValid() async {
         guard !verifyPassword.isEmpty else {
             errorText = "emptyField"
@@ -161,31 +161,31 @@ struct PasswordVerifyReminderView: View {
             isLoading = false
             return
         }
-        
+
         showError = false
-        
+
         let isValid = await fastVaultService.get(
             pubKeyECDSA: vault.pubKeyECDSA,
             password: verifyPassword
         )
-        
+
         if isValid {
             handleCloseTap()
         } else {
             errorText = "incorrectPassword"
             showError = true
         }
-        
+
         isLoading = false
     }
-    
+
     private func handleCloseTap() {
         let calendar = Calendar.current
         let startOfToday = calendar.startOfDay(for: Date())
         biweeklyPasswordVerifyDate = startOfToday.timeIntervalSince1970
         isSheetPresented = false
     }
-    
+
     private func handleButtonTap() {
         Task {
             isLoading = true

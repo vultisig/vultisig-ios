@@ -49,14 +49,14 @@ struct KeyImportOnboardingScreen: View {
             animationVM = nil
         }
     }
-    
+
     var informationView: some View {
         VStack(alignment: .leading, spacing: 32) {
             VStack(alignment: .leading, spacing: 12) {
                 Text("beforeYouStart".localized)
                     .foregroundStyle(Theme.colors.textSecondary)
                     .font(Theme.fonts.caption12)
-                
+
                 CustomHighlightText(
                     "youAreEnteringAnewEra".localized,
                     highlight: "youAreEnteringAnewEraHighlight".localized,
@@ -67,14 +67,14 @@ struct KeyImportOnboardingScreen: View {
                 .frame(maxWidth: 330, alignment: .leading)
                 .fixedSize(horizontal: false, vertical: true)
             }
-            
+
             VStack(alignment: .leading, spacing: 24) {
                 OnboardingInformationRowView(
                     title: "yourSeedphrase".localized,
                     subtitle: "yourSeedphraseSubtitle".localized,
                     icon: "seedphrase"
                 )
-                
+
                 OnboardingInformationRowView(
                     title: "twoDevices".localized,
                     subtitle: "twoDevicesSubtitle".localized,
@@ -84,13 +84,13 @@ struct KeyImportOnboardingScreen: View {
             .fixedSize(horizontal: false, vertical: true)
         }
     }
-    
+
     func startAnimations() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
             withAnimation(.interpolatingSpring) {
                 showInformation = true
             }
-            
+
             withAnimation(.interpolatingSpring.delay(0.7)) {
                 informationOpacity = 1
             }

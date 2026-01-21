@@ -87,7 +87,7 @@ struct SendGasSettingsView: View {
     var totalFeeRow: some View {
         VStack {
             title(text: "Total Fee (Gwei)")
-            textField(title: "Total Fee", text: .constant(viewModel.totalFee), label: viewModel.totalFeeFiat,disabled: true)
+            textField(title: "Total Fee", text: .constant(viewModel.totalFee), label: viewModel.totalFeeFiat, disabled: true)
         }
     }
 

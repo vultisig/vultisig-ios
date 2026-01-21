@@ -15,7 +15,7 @@ extension View {
         self
         #endif
     }
-    
+
     func sheetStyle(padding: CGFloat? = nil) -> some View {
         #if os(iOS)
         self
@@ -28,7 +28,7 @@ extension View {
             .background(Theme.colors.bgPrimary)
         #endif
     }
-    
+
     @ViewBuilder
     func presentationSizingFitted() -> some View {
         #if os(macOS)

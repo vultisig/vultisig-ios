@@ -12,11 +12,11 @@ struct FolderCellView: View {
     let selectedVaultName: String?
     @Binding var isEditing: Bool
     let action: () -> Void
-    
+
     var isSelected: Bool {
         folder.containedVaultNames.contains(selectedVaultName ?? "")
     }
-    
+
     var body: some View {
         Button(action: action) {
             VaultEditCellContainer(isEditing: $isEditing, showDragIndicator: true) {
@@ -35,16 +35,16 @@ struct FolderCellView: View {
                             .font(Theme.fonts.bodySMedium)
                             .multilineTextAlignment(.leading)
                             .lineLimit(1)
-                        
+
                         if isSelected {
                             selectedSubtitle
                         } else {
                             nonSelectedSubtitle
                         }
                     }
-                    
+
                     Spacer()
-                    
+
                     Icon(
                         named: "chevron-right-small",
                         color: Theme.colors.textPrimary,
@@ -58,17 +58,17 @@ struct FolderCellView: View {
             .contentShape(Rectangle())
         }
     }
-    
+
     @ViewBuilder
     var nonSelectedSubtitle: some View {
         let vaultsText: String = folder.containedVaultNames.count > 1 ? "vaults".localized : "vault".localized
         let subtitle = "\(folder.containedVaultNames.count) \(vaultsText)"
-    
+
         Text(subtitle)
             .foregroundStyle(Theme.colors.textSecondary)
             .font(Theme.fonts.footnote)
     }
-    
+
     var selectedSubtitle: some View {
         HStack(spacing: 4) {
             Icon(
@@ -76,13 +76,13 @@ struct FolderCellView: View {
                 color: Theme.colors.alertInfo,
                 size: 16
             )
-            
+
             Text("\(selectedVaultName ?? "") \("active".localized)")
                 .foregroundStyle(Theme.colors.alertInfo)
                 .font(Theme.fonts.footnote)
         }
     }
-    
+
     var selectedBackground: some View {
         RoundedRectangle(cornerRadius: 12)
             .fill(Theme.colors.bgSurface1)

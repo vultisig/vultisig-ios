@@ -10,15 +10,15 @@ import SwiftUI
 struct CommonListItemContainer: ViewModifier {
     let index: Int
     let itemsCount: Int
-    
+
     var isFirst: Bool {
         index == 0
     }
-    
+
     var isLast: Bool {
         index == itemsCount - 1
     }
-    
+
     func body(content: Content) -> some View {
         VStack(spacing: 0) {
             GradientListSeparator()

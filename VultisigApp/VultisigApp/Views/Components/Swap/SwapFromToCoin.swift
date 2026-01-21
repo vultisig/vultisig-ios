@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SwapFromToCoin: View {
     let coin: Coin
-    
+
     var body: some View {
         HStack {
             fromToCoinIcon
@@ -20,7 +20,7 @@ struct SwapFromToCoin: View {
         .background(Theme.colors.bgSurface2)
         .cornerRadius(60)
     }
-    
+
     var fromToCoinIcon: some View {
         AsyncImageView(
             logo: coin.logo,
@@ -29,13 +29,13 @@ struct SwapFromToCoin: View {
             tokenChainLogo: coin.tokenChainLogo
         )
     }
-    
+
     var fromToCoinContent: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("\(coin.ticker)")
                 .font(Theme.fonts.caption12)
                 .foregroundColor(Theme.colors.textPrimary)
-            
+
             if coin.isNativeToken {
                 Text("Native")
                     .font(Theme.fonts.caption10)
@@ -43,7 +43,7 @@ struct SwapFromToCoin: View {
             }
         }
     }
-    
+
     var chevron: some View {
         Image(systemName: "chevron.right")
             .foregroundColor(Theme.colors.textPrimary)

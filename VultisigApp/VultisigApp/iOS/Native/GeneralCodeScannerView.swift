@@ -17,15 +17,15 @@ struct GeneralCodeScannerView: View {
     @Binding var shouldKeysignTransaction: Bool
     @Binding var shouldSendCrypto: Bool
     @Binding var selectedChain: Chain?
-    
+
     let sendTX: SendTransaction
-    
+
     @Query var vaults: [Vault]
-    
+
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
-    
+
     private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-    
+
     var body: some View {
         QRCodeScannerView(
             showScanner: $showSheet
@@ -33,7 +33,7 @@ struct GeneralCodeScannerView: View {
             handle(urlString: result)
         }
     }
-    
+
     private func handle(urlString: String) {
         guard let url = URL(string: urlString) else {
             return
@@ -49,9 +49,9 @@ struct GeneralCodeScannerView: View {
     GeneralCodeScannerView(
         showSheet: .constant(true),
         shouldJoinKeygen: .constant(true),
-        shouldKeysignTransaction: .constant(true), 
+        shouldKeysignTransaction: .constant(true),
         shouldSendCrypto: .constant(true),
-        selectedChain: .constant(nil), 
+        selectedChain: .constant(nil),
         sendTX: SendTransaction()
     )
 }

@@ -11,7 +11,7 @@ struct IconButtonStyle: ButtonStyle {
     let type: ButtonType
     let size: ButtonSize
     @Environment(\.isEnabled) var isEnabled
-    
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(font(for: size))
@@ -39,26 +39,26 @@ private extension IconButtonStyle {
             return EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8)
         }
     }
-    
+
     func font(for size: ButtonSize) -> Font {
         switch size {
         case .medium, .small, .squared: return Theme.fonts.buttonRegularSemibold
         case .mini: return Theme.fonts.bodyMMedium
         }
     }
-    
+
     func cornerRadius(for size: ButtonSize) -> CGFloat {
         switch size {
         case .medium, .small: return 99
         case .mini, .squared: return 30
         }
     }
-    
+
     func backgroundColor(for type: ButtonType, isPressed: Bool, isEnabled: Bool) -> Color {
         guard isEnabled else {
             return Theme.colors.bgButtonDisabled
         }
-        
+
         switch type {
         case .alert:
             if isPressed {
@@ -82,7 +82,7 @@ private extension IconButtonStyle {
             return .clear
         }
     }
-    
+
     func foregroundColor(for type: ButtonType, isPressed: Bool, isEnabled: Bool) -> Color {
         switch type {
         case .primary, .alert, .primarySuccess:
@@ -105,7 +105,7 @@ private extension IconButtonStyle {
             }
         }
     }
-    
+
     func borderColor(for type: ButtonType, isPressed: Bool, isEnabled: Bool) -> Color {
         switch type {
         case .primary, .alert, .primarySuccess:
@@ -124,7 +124,7 @@ private extension IconButtonStyle {
             }
         }
     }
-    
+
     func borderWidth(for type: ButtonType) -> CGFloat {
         switch type {
         case .primary, .alert, .primarySuccess: return 0

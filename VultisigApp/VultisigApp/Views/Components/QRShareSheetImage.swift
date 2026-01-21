@@ -17,27 +17,27 @@ enum QRShareSheetType: String {
 struct QRShareSheetImage: View {
     let image: Image
     let type: QRShareSheetType
-    
+
     let vaultName: String
-    
+
     // Send
     let amount: String
     let toAddress: String
-    
+
     // Swap
     let fromAmount: String
     let toAmount: String
-    
+
     // Address
     let address: String
-    
+
     let padding: CGFloat = 15
     let cornerRadius: CGFloat = 30
-    
+
     var body: some View {
         content
     }
-    
+
     var view: some View {
         VStack(spacing: 32) {
             qrCode
@@ -51,7 +51,7 @@ struct QRShareSheetImage: View {
         .foregroundColor(Theme.colors.textPrimary)
         .multilineTextAlignment(.center)
     }
-    
+
     var titleContent: some View {
         Text(NSLocalizedString(type.rawValue, comment: ""))
             .font(Theme.fonts.bodyMMedium)
@@ -60,7 +60,7 @@ struct QRShareSheetImage: View {
             .foregroundColor(Theme.colors.textPrimary)
             .multilineTextAlignment(.center)
     }
-    
+
     var description: some View {
         ZStack {
             switch type {
@@ -76,11 +76,11 @@ struct QRShareSheetImage: View {
         }
         .padding(.horizontal, 30)
     }
-    
+
     var keygenDescription: some View {
         Text(NSLocalizedString("previewKeygenDescription", comment: ""))
     }
-    
+
     var sendDescription: some View {
         VStack(spacing: 10) {
             vaultText
@@ -88,7 +88,7 @@ struct QRShareSheetImage: View {
             toAddressText
         }
     }
-    
+
     var swapDescription: some View {
         VStack(spacing: 10) {
             vaultText
@@ -96,42 +96,42 @@ struct QRShareSheetImage: View {
             toAmountText
         }
     }
-    
+
     var vaultText: some View {
         HStack(spacing: 4) {
             Text(NSLocalizedString("vault", comment: "") + ":")
             Text(vaultName)
         }
     }
-    
+
     var amountText: some View {
         HStack(spacing: 4) {
             Text(NSLocalizedString("amount", comment: "") + ":")
             Text(amount)
         }
     }
-    
+
     var toAddressText: some View {
         HStack(alignment: .top, spacing: 4) {
             Text(NSLocalizedString("to", comment: "") + ":")
             Text(toAddress)
         }
     }
-    
+
     var fromAmountText: some View {
         HStack(spacing: 4) {
             Text(NSLocalizedString("from", comment: "") + ":")
             Text(fromAmount)
         }
     }
-    
+
     var toAmountText: some View {
         HStack(spacing: 4) {
             Text(NSLocalizedString("to", comment: "") + ":")
             Text(toAmount)
         }
     }
-    
+
     var addressDescription: some View {
         Text(address)
     }

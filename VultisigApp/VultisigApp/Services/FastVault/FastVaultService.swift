@@ -25,7 +25,7 @@ final class FastVaultService {
     func get(pubKeyECDSA: String, password: String) async -> Bool {
         do {
             let urlString = "\(endpoint)/get/\(pubKeyECDSA)"
-            
+
             let pwd = password.data(using: .utf8)?.base64EncodedString()
             guard let pwd else {
                 return false
@@ -57,13 +57,13 @@ final class FastVaultService {
         lib_type: Int
     ) {
         let localPartyID = Self.localPartyID(sessionID: sessionID)
-        let req = VaultCreateRequest(name: name, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email,lib_type: lib_type)
+        let req = VaultCreateRequest(name: name, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email, lib_type: lib_type)
 
         Utils.sendRequest(urlString: "\(endpoint)/create", method: "POST", headers: [:], body: req) { _ in
             print("Send create request to Vultiserver successfully")
         }
     }
-    
+
     func keyImport(
         name: String,
         sessionID: String,
@@ -75,7 +75,7 @@ final class FastVaultService {
         chains: [String]
     ) {
         let localPartyID = Self.localPartyID(sessionID: sessionID)
-        let req = KeyImportRequest(name: name, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email,lib_type: lib_type,chains: chains)
+        let req = KeyImportRequest(name: name, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email, lib_type: lib_type, chains: chains)
 
         Utils.sendRequest(urlString: "\(endpoint)/import", method: "POST", headers: [:], body: req) { _ in
             print("Send create request to Vultiserver successfully")
@@ -133,23 +133,23 @@ final class FastVaultService {
             completion: completion
         )
     }
-    
+
     func verifyBackupOTP(ecdsaKey: String, OTPCode: String) async -> Bool {
         let parameters = "\(ecdsaKey)/\(OTPCode)"
         let urlString = Endpoint.FastVaultBackupVerification + parameters
-        
+
         guard let url = URL(string: urlString) else {
             print("Invalid URL string.")
             return false
         }
-        
+
         do {
             let (_, response) = try await URLSession.shared.data(from: url)
-            
+
             guard let httpResponse = response as? HTTPURLResponse else {
                 return false
             }
-            
+
             if httpResponse.statusCode == 200 {
                 return true
             } else {
@@ -160,7 +160,7 @@ final class FastVaultService {
             return false
         }
     }
-    
+
     func migrate(
         publicKeyECDSA: String,
         sessionID: String,
@@ -172,7 +172,7 @@ final class FastVaultService {
                                  hex_encryption_key: hexEncryptionKey,
                                  encryption_password: encryptionPassword,
                                  email: email)
-        
+
         Utils.sendRequest(urlString: "\(endpoint)/migrate", method: "POST", headers: [:], body: req) { _ in
             print("Send migration request to Vultiserver successfully")
         }

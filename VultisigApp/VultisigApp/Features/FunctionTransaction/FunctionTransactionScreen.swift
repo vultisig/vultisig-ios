@@ -17,7 +17,7 @@ struct FunctionTransactionScreen: View {
     @State var isLoading: Bool = false
 
     @Environment(\.dismiss) var dismiss
-    
+
     var body: some View {
         ZStack {
             switch transactionType {
@@ -143,27 +143,27 @@ struct FunctionTransactionScreen: View {
         }
         .withLoading(isLoading: $isLoading)
     }
-    
+
     func onVerify(_ transactionBuilder: TransactionBuilder) {
         Task { @MainActor in
             isLoading = true
             let tx = transactionBuilder.buildTransaction()
-            
+
             await functionCallViewModel.loadGasInfoForSending(tx: tx)
             await functionCallViewModel.loadFastVault(tx: tx, vault: vault)
-            
+
             sendTx = tx
             isLoading = false
             router.navigate(to: FunctionCallRoute.verify(tx: tx, vault: vault))
         }
     }
-    
+
     @ViewBuilder
     func resolvingCoin<Content: View>(coinMeta: CoinMeta, @ViewBuilder content: (Coin) -> Content) -> some View {
         let coin = vault.coins.first(where: { $0.toCoinMeta() == coinMeta })
         resolvingCoin(coin: coin, content: content)
     }
-    
+
     @ViewBuilder
     func resolvingCoin<Content: View>(coin: Coin?, content: (Coin) -> Content) -> some View {
         if let coin {
@@ -179,7 +179,7 @@ struct FunctionTransactionScreen: View {
             }
         }
     }
-    
+
     @ViewBuilder
     func resolvingCoins<Content: View>(coin: CoinMeta, coin2: CoinMeta, content: (Coin, Coin) -> Content) -> some View {
         resolvingCoin(coinMeta: coin) { coin1 in

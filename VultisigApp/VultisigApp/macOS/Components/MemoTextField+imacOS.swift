@@ -12,7 +12,7 @@ extension MemoTextField {
     var container: some View {
         content
     }
-    
+
     func pasteAddress() {
         let pasteboard = NSPasteboard.general
         if let clipboardContent = pasteboard.string(forType: .string) {

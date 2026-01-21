@@ -9,34 +9,34 @@ import SwiftUI
 
 struct SendCryptoTransactionHashRowView: View {
     @Environment(\.openURL) var openURL
-    
+
     let hash: String
     let explorerLink: String
     let showCopy: Bool
     @Binding var showAlert: Bool
-    
+
     var body: some View {
         HStack(spacing: 32) {
             Text(NSLocalizedString("transactionHash", comment: ""))
                 .foregroundColor(Theme.colors.textTertiary)
                 .lineLimit(1)
                 .truncationMode(.tail)
-            
+
             Spacer()
-            
+
             HStack(spacing: 8) {
                 if showCopy {
                     hashWithCopyView
                 } else {
                     hashView
                 }
-                
+
                 explorerLinkView
             }
         }
         .font(Theme.fonts.bodySMedium)
     }
-    
+
     var explorerLinkView: some View {
         Button {
             if let url = URL(string: explorerLink) {
@@ -50,7 +50,7 @@ struct SendCryptoTransactionHashRowView: View {
                 .foregroundColor(Theme.colors.textPrimary)
         }
     }
-    
+
     var hashWithCopyView: some View {
         Button {
             copyHash()
@@ -65,14 +65,14 @@ struct SendCryptoTransactionHashRowView: View {
             }
         }
     }
-    
+
     var hashView: some View {
         Text(hash)
             .foregroundColor(Theme.colors.textPrimary)
             .lineLimit(1)
             .truncationMode(.middle)
     }
-    
+
     func copyHash() {
         showAlert = true
         ClipboardManager.copyToClipboard(explorerLink)

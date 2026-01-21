@@ -24,9 +24,9 @@ struct BackupNowDisclaimer: View {
                 .listRowInsets(EdgeInsets())
                 .listRowSeparator(.hidden)
                 .padding(1)
-        }.buttonStyle(.plain)   
+        }.buttonStyle(.plain)
     }
-    
+
     var content: some View {
         ZStack {
             title
@@ -41,7 +41,7 @@ struct BackupNowDisclaimer: View {
                 .stroke(Theme.colors.alertError, lineWidth: 1)
         )
     }
-    
+
     var components: some View {
         HStack {
             icon
@@ -49,13 +49,13 @@ struct BackupNowDisclaimer: View {
             chevron
         }
     }
-    
+
     var icon: some View {
         Image(systemName: "exclamationmark.triangle")
             .font(Theme.fonts.title2)
             .foregroundColor(Theme.colors.alertError)
     }
-    
+
     var title: some View {
         Text(NSLocalizedString("backupYourVaultNow", comment: ""))
             .font(Theme.fonts.bodyMMedium)
@@ -63,7 +63,7 @@ struct BackupNowDisclaimer: View {
             .multilineTextAlignment(.center)
             .padding(.horizontal, 24)
     }
-    
+
     var chevron: some View {
         Image(systemName: "chevron.forward")
             .font(Theme.fonts.caption12)

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct GlowIcon: View {
     let icon: String
-    
+
     var body: some View {
         Icon(
             named: icon,

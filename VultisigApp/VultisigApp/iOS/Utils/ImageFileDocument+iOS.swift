@@ -11,14 +11,14 @@ import UniformTypeIdentifiers
 
 struct ImageFileDocument: FileDocument {
     var image: UIImage
-    
+
     @MainActor
     init(image: Image) {
         let renderer = ImageRenderer(content: image)
-        
+
         // Set the scale to match the device's screen scale for better quality
         renderer.scale = 3
-        
+
         // Render the image to a UIImage
         if let uiImage = renderer.uiImage {
             self.image = uiImage

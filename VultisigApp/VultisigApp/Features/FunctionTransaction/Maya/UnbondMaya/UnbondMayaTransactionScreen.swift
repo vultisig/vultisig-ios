@@ -11,15 +11,15 @@ struct UnbondMayaTransactionScreen: View {
     enum FocusedField {
         case address, amount
     }
-    
+
     @StateObject var viewModel: UnbondMayaTransactionViewModel
     var onVerify: (TransactionBuilder) -> Void
-    
+
     @State var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?
-    
+
     @State var showAssetSelection: Bool = false
-    
+
     var body: some View {
         FormScreen(
             title: "unbond".localized,
@@ -130,7 +130,7 @@ struct UnbondMayaTransactionScreen: View {
             ) { showAssetSelection = false }
         }
     }
-    
+
     func onContinue() {
         switch focusedFieldBinding {
         case .address:
@@ -140,12 +140,12 @@ struct UnbondMayaTransactionScreen: View {
                 focusedField = .address
                 return
             }
-            
+
             guard let transactionBuilder = viewModel.transactionBuilder else { return }
             onVerify(transactionBuilder)
         }
     }
-    
+
     func onAddressFill() {
         focusedFieldBinding = viewModel.addressViewModel.field.valid ? .amount : .address
     }

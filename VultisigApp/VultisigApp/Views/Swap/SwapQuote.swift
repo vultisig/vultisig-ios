@@ -15,7 +15,7 @@ enum SwapQuote {
     case oneinch(EVMQuote, fee: BigInt?)
     case kyberswap(EVMQuote, fee: BigInt?)
     case lifi(EVMQuote, fee: BigInt?, integratorFee: Decimal?)
-    
+
     var swapProviderId: SwapProviderId? {
         switch self {
         case .thorchain, .thorchainStagenet, .mayachain:
@@ -59,7 +59,7 @@ enum SwapQuote {
             return quote.tx.to
         }
     }
-    
+
     var displayName: String? {
         switch self {
         case .thorchain:

@@ -14,7 +14,7 @@ extension SendDetailsScreen {
             content
         }
     }
-    
+
     var view: some View {
         VStack {
             tabs
@@ -22,7 +22,7 @@ extension SendDetailsScreen {
                 .padding(.horizontal, 8)
         }
     }
-    
+
     func setData() {
         Task {
             await getBalance()

@@ -17,9 +17,9 @@ struct VultDiscountTiersScreen: View {
     @State private var showTierSheet: VultDiscountTier?
     @State private var scrollProxy: ScrollViewProxy?
     @Environment(\.openURL) var openURL
-    
+
     private let service = VultTierService()
-    
+
     var body: some View {
         Screen(showNavigationBar: false, edgeInsets: .init(bottom: 0)) {
             ScrollViewReader { proxy in
@@ -30,13 +30,13 @@ struct VultDiscountTiersScreen: View {
                             .aspectRatio(contentMode: .fit)
                             .frame(maxWidth: 500)
                             .padding(.bottom, 10)
-                        
+
                         Text("vultDiscountTiersDescription".localized)
                             .font(Theme.fonts.bodySRegular)
                             .foregroundStyle(Theme.colors.textPrimary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .multilineTextAlignment(.leading)
-                        
+
                         ForEach(VultDiscountTier.allCases) { tier in
                             VultDiscountTierView(
                                 tier: tier,
@@ -95,15 +95,15 @@ private extension VultDiscountTiersScreen {
             scrollProxy?.scrollTo(tier.name, anchor: .bottom)
         }
     }
-    
+
     func getVultTier() {
         fetchDiscountTier(cached: true)
     }
-    
+
     func fetchVultTier() {
         fetchDiscountTier(cached: false)
     }
-    
+
     func fetchDiscountTier(cached: Bool) {
         Task {
             let activeTier = await service.fetchDiscountTier(for: vault, cached: cached)
@@ -113,17 +113,17 @@ private extension VultDiscountTiersScreen {
             }
         }
     }
-    
+
     func getVultToken() {
         self.vultToken = service.getVultToken(for: vault)
     }
-    
+
     func canUnlock(tier: VultDiscountTier) -> Bool {
         let tiers = VultDiscountTier.allCases.sorted { $0.balanceToUnlock < $1.balanceToUnlock }
         guard let currentIndex = tiers.firstIndex(where: { $0 == activeTier }) else {
             return true
         }
-        
+
         let tierIndex = tiers.firstIndex(where: { $0 == tier }) ?? 0
         return tierIndex > currentIndex
     }

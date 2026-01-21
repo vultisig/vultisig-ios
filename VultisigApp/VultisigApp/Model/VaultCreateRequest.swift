@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct VaultCreateRequest: Hashable,Codable {
+struct VaultCreateRequest: Hashable, Codable {
     let name: String
     let session_id: String
     let hex_encryption_key: String

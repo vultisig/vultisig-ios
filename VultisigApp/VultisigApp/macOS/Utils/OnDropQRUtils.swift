@@ -15,7 +15,7 @@ enum OnDropQRError: Error {
 }
 
 class OnDropQRUtils {
-    
+
     public static func handleOnDrop(providers: [NSItemProvider], handleImageQrCode: @escaping (Data) -> Void) -> Bool {
         guard let provider = providers.first(where: { $0.hasItemConformingToTypeIdentifier("public.image") }) else {
             print("Invalid file type. Please drop an image.")
@@ -40,13 +40,13 @@ class OnDropQRUtils {
 
         return true
     }
-    
+
     public static func handleFileQRCodeImporterMacDrop(providers: [NSItemProvider], completion: @escaping (Result<[URL], Error>) -> Void) {
         var urls = [URL]()
         var dropError: Error? = nil
 
         let dispatchGroup = DispatchGroup()
-        
+
         for provider in providers {
             dispatchGroup.enter()
             provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { (item, error) in
@@ -55,7 +55,7 @@ class OnDropQRUtils {
                     dispatchGroup.leave()
                     return
                 }
-                
+
                 if let data = item as? Data, let url = URL(dataRepresentation: data, relativeTo: nil) {
                     urls.append(url)
                 } else if let url = item as? URL {

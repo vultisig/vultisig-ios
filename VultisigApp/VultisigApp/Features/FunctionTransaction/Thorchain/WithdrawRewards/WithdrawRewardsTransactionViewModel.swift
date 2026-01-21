@@ -13,22 +13,22 @@ final class WithdrawRewardsTransactionViewModel: ObservableObject, Form {
     let vault: Vault
     let rewards: Decimal
     let rewardsCoin: CoinMeta
-    
+
     @Published var percentageSelected: Double? = 100
     @Published var validForm: Bool = false
     @Published var amountField = FormField(
         label: "amount".localized,
         placeholder: "0"
     )
-    
+
     private(set) var isMaxAmount: Bool = false
     private(set) lazy var form: [FormField] = [
         amountField
     ]
-    
+
     var formCancellable: AnyCancellable?
     var cancellables = Set<AnyCancellable>()
-    
+
     init(
         coin: Coin,
         vault: Vault,
@@ -40,7 +40,7 @@ final class WithdrawRewardsTransactionViewModel: ObservableObject, Form {
         self.rewards = rewards
         self.rewardsCoin = rewardsCoin
     }
-    
+
     func onLoad() {
         setupForm()
         amountField.validators = [
@@ -49,7 +49,7 @@ final class WithdrawRewardsTransactionViewModel: ObservableObject, Form {
         amountField.value = rewards.formatForDisplay(maxDecimals: rewardsCoin.decimals)
         percentageSelected = 100
     }
-    
+
     var transactionBuilder: TransactionBuilder? {
         validateErrors()
         guard validForm else { return nil }
@@ -59,7 +59,7 @@ final class WithdrawRewardsTransactionViewModel: ObservableObject, Form {
             sendMaxAmount: isMaxAmount
         )
     }
-    
+
     func onPercentage(_ percentage: Double) {
         isMaxAmount = percentage == 100
     }

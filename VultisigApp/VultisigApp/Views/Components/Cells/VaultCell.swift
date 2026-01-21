@@ -10,19 +10,19 @@ import SwiftUI
 struct VaultCell: View {
     let vault: Vault
     let isEditing: Bool
-    
+
     @StateObject var viewModel = VaultCellViewModel()
-    
+
     var body: some View {
         HStack(spacing: 4) {
             rearrange
-            
+
             title
-            
+
             if viewModel.isFastVault {
                 fastVaultLabel
             }
-            
+
             Spacer()
             partAssignedCell
             actions
@@ -37,7 +37,7 @@ struct VaultCell: View {
             setData()
         }
     }
-    
+
     var rearrange: some View {
         Image(systemName: "line.3.horizontal")
             .font(Theme.fonts.bodySMedium)
@@ -45,7 +45,7 @@ struct VaultCell: View {
             .frame(maxWidth: isEditing ? nil : 0)
             .clipped()
     }
-    
+
     var title: some View {
         Text(vault.name.capitalized)
             .font(Theme.fonts.bodyMMedium)
@@ -54,11 +54,11 @@ struct VaultCell: View {
             .multilineTextAlignment(.leading)
             .lineLimit(1)
     }
-    
+
     var actions: some View {
         selectOption
     }
-    
+
     var partAssignedCell: some View {
         Group {
             Text(NSLocalizedString("share", comment: "")) +
@@ -69,7 +69,7 @@ struct VaultCell: View {
         .font(Theme.fonts.bodySRegular)
         .foregroundColor(Theme.colors.textSecondary)
     }
-    
+
     var fastVaultLabel: some View {
         Text(NSLocalizedString("fastModeTitle", comment: "").capitalized)
             .font(Theme.fonts.bodySRegular)
@@ -80,7 +80,7 @@ struct VaultCell: View {
             .cornerRadius(5)
             .lineLimit(1)
     }
-    
+
     var selectOption: some View {
         Image(systemName: "chevron.right")
             .font(Theme.fonts.bodyMMedium)
@@ -88,7 +88,7 @@ struct VaultCell: View {
             .frame(maxWidth: isEditing ? 0 : nil)
             .clipped()
     }
-    
+
     private func setData() {
         viewModel.setupCell(vault)
     }

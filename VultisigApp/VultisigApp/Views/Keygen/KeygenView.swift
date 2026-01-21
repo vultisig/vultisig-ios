@@ -12,7 +12,7 @@ import Tss
 import RiveRuntime
 
 struct KeygenView: View {
-    
+
     let vault: Vault
     let tssType: TssType // keygen or reshare
     let keygenCommittee: [String]
@@ -25,12 +25,12 @@ struct KeygenView: View {
     let keyImportInput: KeyImportInput?
     let isInitiateDevice: Bool
     @Binding var hideBackButton: Bool
-    
+
     @StateObject var viewModel = KeygenViewModel()
-    
+
     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
     let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
-    
+
     @State var progressCounter: Double = 1
     @State var showProgressRing = true
     @State var showDoneText = false
@@ -42,11 +42,11 @@ struct KeygenView: View {
     @State var keygenAnimationVMInstance: RiveDataBindingViewModel.Instance?
     @State var displayedProgress: Float = 0
     @State var progressAnimationTimer: Timer?
-    
+
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var context
     @Environment(\.router) var router
-    
+
     var body: some View {
         content
             .sensoryFeedback(.success, trigger: showDoneText)
@@ -80,7 +80,7 @@ struct KeygenView: View {
                 connected?.value = true
             }
     }
-    
+
     private func handleNavigation() {
         switch tssType {
         case .Keygen, .Reshare:
@@ -107,12 +107,12 @@ struct KeygenView: View {
             ))
         }
     }
-    
+
     var container: some View {
         ZStack {
             states
                 .opacity(tssType == .Migrate ? 0 : 1)
-            
+
             if tssType == .Migrate {
                 if viewModel.status == .KeygenFailed {
                     migrationFailedText
@@ -122,11 +122,11 @@ struct KeygenView: View {
             }
         }
     }
-    
+
     var migrateView: some View {
         UpgradingVaultView()
     }
-    
+
     var states: some View {
         ZStack {
             switch viewModel.status {
@@ -161,7 +161,7 @@ struct KeygenView: View {
             }
         }
     }
-    
+
     var migrationFailedText: some View {
         VStack(spacing: 32) {
             Spacer()
@@ -175,19 +175,19 @@ struct KeygenView: View {
             showError = true
         }
     }
-    
+
     var migrateRetryButton: some View {
         PrimaryButton(title: "retry") {
             dismiss()
         }
     }
-    
+
     var doneText: some View {
         VStack(spacing: 18) {
             vaultCreatedAnimationVM?.view()
                 .scaleEffect(0.8)
                 .frame(maxWidth: 512)
-            
+
             VStack {
                 Text(NSLocalizedString("vaultCreated", comment: ""))
                     .foregroundColor(Theme.colors.textPrimary)
@@ -198,7 +198,7 @@ struct KeygenView: View {
             .opacity(progressCounter == 4 ? 1 : 0)
             .animation(.easeInOut, value: progressCounter)
             .padding(.top, 60)
-            
+
             checkmarkAnimationVM?.view()
                 .frame(width: 80, height: 80)
         }
@@ -206,11 +206,11 @@ struct KeygenView: View {
             setDoneData()
         }
     }
-    
+
     var keygenFailedView: some View {
         ZStack {
             switch tssType {
-            case .Keygen,.KeyImport:
+            case .Keygen, .KeyImport:
                 keygenFailedText
             case .Reshare:
                 keygenReshareFailedText
@@ -224,7 +224,7 @@ struct KeygenView: View {
             showProgressRing = false
         }
     }
-    
+
     var migrateFailedText: some View {
         VStack(spacing: 18) {
             Text(NSLocalizedString("migrationFailed", comment: "migration failed"))
@@ -237,7 +237,7 @@ struct KeygenView: View {
                 .multilineTextAlignment(.center)
         }
     }
-    
+
     var keygenFailedText: some View {
         VStack(spacing: 18) {
             Text(NSLocalizedString("keygenFailed", comment: "key generation failed"))
@@ -250,11 +250,11 @@ struct KeygenView: View {
                 .multilineTextAlignment(.center)
         }
     }
-    
+
     var keygenReshareFailedText: some View {
         ErrorMessage(text: "thresholdNotReachedMessage", width: 300)
     }
-    
+
     var retryButton: some View {
         VStack(spacing: 32) {
             appVersion
@@ -262,7 +262,7 @@ struct KeygenView: View {
         }
         .padding(.horizontal, 16)
     }
-    
+
     var appVersion: some View {
         return VStack {
             Text("Vultisig APP V\(version ?? "1")")
@@ -272,13 +272,13 @@ struct KeygenView: View {
         .font(Theme.fonts.bodySRegular)
         .foregroundColor(Theme.colors.bgButtonPrimary)
     }
-    
+
     var button: some View {
         PrimaryButton(title: "retry") {
             dismiss()
         }
     }
-    
+
     func setData() async {
         await viewModel.setData(
             vault: vault,
@@ -293,23 +293,23 @@ struct KeygenView: View {
             keyImportInput: keyImportInput
         )
     }
-    
+
     private func setDoneData() {
         showDoneText = true
         checkVaultType()
-        
+
         if tssType == .Reshare {
             vault.isBackedUp = false
         }
-        
+
         if let fastSignConfig {
             viewModel.saveFastSignConfig(fastSignConfig, vault: vault)
         }
-        
+
         progressCounter = 4
         viewModel.delaySwitchToMain()
     }
-    
+
     private func checkVaultType() {
         if fastSignConfig != nil {
             showVerificationView = true

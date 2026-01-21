@@ -12,7 +12,7 @@ import CryptoSwift
 
 enum MayaChainHelper {
     static let MayaChainGas: UInt64 = 2000000000
-    
+
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain, hrp: "maya") else {
             throw HelperError.runtimeError("\(keysignPayload.coin.address) is invalid")
@@ -23,10 +23,10 @@ enum MayaChainHelper {
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
             throw HelperError.runtimeError("invalid hex public key")
         }
-        
+
         var mayaChainCoin = TW_Cosmos_Proto_THORChainCoin()
         var message = [WalletCore.CosmosMessage()]
-        
+
         if isDeposit {
             mayaChainCoin = TW_Cosmos_Proto_THORChainCoin.with {
                 $0.asset = TW_Cosmos_Proto_THORChainAsset.with {
@@ -51,7 +51,7 @@ enum MayaChainHelper {
             guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .thorchain, hrp: "maya") else {
                 throw HelperError.runtimeError("\(keysignPayload.toAddress) is invalid")
             }
-            
+
             message = [WalletCore.CosmosMessage.with {
                 $0.thorchainSendMessage = WalletCore.CosmosMessage.THORChainSend.with {
                     $0.fromAddress = fromAddr.data
@@ -63,7 +63,7 @@ enum MayaChainHelper {
                 }
             }]
         }
-        
+
         let input = CosmosSigningInput.with {
             $0.publicKey = pubKeyData
             $0.signingMode = .protobuf
@@ -80,10 +80,10 @@ enum MayaChainHelper {
                 $0.gas = MayaChainGas
             }
         }
-        
+
         return try input.serializedData()
     }
-    
+
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .thorchain, txInputData: inputData)
@@ -93,14 +93,14 @@ enum MayaChainHelper {
         }
         return [preSigningOutput.dataHash.hexString]
     }
-    
+
     static func getSignedTransaction(keysignPayload: KeysignPayload,
                                      signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let signedTransaction = try getSignedTransaction(coinHexPubKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
         return signedTransaction
     }
-    
+
     static func getSignedTransaction(coinHexPubKey: String,
                                      inputData: Data,
                                      signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
@@ -109,7 +109,7 @@ enum MayaChainHelper {
         else {
             throw HelperError.runtimeError("public key \(coinHexPubKey) is invalid")
         }
-        
+
         do {
             let hashes = TransactionCompiler.preImageHashes(coinType: .thorchain, txInputData: inputData)
             let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
@@ -120,7 +120,7 @@ enum MayaChainHelper {
             guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
                 throw HelperError.runtimeError("fail to verify signature")
             }
-            
+
             allSignatures.add(data: signature)
             publicKeys.add(data: pubkeyData)
             let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .thorchain,

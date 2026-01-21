@@ -10,12 +10,12 @@ import SwiftUI
 struct PercentageButtonsStack: View {
     let percentages: [Double]
     @Binding var selectedPercentage: Double?
-    
+
     init(percentages: [Double] = [25, 50, 75, 100], selectedPercentage: Binding<Double?>) {
         self.percentages = percentages
         self._selectedPercentage = selectedPercentage
     }
-    
+
     var body: some View {
         HStack(spacing: 12) {
             ForEach(percentages, id: \.self) { percentage in
@@ -27,12 +27,12 @@ struct PercentageButtonsStack: View {
             }
         }
     }
-    
+
     @ViewBuilder
     private func buttonContent(for percentage: Double) -> some View {
         let isSelected = selectedPercentage == percentage
         let buttonText = percentage == 100 ? "MAX" : (Double(percentage) / 100).formatted(.percent)
-        
+
         Text(buttonText)
             .font(Theme.fonts.caption12)
             .foregroundStyle(Theme.colors.textPrimary)

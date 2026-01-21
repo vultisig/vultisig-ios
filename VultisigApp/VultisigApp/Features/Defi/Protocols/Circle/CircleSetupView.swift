@@ -11,20 +11,20 @@ struct CircleSetupView: View {
     let vault: Vault
     @ObservedObject var model: CircleViewModel
     @Environment(\.dismiss) var dismiss
-    
+
     @State var showInfoBanner = true
     @State var showError = false
-    
+
     var walletUSDCBalance: Decimal {
         return CircleViewLogic.getWalletUSDCBalance(vault: vault)
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(spacing: CircleConstants.Design.verticalSpacing) {
                     topBanner
-                    
+
                     VStack(alignment: .leading, spacing: 8) {
                         VStack(spacing: 8) {
                             Text("circleSetupDeposited".localized)
@@ -36,7 +36,7 @@ struct CircleSetupView: View {
                         }
                         .fixedSize()
                         Spacer()
-                        
+
                         Text("circleSetupDepositDescription".localized)
                             .font(Theme.fonts.bodySMedium)
                             .foregroundStyle(Theme.colors.textPrimary)
@@ -44,7 +44,7 @@ struct CircleSetupView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    
+
                     InfoBannerView(
                         description: "circleSetupInfoText".localized,
                         type: .info,
@@ -54,7 +54,7 @@ struct CircleSetupView: View {
                         }
                     )
                     .showIf(showInfoBanner)
-                    
+
                     bottomCard
                 }
                 .padding(.top, CircleConstants.Design.mainViewTopPadding)
@@ -73,14 +73,14 @@ struct CircleSetupView: View {
             )
         }
     }
-    
+
     var topBanner: some View {
         HStack {
             VStack(alignment: .leading, spacing: 8) {
                 Text(NSLocalizedString("circleSetupAccountTitle", comment: "Circle USDC Account"))
                     .font(CircleConstants.Fonts.title)
                     .foregroundStyle(Theme.colors.textSecondary)
-                
+
                 Text("$\(walletUSDCBalance.formatted())")
                     .font(CircleConstants.Fonts.balance)
                     .foregroundStyle(Theme.colors.textPrimary)
@@ -101,11 +101,11 @@ struct CircleSetupView: View {
         .padding(CircleConstants.Design.cardPadding)
         .background(cardBackground)
     }
-    
+
     var hasAccount: Bool {
         vault.circleWalletAddress != nil
     }
-    
+
     var bottomCardLabel: String {
         if hasAccount || model.balance > 0 {
             return NSLocalizedString("circleSetupUSDCDeposited", comment: "USDC deposited")
@@ -113,13 +113,13 @@ struct CircleSetupView: View {
             return NSLocalizedString("circleSetupAccountBalance", comment: "Circle Account Balance")
         }
     }
-    
+
     private var buttonTitle: String {
-        model.isLoading 
+        model.isLoading
             ? NSLocalizedString("circleCreatingAccount", comment: "Creating account...")
             : NSLocalizedString("circleSetupOpenAccount", comment: "Open Account")
     }
-    
+
     var bottomCard: some View {
         VStack(spacing: CircleConstants.Design.cardPadding) {
             HStack(spacing: 12) {
@@ -127,19 +127,19 @@ struct CircleSetupView: View {
                     .resizable()
                     .frame(width: 32, height: 32)
                     .clipShape(Circle())
-                
+
                 VStack(alignment: .leading, spacing: 2) {
                     Text(bottomCardLabel)
                         .font(CircleConstants.Fonts.subtitle)
                         .foregroundStyle(Theme.colors.textSecondary)
-                    
+
                     Text("\(model.balance.formatted()) USDC")
                         .font(Theme.fonts.priceBodyL)
                         .foregroundStyle(Theme.colors.textPrimary)
                 }
                 Spacer()
             }
-            
+
             PrimaryButton(
                 title: buttonTitle,
                 isLoading: model.isLoading,
@@ -153,7 +153,7 @@ struct CircleSetupView: View {
         .padding(CircleConstants.Design.cardPadding)
         .background(cardBackground)
     }
-    
+
     var cardBackground: some View {
         RoundedRectangle(cornerRadius: CircleConstants.Design.cornerRadius)
             .inset(by: 0.5)
@@ -169,7 +169,7 @@ struct CircleSetupView: View {
                 ).opacity(0.09)
             )
     }
-    
+
     func createWallet() async {
         await MainActor.run { model.isLoading = true }
         do {

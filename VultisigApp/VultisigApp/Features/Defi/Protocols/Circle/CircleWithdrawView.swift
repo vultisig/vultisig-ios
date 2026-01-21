@@ -15,7 +15,7 @@ struct CircleWithdrawView: View {
     @StateObject private var model: CircleViewModel
     @Environment(\.dismiss) var dismiss
     @Environment(\.router) var router
-    
+
     @State var amount: String = ""
     @State var percentage: Double = 0.0
     @State var isLoading = false
@@ -23,18 +23,18 @@ struct CircleWithdrawView: View {
     @State var isFastVault = false
     @State var fastPasswordPresented = false
     @State var fastVaultPassword: String = ""
-    
+
     @StateObject var sendTransaction = SendTransaction()
-    
+
     init(vault: Vault, model: CircleViewModel) {
         self.vault = vault
         self._model = StateObject(wrappedValue: model)
     }
-    
+
     var body: some View {
         main
     }
-    
+
     var content: some View {
         ZStack {
             VStack(spacing: 0) {
@@ -42,7 +42,7 @@ struct CircleWithdrawView: View {
                 scrollableContent
                 footerView
             }
-            
+
             if isLoading {
                 Color.black.opacity(0.5).ignoresSafeArea()
                 ProgressView()
@@ -52,7 +52,7 @@ struct CircleWithdrawView: View {
             await loadFastVaultStatus()
         }
     }
-    
+
     var headerView: some View {
         HStack {
             Button {
@@ -64,20 +64,20 @@ struct CircleWithdrawView: View {
                     .frame(width: 40, height: 40)
                     .background(Circle().fill(Color.white.opacity(0.1)))
             }
-            
+
             Spacer()
-            
+
             Text(NSLocalizedString("circleWithdrawTitle", comment: "Withdraw from Circle"))
                 .font(Theme.fonts.bodyLMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
-            
+
             Spacer()
-            
+
             Color.clear.frame(width: 40, height: 40)
         }
         .padding(CircleConstants.Design.horizontalPadding)
     }
-    
+
     var footerView: some View {
         VStack(spacing: 12) {
             if let error = error {
@@ -85,7 +85,7 @@ struct CircleWithdrawView: View {
                     .foregroundStyle(Theme.colors.alertError)
                     .font(.caption)
             }
-            
+
             if vaultEthBalance <= 0 {
                 Text(NSLocalizedString("circleDashboardETHRequired", comment: "ETH is required..."))
                     .font(.caption)
@@ -93,13 +93,13 @@ struct CircleWithdrawView: View {
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            
+
             withdrawButton
         }
         .padding(CircleConstants.Design.horizontalPadding)
         .background(Theme.colors.bgPrimary)
     }
-    
+
     var scrollableContent: some View {
         VStack(spacing: CircleConstants.Design.verticalSpacing) {
             VStack(spacing: 0) {
@@ -107,40 +107,40 @@ struct CircleWithdrawView: View {
                     Text(NSLocalizedString("circleWithdrawAmount", comment: "Amount"))
                         .font(CircleConstants.Fonts.subtitle)
                         .foregroundStyle(Theme.colors.textSecondary)
-                    
+
                     Divider()
                         .background(Theme.colors.textTertiary.opacity(0.2))
                 }
-                
+
                 Spacer()
-                
+
                 VStack(spacing: 8) {
                     HStack(spacing: 4) {
                         amountTextField
-                        
+
                         Text("USDC")
                             .font(Theme.fonts.bodyLMedium)
                             .foregroundStyle(Theme.colors.textSecondary)
                     }
                     .frame(maxWidth: .infinity)
-                    
+
                     Text("\(Int(min(percentage, 100)))%")
                         .font(CircleConstants.Fonts.subtitle)
                         .foregroundStyle(Theme.colors.textSecondary)
                 }
-                
+
                 Spacer()
-                
+
                 VStack(spacing: CircleConstants.Design.verticalSpacing) {
                     percentageCheckpoints
-                    
+
                     HStack {
                         Text(NSLocalizedString("circleDepositBalanceAvailable", comment: "Balance available:"))
                             .font(CircleConstants.Fonts.subtitle)
                             .foregroundStyle(Theme.colors.textSecondary)
-                        
+
                         Spacer()
-                        
+
                         Text("\(model.balance.formatted()) USDC")
                             .font(CircleConstants.Fonts.subtitle)
                             .bold()
@@ -154,14 +154,14 @@ struct CircleWithdrawView: View {
         .padding(.top, CircleConstants.Design.verticalSpacing)
         .frame(maxHeight: .infinity)
     }
-    
+
     var amountTextField: some View {
         SendCryptoAmountTextField(
             amount: $amount,
             onChange: { await updatePercentage(from: $0) }
         )
     }
-    
+
     var percentageCheckpoints: some View {
         HStack(spacing: 8) {
             ForEach([25, 50, 75, 100], id: \.self) { value in
@@ -176,11 +176,11 @@ struct CircleWithdrawView: View {
             }
         }
     }
-    
+
     func isPercentageSelected(_ value: Int) -> Bool {
         abs(percentage - Double(value)) < 1.0
     }
-    
+
     @ViewBuilder
     var withdrawButton: some View {
         if isFastVault {
@@ -188,7 +188,7 @@ struct CircleWithdrawView: View {
                 Text(NSLocalizedString("holdForPairedSign", comment: ""))
                     .foregroundColor(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
-                
+
                 LongPressPrimaryButton(title: NSLocalizedString("circleWithdrawConfirm", comment: "Continue")) {
                     fastPasswordPresented = true
                 } longPressAction: {
@@ -204,25 +204,25 @@ struct CircleWithdrawView: View {
             .disabled(isButtonDisabled)
         }
     }
-    
+
     var vaultEthBalance: Decimal {
         let (chain, _) = CircleViewLogic.getChainDetails(vault: vault)
         return vault.coins.first(where: { $0.chain == chain && $0.isNativeToken })?.balanceDecimal ?? 0
     }
-    
+
     var isButtonDisabled: Bool {
         amount.isEmpty || (Decimal(string: amount) ?? 0) <= 0 || (Decimal(string: amount) ?? 0) > model.balance || vaultEthBalance <= 0 || isLoading
     }
-    
+
     func loadFastVaultStatus() async {
         let isExist = await FastVaultService.shared.exist(pubKeyECDSA: vault.pubKeyECDSA)
         let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
-        
+
         await MainActor.run {
             isFastVault = isExist && !isLocalBackup
         }
     }
-    
+
     func updatePercentage(from amountStr: String) async {
         let balance = model.balance
         guard let amountDec = Decimal(string: amountStr), balance > 0 else {
@@ -230,14 +230,14 @@ struct CircleWithdrawView: View {
         }
         let percent = (amountDec / balance) * 100
         let cappedPercent = min(Double(truncating: percent as NSNumber), 100.0)
-        
+
         if abs(self.percentage - cappedPercent) > 0.1 {
             await MainActor.run {
                 self.percentage = cappedPercent
             }
         }
     }
-    
+
     func updateAmount(from percent: Double) {
         let balance = model.balance
         guard balance > 0 else { return }
@@ -247,7 +247,7 @@ struct CircleWithdrawView: View {
             self.amount = newAmount
         }
     }
-    
+
     func handleWithdraw() async {
         guard let amountDecimal = Decimal(string: amount) else {
             await MainActor.run {
@@ -255,23 +255,23 @@ struct CircleWithdrawView: View {
             }
             return
         }
-        
+
         await MainActor.run {
             isLoading = true
             error = nil
         }
-        
+
         do {
             let decimals = 6
             let amountUnits = (amountDecimal * pow(10, decimals)).description
             let cleanAmountUnits = amountUnits.components(separatedBy: ".").first ?? amountUnits
             let amountVal = BigInt(cleanAmountUnits) ?? BigInt(0)
-            
+
             let (chain, _) = CircleViewLogic.getChainDetails(vault: vault)
             guard let recipientCoin = vault.coins.first(where: { $0.chain == chain }) else {
                 throw NSError(domain: "CircleWithdraw", code: 404, userInfo: [NSLocalizedDescriptionKey: "ETH address not found"])
             }
-            
+
             func attemptPayload() async throws -> KeysignPayload {
                 return try await model.logic.getWithdrawalPayload(
                     vault: vault,
@@ -279,7 +279,7 @@ struct CircleWithdrawView: View {
                     amount: amountVal
                 )
             }
-            
+
             let payload: KeysignPayload
             do {
                 payload = try await attemptPayload()
@@ -299,14 +299,14 @@ struct CircleWithdrawView: View {
             } catch {
                 throw error
             }
-            
+
             let coinToUse = recipientCoin
-            
+
             await MainActor.run {
                 self.sendTransaction.reset(coin: coinToUse)
                 self.sendTransaction.isFastVault = isFastVault
                 self.sendTransaction.fastVaultPassword = fastVaultPassword
-                
+
                 router.navigate(
                     to: SendRoute.pairing(
                         vault: vault,
@@ -315,10 +315,10 @@ struct CircleWithdrawView: View {
                         fastVaultPassword: fastVaultPassword.nilIfEmpty
                     )
                 )
-                
+
                 isLoading = false
             }
-            
+
         } catch {
             await MainActor.run {
                 self.error = error

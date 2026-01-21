@@ -18,10 +18,10 @@ struct DefiPositionsStorageService {
                 positionIDs.contains(position.id)
             }
         )
-        
+
         let existingPositions = try Storage.shared.modelContext.fetch(fetchDescriptor)
         let existingPositionsByID = Dictionary(uniqueKeysWithValues: existingPositions.map { ($0.id, $0) })
-        
+
         for position in positions {
             if let existing = existingPositionsByID[position.id] {
                 // Update existing position
@@ -34,10 +34,10 @@ struct DefiPositionsStorageService {
                 Storage.shared.modelContext.insert(position)
             }
         }
-        
+
         try Storage.shared.save()
     }
-    
+
     /// Upserts bond positions - updates existing ones or inserts new ones based on their unique ID
     /// Also removes stale positions that are no longer present in the new positions array
     @MainActor
@@ -86,7 +86,7 @@ struct DefiPositionsStorageService {
 
         try Storage.shared.save()
     }
-    
+
     /// Upserts stake positions - updates existing ones or inserts new ones based on their unique ID
     @MainActor
     func upsert(_ positions: [StakePosition]) throws {
@@ -96,10 +96,10 @@ struct DefiPositionsStorageService {
                 positionIDs.contains(position.id)
             }
         )
-        
+
         let existingPositions = try Storage.shared.modelContext.fetch(fetchDescriptor)
         let existingPositionsByID = Dictionary(uniqueKeysWithValues: existingPositions.map { ($0.id, $0) })
-        
+
         for position in positions {
             if let existing = existingPositionsByID[position.id] {
                 // Update existing position
@@ -115,7 +115,7 @@ struct DefiPositionsStorageService {
                 Storage.shared.modelContext.insert(position)
             }
         }
-        
+
         try Storage.shared.save()
     }
 }

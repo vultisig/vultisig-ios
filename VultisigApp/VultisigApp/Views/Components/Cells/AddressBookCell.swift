@@ -17,12 +17,12 @@ struct AddressBookCell: View {
 
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
-    
+
     var body: some View {
         HStack {
             rearrangeIcon
                 .showIf(isEditing)
-            
+
             ContainerView {
                 label
             }
@@ -31,7 +31,7 @@ struct AddressBookCell: View {
         .listRowSeparator(.hidden)
         .padding(.vertical, 8)
     }
-    
+
     var label: some View {
         HStack(spacing: 8) {
             Button {
@@ -44,21 +44,21 @@ struct AddressBookCell: View {
                 .showIf(isEditing)
         }
     }
-    
+
     var content: some View {
         HStack(spacing: 12) {
             logo
             text
         }
     }
-    
+
     var logo: some View {
         Image(address.coinMeta.logo)
             .resizable()
             .frame(width: 32, height: 32)
             .cornerRadius(30)
     }
-    
+
     var text: some View {
         VStack(alignment: .leading, spacing: 4) {
             titleContent
@@ -66,7 +66,7 @@ struct AddressBookCell: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     var titleContent: some View {
         Text(address.title)
             .foregroundColor(Theme.colors.textPrimary)
@@ -74,7 +74,7 @@ struct AddressBookCell: View {
             .lineLimit(1)
             .truncationMode(.tail)
     }
-    
+
     var addressContent: some View {
         Text(address.address)
             .foregroundColor(Theme.colors.textPrimary)
@@ -82,13 +82,13 @@ struct AddressBookCell: View {
             .lineLimit(1)
             .truncationMode(.middle)
     }
-    
+
     var rearrangeIcon: some View {
         Icon(named: "grip-vertical", color: Theme.colors.textSecondary)
             .scaleEffect(isEditing ? 1 : 0)
             .frame(width: isEditing ? nil : 0)
     }
-    
+
     var deleteIcon: some View {
         Button {
             modelContext.delete(address)
@@ -96,13 +96,13 @@ struct AddressBookCell: View {
             deleteIconLabel
         }
     }
-    
+
     var deleteIconLabel: some View {
         Icon(named: "trash", color: Theme.colors.textTertiary)
             .scaleEffect(isEditing ? 1 : 0)
             .frame(width: isEditing ? nil : 0)
     }
-    
+
     private func handleSelection() {
         if shouldReturnAddress {
             returnAddress = address.address
@@ -118,7 +118,7 @@ struct AddressBookCell: View {
         Background()
         VStack {
             AddressBookCell(address: AddressBookItem.example, shouldReturnAddress: true, isEditing: false, returnAddress: .constant(""))
-            AddressBookCell(address: AddressBookItem.example, shouldReturnAddress: false,  isEditing: false, returnAddress: .constant(""))
+            AddressBookCell(address: AddressBookItem.example, shouldReturnAddress: false, isEditing: false, returnAddress: .constant(""))
         }
     }
 }

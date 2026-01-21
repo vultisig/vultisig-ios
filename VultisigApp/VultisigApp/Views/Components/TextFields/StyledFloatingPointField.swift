@@ -13,12 +13,12 @@ struct StyledFloatingPointField: View {
     let placeholder: String
     @Binding var value: Decimal
     @Binding var isValid: Bool
-    
+
     var isOptional: Bool = false
-    
+
     @State private var textFieldValue: String = ""
     @State private var localIsValid: Bool = true
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -31,12 +31,12 @@ struct StyledFloatingPointField: View {
                         .foregroundColor(.red)
                 }
             }
-            
+
             container
         }
         .id(placeholder)
     }
-    
+
     var textField: some View {
         TextField("", text: $textFieldValue)
             .placeholder(when: textFieldValue.isEmpty) {
@@ -63,10 +63,10 @@ struct StyledFloatingPointField: View {
             }
             .id(placeholder)
     }
-    
-    private func updateValue(_ newValue: String) {        
+
+    private func updateValue(_ newValue: String) {
         textFieldValue = newValue
-        
+
         if newValue.isValidDecimal() {
             value = newValue.toDecimal()
             validate(value)
@@ -75,7 +75,7 @@ struct StyledFloatingPointField: View {
             validate(value)
         }
     }
-    
+
     private func validate(_ newValue: Decimal) {
         if isOptional {
             isValid = (newValue == 0) || (newValue >= 0)
@@ -84,7 +84,7 @@ struct StyledFloatingPointField: View {
         }
         localIsValid = isValid
     }
-    
+
     var optionalMessage: String {
         return isOptional ? " (optional)" : ""
     }

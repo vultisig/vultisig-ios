@@ -13,7 +13,7 @@ struct CosmosHelperConfig {
     let coinType: CoinType
     let denom: String
     let gasLimit: UInt64
-    
+
     static func getConfig(forChain chain: Chain) throws -> CosmosHelperConfig {
         switch chain {
         case .gaiaChain:

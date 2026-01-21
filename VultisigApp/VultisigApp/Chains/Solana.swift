@@ -9,11 +9,11 @@ import WalletCore
 import BigInt
 
 enum SolanaHelper {
-    
+
     static let defaultFeeInLamports: BigInt = 1000000 // 0.001
     static let priorityFeePrice: UInt64 = 1_000_000 // Priority fee price in lamports
     static let priorityFeeLimit: BigInt = 100_000 // Priority fee compute unit limit
-    
+
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard keysignPayload.coin.chain.ticker == "SOL" else {
             throw HelperError.runtimeError("coin is not SOL")
@@ -24,15 +24,15 @@ enum SolanaHelper {
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .solana) else {
             throw HelperError.runtimeError("fail to get to address")
         }
-        
+
         // Use default priority limit if not provided (backward compatibility)
         let effectivePriorityLimit = priorityLimit > 0 ? priorityLimit : SolanaHelper.priorityFeeLimit
-        
+
         guard effectivePriorityLimit <= UInt32.max else {
             throw HelperError.runtimeError("priorityLimit exceeds UInt32 bounds: \(effectivePriorityLimit)")
         }
         let priorityFeeLimitValue = UInt32(truncatingIfNeeded: effectivePriorityLimit)
-        
+
         if keysignPayload.coin.isNativeToken {
             let input = SolanaSigningInput.with {
                 $0.v0Msg = true
@@ -54,11 +54,11 @@ enum SolanaHelper {
             }
             return try input.serializedData()
         } else {
-            
+
             // We should not create a new account association if it already has.
             // So we can can use a simple tokenTransferTransaction
             if let fromPubKey = fromAddressPubKey, !fromPubKey.isEmpty, let toPubKey = toAddressPubKey, !toPubKey.isEmpty {
-                
+
                 let tokenTransferMessage = SolanaTokenTransfer.with {
                     $0.tokenMintAddress = keysignPayload.coin.contractAddress
                     $0.senderTokenAddress = fromPubKey
@@ -67,7 +67,7 @@ enum SolanaHelper {
                     $0.decimals = UInt32(keysignPayload.coin.decimals)
                     $0.tokenProgramID = tokenProgramId ? SolanaTokenProgramId.token2022Program : SolanaTokenProgramId.tokenProgram
                 }
-                
+
                 let input = SolanaSigningInput.with {
                     $0.v0Msg = true
                     $0.tokenTransferTransaction = tokenTransferMessage
@@ -80,14 +80,14 @@ enum SolanaHelper {
                         $0.limit = priorityFeeLimitValue
                     }
                 }
-                
+
                 return try input.serializedData()
-                
+
             } else if let fromPubKey = fromAddressPubKey, !fromPubKey.isEmpty {
-                
+
                 // Create new account association for either SPL or Token-2022
                 let receiverAddress = SolanaAddress(string: toAddress.description)!
-                
+
                 let generatedAssociatedAddress: String?
                 if tokenProgramId {
                     // Use Token-2022 specific method
@@ -96,11 +96,11 @@ enum SolanaHelper {
                     // Use standard SPL token method
                     generatedAssociatedAddress = receiverAddress.defaultTokenAddress(tokenMintAddress: keysignPayload.coin.contractAddress)
                 }
-                
+
                 guard let createdRecipientAddress = generatedAssociatedAddress else {
                     throw HelperError.runtimeError("Failed to generate associated token address for recipient")
                 }
-                
+
                 let createAndTransferTokenMessage = SolanaCreateAndTransferToken.with {
                     $0.recipientMainAddress = toAddress.description
                     $0.tokenMintAddress = keysignPayload.coin.contractAddress
@@ -110,7 +110,7 @@ enum SolanaHelper {
                     $0.decimals = UInt32(keysignPayload.coin.decimals)
                     $0.tokenProgramID = tokenProgramId ? SolanaTokenProgramId.token2022Program : SolanaTokenProgramId.tokenProgram
                 }
-                
+
                 let input = SolanaSigningInput.with {
                     $0.v0Msg = true
                     $0.createAndTransferTokenTransaction = createAndTransferTokenMessage
@@ -123,15 +123,15 @@ enum SolanaHelper {
                         $0.limit = priorityFeeLimitValue
                     }
                 }
-                
+
                 return try input.serializedData()
             }
-            
+
             throw HelperError.runtimeError("SPL token transfer failed: sender's associated token account not found. Please ensure you have this token in your wallet.")
-            
+
         }
     }
-    
+
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let imageHash = try SolanaHelper.getPreSignedImageHash(inputData: inputData)
@@ -141,13 +141,13 @@ enum SolanaHelper {
     static func getPreSignedImageHash(inputData: Data) throws -> [String] {
         let hashes = TransactionCompiler.preImageHashes(coinType: .solana, txInputData: inputData)
         let preSigningOutput = try SolanaPreSigningOutput(serializedBytes: hashes)
-        
+
         if !preSigningOutput.errorMessage.isEmpty {
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
         return [preSigningOutput.data.hexString]
     }
-    
+
     static func getSignedTransaction(keysignPayload: KeysignPayload,
                                      signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         let coinHexPublicKey = keysignPayload.coin.hexPublicKey
@@ -157,7 +157,7 @@ enum SolanaHelper {
         guard let _ = PublicKey(data: pubkeyData, type: .ed25519) else {
             throw HelperError.runtimeError("public key \(coinHexPublicKey) is invalid")
         }
-        
+
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
 
         let result = try SolanaHelper.getSignedTransaction(
@@ -180,7 +180,7 @@ enum SolanaHelper {
 
         let hashes = TransactionCompiler.preImageHashes(coinType: .solana, txInputData: inputData)
         let preSigningOutput = try SolanaPreSigningOutput(serializedBytes: hashes)
-        
+
         let allSignatures = DataVector()
         let publicKeys = DataVector()
         let signatureProvider = SignatureProvider(signatures: signatures)
@@ -192,13 +192,13 @@ enum SolanaHelper {
 
         allSignatures.add(data: signature)
         publicKeys.add(data: pubkeyData)
-        
+
         let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .solana,
                                                                              txInputData: inputData,
                                                                              signatures: allSignatures,
                                                                              publicKeys: publicKeys)
         let output = try SolanaSigningOutput(serializedBytes: compileWithSignature)
-        
+
         let result = SignedTransactionResult(rawTransaction: output.encoded,
                                              transactionHash: getHashFromRawTransaction(tx: output.encoded))
 
@@ -209,7 +209,7 @@ enum SolanaHelper {
         let sig =  Data(tx.prefix(64).utf8)
         return sig.base64EncodedString()
     }
-    
+
     static func getZeroSignedTransaction(keysignPayload: KeysignPayload) throws -> String {
         let coinHexPublicKey = keysignPayload.coin.hexPublicKey
         guard let publicKey = PublicKey(data: Data(hex: coinHexPublicKey), type: PublicKeyType.ed25519) else {

@@ -12,32 +12,32 @@ import Combine
 // MARK: - Main ViewModel
 
 class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObject {
-    
+
     static let INITIAL_ITEM_FOR_DROPDOWN_TEXT: String = NSLocalizedString("selectSecuredAssetToWithdraw", comment: "")
-    
+
     @Published var isTheFormValid: Bool = false
     @Published var customErrorMessage: String? = nil
     @Published var amount: Decimal = 0.0
     @Published var destinationAddress: String = ""
     @Published var selectedSecuredAsset: IdentifiableString = .init(value: NSLocalizedString("selectSecuredAssetToWithdraw", comment: ""))
-    
+
     @Published var amountValid: Bool = false
     @Published var destinationAddressValid: Bool = false
     @Published var securedAssetValid: Bool = false
-    
+
     @Published var availableSecuredAssets: [IdentifiableString] = []
     @Published var isLoadingAssets: Bool = true
     @Published var loadError: String? = nil
     @Published var selectedSecuredAssetCoin: Coin? = nil  // Track the actual secured asset coin
-    
+
     private var cancellables = Set<AnyCancellable>()
-    
+
     // Domain models
     var tx: SendTransaction
     private var vault: Vault
-    
+
     var addressFields: [String: String] {
-        get { 
+        get {
             ["destinationAddress": destinationAddress]
         }
         set {
@@ -46,41 +46,41 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
             }
         }
     }
-    
+
     required init(tx: SendTransaction, vault: Vault) {
         self.tx = tx
         self.vault = vault
-        
+
         // For withdraw, tx.coin will be set to the selected secured asset
         // when user selects from dropdown. Don't set it to RUNE here.
     }
-    
+
     func initialize() {
         setupValidation()
         prefillAddresses()
         loadAvailableSecuredAssets()
     }
-    
+
     private func prefillAddresses() {
         // For withdraw, prefill with the original coin's address as destination
         destinationAddress = tx.coin.address
         destinationAddressValid = !destinationAddress.isEmpty
     }
-    
+
     // MARK: - Load Available Secured Assets
-    
+
     func loadAvailableSecuredAssets() {
         isLoadingAssets = true
         loadError = nil
-        
+
         // Supported secured asset tickers
         let supportedTickers = ["BTC", "ETH", "BCH", "LTC", "DOGE", "AVAX", "BNB"]
-        
+
         // Get secured assets that actually exist in the vault
         // They might be stored as "DOGE" or "DOGE-DOGE" format
         let securedAssetsInVault = vault.coins.filter { coin in
             guard coin.chain == .thorChain && coin.balanceDecimal > 0 else { return false }
-            
+
             let ticker = coin.ticker.uppercased()
             // Check if it matches a supported ticker directly (e.g., "DOGE")
             if supportedTickers.contains(ticker) {
@@ -94,21 +94,21 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
             }
             return false
         }
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            
+
             // Always start with "Select asset" placeholder to ensure dropdown works
             var assetList = [IdentifiableString(value: NSLocalizedString("selectSecuredAssetToWithdraw", comment: ""))]
-            
+
             if securedAssetsInVault.isEmpty {
                 // Keep just the placeholder
                 self.availableSecuredAssets = assetList
                 self.loadError = NSLocalizedString("noSecuredAssets", comment: "")
             } else {
-                
+
                 let vaultAssets = securedAssetsInVault.map { coin in
                     let ticker = coin.ticker.uppercased()
-                    
+
                     if ticker.contains("-") {
                         let parts = ticker.split(separator: "-")
                         if parts.count == 2 && parts[0] == parts[1] {
@@ -125,12 +125,12 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
             self.isLoadingAssets = false
         }
     }
-    
+
     // MARK: - Asset Selection
-    
+
     func selectSecuredAsset(_ asset: IdentifiableString) {
         selectedSecuredAsset = asset
-        
+
         // Check if it's the placeholder option
         if asset.value == Self.INITIAL_ITEM_FOR_DROPDOWN_TEXT {
             securedAssetValid = false
@@ -138,27 +138,27 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
             destinationAddressValid = false
             return
         }
-        
+
         // Valid asset selected
         securedAssetValid = true
-        
+
         // Update destination address based on selected asset
         updateDestinationAddressForAsset(asset.value)
-        
+
         // Update the tx.coin to the selected secured asset for balance validation
         updateTxCoinForSelectedAsset(asset.value)
     }
-    
+
     private func updateDestinationAddressForAsset(_ assetName: String) {
         // assetName is just the ticker (e.g., "BTC", "ETH", "DOGE")
         let ticker = assetName.uppercased()
-        
+
         // Map secured asset ticker to its native chain
         // When withdrawing, we need to send to the original chain address
         let targetChain = getChainForSecuredAsset(ticker)
-        
+
         // Find the corresponding native coin in vault to get the user's own address for that chain
-        if let coin = vault.coins.first(where: { 
+        if let coin = vault.coins.first(where: {
             $0.chain == targetChain && $0.isNativeToken
         }) {
             destinationAddress = coin.address
@@ -171,7 +171,7 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
             customErrorMessage = String(format: NSLocalizedString("withdrawSecuredAssetError", comment: ""), ticker, ticker, targetChain.name)
         }
     }
-    
+
     /// Maps a secured asset ticker to its native blockchain chain
     private func getChainForSecuredAsset(_ ticker: String) -> Chain {
         switch ticker.uppercased() {
@@ -194,11 +194,11 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
             return .thorChain
         }
     }
-    
+
     private func updateTxCoinForSelectedAsset(_ assetName: String) {
         // assetName is just the ticker (e.g., "BTC", "ETH", "DOGE")
         let ticker = assetName.uppercased()
-        
+
         // Find the secured asset coin - it could be stored as "DOGE" or "DOGE-DOGE"
         if let securedAssetCoin = vault.coins.first(where: {
             guard $0.chain == .thorChain else { return false }
@@ -207,18 +207,18 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
             return coinTicker == ticker || coinTicker == "\(ticker)-\(ticker)"
         }) {
             selectedSecuredAssetCoin = securedAssetCoin
-            
+
             // Set the coin and ensure isNativeToken is false for secured assets
             // This will make getTicker() use getNotNativeTicker() which handles secured assets correctly
             let correctedCoin = securedAssetCoin
             correctedCoin.isNativeToken = false
-            
+
             tx.coin = correctedCoin
         } else {
             selectedSecuredAssetCoin = nil
         }
     }
-    
+
     private func setupValidation() {
         $amount
             .removeDuplicates()
@@ -227,14 +227,14 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
                 self?.validateAmount()
             }
             .store(in: &cancellables)
-        
+
         $destinationAddress
             .receive(on: DispatchQueue.main)
             .sink { [weak self] address in
                 self?.destinationAddressValid = !address.isEmpty && address.count > 10
             }
             .store(in: &cancellables)
-        
+
         Publishers.CombineLatest3($amountValid, $destinationAddressValid, $securedAssetValid)
             .map { amountValid, destinationAddressValid, securedAssetValid in
                 return amountValid && destinationAddressValid && securedAssetValid
@@ -243,7 +243,7 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }
-    
+
     private func validateAmount() {
         guard amount > 0 else {
             amountValid = false
@@ -253,7 +253,7 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
             }
             return
         }
-        
+
         if let secured = selectedSecuredAssetCoin {
             amountValid = amount <= secured.balanceDecimal
             // Only update error message if there's no destination address error
@@ -268,20 +268,20 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
             }
         }
     }
-    
+
     var description: String {
         return toString()
     }
-    
+
     func toString() -> String {
         return "SECURE-:\(destinationAddress)"
     }
-    
+
     var balance: String {
         if selectedSecuredAsset.value.isEmpty || selectedSecuredAsset.value == Self.INITIAL_ITEM_FOR_DROPDOWN_TEXT {
             return NSLocalizedString("selectAssetToSeeBalance", comment: "")
         }
-        
+
         // Use the selectedSecuredAssetCoin which contains the actual secured asset
         if let securedAsset = selectedSecuredAssetCoin {
             let b = securedAsset.balanceDecimal.formatForDisplay()
@@ -290,7 +290,7 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
             return String(format: NSLocalizedString("balanceInParentheses", comment: ""), "0", selectedSecuredAsset.value)
         }
     }
-    
+
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("operation", "withdraw")
@@ -298,7 +298,7 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
         dict.set("destinationAddress", destinationAddress)
         return dict
     }
-    
+
     func getView() -> AnyView {
         AnyView(FunctionCallWithdrawSecuredAssetView(model: self).onAppear {
             self.initialize()
@@ -310,11 +310,11 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
 
 struct FunctionCallWithdrawSecuredAssetView: View {
     @ObservedObject var model: FunctionCallWithdrawSecuredAsset
-    
+
     var body: some View {
         VStack(spacing: 16) {
             SecuredAssetSelectorSection(model: model)
-            
+
             if model.selectedSecuredAsset.value != FunctionCallWithdrawSecuredAsset.INITIAL_ITEM_FOR_DROPDOWN_TEXT {
                 AmountInputSection(model: model)
             }
@@ -324,7 +324,7 @@ struct FunctionCallWithdrawSecuredAssetView: View {
 
 struct SecuredAssetSelectorSection: View {
     @ObservedObject var model: FunctionCallWithdrawSecuredAsset
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if model.isLoadingAssets {
@@ -333,9 +333,9 @@ struct SecuredAssetSelectorSection: View {
                 errorView
             } else {
                 dropdownView
-                
+
                 // Show error if coin for selected asset is not in vault
-                if let errorMessage = model.customErrorMessage, 
+                if let errorMessage = model.customErrorMessage,
                    model.selectedSecuredAsset.value != FunctionCallWithdrawSecuredAsset.INITIAL_ITEM_FOR_DROPDOWN_TEXT {
                     Text(errorMessage)
                         .font(.caption)
@@ -345,15 +345,15 @@ struct SecuredAssetSelectorSection: View {
             }
         }
     }
-    
+
     private var loadingView: some View {
         HStack(spacing: 12) {
             Text(NSLocalizedString("loadingSecuredAssets", comment: ""))
                 .font(.body)
                 .foregroundColor(.primary)
-            
+
             Spacer()
-            
+
             ProgressView()
                 .progressViewStyle(CircularProgressViewStyle())
                 .scaleEffect(0.7)
@@ -363,21 +363,21 @@ struct SecuredAssetSelectorSection: View {
         .background(Color.gray.opacity(0.1))
         .cornerRadius(10)
     }
-    
+
     private var errorView: some View {
         VStack(spacing: 8) {
             HStack(spacing: 12) {
                 Image(systemName: "exclamationmark.triangle")
                     .font(.body)
                     .foregroundColor(.orange)
-                
+
                 Text(model.loadError ?? NSLocalizedString("noSecuredAssetsAvailable", comment: ""))
                     .font(.body)
                     .foregroundColor(.primary)
                     .lineLimit(2)
-                
+
                 Spacer()
-                
+
                 Button {
                     model.loadError = nil
                     model.isLoadingAssets = true
@@ -395,7 +395,7 @@ struct SecuredAssetSelectorSection: View {
             .cornerRadius(10)
         }
     }
-    
+
     private var dropdownView: some View {
         GenericSelectorDropDown(
             items: .constant(model.availableSecuredAssets),
@@ -414,7 +414,7 @@ struct SecuredAssetSelectorSection: View {
 
 struct AmountInputSection: View {
     @ObservedObject var model: FunctionCallWithdrawSecuredAsset
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             StyledFloatingPointField(
@@ -429,11 +429,11 @@ struct AmountInputSection: View {
                     set: { model.amountValid = $0 }
                 )
             )
-            
+
             Text(model.balance)
                 .font(.caption)
                 .foregroundColor(.secondary)
-            
+
             if let errorMessage = model.customErrorMessage {
                 Text(errorMessage)
                     .font(.caption)

@@ -10,14 +10,14 @@ import SwiftUI
 struct CounterView: View {
     @Binding var count: Int
     let minimumValue: Int
-    
+
     private var disabled: Bool { count == minimumValue }
-    
+
     init(count: Binding<Int>, minimumValue: Int) {
         self._count = count
         self.minimumValue = minimumValue
     }
-    
+
     var body: some View {
         HStack {
             counterButton(icon: "minus.circle") {
@@ -25,7 +25,7 @@ struct CounterView: View {
             }
             .disabled(disabled)
             .opacity(disabled ? 0.2 : 1)
-            
+
             counterContainer {
                 Text("\(count)")
                     .frame(maxWidth: .infinity)
@@ -33,13 +33,13 @@ struct CounterView: View {
                     .background(.clear)
                     .font(Theme.fonts.bodyMMedium)
             }
-            
+
             counterButton(icon: "plus.circle") {
                 count += 1
             }
         }
     }
-    
+
     func counterButton(icon: String, perform: @escaping () -> Void) -> some View {
         Button(action: perform) {
             counterContainer {
@@ -51,7 +51,7 @@ struct CounterView: View {
             }
         }
     }
-    
+
     @ViewBuilder
     func counterContainer<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         ZStack {

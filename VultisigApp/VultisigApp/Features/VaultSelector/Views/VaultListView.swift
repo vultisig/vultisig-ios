@@ -15,33 +15,33 @@ struct VaultListView: View {
     var onSelectVault: (Vault) -> Void
     var onSelectFolder: (Folder) -> Void
     var onAddFolder: () -> Void
-    
+
     @Query(sort: \Vault.order, order: .forward) var vaults: [Vault]
     @Query(sort: \Folder.order, order: .forward) var folders: [Folder]
-    
+
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var appViewModel: AppViewModel
-    
+
     var filteredVaults: [Vault] {
         homeViewModel.getFilteredVaults(vaults: vaults, folders: folders)
     }
-    
+
     var headerSubtitle: String {
         let vaultsText: String = vaults.count > 1 ? "vaults".localized : "vault".localized
         var subtitle = "\(vaults.count) \(vaultsText)"
-        
+
         if vaults.count > 1 {
             subtitle += " · \(homeViewModel.balanceText(for: vaults))"
         }
-        
+
         return subtitle
     }
-    
+
     var showListHeaders: Bool {
         filteredVaults.count > 0 && folders.count > 0
     }
-    
+
     var body: some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 0) {
@@ -68,7 +68,7 @@ struct VaultListView: View {
         .padding(.bottom, isIPadOS ? 24 : 0)
         .padding(.horizontal, 16)
     }
-    
+
     var header: some View {
         Group {
             if isEditing {
@@ -79,7 +79,7 @@ struct VaultListView: View {
         }
         .transition(.opacity.animation(.interpolatingSpring))
     }
-    
+
     var editingHeader: some View {
         HStack {
             HStack {}
@@ -87,7 +87,7 @@ struct VaultListView: View {
             Text("editVaults".localized)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.title3)
-            
+
             HStack {
                 ToolbarButton(image: "check", type: .confirmation) {
                     withAnimation {
@@ -98,7 +98,7 @@ struct VaultListView: View {
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
     }
-    
+
     var defaultHeader: some View {
         HStack(spacing: 8) {
             #if os(macOS)
@@ -125,7 +125,7 @@ struct VaultListView: View {
         }
         .padding(.leading, 8)
     }
-    
+
     @ViewBuilder
     var foldersList: some View {
         ForEach(folders) { folder in
@@ -142,7 +142,7 @@ struct VaultListView: View {
         }
         .onMove(perform: isEditing ? moveFolder : nil)
     }
-    
+
     @ViewBuilder
     var vaultsList: some View {
         ForEach(filteredVaults) { vault in
@@ -158,7 +158,7 @@ struct VaultListView: View {
         }
         .onMove(perform: isEditing ? moveVaults : nil)
     }
-    
+
     var addFolderButton: some View {
         ListBottomSection {
             PrimaryButton(
@@ -171,12 +171,12 @@ struct VaultListView: View {
         .opacity(isEditing ? 1 : 0)
         .animation(.interpolatingSpring.delay(0.3), value: isEditing)
     }
-    
+
     func sectionHeader(title: String, paddingTop: CGFloat? = nil) -> some View {
         CommonListHeaderView(title: title, paddingTop: paddingTop)
             .showIf(showListHeaders)
     }
-    
+
     func moveVaults(from: IndexSet, to: Int) {
         var filteredVaults = filteredVaults.sorted(by: { $0.order < $1.order })
         filteredVaults.move(fromOffsets: from, toOffset: to)
@@ -185,7 +185,7 @@ struct VaultListView: View {
         }
         try? modelContext.save()
     }
-    
+
     func moveFolder(from: IndexSet, to: Int) {
         var s = folders.sorted(by: { $0.order < $1.order })
         s.move(fromOffsets: from, toOffset: to)

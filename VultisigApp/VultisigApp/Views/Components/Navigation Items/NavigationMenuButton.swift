@@ -9,7 +9,7 @@ import SwiftUI
 
 struct NavigationMenuButton: View {
     var tint: Color = Theme.colors.textPrimary
-    
+
     var body: some View {
         Image("MenuIcon")
             .font(Theme.fonts.bodyLMedium)

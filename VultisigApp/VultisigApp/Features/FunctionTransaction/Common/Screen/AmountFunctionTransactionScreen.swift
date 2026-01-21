@@ -11,7 +11,7 @@ struct AmountFunctionTransactionScreen<CustomView: View>: View {
     enum FocusedField {
         case amount
     }
-    
+
     let title: String
     let coin: CoinMeta
     let availableAmount: Decimal
@@ -22,10 +22,10 @@ struct AmountFunctionTransactionScreen<CustomView: View>: View {
     var onVerify: () -> Void
     var customViewPosition: AmountTextField<CustomView>.CustomViewPosition
     var customView: () -> CustomView
-    
+
     @State var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?
-    
+
     init(
         title: String,
         coin: CoinMeta,
@@ -49,7 +49,7 @@ struct AmountFunctionTransactionScreen<CustomView: View>: View {
         self.customViewPosition = customViewPosition
         self.customView = customView
     }
-    
+
     var body: some View {
         FormScreen(
             title: title,
@@ -88,7 +88,7 @@ struct AmountFunctionTransactionScreen<CustomView: View>: View {
             }
         }
     }
-    
+
     func onContinue() {
         switch focusedFieldBinding {
         case .amount, nil:

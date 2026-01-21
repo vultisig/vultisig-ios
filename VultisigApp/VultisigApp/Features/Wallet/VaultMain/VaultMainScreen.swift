@@ -17,14 +17,14 @@ struct VaultMainScreen: View {
     @Binding var showBalanceInHeader: Bool
     @Binding var shouldRefresh: Bool
     var onCamera: () -> Void
-    
+
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var viewModel: VaultDetailViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @Environment(\.openURL) var openURL
-    
+
     @State private var scrollOffset: CGFloat = 0
     @State var showChainSelection: Bool = false
     @State var showSearchHeader: Bool = false
@@ -32,14 +32,14 @@ struct VaultMainScreen: View {
     @State var focusSearch: Bool = false
     @State var scrollProxy: ScrollViewProxy?
     @State var frameHeight: CGFloat = 0
-    
+
     // Capture geometry width to avoid circular layout dependency during sheet presentation
     @State private var capturedGeometryWidth: CGFloat = 400
-    
+
     private let scrollReferenceId = "vaultMainScreenBottomContentId"
     private let contentInset: CGFloat = 78
     private let horizontalPadding: CGFloat = 16
-    
+
     var body: some View {
         GeometryReader { geo in
             VStack {
@@ -126,7 +126,7 @@ struct VaultMainScreen: View {
             }
         }
     }
-    
+
     func topContentSection(width: CGFloat) -> some View {
         LazyVStack(spacing: 0) {
             Group {
@@ -142,7 +142,7 @@ struct VaultMainScreen: View {
                 )
             }
             .padding(.horizontal, horizontalPadding)
-            
+
             BannersCarousel(
                 banners: $viewModel.vaultBanners,
                 availableWidth: width,
@@ -152,7 +152,7 @@ struct VaultMainScreen: View {
             )
         }
     }
-    
+
     var bottomContentSection: some View {
         LazyVStack(spacing: 0) {
             Group {
@@ -165,7 +165,7 @@ struct VaultMainScreen: View {
             .transition(.opacity)
             .frame(height: 42)
             .padding(.bottom, 16)
-            
+
             VaultMainChainListView(
                 vault: vault,
                 onCopy: onCopy,
@@ -180,7 +180,7 @@ struct VaultMainScreen: View {
         }
         .id(vault.id)
     }
-    
+
     var defaultBottomSectionHeader: some View {
         HStack(spacing: 8) {
             VStack(spacing: 8) {
@@ -202,7 +202,7 @@ struct VaultMainScreen: View {
             .showIf(viewModel.canShowChainSelection(vault: vault))
         }
     }
-    
+
     var searchBottomSectionHeader: some View {
         HStack(spacing: 12) {
             SearchTextField(value: $viewModel.searchText, isFocused: $focusSearch)
@@ -215,7 +215,7 @@ struct VaultMainScreen: View {
             .transition(.opacity)
         }
     }
-    
+
     func toggleSearch() {
         if showSearchHeader {
             focusSearch.toggle()
@@ -224,31 +224,31 @@ struct VaultMainScreen: View {
             showSearchHeader.toggle()
         }
     }
-    
+
     func onCopy(_ group: GroupedChain) {
         addressToCopy = group.nativeCoin
     }
-    
+
     func refresh() {
         tokenSelectionViewModel.setData(for: vault)
         viewModel.setupBanners(for: vault)
         viewModel.getGroupAsync(tokenSelectionViewModel)
-        
+
         viewModel.groupChains(vault: vault)
         viewModel.updateBalance(vault: vault)
     }
-    
+
     func onScrollOffsetChange(_ offset: CGFloat) {
         let showBalanceInHeader: Bool = offset < contentInset
         guard showBalanceInHeader != self.showBalanceInHeader else { return }
         self.showBalanceInHeader = showBalanceInHeader
     }
-    
+
     func clearSearch() {
         toggleSearch()
         viewModel.searchText = ""
     }
-    
+
     func onCustomizeChains() {
         showChainSelection = true
         // Clear search after sheet gets presented
@@ -256,10 +256,10 @@ struct VaultMainScreen: View {
             clearSearch()
         }
     }
-    
+
     func onAction(_ action: CoinAction) {
         var vaultAction: VaultAction?
-        
+
         switch action {
         case .send:
             vaultAction = .send(coin: viewModel.selectedGroup?.nativeCoin, hasPreselectedCoin: false)
@@ -280,11 +280,11 @@ struct VaultMainScreen: View {
             showReceiveList = true
             return
         }
-        
+
         guard let vaultAction else { return }
         routeToPresent = .mainAction(vaultAction)
     }
-    
+
     func onBannerPressed(_ banner: VaultBannerType) {
         switch banner {
         case .upgradeVault:
@@ -295,7 +295,7 @@ struct VaultMainScreen: View {
             openURL(StaticURL.XVultisigURL)
         }
     }
-    
+
     func onBannerClosed(_ banner: VaultBannerType) {
         viewModel.removeBanner(for: vault, banner: banner)
     }

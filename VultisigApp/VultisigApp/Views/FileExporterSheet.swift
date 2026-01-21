@@ -24,7 +24,7 @@ struct FileExporterSheet<D: FileDocument>: ViewModifier {
     @Binding var isPresented: Bool
     @Binding var fileModel: FileExporterModel<D>?
     var completion: (Result<Bool, Error>) -> Void
-    
+
     func body(content: Content) -> some View {
         fileExporter(content: content)
     }

@@ -12,10 +12,10 @@ struct ReceiveChainSelectionScreen: View {
     @Binding var isPresented: Bool
     @ObservedObject var viewModel: VaultDetailViewModel
     @Binding var addressToCopy: Coin?
-    
+
     @State var showBottomSheet: Bool = false
     @State var selectedCoin: Coin?
-    
+
     init(
         vault: Vault,
         isPresented: Binding<Bool>,
@@ -27,7 +27,7 @@ struct ReceiveChainSelectionScreen: View {
         self.viewModel = viewModel
         self._addressToCopy = addressToCopy
     }
-    
+
     var body: some View {
         Screen(showNavigationBar: false) {
             VStack(spacing: 12) {
@@ -64,9 +64,9 @@ struct ReceiveChainSelectionScreen: View {
             )
         }
         .applySheetSize()
-        .sheetStyle() 
+        .sheetStyle()
     }
-    
+
     var list: some View {
         LazyVStack(spacing: 0) {
             ForEach(Array(viewModel.filteredGroups.enumerated()), id: \.element.name) { offset, chain in
@@ -75,7 +75,7 @@ struct ReceiveChainSelectionScreen: View {
             }
         }
     }
-    
+
     func cell(for chain: GroupedChain) -> some View {
         Button {
             selectedCoin = chain.nativeCoin
@@ -90,7 +90,7 @@ struct ReceiveChainSelectionScreen: View {
             .background(Theme.colors.bgSurface1)
         }
     }
-    
+
     var emptyMessage: some View {
         ErrorMessage(text: "noResultFound")
             .padding(.top, 48)
@@ -99,14 +99,14 @@ struct ReceiveChainSelectionScreen: View {
 
 struct ReceiveChainSelectionRowView: View {
     let chain: Chain
-    
+
     var body: some View {
         HStack {
             iconImage
             nameText
         }
     }
-    
+
     var iconImage: some View {
         AsyncImageView(
             logo: chain.logo,
@@ -115,7 +115,7 @@ struct ReceiveChainSelectionRowView: View {
             tokenChainLogo: nil
         )
     }
-    
+
     var nameText: some View {
         Text(chain.name)
             .font(Theme.fonts.bodySMedium)

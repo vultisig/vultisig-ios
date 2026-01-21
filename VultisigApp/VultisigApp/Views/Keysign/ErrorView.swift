@@ -13,7 +13,7 @@ struct ErrorView: View {
     let description: String
     let buttonTitle: String
     var action: () -> Void
-    
+
     var body: some View {
         VStack {
             Spacer()
@@ -56,7 +56,7 @@ private extension ErrorView {
             return "xmark.circle.fill"
         }
     }
-    
+
     var color: Color {
         switch type {
         case .alert:

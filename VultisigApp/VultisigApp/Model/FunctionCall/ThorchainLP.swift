@@ -18,7 +18,7 @@ struct ThorchainPool: Codable {
     let synthSupply: String
     let pendingInboundAsset: String
     let pendingInboundRune: String
-    
+
     enum CodingKeys: String, CodingKey {
         case asset
         case status
@@ -46,7 +46,7 @@ struct ThorchainLPPosition: Codable {
     let luvi: String?
     let gLPGrowth: String?
     let assetGrowthPct: String?
-    
+
     enum CodingKeys: String, CodingKey {
         case asset
         case runeAddress = "rune_address"
@@ -72,7 +72,7 @@ struct ThorchainPoolLPResponse: Codable {
     let pendingAsset: String
     let runeDepositValue: String
     let assetDepositValue: String
-    
+
     enum CodingKeys: String, CodingKey {
         case asset
         case assetAddress = "asset_address"
@@ -91,7 +91,7 @@ struct ThorchainPoolLPResponse: Codable {
 struct AddLPMemoData {
     let pool: String
     let pairedAddress: String?
-    
+
     var memo: String {
         if let pairedAddress = pairedAddress {
             return "+:\(pool):\(pairedAddress)"
@@ -105,8 +105,8 @@ struct AddLPMemoData {
 struct RemoveLPMemoData {
     let pool: String
     let basisPoints: Int // 10000 = 100%
-    
+
     var memo: String {
         return "-:\(pool):\(basisPoints)"
     }
-} 
+}

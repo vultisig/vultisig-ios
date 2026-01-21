@@ -11,8 +11,8 @@ import OSLog
 class ParticipantDiscovery: ObservableObject {
     private let logger = Logger(subsystem: "participant-discovery", category: "communication")
     @Published var peersFound = [String]()
-    var task: Task<Void,Error>? = nil
-    
+    var task: Task<Void, Error>? = nil
+
     func stop() {
         self.task?.cancel()
         self.task = nil
@@ -35,13 +35,13 @@ class ParticipantDiscovery: ObservableObject {
                     return
                 }
                 do {
-                    let (data,resp) = try await URLSession.shared.data(for: request)
+                    let (data, resp) = try await URLSession.shared.data(for: request)
                     guard let httpResponse = resp as? HTTPURLResponse else {
                         self.logger.error("Invalid response from server")
                         try await Task.sleep(for: .seconds(1)) // wait for a second to continue
                         continue
                     }
-                    
+
                     switch httpResponse.statusCode {
                     case 200 ... 299:
                         if data.isEmpty {
@@ -71,7 +71,7 @@ class ParticipantDiscovery: ObservableObject {
                     default:
                         self.logger.error("Server returned status code \(httpResponse.statusCode)")
                     }
-                    
+
                     try await Task.sleep(for: .seconds(1)) // wait for a second to continue
                 } catch {
                     self.logger.error("Error during participant discovery: \(error.localizedDescription)")

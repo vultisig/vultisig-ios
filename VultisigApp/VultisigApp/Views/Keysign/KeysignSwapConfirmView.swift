@@ -52,7 +52,7 @@ struct KeysignSwapConfirmView: View {
         }
         .padding(20)
     }
-    
+
     var summaryTitle: some View {
         Text(NSLocalizedString("youreSwapping", comment: ""))
             .font(Theme.fonts.bodySMedium)
@@ -110,12 +110,12 @@ struct KeysignSwapConfirmView: View {
             }
         }
     }
-    
+
     var separator: some View {
         Separator()
             .opacity(0.2)
     }
-    
+
     var chevronIcon: some View {
         Image(systemName: "arrow.down")
             .font(Theme.fonts.caption12)
@@ -135,28 +135,28 @@ struct KeysignSwapConfirmView: View {
         HStack(spacing: 4) {
             Text(NSLocalizedString(title, comment: ""))
                 .foregroundColor(Theme.colors.textTertiary)
-            
+
             Spacer()
-            
+
             if showIcon {
                 Image(value)
                     .resizable()
                     .frame(width: 16, height: 16)
             }
-            
+
             Text(value)
                 .foregroundColor(Theme.colors.textPrimary)
-            
+
             if let bracketValue {
                 Text(bracketValue)
                     .foregroundColor(Theme.colors.textTertiary)
             }
-            
+
         }
         .font(Theme.fonts.bodySMedium)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     private func getNetworkFeeCell() -> some View {
         let fees = viewModel.getCalculatedNetworkFee()
         return HStack(spacing: 4) {

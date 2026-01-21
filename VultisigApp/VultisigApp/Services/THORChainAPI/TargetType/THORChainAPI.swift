@@ -18,7 +18,7 @@ enum THORChainAPI: TargetType {
     case getHealth
     case getNetworkInfo
     case getConstants
-    
+
     var baseURL: URL {
         switch self {
         case .getThornameDetails,
@@ -35,7 +35,7 @@ enum THORChainAPI: TargetType {
             return URL(string: "https://midgard.ninerealms.com")!
         }
     }
-    
+
     var path: String {
         switch self {
         case .getThornameDetails(let name):
@@ -60,7 +60,7 @@ enum THORChainAPI: TargetType {
             return "/v2/network"
         }
     }
-    
+
     var method: HTTPMethod {
         switch self {
         case .getThornameDetails,
@@ -76,7 +76,7 @@ enum THORChainAPI: TargetType {
             return .get
         }
     }
-    
+
     var task: HTTPTask {
         switch self {
         case .getThornameDetails,
@@ -92,7 +92,7 @@ enum THORChainAPI: TargetType {
             return .requestPlain
         }
     }
-    
+
     var headers: [String: String]? {
         switch self {
         case .getThornameLookup,

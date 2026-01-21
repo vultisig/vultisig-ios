@@ -12,18 +12,18 @@ final class LocalStateAccessorImpl: NSObject, TssLocalStateAccessorProtocol, Obs
         init(_ description: String) {
             self.description = description
         }
-        
+
         var errorDescription: String? {
             self.description
         }
     }
-    
+
     @Published var keyshares = [KeyShare]()
     private var vault: Vault
     init(vault: Vault) {
         self.vault = vault
     }
-    
+
     func getLocalState(_ pubKey: String?, error: NSErrorPointer) -> String {
         guard let pubKey else {
             return ""
@@ -33,7 +33,7 @@ final class LocalStateAccessorImpl: NSObject, TssLocalStateAccessorProtocol, Obs
         }
         return ""
     }
-    
+
     func saveLocalState(_ pubkey: String?, localState: String?) throws {
         guard let pubkey else {
             throw RuntimeError("pubkey is nil")

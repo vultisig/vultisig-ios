@@ -12,7 +12,7 @@ class DKLSHelper {
         let threshold = Int(ceil(Double(input) * 2.0 / 3.0))
         return UInt32(threshold)
     }
-    
+
     static func arrayToBytes(parties: [String]) -> [UInt8] {
         if parties.count == 0 {
             return []
@@ -24,7 +24,7 @@ class DKLSHelper {
                 byteArray.append(0)
             }
         }
-        
+
         if byteArray.last == 0 {
             byteArray.removeLast()
         }
@@ -33,7 +33,7 @@ class DKLSHelper {
 }
 
 extension Array where Element == UInt8 {
-    
+
     func to_dkls_goslice() -> go_slice {
         let result = self.withUnsafeBufferPointer { bp in
             return go_slice(
@@ -57,7 +57,7 @@ extension String {
         guard let utf8Bytes = self.data(using: .utf8) else {
             return []
         }
-        
+
         return [UInt8](utf8Bytes)
     }
 }

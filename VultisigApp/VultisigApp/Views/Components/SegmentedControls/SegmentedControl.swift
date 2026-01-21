@@ -12,7 +12,7 @@ struct SegmentedControlItem<T: Hashable> {
     let title: String
     let tag: String?
     let isEnabled: Bool
-    
+
     init(value: T, title: String, tag: String? = nil, isEnabled: Bool = true) {
         self.value = value
         self.title = title
@@ -24,19 +24,19 @@ struct SegmentedControlItem<T: Hashable> {
 struct SegmentedControl<T: Hashable>: View {
     @Binding var selection: T
     let items: [SegmentedControlItem<T>]
-    
+
     @State private var segmentFrames: [CGRect] = []
-    
+
     private var selectedIndex: Int {
         items.firstIndex { $0.value == selection } ?? 0
     }
-    
+
     init(selection: Binding<T>, items: [SegmentedControlItem<T>]) {
         self._selection = selection
         self.items = items
         self._segmentFrames = State(initialValue: Array(repeating: .zero, count: items.count))
     }
-    
+
     var body: some View {
         VStack(spacing: 8) {
             HStack(spacing: 16) {
@@ -54,7 +54,7 @@ struct SegmentedControl<T: Hashable>: View {
                                 Text(item.title)
                                     .font(Theme.fonts.bodySMedium)
                                     .foregroundStyle(item.isEnabled ? Theme.colors.textPrimary : Theme.colors.textButtonDisabled)
-                                
+
                             if let tag = item.tag {
                                 Text(tag)
                                     .font(Theme.fonts.caption10)
@@ -84,7 +84,7 @@ struct SegmentedControl<T: Hashable>: View {
                     .buttonStyle(PlainButtonStyle())
                 }
             }
-            
+
             HStack(spacing: 0) {
                 Rectangle()
                     .fill(Theme.colors.primaryAccent4)
@@ -97,22 +97,22 @@ struct SegmentedControl<T: Hashable>: View {
         .coordinateSpace(name: "SegmentedControlContainer")
         .scaledToFit()
     }
-    
+
     private func updateFrameIfNeeded(for index: Int, frame: CGRect) {
         // Ensure the array is properly sized
         if segmentFrames.count != items.count {
             segmentFrames = Array(repeating: .zero, count: items.count)
         }
-        
+
         // Only update if the frame has actually changed to avoid unnecessary updates
         guard index >= 0 && index < segmentFrames.count else { return }
-        
+
         let currentFrame = segmentFrames[safe: index] ?? .zero
         if !currentFrame.equalTo(frame) {
             segmentFrames[index] = frame
         }
     }
-    
+
 }
 
 extension SegmentedControl {
@@ -122,7 +122,7 @@ extension SegmentedControl {
         self.items = segmentItems
         self._segmentFrames = State(initialValue: Array(repeating: .zero, count: segmentItems.count))
     }
-    
+
     init(selection: Binding<T>, items: [(value: T, title: String, isEnabled: Bool)]) {
         let segmentItems = items.map { SegmentedControlItem(value: $0.value, title: $0.title, isEnabled: $0.isEnabled) }
         self._selection = selection
@@ -135,7 +135,7 @@ extension SegmentedControl {
     struct PreviewContainer: View {
         @State private var selectedTab = "Portfolio"
         @State private var selectedOption = 0
-        
+
         var body: some View {
             VStack(spacing: 30) {
                 SegmentedControl(
@@ -147,7 +147,7 @@ extension SegmentedControl {
                     ]
                 )
                 .padding()
-                
+
                 SegmentedControl(
                     selection: $selectedOption,
                     items: [
@@ -157,12 +157,12 @@ extension SegmentedControl {
                     ]
                 )
                 .padding()
-                
+
                 Spacer()
             }
             .background(Color.black)
         }
     }
-    
+
     return PreviewContainer()
 }

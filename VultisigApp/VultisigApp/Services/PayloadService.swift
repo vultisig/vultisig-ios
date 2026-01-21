@@ -12,7 +12,7 @@ enum PayloadServiceError: Error {
 }
 final class PayloadService {
     internal let serverURL: String
-    
+
     init(serverURL: String) {
         self.serverURL = serverURL
     }
@@ -26,18 +26,18 @@ final class PayloadService {
         }
         return false
     }
-    
+
     func uploadPayload(payload: String) async throws -> String {
         let hash = payload.sha256()
         let urlStr = getUrl(hash: hash)
         guard let url = URL(string: urlStr) else {
             throw PayloadServiceError.NetworkError(message: "invalid url: \(urlStr)")
         }
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.httpBody = payload.data(using: .utf8)
-        let (_,resp) = try await URLSession.shared.data(for: request)
+        let (_, resp) = try await URLSession.shared.data(for: request)
         if let httpResponse = resp as? HTTPURLResponse {
             if !(200...299).contains(httpResponse.statusCode) {
                 throw PayloadServiceError.NetworkError(message: "fail to upload payload to relay server")
@@ -45,21 +45,21 @@ final class PayloadService {
         }
         return hash
     }
-    
+
     func getPayload(hash: String) async throws -> String {
         let urlStr = getUrl(hash: hash)
         guard let url = URL(string: urlStr) else {
             throw PayloadServiceError.NetworkError(message: "invalid url: \(urlStr)")
         }
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        let (data,resp) = try await URLSession.shared.data(for: request)
+        let (data, resp) = try await URLSession.shared.data(for: request)
         if let httpResponse = resp as? HTTPURLResponse {
             if !(200...299).contains(httpResponse.statusCode) {
                 throw PayloadServiceError.NetworkError(message: "fail to get payload to relay server")
             }
         }
-        return String(data: data,encoding: .utf8) ?? ""
+        return String(data: data, encoding: .utf8) ?? ""
     }
 }

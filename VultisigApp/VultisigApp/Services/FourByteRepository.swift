@@ -15,39 +15,39 @@ struct FunctionCallInfo: Codable {
 }
 
 struct FourByteRepository {
-    
+
     static let shared = FourByteRepository()
-    
+
     private init() {}
-    
+
     func decode(memo: String) async throws -> FunctionCallInfo? {
         guard memo.count >= 10, memo.hasPrefix("0x") else { return nil }
-        
+
         // Extract function selector (first 4 bytes = 8 hex chars)
         let hexSignature = String(memo.prefix(10))
         let dataHex = String(memo.dropFirst(10))
-        
+
         // 1. Fetch Signature
         guard let textSignature = await fetchSignature(hex: hexSignature) else {
             return nil
         }
-        
+
         // 2. Parse Signature to get function name and param types
         // Example: "transfer(address,uint256)" -> name: "transfer", types: ["address", "uint256"]
         guard let nameEndIndex = textSignature.firstIndex(of: "("),
               let paramsEndIndex = textSignature.lastIndex(of: ")") else {
             return nil
         }
-        
+
         let functionName = String(textSignature[..<nameEndIndex])
         let paramsString = String(textSignature[textSignature.index(after: nameEndIndex)..<paramsEndIndex])
-        
+
         let paramTypes = ABIDecoder.splitTypes(paramsString)
-        
+
         // 3. Decode Arguments
         do {
             let decodedValues = try ABIDecoder.decode(types: paramTypes, data: dataHex)
-            
+
             var parameters: [String: String] = [:]
             for (index, value) in decodedValues.enumerated() {
                 let type = paramTypes[index]
@@ -55,16 +55,16 @@ struct FourByteRepository {
                 let key = "Param \(index + 1) (\(type))"
                 parameters[key] = "\(value)"
             }
-            
+
             let encodedArguments = formatJSON(decodedValues)
-            
+
             return FunctionCallInfo(
                 functionName: functionName,
                 fullSignature: textSignature,
                 parameters: parameters,
                 encodedArguments: encodedArguments
             )
-            
+
         } catch {
             // Return at least the function name if decoding fails
             return FunctionCallInfo(
@@ -75,29 +75,29 @@ struct FourByteRepository {
             )
         }
     }
-    
+
     private func fetchSignature(hex: String) async -> String? {
         let url = Endpoint.fetchFourByteSignature(hexSignature: hex)
-        
+
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            
+
             struct FourByteResponse: Decodable {
                 struct Result: Decodable {
                     let text_signature: String
                 }
                 let results: [Result]
             }
-            
+
             let response = try JSONDecoder().decode(FourByteResponse.self, from: data)
             // Return the first matching signature
             return response.results.first?.text_signature
-            
+
         } catch {
             return nil
         }
     }
-    
+
     private func formatJSON(_ value: Any, indentLevel: Int = 0) -> String {
         // Use JSONSerialization for proper escaping of special characters
         if let arrayValue = value as? [Any] {
