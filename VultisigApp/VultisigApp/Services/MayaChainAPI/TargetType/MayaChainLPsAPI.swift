@@ -53,7 +53,7 @@ enum MayaChainLPsAPI: TargetType {
         }
     }
 
-    var headers: [String : String]? {
+    var headers: [String: String]? {
         return ["X-Client-ID": "vultisig"]
     }
 }

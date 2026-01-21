@@ -12,7 +12,7 @@ struct SettingsRouteBuilder {
     func buildMainSettingsScreen(vault: Vault) -> some View {
         SettingsMainScreen(vault: vault)
     }
-    
+
     @ViewBuilder
     func buildVaultSettingsScreen(vault: Vault) -> some View {
         VaultSettingsScreen(vault: vault)

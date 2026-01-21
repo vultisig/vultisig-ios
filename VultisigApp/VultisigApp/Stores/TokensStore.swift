@@ -1887,7 +1887,7 @@ class TokensStore {
         arbGLD,
         arbWSTETH
     ]
-    
+
     static let rune: CoinMeta = CoinMeta(
         chain: .thorChain,
         ticker: "RUNE",
@@ -1897,7 +1897,7 @@ class TokensStore {
         contractAddress: "",
         isNativeToken: true
     )
-    
+
     static let tcy: CoinMeta = CoinMeta(
         chain: .thorChain,
         ticker: "TCY",
@@ -1907,7 +1907,7 @@ class TokensStore {
         contractAddress: "tcy",
         isNativeToken: false
     )
-    
+
     static let ruji: CoinMeta = CoinMeta(
         chain: .thorChain,
         ticker: "RUJI",
@@ -1917,7 +1917,7 @@ class TokensStore {
         contractAddress: "x/ruji",
         isNativeToken: false
     )
-    
+
     static let sruji: CoinMeta = CoinMeta(
         chain: .thorChain,
         ticker: "sRUJI",
@@ -1927,7 +1927,7 @@ class TokensStore {
         contractAddress: "x/staking-x/ruji",
         isNativeToken: false
     )
-    
+
     static let stcy: CoinMeta = CoinMeta(
         chain: .thorChain,
         ticker: "sTCY",
@@ -1937,7 +1937,7 @@ class TokensStore {
         contractAddress: "x/staking-x/tcy",
         isNativeToken: false
     )
-    
+
     static let yrune: CoinMeta = CoinMeta(
         chain: .thorChain,
         ticker: "yRUNE",
@@ -1957,9 +1957,9 @@ class TokensStore {
         contractAddress: "x/nami-index-nav-thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px-rcpt",
         isNativeToken: false
     )
-    
+
     // MARK: - THORChain LPs Tokens
-    
+
     static let avaxSol: CoinMeta = CoinMeta(
         chain: .avalanche,
         ticker: "SOL",
@@ -1969,7 +1969,7 @@ class TokensStore {
         contractAddress: "0xFE6B19286885a4F7F55AdAD09C3Cd1f906D2478F",
         isNativeToken: false
     )
-    
+
     static let baseCBBTC: CoinMeta = CoinMeta(
         chain: .base,
         ticker: "cbBTC",
@@ -1979,7 +1979,7 @@ class TokensStore {
         contractAddress: "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
         isNativeToken: false
     )
-    
+
     static let baseVVV: CoinMeta = CoinMeta(
         chain: .base,
         ticker: "VVV",
@@ -1989,7 +1989,7 @@ class TokensStore {
         contractAddress: "0xacfE6019Ed1A7Dc6f7B508C02d1b04ec88cC21bf",
         isNativeToken: false
     )
-    
+
     static let bscBTCB: CoinMeta = CoinMeta(
         chain: .bscChain,
         ticker: "BTCB",
@@ -1999,7 +1999,7 @@ class TokensStore {
         contractAddress: "0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c",
         isNativeToken: false
     )
-    
+
     static let bscTWT: CoinMeta = CoinMeta(
         chain: .bscChain,
         ticker: "TWT",
@@ -2009,7 +2009,7 @@ class TokensStore {
         contractAddress: "0x4B0F1812e5Df2A09796481Ff14017e6005508003",
         isNativeToken: false
     )
-    
+
     static let ethDPI: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "DPI",
@@ -2019,7 +2019,7 @@ class TokensStore {
         contractAddress: "0x1494CA1F11D487c2bBe4543E90080AeBa4BA3C2b",
         isNativeToken: false
     )
-    
+
     static let ethGUSD: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "GUSD",
@@ -2029,7 +2029,7 @@ class TokensStore {
         contractAddress: "0x056Fd409E1d7A124BD7017459dFEa2F387b6d5Cd",
         isNativeToken: false
     )
-    
+
     static let ethLUSD: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "LUSD",
@@ -2039,7 +2039,7 @@ class TokensStore {
         contractAddress: "0x5f98805A4E8be255a32880FDeC7F6728C6568bA0",
         isNativeToken: false
     )
-    
+
     static let ethRAZE: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "RAZE",
@@ -2049,7 +2049,7 @@ class TokensStore {
         contractAddress: "0x5Eaa69B29f99C84Fe5dE8200340b4e9b4Ab38EaC",
         isNativeToken: false
     )
-    
+
     static let ethTHOR: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "THOR",
@@ -2059,7 +2059,7 @@ class TokensStore {
         contractAddress: "0xa5f2211B9b8170F694421f2046281775E8468044",
         isNativeToken: false
     )
-    
+
     static let ethUSDP: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "USDP",
@@ -2069,7 +2069,7 @@ class TokensStore {
         contractAddress: "0x8E870D67F660D95d5be530380D0eC0bd388289E1",
         isNativeToken: false
     )
-    
+
     static let ethVTHOR: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "vTHOR",
@@ -2079,7 +2079,7 @@ class TokensStore {
         contractAddress: "0x815C23eCA83261b6Ec689b60Cc4a58b54BC24D8D",
         isNativeToken: false
     )
-    
+
     static let ethXDEFI: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "XDEFI",
@@ -2099,7 +2099,7 @@ class TokensStore {
         contractAddress: "0x69fa0feE221AD11012BAb0FdB45d444D3D2Ce71c",
         isNativeToken: false
     )
-    
+
     static let cacao: CoinMeta = CoinMeta(
         chain: .mayaChain,
         ticker: "CACAO",
@@ -2109,9 +2109,9 @@ class TokensStore {
         contractAddress: "",
         isNativeToken: true
     )
-    
+
     // MARK: - Maya Chain LPs Tokens
-    
+
     static let ethWSTETH: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "WSTETH",
@@ -2121,7 +2121,7 @@ class TokensStore {
         contractAddress: "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
         isNativeToken: false
     )
-    
+
     static let ethLLD: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "LLD",
@@ -2131,7 +2131,7 @@ class TokensStore {
         contractAddress: "0x054c9d4c6f4ea4e14391addd1812106c97d05690",
         isNativeToken: false
     )
-    
+
     static let ethMoca: CoinMeta = CoinMeta(
         chain: .ethereum,
         ticker: "MOCA",
@@ -2141,7 +2141,7 @@ class TokensStore {
         contractAddress: "0x53312F85Bba24C8cb99CFFc13BF82420157230d3",
         isNativeToken: false
     )
-    
+
     static let arbLEO: CoinMeta = CoinMeta(
         chain: .arbitrum,
         ticker: "LEO",
@@ -2151,7 +2151,7 @@ class TokensStore {
         contractAddress: "0x93864d81175095dd93360ffa2a529b8642F76A6E",
         isNativeToken: false
     )
-    
+
     static let arbYUM: CoinMeta = CoinMeta(
         chain: .arbitrum,
         ticker: "YUM",
@@ -2161,7 +2161,7 @@ class TokensStore {
         contractAddress: "0x9F41b34f42058a7b74672055a5fae22c4b113Fd1",
         isNativeToken: false
     )
-    
+
     static let arbGLD: CoinMeta = CoinMeta(
         chain: .arbitrum,
         ticker: "GLD",
@@ -2171,7 +2171,7 @@ class TokensStore {
         contractAddress: "0xaFD091f140C21770f4e5d53d26B2859Ae97555Aa",
         isNativeToken: false
     )
-    
+
     static let arbWSTETH: CoinMeta = CoinMeta(
         chain: .arbitrum,
         ticker: "WSTETH",

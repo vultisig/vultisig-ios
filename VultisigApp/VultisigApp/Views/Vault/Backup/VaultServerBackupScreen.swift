@@ -11,19 +11,19 @@ struct VaultServerBackupScreen: View {
     enum FocusedField {
         case email, password
     }
-    
+
     let vault: Vault
     @StateObject var viewModel = VaultServerBackupViewModel()
-    
+
     @State var scrollViewProxy: ScrollViewProxy?
     @State var showAlert = false
     @State var moveToHome = false
     @State var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?
     private let passwordBottomId = "passwordBottomId"
-    
+
     @EnvironmentObject var appViewModel: AppViewModel
-    
+
     var body: some View {
         Screen(title: "serverBackup".localized) {
             ScrollViewReader { proxy in
@@ -36,7 +36,7 @@ struct VaultServerBackupScreen: View {
                         )
                         .transition(.verticalGrowAndFade)
                         .showIf(showAlert)
-                        
+
                         emailTextField
                         passwordTextField
                     }
@@ -58,12 +58,12 @@ struct VaultServerBackupScreen: View {
             focusedFieldBinding = .email
             viewModel.onLoad()
         }
-        .onChange(of: viewModel.showAlert) { oldValue, newValue in
+        .onChange(of: viewModel.showAlert) { _, newValue in
             withAnimation(.easeInOut(duration: 0.3)) {
                 showAlert = newValue
             }
         }
-        .onChange(of: focusedFieldBinding) { oldValue, newValue in
+        .onChange(of: focusedFieldBinding) { _, newValue in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 focusedField = newValue
             }
@@ -74,7 +74,7 @@ struct VaultServerBackupScreen: View {
             }
         }
     }
-    
+
     var emailTextField: some View {
         FormExpandableSection(
             title: "email".localized,
@@ -90,7 +90,7 @@ struct VaultServerBackupScreen: View {
                 Text("enterVaultEmail".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
-                
+
                 CommonTextField(
                     text: $viewModel.email,
                     placeholder: "enterYourEmail".localized,
@@ -104,7 +104,7 @@ struct VaultServerBackupScreen: View {
             }
         }
     }
-    
+
     var passwordTextField: some View {
         FormExpandableSection(
             title: "password".localized,
@@ -120,16 +120,16 @@ struct VaultServerBackupScreen: View {
                 Text("enterVaultPassword".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
-                
+
                 SecureTextField(
                     value: $viewModel.password,
                     placeholder: "enterYourPassword".localized,
                     error: $viewModel.passwordError
                 )
                 .focused($focusedField, equals: .password)
-                
+
                 Spacer()
-                
+
                 PrimaryButton(title: viewModel.buttonTitle) {
                     focusedFieldBinding = nil
                     Task {

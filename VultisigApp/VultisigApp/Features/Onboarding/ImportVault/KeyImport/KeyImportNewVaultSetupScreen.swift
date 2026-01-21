@@ -59,7 +59,7 @@ struct KeyImportNewVaultSetupScreen: View {
             .frame(width: 350, height: 240)
             .offset(x: -48)
     }
-    
+
     var informationView: some View {
         VStack(alignment: .leading, spacing: 24) {
             OnboardingInformationRowView(
@@ -67,7 +67,7 @@ struct KeyImportNewVaultSetupScreen: View {
                 subtitle: feature1Description,
                 icon: "signature"
             )
-            
+
             OnboardingInformationRowView(
                 title: feature2Title,
                 subtitle: feature2Description,

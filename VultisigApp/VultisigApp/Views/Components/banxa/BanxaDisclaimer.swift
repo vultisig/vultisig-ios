@@ -8,20 +8,20 @@ import SwiftUI
 
 struct BanxaDisclaimer: View {
     let url: URL
-    
+
     @State var continueToBanxa: Bool = false
     var body: some View {
         container
     }
-    
+
     var container: some View {
-        ZStack(alignment: .center){
+        ZStack(alignment: .center) {
             Screen(title: "buy".localized) {
                 content
             }
         }
     }
-    
+
     @ViewBuilder
     var content: some View {
         if !continueToBanxa {
@@ -30,11 +30,11 @@ struct BanxaDisclaimer: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 160)
-                
+
                 Text("Buy or transfer with Banxa")
                     .font(.headline)
                     .padding(10)
-                
+
                 Button {
                     continueToBanxa = true
                 } label: {

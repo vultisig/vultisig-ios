@@ -13,11 +13,11 @@ final class DefiChainLPsViewModel: ObservableObject {
     @Published private(set) var vault: Vault
     @Published private(set) var lpPositions: [LPPosition] = []
     @Published private(set) var initialLoadingDone: Bool = false
-    
+
     var hasLPPositions: Bool {
         !vaultLPPositions.isEmpty
     }
-    
+
     var vaultLPPositions: [CoinMeta] {
         vault.defiPositions.first { $0.chain == chain }?.lps ?? []
     }

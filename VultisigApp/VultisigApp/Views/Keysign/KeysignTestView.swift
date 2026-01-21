@@ -41,7 +41,7 @@ struct KeysignTestView: View {
                                                                      index: UInt32(1))])
                 self.presentationStack.append(.KeysignDiscovery(keysignPayload))
             }
-            Button("join keysign",systemImage: "camera.viewfinder") {
+            Button("join keysign", systemImage: "camera.viewfinder") {
                 self.presentationStack.append(.JoinKeysign)
             }
         }

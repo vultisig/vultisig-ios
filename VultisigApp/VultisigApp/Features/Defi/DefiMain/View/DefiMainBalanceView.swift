@@ -10,11 +10,11 @@ import SwiftUI
 struct DefiMainBalanceView: View {
     @ObservedObject var vault: Vault
     @EnvironmentObject var homeViewModel: HomeViewModel
-    
+
     private let defiBalanceService = DefiBalanceService()
-    
+
     @State var balance: String = ""
-    
+
     var body: some View {
         ZStack {
             coinImages
@@ -22,7 +22,7 @@ struct DefiMainBalanceView: View {
                 Text("defiPortfolio".localized)
                     .font(Theme.fonts.bodyLMedium)
                     .foregroundStyle(Theme.colors.textPrimary)
-                
+
                 VaultMainBalanceView(
                     vault: vault,
                     balanceToShow: balance,
@@ -42,12 +42,12 @@ struct DefiMainBalanceView: View {
             updateBalance()
         }
     }
-    
+
     var gradientBackground: some View {
         EllipticalGradient(
             stops: [
                 Gradient.Stop(color: Color(red: 0.02, green: 0.22, blue: 0.78), location: 0.00),
-                Gradient.Stop(color: Color(red: 0.01, green: 0.07, blue: 0.17).opacity(0), location: 1.00),
+                Gradient.Stop(color: Color(red: 0.01, green: 0.07, blue: 0.17).opacity(0), location: 1.00)
             ],
             center: UnitPoint(x: 0.5, y: 0.9)
         )
@@ -55,7 +55,7 @@ struct DefiMainBalanceView: View {
         .blur(radius: 35)
         .opacity(0.7)
     }
-    
+
     @ViewBuilder
     var coinImages: some View {
         GeometryReader { geometry in
@@ -68,7 +68,7 @@ struct DefiMainBalanceView: View {
                     x: 30,
                     y: 18
                 )
-            
+
             // Mid left - Solana
             Image("defi-solana")
                 .resizable()
@@ -78,7 +78,7 @@ struct DefiMainBalanceView: View {
                     x: 20,
                     y: 45
                 )
-            
+
             // Bottom left corner - Ethereum
             Image("defi-eth")
                 .resizable()
@@ -88,7 +88,7 @@ struct DefiMainBalanceView: View {
                     x: 30,
                     y: geometry.size.height - 25
                 )
-                        
+
             // Top right corner - Bitcoin
             Image("defi-btc")
                 .resizable()
@@ -98,7 +98,7 @@ struct DefiMainBalanceView: View {
                     x: geometry.size.width - 40,
                     y: 40
                 )
-            
+
             // Bottom right corner - XRP
             Image("defi-xrp")
                 .resizable()
@@ -110,7 +110,7 @@ struct DefiMainBalanceView: View {
                 )
         }
     }
-    
+
     func updateBalance() {
         balance = defiBalanceService.totalBalanceInFiatString(for: vault.defiChains, vault: vault)
     }

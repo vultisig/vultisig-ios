@@ -12,14 +12,14 @@ struct Icon: View {
     let color: Color?
     let size: CGFloat
     let isSystem: Bool
-    
+
     init(named: String, color: Color? = Theme.colors.primaryAccent4, size: CGFloat = 20, isSystem: Bool = false) {
         self.name = named
         self.color = color
         self.size = size
         self.isSystem = isSystem
     }
-    
+
     var body: some View {
         if isSystem {
             Image(systemName: name)

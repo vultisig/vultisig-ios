@@ -62,7 +62,7 @@ struct ReshareView: View {
             joinReshareButton
         }
     }
-    
+
     var startReshareButton: some View {
         PrimaryButton(title: "startReshare") {
             router.navigate(to: KeygenRoute.peerDiscovery(
@@ -75,7 +75,7 @@ struct ReshareView: View {
             ))
         }
     }
-    
+
     var startReshareVultisignerButton: some View {
         PrimaryButton(title: "startFastVaultReshare", type: .secondary) {
             router.navigate(to: KeygenRoute.fastVaultEmail(

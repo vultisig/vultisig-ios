@@ -10,29 +10,29 @@ import SwiftUI
 struct ImportWalletUploadSection: View {
     @ObservedObject var viewModel: EncryptedBackupViewModel
     let isUploading: Bool
-    
+
     @State var backgroundColor: Color = Theme.colors.border
-    
+
     var body: some View {
         uploadSection
     }
-    
+
     var uploadSection: some View {
         section
             .frame(height: 200)
             .frame(maxWidth: .infinity)
             .background(backgroundColor.opacity(0.15))
             .cornerRadius(10)
-            .overlay (
+            .overlay(
                 ZStack {
                     getOverlay(isUploading ? 2 : 1)
                     getOverlay(1)
-                        .padding(isUploading ? 8 : 0)
+                       .padding(isUploading ? 8 : 0)
                 }
             )
             .animation(.easeInOut, value: isUploading)
     }
-    
+
     var section: some View {
         ZStack {
             if isUploading {
@@ -43,26 +43,28 @@ struct ImportWalletUploadSection: View {
                 getUploadedFileContent(filename)
             } else {
                 importFileContent
-                    .onAppear  { backgroundColor = Theme.colors.border }
+                    .onAppear {
+                        backgroundColor = Theme.colors.border
+                    }
             }
         }
         .animation(.none, value: isUploading)
     }
-    
+
     var isUploadingContent: some View {
         VStack(spacing: 16) {
             getIcon(tint: Theme.colors.bgButtonTertiary)
-            
+
             Text(NSLocalizedString("dropFileHere", comment: ""))
                 .font(Theme.fonts.bodySMedium)
                 .foregroundColor(Theme.colors.textPrimary)
         }
     }
-    
+
     var errorContent: some View {
         VStack(spacing: 16) {
             getIcon(tint: Theme.colors.alertError)
-            
+
             Text(NSLocalizedString(viewModel.alertTitle, comment: ""))
                 .font(Theme.fonts.bodySMedium)
         }
@@ -73,24 +75,24 @@ struct ImportWalletUploadSection: View {
             }
         }
     }
-    
+
     var importFileContent: some View {
         VStack(spacing: 16) {
             getIcon(tint: Theme.colors.bgButtonTertiary)
-            
+
             Text(NSLocalizedString("importYourVaultShare", comment: ""))
                 .font(Theme.fonts.bodySMedium)
                 .foregroundColor(Theme.colors.textPrimary)
         }
     }
-    
+
     private func textFile(for text: String) -> some View {
         Text(text)
             .font(Theme.fonts.caption12)
             .foregroundColor(Theme.colors.textPrimary)
             .padding(12)
     }
-    
+
     private func getOverlay(_ lineWidth: CGFloat) -> some View {
         ZStack {
             if backgroundColor == Theme.colors.bgButtonPrimary {
@@ -102,11 +104,11 @@ struct ImportWalletUploadSection: View {
             }
         }
     }
-    
+
     private func getUploadedFileContent(_ filename: String) -> some View {
         VStack(spacing: 16) {
             getIcon(isFileUploaded: true, tint: Theme.colors.alertInfo)
-            
+
             Text(filename)
                 .font(Theme.fonts.bodySMedium)
         }
@@ -117,7 +119,7 @@ struct ImportWalletUploadSection: View {
             }
         }
     }
-    
+
     private func getIcon(isFileUploaded: Bool = false, tint: Color) -> some View {
         Image(systemName: isFileUploaded ? "text.document" : "icloud.and.arrow.up")
             .foregroundColor(tint)

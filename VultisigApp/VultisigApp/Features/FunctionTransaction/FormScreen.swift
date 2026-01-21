@@ -13,9 +13,9 @@ struct FormScreen<Content: View>: View {
     @Binding var validForm: Bool
     var onContinue: () -> Void
     var content: () -> Content
-    
+
     @State var scrollViewProxy: ScrollViewProxy?
-    
+
     init(
         title: String,
         fixedHeight: Bool = true,
@@ -29,7 +29,7 @@ struct FormScreen<Content: View>: View {
         self.onContinue = onContinue
         self.content = content
     }
-    
+
     var body: some View {
         Screen(title: title) {
             VStack(spacing: 12) {

@@ -26,7 +26,7 @@ struct KeyImportOverviewScreen: View {
             return "backup_device\(count)"
         }
     }
-    
+
     var body: some View {
         Screen(edgeInsets: .init(leading: 24, trailing: 24)) {
             VStack(alignment: .leading, spacing: 0) {

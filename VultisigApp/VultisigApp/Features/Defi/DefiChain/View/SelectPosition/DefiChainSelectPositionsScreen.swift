@@ -10,10 +10,10 @@ import SwiftUI
 struct DefiChainSelectPositionsScreen: View {
     @ObservedObject var viewModel: DefiChainMainViewModel
     @Binding var isPresented: Bool
-    
+
     @State var selection: [[CoinMeta]] = []
     @State var isLoading: Bool = false
-    
+
     var body: some View {
         ZStack {
             AssetSelectionContainerSheet(
@@ -36,7 +36,7 @@ struct DefiChainSelectPositionsScreen: View {
             viewModel.positionsSearchText = ""
         }
     }
-    
+
     @ViewBuilder
     func cellBuilder(_ asset: CoinMeta, section: DefiChainPositionType) -> some View {
         let pos = viewModel.availablePositions.firstIndex(where: { $0.type == section }) ?? 0
@@ -54,42 +54,42 @@ struct DefiChainSelectPositionsScreen: View {
             }
         }
     }
-    
+
     func setupSelection() {
         let defiPositions = viewModel.vault.defiPositions.first { $0.chain == viewModel.chain }
         selection = [
             defiPositions?.bonds ?? [],
             defiPositions?.staking ?? [],
-            defiPositions?.lps ?? [],
+            defiPositions?.lps ?? []
         ]
     }
-    
+
     func add(asset: CoinMeta, section: Int) {
         guard selection.indices.contains(section) else { return }
         selection[section] = selection[section] + [asset]
     }
-    
+
     func remove(asset: CoinMeta, section: Int) {
         guard selection.indices.contains(section) else { return }
         selection[section] = selection[section].filter { $0 != asset }
     }
-    
+
     func onSave() {
         Task {
             isLoading = true
             updateVaultDefiPositions()
-            
+
             let vaultCoins = viewModel.vault.coins.map { $0.toCoinMeta() }
             let filteredDefiCoins = Set(selection.flatMap { $0 }).filter {
                 !vaultCoins.contains($0)
             }
-            
+
             try? await CoinService.addToChain(assets: Array(filteredDefiCoins), to: viewModel.vault)
             isLoading = false
             isPresented = false
         }
     }
-    
+
     @MainActor
     func updateVaultDefiPositions() {
         viewModel.vault.defiPositions.removeAll(where: { $0.chain == viewModel.chain })
@@ -101,7 +101,7 @@ struct DefiChainSelectPositionsScreen: View {
                 lps: Array(Set(selection[safe: 2] ?? []))
             )
         )
-        
+
         try? Storage.shared.save()
     }
 }

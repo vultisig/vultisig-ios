@@ -11,7 +11,7 @@ struct ChainDetailListView: View {
     @ObservedObject var viewModel: ChainDetailViewModel
     var onPress: (Coin) -> Void
     var onManageTokens: () -> Void
-    
+
     var body: some View {
         if viewModel.filteredTokens.isEmpty {
             addTokensView
@@ -19,7 +19,7 @@ struct ChainDetailListView: View {
             tokensList
         }
     }
-    
+
     var tokensList: some View {
         ForEach(Array(viewModel.filteredTokens.enumerated()), id: \.element.id) { index, token in
             Button {
@@ -33,7 +33,7 @@ struct ChainDetailListView: View {
             }
         }
     }
-    
+
     var addTokensView: some View {
         VStack(spacing: 12) {
             Icon(named: "crypto-outline", color: Theme.colors.primaryAccent4, size: 24)
@@ -47,7 +47,7 @@ struct ChainDetailListView: View {
             }
             .frame(maxWidth: 263)
             .multilineTextAlignment(.center)
-          
+
             PrimaryButton(title: "customizeTokens", leadingIcon: "write", size: .mini, action: onManageTokens)
                 .fixedSize()
         }

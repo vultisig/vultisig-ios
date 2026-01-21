@@ -10,7 +10,7 @@ import SwiftUI
 struct WithdrawRewardsTransactionScreen: View {
     @StateObject var viewModel: WithdrawRewardsTransactionViewModel
     var onVerify: (TransactionBuilder) -> Void
-    
+
     var body: some View {
         AmountFunctionTransactionScreen(
             title: String(format: "withdrawRewards".localized, viewModel.coin.ticker),

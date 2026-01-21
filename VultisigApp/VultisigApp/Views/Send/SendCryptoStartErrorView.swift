@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SendCryptoStartErrorView: View {
     let errorText: String
-    
+
     @EnvironmentObject var appViewModel: AppViewModel
 
     var body: some View {

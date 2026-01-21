@@ -51,7 +51,7 @@ struct KeyImportCustomizeChainsView: View {
             )
         }
     }
-    
+
     func cell(for chain: Chain) -> some View {
         AssetSelectionGridCell(
             name: chain.name,

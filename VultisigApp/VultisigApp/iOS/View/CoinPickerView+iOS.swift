@@ -19,27 +19,30 @@ extension CoinPickerView {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                Button(action: {
-                    dismiss()
-                }) {
-                    Image(systemName: "chevron.backward")
-                        .font(Theme.fonts.bodyLMedium)
-                        .foregroundColor(Theme.colors.textPrimary)
-                }
+                Button(
+                    action: {
+                        dismiss()
+                    },
+                    label: {
+                        Image(systemName: "chevron.backward")
+                            .font(Theme.fonts.bodyLMedium)
+                            .foregroundColor(Theme.colors.textPrimary)
+                    }
+                )
             }
         }
     }
-    
+
     var main: some View {
         view
     }
-    
+
     var view: some View {
         VStack(alignment: .leading, spacing: 0) {
             searchBar
                 .padding(.horizontal, 12)
                 .padding(.top, 24)
-            
+
             ScrollView {
                 scrollView
                     .padding(.horizontal, 12)

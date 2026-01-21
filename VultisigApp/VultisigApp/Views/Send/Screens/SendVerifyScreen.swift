@@ -11,14 +11,14 @@ struct SendVerifyScreen: View {
     @StateObject var sendCryptoVerifyViewModel = SendCryptoVerifyViewModel()
     @ObservedObject var tx: SendTransaction
     let vault: Vault
-    
+
     @State var fastPasswordPresented = false
-    
+
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @Environment(\.router) var router
-    
+
     @State private var error: HelperError?
-    
+
     var body: some View {
         Screen(title: "verify".localized) {
             VStack(spacing: 16) {
@@ -55,7 +55,7 @@ struct SendVerifyScreen: View {
             }
         }
     }
-    
+
     var fields: some View {
         SendCryptoVerifySummaryView(
             input: SendCryptoVerifySummary(
@@ -85,21 +85,21 @@ struct SendVerifyScreen: View {
             }
         }
     }
-    
+
     var checkboxes: some View {
         VStack(spacing: 16) {
             Checkbox(isChecked: $sendCryptoVerifyViewModel.isAmountCorrect, text: "correctAmountCheck")
             Checkbox(isChecked: $sendCryptoVerifyViewModel.isAddressCorrect, text: "sendingRightAddressCheck")
         }
     }
-    
+
     func onSignPress() {
         let canSign = sendCryptoVerifyViewModel.validateSecurityScanner()
         if canSign {
             signAndMoveToNextView()
         }
     }
-    
+
     func signAndMoveToNextView() {
         Task {
             do {
@@ -122,14 +122,14 @@ struct SendVerifyScreen: View {
             }
         }
     }
-    
+
     var pairedSignButton: some View {
         VStack {
             if tx.isFastVault {
                 Text(NSLocalizedString("holdForPairedSign", comment: ""))
                     .foregroundColor(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
-                
+
                 LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
                     fastPasswordPresented = true
                 } longPressAction: {
@@ -157,7 +157,7 @@ struct SendVerifyScreen: View {
 struct VerifyKeysignPayload: Identifiable, Hashable {
     let id: String
     let payload: KeysignPayload
-    
+
     init(id: String = UUID().uuidString, payload: KeysignPayload) {
         self.id = id
         self.payload = payload

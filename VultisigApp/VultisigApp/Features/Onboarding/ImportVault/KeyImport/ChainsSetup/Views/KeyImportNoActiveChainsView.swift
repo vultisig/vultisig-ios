@@ -9,7 +9,7 @@ import SwiftUI
 
 struct KeyImportNoActiveChainsView: View {
     let onAddCustomChains: () -> Void
-    
+
     var body: some View {
         VStack(spacing: 32) {
             Spacer()

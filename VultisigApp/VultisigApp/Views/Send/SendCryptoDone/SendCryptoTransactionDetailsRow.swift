@@ -14,7 +14,7 @@ struct SendCryptoTransactionDetailsRow<AccessoryView: View>: View {
     let bracketValue: String?
     let icon: String?
     let accessoryView: (() -> AccessoryView)
-    
+
     init(
         title: String,
         description: String,
@@ -30,7 +30,7 @@ struct SendCryptoTransactionDetailsRow<AccessoryView: View>: View {
         self.icon = icon
         self.accessoryView = accessoryView
     }
-    
+
     var body: some View {
         VStack(alignment: .trailing, spacing: 16) {
             HStack(spacing: 2) {
@@ -38,23 +38,23 @@ struct SendCryptoTransactionDetailsRow<AccessoryView: View>: View {
                     .foregroundColor(Theme.colors.textTertiary)
                     .lineLimit(1)
                     .truncationMode(.tail)
-                
+
                 Spacer()
-                
+
                 if let icon {
                     Image(icon)
                         .resizable()
                         .frame(width: 16, height: 16)
                         .cornerRadius(32)
                 }
-                
+
                 VStack(alignment: .trailing, spacing: 2) {
                     HStack(spacing: 2) {
                         Text(description)
                             .foregroundColor(Theme.colors.textPrimary)
                             .lineLimit(1)
                             .truncationMode(.middle)
-                        
+
                         if let bracketValue {
                             Text("(\(bracketValue))")
                                 .foregroundColor(Theme.colors.textTertiary)
@@ -62,13 +62,13 @@ struct SendCryptoTransactionDetailsRow<AccessoryView: View>: View {
                                 .truncationMode(.middle)
                         }
                     }
-                    
+
                     if let secondaryDescription {
                         Text(secondaryDescription)
                             .foregroundColor(Theme.colors.textTertiary)
                             .lineLimit(1)
                     }
-                    
+
                 }
             }
             accessoryView()

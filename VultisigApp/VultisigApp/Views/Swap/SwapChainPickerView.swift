@@ -17,10 +17,10 @@ struct SwapChainPickerView: View {
     let vault: Vault
     @Binding var showSheet: Bool
     @Binding var selectedChain: Chain?
-    
+
     @State var searchBarFocused: Bool = false
     @EnvironmentObject var viewModel: CoinSelectionViewModel
-    
+
     init(
         filterType: ChainFilterType = .send,
         vault: Vault,
@@ -32,11 +32,11 @@ struct SwapChainPickerView: View {
         self._showSheet = showSheet
         self._selectedChain = selectedChain
     }
-    
+
     var body: some View {
         container
     }
-    
+
     var container: some View {
 #if os(iOS)
         NavigationStack {
@@ -49,7 +49,7 @@ struct SwapChainPickerView: View {
             .transaction { $0.disablesAnimations = true }
 #endif
     }
-    
+
     var content: some View {
         VStack(spacing: 12) {
             searchBar
@@ -79,7 +79,7 @@ struct SwapChainPickerView: View {
         .sheetStyle()
         .onDisappear { viewModel.searchText = "" }
     }
-    
+
     var listHeader: some View {
         HStack {
             Text(NSLocalizedString("chain", comment: ""))
@@ -94,7 +94,7 @@ struct SwapChainPickerView: View {
         }
         .padding(.horizontal, 24)
     }
-    
+
     var list: some View {
         LazyVStack(spacing: 0) {
             ForEach(sortedChains, id: \.chain) { (chain, balance) in
@@ -109,19 +109,19 @@ struct SwapChainPickerView: View {
         }
         .cornerRadius(12)
     }
-    
+
     var emptyMessage: some View {
         ErrorMessage(text: "noResultFound")
             .padding(.top, 48)
     }
-    
+
     var searchBar: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("selectChain".localized)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.title2)
                 .multilineTextAlignment(.leading)
-            
+
             HStack(spacing: 12) {
                 SearchTextField(value: $viewModel.searchText, isFocused: $searchBarFocused)
                 Button {
@@ -139,7 +139,7 @@ struct SwapChainPickerView: View {
             .animation(.easeInOut, value: searchBarFocused)
         }
     }
-    
+
     var sortedChains: [(chain: Chain, balance: String)] {
         filteredChains.map { chain in
             let totalFiat = vault.coins
@@ -152,7 +152,7 @@ struct SwapChainPickerView: View {
         .sorted(by: { $0.1 > $1.1 })
         .map { (chain: $0.0, balance: $0.1.formatToFiat())}
     }
-    
+
     var filteredChains: [Chain] {
         viewModel.filterChains(type: filterType, vault: vault)
     }

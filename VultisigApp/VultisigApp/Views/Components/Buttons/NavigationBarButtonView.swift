@@ -9,7 +9,7 @@ import SwiftUI
 
 struct NavigationBarButtonView: View {
     let title: String
-    
+
     var body: some View {
         Text(title)
             .foregroundStyle(Theme.colors.primaryAccent4)

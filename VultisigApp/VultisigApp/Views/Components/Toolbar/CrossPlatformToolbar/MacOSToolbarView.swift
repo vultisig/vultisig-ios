@@ -14,9 +14,9 @@ struct MacOSToolbarView<Content: View>: View {
     let ignoresTopEdge: Bool
     let showsBackButton: Bool
     let content: Content
-    
+
     @Environment(\.dismiss) var dismiss
-    
+
     init(
         items: [CustomToolbarItem],
         navigationTitle: String?,
@@ -30,7 +30,7 @@ struct MacOSToolbarView<Content: View>: View {
         self.showsBackButton = showsBackButton
         self.content = content()
     }
-    
+
     var body: some View {
         if ignoresTopEdge {
             content
@@ -43,13 +43,13 @@ struct MacOSToolbarView<Content: View>: View {
                 // macOS toolbar
                 toolbarContent
                     .background(Theme.colors.bgPrimary)
-                
+
                 // Content below toolbar
                 content
             }
         }
     }
-    
+
     private var toolbarContent: some View {
         HStack(alignment: .center) {
             // Leading items with automatic back button
@@ -61,24 +61,24 @@ struct MacOSToolbarView<Content: View>: View {
                     })
                         .rotationEffect(.radians(.pi))
                 }
-                
+
                 // Custom leading items
                 ForEach(Array(leadingItems.enumerated()), id: \.offset) { _, item in
                     item.content
                 }
             }
-            
+
             Spacer()
-            
+
             // Navigation title in the center
             if let navigationTitle {
                 Text(navigationTitle)
                     .foregroundColor(Theme.colors.textPrimary)
                     .font(Theme.fonts.bodyLMedium)
             }
-            
+
             Spacer()
-            
+
             // Trailing items
             ForEach(Array(trailingItems.enumerated()), id: \.offset) { _, item in
                 item.content
@@ -87,11 +87,11 @@ struct MacOSToolbarView<Content: View>: View {
         .frame(height: 60)
         .padding(.horizontal, 16)
     }
-    
+
     private var leadingItems: [CustomToolbarItem] {
         items.filter { $0.placement == .leading }
     }
-    
+
     private var trailingItems: [CustomToolbarItem] {
         items.filter { $0.placement == .trailing }
     }

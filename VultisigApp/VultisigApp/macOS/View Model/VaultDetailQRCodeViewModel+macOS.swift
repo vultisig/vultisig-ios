@@ -13,7 +13,7 @@ extension VaultDetailQRCodeViewModel {
         let renderer = ImageRenderer(content: VaultDetailMacQRCode(vault: vault))
 
         renderer.scale = displayScale
-        
+
         if let nsImage = renderer.nsImage {
             renderedImage = Image(nsImage: nsImage)
         }

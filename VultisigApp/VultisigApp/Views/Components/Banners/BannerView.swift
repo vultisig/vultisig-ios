@@ -10,12 +10,12 @@ import SwiftUI
 struct BannerView<Content: View>: View {
     let bgImage: String
     let content: () -> Content
-    
+
     init(bgImage: String, @ViewBuilder content: @escaping () -> Content) {
         self.content = content
         self.bgImage = bgImage
     }
-    
+
     var body: some View {
         content()
             .padding(24)
@@ -23,7 +23,7 @@ struct BannerView<Content: View>: View {
             .background(image)
             .containerStyle()
     }
-    
+
     var image: some View {
         Image(bgImage)
             .resizable()

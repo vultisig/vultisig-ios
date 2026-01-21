@@ -18,7 +18,7 @@ public enum HTTPError: Error, LocalizedError {
     case networkError(Error)
     case timeout
     case invalidSSLCertificate
-    
+
     public var errorDescription: String? {
         switch self {
         case .invalidURL:
@@ -47,7 +47,7 @@ public enum HTTPError: Error, LocalizedError {
 public struct HTTPResponse<T> {
     public let data: T
     public let response: HTTPURLResponse
-    
+
     public init(data: T, response: HTTPURLResponse) {
         self.data = data
         self.response = response

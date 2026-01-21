@@ -39,8 +39,7 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
         self.defaultAutocompound = defaultAutocompound
         self.availableToUnstake = availableToUnstake
     }
-    
-    
+
     func onLoad() {
         setupForm()
         // Use availableToUnstake if provided, otherwise fall back to stakedBalanceDecimal
@@ -49,17 +48,17 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
 
         $isAutocompound
             .receive(on: DispatchQueue.main)
-            .sink(weak: self) { viewModel, isAutoCompound in
+            .sink(weak: self) { viewModel, _ in
                 viewModel.updateAvailableBalance()
             }
             .store(in: &cancellables)
         isAutocompound = defaultAutocompound
     }
-    
+
     var transactionBuilder: TransactionBuilder? {
         validateErrors()
         guard validForm else { return nil }
-        
+
         switch coin.ticker.uppercased() {
         case "TCY":
             return TCYUnstakeTransactionBuilder(
@@ -75,7 +74,7 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
                 amount: amountField.value,
                 sendMaxAmount: isMaxAmount
             )
-            
+
         case "CACAO":
             return CacaoUnstakeTransactionBuilder(
                 coin: coin,
@@ -85,17 +84,17 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
             return nil
         }
     }
-    
+
     var percentageFromAmount: Double {
         guard availableAmount != .zero else { return 0 }
         let decimal = (amountField.value.toDecimal() / availableAmount) * 100.0
         return (decimal as NSDecimalNumber).doubleValue
     }
-    
+
     func onPercentage(_ percentage: Double) {
         isMaxAmount = percentage == 100
     }
-    
+
     func updateAvailableBalance() {
         Task { @MainActor in
             if autocompoundBalance == .zero {
@@ -108,7 +107,7 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
             self.setupAmountField()
         }
     }
-    
+
     func setupAmountField() {
         self.amountField.validators = [
             AmountBalanceValidator(balance: self.availableAmount)
@@ -116,7 +115,7 @@ final class UnstakeTransactionViewModel: ObservableObject, Form {
         self.percentageSelected = 100
         self.isMaxAmount = true
     }
-    
+
     func fetchAutocompoundBalance() async {
         switch coin.ticker.uppercased() {
         case "TCY":

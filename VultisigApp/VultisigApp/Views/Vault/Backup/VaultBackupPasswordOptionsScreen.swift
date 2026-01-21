@@ -11,7 +11,7 @@ struct VaultBackupPasswordOptionsScreen: View {
     let tssType: TssType
     let backupType: VaultBackupType
     var isNewVault = false
-    
+
     @State var isLoading = false
     @State var presentFileExporter = false
     @StateObject var backupViewModel = EncryptedBackupViewModel()
@@ -39,7 +39,7 @@ struct VaultBackupPasswordOptionsScreen: View {
         .onAppear(perform: onAppear)
         .onDisappear(perform: backupViewModel.resetData)
     }
-    
+
     var icon: some View {
         Image(systemName: "person.badge.key")
             .font(Theme.fonts.title1)
@@ -48,22 +48,22 @@ struct VaultBackupPasswordOptionsScreen: View {
             .background(Theme.colors.bgSurface2)
             .cornerRadius(16)
     }
-    
+
     var textContent: some View {
         VStack(spacing: 16) {
             Text("backupOptionsTitle".localized)
                 .font(Theme.fonts.title2)
                 .foregroundColor(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
-            
+
             boxedText("backupOptionsBox1".localized, highlighted: "backupOptionsBox1Highlighted".localized, icon: "lock-keyhole-open")
-            
+
             boxedText("backupOptionsBox2".localized, highlighted: "backupOptionsBox2Highlighted".localized, icon: "folder-lock")
-            
+
             boxedText("backupOptionsBox3".localized, highlighted: "backupOptionsBox3Highlighted".localized, icon: "file-warning")
         }
     }
-    
+
     func boxedText(_ text: String, highlighted: String, icon: String) -> some View {
         HStack(spacing: 12) {
             Icon(named: icon, color: Theme.colors.primaryAccent4, size: 24)
@@ -77,9 +77,9 @@ struct VaultBackupPasswordOptionsScreen: View {
         }
         .frame(maxWidth: 325)
         .containerStyle(padding: 16, bgColor: Theme.colors.bgSurface1)
-        
+
     }
-    
+
     var buttons: some View {
         VStack(spacing: 12) {
             withoutPasswordButton
@@ -87,13 +87,13 @@ struct VaultBackupPasswordOptionsScreen: View {
         }
         .disabled(isLoading)
     }
-    
+
     var withoutPasswordButton: some View {
         PrimaryButton(title: "backupWithoutPassword") {
             presentFileExporter = true
         }
     }
-    
+
     var withPasswordButton: some View {
         PrimaryButton(title: "usePassword", type: .secondary) {
             router.navigate(to: VaultRoute.backupPasswordScreen(
@@ -103,7 +103,7 @@ struct VaultBackupPasswordOptionsScreen: View {
             ))
         }
     }
-    
+
     private func onAppear() {
         isLoading = true
         FileManager.default.clearTmpDirectory()

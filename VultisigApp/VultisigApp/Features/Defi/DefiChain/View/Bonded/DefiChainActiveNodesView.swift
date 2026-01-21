@@ -13,9 +13,9 @@ struct DefiChainActiveNodesView: View {
     let canUnbond: Bool
     var onBond: (BondNode) -> Void
     var onUnbond: (BondNode) -> Void
-    
+
     @State private var isExpanded = false
-    
+
     var body: some View {
         ContainerView {
             ExpandableView(isExpanded: $isExpanded) {
@@ -24,7 +24,7 @@ struct DefiChainActiveNodesView: View {
                         .foregroundStyle(Theme.colors.textSecondary)
                         .font(Theme.fonts.bodySMedium)
                     Spacer()
-                    
+
                     Icon(named: "chevron-down", color: Theme.colors.textPrimary, size: 20)
                         .rotationEffect(.radians(isExpanded ? .pi : .zero))
                         .animation(.interpolatingSpring, value: isExpanded)

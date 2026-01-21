@@ -10,12 +10,12 @@ import SwiftUI
 struct CommonListHeaderView: View {
     let title: String
     let paddingTop: CGFloat?
-    
+
     init(title: String, paddingTop: CGFloat? = nil) {
         self.title = title
         self.paddingTop = paddingTop
     }
-    
+
     var body: some View {
         Text(title)
             .font(Theme.fonts.caption12)

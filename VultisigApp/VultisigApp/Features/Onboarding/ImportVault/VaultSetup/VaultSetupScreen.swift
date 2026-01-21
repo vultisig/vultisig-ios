@@ -31,7 +31,7 @@ struct VaultSetupScreen: View {
         self.setupType = setupType ?? .fast
         _viewModel = StateObject(wrappedValue: VaultSetupViewModel(setupType: setupType ?? .fast))
     }
-    
+
     var body: some View {
         FormScreen(
             title: "vaultSetup".localized,
@@ -59,7 +59,7 @@ struct VaultSetupScreen: View {
             onContinue()
         }
     }
-    
+
     var nameSection: some View {
         FormExpandableSection(
             title: "name".localized,
@@ -88,7 +88,7 @@ struct VaultSetupScreen: View {
                     error: $viewModel.nameField.error
                 )
                 .focused($focusedField, equals: .name)
-                
+
                 ExpandableView(isExpanded: $referralExpanded) {
                     expandableSecondaryFieldHeader(isExpanded: $referralExpanded, label: "addReferral".localized)
                 } content: {
@@ -102,7 +102,7 @@ struct VaultSetupScreen: View {
             }
         }
     }
-    
+
     var emailSection: some View {
         FormExpandableSection(
             title: viewModel.emailField.label ?? .empty,
@@ -121,7 +121,7 @@ struct VaultSetupScreen: View {
                 Text("enterVaultEmail".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
-                
+
                 CommonTextField(
                     text: $viewModel.emailField.value,
                     placeholder: viewModel.emailField.placeholder ?? .empty,
@@ -135,7 +135,7 @@ struct VaultSetupScreen: View {
             }
         }
     }
-    
+
     var passwordSection: some View {
         FormExpandableSection(
             title: "password".localized,
@@ -153,21 +153,21 @@ struct VaultSetupScreen: View {
                     type: .warning,
                     leadingIcon: "circle-info"
                 )
-                
+
                 SecureTextField(
                     value: $viewModel.passwordField.value,
                     placeholder: viewModel.passwordField.placeholder,
                     error: $viewModel.passwordField.error
                 )
                 .focused($focusedField, equals: .password)
-                
+
                 SecureTextField(
                     value: $viewModel.passwordConfirmField.value,
                     placeholder: viewModel.passwordConfirmField.placeholder,
                     error: $viewModel.passwordConfirmField.error
                 )
                 .focused($focusedField, equals: .passwordConfirm)
-                
+
                 ExpandableView(isExpanded: $hintExpanded) {
                     expandableSecondaryFieldHeader(isExpanded: $hintExpanded, label: "addHint".localized)
                 } content: {
@@ -181,7 +181,7 @@ struct VaultSetupScreen: View {
             }
         }
     }
-    
+
     func expandableSecondaryFieldHeader(isExpanded: Binding<Bool>, label: String) -> some View {
         Button {
             withAnimation(.interpolatingSpring) {
@@ -200,7 +200,7 @@ struct VaultSetupScreen: View {
         }
         .contentShape(Rectangle())
     }
-    
+
     func onContinue() {
         if viewModel.showFastSignFields {
             switch focusedField {

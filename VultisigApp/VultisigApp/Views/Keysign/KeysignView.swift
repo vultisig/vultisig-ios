@@ -18,20 +18,20 @@ struct KeysignView: View {
     let encryptionKeyHex: String
     let isInitiateDevice: Bool
     @StateObject var viewModel = KeysignViewModel()
-    
+
     @State var showAlert = false
     @State var showDoneText = false
     @State var showError = false
-    
+
     @EnvironmentObject var globalStateViewModel: GlobalStateViewModel
-        
+
     var body: some View {
         container
             .sensoryFeedback(.success, trigger: showDoneText)
             .sensoryFeedback(.error, trigger: showError)
             .sensoryFeedback(.impact(weight: .heavy), trigger: viewModel.status)
     }
-    
+
     var content: some View {
         ZStack {
             switch viewModel.status {
@@ -48,7 +48,7 @@ struct KeysignView: View {
             case .KeysignVaultMismatch:
                 keysignVaultMismatchErrorView
             }
-            
+
             PopupCapsule(text: "hashCopied", showPopup: $showAlert)
         }
         .onLoad {
@@ -61,7 +61,7 @@ struct KeysignView: View {
             movetoDoneView()
         }
     }
-    
+
     var keysignFinished: some View {
         ZStack {
             if transferViewModel != nil, keysignPayload != nil {
@@ -74,11 +74,11 @@ struct KeysignView: View {
             showDoneText = true
         }
     }
-    
+
     var forStartKeysign: some View {
         Loader()
     }
-    
+
     var forJoinKeysign: some View {
         JoinKeysignDoneView(vault: vault, viewModel: viewModel, showAlert: $showAlert)
             .onAppear {
@@ -88,21 +88,21 @@ struct KeysignView: View {
                 globalStateViewModel.showKeysignDoneView = false
             }
     }
-    
+
     var sendCryptoKeysignView: some View {
         SendCryptoKeysignView(title: viewModel.keysignError, showError: true)
             .onAppear {
                 showError = true
             }
     }
-    
+
     var keysignVaultMismatchErrorView: some View {
         KeysignVaultMismatchErrorView()
             .onAppear {
                 showError = true
             }
     }
-    
+
     func setData() async {
         if let keysignPayload, keysignPayload.vaultPubKeyECDSA != vault.pubKeyECDSA {
             viewModel.status = .KeysignVaultMismatch
@@ -122,12 +122,12 @@ struct KeysignView: View {
             isInitiateDevice: self.isInitiateDevice
         )
     }
-    
+
     private func movetoDoneView() {
         guard let transferViewModel = transferViewModel, !viewModel.txid.isEmpty else {
             return
         }
-        
+
         transferViewModel.hash = viewModel.txid
         transferViewModel.approveHash = viewModel.approveTxid
         transferViewModel.moveToNextView()
@@ -137,7 +137,7 @@ struct KeysignView: View {
 #Preview {
     ZStack {
         Background()
-        
+
         KeysignView(
             vault: Vault.example,
             keysignCommittee: [],
@@ -145,7 +145,7 @@ struct KeysignView: View {
             sessionID: "session",
             keysignType: .ECDSA,
             messsageToSign: ["message"],
-            keysignPayload: nil, 
+            keysignPayload: nil,
             customMessagePayload: nil,
             transferViewModel: nil,
             encryptionKeyHex: "",

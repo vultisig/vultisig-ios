@@ -20,7 +20,7 @@ extension FastVaultSetPasswordView {
         }
         .crossPlatformToolbar()
     }
-    
+
     var view: some View {
         VStack {
             passwordField

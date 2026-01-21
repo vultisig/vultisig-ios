@@ -22,7 +22,7 @@ struct OffsetObservingScrollView<Content: View>: View {
     @ViewBuilder var content: () -> Content
 
     private let coordinateSpaceName = UUID()
-    
+
     init(
         axes: Axis.Set = .vertical,
         showsIndicators: Bool = true,
@@ -74,12 +74,12 @@ private extension OffsetObservingScrollView {
             Color.clear.frame(width: contentInset)
         }
     }
-    
+
     func preferenceValue(proxy: GeometryProxy) -> CGFloat {
         let frame = proxyFrame(for: proxy)
         return axes == .vertical ? frame.minY : frame.minX
     }
-    
+
     func proxyFrame(for proxy: GeometryProxy) -> CGRect {
         switch ns {
         case .local:
@@ -92,7 +92,7 @@ private extension OffsetObservingScrollView {
 
 private struct ScrollOffsetPreferenceKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
-    
+
     private static var lastUpdateTime: CFTimeInterval = 0
     private static let targetFrameRate: Double = 30
     private static var frameInterval: CFTimeInterval { 1.0 / targetFrameRate }
@@ -100,7 +100,7 @@ private struct ScrollOffsetPreferenceKey: PreferenceKey {
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         let newValue = nextValue()
         let currentTime = CACurrentMediaTime()
-        
+
         // Only update if enough time has passed since the last update
         if currentTime - lastUpdateTime >= frameInterval {
             value += newValue

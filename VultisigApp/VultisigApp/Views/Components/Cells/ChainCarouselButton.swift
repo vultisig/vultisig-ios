@@ -11,14 +11,14 @@ struct ChainCarouselButton: View {
     let chain: Chain
     let isSelected: Bool
     let onTap: () -> Void
-    
+
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: 6) {
                 Image(chain.logo)
                     .resizable()
                     .frame(width: 16, height: 16)
-                
+
                 Text(chain.name)
                     .font(.body12BrockmannMedium)
                     .foregroundColor(isSelected ? .neutral0 : .extraLightGray)
@@ -53,4 +53,4 @@ struct ChainCarouselButton: View {
     }
     .padding()
     .background(Color.blue600)
-} 
+}

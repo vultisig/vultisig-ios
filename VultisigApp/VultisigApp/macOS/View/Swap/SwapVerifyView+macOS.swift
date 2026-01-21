@@ -14,7 +14,7 @@ extension SwapVerifyView {
             .padding(.horizontal, 25)
             .padding(.vertical, 12)
     }
-    
+
     var fields: some View {
         ScrollView {
             VStack(spacing: 30) {

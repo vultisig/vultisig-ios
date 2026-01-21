@@ -6,14 +6,14 @@
 import SwiftUI
 import AVFoundation
 
-final class ApplicationState : ObservableObject {
+final class ApplicationState: ObservableObject {
     @Published var isCameraPermissionGranted: Bool = false
-    
+
     // Singleton
     static let shared = ApplicationState()
-    
+
     init() {}
-    
+
     func checkCameraPermission() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:

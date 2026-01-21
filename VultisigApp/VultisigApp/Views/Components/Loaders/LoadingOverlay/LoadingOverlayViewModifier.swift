@@ -11,7 +11,7 @@ struct LoadingOverlayViewModifier: ViewModifier {
     let text: String
     @Binding var isLoading: Bool
     @State private var isLoadingInternal: Bool = false
-    
+
     func body(content: Content) -> some View {
         content
             .overlay(overlay)
@@ -20,9 +20,9 @@ struct LoadingOverlayViewModifier: ViewModifier {
                     isLoadingInternal = newValue
                 }
             }
-        
+
     }
-    
+
     @ViewBuilder
     var overlay: some View {
         if isLoadingInternal {
@@ -43,9 +43,9 @@ private struct LoadingBanner: View {
     @Binding var isVisible: Bool
     @State private var progress: Double = 0.0
     @State var isVisibleInternal: Bool = false
-    
+
     let animation: Animation = .interpolatingSpring(mass: 1, stiffness: 100, damping: 15)
-    
+
     var body: some View {
         VStack {
             VStack(spacing: 8) {

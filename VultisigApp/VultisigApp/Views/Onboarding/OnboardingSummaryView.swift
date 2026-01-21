@@ -14,7 +14,7 @@ struct OnboardingSummaryView: View {
         case fast
         case secure
         case keyImport
-        
+
         var id: String { rawValue }
 
         var animation: String {
@@ -40,11 +40,11 @@ struct OnboardingSummaryView: View {
     @State var didAgree: Bool = false
     @State var animationVM: RiveViewModel? = nil
     @State var presentChainSelection: Bool = false
-    
+
     var showChooseChainsButton: Bool {
         vault != nil && vault?.libType != .KeyImport
     }
-    
+
     init(kind: Kind, isPresented: Binding<Bool>, onDismiss: (() -> Void)?, vault: Vault? = nil) {
         self.kind = kind
         self._isPresented = isPresented
@@ -66,7 +66,7 @@ struct OnboardingSummaryView: View {
                     .showIf(showChooseChainsButton)
                 }
                 .disabled(!didAgree)
-                
+
             }
             .padding(.top, isMacOS ? 0 : 32)
             .background(BlurredBackground())
@@ -88,7 +88,7 @@ struct OnboardingSummaryView: View {
         }
         .applySheetSize(700, kind == .fast ? 650 : 750)
     }
-    
+
     var animation: some View {
         Group {
             switch kind {
@@ -132,26 +132,26 @@ struct OnboardingSummaryView: View {
         }
         .buttonStyle(.plain)
     }
-    
+
     var chooseYourChainButton: some View {
         PrimaryButton(title: "chooseYourChains", type: .secondary) {
             presentChainSelection = true
         }
         .buttonStyle(.plain)
     }
-    
+
     var orSeparator: some View {
         HStack(spacing: 16) {
             Separator(opacity: 0.2)
-            
+
             Text(NSLocalizedString("or", comment: "").uppercased())
                 .font(Theme.fonts.bodySMedium)
                 .foregroundColor(Theme.colors.textPrimary)
-            
+
             Separator(opacity: 0.2)
         }
     }
-    
+
     private func setData() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             animationVM = RiveViewModel(fileName: kind.animation)
@@ -163,7 +163,7 @@ struct OnboardingSummaryView: View {
 #Preview {
     @Previewable @State var isPresented: Bool = false
     return VStack {
-        
+
     }
     .crossPlatformSheet(isPresented: $isPresented) {
         OnboardingSummaryView(

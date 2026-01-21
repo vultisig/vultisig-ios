@@ -9,10 +9,10 @@ import SwiftUI
 
 struct ReferredCodeFormScreen: View {
     @StateObject var referredViewModel = ReferredViewModel()
-    
-    private let referralSavePercentage: String = "10%"    
+
+    private let referralSavePercentage: String = "10%"
     @Environment(\.dismiss) var dismiss
-    
+
     var body: some View {
         Screen(title: referredViewModel.title.localized) {
             VStack {
@@ -28,7 +28,7 @@ struct ReferredCodeFormScreen: View {
             referredViewModel.resetData()
         }
     }
-    
+
     var main: some View {
         ScrollView {
             VStack(spacing: 8) {
@@ -47,7 +47,7 @@ struct ReferredCodeFormScreen: View {
         }
         .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     var textField: some View {
         ReferralTextField(
             text: $referredViewModel.referredCode,
@@ -56,7 +56,7 @@ struct ReferredCodeFormScreen: View {
             errorMessage: $referredViewModel.referredLaunchViewErrorMessage
         )
     }
-    
+
     var button: some View {
         PrimaryButton(title: "saveReferral") {
             Task { @MainActor in
@@ -65,14 +65,14 @@ struct ReferredCodeFormScreen: View {
                     dismiss()
                 }
             }
-            
+
         }
     }
-    
+
     var loader: some View {
         Loader()
     }
-    
+
     private func setData() {
         referredViewModel.resetData()
         if referredViewModel.hasReferredCode {

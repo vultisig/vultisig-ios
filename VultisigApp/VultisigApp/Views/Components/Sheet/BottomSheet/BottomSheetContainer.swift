@@ -24,7 +24,7 @@ struct BottomSheetContainer<Content: BottomSheetContentView>: View {
         .padding(.top, 24)
         .padding(.horizontal, 16)
     }
-    
+
     var header: some View {
         #if os(iOS)
         Capsule()

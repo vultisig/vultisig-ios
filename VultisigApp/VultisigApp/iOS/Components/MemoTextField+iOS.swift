@@ -13,7 +13,7 @@ extension MemoTextField {
         content
             .textInputAutocapitalization(.never)
     }
-    
+
     func pasteAddress() {
         if let clipboardContent = UIPasteboard.general.string {
             memo = clipboardContent

@@ -21,7 +21,7 @@ struct SettingsCustomMessageView: View {
     @State var fastVaultPassword: String = .empty
     @State var fastPasswordPresented = false
     @State var isFastVault = false
-    
+
     let vault: Vault
     private let fastVaultService = FastVaultService.shared
 
@@ -38,7 +38,7 @@ struct SettingsCustomMessageView: View {
             tabView
         }
     }
-    
+
     var tabView: some View {
         ZStack {
             switch viewModel.state {
@@ -136,7 +136,7 @@ struct SettingsCustomMessageView: View {
                                     chain: Chain.ethereum.name,
                                     decodedMessage: nil)
     }
-    
+
     @ViewBuilder
     var signButton: some View {
         VStack(spacing: 16) {
@@ -144,7 +144,7 @@ struct SettingsCustomMessageView: View {
                 Text(NSLocalizedString("holdForPairedSign", comment: ""))
                     .foregroundColor(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
-                
+
                 LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
                     fastPasswordPresented = true
                 } longPressAction: {
@@ -167,7 +167,7 @@ struct SettingsCustomMessageView: View {
         }
         .padding(.horizontal, 16)
     }
-    
+
     func onLoad() {
         Task { @MainActor in
             let isExist = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
@@ -175,7 +175,7 @@ struct SettingsCustomMessageView: View {
             isFastVault = isExist && !isLocalBackup
         }
     }
-    
+
     func onSignPress() {
         viewModel.moveToNextView()
     }

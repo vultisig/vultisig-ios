@@ -10,9 +10,9 @@ import RiveRuntime
 
 struct KeyImportScanningForChainsView: View {
     let onSelectChainsManually: () -> Void
-    
+
     @State var animationVMLoader: RiveViewModel? = nil
-    
+
     var body: some View {
         VStack(spacing: 12) {
             Spacer()

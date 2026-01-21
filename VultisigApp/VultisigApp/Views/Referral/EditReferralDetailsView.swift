@@ -11,11 +11,11 @@ struct EditReferralDetailsView: View {
     @StateObject var viewModel: EditReferralViewModel
     @ObservedObject var sendTx: SendTransaction
     var onNext: () -> Void
-    
+
     @EnvironmentObject var homeViewModel: HomeViewModel
-    
+
     @State var showPreferredAssetSelection: Bool = false
-    
+
     init(
         viewModel: EditReferralViewModel,
         sendTx: SendTransaction,
@@ -25,7 +25,7 @@ struct EditReferralDetailsView: View {
         self.sendTx = sendTx
         self.onNext = onNext
     }
-    
+
     var body: some View {
         Screen(title: "editReferral".localized) {
             content
@@ -44,14 +44,14 @@ struct EditReferralDetailsView: View {
             }
         }
     }
-    
+
     var content: some View {
         VStack {
             main
             button
         }
     }
-    
+
     var main: some View {
         ScrollView {
             VStack(spacing: 16) {
@@ -65,7 +65,7 @@ struct EditReferralDetailsView: View {
             }
         }
     }
-    
+
     var yourReferralCodeSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("yourReferralCode".localized)
@@ -80,7 +80,7 @@ struct EditReferralDetailsView: View {
             )
         }
     }
-    
+
     var extendExpirationSection: some View {
         VStack(spacing: 8) {
             setExpirationTitle
@@ -88,14 +88,14 @@ struct EditReferralDetailsView: View {
             expirationDate
         }
     }
-    
+
     var setExpirationTitle: some View {
         Text(NSLocalizedString("extendExpiration(inYears)", comment: ""))
             .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     var expirationDate: some View {
         getCell(
             title: "expirationDate",
@@ -105,21 +105,21 @@ struct EditReferralDetailsView: View {
             isPlaceholder: .constant(viewModel.extendedCount == 0)
         )
     }
-    
+
     var choosePayoutAsset: some View {
         VStack(spacing: 8) {
             choosePayoutAssetTitle
             choosePayoutAssetSelection
         }
     }
-    
+
     var choosePayoutAssetTitle: some View {
         Text(NSLocalizedString("choosePayoutAsset", comment: ""))
             .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     var choosePayoutAssetSelection: some View {
         Button {
             showPreferredAssetSelection = true
@@ -133,7 +133,7 @@ struct EditReferralDetailsView: View {
             }
         }
     }
-    
+
     var summary: some View {
         VStack(spacing: 16) {
             getCell(
@@ -144,20 +144,20 @@ struct EditReferralDetailsView: View {
             )
         }
     }
-    
+
     var button: some View {
         PrimaryButton(title: "saveChanges") {
             Task { @MainActor in
                 guard await viewModel.verifyReferralEntries(tx: sendTx) else {
                     return
                 }
-                
+
                 onNext()
             }
         }
         .disabled(!viewModel.isValidForm)
     }
-    
+
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString("error", comment: "")),
@@ -165,7 +165,7 @@ struct EditReferralDetailsView: View {
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
-    
+
     var selectedAsset: some View {
         HStack(spacing: 8) {
             AsyncImageView(
@@ -174,19 +174,19 @@ struct EditReferralDetailsView: View {
                 ticker: viewModel.preferredAsset?.asset.ticker ?? .empty,
                 tokenChainLogo: viewModel.preferredAsset?.asset.chain.logo ?? .empty
             )
-            
+
             Text(viewModel.preferredAsset?.asset.ticker ?? "RUNE")
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(Theme.colors.textPrimary)
         }
     }
-    
+
     var infoLabel: some View {
         Image(systemName: "info.circle")
             .font(Theme.fonts.bodyLMedium)
             .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     private func getCell(
         title: String,
         description1: String,
@@ -198,13 +198,13 @@ struct EditReferralDetailsView: View {
         HStack {
             Text(NSLocalizedString(title, comment: ""))
                 .foregroundColor(Theme.colors.textTertiary)
-            
+
             Spacer()
-            
+
             VStack(alignment: .trailing, spacing: 0) {
                 RedactedText(description1, redactedText: redactedDesc1, isLoading: isPlaceholder)
                     .foregroundColor(Theme.colors.textPrimary)
-                
+
                 if !description2.isEmpty {
                     RedactedText(description2, redactedText: redactedDesc2, isLoading: isPlaceholder)
                         .foregroundColor(Theme.colors.textTertiary)

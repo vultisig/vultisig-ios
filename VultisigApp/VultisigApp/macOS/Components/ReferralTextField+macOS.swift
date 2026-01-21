@@ -14,7 +14,7 @@ extension ReferralTextField {
         pasteboard.clearContents()
         pasteboard.setString(text, forType: .string)
     }
-    
+
     func handlePasteCode() {
         let pasteboard = NSPasteboard.general
         if let clipboardContent = pasteboard.string(forType: .string) {

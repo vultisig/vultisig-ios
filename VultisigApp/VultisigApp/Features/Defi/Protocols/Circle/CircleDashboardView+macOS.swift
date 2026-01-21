@@ -12,18 +12,18 @@ extension CircleDashboardView {
     var content: some View {
         ZStack {
             VaultMainScreenBackground()
-            
+
             VStack(spacing: 0) {
                 ScrollView {
                     VStack(spacing: CircleConstants.Design.verticalSpacing) {
                         topBanner
-                        
+
                         headerDescription
-                        
+
                         if showInfoBanner {
                             infoBanner
                         }
-                        
+
                         if let error = model.error, error.localizedDescription.lowercased() != "cancelled" {
                             InfoBannerView(
                                 description: error.localizedDescription,
@@ -34,7 +34,7 @@ extension CircleDashboardView {
                                 }
                             )
                         }
-                        
+
                         usdcDepositedCard
                     }
                     .padding(.top, CircleConstants.Design.mainViewTopPadding)
@@ -47,13 +47,13 @@ extension CircleDashboardView {
             Task { await loadData() }
         }
     }
-    
+
     var headerDescription: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(NSLocalizedString("circleDashboardDeposited", comment: "Deposited"))
                 .font(.headline)
                 .foregroundStyle(Theme.colors.textPrimary)
-            
+
             Text(NSLocalizedString("circleDashboardDepositDescription", comment: "Deposit your $USDC..."))
                 .font(.body)
                 .foregroundStyle(Theme.colors.textSecondary)
@@ -62,7 +62,7 @@ extension CircleDashboardView {
         .frame(maxWidth: .infinity, alignment: .leading)
 
     }
-    
+
     var infoBanner: some View {
         InfoBannerView(
             description: NSLocalizedString("circleDashboardInfoText", comment: "Funds remain..."),

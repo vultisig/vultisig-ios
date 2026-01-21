@@ -9,9 +9,9 @@ enum DefiChainPositionType: String, CaseIterable, Hashable, Identifiable {
     case bond
     case stake
     case liquidityPool
-    
+
     var id: String { rawValue }
-    
+
     var segmentedControlTitle: String {
         switch self {
         case .bond:
@@ -22,7 +22,7 @@ enum DefiChainPositionType: String, CaseIterable, Hashable, Identifiable {
             "lps".localized
         }
     }
-    
+
     var sectionTitle: String {
         switch self {
         case .bond:

@@ -14,20 +14,20 @@ struct MacScannerView: View {
     let type: DeeplinkFlowType
     let sendTx: SendTransaction
     let selectedVault: Vault?
-    
+
     @Query var vaults: [Vault]
-    
+
     @EnvironmentObject var appViewModel: AppViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
-    
+
     @Environment(\.router) var router
-    
+
     @StateObject var cameraViewModel = MacCameraServiceViewModel()
-    
+
     @State var navigateToUploadQR = false
-    
+
     var body: some View {
         ZStack(alignment: .top) {
             Background()
@@ -57,7 +57,7 @@ struct MacScannerView: View {
             navigateToUploadQR = false
         }
     }
-    
+
     var main: some View {
         VStack(spacing: 0) {
             view
@@ -74,13 +74,13 @@ struct MacScannerView: View {
             }
         }
     }
-    
+
     var view: some View {
         ZStack {
             if cameraViewModel.showPlaceholderError {
                 fallbackErrorView
             }
-            
+
             if !cameraViewModel.showCamera {
                 loader
             } else if cameraViewModel.isCameraUnavailable {
@@ -90,24 +90,24 @@ struct MacScannerView: View {
             }
         }
     }
-    
+
     var loader: some View {
         VStack {
             Spacer()
-            
+
             HStack(spacing: 20) {
                 Text(NSLocalizedString("initializingCamera", comment: ""))
                     .font(Theme.fonts.bodyMMedium)
                     .foregroundColor(Theme.colors.textPrimary)
-                
+
                 ProgressView()
                     .preferredColorScheme(.dark)
             }
-            
+
             Spacer()
         }
     }
-    
+
     var errorView: some View {
         VStack {
             Spacer()
@@ -116,7 +116,7 @@ struct MacScannerView: View {
             buttons
         }
     }
-    
+
     var fallbackErrorView: some View {
         VStack {
             Spacer()
@@ -124,7 +124,7 @@ struct MacScannerView: View {
             Spacer()
         }
     }
-    
+
     var buttons: some View {
         VStack(spacing: 20) {
             uploadQRCodeButton
@@ -132,19 +132,19 @@ struct MacScannerView: View {
         }
         .padding(40)
     }
-    
+
     var uploadQRCodeButton: some View {
         PrimaryButton(title: "uploadQRCodeImage") {
             navigateToUploadQR = true
         }
     }
-    
+
     var tryAgainButton: some View {
         PrimaryButton(title: "tryAgain", type: .secondary) {
             cameraViewModel.setupSession()
         }
     }
-    
+
     var overlay: some View {
         VStack {
             Spacer()
@@ -153,7 +153,7 @@ struct MacScannerView: View {
         }
         .allowsHitTesting(false)
     }
-    
+
     private func getScanner(_ session: AVCaptureSession) -> some View {
         ZStack(alignment: .bottom) {
             MacCameraPreview(session: session)
@@ -163,9 +163,9 @@ struct MacScannerView: View {
                 .onDisappear {
                     cameraViewModel.stopSession()
                 }
-            
+
             overlay
-            
+
             uploadQRCodeButton
                 .padding(40)
         }

@@ -36,7 +36,7 @@ extension FunctionCallAddressTextField {
                 ))
             }
     }
-    
+
     var field: some View {
         HStack(spacing: 0) {
             TextField(addressKey.toFormattedTitleCase(), text: Binding<String>(
@@ -64,46 +64,46 @@ extension FunctionCallAddressTextField {
             .textInputAutocapitalization(.never)
             .keyboardType(.default)
             .textContentType(.oneTimeCode)
-            
+
             pasteButton
             fileButton
             addressBookButton
         }
         .padding(.horizontal, 12)
     }
-    
+
     var codeScanner: some View {
         AddressQRCodeScannerView(
             showScanner: $showScanner,
             onAddress: { handleScan(result: $0) }
         )
     }
-    
+
     private func binding(for key: String) -> Binding<String> {
         return Binding(
             get: { self.memo.addressFields[addressKey, default: ""] },
             set: { self.memo.addressFields[addressKey] = $0 }
         )
     }
-    
+
     func processImage() {
         guard let selectedImage = selectedImage else { return }
         handleImageQrCode(image: selectedImage)
     }
-    
+
     private func handleScan(result: String) {
         memo.addressFields[addressKey] = result
         validateAddress(memo.addressFields[addressKey] ?? "")
         showScanner = false
     }
-    
+
     private func handleImageQrCode(image: UIImage) {
         let qrCodeFromImage = Utils.handleQrCodeFromImage(image: image)
         let address = String(data: qrCodeFromImage, encoding: .utf8) ?? ""
         memo.addressFields[addressKey] = address
         validateAddress(memo.addressFields[addressKey] ?? "")
     }
-    
+
     func pasteAddress() {
         if let clipboardContent = UIPasteboard.general.string {
             memo.addressFields[addressKey] = clipboardContent

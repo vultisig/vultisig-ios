@@ -14,7 +14,7 @@ extension SendDetailsScreen {
             content
         }
     }
-    
+
     var view: some View {
         VStack {
             tabs
@@ -22,16 +22,11 @@ extension SendDetailsScreen {
                 .padding(.horizontal, 8)
         }
     }
-    
+
     func setData() {
         Task {
             await getBalance()
         }
-    }
-    
-    func closeSheets() {
-        sendDetailsViewModel.showCoinPickerSheet = false
-        sendDetailsViewModel.showChainPickerSheet = false
     }
 }
 #endif

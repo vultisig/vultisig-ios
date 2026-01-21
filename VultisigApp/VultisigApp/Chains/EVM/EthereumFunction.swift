@@ -14,7 +14,7 @@ enum EthereumFunction {
         guard address.isNotEmpty, let destinationAddress = AnyAddress(string: address, coin: CoinType.ethereum) else {
             throw HelperError.runtimeError("Address is not valid")
         }
-        
+
         let amountOut = amount.serializeForEvm()
         let encodedFunction = EthereumAbiFunction(name: "transfer")
         encodedFunction.addParamAddress(val: destinationAddress.data, isOutput: false)

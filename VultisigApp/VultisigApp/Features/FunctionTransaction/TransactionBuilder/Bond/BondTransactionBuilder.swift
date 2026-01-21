@@ -14,7 +14,7 @@ struct BondTransactionBuilder: TransactionBuilder {
     let nodeAddress: String
     let providerAddress: String
     let operatorFee: Int64?
-    
+
     var memo: String {
         var memo = "BOND:\(nodeAddress)"
         if !providerAddress.isEmpty {
@@ -29,7 +29,7 @@ struct BondTransactionBuilder: TransactionBuilder {
         }
         return memo
     }
-    
+
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("nodeAddress", nodeAddress)
@@ -38,7 +38,7 @@ struct BondTransactionBuilder: TransactionBuilder {
         dict.set("memo", memo)
         return dict
     }
-    
+
     var transactionType: VSTransactionType { .unspecified }
     var wasmContractPayload: WasmExecuteContractPayload? { nil }
     var toAddress: String { "" }

@@ -10,10 +10,10 @@ import SwiftUI
 private struct AddressCopyBannerViewModifier: ViewModifier {
     @Binding var coin: Coin?
     var onFinish: () -> Void
-    
+
     @State var isVisible: Bool = false
     @State var text: String = ""
-    
+
     func body(content: Content) -> some View {
         content
             .overlay(

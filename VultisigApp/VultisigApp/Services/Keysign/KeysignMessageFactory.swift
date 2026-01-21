@@ -17,7 +17,7 @@ struct KeysignMessageFactory {
 
     func getKeysignMessages(vault: Vault) throws -> [String] {
         var messages: [String] = []
-        
+
         if let approvePayload =  payload.approvePayload {
             let swaps = THORChainSwaps()
             messages += try swaps.getPreSignedApproveImageHash(approvePayload: approvePayload, keysignPayload: payload)

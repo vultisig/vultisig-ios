@@ -9,7 +9,7 @@ import SwiftUI
 
 struct KeysignVaultMismatchErrorView: View {
     @EnvironmentObject var appViewModel: AppViewModel
-    
+
     var body: some View {
         ErrorView(
             type: .warning,

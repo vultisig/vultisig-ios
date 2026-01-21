@@ -7,7 +7,7 @@
 
 struct ClosureValidator: FormFieldValidator {
     let action: (String) throws -> Void
-    
+
     func validate(value: String) throws {
         try action(value)
     }

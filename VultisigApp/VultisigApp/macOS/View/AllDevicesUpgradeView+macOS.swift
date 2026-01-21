@@ -18,7 +18,7 @@ extension AllDevicesUpgradeView {
             button
         }
         .crossPlatformToolbar("Upgrade")
-        .padding(.bottom,30)
+        .padding(.bottom, 30)
     }
 }
 #endif

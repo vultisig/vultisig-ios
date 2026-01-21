@@ -18,27 +18,27 @@ enum CircleApiError: Error {
 
 struct CircleApiService {
     static let shared = CircleApiService()
-    
+
     private init() {}
-    
+
     // MARK: - DTOs
-    
+
     struct CircleWalletResponse: Decodable {
         let address: String
         let status: String
     }
-    
+
     struct CircleBalanceResponse: Decodable {
         let amount: String
         let currency: String
     }
-    
+
     struct CircleYieldResponse: Decodable {
         let apy: String
         let totalRewards: String
         let currentRewards: String
     }
-    
+
     struct CircleTransactionData: Decodable {
         let to: String
         let value: String
@@ -47,9 +47,9 @@ struct CircleApiService {
         let maxFeePerGas: String
         let maxPriorityFeePerGas: String
     }
-    
+
     // MARK: - Public API
-    
+
     struct CircleWalletItem: Decodable {
         let id: String
         let state: String?
@@ -64,15 +64,15 @@ struct CircleApiService {
         let createDate: String?
         let scaCore: String?
     }
-    
+
     public func fetchWallet(ethAddress: String) async throws -> String? {
         let fetchUrlString = Endpoint.fetchCircleWallets(refId: ethAddress)
         guard let fetchUrl = URL(string: fetchUrlString) else {
             throw CircleApiError.invalidUrl
         }
-        
+
         let (fetchData, fetchResponse) = try await URLSession.shared.data(from: fetchUrl)
-        
+
         if let httpResponse = fetchResponse as? HTTPURLResponse {
             if (200...299).contains(httpResponse.statusCode) {
                 let wallets = try JSONDecoder().decode([CircleWalletItem].self, from: fetchData)
@@ -82,44 +82,44 @@ struct CircleApiService {
                 throw CircleApiError.apiError(statusCode: httpResponse.statusCode, body: body)
             }
         }
-        
+
         throw CircleApiError.unknown
     }
-    
+
     func createWallet(ethAddress: String) async throws -> String {
         guard !ethAddress.isEmpty else {
             throw CircleApiError.invalidUrl
         }
-        
+
         // Fetch existing wallet via refId
         if let existing = try? await fetchWallet(ethAddress: ethAddress) {
             return existing
         }
-        
+
         // Create new wallet
         guard let createUrl = URL(string: Endpoint.createCircleWallet()) else {
             throw CircleApiError.invalidUrl
         }
-        
+
         var request = URLRequest(url: createUrl)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
         let payload: [String: String] = [
             "idempotency_key": UUID().uuidString,
             "account_type": "SCA",
             "name": "Vultisig Wallet",
             "owner": ethAddress
         ]
-        
+
         do {
             request.httpBody = try JSONEncoder().encode(payload)
         } catch {
             throw CircleApiError.serverError("Failed to encode payload: \(error.localizedDescription)")
         }
-        
+
         let (createData, createResponse) = try await URLSession.shared.data(for: request)
-        
+
         if let httpResponse = createResponse as? HTTPURLResponse {
             if (200...299).contains(httpResponse.statusCode) {
                 // Success - API returns just the address as a string
@@ -130,18 +130,18 @@ struct CircleApiService {
                         return addressString
                     }
                 }
-                
+
                 // Try as array of objects
                 if let wallets = try? JSONDecoder().decode([CircleWalletItem].self, from: createData),
                    let first = wallets.first {
                     return first.address
                 }
-                
+
                 // Try as single object
                 if let wallet = try? JSONDecoder().decode(CircleWalletItem.self, from: createData) {
                     return wallet.address
                 }
-                
+
                 throw CircleApiError.decodingError
             } else if httpResponse.statusCode == 401 {
                 throw CircleApiError.unauthorized
@@ -150,7 +150,7 @@ struct CircleApiService {
                 throw CircleApiError.serverError("Create failed: \(httpResponse.statusCode) - \(errorMsg)")
             }
         }
-        
+
         throw CircleApiError.unknown
     }
 }

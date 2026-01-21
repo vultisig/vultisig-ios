@@ -9,25 +9,25 @@ import SwiftUI
 
 struct FastVaultEnterPasswordView: View {
     @AppStorage("isBiometryEnabled") var isBiometryEnabled: Bool = true
-    
+
     @State var isLoading: Bool = false
     @State var errorMessage: String? = nil
     @State var showHint: Bool = false
-    
+
     @Binding var password: String
-    
+
     @Environment(\.dismiss) var dismiss
-    
+
     let vault: Vault
     let onSubmit: (() -> Void)?
-    
+
     private let keychain = DefaultKeychainService.shared
     private let biometryService = BiometryService.shared
-    
+
     var hint: String? {
         keychain.getFastHint(pubKeyECDSA: vault.pubKeyECDSA)
     }
-    
+
     var body: some View {
         VStack(spacing: 10) {
             // Icon
@@ -37,39 +37,40 @@ struct FastVaultEnterPasswordView: View {
                 size: 32
             )
             .padding(.top, 32)
-            
+
             // Title
             Text("enterYourPassword".localized)
                 .font(Theme.fonts.title2)
                 .foregroundColor(Theme.colors.textPrimary)
                 .padding(.vertical, 10)
-            
+
             // Password field
             SecureTextField(
                 value: $password,
                 placeholder: "enterPassword".localized,
                 error: $errorMessage
             )
-            
+
             // Show hint toggle
             if let hint, hint.isNotEmpty {
                 Button(action: {
                     withAnimation(.easeInOut(duration: 0.2)) {
                         showHint.toggle()
                     }
-                }) {
+                }, label: {
                     HStack(spacing: 4) {
                         Text("showHint".localized)
                             .font(Theme.fonts.caption12)
                             .foregroundColor(Theme.colors.textTertiary)
-                        
+
                         Icon(named: "chevron-down", color: Theme.colors.textTertiary, size: 16)
                             .rotationEffect(.degrees(showHint ? 180 : 0))
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                       )
                 .buttonStyle(.plain)
-                
+
                 // Hint text
                 Text(hint)
                     .font(.system(size: 12, weight: .medium).italic())
@@ -77,9 +78,9 @@ struct FastVaultEnterPasswordView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .opacity(showHint ? 1 : 0)
             }
-            
+
             Spacer()
-            
+
             // Next button
             PrimaryButton(title: "next".localized) {
                 Task {
@@ -89,7 +90,7 @@ struct FastVaultEnterPasswordView: View {
             .disabled(password.isEmpty || isLoading)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal , 16)
+        .padding(.horizontal, 16)
         .padding(.bottom, 16)
         .background(Theme.colors.bgPrimary)
 #if os(iOS)
@@ -107,19 +108,19 @@ struct FastVaultEnterPasswordView: View {
         .onAppear {
             tryAuthenticate()
         }
-        
+
     }
-    
+
     @MainActor func checkPassword() async {
         errorMessage = nil
         isLoading = true
         defer { isLoading = false }
-        
+
         let isValidPassword = await FastVaultService.shared.get(
             pubKeyECDSA: vault.pubKeyECDSA,
             password: password
         )
-        
+
         if isValidPassword {
             savePassword()
             onSubmit?()
@@ -128,11 +129,11 @@ struct FastVaultEnterPasswordView: View {
             errorMessage = NSLocalizedString("incorrectPasswordTryAgain", comment: "")
         }
     }
-    
+
     func savePassword() {
         keychain.setFastPassword(password, pubKeyECDSA: vault.pubKeyECDSA)
     }
-    
+
     func tryAuthenticate() {
         guard let fastPassword = keychain.getFastPassword(pubKeyECDSA: vault.pubKeyECDSA) else {
             return

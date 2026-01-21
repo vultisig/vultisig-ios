@@ -72,7 +72,7 @@ extension THORChainAPIService {
     /// - APR does not account for compounding (use APY for that)
     /// - Past performance does not guarantee future returns
     /// - LUVI measures liquidity unit value independent of asset price changes
-    
+
     /// Fetches detailed statistics for all pools
     /// - Parameter period: Optional time period for LUVI-based APR calculation (e.g., "100d", "30d", "7d"). Default is 30 days.
     ///   The period parameter affects how the APR is annualized from LUVI growth:
@@ -149,7 +149,7 @@ extension THORChainAPIService {
         let poolStats = try await getPoolStats(period: period)
 
         var positions: [THORChainLPPosition] = []
-        
+
         // Filter pools by user selection
         let userPools = poolStats.filter {
             guard let poolCoin = THORChainAssetFactory.createCoin(from: $0.asset) else {
@@ -200,7 +200,7 @@ extension THORChainAPIService {
         default: return 30 // Default to 30 days
         }
     }
-    
+
     /// Convenience method to get a single pool's LP position for an address with manual APR
     /// - Parameters:
     ///   - address: The THORChain or asset address to lookup

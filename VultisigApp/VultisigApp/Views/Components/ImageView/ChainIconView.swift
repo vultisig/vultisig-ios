@@ -10,7 +10,7 @@ import SwiftUI
 struct ChainIconView: View {
     let icon: String
     let size: CGFloat
-    
+
     var body: some View {
         Image(icon)
             .resizable()

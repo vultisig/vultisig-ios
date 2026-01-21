@@ -9,16 +9,16 @@ import SwiftUI
 
 struct KeygenViewInstructions: View {
     @State var tabIndex = 0
-    
+
     init() {
         setIndicator()
     }
-    
+
     var body: some View {
         cards
             .frame(maxHeight: 250)
     }
-    
+
     func getCard(for index: Int) -> some View {
         VStack(spacing: 22) {
             getTitle(for: index)
@@ -27,13 +27,13 @@ struct KeygenViewInstructions: View {
         .tag(index)
         .frame(maxWidth: 280)
     }
-    
+
     private func getTitle(for index: Int) -> some View {
         Text(NSLocalizedString("keygenInstructionsCar\(index+1)Title", comment: ""))
             .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodyMMedium)
     }
-    
+
     private func getDescription(for index: Int) -> some View {
         Group {
             Text(NSLocalizedString("keygenInstructionsCar\(index+1)DescriptionPart1", comment: ""))

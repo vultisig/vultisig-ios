@@ -11,9 +11,9 @@ struct ExpandableView<Header: View, Content: View>: View {
     @Binding var isExpanded: Bool
     let header: () -> Header
     let content: () -> Content
-    
+
     @State var isExpandedInternal = false
-        
+
     init(
         isExpanded: Binding<Bool>,
         @ViewBuilder header: @escaping () -> Header,
@@ -24,7 +24,7 @@ struct ExpandableView<Header: View, Content: View>: View {
         self.content = content
         self._isExpandedInternal = State(initialValue: isExpanded.wrappedValue)
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
             header()
@@ -43,7 +43,7 @@ struct ExpandableView<Header: View, Content: View>: View {
             animate()
         }
     }
-    
+
     private func animate() {
         withAnimation(.easeInOut) {
             isExpandedInternal = isExpanded

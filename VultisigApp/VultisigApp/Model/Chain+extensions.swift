@@ -7,13 +7,11 @@
 
 import Foundation
 
-extension Chain{
-    init?(name: String){
-        for chain in Chain.allCases {
-            if chain.name == name  {
-                self = chain
-                return
-            }
+extension Chain {
+    init?(name: String) {
+        for chain in Chain.allCases where chain.name == name {
+            self = chain
+            return
         }
         return nil
     }
@@ -22,10 +20,10 @@ extension Chain{
 extension Chain {
     var canBuy: Bool {
         switch self {
-        case .kujira,.blast,.terra,.terraClassic,.osmosis,.akash,.noble,.mayaChain,.thorChainStagenet, .hyperliquid, .sei:
+        case .kujira, .blast, .terra, .terraClassic, .osmosis, .akash, .noble, .mayaChain, .thorChainStagenet, .hyperliquid, .sei:
             return false
-        case .thorChain,.solana,.ethereum, .avalanche, .base , .arbitrum, .polygon, .polygonV2, .optimism,.bscChain,.bitcoin,.bitcoinCash,.litecoin,.dogecoin,.dash,.cardano,.gaiaChain,
-                .cronosChain,.sui,.polkadot,.zksync,.dydx,.ton,.ripple,.tron,.ethereumSepolia,.zcash,.mantle:
+        case .thorChain, .solana, .ethereum, .avalanche, .base, .arbitrum, .polygon, .polygonV2, .optimism, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .cardano, .gaiaChain,
+                .cronosChain, .sui, .polkadot, .zksync, .dydx, .ton, .ripple, .tron, .ethereumSepolia, .zcash, .mantle:
             return true
         }
     }

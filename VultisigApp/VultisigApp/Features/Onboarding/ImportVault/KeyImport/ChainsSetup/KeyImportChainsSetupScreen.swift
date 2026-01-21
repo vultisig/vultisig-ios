@@ -12,7 +12,7 @@ struct KeyImportChainsSetupScreen: View {
 
     @StateObject var viewModel = KeyImportChainsSetupViewModel()
     @Environment(\.router) var router
-    
+
     var body: some View {
         Screen(
             title: viewModel.screenTitle,
@@ -45,11 +45,11 @@ struct KeyImportChainsSetupScreen: View {
         .animation(.interpolatingSpring, value: viewModel.state)
         .onLoad(perform: { await viewModel.onLoad(mnemonic: mnemonic) })
     }
-    
+
     func onCustomizeChains() {
         viewModel.state = .customizeChains
     }
-    
+
     func presentVaultSetup() {
         // Build chain settings with derivations
         let chainSettings = viewModel.chainsToImport.map { chain -> ChainImportSetting in

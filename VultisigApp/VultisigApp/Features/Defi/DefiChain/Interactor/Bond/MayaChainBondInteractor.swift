@@ -8,7 +8,6 @@
 struct MayaChainBondInteractor: BondInteractor {
     private let mayaChainAPIService = MayaChainAPIService()
 
-    // TODO: - ADD VULTI NODES FOR MAYA
     let vultiNodeAddresses: [String] = []
 
     func fetchBondPositions(vault: Vault) async -> (active: [BondPosition], available: [BondNode]) {

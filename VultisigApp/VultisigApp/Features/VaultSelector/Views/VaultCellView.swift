@@ -15,9 +15,9 @@ struct VaultCellView<TrailingView: View>: View {
     let showTrailingDetails: Bool
     var trailingView: () -> TrailingView
     var action: (() -> Void)?
-    
+
     @EnvironmentObject var homeViewModel: HomeViewModel
-    
+
     init(
         vault: Vault,
         isSelected: Bool,
@@ -35,7 +35,7 @@ struct VaultCellView<TrailingView: View>: View {
         self.trailingView = trailingView
         self.action = action
     }
-    
+
     init(
         vault: Vault,
         isSelected: Bool,
@@ -52,7 +52,7 @@ struct VaultCellView<TrailingView: View>: View {
         self.trailingView = { EmptyView() }
         self.action = action
     }
-    
+
     var body: some View {
         if let action {
             Button(action: action) {
@@ -62,7 +62,7 @@ struct VaultCellView<TrailingView: View>: View {
             content
         }
     }
-    
+
     var content: some View {
         VaultEditCellContainer(isEditing: $isEditing, showDragIndicator: showDragIndicator) {
             HStack {
@@ -87,7 +87,7 @@ struct VaultCellView<TrailingView: View>: View {
         }
         .contentShape(Rectangle())
     }
-    
+
     var selectedBackground: some View {
         RoundedRectangle(cornerRadius: 12)
             .fill(Theme.colors.bgSurface1)
@@ -97,7 +97,7 @@ struct VaultCellView<TrailingView: View>: View {
 #Preview {
     VStack {
         VaultCellView(vault: .example, isSelected: false, isEditing: .constant(false)) {}
-        
+
         VaultCellView(vault: .example, isSelected: true, isEditing: .constant(false)) {}
     }
     .background(Theme.colors.bgPrimary)

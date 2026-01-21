@@ -9,16 +9,11 @@
 import SwiftUI
 
 extension SwapCryptoDetailsView {
-   var overlay: some View {
-        MacOSOverlay()
-            .onTapGesture(perform: closeSheets)
-    }
-    
     var view: some View {
        content
             .padding(.horizontal, 25)
     }
-    
+
     var percentageButtons: some View {
         SwapPercentageButtons(
             show100: !tx.fromCoin.isNativeToken,
@@ -27,7 +22,7 @@ extension SwapCryptoDetailsView {
             handlePercentageSelection(percentage)
         }
     }
-    
+
     var fields: some View {
         ScrollView {
             VStack(spacing: 8) {
@@ -39,13 +34,6 @@ extension SwapCryptoDetailsView {
             .padding(.horizontal, 16)
         }
         .scrollClipDisabled()
-    }
-    
-    func closeSheets() {
-        swapViewModel.showFromChainSelector = false
-        swapViewModel.showToChainSelector = false
-        swapViewModel.showFromCoinSelector = false
-        swapViewModel.showToCoinSelector = false
     }
 }
 #endif

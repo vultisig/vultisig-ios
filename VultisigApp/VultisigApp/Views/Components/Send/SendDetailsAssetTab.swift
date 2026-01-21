@@ -12,15 +12,15 @@ struct SendDetailsAssetTab: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var viewModel: SendDetailsViewModel
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
-    
+
     @EnvironmentObject var appViewModel: AppViewModel
-    
+
     var body: some View {
         content
             .onAppear {
                 setData()
             }
-            .onChange(of: tx.coin, { oldValue, newValue in
+            .onChange(of: tx.coin, { _, _ in
                 setData()
             })
             .onChange(of: viewModel.showCoinPickerSheet) { oldValue, newValue in
@@ -29,14 +29,14 @@ struct SendDetailsAssetTab: View {
             .onChange(of: isExpanded) { oldValue, newValue in
                 handleAssetSelection(oldValue, newValue)
             }
-            .onChange(of: viewModel.selectedChain) { oldValue, newValue in
+            .onChange(of: viewModel.selectedChain) { _, newValue in
                 guard let vault = appViewModel.selectedVault else { return }
-                
+
                 // ALWAYS select the NATIVE token for the chain, NEVER a regular token
-                let nativeCoin = vault.coins.first(where: { 
-                    $0.chain == newValue && $0.isNativeToken == true 
+                let nativeCoin = vault.coins.first(where: {
+                    $0.chain == newValue && $0.isNativeToken == true
                 })
-                
+
                 if let nativeCoin {
                     tx.fromAddress = nativeCoin.address
                     tx.coin = nativeCoin
@@ -44,7 +44,7 @@ struct SendDetailsAssetTab: View {
             }
             .clipped()
     }
-    
+
     var content: some View {
         SendFormExpandableSection(isExpanded: isExpanded) {
             titleSection
@@ -53,13 +53,13 @@ struct SendDetailsAssetTab: View {
             assetSelectionSection
         }
     }
-    
+
     var titleSection: some View {
         HStack {
             Text(NSLocalizedString("asset", comment: ""))
                 .font(Theme.fonts.bodySMedium)
                 .foregroundColor(Theme.colors.textPrimary)
-            
+
             if viewModel.assetSetupDone {
                 doneSelectedAsset
                 Spacer()
@@ -73,18 +73,18 @@ struct SendDetailsAssetTab: View {
             viewModel.onSelect(tab: .asset)
         }
     }
-    
+
     var separator: some View {
         LinearSeparator()
     }
-    
+
     var assetSelectionSection: some View {
         VStack(spacing: 12) {
             chainSelection
             selectedCoinCell
         }
     }
-    
+
     var chainSelection: some View {
         Button {
             viewModel.showChainPickerSheet.toggle()
@@ -92,7 +92,7 @@ struct SendDetailsAssetTab: View {
             chainSelectionLabel
         }
     }
-    
+
     var chainSelectionLabel: some View {
         HStack(spacing: 8) {
             chainSelectionTitle
@@ -100,17 +100,17 @@ struct SendDetailsAssetTab: View {
             Spacer()
         }
     }
-    
+
     var chainSelectionTitle: some View {
         Text(NSLocalizedString("from", comment: ""))
             .font(Theme.fonts.caption12)
             .foregroundColor(Theme.colors.textTertiary)
     }
-    
+
     var selectedChainCell: some View {
         SwapFromToChain(chain: tx.coin.chain)
     }
-    
+
     var selectedCoinCell: some View {
         HStack {
             selectedCoinButton
@@ -118,7 +118,7 @@ struct SendDetailsAssetTab: View {
             selectedCoinBalance
         }
     }
-    
+
     var selectedCoinButton: some View {
         Button {
             viewModel.showCoinPickerSheet.toggle()
@@ -126,7 +126,7 @@ struct SendDetailsAssetTab: View {
             SwapFromToCoin(coin: tx.coin)
         }
     }
-    
+
     var selectedCoinBalance: some View {
         VStack(alignment: .trailing, spacing: 2) {
             Group {
@@ -136,14 +136,14 @@ struct SendDetailsAssetTab: View {
             }
             .font(Theme.fonts.bodySMedium)
             .foregroundColor(Theme.colors.textPrimary)
-            
+
             Text(tx.coin.balanceInFiat)
                 .font(Theme.fonts.caption12)
                 .foregroundColor(Theme.colors.textTertiary)
         }
         .frame(maxWidth: .infinity, alignment: .trailing)
     }
-    
+
     var doneSelectedAsset: some View {
         HStack(spacing: 4) {
             AsyncImageView(
@@ -152,31 +152,30 @@ struct SendDetailsAssetTab: View {
                 ticker: tx.coin.ticker,
                 tokenChainLogo: tx.coin.tokenChainLogo
             )
-            
+
             Text("\(tx.coin.ticker)")
                 .font(Theme.fonts.caption12)
                 .foregroundColor(Theme.colors.textTertiary)
         }
     }
-    
+
     var doneEditTools: some View {
         SendDetailsTabEditTools(forTab: .asset, viewModel: viewModel)
     }
-    
+
     private func setData() {
         viewModel.selectedChain = tx.coin.chain
     }
-    
+
     private func handleAssetSelection(_ oldValue: Bool, _ newValue: Bool) {
         guard oldValue != newValue, !newValue else {
             return
         }
-        
+
         viewModel.onSelect(tab: .address)
         viewModel.assetSetupDone = true
     }
 }
-
 
 #Preview {
     SendDetailsAssetTab(

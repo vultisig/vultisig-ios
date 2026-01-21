@@ -10,14 +10,14 @@ import SwiftUI
 struct StepsAnimationView<Header: View, CellContent: View>: View {
     @State var contentHeight: CGFloat = .zero
     let cellHeight: CGFloat = 68
-    
+
     let title: String
     let steps: Int
     let cellContent: (Int) -> CellContent
     let header: () -> Header
-    
+
     @State var showCells: [Bool]
-    
+
     init(
         title: String,
         steps: Int,
@@ -30,7 +30,7 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
         self.header = header
         self.showCells = Array(repeating: false, count: steps)
     }
-    
+
     init(
         title: String,
         steps: Int,
@@ -43,14 +43,14 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
             header: { EmptyView() }
         )
     }
-    
+
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
             rectangle
             content
         }
     }
-    
+
     @ViewBuilder
     var rectangle: some View {
         let height = contentHeight - cellHeight / 2 + 1.5
@@ -72,7 +72,7 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
         .readSize {
             let currentContentHeight = contentHeight
             contentHeight = $0.height
-            
+
             if currentContentHeight == 0 {
                 setData()
             }
@@ -93,7 +93,7 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.leading, 24)
     }
-    
+
     var shadow: some View {
         Circle()
             .frame(width: 360, height: 360)
@@ -133,9 +133,9 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
         .offset(y: showCell ? 0 : -10)
         .animation(.easeInOut, value: showCell)
     }
-    
+
     private func setData() {
-        showCells.enumerated().forEach { index, _ in
+        showCells.indices.forEach { index in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1 * (Double(index) + 1)) {
                 showCells[index] = true
             }

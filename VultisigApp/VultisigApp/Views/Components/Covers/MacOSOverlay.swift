@@ -13,7 +13,7 @@ struct MacOSOverlay: View {
             Color.black
                 .frame(height: 200)
                 .offset(y: -200)
-            
+
             Color.black
         }
         .opacity(0.8)

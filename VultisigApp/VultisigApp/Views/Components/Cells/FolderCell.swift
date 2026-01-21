@@ -10,7 +10,7 @@ import SwiftUI
 struct FolderCell: View {
     let folder: Folder
     let isEditing: Bool
-    
+
     var body: some View {
         HStack(spacing: 8) {
             rearrange
@@ -26,7 +26,7 @@ struct FolderCell: View {
         .padding(.horizontal, 16)
         .animation(.easeInOut, value: isEditing)
     }
-    
+
     var rearrange: some View {
         Image(systemName: "line.3.horizontal")
             .font(Theme.fonts.bodySMedium)
@@ -34,13 +34,13 @@ struct FolderCell: View {
             .frame(maxWidth: isEditing ? nil : 0)
             .clipped()
     }
-    
+
     var folderIcon: some View {
         Image(systemName: "folder")
             .font(Theme.fonts.bodySMedium)
             .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     var title: some View {
         Text(folder.folderName.capitalized)
             .font(Theme.fonts.bodyMMedium)
@@ -49,7 +49,7 @@ struct FolderCell: View {
             .multilineTextAlignment(.leading)
             .lineLimit(1)
     }
-    
+
     var chevron: some View {
         Image(systemName: "chevron.right")
             .font(Theme.fonts.bodyMMedium)

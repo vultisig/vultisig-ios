@@ -110,7 +110,7 @@ final class VaultSetupViewModel: ObservableObject, Form {
     var vaultName: String {
         nameField.value
     }
-    
+
     var fastConfig: FastSignConfig {
         FastSignConfig(
             email: emailField.value,
@@ -119,7 +119,7 @@ final class VaultSetupViewModel: ObservableObject, Form {
             isExist: false
         )
     }
-    
+
     func onLoad() {
         setupForm()
 
@@ -151,21 +151,21 @@ final class VaultSetupViewModel: ObservableObject, Form {
             .store(in: &cancellables)
 
     }
-    
+
     func isPasswordConfirmValid(value: String) -> Bool {
         passwordField.value.isNotEmpty && value == passwordField.value
     }
-    
+
     func getVault(keyImportInput: KeyImportInput?) -> Vault {
         let vault = Vault(
             name: vaultName,
             libType: keyImportInput != nil ? .KeyImport : nil,
         )
-        
+
         if referralField.value.isNotEmpty, referralField.valid {
             vault.referredCode = ReferredCode(code: referralField.value, vault: vault)
         }
-        
+
         return vault
     }
 }

@@ -10,11 +10,11 @@ import Foundation
 extension Int64 {
     func hexString() -> String {
         var hexStr = String(format: "%02x", self)
-        
+
         if hexStr.count % 2 != 0 {
             hexStr = "0" + hexStr
         }
-        
+
         return hexStr
     }
 }

@@ -12,10 +12,10 @@ struct ReferralTextField: View {
     let placeholderText: String
     let action: ReferralTextFieldAction
     @Binding var errorMessage: String?
-    
+
     var showSuccess: Bool
     var isDisabled = false
-    
+
     init(
         text: Binding<String>,
         placeholderText: String,
@@ -31,14 +31,14 @@ struct ReferralTextField: View {
         self.showSuccess = showSuccess
         self.isDisabled = isDisabled
     }
-    
+
     var body: some View {
         textField
             .onChange(of: text) { _, newValue in
                 sanitizeText(newValue)
             }
     }
-    
+
     var textField: some View {
         CommonTextField(
             text: $text,
@@ -51,7 +51,7 @@ struct ReferralTextField: View {
         }
         .disabled(isDisabled)
     }
-    
+
     var actionButton: some View {
         ZStack {
             switch action {
@@ -66,7 +66,7 @@ struct ReferralTextField: View {
         .font(Theme.fonts.bodyMRegular)
         .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     var copyButton: some View {
         Button {
             handleCopyCode()
@@ -74,7 +74,7 @@ struct ReferralTextField: View {
             Icon(named: "copy", color: Theme.colors.textPrimary, size: 20)
         }
     }
-    
+
     var pasteButton: some View {
         Button {
             handlePasteCode()
@@ -82,11 +82,11 @@ struct ReferralTextField: View {
             Icon(named: "clipboard-paste", color: Theme.colors.textPrimary, size: 20)
         }
     }
-    
+
     private func clearCode() {
         text = ""
     }
-    
+
     // Based on thorname docs
     // https://docs.thorchain.org/how-it-works/thorchain-name-service#overview
     private func sanitizeText(_ text: String) {

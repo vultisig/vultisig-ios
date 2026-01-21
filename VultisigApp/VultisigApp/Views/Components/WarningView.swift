@@ -16,7 +16,7 @@ struct WarningView: View {
             .padding(.vertical, 16)
             .background(Theme.colors.alertError.opacity(0.3))
             .cornerRadius(12)
-            .overlay (
+            .overlay(
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(Theme.colors.alertError, lineWidth: 1)
             )

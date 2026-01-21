@@ -56,6 +56,7 @@ jobs:
             -scheme "$scheme" \
             -"$filetype_parameter" "$file_to_build" \
             -destination 'platform=macOS,arch=x86_64' \
+            -skipPackagePluginValidation \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_ALLOWED=NO \
             ONLY_ACTIVE_ARCH=YES \
@@ -79,6 +80,7 @@ jobs:
             -scheme "$scheme" \
             -"$filetype_parameter" "$file_to_build" \
             -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.1' \
+            -skipPackagePluginValidation \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_ALLOWED=NO \
             ONLY_ACTIVE_ARCH=YES \

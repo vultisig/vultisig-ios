@@ -12,12 +12,12 @@ struct FastBackupVaultOverview: View {
     let tssType: TssType
     let vault: Vault
     let email: String
-    
+
     let totalTabCount = 4
-    
+
     @State var tabIndex = 0
     @State var isVerificationLinkActive = false
-    
+
     @State var animationVM: RiveViewModel? = nil
     @State var backupVaultAnimationVM: RiveViewModel? = nil
     @Environment(\.router) var router
@@ -50,7 +50,7 @@ struct FastBackupVaultOverview: View {
             setData()
         }
     }
-    
+
     var content: some View {
         VStack(spacing: 0) {
             if tssType == .Migrate {
@@ -62,14 +62,14 @@ struct FastBackupVaultOverview: View {
                 Spacer()
                 textTabView
             }
-            
+
             button
         }
-        .onChange(of: tabIndex) { oldValue, newValue in
+        .onChange(of: tabIndex) { _, newValue in
             animate(index: newValue)
         }
     }
-    
+
     var header: some View {
         HStack {
             headerTitle
@@ -77,13 +77,13 @@ struct FastBackupVaultOverview: View {
         }
         .padding(16)
     }
-    
+
     var headerTitle: some View {
         Text(NSLocalizedString(getTitle(), comment: ""))
             .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodyLMedium)
     }
-    
+
     var migrateText: some View {
         VStack(spacing: 2) {
             Text(NSLocalizedString("FastMigrateOverviewText1", comment: ""))
@@ -96,7 +96,7 @@ struct FastBackupVaultOverview: View {
         .padding(.horizontal, 36)
         .padding(.bottom, 24)
     }
-    
+
     var progressBar: some View {
         HStack(spacing: 5) {
             ForEach(0..<totalTabCount, id: \.self) { index in
@@ -109,7 +109,7 @@ struct FastBackupVaultOverview: View {
         }
         .padding(.horizontal, 16)
     }
-    
+
     var nextButton: some View {
         IconButton(icon: "chevron-right") {
             nextTapped()
@@ -118,33 +118,33 @@ struct FastBackupVaultOverview: View {
         .background(Color.clear)
         .frame(width: 80)
     }
-    
+
     private func setData() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             animationVM = RiveViewModel(fileName: "fastvault_overview", autoPlay: true)
             backupVaultAnimationVM = RiveViewModel(fileName: "backup_vault", autoPlay: true)
         }
     }
-    
+
     private func nextTapped() {
         guard tssType != .Migrate else {
             isVerificationLinkActive = true
             return
         }
-        
+
         if tabIndex == 2 {
             isVerificationLinkActive = true
             return
         }
-        
+
         if tabIndex == 3 {
             onBackup()
             return
         }
-        
+
         tabIndex += 1
     }
-    
+
     func onBackup() {
         router.navigate(to: KeygenRoute.backupNow(
             tssType: tssType,
@@ -152,15 +152,11 @@ struct FastBackupVaultOverview: View {
             isNewVault: true
         ))
     }
-    
-    private func moveToBackupView() {
-        isVerificationLinkActive = true
-    }
-    
+
     private func animate(index: Int) {
         animationVM?.setInput("Index", value: Double(index))
     }
-    
+
     private func getTitle() -> String {
         switch tabIndex {
         case 2:
@@ -180,5 +176,3 @@ struct FastBackupVaultOverview: View {
         email: "mail@email.com"
     )
 }
-
-

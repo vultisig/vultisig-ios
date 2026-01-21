@@ -14,9 +14,9 @@ protocol SecurityScannerSettingsServiceProtocol {
 
 struct SecurityScannerSettingsService: SecurityScannerSettingsServiceProtocol {
     @AppStorage("VultisigSecurityScanEnabled") private var securityScannerEnabled: Bool = true
-    
+
     var isEnabled: Bool { securityScannerEnabled }
-    
+
     func saveSecurityScannerStatus(enable: Bool) {
         securityScannerEnabled = enable
     }

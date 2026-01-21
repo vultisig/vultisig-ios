@@ -14,7 +14,7 @@ struct SettingsCommonOptionView: View {
     let description: String?
     let type: SettingsOptionViewType
     let showSeparator: Bool
-    
+
     init(
         icon: String?,
         title: String,
@@ -30,7 +30,7 @@ struct SettingsCommonOptionView: View {
         self.type = type
         self.showSeparator = showSeparator
     }
-    
+
     var body: some View {
         SettingsOptionView(
             icon: icon,
@@ -41,14 +41,14 @@ struct SettingsCommonOptionView: View {
             trailingView: { trailingView }
         )
     }
-    
+
     @ViewBuilder
     var trailingView: some View {
         if let description {
             Text(description)
                 .font(Theme.fonts.footnote)
         }
-        
+
         Icon(
             named: "chevron-right",
             color: Theme.colors.textTertiary,

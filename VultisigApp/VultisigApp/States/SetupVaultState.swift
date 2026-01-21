@@ -21,7 +21,6 @@ enum SetupVaultState: CaseIterable {
         }
     }
 
-
     var hasOtherDevices: Bool {
         switch self {
         case .fast:
@@ -41,7 +40,7 @@ enum SetupVaultState: CaseIterable {
             return NSLocalizedString("secureModeTitle", comment: "")
         }
     }
-    
+
     var loaderTitle: String {
         switch self {
         case .fast:
@@ -52,7 +51,7 @@ enum SetupVaultState: CaseIterable {
             return NSLocalizedString("secureLoaderTitle", comment: "")
         }
     }
-    
+
     var secureTextTitle: String {
         switch self {
         case .secure:
@@ -61,7 +60,7 @@ enum SetupVaultState: CaseIterable {
             return NSLocalizedString("fastSetUp", comment: "")
         }
     }
-    
+
     var secureTextDecription: String {
         switch self {
         case .secure:

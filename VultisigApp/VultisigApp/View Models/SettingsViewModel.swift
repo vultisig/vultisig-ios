@@ -14,7 +14,7 @@ class SettingsViewModel: ObservableObject {
             SettingsLanguage.current = selectedLanguage
         }
     }
-    
+
     @Published var selectedCurrency: SettingsCurrency {
         didSet {
             SettingsCurrency.current = selectedCurrency
@@ -33,12 +33,12 @@ class SettingsViewModel: ObservableObject {
     @AppStorage("sepolia") var enableSepolia: Bool = false
     @AppStorage("thorchainStagenet") var enableThorchainStagenet: Bool = false
     @AppStorage("SellEnabled") var sellEnabled: Bool = false
-    
+
     init() {
         self.selectedCurrency = SettingsCurrency.current
         self.selectedLanguage = SettingsLanguage.current
         self.selectedAPRPeriod = SettingsAPRPeriod.current
     }
-    
+
     static let shared = SettingsViewModel()
 }

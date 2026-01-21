@@ -27,22 +27,22 @@ public enum HTTPTask {
 public protocol TargetType {
     /// The base URL for the API
     var baseURL: URL { get }
-    
+
     /// The path to be appended to `baseURL` to form the full `URL`
     var path: String { get }
-    
+
     /// The HTTP method used in the request
     var method: HTTPMethod { get }
-    
+
     /// The type of HTTP task to be performed
     var task: HTTPTask { get }
-    
+
     /// The headers to be used in the request
     var headers: [String: String]? { get }
-    
+
     /// A Boolean value indicating whether the request should validate the HTTPS certificate
     var validationType: ValidationType { get }
-    
+
     /// The timeout interval for the request
     var timeoutInterval: TimeInterval { get }
 }
@@ -59,11 +59,11 @@ public extension TargetType {
     var validationType: ValidationType {
         return .successCodes
     }
-    
+
     var timeoutInterval: TimeInterval {
         return 60.0
     }
-    
+
     var headers: [String: String]? {
         return ["Content-Type": "application/json"]
     }

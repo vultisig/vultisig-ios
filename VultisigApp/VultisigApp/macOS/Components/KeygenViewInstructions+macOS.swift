@@ -10,7 +10,7 @@ import SwiftUI
 
 extension KeygenViewInstructions {
     func setIndicator() {}
-    
+
     var cards: some View {
         TabView(selection: $tabIndex) {
             ForEach(0..<7) { index in

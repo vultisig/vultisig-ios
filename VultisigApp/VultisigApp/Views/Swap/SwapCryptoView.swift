@@ -11,19 +11,19 @@ struct SwapCryptoView: View {
     let fromCoin: Coin?
     let toCoin: Coin?
     let vault: Vault
-    
+
     @State var keysignView: KeysignView?
-    
+
     @StateObject var tx = SwapTransaction()
     @StateObject var swapViewModel = SwapCryptoViewModel()
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
-    
+
     init(fromCoin: Coin? = nil, toCoin: Coin? = nil, vault: Vault) {
         self.fromCoin = fromCoin
         self.toCoin = toCoin
         self.vault = vault
     }
-    
+
     var body: some View {
         content
             .onLoad {
@@ -32,13 +32,13 @@ struct SwapCryptoView: View {
                 }
             }
     }
-    
+
     var view: some View {
         VStack(spacing: 18) {
             tabView
         }
     }
-    
+
     @ViewBuilder
     var tabView: some View {
         ZStack {
@@ -58,15 +58,15 @@ struct SwapCryptoView: View {
             }
         }
     }
-    
+
     var detailsView: some View {
         SwapCryptoDetailsView(tx: tx, swapViewModel: swapViewModel, vault: vault)
     }
-    
+
     var verifyView: some View {
         SwapVerifyView(tx: tx, swapViewModel: swapViewModel, vault: vault)
     }
-    
+
     var pairView: some View {
         ZStack {
             if let keysignPayload = swapViewModel.keysignPayload {
@@ -99,7 +99,7 @@ struct SwapCryptoView: View {
             }
         }
     }
-    
+
     var keysign: some View {
         ZStack {
             if let keysignView = keysignView {
@@ -109,12 +109,12 @@ struct SwapCryptoView: View {
             }
         }
     }
-    
+
     var doneView: some View {
         ZStack {
             if let hash = swapViewModel.hash {
                 SendCryptoDoneView(
-                    vault: vault, hash: hash, approveHash: swapViewModel.approveHash, 
+                    vault: vault, hash: hash, approveHash: swapViewModel.approveHash,
                     chain: tx.fromCoin.chain,
                     progressLink: swapViewModel.progressLink(tx: tx, hash: hash),
                     sendTransaction: nil,
@@ -124,23 +124,23 @@ struct SwapCryptoView: View {
             } else {
                 SendCryptoSigningErrorView(errorString: swapViewModel.error?.localizedDescription ?? "Error")
             }
-        }.onAppear() {
+        }.onAppear {
             Task {
                 try await Task.sleep(for: .seconds(5))
                 swapViewModel.stopMediator()
             }
         }
     }
-    
+
     var errorView: some View {
         SendCryptoSigningErrorView(errorString: swapViewModel.error?.localizedDescription ?? "Error")
     }
-    
+
     var showBackButton: Bool {
         swapViewModel.currentIndex != 1 && swapViewModel.currentIndex != 5
     }
-    
-    var backButton: some View {        
+
+    var backButton: some View {
         return Button {
             swapViewModel.handleBackTap()
         } label: {

@@ -10,12 +10,12 @@ import SwiftUI
 struct FunctionCallPairScreen: View {
     @Environment(\.router) var router
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
-    
+
     let vault: Vault
     let tx: SendTransaction
     let keysignPayload: KeysignPayload
     let fastVaultPassword: String?
-    
+
     var body: some View {
         Screen(showNavigationBar: false) {
             KeysignDiscoveryView(

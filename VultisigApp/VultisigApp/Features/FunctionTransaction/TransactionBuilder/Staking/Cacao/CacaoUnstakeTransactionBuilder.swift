@@ -12,18 +12,18 @@ struct CacaoUnstakeTransactionBuilder: TransactionBuilder {
     let bps: Int
     let amount: String = "0"
     let sendMaxAmount: Bool = false
-    
+
     var memo: String {
         "POOL-:\(bps)"
     }
-    
+
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("BPS", "\(bps)")
         dict.set("memo", memo)
         return dict
     }
-    
+
     var transactionType: VSTransactionType { .unspecified }
     var wasmContractPayload: WasmExecuteContractPayload? { nil }
     var toAddress: String { "" }

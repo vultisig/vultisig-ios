@@ -10,7 +10,7 @@ import SwiftUI
 import WalletCore
 
 public struct AddressService {
-    
+
     /// Detects which chain an address belongs to by validating against all WalletCore CoinTypes
     /// Returns the detected chain if found and it exists in the vault, or nil otherwise
     static func detectChain(from address: String, vault: Vault, currentChain: Chain) -> Chain? {
@@ -18,23 +18,23 @@ public struct AddressService {
         if validateAddress(address: address, chain: currentChain) {
             return nil // Already on correct chain
         }
-        
+
         // Special handling for MayaChain
         if AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya") {
             return vault.coins.contains(where: { $0.chain == .mayaChain && $0.isNativeToken }) ? .mayaChain : nil
         }
-        
+
         // Special handling for ThorChain Stagenet
         if AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor") {
             return vault.coins.contains(where: { $0.chain == .thorChainStagenet && $0.isNativeToken }) ? .thorChainStagenet : nil
         }
-        
+
         // Check if it's an EVM address - don't auto-switch for safety
         if isEVMAddress(address) {
             // Don't auto-switch between EVM chains for safety
             return nil
         }
-        
+
         // Iterate through all WalletCore CoinTypes to find matching address
         for coinType in CoinType.allCases {
             if coinType.validate(address: address) {
@@ -45,10 +45,10 @@ public struct AddressService {
                 }
             }
         }
-        
+
         return nil
     }
-    
+
     /// Checks if an address is an EVM address (0x followed by 40 hex characters)
     private static func isEVMAddress(_ address: String) -> Bool {
         let pattern = "^0x[a-fA-F0-9]{40}$"
@@ -67,7 +67,7 @@ public struct AddressService {
                 throw Errors.invalidAddress
             }
         }
-        
+
         if chain == .thorChainStagenet {
             let isValid = AnyAddress.isValidBech32(string: input, coin: .thorchain, hrp: "sthor")
 
@@ -101,7 +101,7 @@ public struct AddressService {
         if chain == .mayaChain {
             return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
         }
-        
+
         if chain == .thorChainStagenet {
             return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor")
         }

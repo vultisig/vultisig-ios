@@ -9,9 +9,9 @@ import Foundation
 import SwiftData
 
 class BalanceService {
-    
+
     static let shared = BalanceService()
-    
+
     private let utxo = BlockchairService.shared
     private let sol = SolanaService.shared
     private let sui = SuiService.shared
@@ -26,7 +26,7 @@ class BalanceService {
     private let mayaChainAPIService = MayaChainAPIService()
 
     private let cryptoPriceService = CryptoPriceService.shared
-    
+
     func updateBalances(vault: Vault) async {
         do {
             try await cryptoPriceService.fetchPrices(vault: vault)
@@ -34,7 +34,7 @@ class BalanceService {
             print("error \(error)")
             print("Fetch Rates error: \(error.localizedDescription)")
         }
-        
+
         do {
             await withTaskGroup(of: Void.self) { group in
                 for coin in vault.coins {
@@ -43,11 +43,11 @@ class BalanceService {
                             do {
                                 let rawBalance = try await fetchBalance(for: coin)
                                 try await updateCoin(coin, rawBalance: rawBalance)
-                                
+
                                 if let stakedBalance = try await fetchStakedBalance(for: coin) {
                                     try await updateCoin(coin, stakedBalance: stakedBalance)
                                 }
-                                
+
                                 try await updateBondedIfNeeded(for: coin)
                             } catch {
                                 print("Fetch Balances error: \(error.localizedDescription)")
@@ -56,13 +56,13 @@ class BalanceService {
                     }
                 }
             }
-            
+
             try await Storage.shared.save()
         } catch {
             print("Update Balances error: \(error.localizedDescription)")
         }
     }
-    
+
     func updateBalance(for coin: Coin) async {
         print("Updating balance for coin: \(coin.ticker) on chain: \(coin.chain.rawValue)")
         do {
@@ -73,7 +73,7 @@ class BalanceService {
         do {
             let rawBalance = try await fetchBalance(for: coin)
             try await updateCoin(coin, rawBalance: rawBalance)
-            
+
             if let stakedBalance = try await fetchStakedBalance(for: coin) {
                 try await updateCoin(coin, stakedBalance: stakedBalance)
             }
@@ -85,35 +85,35 @@ class BalanceService {
             print("Fetch Balance error: \(error.localizedDescription)")
         }
     }
-    
+
     func fetchBalance(for coin: CoinMeta, address: String) async throws -> String {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
             let blockChairData = try await utxo.fetchBlockchairData(coin: coin, address: address)
             return blockChairData.address?.balance?.description ?? "0"
-            
+
         case .cardano:
             return try await cardano.getBalance(coin: coin, address: address)
-            
+
         case .thorChain, .thorChainStagenet:
             let service = ThorchainServiceFactory.getService(for: coin.chain)
             let thorBalances = try await service.fetchBalances(address)
             return thorBalances.balance(denom: coin.chain.ticker.lowercased(), coin: coin)
-            
+
         case .solana:
             return try await sol.getSolanaBalance(coin: coin, address: address)
-            
+
         case .sui:
             return try await sui.getBalance(coin: coin, address: address)
-            
+
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid, .sei:
             let service = try EvmService.getService(forChain: coin.chain)
             return try await service.getBalance(coin: coin, address: address)
-            
+
         case .gaiaChain, .dydx, .kujira, .osmosis, .terra, .terraClassic, .noble, .akash:
             let cosmosService = try CosmosService.getService(forChain: coin.chain)
             let balances = try await cosmosService.fetchBalances(coin: coin, address: address)
-            
+
             // Determine the correct denom for each chain
             let denom: String
             switch coin.chain {
@@ -122,26 +122,26 @@ class BalanceService {
             default:
                 denom = coin.chain.ticker.lowercased()
             }
-            
+
             return balances.balance(denom: denom, coin: coin)
-            
+
         case .mayaChain:
             let mayaBalance = try await maya.fetchBalances(address)
             return mayaBalance.balance(denom: coin.ticker.lowercased())
-            
+
         case .polkadot:
             return try await dot.getBalance(address: address)
-            
+
         case .ton:
             if coin.isNativeToken {
                 return try await ton.getBalance(coin: coin, address: address)
             } else {
                 return try await ton.getJettonBalance(coin: coin, address: address)
             }
-            
+
         case .ripple:
             return try await ripple.getBalance(coin: coin, address: address)
-            
+
         case .tron:
             return try await tron.getBalance(coin: coin, address: address)
         }
@@ -149,9 +149,9 @@ class BalanceService {
 }
 
 private extension BalanceService {
-    
+
     private var enableAutoCompoundStakedBalance: Bool { false }
-    
+
     func fetchStakedBalance(for coin: Coin) async throws -> String? {
         switch coin.chain {
         case .thorChain:
@@ -219,24 +219,24 @@ private extension BalanceService {
             return nil
         }
     }
-    
+
     func fetchBalance(for coin: Coin) async throws -> String {
         try await fetchBalance(for: coin.toCoinMeta(), address: coin.address)
     }
-    
+
     @MainActor func updateCoin(_ coin: Coin, rawBalance: String) async throws {
         guard coin.rawBalance != rawBalance else {
             return
         }
-        
+
         coin.rawBalance = rawBalance
     }
-    
+
     @MainActor func updateCoin(_ coin: Coin, stakedBalance: String) async throws {
         guard coin.stakedBalance != stakedBalance else {
             return
         }
-        
+
         coin.stakedBalance = stakedBalance
     }
 }

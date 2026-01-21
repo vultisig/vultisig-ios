@@ -11,29 +11,29 @@ import SwiftUI
 struct DefiMainScreen: View {
     @ObservedObject var vault: Vault
     @Binding var showBalanceInHeader: Bool
-    
+
     // Logic/State for Circle presence check
     private var isCircleEnabled: Bool {
         // Feature flag or simply always enabled as per requirements
         return true
     }
-    
+
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @Environment(\.router) var router
-    
+
     @State var scrollProxy: ScrollViewProxy?
     @State var showSearchHeader: Bool = false
     @State var focusSearch: Bool = false
     @State var scrollOffset: CGFloat = 0
     @State var showChainSelection: Bool = false
-    
+
     private let scrollReferenceId = "DefiMainScreenBottomContentId"
     private let contentInset: CGFloat = 78
     private let horizontalPadding: CGFloat = 16
-    
+
     @StateObject var viewModel = DefiMainViewModel()
-    
+
     var body: some View {
         VStack {
             ScrollViewReader { proxy in
@@ -81,11 +81,11 @@ struct DefiMainScreen: View {
             }
         }
         .throttledOnAppear(interval: 15.0, action: refresh)
-        .onChange(of: vault) { oldValue, newValue in
+        .onChange(of: vault) { _, _ in
             refresh()
         }
     }
-    
+
     var bottomContentSection: some View {
         LazyVStack(spacing: 0) {
             Group {
@@ -98,7 +98,7 @@ struct DefiMainScreen: View {
             .transition(.opacity)
             .frame(height: 42)
             .padding(.bottom, 16)
-            
+
             DefiChainListView(
                 vault: vault,
                 viewModel: viewModel,
@@ -114,7 +114,7 @@ struct DefiMainScreen: View {
         }
         .id(vault.id)
     }
-    
+
     var defaultBottomSectionHeader: some View {
         HStack(spacing: 8) {
             VStack(spacing: 8) {
@@ -135,7 +135,7 @@ struct DefiMainScreen: View {
             }
         }
     }
-    
+
     var searchBottomSectionHeader: some View {
         HStack(spacing: 12) {
             SearchTextField(value: $viewModel.searchText, isFocused: $focusSearch)
@@ -148,7 +148,7 @@ struct DefiMainScreen: View {
             .transition(.opacity)
         }
     }
-    
+
     func toggleSearch() {
         if showSearchHeader {
             focusSearch.toggle()
@@ -157,16 +157,16 @@ struct DefiMainScreen: View {
             showSearchHeader.toggle()
         }
     }
-    
+
     func refresh() {
         viewModel.groupChains(vault: vault)
     }
-    
+
     func clearSearch() {
         toggleSearch()
         viewModel.searchText = ""
     }
-    
+
     func onCustomizeChains() {
         showChainSelection = true
         // Clear search after sheet gets presented
@@ -174,7 +174,7 @@ struct DefiMainScreen: View {
             clearSearch()
         }
     }
-    
+
     func onScrollOffsetChange(_ offset: CGFloat) {
         let showBalanceInHeader: Bool = offset < contentInset
         guard showBalanceInHeader != self.showBalanceInHeader else { return }

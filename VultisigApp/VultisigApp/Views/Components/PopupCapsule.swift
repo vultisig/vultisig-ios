@@ -10,10 +10,10 @@ import SwiftUI
 struct PopupCapsule: View {
     let text: String
     @Binding var showPopup: Bool
-    
+
     @State var offset: CGFloat = 200
     @State var showText: Bool = false
-    
+
     var body: some View {
         VStack {
             Spacer()
@@ -21,11 +21,11 @@ struct PopupCapsule: View {
         }
         .ignoresSafeArea()
         .allowsHitTesting(false)
-        .onChange(of: showPopup) { oldValue, newValue in
+        .onChange(of: showPopup) { _, _ in
             startAnimation()
         }
     }
-    
+
     var capsule: some View {
         Text(showText ? NSLocalizedString(text, comment: "") : "")
             .foregroundColor(Theme.colors.textPrimary.opacity(showText ? 1 : 0))
@@ -36,28 +36,28 @@ struct PopupCapsule: View {
             .cornerRadius(100)
             .offset(y: offset)
     }
-    
+
     private func startAnimation() {
         guard showPopup else {
             return
         }
-        
+
         withAnimation {
             offset = -50
         }
-            
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             withAnimation {
                 showText = true
             }
         }
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             withAnimation {
                 offset = 100
             }
         }
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.1) {
             withAnimation {
                 showText = false
@@ -71,7 +71,7 @@ struct PopupCapsule: View {
     @Previewable @State var show = true
     return ZStack {
         Background()
-        
+
         PopupCapsule(text: "addressCopied", showPopup: $show)
     }
 }

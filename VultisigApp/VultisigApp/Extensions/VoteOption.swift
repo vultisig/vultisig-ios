@@ -13,7 +13,7 @@ extension TW_Cosmos_Proto_Message.VoteOption: @retroactive Identifiable {
     public var id: Int {
         return self.rawValue
     }
-    
+
     public var description: String {
         switch self {
         case .unspecified:
@@ -33,4 +33,3 @@ extension TW_Cosmos_Proto_Message.VoteOption: @retroactive Identifiable {
         }
     }
 }
-

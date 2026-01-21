@@ -11,7 +11,7 @@ extension View {
     func crossPlatformSheet<SheetContent: View>(isPresented: Binding<Bool>, @ViewBuilder sheetContent: @escaping () -> SheetContent) -> some View {
         modifier(CrossPlatformSheet(isPresented: isPresented, sheetContent: sheetContent))
     }
-    
+
     func crossPlatformSheet<Item: Identifiable & Equatable, SheetContent: View>(item: Binding<Item?>, @ViewBuilder sheetContent: @escaping (Item) -> SheetContent) -> some View {
         modifier(PlatformSheetWithItem(item: item, sheetContent: sheetContent))
     }
@@ -19,19 +19,19 @@ extension View {
 
 private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
     @Binding var isPresented: Bool
-    
+
     var sheetContent: () -> SheetContent
-    
+
     @Environment(\.sheetPresentedCounterManager) var counterManager
-    
+
     @State var counter: Int = 0
     @State private var internalIsPresented: Bool = false
-    
+
     init(isPresented: Binding<Bool>, @ViewBuilder sheetContent: @escaping () -> SheetContent) {
         self._isPresented = isPresented
         self.sheetContent = sheetContent
     }
-    
+
     func body(content: Content) -> some View {
         #if os(macOS)
         if #available(macOS 26.0, *) {
@@ -43,13 +43,13 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
         nativeSheet(content: content)
         #endif
     }
-    
+
     #if os(macOS)
     func customSheet(content: Content) -> some View {
         ZStack {
             content
                 .blur(radius: internalIsPresented ? 5 : 0)
-            
+
             if isPresented {
                 // Semi-transparent backdrop
                 Color.black.opacity(0.1)
@@ -59,7 +59,7 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
                             internalIsPresented = false
                         }
                     }
-                
+
                 sheetContent()
                     .clipShape(RoundedRectangle(cornerRadius: 24))
                     .overlay(
@@ -82,7 +82,7 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
         }
     }
     #endif
-    
+
     func nativeSheet(content: Content) -> some View {
         content
             .sheet(isPresented: $isPresented) {
@@ -109,20 +109,20 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
 
 private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetContent: View>: ViewModifier {
     @Binding var item: Item?
-    
+
     var sheetContent: (Item) -> SheetContent
-    
+
     @Environment(\.sheetPresentedCounterManager) var counterManager
     @State private var isPresented: Bool = false
-    
+
     @State var counter: Int = 0
     @State private var internalItem: Item?
-    
+
     init(item: Binding<Item?>, @ViewBuilder sheetContent: @escaping (Item) -> SheetContent) {
         self._item = item
         self.sheetContent = sheetContent
     }
-    
+
     func body(content: Content) -> some View {
         #if os(macOS)
         if #available(macOS 26.0, *) {
@@ -134,13 +134,13 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
         nativeSheet(content: content)
         #endif
     }
-    
+
     #if os(macOS)
     func customSheet(content: Content) -> some View {
         ZStack {
             content
                 .blur(radius: internalItem != nil ? 5 : 0)
-            
+
             if let currentItem = internalItem {
                 // Semi-transparent backdrop
                 Color.black.opacity(0.1)
@@ -150,7 +150,7 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
                             internalItem = nil
                         }
                     }
-                
+
                 sheetContent(currentItem)
                     .clipShape(RoundedRectangle(cornerRadius: 24))
                     .overlay(
@@ -173,7 +173,7 @@ private struct PlatformSheetWithItem<Item: Identifiable & Equatable, SheetConten
         }
     }
     #endif
-    
+
     func nativeSheet(content: Content) -> some View {
         content
             .sheet(item: $item) { item in

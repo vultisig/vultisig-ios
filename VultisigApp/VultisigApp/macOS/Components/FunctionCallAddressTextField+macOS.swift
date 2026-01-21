@@ -45,7 +45,7 @@ extension FunctionCallAddressTextField {
                 ))
             }
     }
-    
+
     var field: some View {
         HStack(spacing: 0) {
             TextField(addressKey.toFormattedTitleCase(), text: Binding<String>(
@@ -70,21 +70,21 @@ extension FunctionCallAddressTextField {
                     }
                 }
             ))
-            
+
             pasteButton
             fileButton
             addressBookButton
         }
         .padding(.horizontal, 12)
     }
-    
+
     private func handleImageQrCode(data: Data) {
         let (address, amount, _) = Utils.parseCryptoURI(String(data: data, encoding: .utf8) ?? .empty)
         memo.addressFields[addressKey] = address
         memo.addressFields["amount"] = amount
         validateAddress(address)
     }
-    
+
     func pasteAddress() {
         let pasteboard = NSPasteboard.general
         if let clipboardContent = pasteboard.string(forType: .string) {

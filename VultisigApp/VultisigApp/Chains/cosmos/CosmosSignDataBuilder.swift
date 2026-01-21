@@ -19,7 +19,7 @@ enum CosmosSignDataBuilder {
         }
         return .protobuf
     }
-    
+
     static func getFee(keysignPayload: KeysignPayload) throws -> WalletCore.CosmosFee? {
         guard let signData = keysignPayload.signData else { return nil }
         switch signData {
@@ -41,7 +41,7 @@ enum CosmosSignDataBuilder {
             else {
                 throw HelperError.runtimeError("Couldn't parse signDirect fee info")
             }
-            
+
             return WalletCore.CosmosFee.with {
                 $0.gas = feeInfo.gasLimit
                 $0.amounts = feeInfo.amounts.map { coin in
@@ -53,7 +53,7 @@ enum CosmosSignDataBuilder {
             }
         }
     }
-    
+
     static func getMessages(keysignPayload: KeysignPayload) throws -> (messages: [WalletCore.CosmosMessage], memo: String?)? {
         if let signAmino = keysignPayload.signAmino {
             let messages = signAmino.msgs.map { msg in
@@ -66,7 +66,7 @@ enum CosmosSignDataBuilder {
             }
             return (messages: messages, memo: nil)
         }
-        
+
         if let signDirect = keysignPayload.signDirect {
             // Decode bodyBytes and authInfoBytes from base64
             guard let bodyBytes = signDirect.bodyBytes.fromBase64(),
@@ -87,7 +87,7 @@ enum CosmosSignDataBuilder {
 
             return (messages: messages, memo: extractedMemo)
         }
-        
+
         return nil
     }
 }

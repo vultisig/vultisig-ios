@@ -12,9 +12,9 @@ struct TokenSelectionGridCell: View {
     let name: String?
     let showChainIcon: Bool
     var onSelection: (Bool) -> Void
-    
+
     @State var isSelected: Bool
-    
+
     init(coin: CoinMeta, name: String? = nil, showChainIcon: Bool = false, isSelected: Bool, onSelection: @escaping (Bool) -> Void) {
         self.coin = coin
         self.name = name
@@ -22,7 +22,7 @@ struct TokenSelectionGridCell: View {
         self.isSelected = isSelected
         self.onSelection = onSelection
     }
-    
+
     var body: some View {
         AssetSelectionGridCell(
             name: name ?? coin.ticker,

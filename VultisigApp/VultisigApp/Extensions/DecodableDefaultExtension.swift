@@ -6,9 +6,7 @@
 //
 
 import Foundation
-import Foundation
 import BigInt // Ensure this import is correct for BigInt support
-
 
 extension DecodableDefault {
     typealias Source = DecodableDefaultSource
@@ -20,24 +18,24 @@ extension DecodableDefault {
     typealias EmptyList<T: List> = Wrapper<Sources.EmptyList<T>>
     typealias EmptyMap<T: Map> = Wrapper<Sources.EmptyMap<T>>
     typealias EmptyDouble = Wrapper<Sources.EmptyDouble>
-    
+
     enum Sources {
         enum True: Source {
             static var defaultValue: Bool { true }
         }
-        
+
         enum False: Source {
             static var defaultValue: Bool { false }
         }
-        
+
         enum EmptyString: Source {
             static var defaultValue: String { "" }
         }
-        
+
         enum EmptyList<T: List>: Source {
             static var defaultValue: T { [] }
         }
-        
+
         enum EmptyMap<T: Map>: Source {
             static var defaultValue: T { [:] }
         }
@@ -45,7 +43,7 @@ extension DecodableDefault {
             static var defaultValue: Double { 0.0 }
         }
     }
-    
+
     @propertyWrapper
     struct Wrapper<Source: DecodableDefaultSource> {
         typealias Value = Source.Value

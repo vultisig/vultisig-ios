@@ -16,10 +16,10 @@ struct PrimaryButton: View {
     let size: ButtonSize
     let action: () -> Void
     let reserveTrailingIconSpace: Bool
-    
+
     let supportsLongPress: Bool
     @Binding var longPressProgress: CGFloat
-    
+
     init(
         title: String,
         leadingIcon: String? = nil,
@@ -43,7 +43,7 @@ struct PrimaryButton: View {
         self._longPressProgress = longPressProgress
         self.action = action
     }
-    
+
     var body: some View {
         Button {
             #if os(iOS)
@@ -75,7 +75,7 @@ struct PrimaryButton: View {
         PrimaryButton(title: "Continue", type: .primary, size: .medium) {}
         PrimaryButton(title: "Continue", type: .primary, size: .small) {}
         PrimaryButton(title: "Continue", type: .primary, size: .mini) {}
-        
+
         PrimaryButton(title: "Continue", type: .secondary, size: .medium) {}
         PrimaryButton(title: "Continue", type: .secondary, size: .small) {}
         PrimaryButton(title: "Continue", type: .secondary, size: .mini) {}

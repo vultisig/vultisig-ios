@@ -16,22 +16,22 @@ enum CoinAction: String, Codable {
     case buy
     case sell
     case receive
-    
+
     var title: String {
         return rawValue.capitalized
     }
-    
+
     var color: Color {
         switch self {
         case .send:
             return Theme.colors.bgButtonPrimary
         case .swap:
             return Theme.colors.primaryAccent4
-        case .deposit, .bridge, .memo,.buy, .sell, .receive:
+        case .deposit, .bridge, .memo, .buy, .sell, .receive:
             return Theme.colors.primaryAccent3
         }
     }
-    
+
     var buttonTitle: String {
         switch self {
         case .send:
@@ -48,7 +48,7 @@ enum CoinAction: String, Codable {
             "receive".localized
         }
     }
-    
+
     var buttonIcon: String {
         switch self {
         case .send:
@@ -69,7 +69,7 @@ enum CoinAction: String, Codable {
             "arrow-wall-down"
         }
     }
-    
+
     var shouldHightlight: Bool {
         switch self {
         case .swap:
@@ -84,7 +84,7 @@ enum CoinAction: String, Codable {
             return false
         }
     }
-    
+
     var isDefi: Bool {
         switch self {
         case .deposit, .bridge, .memo:

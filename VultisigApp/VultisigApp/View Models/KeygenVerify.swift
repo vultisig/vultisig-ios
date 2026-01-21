@@ -14,14 +14,14 @@ class KeygenVerify: ObservableObject {
     let sessionID: String
     let localPartyID: String
     let keygenCommittee: [String]
-    
+
     init(serverAddr: String, sessionID: String, localPartyID: String, keygenCommittee: [String]) {
         self.serverAddr = serverAddr
         self.sessionID = sessionID
         self.localPartyID = localPartyID
         self.keygenCommittee = keygenCommittee
     }
-    
+
     func markLocalPartyComplete() async {
         let urlString = "\(self.serverAddr)/complete/\(self.sessionID)"
         let body = [self.localPartyID]
@@ -32,11 +32,11 @@ class KeygenVerify: ObservableObject {
             self.logger.error("Failed to send request to mediator, error:\(error)")
         }
     }
-    
+
     func checkCompletedParties() async -> Bool {
         let urlString = "\(serverAddr)/complete/\(sessionID)"
         let start = Date()
-        repeat{
+        repeat {
             do {
                 let result = try await Utils.asyncGetRequest(urlString: urlString, headers: nil)
                 if !result.isEmpty {
@@ -51,7 +51,7 @@ class KeygenVerify: ObservableObject {
             } catch {
                 self.logger.error("Failed to decode response to JSON: \(error)")
             }
-            
+
         } while (Date().timeIntervalSince(start) < 60) // set timeout to 1 minutes
         return false
     }

@@ -22,7 +22,7 @@ struct ZipFileGenerator {
         guard directoryURL.isDirectory else {
             throw ZipFileError.urlNotADirectory(directoryURL)
         }
-        
+
         var fileManagerError: Swift.Error?
         let fm = FileManager.default
         do {

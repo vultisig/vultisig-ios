@@ -18,11 +18,11 @@ struct NewWalletNameView: View {
     @State var errorMessage: String = ""
 
     @Query var vaults: [Vault]
-    
+
     var body: some View {
         content
     }
-    
+
     var view: some View {
         VStack {
             fields
@@ -32,7 +32,7 @@ struct NewWalletNameView: View {
             Spacer()
             button
         }
-        .onAppear() {
+        .onAppear {
             isNameFocused = true
         }
     }
@@ -54,7 +54,7 @@ struct NewWalletNameView: View {
                     verifyVault()
                 }
                 .maxLength($name, 64)
-            
+
             if !name.isEmpty {
                 clearButton
             }
@@ -72,7 +72,7 @@ struct NewWalletNameView: View {
         )
         .padding(.top, 32)
     }
-    
+
     var clearButton: some View {
         Button {
             resetPlaceholderName()
@@ -81,7 +81,7 @@ struct NewWalletNameView: View {
                 .foregroundColor(Theme.colors.textTertiary)
         }
     }
-    
+
     var button: some View {
         PrimaryButton(title: "next") {
             verifyVault()
@@ -89,18 +89,18 @@ struct NewWalletNameView: View {
         .padding(.vertical, 40)
         .padding(.horizontal, 24)
     }
-    
+
     var fields: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(NSLocalizedString("nameYourVault", comment: ""))
                 .font(Theme.fonts.largeTitle)
                 .foregroundColor(Theme.colors.textPrimary)
                 .padding(.top, 16)
-            
+
             Text(NSLocalizedString("newWalletNameDescription", comment: ""))
                 .font(Theme.fonts.bodySMedium)
                 .foregroundColor(Theme.colors.textTertiary)
-            
+
             textfield
         }
         .padding(.horizontal, 16)
@@ -111,7 +111,7 @@ struct NewWalletNameView: View {
             errorMessage = NSLocalizedString("enterVaultName", comment: "")
             return
         }
-        
+
         for vault in vaults {
             if vault.name.caseInsensitiveCompare(name) == .orderedSame {
                 errorMessage = NSLocalizedString("vaultNameExists", comment: "").replacingOccurrences(of: "%s", with: name)
@@ -119,7 +119,7 @@ struct NewWalletNameView: View {
             }
         }
         errorMessage = ""
-        
+
         let vault = Vault(name: name)
         if selectedTab.isFastVault {
             router.navigate(to: KeygenRoute.fastVaultEmail(
@@ -139,7 +139,7 @@ struct NewWalletNameView: View {
             ))
         }
     }
-    
+
     private func getVaultName() -> String {
         if name.isEmpty {
             return "Vault "
@@ -147,7 +147,7 @@ struct NewWalletNameView: View {
             return name + " "
         }
     }
-    
+
     private func resetPlaceholderName() {
         isNameFocused = false
         name = ""

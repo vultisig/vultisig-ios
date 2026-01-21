@@ -8,7 +8,7 @@
 import Foundation
 
 extension Coin {
-    
+
     var thorswapMultiplier: Decimal {
         switch chain {
         case .mayaChain:
@@ -17,11 +17,11 @@ extension Coin {
             return 1e8
         }
     }
-    
+
     var isSwapSupported: Bool {
         return !swapProviders.isEmpty
     }
-    
+
     var swapProviders: [SwapProvider] {
         switch chain {
         case .mayaChain, .dash, .kujira:
@@ -30,38 +30,38 @@ extension Coin {
             let defaultProviders: [SwapProvider] = [
                 .oneinch(chain),
                 .lifi,
-                .kyberswap(chain),
+                .kyberswap(chain)
             ]
-            
+
             var providers: [SwapProvider] = []
-            
+
             if thorEthTokens.contains(ticker) {
                 providers.append(.thorchain)
                 providers.append(.thorchainStagenet)
             }
-            
+
             if mayaEthTokens.contains(ticker) {
                 providers.append(.mayachain)
             }
-            
+
             return providers + defaultProviders
         case .bscChain:
             if thorBscTokens.contains(ticker) {
-                return [.thorchain, .thorchainStagenet, .oneinch(chain), .lifi,  .kyberswap(chain)]
+                return [.thorchain, .thorchainStagenet, .oneinch(chain), .lifi, .kyberswap(chain)]
             } else {
-                return [.oneinch(chain), .lifi,.kyberswap(chain) ]
+                return [.oneinch(chain), .lifi, .kyberswap(chain) ]
             }
         case .avalanche:
             if thorAvaxTokens.contains(ticker) {
                 return [.thorchain, .thorchainStagenet, .oneinch(chain), .lifi, .kyberswap(chain)]
             } else {
-                return [.oneinch(chain), .lifi,.kyberswap(chain)]
+                return [.oneinch(chain), .lifi, .kyberswap(chain)]
             }
         case .arbitrum:
             if mayaArbTokens.contains(ticker) {
-                return [.mayachain, .oneinch(chain), .lifi, .kyberswap(chain), ]
+                return [.mayachain, .oneinch(chain), .lifi, .kyberswap(chain)]
             } else {
-                return [.oneinch(chain), .lifi, .kyberswap(chain), ]
+                return [.oneinch(chain), .lifi, .kyberswap(chain)]
             }
         case .base:
             if thorBaseTokens.contains(ticker) {
@@ -98,7 +98,7 @@ extension Coin {
             return []
         }
     }
-    
+
     var isLifiFeesSupported: Bool {
         switch chain.chainType {
         case .EVM:
@@ -110,27 +110,27 @@ extension Coin {
 }
 
 private extension Coin {
-    
+
     var mayaEthTokens: [String] {
-        return ["ETH","USDC"]
+        return ["ETH", "USDC"]
     }
-    
+
     var mayaArbTokens: [String] {
-        return ["ETH","ARB","USDC","YUM","TGT","GLD","USDT","PEPE"]
+        return ["ETH", "ARB", "USDC", "YUM", "TGT", "GLD", "USDT", "PEPE"]
     }
-    
+
     var thorEthTokens: [String] {
         return ["ETH", "USDT", "USDC", "WBTC", "THOR", "XRUNE", "DAI", "LUSD", "GUSD", "VTHOR", "USDP", "LINK", "WSTETH", "TGT", "AAVE", "FOX", "DPI", "SNX", "vTHOR"]
     }
-    
+
     var thorBscTokens: [String] {
         return ["BNB", "USDT", "USDC"]
     }
-    
+
     var thorBaseTokens: [String] {
         return ["ETH", "USDC", "CBBTC"]
     }
-    
+
     var thorAvaxTokens: [String] {
         return ["AVAX", "USDC", "USDT", "SOL"]
     }

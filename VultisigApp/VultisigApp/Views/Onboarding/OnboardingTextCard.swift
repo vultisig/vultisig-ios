@@ -10,11 +10,11 @@ import SwiftUI
 struct OnboardingTextCard: View {
     let index: Int
     let textPrefix: String
-    
+
     var deviceCount: String? = nil
-    
+
     @State var showText: Bool = false
-    
+
     var body: some View {
         Group {
             Text(NSLocalizedString("\(textPrefix)\(index+1)Text1", comment: ""))
@@ -40,7 +40,7 @@ struct OnboardingTextCard: View {
             setData()
         }
     }
-    
+
     private func setData() {
         withAnimation {
             showText = true

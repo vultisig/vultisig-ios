@@ -19,9 +19,9 @@ enum CosmosHelper {
     case terraClassic
     case noble
     case akash
-    
+
     // MARK: - Factory Methods
-    
+
     static func getHelper(forChain chain: Chain) throws -> CosmosHelper {
         switch chain {
         case .gaiaChain:
@@ -44,14 +44,14 @@ enum CosmosHelper {
             throw HelperError.runtimeError("Unsupported Cosmos chain: \(chain)")
         }
     }
-    
+
     // MARK: - Service Implementation
-    
+
     private func makeHelperStruct() throws -> CosmosHelperStruct {
         let config = try CosmosHelperConfig.getConfig(forChain: chain)
         return CosmosHelperStruct(config: config)
     }
-    
+
     private var chain: Chain {
         switch self {
         case .gaiaChain:
@@ -72,14 +72,14 @@ enum CosmosHelper {
             return .akash
         }
     }
-    
+
     // MARK: - Public API
-    
+
     func getSwapPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         let helper = try makeHelperStruct()
         return try helper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
     }
-    
+
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         // Handle special cases for Terra and Dydx
         switch self {
@@ -92,7 +92,7 @@ enum CosmosHelper {
             return try helper.getPreSignedInputData(keysignPayload: keysignPayload)
         }
     }
-    
+
     func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         switch self {
         case .terra, .terraClassic:
@@ -104,7 +104,7 @@ enum CosmosHelper {
             return try helper.getPreSignedImageHash(keysignPayload: keysignPayload)
         }
     }
-    
+
     func getSignedTransaction(keysignPayload: KeysignPayload,
                               signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         switch self {
@@ -117,7 +117,7 @@ enum CosmosHelper {
             return try helper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
         }
     }
-    
+
     func getSignedTransaction(coinHexPublicKey: String,
                               inputData: Data,
                               signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
@@ -132,4 +132,3 @@ enum CosmosHelper {
         }
     }
 }
-

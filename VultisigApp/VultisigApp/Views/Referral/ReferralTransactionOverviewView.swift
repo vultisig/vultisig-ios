@@ -13,7 +13,7 @@ struct ReferralTransactionOverviewView: View {
     let sendTx: SendTransaction
     let isEdit: Bool
     @ObservedObject var referralViewModel: ReferralViewModel
-        
+
     var body: some View {
         Screen {
             SendCryptoDoneContentView(
@@ -38,7 +38,7 @@ struct ReferralTransactionOverviewView: View {
         }
         .navigationBarBackButtonHidden(true)
     }
-    
+
     private func setData() {
         if !isEdit {
             referralViewModel.updateReferralCode(code: referralViewModel.referralCode)

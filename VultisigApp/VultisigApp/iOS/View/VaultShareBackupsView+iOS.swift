@@ -15,7 +15,7 @@ extension VaultShareBackupsView {
                 image
                 Spacer()
             }
-            
+
             VStack(spacing: 0) {
                 Spacer()
                 description

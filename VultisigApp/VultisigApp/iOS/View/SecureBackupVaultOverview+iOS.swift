@@ -13,23 +13,23 @@ extension SecureBackupVaultOverview {
         content
             .navigationBarBackButtonHidden(true)
     }
-    
+
     var textTabView: some View {
         text
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
     }
-    
+
     var button: some View {
         nextButton
             .padding(.horizontal, 40)
             .padding(.bottom, 100)
     }
-    
+
     var animation: some View {
         animationVM?.view()
             .offset(y: -80)
     }
-    
+
     var text: some View {
         TabView(selection: $tabIndex) {
             ForEach(0..<totalTabCount, id: \.self) { index in

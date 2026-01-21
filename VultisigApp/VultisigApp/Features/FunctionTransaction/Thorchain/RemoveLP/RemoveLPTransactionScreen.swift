@@ -11,13 +11,13 @@ struct RemoveLPTransactionScreen: View {
     enum FocusedField {
         case amount
     }
-    
+
     @StateObject var viewModel: RemoveLPTransactionViewModel
     var onVerify: (TransactionBuilder) -> Void
-    
+
     @State var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?
-    
+
     var body: some View {
         FormScreen(
             title: String(format: "removeCoinLP".localized, viewModel.position.coin1.chain.name),
@@ -38,7 +38,7 @@ struct RemoveLPTransactionScreen: View {
                         percentage: $viewModel.percentageSelected,
                         position: viewModel.position
                     )
-                    
+
                     if let feeError = viewModel.feeError {
                         InfoBannerView(description: feeError, type: .error, leadingIcon: "triangle-alert")
                     }
@@ -50,7 +50,7 @@ struct RemoveLPTransactionScreen: View {
             viewModel.onLoad()
         }
     }
-    
+
     func onContinue() {
         guard let transactionBuilder = viewModel.transactionBuilder else { return }
         onVerify(transactionBuilder)
@@ -60,9 +60,9 @@ struct RemoveLPTransactionScreen: View {
 private struct RemoveLPAmountSection: View {
     @Binding var percentage: Double?
     let position: LPPosition
-    
+
     var formattedPercentage: Double { percentage ?? 100 }
-    
+
     var body: some View {
         VStack(spacing: 32) {
             Spacer()
@@ -73,12 +73,12 @@ private struct RemoveLPAmountSection: View {
             PercentageSliderView(percentage: $percentage, minimumValue: 1)
         }
     }
-    
+
     @ViewBuilder
     func amountView(for coin: CoinMeta, balance: Decimal) -> some View {
         let percentageAmount = balance * Decimal(formattedPercentage / 100)
         let amount = AmountFormatter.formatCryptoAmount(value: percentageAmount, coin: coin)
-        
+
         VStack(spacing: 5) {
             Text(amount)
                 .font(Theme.fonts.largeTitle)

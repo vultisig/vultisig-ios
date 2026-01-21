@@ -8,7 +8,7 @@
 import Foundation
 
 class CoinSelectionViewModel: ObservableObject {
-    
+
     @Published var groupedAssets: [Chain: [CoinMeta]] = [:]
     @Published var searchText: String = .empty
     @Published var selection = Set<CoinMeta>()
@@ -18,7 +18,7 @@ class CoinSelectionViewModel: ObservableObject {
             .map { $0.key }
             .sorted(by: { $0.name < $1.name })
     }
-    
+
     var filteredChains: [Chain] {
         if searchText.isEmpty {
             return groupedAssets.keys.sorted(by: { $0.name < $1.name })
@@ -30,18 +30,18 @@ class CoinSelectionViewModel: ObservableObject {
                 }
                 .map { $0.key }
                 .sorted(by: { $0.name < $1.name })
-            
+
             return assets
         }
     }
 
     let actionResolver = CoinActionResolver()
     let balanceService = BalanceService.shared
-    
+
     func loadData(coin: Coin) async {
         await balanceService.updateBalance(for: coin)
     }
-    
+
     func setData(for vault: Vault, checkForSelected: Bool = true) {
         if checkForSelected {
             checkSelected(for: vault)
@@ -50,23 +50,23 @@ class CoinSelectionViewModel: ObservableObject {
         }
         groupAssets()
     }
-    
+
     func hasTokens(chain: Chain) -> Bool {
         guard let coins = groupedAssets[chain] else { return false }
         return coins.count > 1
     }
-    
+
     private func checkSelected(for vault: Vault) {
         selection = Set(vault.coins.map { $0.toCoinMeta() })
     }
-    
+
     private func groupAssets() {
         groupedAssets = [:]
-        
+
         // Filter out Sepolia and Thorchain Stagenet based on settings
         let enableETHSepolia = UserDefaults.standard.bool(forKey: "sepolia")
         let enableThorchainStagenet = UserDefaults.standard.bool(forKey: "thorchainStagenet")
-        
+
         let filteredAssets = TokensStore.TokenSelectionAssets.filter { asset in
             if asset.chain == .ethereumSepolia {
                 return enableETHSepolia
@@ -76,14 +76,14 @@ class CoinSelectionViewModel: ObservableObject {
             }
             return true
         }
-        
+
         groupedAssets = Dictionary(grouping: filteredAssets.sorted(by: { first, _ in
             if first.isNativeToken {
                 return true
             }
             return false
         })) { $0.chain }
-        
+
         // Add Sepolia if enabled (it's not in TokenSelectionAssets)
         if enableETHSepolia {
             groupedAssets[TokensStore.Token.ethSepolia.chain] = [TokensStore.Token.ethSepolia]
@@ -109,7 +109,7 @@ class CoinSelectionViewModel: ObservableObject {
             }
         }
     }
-    
+
     func filterChains(type: ChainFilterType, vault: Vault) -> [Chain] {
         switch type {
         case .swap:

@@ -10,7 +10,7 @@ import SwiftUI
 struct KeygenStatusText: View {
     let gradientText: String
     let plainText: String
-    
+
     var body: some View {
         Group {
             Text(NSLocalizedString(gradientText, comment: ""))

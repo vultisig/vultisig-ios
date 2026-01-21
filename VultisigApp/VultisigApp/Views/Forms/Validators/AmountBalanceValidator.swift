@@ -14,14 +14,14 @@ struct AmountBalanceValidator: FormFieldValidator {
         formatter.locale = Locale.current
         return formatter
     }()
-    
+
     let balance: Decimal
-    
+
     enum ValidationError: LocalizedError {
         case invalidAmount
         case zeroAmount
         case exceedsBalance
-        
+
         var errorDescription: String? {
             switch self {
             case .invalidAmount:
@@ -29,11 +29,11 @@ struct AmountBalanceValidator: FormFieldValidator {
             case .exceedsBalance:
                 return "amountExceeded".localized
             case .zeroAmount:
-                return "amountCannotBeZero".localized    
+                return "amountCannotBeZero".localized
             }
         }
     }
-    
+
     func validate(value: String) throws {
         guard
             let number = Self.formatter.number(from: value),
@@ -41,15 +41,15 @@ struct AmountBalanceValidator: FormFieldValidator {
         else {
             throw ValidationError.invalidAmount
         }
-        
+
         if amount < 0 {
             throw ValidationError.invalidAmount
         }
-        
+
         if amount == 0 {
             throw ValidationError.zeroAmount
         }
-        
+
         guard amount <= balance else {
             throw ValidationError.exceedsBalance
         }

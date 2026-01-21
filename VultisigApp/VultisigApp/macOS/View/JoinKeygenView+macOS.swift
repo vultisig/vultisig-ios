@@ -17,7 +17,7 @@ extension JoinKeygenView {
             main
         }
     }
-    
+
     var main: some View {
         VStack(spacing: .zero) {
             headerMac
@@ -27,7 +27,7 @@ extension JoinKeygenView {
             Spacer()
         }
     }
-    
+
     var headerMac: some View {
         JoinKeygenHeader(title: "joinKeygen", hideBackButton: hideBackButton)
     }

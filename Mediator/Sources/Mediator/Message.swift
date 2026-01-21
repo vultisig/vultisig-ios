@@ -7,7 +7,7 @@ import Foundation
 final class Session: Codable {
     var SessionID: String
     var Participants: [String]
-    
+
     init(SessionID: String, Participants: [String]) {
         self.SessionID = SessionID
         self.Participants = Participants
@@ -21,8 +21,8 @@ public struct Message: Codable {
     public let body: String
     public let hash: String
     public let sequence_no: Int64
-    
-    public init(session_id: String, from: String, to: [String], body: String,hash: String,sequenceNo: Int64) {
+
+    public init(session_id: String, from: String, to: [String], body: String, hash: String, sequenceNo: Int64) {
         self.session_id = session_id
         self.from = from
         self.to = to

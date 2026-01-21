@@ -31,21 +31,21 @@ struct CircleView: View {
                 // Show warning to add ETH
                 VStack(spacing: 24) {
                     Spacer()
-                    
+
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 60))
                         .foregroundStyle(Theme.colors.alertWarning)
-                    
+
                     Text(NSLocalizedString("circleEthereumRequired", comment: "Ethereum Required"))
                         .font(Theme.fonts.title2)
                         .foregroundStyle(Theme.colors.textPrimary)
-                    
+
                     Text(NSLocalizedString("circleEthereumRequiredDescription", comment: "Please add Ethereum..."))
                         .font(Theme.fonts.bodyMRegular)
                         .foregroundStyle(Theme.colors.textSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
-                    
+
                     Spacer()
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -63,10 +63,10 @@ struct CircleView: View {
             Task { await checkExistingWallet() }
         }
     }
-    
+
     private func checkExistingWallet() async {
         await MainActor.run { model.isLoading = true }
-        
+
         do {
             let existingAddress = try await model.logic.checkExistingWallet(vault: vault)
             await MainActor.run {
@@ -92,4 +92,3 @@ struct CircleView: View {
         }
     }
 }
-

@@ -2,20 +2,20 @@ import Foundation
 import SwiftUI
 
 struct FunctionCallSelectorDropdown: View {
-    
+
     @Binding var items: [FunctionCallType]
     @Binding var selected: FunctionCallType
-    
+
     @Binding var coin: Coin
-    
+
     var onSelect: ((FunctionCallType) -> Void)?
-    
+
     @State private var isExpanded = false
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             selectedCell
-            
+
             if isExpanded {
                 cells
             }
@@ -24,7 +24,7 @@ struct FunctionCallSelectorDropdown: View {
         .background(Theme.colors.bgSurface1)
         .cornerRadius(10)
     }
-    
+
     var selectedCell: some View {
         Button {
             withAnimation {
@@ -34,12 +34,12 @@ struct FunctionCallSelectorDropdown: View {
             cell
         }
     }
-    
+
     var cell: some View {
         HStack(spacing: 12) {
             Text(selected.display(coin: coin))
             Spacer()
-            
+
             Image(systemName: "chevron.down")
         }
         .redacted(reason: selected.rawValue.isEmpty ? .placeholder : [])
@@ -47,7 +47,7 @@ struct FunctionCallSelectorDropdown: View {
         .foregroundColor(Theme.colors.textPrimary)
         .frame(height: 48)
     }
-    
+
     var cells: some View {
         ForEach(items, id: \.id) { item in
             Button {
@@ -60,15 +60,15 @@ struct FunctionCallSelectorDropdown: View {
             }
         }
     }
-    
+
     private func getCell(for item: FunctionCallType) -> some View {
         HStack(spacing: 12) {
             Text(item.display(coin: coin))
                 .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(Theme.colors.textPrimary)
-            
+
             Spacer()
-            
+
             if selected == item {
                 Image(systemName: "checkmark")
                     .font(Theme.fonts.bodyMRegular)
@@ -77,7 +77,7 @@ struct FunctionCallSelectorDropdown: View {
         }
         .frame(height: 48)
     }
-    
+
     private func handleSelection(for item: FunctionCallType) {
         isExpanded = false
         selected = item

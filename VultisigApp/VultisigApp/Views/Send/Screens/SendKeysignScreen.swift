@@ -13,7 +13,7 @@ struct SendKeysignScreen: View {
     let input: KeysignInput
     let tx: SendTransaction
     @StateObject var viewModel = SendKeysignViewModel()
-    
+
     var body: some View {
         Screen(title: "keysign".localized) {
             KeysignView(
@@ -52,10 +52,10 @@ struct SendKeysignScreen: View {
 
 class SendKeysignViewModel: ObservableObject, TransferViewModel {
     @Published var keysignFinished: Bool = false
-    
+
     var hash: String?
     var approveHash: String?
-    
+
     func moveToNextView() {
         keysignFinished = true
     }

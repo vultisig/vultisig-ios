@@ -12,9 +12,8 @@ class THORChainAccountValue: Codable {
     var publicKey: String?
     var accountNumber: String?
     var sequence: String?
-    
+
     enum CodingKeys: String, CodingKey {
         case address, publicKey = "pub_key", accountNumber = "account_number", sequence
     }
 }
-

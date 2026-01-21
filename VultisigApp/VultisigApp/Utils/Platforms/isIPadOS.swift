@@ -16,4 +16,3 @@ var isIPadOS: Bool {
         return false
     #endif
 }
-

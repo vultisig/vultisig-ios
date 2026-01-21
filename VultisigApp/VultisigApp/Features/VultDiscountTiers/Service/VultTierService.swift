@@ -33,16 +33,16 @@ struct VultTierService {
 
         return tier
     }
-    
+
     func getVultToken(for vault: Vault) -> Coin? {
         vault.coins.first(where: { $0.chain == .ethereum && $0.ticker == vultTicker })
     }
-    
+
     /// Clears the cached timestamp for a specific vault
     func clearCache(for vault: Vault) {
         cacheEntries.removeAll { $0.vaultId == vault.pubKeyEdDSA }
     }
-    
+
     /// Clears all cached timestamps
     func clearAllCache() {
         cacheEntries.removeAll()
@@ -70,7 +70,7 @@ struct VultTierService {
             return tier
         }
     }
-    
+
     private func canUpgrade(_ tier: VultDiscountTier?) -> Bool {
         switch tier {
         case .bronze, .silver, .gold, .none:
@@ -109,7 +109,7 @@ private extension VultTierService {
         let vaultId: String
         let lastFetchDate: Date
     }
-    
+
     func fetchVultBalance(for vault: Vault) async -> Decimal {
         // Check if we need to fetch fresh balance
         if shouldFetchBalance(for: vault) {
@@ -119,38 +119,38 @@ private extension VultTierService {
             if let vultToken {
                 await BalanceService.shared.updateBalance(for: vultToken)
             }
-            
+
             // Update the cache entry
             cacheEntries.removeAll { $0.vaultId == vault.pubKeyEdDSA }
             cacheEntries.append(CacheEntry(vaultId: vault.pubKeyEdDSA, lastFetchDate: Date()))
         }
-        
+
         // Return the balance from the coin (fresh or cached)
         guard let vultToken = getVultToken(for: vault) else { return .zero }
         return vultToken.balanceDecimal
     }
-    
+
     func getOrAddVultTokenIfNeeded(to vault: Vault) async -> Coin? {
         var vultToken = getVultToken(for: vault)
         if vultToken == nil {
             await addVultToken(to: vault)
             vultToken = getVultToken(for: vault)
         }
-        
+
         return vultToken
     }
-    
+
     func addVultToken(to vault: Vault) async {
         let vultTokenMeta = TokensStore.TokenSelectionAssets.first(where: { $0.chain == .ethereum && $0.ticker == vultTicker })
         guard let vultTokenMeta else { return }
         try? await CoinService.addToChain(assets: [vultTokenMeta], to: vault)
     }
-    
+
     func addEthChainIfNeeded(for vault: Vault) async {
         guard !vault.coins.contains(where: { $0.chain == .ethereum && $0.isNativeToken }) else {
             return
         }
-        
+
         let ethNativeToken = TokensStore.TokenSelectionAssets.first(where: { $0.chain == .ethereum && $0.isNativeToken })
         guard let ethNativeToken else { return }
         try? await CoinService.addToChain(assets: [ethNativeToken], to: vault)

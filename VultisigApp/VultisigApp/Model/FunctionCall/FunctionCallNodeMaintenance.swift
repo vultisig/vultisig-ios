@@ -9,18 +9,18 @@ class FunctionCallNodeMaintenance: FunctionCallAddressable, ObservableObject {
     @Published var isProviderValid: Bool = false
     @Published var isAmountValid: Bool = false
     @Published var isFeeValid: Bool = false
-    
+
     @Published var nodeAddress: String = ""
     @Published var provider: String = ""
     @Published var fee: Decimal = 0.0
     @Published var amount: Decimal = 0.0
     @Published var action: NodeAction = .bond
-    
+
     enum NodeAction: String, CaseIterable, Identifiable {
         case bond, unbond, leave
         var id: String { self.rawValue }
     }
-    
+
     var addressFields: [String: String] {
         get {
             var fields = ["nodeAddress": nodeAddress]
@@ -38,10 +38,10 @@ class FunctionCallNodeMaintenance: FunctionCallAddressable, ObservableObject {
             }
         }
     }
-    
+
     required init() {
     }
-    
+
     init(nodeAddress: String, provider: String = "", fee: Decimal = 0.0, amount: Decimal = 0.0, action: NodeAction = .bond) {
         self.nodeAddress = nodeAddress
         self.provider = provider
@@ -54,11 +54,11 @@ class FunctionCallNodeMaintenance: FunctionCallAddressable, ObservableObject {
         self.isAmountValid = true
         self.isTheFormValid = self.isNodeAddressValid
     }
-    
+
     var description: String {
         return toString()
     }
-    
+
     func toString() -> String {
         var memo = ""
         switch self.action {
@@ -69,11 +69,11 @@ class FunctionCallNodeMaintenance: FunctionCallAddressable, ObservableObject {
         case .leave:
             memo = "LEAVE:\(self.nodeAddress)"
         }
-        
+
         if !self.provider.isEmpty {
             memo += ":\(self.provider)"
         }
-        
+
         if self.fee != 0.0 {
             if self.provider.isEmpty {
                 memo += "::\(self.fee)"
@@ -81,10 +81,10 @@ class FunctionCallNodeMaintenance: FunctionCallAddressable, ObservableObject {
                 memo += ":\(self.fee)"
             }
         }
-        
+
         return memo
     }
-    
+
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("nodeAddress", "\(self.nodeAddress)")
@@ -95,7 +95,7 @@ class FunctionCallNodeMaintenance: FunctionCallAddressable, ObservableObject {
         dict.set("memo", self.toString())
         return dict
     }
-    
+
     func getView() -> AnyView {
         AnyView(VStack {
             FunctionCallAddressTextField(
@@ -139,7 +139,7 @@ class FunctionCallNodeMaintenance: FunctionCallAddressable, ObservableObject {
                     set: { self.isAmountValid = $0 }
                 )
             )
-            
+
             Picker(selection: Binding(
                 get: { self.action },
                 set: { self.action = $0 }
@@ -148,7 +148,7 @@ class FunctionCallNodeMaintenance: FunctionCallAddressable, ObservableObject {
                 Text(NodeAction.unbond.rawValue).tag(NodeAction.unbond)
                 Text(NodeAction.leave.rawValue).tag(NodeAction.leave)
             }
-            
+
         })
     }
 }

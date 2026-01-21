@@ -19,7 +19,7 @@ final class SendGasSettingsViewModel: ObservableObject {
     @Published var gasLimit: String = .empty
     @Published var baseFee: String = .empty
     @Published var priorityFeesMap: [FeeMode: BigInt] = [:]
-    
+
     // UTXO
     @Published var byteFee: String = .empty
 

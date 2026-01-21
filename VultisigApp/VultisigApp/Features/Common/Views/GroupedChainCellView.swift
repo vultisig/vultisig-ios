@@ -13,14 +13,14 @@ struct GroupedChainCellView: View {
     let fiatBalance: String
     let cryptoBalance: String
     var onCopy: (() -> Void)?
-    
+
     @State private var trailingSubtitle: String = ""
     @State private var fiatBalanceText: String = ""
     @State private var hasLoaded: Bool = false
     @State private var trailingSubtitleFont: Font = Theme.fonts.priceCaption
 
     @EnvironmentObject var homeViewModel: HomeViewModel
-    
+
     init(
         group: GroupedChain,
         vault: Vault,
@@ -34,7 +34,7 @@ struct GroupedChainCellView: View {
         self.cryptoBalance = cryptoBalance
         self.onCopy = onCopy
     }
-    
+
     var body: some View {
         HStack {
             HStack(spacing: 12) {
@@ -44,7 +44,7 @@ struct GroupedChainCellView: View {
                     ticker: group.chain.ticker,
                     tokenChainLogo: group.chain.logo
                 )
-                
+
                 VStack(alignment: .leading, spacing: 4) {
                     Text(group.name)
                         .font(Theme.fonts.bodySMedium)
@@ -61,7 +61,7 @@ struct GroupedChainCellView: View {
                     }
                 }
             }
-            
+
             HStack(spacing: 8) {
                 Spacer()
                 VStack(alignment: .trailing, spacing: 4) {
@@ -99,13 +99,13 @@ private extension GroupedChainCellView {
     func updateTexts() {
         updateTrailingSubtitle()
         updateFiatBalanceText()
-        
+
         guard !hasLoaded else { return }
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             hasLoaded = true
         }
     }
-    
+
     func updateTrailingSubtitle() {
         let showPrice = group.coins.count > 1
         let trailingSubtitle = showPrice ? "\(group.coins.count) \("assets".localized)" : cryptoBalance
@@ -114,7 +114,7 @@ private extension GroupedChainCellView {
             self.trailingSubtitleFont = (showPrice && !homeViewModel.hideVaultBalance) ? Theme.fonts.priceCaption : Theme.fonts.caption12
         }
     }
-    
+
     func updateFiatBalanceText() {
         withAnimation(.interpolatingSpring) {
             fiatBalanceText = homeViewModel.hideVaultBalance ? String.hideBalanceText : fiatBalance

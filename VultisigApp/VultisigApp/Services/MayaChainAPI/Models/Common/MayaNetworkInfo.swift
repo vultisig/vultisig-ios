@@ -15,10 +15,10 @@ struct MayaNetworkInfo: Decodable {
     let liquidityAPY: String?     // CACAO pool APY
 
     enum CodingKeys: String, CodingKey {
-        case bondingAPY = "bondingAPY"
-        case nextChurnHeight = "nextChurnHeight"
-        case totalPooledRune = "totalPooledRune"
-        case liquidityAPY = "liquidityAPY"
+        case bondingAPY
+        case nextChurnHeight
+        case totalPooledRune
+        case liquidityAPY
     }
 }
 

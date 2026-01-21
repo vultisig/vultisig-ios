@@ -7,8 +7,8 @@
 
 import Foundation
 
-struct THORChainNetworkStatus: Codable{
-    struct resultInfo: Codable{
+struct THORChainNetworkStatus: Codable {
+    struct resultInfo: Codable {
         struct nodeInfo: Codable {
             let network: String
         }

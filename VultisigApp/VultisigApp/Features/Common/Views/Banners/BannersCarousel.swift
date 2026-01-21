@@ -14,16 +14,16 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
     let paddingTop: CGFloat?
     var onBanner: (Banner) -> Void
     var onClose: (Banner) -> Void
-    
+
     @State var currentIndex: Int = 0
     @State var scrollPosition: Int? = 0
     @State var bannersCount: Int = 0
     @State var bannersToRemove: Set<AnyHashable> = []
     @State private var timer: Timer?
     @State var showCarousel: Bool = false
-    
+
     @State var internalBanners: [Banner] = []
-    
+
     var bannerWidth: CGFloat {
         #if os(iOS)
         if UIDevice.current.userInterfaceIdiom == .phone {
@@ -35,15 +35,15 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
         return BannerLayoutProperties.maxWidth
         #endif
     }
-    
+
     var horizontalPadding: CGFloat {
         max((availableWidth - bannerWidth) / 2, BannerLayoutProperties.minimumPadding)
     }
-    
+
     private let bannerHeight: CGFloat = 128
     private let spacing: CGFloat = 16
     private let indicatorsHeight: CGFloat = BannerLayoutProperties.indicatorsHeight
-    
+
     var body: some View {
         ZStack {
             VStack(spacing: spacing) {
@@ -77,7 +77,7 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
                 .scrollTargetBehavior(.viewAligned)
                 .scrollPosition(id: $scrollPosition, anchor: .center)
                 .scrollIndicators(.never)
-                
+
                 VaultBannerCarouselIndicators(
                     currentIndex: $currentIndex,
                     bannersCount: $bannersCount
@@ -116,26 +116,26 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
             guard let newScrollPosition = scrollPosition else {
                 return
             }
-            
+
             withAnimation {
                 currentIndex = newScrollPosition
                 startTimer()
             }
         }
     }
-    
+
     func removeBanner(_ banner: Banner) {
         stopTimer()
-        
+
         if bannersCount == 1 {
             updateBannersCount(0)
         }
-        
+
         guard let indexToRemove = internalBanners.firstIndex(where: { $0.id == banner.id }) else {
             print("Banner not found")
             return
         }
-        
+
         // Calculate the new current index before removal
         let newCurrentIndex: Int
         if internalBanners.count <= 1 {
@@ -156,18 +156,18 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
             // If we're removing a banner after current position
             newCurrentIndex = currentIndex
         }
-        
+
         // Start the removal animation
         _ = withAnimation(.easeInOut(duration: 0.4)) {
             bannersToRemove.insert(AnyHashable(banner.id))
         }
-        
+
         // Wait for removal animation to complete, then update the data
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
             // Remove the banner from the array
             internalBanners.removeAll { $0.id == banner.id }
             bannersToRemove.remove(AnyHashable(banner.id))
-            
+
             // Update indices without animation to prevent conflicts
             if !internalBanners.isEmpty {
                 let safeIndex = min(max(0, newCurrentIndex), internalBanners.count - 1)
@@ -177,19 +177,19 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
                 currentIndex = 0
                 scrollPosition = 0
             }
-            
+
             // Restart timer after a brief delay
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 if !internalBanners.isEmpty {
                     startTimer()
                 }
             }
-            
+
             // Notify parent that banner was removed
             onClose(banner)
         }
     }
-    
+
     private func startTimer() {
         stopTimer()
         timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
@@ -202,12 +202,12 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
             }
         }
     }
-    
+
     private func stopTimer() {
         timer?.invalidate()
         timer = nil
     }
-    
+
     private func updateBannersCount(_ count: Int) {
         let shouldShow = count > 0
         withAnimation(.easeInOut) {
@@ -219,7 +219,7 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
 
 #Preview {
     @Previewable @State var banners = [VaultBannerType.upgradeVault, .backupVault, .followVultisig]
-    
+
     BannersCarousel(
         banners: $banners,
         availableWidth: 500,

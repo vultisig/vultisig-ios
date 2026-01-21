@@ -10,13 +10,13 @@ import SwiftUI
 struct DefiChainCellView: View {
     @ObservedObject var group: GroupedChain
     let vault: Vault
-    
+
     @EnvironmentObject var homeViewModel: HomeViewModel
-    
+
     private let service = DefiBalanceService()
-    
+
     @State var balanceFiat: String = ""
-    
+
     var body: some View {
         if group.name == "Circle" {
              DefiCircleRow(vault: vault)
@@ -34,7 +34,7 @@ struct DefiChainCellView: View {
             }
         }
     }
-    
+
     func updateBalance() {
         balanceFiat = service.totalBalanceInFiatString(for: group.chain, vault: vault)
     }

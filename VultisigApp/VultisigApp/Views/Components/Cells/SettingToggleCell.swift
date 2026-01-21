@@ -8,12 +8,11 @@
 import SwiftUI
 
 struct SettingToggleCell: View {
-    
-    
+
     let title: String
     let icon: String
     @Binding var isEnabled: Bool
-    
+
     var body: some View {
         HStack(spacing: 12) {
             iconBlock
@@ -28,19 +27,19 @@ struct SettingToggleCell: View {
             isEnabled.toggle()
         }
     }
-    
+
     var iconBlock: some View {
         Image(systemName: icon)
             .font(Theme.fonts.bodyLRegular)
             .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     var titleBlock: some View {
         Text(NSLocalizedString(title, comment: ""))
             .font(Theme.fonts.bodySRegular)
             .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     var toggle: some View {
         Toggle("", isOn: $isEnabled)
             .labelsHidden()

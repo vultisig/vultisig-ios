@@ -11,7 +11,7 @@ struct SettingsLanguageSelectionView: View {
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @State private var showAlert = false
     @Environment(\.dismiss) var dismiss
-    
+
     var body: some View {
         Screen(title: "language".localized, edgeInsets: ScreenEdgeInsets(bottom: 0)) {
             ScrollView(showsIndicators: false) {
@@ -41,7 +41,7 @@ struct SettingsLanguageSelectionView: View {
             )
         }
     }
-    
+
     func handleSelection(_ language: SettingsLanguage) {
         settingsViewModel.selectedLanguage = language
         showAlert = true

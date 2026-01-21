@@ -10,7 +10,7 @@ import SwiftUI
 struct CoinDetailHeaderView: View {
     @ObservedObject var coin: Coin
     @EnvironmentObject var homeViewModel: HomeViewModel
-    
+
     var body: some View {
         VStack(spacing: 8) {
             chainNameView
@@ -19,7 +19,7 @@ struct CoinDetailHeaderView: View {
             chainFiatBalanceView
         }
     }
-    
+
     var chainNameView: some View {
         HStack(spacing: 8) {
             AsyncImageView(
@@ -28,20 +28,20 @@ struct CoinDetailHeaderView: View {
                 ticker: coin.ticker,
                 tokenChainLogo: nil
             )
-            
+
             Text(coin.ticker)
                 .font(Theme.fonts.footnote)
                 .foregroundStyle(Theme.colors.textPrimary)
         }
     }
-    
+
     var chainBalanceView: some View {
         Text(homeViewModel.hideVaultBalance ? String.hideBalanceText : coin.balanceInFiat)
             .font(Theme.fonts.priceTitle1)
             .foregroundStyle(Theme.colors.textPrimary)
             .frame(height: 47)
     }
-    
+
     var chainFiatBalanceView: some View {
         Text(homeViewModel.hideVaultBalance ? String.hideBalanceText : coin.balanceStringWithTicker)
             .font(Theme.fonts.subtitle)

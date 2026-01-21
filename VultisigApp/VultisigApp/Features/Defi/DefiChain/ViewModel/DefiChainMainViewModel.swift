@@ -11,10 +11,10 @@ final class DefiChainMainViewModel: ObservableObject {
     @Published private(set) var vault: Vault
     @Published var selectedPosition: DefiChainPositionType = .bond
     @Published var positions: [SegmentedControlItem<DefiChainPositionType>] = []
-    
+
     @Published private(set) var availablePositions: [AssetSection<DefiChainPositionType, CoinMeta>] = []
     @Published var positionsSearchText = ""
-    
+
     var filteredAvailablePositions: [AssetSection<DefiChainPositionType, CoinMeta>] {
         guard positionsSearchText.isNotEmpty else { return availablePositions }
         return availablePositions.compactMap { section in
@@ -24,32 +24,32 @@ final class DefiChainMainViewModel: ObservableObject {
             return AssetSection(title: section.title, type: section.type, assets: newPositions)
         }
     }
-    
+
     let chain: Chain
-    
+
     init(vault: Vault, chain: Chain) {
         self.vault = vault
         self.chain = chain
     }
-    
+
     func update(vault: Vault) {
         self.vault = vault
     }
-    
+
     func moveToNextPosition() {
         let allPositions = DefiChainPositionType.allCases
         let currentIndex = allPositions.firstIndex(of: selectedPosition) ?? 0
         let nextIndex = (currentIndex + 1) % allPositions.count
         selectedPosition = allPositions[nextIndex]
     }
-    
+
     func moveToPreviousPosition() {
         let allPositions = DefiChainPositionType.allCases
         let currentIndex = allPositions.firstIndex(of: selectedPosition) ?? 0
         let previousIndex = currentIndex == 0 ? allPositions.count - 1 : currentIndex - 1
         selectedPosition = allPositions[previousIndex]
     }
-    
+
     func onLoad() {
         let positionTypes = getDefiPositionTypes()
         positions = positionTypes.map {
@@ -60,18 +60,18 @@ final class DefiChainMainViewModel: ObservableObject {
             await setupSelectablePositions()
         }
     }
-    
+
     func refresh() async {
         guard let nativeCoin = vault.nativeCoin(for: chain) else { return }
         await BalanceService.shared.updateBalance(for: nativeCoin)
     }
-    
+
     func setupSelectablePositions() async {
         let positionsService = DefiPositionsService()
         let bond = positionsService.bondCoins(for: chain)
         let staking = positionsService.stakeCoins(for: chain)
         let lps = await positionsService.lpCoins(for: chain)
-        
+
         await MainActor.run {
             availablePositions = [
                 AssetSection(title: DefiChainPositionType.bond.sectionTitle, type: DefiChainPositionType.bond, assets: bond),
@@ -80,7 +80,7 @@ final class DefiChainMainViewModel: ObservableObject {
             ]
         }
     }
-    
+
     func getDefiPositionTypes() -> [DefiChainPositionType] {
         switch chain {
         case .thorChain:

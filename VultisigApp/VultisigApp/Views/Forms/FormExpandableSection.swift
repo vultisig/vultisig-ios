@@ -11,13 +11,13 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
     let title: String
     let isValid: Bool
     let showValue: Bool
-    
+
     var focusedField: Binding<T?>
     let focusedFieldEquals: [T]
     var onExpand: (Bool) -> Void
     let content: () -> Content
     let valueView: () -> ValueView
-    
+
     init(
         title: String,
         isValid: Bool,
@@ -45,7 +45,7 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
             }
         )
     }
-    
+
     init(
         title: String,
         isValid: Bool,
@@ -73,7 +73,7 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
             }
         )
     }
-    
+
     init(
         title: String,
         isValid: Bool,
@@ -93,7 +93,7 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
         self.content = content
         self.valueView = valueView
     }
-    
+
     init(
         title: String,
         isValid: Bool,
@@ -113,9 +113,9 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
         self.content = content
         self.valueView = valueView
     }
-    
+
     @State var isExpanded = false
-    
+
     var body: some View {
         SendFormExpandableSection(isExpanded: isExpanded) {
             Button {
@@ -127,7 +127,7 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textPrimary)
                         .frame(maxWidth: showValue && isValid ? nil : .infinity, alignment: .leading)
-                    
+
                     if isValid && !isExpanded {
                         HStack(spacing: 12) {
                             valueView()
@@ -154,7 +154,7 @@ struct FormExpandableSection<Content: View, T: Hashable, ValueView: View>: View 
         }
         .onChange(of: focusedField.wrappedValue) { _, newValue in
             guard let newValue else { return }
-            isExpanded = focusedFieldEquals.contains(newValue) 
+            isExpanded = focusedFieldEquals.contains(newValue)
         }
     }
 }

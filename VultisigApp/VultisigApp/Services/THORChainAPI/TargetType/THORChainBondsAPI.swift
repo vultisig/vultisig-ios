@@ -13,7 +13,6 @@ enum THORChainBondsAPI: TargetType {
     case getChurns
     case getChurnInterval
 
-
     var baseURL: URL {
         switch self {
         case .getNodeDetails, .getChurnInterval:
@@ -50,7 +49,7 @@ enum THORChainBondsAPI: TargetType {
         }
     }
 
-    var headers: [String : String]? {
+    var headers: [String: String]? {
         switch self {
         case .getBondedNodes, .getNodeDetails, .getChurns, .getChurnInterval:
             return ["X-Client-ID": "vultisig"]

@@ -21,16 +21,14 @@ final class VaultSelectedViewModel: ObservableObject, Hashable {
     static func == (lhs: VaultSelectedViewModel, rhs: VaultSelectedViewModel) -> Bool {
         lhs.selectedVault == rhs.selectedVault
     }
-    
+
     func hash(into hasher: inout Hasher) {
         hasher.combine(selectedVault)
     }
-    
+
     @Published var selectedVault: Vault?
-    
+
     init(selectedVault: Vault? = nil) {
         self.selectedVault = selectedVault
     }
 }
-
-

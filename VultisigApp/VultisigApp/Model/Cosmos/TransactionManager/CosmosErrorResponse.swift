@@ -11,7 +11,7 @@ class CosmosErrorResponse: Codable {
     let code: Int
     let message: String
     let details: [String]
-    
+
     enum CodingKeys: String, CodingKey {
         case code, message, details
     }

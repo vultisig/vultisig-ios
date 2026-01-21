@@ -16,7 +16,7 @@ enum DefiInteractorResolver {
             fatalError("Chain \(chain.name) doesn't support DeFi Stake Tab")
         }
     }
-    
+
     static func bondInteractor(for chain: Chain) -> BondInteractor {
         switch chain {
         case .thorChain:
@@ -27,7 +27,7 @@ enum DefiInteractorResolver {
             fatalError("Chain \(chain.name) doesn't support DeFi Bond Tab")
         }
     }
-    
+
     static func lpsInteractor(for chain: Chain) -> LPsInteractor {
         switch chain {
         case .thorChain:

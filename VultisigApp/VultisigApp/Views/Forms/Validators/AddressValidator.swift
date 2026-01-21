@@ -7,7 +7,7 @@
 
 struct AddressValidator: FormFieldValidator {
     let chain: Chain
-    
+
     func validate(value: String) throws {
         guard value.isNotEmpty else { return }
         guard AddressService.validateAddress(address: value, chain: chain) else {

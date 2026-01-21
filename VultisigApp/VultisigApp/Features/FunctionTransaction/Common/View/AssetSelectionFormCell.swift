@@ -9,7 +9,7 @@ import SwiftUI
 
 struct AssetSelectionFormCell: View {
     let coin: CoinMeta?
-    
+
     var body: some View {
         if let coin {
             HStack(spacing: 4) {
@@ -19,18 +19,18 @@ struct AssetSelectionFormCell: View {
                     ticker: coin.ticker,
                     tokenChainLogo: nil
                 )
-                
+
                 VStack(alignment: .leading, spacing: 2) {
                     Text(coin.ticker)
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textPrimary)
-                    
+
                     Text("native".localized)
                         .font(Theme.fonts.caption10)
                         .foregroundStyle(Theme.colors.textTertiary)
                         .showIf(coin.isNativeToken)
                 }
-                
+
                 Icon(
                     named: "chevron-right",
                     color: Theme.colors.textPrimary,

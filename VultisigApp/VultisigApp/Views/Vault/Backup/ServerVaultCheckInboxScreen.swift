@@ -24,7 +24,7 @@ struct ServerVaultCheckInboxScreen: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(maxWidth: 365)
-                    
+
                     VStack(spacing: 16) {
                         Text("backupShareSent")
                             .foregroundStyle(Theme.colors.textPrimary)
@@ -47,7 +47,7 @@ struct ServerVaultCheckInboxScreen: View {
                     .padding(.horizontal, 16)
                 }
                 Spacer()
-                
+
                 PrimaryButton(
                     title: "close".localized,
                     type: .secondary
@@ -73,17 +73,13 @@ struct ServerVaultCheckInboxScreen: View {
 #if os(macOS)
 private extension ServerVaultCheckInboxScreen {
     var emailOptions: [EmailOption] { [] }
-    
+
     var showCheckInboxButton: Bool { true }
-    
-    func canOpenURL(_ url: URL) -> Bool {
-        return NSWorkspace.shared.urlForApplication(toOpen: url) != nil
-    }
-    
+
     func openApp(url: URL) {
         NSWorkspace.shared.open(url)
     }
-    
+
     func onCheckEmail() {
         NSWorkspace.shared.open(URL(string: "mailto:")!)
     }
@@ -91,11 +87,11 @@ private extension ServerVaultCheckInboxScreen {
 #else
 private extension ServerVaultCheckInboxScreen {
     var showCheckInboxButton: Bool { !emailOptions.isEmpty }
-    
+
     func openApp(url: URL) {
         UIApplication.shared.open(url, options: [:])
     }
- 
+
     var emailOptions: [EmailOption] {
         [
             EmailOption(url: URL(string: "message://")!, name: "Mail"),
@@ -105,7 +101,7 @@ private extension ServerVaultCheckInboxScreen {
             EmailOption(url: URL(string: "protonmail://")!, name: "ProtonMail")
         ].filter { UIApplication.shared.canOpenURL($0.url) }
     }
-    
+
     func onCheckEmail() {
         presentEmailDialog.toggle()
     }

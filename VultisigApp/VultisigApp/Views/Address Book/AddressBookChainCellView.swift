@@ -9,14 +9,14 @@ import SwiftUI
 
 struct AddressBookChainCellView: View {
     let chain: AddressBookChainType
-    
+
     var body: some View {
         HStack {
             iconImage
             nameText
         }
     }
-    
+
     var iconImage: some View {
         AsyncImageView(
             logo: chain.icon,
@@ -25,7 +25,7 @@ struct AddressBookChainCellView: View {
             tokenChainLogo: nil
         )
     }
-    
+
     var nameText: some View {
         Text(chain.name)
             .font(Theme.fonts.bodySMedium)

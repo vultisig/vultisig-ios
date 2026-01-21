@@ -10,7 +10,7 @@ import SwiftUI
 struct RedeemTransactionScreen: View {
     @StateObject var viewModel: RedeemTransactionViewModel
     var onVerify: (TransactionBuilder) -> Void
-    
+
     var body: some View {
         AmountFunctionTransactionScreen(
             title: String(format: "redeemCoin".localized, viewModel.coin.ticker),
@@ -33,7 +33,7 @@ struct RedeemTransactionScreen: View {
             viewModel.onPercentage(newValue)
         }
     }
-    
+
     var slippageView: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("\("slippage".localized):")

@@ -20,11 +20,11 @@ struct QRCodePixelGenerator {
     init(inset: CGFloat = 0) {
         self.inset = inset
     }
-    
+
     // Cross-platform corner representation
     struct RoundingCorners: OptionSet {
         let rawValue: Int
-        
+
         static let topLeft = RoundingCorners(rawValue: 1 << 0)
         static let topRight = RoundingCorners(rawValue: 1 << 1)
         static let bottomLeft = RoundingCorners(rawValue: 1 << 2)
@@ -90,11 +90,11 @@ struct QRCodePixelGenerator {
     func offPath(size: CGSize, data: QRCode) -> CGPath {
         return self.path(size: size, data: data, isOn: false)
     }
-    
+
 #if canImport(UIKit)
     private func convertToUIRectCorner(_ corners: RoundingCorners) -> UIRectCorner {
         var uiCorners: UIRectCorner = []
-        
+
         if corners.contains(.topLeft) {
             uiCorners.insert(.topLeft)
         }
@@ -107,16 +107,16 @@ struct QRCodePixelGenerator {
         if corners.contains(.bottomRight) {
             uiCorners.insert(.bottomRight)
         }
-        
+
         return uiCorners
     }
 #endif
-    
+
 #if canImport(AppKit)
     private func createRoundedRectPath(rect: CGRect, corners: RoundingCorners) -> CGPath {
         let path = CGMutablePath()
         let radius = min(rect.width, rect.height) / 2
-        
+
         if corners == .allCorners && radius > 0 {
             // Simple case - all corners rounded
             path.addRoundedRect(in: rect, cornerWidth: radius, cornerHeight: radius)
@@ -126,48 +126,48 @@ struct QRCodePixelGenerator {
             let minY = rect.minY
             let maxX = rect.maxX
             let maxY = rect.maxY
-            
+
             path.move(to: CGPoint(x: minX + (corners.contains(.topLeft) ? radius : 0), y: minY))
-            
+
             // Top edge
             path.addLine(to: CGPoint(x: maxX - (corners.contains(.topRight) ? radius : 0), y: minY))
-            
+
             // Top right corner
             if corners.contains(.topRight) && radius > 0 {
                 path.addArc(center: CGPoint(x: maxX - radius, y: minY + radius),
                            radius: radius, startAngle: -CGFloat.pi/2, endAngle: 0, clockwise: false)
             }
-            
+
             // Right edge
             path.addLine(to: CGPoint(x: maxX, y: maxY - (corners.contains(.bottomRight) ? radius : 0)))
-            
+
             // Bottom right corner
             if corners.contains(.bottomRight) && radius > 0 {
                 path.addArc(center: CGPoint(x: maxX - radius, y: maxY - radius),
                            radius: radius, startAngle: 0, endAngle: CGFloat.pi/2, clockwise: false)
             }
-            
+
             // Bottom edge
             path.addLine(to: CGPoint(x: minX + (corners.contains(.bottomLeft) ? radius : 0), y: maxY))
-            
+
             // Bottom left corner
             if corners.contains(.bottomLeft) && radius > 0 {
                 path.addArc(center: CGPoint(x: minX + radius, y: maxY - radius),
                            radius: radius, startAngle: CGFloat.pi/2, endAngle: CGFloat.pi, clockwise: false)
             }
-            
+
             // Left edge
             path.addLine(to: CGPoint(x: minX, y: minY + (corners.contains(.topLeft) ? radius : 0)))
-            
+
             // Top left corner
             if corners.contains(.topLeft) && radius > 0 {
                 path.addArc(center: CGPoint(x: minX + radius, y: minY + radius),
                            radius: radius, startAngle: CGFloat.pi, endAngle: -CGFloat.pi/2, clockwise: false)
             }
-            
+
             path.closeSubpath()
         }
-        
+
         return path
     }
 #endif
@@ -222,12 +222,12 @@ struct QRCodePixelGenerator {
         let cutOutFrameRange = data.cutOutFrameRange
         let center = Double(data.pixelSize) / 2.0
         let radius = Double(cutOutFrameRange.end - cutOutFrameRange.start) / 2.0
-        
+
         // Calculate distance from center
         let deltaX = Double(col) - center + 0.5 // +0.5 to center the pixel
         let deltaY = Double(row) - center + 0.5
         let distanceFromCenter = sqrt(deltaX * deltaX + deltaY * deltaY)
-        
+
         return distanceFromCenter <= radius
     }
 }

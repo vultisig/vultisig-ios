@@ -13,7 +13,7 @@ extension KeygenViewInstructions {
         UIPageControl.appearance().currentPageIndicatorTintColor = UIColor(Theme.colors.bgButtonPrimary)
         UIPageControl.appearance().pageIndicatorTintColor = UIColor(Theme.colors.border)
     }
-    
+
     var cards: some View {
         TabView(selection: $tabIndex) {
             ForEach(0..<7) { index in

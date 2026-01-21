@@ -15,11 +15,11 @@ enum VultDiscountTier: String, Identifiable, CaseIterable {
     case platinum
     case diamond
     case ultimate
-    
+
     var id: String { rawValue }
     var name: String { rawValue }
     var icon: String { "vult-\(rawValue)" }
-    
+
     var bpsDiscount: Int {
         switch self {
         case .bronze:
@@ -36,7 +36,7 @@ enum VultDiscountTier: String, Identifiable, CaseIterable {
             .max
         }
     }
-    
+
     var balanceToUnlock: Decimal {
         switch self {
         case .bronze:
@@ -53,7 +53,7 @@ enum VultDiscountTier: String, Identifiable, CaseIterable {
             1_000_000
         }
     }
-    
+
     var primaryColor: Color {
         switch self {
         case .bronze:
@@ -70,7 +70,7 @@ enum VultDiscountTier: String, Identifiable, CaseIterable {
             .black
         }
     }
-    
+
     var secondaryColor: Color {
         switch self {
         case .bronze, .silver, .gold:

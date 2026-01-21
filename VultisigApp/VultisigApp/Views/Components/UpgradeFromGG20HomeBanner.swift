@@ -30,12 +30,12 @@ struct UpgradeFromGG20HomeBanner: View {
         .padding(16)
         .background(Theme.colors.bgPrimary)
     }
-    
+
     var icon: some View {
         Image(systemName: "arrow.up.circle")
             .font(Theme.fonts.bodyLMedium)
     }
-    
+
     var title: some View {
         Text(NSLocalizedString("upgradeYourVaultNow", comment: ""))
             .font(Theme.fonts.bodySMedium)

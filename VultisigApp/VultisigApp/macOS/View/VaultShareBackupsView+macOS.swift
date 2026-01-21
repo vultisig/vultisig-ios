@@ -17,7 +17,7 @@ extension VaultShareBackupsView {
             description
             button
         }
-        .padding(.bottom,36)
+        .padding(.bottom, 36)
         .crossPlatformToolbar()
     }
 }

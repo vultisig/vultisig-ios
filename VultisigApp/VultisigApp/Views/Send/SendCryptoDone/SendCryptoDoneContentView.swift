@@ -17,7 +17,7 @@ struct SendCryptoDoneContentView: View {
     @State var animationVM: RiveViewModel? = nil
     @EnvironmentObject var appViewModel: AppViewModel
     @Environment(\.router) var router
-    
+
     var body: some View {
         VStack {
             ScrollView {
@@ -40,7 +40,7 @@ struct SendCryptoDoneContentView: View {
                                 .opacity(0.8)
                         }
                         .showIf(input.hash.isNotEmpty)
-                        
+
                         transactionDetailsButton
                     }
                     .font(Theme.fonts.bodySMedium)
@@ -55,7 +55,7 @@ struct SendCryptoDoneContentView: View {
                     )
                 }
             }
-            
+
             PrimaryButton(title: "done") {
                 onDoneButtonPressed()
             }
@@ -68,12 +68,12 @@ struct SendCryptoDoneContentView: View {
             animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
         }
     }
-    
+
     private func onDoneButtonPressed() {
         onDone()
         navigateToHome = true
     }
-    
+
     var transactionDetailsButton: some View {
         Button {
             router.navigate(to: SendRoute.transactionDetails(input: input))
@@ -87,17 +87,17 @@ struct SendCryptoDoneContentView: View {
         }
         .buttonStyle(.plain)
     }
-    
+
     var animation: some View {
         ZStack {
             animationVM?.view()
                 .frame(width: 280, height: 280)
-            
+
             animationText
                 .offset(y: 50)
         }
     }
-    
+
     var animationText: some View {
         Text(NSLocalizedString("transactionSuccessful", comment: ""))
             .foregroundStyle(LinearGradient.primaryGradient)

@@ -15,25 +15,25 @@ class FunctionCallVote: FunctionCallAddressable, ObservableObject {
     @Published var customErrorMessage: String? = nil
     @Published var selectedMemo: TW_Cosmos_Proto_Message.VoteOption
     @Published var proposalID: Int = 0
-    
+
     private var cancellables = Set<AnyCancellable>()
-    
+
     var addressFields: [String: String] {
         get { [:] }
         set { }
     }
-    
+
     required init() {
         self.selectedMemo = .unspecified
         setupValidation()
     }
-    
+
     init(selectedMemo: TW_Cosmos_Proto_Message.VoteOption, proposalID: Int = 0) {
         self.selectedMemo = selectedMemo
         self.proposalID = proposalID
         setupValidation()
     }
-    
+
     private func setupValidation() {
         $selectedMemo
             .combineLatest($proposalID)
@@ -43,15 +43,15 @@ class FunctionCallVote: FunctionCallAddressable, ObservableObject {
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }
-    
+
     var description: String {
         return toString()
     }
-    
+
     func toString() -> String {
         return "DYDX_VOTE:\(selectedMemo.description):\(proposalID)"
     }
-    
+
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("VoteDescription", selectedMemo.description)
@@ -59,7 +59,7 @@ class FunctionCallVote: FunctionCallAddressable, ObservableObject {
         dict.set("memo", self.toString())
         return dict
     }
-    
+
     func getView() -> AnyView {
         AnyView(VStack {
             GenericSelectorDropDown(
@@ -73,7 +73,7 @@ class FunctionCallVote: FunctionCallAddressable, ObservableObject {
                     self.selectedMemo = memo
                 }
             )
-            
+
             StyledIntegerField(
                 placeholder: NSLocalizedString("proposalID", comment: "Proposal ID placeholder"),
                 value: Binding(

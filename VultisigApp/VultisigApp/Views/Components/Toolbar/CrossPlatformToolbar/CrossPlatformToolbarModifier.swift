@@ -14,10 +14,10 @@ public struct CustomToolbarItem {
         case leading
         case trailing
     }
-    
+
     public let placement: Placement
     public let content: AnyView
-    
+
     public init<Content: View>(placement: Placement, @ViewBuilder content: () -> Content) {
         self.placement = placement
         self.content = AnyView(content())
@@ -31,27 +31,27 @@ public struct CustomToolbarItemsBuilder {
     public static func buildExpression(_ item: CustomToolbarItem) -> CustomToolbarItem {
         item
     }
-    
+
     public static func buildBlock(_ items: CustomToolbarItem...) -> [CustomToolbarItem] {
         items
     }
-    
+
     public static func buildOptional(_ item: [CustomToolbarItem]?) -> [CustomToolbarItem] {
         item ?? []
     }
-    
+
     public static func buildEither(first items: [CustomToolbarItem]) -> [CustomToolbarItem] {
         items
     }
-    
+
     public static func buildEither(second items: [CustomToolbarItem]) -> [CustomToolbarItem] {
         items
     }
-    
+
     public static func buildArray(_ items: [[CustomToolbarItem]]) -> [CustomToolbarItem] {
         items.flatMap { $0 }
     }
-    
+
     public static func buildBlock() -> [CustomToolbarItem] {
         []
     }
@@ -152,7 +152,7 @@ public extension View {
             showsBackButton: showsBackButton
         ))
     }
-    
+
     /// Cross-platform toolbar modifier without custom items
     /// - Parameters:
     ///   - navigationTitle: Optional title to display in the navigation bar/toolbar center
@@ -170,7 +170,7 @@ public extension View {
             showsBackButton: showsBackButton
         ))
     }
-    
+
     /// Convenience method for toolbar with navigation title
     func crossPlatformToolbar(
         _ navigationTitle: String,
@@ -185,7 +185,7 @@ public extension View {
             items: items
         )
     }
-    
+
     /// Convenience method for toolbar with navigation title and no custom items
     func crossPlatformToolbar(
         _ navigationTitle: String,
@@ -198,7 +198,7 @@ public extension View {
             showsBackButton: showsBackButton
         )
     }
-    
+
     /// macOS-specific window sizing and padding modifier
     /// - Parameters:
     ///   - maxWidth: Maximum width for macOS window

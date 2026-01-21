@@ -12,7 +12,7 @@ extension KeygenView {
     var content: some View {
         container
             .onLoad {
-                Task{
+                Task {
                     await setData()
                     await viewModel.startKeygen(context: context)
                 }

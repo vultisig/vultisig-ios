@@ -15,9 +15,9 @@ struct SendCryptoDoneSummary: View {
     let approveHash: String?
     let sendSummaryViewModel: SendSummaryViewModel
     let swapSummaryViewModel: SwapCryptoViewModel
-    
+
     @EnvironmentObject var settingsViewModel: SettingsViewModel
-    
+
     var body: some View {
         Group {
             if let tx = sendTransaction {
@@ -29,10 +29,10 @@ struct SendCryptoDoneSummary: View {
         .padding(.horizontal, 16)
         .padding(.bottom, 24)
     }
-    
+
     private func getSendCard(_ tx: SendTransaction) -> some View {
         VStack(spacing: 18) {
-            
+
             if !tx.fromAddress.isEmpty {
                 Separator()
                 getGeneralCell(
@@ -41,7 +41,7 @@ struct SendCryptoDoneSummary: View {
                     isVerticalStacked: true
                 )
             }
-            
+
             if !tx.toAddress.isEmpty {
                 Separator()
                 getGeneralCell(
@@ -50,12 +50,12 @@ struct SendCryptoDoneSummary: View {
                     isVerticalStacked: true
                 )
             }
-            
+
             if !tx.memo.isEmpty {
                 let decodedMemo = tx.memo.decodedExtensionMemo
-                
+
                 Separator()
-                
+
                 // Show decoded memo if available, otherwise show original memo
                 if let decodedMemo = decodedMemo, !decodedMemo.isEmpty {
                     getGeneralCell(
@@ -71,7 +71,7 @@ struct SendCryptoDoneSummary: View {
                     )
                 }
             }
-            
+
             if !getSendAmount(for: tx).isEmpty {
                 Separator()
                 getGeneralCell(
@@ -79,7 +79,7 @@ struct SendCryptoDoneSummary: View {
                     description: getSendAmount(for: tx)
                 )
             }
-            
+
             if !getSendFiatAmount(for: tx).isEmpty {
                 Separator()
                 getGeneralCell(
@@ -87,7 +87,7 @@ struct SendCryptoDoneSummary: View {
                     description: getSendFiatAmount(for: tx)
                 )
             }
-            
+
             Separator()
             getGeneralCell(
                 title: "networkFee",
@@ -95,7 +95,7 @@ struct SendCryptoDoneSummary: View {
             )
         }
     }
-    
+
     private func getSwapCard(_ tx: SwapTransaction) -> some View {
         VStack(spacing: 18) {
             Separator()
@@ -106,7 +106,7 @@ struct SendCryptoDoneSummary: View {
                     selectedCurrency: settingsViewModel.selectedCurrency
                 )
             )
-            
+
             Separator()
             getGeneralCell(
                 title: "to",
@@ -115,7 +115,7 @@ struct SendCryptoDoneSummary: View {
                     selectedCurrency: settingsViewModel.selectedCurrency
                 )
             )
-            
+
             if swapSummaryViewModel.showFees(tx: tx) {
                 Separator()
                 getGeneralCell(
@@ -123,7 +123,7 @@ struct SendCryptoDoneSummary: View {
                     description: swapSummaryViewModel.swapFeeString(tx: tx)
                 )
             }
-            
+
             if swapSummaryViewModel.showGas(tx: tx) {
                 Separator()
                 getGeneralCell(
@@ -131,7 +131,7 @@ struct SendCryptoDoneSummary: View {
                     description: "\(swapSummaryViewModel.swapGasString(tx: tx))(~\(swapSummaryViewModel.approveFeeString(tx: tx)))"
                 )
             }
-            
+
             if swapSummaryViewModel.showTotalFees(tx: tx) {
                 Separator()
                 getGeneralCell(
@@ -141,14 +141,14 @@ struct SendCryptoDoneSummary: View {
             }
         }
     }
-    
+
     private func getGeneralCell(title: String, description: String, isVerticalStacked: Bool = false, isBold: Bool = true) -> some View {
         ZStack {
             if isVerticalStacked {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(NSLocalizedString(title, comment: ""))
                         .bold()
-                    
+
                     Text(description)
                         .opacity(isBold ? 1 : 0.4)
                 }
@@ -157,9 +157,9 @@ struct SendCryptoDoneSummary: View {
                 HStack {
                     Text(NSLocalizedString(title, comment: ""))
                         .bold()
-                    
+
                     Spacer()
-                    
+
                     Text(description)
                         .opacity(isBold ? 1 : 0.4)
                 }
@@ -169,12 +169,12 @@ struct SendCryptoDoneSummary: View {
         .foregroundColor(Theme.colors.textPrimary)
         .bold(isBold)
     }
-    
+
     private func getSendAmount(for tx: SendTransaction) -> String {
         let amountDecimal = tx.amount.toDecimal()
         return amountDecimal.formatForDisplay() + " " + tx.coin.ticker
     }
-    
+
     private func getSendFiatAmount(for tx: SendTransaction) -> String {
         tx.amountInFiat.formatToFiat()
     }

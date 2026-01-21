@@ -10,7 +10,7 @@ import VultisigCommonData
 enum SignData: Codable, Hashable {
     case signAmino(SignAmino)
     case signDirect(SignDirect)
-    
+
     init(proto: VSKeysignPayload.OneOf_SignData) {
         switch proto {
         case .signAmino(let vSSignAmino):
@@ -19,7 +19,7 @@ enum SignData: Codable, Hashable {
             self = .signDirect(SignDirect(proto: vSSignDirect))
         }
     }
-    
+
     func mapToProtobuff() -> VSKeysignPayload.OneOf_SignData {
         switch self {
         case .signAmino(let vSSignAmino):
@@ -33,17 +33,17 @@ enum SignData: Codable, Hashable {
 struct CosmosCoin: Codable, Hashable {
     let amount: String
     let denom: String
-    
+
     init(proto: VSCosmosCoin) {
         self.amount = proto.amount
         self.denom = proto.denom
     }
-    
+
     init(amount: String, denom: String) {
         self.amount = amount
         self.denom = denom
     }
-    
+
     func mapToProtobuff() -> VSCosmosCoin {
         .with {
             $0.amount = self.amount
@@ -64,14 +64,14 @@ struct SignDirect: Codable, Hashable {
         chainID: "",
         accountNumber: ""
     )
-    
+
     init(proto: VSSignDirect) {
         self.bodyBytes = proto.bodyBytes
         self.authInfoBytes = proto.authInfoBytes
         self.chainID = proto.chainID
         self.accountNumber = proto.accountNumber
     }
-    
+
     init(
         bodyBytes: String,
         authInfoBytes: String,
@@ -83,7 +83,7 @@ struct SignDirect: Codable, Hashable {
         self.chainID = chainID
         self.accountNumber = accountNumber
     }
-    
+
     func mapToProtobuff() -> VSSignDirect {
         .with {
             $0.bodyBytes = bodyBytes
@@ -97,12 +97,12 @@ struct SignDirect: Codable, Hashable {
 struct SignAmino: Codable, Hashable {
     let fee: CosmosFee
     let msgs: [CosmosMessage]
-    
+
     init(proto: VSSignAmino) {
         self.fee = CosmosFee(proto: proto.fee)
         self.msgs = proto.msgs.map { CosmosMessage(proto: $0) }
     }
-    
+
     init(
         fee: CosmosFee,
         msgs: [CosmosMessage]
@@ -110,7 +110,7 @@ struct SignAmino: Codable, Hashable {
         self.fee = fee
         self.msgs = msgs
     }
-    
+
     func mapToProtobuff() -> VSSignAmino {
         .with {
             $0.fee = fee.mapToProtobuff()
@@ -122,12 +122,12 @@ struct SignAmino: Codable, Hashable {
 struct CosmosMessage: Codable, Hashable {
     let type: String
     let value: String
-    
+
     init(proto: VSCosmosMsg) {
         self.type = proto.type
         self.value = proto.value
     }
-    
+
     init(
         type: String,
         value: String
@@ -135,7 +135,7 @@ struct CosmosMessage: Codable, Hashable {
         self.type = type
         self.value = value
     }
-    
+
     func mapToProtobuff() -> VSCosmosMsg {
         .with {
             $0.type = type
@@ -150,7 +150,7 @@ struct CosmosFee: Codable, Hashable {
     let feePayer: String
     let amount: [CosmosCoin]
     let gas: String
-    
+
     init(proto: VSCosmosFee) {
         self.payer = proto.payer
         self.granter = proto.granter
@@ -158,7 +158,7 @@ struct CosmosFee: Codable, Hashable {
         self.amount = proto.amount.map { CosmosCoin(proto: $0) }
         self.gas = proto.gas
     }
-    
+
     init(
         payer: String,
         granter: String,
@@ -172,7 +172,7 @@ struct CosmosFee: Codable, Hashable {
         self.amount = amount
         self.gas = gas
     }
-    
+
     func mapToProtobuff() -> VSCosmosFee {
         .with {
             $0.payer = payer

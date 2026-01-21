@@ -16,7 +16,7 @@ struct AmountTextField<CustomView: View>: View {
         case balance
         case bottom
     }
-    
+
     @Binding var amount: String
     @Binding var error: String?
     let ticker: String
@@ -28,7 +28,7 @@ struct AmountTextField<CustomView: View>: View {
     let customViewPosition: CustomViewPosition
     @State var amountInternal: String = ""
     @State var size: CGSize?
-    
+
     init(
         amount: Binding<String>,
         error: Binding<String?>,
@@ -51,7 +51,7 @@ struct AmountTextField<CustomView: View>: View {
         self.customView = customView()
         self._amountInternal = State(initialValue: amount.wrappedValue)
     }
-    
+
     init(
         amount: Binding<String>,
         error: Binding<String?>,
@@ -73,7 +73,7 @@ struct AmountTextField<CustomView: View>: View {
             customView: { EmptyView() }
         )
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
             Spacer()
@@ -95,7 +95,7 @@ struct AmountTextField<CustomView: View>: View {
                         .fixedSize()
                 }
                 .frame(maxWidth: size?.width)
-                
+
                 if let percentage {
                     Text((Double(percentage) / 100).formatted(.percent))
                         .font(Theme.fonts.subtitle)
@@ -112,13 +112,13 @@ struct AmountTextField<CustomView: View>: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 percentageView
-                
+
                 if customViewPosition == .balance {
                     unwrappedCustomView
                 }
-                
+
                 availableBalanceView
-                
+
                 if customViewPosition == .bottom {
                     unwrappedCustomView
                 }
@@ -141,7 +141,7 @@ struct AmountTextField<CustomView: View>: View {
         }
         .readSize(onChange: { size = $0 })
     }
-    
+
     @ViewBuilder
     var percentageView: some View {
         switch type {
@@ -151,7 +151,7 @@ struct AmountTextField<CustomView: View>: View {
             PercentageSliderView(percentage: $percentage)
         }
     }
-    
+
     var availableBalanceView: some View {
         HStack {
             Text("balanceAvailable".localized)
@@ -162,14 +162,14 @@ struct AmountTextField<CustomView: View>: View {
         }
         .font(Theme.fonts.bodySMedium)
     }
-    
+
     func setupAmount() {
         guard let percentage else { return }
         let multiplier = (Decimal(percentage) / 100)
         let amountDecimal = availableAmount * multiplier
         amount = amountDecimal.formatToDecimal(digits: decimals)
     }
-    
+
     @ViewBuilder
     var unwrappedCustomView: some View {
         if !(customView is EmptyView) {
@@ -180,7 +180,7 @@ struct AmountTextField<CustomView: View>: View {
 
 #Preview {
     @Previewable @State var amount: String = "0"
-    
+
     VStack {
         AmountTextField(
             amount: $amount,
@@ -191,7 +191,7 @@ struct AmountTextField<CustomView: View>: View {
             decimals: 6,
             percentage: .constant(nil)
         )
-        
+
         AmountTextField(
             amount: $amount,
             error: .constant(nil),

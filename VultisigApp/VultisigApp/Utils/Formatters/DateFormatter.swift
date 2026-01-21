@@ -13,11 +13,11 @@ enum CustomDateFormatter {
         formatter.dateFormat = "MMM d, yy"
         return formatter
     }()
-    
+
     static func formatMonthDayYear(_ date: Date) -> String {
         monthDayYear.string(from: date)
     }
-    
+
     static func formatMonthDayYear(_ timeInterval: TimeInterval) -> String {
         monthDayYear.string(from: Date(timeIntervalSince1970: timeInterval))
     }

@@ -9,13 +9,13 @@ import SwiftUI
 
 struct NavigationHelpButton: View {
     var tint: Color = Theme.colors.textPrimary
-    
+
     var body: some View {
         Link(destination: URL(string: Endpoint.supportDocumentLink)!) {
             image
         }
     }
-    
+
     var image: some View {
         Image(systemName: "questionmark.circle")
             .font(Theme.fonts.bodyLMedium)

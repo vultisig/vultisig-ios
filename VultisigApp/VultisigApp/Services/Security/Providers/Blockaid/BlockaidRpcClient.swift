@@ -10,13 +10,13 @@ import Foundation
 // MARK: - BlockaidRpcClient Implementation
 
 struct BlockaidRpcClient: BlockaidRpcClientProtocol {
-    
+
     private let httpClient: HTTPClientProtocol
-    
+
     init(httpClient: HTTPClientProtocol) {
         self.httpClient = httpClient
     }
-    
+
     func scanBitcoinTransaction(
         address: String,
         serializedTransaction: String
@@ -28,7 +28,7 @@ struct BlockaidRpcClient: BlockaidRpcClientProtocol {
         )
         return response.data
     }
-    
+
     func scanEVMTransaction(
         chain: Chain,
         from: String,
@@ -49,7 +49,7 @@ struct BlockaidRpcClient: BlockaidRpcClientProtocol {
         )
         return response.data
     }
-    
+
     func scanSolanaTransaction(
         address: String,
         serializedMessage: String
@@ -61,7 +61,7 @@ struct BlockaidRpcClient: BlockaidRpcClientProtocol {
         )
         return response.data
     }
-    
+
     func scanSuiTransaction(
         address: String,
         serializedTransaction: String
@@ -78,7 +78,7 @@ struct BlockaidRpcClient: BlockaidRpcClientProtocol {
 // MARK: - Private Helper Methods
 
 private extension BlockaidRpcClient {
-    
+
     func buildBitcoinScanRequest(
         address: String,
         serializedTransaction: String
@@ -91,7 +91,7 @@ private extension BlockaidRpcClient {
             transaction: serializedTransaction
         )
     }
-    
+
     func buildEthereumScanRequest(
         chain: Chain,
         from: String,
@@ -115,7 +115,7 @@ private extension BlockaidRpcClient {
             simulatedWithEstimatedGas: false
         )
     }
-    
+
     func buildSolanaScanRequest(
         address: String,
         serializedMessage: String
@@ -130,7 +130,7 @@ private extension BlockaidRpcClient {
             method: BlockaidConstants.solanaSignAndSend
         )
     }
-    
+
     func buildSuiScanRequest(
         address: String,
         serializedTransaction: String
@@ -177,4 +177,3 @@ private extension Chain {
         }
     }
 }
-

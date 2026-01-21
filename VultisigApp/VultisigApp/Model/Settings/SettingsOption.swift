@@ -22,7 +22,7 @@ enum SettingsOptionType {
 
 enum SettingsOption: String, Identifiable {
     var id: String { rawValue }
-    
+
     case vaultSettings
     case vultDiscountTiers
     case registerVaults
@@ -40,7 +40,7 @@ enum SettingsOption: String, Identifiable {
     case website
     case privacyPolicy
     case termsOfService
-    
+
     var title: String {
         switch self {
         case .vaultSettings:
@@ -79,7 +79,7 @@ enum SettingsOption: String, Identifiable {
             return "termsOfService"
         }
     }
-    
+
     var icon: String? {
         switch self {
         case .vaultSettings:
@@ -118,7 +118,7 @@ enum SettingsOption: String, Identifiable {
             return "notebook-text"
         }
     }
-    
+
     var type: SettingsOptionType {
         switch self {
         case .twitter:

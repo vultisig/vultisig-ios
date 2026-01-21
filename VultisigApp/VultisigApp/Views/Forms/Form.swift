@@ -36,7 +36,7 @@ public extension Form {
                 form.validForm = validations.allSatisfy { $0 }
             }
     }
-    
+
     func validateErrors() {
         form.forEach {  field in
             try? field.validateErrors(showing: true)

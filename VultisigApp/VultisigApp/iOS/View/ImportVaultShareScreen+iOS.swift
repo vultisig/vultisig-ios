@@ -17,7 +17,7 @@ extension ImportVaultShareScreen {
                 }
             }
     }
-    
+
     var main: some View {
         view
     }

@@ -31,7 +31,7 @@ extension JoinKeygenView {
             }
         }
     }
-    
+
     var main: some View {
         VStack(spacing: .zero) {
             Spacer()

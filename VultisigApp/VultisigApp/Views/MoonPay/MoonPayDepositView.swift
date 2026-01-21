@@ -3,39 +3,39 @@ import SwiftUI
 struct MoonPayDepositView: View {
     let depositPayload: MoonPayDepositPayload
     let vault: Vault
-    
+
     @StateObject var tx = SendTransaction()
     @StateObject var sendCryptoViewModel = SendCryptoViewModel()
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
-    
+
     @State var keysignPayload: KeysignPayload? = nil
     @State var keysignView: KeysignView? = nil
-    
+
     @Environment(\.dismiss) var dismiss
-    
+
     var body: some View {
         content
             .onAppear {
                 setupTransaction()
             }
     }
-    
+
     var content: some View {
         ZStack {
             Background()
             view
         }
     }
-    
+
     var view: some View {
         VStack(spacing: 18) {
             ProgressBar(progress: sendCryptoViewModel.getProgress())
                 .padding(.top, 12)
-            
+
             tabView
         }
     }
-    
+
     var tabView: some View {
         ZStack {
             switch sendCryptoViewModel.currentIndex {
@@ -55,7 +55,7 @@ struct MoonPayDepositView: View {
         }
         .frame(maxHeight: .infinity)
     }
-    
+
     var detailsView: some View {
         SendCryptoDetailsView(
             tx: tx,
@@ -63,7 +63,7 @@ struct MoonPayDepositView: View {
             vault: vault
         )
     }
-    
+
     var verifyView: some View {
         SendCryptoVerifyView(
             keysignPayload: $keysignPayload,
@@ -73,7 +73,7 @@ struct MoonPayDepositView: View {
             vault: vault
         )
     }
-    
+
     var pairView: some View {
         ZStack {
             if let keysignPayload = keysignPayload {
@@ -92,7 +92,7 @@ struct MoonPayDepositView: View {
             }
         }
     }
-    
+
     var keysign: some View {
         ZStack {
             if let keysignView = keysignView {
@@ -102,7 +102,7 @@ struct MoonPayDepositView: View {
             }
         }
     }
-    
+
     var doneView: some View {
         ZStack {
             if let hash = sendCryptoViewModel.hash, let chain = keysignPayload?.coin.chain {
@@ -119,11 +119,11 @@ struct MoonPayDepositView: View {
             }
         }
     }
-    
+
     var errorView: some View {
         SendCryptoSigningErrorView()
     }
-    
+
     private func setupTransaction() {
         // Set up the transaction with the deposit payload details
         if let coin = vault.coins.first(where: { $0.chain.ticker == depositPayload.cryptoCurrencyCode }) {
@@ -132,4 +132,4 @@ struct MoonPayDepositView: View {
             tx.amount = BigInt(depositPayload.cryptoCurrencyAmountSmallestDenomination)
         }
     }
-} 
+}

@@ -14,9 +14,9 @@ struct VaultSelectChainScreen: View {
     var onSave: () -> Void
     @State var searchBarFocused: Bool = false
     @State var isLoading: Bool = false
-    
+
     @StateObject var viewModel = CoinSelectionViewModel()
-    
+
     init(
         vault: Vault,
         preselectChains: Bool = true,
@@ -28,11 +28,11 @@ struct VaultSelectChainScreen: View {
         self._isPresented = isPresented
         self.onSave = onSave
     }
-    
+
     var sections: [AssetSection<Int, Chain>] {
         !viewModel.filteredChains.isEmpty ? [AssetSection(assets: viewModel.filteredChains)] : []
     }
-    
+
     var body: some View {
         AssetSelectionContainerSheet(
             title: "selectChains".localized,
@@ -54,7 +54,7 @@ struct VaultSelectChainScreen: View {
             viewModel.setData(for: vault, checkForSelected: preselectChains)
         }
     }
-    
+
     func isSelected(chain: Chain) -> Bool {
         return viewModel.selection.contains { $0.chain == chain }
     }
@@ -70,24 +70,23 @@ private extension VaultSelectChainScreen {
                 isPresented.toggle()
             }
             await saveAssets()
-            
+
         }
     }
-    
+
     func onSelection(_ chainSelection: ChainSelection) {
         viewModel.handleSelection(isSelected: chainSelection.selected, asset: chainSelection.asset)
     }
-    
+
     func saveAssets() async {
         /// When it comes from onboarding, if the selection is empty we keep default chains
         if !preselectChains, viewModel.selection.isEmpty {
             return
         }
-        
+
         await CoinService.saveAssets(for: vault, selection: viewModel.selection)
     }
 }
-
 
 #Preview {
     VaultSelectChainScreen(
@@ -96,5 +95,3 @@ private extension VaultSelectChainScreen {
         onSave: {}
     )
 }
-
-

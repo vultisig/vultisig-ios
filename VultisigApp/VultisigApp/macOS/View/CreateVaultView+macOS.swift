@@ -15,7 +15,7 @@ extension CreateVaultView {
             view
         }
     }
-    
+
     var scanButton: some View {
         PrimaryButton(title: "scanQRStartScreen", leadingIcon: "qr-code", type: .secondary) {
             navigateToScanQR = true

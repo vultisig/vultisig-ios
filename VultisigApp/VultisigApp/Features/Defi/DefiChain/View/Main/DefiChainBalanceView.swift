@@ -10,25 +10,25 @@ import SwiftUI
 struct DefiChainBalanceView: View {
     @ObservedObject var vault: Vault
     let groupedChain: GroupedChain
-    
+
     @EnvironmentObject var homeViewModel: HomeViewModel
-    
+
     let service = DefiBalanceService()
     var balance: String {
         service.totalBalanceInFiatString(for: groupedChain.chain, vault: vault)
     }
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(groupedChain.name)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.bodyLMedium)
-            
+
             Text("balance".localized)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.caption12)
                 .padding(.top, 12)
-            
+
             HiddenBalanceText(balance)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.priceTitle1)
@@ -39,7 +39,7 @@ struct DefiChainBalanceView: View {
         .padding(16)
         .background(backgroundView)
     }
-    
+
     var backgroundView: some View {
         RoundedRectangle(cornerRadius: 16)
             .inset(by: 0.5)
@@ -48,7 +48,7 @@ struct DefiChainBalanceView: View {
             .overlay(imageView, alignment: .trailing)
             .clipShape(RoundedRectangle(cornerRadius: 16))
     }
-    
+
     var imageName: String {
         switch groupedChain.chain {
         case .thorChain:
@@ -59,18 +59,18 @@ struct DefiChainBalanceView: View {
             ""
         }
     }
-    
+
     var imageView: some View {
         Image(imageName)
             .resizable()
             .aspectRatio(contentMode: .fit)
     }
-    
+
     var gradientStyle: some ShapeStyle {
         LinearGradient(
             stops: [
                 Gradient.Stop(color: Color(hex: "34E6BF"), location: 0.00),
-                Gradient.Stop(color: Color(red: 0.11, green: 0.5, blue: 0.42).opacity(0), location: 1.00),
+                Gradient.Stop(color: Color(red: 0.11, green: 0.5, blue: 0.42).opacity(0), location: 1.00)
             ],
             startPoint: UnitPoint(x: 0.5, y: 0),
             endPoint: UnitPoint(x: 0.5, y: 1)

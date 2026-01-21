@@ -20,12 +20,11 @@ struct SettingsOptionView<TrailingView: View>: View {
     let type: SettingsOptionViewType
     let showSeparator: Bool
     let trailingView: () -> TrailingView
-    
+
     init(
         icon: String?,
         title: String,
         subtitle: String? = nil,
-        description: String? = nil,
         type: SettingsOptionViewType = .normal,
         showSeparator: Bool = true,
         @ViewBuilder trailingView: @escaping () -> TrailingView
@@ -37,7 +36,7 @@ struct SettingsOptionView<TrailingView: View>: View {
         self.showSeparator = showSeparator
         self.trailingView = trailingView
     }
-    
+
     var bgColor: Color? {
         switch type {
         case .normal, .alert:
@@ -46,7 +45,7 @@ struct SettingsOptionView<TrailingView: View>: View {
             return Theme.colors.primaryAccent3
         }
     }
-    
+
     var iconColor: Color {
         switch type {
         case .normal:
@@ -57,7 +56,7 @@ struct SettingsOptionView<TrailingView: View>: View {
             return Theme.colors.alertError
         }
     }
-    
+
     var fontColor: Color {
         switch type {
         case .normal, .highlighted:
@@ -66,19 +65,19 @@ struct SettingsOptionView<TrailingView: View>: View {
             return Theme.colors.alertError
         }
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
                 if let icon {
                     Icon(named: icon, color: iconColor, size: 20)
                 }
-                
+
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title.localized)
                         .font(Theme.fonts.footnote)
                         .foregroundStyle(fontColor)
-                    
+
                     if let subtitle {
                         Text(subtitle)
                             .font(Theme.fonts.caption12)
@@ -86,9 +85,9 @@ struct SettingsOptionView<TrailingView: View>: View {
                             .multilineTextAlignment(.leading)
                     }
                 }
-                
+
                 Spacer()
-                
+
                 trailingView()
                     .foregroundStyle(fontColor)
             }
