@@ -36,7 +36,7 @@ struct BackupNowDisclaimer: View {
         .padding(.horizontal, 12)
         .background(Theme.colors.alertError.opacity(0.3))
         .cornerRadius(12)
-        .overlay (
+        .overlay(
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Theme.colors.alertError, lineWidth: 1)
         )

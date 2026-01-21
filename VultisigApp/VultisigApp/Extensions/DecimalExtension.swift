@@ -123,4 +123,3 @@ extension Decimal {
         return NSDecimalNumber(decimal: self).intValue
     }
 }
-

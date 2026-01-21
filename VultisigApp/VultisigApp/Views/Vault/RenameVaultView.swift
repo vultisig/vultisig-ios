@@ -72,15 +72,13 @@ struct RenameVaultView: View {
     }
     
     private func checkForFolder(oldName: String, newName: String) {
-        for folder in folders {
-            if folder.containedVaultNames.contains(oldName) {
-                folder.containedVaultNames.append(newName)
-            }
+        for folder in folders where folder.containedVaultNames.contains(oldName) {
+            folder.containedVaultNames.append(newName)
         }
     }
 }
 
 #Preview {
-    RenameVaultView(vaults:[], folders: [], vault: Vault.example)
+    RenameVaultView(vaults: [], folders: [], vault: Vault.example)
         .environmentObject(AppViewModel())
 }

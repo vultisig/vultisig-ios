@@ -17,4 +17,4 @@ enum SuiConstants {
     
     /// USDC decimals on SUI chain
     static let usdcDecimals = 6
-} 
+}

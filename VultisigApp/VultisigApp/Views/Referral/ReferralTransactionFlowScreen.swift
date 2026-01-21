@@ -58,8 +58,7 @@ struct ReferralTransactionFlowScreen: View {
     var detailsView: some View {
         if let details = referralViewModel.thornameDetails,
            let nativeCoin = referralViewModel.nativeCoin,
-           let vault
-        {
+           let vault {
             EditReferralDetailsView(
                 viewModel: EditReferralViewModel(
                     nativeCoin: nativeCoin,

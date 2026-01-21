@@ -27,8 +27,8 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
          messageID: String?,
          encryptionKeyHex: String,
          vaultPubKey: String,
-         isKeygen:Bool,
-         encryptGCM:Bool) {
+         isKeygen: Bool,
+         encryptGCM: Bool) {
         self.mediatorUrl = mediatorUrl
         self.sessionID = sessionID
         self.messageID = messageID
@@ -65,16 +65,6 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
         }
         if isKeygen {
             req.setValue("vultisig", forHTTPHeaderField: "keygen")
-        }
-        // apply basic authentication
-        if VultisigRelay.IsRelayEnabled {
-            var authentication = Data()
-            if isKeygen {
-                authentication = "x:x".data(using: .utf8)!
-            } else {
-                authentication = "\(VultisigRelay.VultisigApiKey):\(self.vaultPubKey)".data(using: .utf8)!
-            }
-            req.setValue("Basic \(authentication.base64EncodedString())", forHTTPHeaderField: "Authorization")
         }
         var encryptedBody: String? = nil
         if self.encryptGCM {

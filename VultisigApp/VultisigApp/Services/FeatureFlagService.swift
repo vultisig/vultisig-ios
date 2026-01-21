@@ -9,7 +9,7 @@ import Foundation
 enum FeatureFlag: String {
     case EncryptGCM
     
-    var name: String{
+    var name: String {
         switch self {
         case .EncryptGCM: return "encrypt-gcm"
         }
@@ -18,7 +18,7 @@ enum FeatureFlag: String {
 
 final class FeatureFlagService {
     func isFeatureEnabled(feature: FeatureFlag) async -> Bool {
-        do{
+        do {
             let features = try await getFeatureFlagFromServer()
             if let result = features[feature.name] as? Bool {
                 return result
@@ -32,11 +32,11 @@ final class FeatureFlagService {
         return false
     }
     
-    private func getFeatureFlagFromServer() async throws -> [String: Any]{
+    private func getFeatureFlagFromServer() async throws -> [String: Any] {
 #if DEBUG
-        let url =  URL(string:"https://api.vultisig.com/feature/debug.json")!
+        let url =  URL(string: "https://api.vultisig.com/feature/debug.json")!
 #else
-        let url = URL(string:"https://api.vultisig.com/feature/release.json")!
+        let url = URL(string: "https://api.vultisig.com/feature/release.json")!
 #endif
         let (jsonData, _) = try await URLSession.shared.data(from: url)
         // Decode JSON data into a dictionary

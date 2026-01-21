@@ -66,10 +66,8 @@ struct DefiPositionsStorageService {
         let newPositionIDs = Set(positions.map { $0.id })
 
         // Delete positions that are no longer present
-        for existingPosition in allExistingPositions {
-            if !newPositionIDs.contains(existingPosition.id) {
-                Storage.shared.modelContext.delete(existingPosition)
-            }
+        for existingPosition in allExistingPositions where !newPositionIDs.contains(existingPosition.id) {
+            Storage.shared.modelContext.delete(existingPosition)
         }
 
         // Update or insert new positions

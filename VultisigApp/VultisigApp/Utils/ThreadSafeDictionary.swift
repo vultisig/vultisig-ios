@@ -1,6 +1,6 @@
 import Foundation
 
-final class ThreadSafeDictionary<Key: Hashable & Sendable, Value: Sendable> : @unchecked Sendable {
+final class ThreadSafeDictionary<Key: Hashable & Sendable, Value: Sendable>: @unchecked Sendable {
     private var dictionary: [Key: Value] = Dictionary(minimumCapacity: 1000)
     private let queue = DispatchQueue(label: "ThreadSafeDictionaryQueue", attributes: .concurrent)
     

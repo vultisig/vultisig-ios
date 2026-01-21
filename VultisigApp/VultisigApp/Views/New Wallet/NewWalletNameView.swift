@@ -32,7 +32,7 @@ struct NewWalletNameView: View {
             Spacer()
             button
         }
-        .onAppear() {
+        .onAppear {
             isNameFocused = true
         }
     }

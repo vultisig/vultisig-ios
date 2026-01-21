@@ -32,5 +32,3 @@ final class VaultSelectedViewModel: ObservableObject, Hashable {
         self.selectedVault = selectedVault
     }
 }
-
-

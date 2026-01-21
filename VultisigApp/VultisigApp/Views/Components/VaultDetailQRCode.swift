@@ -81,8 +81,7 @@ struct VaultDetailQRCode: View {
     
     func getQRCode(vault: Vault) -> Image {
         let vaultPublicKeyExport = viewModel.getVaultPublicKeyExport(vault: vault)
-        
-        do{
+        do {
             let data = try JSONEncoder().encode(vaultPublicKeyExport)
             return Utils.generateQRCodeImage(
                 from: String(data: data, encoding: .utf8) ?? "",

@@ -152,9 +152,9 @@ final class BondMayaTransactionViewModel: ObservableObject, Form {
                     positions[pool.pool] = units
                 }
             }
-
+            let p = positions
             await MainActor.run {
-                userLPPositions = positions
+                userLPPositions = p
             }
         } catch {
             print("Error fetching user LP positions: \(error.localizedDescription)")

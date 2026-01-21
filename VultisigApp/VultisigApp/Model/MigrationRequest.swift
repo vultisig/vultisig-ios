@@ -6,7 +6,7 @@
 //
 
 import Foundation
-struct MigrationRequest : Hashable,Codable{
+struct MigrationRequest: Hashable,Codable {
     let public_key: String
     let session_id: String
     let hex_encryption_key: String

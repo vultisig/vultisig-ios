@@ -10,4 +10,3 @@ import Foundation
 class THORChainAccountResult: Codable {
     var value: THORChainAccountValue?
 }
-

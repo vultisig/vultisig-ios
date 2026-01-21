@@ -57,7 +57,6 @@ struct ReferralVaultSelectionScreen: View {
         .background(isSelected(vault: vault) ? Theme.colors.bgSurface2 : Theme.colors.bgSurface1)
     }
     
-    
     @ViewBuilder
     func trailingIcon(vault: Vault) -> some View {
         if isSelected(vault: vault) {

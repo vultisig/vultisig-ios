@@ -73,8 +73,7 @@ struct BackupVaultSuccessView: View {
                 secureAnimationVM.view()
             } else if let upgradeAnimationVM {
                 upgradeAnimationVM.view()
-            }
-            else {
+            } else {
                 Spacer()
             }
         }

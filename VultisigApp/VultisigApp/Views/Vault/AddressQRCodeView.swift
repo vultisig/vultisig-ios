@@ -53,7 +53,7 @@ struct AddressQRCodeView: View {
             .aspectRatio(contentMode: .fit)
             .background(Theme.colors.bgSurface1)
             .cornerRadius(20)
-            .overlay (
+            .overlay(
                 RoundedRectangle(cornerRadius: 20)
                     .strokeBorder(Theme.colors.bgButtonPrimary, style: StrokeStyle(lineWidth: 2, dash: [100]))
             )

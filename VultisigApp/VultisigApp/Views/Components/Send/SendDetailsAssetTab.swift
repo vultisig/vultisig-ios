@@ -177,7 +177,6 @@ struct SendDetailsAssetTab: View {
     }
 }
 
-
 #Preview {
     SendDetailsAssetTab(
         isExpanded: true,

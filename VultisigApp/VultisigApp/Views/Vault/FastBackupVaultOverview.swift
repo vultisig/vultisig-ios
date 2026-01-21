@@ -176,5 +176,3 @@ struct FastBackupVaultOverview: View {
         email: "mail@email.com"
     )
 }
-
-

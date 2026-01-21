@@ -95,8 +95,7 @@ enum MayaChainHelper {
     }
     
     static func getSignedTransaction(keysignPayload: KeysignPayload,
-                                     signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
-    {
+                                     signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let signedTransaction = try getSignedTransaction(coinHexPubKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
         return signedTransaction
@@ -104,8 +103,7 @@ enum MayaChainHelper {
     
     static func getSignedTransaction(coinHexPubKey: String,
                                      inputData: Data,
-                                     signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
-    {
+                                     signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         guard let pubkeyData = Data(hexString: coinHexPubKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {

@@ -97,8 +97,7 @@ struct NavigationHomeEditButton: View {
     }
     
     private func deleteFolder() {
-        for folder in folders {
-            if folder == selectedFolder {
+        for folder in folders where folder == selectedFolder {
                 modelContext.delete(folder)
                 do {
                     try modelContext.save()
@@ -108,7 +107,6 @@ struct NavigationHomeEditButton: View {
                 isEditingFolders = false
                 showFolderDetails = false
                 return
-            }
         }
     }
 }

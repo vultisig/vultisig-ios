@@ -130,11 +130,9 @@ private extension AddFolderScreen {
     }
     
     func removeVault(_ vault: Vault) {
-        for index in 0..<folderViewModel.selectedVaults.count {
-            if areVaultsSame(folderViewModel.selectedVaults[index], vault) {
-                folderViewModel.selectedVaults.remove(at: index)
-                return
-            }
+        for index in 0..<folderViewModel.selectedVaults.count where areVaultsSame(folderViewModel.selectedVaults[index], vault) {
+            folderViewModel.selectedVaults.remove(at: index)
+            return
         }
     }
     

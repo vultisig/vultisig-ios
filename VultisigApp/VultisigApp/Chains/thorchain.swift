@@ -93,11 +93,11 @@ enum THORChainHelper {
         if chainID != service.network && !service.network.isEmpty {
             chainID = service.network
         }
-                
+        
         let transactionType = VSTransactionType(rawValue: transactionTypeRawValue) ?? .unspecified
         let messages: [WalletCore.CosmosMessage]
         var memo = keysignPayload.memo
-
+        
         if let signDataMessagesResult = try CosmosSignDataBuilder.getMessages(keysignPayload: keysignPayload) {
             messages = signDataMessagesResult.messages
             memo = signDataMessagesResult.memo
@@ -149,9 +149,7 @@ enum THORChainHelper {
     }
     
     static func getSignedTransaction(keysignPayload: KeysignPayload,
-        signatures: [String: TssKeysignResponse]
-    ) throws -> SignedTransactionResult
-    {
+                                     signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let signedTransaction = try getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
         return signedTransaction
@@ -161,8 +159,7 @@ enum THORChainHelper {
         coinHexPublicKey: String,
         inputData: Data,
         signatures: [String: TssKeysignResponse]
-    ) throws -> SignedTransactionResult
-    {
+    ) throws -> SignedTransactionResult {
         guard let pubkeyData = Data(hexString: coinHexPublicKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {
@@ -338,7 +335,7 @@ enum THORChainHelper {
         if let signDataFee = try CosmosSignDataBuilder.getFee(keysignPayload: keysignPayload) {
             return signDataFee
         }
-    
+        
         return WalletCore.CosmosFee.with {
             $0.gas = 20_000_000
         }

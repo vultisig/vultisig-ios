@@ -13,7 +13,7 @@ class VaultDefaultCoinService {
     private let semaphore = DispatchSemaphore(value: 1)
     let baseDefaultChains = [Chain.bitcoin, Chain.ethereum, Chain.thorChain, Chain.solana,Chain.bscChain]
     
-    init(context: ModelContext){
+    init(context: ModelContext) {
         self.context = context
     }
     

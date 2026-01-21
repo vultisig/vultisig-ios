@@ -47,7 +47,6 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case hyperliquid
     case sei
     
-    
     enum MigrationKeys: String, CodingKey {
         case ticker
     }
@@ -95,7 +94,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .sei: return "Sei"
         }
     }
-    var feeUnit: String{
+    var feeUnit: String {
         switch self {
         case .thorChain, .thorChainStagenet: return "RUNE"
         case .solana: return "SOL"
@@ -141,7 +140,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .cardano: return "ADA"
         case .mayaChain: return "CACAO"
         case .arbitrum: return "ARB"
-        case .base: return "BASE" //Base does not have a coin
+        case .base: return "BASE" 
         case .optimism: return "OP"
         case .polygon: return "MATIC"
         case .polygonV2: return "POL"
@@ -339,7 +338,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .polygon:
             return 137
         case .polygonV2:
-            return 137 // TODO: find the new id
+            return 137 
         case .optimism:
             return 10
         case .bscChain:

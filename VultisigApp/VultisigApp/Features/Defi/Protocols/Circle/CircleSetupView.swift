@@ -25,7 +25,6 @@ struct CircleSetupView: View {
                 VStack(spacing: CircleConstants.Design.verticalSpacing) {
                     topBanner
                     
-                    //TODO: reuse that on Dashboard
                     VStack(alignment: .leading, spacing: 8) {
                         VStack(spacing: 8) {
                             Text("circleSetupDeposited".localized)

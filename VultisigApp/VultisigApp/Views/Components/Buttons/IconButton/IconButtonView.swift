@@ -32,4 +32,3 @@ struct IconButtonView: View {
 #Preview {
     IconButtonView(icon: "chevron-right")
 }
-

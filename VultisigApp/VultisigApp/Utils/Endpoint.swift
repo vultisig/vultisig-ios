@@ -120,8 +120,6 @@ class Endpoint {
         return "\(blockaidApiBase)/exchange-protection/withdrawal"
     }
     
-    
-    
     // Legacy endpoint methods (for backward compatibility)
     static func blockaidAddressScan() -> String {
         return blockaidEVMAddressScan()
@@ -424,18 +422,18 @@ class Endpoint {
     
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"
     
-    static let polkadotServiceRpc = "https://api.vultisig.com/dot/" //"https://polkadot-rpc.publicnode.com"
+    static let polkadotServiceRpc = "https://api.vultisig.com/dot/" // "https://polkadot-rpc.publicnode.com"
     
     static let polkadotServiceBalance = "https://assethub-polkadot.api.subscan.io/api/v2/scan/search"
     
     static let tonServiceRpc = "https://api.vultisig.com/ton/v2/jsonRPC"
     
     static func fetchTonBalance(address: String) -> String {
-        return "https://api.vultisig.com/ton/v3/addressInformation?address=\(address)&use_v2=false";
+        return "https://api.vultisig.com/ton/v3/addressInformation?address=\(address)&use_v2=false"
     }
     
     static func fetchTonJettonBalance(address: String, jettonAddress: String) -> String {
-        return "\(vultisigApiProxy)/ton/v3/jetton/wallets?owner_address=\(address)&jetton_master_address=\(jettonAddress)";
+        return "\(vultisigApiProxy)/ton/v3/jetton/wallets?owner_address=\(address)&jetton_master_address=\(jettonAddress)"
     }
     
     static func tonApiRunGetMethod() -> String {
@@ -451,11 +449,11 @@ class Endpoint {
     }
     
     static func fetchExtendedAddressInformation(address: String) -> String {
-        return "https://api.vultisig.com/ton/v2/getExtendedAddressInformation?address=\(address)";
+        return "https://api.vultisig.com/ton/v2/getExtendedAddressInformation?address=\(address)"
     }
     
     static func broadcastTonTransaction() -> String {
-        return "https://api.vultisig.com/ton/v2/sendBocReturnHash";
+        return "https://api.vultisig.com/ton/v2/sendBocReturnHash"
     }
     
     static func bitcoinLabelTxHash(_ value: String) -> String {
@@ -551,7 +549,7 @@ class Endpoint {
         return "\(baseUrl)/v2/thorname/lookup/\(name)".asUrl
     }
     
-    static func fetchOsmosisAccountBalance(address: String) -> String{
+    static func fetchOsmosisAccountBalance(address: String) -> String {
         "https://osmosis-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
     }
     static func fetchOsmosisAccountNumber(_ address: String) -> String {
@@ -564,15 +562,15 @@ class Endpoint {
         "https://osmosis-rest.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
     }
     
-    static func fetchOsmosisIbcDenomTraces(hash: String) -> String{
+    static func fetchOsmosisIbcDenomTraces(hash: String) -> String {
         "https://osmosis-rest.publicnode.com/ibc/apps/transfer/v1/denom_traces/\(hash)"
     }
     
-    static func fetchOsmosisLatestBlock() -> String{
+    static func fetchOsmosisLatestBlock() -> String {
         "https://osmosis-rest.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/latest"
     }
     
-    static func fetchAkashAccountBalance(address: String) -> String{
+    static func fetchAkashAccountBalance(address: String) -> String {
         "https://akash-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
     }
     static func fetchAkashAccountNumber(_ address: String) -> String {
@@ -581,7 +579,7 @@ class Endpoint {
     
     static let broadcastAkashTransaction = "https://akash-rest.publicnode.com/cosmos/tx/v1beta1/txs"
     
-    static func fetchNobleAccountBalance(address: String) -> String{
+    static func fetchNobleAccountBalance(address: String) -> String {
         "https://noble-api.polkachu.com/cosmos/bank/v1beta1/balances/\(address)"
     }
     static func fetchNobleAccountNumber(_ address: String) -> String {
@@ -590,7 +588,7 @@ class Endpoint {
     
     static let broadcastNobleTransaction = "https://noble-api.polkachu.com/cosmos/tx/v1beta1/txs"
     
-    static func fetchCosmosAccountBalance(address: String) -> String{
+    static func fetchCosmosAccountBalance(address: String) -> String {
         "https://cosmos-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
     }
     static func fetchCosmosAccountNumber(_ address: String) -> String {
@@ -603,16 +601,15 @@ class Endpoint {
         "https://cosmos-rest.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
     }
     
-    static func fetchCosmosIbcDenomTraces(hash: String) -> String{
+    static func fetchCosmosIbcDenomTraces(hash: String) -> String {
         "https://cosmos-rest.publicnode.com/ibc/apps/transfer/v1/denom_traces/\(hash)"
     }
     
-    static func fetchCosmosLatestBlock() -> String{
+    static func fetchCosmosLatestBlock() -> String {
         "https://cosmos-rest.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/latest"
     }
     
-    
-    static func fetchTerraAccountBalance(address: String) -> String{
+    static func fetchTerraAccountBalance(address: String) -> String {
         "https://terra-lcd.publicnode.com/cosmos/bank/v1beta1/spendable_balances/\(address)"
     }
     static func fetchTerraAccountNumber(_ address: String) -> String {
@@ -621,7 +618,7 @@ class Endpoint {
     
     static let broadcastTerraTransaction = "https://terra-lcd.publicnode.com/cosmos/tx/v1beta1/txs"
     
-    static func fetchTerraIbcDenomTraces(hash: String) -> String{
+    static func fetchTerraIbcDenomTraces(hash: String) -> String {
         "https://terra-lcd.publicnode.com/ibc/apps/transfer/v1/denom_traces/\(hash)"
     }
     
@@ -629,11 +626,11 @@ class Endpoint {
         "https://terra-lcd.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
     }
     
-    static func fetchTerraLatestBlock() -> String{
+    static func fetchTerraLatestBlock() -> String {
         "https://terra-lcd.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/latest"
     }
     
-    static func fetchTerraClassicAccountBalance(address: String) -> String{
+    static func fetchTerraClassicAccountBalance(address: String) -> String {
         "https://terra-classic-lcd.publicnode.com/cosmos/bank/v1beta1/spendable_balances/\(address)"
     }
     static func fetchTerraClassicAccountNumber(_ address: String) -> String {
@@ -642,7 +639,7 @@ class Endpoint {
     
     static let broadcastTerraClassicTransaction = "https://terra-classic-lcd.publicnode.com/cosmos/tx/v1beta1/txs"
     
-    static func fetchTerraClassicIbcDenomTraces(hash: String) -> String{
+    static func fetchTerraClassicIbcDenomTraces(hash: String) -> String {
         "https://terra-classic-lcd.publicnode.com/ibc/apps/transfer/v1/denom_traces/\(hash)"
     }
     
@@ -650,11 +647,11 @@ class Endpoint {
         "https://terra-classic-lcd.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
     }
     
-    static func fetchTerraClassicLatestBlock() -> String{
+    static func fetchTerraClassicLatestBlock() -> String {
         "https://terra-classic-lcd.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/latest"
     }
     
-    static func fetchDydxAccountBalance(address: String) -> String{
+    static func fetchDydxAccountBalance(address: String) -> String {
         "https://dydx-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
     }
     static func fetchDydxAccountNumber(_ address: String) -> String {
@@ -663,7 +660,7 @@ class Endpoint {
     
     static let broadcastDydxTransaction = "https://dydx-rest.publicnode.com/cosmos/tx/v1beta1/txs"
     
-    static func fetchKujiraAccountBalance(address: String) -> String{
+    static func fetchKujiraAccountBalance(address: String) -> String {
         "https://kujira-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
     }
     static func fetchKujiraAccountNumber(_ address: String) -> String {
@@ -676,11 +673,11 @@ class Endpoint {
         "https://kujira-rest.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
     }
     
-    static func fetchKujiraIbcDenomTraces(hash: String) -> String{
+    static func fetchKujiraIbcDenomTraces(hash: String) -> String {
         "https://kujira-rest.publicnode.com/ibc/apps/transfer/v1/denom_traces/\(hash)"
     }
     
-    static func fetchKujiraLatestBlock() -> String{
+    static func fetchKujiraLatestBlock() -> String {
         "https://kujira-rest.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/latest"
     }
     
@@ -803,7 +800,7 @@ class Endpoint {
         return "\(vultisigApiProxy)/ada/".asUrl
     }
     
-    static func getExplorerByAddressURL(chain: Chain, address:String) -> String? {
+    static func getExplorerByAddressURL(chain: Chain, address: String) -> String? {
         switch chain {
         case .bitcoin:
             return "https://mempool.space/address/\(address)"

@@ -57,8 +57,7 @@ class FunctionCallBondMayaChain: FunctionCallAddressable, ObservableObject
         
         if assets.isEmpty {
             DispatchQueue.main.async {
-                MayachainService.shared.getDepositAssets {
-                    [weak self] assetsResponse in
+                MayachainService.shared.getDepositAssets {[weak self] assetsResponse in
                     self?.assets = assetsResponse.map {
                         IdentifiableString(value: $0)
                     }

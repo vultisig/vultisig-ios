@@ -8,7 +8,6 @@
 struct THORChainBondInteractor: BondInteractor {
     private let thorchainAPIService = THORChainAPIService()
     
-    // TODO: - ADD VULTI NODES
     let vultiNodeAddresses: [String] = []
     
     func fetchBondPositions(vault: Vault) async -> (active: [BondPosition], available: [BondNode]) {

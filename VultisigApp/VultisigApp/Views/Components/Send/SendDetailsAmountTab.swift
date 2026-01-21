@@ -12,7 +12,7 @@ struct SendDetailsAmountTab: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var viewModel: SendDetailsViewModel
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
-    let validateForm: () async -> ()
+    let validateForm: () async -> Void
     @FocusState.Binding var focusedField: Field?
     @Binding var settingsPresented: Bool
     @State var percentage: Double?
@@ -95,7 +95,7 @@ struct SendDetailsAmountTab: View {
         SendDetailsAmountTextField(tx: tx, viewModel: viewModel, sendCryptoViewModel: sendCryptoViewModel, focusedField: $focusedField)
             .id(Field.amount)
             .onSubmit {
-                Task{
+                Task {
                     await validateForm()
                 }
             }

@@ -27,7 +27,7 @@ struct ThisDevicePeerCell: View {
         .frame(height: 70)
         .background(Theme.colors.bgSuccess)
         .cornerRadius(16)
-        .overlay (
+        .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .stroke(Theme.colors.alertSuccess.opacity(0.25), lineWidth: 1)
         )

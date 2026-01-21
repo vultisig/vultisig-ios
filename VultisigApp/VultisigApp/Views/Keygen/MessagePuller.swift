@@ -88,7 +88,7 @@ class MessagePuller: ObservableObject {
                         if self.encryptGCM {
                             print("decrypt with AES+GCM")
                             decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex)
-                        }else{
+                        } else {
                             print("decrypt with AES+CBC")
                             decryptedBody = msg.body.aesDecrypt(key: self.encryptionKeyHex)
                         }
@@ -120,7 +120,7 @@ class MessagePuller: ObservableObject {
         sessionID: String,
         localPartyKey: String,
         hash: String,
-        headers: [String:String]
+        headers: [String: String]
     ) {
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(localPartyKey)/\(hash)"
         Utils.deleteFromServer(urlString: urlString,headers: headers)

@@ -129,7 +129,7 @@ struct FastVaultSetPasswordView: View {
         }
         .opacity(fastVaultExist ? 0 : 1)
     }
-    func handleSubmit(){
+    func handleSubmit() { 
         if fastVaultExist {
             Task { await checkPassword() }
         } else {

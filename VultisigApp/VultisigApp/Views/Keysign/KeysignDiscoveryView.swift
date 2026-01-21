@@ -40,7 +40,6 @@ struct KeysignDiscoveryView: View {
     @State var qrCodeImage: Image? = nil
     @State var selectedNetwork = VultisigRelay.IsRelayEnabled ? NetworkPromptType.Internet : NetworkPromptType.Local
     
-    
     @State var qrSize: CGFloat = .zero
     @State var qrOutlineSize: CGFloat = .zero
     @State var showDisclaimer: Bool = true

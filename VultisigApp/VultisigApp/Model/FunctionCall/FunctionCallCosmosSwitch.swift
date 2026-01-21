@@ -37,7 +37,6 @@ class FunctionCallCosmosSwitch: FunctionCallAddressable, ObservableObject {
     @Published var isTheFormValid: Bool = false
     @Published var customErrorMessage: String? = nil
     
-    
     private var tx: SendTransaction
     private var vault: Vault
     

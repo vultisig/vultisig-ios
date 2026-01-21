@@ -19,8 +19,6 @@ struct SendDetailsAdditionalSection: View {
     var body: some View {
         VStack(spacing: 14) {
             addMemoField
-            
-            
         }
         .onAppear {
             if !tx.memo.isEmpty {

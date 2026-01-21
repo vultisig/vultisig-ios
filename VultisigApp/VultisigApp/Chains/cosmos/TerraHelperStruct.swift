@@ -27,8 +27,7 @@ struct TerraHelperStruct {
         
         if
             let signDataMessages = try CosmosSignDataBuilder.getMessages(keysignPayload: keysignPayload),
-            let signDataFee = try CosmosSignDataBuilder.getFee(keysignPayload: keysignPayload)
-        {
+            let signDataFee = try CosmosSignDataBuilder.getFee(keysignPayload: keysignPayload) {
             
             let input = CosmosSigningInput.with {
                 $0.publicKey = pubKeyData
@@ -47,9 +46,8 @@ struct TerraHelperStruct {
             return try input.serializedData()
             
         } else if keysignPayload.coin.isNativeToken
-            || keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/")
-            || keysignPayload.coin.contractAddress.lowercased().starts(with: "factory/")
-        {
+                    || keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/")
+                    || keysignPayload.coin.contractAddress.lowercased().starts(with: "factory/") {
             
             let input = CosmosSigningInput.with {
                 $0.publicKey = pubKeyData
@@ -62,7 +60,7 @@ struct TerraHelperStruct {
                     $0.memo = memo
                 }
                 $0.messages = [WalletCore.CosmosMessage.with {
-                    $0.sendCoinsMessage = WalletCore.CosmosMessage.Send.with{
+                    $0.sendCoinsMessage = WalletCore.CosmosMessage.Send.with {
                         $0.fromAddress = keysignPayload.coin.address
                         $0.amounts = [CosmosAmount.with {
                             $0.denom = keysignPayload.coin.isNativeToken ? denom : keysignPayload.coin.contractAddress
@@ -94,11 +92,11 @@ struct TerraHelperStruct {
                     $0.accountNumber = accountNumber
                     $0.sequence = sequence
                     $0.mode = .sync
-
+                    
                     if let memo = keysignPayload.memo {
                         $0.memo = memo
                     }
-
+                    
                     $0.messages = [WalletCore.CosmosMessage.with {
                         $0.sendCoinsMessage = WalletCore.CosmosMessage.Send.with {
                             $0.fromAddress = keysignPayload.coin.address
@@ -109,7 +107,7 @@ struct TerraHelperStruct {
                             $0.toAddress = keysignPayload.toAddress
                         }
                     }]
-
+                    
                     $0.fee = WalletCore.CosmosFee.with {
                         $0.gas = 1000000
                         $0.amounts = [
@@ -125,7 +123,7 @@ struct TerraHelperStruct {
                     }
                     
                 }
-
+                
                 return try input.serializedData()
                 
             } else {
@@ -143,11 +141,11 @@ struct TerraHelperStruct {
                                     {"transfer": { "amount": "\(keysignPayload.toAmount)", "recipient": "\(keysignPayload.toAddress)" } }
                                     """
                 }
-
+                
                 let message = WalletCore.CosmosMessage.with {
                     $0.wasmExecuteContractGeneric = wasmGenericMessage
                 }
-                               
+                
                 let fee = WalletCore.CosmosFee.with {
                     $0.gas = GasLimit
                     $0.amounts = [CosmosAmount.with {
@@ -189,19 +187,17 @@ struct TerraHelperStruct {
     }
     
     static func getSignedTransaction(keysignPayload: KeysignPayload,
-                              signatures: [String: TssKeysignResponse],
-                              chain: Chain) throws -> SignedTransactionResult
-    {
+                                     signatures: [String: TssKeysignResponse],
+                                     chain: Chain) throws -> SignedTransactionResult {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload, chain: chain)
         let signedTransaction = try getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures, chain: chain)
         return signedTransaction
     }
     
     static func getSignedTransaction(coinHexPublicKey: String,
-                              inputData: Data,
-                              signatures: [String: TssKeysignResponse],
-                              chain: Chain) throws -> SignedTransactionResult
-    {
+                                     inputData: Data,
+                                     signatures: [String: TssKeysignResponse],
+                                     chain: Chain) throws -> SignedTransactionResult {
         let coinType = chain.coinType
         guard let pubkeyData = Data(hexString: coinHexPublicKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)

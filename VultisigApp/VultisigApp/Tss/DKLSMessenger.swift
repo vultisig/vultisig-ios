@@ -66,7 +66,7 @@ final class DKLSMessenger {
                 return try await downloadSetupMessage(additionalHeader)
             } catch {
                 print("fail to download setup message,error \(error), attempt: \(attempt)")
-                //backoff 1s
+                // backoff 1s
                 try await Task.sleep(for: .seconds(1))
             }
             attempt = attempt + 1
@@ -163,8 +163,7 @@ final class DKLSMessenger {
                 }
                 logger.info("send message (\(msg.hash) to (\(msg.to)) successfully, sequenceNo:\(msg.sequence_no)")
                 return
-            }
-            catch {
+            } catch {
                 logger.error("fail to send message,error:\(error)")
             }
         }

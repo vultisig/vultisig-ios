@@ -143,8 +143,8 @@ struct CoinService {
         let isDerived = pubKey != nil
         let newCoin = try CoinFactory.create(
             asset: asset,
-            publicKeyECDSA:  pubKey ?? vault.pubKeyECDSA,
-            publicKeyEdDSA:  pubKey ?? vault.pubKeyEdDSA,
+            publicKeyECDSA: pubKey ?? vault.pubKeyECDSA,
+            publicKeyEdDSA: pubKey ?? vault.pubKeyEdDSA,
             hexChainCode: vault.hexChainCode,
             isDerived: isDerived
         )
@@ -177,7 +177,7 @@ struct CoinService {
     static func fetchDiscoveredTokens(nativeCoin: CoinMeta, address: String) async throws -> [CoinMeta] {
         var tokens: [CoinMeta] = []
         switch nativeCoin.chain.chainType {
-        case .EVM :
+        case .EVM:
             let service = try EvmService.getService(forChain: nativeCoin.chain)
             tokens = try await service.getTokens(nativeToken: nativeCoin, address: address)
         case .Solana:

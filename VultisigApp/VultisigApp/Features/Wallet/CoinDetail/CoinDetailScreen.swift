@@ -160,7 +160,6 @@ private extension CoinDetailScreen {
                 coinType: coin.ticker
             )
         case .sell:
-            // TODO: - To add
             break
         }
         

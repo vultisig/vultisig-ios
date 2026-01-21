@@ -149,7 +149,7 @@ enum SettingsAPRPeriod: String, CaseIterable {
 }
 
 class SettingsOptionsStore {
-    static let FAQData : [(question: String, answer: String)] = Range(1...9).map {
+    static let FAQData: [(question: String, answer: String)] = Range(1...9).map {
         (question: "faqQuestion\($0)", answer: "faqAnswer\($0)")
     }
 }

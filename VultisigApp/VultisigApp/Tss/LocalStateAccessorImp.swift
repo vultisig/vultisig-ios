@@ -28,10 +28,8 @@ final class LocalStateAccessorImpl: NSObject, TssLocalStateAccessorProtocol, Obs
         guard let pubKey else {
             return ""
         }
-        for share in self.vault.keyshares {
-            if share.pubkey == pubKey {
-                return share.keyshare
-            }
+        for share in self.vault.keyshares where share.pubkey == pubKey {
+            return share.keyshare
         }
         return ""
     }
@@ -48,4 +46,3 @@ final class LocalStateAccessorImpl: NSObject, TssLocalStateAccessorProtocol, Obs
         }
     }
 }
-

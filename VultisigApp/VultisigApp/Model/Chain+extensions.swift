@@ -7,13 +7,11 @@
 
 import Foundation
 
-extension Chain{
-    init?(name: String){
-        for chain in Chain.allCases {
-            if chain.name == name  {
-                self = chain
-                return
-            }
+extension Chain {
+    init?(name: String) {
+        for chain in Chain.allCases where chain.name == name {
+            self = chain
+            return
         }
         return nil
     }

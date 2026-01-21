@@ -9,7 +9,6 @@ import SwiftUI
 
 struct SettingToggleCell: View {
     
-    
     let title: String
     let icon: String
     @Binding var isEnabled: Bool

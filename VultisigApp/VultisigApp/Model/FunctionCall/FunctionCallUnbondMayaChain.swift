@@ -10,8 +10,7 @@ import Foundation
 import SwiftUI
 
 class FunctionCallUnbondMayaChain: FunctionCallAddressable,
-                                   ObservableObject
-{
+                                   ObservableObject {
     
     @Published var nodeAddress: String = ""
     @Published var fee: Int64 = .zero
@@ -49,8 +48,7 @@ class FunctionCallUnbondMayaChain: FunctionCallAddressable,
             self.assets = assets ?? []
         } else {
             DispatchQueue.main.async {
-                MayachainService.shared.getDepositAssets {
-                    [weak self] assetsResponse in
+                MayachainService.shared.getDepositAssets {[weak self] assetsResponse in
                     self?.assets = assetsResponse.map {
                         IdentifiableString(value: $0)
                     }

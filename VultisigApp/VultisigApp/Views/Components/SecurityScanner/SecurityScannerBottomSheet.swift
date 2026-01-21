@@ -134,5 +134,3 @@ struct SecurityScannerBottomSheetStyle {
     let image: String
     let imageColor: Color
 }
-
-

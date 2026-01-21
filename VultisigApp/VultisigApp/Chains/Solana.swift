@@ -10,7 +10,7 @@ import BigInt
 
 enum SolanaHelper {
     
-    static let defaultFeeInLamports: BigInt = 1000000 //0.001
+    static let defaultFeeInLamports: BigInt = 1000000 // 0.001
     static let priorityFeePrice: UInt64 = 1_000_000 // Priority fee price in lamports
     static let priorityFeeLimit: BigInt = 100_000 // Priority fee compute unit limit
     
@@ -149,8 +149,7 @@ enum SolanaHelper {
     }
     
     static func getSignedTransaction(keysignPayload: KeysignPayload,
-                                     signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
-    {
+                                     signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         let coinHexPublicKey = keysignPayload.coin.hexPublicKey
         guard let pubkeyData = Data(hexString: coinHexPublicKey) else {
             throw HelperError.runtimeError("public key \(coinHexPublicKey) is invalid")
@@ -201,7 +200,7 @@ enum SolanaHelper {
         let output = try SolanaSigningOutput(serializedBytes: compileWithSignature)
         
         let result = SignedTransactionResult(rawTransaction: output.encoded,
-                                             transactionHash: getHashFromRawTransaction(tx:output.encoded))
+                                             transactionHash: getHashFromRawTransaction(tx: output.encoded))
 
         return result
     }

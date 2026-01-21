@@ -52,7 +52,7 @@ class FunctionCallCosmosMerge: ObservableObject {
         
         if tx.coin.isNativeToken {
             self.amount = 0.0
-        } else  {
+        } else {
             self.amount = tx.coin.balanceDecimal
         }
     }

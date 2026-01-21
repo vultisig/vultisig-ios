@@ -12,7 +12,7 @@ import CryptoKit
 import BigInt
 import Foundation
 
-extension Data{
+extension Data {
     func sha256() -> Data {
         var hash = [UInt8](repeating: 0,  count: Int(CC_SHA256_DIGEST_LENGTH))
         

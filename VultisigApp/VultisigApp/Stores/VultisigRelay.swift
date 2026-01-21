@@ -21,11 +21,11 @@ class VultisigRelay {
             UserDefaults.standard.set(newValue, forKey: "use_vultisig_relay")
         }
     }
-    static var VultisigApiKey: String{
-        get{
+    static var VultisigApiKey: String {
+        get {
             return UserDefaults.standard.string(forKey: "vultisig_apikey") ?? ""
         }
-        set{
+        set {
             UserDefaults.standard.set(newValue, forKey: "vultisig_apikey")
         }
     }

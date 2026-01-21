@@ -23,11 +23,11 @@ struct ImportWalletUploadSection: View {
             .frame(maxWidth: .infinity)
             .background(backgroundColor.opacity(0.15))
             .cornerRadius(10)
-            .overlay (
+            .overlay(
                 ZStack {
                     getOverlay(isUploading ? 2 : 1)
                     getOverlay(1)
-                        .padding(isUploading ? 8 : 0)
+                       .padding(isUploading ? 8 : 0)
                 }
             )
             .animation(.easeInOut, value: isUploading)
@@ -43,7 +43,9 @@ struct ImportWalletUploadSection: View {
                 getUploadedFileContent(filename)
             } else {
                 importFileContent
-                    .onAppear  { backgroundColor = Theme.colors.border }
+                    .onAppear {
+                        backgroundColor = Theme.colors.border
+                    }
             }
         }
         .animation(.none, value: isUploading)

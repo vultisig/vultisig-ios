@@ -23,8 +23,6 @@ struct Blockchair: Codable {
 		var balanceInBTC: String {
 			formatAsBitcoin(balance ?? 0)
 		}
-        
-		
 		// Helper function to format an amount in satoshis as Bitcoin
         func formatAsBitcoin(_ satoshis: Int) -> String {
 			let btcValue = Decimal(satoshis) / 100_000_000.0 // Convert satoshis to BTC

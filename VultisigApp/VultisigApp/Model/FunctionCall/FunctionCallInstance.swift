@@ -153,7 +153,7 @@ enum FunctionCallInstance {
         case .securedAsset(let memo):
             // For secured assets (MINT), return the inbound address
             return memo.tx.toAddress.isEmpty ? nil : memo.tx.toAddress
-        case .withdrawSecuredAsset(_):
+        case .withdrawSecuredAsset:
             return nil // Withdraw is done via MsgDeposit on THORChain
         default:
             return nil
@@ -197,13 +197,13 @@ enum FunctionCallInstance {
     
     func getTransactionType() -> VSTransactionType {
         switch self {
-        case .vote(_):
+        case .vote:
             return VSTransactionType.vote
-        case .cosmosIBC(_):
+        case .cosmosIBC:
             return VSTransactionType.ibcTransfer
-        case .merge(_):
+        case .merge:
             return VSTransactionType.thorMerge
-        case .unmerge(_):
+        case .unmerge:
             return VSTransactionType.thorUnmerge
         default:
             return .unspecified
@@ -286,9 +286,9 @@ enum FunctionCallInstance {
     
     var wasmContractPayload: WasmExecuteContractPayload? {
         switch self {
-        case .securedAsset(_):
+        case .securedAsset:
             return nil // Secured assets don't use WASM contracts
-        case .withdrawSecuredAsset(_):
+        case .withdrawSecuredAsset:
             return nil // Withdraw secured assets don't use WASM contracts
         default:
             return nil

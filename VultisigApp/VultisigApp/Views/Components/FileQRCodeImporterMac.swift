@@ -10,8 +10,8 @@ import UniformTypeIdentifiers
 
 struct FileQRCodeImporterMac: View {
     let fileName: String?
-    let resetData: () -> ()
-    let handleFileImport: (_ result: Result<[URL], Error>) -> ()
+    let resetData: () -> Void
+    let handleFileImport: (_ result: Result<[URL], Error>) -> Void
     
 #if os(iOS)
     let selectedImage: UIImage?
@@ -53,7 +53,7 @@ struct FileQRCodeImporterMac: View {
         .frame(maxWidth: .infinity)
         .background(Theme.colors.bgButtonPrimary.opacity(0.15))
         .cornerRadius(10)
-        .overlay (
+        .overlay(
             ZStack {
                 getOverlay(isUploading ? 2 : 1)
                 getOverlay(1)

@@ -265,7 +265,6 @@ private extension ChainDetailScreen {
                 coinType: nativeCoin.ticker
             )
         case .sell:
-            // TODO: - To add
             break
         }
         

@@ -147,7 +147,6 @@ enum Utils {
         }
     }
     
-    
     public static func asyncGetRequest(urlString: String, headers: [String: String]? = nil) async throws -> Data {
         guard let url = URL(string: urlString) else {
             throw NSError(domain: "Invalid URL", code: 0, userInfo: nil)
@@ -419,14 +418,13 @@ enum Utils {
         }
     }
     
-    
     public static func isCacheValid<T>(for key: String, in cache: [String: (data: T, timestamp: Date)], timeInSeconds: Double) -> Bool {
         guard let cacheEntry = cache[key] else { return false }
         let elapsedTime = Date().timeIntervalSince(cacheEntry.timestamp)
         return elapsedTime <= timeInSeconds
     }
     
-    public static func getCachedData<T>(cacheKey: String, cache: [String: (data: T, timestamp: Date)], timeInSeconds: TimeInterval) async  -> T? {
+    public static func getCachedData<T>(cacheKey: String, cache: [String: (data: T, timestamp: Date)], timeInSeconds: TimeInterval) async -> T? {
         if let cacheEntry = cache[cacheKey], isCacheValid(for: cacheKey, in: cache, timeInSeconds: timeInSeconds) {
             return cacheEntry.data
         } else {

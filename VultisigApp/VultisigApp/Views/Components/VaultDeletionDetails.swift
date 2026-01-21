@@ -14,7 +14,7 @@ struct VaultDeletionDetails: View {
     @EnvironmentObject var appViewModel: AppViewModel
     @State var totalValue: String = ""
     
-    func setData(){
+    func setData() {
         totalValue = appViewModel.selectedVault?.coins.totalBalanceInFiatString ?? "$0"
     }
     
@@ -32,7 +32,7 @@ struct VaultDeletionDetails: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .onAppear() {
+        .onAppear {
             setData()
         }
     }

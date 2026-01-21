@@ -13,3 +13,6 @@ disabled_rules:
   - function_parameter_count
   - large_tuple
   - implicit_optional_initialization
+  - nesting
+  - inclusive_language
+  - for_where

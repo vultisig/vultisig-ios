@@ -28,4 +28,3 @@ struct VaultPartView: View {
         )
     }
 }
-

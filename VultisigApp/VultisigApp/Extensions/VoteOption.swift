@@ -33,4 +33,3 @@ extension TW_Cosmos_Proto_Message.VoteOption: @retroactive Identifiable {
         }
     }
 }
-

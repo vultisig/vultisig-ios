@@ -36,7 +36,7 @@ extension Vault: ProtoMappable {
         }
     }
     
-    func mapToProtobuff() ->  VSVault {
+    func mapToProtobuff()->  VSVault {
         return VSVault.with {
             $0.name = name
             $0.publicKeyEcdsa = pubKeyECDSA
@@ -46,14 +46,14 @@ extension Vault: ProtoMappable {
             $0.localPartyID = self.localPartyID
             $0.resharePrefix = self.resharePrefix ?? ""
             $0.libType = libType?.toVSLibType() ?? .gg20
-            $0.keyShares = self.keyshares.map{s in
+            $0.keyShares = self.keyshares.map { s in
                 var share = VSVault.KeyShare()
                 share.publicKey = s.pubkey
                 share.keyshare = s.keyshare
                 return share
             }
             $0.createdAt = Google_Protobuf_Timestamp(date: self.createdAt)
-            $0.chainPublicKeys = self.chainPublicKeys.map{c in
+            $0.chainPublicKeys = self.chainPublicKeys.map { c in
                 var cp = VSVault.ChainPublicKey()
                 cp.publicKey = c.publicKeyHex
                 cp.chain = c.chain.name

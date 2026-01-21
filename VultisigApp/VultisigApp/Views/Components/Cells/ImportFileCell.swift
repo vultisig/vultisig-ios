@@ -10,7 +10,7 @@ import SwiftUI
 struct ImportFileCell: View {
     
     let name: String
-    let resetData: () -> ()
+    let resetData: () -> Void
     
     var body: some View {
         HStack {

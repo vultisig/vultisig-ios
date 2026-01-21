@@ -23,7 +23,7 @@ struct JoinKeysignDoneSummary: View {
                 if viewModel.keysignPayload?.swapPayload != nil {
                     // Check if it's an LP operation by looking at the memo
                     if let memo = viewModel.keysignPayload?.memo,
-                       (memo.starts(with: "+:") || memo.starts(with: "-:")) {
+                       memo.starts(with: "+:") || memo.starts(with: "-:") {
                         // LP operation - show regular send content instead of swap
                         sendContent
                     } else {

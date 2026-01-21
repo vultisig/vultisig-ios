@@ -6,7 +6,7 @@
 import Foundation
 import Tss
 
-struct   KeysignSignature : Codable {
+struct KeysignSignature: Codable {
     let msg: String
     let r: String
     let s: String
@@ -36,7 +36,6 @@ extension TssKeysignResponse {
             return .failure(HelperError.runtimeError("fail to get recovery data"))
         }
         
-        
         var signature = Data()
         signature.append(rData)
         signature.append(sData)
@@ -62,10 +61,10 @@ extension TssKeysignResponse {
     
     func getJson() throws -> Data {
         let sig = KeysignSignature(msg: self.msg,
-                                   r:self.r,
+                                   r: self.r,
                                    s: self.s,
-                                   derSignature:self.derSignature,
-                                   recoveryID:self.recoveryID)
+                                   derSignature: self.derSignature,
+                                   recoveryID: self.recoveryID)
         return try JSONEncoder().encode(sig)
     }
     
@@ -80,4 +79,3 @@ extension TssKeysignResponse {
         return tssKeysignResp
     }
 }
-

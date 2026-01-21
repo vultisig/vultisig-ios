@@ -17,4 +17,3 @@ class THORChainAccountValue: Codable {
         case address, publicKey = "pub_key", accountNumber = "account_number", sequence
     }
 }
-
