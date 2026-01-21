@@ -12,16 +12,16 @@ final class DefiChainBondViewModel: ObservableObject {
     @Published private(set) var activeBondedNodes: [BondPosition] = []
     @Published private(set) var availableNodes: [BondNode] = []
     @Published private(set) var canUnbond: Bool = false
-    
+
     private var totalBondedDecimal: Decimal {
         activeBondedNodes.map(\.amount).reduce(.zero, +)
     }
-    
+
     var totalBondedBalance: String {
         guard let nativeCoin = vault.nativeCoin(for: chain) else { return "" }
         return nativeCoin.formatWithTicker(value: totalBondedDecimal)
     }
-    
+
     var totalBondedBalanceFiat: String {
         guard let nativeCoin = vault.nativeCoin(for: chain) else { return "" }
         return nativeCoin.fiat(decimal: nativeCoin.valueWithDecimals(value: totalBondedDecimal)).formatToFiat()
@@ -30,33 +30,43 @@ final class DefiChainBondViewModel: ObservableObject {
     var hasBondPositions: Bool {
         vault.defiPositions.contains { $0.chain == chain && !$0.bonds.isEmpty }
     }
+<<<<<<< HEAD
     
     private let interactor: BondInteractor?
+=======
+
+    private let interactor: BondInteractor
+>>>>>>> 186671542ac1b63de085bacb2f784ce5c89644a3
     private let chain: Chain
-    
+
     init(vault: Vault, chain: Chain) {
         self.vault = vault
         self.chain = chain
         self.interactor = DefiInteractorResolver.bondInteractor(for: chain)
     }
-    
+
     func update(vault: Vault) {
         self.vault = vault
     }
-    
+
     @MainActor
     func refresh() async {
+<<<<<<< HEAD
         guard hasBondPositions, let interactor = interactor else { return }
         
+=======
+        guard hasBondPositions else { return }
+
+>>>>>>> 186671542ac1b63de085bacb2f784ce5c89644a3
         activeBondedNodes = vault.bondPositions.filter { $0.node.coin.chain == chain }
-        
+
         self.canUnbond = await interactor.canUnbond()
         let (active, available) = await interactor.fetchBondPositions(vault: vault)
-        
+
         if !active.isEmpty {
             self.activeBondedNodes = active
         }
-        
+
         if !available.isEmpty {
             self.availableNodes = available
         }

@@ -11,9 +11,9 @@ struct DefiChainSelectionGridCell: View {
     let chain: Chain
     @ObservedObject var viewModel: DefiSelectChainViewModel
     var onSelection: (DefiChainSelection) -> Void
-    
+
     @State var isSelected = false
-    
+
     var body: some View {
         AssetSelectionGridCell(
             name: chain.name,
@@ -25,7 +25,7 @@ struct DefiChainSelectionGridCell: View {
         }
         .onAppear(perform: onAppear)
     }
-    
+
     func onAppear() {
         isSelected = viewModel.selection.contains(chain)
     }
@@ -37,5 +37,5 @@ struct DefiChainSelectionGridCell: View {
         viewModel: DefiSelectChainViewModel()
     ) { _ in }
     .environmentObject(CoinSelectionViewModel())
-    
+
 }

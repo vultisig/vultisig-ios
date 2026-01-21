@@ -11,24 +11,24 @@ import SwiftUI
 extension VaultDetailQRCodeViewModel {
     func render(vault: Vault, displayScale: CGFloat) {
         let screenSize = UIScreen.main.bounds.size
-        
+
         // Create a scaled version that fills the screen while maintaining aspect ratio
         let qrCodeView = VaultDetailQRCode(vault: vault)
-        
+
         let renderer = ImageRenderer(content: qrCodeView)
         renderer.proposedSize = ProposedViewSize(screenSize)
         renderer.scale = displayScale
-        
+
         if let uiImage = renderer.uiImage {
             renderedImage = Image(uiImage: uiImage)
         }
     }
-    
+
     func shareImage(_ imageName: String) {
         guard let image = renderedImage else {
             return
         }
-        
+
         let uiImage = renderImage(image: image)
 
         let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(imageName)
@@ -44,7 +44,7 @@ extension VaultDetailQRCodeViewModel {
             rootViewController.present(activityViewController, animated: true, completion: nil)
         }
     }
-    
+
     func renderImage(image: Image) -> UIImage {
         let controller = UIHostingController(rootView: image)
         let view = controller.view

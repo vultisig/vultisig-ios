@@ -28,7 +28,7 @@ struct BackupGuideAnimationView: View {
             .padding(.top, isMacOS ? 0 : 32)
         }
     }
-    
+
     @ViewBuilder
     func animationCell(index: Int) -> some View {
         switch type {
@@ -42,7 +42,7 @@ struct BackupGuideAnimationView: View {
             }
         }
     }
-    
+
     var secureAnimationCells: [(icon: String, text: String)] {
         [
             (icon: "circle-info", text: String(format: "secureVaultSummaryText1".localized, vault?.signers.count ?? 0)),
@@ -51,7 +51,7 @@ struct BackupGuideAnimationView: View {
             (icon: "cloud-check-2", text: "secureVaultSummaryText4")
         ]
     }
-    
+
     var keyImportAnimationCells: [(icon: String, text: String)] {
         [
             (icon: "devices", text: "keyImportVaultSummaryText1"),
@@ -61,7 +61,7 @@ struct BackupGuideAnimationView: View {
             (icon: "unlocked", text: "keyImportVaultSummaryText5")
         ]
     }
-    
+
     var animationHeader: some View {
         HStack {
             Icon(named: "shield", color: Theme.colors.alertSuccess, size: 16)

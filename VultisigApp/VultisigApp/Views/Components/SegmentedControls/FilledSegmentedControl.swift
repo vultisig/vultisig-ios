@@ -15,11 +15,11 @@ protocol FilledSegmentedControlType: Identifiable {
 struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
     @Binding var selection: T
     let options: [T]
-    
+
     var selectionIndex: Int {
         options.firstIndex { $0.id == selection.id } ?? 0
     }
-    
+
     var body: some View {
         GeometryReader { proxy in
             ZStack(alignment: .leading) {
@@ -29,7 +29,7 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
                     .frame(width: size)
                     .offset(x: CGFloat(selectionIndex) * size)
                     .animation(.interpolatingSpring, value: selectionIndex)
-                
+
                 HStack {
                     ForEach(options) { option in
                         Button {
@@ -61,16 +61,16 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
 #Preview {
     enum FilledTestType: String, FilledSegmentedControlType {
         case option1, option2
-        
+
         var id: Int {
             hashValue
         }
-        
+
         var title: String {
             rawValue
         }
     }
-    
+
     @Previewable @State var selection = FilledTestType.option1
     return FilledSegmentedControl(selection: $selection, options: [.option1, .option2])
 }

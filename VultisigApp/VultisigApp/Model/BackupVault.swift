@@ -7,11 +7,11 @@
 
 import Foundation
 
-enum VaultVersion: String, Codable{
-    case v1 = "v1"
+enum VaultVersion: String, Codable {
+    case v1
 }
 
-struct BackupVault : Codable{
+struct BackupVault: Codable {
     let version: VaultVersion
     let vault: Vault
 }

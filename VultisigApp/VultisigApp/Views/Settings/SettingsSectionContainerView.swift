@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SettingsSectionContainerView<Content: View>: View {
     var content: () -> Content
-    
+
     var body: some View {
         content()
             .background(

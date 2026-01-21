@@ -14,7 +14,7 @@ struct SecurityScannerTransaction {
     let to: String
     let amount: BigInt
     let data: String
-    
+
     init(
         chain: Chain,
         type: SecurityTransactionType,
@@ -36,7 +36,7 @@ struct SecurityScannerMetadata: Equatable {
     let requestId: String
     let classification: String
     let resultType: String
-    
+
     init(
         requestId: String = "",
         classification: String = "",
@@ -88,7 +88,7 @@ enum SecurityScannerFeaturesType {
 struct SecurityScannerSupport {
     let provider: String
     let feature: [Feature]
-    
+
     struct Feature {
         let chains: [Chain]
         let featureType: SecurityScannerFeaturesType

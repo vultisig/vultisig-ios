@@ -24,7 +24,7 @@ extension VultisigApp {
             .environmentObject(deeplinkViewModel)
             .buttonStyle(BorderlessButtonStyle())
             .frame(minWidth: 900, minHeight: 600)
-            .onAppear{
+            .onAppear {
                 // Run migrations on app launch
                 AppMigrationService().performMigrationsIfNeeded()
 

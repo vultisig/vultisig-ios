@@ -13,15 +13,14 @@ public final class Mediator {
     let cache = ConcurrentCache()
     private var service: NetService
     private let lock = NSLock()
-    
+
     // Singleton
     public static let shared = Mediator()
     private init() {
         self.service = NetService(domain: "local.", type: "_http._tcp", name: "VultisigApp", port: Int32(self.port))
         self.setupRoute()
     }
-    
-    
+
     private func setupRoute() {
         // POST with a sessionID
         self.server.POST["/:sessionID"] = self.postSession
@@ -38,21 +37,21 @@ public final class Mediator {
         // coordinate keysign finish
         self.server.POST["/complete/:seesionID/keysign"] = self.keysignFinish
         self.server.GET["/complete/:seesionID/keysign"] = self.keysignFinish
-        
+
         // POST/GET , to notifiy all parties to start keygen/keysign
         self.server["/start/:sessionID"] = self.startKeygenOrKeysign
-        
+
         // POST, mark a keygen has been complete
         self.server["/complete/:sessionID"] = self.keygenFinishSession
-        
+
         // Payload
         self.server["/payload/:hash"] = self.processPayload
-        
+
         // setup message
         self.server["/setup-message/:sessionID"] = self.processSetupMessage
-        
+
     }
-    
+
     // start the server
     public func start(name: String) {
         do {
@@ -66,14 +65,14 @@ public final class Mediator {
         }
         self.logger.info("server started successfully")
     }
-    
+
     // stop mediator server
     public func stop() {
         self.server.stop()
         // clean up all
         self.cache.removeAll()
     }
-    
+
     private func startKeygenOrKeysign(req: HttpRequest) -> HttpResponse {
         guard let sessionID = req.params[":sessionID"] else {
             return HttpResponse.badRequest(.text("sessionID is empty"))
@@ -81,7 +80,7 @@ public final class Mediator {
         let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
         let key = "session-\(cleanSessionID)-start"
         // self.logger.debug("request session id is: \(cleanSessionID)")
-        do{
+        do {
             switch req.method {
             case "POST":
                 do {
@@ -92,7 +91,7 @@ public final class Mediator {
                     self.logger.error("fail to start keygen/keysign,error:\(error.localizedDescription)")
                     return HttpResponse.badRequest(.none)
                 }
-                
+
                 return HttpResponse.ok(.text(""))
             case "GET":
                 if !self.cache.objectExists(forKey: key) {
@@ -107,12 +106,12 @@ public final class Mediator {
             default:
                 return HttpResponse.notFound
             }
-        }catch{
+        } catch {
             logger.error("fail to process request to start keygen/keysign,error:\(error.localizedDescription)")
             return HttpResponse.internalServerError
         }
     }
-    
+
     private func sendMessage(req: HttpRequest) -> HttpResponse {
         guard let sessionID = req.params[":sessionID"] else {
             return HttpResponse.badRequest(.text("sessionID is empty"))
@@ -138,7 +137,7 @@ public final class Mediator {
         }
         return HttpResponse.accepted
     }
-    
+
     private func getMessages(req: HttpRequest) -> HttpResponse {
         guard let sessionID = req.params[":sessionID"] else {
             return HttpResponse.badRequest(.text("sessionID is empty"))
@@ -156,10 +155,10 @@ public final class Mediator {
                 keyPrefix = "\(cleanSessionID)-\(cleanParticipantKey)-\(messageID)-"
             }
             let encoder = JSONEncoder()
-            
+
             // get all the messages
             let allKeys = self.cache.getAllKeys()
-            let messages = try allKeys.filter{
+            let messages = try allKeys.filter {
                 $0.hasPrefix(keyPrefix)
             }.compactMap { cacheKey in
                 try self.cache.getObject(forKey: cacheKey) as? Message
@@ -171,11 +170,11 @@ public final class Mediator {
             return HttpResponse.internalServerError
         }
     }
-    
+
     private func postSession(req: HttpRequest) -> HttpResponse {
         return processSession(req: req, keyPrefix: nil)
     }
-    
+
     private func keygenFinishSession(req: HttpRequest) -> HttpResponse {
         switch req.method {
         case "POST":
@@ -186,15 +185,15 @@ public final class Mediator {
             return HttpResponse.notAcceptable
         }
     }
-    
-    private func processSession(req: HttpRequest,keyPrefix: String?) -> HttpResponse {
+
+    private func processSession(req: HttpRequest, keyPrefix: String?) -> HttpResponse {
         guard let sessionID = req.params[":sessionID"] else {
             self.logger.error("request session id is empty")
             return HttpResponse.badRequest(.text("sessionID is empty"))
         }
         let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
         var key = ""
-        if let keyPrefix{
+        if let keyPrefix {
             key = "\(keyPrefix)-session-\(cleanSessionID)"
         } else {
             key = "session-\(cleanSessionID)"
@@ -211,20 +210,19 @@ public final class Mediator {
                     }
                     self.cache.setObject(cachedValue, forKey: key)
                 }
-            }
-            else {
+            } else {
                 let session = Session(SessionID: cleanSessionID, Participants: p)
                 self.cache.setObject(session, forKey: key)
             }
             self.logger.debug("session id is: \(cleanSessionID), participants:\(p) stored with key:\(key)")
-            
+
         } catch {
             self.logger.error("fail to decode json body,error:\(error)")
             return HttpResponse.badRequest(.text("invalid json payload"))
         }
         return HttpResponse.created
     }
-    
+
     private func deleteSession(req: HttpRequest) -> HttpResponse {
         guard let sessionID = req.params[":sessionID"] else {
             return HttpResponse.badRequest(.text("sessionID is empty"))
@@ -236,38 +234,36 @@ public final class Mediator {
         self.cache.removeObject(key: keyStart)
         return HttpResponse.ok(.text(""))
     }
-    
+
     private func getSession(req: HttpRequest) -> HttpResponse {
         return processGetSession(req: req, keyPrefix: nil)
     }
-    
-    private func processGetSession(req: HttpRequest, keyPrefix: String?) -> HttpResponse{
+
+    private func processGetSession(req: HttpRequest, keyPrefix: String?) -> HttpResponse {
         guard let sessionID = req.params[":sessionID"] else {
             return HttpResponse.badRequest(.text("sessionID is empty"))
         }
-        
+
         let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
         var key = ""
-        if let keyPrefix{
+        if let keyPrefix {
             key = "\(keyPrefix)-session-\(cleanSessionID)"
         } else {
             key = "session-\(cleanSessionID)"
         }
-        do  {
+        do {
             if let cachedValue = try self.cache.getObject(forKey: key) as? Session {
                 return HttpResponse.ok(.json(cachedValue.Participants))
             }
-        }
-        catch Cache.StorageError.notFound {
+        } catch Cache.StorageError.notFound {
             logger.error("session with key:\(key) not found")
             return HttpResponse.notFound
-        }
-        catch{
+        } catch {
             logger.error("fail to get session,error:\(error.localizedDescription)")
         }
         return HttpResponse.notFound
     }
-    
+
     private func deleteMessage(req: HttpRequest) -> HttpResponse {
         guard let sessionID = req.params[":sessionID"] else {
             return HttpResponse.badRequest(.text("sessionID is empty"))
@@ -289,7 +285,7 @@ public final class Mediator {
         self.cache.removeObject(key: key)
         return HttpResponse.ok(.text(""))
     }
-    
+
     func keysignFinish(req: HttpRequest) -> HttpResponse {
         guard let sessionID = req.params[":sessionID"] else {
             return HttpResponse.badRequest(.text("sessionID is empty"))
@@ -297,14 +293,14 @@ public final class Mediator {
         guard let messageID = req.headers["message_id"] else {
             return HttpResponse.badRequest(.text("message_id is empty"))
         }
-        
+
         let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
         let key = "keysign-\(cleanSessionID)-\(messageID)-complete"
         self.logger.debug("keysign complete, key:\(key)")
-        do{
+        do {
             switch req.method {
             case "POST":
-                let body = String(data:Data(req.body),encoding:.utf8) ?? ""
+                let body = String(data: Data(req.body), encoding: .utf8) ?? ""
                 self.cache.setObject(body, forKey: key)
                 return HttpResponse.ok(.text(""))
             case "GET":
@@ -319,20 +315,20 @@ public final class Mediator {
             default:
                 return HttpResponse.notFound
             }
-        }catch{
+        } catch {
             logger.error("fail to process request to start keygen/keysign,error:\(error.localizedDescription)")
             return HttpResponse.internalServerError
         }
     }
-    
+
     func processPayload(req: HttpRequest) -> HttpResponse {
         guard let hash = req.params[":hash"] else {
             return HttpResponse.badRequest(.text("hash is empty"))
         }
-        do{
+        do {
             switch req.method {
             case "POST":
-                let body = String(data:Data(req.body),encoding:.utf8) ?? ""
+                let body = String(data: Data(req.body), encoding: .utf8) ?? ""
                 let hashBody = body.sha256()
                 if hash != hashBody {
                     return HttpResponse.badRequest(.text("invalid hash"))
@@ -357,12 +353,12 @@ public final class Mediator {
             default:
                 return HttpResponse.notFound
             }
-        } catch{
+        } catch {
             logger.error("fail to process request to payload,error:\(error.localizedDescription)")
             return HttpResponse.internalServerError
         }
     }
-    
+
     func processSetupMessage(req: HttpRequest) -> HttpResponse {
         guard let sessionID = req.params[":sessionID"] else {
             return HttpResponse.badRequest(.text("sessionID is empty"))
@@ -372,10 +368,10 @@ public final class Mediator {
         if let messageID, !messageID.isEmpty {
             key += "-\(messageID)"
         }
-        do{
+        do {
             switch req.method {
             case "POST":
-                let body = String(data:Data(req.body),encoding:.utf8) ?? ""
+                let body = String(data: Data(req.body), encoding: .utf8) ?? ""
                 self.cache.setObject(body, forKey: key)
                 return HttpResponse.created
             case "GET":
@@ -390,13 +386,12 @@ public final class Mediator {
             default:
                 return HttpResponse.notFound
             }
-        } catch{
+        } catch {
             logger.error("fail to process request to payload,error:\(error.localizedDescription)")
             return HttpResponse.internalServerError
         }
     }
-    
-    
+
     deinit {
         self.cache.removeAll() // clean up cache
     }

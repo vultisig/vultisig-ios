@@ -12,9 +12,9 @@ struct SwapCoinCell: View {
     let balance: String?
     let balanceFiat: String?
     let isSelected: Bool
-    
+
     var onSelect: () -> Void
-    
+
     var body: some View {
         Button {
             onSelect()
@@ -23,7 +23,7 @@ struct SwapCoinCell: View {
         }
         .buttonStyle(.plain)
     }
-    
+
     var label: some View {
         VStack(spacing: 0) {
             content
@@ -31,7 +31,7 @@ struct SwapCoinCell: View {
         }
         .background(isSelected ? Theme.colors.bgSurface2 : Theme.colors.bgSurface1)
     }
-    
+
     var content: some View {
         HStack {
             icon
@@ -43,7 +43,7 @@ struct SwapCoinCell: View {
         .padding(.horizontal, 22)
         .padding(.vertical, 12)
     }
-    
+
     var icon: some View {
         AsyncImageView(
             logo: coin.logo,
@@ -52,13 +52,13 @@ struct SwapCoinCell: View {
             tokenChainLogo: !coin.isNativeToken ? coin.chain.logo : nil
         )
     }
-    
+
     var title: some View {
         Text(coin.ticker)
             .font(Theme.fonts.bodySMedium)
             .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     var chain: some View {
         Text(coin.chain.name)
             .foregroundColor(Theme.colors.textSecondary)
@@ -70,14 +70,14 @@ struct SwapCoinCell: View {
                     .stroke(Theme.colors.bgSurface2, lineWidth: 1)
             )
     }
-    
+
     @ViewBuilder
     var balanceView: some View {
         if let balance, let balanceFiat {
             VStack(alignment: .trailing, spacing: 4) {
                 Text(balance)
                     .foregroundColor(Theme.colors.textPrimary)
-                
+
                 Text(balanceFiat)
                     .foregroundColor(Theme.colors.textTertiary)
             }

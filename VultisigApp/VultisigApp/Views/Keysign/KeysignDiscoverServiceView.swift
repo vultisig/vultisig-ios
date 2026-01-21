@@ -10,12 +10,12 @@ import SwiftUI
 struct KeysignDiscoverServiceView: View {
     @ObservedObject var viewModel: JoinKeysignViewModel
     @ObservedObject var serviceDelegate: ServiceDelegate
-    
+
     var body: some View {
         VStack(spacing: 16) {
             loader
             deviceID
-            
+
             Text(NSLocalizedString("discoveringMediator", comment: "Discovering mediator service, please wait..."))
         }
         .font(Theme.fonts.bodyMMedium)
@@ -28,7 +28,7 @@ struct KeysignDiscoverServiceView: View {
             viewModel.discoverService()
         }
     }
-    
+
     var loader: some View {
         ZStack {
             if self.serviceDelegate.serverURL == nil {
@@ -46,7 +46,7 @@ struct KeysignDiscoverServiceView: View {
         }
         .padding(.bottom, 18)
     }
-    
+
     var deviceID: some View {
         HStack {
             Text(NSLocalizedString("thisDevice", comment: ""))

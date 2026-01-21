@@ -12,7 +12,7 @@ struct AddFolderVaultCellView: View {
     let isSelected: Bool
     var onSelection: (Bool) -> Void
     @State var isSelectedInternal: Bool = false
-    
+
     var body: some View {
         HStack {
             VaultCellMainView(vault: vault)
@@ -35,7 +35,7 @@ struct AddFolderVaultCellView: View {
             guard isSelectedInternal != isSelected else {
                 return
             }
-            
+
             // Wait for toggle animation to complete
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 onSelection(isSelectedInternal)

@@ -13,7 +13,7 @@ class ChainCellViewModel: ObservableObject {
         guard group.coins.count>1 else {
             return "1 " + NSLocalizedString("asset", comment: "")
         }
-        
+
         return "\(group.coins.count) \(NSLocalizedString("assets", comment: ""))"
     }
 }

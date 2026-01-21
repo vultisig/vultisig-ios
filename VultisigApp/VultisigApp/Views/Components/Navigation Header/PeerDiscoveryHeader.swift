@@ -11,10 +11,10 @@ struct PeerDiscoveryHeader: View {
     let title: String
     let vault: Vault
     let hideBackButton: Bool
-    
+
     @ObservedObject var viewModel: KeygenPeerDiscoveryViewModel
     @ObservedObject var shareSheetViewModel: ShareSheetViewModel
-    
+
     var body: some View {
         HStack {
             leadingAction
@@ -27,23 +27,23 @@ struct PeerDiscoveryHeader: View {
         .padding(.horizontal, 40)
         .padding(.top, 8)
     }
-    
+
     var leadingAction: some View {
         NavigationBackButton()
             .opacity(hideBackButton ? 0 : 1)
     }
-    
+
     var text: some View {
         Text(NSLocalizedString(title, comment: ""))
             .foregroundColor(Theme.colors.textPrimary)
             .font(.title3)
     }
-    
+
     var trailingAction: some View {
         ZStack {
             if viewModel.status == .WaitingForDevices {
                 NavigationQRShareButton(
-                    vault: vault, 
+                    vault: vault,
                     type: .Keygen,
                     viewModel: shareSheetViewModel
                 )

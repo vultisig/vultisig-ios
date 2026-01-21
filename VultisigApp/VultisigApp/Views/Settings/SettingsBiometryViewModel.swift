@@ -22,7 +22,7 @@ final class SettingsBiometryViewModel: ObservableObject {
 
     private let keychain = DefaultKeychainService.shared
     private let fastVaultService = FastVaultService.shared
-    
+
     var saveHintEnabled: Bool {
         hint != initialHint
     }
@@ -31,7 +31,7 @@ final class SettingsBiometryViewModel: ObservableObject {
         password = .empty
         passwordError = nil
     }
-    
+
     func resetHintData(vault: Vault) {
         if let hint = keychain.getFastHint(pubKeyECDSA: vault.pubKeyECDSA) {
            self.hint = hint
@@ -69,11 +69,11 @@ final class SettingsBiometryViewModel: ObservableObject {
             password.isEmpty ? nil : password,
             pubKeyECDSA: vault.pubKeyECDSA
         )
-        
+
         isBiometryEnabled = true
         return true
     }
-    
+
     func saveHint(vault: Vault) {
         keychain.setFastHint(
             hint.isEmpty ? nil : hint,

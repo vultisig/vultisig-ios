@@ -11,7 +11,7 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
     let banner: Banner
     let action: () -> Void
     let onClose: () -> Void
-    
+
     init(
         banner: Banner,
         action: @escaping () -> Void,
@@ -21,7 +21,7 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
         self.action = action
         self.onClose = onClose
     }
-    
+
     var body: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 16) {
@@ -35,7 +35,7 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textPrimary)
                 }
-                
+
                 PrimaryButton(
                     title: banner.buttonTitle,
                     type: .primarySuccess,
@@ -47,9 +47,9 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            
+
             Spacer()
-            
+
             CarouselBannerCloseButton(action: onClose)
         }
         .padding(8)
@@ -70,7 +70,7 @@ struct CarouselBannerView<Banner: CarouselBannerType>: View {
 
 private struct CarouselBannerCloseButton: View {
     let action: () -> Void
-    
+
     var body: some View {
         if #available(iOS 26.0, macOS 26.0, *) {
             Button(action: action) {
@@ -91,7 +91,7 @@ private struct CarouselBannerCloseButton: View {
             .buttonStyle(.plain)
         }
     }
-    
+
     var icon: some View {
         Icon(
             named: "cross-small",
@@ -107,5 +107,5 @@ private struct CarouselBannerCloseButton: View {
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     .background(Theme.colors.bgPrimary)
-    
+
 }

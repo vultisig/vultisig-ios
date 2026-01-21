@@ -15,7 +15,7 @@ extension View {
                 field.wrappedValue = newValue
             }
         }
-    
+
     func focusPreviousField<F: RawRepresentable>(_ field: FocusState<F?>.Binding) where F.RawValue == Int {
         guard let currentValue = field.wrappedValue else { return }
         let nextValue = currentValue.rawValue - 1
@@ -23,18 +23,18 @@ extension View {
             field.wrappedValue = newValue
         }
     }
-    
+
     func borderlessTextFieldStyle() -> some View {
         self.textFieldStyle(PlainTextFieldStyle())
     }
-    
+
     @ViewBuilder
     func showIf(_ shouldShow: Bool) -> some View {
         if shouldShow {
             self
         }
     }
-    
+
     @ViewBuilder
     func unwrap<T, Content: View>(_ value: T?, transform: (Self, T) -> Content) -> some View {
         if let value {
@@ -43,7 +43,7 @@ extension View {
             self
         }
     }
-    
+
     /// Applies the given transform if the given condition evaluates to `true`.
     /// - Parameters:
     ///   - condition: The condition to evaluate.
@@ -56,7 +56,7 @@ extension View {
             self
         }
     }
-    
+
     @ViewBuilder func supportsLiquidGlass<Content: View>(transform: (Self, Bool) -> Content) -> some View {
         if #available(iOS 26.0, *) {
             transform(self, true)

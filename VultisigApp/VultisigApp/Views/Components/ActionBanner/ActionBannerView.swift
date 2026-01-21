@@ -14,7 +14,7 @@ struct ActionBannerView: View {
     let buttonTitle: String
     let showsActionButton: Bool
     let action: () -> Void
-    
+
     init(
         icon: String? = nil,
         title: String,
@@ -30,7 +30,7 @@ struct ActionBannerView: View {
         self.showsActionButton = showsActionButton
         self.action = action
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
             GradientListSeparator()
@@ -47,7 +47,7 @@ struct ActionBannerView: View {
                         .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: 263)
-                
+
                 PrimaryButton(title: buttonTitle, size: .mini, action: action)
                     .fixedSize()
             }

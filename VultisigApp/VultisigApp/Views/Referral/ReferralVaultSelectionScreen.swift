@@ -11,9 +11,9 @@ import SwiftUI
 struct ReferralVaultSelectionScreen: View {
     @Query var vaults: [Vault]
     @Environment(\.dismiss) var dismiss
-    
+
     @ObservedObject var viewModel: VaultSelectedViewModel
-    
+
     var body: some View {
         Screen(title: "referral".localized) {
             ScrollView(showsIndicators: false) {
@@ -21,7 +21,7 @@ struct ReferralVaultSelectionScreen: View {
                     Text("vaults".localized)
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textTertiary)
-                    
+
                     VStack(spacing: 0) {
                         ForEach(vaults) { vault in
                             Button {
@@ -40,7 +40,7 @@ struct ReferralVaultSelectionScreen: View {
             }
         }
     }
-    
+
     func vaultRow(vault: Vault) -> some View {
         HStack(spacing: 16) {
             Text(vault.name)
@@ -56,8 +56,7 @@ struct ReferralVaultSelectionScreen: View {
         .padding(.vertical, 12)
         .background(isSelected(vault: vault) ? Theme.colors.bgSurface2 : Theme.colors.bgSurface1)
     }
-    
-    
+
     @ViewBuilder
     func trailingIcon(vault: Vault) -> some View {
         if isSelected(vault: vault) {
@@ -66,7 +65,7 @@ struct ReferralVaultSelectionScreen: View {
             Icon(named: "chevron-right", color: Theme.colors.textPrimary, size: 16)
         }
     }
-    
+
     func isSelected(vault: Vault) -> Bool {
         vault == viewModel.selectedVault
     }

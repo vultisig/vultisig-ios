@@ -11,15 +11,15 @@ struct BondMayaTransactionScreen: View {
     enum FocusedField {
         case address, amount
     }
-    
+
     @StateObject var viewModel: BondMayaTransactionViewModel
     var onVerify: (TransactionBuilder) -> Void
-    
+
     @State var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?
-    
+
     @State var showAssetSelection: Bool = false
-    
+
     var body: some View {
         FormScreen(
             title: "bond".localized,
@@ -58,7 +58,7 @@ struct BondMayaTransactionScreen: View {
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    
+
                     CommonTextField(
                         text: $viewModel.lpUnitsField.value,
                         label: viewModel.lpUnitsField.label,
@@ -81,13 +81,16 @@ struct BondMayaTransactionScreen: View {
                             Text(availableUnits)
                                 .font(Theme.fonts.caption12)
                                 .foregroundColor(Theme.colors.textPrimary)
-                            Button(action: {
-                                viewModel.lpUnitsField.value = availableUnits
-                            }) {
-                                Text("max".localized)
-                                    .font(Theme.fonts.caption12)
-                                    .foregroundColor(Theme.colors.alertInfo)
-                            }
+                            Button(
+                                action: {
+                                    viewModel.lpUnitsField.value = availableUnits
+                                },
+                                label: {
+                                    Text("max".localized)
+                                        .font(Theme.fonts.caption12)
+                                        .foregroundColor(Theme.colors.alertInfo)
+                                }
+                            )
                         }
                     }
 
@@ -110,10 +113,10 @@ struct BondMayaTransactionScreen: View {
             viewModel.onLoad()
             onAddressFill()
         }
-        .onChange(of: viewModel.addressViewModel.field.valid) { _, isValid in
+        .onChange(of: viewModel.addressViewModel.field.valid) { _, _ in
             onAddressFill()
         }
-        .onChange(of: focusedFieldBinding) { oldValue, newValue in
+        .onChange(of: focusedFieldBinding) { _, newValue in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 focusedField = newValue
             }
@@ -127,7 +130,7 @@ struct BondMayaTransactionScreen: View {
             ) { showAssetSelection = false }
         }
     }
-    
+
     func onContinue() {
         switch focusedFieldBinding {
         case .address:
@@ -137,12 +140,12 @@ struct BondMayaTransactionScreen: View {
                 focusedField = .address
                 return
             }
-            
+
             guard let transactionBuilder = viewModel.transactionBuilder else { return }
             onVerify(transactionBuilder)
         }
     }
-    
+
     func onAddressFill() {
         focusedFieldBinding = viewModel.addressViewModel.field.valid ? .amount : .address
     }

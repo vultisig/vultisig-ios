@@ -13,7 +13,7 @@ extension ReferralTextField {
         let pasteboard = UIPasteboard.general
         pasteboard.string = text
     }
-    
+
     func handlePasteCode() {
         if let clipboardContent = UIPasteboard.general.string {
             text = clipboardContent

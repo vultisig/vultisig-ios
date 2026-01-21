@@ -13,13 +13,13 @@ struct DefiChainLPPositionView: View {
     let fiatAmount: String
     var onRemove: () -> Void
     var onAdd: () -> Void
-    
+
     var title: String {
         String(format: "coinPool".localized, "\(position.coin1.ticker)/\(position.coin2.ticker)")
     }
-    
+
     var removeDisabled: Bool { position.coin1Amount.isZero }
-    
+
     var body: some View {
         ContainerView {
             VStack(spacing: 16) {
@@ -31,7 +31,7 @@ struct DefiChainLPPositionView: View {
             }
         }
     }
-    
+
     var header: some View {
         HStack(spacing: 12) {
             AsyncImageView(
@@ -40,12 +40,12 @@ struct DefiChainLPPositionView: View {
                 ticker: position.coin2.ticker,
                 tokenChainLogo: position.coin2.chain.logo
             )
-            
+
             VStack(alignment: .leading, spacing: .zero) {
                 Text(title)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
-                
+
                 HiddenBalanceText(fiatAmount)
                     .font(Theme.fonts.priceTitle1)
                     .foregroundStyle(Theme.colors.textPrimary)
@@ -55,7 +55,7 @@ struct DefiChainLPPositionView: View {
             Spacer()
         }
     }
-    
+
     var aprSection: some View {
         HStack(spacing: 4) {
             Icon(named: "percent", size: 16)
@@ -63,13 +63,13 @@ struct DefiChainLPPositionView: View {
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textTertiary)
             Spacer()
-            
+
             Text(position.apr.formatted(.percent.precision(.fractionLength(2))))
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.alertSuccess)
         }
     }
-    
+
     var lpTitle: String {
         let amount1 = AmountFormatter.formatCryptoAmount(value: position.coin1Amount, coin: position.coin1)
         let amount2 = AmountFormatter.formatCryptoAmount(value: position.coin2Amount, coin: position.coin2)
@@ -86,7 +86,7 @@ struct DefiChainLPPositionView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     var lpButtonsView: some View {
         HStack(alignment: .top, spacing: 16) {
             DefiButton(title: "remove".localized, icon: "minus-circle", type: .secondary) {
@@ -117,7 +117,7 @@ struct DefiChainLPPositionView: View {
             onRemove: {},
             onAdd: {}
         )
-        
+
         DefiChainLPPositionView(
             vault: .example,
             position: LPPosition(

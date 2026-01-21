@@ -26,22 +26,22 @@ class MayachainService: ThorchainSwapProvider {
             CosmosBalanceResponse.self, from: data)
         return balanceResponse.balances
     }
-    
+
     func fetchTokens(_ address: String) async throws -> [CoinMeta] {
         do {
             let balances: [CosmosBalance] = try await fetchBalances(address)
             var coinMetaList = [CoinMeta]()
             for balance in balances where balance.denom.caseInsensitiveCompare("cacao") != .orderedSame {
                 // Check if token exists in TokensStore first
-                let localAsset = TokensStore.TokenSelectionAssets.first(where: { 
+                let localAsset = TokensStore.TokenSelectionAssets.first(where: {
                     $0.chain == .mayaChain && ($0.contractAddress == balance.denom || $0.ticker.uppercased() == balance.denom.uppercased())
                 })
-                
+
                 let ticker: String
                 let decimals: Int
                 let logo: String
                 let priceProviderId: String
-                
+
                 if let localAsset = localAsset {
                     // Use data from TokensStore
                     ticker = localAsset.ticker
@@ -55,7 +55,7 @@ class MayachainService: ThorchainSwapProvider {
                     logo = balance.denom.replacingOccurrences(of: "/", with: "").lowercased()
                     priceProviderId = ""
                 }
-                
+
                 let coinMeta = CoinMeta(
                     chain: .mayaChain,
                     ticker: ticker,
@@ -75,8 +75,7 @@ class MayachainService: ThorchainSwapProvider {
     }
 
     func fetchAccountNumber(_ address: String) async throws
-        -> THORChainAccountValue?
-    {
+        -> THORChainAccountValue? {
         guard
             let url = URL(string: Endpoint.fetchAccountNumberMayachain(address))
         else {
@@ -129,8 +128,7 @@ class MayachainService: ThorchainSwapProvider {
         }
     }
 
-    func broadcastTransaction(jsonString: String) async -> Result<String, Error>
-    {
+    func broadcastTransaction(jsonString: String) async -> Result<String, Error> {
         let url = URL(string: Endpoint.broadcastTransactionMayachain)!
 
         guard let jsonData = jsonString.data(using: .utf8) else {
@@ -183,8 +181,7 @@ class MayachainService: ThorchainSwapProvider {
             let bondable: Bool
         }
 
-        let task = URLSession.shared.dataTask(with: URLRequest(url: url)) {
-            data, response, error in
+        let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, response, error in
             // Verifica se houve erro
             if let error = error {
                 print("Erro ao buscar ativos: \(error)")

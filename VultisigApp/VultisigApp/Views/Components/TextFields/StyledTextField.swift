@@ -14,9 +14,9 @@ struct StyledTextField: View {
     var maxLengthSize: Int
     @Binding var isValid: Bool
     var isOptional: Bool = false
-    
+
     @State private var localIsValid: Bool = true
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -29,7 +29,7 @@ struct StyledTextField: View {
                         .foregroundColor(.red)
                 }
             }
-            
+
             TextField(placeholder.capitalized, text: customBinding)
                 .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(Theme.colors.textPrimary)
@@ -45,7 +45,7 @@ struct StyledTextField: View {
                 }
         }
     }
-    
+
     var customBinding: Binding<String> {
         Binding<String>(
             get: { text },
@@ -55,14 +55,14 @@ struct StyledTextField: View {
             }
         )
     }
-    
+
     var optionalMessage: String {
         if isOptional {
             return " (optional)"
         }
         return ""
     }
-    
+
     private func validate(_ newValue: String) {
         if isOptional {
             isValid = newValue.isEmpty || !newValue.trimmingCharacters(in: .whitespaces).isEmpty

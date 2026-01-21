@@ -38,7 +38,7 @@ struct ServerBackupVerificationView: View {
     var verificationCode: String {
         return otp.joined().trimmingCharacters(in: .whitespaces)
     }
-    
+
     var body: some View {
         ZStack {
             Background()
@@ -57,7 +57,7 @@ struct ServerBackupVerificationView: View {
         }
         .interactiveDismissDisabled()
     }
-    
+
     var title: some View {
         Text(NSLocalizedString("enter5DigitVerificationCode", comment: ""))
             .font(Theme.fonts.largeTitle)
@@ -65,7 +65,7 @@ struct ServerBackupVerificationView: View {
             .multilineTextAlignment(.leading)
             .padding(.top, 50)
     }
-    
+
     var description: some View {
         Text(NSLocalizedString("enter5DigitVerificationCodeDescription", comment: ""))
             .font(Theme.fonts.bodySMedium)
@@ -101,7 +101,7 @@ struct ServerBackupVerificationView: View {
         } else if newValue.isEmpty && index > 0 {
             focusedField = index - 1
         }
-        
+
         if verificationCode.count == Self.codeLength {
             verifyCode()
         }
@@ -134,38 +134,38 @@ struct ServerBackupVerificationView: View {
         .listStyle(PlainListStyle())
         .buttonStyle(BorderlessButtonStyle())
     }
-    
+
     var loadingText: some View {
         HStack {
             animationVM?.view()
                 .frame(width: 24, height: 24)
-            
+
             Text(NSLocalizedString("verifyingCodePleaseWait", comment: ""))
                 .foregroundColor(Theme.colors.textPrimary)
                 .font(Theme.fonts.bodySMedium)
-            
+
             Spacer()
         }
     }
-    
+
     var alertText: some View {
         Text(NSLocalizedString(alertDescription, comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
             .foregroundColor(Theme.colors.alertError)
             .font(Theme.fonts.bodySMedium)
     }
-    
+
     private func verifyCode() {
         guard !verificationCode.isEmpty else {
             alertDescription = "emptyField"
             showAlert = true
             return
         }
-        
+
         Task {
             alertDescription = "verificationCodeTryAgain"
             isLoading = true
-            
+
             let isSuccess = await FastVaultService.shared.verifyBackupOTP(
                 ecdsaKey: vault.pubKeyECDSA,
                 OTPCode: verificationCode
@@ -174,7 +174,7 @@ struct ServerBackupVerificationView: View {
             if isSuccess {
                 tabIndex = 3
                 isPresented = false
-                
+
                 if tssType == .Migrate {
                     onBackup()
                 }
@@ -185,11 +185,11 @@ struct ServerBackupVerificationView: View {
             isLoading = false
         }
     }
-    
+
     private func deleteVault() {
         modelContext.delete(vault)
         isLoading = true
-        
+
         do {
             try modelContext.save()
             isLoading = false

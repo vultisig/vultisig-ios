@@ -11,7 +11,7 @@ struct VaultEditCellContainer<Content: View>: View {
     @Binding var isEditing: Bool
     let showDragIndicator: Bool
     var content: () -> Content
-    
+
     var body: some View {
         HStack(spacing: 0) {
             icon
@@ -22,7 +22,7 @@ struct VaultEditCellContainer<Content: View>: View {
         .padding(.vertical, 4)
         .animation(.easeInOut, value: isEditing)
     }
-    
+
     var icon: some View {
         Icon(
             named: "line-3-horizontal",

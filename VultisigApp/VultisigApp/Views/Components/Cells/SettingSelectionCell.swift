@@ -12,14 +12,14 @@ struct SettingSelectionCell: View {
     let isSelected: Bool
     var description: String? = nil
     let showSeparator: Bool
-    
+
     init(title: String, isSelected: Bool, description: String? = nil, showSeparator: Bool = true) {
         self.title = title
         self.isSelected = isSelected
         self.description = description
         self.showSeparator = showSeparator
     }
-    
+
     var body: some View {
         VStack(spacing: .zero) {
             HStack {
@@ -33,23 +33,23 @@ struct SettingSelectionCell: View {
                 .showIf(showSeparator)
         }
     }
-    
+
     var content: some View {
         VStack(alignment: .leading, spacing: 4) {
             titleBlock
-            
+
             if let description {
                 getDescriptionBlock(description)
             }
         }
     }
-    
+
     var titleBlock: some View {
         Text(title)
             .font(Theme.fonts.bodySRegular)
             .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     var chevron: some View {
         Image(systemName: "checkmark")
             .resizable()
@@ -60,7 +60,7 @@ struct SettingSelectionCell: View {
             .background(Circle().fill(Theme.colors.primaryAccent3))
             .showIf(isSelected)
     }
-    
+
     private func getDescriptionBlock(_ value: String) -> some View {
         Text(value)
             .font(Theme.fonts.caption12)

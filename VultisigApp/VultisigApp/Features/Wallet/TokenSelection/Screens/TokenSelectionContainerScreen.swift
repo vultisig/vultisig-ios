@@ -11,9 +11,9 @@ struct TokenSelectionContainerScreen: View {
     let vault: Vault
     let group: GroupedChain
     @Binding var isPresented: Bool
-    
+
     @State var showTokenSelection: Bool = true
-    
+
     var body: some View {
             ZStack {
                 Group {
@@ -38,7 +38,7 @@ struct TokenSelectionContainerScreen: View {
         .applySheetSize()
         .sheetStyle(padding: 0)
     }
-    
+
     private func toggleSheet() {
         withAnimation { showTokenSelection.toggle() }
     }

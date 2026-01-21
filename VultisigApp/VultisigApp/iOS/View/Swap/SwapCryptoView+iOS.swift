@@ -31,7 +31,7 @@ extension SwapCryptoView {
                     backButton
                 }
             }
-            
+
             if swapViewModel.currentIndex==3 {
                 ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                     NavigationQRShareButton(
@@ -46,11 +46,11 @@ extension SwapCryptoView {
             UIApplication.shared.isIdleTimerDisabled = false
         }
     }
-    
+
     var main: some View {
         views
     }
-    
+
     var views: some View {
         ZStack {
             Background()

@@ -11,22 +11,22 @@ import SwiftUI
 struct ChooseBackupSheetView: View, BottomSheetProperties {
     @Query var vaults: [Vault]
     let vault: Vault
-    
+
     var onDeviceBackup: () -> Void
     var onServerBackup: () -> Void
-    
+
     var bgColor: Color? {
         Theme.colors.bgPrimary
     }
-    
+
     var body: some View {
         VStack(spacing: 24) {
             Text("chooseBackupMethod".localized)
                 .font(Theme.fonts.subtitle)
                 .foregroundStyle(Theme.colors.textPrimary)
-            
+
             GradientListSeparator()
-            
+
             VStack(spacing: 14) {
                 buttonView(
                     title: "deviceBackupTitle".localized,
@@ -43,7 +43,7 @@ struct ChooseBackupSheetView: View, BottomSheetProperties {
             }
         }
     }
-    
+
     func buttonView(title: String, subtitle: String, icon: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 12) {

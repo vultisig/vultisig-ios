@@ -9,25 +9,25 @@ import SwiftUI
 
 struct SwapVerifyView: View {
     @StateObject var verifyViewModel = SwapCryptoVerifyViewModel()
-    
+
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
-    
+
     @StateObject var referredViewModel = ReferredViewModel()
-    
+
     let vault: Vault
-    
+
     @State var fastPasswordPresented = false
     @State private var signButtonDisabled = false
-    
+
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    
+
     var body: some View {
         ZStack {
             Background()
             view
         }
-        .onReceive(timer) { input in
+        .onReceive(timer) { _ in
             swapViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
         }
         .onDisappear {
@@ -53,11 +53,11 @@ struct SwapVerifyView: View {
             }
         }
     }
-    
+
     var view: some View {
         container
     }
-    
+
     var content: some View {
         VStack(spacing: 16) {
             fields
@@ -66,15 +66,15 @@ struct SwapVerifyView: View {
                 .disabled(!verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired) || swapViewModel.isLoadingFees || signButtonDisabled)
         }
     }
-    
+
     var summary: some View {
         VStack(spacing: 16) {
             SecurityScannerHeaderView(state: verifyViewModel.securityScannerState)
-            
+
             VStack(spacing: 16) {
                 summaryTitle
                 summaryFromTo
-                
+
                 if let providerName = tx.quote?.displayName {
                     separator
                     getValueCell(
@@ -83,7 +83,7 @@ struct SwapVerifyView: View {
                         showIcon: true
                     )
                 }
-                
+
                 if swapViewModel.showGas(tx: tx) {
                     separator
                     getNetworkFeeCell(
@@ -92,17 +92,17 @@ struct SwapVerifyView: View {
                     )
                     .blur(radius: swapViewModel.isLoadingFees ? 1 : 0)
                 }
-                
+
                 if swapViewModel.showFees(tx: tx) {
                     separator
                     getValueCell(
                         for: "swapFee",
                         with: swapViewModel.swapFeeString(tx: tx),
-                        bracketValue:nil
+                        bracketValue: nil
                     )
                     .blur(radius: swapViewModel.isLoadingFees ? 1 : 0)
                 }
-                
+
                 if swapViewModel.showTotalFees(tx: tx) {
                     separator
                     getValueCell(
@@ -111,7 +111,7 @@ struct SwapVerifyView: View {
                     )
                     .blur(radius: swapViewModel.isLoadingFees ? 1 : 0)
                 }
-                
+
                 separator
                 getValueCell(
                     for: "vault",
@@ -123,28 +123,28 @@ struct SwapVerifyView: View {
             .cornerRadius(10)
         }
     }
-    
+
     var summaryFromToIcons: some View {
         HStack(spacing: 10) {
             ZStack {
                 verticalSeparator
                 chevronIcon
             }
-            
+
             Text("to".localized)
                 .font(Theme.fonts.caption10)
                 .foregroundStyle(Theme.colors.textTertiary)
             separator
         }
     }
-    
+
     var verticalSeparator: some View {
         Rectangle()
             .frame(width: 1)
             .frame(idealHeight: 80, maxHeight: 100)
             .foregroundColor(Theme.colors.bgSurface2)
     }
-    
+
     var summaryFromTo: some View {
         VStack(spacing: 0) {
             getSwapAssetCell(
@@ -155,9 +155,9 @@ struct SwapVerifyView: View {
                 coin: tx.fromCoin,
                 isTo: false
             )
-            
+
             summaryFromToIcons
-            
+
             getSwapAssetCell(
                 for: tx.toAmountDecimal.formatForDisplay(),
                 with: tx.toCoin.ticker,
@@ -168,7 +168,7 @@ struct SwapVerifyView: View {
             )
         }
     }
-    
+
     var chevronIcon: some View {
         Image(systemName: "arrow.down")
             .font(Theme.fonts.caption12)
@@ -178,14 +178,14 @@ struct SwapVerifyView: View {
             .cornerRadius(32)
             .bold()
     }
-    
+
     var summaryTitle: some View {
         Text(NSLocalizedString("youreSwapping", comment: ""))
             .font(Theme.fonts.bodySMedium)
             .foregroundColor(Theme.colors.textSecondary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     var checkboxes: some View {
         VStack(spacing: 16) {
             Checkbox(isChecked: $verifyViewModel.isAmountCorrect, text: "swapVerifyCheckbox1Description")
@@ -195,14 +195,14 @@ struct SwapVerifyView: View {
             }
         }
     }
-    
+
     @ViewBuilder
     var signButton: some View {
         if tx.isFastVault {
             Text(NSLocalizedString("holdForPairedSign", comment: ""))
                 .foregroundColor(Theme.colors.textTertiary)
                 .font(Theme.fonts.bodySMedium)
-            
+
             LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
                 fastPasswordPresented = true
             } longPressAction: {
@@ -224,14 +224,14 @@ struct SwapVerifyView: View {
             }.disabled(signButtonDisabled)
         }
     }
-    
+
     private func onSignPress() {
         let canSign = verifyViewModel.validateSecurityScanner()
         if canSign {
             signAndMoveToNextView()
         }
     }
-    
+
     func signAndMoveToNextView() {
         signButtonDisabled = true
         Task {
@@ -241,20 +241,20 @@ struct SwapVerifyView: View {
             await MainActor.run { signButtonDisabled = false }
         }
     }
-    
+
     var showApproveCheckmark: Bool {
         return tx.isApproveRequired
     }
-    
+
     var separator: some View {
         Separator()
             .opacity(0.2)
     }
-    
+
     var refreshCounter: some View {
         SwapRefreshQuoteCounter(timer: swapViewModel.timer)
     }
-    
+
     func getValueCell(
         for title: String,
         with value: String,
@@ -264,18 +264,18 @@ struct SwapVerifyView: View {
         HStack(spacing: 4) {
             Text(NSLocalizedString(title, comment: ""))
                 .foregroundColor(Theme.colors.textTertiary)
-            
+
             Spacer()
-            
+
             if showIcon {
                 Image(value)
                     .resizable()
                     .frame(width: 16, height: 16)
             }
-            
+
             Text(value)
                 .foregroundColor(Theme.colors.textPrimary)
-            
+
             if let bracketValue {
                 Group {
                     Text("(") +
@@ -284,12 +284,12 @@ struct SwapVerifyView: View {
                 }
                 .foregroundColor(Theme.colors.textTertiary)
             }
-            
+
         }
         .font(Theme.fonts.bodySMedium)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     private func getNetworkFeeCell(
         cryptoAmount: String,
         fiatAmount: String
@@ -298,14 +298,14 @@ struct SwapVerifyView: View {
             Text(NSLocalizedString("networkFee", comment: ""))
                 .foregroundColor(Theme.colors.textTertiary)
                 .font(Theme.fonts.bodySMedium)
-            
+
             Spacer()
-            
+
             VStack(alignment: .trailing, spacing: 2) {
                 Text(cryptoAmount)
                     .foregroundColor(Theme.colors.textPrimary)
                     .font(Theme.fonts.bodySMedium)
-                
+
                 Text(fiatAmount)
                     .foregroundColor(Theme.colors.textTertiary)
                     .font(Theme.fonts.caption12)
@@ -313,7 +313,7 @@ struct SwapVerifyView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     private func getSwapAssetCell(
         for amount: String,
         with ticker: String,
@@ -324,7 +324,7 @@ struct SwapVerifyView: View {
     ) -> some View {
         HStack(spacing: 8) {
             getCoinIcon(for: coin)
-            
+
             VStack(alignment: .leading, spacing: 4) {
                 Text("minPayout".localized)
                     .font(Theme.fonts.caption12)
@@ -338,7 +338,7 @@ struct SwapVerifyView: View {
                         .foregroundColor(Theme.colors.textTertiary)
                 }
                 .font(Theme.fonts.bodyLMedium)
-                
+
                 HStack(spacing: 0) {
                     Text(fiatValue)
                         .font(Theme.fonts.caption12)
@@ -347,15 +347,15 @@ struct SwapVerifyView: View {
                     if let chain {
                         HStack(spacing: 2) {
                             Spacer()
-                            
+
                             Text(NSLocalizedString("on", comment: ""))
                                 .foregroundColor(Theme.colors.textTertiary)
                                 .padding(.trailing, 4)
-                            
+
                             Image(chain.logo)
                                 .resizable()
                                 .frame(width: 12, height: 12)
-                            
+
                             Text(chain.name)
                                 .foregroundColor(Theme.colors.textPrimary)
                         }
@@ -367,7 +367,7 @@ struct SwapVerifyView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
-    
+
     private func getCoinIcon(for coin: Coin) -> some View {
         AsyncImageView(
             logo: coin.logo,

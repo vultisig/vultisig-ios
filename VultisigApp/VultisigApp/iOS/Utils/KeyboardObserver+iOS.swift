@@ -10,7 +10,7 @@ import SwiftUI
 import Combine
 
 final class KeyboardObserver: ObservableObject {
-    
+
     @MainActor @Published var keyboardHeight: CGFloat = 0
 
     private var cancellables: Set<AnyCancellable> = []

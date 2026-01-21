@@ -12,12 +12,12 @@ extension Array {
         var seen = Set<T>()
         return filter { seen.insert(transform($0)).inserted }
     }
-    
+
     public subscript(safe index: Int) -> Element? {
         guard index >= 0, index < endIndex else {
             return nil
         }
-        
+
         return self[index]
     }
 }

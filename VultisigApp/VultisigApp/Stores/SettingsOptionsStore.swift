@@ -15,7 +15,7 @@ enum SettingsLanguage: String, CaseIterable {
     case Hrvatski
     case Portuguese
     case Chinese
-    
+
     func description() -> String {
         switch self {
         case .English:
@@ -34,7 +34,7 @@ enum SettingsLanguage: String, CaseIterable {
             return NSLocalizedString("Chinese", comment: "Chinese")
         }
     }
-    
+
     func appleLanguageCode() -> String {
         switch self {
         case .English:
@@ -53,7 +53,7 @@ enum SettingsLanguage: String, CaseIterable {
             return "zh-Hans"
         }
     }
-        
+
     static var current: SettingsLanguage {
         get {
             if let langString = UserDefaults.standard.string(forKey: "lang"),
@@ -66,7 +66,7 @@ enum SettingsLanguage: String, CaseIterable {
         set {
             // Set the language only for the UI purpose
             UserDefaults.standard.set(newValue.rawValue, forKey: "lang")
-            
+
             // Set the language for the system, must restart the app to have effect
             let languageCode = newValue.appleLanguageCode()
             UserDefaults.standard.set([languageCode], forKey: "AppleLanguages")
@@ -86,7 +86,7 @@ enum SettingsCurrency: String, CaseIterable {
     case CAD
     case SGD
     case SEK
-    
+
     static var current: SettingsCurrency {
         get {
             if let currencyString = UserDefaults.standard.string(forKey: "currency"),
@@ -100,7 +100,7 @@ enum SettingsCurrency: String, CaseIterable {
             UserDefaults.standard.set(newValue.rawValue, forKey: "currency")
         }
     }
-    
+
     var usesEuropeanFormat: Bool {
         switch self {
         case .EUR, .CHF:
@@ -149,7 +149,7 @@ enum SettingsAPRPeriod: String, CaseIterable {
 }
 
 class SettingsOptionsStore {
-    static let FAQData : [(question: String, answer: String)] = Range(1...9).map {
+    static let FAQData: [(question: String, answer: String)] = Range(1...9).map {
         (question: "faqQuestion\($0)", answer: "faqAnswer\($0)")
     }
 }

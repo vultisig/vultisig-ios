@@ -16,9 +16,9 @@ extension View {
 
 private struct SheetPresentedViewModifier: ViewModifier {
     @Environment(\.sheetPresentedCounterManager) var sheetPresentedCounterManager
-    
+
     @State var blurContent: Bool = false
-    
+
     func body(content: Content) -> some View {
         content
             .overlay(blurContent ? overlayView : nil)
@@ -34,7 +34,7 @@ private struct SheetPresentedViewModifier: ViewModifier {
             }
             #endif
     }
-    
+
     var overlayView: some View {
         Color.black
             .opacity(0.4)

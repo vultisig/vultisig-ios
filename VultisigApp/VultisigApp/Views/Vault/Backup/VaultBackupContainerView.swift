@@ -16,7 +16,7 @@ struct VaultBackupContainerView<Content: View>: View {
     let backupType: VaultBackupType
     let isNewVault: Bool
     var content: () -> Content
-    
+
     @Environment(\.router) var router
 
     @EnvironmentObject var appViewModel: AppViewModel
@@ -45,12 +45,12 @@ struct VaultBackupContainerView<Content: View>: View {
                 )
             }
     }
-    
+
     func fileSaved() {
         backupType.markBackedUp()
         FileManager.default.clearTmpDirectory()
     }
-    
+
     func dismissView() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             if isNewVault {

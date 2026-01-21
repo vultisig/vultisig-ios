@@ -13,25 +13,25 @@ struct RUJIUnstakeTransactionBuilder: TransactionBuilder {
     let coin: Coin
     let amount: String
     let sendMaxAmount: Bool
-    
+
     var rawAmount: String {
         coin.decimalToCrypto(value: amount.toDecimal()).description
     }
-    
+
     var memo: String {
         "withdraw:\(coin.contractAddress):\(rawAmount)"
     }
-    
+
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("memo", memo)
         return dict
     }
-    
+
     var transactionType: VSTransactionType {
         .genericContract
     }
-    
+
     var wasmContractPayload: WasmExecuteContractPayload? {
         WasmExecuteContractPayload(
             senderAddress: coin.address,

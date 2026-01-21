@@ -12,7 +12,7 @@ extension ImportVaultShareScreen {
     var content: some View {
         view
             .onDrop(of: [.data], isTargeted: $isUploading) { providers -> Bool in
-                Task{
+                Task {
                     await backupViewModel.handleOnDrop(providers: providers)
                 }
                 return true

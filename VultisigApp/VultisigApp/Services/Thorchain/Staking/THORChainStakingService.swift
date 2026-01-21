@@ -21,7 +21,7 @@ class THORChainStakingService {
     private var constantsCacheTimestamp: Date?
     private let constantsCacheDuration: TimeInterval = 3600 // 1 hour
     private let thorchainAPIService = THORChainAPIService()
-    
+
     private init() {
         self.httpClient = HTTPClient()
     }
@@ -153,7 +153,7 @@ private extension THORChainStakingService {
         let response = try await httpClient.request(target, responseType: TcyUserDistributionsResponse.self)
         return response.data
     }
-    
+
     func fetchTcyModuleBalance() async throws -> TcyModuleBalanceResponse {
         let target = THORChainStakingAPI.getTcyModuleBalance
         let response = try await httpClient.request(target, responseType: TcyModuleBalanceResponse.self)

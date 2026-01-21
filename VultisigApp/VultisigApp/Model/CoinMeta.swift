@@ -16,7 +16,7 @@ struct CoinMeta: Hashable, Codable {
     let contractAddress: String
     let isNativeToken: Bool
     var priceProviderId: String
-    
+
     init(chain: Chain,
          ticker: String,
          logo: String,
@@ -37,7 +37,7 @@ struct CoinMeta: Hashable, Codable {
         guard !isNativeToken else { return nil }
         return chain.logo
     }
-    
+
     var coinType: CoinType {
         return self.chain.coinType
     }
@@ -45,13 +45,13 @@ struct CoinMeta: Hashable, Codable {
     func coinId(address: String) -> String {
         return "\(chain.rawValue)-\(ticker)-\(address)-\(contractAddress)"
     }
-    
+
     static var example = CoinMeta(chain: .bitcoin, ticker: "BTC", logo: "btc", decimals: 1, priceProviderId: "provider", contractAddress: "123456789", isNativeToken: true)
-    
+
     private var normalizedTicker: String {
         ticker.lowercased()
     }
-    
+
     private var normalizedContract: String {
         contractAddress.lowercased()
     }
@@ -63,7 +63,7 @@ extension CoinMeta: Equatable {
         lhs.normalizedTicker == rhs.normalizedTicker &&
         lhs.normalizedContract == rhs.normalizedContract
     }
-    
+
     func hash(into hasher: inout Hasher) {
         hasher.combine(chain)
         hasher.combine(normalizedTicker)

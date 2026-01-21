@@ -9,7 +9,7 @@ import SwiftUI
 
 struct CustomTokenGridCell: View {
     var action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             VStack(spacing: 10) {
@@ -26,7 +26,7 @@ struct CustomTokenGridCell: View {
                         .inset(by: 0.75)
                         .strokeBorder(Theme.colors.border, style: StrokeStyle(lineWidth: 1.5, dash: [3, 3]))
                 )
-                
+
                 Text("custom".localized)
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textPrimary)

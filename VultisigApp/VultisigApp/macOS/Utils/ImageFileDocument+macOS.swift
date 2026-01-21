@@ -10,15 +10,15 @@ import UniformTypeIdentifiers
 
 struct ImageFileDocument: FileDocument {
     var image: NSImage
-    
+
     @MainActor
     init(image: Image) {
         let size = NSSize(width: 960, height: 1380)  // Adjust the size according to your needs
         let renderer = ImageRenderer(content: image)
-        
+
         // Set the scale to match the device's screen scale for better quality
         renderer.scale = NSScreen.main?.backingScaleFactor ?? 2.0
-        
+
         // Create an NSImage from the rendered CGImage
         if let cgImage = renderer.cgImage {
             let nsImage = NSImage(cgImage: cgImage, size: size)

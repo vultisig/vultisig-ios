@@ -3,8 +3,6 @@ import OSLog
 import SwiftUI
 import VultisigCommonData
 
-
-
 import UniformTypeIdentifiers
 import WalletCore
 import BigInt
@@ -27,21 +25,21 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var isStakingOperation: Bool = false
     @Published var memoFunctionDictionary: ThreadSafeDictionary<String, String> = ThreadSafeDictionary()
     var wasmContractPayload: WasmExecuteContractPayload?
-    
+
     @Published var coin: Coin = .example
     @Published var transactionType: VSTransactionType = .unspecified
     @Published var vault: Vault?
-    
+
     var txVault: Vault? { vault ?? AppViewModel.shared.selectedVault }
-    
+
     var gasLimit: BigInt {
         return customGasLimit ?? estematedGasLimit ?? BigInt(EVMHelper.defaultETHTransferGasUnit)
     }
-    
+
     var byteFee: BigInt {
         return customByteFee ?? gas
     }
-    
+
     var isAmountExceeded: Bool {
         // TRON staking operations: skip validation entirely
         // The balance is already validated in TronFreezeView/TronUnfreezeView
@@ -55,30 +53,30 @@ class SendTransaction: ObservableObject, Hashable {
             let comparison = amountInRaw > coin.rawBalance.toBigInt(decimals: coin.decimals)
             return comparison
         }
-        
+
         // For UTXO and Cardano chains, use the actual fee (plan.fee) not the gas (sats/byte rate)
         let feeToUse = (coin.chainType == .UTXO || coin.chainType == .Cardano) ? fee : gas
         let totalTransactionCost = amountInRaw + feeToUse
         let comparison = totalTransactionCost > coin.rawBalance.toBigInt(decimals: coin.decimals)
-        
+
         return comparison
     }
-    
+
     var isDeposit: Bool {
         !memoFunctionDictionary.allItems().isEmpty && ![ChainType.UTXO, ChainType.Ripple, ChainType.Solana].contains(coin.chainType)
     }
-    
+
     var canBeReaped: Bool {
-        
+
         let tickers = [Chain.polkadot.ticker, Chain.ripple.ticker]
         if !tickers.contains(coin.ticker) {
             return false
         }
-        
+
         let totalBalance = BigInt(coin.rawBalance) ?? BigInt.zero
         let totalTransactionCost = amountInRaw + gas
         let remainingBalance = totalBalance - totalTransactionCost
-        
+
         switch coin.chainType {
         case .Polkadot:
             return remainingBalance < PolkadotHelper.defaultExistentialDeposit
@@ -88,20 +86,20 @@ class SendTransaction: ObservableObject, Hashable {
             return false
         }
     }
-    
+
     func hasEnoughNativeTokensToPayTheFees(specific: BlockChainSpecific) async -> (Bool, String) {
         var errorMessage = ""
         guard !coin.isNativeToken else { return (true, errorMessage) }
-        
+
         if let vault = txVault {
             if let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
                 await BalanceService.shared.updateBalance(for: nativeToken)
-                
+
                 let nativeTokenBalance = nativeToken.rawBalance.toBigInt()
-                
+
                 if specific.fee > nativeTokenBalance {
                     errorMessage = String(format: "insufficientGasTokenError".localized, nativeToken.ticker, coin.ticker)
-                    
+
                     return (false, errorMessage)
                 }
                 return (true, errorMessage)
@@ -113,22 +111,21 @@ class SendTransaction: ObservableObject, Hashable {
         errorMessage = "unableToVerifyGasTokenError".localized
         return (false, errorMessage)
     }
-    
-    
+
     func getNativeTokenBalance() async -> String {
         guard !coin.isNativeToken else { return .zero }
-        
+
         if let vault = txVault {
             if let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
                 await BalanceService.shared.updateBalance(for: nativeToken)
                 let nativeTokenRawBalance = Decimal(string: nativeToken.rawBalance) ?? .zero
-                
+
                 let nativeDecimals = nativeToken.decimals
-                
+
                 let nativeTokenBalance = nativeTokenRawBalance / pow(10, nativeDecimals)
-                
+
                 let nativeTokenBalanceDecimal = nativeTokenBalance.formatForDisplay(maxDecimals: 8)
-                
+
                 return "\(nativeTokenBalanceDecimal) \(nativeToken.ticker)"
             } else {
                 print("No native token found for chain \(coin.chain.name)")
@@ -138,28 +135,28 @@ class SendTransaction: ObservableObject, Hashable {
         print("Failed to access current vault")
         return .zero
     }
-    
+
     var amountInRaw: BigInt {
         let decimals = coin.decimals
         let amountInDecimals = amountDecimal * pow(10, decimals)
         return amountInDecimals.description.toBigInt(decimals: decimals)
     }
-    
+
     var amountDecimal: Decimal {
         let decimalValue = amount.toDecimal()
         let truncatedDecimal = decimalValue.truncated(toPlaces: coin.decimals)
         return truncatedDecimal
     }
-    
+
     var gasDecimal: Decimal {
         return Decimal(gas)
     }
-    
+
     var gasInReadable: String {
         // Get native coin for proper fee display (fees are always in native token)
         var nativeCoin = coin
         var decimals = coin.decimals
-        
+
         if !coin.isNativeToken {
             if let vault = txVault {
                 if let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
@@ -168,7 +165,7 @@ class SendTransaction: ObservableObject, Hashable {
                 }
             }
         }
-        
+
         if coin.chain.chainType == .EVM {
             // convert to Gwei , show as Gwei for EVM chain only
             guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) else {
@@ -176,20 +173,20 @@ class SendTransaction: ObservableObject, Hashable {
             }
             return "\(gasDecimal / weiPerGWeiDecimal) \(coin.chain.feeUnit)"
         }
-        
+
         // For UTXO and Cardano chains, use total fee amount (like Android) instead of sats/byte rate
         let feeToDisplay = (coin.chainType == .UTXO || coin.chainType == .Cardano) ? fee : gas
         let feeDecimal = Decimal(feeToDisplay)
-        
-        return "\((feeDecimal / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(nativeCoin.ticker)"
+
+        return "\((feeDecimal / pow(10, decimals)).formatToDecimal(digits: decimals).description) \(nativeCoin.ticker)"
     }
-    
+
     init() { }
-    
+
     init(coin: Coin) {
         self.reset(coin: coin)
     }
-    
+
     static func == (lhs: SendTransaction, rhs: SendTransaction) -> Bool {
         lhs.fromAddress == rhs.fromAddress &&
         lhs.toAddress == rhs.toAddress &&
@@ -198,7 +195,7 @@ class SendTransaction: ObservableObject, Hashable {
         lhs.gas == rhs.gas &&
         lhs.sendMaxAmount == rhs.sendMaxAmount
     }
-    
+
     func hash(into hasher: inout Hasher) {
         hasher.combine(fromAddress)
         hasher.combine(toAddress)
@@ -207,7 +204,7 @@ class SendTransaction: ObservableObject, Hashable {
         hasher.combine(gas)
         hasher.combine(sendMaxAmount)
     }
-    
+
     func reset(coin: Coin) {
         self.toAddress = .empty
         self.amount = .empty
@@ -229,15 +226,15 @@ class SendTransaction: ObservableObject, Hashable {
         self.fastVaultPassword = .empty  // Clear password state
         self.isStakingOperation = false // Reset staking operation flag
     }
-    
+
     func parseCryptoURI(_ uri: String) {
         guard URLComponents(string: uri) != nil else {
             print("Invalid URI")
             return
         }
-        
+
         let (address, amount, message) = Utils.parseCryptoURI(uri)
-        
+
         self.toAddress = address
         self.amount = amount
         self.memo = message

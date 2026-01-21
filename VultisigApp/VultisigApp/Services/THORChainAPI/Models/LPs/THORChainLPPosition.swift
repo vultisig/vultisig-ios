@@ -27,7 +27,7 @@ struct THORChainLPPosition {
     var currentAssetAmount: Decimal {
         Decimal(string: assetRedeemValue) ?? 0
     }
-    
+
     /// LUVI-based Annual Percentage Rate as decimal (e.g., 0.0067 for 0.67%)
     /// This represents the annualized growth of liquidity unit value over the period
     /// Formula: APR = ((LUVI_end / LUVI_start) - 1) * (365 / period_days)

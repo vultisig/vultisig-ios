@@ -9,15 +9,15 @@
 import SwiftUI
 
 extension VaultDetailQRCodeView {
-    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-    
+    private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+
     var buttons: some View {
         VStack(spacing: 16) {
             shareButton
             saveButton
         }
     }
-    
+
     var shareButton: some View {
         ZStack {
             if idiom == .phone {

@@ -10,7 +10,7 @@ import SwiftUI
 struct ReferralInitialScreen: View {
     @StateObject var referredViewModel = ReferredViewModel()
     @StateObject var referralViewModel = ReferralViewModel()
-    
+
     @StateObject var keyboardObserver = KeyboardObserver()
     @State var scrollViewProxy: ScrollViewProxy?
     @State var screenHeight: CGFloat = 0
@@ -19,13 +19,13 @@ struct ReferralInitialScreen: View {
     private let referralSavePercentage: String = "10%"
     private let referralSavePercentage2: String = "20%"
     private let scrollToReferenceId = "scrollTo"
-    
+
     @EnvironmentObject var appViewModel: AppViewModel
-    
+
     var isLoading: Bool {
         referredViewModel.isLoading || referralViewModel.isLoading
     }
-    
+
     var body: some View {
         Screen(title: "vultisig-referrals".localized) {
             GeometryReader { geo in
@@ -70,38 +70,38 @@ struct ReferralInitialScreen: View {
             guard height > 250 else {
                 return
             }
-            
+
             withAnimation {
                 scrollViewProxy?.scrollTo(scrollToReferenceId, anchor: .bottom)
             }
         }
         #endif
     }
-    
+
     var orSeparator: some View {
         HStack(spacing: 16) {
             separator
-            
+
             Text(NSLocalizedString("or", comment: "").uppercased())
                 .font(Theme.fonts.bodySMedium)
                 .foregroundColor(Theme.colors.textPrimary)
-            
+
             separator
         }
     }
-    
+
     var separator: some View {
         Separator()
             .opacity(0.2)
     }
-    
+
     var image: some View {
         Image("ReferralLaunchOverview")
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(maxWidth: 365)
     }
-    
+
     var referredContent: some View {
         VStack(spacing: 16) {
             VStack(spacing: 8) {
@@ -116,7 +116,7 @@ struct ReferralInitialScreen: View {
                         $0.foregroundColor = Theme.colors.primaryAccent4
                     }
                 }
-                
+
                 referredTextField
             }
 
@@ -136,7 +136,7 @@ private extension ReferralInitialScreen {
         }
         .disabled(referredViewModel.referredButtonDisabled)
     }
-    
+
     var referredTextField: some View {
         ReferralTextField(
             text: $referredViewModel.referredCode,
@@ -160,7 +160,7 @@ private extension ReferralInitialScreen {
             }
         }
     }
-    
+
     var referralTitle: some View {
         HighlightedText(
             text: String(format: "createYourCodeAndEarn".localized, referralSavePercentage2),
@@ -174,13 +174,13 @@ private extension ReferralInitialScreen {
         .multilineTextAlignment(.center)
         .fixedSize(horizontal: false, vertical: true)
     }
-    
+
     var createReferralButton: some View {
         PrimaryButton(title: "createReferral") {
             router.navigate(to: ReferralRoute.createReferral(selectedVaultViewModel: VaultSelectedViewModel()))
         }
     }
-    
+
     var editReferralButton: some View {
         PrimaryButton(title: "editReferral") {
             router.navigate(to: ReferralRoute.main)

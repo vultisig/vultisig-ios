@@ -33,7 +33,7 @@ struct SendCryptoVerifySummary {
         // Only for Function Calls
         decodedFunctionSignature: String? = nil,
         decodedFunctionArguments: String? = nil,
-        memoFunctionDictionary: [String : String]? = nil,
+        memoFunctionDictionary: [String: String]? = nil,
         feeCrypto: String,
         feeFiat: String,
         isCalculatingFee: Bool = false,

@@ -15,4 +15,3 @@ struct CosmosSignature: Codable {
         return Data(base64Encoded: tx_bytes)?.sha256().toHexString().uppercased() ?? ""
     }
 }
-

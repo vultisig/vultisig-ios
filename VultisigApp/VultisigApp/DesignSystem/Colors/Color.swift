@@ -18,17 +18,17 @@ extension Color {
     init(hex: String) {
         self.init(light: hex, dark: nil)
     }
-    
+
     init(light: String, dark: String?) {
         let lightColor = PlatformColor(hex: light) ?? .clear
         let darkColor = PlatformColor(hex: dark ?? light) ?? .clear
         self.init(light: lightColor, dark: darkColor)
     }
-    
+
     init(light: PlatformColor, dark: PlatformColor?) {
         self.init(.dynamic(light: light, dark: dark ?? light))
     }
-    
+
     var toCGColor: CGColor {
         #if canImport(UIKit)
         UIColor(self).cgColor
@@ -40,7 +40,7 @@ extension Color {
 
 extension PlatformColor {
     private static var hexColorCache = [String: CGColor]()
-    
+
     static func dynamic(light: PlatformColor?, dark: PlatformColor?) -> PlatformColor {
 #if canImport(UIKit)
         return PlatformColor { trait in
@@ -65,21 +65,21 @@ extension PlatformColor {
         }
 #endif
     }
-    
+
     convenience init?(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        
+
         // Return nil for empty strings
         guard !hex.isEmpty else { return nil }
-        
+
         if let cachedColor = Self.hexColorCache[hex] {
             self.init(cgColor: cachedColor)
             return
         }
-        
+
         var int: UInt64 = 0
         guard Scanner(string: hex).scanHexInt64(&int) else { return nil }
-        
+
         let a, r, g, b: UInt64
         switch hex.count {
         case 3: // RGB (12-bit)
@@ -92,9 +92,9 @@ extension PlatformColor {
             // Invalid hex format - return nil instead of creating invalid color
             return nil
         }
-        
+
         defer { Self.hexColorCache[hex] = self.cgColor }
-        
+
         self.init(
             red: Double(r) / 255,
             green: Double(g) / 255,

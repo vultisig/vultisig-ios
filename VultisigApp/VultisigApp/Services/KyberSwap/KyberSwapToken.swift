@@ -29,4 +29,4 @@ extension KyberSwapToken {
                         contractAddress: self.address,
                         isNativeToken: false)
     }
-} 
+}

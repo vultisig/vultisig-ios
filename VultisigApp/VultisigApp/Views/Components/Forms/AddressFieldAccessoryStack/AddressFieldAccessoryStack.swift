@@ -22,13 +22,13 @@ struct AddressFieldAccessoryStack: View {
     @State var isUploading: Bool = false
     @State var showAddressBookSheet: Bool = false
     @State var scannerResultId: UUID? = nil
-    
+
 #if os(iOS)
     @State var selectedImage: UIImage?
 #elseif os(macOS)
     @State var selectedImage: NSImage?
 #endif
-    
+
     var body: some View {
         HStack(spacing: 8) {
             AddressFieldAccessoryButton(icon: "copy-2") {
@@ -94,7 +94,7 @@ struct AddressFieldAccessoryStack: View {
         }
         #endif
     }
-    
+
     func pasteAddress() {
         if let clipboardContent = ClipboardManager.pasteFromClipboard() {
             onResult(AddressResult(address: clipboardContent))
@@ -108,12 +108,12 @@ private extension AddressFieldAccessoryStack {
         onResult(.fromURI(result))
         showScanner = false
     }
-    
+
     func processImage() {
         guard let selectedImage = selectedImage else { return }
         handleImageQrCode(image: selectedImage)
     }
-    
+
     func handleImageQrCode(image: UIImage) {
         let qrCodeFromImage = Utils.handleQrCodeFromImage(image: image)
         onResult(.fromURI(String(data: qrCodeFromImage, encoding: .utf8) ?? .empty))

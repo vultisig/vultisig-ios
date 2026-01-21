@@ -17,7 +17,7 @@ extension SwapVerifyView {
                 }
             }
     }
-    
+
     var fields: some View {
         ScrollView {
             VStack(spacing: 30) {

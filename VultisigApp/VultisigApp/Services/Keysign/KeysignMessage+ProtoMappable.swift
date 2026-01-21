@@ -14,7 +14,7 @@ enum KeysignPayloadFactoryError: Error {
 }
 
 extension KeysignMessage: ProtoMappable {
-    
+
     init(proto: VSKeysignMessage) throws {
         self.sessionID = proto.sessionID
         self.serviceName = proto.serviceName
@@ -32,7 +32,7 @@ extension KeysignMessage: ProtoMappable {
         self.useVultisigRelay = proto.useVultisigRelay
         self.payloadID =  proto.payloadID
     }
-    
+
     func mapToProtobuff() -> VSKeysignMessage {
         let message = VSKeysignMessage.with {
             $0.sessionID = sessionID
@@ -48,13 +48,13 @@ extension KeysignMessage: ProtoMappable {
             }
             $0.encryptionKeyHex = encryptionKeyHex
             $0.useVultisigRelay = useVultisigRelay
-        }        
+        }
         return message
     }
 }
 
 extension CustomMessagePayload: ProtoMappable {
-    
+
     init(proto: VSCustomMessagePayload) throws {
         self.method = proto.method
         self.message = proto.message
@@ -62,7 +62,7 @@ extension CustomMessagePayload: ProtoMappable {
         self.vaultPublicKeyECDSA = proto.vaultPublicKeyEcdsa
         self.chain = proto.chain
     }
-    
+
     func mapToProtobuff() -> VSCustomMessagePayload {
         return VSCustomMessagePayload.with {
             $0.method = method
@@ -75,12 +75,12 @@ extension CustomMessagePayload: ProtoMappable {
 }
 
 extension KeysignPayload: ProtoMappable {
-    
+
     init(proto: VSKeysignPayload) throws {
         guard let blockchainSpecific = proto.blockchainSpecific else {
             throw ProtoMappableError.blockchainSpecificNotFound
         }
-        
+
         self.coin = try ProtoCoinResolver.resolve(coin: proto.coin)
         self.toAddress = proto.toAddress
         self.toAmount = BigInt(stringLiteral: proto.toAmount)
@@ -125,7 +125,7 @@ extension KeysignPayload: ProtoMappable {
         self.skipBroadcast = proto.skipBroadcast
         self.signData = proto.signData.flatMap { SignData(proto: $0) }
     }
-    
+
     func mapToProtobuff() -> VSKeysignPayload {
         return .with {
             $0.coin = ProtoCoinResolver.proto(from: coin)
@@ -162,12 +162,12 @@ extension KeysignPayload: ProtoMappable {
 }
 
 extension ERC20ApprovePayload {
-    
+
     init(proto: VSErc20ApprovePayload) {
         self.amount = BigInt(stringLiteral: proto.amount)
         self.spender = proto.spender
     }
-    
+
     func mapToProtobuff() -> VSErc20ApprovePayload {
         return .with {
             $0.amount = String(amount)
@@ -253,7 +253,7 @@ extension SwapPayload {
             ))
         }
     }
-    
+
     func mapToProtobuff() -> VSKeysignPayload.OneOf_SwapPayload {
         switch self {
         case .thorchain(let payload), .thorchainStagenet(let payload):
@@ -313,7 +313,7 @@ extension SwapPayload {
 }
 
 extension BlockChainSpecific {
-    
+
     init(proto: VSKeysignPayload.OneOf_BlockchainSpecific) throws {
         switch proto {
         case .utxoSpecific(let value):
@@ -385,7 +385,7 @@ extension BlockChainSpecific {
                     "coinType": coin.coinType
                 ]
             }
-            
+
             self = .Sui(
                 referenceGasPrice: BigInt(stringLiteral: value.referenceGasPrice),
                 coins: coinsArray,
@@ -419,9 +419,9 @@ extension BlockChainSpecific {
                 gasFeeEstimation: value.gasEstimation
             )
         }
-        
+
     }
-    
+
     func mapToProtobuff() -> VSKeysignPayload.OneOf_BlockchainSpecific {
         switch self {
         case .UTXO(let byteFee, let sendMaxAmount):
@@ -462,7 +462,7 @@ extension BlockChainSpecific {
                 $0.sequence = sequence
                 $0.gas = gas
                 $0.transactionType = VSTransactionType(rawValue: transactionType) ?? .unspecified
-                $0.ibcDenomTraces = VSCosmosIbcDenomTrace.with{
+                $0.ibcDenomTraces = VSCosmosIbcDenomTrace.with {
                     $0.baseDenom = ibc?.baseDenom ?? ""
                     $0.path = ibc?.path ?? ""
                     $0.latestBlock = ibc?.height ?? "0"
@@ -488,13 +488,13 @@ extension BlockChainSpecific {
                 suiCoin.coinType = coinDict["coinType"] ?? ""
                 return suiCoin
             }
-            
+
             return .suicheSpecific(.with {
                 $0.referenceGasPrice = String(referenceGasPrice)
                 $0.gasBudget = String(gasBudget)
                 $0.coins = suiCoins
             })
-            
+
         case .Ton(let sequenceNumber, let expireAt, let bounceable, let sendMaxAmount, let jettonAddress, let isActiveDestination):
             return .tonSpecific(.with {
                 $0.sequenceNumber = sequenceNumber
@@ -504,8 +504,7 @@ extension BlockChainSpecific {
                 $0.jettonAddress = jettonAddress
                 $0.isActiveDestination = isActiveDestination
             })
-            
-            
+
         case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber, let specVersion, let transactionVersion, let genesisHash, let gas):
             return .polkadotSpecific(.with {
                 $0.recentBlockHash = recentBlockHash
@@ -522,7 +521,7 @@ extension BlockChainSpecific {
                 $0.gas = gas
                 $0.lastLedgerSequence = lastLedgerSequence
             })
-            
+
         case .Tron(
             let timestamp,
             let expiration,

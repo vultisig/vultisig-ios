@@ -14,7 +14,7 @@ struct AssetSelectionGridCell: View {
     let tokenChainLogo: String?
     @Binding var isSelected: Bool
     var onSelection: () -> Void
-    
+
     init(
         name: String,
         ticker: String,
@@ -30,7 +30,7 @@ struct AssetSelectionGridCell: View {
         self._isSelected = isSelected
         self.onSelection = onSelection
     }
-    
+
     var body: some View {
         Button {
             isSelected.toggle()
@@ -53,7 +53,7 @@ struct AssetSelectionGridCell: View {
                 .overlay(isSelected ? selectedOverlay : nil)
                 .clipShape(RoundedRectangle(cornerRadius: 24))
                 .animation(.easeInOut, value: isSelected)
-                
+
                 Text(name)
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textPrimary)
@@ -64,7 +64,7 @@ struct AssetSelectionGridCell: View {
         }
         .buttonStyle(.plain)
     }
-    
+
     var selectedOverlay: some View {
         ZStack(alignment: .bottomTrailing) {
             Icon(named: "check", color: Theme.colors.alertSuccess, size: 8)

@@ -12,24 +12,24 @@ extension CircleDashboardView {
     var content: some View {
         ZStack {
             VaultMainScreenBackground()
-            
+
             VStack(spacing: 0) {
                 ScrollView {
                     VStack(spacing: CircleConstants.Design.verticalSpacing) {
                         topBanner
-                        
+
                         VStack(alignment: .leading, spacing: 8) {
                             Text(NSLocalizedString("circleDashboardDeposited", comment: "Deposited"))
                                 .font(.headline)
                                 .foregroundStyle(Theme.colors.textPrimary)
-                            
+
                             Text(NSLocalizedString("circleDashboardDepositDescription", comment: "Deposit your $USDC..."))
                                 .font(.body)
                                 .foregroundStyle(Theme.colors.textSecondary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        
+
                         InfoBannerView(
                             description: NSLocalizedString("circleDashboardInfoText", comment: "Funds remain..."),
                             type: .info,
@@ -39,7 +39,7 @@ extension CircleDashboardView {
                             }
                         )
                         .showIf(showInfoBanner)
-                        
+
                         if let error = model.error, error.localizedDescription.lowercased() != "cancelled" {
                             InfoBannerView(
                                 description: error.localizedDescription,
@@ -50,7 +50,7 @@ extension CircleDashboardView {
                                 }
                             )
                         }
-                        
+
                         usdcDepositedCard
                     }
                     .padding(.top, CircleConstants.Design.mainViewTopPadding)

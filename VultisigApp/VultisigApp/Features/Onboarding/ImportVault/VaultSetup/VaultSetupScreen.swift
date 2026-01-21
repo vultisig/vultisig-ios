@@ -10,11 +10,11 @@ import SwiftUI
 struct VaultSetupScreen: View {
     let tssType: TssType
     let keyImportInput: KeyImportInput?
-    
+
     enum FocusedField {
         case name, referral, email, password, passwordConfirm, hint
     }
-    
+
     @StateObject var viewModel = VaultSetupViewModel()
 
     @State var scrollViewProxy: ScrollViewProxy?
@@ -23,12 +23,12 @@ struct VaultSetupScreen: View {
     @State var hintExpanded = false
     @State var referralExpanded = false
     @Environment(\.router) var router
-    
+
     init(tssType: TssType, keyImportInput: KeyImportInput?) {
         self.tssType = tssType
         self.keyImportInput = keyImportInput
     }
-    
+
     var body: some View {
         FormScreen(
             title: "vaultSetup".localized,
@@ -53,7 +53,7 @@ struct VaultSetupScreen: View {
             onContinue()
         }
     }
-    
+
     var nameSection: some View {
         FormExpandableSection(
             title: "name".localized,
@@ -82,7 +82,7 @@ struct VaultSetupScreen: View {
                     error: $viewModel.nameField.error
                 )
                 .focused($focusedField, equals: .name)
-                
+
                 ExpandableView(isExpanded: $referralExpanded) {
                     expandableSecondaryFieldHeader(isExpanded: $referralExpanded, label: "addReferral".localized)
                 } content: {
@@ -96,7 +96,7 @@ struct VaultSetupScreen: View {
             }
         }
     }
-    
+
     var emailSection: some View {
         FormExpandableSection(
             title: viewModel.emailField.label ?? .empty,
@@ -115,7 +115,7 @@ struct VaultSetupScreen: View {
                 Text("enterVaultEmail".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
-                
+
                 CommonTextField(
                     text: $viewModel.emailField.value,
                     placeholder: viewModel.emailField.placeholder ?? .empty,
@@ -129,7 +129,7 @@ struct VaultSetupScreen: View {
             }
         }
     }
-    
+
     var passwordSection: some View {
         FormExpandableSection(
             title: "password".localized,
@@ -147,21 +147,21 @@ struct VaultSetupScreen: View {
                     type: .warning,
                     leadingIcon: "circle-info"
                 )
-                
+
                 SecureTextField(
                     value: $viewModel.passwordField.value,
                     placeholder: viewModel.passwordField.placeholder,
                     error: $viewModel.passwordField.error
                 )
                 .focused($focusedField, equals: .password)
-                
+
                 SecureTextField(
                     value: $viewModel.passwordConfirmField.value,
                     placeholder: viewModel.passwordConfirmField.placeholder,
                     error: $viewModel.passwordConfirmField.error
                 )
                 .focused($focusedField, equals: .passwordConfirm)
-                
+
                 ExpandableView(isExpanded: $hintExpanded) {
                     expandableSecondaryFieldHeader(isExpanded: $hintExpanded, label: "addHint".localized)
                 } content: {
@@ -175,7 +175,7 @@ struct VaultSetupScreen: View {
             }
         }
     }
-    
+
     func expandableSecondaryFieldHeader(isExpanded: Binding<Bool>, label: String) -> some View {
         Button {
             withAnimation(.interpolatingSpring) {
@@ -194,7 +194,7 @@ struct VaultSetupScreen: View {
         }
         .contentShape(Rectangle())
     }
-    
+
     func onContinue() {
         switch focusedField {
         case .name, .referral:
@@ -208,7 +208,7 @@ struct VaultSetupScreen: View {
         case nil:
             return
         }
-        
+
         guard viewModel.validForm else { return }
         router.navigate(to: OnboardingRoute.keyImportNewVaultSetup(
             vault: viewModel.getVault(keyImportInput: keyImportInput),

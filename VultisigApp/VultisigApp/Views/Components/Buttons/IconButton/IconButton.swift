@@ -13,7 +13,7 @@ struct IconButton: View {
     let type: ButtonType
     let size: ButtonSize
     let action: () -> Void
-    
+
     init(
         icon: String,
         isLoading: Bool = false,
@@ -27,7 +27,7 @@ struct IconButton: View {
         self.size = size
         self.action = action
     }
-    
+
     var body: some View {
         Button {
             #if os(iOS)
@@ -49,7 +49,7 @@ struct IconButton: View {
         IconButton(icon: "chevron-right", type: .primary, size: .medium) {}
         IconButton(icon: "chevron-right", type: .primary, size: .small) {}
         IconButton(icon: "chevron-right", type: .primary, size: .mini) {}
-        
+
         IconButton(icon: "chevron-right", type: .secondary, size: .medium) {}
         IconButton(icon: "chevron-right", type: .secondary, size: .small) {}
         IconButton(icon: "chevron-right", type: .secondary, size: .mini) {}

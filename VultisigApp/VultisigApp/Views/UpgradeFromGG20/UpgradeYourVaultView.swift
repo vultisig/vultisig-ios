@@ -11,9 +11,9 @@ import RiveRuntime
 struct UpgradeYourVaultView: View {
     @Binding var showSheet: Bool
     let onUpgrade: () -> Void
-    
+
     @State var animationVM: RiveViewModel? = nil
-    
+
     var body: some View {
         ZStack {
             Background()
@@ -23,7 +23,7 @@ struct UpgradeYourVaultView: View {
             setData()
         }
     }
-    
+
     var content: some View {
         VStack(spacing: 0) {
             title
@@ -35,17 +35,17 @@ struct UpgradeYourVaultView: View {
         }
         .padding(36)
     }
-    
+
     var title: some View {
         Text(NSLocalizedString("upgradeYourVault", comment: ""))
             .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodyLMedium)
     }
-    
+
     var animation: some View {
         animationVM?.view()
     }
-    
+
     var description: some View {
         Group {
             Text(NSLocalizedString("upgradeYourVaultTitle1", comment: ""))
@@ -58,7 +58,7 @@ struct UpgradeYourVaultView: View {
         .multilineTextAlignment(.center)
         .font(Theme.fonts.title1)
     }
-    
+
     var button: some View {
         PrimaryButton(title: "upgradeNow") {
             showSheet = false
@@ -67,7 +67,7 @@ struct UpgradeYourVaultView: View {
         .frame(width: 180)
         .padding(.vertical, 36)
     }
-    
+
     private func setData() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             animationVM = RiveViewModel(fileName: "upgrade_animation", autoPlay: true)

@@ -10,7 +10,7 @@ enum PreferredAssetFactory {
         guard let coin = THORChainAssetFactory.createCoin(from: asset, decimals: decimals) else {
             return nil
         }
-        
+
         return THORChainAsset(thorchainAsset: asset, asset: coin)
     }
 }

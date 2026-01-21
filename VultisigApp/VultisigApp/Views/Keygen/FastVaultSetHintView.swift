@@ -14,7 +14,7 @@ struct FastVaultSetHintView: View {
     let fastVaultEmail: String
     let fastVaultPassword: String
     let fastVaultExist: Bool
-    
+
     @State var hint: String = ""
     @FocusState var isFocused: Bool
     @Environment(\.router) var router
@@ -27,24 +27,24 @@ struct FastVaultSetHintView: View {
                 }
             }
     }
-    
+
     var hintField: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(NSLocalizedString("setPasswordHintTitle", comment: ""))
                 .font(Theme.fonts.largeTitle)
                 .foregroundColor(Theme.colors.textPrimary)
                 .padding(.top, 16)
-            
+
             Text(NSLocalizedString("setPasswordHintSubtitle", comment: ""))
                 .font(Theme.fonts.bodySMedium)
                 .foregroundColor(Theme.colors.textTertiary)
-            
+
             hintTextfield
         }
         .padding(.top, 24)
         .padding(.horizontal, 16)
     }
-    
+
     var hintTextfield: some View {
         CommonTextEditor(
             value: $hint,
@@ -57,7 +57,7 @@ struct FastVaultSetHintView: View {
             }
         }
     }
-    
+
     var buttons: some View {
         HStack(spacing: 8) {
             PrimaryButton(
@@ -77,7 +77,7 @@ struct FastVaultSetHintView: View {
         .padding(.bottom, 40)
         .padding(.horizontal, 16)
     }
-    
+
     var fastSignConfig: FastSignConfig {
         return FastSignConfig(
             email: fastVaultEmail,
@@ -86,7 +86,7 @@ struct FastVaultSetHintView: View {
             isExist: fastVaultExist
         )
     }
-    
+
     func onLinkActive() {
         router.navigate(to: KeygenRoute.peerDiscovery(
             tssType: tssType,

@@ -21,32 +21,32 @@ struct KyberSwapQuote: Codable, Hashable {
         let transactionValue: String
         var gasPrice: String?
     }
-    
+
     let code: Int
     let message: String
     var data: Data
     let requestId: String
-    
+
     var dstAmount: String {
         return data.amountOut
     }
-    
+
     func gasForChain(_ chain: Chain) -> Int64 {
         let baseGas = Int64(data.gas) ?? 600000
         let gasMultiplierTimes10: Int64
-        
+
         switch chain {
         case .ethereum, .arbitrum, .optimism, .base, .polygon, .avalanche, .bscChain:
             gasMultiplierTimes10 = 20
         default:
             gasMultiplierTimes10 = 16
         }
-        
+
         return (baseGas * gasMultiplierTimes10) / 10
     }
-    
+
     var tx: Transaction {
-        
+
         return Transaction(
             from: "",
             to: data.routerAddress,
@@ -66,14 +66,5 @@ extension KyberSwapQuote {
         let value: String
         let gasPrice: String
         let gas: Int64
-        
-        init(from: String, to: String, data: String, value: String, gasPrice: String, gas: Int64) {
-            self.from = from
-            self.to = to
-            self.data = data
-            self.value = value
-            self.gasPrice = gasPrice
-            self.gas = gas
-        }
     }
-} 
+}

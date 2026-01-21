@@ -11,17 +11,17 @@ class Coin: ObservableObject, Codable, Hashable {
     var ticker: String
     var contractAddress: String
     var isNativeToken: Bool
-    
+
     @Attribute(originalName: "decimals") private(set) var strDecimals: String
-    
+
     var logo: String
     var priceProviderId: String
     var rawBalance: String = ""
     var stakedBalance: String = ""
-    
+
     @Transient var bondedNodes: [RuneBondNode] = []
     @Relationship(inverse: \Vault.coins) var vault: Vault?
-    
+
     var decimals: Int {
         get {
             return Int(strDecimals) ?? 0
@@ -30,7 +30,7 @@ class Coin: ObservableObject, Codable, Hashable {
             strDecimals = String(newValue)
         }
     }
-    
+
     init(asset: CoinMeta, address: String, hexPublicKey: String) {
         self.chain = asset.chain
         self.ticker = asset.ticker
@@ -40,19 +40,19 @@ class Coin: ObservableObject, Codable, Hashable {
         self.contractAddress = asset.contractAddress
         self.isNativeToken = asset.isNativeToken
         self.id = asset.coinId(address: address)
-        
+
         self.rawBalance = .zero
         self.stakedBalance = .zero
         self.address = address
         self.hexPublicKey = hexPublicKey
     }
-    
+
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let chain = try container.decode(Chain.self, forKey: .chain)
         let ticker = try container.decode(String.self, forKey: .ticker)
         let address = try container.decodeIfPresent(String.self, forKey: .address) ?? ""
-        
+
         self.chain = chain
         self.ticker = ticker
         self.address = address
@@ -64,9 +64,9 @@ class Coin: ObservableObject, Codable, Hashable {
         self.isNativeToken = try container.decode(Bool.self, forKey: .isNativeToken)
         self.hexPublicKey = try container.decodeIfPresent(String.self, forKey: .hexPublicKey) ?? ""
         self.id = try container.decodeIfPresent(String.self, forKey: .id) ?? "\(chain.rawValue)-\(ticker)-\(address)-\(contractAddress)"
-        
+
     }
-    
+
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
@@ -80,67 +80,67 @@ class Coin: ObservableObject, Codable, Hashable {
         try container.encode(hexPublicKey, forKey: .hexPublicKey)
         try container.encode(address, forKey: .address)
     }
-    
+
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
-    
+
     static func == (lhs: Coin, rhs: Coin) -> Bool {
         return lhs.id == rhs.id
     }
-    
+
     var balanceDecimal: Decimal {
         let value = rawBalance.toDecimal() / pow(10, decimals)
         return value
     }
-    
+
     var stakedBalanceDecimal: Decimal {
         let value = stakedBalance.toDecimal() / pow(10, decimals)
         return value
     }
-    
+
     var combinedBalanceDecimal: Decimal {
         // Only return the available balance, excluding staked/bonded amounts
         // Staked/bonded amounts are shown separately in the DeFi tab
         return balanceDecimal
     }
-    
+
     var balanceString: String {
         return balanceDecimal.formatForDisplay()
     }
-    
+
     var balanceStringWithTicker: String {
         "\(balanceString) \(ticker)"
     }
-    
+
     var defiBalanceString: String {
         return defiBalanceDecimal.formatForDisplay()
     }
-    
+
     var defiBalanceStringWithTicker: String {
         "\(defiBalanceString) \(ticker)"
     }
-    
+
     func valueWithDecimals(value: Decimal) -> Decimal {
         value / pow(10, decimals)
     }
-    
+
     func decimalToCrypto(value: Decimal) -> Decimal {
         value * pow(10, decimals)
     }
-    
+
     func formatWithTicker(value: Decimal) -> String {
         "\(valueWithDecimals(value: value).formatForDisplay()) \(ticker)"
     }
-    
+
     var balanceInFiat: String {
         return balanceInFiatDecimal.formatToFiat()
     }
-    
+
     var chainType: ChainType {
         chain.type
     }
-    
+
     var supportsFeeSettings: Bool {
         switch chainType {
         case .EVM, .UTXO:
@@ -149,8 +149,8 @@ class Coin: ObservableObject, Codable, Hashable {
             return false
         }
     }
-    
-    var feeDefault: String{
+
+    var feeDefault: String {
         switch self.chain {
         case .thorChain, .thorChainStagenet:
             return "2000000"
@@ -158,7 +158,7 @@ class Coin: ObservableObject, Codable, Hashable {
             return "2000000000"
         case .solana:
             return SolanaHelper.defaultFeeInLamports.description
-        case .ethereum,.avalanche, .bscChain,.ethereumSepolia, .hyperliquid, .sei:
+        case .ethereum, .avalanche, .bscChain, .ethereumSepolia, .hyperliquid, .sei:
             if self.isNativeToken {
                 return "23000"
             } else {
@@ -173,7 +173,7 @@ class Coin: ObservableObject, Codable, Hashable {
             } else {
                 return "150000" // Increased from 120000
             }
-        case .blast,.optimism,.cronosChain, .polygon, .polygonV2:
+        case .blast, .optimism, .cronosChain, .polygon, .polygonV2:
             if self.isNativeToken {
                 return "40000"
             } else {
@@ -188,7 +188,7 @@ class Coin: ObservableObject, Codable, Hashable {
             }
         case .zksync:
             return "200000"
-        case .bitcoin,.bitcoinCash,.dash:
+        case .bitcoin, .bitcoinCash, .dash:
             return "20"
         case .cardano:
             return "180000" // Fallback only - dynamic calculation is preferred
@@ -226,38 +226,38 @@ class Coin: ObservableObject, Codable, Hashable {
             return "100000" // 0.1 TRX = 100000 SUN
         }
     }
-    
+
     var price: Double {
         return RateProvider.shared.rate(for: self)?.value ?? 0
     }
-    
+
     func decimal(for value: BigInt) -> Decimal {
         let decimalValue = value.description.toDecimal()
         return decimalValue / pow(Decimal(10), decimals)
     }
-    
+
     func raw(for value: Decimal) -> BigInt {
         var decimal = value * pow(10, decimals)
-        
+
         var result = Decimal()
-        NSDecimalRound(&result, &decimal, 0,.up)
+        NSDecimalRound(&result, &decimal, 0, .up)
         return BigInt(result.description) ?? BigInt(0)
     }
-    
+
     func fiat(value: BigInt) -> Decimal {
         let decimal = decimal(for: value)
         return RateProvider.shared.fiatBalance(value: decimal, coin: self)
     }
-    
+
     func fiat(gas: BigInt) -> Decimal {
         let decimal = decimal(for: gas)
         return RateProvider.shared.fiatBalance(value: decimal, coin: self)
     }
-    
+
     func fiat(decimal: Decimal) -> Decimal {
         return RateProvider.shared.fiatBalance(value: decimal, coin: self)
     }
-    
+
     var swapAsset: String {
         guard !isNativeToken else {
             if chain == .gaiaChain {
@@ -278,59 +278,58 @@ class Coin: ObservableObject, Codable, Hashable {
 
         return "\(chain.swapAsset).\(ticker)-\(contractAddress)"
     }
-    
+
     func getMaxValue(_ fee: BigInt) -> Decimal {
         let totalFeeAdjusted = fee
         let maxValue = rawBalance.toBigInt() - totalFeeAdjusted
         let maxValueDecimal = maxValue.toDecimal(decimals: decimals)
         let tokenDecimals = decimals
         let maxValueCalculated = maxValueDecimal / pow(10, tokenDecimals)
-        
+
         return maxValueCalculated < .zero ? 0 : maxValueCalculated.truncated(toPlaces: decimals - 1)
     }
-    
+
     var balanceInFiatDecimal: Decimal {
         let combined = combinedBalanceDecimal
         let fiat = RateProvider.shared.fiatBalance(value: combined, coin: self)
         return fiat
     }
-    
+
     var defiBalanceInFiatDecimal: Decimal {
         let fiat = RateProvider.shared.fiatBalance(value: defiBalanceDecimal, coin: self)
         return fiat
     }
-    
+
     var blockchairKey: String {
         return "\(address)-\(chain.name.lowercased())"
     }
-    
+
     var shouldApprove: Bool {
         return !isNativeToken && chain.chainType == .EVM
     }
-    
+
     var tokenChainLogo: String? {
         guard chain.logo != logo else { return nil }
         return chain.logo
     }
-    
 
     var isRune: Bool {
         return chain == .thorChain && ticker.uppercased() == "RUNE" && isNativeToken
     }
-     
+
     var hasBondedNodes: Bool {
         return !bondedNodes.isEmpty
     }
-    
+
     static let example: Coin = {
         let asset = CoinMeta(chain: .bitcoin, ticker: "BTC", logo: "BitcoinLogo", decimals: 8, priceProviderId: "Bitcoin", contractAddress: "ContractAddressExample", isNativeToken: false)
         return Coin(asset: asset, address: "bc1qxyzbc1qxyzbc1qxyzbc1qxyzbc1qxyzbc1qxyzbc1qxyzbc1qxyz", hexPublicKey: "HexPublicKeyExample")
     }()
-    
+
     func toCoinMeta() -> CoinMeta {
         return CoinMeta(chain: chain, ticker: ticker, logo: logo, decimals: decimals, priceProviderId: priceProviderId, contractAddress: contractAddress, isNativeToken: isNativeToken)
     }
-    
+
     var supportsAutocompound: Bool {
         switch ticker.uppercased() {
         case "TCY":
@@ -342,18 +341,15 @@ class Coin: ObservableObject, Codable, Hashable {
 }
 
 extension Coin: Comparable {
-    
+
     static func < (lhs: Coin, rhs: Coin) -> Bool {
         if lhs.balanceInFiatDecimal != rhs.balanceInFiatDecimal {
             return lhs.balanceInFiatDecimal > rhs.balanceInFiatDecimal
-        }
-        else if lhs.chain.name != rhs.chain.name {
+        } else if lhs.chain.name != rhs.chain.name {
             return lhs.chain.name < rhs.chain.name
-        }
-        else if lhs.isNativeToken != rhs.isNativeToken {
+        } else if lhs.isNativeToken != rhs.isNativeToken {
             return !lhs.isNativeToken
-        }
-        else {
+        } else {
             return lhs.ticker < rhs.ticker
         }
     }
@@ -391,7 +387,7 @@ extension Coin {
             return stakedBalanceDecimal
         }
     }
-    
+
     var thorchainDefiBalanceDecimal: Decimal {
         switch ticker.uppercased() {
         case "YRUNE", "YTCY":

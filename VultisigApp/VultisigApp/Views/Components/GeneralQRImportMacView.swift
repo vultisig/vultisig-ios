@@ -12,25 +12,25 @@ struct GeneralQRImportMacView: View {
     let type: DeeplinkFlowType
     let selectedVault: Vault?
     var onParsedAddress: (String) -> Void
-    
+
     @State var fileName: String? = nil
     @State var alertDescription = ""
     @State var importResult: Result<[URL], Error>? = nil
-    
+
     @State var showAlert = false
     @State var isButtonEnabled = false
-    
+
 #if os(iOS)
     @State var selectedImage: UIImage?
 #elseif os(macOS)
     @State var selectedImage: NSImage?
 #endif
-    
+
     @Query var vaults: [Vault]
-    
+
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
-    
+
     var body: some View {
         ZStack {
             Background()
@@ -39,11 +39,11 @@ struct GeneralQRImportMacView: View {
         .navigationBarBackButtonHidden(true)
         .crossPlatformToolbar(getTitle())
     }
-    
+
     var main: some View {
         content
     }
-    
+
     var content: some View {
         VStack(spacing: 32) {
             title
@@ -53,13 +53,13 @@ struct GeneralQRImportMacView: View {
         }
         .padding(40)
     }
-    
+
     var title: some View {
         Text(getDescription())
             .font(Theme.fonts.bodyMMedium)
             .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     var uploadSection: some View {
         FileQRCodeImporterMac(
             fileName: fileName,
@@ -71,14 +71,14 @@ struct GeneralQRImportMacView: View {
             alert
         }
     }
-    
+
     var button: some View {
         PrimaryButton(title: "continue") {
             handleTap()
         }
         .disabled(!isButtonEnabled)
     }
-    
+
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString("error", comment: "")),
@@ -86,10 +86,10 @@ struct GeneralQRImportMacView: View {
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
-    
+
     private func getTitle() -> String {
         let text: String
-        
+
         switch type {
         case .NewVault:
             text = "pair"
@@ -100,13 +100,13 @@ struct GeneralQRImportMacView: View {
         case .Unknown:
             text = "scanQRCode"
         }
-        
+
         return NSLocalizedString(text, comment: "")
     }
-    
+
     private func getDescription() -> String {
         let text: String
-        
+
         switch type {
         case .NewVault:
             text = "uploadQRCodeImageKeygen"
@@ -117,17 +117,17 @@ struct GeneralQRImportMacView: View {
         case .Unknown:
             text = "uploadFileWithQRCode"
         }
-        
+
         return NSLocalizedString(text, comment: "")
     }
-    
+
     private func resetData() {
         fileName = nil
         selectedImage = nil
         isButtonEnabled = false
         importResult = nil
     }
-    
+
     private func handleFileImport(result: Result<[URL], Error>) {
         switch result {
         case .success(let urls):
@@ -137,20 +137,20 @@ struct GeneralQRImportMacView: View {
             print("Error importing file: \(error.localizedDescription)")
         }
     }
-    
+
     private func handleTap() {
         guard let importResult else {
             return
         }
-        
+
         do {
             let qrCode = try Utils.handleQrCodeFromImage(result: importResult)
             let result = String(data: qrCode, encoding: .utf8)
-            
+
             guard let result, let url = URL(string: result) else {
                 return
             }
-            
+
             deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
         } catch {
             if let description = error as? UtilsQrCodeFromImageError {

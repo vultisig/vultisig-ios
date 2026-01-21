@@ -87,10 +87,9 @@ struct SendGasSettingsView: View {
     var totalFeeRow: some View {
         VStack {
             title(text: "Total Fee (Gwei)")
-            textField(title: "Total Fee", text: .constant(viewModel.totalFee), label: viewModel.totalFeeFiat,disabled: true)
+            textField(title: "Total Fee", text: .constant(viewModel.totalFee), label: viewModel.totalFeeFiat, disabled: true)
         }
     }
-
 
     func title(text: String) -> some View {
         HStack {
@@ -131,13 +130,16 @@ struct SendGasSettingsView: View {
     }
 
     var backButton: some View {
-        Button(action: {
-            isPresented = false
-        }) {
-            Image("x")
-                .font(Theme.fonts.bodyLMedium)
-                .foregroundColor(Theme.colors.textPrimary)
-        }
+        Button(
+            action: {
+                isPresented = false
+            },
+            label: {
+                Image("x")
+                    .font(Theme.fonts.bodyLMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
+            }
+        )
     }
 
     var saveButton: some View {

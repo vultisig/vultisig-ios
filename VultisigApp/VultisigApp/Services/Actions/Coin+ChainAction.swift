@@ -8,20 +8,20 @@
 import Foundation
 
 extension CoinAction {
-    
+
     static var swapChains: [Chain] = [
-        .solana,.bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash,
-        .thorChain, .thorChainStagenet, .mayaChain, .ethereum, .avalanche, .base, .arbitrum,.blast,.mantle,.hyperliquid,
+        .solana, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash,
+        .thorChain, .thorChainStagenet, .mayaChain, .ethereum, .avalanche, .base, .arbitrum, .blast, .mantle, .hyperliquid,
         .polygon, .polygonV2, .optimism, .bscChain, .gaiaChain, .kujira, .zksync, .zcash, .ripple,
         .cronosChain, .tron
     ]
-    
+
     static var memoChains: [Chain] = [
         .thorChain, .thorChainStagenet, .mayaChain, .ton, .dydx, .kujira, .gaiaChain, .osmosis,
         // THORChain LP supported chains
         .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple
     ]
-    
+
     static var defiChains: [Chain] = [
         .thorChain,
         .mayaChain,
@@ -31,9 +31,9 @@ extension CoinAction {
 
 extension Chain {
     var defaultActions: [CoinAction] {
-        
+
         var actions: [CoinAction] = []
-        
+
         if CoinAction.swapChains.contains(self) {
             actions.append(.swap)
         }
@@ -51,13 +51,13 @@ extension Chain {
         if enableSell {
             actions.append(.sell)
         }
-        
+
         if CoinAction.memoChains.contains(self) {
             actions.append(.memo)
         }
-        
+
         actions.append(.receive)
-        
+
         return actions.filtered
     }
 }

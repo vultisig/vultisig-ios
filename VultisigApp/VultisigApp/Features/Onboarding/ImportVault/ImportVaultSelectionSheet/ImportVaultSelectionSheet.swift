@@ -11,7 +11,7 @@ struct ImportVaultSelectionSheet: View {
     @Binding var isPresented: Bool
     let onSeedphrase: () -> Void
     let onVaultShare: () -> Void
-    
+
     var body: some View {
         Screen(showNavigationBar: false) {
             VStack(spacing: 14) {
@@ -21,7 +21,7 @@ struct ImportVaultSelectionSheet: View {
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 340)
                     .padding(.bottom, 6)
-                
+
                 importButton(
                     title: "importSeedphraseTitle".localized,
                     subtitle: "importSeedphraseSubtitle".localized,
@@ -29,7 +29,7 @@ struct ImportVaultSelectionSheet: View {
                     isNew: true,
                     action: onSeedphrase
                 )
-                
+
                 importButton(
                     title: "importVaultShareTitle".localized,
                     subtitle: "importVaultShareSubtitle".localized,
@@ -51,7 +51,7 @@ struct ImportVaultSelectionSheet: View {
         .sheetStyle()
         .presentationDetents([.medium])
     }
-    
+
     func importButton(
         title: String,
         subtitle: String,
@@ -86,7 +86,7 @@ struct ImportVaultSelectionSheet: View {
         }
         .buttonStyle(.plain)
     }
-    
+
     private var newTag: some View {
         HStack(spacing: 4) {
             Icon(

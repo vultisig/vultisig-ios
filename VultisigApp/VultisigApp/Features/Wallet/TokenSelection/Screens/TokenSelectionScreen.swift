@@ -17,21 +17,21 @@ struct TokenSelectionScreen: View {
     let group: GroupedChain
     @Binding var isPresented: Bool
     var onCustomToken: () -> Void
-    
+
     @StateObject var tokenViewModel = TokenSelectionViewModel()
     @EnvironmentObject var coinViewModel: CoinSelectionViewModel
-    
+
     var elements: [TokenSelectionAsset] {
         let assets = tokenViewModel.searchText.isEmpty ?
             tokenViewModel.selectedTokens + tokenViewModel.preExistTokens :
             tokenViewModel.searchedTokens
         return [.custom] + assets.map { .token($0) }
     }
-    
+
     var sections: [AssetSection<Int, TokenSelectionAsset>] {
         !elements.isEmpty ? [AssetSection(assets: elements)] : []
     }
-    
+
     var body: some View {
         AssetSelectionContainerSheet(
             title: "selectTokensTitle".localized,
@@ -49,11 +49,11 @@ struct TokenSelectionScreen: View {
         .onDisappear {
             tokenViewModel.cancelLoading()
         }
-        .onReceive(tokenViewModel.$searchText) { newVault in
+        .onReceive(tokenViewModel.$searchText) { _ in
             tokenViewModel.updateSearchedTokens(groupedChain: group)
         }
     }
-    
+
     @ViewBuilder
     func cellBuilder(_ asset: TokenSelectionAsset, _ index: Int) -> some View {
         switch asset {
@@ -68,7 +68,7 @@ struct TokenSelectionScreen: View {
             }
         }
     }
-    
+
     func onSave() {
         Task {
             await CoinService.saveAssets(for: vault, selection: coinViewModel.selection)

@@ -10,7 +10,7 @@ import SwiftUI
 class UpdateVersion: Codable {
     let tagName: String
     let prerelease: Bool
-    
+
     enum CodingKeys: String, CodingKey {
         case tagName = "tag_name"
         case prerelease

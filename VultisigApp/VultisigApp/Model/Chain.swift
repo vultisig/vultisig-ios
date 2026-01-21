@@ -46,12 +46,11 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case mantle
     case hyperliquid
     case sei
-    
-    
+
     enum MigrationKeys: String, CodingKey {
         case ticker
     }
-    
+
     var name: String {
         switch self {
         case .thorChain: return "THORChain"
@@ -95,11 +94,11 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .sei: return "Sei"
         }
     }
-    var feeUnit: String{
+    var feeUnit: String {
         switch self {
         case .thorChain, .thorChainStagenet: return "RUNE"
         case .solana: return "SOL"
-        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon, .polygonV2,.optimism,.bscChain,.cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid, .sei: return "Gwei"
+        case .ethereum, .avalanche, .base, .blast, .arbitrum, .polygon, .polygonV2, .optimism, .bscChain, .cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid, .sei: return "Gwei"
         case .bitcoin: return "BTC/vbyte"
         case .bitcoinCash: return "BCH/vbyte"
         case .litecoin: return "LTC/vbyte"
@@ -123,12 +122,12 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .zcash: return "ZEC/vbyte"
         }
     }
-    
+
     var ticker: String {
         switch self {
         case .thorChain, .thorChainStagenet: return "RUNE"
         case .solana: return "SOL"
-        case .ethereum,.ethereumSepolia: return "ETH"
+        case .ethereum, .ethereumSepolia: return "ETH"
         case .avalanche: return "AVAX"
         case .bscChain: return "BNB"
         case .bitcoin: return "BTC"
@@ -141,7 +140,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .cardano: return "ADA"
         case .mayaChain: return "CACAO"
         case .arbitrum: return "ARB"
-        case .base: return "BASE" //Base does not have a coin
+        case .base: return "BASE"
         case .optimism: return "OP"
         case .polygon: return "MATIC"
         case .polygonV2: return "POL"
@@ -165,7 +164,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .sei: return "SEI"
         }
     }
-    
+
     var swapAsset: String {
         switch self {
         case .thorChain, .thorChainStagenet: return "THOR"
@@ -208,7 +207,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .sei: return "SEI"
         }
     }
-    
+
     var signingKeyType: KeyType {
         switch self.chainType {
         case .Cosmos, .EVM, .THORChain, .UTXO, .Ripple, .Tron:
@@ -217,10 +216,10 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return .EdDSA
         }
     }
-    
+
     var chainType: ChainType {
         switch self {
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync,.ethereumSepolia, .mantle, .hyperliquid, .sei:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid, .sei:
             return .EVM
         case .thorChain, .thorChainStagenet, .mayaChain:
             return .THORChain
@@ -244,14 +243,14 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return .Tron
         }
     }
-    
+
     var logo: String {
         switch self {
         case .thorChain, .thorChainStagenet:
             return "rune"
         case .solana:
             return "solana"
-        case .ethereum,.ethereumSepolia:
+        case .ethereum, .ethereumSepolia:
             return "eth"
         case .avalanche:
             return "avax"
@@ -323,7 +322,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return "sei"
         }
     }
-    
+
     var chainID: Int? {
         switch self {
         case .ethereum:
@@ -339,7 +338,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .polygon:
             return 137
         case .polygonV2:
-            return 137 // TODO: find the new id
+            return 137
         case .optimism:
             return 10
         case .bscChain:
@@ -376,7 +375,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return CoinType.litecoin
         case .dogecoin:
             return CoinType.dogecoin
-        case .ethereum,.ethereumSepolia:
+        case .ethereum, .ethereumSepolia:
             return CoinType.ethereum
         case .bscChain:
             return CoinType.smartChain
@@ -440,7 +439,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return CoinType.ethereum
         }
     }
-   
+
     var isECDSA: Bool {
         return signingKeyType == .ECDSA
     }
@@ -448,9 +447,9 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     var index: Int {
         return Chain.allCases.firstIndex(of: self) ?? 0
     }
-    
+
     static let example = Chain(name: "Bitcoin")!
-    
+
     var isSwapAvailable: Bool {
         switch self {
         case .thorChain,
@@ -496,20 +495,20 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return false
         }
     }
-    
+
     var type: ChainType {
         switch self {
         case .thorChain, .thorChainStagenet, .mayaChain:
             return .THORChain
         case .solana:
             return .Solana
-        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon, .polygonV2,.optimism,.bscChain,.cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid, .sei:
+        case .ethereum, .avalanche, .base, .blast, .arbitrum, .polygon, .polygonV2, .optimism, .bscChain, .cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid, .sei:
             return .EVM
-        case .bitcoin,.bitcoinCash,.litecoin,.dogecoin,.dash, .zcash:
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
             return .UTXO
         case .cardano:
             return .Cardano
-        case .gaiaChain,.kujira, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash:
+        case .gaiaChain, .kujira, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash:
             return .Cosmos
         case .sui:
             return .Sui
@@ -536,7 +535,7 @@ extension Chain {
             return true
         }
     }
-    
+
     /// Indicates if this chain supports pending transaction tracking via sequence numbers (nonce)
     var supportsPendingTransactions: Bool {
         switch self {
@@ -546,7 +545,7 @@ extension Chain {
             return false
         }
     }
-    
+
     static var enabledChains: [Chain] {
         allCases.filter {
             switch $0 {

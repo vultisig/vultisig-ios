@@ -9,9 +9,9 @@ import SwiftUI
 
 struct SendCryptoSigningErrorView: View {
     let errorString: String
-    
+
     @EnvironmentObject var appViewModel: AppViewModel
-    
+
     var body: some View {
         ErrorView(
             type: .alert,

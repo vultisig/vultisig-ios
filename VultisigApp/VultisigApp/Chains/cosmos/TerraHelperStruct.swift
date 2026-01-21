@@ -12,24 +12,23 @@ import VultisigCommonData
 
 struct TerraHelperStruct {
     static let GasLimit: UInt64 = 300000
-    
+
     static func getPreSignedInputData(keysignPayload: KeysignPayload, chain: Chain) throws -> Data {
-        guard case .Cosmos(let accountNumber, let sequence , let gas, _, _) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence, let gas, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")
         }
-        
+
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
             throw HelperError.runtimeError("invalid hex public key")
         }
-        
+
         let coinType = chain.coinType
         let denom = "uluna"
-        
+
         if
             let signDataMessages = try CosmosSignDataBuilder.getMessages(keysignPayload: keysignPayload),
-            let signDataFee = try CosmosSignDataBuilder.getFee(keysignPayload: keysignPayload)
-        {
-            
+            let signDataFee = try CosmosSignDataBuilder.getFee(keysignPayload: keysignPayload) {
+
             let input = CosmosSigningInput.with {
                 $0.publicKey = pubKeyData
                 $0.signingMode = CosmosSignDataBuilder.getSigningMode(keysignPayload: keysignPayload)
@@ -43,14 +42,13 @@ struct TerraHelperStruct {
                 $0.messages = signDataMessages.messages
                 $0.fee = signDataFee
             }
-            
+
             return try input.serializedData()
-            
+
         } else if keysignPayload.coin.isNativeToken
-            || keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/")
-            || keysignPayload.coin.contractAddress.lowercased().starts(with: "factory/")
-        {
-            
+                    || keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/")
+                    || keysignPayload.coin.contractAddress.lowercased().starts(with: "factory/") {
+
             let input = CosmosSigningInput.with {
                 $0.publicKey = pubKeyData
                 $0.signingMode = .protobuf
@@ -62,7 +60,7 @@ struct TerraHelperStruct {
                     $0.memo = memo
                 }
                 $0.messages = [WalletCore.CosmosMessage.with {
-                    $0.sendCoinsMessage = WalletCore.CosmosMessage.Send.with{
+                    $0.sendCoinsMessage = WalletCore.CosmosMessage.Send.with {
                         $0.fromAddress = keysignPayload.coin.address
                         $0.amounts = [CosmosAmount.with {
                             $0.denom = keysignPayload.coin.isNativeToken ? denom : keysignPayload.coin.contractAddress
@@ -71,7 +69,7 @@ struct TerraHelperStruct {
                         $0.toAddress = keysignPayload.toAddress
                     }
                 }]
-                
+
                 $0.fee = WalletCore.CosmosFee.with {
                     $0.gas = GasLimit
                     $0.amounts = [CosmosAmount.with {
@@ -80,13 +78,13 @@ struct TerraHelperStruct {
                     }]
                 }
             }
-            
+
             return try input.serializedData()
-            
+
         } else {
-            
+
             if !keysignPayload.coin.contractAddress.contains("terra1") && !keysignPayload.coin.contractAddress.contains("ibc/") {
-                
+
                 let input = CosmosSigningInput.with {
                     $0.publicKey = pubKeyData
                     $0.signingMode = .protobuf
@@ -123,19 +121,19 @@ struct TerraHelperStruct {
                             }
                         ]
                     }
-                    
+
                 }
 
                 return try input.serializedData()
-                
+
             } else {
-                
+
                 // This is for WASM tokens
-                
+
                 guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: coinType) else {
                     throw HelperError.runtimeError("\(keysignPayload.coin.address) is invalid")
                 }
-                
+
                 let wasmGenericMessage = WalletCore.CosmosMessage.WasmExecuteContractGeneric.with {
                     $0.senderAddress = fromAddr.description
                     $0.contractAddress = keysignPayload.coin.contractAddress.description
@@ -147,7 +145,7 @@ struct TerraHelperStruct {
                 let message = WalletCore.CosmosMessage.with {
                     $0.wasmExecuteContractGeneric = wasmGenericMessage
                 }
-                               
+
                 let fee = WalletCore.CosmosFee.with {
                     $0.gas = GasLimit
                     $0.amounts = [CosmosAmount.with {
@@ -155,7 +153,7 @@ struct TerraHelperStruct {
                         $0.denom = denom
                     }]
                 }
-                
+
                 let input = CosmosSigningInput.with {
                     $0.signingMode = .protobuf
                     $0.accountNumber = accountNumber
@@ -169,14 +167,14 @@ struct TerraHelperStruct {
                     $0.publicKey = pubKeyData
                     $0.mode = .sync
                 }
-                
+
                 return try input.serializedData()
-                
+
             }
-            
+
         }
     }
-    
+
     static func getPreSignedImageHash(keysignPayload: KeysignPayload, chain: Chain) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload, chain: chain)
         let coinType = chain.coinType
@@ -187,28 +185,26 @@ struct TerraHelperStruct {
         }
         return [preSigningOutput.dataHash.hexString]
     }
-    
+
     static func getSignedTransaction(keysignPayload: KeysignPayload,
-                              signatures: [String: TssKeysignResponse],
-                              chain: Chain) throws -> SignedTransactionResult
-    {
+                                     signatures: [String: TssKeysignResponse],
+                                     chain: Chain) throws -> SignedTransactionResult {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload, chain: chain)
         let signedTransaction = try getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures, chain: chain)
         return signedTransaction
     }
-    
+
     static func getSignedTransaction(coinHexPublicKey: String,
-                              inputData: Data,
-                              signatures: [String: TssKeysignResponse],
-                              chain: Chain) throws -> SignedTransactionResult
-    {
+                                     inputData: Data,
+                                     signatures: [String: TssKeysignResponse],
+                                     chain: Chain) throws -> SignedTransactionResult {
         let coinType = chain.coinType
         guard let pubkeyData = Data(hexString: coinHexPublicKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {
             throw HelperError.runtimeError("public key \(coinHexPublicKey) is invalid")
         }
-        
+
         do {
             let hashes = TransactionCompiler.preImageHashes(coinType: coinType, txInputData: inputData)
             let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
@@ -219,7 +215,7 @@ struct TerraHelperStruct {
             guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
                 throw HelperError.runtimeError("fail to verify signature")
             }
-            
+
             allSignatures.add(data: signature)
             publicKeys.add(data: pubkeyData)
             let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: coinType,
@@ -236,4 +232,3 @@ struct TerraHelperStruct {
         }
     }
 }
-

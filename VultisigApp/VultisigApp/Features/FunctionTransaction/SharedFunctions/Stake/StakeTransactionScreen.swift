@@ -10,9 +10,9 @@ import SwiftUI
 struct StakeTransactionScreen: View {
     @StateObject var viewModel: StakeTransactionViewModel
     var onVerify: (TransactionBuilder) -> Void
-    
+
     @State var percentageSelected: Double?
-    
+
     var body: some View {
         AmountFunctionTransactionScreen(
             title: String(format: "stakeCoin".localized, viewModel.coin.ticker),
@@ -37,7 +37,7 @@ struct StakeTransactionScreen: View {
             viewModel.onPercentage(newValue)
         }
     }
-    
+
     @ViewBuilder
     var autocompoundToggle: some View {
         if viewModel.supportsAutocompound {

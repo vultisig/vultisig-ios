@@ -13,24 +13,24 @@ struct DefiChainActiveNodeView: View {
     let canUnbond: Bool
     var onUnbond: (BondNode) -> Void
     var onBond: (BondNode) -> Void
-    
+
     let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM d, yy"
         return formatter
     }()
-    
+
     var formattedChurnDate: String {
         guard let nextChurn = activeNode.nextChurn else {
             return "-"
         }
         return CustomDateFormatter.formatMonthDayYear(nextChurn)
     }
-    
+
     var fiatAmount: String {
         coin.fiat(decimal: coin.valueWithDecimals(value: activeNode.amount)).formatToFiat()
     }
-    
+
     var unbondDisabled: Bool { !activeNode.node.state.canUnbond || !canUnbond }
     var bondDisabled: Bool { !activeNode.node.state.canBond }
 
@@ -43,33 +43,33 @@ struct DefiChainActiveNodeView: View {
                 Spacer()
                 BondNodeStateView(state: activeNode.node.state)
             }
-            
+
             HStack(spacing: 4) {
                 HiddenBalanceText(String(format: "bondedXCoin".localized, coin.formatWithTicker(value: activeNode.amount)))
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.title3)
                 Spacer()
-                
+
                 HiddenBalanceText(fiatAmount)
                     .font(Theme.fonts.title3)
                     .foregroundStyle(Theme.colors.textTertiary)
             }
             .lineLimit(1)
-            
+
             HStack(spacing: 4) {
                 Icon(named: "percent", size: 16)
                 Text("apy".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
                 Spacer()
-                
+
                 Text(activeNode.apy.formatted(.percent.precision(.fractionLength(2))))
                     .font(Theme.fonts.bodyMMedium)
                     .foregroundStyle(Theme.colors.alertSuccess)
             }
-            
+
             Separator(color: Theme.colors.border, opacity: 1)
-            
+
             VStack(alignment: .leading, spacing: 14) {
                 HStack(alignment: .top, spacing: 16) {
                     nextChurnView
@@ -85,7 +85,7 @@ struct DefiChainActiveNodeView: View {
             }
         }
     }
-    
+
     var nextChurnView: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
@@ -99,7 +99,7 @@ struct DefiChainActiveNodeView: View {
                 .foregroundStyle(Theme.colors.textSecondary)
         }
     }
-    
+
     var nextAwardView: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
@@ -113,7 +113,7 @@ struct DefiChainActiveNodeView: View {
                 .foregroundStyle(Theme.colors.textSecondary)
         }
     }
-    
+
     var bondButtonsView: some View {
         HStack(alignment: .top, spacing: 16) {
             DefiButton(title: "unbond".localized, icon: "broken-chain-3", type: .secondary) {
@@ -145,7 +145,7 @@ struct DefiChainActiveNodeView: View {
             onUnbond: { _ in },
             onBond: { _ in }
         )
-        
+
         DefiChainActiveNodeView(
             coin: .example,
             activeNode: .init(

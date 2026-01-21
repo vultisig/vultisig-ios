@@ -12,11 +12,11 @@ struct SendDetailsAmountTab: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var viewModel: SendDetailsViewModel
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
-    let validateForm: () async -> ()
+    let validateForm: () async -> Void
     @FocusState.Binding var focusedField: Field?
     @Binding var settingsPresented: Bool
     @State var percentage: Double?
-    
+
     var body: some View {
         content
             .padding(.bottom, 65)
@@ -25,13 +25,13 @@ struct SendDetailsAmountTab: View {
                 guard newValue else {
                     return
                 }
-                
+
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     focusedField = .amount
                 }
             }
     }
-    
+
     var content: some View {
         SendFormExpandableSection(isExpanded: isExpanded) {
             titleSection
@@ -39,26 +39,26 @@ struct SendDetailsAmountTab: View {
             VStack(spacing: 16) {
                 separator
                 amountFieldSection
-                
+
                 if sendCryptoViewModel.showAmountAlert {
                     errorText
                 }
-                
+
                 percentageButtons
                 balanceSection
                 additionalOptionsSection
             }
         }
     }
-    
+
     var titleSection: some View {
         HStack {
             Text(NSLocalizedString("amount", comment: ""))
                 .font(Theme.fonts.bodySMedium)
                 .foregroundColor(Theme.colors.textPrimary)
-            
+
             Spacer()
-            
+
             if showGasSelector {
                 gasSelector
             }
@@ -68,15 +68,15 @@ struct SendDetailsAmountTab: View {
             viewModel.onSelect(tab: .amount)
         }
     }
-    
+
     var separator: some View {
         LinearSeparator()
     }
-    
+
     var showGasSelector: Bool {
         isExpanded && tx.coin.supportsFeeSettings
     }
-    
+
     var gasSelector: some View {
         Button {
             settingsPresented.toggle()
@@ -84,23 +84,23 @@ struct SendDetailsAmountTab: View {
             editLabel
         }
     }
-    
+
     var editLabel: some View {
         Image(systemName: "fuelpump")
             .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodyMMedium)
     }
-    
+
     var amountFieldSection: some View {
         SendDetailsAmountTextField(tx: tx, viewModel: viewModel, sendCryptoViewModel: sendCryptoViewModel, focusedField: $focusedField)
             .id(Field.amount)
             .onSubmit {
-                Task{
+                Task {
                     await validateForm()
                 }
             }
     }
-    
+
     @ViewBuilder
     var percentageButtons: some View {
         let isDisabled = sendCryptoViewModel.isLoading || tx.isCalculatingFee
@@ -112,7 +112,7 @@ struct SendDetailsAmountTab: View {
             sendCryptoViewModel.setMaxValues(tx: tx, percentage: newValue)
         }
     }
-    
+
     var balanceSection: some View {
         HStack {
             Text(NSLocalizedString("balanceAvailable", comment: ""))
@@ -126,11 +126,11 @@ struct SendDetailsAmountTab: View {
         .background(Theme.colors.bgSurface1)
         .cornerRadius(12)
     }
-    
+
     var additionalOptionsSection: some View {
         SendDetailsAdditionalSection(tx: tx, viewModel: viewModel, sendCryptoViewModel: sendCryptoViewModel)
     }
-    
+
     var errorText: some View {
         Text(NSLocalizedString(sendCryptoViewModel.errorMessage ?? .empty, comment: ""))
             .font(Theme.fonts.caption12)

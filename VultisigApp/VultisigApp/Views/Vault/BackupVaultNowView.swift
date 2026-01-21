@@ -41,7 +41,7 @@ struct BackupVaultNowView: View {
                 navigateToBackup = false
             }
     }
-    
+
     var content: some View {
         VStack(spacing: 0) {
             logo
@@ -88,7 +88,7 @@ struct BackupVaultNowView: View {
             .padding(.horizontal, 32)
             .multilineTextAlignment(.center)
     }
-    
+
     var backupButton: some View {
         PrimaryButton(title: "Backup") {
             navigateToBackup = true

@@ -13,13 +13,13 @@ import AVFoundation
 struct QRCodeScannerView: View {
     @Binding var showScanner: Bool
     var handleImport: (String) -> Void
-    
+
     @State var isGalleryPresented = false
     @State var isFilePresented = false
     @State var showErrorPopup = false
-    
-    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-    
+
+    private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+
     var body: some View {
         ZStack {
             cameraView
@@ -40,7 +40,7 @@ struct QRCodeScannerView: View {
                 }
         }
     }
-    
+
     var content: some View {
         VStack {
             header
@@ -49,7 +49,7 @@ struct QRCodeScannerView: View {
         }
         .padding(.vertical, 8)
     }
-    
+
     var header: some View {
         HStack {
             backButton
@@ -62,7 +62,7 @@ struct QRCodeScannerView: View {
         .font(Theme.fonts.bodyLMedium)
         .offset(y: 8)
     }
-    
+
     var backButton: some View {
         Button {
             showScanner = false
@@ -70,17 +70,17 @@ struct QRCodeScannerView: View {
             getIcon(for: "xmark")
         }
     }
-    
+
     var title: some View {
         Text(NSLocalizedString("scanQRStartScreen", comment: ""))
     }
-    
+
     var helpButton: some View {
         Link(destination: URL(string: Endpoint.supportDocumentLink)!) {
             getIcon(for: "questionmark.circle")
         }
     }
-    
+
     var cameraView: some View {
         ZStack {
             CodeScannerView(
@@ -91,20 +91,20 @@ struct QRCodeScannerView: View {
                 switch result {
                 case .success(let success):
                     handleImport(success.string)
-                case .failure(_):
+                case .failure:
                     showErrorPopup = true
                 }
             }
-            
+
             overlay
         }
     }
-    
+
     var overlay: some View {
         Image("QRScannerOutline")
             .padding(60)
     }
-    
+
     var menubuttons: some View {
         Menu {
             Button {
@@ -115,7 +115,7 @@ struct QRCodeScannerView: View {
                     systemImage: "photo.on.rectangle.angled"
                 )
             }
-            
+
             Button {
                 isFilePresented.toggle()
             } label: {
@@ -131,7 +131,7 @@ struct QRCodeScannerView: View {
         .padding(.horizontal, 16)
         .padding(.bottom, 30)
     }
-    
+
     var uploadButton: some View {
         PrimaryButtonView(title: "uploadQR", leadingIcon: "share")
     }

@@ -15,9 +15,9 @@ struct TCYUnstakeTransactionBuilder: TransactionBuilder {
     let autoCompoundAmount: Decimal
     let sendMaxAmount: Bool
     let isAutoCompound: Bool
-    
+
     var amount: String { "0" }
-    
+
     var memo: String {
         if !isAutoCompound {
             let basisPoints = percentage * 100
@@ -25,24 +25,24 @@ struct TCYUnstakeTransactionBuilder: TransactionBuilder {
         }
         return ""
     }
-    
+
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("memo", memo)
         return dict
     }
-    
+
     var transactionType: VSTransactionType {
         isAutoCompound ? .genericContract : .unspecified
     }
-    
+
     var wasmContractPayload: WasmExecuteContractPayload? {
         guard isAutoCompound else { return nil }
-        
+
         let withdrawAmount = (coin.decimalToCrypto(value: autoCompoundAmount) * Decimal(percentage)) / 100
         let units = withdrawAmount.toInt()
         guard units >= 1 else { return nil }
-        
+
         return WasmExecuteContractPayload(
             senderAddress: coin.address,
             contractAddress: Self.destinationAddress,
@@ -55,6 +55,6 @@ struct TCYUnstakeTransactionBuilder: TransactionBuilder {
             )]
         )
     }
-    
+
     var toAddress: String { "" }
 }

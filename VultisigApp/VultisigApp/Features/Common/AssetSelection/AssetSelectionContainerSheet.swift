@@ -11,13 +11,13 @@ struct AssetSection<SectionType: Hashable, Asset: Hashable>: Hashable {
     let title: String?
     let type: SectionType
     let assets: [Asset]
-    
+
     init(title: String? = nil, type: SectionType, assets: [Asset]) {
         self.title = title
         self.type = type
         self.assets = assets
     }
-    
+
     init(title: String? = nil, assets: [Asset]) where SectionType == Int {
         self.title = title
         self.type = .zero
@@ -34,9 +34,9 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
     var onSave: () -> Void
     var cellBuilder: (Asset, SectionType) -> CellView
     var emptyStateBuilder: () -> EmptyStateView
-    
+
     @State var searchBarFocused: Bool = false
-    
+
     init(
         title: String,
         subtitle: String? = nil,
@@ -56,11 +56,11 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
         self.cellBuilder = cellBuilder
         self.emptyStateBuilder = emptyStateBuilder
     }
-    
+
     var body: some View {
         container
     }
-    
+
     var container: some View {
 #if os(iOS)
         NavigationStack {
@@ -73,7 +73,7 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
             .transaction { $0.disablesAnimations = true }
 #endif
     }
-    
+
     var content: some View {
         AssetSelectionContainerView(
             title: title,
@@ -96,7 +96,7 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
                     view.padding(.top, isSupported ? 0 : 16)
                 }
             }
-            
+
             CustomToolbarItem(placement: .trailing) {
                 ToolbarButton(image: "check", type: .confirmation) {
                     onSave()
@@ -111,33 +111,33 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
         .presentationDragIndicator(.visible)
         .background(Theme.colors.bgPrimary)
     }
-    
+
     var gradientOverlay: some View {
         LinearGradient(
             stops: [
                 Gradient.Stop(color: Color(red: 0.01, green: 0.07, blue: 0.17), location: 0.00),
-                Gradient.Stop(color: Color(red: 0.01, green: 0.07, blue: 0.17).opacity(0), location: 1.00),
+                Gradient.Stop(color: Color(red: 0.01, green: 0.07, blue: 0.17).opacity(0), location: 1.00)
             ],
             startPoint: UnitPoint(x: 0.5, y: 1),
             endPoint: UnitPoint(x: 0.5, y: 0)
         )
         .frame(height: 60)
     }
-    
+
     var textfield: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(title)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.title2)
                 .multilineTextAlignment(.leading)
-            
+
             if let subtitle {
                 Text(subtitle)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
                     .multilineTextAlignment(.leading)
             }
-            
+
             HStack(spacing: 12) {
                 SearchTextField(value: $searchText, isFocused: $searchBarFocused)
                 Button {
@@ -155,7 +155,7 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
             .animation(.easeInOut, value: searchBarFocused)
         }
     }
-    
+
     @ViewBuilder
     var grid: some View {
         let spacing: CGFloat = 16
@@ -189,5 +189,3 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
         emptyStateBuilder: { EmptyView() }
     )
 }
-
-

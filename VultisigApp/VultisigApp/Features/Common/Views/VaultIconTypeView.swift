@@ -9,15 +9,15 @@ import SwiftUI
 
 struct VaultIconTypeView: View {
     let isFastVault: Bool
-    
+
     var iconName: String {
         isFastVault ? "lightning" : "shield"
     }
-    
+
     var iconColor: Color {
         isFastVault ? Theme.colors.alertWarning : Theme.colors.bgButtonPrimary
     }
-    
+
     var body: some View {
         Icon(named: iconName, color: iconColor, size: 16)
     }

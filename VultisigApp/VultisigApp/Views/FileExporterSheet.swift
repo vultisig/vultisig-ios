@@ -24,7 +24,7 @@ struct FileExporterSheet<D: FileDocument>: ViewModifier {
     @Binding var isPresented: Bool
     @Binding var fileModel: FileExporterModel<D>?
     var completion: (Result<Bool, Error>) -> Void
-    
+
     func body(content: Content) -> some View {
         fileExporter(content: content)
     }
@@ -35,7 +35,7 @@ extension FileExporterSheet {
     func fileExporter(content: Content) -> some View {
         content
             .unwrap(fileModel) { view, fileModel in
-                view.shareSheet(isPresented: $isPresented, activityItems: [fileModel.url])  { didSave in
+                view.shareSheet(isPresented: $isPresented, activityItems: [fileModel.url]) { didSave in
                     completion(.success(didSave))
                 }
             }

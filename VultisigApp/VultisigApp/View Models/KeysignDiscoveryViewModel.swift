@@ -18,16 +18,16 @@ enum KeysignDiscoveryStatus {
 class KeysignDiscoveryViewModel: ObservableObject {
     private let logger = Logger(subsystem: "keysign-discovery", category: "viewmodel")
     private var cancellables = Set<AnyCancellable>()
-    
+
     var vault: Vault
     var keysignPayload: KeysignPayload?
     var customMessagePayload: CustomMessagePayload?
     var participantDiscovery: ParticipantDiscovery?
     var encryptionKeyHex: String?
-    
+
     private let mediator = Mediator.shared
     private let fastVaultService = FastVaultService.shared
-    
+
     @Published var serverAddr = "http://127.0.0.1:18080"
     @Published var selections = Set<String>()
     @Published var sessionID = ""
@@ -36,7 +36,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
     @Published var keysignMessages = [String]()
     @Published var serviceName = ""
     @Published var errorMessage = ""
-    
+
     init() {
         self.vault = Vault(name: "Main Vault")
         self.keysignPayload = KeysignPayload(
@@ -64,7 +64,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             serverAddr = Endpoint.vultisigRelay
         }
     }
-    
+
     @MainActor
     func setData(
         vault: Vault,
@@ -78,7 +78,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.keysignPayload = keysignPayload
         self.customMessagePayload = customMessagePayload
         self.participantDiscovery = participantDiscovery
-        
+
         if self.sessionID.isEmpty {
             self.sessionID = UUID().uuidString
         }
@@ -93,7 +93,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.selections.insert(self.localPartyID)
         // mediator server need to be
         self.mediator.start(name: self.serviceName)
-        
+
         var coin: Coin?
         if let keysignPayload {
             do {
@@ -105,7 +105,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
                     self.keysignPayload = finalPayload
                     logger.info("Refreshed Solana blockhash before generating keysign messages")
                 }
-                
+
                 let keysignFactory = KeysignMessageFactory(payload: finalPayload)
                 let preSignedImageHash = try keysignFactory.getKeysignMessages(vault: vault)
                 self.keysignMessages = preSignedImageHash.sorted()
@@ -116,26 +116,26 @@ class KeysignDiscoveryViewModel: ObservableObject {
                 self.status = .FailToStart
             }
         }
-        
+
         if let customMessagePayload {
             self.keysignMessages = customMessagePayload.keysignMessages
             coin = vault.nativeCoin(for: Chain(name: customMessagePayload.chain) ?? .ethereum)
         }
-        
+
         if keysignMessages.isEmpty {
             logger.error("no meessage need to be signed")
             status = .FailToStart
         }
-        
+
         if let fastVaultPassword, let coin {
             // when fast sign , always using relay server
             serverAddr = Endpoint.vultisigRelay
-            
+
             if vault.signers.count <= 3 {
                 // skip device lookup if possible
                 status = .WaitingForFast
             }
-            
+
             fastVaultService.sign(
                 publicKeyEcdsa: vault.pubKeyECDSA,
                 keysignMessages: self.keysignMessages,
@@ -154,12 +154,12 @@ class KeysignDiscoveryViewModel: ObservableObject {
                     self.logger.info("Fast Vault signing initiated successfully")
                 }
             }
-            
+
             cancellables.forEach { $0.cancel() }
-            
+
             participantDiscovery.$peersFound
                 .removeDuplicates()
-                .filter{!$0.isEmpty}
+                .filter { !$0.isEmpty }
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] in
                 guard let self else { return }
@@ -174,9 +174,9 @@ class KeysignDiscoveryViewModel: ObservableObject {
             .store(in: &cancellables)
         }
     }
-    
+
     func startDiscovery() async {
-        
+
         self.logger.info("mediator server started")
         self.startKeysignSession()
         self.participantDiscovery?.getParticipants(
@@ -186,7 +186,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             pubKeyECDSA: vault.pubKeyECDSA
         )
     }
-    
+
     func handleSelection(_ peer: String) {
         if selections.contains(peer) {
             // Don't remove itself
@@ -197,16 +197,16 @@ class KeysignDiscoveryViewModel: ObservableObject {
             selections.insert(peer)
         }
     }
-    
+
     func startFastKeysignIfNeeded(vault: Vault, onFastKeysign: (() -> Void)?) {
         guard isValidPeers(vault: vault) else { return }
         onFastKeysign?()
     }
-    
+
     func isValidPeers(vault: Vault) -> Bool {
         return selections.count >= (vault.getThreshold() + 1)
     }
-    
+
     @MainActor func startKeysign(vault: Vault) -> KeysignInput {
         kickoffKeysign(allParticipants: self.selections.map { $0 })
         participantDiscovery?.stop()
@@ -224,7 +224,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             isInitiateDevice: true
         )
     }
-    
+
     func kickoffKeysign(allParticipants: [String]) {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
         Utils.sendRequest(urlString: urlString,
@@ -234,12 +234,12 @@ class KeysignDiscoveryViewModel: ObservableObject {
             self.logger.info("kicked off keysign successfully")
         }
     }
-    
+
     func stopDiscovery() {
         self.participantDiscovery?.stop()
     }
-    
-    func restartParticipantDiscovery(){
+
+    func restartParticipantDiscovery() {
         self.participantDiscovery?.stop()
         if VultisigRelay.IsRelayEnabled {
             serverAddr = Endpoint.vultisigRelay
@@ -267,14 +267,14 @@ class KeysignDiscoveryViewModel: ObservableObject {
             }
         }
     }
-    
+
     func getQrImage(size: CGFloat) async -> (String, Image)? {
         guard let qrCodeData = await generateQRdata() else {
             return nil
         }
         return (qrCodeData, Utils.generateQRCodeImage(from: qrCodeData))
     }
-    
+
     private func generateQRdata() async -> String? {
         do {
             guard let encryptionKeyHex = self.encryptionKeyHex else {
@@ -293,7 +293,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             let protoKeysignMsg = try ProtoSerializer.serialize(message)
             let payloadService = PayloadService(serverURL: serverAddr)
             var jsonData = ""
-            
+
             if let keysignPayload, payloadService.shouldUploadToRelay(payload: protoKeysignMsg) {
                 let keysignPayload = try ProtoSerializer.serialize(keysignPayload)
                 let hash = try await payloadService.uploadPayload(payload: keysignPayload)
@@ -305,7 +305,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
                                                            useVultisigRelay: VultisigRelay.IsRelayEnabled,
                                                            payloadID: hash)
                 jsonData = try ProtoSerializer.serialize(messageWithoutPayload)
-                
+
             } else {
                 jsonData = protoKeysignMsg
             }
@@ -315,7 +315,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             return nil
         }
     }
-    
+
     private var keysignType: KeyType {
         if let keysignPayload {
             return keysignPayload.coin.chain.signingKeyType

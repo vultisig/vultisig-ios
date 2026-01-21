@@ -12,7 +12,7 @@ struct PreferredAssetSelectionView: View {
     @Binding var preferredAsset: THORChainAsset?
     var onSelect: () -> Void
     @StateObject var viewModel = PreferredAssetSelectionViewModel()
-    
+
     var body: some View {
         Screen(showNavigationBar: false) {
             VStack(spacing: 8) {
@@ -45,7 +45,7 @@ struct PreferredAssetSelectionView: View {
             }
         }
     }
-    
+
     var list: some View {
         LazyVStack(spacing: 0) {
             ForEach(viewModel.filteredAssets, id: \.asset) { asset in
@@ -56,12 +56,12 @@ struct PreferredAssetSelectionView: View {
             }
         }
     }
-    
+
     var loadingView: some View {
         VStack(spacing: 16) {
             SpinningLineLoader()
                 .scaleEffect(1.2)
-            
+
             Text(NSLocalizedString("loading", comment: ""))
                 .font(Theme.fonts.bodySMedium)
                 .foregroundColor(Theme.colors.textTertiary)
@@ -69,7 +69,7 @@ struct PreferredAssetSelectionView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.top, 48)
     }
-    
+
     var emptyMessage: some View {
         ErrorMessage(text: "noResultFound")
             .padding(.top, 48)

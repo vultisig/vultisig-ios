@@ -10,7 +10,7 @@ import Foundation
 enum AddressBookChainType: Identifiable, Equatable, Hashable {
     case evm
     case chain(coin: CoinMeta)
-    
+
     init(coinMeta: CoinMeta) {
         switch coinMeta.chain.type {
         case .EVM:
@@ -19,9 +19,9 @@ enum AddressBookChainType: Identifiable, Equatable, Hashable {
             self = .chain(coin: coinMeta)
         }
     }
-    
+
     var id: String { name }
-    
+
     var name: String {
         switch self {
         case .evm:
@@ -30,7 +30,7 @@ enum AddressBookChainType: Identifiable, Equatable, Hashable {
             coin.chain.name
         }
     }
-    
+
     var icon: String {
         switch self {
         case .evm:
@@ -39,7 +39,7 @@ enum AddressBookChainType: Identifiable, Equatable, Hashable {
             coin.chain.logo
         }
     }
-    
+
     var chain: Chain {
         switch self {
         case .evm:

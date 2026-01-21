@@ -9,17 +9,17 @@ import SwiftUI
 
 struct VultisigLogo: View {
     var isAnimated: Bool = true
-    
+
     @State var didAppear = false
     @State var showTexts = true
-    
+
     var body: some View {
         container
             .onAppear {
                 setData()
             }
     }
-    
+
     var content: some View {
         VStack(spacing: 18) {
             primaryLogo
@@ -28,7 +28,7 @@ struct VultisigLogo: View {
             }
         }
     }
-    
+
     var primaryLogo: some View {
         Image("VultisigLogoSquared")
             .resizable()
@@ -36,7 +36,7 @@ struct VultisigLogo: View {
             .scaleEffect(didAppear ? 1 : 0)
             .opacity(didAppear ? 1 : 0)
     }
-    
+
     var title: some View {
         Text("Vultisig")
             .font(Theme.fonts.title1)
@@ -46,7 +46,7 @@ struct VultisigLogo: View {
                 isAnimated ? .easeIn(duration: 1) : .none,
                 value: didAppear)
     }
-    
+
     private func setData() {
         withAnimation(isAnimated ? .spring : .none) {
             didAppear = true

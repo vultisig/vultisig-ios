@@ -9,10 +9,10 @@ import SwiftUI
 
 struct RefreshToolbarButton: View {
     var onRefresh: () -> Void
-    
+
     @State private var isRefreshing = false
     @State private var disabled = false
-    
+
     var body: some View {
         ToolbarButton(image: "refresh", action: onPress) { icon in
             icon
@@ -20,13 +20,13 @@ struct RefreshToolbarButton: View {
         }
         .disabled(disabled)
     }
-    
+
     func onPress() {
         self.disabled = true
         withAnimation(.linear(duration: 1).repeatForever(autoreverses: false)) {
             isRefreshing = true
         }
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
             self.disabled = false
             withAnimation(.linear(duration: 0.3)) {

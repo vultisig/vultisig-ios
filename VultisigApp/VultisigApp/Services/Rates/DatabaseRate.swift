@@ -12,7 +12,7 @@ import SwiftData
 final class DatabaseRate {
 
     @Attribute(.unique) var id: String
-    
+
     var fiat: String
     var crypto: String
     var value: Double

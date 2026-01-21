@@ -10,12 +10,12 @@ import SwiftUI
 import RiveRuntime
 
 extension PeerDiscoveryView {
-    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-    
+    private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+
     var qrCodeSize: CGFloat {
         screenHeight / 3.5
     }
-    
+
     var content: some View {
         GeometryReader { proxy in
             ZStack {
@@ -26,7 +26,7 @@ extension PeerDiscoveryView {
                 screenHeight = proxy.size.height
                 setData()
             }
-            .crossPlatformToolbar(NSLocalizedString(getHeaderTitle(),comment: "")) {
+            .crossPlatformToolbar(NSLocalizedString(getHeaderTitle(), comment: "")) {
                 CustomToolbarItem(placement: .trailing) {
                     if isShareButtonVisible {
                         NavigationQRShareButton(
@@ -40,7 +40,7 @@ extension PeerDiscoveryView {
         }
         .navigationBarBackButtonHidden(hideBackButton)
         .detectOrientation($orientation)
-        .onChange(of: orientation) { oldValue, newValue in
+        .onChange(of: orientation) { _, _ in
             setData()
         }
         .onAppear {
@@ -50,11 +50,11 @@ extension PeerDiscoveryView {
             UIApplication.shared.isIdleTimerDisabled = false
         }
     }
-    
+
     var main: some View {
         states
     }
-    
+
     var portraitContent: some View {
         ScrollView {
             VStack(spacing: 16) {
@@ -63,7 +63,7 @@ extension PeerDiscoveryView {
             }
         }
     }
-    
+
     var paringBarcode: some View {
         ZStack {
             animation
@@ -73,11 +73,11 @@ extension PeerDiscoveryView {
                 .padding(20)
         }
     }
-    
+
     var animation: some View {
         animationVM?.view()
     }
-    
+
     var scrollList: some View {
         VStack(alignment: .leading, spacing: 24) {
             listTitle
@@ -91,12 +91,12 @@ extension PeerDiscoveryView {
         .frame(maxWidth: .infinity)
         .padding(.horizontal, idiom == .pad ? 24 : 16)
     }
-    
+
     var networkPrompts: some View {
         NetworkPrompts(selectedNetwork: $viewModel.selectedNetwork)
             .padding(.top, idiom == .pad ? 10 : 2)
     }
-    
+
     var devices: some View {
         ForEach(participantDiscovery.peersFound, id: \.self) { peer in
             Button {
@@ -107,11 +107,11 @@ extension PeerDiscoveryView {
         }
         .padding(idiom == .phone ? 0 : 8)
     }
-    
+
     @ViewBuilder
     var bottomButton: some View {
         let isButtonDisabled = disableContinueButton()
-        
+
         PrimaryButton(title: isButtonDisabled ? "waitingOnDevices..." : "next") {
             viewModel.startKeygen()
         }
@@ -121,22 +121,22 @@ extension PeerDiscoveryView {
         .disabled(isButtonDisabled)
         .animation(.easeInOut(duration: 0.2), value: isButtonDisabled)
     }
-    
+
     var switchLink: some View {
         SwitchToLocalLink(isForKeygen: true, selectedNetwork: $viewModel.selectedNetwork)
             .disabled(viewModel.isLoading)
     }
-    
+
     var isShareButtonVisible: Bool {
         return viewModel.status == .WaitingForDevices && selectedTab.hasOtherDevices
     }
-    
+
     func setData() {
         guard self.qrCodeImage == nil, qrCodeSize > 0 else { return }
         guard let (qrCodeString, qrCodeImage) = viewModel.getQRCodeData(size: qrCodeSize, displayScale: displayScale) else {
             return
         }
-        
+
         self.qrCodeImage = qrCodeImage
         animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
         shareSheetViewModel.render(

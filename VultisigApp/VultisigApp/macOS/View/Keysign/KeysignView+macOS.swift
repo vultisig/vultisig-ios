@@ -11,7 +11,7 @@ import SwiftUI
 extension KeysignView {
     var container: some View {
         content
-            .onDisappear(){
+            .onDisappear {
                 viewModel.stopMessagePuller()
             }
     }

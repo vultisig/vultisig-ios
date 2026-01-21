@@ -11,7 +11,7 @@ struct OnboardingInformationRowView: View {
     let title: String
     let subtitle: String
     let icon: String
-    
+
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
             Icon(
@@ -23,7 +23,7 @@ struct OnboardingInformationRowView: View {
                 Text(title)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.subtitle)
-                
+
                 Text(subtitle)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.footnote)

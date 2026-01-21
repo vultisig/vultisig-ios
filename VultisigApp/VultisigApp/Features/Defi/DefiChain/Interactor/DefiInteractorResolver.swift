@@ -16,8 +16,13 @@ enum DefiInteractorResolver {
             return nil  // Chain doesn't support DeFi Stake Tab
         }
     }
+<<<<<<< HEAD
     
     static func bondInteractor(for chain: Chain) -> BondInteractor? {
+=======
+
+    static func bondInteractor(for chain: Chain) -> BondInteractor {
+>>>>>>> 186671542ac1b63de085bacb2f784ce5c89644a3
         switch chain {
         case .thorChain:
             return THORChainBondInteractor()
@@ -27,8 +32,13 @@ enum DefiInteractorResolver {
             return nil  // Chain doesn't support DeFi Bond Tab
         }
     }
+<<<<<<< HEAD
     
     static func lpsInteractor(for chain: Chain) -> LPsInteractor? {
+=======
+
+    static func lpsInteractor(for chain: Chain) -> LPsInteractor {
+>>>>>>> 186671542ac1b63de085bacb2f784ce5c89644a3
         switch chain {
         case .thorChain:
             return THORChainLPsInteractor()

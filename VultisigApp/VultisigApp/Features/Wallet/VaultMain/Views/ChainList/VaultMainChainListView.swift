@@ -10,10 +10,10 @@ import SwiftUI
 struct VaultMainChainListView: View {
     @ObservedObject var vault: Vault
     @EnvironmentObject var viewModel: VaultDetailViewModel
-    
+
     var onCopy: (GroupedChain) -> Void
     var onCustomizeChains: () -> Void
-    
+
     var body: some View {
         Group {
             if !viewModel.filteredGroups.isEmpty {
@@ -23,7 +23,7 @@ struct VaultMainChainListView: View {
             }
         }
     }
-    
+
     var chainList: some View {
         ForEach(Array(viewModel.filteredGroups.enumerated()), id: \.element.id) { index, group in
             VaultChainCellView(group: group, vault: vault) {
@@ -38,8 +38,7 @@ struct VaultMainChainListView: View {
 }
 
 #Preview {
-    VaultMainChainListView(vault: .example)
-    { _ in }
+    VaultMainChainListView(vault: .example) { _ in }
     onCustomizeChains: {}
     .environmentObject(VaultDetailViewModel())
 }

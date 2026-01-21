@@ -54,23 +54,23 @@ final class StakeTransactionViewModel: ObservableObject, Form {
         }
         return nil
     }
-    
+
     init(coin: Coin, vault: Vault, defaultAutocompound: Bool) {
         self.coin = coin
         self.vault = vault
         self.defaultAutocompound = defaultAutocompound
     }
-    
+
     func onLoad() {
         setupForm()
         amountField.validators.append(AmountBalanceValidator(balance: coin.balanceDecimal))
         isAutocompound = defaultAutocompound
     }
-    
+
     var transactionBuilder: TransactionBuilder? {
         validateErrors()
         guard validForm else { return nil }
-        
+
         switch coin.ticker.uppercased() {
         case "TCY":
             return TCYStakeTransactionBuilder(
@@ -94,7 +94,7 @@ final class StakeTransactionViewModel: ObservableObject, Form {
             return nil
         }
     }
-    
+
     func onPercentage(_ percentage: Double) {
         isMaxAmount = percentage == 100
     }

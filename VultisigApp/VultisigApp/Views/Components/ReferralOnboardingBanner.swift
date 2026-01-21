@@ -10,7 +10,7 @@ import SwiftUI
 struct ReferralOnboardingBanner: View {
     let onNext: () -> Void
     let onClose: () -> Void
-    
+
     var body: some View {
         ZStack {
             Background()
@@ -18,7 +18,7 @@ struct ReferralOnboardingBanner: View {
             closeButtonContainer
         }
     }
-    
+
     var content: some View {
         VStack(spacing: 12) {
             image
@@ -29,14 +29,14 @@ struct ReferralOnboardingBanner: View {
         .frame(height: 400)
         .padding(.horizontal, 24)
     }
-    
+
     var image: some View {
         Image("ReferralOnboardingBanner")
             .resizable()
             .frame(width: 240, height: 194)
             .padding(.bottom, 12)
     }
-    
+
     var title: some View {
         Group {
             Text(NSLocalizedString("referralOnboardingBannerTitle1", comment: ""))
@@ -49,7 +49,7 @@ struct ReferralOnboardingBanner: View {
         .font(Theme.fonts.title2)
         .multilineTextAlignment(.center)
     }
-    
+
     var button: some View {
         PrimaryButton(title: "next") {
             handleTap()
@@ -57,18 +57,18 @@ struct ReferralOnboardingBanner: View {
         .padding(.bottom, 24)
         .padding(.top, 12)
     }
-    
+
     var closeButtonContainer: some View {
         HStack {
             Spacer()
             VStack {
                 closeButton
-                
+
                 Spacer()
             }
         }
     }
-    
+
     var closeButton: some View {
         Button {
             onClose()
@@ -78,13 +78,13 @@ struct ReferralOnboardingBanner: View {
         .buttonStyle(.plain)
         .padding(24)
     }
-    
+
     var closeLabel: some View {
         Image(systemName: "xmark")
             .font(Theme.fonts.title2)
             .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     private func handleTap() {
         onNext()
     }

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct HomeRouter {
     private let viewBuilder = HomeRouteBuilder()
-    
+
     @ViewBuilder
     func build(_ route: HomeRoute) -> some View {
         switch route {

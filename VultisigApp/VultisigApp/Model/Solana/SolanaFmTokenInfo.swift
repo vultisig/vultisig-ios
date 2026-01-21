@@ -14,7 +14,7 @@ public struct SolanaFmTokenInfo: Codable {
         let image: String?
         let extensions: Extensions?
         let chainId: Int?
-        
+
         init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             name = try? container.decode(String.self, forKey: .name)
@@ -24,41 +24,41 @@ public struct SolanaFmTokenInfo: Codable {
             chainId = try? container.decode(Int.self, forKey: .chainId)
         }
     }
-    
+
     struct Extensions: Codable {
         let coingeckoId: String?
-        
+
         init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             coingeckoId = try? container.decode(String.self, forKey: .coingeckoId)
         }
     }
-    
+
     struct TokenMetadata: Codable {
         struct OnChainInfo: Codable {
             let name: String?
             let symbol: String?
-            
+
             init(from decoder: Decoder) throws {
                 let container = try decoder.container(keyedBy: CodingKeys.self)
                 name = try? container.decode(String.self, forKey: .name)
                 symbol = try? container.decode(String.self, forKey: .symbol)
             }
         }
-        
+
         let onChainInfo: OnChainInfo?
-        
+
         init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             onChainInfo = try? container.decode(OnChainInfo.self, forKey: .onChainInfo)
         }
     }
-    
+
     let mint: String?
     let decimals: Int?
     let tokenList: TokenList?
     let tokenMetadata: TokenMetadata?
-    
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         mint = try? container.decode(String.self, forKey: .mint)

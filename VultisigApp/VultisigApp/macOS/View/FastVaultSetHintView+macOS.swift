@@ -16,11 +16,11 @@ extension FastVaultSetHintView {
         }
         .crossPlatformToolbar()
     }
-    
+
     var main: some View {
         view
     }
-    
+
     var view: some View {
         VStack {
             hintField

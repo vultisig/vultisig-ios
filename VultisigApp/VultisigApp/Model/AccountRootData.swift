@@ -10,33 +10,33 @@ struct AccountRootData: Decodable {
 
     struct ResponseData: Decodable {
         let node: AccountNode?
-        
+
         struct AccountNode: Decodable {
             let merge: AccountMerge?
             let stakingV2: [StakingV2]?
-            
+
             struct AccountMerge: Decodable {
                 let accounts: [MergeAccount]
-                
+
                 struct MergeAccount: Decodable {
                     let pool: Pool
                     let size: Size
                     let shares: String
-                    
+
                     struct Size: Decodable {
                         let amount: String
                     }
-                    
+
                     struct Pool: Decodable {
                         let mergeAsset: MergeAsset
-                        
+
                         struct MergeAsset: Decodable {
                             let metadata: Metadata
                         }
                     }
                 }
             }
-            
+
             struct StakingV2: Decodable {
                 let account: String
                 let bonded: Bonded
@@ -69,10 +69,10 @@ struct AccountRootData: Decodable {
             struct Asset: Decodable {
                 let metadata: Metadata?
             }
-            
+
             struct Metadata: Decodable {
                 let symbol: String
             }
         }
     }
-} 
+}

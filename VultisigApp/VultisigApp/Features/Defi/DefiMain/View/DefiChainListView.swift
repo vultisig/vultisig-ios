@@ -24,7 +24,7 @@ struct DefiChainListView: View {
             }
         }
     }
-    
+
     var chainList: some View {
         ForEach(Array(viewModel.filteredGroups.enumerated()), id: \.element.id) { index, group in
             Button {

@@ -10,7 +10,7 @@ import SwiftUI
 struct KeysignDiscoveryDisclaimer: View {
     let vault: Vault
     @Binding var showAlert: Bool
-    
+
     var body: some View {
         HStack(spacing: 12) {
             infoIcon
@@ -28,23 +28,23 @@ struct KeysignDiscoveryDisclaimer: View {
         .padding(.horizontal, 8)
         .padding(.vertical, 12)
     }
-    
+
     var infoIcon: some View {
         Image(systemName: "info.circle")
             .resizable()
             .frame(width: 16, height: 16)
     }
-    
+
     var text: some View {
         let value = NSLocalizedString("keysignDiscoveryDisclaimer", comment: "") +
         String(describing: vault.getThreshold()) +
         NSLocalizedString("keysignDiscoveryDisclaimerDevice", comment: "")
-        
+
         return Text(value)
             .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     var closeButton: some View {
         Button {
             showAlert = false
@@ -52,7 +52,7 @@ struct KeysignDiscoveryDisclaimer: View {
             closeButtonLabel
         }
     }
-    
+
     var closeButtonLabel: some View {
         Image(systemName: "xmark")
             .resizable()

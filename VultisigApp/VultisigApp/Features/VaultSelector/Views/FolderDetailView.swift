@@ -13,28 +13,28 @@ struct FolderDetailView: View {
     var onSelectVault: (Vault) -> Void
     var onEditFolder: () -> Void
     var onBack: () -> Void
-    
+
     @Query(sort: \Vault.order, order: .forward) var vaults: [Vault]
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var appViewModel: AppViewModel
-    
+
     var filteredVaults: [Vault] {
         vaults.filter {
             folder.containedVaultNames.contains($0.name)
         }
     }
-    
+
     var headerSubtitle: String {
         let vaultsText: String = filteredVaults.count > 1 ? "vaults".localized : "vault".localized
         var subtitle = "\(filteredVaults.count) \(vaultsText)"
-        
+
         if filteredVaults.count > 1 {
             subtitle += " · \(homeViewModel.balanceText(for: filteredVaults))"
         }
-        
+
         return subtitle
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
             header
@@ -53,7 +53,7 @@ struct FolderDetailView: View {
         .padding(.top, 24)
         .padding(.horizontal, 16)
     }
-    
+
     var header: some View {
         HStack(spacing: 16) {
             ToolbarButton(
@@ -82,14 +82,14 @@ struct FolderDetailView: View {
                 stops: [
                     Gradient.Stop(color: Theme.colors.bgPrimary, location: 0.50),
                     Gradient.Stop(color: Theme.colors.bgPrimary.opacity(0.5), location: 0.85),
-                    Gradient.Stop(color: Theme.colors.bgPrimary.opacity(0), location: 1.00),
+                    Gradient.Stop(color: Theme.colors.bgPrimary.opacity(0), location: 1.00)
                 ],
                 startPoint: UnitPoint(x: 0.5, y: 0),
                 endPoint: UnitPoint(x: 0.5, y: 1)
             )
         )
     }
-    
+
     @ViewBuilder
     var vaultsList: some View {
         ForEach(filteredVaults) { vault in

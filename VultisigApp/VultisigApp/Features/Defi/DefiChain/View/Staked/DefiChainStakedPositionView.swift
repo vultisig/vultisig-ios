@@ -13,11 +13,11 @@ struct DefiChainStakedPositionView: View {
     var onStake: () -> Void
     var onUnstake: () -> Void
     var onWithdraw: () -> Void
-    
+
     var stakedAmount: String {
         AmountFormatter.formatCryptoAmount(value: position.amount, coin: position.coin)
     }
-    
+
     var title: String {
         switch position.type {
         case .stake:
@@ -48,7 +48,7 @@ struct DefiChainStakedPositionView: View {
     var hasAPR: Bool { position.apr != nil }
     var hasEstimatedReward: Bool { position.estimatedReward != nil }
     var hasNextPayout: Bool { position.nextPayout != nil }
-    
+
     var body: some View {
         ContainerView {
             VStack(spacing: 16) {
@@ -64,7 +64,7 @@ struct DefiChainStakedPositionView: View {
             }
         }
     }
-    
+
     var header: some View {
         HStack(spacing: 12) {
             AsyncImageView(
@@ -73,18 +73,18 @@ struct DefiChainStakedPositionView: View {
                 ticker: position.coin.ticker,
                 tokenChainLogo: nil
             )
-            
+
             VStack(alignment: .leading, spacing: .zero) {
                 Text(title)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
-                
+
                 HiddenBalanceText(stakedAmount)
                     .font(Theme.fonts.priceTitle1)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .contentTransition(.numericText())
                     .animation(.interpolatingSpring, value: stakedAmount)
-                
+
                 HiddenBalanceText(fiatAmount)
                     .font(Theme.fonts.priceCaption)
                     .foregroundStyle(Theme.colors.textTertiary)
@@ -94,7 +94,7 @@ struct DefiChainStakedPositionView: View {
             Spacer()
         }
     }
-    
+
     @ViewBuilder
     var rewardsSection: some View {
         if let apr = position.apr {
@@ -124,7 +124,7 @@ struct DefiChainStakedPositionView: View {
             }
         }
     }
-    
+
     var nextPayoutView: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
@@ -156,7 +156,7 @@ struct DefiChainStakedPositionView: View {
             }
         }
     }
-    
+
     @ViewBuilder
     var stakeButtonsView: some View {
         switch position.type {
@@ -165,7 +165,7 @@ struct DefiChainStakedPositionView: View {
                 PrimaryButton(title: withdrawTitle, action: onWithdraw)
                     .showIf(canWithdraw)
                 defaultButtonsView
-                
+
                 if let unstakeMessage = position.unstakeMessage {
                     Text(unstakeMessage)
                         .font(Theme.fonts.caption10)
@@ -187,7 +187,7 @@ struct DefiChainStakedPositionView: View {
             }
         }
     }
-    
+
     var addButonTitle: String {
         switch position.coin.chain {
         case .mayaChain:
@@ -196,7 +196,7 @@ struct DefiChainStakedPositionView: View {
             "stake".localized
         }
     }
-    
+
     var removeButonTitle: String {
         switch position.coin.chain {
         case .mayaChain:
@@ -216,7 +216,7 @@ struct DefiChainStakedPositionView: View {
             }
         }
     }
-    
+
     var withdrawTitle: String {
         guard let rewards = position.rewards,
               let rewardCoin = position.rewardCoin else {
@@ -246,7 +246,7 @@ struct DefiChainStakedPositionView: View {
             onUnstake: {},
             onWithdraw: {}
         )
-        
+
         DefiChainStakedPositionView(
             position: StakePosition(
                 coin: .example,

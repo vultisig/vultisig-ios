@@ -11,7 +11,7 @@ struct SecurityScannerBottomSheet: View & BottomSheetProperties {
     let securityScannerModel: SecurityScannerResult?
     let onContinueAnyway: () -> Void
     let onDismissRequest: () -> Void
-    
+
     var body: some View {
         if let securityScannerModel {
             let contentStyle = securityScannerModel.getSecurityScannerBottomSheetStyle()
@@ -30,26 +30,26 @@ struct SecurityScannerBottomSheetContent: View {
     let securityScannerProvider: String?
     let onDismissRequest: () -> Void
     let onContinueAnyway: () -> Void
-    
+
     var body: some View {
         VStack(spacing: 24) {
             Image(systemName: contentStyle.image)
                 .font(.system(size: 24, weight: .semibold))
                 .foregroundColor(contentStyle.imageColor)
-                
+
             VStack(spacing: 12) {
                 Text(contentStyle.title)
                     .foregroundColor(contentStyle.imageColor)
                     .font(Theme.fonts.title2)
                     .multilineTextAlignment(.center)
-                
+
                 Text(contentStyle.description)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
                     .multilineTextAlignment(.center)
                     .frame(height: 60)
             }
-            
+
             if let securityScannerProvider = securityScannerProvider {
                 HStack(spacing: 4) {
                     Spacer()
@@ -61,12 +61,12 @@ struct SecurityScannerBottomSheetContent: View {
                     Spacer()
                 }
             }
-            
+
             VStack(spacing: 8) {
                 PrimaryButton(title: "securityScannerContinueGoBack".localized) {
                     onDismissRequest()
                 }
-                
+
                 Button("securityScannerContinueAnyway".localized) {
                     onContinueAnyway()
                 }
@@ -111,14 +111,14 @@ private extension SecurityScannerResult {
         case .none, .low:
             title = "securityScannerLowRiskTitle".localized
         }
-        
+
         let description = self.description ?? "securityScannerDefaultDescription".localized
         let (color, icon) = if riskLevel == .critical || riskLevel == .high {
             (Theme.colors.alertError, "exclamationmark.triangle")
         } else {
             (Theme.colors.alertWarning, "exclamationmark.circle")
         }
-        
+
         return SecurityScannerBottomSheetStyle(
             title: title,
             description: description,
@@ -134,5 +134,3 @@ struct SecurityScannerBottomSheetStyle {
     let image: String
     let imageColor: Color
 }
-
-

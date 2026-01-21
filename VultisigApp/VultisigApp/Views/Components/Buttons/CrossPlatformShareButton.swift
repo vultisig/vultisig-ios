@@ -120,7 +120,7 @@ private struct MacShareButton<Content: View>: View {
     let caption: String
     let scale: CGFloat
     let content: (@escaping () -> Void) -> Content
-    
+
     @State private var cachedImage: NSImage?
     @State private var showSharePicker = false
     @State private var buttonFrame: CGRect = .zero
@@ -151,7 +151,7 @@ private struct MacShareButton<Content: View>: View {
                 )
             )
     }
-    
+
     private var shareItems: [Any] {
         var items: [Any] = [caption]
         if let cachedImage = cachedImage {
@@ -162,7 +162,7 @@ private struct MacShareButton<Content: View>: View {
         }
         return items
     }
-    
+
     private func share() {
         showSharePicker = true
     }
@@ -173,13 +173,13 @@ private struct SharePickerView: NSViewRepresentable {
     let items: [Any]
     @Binding var isPresented: Bool
     let sourceRect: CGRect
-    
+
     func makeNSView(context: Context) -> NSView {
         let view = NSView()
         context.coordinator.parentView = view
         return view
     }
-    
+
     func updateNSView(_ nsView: NSView, context: Context) {
         if isPresented {
             context.coordinator.showSharePicker(items: items, sourceRect: sourceRect)
@@ -188,24 +188,24 @@ private struct SharePickerView: NSViewRepresentable {
             }
         }
     }
-    
+
     func makeCoordinator() -> Coordinator {
         Coordinator()
     }
-    
+
     class Coordinator: NSObject {
         weak var parentView: NSView?
-        
+
         func showSharePicker(items: [Any], sourceRect: CGRect) {
             guard let parentView = parentView,
                   let window = parentView.window else { return }
-            
+
             let picker = NSSharingServicePicker(items: items)
-            
+
             // Convert the global frame to the window's coordinate system
             let windowRect = window.convertFromScreen(sourceRect)
             let viewRect = parentView.convert(windowRect, from: nil)
-            
+
             picker.show(relativeTo: viewRect, of: parentView, preferredEdge: .minY)
         }
     }

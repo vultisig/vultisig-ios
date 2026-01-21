@@ -15,7 +15,7 @@ extension THORChainSwapAsset: @retroactive Codable {
         case symbol
         case tokenID
     }
-    
+
     public init(from decoder: Decoder) throws {
         self.init()
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -23,7 +23,7 @@ extension THORChainSwapAsset: @retroactive Codable {
         self.symbol = try container.decode(String.self, forKey: .symbol)
         self.tokenID = try container.decode(String.self, forKey: .tokenID)
     }
-    
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(self.chain, forKey: .chain)
@@ -45,22 +45,22 @@ struct THORChainSwapPayload: Codable, Hashable {
     let streamingQuantity: String
     let expirationTime: UInt64
     let isAffiliate: Bool
-    
+
     var toAddress: String {
         return toCoin.address
     }
-    
+
     var fromAsset: THORChainSwapAsset {
         return swapAsset(for: fromCoin, source: true)
     }
-    
+
     var toAsset: THORChainSwapAsset {
         return swapAsset(for: toCoin, source: false)
     }
 }
 
 private extension THORChainSwapPayload {
-    
+
     func swapAsset(for coin: Coin, source: Bool) -> THORChainSwapAsset {
         return THORChainSwapAsset.with {
             switch coin.chain {
@@ -84,9 +84,9 @@ private extension THORChainSwapPayload {
                 $0.chain = .atom
             case .solana, .sui, .dash, .kujira, .mayaChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .polkadot, .zksync, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron, .ethereumSepolia, .zcash, .cardano, .mantle, .hyperliquid, .sei: break
             }
-            
+
             $0.symbol = coin.ticker
-            
+
             if !coin.isNativeToken {
                 if source {
                     $0.tokenID = coin.contractAddress

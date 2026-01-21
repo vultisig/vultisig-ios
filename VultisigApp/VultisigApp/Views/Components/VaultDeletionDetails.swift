@@ -10,14 +10,14 @@ import SwiftUI
 struct VaultDeletionDetails: View {
     let vault: Vault
     let devicesInfo: [DeviceInfo]
-    
+
     @EnvironmentObject var appViewModel: AppViewModel
     @State var totalValue: String = ""
-    
-    func setData(){
+
+    func setData() {
         totalValue = appViewModel.selectedVault?.coins.totalBalanceInFiatString ?? "$0"
     }
-    
+
     var body: some View {
         VStack(spacing: 12) {
             nameView
@@ -32,11 +32,11 @@ struct VaultDeletionDetails: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .onAppear() {
+        .onAppear {
             setData()
         }
     }
-    
+
     func cellContainer<Content: View>(@ViewBuilder content: @escaping () -> Content) -> some View {
         ContainerView {
             content()
@@ -55,7 +55,7 @@ struct VaultDeletionDetails: View {
             }
         }
     }
-    
+
     var valueView: some View {
         cellContainer {
             HStack {
@@ -65,7 +65,7 @@ struct VaultDeletionDetails: View {
             }
         }
     }
-    
+
     var typeView: some View {
         cellContainer {
             VStack(alignment: .leading, spacing: 0) {
@@ -75,7 +75,7 @@ struct VaultDeletionDetails: View {
             }
         }
     }
-    
+
     var deviceView: some View {
         cellContainer {
             VStack(alignment: .leading, spacing: 0) {
@@ -85,7 +85,7 @@ struct VaultDeletionDetails: View {
             }
         }
     }
-    
+
     var ECDSAKeyView: some View {
         cellContainer {
             VStack(alignment: .leading, spacing: 0) {
@@ -96,7 +96,7 @@ struct VaultDeletionDetails: View {
             }
         }
     }
-    
+
     var EdDSAKeyView: some View {
         cellContainer {
             VStack(alignment: .leading, spacing: 0) {
@@ -107,28 +107,28 @@ struct VaultDeletionDetails: View {
             }
         }
     }
-    
+
     func title(for text: String) -> some View {
         Text("\(text):")
     }
-    
+
     private func titlePartText() -> String {
         let part = NSLocalizedString("share", comment: "")
         let of = NSLocalizedString("of", comment: "")
         let space = " "
         let vaultIndex = getDeviceIndex()
         let totalCount = "\(vault.signers.count)"
-        
+
         return part + space + vaultIndex + space + of + space + totalCount
     }
-    
+
     private func getDeviceIndex() -> String {
         for device in devicesInfo {
             if device.Signer == vault.localPartyID {
                 return "\(device.Index + 1)"
             }
         }
-        
+
         return "0"
     }
 }

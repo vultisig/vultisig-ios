@@ -18,26 +18,26 @@ extension FastVaultEmailView {
         .navigationTitle(NSLocalizedString("", comment: ""))
         .navigationBarTitleDisplayMode(.inline)
     }
-    
+
     var main: some View {
         view
     }
-    
+
     var view: some View {
         VStack {
             emailField
-            
+
             if isEmptyEmail {
                 emptyEmailLabel
             } else if isInvalidEmail {
                 validEmailLabel
             }
-            
+
             Spacer()
             button
         }
     }
-    
+
     func textfield(title: String, text: Binding<String>) -> some View {
         HStack {
             TextField("", text: text, prompt: Text(NSLocalizedString(title, comment: ""))

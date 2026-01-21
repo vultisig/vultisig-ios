@@ -10,7 +10,7 @@ import SwiftUI
 struct AddLPTransactionScreen: View {
     @StateObject var viewModel: AddLPTransactionViewModel
     var onVerify: (TransactionBuilder) -> Void
-    
+
     var body: some View {
         AmountFunctionTransactionScreen(
             title: String(format: "addCoinLP".localized, viewModel.coin.chain.name),

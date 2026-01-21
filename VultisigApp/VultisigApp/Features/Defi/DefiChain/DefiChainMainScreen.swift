@@ -19,7 +19,7 @@ struct DefiChainMainScreen: View {
     @State private var showPositionSelection = false
     @State private var isLoading = false
     @State private var error: HelperError?
-    
+
     init(vault: Vault, group: GroupedChain) {
         self.vault = vault
         self.group = group
@@ -28,7 +28,7 @@ struct DefiChainMainScreen: View {
         self._viewModel = StateObject(wrappedValue: DefiChainMainViewModel(vault: vault, chain: group.chain))
         self._stakeViewModel = StateObject(wrappedValue: DefiChainStakeViewModel(vault: vault, chain: group.chain))
     }
-    
+
     var body: some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 16) {
@@ -71,7 +71,7 @@ struct DefiChainMainScreen: View {
             )
         }
     }
-    
+
     var positionsSegmentedControlView: some View {
         HStack(spacing: .zero) {
             SegmentedControl(selection: $viewModel.selectedPosition, items: viewModel.positions)
@@ -82,7 +82,7 @@ struct DefiChainMainScreen: View {
             }
         }
     }
-    
+
     var selectedPositionView: some View {
         Group {
             switch viewModel.selectedPosition {
@@ -129,7 +129,7 @@ struct DefiChainMainScreen: View {
         .animation(.easeInOut, value: viewModel.selectedPosition)
         .gesture(dragGesture)
     }
-    
+
     var emptyStateView: some View {
         ActionBannerView(
             title: "noPositionsSelectedTitle".localized,
@@ -138,7 +138,7 @@ struct DefiChainMainScreen: View {
             action: { showPositionSelection.toggle() }
         )
     }
-    
+
     func onStake(position: StakePosition) {
         switch position.type {
         case .stake, .compound:
@@ -147,7 +147,7 @@ struct DefiChainMainScreen: View {
             onTransactionToPresent(.mint(coin: coin(for: position.coin), yCoin: position.coin))
         }
     }
-    
+
     func onUnstake(position: StakePosition) {
         switch position.type {
         case .stake, .compound:
@@ -162,7 +162,7 @@ struct DefiChainMainScreen: View {
             onTransactionToPresent(.redeem(coin: coin(for: position.coin), yCoin: position.coin))
         }
     }
-    
+
     func coin(for yCoin: CoinMeta) -> CoinMeta {
         let coin: CoinMeta
         switch yCoin {
@@ -175,12 +175,12 @@ struct DefiChainMainScreen: View {
         }
         return coin
     }
-    
+
     func onTransactionToPresent(_ type: FunctionTransactionType) {
         Task { @MainActor in
             let vaultCoins = vault.coins.map { $0.toCoinMeta() }
             let shouldAdd = type.coins.contains { !vaultCoins.contains($0) }
-            
+
             if shouldAdd {
                 isLoading = true
                 do {
@@ -192,7 +192,7 @@ struct DefiChainMainScreen: View {
                 }
                 isLoading = false
             }
-            
+
             router.navigate(to: FunctionCallRoute.functionTransaction(
                 vault: vault,
                 transactionType: type
@@ -207,7 +207,7 @@ private extension DefiChainMainScreen {
             .onEnded { value in
                 let horizontalMovement = value.translation.width
                 let verticalMovement = value.translation.height
-                
+
                 // Only handle if it's a primarily horizontal swipe with significant distance
                 if abs(horizontalMovement) > abs(verticalMovement) * 2 && abs(horizontalMovement) > 80 {
                     withAnimation(.easeInOut) {
@@ -222,7 +222,7 @@ private extension DefiChainMainScreen {
                 }
             }
     }
-    
+
     var bottomGradient: some View {
         LinearGradient(
             stops: [
@@ -250,7 +250,7 @@ private extension DefiChainMainScreen {
             await lpsViewModel.refresh()
         }
     }
-    
+
     func update(vault: Vault) {
         viewModel.update(vault: vault)
         bondViewModel.update(vault: vault)

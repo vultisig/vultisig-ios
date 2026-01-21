@@ -34,7 +34,7 @@ extension AddressBookTextField {
             OnDropQRUtils.handleOnDrop(providers: providers, handleImageQrCode: handleImageQrCode)
         }
     }
-    
+
     func pasteAddress() {
         let pasteboard = NSPasteboard.general
         if let clipboardContent = pasteboard.string(forType: .string) {

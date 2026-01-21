@@ -11,7 +11,7 @@ import SwiftUI
 enum VaultBackupType: Hashable {
     case single(vault: Vault)
     case multiple(vaults: [Vault], selectedVault: Vault)
-    
+
     var vault: Vault {
         switch self {
         case .single(let vault):
@@ -20,7 +20,7 @@ enum VaultBackupType: Hashable {
             return selectedVault
         }
     }
-    
+
     func markBackedUp() {
         switch self {
         case .single(vault: let vault):
@@ -77,7 +77,7 @@ struct VaultBackupSelectionScreen: View {
             backupTypeRow(type: type)
         }
     }
-    
+
     func backupTypeRow(type: VaultBackupType) -> some View {
         VStack(spacing: 12) {
             HStack {
@@ -103,7 +103,7 @@ struct VaultBackupSelectionScreen: View {
                     }
                     .background(Theme.colors.bgSurface1)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
-                    
+
                     Text(String(format: "plusMore".localized, moreVaultsCount))
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textPrimary)
@@ -113,20 +113,20 @@ struct VaultBackupSelectionScreen: View {
         }
         .containerStyle(padding: 12)
     }
-    
+
     func vaultRow(vault: Vault) -> some View {
         HStack {
             Text(vault.name)
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
             Spacer()
-            
+
             VaultPartView(vault: vault)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
     }
-    
+
     func title(for type: VaultBackupType) -> String {
         switch type {
         case .single:

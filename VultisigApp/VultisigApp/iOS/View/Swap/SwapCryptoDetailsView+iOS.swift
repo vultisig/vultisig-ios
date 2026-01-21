@@ -18,9 +18,9 @@ extension SwapCryptoDetailsView {
                 if !swapViewModel.showFromChainSelector && !swapViewModel.showToChainSelector && !swapViewModel.showFromCoinSelector && !swapViewModel.showToCoinSelector {
                     ToolbarItemGroup(placement: .keyboard) {
                         percentageButtons
-                        
+
                         Spacer()
-                        
+
                         Button {
                             hideKeyboard()
                         } label: {
@@ -30,7 +30,7 @@ extension SwapCryptoDetailsView {
                 }
             }
     }
-    
+
     var percentageButtons: some View {
         SwapPercentageButtons(
             show100: !tx.fromCoin.isNativeToken,
@@ -41,7 +41,7 @@ extension SwapCryptoDetailsView {
         .opacity(keyboardObserver.keyboardHeight == 0 ? 0 : 1)
         .animation(.easeInOut, value: keyboardObserver.keyboardHeight)
     }
-    
+
     var fields: some View {
         ScrollView {
             VStack(spacing: 8) {

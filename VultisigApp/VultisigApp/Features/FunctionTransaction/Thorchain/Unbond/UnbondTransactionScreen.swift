@@ -11,14 +11,14 @@ struct UnbondTransactionScreen: View {
     enum FocusedField {
         case address, amount
     }
-    
+
     @StateObject var viewModel: UnbondTransactionViewModel
     var onVerify: (TransactionBuilder) -> Void
-    
+
     @State var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?
     @State var percentageSelected: Double?
-    
+
     var body: some View {
         FormScreen(
             title: "unbondRune".localized,
@@ -40,7 +40,7 @@ struct UnbondTransactionScreen: View {
                 FunctionAddressField(viewModel: viewModel.providerViewModel)
                     .focused($focusedField, equals: .address)
             }
-            
+
             FormExpandableSection(
                 title: viewModel.amountField.label ?? .empty,
                 isValid: viewModel.amountField.valid,
@@ -70,16 +70,16 @@ struct UnbondTransactionScreen: View {
             guard let newValue else { return }
             viewModel.onPercentage(newValue)
         }
-        .onChange(of: viewModel.addressViewModel.field.valid) { _, isValid in
+        .onChange(of: viewModel.addressViewModel.field.valid) { _, _ in
             onAddressFill()
         }
-        .onChange(of: focusedFieldBinding) { oldValue, newValue in
+        .onChange(of: focusedFieldBinding) { _, newValue in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 focusedField = newValue
             }
         }
     }
-    
+
     func onContinue() {
         switch focusedFieldBinding {
         case .address:
@@ -89,12 +89,12 @@ struct UnbondTransactionScreen: View {
                 focusedField = .address
                 return
             }
-            
+
             guard let transactionBuilder = viewModel.transactionBuilder else { return }
             onVerify(transactionBuilder)
         }
     }
-    
+
     func onAddressFill() {
         focusedFieldBinding = viewModel.addressViewModel.field.valid ? .amount : .address
     }

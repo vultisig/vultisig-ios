@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ServerBackupVerificationHeader: View {
-    
+
     var body: some View {
         HStack {
             leadingAction.opacity(0)
@@ -22,13 +22,13 @@ struct ServerBackupVerificationHeader: View {
         .padding(.top, 8)
         .background(Theme.colors.bgPrimary)
     }
-    
+
     var leadingAction: some View {
         Image(systemName: "chevron.backward")
             .font(Theme.fonts.bodyLMedium)
             .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     var text: some View {
         Text(NSLocalizedString("", comment: ""))
             .foregroundColor(Theme.colors.textPrimary)

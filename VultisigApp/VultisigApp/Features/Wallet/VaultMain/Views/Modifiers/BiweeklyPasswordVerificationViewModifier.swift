@@ -9,10 +9,10 @@ import SwiftUI
 
 struct BiweeklyPasswordVerificationViewModifier: ViewModifier {
     let vault: Vault
-    
+
     @State var shouldShow: Bool = false
     @AppStorage("biweeklyPasswordVerifyDate") private var biweeklyPasswordVerifyDate: Double?
-    
+
     func body(content: Content) -> some View {
         content
             .crossPlatformSheet(isPresented: $shouldShow) {
@@ -25,20 +25,20 @@ struct BiweeklyPasswordVerificationViewModifier: ViewModifier {
                 }
             }
     }
-    
+
     func checkIfNeeded() {
         guard vault.isFastVault else { return }
-        
+
         guard let lastVerifyTimestamp = biweeklyPasswordVerifyDate else {
             return
         }
-        
+
         let lastVerifyDate = Date(timeIntervalSince1970: lastVerifyTimestamp)
         let currentDate = Date()
-        
+
         let calendar = Calendar.current
         let difference = calendar.dateComponents([.day], from: calendar.startOfDay(for: lastVerifyDate), to: calendar.startOfDay(for: currentDate))
-        
+
         if let days = difference.day, days >= 15 {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 shouldShow = true

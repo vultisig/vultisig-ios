@@ -8,12 +8,12 @@
 import SwiftUI
 
 struct HomeRouteBuilder {
-    
+
     @ViewBuilder
     func buildHome(showingVaultSelector: Bool) -> some View {
         HomeScreen(showingVaultSelector: showingVaultSelector)
     }
-    
+
     @ViewBuilder
     func buildActionRoute(action: VaultAction, sendTx: SendTransaction, vault: Vault) -> some View {
         switch action {

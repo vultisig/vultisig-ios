@@ -10,7 +10,7 @@ import SwiftUI
 struct ActionButton: View {
     let title: String
     let fontColor: Color
-    
+
     var body: some View {
         Text(NSLocalizedString(title, comment: "").uppercased())
             .font(Theme.fonts.buttonSSemibold)

@@ -17,7 +17,7 @@ enum FunctionTransactionType: Hashable {
     case redeem(coin: CoinMeta, yCoin: CoinMeta)
     case addLP(position: LPPosition)
     case removeLP(position: LPPosition)
-    
+
     var coins: [CoinMeta] {
         switch self {
         case .bond(let coin, _):

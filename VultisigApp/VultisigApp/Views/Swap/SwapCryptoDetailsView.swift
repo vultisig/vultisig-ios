@@ -10,25 +10,25 @@ import SwiftUI
 struct SwapCryptoDetailsView: View {
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
-    
+
     @State var buttonRotated = false
     @State var showErrorTooltip = false
 
     @StateObject var referredViewModel = ReferredViewModel()
     @StateObject var keyboardObserver = KeyboardObserver()
-    
+
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
-    
+
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    
+
     let vault: Vault
-    
+
     var body: some View {
         screenContainer
             .onAppear {
                 setData()
             }
-            .onReceive(timer) { input in
+            .onReceive(timer) { _ in
                 swapViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
             }
             .onChange(of: tx.fromCoin, { _, _ in
@@ -54,7 +54,7 @@ struct SwapCryptoDetailsView: View {
                 swapViewModel.error = nil
             }
     }
-    
+
     var screenContainer: some View {
         ZStack(alignment: .bottom) {
             screenContent
@@ -63,7 +63,7 @@ struct SwapCryptoDetailsView: View {
             #endif
         }
     }
-    
+
     var screenContent: some View {
         Screen(showNavigationBar: false) {
             view
@@ -105,14 +105,14 @@ struct SwapCryptoDetailsView: View {
             .environmentObject(coinSelectionViewModel)
         }
     }
-    
+
     var content: some View {
         VStack {
             fields
             continueButton
         }
     }
-    
+
     var swapContent: some View {
         ZStack {
             amountFields
@@ -136,14 +136,14 @@ struct SwapCryptoDetailsView: View {
                 .offset(x: 28)
         }
     }
-    
+
     var amountFields: some View {
         VStack(spacing: 12) {
             swapFromField
             swapToField
         }
     }
-    
+
     var swapFromField: some View {
         SwapFromToField(
             title: "from",
@@ -159,7 +159,7 @@ struct SwapCryptoDetailsView: View {
             handlePercentageSelection: handlePercentageSelection
         )
     }
-    
+
     var swapToField: some View {
         SwapFromToField(
             title: "to",
@@ -175,7 +175,7 @@ struct SwapCryptoDetailsView: View {
             handlePercentageSelection: nil
         )
     }
-    
+
     var swapButton: some View {
         Button {
             handleSwapTap()
@@ -185,7 +185,7 @@ struct SwapCryptoDetailsView: View {
         .background(Circle().fill(Theme.colors.bgPrimary))
         .overlay(Circle().stroke(Theme.colors.bgSurface2))
     }
-    
+
     var swapLabel: some View {
         ZStack {
             if swapViewModel.isLoadingQuotes {
@@ -203,22 +203,22 @@ struct SwapCryptoDetailsView: View {
         .rotationEffect(.degrees(buttonRotated ? 180 : 0))
         .animation(.spring, value: buttonRotated)
     }
-    
+
     var filler: some View {
         Rectangle()
             .frame(width: 12, height: 10)
             .foregroundColor(Theme.colors.bgPrimary)
     }
-    
+
     var summary: some View {
         SwapDetailsSummary(tx: tx, swapViewModel: swapViewModel)
             .redacted(reason: swapViewModel.isLoadingQuotes ? .placeholder : [])
     }
-    
+
     @ViewBuilder
     var continueButton: some View {
         let isDisabled = !swapViewModel.validateForm(tx: tx) || swapViewModel.isLoading
-        
+
         if swapViewModel.isLoadingTransaction {
             ButtonLoader()
                 .disabled(true)
@@ -233,7 +233,7 @@ struct SwapCryptoDetailsView: View {
             .opacity(swapViewModel.validateForm(tx: tx) ? 1 : 0.5)
         }
     }
-    
+
     var loader: some View {
         VStack {
             Spacer()
@@ -241,25 +241,25 @@ struct SwapCryptoDetailsView: View {
             Spacer()
         }
     }
-    
+
     var refreshCounter: some View {
         SwapRefreshQuoteCounter(timer: swapViewModel.timer)
     }
-    
+
     private func setData() {
         referredViewModel.setData()
         swapViewModel.fromChain = tx.fromCoin.chain
         swapViewModel.toChain = tx.toCoin.chain
     }
-    
+
     private func handleFromCoinUpdate() {
         swapViewModel.updateFromCoin(coin: tx.fromCoin, tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
     }
-    
+
     private func handleToCoinUpdate() {
         swapViewModel.updateToCoin(coin: tx.toCoin, tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
     }
-    
+
     private func handleSwapTap() {
         swapViewModel.error = nil
         buttonRotated.toggle()
@@ -268,7 +268,7 @@ struct SwapCryptoDetailsView: View {
         swapViewModel.fromChain = swapViewModel.toChain
         swapViewModel.toChain = fromChain
     }
-    
+
     func showSheet() -> Bool {
         swapViewModel.showFromChainSelector || swapViewModel.showToChainSelector || swapViewModel.showFromCoinSelector || swapViewModel.showToCoinSelector
     }
@@ -280,7 +280,7 @@ extension SwapCryptoDetailsView {
         // We use 4 decimals to avoid impractical precision
         // Also LIFI and other providers use 4 decimals top
         let decimalsToUse: Int = 4
-        
+
         switch percentage {
         case 25:
             tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.25).formatToDecimal(digits: decimalsToUse)

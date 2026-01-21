@@ -9,7 +9,7 @@ import SwiftUI
 
 struct CreateVaultHeader: View {
     let showBackButton: Bool
-    
+
     var body: some View {
         HStack {
             leadingAction
@@ -20,7 +20,7 @@ struct CreateVaultHeader: View {
         .padding(.horizontal, 40)
         .padding(.top, 8)
     }
-    
+
     var leadingAction: some View {
         ZStack {
             if showBackButton {
@@ -28,7 +28,7 @@ struct CreateVaultHeader: View {
             }
         }
     }
-    
+
     var trailingAction: some View {
         NavigationHelpButton()
     }

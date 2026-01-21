@@ -20,7 +20,6 @@ final class DefiChainStakeViewModel: ObservableObject {
     var vaultStakePositions: [CoinMeta] {
         vault.defiPositions.first { $0.chain == chain }?.staking ?? []
     }
-    
     private let interactor: StakeInteractor?
 
     init(vault: Vault, chain: Chain) {
@@ -44,16 +43,14 @@ private extension DefiChainStakeViewModel {
         stakePositions = vault.stakePositions
             .filter { vaultStakePositions.contains($0.coin) }
             .sorted { $0.amount > $1.amount }
-        
+
         if !stakePositions.isEmpty {
             initialLoadingDone = true
         }
-        
         guard let interactor = interactor else {
             initialLoadingDone = true
             return
         }
-                
         let positions = await interactor.fetchStakePositions(vault: vault)
         if !positions.isEmpty {
             stakePositions = positions

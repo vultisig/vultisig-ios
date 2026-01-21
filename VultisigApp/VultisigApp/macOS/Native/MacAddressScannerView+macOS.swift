@@ -11,21 +11,21 @@ struct AddressResult {
     let address: String
     let memo: String?
     let amount: String?
-    
+
     init(address: String, memo: String? = nil, amount: String? = nil) {
         self.address = address
         self.memo = memo
         self.amount = amount
     }
-    
+
     static func fromURI(_ uri: String) -> AddressResult {
         guard URLComponents(string: uri) != nil else {
             // Validate up
             return .init(address: uri)
         }
-        
+
         let (address, amount, message) = Utils.parseCryptoURI(uri)
-        
+
         return AddressResult(address: address, memo: message, amount: amount)
     }
 }
@@ -55,18 +55,18 @@ struct MacAddressScannerView: View {
         self._scannedResult = scannedResult
         self.onParsedResult = onParsedResult
     }
-    
+
     var body: some View {
         ZStack(alignment: .top) {
             Background()
             content
         }
         .crossPlatformToolbar("scanQRCode".localized, ignoresTopEdge: true)
-        .onChange(of: scannerViewModel.detectedQRCode) { oldValue, newValue in
+        .onChange(of: scannerViewModel.detectedQRCode) { _, _ in
             handleScan()
         }
     }
-    
+
     var content: some View {
         ZStack {
             if showImportOptions {
@@ -76,7 +76,7 @@ struct MacAddressScannerView: View {
             }
         }
     }
-    
+
     var importOption: some View {
         GeneralQRImportMacView(type: .Unknown, selectedVault: selectedVault) { address in
             goBack()
@@ -85,13 +85,13 @@ struct MacAddressScannerView: View {
             onParsedResult?(result)
         }
     }
-    
+
     var camera: some View {
         ZStack {
             if scannerViewModel.showPlaceholderError {
                 fallbackErrorView
             }
-            
+
             if !scannerViewModel.showCamera {
                 loader
             } else if scannerViewModel.isCameraUnavailable {
@@ -101,24 +101,24 @@ struct MacAddressScannerView: View {
             }
         }
     }
-    
+
     var loader: some View {
         VStack {
             Spacer()
-            
+
             HStack(spacing: 20) {
                 Text(NSLocalizedString("initializingCamera", comment: ""))
                     .font(Theme.fonts.bodyMMedium)
                     .foregroundColor(Theme.colors.textPrimary)
-                
+
                 ProgressView()
                     .preferredColorScheme(.dark)
             }
-            
+
             Spacer()
         }
     }
-    
+
     var errorView: some View {
         VStack {
             Spacer()
@@ -127,7 +127,7 @@ struct MacAddressScannerView: View {
             buttons
         }
     }
-    
+
     var fallbackErrorView: some View {
         VStack {
             Spacer()
@@ -135,7 +135,7 @@ struct MacAddressScannerView: View {
             Spacer()
         }
     }
-    
+
     var buttons: some View {
         VStack(spacing: 20) {
             uploadQRCodeButton
@@ -143,19 +143,19 @@ struct MacAddressScannerView: View {
         }
         .padding(40)
     }
-    
+
     var uploadQRCodeButton: some View {
         PrimaryButton(title: "uploadQRCodeImage") {
             showImportOptions = true
         }
     }
-    
+
     var tryAgainButton: some View {
         PrimaryButton(title: "tryAgain", type: .secondary) {
             scannerViewModel.setupSession()
         }
     }
-    
+
     private func getScanner(_ session: AVCaptureSession) -> some View {
         ZStack(alignment: .bottom) {
             MacCameraPreview(session: session)
@@ -165,12 +165,12 @@ struct MacAddressScannerView: View {
                 .onDisappear {
                     scannerViewModel.stopSession()
                 }
-            
+
             uploadQRCodeButton
                 .padding(40)
         }
     }
-    
+
     private func handleScan() {
         guard let detectedQRCode = scannerViewModel.detectedQRCode else {
             return
@@ -181,7 +181,7 @@ struct MacAddressScannerView: View {
         scannedResult = result
         onParsedResult?(result)
     }
-    
+
     private func goBack() {
         scannerViewModel.stopSession()
         showImportOptions = false

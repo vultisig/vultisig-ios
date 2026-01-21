@@ -19,7 +19,7 @@ extension CircleDepositView {
             Task { await loadData() }
         }
     }
-    
+
     var scrollView: some View {
         ScrollView {
             scrollableContent

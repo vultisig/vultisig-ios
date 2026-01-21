@@ -12,24 +12,24 @@ struct SearchTextField: View {
     @Binding var isFocused: Bool
     let showPasteButton: Bool
     @FocusState var focusedState: Bool
-        
+
     init(value: Binding<String>, isFocused: Binding<Bool> = .constant(false), showPasteButton: Bool = false) {
         self._value = value
         self._isFocused = isFocused
         self.showPasteButton = showPasteButton
     }
-    
+
     var showClearButton: Bool {
         value.isNotEmpty
     }
-    
+
     var body: some View {
         HStack(spacing: 0) {
             Icon(
                 named: "magnifying-glass",
                 color: Theme.colors.textSecondary,
                 size: 16
-            )            
+            )
             TextField(NSLocalizedString("search", comment: "Search"), text: $value)
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(Theme.colors.textPrimary)
@@ -38,13 +38,13 @@ struct SearchTextField: View {
                 .colorScheme(.dark)
                 .padding(.horizontal, 8)
                 .focused($focusedState)
-            
+
             HStack(spacing: 8) {
                 clearButton
                     .opacity(showClearButton ? 1 : 0)
                     .allowsHitTesting(showClearButton)
                     .animation(.easeInOut, value: showClearButton)
-                
+
                 pasteButton
                     .showIf(showPasteButton)
             }
@@ -61,7 +61,7 @@ struct SearchTextField: View {
             focusedState = newValue
         }
     }
-    
+
     var clearButton: some View {
         Button {
             value = .empty
@@ -72,7 +72,7 @@ struct SearchTextField: View {
         }
         .buttonStyle(.plain)
     }
-    
+
     var pasteButton: some View {
         Button {
             guard let pasted = ClipboardManager.pasteFromClipboard() else { return }
