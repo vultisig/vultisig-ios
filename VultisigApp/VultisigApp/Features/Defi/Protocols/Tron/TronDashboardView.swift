@@ -45,7 +45,46 @@ struct TronDashboardView: View {
     }
     
     var body: some View {
-        content
+        ZStack {
+            VaultMainScreenBackground()
+            
+            VStack(spacing: 0) {
+                scrollContent
+            }
+        }
+    }
+    
+    var scrollContent: some View {
+        ScrollView {
+            VStack(spacing: TronConstants.Design.verticalSpacing) {
+                topBanner
+                
+                resourcesCard
+                
+                actionsCard
+                
+                if let error = model.error, !(error is CancellationError) && error.localizedDescription.lowercased() != "cancelled" {
+                    InfoBannerView(
+                        description: error.localizedDescription,
+                        type: .error,
+                        leadingIcon: nil,
+                        onClose: {
+                            withAnimation { model.error = nil }
+                        }
+                    )
+                }
+                
+                pendingWithdrawalsCard
+            }
+            .padding(.top, TronConstants.Design.mainViewTopPadding)
+            .padding(.bottom, TronConstants.Design.mainViewBottomPadding)
+            .padding(.horizontal, TronConstants.Design.horizontalPadding)
+        }
+        #if os(iOS)
+        .refreshable {
+            await onRefresh()
+        }
+        #endif
     }
     
     var topBanner: some View {

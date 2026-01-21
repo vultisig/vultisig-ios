@@ -32,7 +32,25 @@ struct TronUnfreezeView: View {
     }
     
     var body: some View {
-        main
+        ZStack {
+            VaultMainScreenBackground()
+            content
+        }
+        .navigationBarBackButtonHidden(true)
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
+        .task {
+            await loadData()
+            await loadFastVaultStatus()
+        }
+        .crossPlatformSheet(isPresented: $fastPasswordPresented) {
+            FastVaultEnterPasswordView(
+                password: $fastVaultPassword,
+                vault: vault,
+                onSubmit: { Task { await handleUnfreeze() } }
+            )
+        }
     }
     
     var content: some View {
@@ -47,10 +65,6 @@ struct TronUnfreezeView: View {
                 Theme.colors.bgPrimary.opacity(0.8).ignoresSafeArea()
                 ProgressView()
             }
-        }
-        .task {
-            await loadData()
-            await loadFastVaultStatus()
         }
     }
     

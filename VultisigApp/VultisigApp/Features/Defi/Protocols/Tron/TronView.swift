@@ -13,6 +13,13 @@ struct TronView: View {
 
     @StateObject private var model = TronViewModel()
 
+    var body: some View {
+        content
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+    }
+    
     var content: some View {
         Screen(
             title: NSLocalizedString("tronTitle", comment: "TRON Staking"),
