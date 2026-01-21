@@ -124,7 +124,6 @@
 "createReferralCode" = "Stvorite referalni kod";
 "createYourCodeAndEarn" = "Kreiraj vlastiti kod i zaradi 10 bps na swapovima";
 "creatingTssInstance" = "STVARANJE TSS INSTANCE...";
-"creatingVault" = "Stvaranje Trezora";
 "Croatian" = "Hrvatski";
 "Chinese" = "Kineski";
 "currency" = "Valuta";
@@ -514,6 +513,7 @@
 "peerDiscoveryInfoTitle2" = "QR kod";
 "peerDiscoveryScanDeviceDisclaimer" = "Skenirajte QR kod s drugim uređajem. Preporučena je konfiguracija s 3 uređaja, 2 su dovoljna.";
 "pendingRewards" = "Nagrade na čekanju";
+"phantomWallet" = "Phantom wallet";
 "photoLibrary" = "Biblioteka fotografija";
 "pickPayoutAsset" = "Odaberi način isplate s popisa";
 "pickReferralCode" = "Odaberi referalni kod";
@@ -721,6 +721,7 @@
 "somethingWentWrongTryAgain" = "Nešto je pošlo po zlu, pokušajte ponovo.";
 "soon" = "Uskoro";
 "Spanish" = "Španjolski";
+"standardSolanaWallet" = "Standard Solana wallet";
 "start" = "Početak";
 "startFastVaultReshare" = "Započni ponovno dijeljenje s Vultiserverom";
 "startFromOneDevice" = "Krenite od jednog uređaja";
@@ -1162,7 +1163,7 @@
 "scanningForChainsSubtitleHighlight" = "Ovaj proces može potrajati do 2 minute.";
 "selectChainsManually" = "Odaberi chainove ručno";
 "noActiveChainsFound" = "Nisu pronađeni aktivni chainovi";
-"noActiveChainsFoundSubtitle" = "Nismo otkrili nikakvu imovinu na ovoj seed frazi.\nSvaki dodatni chain povećava vrijeme za generiranje vašeg trezora i mogućnost isteka vremena.";
+"noActiveChainsFoundSubtitle" = "Nismo otkrili nikakvu imovinu na ovoj seed frazi.\n\nSvaki dodatni chain povećava vrijeme potrebno za generiranje vašeg vaulta i mogućnost timeouta.";
 "addCustomChains" = "Dodaj prilagođene chainove";
 "foundActiveChainsTitle" = "Pronašli smo %d aktivnih chainova";
 "foundActiveChainsSubtitle" = "Svaki dodatni chain otprilike udvostručuje vrijeme za generiranje vašeg trezora. Procijenjeno vrijeme za sve odabrane chainove: %d minuta";
@@ -1223,3 +1224,57 @@
 // Maya Unbond Node Status
 "nodeActiveCannotUnbond" = "Čvor je %@ - nije moguć unbond dok je aktivan";
 "nodeChurnedCanUnbond" = "Čvor je rotiran - unbond dostupan";
+
+"seedPhraseImportTip" = "Savjet: Možete koristiti preglednik kao uređaj";
+"whereDoYouMigrateFrom" = "Odakle migrirate?";
+
+// Vault Setup Screens
+"yourVaultSetup" = "Vaša postavka trezora";
+
+// Screen 1 - Fast Vault (2-device setup)
+"vaultSetup1Title" = "Brzi trezor";
+"vaultSetup1Subtitle" = "Postava s 2 uređaja";
+"vaultSetup1Feature1Title" = "Potpisivanje s 1 uređajem";
+"vaultSetup1Feature1Description" = "Praktično potpisivanje s jednim uređajem u pokretu. Savršeno za dnevne transakcije ili trgovanje manjim iznosima.";
+"vaultSetup1Feature2Title" = "Brza i sigurna postava";
+"vaultSetup1Feature2Description" = "Bez dugog postavljanja. Samo vaš email i lozinka, plus dvije sigurnosne kopije.";
+"vaultSetup1Feature3Title" = "Vi zadržavate kontrolu";
+"vaultSetup1Feature3Description" = "Suopotpisnik nikada ne može pokrenuti transakcije; samo pomaže pri potpisivanju.";
+
+// Screen 2 - Secure Vault (2-device vault)
+"vaultSetup2Title" = "Siguran trezor";
+"vaultSetup2Subtitle" = "Trezor s 2 uređaja";
+"vaultSetup2Feature1Title" = "Potpisivanje s 2 uređaja";
+"vaultSetup2Feature1Description" = "Svaka transakcija zahtijeva odobrenje s oba vaša uređaja.";
+"vaultSetup2Feature2Title" = "Bez jedinstvene točke neuspjeha";
+"vaultSetup2Feature2Description" = "Jedan uređaj sam ne može premjestiti sredstva. Ako se uređaj izgubi ili kompromitira, ne može samostalno odobriti.";
+"vaultSetup2Feature3Title" = "Idealno za jednostavno hladno skladištenje";
+"vaultSetup2Feature3Description" = "Savršena postava za korisnike sa samo 2 uređaja.";
+
+// Screen 3 - Secure Vault (3-device vault)
+"vaultSetup3Title" = "Siguran trezor";
+"vaultSetup3Subtitle" = "Trezor s 3 uređaja";
+"vaultSetup3Feature1Title" = "Potpisivanje s 2 uređaja";
+"vaultSetup3Feature1Description" = "Svaka transakcija zahtijeva odobrenje od 2 od vaša 3 uređaja.";
+"vaultSetup3Feature2Title" = "Bez jedinstvene točke neuspjeha";
+"vaultSetup3Feature2Description" = "Jedan uređaj sam ne može premjestiti sredstva. Ako se uređaj izgubi ili kompromitira, ne može samostalno odobriti.";
+"vaultSetup3Feature3Title" = "Idealno za hladno skladištenje";
+"vaultSetup3Feature3Description" = "Savršena ravnoteža za većinu korisnika. 2 potpisnika i 1 sigurnosni uređaj. Pohranite imovinu bez stresa.";
+
+// Screen 4 - Secure Vault (4-device vault)
+"vaultSetup4Title" = "Siguran trezor";
+"vaultSetup4Subtitle" = "Trezor s 4+ uređaja";
+"vaultSetup4Feature1Title" = "Potpisivanje s 3 ili više uređaja";
+"vaultSetup4Feature1Description" = "Trezori trebaju 67% uređaja za potpisivanje transakcije. Imajte koliko god potpisnika želite";
+"vaultSetup4Feature2Title" = "Dinamičko upravljanje uređajima";
+"vaultSetup4Feature2Description" = "Dodajte koliko god uređaja želite i dobijte institucionalnu razinu sigurnosti.";
+"vaultSetup4Feature3Title" = "Izrađeno za timove i riznice";
+"vaultSetup4Feature3Description" = "Idealno za timove koji upravljaju zajedničkim sredstvima i trezorima veće vrijednosti, koji zahtijevaju više potpisnika.";
+
+"backupEachDevice" = "Napravite sigurnosnu kopiju svakog uređaja";
+"backupEachDeviceDescription" = "Ovo je samo 1 sigurnosna kopija vašeg trezora, ponovite ovaj postupak za ostale uređaje.";
+"backupsDescription" = "Umjesto jedne seed fraze, vaš trezor je osiguran s više uređaja. Svaki uređaj ima svoju sigurnosnu kopiju. Sigurnosna kopija sama ne može premjestiti sredstva. Sigurnosne kopije su samo za oporavak.";
+"backupsTitle" = "Sigurnosne kopije, vaša nova metoda oporavka";
+"backupsTitleHighlight" = "Sigurnosne kopije";
+"storeBackupsSeparately" = "Čuvajte sigurnosne kopije odvojeno";
+"storeBackupsSeparatelyDescription" = "Čuvajte svaku sigurnosnu kopiju na drugom mjestu. Ako je jedna kompromitirana, vaša sredstva ostaju sigurna.";

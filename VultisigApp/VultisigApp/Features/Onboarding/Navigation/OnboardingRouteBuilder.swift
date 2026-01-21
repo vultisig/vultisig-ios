@@ -10,8 +10,8 @@ import SwiftUI
 struct OnboardingRouteBuilder {
 
     @ViewBuilder
-    func buildVaultSetupScreen(tssType: TssType, keyImportInput: KeyImportInput?) -> some View {
-        VaultSetupScreen(tssType: tssType, keyImportInput: keyImportInput)
+    func buildVaultSetupScreen(tssType: TssType, keyImportInput: KeyImportInput?, setupType: KeyImportSetupType?) -> some View {
+        VaultSetupScreen(tssType: tssType, keyImportInput: keyImportInput, setupType: setupType)
     }
 
     @ViewBuilder
@@ -25,15 +25,22 @@ struct OnboardingRouteBuilder {
     }
 
     @ViewBuilder
+    func buildKeyImportDeviceCountScreen(mnemonic: String, chainSettings: [ChainImportSetting]) -> some View {
+        KeyImportDeviceCountScreen(mnemonic: mnemonic, chainSettings: chainSettings)
+    }
+
+    @ViewBuilder
     func buildKeyImportNewVaultSetupScreen(
         vault: Vault,
         keyImportInput: KeyImportInput?,
-        fastSignConfig: FastSignConfig
+        fastSignConfig: FastSignConfig?,
+        setupType: KeyImportSetupType
     ) -> some View {
         KeyImportNewVaultSetupScreen(
             vault: vault,
             keyImportInput: keyImportInput,
-            fastSignConfig: fastSignConfig
+            fastSignConfig: fastSignConfig,
+            setupType: setupType
         )
     }
 

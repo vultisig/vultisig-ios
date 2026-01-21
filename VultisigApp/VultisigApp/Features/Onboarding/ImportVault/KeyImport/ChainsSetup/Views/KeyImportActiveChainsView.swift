@@ -17,6 +17,9 @@ struct KeyImportActiveChainsView: View {
     let activeChains: [KeyImportChain]
     let onImport: () -> Void
     let onCustomize: () -> Void
+    @ObservedObject var viewModel: KeyImportChainsSetupViewModel
+
+    @State private var showDerivationSheet = false
 
     var minutes: Int {
         activeChains.count * 2
@@ -76,7 +79,14 @@ struct KeyImportActiveChainsView: View {
                     .frame(height: 150)
 
                 VStack(spacing: 12) {
-                    PrimaryButton(title: "importTheseChains", action: onImport)
+                    PrimaryButton(title: "importTheseChains", action: {
+                        if activeChains.contains(where: { $0.chain == .solana }) &&
+                           viewModel.hasMultipleDerivations(for: .solana) {
+                            showDerivationSheet = true
+                        } else {
+                            onImport()
+                        }
+                    })
                     Button(action: onCustomize) {
                         HStack(spacing: 8) {
                             Icon(
@@ -93,6 +103,17 @@ struct KeyImportActiveChainsView: View {
                 }
             }
         }
+        .crossPlatformSheet(isPresented: $showDerivationSheet) {
+            DerivationPathSelectionSheet(
+                chain: .solana,
+                selectedPath: $viewModel.selectedDerivationPath,
+                isPresented: $showDerivationSheet,
+                onSelect: { path in
+                    viewModel.selectDerivationPath(path, for: .solana)
+                    onImport()
+                }
+            )
+        }
     }
 }
 
@@ -100,6 +121,7 @@ struct KeyImportActiveChainsView: View {
     KeyImportActiveChainsView(
         activeChains: [],
         onImport: {},
-        onCustomize: {}
+        onCustomize: {},
+        viewModel: KeyImportChainsSetupViewModel()
     )
 }
