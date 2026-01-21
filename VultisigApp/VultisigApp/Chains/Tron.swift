@@ -64,8 +64,6 @@ enum TronHelper {
                 memo: keysignPayload.memo
             )
         }
-<<<<<<< HEAD
-        
         // FreezeBalanceV2 (Stake 2.0) - detect from memo
         if let memo = keysignPayload.memo, memo.hasPrefix("FREEZE:") {
             let resourceString = String(memo.dropFirst("FREEZE:".count))
@@ -93,10 +91,6 @@ enum TronHelper {
                 blockHeaderParentHash: blockHeaderParentHash, blockHeaderWitnessAddress: blockHeaderWitnessAddress
             )
         }
-        
-=======
-
->>>>>>> 186671542ac1b63de085bacb2f784ce5c89644a3
         // Fallback: validate toAddress for regular transfers
         guard AnyAddress(string: keysignPayload.toAddress, coin: .tron) != nil else {
             throw HelperError.runtimeError("fail to get to address")
@@ -299,8 +293,6 @@ enum TronHelper {
         }
         return try input.serializedData()
     }
-<<<<<<< HEAD
-    
     // MARK: - FreezeBalanceV2 (Stake 2.0)
     
     private static func buildTronFreezeBalanceV2Input(
@@ -376,10 +368,6 @@ enum TronHelper {
         }
         return try input.serializedData()
     }
-    
-=======
-
->>>>>>> 186671542ac1b63de085bacb2f784ce5c89644a3
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(
             keysignPayload: keysignPayload
