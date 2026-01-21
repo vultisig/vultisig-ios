@@ -151,7 +151,11 @@ struct SendGasSettingsView: View {
 
     func fetch() {
         Task {
-            try await viewModel.fetch(chain: viewModel.chain)
+            do {
+                try await viewModel.fetch(chain: viewModel.chain)
+            } catch {
+                print("Error fetching gas settings: \(error)")
+            }
         }
     }
 

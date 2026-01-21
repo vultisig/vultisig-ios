@@ -23,7 +23,7 @@ final class LocalStateAccessorImpl: NSObject, TssLocalStateAccessorProtocol, Obs
     init(vault: Vault) {
         self.vault = vault
     }
-
+    // swiftlint:disable:next unused_parameter
     func getLocalState(_ pubKey: String?, error: NSErrorPointer) -> String {
         guard let pubKey else {
             return ""
