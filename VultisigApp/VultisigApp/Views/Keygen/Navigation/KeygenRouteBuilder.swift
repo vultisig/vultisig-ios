@@ -44,12 +44,14 @@ struct KeygenRouteBuilder {
     func buildKeyImportOverviewScreen(
         vault: Vault,
         email: String?,
-        keyImportInput: KeyImportInput?
+        keyImportInput: KeyImportInput?,
+        setupType: KeyImportSetupType
     ) -> some View {
         KeyImportOverviewScreen(
             vault: vault,
             email: email,
-            keyImportInput: keyImportInput
+            keyImportInput: keyImportInput,
+            setupType: setupType
         )
     }
 
@@ -59,14 +61,16 @@ struct KeygenRouteBuilder {
         vault: Vault,
         selectedTab: SetupVaultState,
         fastSignConfig: FastSignConfig?,
-        keyImportInput: KeyImportInput?
+        keyImportInput: KeyImportInput?,
+        setupType: KeyImportSetupType?
     ) -> some View {
         PeerDiscoveryView(
             tssType: tssType,
             vault: vault,
             selectedTab: selectedTab,
             fastSignConfig: fastSignConfig,
-            keyImportInput: keyImportInput
+            keyImportInput: keyImportInput,
+            setupType: setupType
         )
     }
 

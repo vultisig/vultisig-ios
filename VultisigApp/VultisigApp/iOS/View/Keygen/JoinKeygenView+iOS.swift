@@ -14,6 +14,7 @@ extension JoinKeygenView {
         ZStack {
             Background()
             shadow
+                .showIf(viewModel.status != .KeygenStarted)
 
             if viewModel.areVaultsMismatched {
                 vaultsMismatchedError

@@ -126,7 +126,6 @@
 "createReferralCode" = "创建推荐码";
 "createYourCodeAndEarn" = "创建您自己的代码并在推荐交换中赚取 %@";
 "creatingTssInstance" = "正在创建 TSS 实例...";
-"creatingVault" = "正在创建保险库";
 "Croatian" = "克罗地亚语";
 "Chinese" = "中文";
 "currency" = "货币";
@@ -516,6 +515,7 @@
 "peerDiscoveryInfoTitle2" = "二维码";
 "peerDiscoveryScanDeviceDisclaimer" = "使用其他设备扫描二维码。建议使用 3 个设备设置，2 个也足够";
 "pendingRewards" = "待领取奖励";
+"phantomWallet" = "Phantom wallet";
 "photoLibrary" = "照片库";
 "pickPayoutAsset" = "请从选择中选择支付资产选项";
 "pickReferralCode" = "选择推荐码";
@@ -722,6 +722,7 @@
 "somethingWentWrongTryAgain" = "出了点问题，请重试";
 "soon" = "即将推出";
 "Spanish" = "西班牙语";
+"standardSolanaWallet" = "Standard Solana wallet";
 "start" = "开始";
 "startFastVaultReshare" = "使用 Vultiserver 开始重新共享";
 "startFromOneDevice" = "从一个设备开始";
@@ -1204,7 +1205,7 @@
 "scanningForChainsSubtitleHighlight" = "此过程可能需要长达2分钟。";
 "selectChainsManually" = "手动选择链";
 "noActiveChainsFound" = "未找到活跃链";
-"noActiveChainsFoundSubtitle" = "我们未在此助记词中检测到任何资产。\n每增加一条链都会增加生成保险库的时间和超时的可能性。";
+"noActiveChainsFoundSubtitle" = "我们未在此助记词中检测到任何资产。\n\n每增加一条链都会增加生成保险库的时间和超时的可能性。";
 "addCustomChains" = "添加自定义链";
 "foundActiveChainsTitle" = "我们找到了%d条活跃链";
 "foundActiveChainsSubtitle" = "每增加一条链大约会使生成保险库的时间翻倍。所有选定链的预计时间：%d分钟";
@@ -1265,3 +1266,57 @@
 // Maya Unbond Node Status
 "nodeActiveCannotUnbond" = "节点状态为 %@ - 活跃时无法解绑";
 "nodeChurnedCanUnbond" = "节点已轮换 - 可以解绑";
+
+"seedPhraseImportTip" = "提示：您可以使用浏览器作为设备";
+"whereDoYouMigrateFrom" = "您从哪里迁移？";
+
+// Vault Setup Screens
+"yourVaultSetup" = "您的保险库设置";
+
+// Screen 1 - Fast Vault (2-device setup)
+"vaultSetup1Title" = "快速保险库";
+"vaultSetup1Subtitle" = "2设备设置";
+"vaultSetup1Feature1Title" = "1设备签名";
+"vaultSetup1Feature1Description" = "随时随地方便的单设备签名。适合日常交易或小额交易。";
+"vaultSetup1Feature2Title" = "快速安全设置";
+"vaultSetup1Feature2Description" = "无需冗长设置。只需您的电子邮件和密码，加上两个备份。";
+"vaultSetup1Feature3Title" = "您保持控制";
+"vaultSetup1Feature3Description" = "共同签名者永远无法发起交易；只能协助签名。";
+
+// Screen 2 - Secure Vault (2-device vault)
+"vaultSetup2Title" = "安全保险库";
+"vaultSetup2Subtitle" = "2设备保险库";
+"vaultSetup2Feature1Title" = "2设备签名";
+"vaultSetup2Feature1Description" = "每笔交易都需要两个设备的批准。";
+"vaultSetup2Feature2Title" = "无单点故障";
+"vaultSetup2Feature2Description" = "单个设备无法转移资金。如果一个设备丢失或被泄露，它无法单独批准。";
+"vaultSetup2Feature3Title" = "适合简单冷存储";
+"vaultSetup2Feature3Description" = "适合只有2个设备的用户的完美设置。";
+
+// Screen 3 - Secure Vault (3-device vault)
+"vaultSetup3Title" = "安全保险库";
+"vaultSetup3Subtitle" = "3设备保险库";
+"vaultSetup3Feature1Title" = "2设备签名";
+"vaultSetup3Feature1Description" = "每笔交易需要您3个设备中的2个批准。";
+"vaultSetup3Feature2Title" = "无单点故障";
+"vaultSetup3Feature2Description" = "单个设备无法转移资金。如果一个设备丢失或被泄露，它无法单独批准。";
+"vaultSetup3Feature3Title" = "适合冷存储";
+"vaultSetup3Feature3Description" = "适合大多数用户的完美平衡。2个签名者和1个备份设备。无压力存储资产。";
+
+// Screen 4 - Secure Vault (4-device vault)
+"vaultSetup4Title" = "安全保险库";
+"vaultSetup4Subtitle" = "4+设备保险库";
+"vaultSetup4Feature1Title" = "3设备或更多签名";
+"vaultSetup4Feature1Description" = "保险库需要67%的设备来签署交易。想要多少签名者就有多少";
+"vaultSetup4Feature2Title" = "动态设备管理";
+"vaultSetup4Feature2Description" = "添加任意数量的设备，获得机构级安全性。";
+"vaultSetup4Feature3Title" = "为团队和财务构建";
+"vaultSetup4Feature3Description" = "适合管理共享资金和高价值保险库的团队，需要更多签名者。";
+
+"backupEachDevice" = "备份每个设备";
+"backupEachDeviceDescription" = "这只是您保险库的1个备份，请对其他设备重复此过程。";
+"backupsDescription" = "您的保险库不是由单个助记词保护，而是由多个设备保护。每个设备都有自己的备份。单个备份无法转移资金。备份仅用于恢复。";
+"backupsTitle" = "备份，您的新恢复方法";
+"backupsTitleHighlight" = "备份";
+"storeBackupsSeparately" = "分别存储备份";
+"storeBackupsSeparatelyDescription" = "将每个备份保存在不同的地方。如果一个被泄露，您的资金仍然安全。";
