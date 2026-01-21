@@ -15,7 +15,7 @@ extension JoinKeygenView {
             Background()
             shadow
                 .showIf(viewModel.status != .KeygenStarted)
-            
+
             if viewModel.areVaultsMismatched {
                 vaultsMismatchedError
             } else {

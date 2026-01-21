@@ -29,7 +29,7 @@ struct KeyImportDeviceCountScreen: View {
         .background(VaultMainScreenBackground())
         .onLoad(perform: onLoad)
     }
-    
+
     var tipView: some View {
         HStack(spacing: 8) {
             Icon(named: "lightbulb", size: 12)
@@ -60,12 +60,12 @@ struct KeyImportDeviceCountScreen: View {
             setupType: setupType
         ))
     }
-    
+
     var setupType: KeyImportSetupType {
         guard selectedDeviceCount > 0 else {
             return .fast
         }
-        
+
         return .secure(numberOfDevices: selectedDeviceCount + 1)
     }
 }

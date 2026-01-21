@@ -192,7 +192,7 @@ struct KeygenView: View {
             vaultCreatedAnimationVM?.view()
                 .frame(maxWidth: 512)
                 .offset(y: -120)
-            
+
             VStack(spacing: 24) {
                 VStack {
                     Text(NSLocalizedString("vaultCreated", comment: ""))
@@ -204,7 +204,7 @@ struct KeygenView: View {
                 .opacity(progressCounter == 4 ? 1 : 0)
                 .animation(.easeInOut, value: progressCounter)
                 .padding(.top, 60)
-                
+
                 checkmarkAnimationVM?.view()
                     .frame(width: 80, height: 80)
             }

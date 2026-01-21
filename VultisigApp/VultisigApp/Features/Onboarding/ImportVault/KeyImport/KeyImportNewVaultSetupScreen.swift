@@ -13,15 +13,15 @@ struct KeyImportNewVaultSetupScreen: View {
     let keyImportInput: KeyImportInput?
     let fastSignConfig: FastSignConfig?
     let setupType: KeyImportSetupType
-    
+
     @State private var animationVM: RiveViewModel? = nil
-    
+
     @Environment(\.router) var router
-    
+
     var selectedTab: SetupVaultState {
         setupType == .fast ? .fast : .secure
     }
-    
+
     var body: some View {
         Screen(edgeInsets: .init(leading: 24, trailing: 24)) {
             VStack(alignment: .leading, spacing: 14) {
@@ -53,7 +53,7 @@ struct KeyImportNewVaultSetupScreen: View {
         }
         .onLoad(perform: onLoad)
     }
-    
+
     var animation: some View {
         animationVM?.view()
             .frame(width: 350, height: 240)
@@ -73,7 +73,7 @@ struct KeyImportNewVaultSetupScreen: View {
                 subtitle: feature2Description,
                 icon: "shield-check-filled"
             )
-            
+
             OnboardingInformationRowView(
                 title: feature3Title,
                 subtitle: feature3Description,
@@ -82,16 +82,16 @@ struct KeyImportNewVaultSetupScreen: View {
         }
         .fixedSize(horizontal: false, vertical: true)
     }
-    
+
     var vaultTypeBadge: some View {
         HStack(spacing: 8) {
             vaultTypeBadgeIcon
-            
+
             VStack(alignment: .leading, spacing: 0) {
                 Text(vaultSetupTitle)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.subtitle)
-                
+
                 Text(vaultSetupSubtitle)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.caption12)
@@ -112,7 +112,7 @@ struct KeyImportNewVaultSetupScreen: View {
                 )
         )
     }
-    
+
     var vaultTypeBadgeIcon: some View {
         ZStack {
             Circle()
@@ -142,7 +142,7 @@ struct KeyImportNewVaultSetupScreen: View {
         }
         .frame(width: 33, height: 33)
     }
-    
+
     private func onLoad() {
         animationVM = RiveViewModel(fileName: setupType.vaultSetupAnimationName)
         animationVM?.fit = .fitHeight
@@ -165,7 +165,7 @@ private extension KeyImportNewVaultSetupScreen {
             }
         }
     }
-    
+
     var vaultSetupSubtitle: String {
         switch setupType {
         case .fast:
@@ -181,7 +181,7 @@ private extension KeyImportNewVaultSetupScreen {
             }
         }
     }
-    
+
     var feature1Title: String {
         switch setupType {
         case .fast:
@@ -197,7 +197,7 @@ private extension KeyImportNewVaultSetupScreen {
             }
         }
     }
-    
+
     var feature1Description: String {
         switch setupType {
         case .fast:
@@ -213,7 +213,7 @@ private extension KeyImportNewVaultSetupScreen {
             }
         }
     }
-    
+
     var feature2Title: String {
         switch setupType {
         case .fast:
@@ -229,7 +229,7 @@ private extension KeyImportNewVaultSetupScreen {
             }
         }
     }
-    
+
     var feature2Description: String {
         switch setupType {
         case .fast:
@@ -245,7 +245,7 @@ private extension KeyImportNewVaultSetupScreen {
             }
         }
     }
-    
+
     var feature3Title: String {
         switch setupType {
         case .fast:
@@ -261,7 +261,7 @@ private extension KeyImportNewVaultSetupScreen {
             }
         }
     }
-    
+
     var feature3Description: String {
         switch setupType {
         case .fast:
@@ -277,7 +277,7 @@ private extension KeyImportNewVaultSetupScreen {
             }
         }
     }
-    
+
     var featureIcon: String {
         switch setupType {
         case .fast:

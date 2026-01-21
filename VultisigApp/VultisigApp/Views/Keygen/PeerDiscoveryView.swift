@@ -171,7 +171,7 @@ struct PeerDiscoveryView: View {
             return showWaitingOnDevice
         }
     }
-    
+
     var showWaitingOnDevice: Bool {
         // Key import requires setupType, and this screen shouldn't be shown for fast
         guard
@@ -180,7 +180,7 @@ struct PeerDiscoveryView: View {
         else {
             return false
         }
-        
+
         switch numberOfDevices {
         case 0...3:
             return viewModel.selections.count != numberOfDevices

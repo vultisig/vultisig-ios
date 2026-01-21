@@ -71,7 +71,7 @@ struct KeyImportOverviewScreen: View {
             }
         }
     }
-    
+
     var animation: some View {
         animationVM?.view()
             .frame(width: 350, height: 240)
@@ -88,7 +88,7 @@ struct KeyImportOverviewScreen: View {
                 )
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.title2)
-                
+
                 Text("backupsDescription".localized)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.footnote)
@@ -111,7 +111,6 @@ struct KeyImportOverviewScreen: View {
         .fixedSize(horizontal: false, vertical: true)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
 
     private func onLoad() {
         animationVM = RiveViewModel(fileName: animationFileName)

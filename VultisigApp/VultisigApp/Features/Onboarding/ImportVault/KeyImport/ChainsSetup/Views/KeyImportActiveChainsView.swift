@@ -20,7 +20,7 @@ struct KeyImportActiveChainsView: View {
     @ObservedObject var viewModel: KeyImportChainsSetupViewModel
 
     @State private var showDerivationSheet = false
-    
+
     var minutes: Int {
         activeChains.count * 2
     }

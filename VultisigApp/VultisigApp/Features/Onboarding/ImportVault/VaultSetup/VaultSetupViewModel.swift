@@ -106,7 +106,7 @@ final class VaultSetupViewModel: ObservableObject, Form {
             )
         }
     }
-    
+
     var vaultName: String {
         nameField.value
     }

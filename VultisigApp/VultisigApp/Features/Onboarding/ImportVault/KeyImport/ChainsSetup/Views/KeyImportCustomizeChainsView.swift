@@ -14,7 +14,7 @@ struct KeyImportCustomizeChainsView: View {
     @State var searchText: String = ""
     @State var items: [Chain] = []
     @State private var showDerivationSheet = false
-    
+
     var body: some View {
         ZStack(alignment: .bottom) {
             AssetSelectionContainerView(
@@ -23,7 +23,7 @@ struct KeyImportCustomizeChainsView: View {
                 cellBuilder: { chain, _ in cell(for: chain) },
                 emptyStateBuilder: { EmptyView() }
             )
-            
+
             PrimaryButton(title: "continue".localized, action: {
                 if viewModel.selectedChains.contains(.solana) && viewModel.hasMultipleDerivations(for: .solana) {
                     showDerivationSheet = true
