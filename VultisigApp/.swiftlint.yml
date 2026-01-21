@@ -16,4 +16,6 @@ disabled_rules:
   - for_where
   - unused_optional_binding
   - non_optional_string_data_conversion
+  - todo
+  - compiler_protocol_init
 reporter: "xcode"
