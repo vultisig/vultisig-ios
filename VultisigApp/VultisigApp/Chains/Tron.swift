@@ -67,6 +67,9 @@ enum TronHelper {
         // FreezeBalanceV2 (Stake 2.0) - detect from memo
         if let memo = keysignPayload.memo, memo.hasPrefix("FREEZE:") {
             let resourceString = String(memo.dropFirst("FREEZE:".count))
+            guard resourceString == "BANDWIDTH" || resourceString == "ENERGY" else {
+                throw HelperError.runtimeError("Invalid TRON resource type: \(resourceString)")
+            }
             return try buildTronFreezeBalanceV2Input(
                 ownerAddress: keysignPayload.coin.address,
                 frozenBalance: keysignPayload.toAmount,
@@ -81,6 +84,9 @@ enum TronHelper {
         // UnfreezeBalanceV2 (Stake 2.0) - detect from memo
         if let memo = keysignPayload.memo, memo.hasPrefix("UNFREEZE:") {
             let resourceString = String(memo.dropFirst("UNFREEZE:".count))
+            guard resourceString == "BANDWIDTH" || resourceString == "ENERGY" else {
+                throw HelperError.runtimeError("Invalid TRON resource type: \(resourceString)")
+            }
             return try buildTronUnfreezeBalanceV2Input(
                 ownerAddress: keysignPayload.coin.address,
                 unfreezeBalance: keysignPayload.toAmount,
@@ -305,13 +311,13 @@ enum TronHelper {
         blockHeaderParentHash: String, blockHeaderWitnessAddress: String
     ) throws -> Data {
         // Validate frozenBalance is positive and fits in Int64
-        guard frozenBalance > 0 else {
-            throw HelperError.runtimeError("Invalid frozen balance: must be greater than 0")
+        guard let safeFrozenBalance = Int64(exactly: frozenBalance), safeFrozenBalance > 0 else {
+            throw HelperError.runtimeError("Invalid frozen balance: must be strictly positive and fit in Int64")
         }
         
         let contract = TronFreezeBalanceV2Contract.with {
             $0.ownerAddress = ownerAddress
-            $0.frozenBalance = Int64(frozenBalance)
+            $0.frozenBalance = safeFrozenBalance
             $0.resource = resource
         }
         
@@ -343,13 +349,13 @@ enum TronHelper {
         blockHeaderParentHash: String, blockHeaderWitnessAddress: String
     ) throws -> Data {
         // Validate unfreezeBalance is positive
-        guard unfreezeBalance > 0 else {
-            throw HelperError.runtimeError("Invalid unfreeze balance: must be greater than 0")
+        guard let safeUnfreezeBalance = Int64(exactly: unfreezeBalance), safeUnfreezeBalance > 0 else {
+            throw HelperError.runtimeError("Invalid unfreeze balance: must be strictly positive and fit in Int64")
         }
         
         let contract = TronUnfreezeBalanceV2Contract.with {
             $0.ownerAddress = ownerAddress
-            $0.unfreezeBalance = Int64(unfreezeBalance)
+            $0.unfreezeBalance = safeUnfreezeBalance
             $0.resource = resource
         }
         
