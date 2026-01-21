@@ -15,3 +15,5 @@ disabled_rules:
   - inclusive_language
   - for_where
   - unused_optional_binding
+  - non_optional_string_data_conversion
+reporter: "xcode"

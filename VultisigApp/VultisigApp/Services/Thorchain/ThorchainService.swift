@@ -747,7 +747,7 @@ struct DenomMetadata: Decodable {
 
     enum CodingKeys: String, CodingKey {
         case base, symbol, display
-        case denom_units = "denom_units"
+        case denom_units
     }
 }
 

@@ -52,9 +52,9 @@ class ERC20Helper {
             throw HelperError.runtimeError("fail to get chainID")
         }
         guard case .Ethereum(let maxFeePerGasWei,
-                          let priorityFeeWei,
-                          let nonce,
-                          let gasLimit) = keysignPayload.chainSpecific
+                             let priorityFeeWei,
+                             let nonce,
+                             let gasLimit) = keysignPayload.chainSpecific
         else {
             throw HelperError.runtimeError("fail to get Ethereum chain specific")
         }
@@ -93,7 +93,7 @@ class ERC20Helper {
     }
 
     func getSignedTransaction(keysignPayload: KeysignPayload,
-                                     signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
+                              signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         let coinHexPublicKey = keysignPayload.coin.hexPublicKey
         guard let pubkeyData = Data(hexString: coinHexPublicKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)

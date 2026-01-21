@@ -12,4 +12,3 @@ struct OneInchQuoteError: Codable, Error {
     let description: String
     let statusCode: Int
 }
-
