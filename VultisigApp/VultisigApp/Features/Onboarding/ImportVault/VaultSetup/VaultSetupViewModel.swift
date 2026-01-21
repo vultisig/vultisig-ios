@@ -13,8 +13,8 @@ final class VaultSetupViewModel: ObservableObject, Form {
     private let setupType: KeyImportSetupType
 
     private(set) lazy var form: [FormField] = {
-        // For fast setup, only name is required
-        // For secure setup, all fields are required
+        // For secure setup, only name is required
+        // For fast setup, all fields are required
         if setupType.requiresFastSign {
             return [
                 nameField,

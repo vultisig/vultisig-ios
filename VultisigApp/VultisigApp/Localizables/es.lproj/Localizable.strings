@@ -1164,7 +1164,7 @@
 "scanningForChainsSubtitleHighlight" = "Este proceso puede tardar hasta 2 minutos.";
 "selectChainsManually" = "Seleccionar cadenas manualmente";
 "noActiveChainsFound" = "No se encontraron chains activas";
-"noActiveChainsFoundSubtitle" = "No detectamos ningún activo en esta frase semilla.\n\nCada cadena adicional aumenta el tiempo para generar tu bóveda y la posibilidad de un tiempo de espera.";
+"noActiveChainsFoundSubtitle" = "No detectamos ningún activo en esta frase semilla.\n\nCada cadena adicional aumenta el tiempo para generar tu bóveda y la posibilidad de timeout.";
 "addCustomChains" = "Agregar chains personalizadas";
 "foundActiveChainsTitle" = "Encontramos %d cadenas activas";
 "foundActiveChainsSubtitle" = "Cada cadena adicional duplica aproximadamente el tiempo para generar tu bóveda. Tiempo estimado para todas las cadenas seleccionadas: %d minutos";

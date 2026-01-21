@@ -1163,7 +1163,7 @@
 "scanningForChainsSubtitleHighlight" = "Este processo pode levar até 2 minutos.";
 "selectChainsManually" = "Selecionar chains manualmente";
 "noActiveChainsFound" = "Nenhuma chain ativa encontrada";
-"noActiveChainsFoundSubtitle" = "Não detectamos nenhum ativo nesta frase semente.\n\nCada chain adicional aumenta o tempo para gerar seu cofre e a possibilidade de um tempo limite.";
+"noActiveChainsFoundSubtitle" = "Não detectamos nenhum ativo nesta frase semente.\n\nCada chain adicional aumenta o tempo para gerar seu vault e a possibilidade de timeout.";
 "addCustomChains" = "Adicionar chains personalizadas";
 "foundActiveChainsTitle" = "Encontramos %d chains ativas";
 "foundActiveChainsSubtitle" = "Cada chain adicional aproximadamente dobra o tempo para gerar seu cofre. Tempo estimado para todas as chains selecionadas: %d minutos";

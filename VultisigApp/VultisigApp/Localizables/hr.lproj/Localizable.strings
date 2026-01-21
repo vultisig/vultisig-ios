@@ -1163,7 +1163,7 @@
 "scanningForChainsSubtitleHighlight" = "Ovaj proces može potrajati do 2 minute.";
 "selectChainsManually" = "Odaberi chainove ručno";
 "noActiveChainsFound" = "Nisu pronađeni aktivni chainovi";
-"noActiveChainsFoundSubtitle" = "Nismo otkrili nikakvu imovinu na ovoj seed frazi.\n\nSvaki dodatni chain povećava vrijeme za generiranje vašeg trezora i mogućnost isteka vremena.";
+"noActiveChainsFoundSubtitle" = "Nismo otkrili nikakvu imovinu na ovoj seed frazi.\n\nSvaki dodatni chain povećava vrijeme potrebno za generiranje vašeg vaulta i mogućnost timeouta.";
 "addCustomChains" = "Dodaj prilagođene chainove";
 "foundActiveChainsTitle" = "Pronašli smo %d aktivnih chainova";
 "foundActiveChainsSubtitle" = "Svaki dodatni chain otprilike udvostručuje vrijeme za generiranje vašeg trezora. Procijenjeno vrijeme za sve odabrane chainove: %d minuta";
