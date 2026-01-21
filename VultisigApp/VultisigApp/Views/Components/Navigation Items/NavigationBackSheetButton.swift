@@ -10,15 +10,18 @@ import SwiftUI
 struct NavigationBackSheetButton: View {
     @Binding var showSheet: Bool
     var tint: Color = Theme.colors.textPrimary
-    
+
     var body: some View {
-        Button(action: {
-            showSheet.toggle()
-        }) {
-            Image(systemName: "chevron.backward")
-                .font(Theme.fonts.bodyLMedium)
-                .foregroundColor(tint)
-        }
+        Button(
+            action: {
+                showSheet.toggle()
+            },
+            label: {
+                Image(systemName: "chevron.backward")
+                    .font(Theme.fonts.bodyLMedium)
+                    .foregroundColor(tint)
+            }
+        )
     }
 }
 

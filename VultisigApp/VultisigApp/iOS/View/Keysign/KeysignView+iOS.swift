@@ -14,7 +14,7 @@ extension KeysignView {
             .onAppear {
                 UIApplication.shared.isIdleTimerDisabled = true
             }
-            .onDisappear(){
+            .onDisappear {
                 viewModel.stopMessagePuller()
                 UIApplication.shared.isIdleTimerDisabled = false
             }

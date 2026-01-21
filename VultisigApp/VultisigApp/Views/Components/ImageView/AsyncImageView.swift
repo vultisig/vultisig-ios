@@ -17,7 +17,7 @@ struct AsyncImageView: View {
     let size: CGSize
     let ticker: String
     let tokenChainLogo: String?
-    
+
     var source: Source {
         if logo.hasPrefix("https://") {
             return .remote(URL(string: logo))
@@ -52,7 +52,7 @@ struct AsyncImageView: View {
                     fallbackText
                 }
             }
-            
+
             if let chainIcon = tokenChainLogo, logo != tokenChainLogo {
                 ChainIconView(
                     icon: "chain-" + chainIcon,

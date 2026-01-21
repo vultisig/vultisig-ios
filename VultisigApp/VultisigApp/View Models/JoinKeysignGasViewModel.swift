@@ -38,7 +38,7 @@ struct JoinKeysignGasViewModel {
         var feeToUse = payload.chainSpecific.gas
         if payload.coin.chainType == .UTXO {
             feeToUse = calculateUTXOTotalFee(payload: payload) ?? payload.chainSpecific.gas
-        } else if payload.coin.chainType == .Cardano  {
+        } else if payload.coin.chainType == .Cardano {
             feeToUse = calculateCardanoTotalFee(payload: payload) ?? payload.chainSpecific.gas
         }
 
@@ -52,12 +52,12 @@ struct JoinKeysignGasViewModel {
 
         return ("\(gasInReadable) \(nativeToken.ticker)", feeInReadable)
     }
-    
+
     func getJoinedCalculatedNetworkFee(payload: KeysignPayload) -> String {
         let fees = getCalculatedNetworkFee(payload: payload)
         return fees.feeCrypto + " (~\(fees.feeFiat))"
     }
-    
+
     func feesInReadable(coin: Coin, fee: BigInt) -> String {
         // Try to get native coin from vault first (has up-to-date price data)
         if let vaultNativeCoin = AppViewModel.shared.selectedVault?.nativeCoin(for: coin.chain) {
@@ -68,18 +68,18 @@ struct JoinKeysignGasViewModel {
                 return fiatString
             }
         }
-        
+
         // Fallback to the payload coin itself
         let feeDecimal = coin.decimal(for: fee)
         // Use fee-specific formatting with more decimal places (5 instead of 2)
         return RateProvider.shared.fiatFeeString(value: feeDecimal, coin: coin)
     }
-    
+
     private func calculateUTXOTotalFee(payload: KeysignPayload) -> BigInt? {
         guard let helper = UTXOChainsHelper.getHelper(coin: payload.coin) else {
             return nil
         }
-        
+
         do {
             let plan = try helper.getBitcoinTransactionPlan(keysignPayload: payload)
             return plan.fee > 0 ? BigInt(plan.fee) : nil
@@ -87,7 +87,7 @@ struct JoinKeysignGasViewModel {
             return nil
         }
     }
-    
+
     private func calculateCardanoTotalFee(payload: KeysignPayload) -> BigInt? {
         let helper = CardanoHelper()
         do {

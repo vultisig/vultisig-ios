@@ -11,7 +11,7 @@ struct VaultSelectorView: View {
     let vaultName: String
     let isFastVault: Bool
     var action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: 6) {

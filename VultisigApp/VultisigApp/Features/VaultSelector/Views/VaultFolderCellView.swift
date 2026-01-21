@@ -12,9 +12,9 @@ struct VaultFolderCellView: View {
     let isOnFolder: Bool
     let isSelected: Bool
     var onSelection: () -> Void
-    
+
     @State var isOnFolderInternal: Bool = false
-    
+
     var body: some View {
         VaultCellView(
             vault: vault,
@@ -38,7 +38,7 @@ struct VaultFolderCellView: View {
             guard isOnFolderInternal != isOnFolder else {
                 return
             }
-            
+
             // Wait for toggle animation to complete
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 onSelection()

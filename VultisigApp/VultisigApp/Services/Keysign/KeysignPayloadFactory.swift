@@ -9,7 +9,7 @@ import Foundation
 import BigInt
 
 struct KeysignPayloadFactory {
-    
+
     enum Errors: String, Error, LocalizedError {
         case notEnoughBalanceError
         case notEnoughUTXOError
@@ -18,16 +18,16 @@ struct KeysignPayloadFactory {
         case failToGetAccountNumber
         case failToGetSequenceNo
         case failToGetRecentBlockHash
-        
+
         var errorDescription: String? {
             return String(NSLocalizedString(rawValue, comment: ""))
         }
     }
-    
+
     private let utxo = BlockchairService.shared
     private let thor = ThorchainService.shared
     private let sol = SolanaService.shared
-    
+
     func buildTransfer(
         coin: Coin,
         toAddress: String,
@@ -39,11 +39,11 @@ struct KeysignPayloadFactory {
         vault: Vault,
         wasmExecuteContractPayload: WasmExecuteContractPayload? = nil
     ) async throws -> KeysignPayload {
-        
+
         var utxos: [UtxoInfo] = []
-        
+
         switch chainSpecific {
-        case .UTXO(_, _), .Cardano(_, _, _):
+        case .UTXO, .Cardano:
             // Use WalletCore transaction planning for UTXO selection (both UTXO and Cardano chains)
             let payload = KeysignPayload(
                 coin: coin,
@@ -64,19 +64,19 @@ struct KeysignPayloadFactory {
                 skipBroadcast: false,
                 signData: nil
             )
-            
+
             // Select appropriate UTXO selection method based on chain
             if coin.chain == .cardano {
                 utxos = try await selectCardanoUTXOs(vault: vault, keysignPayload: payload)
             } else {
                 utxos = try await selectUTXOs(vault: vault, keysignPayload: payload)
             }
-            
+
         default:
             // Non-UTXO chains don't need UTXO selection
             break
         }
-        
+
         return KeysignPayload(
             coin: coin,
             toAddress: toAddress,
@@ -97,8 +97,8 @@ struct KeysignPayloadFactory {
             signData: nil
         )
     }
-    
-    private func selectUTXOs(vault: Vault,keysignPayload: KeysignPayload) async throws -> [UtxoInfo] {
+
+    private func selectUTXOs(vault: Vault, keysignPayload: KeysignPayload) async throws -> [UtxoInfo] {
         let info = await utxo.getByKey(key: keysignPayload.coin.blockchairKey)?.utxo?.map({
             UtxoInfo(
                 hash: $0.transactionHash ?? "",
@@ -109,7 +109,7 @@ struct KeysignPayloadFactory {
         guard let utxosInfo = info else {
             return []
         }
-        
+
         let dustThreshold = keysignPayload.coin.coinType.getFixedDustThreshold()
         let usableUTXOs = utxosInfo.filter { $0.amount >= dustThreshold }
         if usableUTXOs.isEmpty {
@@ -138,7 +138,7 @@ struct KeysignPayloadFactory {
             skipBroadcast: keysignPayload.skipBroadcast,
             signData: nil
         )
-        
+
         let plan = try utxoHelper.getBitcoinTransactionPlan(keysignPayload: tmpKeysignPayload)
         if plan.utxos.isEmpty {
             throw Errors.notEnoughUTXOError
@@ -151,15 +151,15 @@ struct KeysignPayloadFactory {
             )
         }
     }
-    
+
     private func selectCardanoUTXOs(vault: Vault, keysignPayload: KeysignPayload) async throws -> [UtxoInfo] {
         // Fetch all available UTXOs for Cardano using Koios API
         let cardanoUTXOs = try await CardanoService.shared.getUTXOs(coin: keysignPayload.coin)
-        
+
         guard !cardanoUTXOs.isEmpty else {
             throw Errors.notEnoughUTXOError
         }
-        
+
         // Create temporary payload with all available UTXOs for WalletCore planning
         let tmpKeysignPayload = KeysignPayload(
             coin: keysignPayload.coin,
@@ -180,15 +180,15 @@ struct KeysignPayloadFactory {
             skipBroadcast: keysignPayload.skipBroadcast,
             signData: nil
         )
-        
+
         // Use WalletCore's Cardano transaction planning to select optimal UTXOs
         let cardanoHelper = CardanoHelper()
-        
+
         let plan = try cardanoHelper.getCardanoTransactionPlan(keysignPayload: tmpKeysignPayload)
         if plan.utxos.isEmpty {
             throw Errors.notEnoughUTXOError
         }
-        
+
         // Convert WalletCore's selected UTXOs back to UtxoInfo format
         return plan.utxos.map { utxo in
             UtxoInfo(

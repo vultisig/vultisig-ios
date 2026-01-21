@@ -6,16 +6,16 @@ struct FunctionCallDetailsScreen: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var functionCallViewModel: FunctionCallViewModel
     @ObservedObject var vault: Vault
-    
+
     @State private var selectedFunctionMemoType: FunctionCallType
     @State private var selectedContractMemoType: FunctionCallContractType
     @State private var showInvalidFormAlert = false
-    
+
     @State var fnCallInstance: FunctionCallInstance
     let defaultCoin: Coin
-    
+
     @StateObject var keyboardObserver = KeyboardObserver()
-    
+
     init(
         tx: SendTransaction,
         functionCallViewModel: FunctionCallViewModel,
@@ -31,13 +31,13 @@ struct FunctionCallDetailsScreen: View {
         if let nodeAddress = dict.get("nodeAddress"), !nodeAddress.isEmpty {
             if let actionStr = dict.get("action") {
                 let functionType: FunctionCallType
-                
+
                 switch actionStr.lowercased() {
                 case "bond":
                     functionType = .bond
                     self._selectedFunctionMemoType = State(initialValue: functionType)
                     self._selectedContractMemoType = State(initialValue: FunctionCallContractType.getDefault(for: defaultCoin))
-                    
+
                     let bondInstance = FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
                     bondInstance.nodeAddress = nodeAddress
                     bondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
@@ -47,12 +47,12 @@ struct FunctionCallDetailsScreen: View {
                     }
                     self._fnCallInstance = State(initialValue: .bond(bondInstance))
                     return
-                    
+
                 case "unbond":
                     functionType = .unbond
                     self._selectedFunctionMemoType = State(initialValue: functionType)
                     self._selectedContractMemoType = State(initialValue: FunctionCallContractType.getDefault(for: defaultCoin))
-                    
+
                     let unbondInstance = FunctionCallUnbond(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
                     unbondInstance.nodeAddress = nodeAddress
                     unbondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
@@ -62,12 +62,12 @@ struct FunctionCallDetailsScreen: View {
                     }
                     self._fnCallInstance = State(initialValue: .unbond(unbondInstance))
                     return
-                    
+
                 case "rebond":
                     functionType = .rebond
                     self._selectedFunctionMemoType = State(initialValue: functionType)
                     self._selectedContractMemoType = State(initialValue: FunctionCallContractType.getDefault(for: defaultCoin))
-                    
+
                     let rebondInstance = FunctionCallReBond(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
                     rebondInstance.nodeAddress = nodeAddress
                     rebondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
@@ -94,13 +94,13 @@ struct FunctionCallDetailsScreen: View {
         self._fnCallInstance = State(
             initialValue: FunctionCallInstance.getDefault(for: defaultCoin, tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
     }
-    
+
     private static func validateNodeAddress(_ address: String) -> Bool {
         return AddressService.validateAddress(address: address, chain: .thorChain) ||
         AddressService.validateAddress(address: address, chain: .mayaChain) ||
         AddressService.validateAddress(address: address, chain: .ton)
     }
-    
+
     var body: some View {
         content
             .alert(isPresented: $functionCallViewModel.showAlert) {
@@ -118,7 +118,7 @@ struct FunctionCallDetailsScreen: View {
                         functionCallViewModel.setRuneToken(to: tx, vault: vault)
                     }
                     let bondInstance = FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
-                    
+
                     if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
                         bondInstance.nodeAddress = nodeAddress
                         bondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
@@ -130,29 +130,29 @@ struct FunctionCallDetailsScreen: View {
                         functionCallViewModel.setRuneToken(to: tx, vault: vault)
                     }
                     let unbondInstance = FunctionCallUnbond(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
-                    
+
                     if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
                         unbondInstance.nodeAddress = nodeAddress
                         unbondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
                     }
-                    
+
                     fnCallInstance = .unbond(unbondInstance)
-                    
+
                 case .rebond:
                     // Ensure RUNE token is selected for REBOND operations on THORChain
                     if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
                         functionCallViewModel.setRuneToken(to: tx, vault: vault)
                     }
                     let rebondInstance = FunctionCallReBond(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
-                    
+
                     if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
                         rebondInstance.nodeAddress = nodeAddress
                         rebondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
                     }
-                    
+
                     fnCallInstance = .rebond(rebondInstance)
                 case .bondMaya:
-                    
+
                     DispatchQueue.main.async {
                         MayachainService.shared.getDepositAssets {
                             assetsResponse in
@@ -166,9 +166,9 @@ struct FunctionCallDetailsScreen: View {
                             }
                         }
                     }
-                    
+
                 case .unbondMaya:
-                    
+
                     DispatchQueue.main.async {
                         MayachainService.shared.getDepositAssets {
                             assetsResponse in
@@ -182,21 +182,21 @@ struct FunctionCallDetailsScreen: View {
                             }
                         }
                     }
-                    
+
                 case .leave:
                     // Ensure RUNE token is selected for LEAVE operations on THORChain
                     if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
                         functionCallViewModel.setRuneToken(to: tx, vault: vault)
                     }
                     let leaveInstance = FunctionCallLeave(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
-                    
+
                     if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
                         leaveInstance.nodeAddress = nodeAddress
                         leaveInstance.addressFields["nodeAddress"] = nodeAddress
-                        
+
                         leaveInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
                     }
-                    
+
                     fnCallInstance = .leave(leaveInstance)
                 case .custom:
                     fnCallInstance = .custom(FunctionCallCustom(tx: tx, vault: vault))
@@ -215,17 +215,17 @@ struct FunctionCallDetailsScreen: View {
                     if tx.coin.chain == .thorChain && tx.coin.ticker.uppercased() != "TCY" {
                         functionCallViewModel.setTcyToken(to: tx, vault: vault)
                     }
-                    
+
                     DispatchQueue.main.async {
                         ThorchainService.shared.fetchTcyStakedAmount(address: tx.coin.address) {
                             stakedAmount in
-                            
+
                             DispatchQueue.main.async {
                                 fnCallInstance = .unstakeTcy(FunctionCallUnstakeTCY(tx: tx, vault: vault, functionCallViewModel: functionCallViewModel, stakedAmount: stakedAmount))
                             }
                         }
                     }
-                    
+
                 case .unstake:
                     fnCallInstance = .unstake(FunctionCallUnstake())
 
@@ -273,7 +273,7 @@ struct FunctionCallDetailsScreen: View {
                 }
             }
     }
-    
+
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString("error", comment: "")),
@@ -283,7 +283,7 @@ struct FunctionCallDetailsScreen: View {
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
-    
+
     var invalidFormAlert: Alert {
         Alert(
             title: Text("Form Invalid"),
@@ -293,7 +293,7 @@ struct FunctionCallDetailsScreen: View {
             dismissButton: .default(Text("OK"))
         )
     }
-    
+
     private func extractNodeAddress(from instance: FunctionCallInstance) -> String? {
         switch instance {
         case .bond(let bond):
@@ -308,20 +308,20 @@ struct FunctionCallDetailsScreen: View {
             return nil
         }
     }
-    
+
     var functionSelector: some View {
         FunctionCallSelectorDropdown(
             items: .constant(FunctionCallType.getCases(for: tx.coin)),
             selected: $selectedFunctionMemoType, coin: $tx.coin)
     }
-    
+
     var contractSelector: some View {
         FunctionCallContractSelectorDropDown(
             items: .constant(
                 FunctionCallContractType.getCases(for: tx.coin)),
             selected: $selectedContractMemoType, coin: tx.coin)
     }
-    
+
     var button: some View {
         PrimaryButton(title: "continue") {
             Task {
@@ -331,13 +331,13 @@ struct FunctionCallDetailsScreen: View {
                     tx.memoFunctionDictionary = fnCallInstance.toDictionary()
                     tx.transactionType = fnCallInstance.getTransactionType()
                     tx.wasmContractPayload = fnCallInstance.wasmContractPayload
-                    
+
                     if let toAddress = fnCallInstance.toAddress {
                         tx.toAddress = toAddress
                     }
-                    
+
                     functionCallViewModel.moveToNextView()
-                    
+
                 } else {
                     showInvalidFormAlert = true
                 }

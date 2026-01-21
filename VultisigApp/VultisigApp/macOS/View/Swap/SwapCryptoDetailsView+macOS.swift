@@ -13,7 +13,7 @@ extension SwapCryptoDetailsView {
        content
             .padding(.horizontal, 25)
     }
-    
+
     var percentageButtons: some View {
         SwapPercentageButtons(
             show100: !tx.fromCoin.isNativeToken,
@@ -22,7 +22,7 @@ extension SwapCryptoDetailsView {
             handlePercentageSelection(percentage)
         }
     }
-    
+
     var fields: some View {
         ScrollView {
             VStack(spacing: 8) {

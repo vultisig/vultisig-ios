@@ -19,9 +19,9 @@ struct NavigationQRShareButton: View {
     let type: NavigationQRType
     let viewModel: ShareSheetViewModel
     var tint: Color = Theme.colors.textPrimary
-    
+
     var title: String = ""
-        
+
     var body: some View {
         if let image = viewModel.renderedImage {
             CrossPlatformShareButton(image: image, caption: viewModel.qrCodeData ?? .empty) { onShare in
@@ -35,10 +35,9 @@ struct NavigationQRShareButton: View {
     ZStack {
         Background()
         NavigationQRShareButton(
-            vault: Vault.example, 
+            vault: Vault.example,
             type: .Keygen,
             viewModel: ShareSheetViewModel()
         )
     }
 }
-

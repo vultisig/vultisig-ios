@@ -10,7 +10,7 @@ import Foundation
 class KeyShare: Codable {
     let pubkey: String
     let keyshare: String
-    
+
     init(pubkey: String, keyshare: String) {
         self.pubkey = pubkey
         self.keyshare = keyshare

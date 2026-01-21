@@ -17,7 +17,7 @@ final class BondPosition {
     var apy: Double
     var nextReward: Decimal
     var nextChurn: Date?
-    
+
     @Relationship(inverse: \Vault.bondPositions) var vault: Vault?
 
     init(

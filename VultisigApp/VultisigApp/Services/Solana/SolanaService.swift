@@ -5,7 +5,7 @@ import WalletCore
 enum SolanaServiceError: Error, LocalizedError {
     case blockhashExpired(message: String)
     case rpcError(message: String, code: Int)
-    
+
     var errorDescription: String? {
         switch self {
         case .blockhashExpired(let message):
@@ -20,7 +20,7 @@ struct SendTransactionResponse: Codable {
     let jsonrpc: String
     let result: String?
     let error: ErrorResponse?
-    
+
     struct ErrorResponse: Codable {
         let code: Int
         let message: String
@@ -29,81 +29,81 @@ struct SendTransactionResponse: Codable {
 
 class SolanaService {
     static let shared = SolanaService()
-    
+
     private init() {}
-    
+
     private let rpcURL = URL(string: Endpoint.solanaServiceRpc)!
-    
+
     private let accountQueryMethods = Set([
         "getTokenAccountsByOwner",
         "getAccountInfo",
         "getMultipleAccounts"
     ])
-    
+
     private let jsonDecoder = JSONDecoder()
-    
+
     private let TOKEN_PROGRAM_ID_2022 = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-    
+
     // Token account cache
     private struct TokenAccountCacheKey: Hashable {
         let walletAddress: String
         let mintAddress: String
     }
-    
+
     private struct TokenAccountCacheValue {
         let accountAddress: String
         let isToken2022: Bool
         let timestamp: Date
     }
-    
+
     private var tokenAccountCache = ThreadSafeDictionary<String, (data: TokenAccountCacheValue, timestamp: Date)>()
     private let cacheExpirationTime: TimeInterval = 86400 * 30 // 30 days - token accounts don't change once created
-    
+
     func sendSolanaTransaction(encodedTransaction: String) async throws -> String? {
         let requestBody: [String: Any] = [
             "jsonrpc": "2.0",
             "id": 1,
             "method": "sendTransaction",
-            "params": [encodedTransaction],
+            "params": [encodedTransaction]
         ]
-        
+
         do {
             let data = try await postRequest(with: requestBody, url: rpcURL)
-            
+
             // Parse response
             if let jsonObject = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
                 // Check for error
                 if let error = jsonObject["error"] as? [String: Any] {
                     let errorMessage = error["message"] as? String ?? "Unknown error"
                     let errorCode = error["code"] as? Int ?? -1
-                    
+
                     // Check if it's a blockhash expiration error
                     if errorMessage.contains("Blockhash not found") ||
                         errorMessage.contains("blockhash") ||
                         errorCode == -32002 {
                         throw SolanaServiceError.blockhashExpired(message: errorMessage)
                     }
-                    
+
                     throw SolanaServiceError.rpcError(message: errorMessage, code: errorCode)
                 }
-                
+
                 // Check for result
                 if let result = jsonObject["result"] as? String {
                     return result
                 }
             }
-            
+
             let response = try JSONDecoder().decode(SendTransactionResponse.self, from: data)
             return response.result
         } catch {
             throw error
         }
     }
-    
+
     func getSolanaBalance(coin: Coin) async throws -> String {
         try await getSolanaBalance(coin: coin.toCoinMeta(), address: coin.address)
     }
-    
+
     func getSolanaBalance(coin: CoinMeta, address: String) async throws -> String {
         if coin.isNativeToken {
             let data = try await Utils.PostRequestRpc(
@@ -111,16 +111,16 @@ class SolanaService {
                 method: "getBalance",
                 params: [address]
             )
-            
+
             guard
                 let totalBalance = Utils.extractResultFromJson(
                     fromData: data,
                     path: "result.value"
                 ) as? Int64
             else { return "0" }
-            
+
             return totalBalance.description
-            
+
         } else {
             guard
                 let balance = try await fetchTokenBalance(
@@ -128,11 +128,11 @@ class SolanaService {
                     contractAddress: coin.contractAddress
                 )
             else { return "0" }
-            
+
             return balance
         }
     }
-    
+
     func fetchRecentBlockhash() async throws -> String? {
         do {
             var blockHash: String? = nil
@@ -140,9 +140,9 @@ class SolanaService {
                 "jsonrpc": "2.0",
                 "id": 1,
                 "method": "getLatestBlockhash",
-                "params": [["commitment": "finalized"]],
+                "params": [["commitment": "finalized"]]
             ]
-            
+
             let data = try await postRequest(with: requestBody, url: rpcURL)
             blockHash =
             Utils.extractResultFromJson(
@@ -153,14 +153,13 @@ class SolanaService {
             throw error
         }
     }
-    
+
     func fetchSolanaTokenInfoList(contractAddresses: [String]) async throws
-    -> [String: SolanaFmTokenInfo]
-    {
+    -> [String: SolanaFmTokenInfo] {
         guard !contractAddresses.isEmpty else {
             return [:]
         }
-        
+
         do {
             let urlString = Endpoint.solanaTokenInfoServiceRpc
             let body: [String: Any] = ["tokens": contractAddresses]
@@ -176,10 +175,9 @@ class SolanaService {
             return [:]
         }
     }
-    
+
     func fetchSolanaJupiterTokenInfoList(contractAddress: String) async throws
-    -> SolanaJupiterToken
-    {
+    -> SolanaJupiterToken {
         do {
             let urlString = Endpoint.solanaTokenInfoServiceRpc2(
                 tokenAddress: contractAddress)
@@ -204,13 +202,13 @@ class SolanaService {
             throw error
         }
     }
-    
+
     func fetchSolanaJupiterTokenList() async throws -> [CoinMeta] {
         do {
             let urlString = Endpoint.solanaTokenInfoList()
             let dataResponse = try await Utils.asyncGetRequest(
                 urlString: urlString, headers: [:])
-            
+
             let tokenInfos = try JSONDecoder().decode(
                 [SolanaJupiterToken].self, from: dataResponse)
             return tokenInfos.map { jupiterTokenInfo in
@@ -237,20 +235,20 @@ class SolanaService {
             throw error
         }
     }
-    
+
     func fetchTokenAssociatedAccountByOwner(for ownerAddress: String, mintAddress: String) async throws -> (String, Bool) {
         // First try getTokenAccountsByOwner
         let (tokenAccounts, isToken2022) = try await getTokenAccountsByOwner(walletAddress: ownerAddress, mintAddress: mintAddress)
-        
+
         if !tokenAccounts.isEmpty {
             return (tokenAccounts, isToken2022)
         }
-        
+
         // If getTokenAccountsByOwner returns empty, probe the deterministic ATAs directly
         guard let walletCoreAddress = WalletCore.SolanaAddress(string: ownerAddress) else {
             return ("", false)
         }
-        
+
         // Try standard SPL token ATA first
         if let defaultAta = walletCoreAddress.defaultTokenAddress(tokenMintAddress: mintAddress), !defaultAta.isEmpty {
             let (exists, _) = try await checkAccountExists(address: defaultAta)
@@ -258,7 +256,7 @@ class SolanaService {
                 return (defaultAta, false)
             }
         }
-        
+
         // Try Token-2022 ATA
         if let token2022Ata = walletCoreAddress.token2022Address(tokenMintAddress: mintAddress), !token2022Ata.isEmpty {
             let (exists, _) = try await checkAccountExists(address: token2022Ata)
@@ -266,18 +264,18 @@ class SolanaService {
                 return (token2022Ata, true)
             }
         }
-        
+
         return ("", false)
     }
-    
+
     func getTokenAccountsByOwner(walletAddress: String, mintAddress: String) async throws -> (String, Bool) {
         // Check cache first
         let cacheKey = "solana-token-account-\(walletAddress)-\(mintAddress)"
-        
+
         if let cachedValue = await Utils.getCachedData(cacheKey: cacheKey, cache: tokenAccountCache, timeInSeconds: cacheExpirationTime) {
             return (cachedValue.accountAddress, cachedValue.isToken2022)
         }
-        
+
         do {
             let requestBody: [String: Any] = [
                 "jsonrpc": "2.0",
@@ -286,21 +284,21 @@ class SolanaService {
                 "params": [
                     walletAddress,
                     ["mint": mintAddress],
-                    ["encoding": "jsonParsed"],
-                ],
+                    ["encoding": "jsonParsed"]
+                ]
             ]
-            
+
             let data = try await postRequest(with: requestBody, url: rpcURL)
             let parsedData = try parseSolanaTokenResponse(jsonData: data)
             let accounts: [SolanaService.SolanaTokenAccount] = parsedData.result.value
-            
+
             guard let associatedAccount = accounts.first else {
                 return ("", false)
             }
-            
+
             let accountOwner = associatedAccount.account.owner
             let isToken2022 = accountOwner == TOKEN_PROGRAM_ID_2022
-            
+
             // Cache the result
             let cacheValue = TokenAccountCacheValue(
                 accountAddress: associatedAccount.pubkey,
@@ -308,23 +306,22 @@ class SolanaService {
                 timestamp: Date()
             )
             tokenAccountCache.set(cacheKey, (data: cacheValue, timestamp: Date()))
-            
+
             return (associatedAccount.pubkey, isToken2022)
         } catch {
             throw error
         }
     }
-    
+
     func fetchTokenAccountsByOwner(for walletAddress: String) async throws
-    -> [SolanaService.SolanaTokenAccount]
-    {
+    -> [SolanaService.SolanaTokenAccount] {
         let programs: [String] = [
             "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", // spl-token
             "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb" // spl-token-2022
         ]
-        
+
         var returnPrograms: [SolanaService.SolanaTokenAccount] = []
-        
+
         do {
             for program in programs {
                 let requestBody: [String: Any] = [
@@ -336,14 +333,14 @@ class SolanaService {
                         [
                             "programId": program
                         ],
-                        ["encoding": "jsonParsed"],
-                    ],
+                        ["encoding": "jsonParsed"]
+                    ]
                 ]
-                
+
                 let data = try await postRequest(with: requestBody, url: rpcURL)
                 let parsedData = try parseSolanaTokenResponse(jsonData: data)
                 let items: [SolanaService.SolanaTokenAccount] = parsedData.result.value
-                
+
                 for item in items {
                     returnPrograms.append(item)
                 }
@@ -354,39 +351,37 @@ class SolanaService {
         }
         return returnPrograms
     }
-    
-    func fetchTokenBalance(for walletAddress: String, contractAddress: String)
-    async throws -> String?
-    {
+
+    func fetchTokenBalance(for walletAddress: String, contractAddress: String) async throws -> String? {
         do {
             let accounts: [SolanaTokenAccount] =
             try await fetchTokenAccountsByOwner(for: walletAddress)
-            
+
             if let token = accounts.first(where: {
                 $0.account.data.parsed.info.mint.lowercased() == contractAddress.lowercased()
             }) {
                 return token.account.data.parsed.info.tokenAmount.amount
             }
-            
+
             return nil
         } catch {
             print("Error in fetchTokenBalance: \(error.localizedDescription)")
             throw error
         }
     }
-    
+
     func fetchTokens(for walletAddress: String) async throws -> [CoinMeta] {
         do {
             let accounts: [SolanaTokenAccount] = try await fetchTokenAccountsByOwner(for: walletAddress)
-            
+
             guard !accounts.isEmpty else {
                 return []
             }
-            
+
             let tokenAddresses = accounts.map {
                 $0.account.data.parsed.info.mint
             }
-            
+
             let tokens = try await fetchTokensInfos(for: tokenAddresses)
             return tokens
         } catch {
@@ -394,18 +389,16 @@ class SolanaService {
             throw error
         }
     }
-    
-    func fetchTokensInfos(for contractAddresses: [String]) async throws
-    -> [CoinMeta]
-    {
+
+    func fetchTokensInfos(for contractAddresses: [String]) async throws -> [CoinMeta] {
         guard !contractAddresses.isEmpty else {
             return []
         }
-        
+
         let tokenInfos = try await fetchSolanaTokenInfoList(contractAddresses: contractAddresses)
-        
+
         var coinMetaList = [CoinMeta]()
-        
+
         for contractAddress in contractAddresses {
             do {
                 if let tokenInfo = tokenInfos[contractAddress] {
@@ -437,36 +430,36 @@ class SolanaService {
                 continue
             }
         }
-        
+
         return coinMetaList
     }
-    
+
     func fetchHighPriorityFee(account: String) async throws -> UInt64 {
         do {
             struct PrioritizationFeeResponse: Decodable {
                 let result: [FeeObject]
             }
-            
+
             struct FeeObject: Decodable {
                 let prioritizationFee: Int
                 let slot: Int
             }
-            
+
             let requestBody: [String: Any] = [
                 "jsonrpc": "2.0",
                 "id": 1,
                 "method": "getRecentPrioritizationFees",
-                "params": [[account]],
+                "params": [[account]]
             ]
-            
+
             let data = try await postRequest(with: requestBody, url: rpcURL)
             let decoder = JSONDecoder()
             let response = try decoder.decode(
                 PrioritizationFeeResponse.self, from: data)
-            
+
             let fees = response.result.map { $0.prioritizationFee }
             let nonZeroFees = fees.filter { $0 > 0 }
-            
+
             let highPriorityFee = nonZeroFees.max() ?? 0
             return UInt64(highPriorityFee)
         } catch {
@@ -474,24 +467,20 @@ class SolanaService {
             throw error
         }
     }
-    
+
     private func postRequest(with requestBody: [String: Any], url: URL) async throws -> Data {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
         request.timeoutInterval = 10
-        
+
         let (data, _) = try await URLSession.shared.data(for: request)
-        
+
         return data
     }
-    
-    private func parseSolanaTokenResponse(jsonData: Data) throws
-    -> SolanaService.SolanaDetailedRPCResult<
-        [SolanaService.SolanaTokenAccount]
-    >
-    {
+
+    private func parseSolanaTokenResponse(jsonData: Data) throws -> SolanaService.SolanaDetailedRPCResult<[SolanaService.SolanaTokenAccount]> {
         do {
             return try JSONDecoder().decode(
                 SolanaService.SolanaDetailedRPCResult<
@@ -502,42 +491,42 @@ class SolanaService {
             throw error
         }
     }
-    
+
     static func getTokenUSDValue(contractAddress: String) async -> Double {
-        
+
         do {
-            
+
             let amountDecimal = 1_000_000 // 1 USDC
-            
+
             let urlString: String = Endpoint.solanaTokenQuote(
                 inputMint: contractAddress,
                 outputMint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
                 amount: amountDecimal.description,
                 slippageBps: "50"
             )
-            
+
             let dataResponse = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
             let rawAmount = Utils.extractResultFromJson(fromData: dataResponse, path: "swapUsdValue") as? String ?? "0"
-            
+
             return Double(rawAmount) ?? 0.0
-            
+
         } catch {
             print("Error in fetchSolanaJupiterTokenInfoList:")
             return 0.0
         }
-        
+
     }
-    
+
     func checkAccountExists(address: String) async throws -> (exists: Bool, isToken2022: Bool) {
         let requestBody: [String: Any] = [
             "jsonrpc": "2.0",
             "id": 1,
             "method": "getAccountInfo",
-            "params": [address, ["encoding": "jsonParsed"]],
+            "params": [address, ["encoding": "jsonParsed"]]
         ]
-        
+
         let data = try await postRequest(with: requestBody, url: rpcURL)
-        
+
         if let jsonObj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
            let result = jsonObj["result"] as? [String: Any],
            let value = result["value"] as? [String: Any] {
@@ -546,8 +535,8 @@ class SolanaService {
             let isToken2022 = ownerProgram == TOKEN_PROGRAM_ID_2022
             return (true, isToken2022)
         }
-        
+
         return (false, false)
     }
-    
+
 }

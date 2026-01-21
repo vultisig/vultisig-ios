@@ -26,7 +26,7 @@ enum FunctionCallInstance {
     case addThorLP(FunctionCallAddThorLP)
     case securedAsset(FunctionCallSecuredAsset)
     case withdrawSecuredAsset(FunctionCallWithdrawSecuredAsset)
-    
+
     var view: AnyView {
         switch self {
         case .rebond(let memo):
@@ -61,7 +61,7 @@ enum FunctionCallInstance {
             return memo.getView()
         }
     }
-    
+
     var description: String {
         switch self {
         case .rebond(let memo):
@@ -96,7 +96,7 @@ enum FunctionCallInstance {
             return memo.description
         }
     }
-    
+
     var amount: Decimal {
         switch self {
         case .rebond:
@@ -131,7 +131,7 @@ enum FunctionCallInstance {
             return memo.amount
         }
     }
-    
+
     var toAddress: String? {
         switch self {
         case .stake(let memo):
@@ -153,13 +153,13 @@ enum FunctionCallInstance {
         case .securedAsset(let memo):
             // For secured assets (MINT), return the inbound address
             return memo.tx.toAddress.isEmpty ? nil : memo.tx.toAddress
-        case .withdrawSecuredAsset(_):
+        case .withdrawSecuredAsset:
             return nil // Withdraw is done via MsgDeposit on THORChain
         default:
             return nil
         }
     }
-    
+
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         switch self {
         case .rebond(let memo):
@@ -194,22 +194,22 @@ enum FunctionCallInstance {
             return memo.toDictionary()
         }
     }
-    
+
     func getTransactionType() -> VSTransactionType {
         switch self {
-        case .vote(_):
+        case .vote:
             return VSTransactionType.vote
-        case .cosmosIBC(_):
+        case .cosmosIBC:
             return VSTransactionType.ibcTransfer
-        case .merge(_):
+        case .merge:
             return VSTransactionType.thorMerge
-        case .unmerge(_):
+        case .unmerge:
             return VSTransactionType.thorUnmerge
         default:
             return .unspecified
         }
     }
-    
+
     var isTheFormValid: Bool {
         switch self {
         case .rebond(let memo):
@@ -244,7 +244,7 @@ enum FunctionCallInstance {
             return memo.isTheFormValid
         }
     }
-    
+
     var customErrorMessage: String? {
         switch self {
         case .rebond(let memo):
@@ -259,7 +259,7 @@ enum FunctionCallInstance {
             return nil
         }
     }
-    
+
     static func getDefault(for coin: Coin, tx: SendTransaction, vault: Vault) -> FunctionCallInstance {
         switch coin.chain {
         case .thorChain:
@@ -283,12 +283,12 @@ enum FunctionCallInstance {
             return .custom(FunctionCallCustom(tx: tx, vault: vault))
         }
     }
-    
+
     var wasmContractPayload: WasmExecuteContractPayload? {
         switch self {
-        case .securedAsset(_):
+        case .securedAsset:
             return nil // Secured assets don't use WASM contracts
-        case .withdrawSecuredAsset(_):
+        case .withdrawSecuredAsset:
             return nil // Withdraw secured assets don't use WASM contracts
         default:
             return nil

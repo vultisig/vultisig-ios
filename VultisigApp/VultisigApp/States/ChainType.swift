@@ -19,13 +19,13 @@ enum ChainType: Codable, CustomStringConvertible {
     case Ton
     case Ripple
     case Tron
-    
+
     var description: String {
         switch self {
         case .UTXO:
             return "Unspent Transaction Output"
         case .Cardano:
-            return "Cardano" //Cardano is also UTXO, but uses Ed25519 Cardano, that is why it is separated
+            return "Cardano" // Cardano is also UTXO, but uses Ed25519 Cardano, that is why it is separated
         case .EVM:
             return "Ethereum Virtual Machine"
         case .Solana:

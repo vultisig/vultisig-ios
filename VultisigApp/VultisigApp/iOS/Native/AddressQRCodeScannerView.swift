@@ -13,7 +13,7 @@ import AVFoundation
 struct AddressQRCodeScannerView: View {
     @Binding var showScanner: Bool
     let onAddress: (String) -> Void
-    
+
     var body: some View {
         QRCodeScannerView(showScanner: $showScanner) { address in
             onAddress(address)

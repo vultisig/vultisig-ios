@@ -15,13 +15,13 @@ struct SettingsSectionView<Content: View>: View {
         self.title = title
         self.content = content
     }
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title.localized)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textTertiary)
-            
+
             SettingsSectionContainerView {
                 VStack(spacing: .zero) {
                     content()

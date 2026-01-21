@@ -12,12 +12,12 @@ struct VaultMainBalanceView: View {
         case wallet
         case defi
     }
-    
+
     @ObservedObject var vault: Vault
     let balanceToShow: String
     let style: Style
     @EnvironmentObject var homeViewModel: HomeViewModel
-    
+
     var body: some View {
         Button {
             homeViewModel.hideVaultBalance.toggle()
@@ -29,7 +29,7 @@ struct VaultMainBalanceView: View {
             .frame(maxWidth: .infinity)
         }
     }
-    
+
     var balanceLabel: some View {
         HiddenBalanceText(balanceToShow)
             .font(font)
@@ -57,14 +57,14 @@ struct VaultMainBalanceView: View {
         .frame(width: 120)
         .animation(.interactiveSpring(duration: 0.3), value: homeViewModel.hideVaultBalance)
     }
-    
+
     var spacing: CGFloat {
         switch style {
         case .wallet: 12
         case .defi: 8
         }
     }
-    
+
     var font: Font {
         switch style {
         case .wallet: Theme.fonts.priceLargeTitle

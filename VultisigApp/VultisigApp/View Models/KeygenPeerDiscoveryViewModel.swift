@@ -16,15 +16,15 @@ enum PeerDiscoveryStatus {
 }
 
 class KeygenPeerDiscoveryViewModel: ObservableObject {
-    
+
     private let logger = Logger(subsystem: "peers-discory-viewmodel", category: "communication")
-    
+
     var tssType: TssType
     var vault: Vault
     var participantDiscovery: ParticipantDiscovery?
     var encryptionKeyHex: String?
     var chains: [Chain]?
-    
+
     @Published var status = PeerDiscoveryStatus.WaitingForDevices
     @Published var serviceName = ""
     @Published var errorMessage = ""
@@ -40,18 +40,18 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
     }
     @Published var isLoading: Bool = false
-    
+
     private var peersFoundCancellable: AnyCancellable?
     private let mediator = Mediator.shared
     private let fastVaultService = FastVaultService.shared
-    
+
     init() {
         self.tssType = .Keygen
         self.vault = Vault(name: "Main Vault")
         self.status = .WaitingForDevices
         self.participantDiscovery = nil
         self.encryptionKeyHex = Encryption.getEncryptionKey()
-        
+
         if VultisigRelay.IsRelayEnabled {
             serverAddr = Endpoint.vultisigRelay
             selectedNetwork = .Internet
@@ -60,7 +60,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             selectedNetwork = .Local
         }
     }
-    
+
     func setData(
         vault: Vault,
         tssType: TssType,
@@ -81,11 +81,11 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         if self.sessionID.isEmpty {
             self.sessionID = UUID().uuidString
         }
-        
+
         if self.serviceName.isEmpty {
             self.serviceName = "VultisigApp-" + Int.random(in: 1 ... 1000).description
         }
-        
+
         if self.vault.hexChainCode.isEmpty {
             guard let chainCode = Utils.getChainCode() else {
                 self.logger.error("fail to get chain code")
@@ -94,18 +94,18 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             }
             self.vault.hexChainCode = chainCode
         }
-        
+
         if !self.vault.localPartyID.isEmpty {
             self.localPartyID = vault.localPartyID
         } else {
             self.localPartyID = Utils.getLocalDeviceIdentity()
             self.vault.localPartyID = self.localPartyID
         }
-        
+
         self.restartSelections()
         // ensure when active / fast vault , user is always using internet option
         switch state {
-        case .active , .fast:
+        case .active, .fast:
             VultisigRelay.IsRelayEnabled = true
             selectedNetwork = .Internet
             serverAddr = Endpoint.vultisigRelay
@@ -144,12 +144,12 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                          oldResharePrefix: vault.resharePrefix ?? "",
                                          lib_type: vault.libType == .DKLS ? 1 : 0)
             case .Migrate:
-                fastVaultService.migrate(publicKeyECDSA:vault.pubKeyECDSA, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, encryptionPassword: config.password, email: config.email)
+                fastVaultService.migrate(publicKeyECDSA: vault.pubKeyECDSA, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, encryptionPassword: config.password, email: config.email)
             }
         }
         self.isLoading = false
     }
-    
+
     func setupPeersFoundCancellable(
         state: SetupVaultState,
         participantDiscovery: ParticipantDiscovery
@@ -158,32 +158,32 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         peersFoundCancellable = nil
         peersFoundCancellable = participantDiscovery.$peersFound
             .removeDuplicates()
-            .filter{!$0.isEmpty}
+            .filter { !$0.isEmpty }
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
                 guard let self else { return }
                 if $0.count == 0 {
                     return
                 }
-                        
+
                 $0.forEach { peer in
                     self.autoSelectPeer(peer)
                 }
                 self.startFastVaultKeygenIfNeeded(state: state)
             }
     }
-    
+
     func restartSelections() {
         self.selections.removeAll()
         self.selections.insert(self.localPartyID)
     }
-    
-    func autoSelectPeer(_ peer: String){
+
+    func autoSelectPeer(_ peer: String) {
         if !selections.contains(peer) {
             selections.insert(peer)
         }
     }
-    
+
     func handleSelection(_ peer: String) {
         withAnimation {
             if selections.contains(peer) {
@@ -195,16 +195,16 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             }
         }
     }
-    
+
     var isLookingForDevices: Bool {
         return status == .WaitingForDevices && selections.count < 2
     }
-    
+
     func startFastVaultKeygenIfNeeded(state: SetupVaultState) {
         guard isValidPeers(state: state), !state.hasOtherDevices else { return }
         startKeygen()
     }
-    
+
     func isValidPeers(state: SetupVaultState) -> Bool {
         guard state.isFastVault else {
             return true
@@ -212,7 +212,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         let isValid = selections.contains(where: { $0.contains("Server-") })
         return isValid
     }
-    
+
     func startDiscovery() {
         self.mediator.start(name: self.serviceName)
         self.logger.info("mediator server started")
@@ -222,7 +222,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                                    localParty: self.localPartyID,
                                                    pubKeyECDSA: vault.pubKeyECDSA)
     }
-    
+
     func restartParticipantDiscovery() {
         self.participantDiscovery?.stop()
         if VultisigRelay.IsRelayEnabled {
@@ -240,25 +240,25 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             pubKeyECDSA: vault.pubKeyECDSA
         )
     }
-    
+
     func startKeygen() {
         self.startKeygen(allParticipants: self.selections.map { $0 })
         self.status = .Keygen
         self.participantDiscovery?.stop()
     }
-    
+
     func stopMediator() {
         self.logger.info("mediator server stopped")
         self.participantDiscovery?.stop()
         self.mediator.stop()
     }
-    
+
     private func startSession() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
         let body = [self.localPartyID]
-        
+
         self.logger.info("starting session with url:\(urlString), body:\(body)")
-        Utils.sendRequest(urlString: urlString, method: "POST",headers: nil, body: body) { success in
+        Utils.sendRequest(urlString: urlString, method: "POST", headers: nil, body: body) { success in
             if success {
                 self.logger.info("Started session successfully.")
             } else {
@@ -266,20 +266,18 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             }
         }
     }
-    
-
 
     private func startKeygen(allParticipants: [String]) {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
-        
+
         // Enforce deterministic order (assumes calling device is the initiator): local device first, then peers by discovery order
         var sortedParticipants = [String]()
-        
+
         // Always add self first if selected
         if self.selections.contains(self.localPartyID) {
             sortedParticipants.append(self.localPartyID)
         }
-        
+
         // Add discovered peers in order
         if let discoveredPeers = self.participantDiscovery?.peersFound {
             for peer in discoveredPeers {
@@ -288,21 +286,21 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                 }
             }
         }
-        
+
         // Fallback: If there are any selected peers not in discovery list (edge case), add them
         for peer in allParticipants {
             if !sortedParticipants.contains(peer) {
                 sortedParticipants.append(peer)
             }
         }
-        
+
         self.keygenCommittee = sortedParticipants
-        
-        Utils.sendRequest(urlString: urlString, method: "POST",headers:nil, body: sortedParticipants) { _ in
+
+        Utils.sendRequest(urlString: urlString, method: "POST", headers: nil, body: sortedParticipants) { _ in
             self.logger.info("kicked off keygen successfully")
         }
     }
-    
+
     func getQRCodeData(size: CGFloat, displayScale: CGFloat) -> (String, Image)? {
         guard
             let qrCodeData = generateQRdata(),
@@ -315,10 +313,10 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         else {
             return nil
         }
-        
+
         return (qrCodeData, image)
     }
-    
+
     private func generateQRdata() -> String? {
         do {
             guard let encryptionKeyHex else { return nil }

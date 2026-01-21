@@ -9,34 +9,34 @@ import SwiftUI
 import RiveRuntime
 
 struct OnboardingView: View {
-    
+
     @EnvironmentObject var appViewModel: AppViewModel
     @Environment(\.router) var router
     @State var tabIndex = 0
-    
+
     @State var showOnboarding = false
     @State var showStartupText = false
     @State var startupTextOpacity = true
     @State var showSummary = false
-    
+
     @State var animationScale: CGFloat = .zero
-    
+
     @State var animationVM: RiveViewModel? = nil
-    
+
 #if os(iOS)
     @State var orientation = UIDevice.current.orientation
 #endif
-    
+
     let totalTabCount: Int = 6
-    
+
     var body: some View {
         container
     }
-    
+
     var content: some View {
         ZStack {
             Background()
-            
+
             if showOnboarding {
                 view
             } else {
@@ -63,7 +63,7 @@ struct OnboardingView: View {
             })
         }
     }
-    
+
     var header: some View {
         HStack {
             backButton
@@ -72,7 +72,7 @@ struct OnboardingView: View {
         }
         .padding(16)
     }
-    
+
     var backButton: some View {
         Button {
             backTapped()
@@ -86,7 +86,7 @@ struct OnboardingView: View {
             .contentShape(Rectangle())
         }
     }
-    
+
     var progressBar: some View {
         HStack(spacing: 5) {
             ForEach(0..<totalTabCount, id: \.self) { index in
@@ -99,7 +99,7 @@ struct OnboardingView: View {
         }
         .padding(.horizontal, 16)
     }
-    
+
     var nextButton: some View {
         IconButton(icon: "chevron-right") {
             nextTapped()
@@ -107,7 +107,7 @@ struct OnboardingView: View {
         .frame(width: 80)
         .padding(.bottom, getBottomPadding())
     }
-    
+
     var skipButton: some View {
         Button {
             skipTapped()
@@ -117,7 +117,7 @@ struct OnboardingView: View {
                 .font(Theme.fonts.bodySMedium)
         }
     }
-    
+
     var startupText: some View {
         Group {
             Text(NSLocalizedString("sayGoodbyeTo", comment: ""))
@@ -146,39 +146,39 @@ private extension OnboardingView {
             showSummary = true
             return
         }
-        
+
         tabIndex += 1
     }
-    
+
     func backTapped() {
         showOnboarding = false
     }
-    
+
     func skipTapped() {
         showSummary = true
     }
-    
+
     func moveToVaultView() {
         appViewModel.showOnboarding = false
     }
-    
+
     func setupStartupText() {
         startupTextOpacity = true
         showStartupText = true
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             startupTextOpacity = false
         }
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
             showOnboarding = true
         }
     }
-    
+
     func playAnimation() {
         animationVM?.setInput("Index", value: Double(tabIndex))
     }
-    
+
     func resetOnboarding() {
         tabIndex = 0
         animationVM?.stop()

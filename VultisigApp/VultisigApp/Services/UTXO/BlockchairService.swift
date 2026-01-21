@@ -9,12 +9,12 @@ import Foundation
 import BigInt
 
 actor BlockchairService {
-    
+
     private init() {}
-    
+
     static let shared = BlockchairService()
 
-    var blockchairData: ThreadSafeDictionary<String,Blockchair> = ThreadSafeDictionary()
+    var blockchairData: ThreadSafeDictionary<String, Blockchair> = ThreadSafeDictionary()
 
     private var cacheFeePrice: [String: (data: BigInt, timestamp: Date)] = [:]
 
@@ -22,10 +22,10 @@ actor BlockchairService {
         let coinName = coin.chain.name.lowercased()
         let url = Endpoint.blockchairDashboard(address, coinName)
         let (data, _) = try await URLSession.shared.data(from: url)
-        
+
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
-        
+
         let decodedData = try decoder.decode(BlockchairResponse.self, from: data)
 
         guard let d = decodedData.data[address] else {
@@ -36,11 +36,11 @@ actor BlockchairService {
 
         return d
     }
-    
+
     func blockchairKey(for coin: CoinMeta, address: String) -> String {
         return "\(address)-\(coin.chain.name.lowercased())"
     }
-    
+
     func fetchSatsPrice(coin: Coin) async throws -> BigInt {
         let cacheKey = "utxo-\(coin.chain.name.lowercased())-fee-price"
         if let cachedData: BigInt = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheFeePrice, timeInSeconds: 60*5) {
@@ -57,17 +57,17 @@ actor BlockchairService {
             throw Errors.fetchSatsPriceFailed
         }
     }
-    
+
     func getByKey(key: String) -> Blockchair? {
         return blockchairData.get(key)
     }
-    
+
     /// Clear UTXO cache for a specific address to force fresh UTXO fetch
     func clearUTXOCache(for coin: Coin) {
         blockchairData.remove(coin.blockchairKey)
         print("Cleared UTXO cache for \(coin.chain.name) address: \(coin.address)")
     }
-    
+
     /// Clear all UTXO cache
     func clearAllUTXOCache() {
         blockchairData.clear()

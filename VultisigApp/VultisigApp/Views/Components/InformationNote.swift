@@ -9,7 +9,7 @@ import SwiftUI
 
 struct InformationNote: View {
     @State var message: String? = nil
-    
+
     var body: some View {
         HStack(spacing: 12) {
             icon
@@ -24,12 +24,12 @@ struct InformationNote: View {
         )
         .padding(1)
     }
-    
+
     var icon: some View {
         Image(systemName: "exclamationmark.triangle")
             .foregroundColor(Theme.colors.bgAlert)
     }
-    
+
     var text: some View {
         if message == nil {
             Text(NSLocalizedString("joinKeygenConnectionDisclaimer", comment: ""))

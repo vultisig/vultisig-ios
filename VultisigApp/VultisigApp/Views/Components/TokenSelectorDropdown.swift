@@ -18,7 +18,7 @@ struct TokenSelectorDropdown: View {
                 onPress?()
             }
     }
-    
+
     var cell: some View {
         HStack(spacing: 10) {
             image
@@ -35,7 +35,7 @@ struct TokenSelectorDropdown: View {
         .background(Theme.colors.bgSurface1)
         .cornerRadius(10)
     }
-    
+
     var image: some View {
         AsyncImageView(
             logo: coin.logo,
@@ -44,7 +44,7 @@ struct TokenSelectorDropdown: View {
             tokenChainLogo: coin.chain.logo
         )
     }
-    
+
     var ticker: some View {
         Text("\(coin.ticker)")
             .font(Theme.fonts.bodyMMedium)
@@ -62,7 +62,7 @@ struct TokenSelectorDropdown: View {
                 Text(NSLocalizedString("balance", comment: "")) +
                 Text(": ")
             }
-            
+
             if let balance {
                 Text(balance)
             } else {
@@ -72,7 +72,7 @@ struct TokenSelectorDropdown: View {
         .font(Theme.fonts.caption12)
         .foregroundColor(Theme.colors.textSecondary)
     }
-    
+
 }
 
 #Preview {

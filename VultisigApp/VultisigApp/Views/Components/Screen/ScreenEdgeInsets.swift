@@ -12,7 +12,7 @@ struct ScreenEdgeInsets {
     let leading: CGFloat?
     let bottom: CGFloat?
     let trailing: CGFloat?
-    
+
     init(
         top: CGFloat? = nil,
         leading: CGFloat? = nil,
@@ -24,6 +24,6 @@ struct ScreenEdgeInsets {
         self.bottom = bottom
         self.trailing = trailing
     }
-    
+
     static let noInsets = ScreenEdgeInsets()
 }

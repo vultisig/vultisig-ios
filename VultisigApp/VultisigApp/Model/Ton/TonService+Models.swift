@@ -35,7 +35,7 @@ struct StackItem: Codable {
     let type: String?
     let value: StackValue?
     let boc: String?
-    
+
     private enum CodingKeys: String, CodingKey {
         case type, value, boc
     }
@@ -45,7 +45,7 @@ struct StackValue: Codable {
     let bytes: String?
     let b64: String?
     let boc: String?
-    
+
     private enum CodingKeys: String, CodingKey {
         case bytes, b64, boc
     }

@@ -19,7 +19,7 @@ struct QRCode {
 
     init(_ data: Data, enableLogoCutout: Bool = true) {
         self.enableLogoCutout = enableLogoCutout
-        
+
         guard let result = self.generator.generate(data, errorCorrection: errorCorrection.rawValue) else {
             self.current = BoolMatrix()
             return
@@ -45,7 +45,7 @@ struct QRCode {
         guard enableLogoCutout else {
             return (0, 0)
         }
-        
+
         let pointSize = pixelSize.isOdd ? pixelSize - 1 : pixelSize
         let center = pixelSize / 2
 
@@ -60,7 +60,7 @@ struct QRCode {
         guard enableLogoCutout else {
             return (0, 0)
         }
-        
+
         let logoCutOutPercenatge = 1 - paddingPercentage
         let cutOutFrame = cutOutFrameRange
         return (Int(Double(cutOutFrame.start) * logoCutOutPercenatge), Int(Double(cutOutFrame.end) * logoCutOutPercenatge))

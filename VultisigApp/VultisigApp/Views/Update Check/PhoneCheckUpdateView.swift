@@ -9,7 +9,7 @@ import SwiftUI
 
 struct PhoneCheckUpdateView: View {
     @EnvironmentObject var phoneCheckUpdateViewModel: PhoneCheckUpdateViewModel
-    
+
     var body: some View {
         Screen(title: "checkUpdate".localized) {
             view.background(BlurredBackground())
@@ -18,7 +18,7 @@ struct PhoneCheckUpdateView: View {
             setData()
         }
     }
-    
+
     var view: some View {
         ZStack {
             if phoneCheckUpdateViewModel.showDetails {
@@ -30,7 +30,7 @@ struct PhoneCheckUpdateView: View {
             }
         }
     }
-    
+
     var errorMessage: some View {
         VStack {
             Spacer()
@@ -39,7 +39,7 @@ struct PhoneCheckUpdateView: View {
             tryAgainButton
         }
     }
-    
+
     var details: some View {
         ZStack {
             if phoneCheckUpdateViewModel.isUpdateAvailable {
@@ -49,7 +49,7 @@ struct PhoneCheckUpdateView: View {
             }
         }
     }
-    
+
     var loader: some View {
         VStack(spacing: 24) {
             Spacer()
@@ -58,31 +58,31 @@ struct PhoneCheckUpdateView: View {
             Spacer()
         }
     }
-    
+
     var checkUpdateLabel: some View {
         Text(NSLocalizedString("checkingForUpdate", comment: ""))
             .font(Theme.fonts.bodyMMedium)
             .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     var tryAgainButton: some View {
         PrimaryButton(title: "tryAgain") {
             setData()
         }
         .padding(40)
     }
-    
+
     var appUpToDateMessage: some View {
         UpdateCheckUpToDateView(currentVersion: phoneCheckUpdateViewModel.currentVersionString)
     }
-    
+
     var updateAppMessage: some View {
         UpdateCheckUpdateNowView(
             latestVersion: phoneCheckUpdateViewModel.latestVersionString,
             link: StaticURL.AppStoreVultisigURL
         )
     }
-    
+
     private func setData() {
         phoneCheckUpdateViewModel.checkForUpdates()
     }

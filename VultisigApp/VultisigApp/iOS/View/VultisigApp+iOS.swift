@@ -32,7 +32,7 @@ extension VultisigApp {
                     break
                 }
             }
-            .onAppear() {
+            .onAppear {
                 // Run migrations on app launch
                 AppMigrationService().performMigrationsIfNeeded()
 

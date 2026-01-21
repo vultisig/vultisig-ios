@@ -9,7 +9,7 @@ import Foundation
 import BigInt
 
 extension String {
-    
+
     /// Attempts to decode this string as a Vultisig extension memo
     /// Returns the decoded human-readable description or nil if not an extension memo
     var decodedExtensionMemo: String? {
@@ -17,54 +17,54 @@ extension String {
         guard isExtensionMemo else {
             return nil
         }
-        
+
         // Handle different extension memo formats - prioritize detailed parsing over simple patterns
         if let decodedContract = decodedContractInteraction {
             return decodedContract
         }
-        
+
         if let decodedHex = decodedHexMemo {
             return decodedHex
         }
-        
+
         if let decodedAction = decodedActionMemo {
             return decodedAction
         }
-        
+
         if let decodedTransaction = decodedTransactionMemo {
             return decodedTransaction
         }
-        
+
         return nil
     }
-    
+
     /// Async version that can properly handle unknown function selectors via 4byte.directory
     func decodedExtensionMemoAsync() async -> String? {
         // Check if this is a Vultisig Extension memo format
         guard isExtensionMemo else {
             return nil
         }
-        
+
         // Handle different extension memo formats - prioritize detailed parsing over simple patterns
         if let decodedContract = decodedContractInteraction {
             return decodedContract
         }
-        
+
         if let decodedHex = await decodedHexMemoAsync() {
             return decodedHex
         }
-        
+
         if let decodedAction = decodedActionMemo {
             return decodedAction
         }
-        
+
         if let decodedTransaction = decodedTransactionMemo {
             return decodedTransaction
         }
-        
+
         return nil
     }
-    
+
     /// Checks if this string appears to be an extension memo format
     public var isExtensionMemo: Bool {
         // Extension memos typically start with specific patterns or contain encoded data
@@ -73,29 +73,29 @@ extension String {
         // - Base64 encoded data
         // - JSON-like structures
         // - Contract interaction patterns
-        
+
         if hasPrefix("0x") && count > 10 {
             return true
         }
-        
+
         // Check for common dApp interaction patterns
         if contains("approve") || contains("transfer") || contains("swap") {
             return true
         }
-        
+
         // Check for encoded JSON or structured data
         if contains("{") && contains("}") {
             return true
         }
-        
+
         // Check for base64-like patterns (common in extension memos)
         if isBase64Like {
             return true
         }
-        
+
         return false
     }
-    
+
     /// Attempts to decode as a contract interaction memo
     private var decodedContractInteraction: String? {
         // Handle contract interaction memos
@@ -105,55 +105,55 @@ extension String {
                 return json.formattedContractInteraction
             }
         }
-        
+
         return nil
     }
-    
+
     /// Attempts to decode as an action-based memo
     private var decodedActionMemo: String? {
         // Decode common action-based memos
         if hasPrefix("0x") {
             return decodedHexMemo
         }
-        
+
         // Handle specific action patterns
         if lowercased().contains("approve") {
             return extractedApprovalDetails
         }
-        
+
         if lowercased().contains("transfer") {
             return extractedTransferDetails
         }
-        
+
         if lowercased().contains("swap") {
             return extractedSwapDetails
         }
-        
+
         return nil
     }
-    
+
     /// Attempts to decode as a transaction memo
     private var decodedTransactionMemo: String? {
         // Handle transaction-specific memos
         if let decodedBase64 = decodedBase64Memo {
             return decodedBase64
         }
-        
+
         return nil
     }
-    
+
     /// Attempts to decode as hex memo
     private var decodedHexMemo: String? {
         guard hasPrefix("0x") && count > 10 else {
             return nil
         }
-        
+
         let hexString = String(dropFirst(2))
-        
+
         // Try to decode as function selector + parameters
         if hexString.count >= 8 {
             let selector = String(hexString.prefix(8))
-            
+
             // First check known function selectors for immediate response
             if let knownFunction = knownFunctionSelector(selector) {
                 // For KyberSwap and other complex swaps, try to decode parameters
@@ -164,26 +164,26 @@ extension String {
                 }
                 return knownFunction
             }
-            
+
             // For unknown selectors, return nil to indicate async decoding is needed
             return nil
         }
-        
+
         return "Hex Data (\(hexString.prefix(16))...)"
     }
-    
+
     /// Async version that can handle unknown function selectors via 4byte.directory
     private func decodedHexMemoAsync() async -> String? {
         guard hasPrefix("0x") && count > 10 else {
             return nil
         }
-        
+
         let hexString = String(dropFirst(2))
-        
+
         // Try to decode as function selector + parameters
         if hexString.count >= 8 {
             let selector = String(hexString.prefix(8))
-            
+
             // First check known function selectors for immediate response
             if let knownFunction = knownFunctionSelector(selector) {
                 // For KyberSwap and other complex swaps, try to decode parameters
@@ -194,7 +194,7 @@ extension String {
                 }
                 return knownFunction
             }
-            
+
             // For unknown selectors, try async decoding via 4byte.directory
             if let parsedMemo = await MemoDecodingService.shared.getParsedMemo(memo: self) {
                 var result = parsedMemo.functionSignature
@@ -203,14 +203,14 @@ extension String {
                 }
                 return result
             }
-            
+
             // If async decoding fails, return basic info
             return "Contract Function Call (\(selector))"
         }
-        
+
         return "Hex Data (\(hexString.prefix(16))...)"
     }
-    
+
     /// Returns known function selector descriptions
     private func knownFunctionSelector(_ selector: String) -> String? {
         switch selector.lowercased() {
@@ -262,34 +262,34 @@ extension String {
             return nil
         }
     }
-    
+
     /// Attempts to decode KyberSwap parameters
     private func decodeKyberSwapParams() -> String? {
         guard hasPrefix("0x") && count > 10 else {
             return nil
         }
-        
+
         let hexData = String(dropFirst(2))
         guard hexData.count >= 72 else { return nil }
-        
+
         var result = "KyberSwap Token Swap\n"
-        
+
         // First, try to find and decode embedded JSON data
         if let jsonData = extractEmbeddedJSON(from: hexData) {
             result += formatKyberSwapJSON(jsonData)
             return result.trimmingCharacters(in: .whitespacesAndNewlines)
         }
-        
+
         // Fall back to basic ABI parameter parsing if no JSON found
         let paramData = String(hexData.dropFirst(8))
         let chunks = paramData.chunked(into: 64)
         guard chunks.count >= 4 else { return "KyberSwap Token Swap (insufficient data)" }
-        
+
         // Parameter 1: Source token address (first 32 bytes)
         if let srcTokenAddress = extractAddress(from: chunks[0]) {
             result += "From Token: \(srcTokenAddress)\n"
         }
-        
+
         // Parameter 2: Source amount (second 32 bytes)
         if let srcAmountHex = chunks.count > 1 ? chunks[1] : nil,
            let srcAmount = BigInt(srcAmountHex, radix: 16) {
@@ -300,39 +300,39 @@ extension String {
                 result += "From Amount: \(srcAmount) wei\n"
             }
         }
-        
+
         return result.trimmingCharacters(in: .whitespacesAndNewlines)
     }
-    
+
     /// Extracts and decodes embedded JSON data from hex transaction
     private func extractEmbeddedJSON(from hexData: String) -> [String: Any]? {
         // Look for JSON start pattern (7b = '{' in hex)
         let jsonStartPattern = "7b22" // '{"' in hex
-        
+
         guard let range = hexData.range(of: jsonStartPattern) else {
             return nil
         }
-        
+
         // Extract hex data starting from the JSON pattern
         let jsonHexStart = hexData[range.lowerBound...]
-        
+
         // Find the end of JSON (look for closing brace followed by padding)
         var jsonHex = ""
         var braceCount = 0
         var foundStart = false
-        
+
         for i in stride(from: 0, to: min(jsonHexStart.count, 4000), by: 2) {
             let startIndex = jsonHexStart.index(jsonHexStart.startIndex, offsetBy: i)
             guard let endIndex = jsonHexStart.index(startIndex, offsetBy: 2, limitedBy: jsonHexStart.endIndex) else { break }
-            
+
             let hexByte = String(jsonHexStart[startIndex..<endIndex])
             guard let byte = UInt8(hexByte, radix: 16),
                   byte < 128 else { continue } // Only ASCII characters
-            
+
             let scalar = UnicodeScalar(byte)
             let char = Character(scalar)
             jsonHex += hexByte
-            
+
             if char == "{" {
                 foundStart = true
                 braceCount += 1
@@ -343,7 +343,7 @@ extension String {
                 }
             }
         }
-        
+
         // Convert hex to JSON string
         var hexDataBytes = Data()
         for i in stride(from: 0, to: jsonHex.count, by: 2) {
@@ -354,42 +354,42 @@ extension String {
                 hexDataBytes.append(byte)
             }
         }
-        
+
         guard let jsonString = String(data: hexDataBytes, encoding: .utf8),
               let jsonData = jsonString.data(using: .utf8),
               let json = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any] else {
             return nil
         }
-        
+
         return json
     }
-    
+
     /// Formats KyberSwap JSON data into readable string
     private func formatKyberSwapJSON(_ json: [String: Any]) -> String {
         var details: [String] = []
-        
+
         if let source = json["Source"] as? String {
             details.append("Source: \(source)")
         }
-        
+
         if let amountInUSD = json["AmountInUSD"] as? String,
            let amount = Double(amountInUSD) {
             details.append("Amount In: $\(String(format: "%.4f", amount))")
         }
-        
+
         if let amountOutUSD = json["AmountOutUSD"] as? String,
            let amount = Double(amountOutUSD) {
             details.append("Amount Out: $\(String(format: "%.4f", amount))")
         }
-        
+
         if let amountOut = json["AmountOut"] as? String {
             details.append("Raw Amount Out: \(amountOut)")
         }
-        
+
         if let routeID = json["RouteID"] as? String {
             details.append("Route: \(routeID.prefix(20))...")
         }
-        
+
         if let timestamp = json["Timestamp"] as? Int {
             let date = Date(timeIntervalSince1970: TimeInterval(timestamp))
             let formatter = DateFormatter()
@@ -397,14 +397,14 @@ extension String {
             formatter.timeStyle = .short
             details.append("Time: \(formatter.string(from: date))")
         }
-        
+
         return details.joined(separator: "\n")
     }
-    
+
     /// Helper to extract a valid Ethereum address from ABI-encoded parameter
     private func extractAddress(from chunk: String) -> String? {
         guard chunk.count == 64 else { return nil }
-        
+
         // Check if this looks like an address (20 bytes with 12 bytes of leading zeros)
         if chunk.hasPrefix("000000000000000000000000") {
             let addressHex = String(chunk.suffix(40))
@@ -413,10 +413,10 @@ extension String {
                 return "0x" + addressHex
             }
         }
-        
+
         return nil
     }
-    
+
     /// Extracts approval details from text
     private var extractedApprovalDetails: String {
         if let range = range(of: "approve", options: .caseInsensitive) {
@@ -425,7 +425,7 @@ extension String {
         }
         return "Token Approval"
     }
-    
+
     /// Extracts transfer details from text
     private var extractedTransferDetails: String {
         if let range = range(of: "transfer", options: .caseInsensitive) {
@@ -434,7 +434,7 @@ extension String {
         }
         return "Token Transfer"
     }
-    
+
     /// Extracts swap details from text
     private var extractedSwapDetails: String {
         if let range = range(of: "swap", options: .caseInsensitive) {
@@ -443,7 +443,7 @@ extension String {
         }
         return "Token Swap"
     }
-    
+
     /// Attempts to decode as base64
     private var decodedBase64Memo: String? {
         guard let data = Data(base64Encoded: self),
@@ -451,10 +451,10 @@ extension String {
               !text.isEmpty else {
             return nil
         }
-        
+
         return text
     }
-    
+
     /// Checks if string looks like base64
     private var isBase64Like: Bool {
         let base64Pattern = "^[A-Za-z0-9+/]*={0,2}$"
@@ -467,7 +467,7 @@ extension String {
 // MARK: - Dictionary Extension for Contract Interaction
 
 private extension Dictionary where Key == String, Value == Any {
-    
+
     /// Formats contract interaction JSON into readable string
     var formattedContractInteraction: String {
         if let method = self["method"] as? String {
@@ -498,18 +498,18 @@ private extension Dictionary where Key == String, Value == Any {
 // MARK: - String Extension for Hex Processing
 
 private extension String {
-    
+
     /// Chunks the string into fixed-size pieces
     func chunked(into size: Int) -> [String] {
         var chunks: [String] = []
         var currentIndex = startIndex
-        
+
         while currentIndex < endIndex {
             let nextIndex = index(currentIndex, offsetBy: size, limitedBy: endIndex) ?? endIndex
             chunks.append(String(self[currentIndex..<nextIndex]))
             currentIndex = nextIndex
         }
-        
+
         return chunks
     }
-} 
+}

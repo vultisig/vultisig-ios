@@ -14,18 +14,18 @@ struct Loader: View {
             loader
         }
     }
-    
+
     var overlay: some View {
         Color.black
             .ignoresSafeArea()
             .opacity(0.3)
     }
-    
+
     var loader: some View {
         VStack(spacing: 20) {
             SpinningLineLoader()
                 .scaleEffect(1.5)
-            
+
             Text(NSLocalizedString("pleaseWait", comment: ""))
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(Theme.colors.textPrimary)
@@ -48,14 +48,14 @@ struct InlineLoader: View {
 
 struct SpinningLineLoader: View {
     @State private var isAnimating = false
-    
+
     var body: some View {
         ZStack {
             // Blue background circle
             Circle()
                 .fill(Theme.colors.bgSurface1) // Using hex value for blue600
                 .frame(width: 32, height: 32)
-            
+
             // White spinning arc - much shorter like in SwapRefreshQuoteCounter
             Circle()
                 .trim(from: 0, to: 0.25)

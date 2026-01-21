@@ -28,11 +28,11 @@ struct ChainDetailScreen: View {
 
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @Environment(\.dismiss) var dismiss
-    
+
     var coins: [Coin] {
         vault.coins(for: nativeCoin.chain)
     }
-    
+
     var groupedChain: GroupedChain {
         return GroupedChain(
             chain: nativeCoin.chain,
@@ -42,7 +42,7 @@ struct ChainDetailScreen: View {
             coins: coins
         )
     }
-    
+
     init(
         nativeCoin: Coin,
         vault: Vault,
@@ -55,7 +55,7 @@ struct ChainDetailScreen: View {
         self.onAddressCopy = onAddressCopy
         self._viewModel = StateObject(wrappedValue: ChainDetailViewModel(vault: vault, nativeCoin: nativeCoin))
     }
-    
+
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView(showsIndicators: false) {
@@ -79,13 +79,14 @@ struct ChainDetailScreen: View {
             ReceiveQRCodeBottomSheet(
                 coin: nativeCoin,
                 isNativeCoin: true,
-                onClose: { showReceiveSheet = false }
-            ) { coin in
-                showReceiveSheet = false
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                    onAddressCopy?(coin)
+                onClose: { showReceiveSheet = false },
+                onCopy: { coin in
+                    showReceiveSheet = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                        onAddressCopy?(coin)
+                    }
                 }
-            }
+            )
         }
         .crossPlatformSheet(isPresented: $showManageTokens) {
             TokenSelectionContainerScreen(
@@ -114,7 +115,7 @@ struct ChainDetailScreen: View {
             refresh()
         }
     }
-    
+
     var topContentSection: some View {
         VStack(spacing: 32) {
             ChainDetailHeaderView(
@@ -129,7 +130,7 @@ struct ChainDetailScreen: View {
             )
         }
     }
-    
+
     var bottomContentSection: some View {
         LazyVStack(spacing: 0) {
             Group {
@@ -142,7 +143,7 @@ struct ChainDetailScreen: View {
             .transition(.opacity)
             .frame(height: 42)
             .padding(.bottom, 16)
-            
+
             ChainDetailListView(viewModel: viewModel) {
                 coinToShow = $0
             } onManageTokens: {
@@ -156,7 +157,7 @@ struct ChainDetailScreen: View {
             )
         }
     }
-    
+
     var defaultBottomSectionHeader: some View {
         HStack(spacing: 8) {
             VStack(spacing: 8) {
@@ -177,7 +178,7 @@ struct ChainDetailScreen: View {
             }
         }
     }
-    
+
     var searchBottomSectionHeader: some View {
         HStack(spacing: 12) {
             SearchTextField(value: $viewModel.searchText, isFocused: $focusSearch)
@@ -196,7 +197,7 @@ private extension ChainDetailScreen {
     func onRefreshButton() {
         refresh()
     }
-    
+
     func refresh() {
         Task.detached {
             await updateBalances()
@@ -222,22 +223,22 @@ private extension ChainDetailScreen {
             }
         }
     }
-    
+
     func toggleSearch() {
         withAnimation(.interpolatingSpring) {
             showSearchHeader.toggle()
         }
-        
+
         if showSearchHeader {
             focusSearch.toggle()
         }
     }
-    
+
     func clearSearch() {
         viewModel.searchText = ""
         toggleSearch()
     }
-    
+
     func onAction(_ action: CoinAction) {
         sendTx.reset(coin: nativeCoin)
         var vaultAction: VaultAction?
@@ -264,24 +265,23 @@ private extension ChainDetailScreen {
                 coinType: nativeCoin.ticker
             )
         case .sell:
-            // TODO: - To add
             break
         }
-        
+
         guard let vaultAction else { return }
 
         navigateToAction(action: vaultAction)
     }
-    
+
     func onCopy() {
         onAddressCopy?(nativeCoin)
     }
-    
+
     func onCoinAction(_ action: VaultAction) {
         coinToShow = nil
         navigateToAction(action: action)
     }
-    
+
     func navigateToAction(action: VaultAction) {
         router.navigate(to: HomeRoute.vaultAction(action: action, sendTx: sendTx, vault: vault))
     }

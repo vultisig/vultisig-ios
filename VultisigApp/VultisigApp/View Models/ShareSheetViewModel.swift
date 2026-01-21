@@ -11,7 +11,7 @@ import SwiftUI
 class ShareSheetViewModel: ObservableObject {
     @Published var renderedImage: Image? = nil
     @Published var qrCodeData: String?
-    
+
     func render(
         qrCodeImage: Image,
         qrCodeData: String?,

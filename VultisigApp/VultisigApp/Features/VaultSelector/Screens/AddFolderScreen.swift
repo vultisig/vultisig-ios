@@ -10,17 +10,17 @@ import SwiftData
 
 struct AddFolderScreen: View {
     var onClose: () -> Void
-    
+
     @Query var vaults: [Vault]
     @Query var folders: [Folder]
-    
+
     @State var filteredVaults: [Vault] = []
-    
+
     @StateObject var folderViewModel = CreateFolderViewModel()
-    
+
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var viewModel: HomeViewModel
-    
+
     var body: some View {
         view
             .padding(.top, 24)
@@ -28,14 +28,14 @@ struct AddFolderScreen: View {
             .padding(.horizontal, 16)
             .onLoad(perform: setData)
     }
-    
+
     var view: some View {
         ZStack(alignment: .bottom) {
             content
             saveButton
         }
     }
-    
+
     var content: some View {
         VStack {
             header
@@ -57,7 +57,7 @@ struct AddFolderScreen: View {
             .safeAreaInset(edge: .bottom, content: { Spacer().frame(height: 100) })
         }
     }
-    
+
     var vaultsList: some View {
         ForEach(Array(filteredVaults.enumerated()), id: \.element) { index, vault in
             AddFolderVaultCellView(
@@ -70,7 +70,7 @@ struct AddFolderScreen: View {
             .commonListItemContainer(index: index, itemsCount: filteredVaults.count)
         }
     }
-    
+
     var saveButton: some View {
         ListBottomSection {
             PrimaryButton(title: "save") {
@@ -79,7 +79,7 @@ struct AddFolderScreen: View {
             .disabled(folderViewModel.saveButtonDisabled)
         }
     }
-    
+
     var header: some View {
         HStack {
             HStack {}
@@ -107,20 +107,20 @@ private extension AddFolderScreen {
         guard folderViewModel.runChecks(folders) else {
             return
         }
-        
+
         folderViewModel.setupFolder(folders.count)
-        
+
         guard let vaultFolder = folderViewModel.vaultFolder else {
             folderViewModel.showErrorAlert()
             return
         }
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now()) {
             modelContext.insert(vaultFolder)
             onClose()
         }
     }
-    
+
     func handleSelection(vault: Vault, isSelected: Bool) {
         if isSelected {
             folderViewModel.selectedVaults.append(vault)
@@ -128,16 +128,14 @@ private extension AddFolderScreen {
             removeVault(vault)
         }
     }
-    
+
     func removeVault(_ vault: Vault) {
-        for index in 0..<folderViewModel.selectedVaults.count {
-            if areVaultsSame(folderViewModel.selectedVaults[index], vault) {
-                folderViewModel.selectedVaults.remove(at: index)
-                return
-            }
+        for index in 0..<folderViewModel.selectedVaults.count where areVaultsSame(folderViewModel.selectedVaults[index], vault) {
+            folderViewModel.selectedVaults.remove(at: index)
+            return
         }
     }
-    
+
     func areVaultsSame(_ selectedVault: Vault, _ vault: Vault) -> Bool {
         selectedVault.name == vault.name && selectedVault.pubKeyECDSA == vault.pubKeyECDSA && selectedVault.pubKeyEdDSA == vault.pubKeyEdDSA
     }
@@ -147,4 +145,3 @@ private extension AddFolderScreen {
     AddFolderScreen {}
     .environmentObject(HomeViewModel())
 }
-

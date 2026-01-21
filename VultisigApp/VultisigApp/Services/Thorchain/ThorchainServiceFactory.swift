@@ -16,7 +16,7 @@ protocol ThorchainServiceProtocol {
     func fetchThorchainInboundAddress() async -> [InboundAddress]
     func getTHORChainChainID() async throws -> String
     func ensureTHORChainChainID() -> String
-    func broadcastTransaction(jsonString: String) async -> Result<String,Error>
+    func broadcastTransaction(jsonString: String) async -> Result<String, Error>
     func fetchTcyStakedAmount(address: String) async -> Decimal
     func fetchTcyAutoCompoundAmount(address: String) async -> Decimal
     func fetchMergeAccounts(address: String) async -> [MergeAccountResponse.ResponseData.Node.AccountMerge.MergeAccount]
@@ -29,7 +29,7 @@ extension ThorchainService: ThorchainServiceProtocol {}
 extension ThorchainStagenetService: ThorchainServiceProtocol {}
 
 enum ThorchainServiceFactory {
-    
+
     static func getService(for chain: Chain) -> ThorchainServiceProtocol {
         switch chain {
         case .thorChainStagenet:
@@ -38,9 +38,8 @@ enum ThorchainServiceFactory {
             guard chain.chainType == .THORChain else {
                 fatalError("Chain \(chain) is not a THORChain variant")
             }
-            
+
             return ThorchainService.shared
         }
     }
 }
-

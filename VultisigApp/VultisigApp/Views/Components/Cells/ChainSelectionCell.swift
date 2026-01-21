@@ -10,45 +10,44 @@ import SwiftUI
 struct ChainSelectionCell: View {
     let assets: [CoinMeta]
     @Binding var showAlert: Bool
-    
+
     @State var isSelected = false
     @State var selectedTokensCount = 0
     @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
-    
+
     var body: some View {
         content
             .onAppear {
                 setData()
             }
-            .onChange(of: tokenSelectionViewModel.selection) { oldValue, newValue in
+            .onChange(of: tokenSelectionViewModel.selection) { _, _ in
                 setData()
             }
     }
-    
+
     var content: some View {
         ZStack {
-            
+
             // This allow to remove the chains even with tokens
             enabledContent
-            
+
         }
     }
-    
+
     var enabledContent: some View {
         cell
     }
-    
+
     var cell: some View {
         let nativeAsset = assets[0]
         return CoinSelectionCell(asset: nativeAsset)
-            //.redacted(reason: nativeAsset==nil ? .placeholder : [])
     }
-    
+
     private func setData() {
         guard let nativeAsset = assets.first else {
             return
         }
-        
+
         if tokenSelectionViewModel.selection.contains(where: { cm in
             cm.chain == nativeAsset.chain && cm.ticker.lowercased() == nativeAsset.ticker.lowercased()
         }) {
@@ -56,10 +55,10 @@ struct ChainSelectionCell: View {
         } else {
             isSelected = false
         }
-        
+
         countSelectedToken()
     }
-    
+
     private func countSelectedToken() {
         selectedTokensCount = 0
         for asset in assets {

@@ -26,49 +26,49 @@ class FunctionCallCosmosMerge: ObservableObject {
     @Published var amount: Decimal = 0.0
     @Published var destinationAddress: String = ""
     @Published var fnCall: String = ""
-    
+
     @Published var amountValid: Bool = false
     @Published var fnCallValid: Bool = true
-    
+
     @Published var isTheFormValid: Bool = false
-    
+
     @Published var tokens: [IdentifiableString] = []
     @Published var tokenValid: Bool = false
     @Published var selectedToken: IdentifiableString = .init(value: NSLocalizedString("selectTokenToMerge", comment: ""))
-    
+
     @Published var balanceLabel: String = NSLocalizedString("amountSelectToken", comment: "")
-    
+
     @ObservedObject var tx: SendTransaction
-    
+
     private var vault: Vault
-    
+
     private var cancellables = Set<AnyCancellable>()
-    
+
     required init(
         tx: SendTransaction, vault: Vault
     ) {
         self.tx = tx
         self.vault = vault
-        
+
         if tx.coin.isNativeToken {
             self.amount = 0.0
-        } else  {
+        } else {
             self.amount = tx.coin.balanceDecimal
         }
     }
-    
+
     func initialize() {
         setupValidation()
         loadTokens()
         preSelectToken()
     }
-    
+
     private func loadTokens() {
         let coinsInVault: Set<String> = Set(vault.coins.filter { $0.chain == tx.coin.chain }.map {
             let normalized = $0.ticker.lowercased()
             return normalized
         })
-        
+
         for token in ThorchainMergeTokens.tokensToMerge {
             let normalizedToken = token.denom.lowercased().replacingOccurrences(of: "thor.", with: "")
             if coinsInVault.contains(normalizedToken) {
@@ -76,7 +76,7 @@ class FunctionCallCosmosMerge: ObservableObject {
             }
         }
     }
-    
+
     private func preSelectToken() {
         if let match = ThorchainMergeTokens.tokensToMerge.first(where: {
             $0.denom.lowercased() == "thor.\(tx.coin.ticker.lowercased())"
@@ -90,21 +90,21 @@ class FunctionCallCosmosMerge: ObservableObject {
             }
         }
     }
-    
+
     var selectedVaultCoin: Coin? {
         let ticker = selectedToken.value
             .lowercased()
             .replacingOccurrences(of: "thor.", with: "")
-        
+
         for coin in vault.coins {
             if coin.chain == tx.coin.chain && coin.ticker.lowercased() == ticker {
                 return coin
             }
         }
-        
+
         return nil
     }
-    
+
     var balance: String {
         if let coin = selectedVaultCoin {
             let balance = coin.balanceDecimal.formatForDisplay()
@@ -113,30 +113,30 @@ class FunctionCallCosmosMerge: ObservableObject {
             return NSLocalizedString("amountSelectToken", comment: "")
         }
     }
-    
+
     private func setupValidation() {
         Publishers.CombineLatest($amountValid, $tokenValid)
             .map { $0 && $1 }
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }
-    
+
     var description: String {
         return toString()
     }
-    
+
     func toString() -> String {
         let memo = "merge:\(selectedToken.value)"
         return memo
     }
-    
+
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("destinationAddress", self.destinationAddress)
         dict.set("memo", self.toString())
         return dict
     }
-    
+
     func getView() -> AnyView {
         AnyView(FunctionCallCosmosMergeView(viewModel: self).onAppear {
             self.initialize()
@@ -146,10 +146,10 @@ class FunctionCallCosmosMerge: ObservableObject {
 
 private struct FunctionCallCosmosMergeView: View {
     @ObservedObject var viewModel: FunctionCallCosmosMerge
-    
+
     var body: some View {
         VStack {
-            
+
             GenericSelectorDropDown(
                 items: Binding(
                     get: { viewModel.tokens },
@@ -167,13 +167,13 @@ private struct FunctionCallCosmosMergeView: View {
                     viewModel.destinationAddress = ThorchainMergeTokens.tokensToMerge.first {
                         $0.denom.lowercased() == asset.value.lowercased()
                     }?.wasmContractAddress ?? ""
-                    
+
                     if let coin = viewModel.selectedVaultCoin {
-                        
+
                         withAnimation {
                             viewModel.balanceLabel = String(format: NSLocalizedString("amountBalance", comment: ""), coin.balanceDecimal.formatForDisplay(), coin.ticker.uppercased())
                             viewModel.amount = coin.balanceDecimal
-                            
+
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                                 viewModel.tx.coin = coin
                                 viewModel.objectWillChange.send()
@@ -185,7 +185,7 @@ private struct FunctionCallCosmosMergeView: View {
                     }
                 }
             )
-            
+
             StyledFloatingPointField(
                 label: viewModel.balanceLabel,
                 placeholder: viewModel.balanceLabel,

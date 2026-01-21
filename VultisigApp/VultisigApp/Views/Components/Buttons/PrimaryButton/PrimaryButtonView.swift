@@ -14,7 +14,7 @@ struct PrimaryButtonView: View {
     let isLoading: Bool
     let paddingLeading: CGFloat
     let reserveTrailingIconSpace: Bool
-    
+
     init(
         title: String,
         leadingIcon: String? = nil,
@@ -30,18 +30,18 @@ struct PrimaryButtonView: View {
         self.paddingLeading = paddingLeading
         self.reserveTrailingIconSpace = reserveTrailingIconSpace
     }
-    
+
     var body: some View {
         HStack(spacing: 8) {
             Spacer()
             if let leadingIcon {
                 Icon(named: leadingIcon, color: Theme.colors.textPrimary, size: 15)
             }
-            
+
             Text(NSLocalizedString(title, comment: "Button Text"))
                 .fixedSize(horizontal: true, vertical: false)
                 .padding(.leading, paddingLeading)
-            
+
             if let trailingIcon {
                 Icon(named: trailingIcon, color: Theme.colors.textPrimary, size: 15)
             } else if reserveTrailingIconSpace {

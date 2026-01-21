@@ -24,7 +24,7 @@ extension SendGasSettingsView {
         .applySheetSize()
         .sheetStyle()
     }
-    
+
     func textField(title: String, text: Binding<String>, label: String? = nil, disabled: Bool = false) -> some View {
         VStack {
             HStack {
@@ -39,7 +39,7 @@ extension SendGasSettingsView {
                     .colorScheme(.dark)
                     .textContentType(.oneTimeCode)
                     .disabled(disabled)
-                
+
                 if let label {
                     Text(label)
                         .foregroundColor(Theme.colors.textSecondary)
@@ -55,14 +55,14 @@ extension SendGasSettingsView {
         )
         .padding(.horizontal, 16)
     }
-    
+
     var buttons: some View {
         VStack(spacing: 20) {
             continueButton
         }
         .padding(40)
     }
-    
+
     var continueButton: some View {
         PrimaryButton(title: "save") {
             save()

@@ -13,13 +13,13 @@ struct FastVaultSetPasswordView: View {
     let selectedTab: SetupVaultState
     let fastVaultEmail: String
     let fastVaultExist: Bool
-    
+
     @State var password: String = ""
     @State var verifyPassword: String = ""
     @State var isLoading: Bool = false
     @State var isWrongPassword: Bool = false
     @State var showTooltip = false
-    
+
     @State var passwordFieldError = ""
     @State var verifyFieldError = ""
     @FocusState var isPasswordFieldFocused: Bool
@@ -38,10 +38,10 @@ struct FastVaultSetPasswordView: View {
                     isPasswordFieldFocused = true
                 }
             }
-            .onChange(of: password) { oldValue, newValue in
+            .onChange(of: password) { _, _ in
                 _ = validatePassword()
             }
-            .onChange(of: verifyPassword) { oldValue, newValue in
+            .onChange(of: verifyPassword) { _, _ in
                 _ = validatePassword()
             }
     }
@@ -66,11 +66,11 @@ struct FastVaultSetPasswordView: View {
             ))
         }
     }
-    
+
     var passwordField: some View {
         VStack(alignment: .leading, spacing: 12) {
             title
-            
+
             if tssType == .Migrate {
                 migrateDescription
                 textfield
@@ -86,23 +86,23 @@ struct FastVaultSetPasswordView: View {
         .padding(.horizontal, 16)
         .padding(.top, 30)
     }
-    
+
     var title: some View {
         Text(NSLocalizedString("vultiserverPassword", comment: ""))
             .font(Theme.fonts.largeTitle)
             .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     var migrateDescription: some View {
         Text(NSLocalizedString("migratePasswordDescription", comment: ""))
             .font(Theme.fonts.bodySMedium)
             .foregroundColor(Theme.colors.textTertiary)
     }
-    
+
     var disclaimer: some View {
         FastVaultPasswordDisclaimer(showTooltip: $showTooltip)
     }
-    
+
     var textfield: some View {
         HiddenTextField(
             placeholder: "enterPassword",
@@ -116,7 +116,7 @@ struct FastVaultSetPasswordView: View {
         }
         .padding(.top, 32)
     }
-    
+
     var verifyTextfield: some View {
         HiddenTextField(
             placeholder: "verifyPassword",
@@ -129,7 +129,7 @@ struct FastVaultSetPasswordView: View {
         }
         .opacity(fastVaultExist ? 0 : 1)
     }
-    func handleSubmit(){
+    func handleSubmit() {
         if fastVaultExist {
             Task { await checkPassword() }
         } else {
@@ -144,7 +144,7 @@ struct FastVaultSetPasswordView: View {
         .padding(.bottom, 40)
         .padding(.horizontal, 16)
     }
-    
+
     var fastSignConfig: FastSignConfig {
         return FastSignConfig(
             email: fastVaultEmail,
@@ -153,16 +153,16 @@ struct FastVaultSetPasswordView: View {
             isExist: fastVaultExist
         )
     }
-    
+
     @MainActor func checkPassword() async {
         isLoading = true
         defer { isLoading = false }
-        
+
         let isValid = await fastVaultService.get(
             pubKeyECDSA: vault.pubKeyECDSA,
             password: password
         )
-        
+
         guard isValid else {
             isWrongPassword = true
             password = .empty
@@ -170,19 +170,19 @@ struct FastVaultSetPasswordView: View {
         }
         handleNavigation()
     }
-    func validatePassword()->Bool {
+    func validatePassword() -> Bool {
         guard !password.isEmpty else {
             verifyFieldError = ""
             passwordFieldError = "emptyField"
             return false
         }
-        
+
         guard !verifyPassword.isEmpty else {
             verifyFieldError = "emptyField"
             passwordFieldError = ""
             return false
         }
-        
+
         guard password == verifyPassword else {
             verifyFieldError = "passwordMismatch"
             passwordFieldError = "passwordMismatch"
@@ -198,4 +198,3 @@ struct FastVaultSetPasswordView: View {
         }
     }
 }
-

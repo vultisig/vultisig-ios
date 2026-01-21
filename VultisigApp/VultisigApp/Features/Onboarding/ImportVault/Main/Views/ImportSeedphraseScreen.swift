@@ -18,22 +18,22 @@ struct ImportSeedphraseScreen: View {
     @State var validMnemonic: Bool? = false
     @State var errorMessage: String?
     @Environment(\.router) var router
-    
+
     var importButtonDisabled: Bool {
         validMnemonic == false
     }
-    
+
     var wordsCount: Int {
         cleanMnemonic(text: mnemonicInput)
             .split(separator: " ")
             .count
     }
-    
+
     var wordsCountAccessory: String {
         let maxWords = wordsCount > 12 ? 24 : 12
         return "\(wordsCount)/\(maxWords)"
     }
-    
+
     var body: some View {
         Screen {
             VStack(spacing: 0) {
@@ -55,7 +55,7 @@ struct ImportSeedphraseScreen: View {
                         .multilineTextAlignment(.center)
                         .fixedSize()
                     }
-                    
+
                     CommonTextEditor(
                         value: $mnemonicInput,
                         placeholder: "mnemonicPlaceholder".localized,
@@ -88,43 +88,43 @@ struct ImportSeedphraseScreen: View {
                 validateMnemonic(cleaned)
                 return
             }
-            
+
             // Cancel any existing validation task
             validationTask?.cancel()
-            
+
             // Clear error message immediately when user is typing
             errorMessage = nil
             validMnemonic = false
-            
+
             // Debounce validation by 0.5 seconds
             validationTask = Task {
                 try? await Task.sleep(for: .milliseconds(500))
-                
+
                 guard !Task.isCancelled else { return }
-                
+
                 validateMnemonic(cleaned)
             }
         }
     }
-    
+
     func cleanMnemonic(text: String) -> String {
         text
             .components(separatedBy: .whitespacesAndNewlines)
             .filter { !$0.isEmpty }
             .joined(separator: " ")
     }
-    
+
     func setup() {
         isFocused = true
     }
-    
+
     func onImport() {
         guard validMnemonic == true else { return }
         router.navigate(to: OnboardingRoute.chainsSetup(
             mnemonic: cleanMnemonic(text: mnemonicInput)
         ))
     }
-    
+
     @MainActor
     func validateMnemonic(_ cleaned: String) {
         // Don't validate if input is empty
@@ -132,10 +132,10 @@ struct ImportSeedphraseScreen: View {
             errorMessage = nil
             return
         }
-        
+
         let words = cleaned.split(separator: " ")
         let wordCount = words.count
-        
+
         // Check if word count is valid (12 or 24)
         guard wordsCountType.contains(wordCount) else {
             if wordCount > 0 {
@@ -143,13 +143,13 @@ struct ImportSeedphraseScreen: View {
             }
             return
         }
-        
+
         // Check if mnemonic is valid
         guard Mnemonic.isValid(mnemonic: cleaned) else {
             errorMessage = "seedPhraseInvalidError".localized
             return
         }
-        
+
         // Valid mnemonic
         errorMessage = nil
         validMnemonic = true

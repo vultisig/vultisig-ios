@@ -11,12 +11,12 @@ import SwiftUI
 // TODO: - To be removed after release
 struct VaultDefiChainsService {
     @AppStorage("enabled_vaults_4") private var enabledVaults: [String] = []
-    
+
     func enableDefiChainsIfNeeded(for vault: Vault) async {
         guard !enabledVaults.contains(vault.pubKeyECDSA) else {
             return
         }
-        
+
         let allDefiChains = (vault.chains + vault.defiChains).filter { CoinAction.defiChains.contains($0) }
         vault.defiChains = Array(Set(allDefiChains))
         vault.defiPositions = vault.defiPositions.map {

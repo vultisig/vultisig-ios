@@ -10,23 +10,23 @@ import WalletCore
 import CryptoSwift
 
 class EVMHelper {
-    static let defaultETHTransferGasUnit:Int64 = 23000 // Increased to 23000 to support swaps and transfers with memo
-    static let defaultETHSwapGasUnit:Int64 = 600000
-    static let defaultERC20TransferGasUnit:Int64 = 120000
+    static let defaultETHTransferGasUnit: Int64 = 23000 // Increased to 23000 to support swaps and transfers with memo
+    static let defaultETHSwapGasUnit: Int64 = 600000
+    static let defaultERC20TransferGasUnit: Int64 = 120000
     static let weiPerGWei: Int64 = 1_000_000_000
     static let wei: Int64 = 1_000_000_000_000_000_000
-    
+
     static let ethDecimals = 18
     let coinType: CoinType
-    
+
     init(coinType: CoinType) {
         self.coinType = coinType
     }
-    
+
     static func getHelper(coin: Coin) -> EVMHelper {
         return EVMHelper(coinType: coin.coinType)
     }
-    
+
     func getChainId(chain: Chain) -> String {
         switch chain {
         case .ethereumSepolia:
@@ -39,7 +39,7 @@ class EVMHelper {
             return self.coinType.chainId
         }
     }
-    
+
     private func setGasParameters(
         input: inout EthereumSigningInput,
         chain: Chain,
@@ -72,7 +72,7 @@ class EVMHelper {
             }
         }
     }
-    
+
     private func configureGasForChain(
         _ input: inout EthereumSigningInput,
         chain: Chain,
@@ -91,18 +91,17 @@ class EVMHelper {
             input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
         }
     }
-    
+
     func getPreSignedInputData(
         signingInput: EthereumSigningInput,
         keysignPayload: KeysignPayload,
         gas: BigUInt? = nil,
         gasPrice: BigUInt? = nil,
-        incrementNonce: Bool = false) throws -> Data
-    {
+        incrementNonce: Bool = false) throws -> Data {
         guard let intChainID = Int(getChainId(chain: keysignPayload.coin.chain)) else {
             throw HelperError.runtimeError("fail to get chainID")
         }
-        
+
         guard case .Ethereum(
             let maxFeePerGasWei,
             let priorityFeeWei,
@@ -111,13 +110,13 @@ class EVMHelper {
         ) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get Ethereum chain specific")
         }
-        
+
         let incrementNonceValue: Int64 = incrementNonce ? 1 : 0
-        
+
         var input = signingInput
         input.chainID = Data(hexString: Int64(intChainID).hexString())!
         input.nonce = Data(hexString: (nonce + incrementNonceValue).hexString())!
-        
+
         setGasParameters(
             input: &input,
             chain: keysignPayload.coin.chain,
@@ -127,21 +126,20 @@ class EVMHelper {
             maxFeePerGasWei: maxFeePerGasWei,
             priorityFeeWei: priorityFeeWei
         )
-        
+
         return try input.serializedData()
     }
-    
+
     // method to get thorchain swap payload
     func getSwapPreSignedInputData(
         keysignPayload: KeysignPayload,
         gas: BigUInt? = nil,
         gasPrice: BigUInt? = nil,
-        incrementNonce: Bool = false) throws -> Data
-    {
+        incrementNonce: Bool = false) throws -> Data {
         guard let intChainID = Int(getChainId(chain: keysignPayload.coin.chain)) else {
             throw HelperError.runtimeError("fail to get chainID")
         }
-        
+
         guard let swapPayload = keysignPayload.swapPayload else {
             throw HelperError.runtimeError("swap payload is nil")
         }
@@ -174,9 +172,9 @@ class EVMHelper {
             $0.chainID = Data(hexString: Int64(intChainID).hexString())!
             $0.nonce = Data(hexString: (nonce + incrementNonceValue).hexString())!
             $0.toAddress = thorChainSwapPayload.toAddress
-           
+
         }
-        
+
         if swapPayload.fromCoin.isNativeToken {
             input.toAddress = thorChainSwapPayload.vaultAddress
             // send to asgard
@@ -192,7 +190,7 @@ class EVMHelper {
             }
             input.toAddress = routerAddress
             let f = EthereumAbiFunction(name: "depositWithExpiry")
-            guard let vaultAddr = AnyAddress(string: thorChainSwapPayload.vaultAddress, coin: .ethereum) else{
+            guard let vaultAddr = AnyAddress(string: thorChainSwapPayload.vaultAddress, coin: .ethereum) else {
                 throw HelperError.runtimeError("invalid vault address")
             }
             guard let contractAddress = AnyAddress(string: thorChainSwapPayload.fromCoin.contractAddress, coin: .ethereum) else {
@@ -211,7 +209,7 @@ class EVMHelper {
                 }
             }
         }
-        
+
         setGasParameters(
             input: &input,
             chain: keysignPayload.coin.chain,
@@ -224,8 +222,7 @@ class EVMHelper {
 
         return try input.serializedData()
     }
-        
-    
+
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard let intChainID = Int(getChainId(chain: keysignPayload.coin.chain)) else {
             throw HelperError.runtimeError("fail to get chainID")
@@ -255,7 +252,7 @@ class EVMHelper {
                 }
             }
         }
-        
+
         configureGasForChain(
             &input,
             chain: keysignPayload.coin.chain,
@@ -265,7 +262,7 @@ class EVMHelper {
         )
         return try input.serializedData()
     }
-    
+
     func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: coinType, txInputData: inputData)
@@ -275,19 +272,17 @@ class EVMHelper {
         }
         return [preSigningOutput.dataHash.hexString]
     }
-    
+
     func getSignedTransaction(keysignPayload: KeysignPayload,
-                              signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
-    {
+                              signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let signedTransaction = try getSignedTransaction(ethPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
         return signedTransaction
     }
-    
+
     func getSignedTransaction(ethPublicKey: String,
                               inputData: Data,
-                              signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
-    {
+                              signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         guard let pubkeyData = Data(hexString: ethPublicKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {
@@ -296,26 +291,26 @@ class EVMHelper {
 
         let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
-        
+
         // Validate preSigningOutput before using it to prevent null pointer crashes
         guard preSigningOutput.error == .ok else {
             throw HelperError.runtimeError("preSigningOutput error: \(preSigningOutput.errorMessage)")
         }
-        
+
         guard !preSigningOutput.dataHash.isEmpty else {
             throw HelperError.runtimeError("preSigningOutput.dataHash is empty")
         }
-        
+
         let allSignatures = DataVector()
         let publicKeys = DataVector()
         let signatureProvider = SignatureProvider(signatures: signatures)
         let signature = signatureProvider.getSignatureWithRecoveryID(preHash: preSigningOutput.dataHash)
-        
+
         // Validate signature before passing to WalletCore
         guard !signature.isEmpty else {
             throw HelperError.runtimeError("signature is empty after recovery ID calculation")
         }
-        
+
         guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
             throw HelperError.runtimeError("fail to verify signature")
         }

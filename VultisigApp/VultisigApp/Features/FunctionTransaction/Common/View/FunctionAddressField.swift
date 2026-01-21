@@ -9,7 +9,7 @@ import SwiftUI
 
 struct FunctionAddressField: View {
     @StateObject var viewModel: AddressViewModel
-    
+
     var body: some View {
         AddressTextField(
             address: $viewModel.field.value,

@@ -14,4 +14,4 @@ struct KyberSwapPayload: Codable, Hashable {
     let fromAmount: BigInt
     let toAmountDecimal: Decimal
     let quote: KyberSwapQuote
-} 
+}

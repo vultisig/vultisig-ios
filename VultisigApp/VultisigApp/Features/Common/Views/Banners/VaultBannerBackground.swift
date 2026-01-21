@@ -9,7 +9,7 @@ import SwiftUI
 
 struct VaultBannerBackground: View {
     let type: VaultBannerType
-    
+
     var body: some View {
         switch type {
         case .upgradeVault:
@@ -20,14 +20,14 @@ struct VaultBannerBackground: View {
             followVultisigView
         }
     }
-    
+
     var upgradeVaultView: some View {
         ZStack(alignment: .trailing) {
             Theme.colors.bgSurface1
             image
         }
     }
-    
+
     var backupVaultView: some View {
         ZStack(alignment: .trailing) {
             Theme.colors.bgSurface1
@@ -49,7 +49,7 @@ struct VaultBannerBackground: View {
                 .offset(x: 25, y: 20)
         }
     }
-    
+
     var followVultisigView: some View {
         LinearGradient(
             stops: [
@@ -61,7 +61,7 @@ struct VaultBannerBackground: View {
         )
         .overlay(image, alignment: .trailing)
     }
-    
+
     var image: some View {
         Image(type.image)
             .resizable()

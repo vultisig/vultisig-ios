@@ -9,13 +9,13 @@
 import SwiftUI
 
 extension KeysignDiscoveryView {
-    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-    
+    private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+
     var container: some View {
         content
             .detectOrientation($orientation)
     }
-    
+
     var view: some View {
         VStack {
             switch viewModel.status {
@@ -29,22 +29,22 @@ extension KeysignDiscoveryView {
         }
         .blur(radius: isLoading ? 1 : 0)
     }
-    
+
     var background: some View {
         Background()
     }
-    
+
     var orientedContent: some View {
         portraitContent
     }
-    
+
     var QRCodeContent: some View {
         VStack {
             paringQRCode
             disclaimer
         }
     }
-    
+
     var qrCode: some View {
         qrCodeImage?
             .resizable()
@@ -52,11 +52,11 @@ extension KeysignDiscoveryView {
             .aspectRatio(contentMode: .fill)
             .padding(24)
     }
-    
+
     var deviceList: some View {
         VStack {
             listTitle
-            
+
             LazyVGrid(columns: adaptiveColumns, spacing: 18) {
                 ThisDevicePeerCell(deviceName: idiom == .phone ? "iPhone" : "iPad")
                 devices
@@ -65,7 +65,7 @@ extension KeysignDiscoveryView {
             .padding(.bottom, 120)
         }
     }
-    
+
     var devices: some View {
         ForEach(participantDiscovery.peersFound, id: \.self) { peer in
             Button {
@@ -81,7 +81,7 @@ extension KeysignDiscoveryView {
         }
         .padding(idiom == .phone ? 0 : 8)
     }
-    
+
     var switchLink: some View {
         SwitchToLocalLink(isForKeygen: false, selectedNetwork: $selectedNetwork)
     }

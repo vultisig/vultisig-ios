@@ -8,8 +8,7 @@
 import SwiftUI
 
 struct Search: View {
-    
-    
+
     @Binding var searchText: String
     var cornerRadius: CGFloat = 10
 

@@ -10,7 +10,7 @@ import SwiftUI
 struct AddressBookChainSelector: View {
     @Binding var selectedChain: AddressBookChainType
     @Binding var presentSelector: Bool
-    
+
     var body: some View {
         Button {
             presentSelector = true

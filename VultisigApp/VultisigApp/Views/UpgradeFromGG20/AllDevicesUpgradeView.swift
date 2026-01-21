@@ -23,11 +23,11 @@ struct AllDevicesUpgradeView: View {
             setData()
         }
     }
-    
+
     var animation: some View {
         animationVM?.view()
     }
-    
+
     var description: some View {
         Group {
             Text(NSLocalizedString("allDevicesUpgradeTitle1", comment: ""))
@@ -40,7 +40,7 @@ struct AllDevicesUpgradeView: View {
         .multilineTextAlignment(.center)
         .font(Theme.fonts.title1)
     }
-    
+
     var button: some View {
         PrimaryButton(title: "next") {
             router.navigate(to: VaultRoute.vaultShareBackups(vault: vault))
@@ -48,7 +48,7 @@ struct AllDevicesUpgradeView: View {
         .frame(width: 120)
         .padding(.vertical, 36)
     }
-    
+
     private func setData() {
         animationVM = RiveViewModel(fileName: "all_devices_animation", autoPlay: true)
     }

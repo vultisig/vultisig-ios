@@ -26,9 +26,9 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
          addThorLP,
          securedAsset,
          withdrawSecuredAsset
-    
+
     var id: String { self.rawValue }
-    
+
     func display(coin: Coin) -> String {
         switch self {
         case .rebond:
@@ -63,7 +63,7 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return NSLocalizedString("Withdraw Secured Asset", comment: "")
         }
     }
-    
+
     static func getCases(for coin: Coin) -> [FunctionCallType] {
         switch coin.chain {
         case .thorChain:
@@ -76,7 +76,7 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
                 .securedAsset,
                 .withdrawSecuredAsset
             ]
-            
+
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
             return [
                 .addThorLP,
@@ -107,12 +107,12 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return [.cosmosIBC]
         case .akash:
             return [.cosmosIBC]
-            
+
         default:
             return []
         }
     }
-    
+
     static func getDefault(for coin: Coin) -> FunctionCallType {
         switch coin.chain {
         case .thorChain:

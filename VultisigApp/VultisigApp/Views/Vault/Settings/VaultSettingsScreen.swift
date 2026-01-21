@@ -10,10 +10,10 @@ import SwiftData
 
 struct VaultSettingsScreen: View {
     let vault: Vault
-    
+
     @Query var vaults: [Vault]
     @Query var folders: [Folder]
-    
+
     @Environment(\.router) var router
 
     @State var devicesInfo: [DeviceInfo] = []
@@ -23,11 +23,11 @@ struct VaultSettingsScreen: View {
 
     @State var isFastSigningBiometricsEnabled: Bool = false
     @StateObject var viewModel = SettingsBiometryViewModel()
-    
+
     init(vault: Vault) {
         self.vault = vault
     }
-    
+
     var body: some View {
         Screen(title: "vaultSettings".localized) {
             ScrollView(showsIndicators: false) {
@@ -38,13 +38,13 @@ struct VaultSettingsScreen: View {
                         fastSigningBiometrics
                             .showIf(vault.isFastVault)
                     }
-                    
+
                     SettingsSectionView(title: "security".localized) {
                         passwordHint
                             .showIf(vault.isFastVault)
                         backupVault
                     }
-                    
+
                     SettingsSectionView(title: "other".localized) {
                         VStack(spacing: .zero) {
                             if vault.libType == nil || vault.libType == .GG20 {
@@ -53,7 +53,7 @@ struct VaultSettingsScreen: View {
                             advancedSettings
                         }
                     }
-                    
+
                     SettingsSectionContainerView {
                         VStack(spacing: .zero) {
                             deleteVault
@@ -92,7 +92,7 @@ struct VaultSettingsScreen: View {
             FastSigningPasswordSheetView(viewModel: viewModel, vault: vault)
         }
     }
-    
+
     var fastSigningBiometrics: some View {
         SettingsOptionView(
             icon: "lightning",
@@ -109,7 +109,7 @@ struct VaultSettingsScreen: View {
             .toggleStyle(.switch)
         }
     }
-    
+
     var passwordHint: some View {
         Button {
             router.navigate(to: VaultRoute.passwordHint(vault: vault))
@@ -117,7 +117,7 @@ struct VaultSettingsScreen: View {
             SettingsCommonOptionView(icon: "message-square-lock", title: "passwordHint".localized, subtitle: "setOrUpdateHint".localized)
         }
     }
-    
+
     var vaultDetails: some View {
         Button {
             router.navigate(to: VaultRoute.vaultDetails(vault: vault, devicesInfo: devicesInfo))
@@ -125,7 +125,7 @@ struct VaultSettingsScreen: View {
             SettingsCommonOptionView(icon: "circle-info", title: "vaultDetailsTitle".localized, subtitle: "vaultDetailsDescription".localized)
         }
     }
-    
+
     var backupVault: some View {
         Button {
             if vault.isFastVault {
@@ -142,7 +142,7 @@ struct VaultSettingsScreen: View {
             )
         }
     }
-    
+
     var editVault: some View {
         Button {
             router.navigate(to: VaultRoute.renameVault(vault: vault, vaults: vaults, folders: folders))
@@ -155,7 +155,7 @@ struct VaultSettingsScreen: View {
             )
         }
     }
-    
+
     var deleteVault: some View {
         Button {
             router.navigate(to: VaultRoute.deleteVault(vault: vault, devicesInfo: devicesInfo))
@@ -182,7 +182,7 @@ struct VaultSettingsScreen: View {
             )
         }
     }
-    
+
     var advancedSettings: some View {
         Button {
             router.navigate(to: VaultRoute.advancedSettings(vault: vault))
@@ -195,14 +195,14 @@ struct VaultSettingsScreen: View {
             )
         }
     }
-    
+
     private func onLoad() {
         self.isFastSigningBiometricsEnabled = viewModel.isBiometryEnabled
         devicesInfo = vault.signers.enumerated().map { index, signer in
             DeviceInfo(Index: index, Signer: signer)
         }
     }
-    
+
     func onDeviceBackup() {
         if vaults.count > 1 {
             router.navigate(to: VaultRoute.backupSelection(vault: vault))
@@ -214,15 +214,15 @@ struct VaultSettingsScreen: View {
             ))
         }
     }
-    
+
     func onBiometryEnabledChanged(_ isEnabled: Bool) {
         isFastSigningBiometricsEnabled = isEnabled
-        
+
         guard isEnabled else {
             viewModel.onBiometryEnabledChanged(isEnabled, vault: vault)
             return
         }
-        
+
         presentFastSigningBiometricsSheet = true
     }
 }

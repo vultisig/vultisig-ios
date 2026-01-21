@@ -27,13 +27,13 @@ final class DKLSKeygen {
     var messenger: DKLSMessenger
     let localPartyID: String
     var cache = NSCache<NSString, AnyObject>()
-    var setupMessage:[UInt8] = []
+    var setupMessage: [UInt8] = []
     var keyshare: DKLSKeyshare?
     let publicKeyECDSA: String
     let localPrivateSecret: String?
     let hexChainCode: String
     let DKLS_LIB_OK: godkls.lib_error = .init(0)
-    
+
     init(vault: Vault,
          tssType: TssType,
          keygenCommittee: [String],
@@ -58,16 +58,16 @@ final class DKLSKeygen {
         self.localPrivateSecret = localUI
         self.hexChainCode = vault.hexChainCode
     }
-    
+
     func getSetupMessage() -> [UInt8] {
         return self.setupMessage
     }
-    
+
     func getKeyshare() -> DKLSKeyshare? {
         return self.keyshare
     }
-    
-    private func getDklsSetupMessage() throws -> [UInt8]  {
+
+    private func getDklsSetupMessage() throws -> [UInt8] {
         var buf = godkls.tss_buffer()
         defer {
             godkls.tss_buffer_free(&buf)
@@ -83,8 +83,8 @@ final class DKLSKeygen {
         self.setupMessage = Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
         return self.setupMessage
     }
-    
-    private func getDklsKeyImportSetupMessage(hexPrivateKey: String, hexRootChainCode: String) throws -> ([UInt8],godkls.Handle)  {
+
+    private func getDklsKeyImportSetupMessage(hexPrivateKey: String, hexRootChainCode: String) throws -> ([UInt8], godkls.Handle) {
         var buf = godkls.tss_buffer()
         defer {
             godkls.tss_buffer_free(&buf)
@@ -106,36 +106,36 @@ final class DKLSKeygen {
         var privateKeySlice = decodedPrivateKey.to_dkls_goslice()
         var rootChainSlice = decodedChainCode.to_dkls_goslice()
         var handler = godkls.Handle()
-        let err = dkls_key_import_initiator_new(&privateKeySlice, &rootChainSlice, UInt8(threshold), &ids,&buf, &handler)
+        let err = dkls_key_import_initiator_new(&privateKeySlice, &rootChainSlice, UInt8(threshold), &ids, &buf, &handler)
         if err != DKLS_LIB_OK {
             throw HelperError.runtimeError("fail to setup keygen message, dkls error:\(err)")
         }
         self.setupMessage = Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
-        return (self.setupMessage,handler)
+        return (self.setupMessage, handler)
     }
-    
-    func GetDKLSOutboundMessage(handle: godkls.Handle) -> (godkls.lib_error,[UInt8]) {
+
+    func GetDKLSOutboundMessage(handle: godkls.Handle) -> (godkls.lib_error, [UInt8]) {
         var buf = godkls.tss_buffer()
         defer {
             godkls.tss_buffer_free(&buf)
         }
         var result: godkls.lib_error
         switch self.tssType {
-        case .Keygen,.Migrate,.KeyImport:
-            result = dkls_keygen_session_output_message(handle,&buf)
+        case .Keygen, .Migrate, .KeyImport:
+            result = dkls_keygen_session_output_message(handle, &buf)
         case .Reshare:
-            result = dkls_qc_session_output_message(handle,&buf)
+            result = dkls_qc_session_output_message(handle, &buf)
         }
-        
+
         if result != DKLS_LIB_OK {
             print("fail to get outbound message: \(result)")
-            return (result,[])
+            return (result, [])
         }
-        return (result,Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len))))
-        
+        return (result, Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len))))
+
     }
-    
-    func getOutboundMessageReceiver(handle: godkls.Handle,message: godkls.go_slice,idx: UInt32) -> [UInt8] {
+
+    func getOutboundMessageReceiver(handle: godkls.Handle, message: godkls.go_slice, idx: UInt32) -> [UInt8] {
         var buf_receiver = godkls.tss_buffer()
         defer {
             godkls.tss_buffer_free(&buf_receiver)
@@ -143,22 +143,22 @@ final class DKLSKeygen {
         var mutableMessage = message
         var receiverResult: godkls.lib_error
         switch self.tssType {
-        case .Keygen,.Migrate,.KeyImport:
+        case .Keygen, .Migrate, .KeyImport:
             receiverResult = dkls_keygen_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
         case .Reshare:
             receiverResult = dkls_qc_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
         }
-        
+
         if receiverResult != DKLS_LIB_OK {
             print("fail to get receiver message,error: \(receiverResult)")
             return []
         }
         return Array(UnsafeBufferPointer(start: buf_receiver.ptr, count: Int(buf_receiver.len)))
     }
-    
-    func processDKLSOutboundMessage(handle: godkls.Handle) async throws  {
+
+    func processDKLSOutboundMessage(handle: godkls.Handle) async throws {
         repeat {
-            let (result,outboundMessage) = GetDKLSOutboundMessage(handle: handle)
+            let (result, outboundMessage) = GetDKLSOutboundMessage(handle: handle)
             if result != DKLS_LIB_OK {
                 print("fail to get outbound message,\(result)")
             }
@@ -168,34 +168,34 @@ final class DKLSKeygen {
             let message = outboundMessage.to_dkls_goslice()
             let encodedOutboundMessage = Data(outboundMessage).base64EncodedString()
             for i in 0..<self.keygenCommittee.count {
-                let receiverArray = getOutboundMessageReceiver(handle:handle,
+                let receiverArray = getOutboundMessageReceiver(handle: handle,
                                                                message: message,
                                                                idx: UInt32(i))
-                
+
                 if receiverArray.count == 0 {
                     break
                 }
-                let receiverString = String(bytes:receiverArray,encoding: .utf8)!
+                let receiverString = String(bytes: receiverArray, encoding: .utf8)!
                 print("sending message from \(self.localPartyID) to: \(receiverString) , length:\(outboundMessage.count)")
                 try await self.messenger.send(self.localPartyID, to: receiverString, body: encodedOutboundMessage)
             }
         } while 1 > 0
     }
-    
+
     func pullInboundMessages(handle: godkls.Handle) async throws -> Bool {
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(self.localPartyID)"
         print("start pulling inbound messages from:\(urlString)")
         guard let url = URL(string: urlString) else {
             throw HelperError.runtimeError("invalid url string: \(urlString)")
         }
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         var isFinished = false
         let start = DispatchTime.now()
         repeat {
-            let (data,resp) = try await URLSession.shared.data(for: request)
+            let (data, resp) = try await URLSession.shared.data(for: request)
             guard let httpResp = resp as? HTTPURLResponse else {
                 throw HelperError.runtimeError("fail to convert resp to http url response")
             }
@@ -221,11 +221,11 @@ final class DKLSKeygen {
                 throw HelperError.runtimeError("timeout: failed to create vault within 60 seconds")
             }
         } while !isFinished
-        
+
         return false
     }
-    
-    func processInboundMessage(handle: godkls.Handle,data:Data) async throws -> Bool {
+
+    func processInboundMessage(handle: godkls.Handle, data: Data) async throws -> Bool {
         if data.count == 0 {
             return false
         }
@@ -238,8 +238,8 @@ final class DKLSKeygen {
                 print("message with key:\(key) has been applied before")
                 continue
             }
-            
-            //print("Got message from: \(msg.from), to: \(msg.to), key:\(key) , seq: \(msg.sequence_no)")
+
+            // print("Got message from: \(msg.from), to: \(msg.to), key:\(key) , seq: \(msg.sequence_no)")
             guard let decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex) else {
                 throw HelperError.runtimeError("fail to decrypted message body")
             }
@@ -247,18 +247,18 @@ final class DKLSKeygen {
             guard let decodedMsg = Data(base64Encoded: decryptedBody) else {
                 throw HelperError.runtimeError("fail to decrypted inbound message")
             }
-            
+
             let descryptedBodyArr = [UInt8](decodedMsg)
             var decryptedBodySlice = descryptedBodyArr.to_dkls_goslice()
-            var isFinished:UInt32 = 0
+            var isFinished: UInt32 = 0
             var result: godkls.lib_error
             switch self.tssType {
-            case .Keygen,.Migrate,.KeyImport:
+            case .Keygen, .Migrate, .KeyImport:
                 result = dkls_keygen_session_input_message(handle, &decryptedBodySlice, &isFinished)
             case .Reshare:
                 result = dkls_qc_session_input_message(handle, &decryptedBodySlice, &isFinished)
             }
-            
+
             if result != DKLS_LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
             } else {
@@ -275,7 +275,7 @@ final class DKLSKeygen {
         }
         return false
     }
-    
+
     func deleteMessageFromServer(hash: String) async throws {
         let urlString = "\(mediatorURL)/message/\(self.sessionID)/\(self.localPartyID)/\(hash)"
         guard let url = URL(string: urlString) else {
@@ -283,7 +283,7 @@ final class DKLSKeygen {
         }
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
-        let (_,_) = try await URLSession.shared.data(for: request)
+        let (_, _) = try await URLSession.shared.data(for: request)
     }
     // DKLSKeygenWithRetry tries to do keygen with retry mechanism
     // additionalHeader is used to pass extra header info to messenger when uploading setup message
@@ -291,11 +291,11 @@ final class DKLSKeygen {
         print("keygen committee: \(self.keygenCommittee)")
         self.cache.removeAllObjects()
         do {
-            var keygenSetupMsg:[UInt8]
+            var keygenSetupMsg: [UInt8]
             var handler = godkls.Handle()
             if self.isInitiateDevice && attempt == 0 {
                 switch self.tssType {
-                case .Keygen,.Migrate,.Reshare:
+                case .Keygen, .Migrate, .Reshare:
                     // only for the first time , and on the initiating device , we create the setup message
                     // for retry , let's just use the existing setup message
                     keygenSetupMsg = try getDklsSetupMessage()
@@ -303,10 +303,10 @@ final class DKLSKeygen {
                     guard let localPrivateSecret = self.localPrivateSecret else {
                         throw HelperError.runtimeError("can't import , local private key is empty")
                     }
-                    (keygenSetupMsg,handler) = try getDklsKeyImportSetupMessage(hexPrivateKey: localPrivateSecret, hexRootChainCode: self.hexChainCode)
+                    (keygenSetupMsg, handler) = try getDklsKeyImportSetupMessage(hexPrivateKey: localPrivateSecret, hexRootChainCode: self.hexChainCode)
                 }
                 self.setupMessage = keygenSetupMsg
-                try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString(),additionalHeader)
+                try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString(), additionalHeader)
             } else {
                 // download the setup message from relay server
                 let strKeygenSetupMsg = try await messenger.downloadSetupMessageWithRetry(additionalHeader)
@@ -314,18 +314,18 @@ final class DKLSKeygen {
                 self.setupMessage = keygenSetupMsg
             }
             var decodedSetupMsg = keygenSetupMsg.to_dkls_goslice()
-            
+
             let localPartyIDArr = self.localPartyID.toArray()
             var localPartySlice = localPartyIDArr.to_dkls_goslice()
             switch self.tssType {
             case .Keygen:
-                let result = dkls_keygen_session_from_setup(&decodedSetupMsg,&localPartySlice, &handler)
+                let result = dkls_keygen_session_from_setup(&decodedSetupMsg, &localPartySlice, &handler)
                 if result != DKLS_LIB_OK {
                     throw HelperError.runtimeError("fail to create session from setup message,error:\(result)")
                 }
             case .KeyImport:
                 if !self.isInitiateDevice {
-                    let result = dkls_key_importer_new(&decodedSetupMsg,&localPartySlice,&handler)
+                    let result = dkls_key_importer_new(&decodedSetupMsg, &localPartySlice, &handler)
                     if result != DKLS_LIB_OK {
                         throw HelperError.runtimeError("fail to create key import session from setup message,error:\(result)")
                     }
@@ -367,7 +367,7 @@ final class DKLSKeygen {
                 // in case there are more messages need to send out
                 try await processDKLSOutboundMessage(handle: h)
                 var keyshareHandler = godkls.Handle()
-                let keyShareResult = dkls_keygen_session_finish(handler,&keyshareHandler)
+                let keyShareResult = dkls_keygen_session_finish(handler, &keyshareHandler)
                 if keyShareResult != DKLS_LIB_OK {
                     throw HelperError.runtimeError("fail to get keyshare,\(keyShareResult)")
                 }
@@ -387,77 +387,76 @@ final class DKLSKeygen {
                 print("chaincode: \(chainCodeBytes.toHexString())")
                 try await Task.sleep(for: .milliseconds(500))
             }
-        }
-        catch {
+        } catch {
             print("Failed to generate key, error: \(error.localizedDescription)")
             if attempt < 3 { // let's retry
                 print("keygen/reshare retry, attemp: \(attempt)")
-                try await DKLSKeygenWithRetry(attempt: attempt + 1,additionalHeader: additionalHeader)
+                try await DKLSKeygenWithRetry(attempt: attempt + 1, additionalHeader: additionalHeader)
             } else {
                 throw error
             }
         }
     }
-    
-    func getKeyshareBytes(handle: godkls.Handle) throws  -> [UInt8] {
+
+    func getKeyshareBytes(handle: godkls.Handle) throws -> [UInt8] {
         var buf = godkls.tss_buffer()
         defer {
             godkls.tss_buffer_free(&buf)
         }
-        let result = dkls_keyshare_to_bytes(handle,&buf)
+        let result = dkls_keyshare_to_bytes(handle, &buf)
         if result != DKLS_LIB_OK {
             throw HelperError.runtimeError("fail to get keyshare from handler, \(result)")
         }
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
-    
-    func getPublicKeyBytes(handle: godkls.Handle) throws  -> [UInt8] {
+
+    func getPublicKeyBytes(handle: godkls.Handle) throws -> [UInt8] {
         var buf = godkls.tss_buffer()
         defer {
             godkls.tss_buffer_free(&buf)
         }
-        let result =  dkls_keyshare_public_key(handle,&buf)
+        let result =  dkls_keyshare_public_key(handle, &buf)
         if result != DKLS_LIB_OK {
             throw HelperError.runtimeError("fail to get ECDSA public key from handler, \(result)")
         }
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
-    
+
     func getChainCode(handle: godkls.Handle) throws -> [UInt8] {
         var buf = godkls.tss_buffer()
         defer {
             godkls.tss_buffer_free(&buf)
         }
-        let result =  dkls_keyshare_chaincode(handle,&buf)
+        let result =  dkls_keyshare_chaincode(handle, &buf)
         if result != DKLS_LIB_OK {
             throw HelperError.runtimeError("fail to get ECDSA chaincode from handler, \(result)")
         }
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
-    
+
     // processReshareCommittee combine old keygen party and new keygen party into the same array , and return two seperate index array
-    func processReshareCommittee(oldCommittee: [String],newCommittee: [String]) -> ([String],[UInt8],[UInt8]) {
+    func processReshareCommittee(oldCommittee: [String], newCommittee: [String]) -> ([String], [UInt8], [UInt8]) {
         var allParties = oldCommittee
         var oldPartiesIdx = [UInt8]()
         var newPartiesIdx = [UInt8]()
-        
+
         for item in newCommittee {
             if !allParties.contains(item) {
                 allParties.append(item)
             }
         }
-        
-        for(idx,item) in allParties.enumerated() {
-            if oldCommittee.contains(item){
+
+        for(idx, item) in allParties.enumerated() {
+            if oldCommittee.contains(item) {
                 oldPartiesIdx.append(UInt8(idx))
             }
-            if newCommittee.contains(item){
+            if newCommittee.contains(item) {
                 newPartiesIdx.append(UInt8(idx))
             }
         }
-        return (allParties,newPartiesIdx,oldPartiesIdx)
+        return (allParties, newPartiesIdx, oldPartiesIdx)
     }
-    
+
     func getKeyshareString() -> String? {
         for ks in vault.keyshares {
             if ks.pubkey == self.publicKeyECDSA {
@@ -466,7 +465,7 @@ final class DKLSKeygen {
         }
         return nil
     }
-    
+
     func getKeyshareBytesFromVault() throws -> [UInt8] {
         guard let localKeyshare = getKeyshareString() else {
             throw HelperError.runtimeError("fail to get local keyshare")
@@ -477,25 +476,25 @@ final class DKLSKeygen {
         }
         return [UInt8](keyshareData)
     }
-    
-    private func getDklsReshareSetupMessage(keyshareHandle: godkls.Handle) throws ->[UInt8] {
+
+    private func getDklsReshareSetupMessage(keyshareHandle: godkls.Handle) throws -> [UInt8] {
         var buf = godkls.tss_buffer()
         defer {
             godkls.tss_buffer_free(&buf)
         }
         let threshold = DKLSHelper.getThreshod(input: self.keygenCommittee.count)
-        let (allParties,newPartiesIdx,oldPartiesIdx) = processReshareCommittee(oldCommittee: self.vaultOldCommittee, newCommittee: self.keygenCommittee)
+        let (allParties, newPartiesIdx, oldPartiesIdx) = processReshareCommittee(oldCommittee: self.vaultOldCommittee, newCommittee: self.keygenCommittee)
         let byteArray = DKLSHelper.arrayToBytes(parties: allParties)
         var ids = byteArray.to_dkls_goslice()
         var newPartiesIdxSlice = newPartiesIdx.to_dkls_goslice()
         var oldPartiesIdxSlice = oldPartiesIdx.to_dkls_goslice()
-        let result = dkls_qc_setupmsg_new(keyshareHandle, &ids, &oldPartiesIdxSlice,threshold,&newPartiesIdxSlice,&buf)
+        let result = dkls_qc_setupmsg_new(keyshareHandle, &ids, &oldPartiesIdxSlice, threshold, &newPartiesIdxSlice, &buf)
         if result != DKLS_LIB_OK {
             throw HelperError.runtimeError("fail to get qc setup message, \(result)")
         }
-        return Array(UnsafeBufferPointer(start: buf.ptr,count: Int(buf.len)))
+        return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
-    
+
     func DKLSReshareWithRetry(attempt: UInt8) async throws {
         self.cache.removeAllObjects()
         do {
@@ -504,16 +503,16 @@ final class DKLSKeygen {
                 // we are part of the old keygen committee, let's load existing keyshare
                 let keyshare = try getKeyshareBytesFromVault()
                 var keyshareSlice = keyshare.to_dkls_goslice()
-                let result = dkls_keyshare_from_bytes(&keyshareSlice,&keyshareHandle)
+                let result = dkls_keyshare_from_bytes(&keyshareSlice, &keyshareHandle)
                 if result != DKLS_LIB_OK {
                     throw HelperError.runtimeError("fail to get keyshare, \(result)")
                 }
             }
-            
-            var reshareSetupMsg:[UInt8]
+
+            var reshareSetupMsg: [UInt8]
             if self.isInitiateDevice && attempt == 0 {
                 reshareSetupMsg = try getDklsReshareSetupMessage(keyshareHandle: keyshareHandle)
-                try await messenger.uploadSetupMessage(message: Data(reshareSetupMsg).base64EncodedString(),nil)
+                try await messenger.uploadSetupMessage(message: Data(reshareSetupMsg).base64EncodedString(), nil)
             } else {
                 // download the setup message from relay server
                 let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry(nil)
@@ -524,8 +523,8 @@ final class DKLSKeygen {
             var handler = godkls.Handle()
             let localPartyIDArr = self.localPartyID.toArray()
             var localPartySlice = localPartyIDArr.to_dkls_goslice()
-            
-            let result = dkls_qc_session_from_setup(&decodedSetupMsg,&localPartySlice, keyshareHandle,&handler)
+
+            let result = dkls_qc_session_from_setup(&decodedSetupMsg, &localPartySlice, keyshareHandle, &handler)
             if result != DKLS_LIB_OK {
                 throw HelperError.runtimeError("fail to create session from reshare setup message,error:\(result)")
             }
@@ -542,7 +541,7 @@ final class DKLSKeygen {
             if isFinished {
                 try await processDKLSOutboundMessage(handle: h)
                 var newKeyshareHandler = godkls.Handle()
-                let keyShareResult = dkls_qc_session_finish(handler,&newKeyshareHandler)
+                let keyShareResult = dkls_qc_session_finish(handler, &newKeyshareHandler)
                 if keyShareResult != DKLS_LIB_OK {
                     throw HelperError.runtimeError("fail to get new keyshare,\(keyShareResult)")
                 }
@@ -563,8 +562,7 @@ final class DKLSKeygen {
                 print("chaincode: \(chainCodeBytes.toHexString())")
                 try await Task.sleep(for: .milliseconds(500))
             }
-        }
-        catch {
+        } catch {
             print("Failed to reshare key, error: \(error.localizedDescription)")
             if attempt < 3 { // let's retry
                 print("keygen/reshare retry, attemp: \(attempt)")

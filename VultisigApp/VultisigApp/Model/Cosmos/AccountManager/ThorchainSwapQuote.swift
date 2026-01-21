@@ -45,7 +45,7 @@ struct ThorchainSwapQuote: Codable, Hashable {
     }
 }
 
-struct Fees: Codable,Hashable {
+struct Fees: Codable, Hashable {
     let affiliate: String
     let asset: String
     let outbound: String

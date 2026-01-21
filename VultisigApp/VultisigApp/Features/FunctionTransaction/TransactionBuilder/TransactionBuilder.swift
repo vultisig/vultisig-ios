@@ -29,7 +29,7 @@ extension TransactionBuilder {
         sendTx.transactionType = transactionType
         sendTx.wasmContractPayload = wasmContractPayload
         sendTx.toAddress = toAddress
-        
+
         return sendTx
     }
 }

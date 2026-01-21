@@ -13,9 +13,9 @@ struct DefiButton: View {
     let type: ButtonType
     let isSystemIcon: Bool
     let action: () -> Void
-    
+
     @Environment(\.isEnabled) var isEnabled
-    
+
     let iconSize: CGFloat = 12
     let iconPadding: CGFloat = 4
     init(title: String, icon: String? = nil, type: ButtonType = .primary, isSystemIcon: Bool = false, action: @escaping () -> Void) {
@@ -25,7 +25,7 @@ struct DefiButton: View {
         self.isSystemIcon = isSystemIcon
         self.action = action
     }
-    
+
     var body: some View {
         Button {
             #if os(iOS)
@@ -35,10 +35,10 @@ struct DefiButton: View {
         } label: {
             PrimaryButtonView(title: title, paddingLeading: icon != nil ? (iconSize * 2 + iconPadding) / 2 : 0)
         }
-        .buttonStyle(PrimaryButtonStyle(type: type,size: .small))
+        .buttonStyle(PrimaryButtonStyle(type: type, size: .small))
         .overlay(iconView, alignment: .leading)
     }
-    
+
     @ViewBuilder
     var iconView: some View {
         if let icon {

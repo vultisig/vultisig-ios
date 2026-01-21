@@ -13,17 +13,17 @@ struct ReferralRouteBuilder {
     func buildInitialScreen() -> some View {
         ReferralInitialScreen()
     }
-    
+
     @ViewBuilder
     func buildOnboardingScreen() -> some View {
         ReferredOnboardingView()
     }
-    
+
     @ViewBuilder
     func buildMainScreen() -> some View {
         ReferralMainScreen()
     }
-    
+
     @ViewBuilder
     func buildReferredCodeFormScreen() -> some View {
         ReferredCodeFormScreen()

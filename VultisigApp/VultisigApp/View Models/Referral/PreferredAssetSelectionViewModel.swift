@@ -12,16 +12,16 @@ class PreferredAssetSelectionViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published private var assets: [THORChainAsset] = []
     private let thorchainService: THORChainAPIService
-    
+
     var filteredAssets: [THORChainAsset] {
         guard searchText.isNotEmpty else { return assets }
         return assets.filter { $0.asset.ticker.localizedCaseInsensitiveContains(searchText) }
     }
-    
+
     init(thorchainService: THORChainAPIService = .init()) {
         self.thorchainService = thorchainService
     }
-    
+
     func setup() async {
         await MainActor.run { isLoading = true }
         do {
@@ -29,7 +29,7 @@ class PreferredAssetSelectionViewModel: ObservableObject {
             let assets: [THORChainAsset] = pools.compactMap { pool -> THORChainAsset? in
                 PreferredAssetFactory.createCoin(from: pool.asset, decimals: pool.decimals)
             }
-            
+
             await MainActor.run { self.assets = assets }
         } catch {
             // Will show empty state

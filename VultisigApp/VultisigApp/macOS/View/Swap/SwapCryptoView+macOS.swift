@@ -22,14 +22,14 @@ extension SwapCryptoView {
         }
         .navigationBarBackButtonHidden(swapViewModel.currentIndex != 1 ? true : false)
     }
-    
+
     var main: some View {
         VStack {
             headerMac
             views
         }
     }
-    
+
     var headerMac: some View {
         SwapCryptoHeader(
             vault: vault,
@@ -37,7 +37,7 @@ extension SwapCryptoView {
             shareSheetViewModel: shareSheetViewModel
         )
     }
-    
+
     var views: some View {
         ZStack {
             Background()

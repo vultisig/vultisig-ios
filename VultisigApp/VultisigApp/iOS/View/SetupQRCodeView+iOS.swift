@@ -22,7 +22,7 @@ extension SetupQRCodeView {
             }
         }
     }
-    
+
     var main: some View {
         view
     }

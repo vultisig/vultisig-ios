@@ -28,7 +28,7 @@ extension CircleWithdrawView {
             )
         }
     }
-    
+
     var scrollView: some View {
         ScrollView {
             scrollableContent

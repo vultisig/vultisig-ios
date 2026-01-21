@@ -12,11 +12,11 @@ struct SwapCoinPickerView: View {
     @Binding var showSheet: Bool
     @Binding var selectedCoin: Coin
     @State var selectedChain: Chain?
-    
+
     @StateObject var viewModel: SwapCoinSelectionViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @State var searchBarFocused: Bool = false
-    
+
     var showSelectChainHeader: Bool {
         #if os(macOS)
         return true
@@ -24,7 +24,7 @@ struct SwapCoinPickerView: View {
         return !searchBarFocused
         #endif
     }
-    
+
     init(
         vault: Vault,
         showSheet: Binding<Bool>,
@@ -37,11 +37,11 @@ struct SwapCoinPickerView: View {
         self.selectedChain = selectedChain
         self._viewModel = StateObject(wrappedValue: .init(vault: vault, selectedCoin: selectedCoin.wrappedValue))
     }
-    
+
     var body: some View {
         container
     }
-    
+
     var container: some View {
 #if os(iOS)
         NavigationStack {
@@ -54,7 +54,7 @@ struct SwapCoinPickerView: View {
             .transaction { $0.disablesAnimations = true }
 #endif
     }
-    
+
     var content: some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 12) {
@@ -74,7 +74,7 @@ struct SwapCoinPickerView: View {
             }
             .padding(.vertical, 8)
             .padding(.horizontal, 16)
-            
+
             VStack(spacing: 12) {
                 GradientListSeparator()
                 Text("selectChain".localized)
@@ -106,12 +106,12 @@ struct SwapCoinPickerView: View {
         .applySheetSize()
         .sheetStyle()
     }
-    
+
     var loadingView: some View {
         VStack(spacing: 16) {
             SpinningLineLoader()
                 .scaleEffect(1.2)
-            
+
             Text(NSLocalizedString("loading", comment: ""))
                 .font(Theme.fonts.bodySMedium)
                 .foregroundColor(Theme.colors.textTertiary)
@@ -119,7 +119,7 @@ struct SwapCoinPickerView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.top, 48)
     }
-    
+
     @ViewBuilder
     var list: some View {
         LazyVStack(spacing: 0) {
@@ -137,19 +137,19 @@ struct SwapCoinPickerView: View {
         }
         .cornerRadius(12)
     }
-    
+
     var emptyMessage: some View {
         ErrorMessage(text: "noResultFound")
             .padding(.top, 48)
     }
-    
+
     var searchBar: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("selectAsset".localized)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.title2)
                 .multilineTextAlignment(.leading)
-            
+
             HStack(spacing: 12) {
                 SearchTextField(value: $viewModel.searchText, isFocused: $searchBarFocused)
                 Button {
@@ -167,7 +167,7 @@ struct SwapCoinPickerView: View {
             .animation(.easeInOut, value: searchBarFocused)
         }
     }
-    
+
     let itemSize: CGFloat = 120
     let itemPadding: CGFloat = 8
     var chainCarousel: some View {
@@ -177,7 +177,7 @@ struct SwapCoinPickerView: View {
                 .allowsHitTesting(false)
                 .frame(width: itemSize)
                 .shadow(color: Theme.colors.border, radius: 6)
-            
+
             let itemContainerSize = itemSize + itemPadding
             FlatPicker(selectedItem: $selectedChain, items: availableChains, itemSize: itemContainerSize, axis: .horizontal) { chain in
                 let isSelected = selectedChain == chain
@@ -209,7 +209,7 @@ struct SwapCoinPickerView: View {
                 .frame(width: itemContainerSize)
                 .buttonStyle(.plain)
             }
-            
+
             Capsule()
                 .strokeBorder(Theme.colors.primaryAccent3, lineWidth: 2)
                 .allowsHitTesting(false)
@@ -217,25 +217,25 @@ struct SwapCoinPickerView: View {
         }
         .frame(height: 44)
     }
-    
+
     private var availableChains: [Chain] {
         return coinSelectionViewModel.chains
             .filter(\.isSwapAvailable)
             .filter { vault.chains.contains($0) }
     }
-    
+
     private func reloadCoins() {
         Task {
             guard let selectedChain else { return }
             await viewModel.fetchCoins(chain: selectedChain)
         }
     }
-    
+
     private func onSelect(chain: Chain) {
         selectedChain = chain
         reloadCoins()
     }
-    
+
     private func onSelect(coin: CoinMeta) {
         guard let newCoin = viewModel.onSelect(coin: coin) else {
             return

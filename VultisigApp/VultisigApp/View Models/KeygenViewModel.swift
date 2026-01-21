@@ -67,7 +67,7 @@ class KeygenViewModel: ObservableObject {
             // .ledger: .someLedgerDerivation
         ]
     ]
-    
+
     var vault: Vault
     var tssType: TssType // keygen or reshare
     var keygenCommittee: [String]
@@ -78,19 +78,19 @@ class KeygenViewModel: ObservableObject {
     var oldResharePrefix: String
     var isInitiateDevice: Bool
     var keyImportInput: KeyImportInput?
-    
+
     @Published var isLinkActive = false
     @Published var keygenError: String = ""
     @Published var status = KeygenStatus.CreatingInstance
     @Published var progress: Float = 0.0
-    
+
     private var tssService: TssServiceImpl? = nil
     private var tssMessenger: TssMessengerImpl? = nil
     private var stateAccess: LocalStateAccessorImpl? = nil
     private var messagePuller: MessagePuller? = nil
-    
+
     private let keychain = DefaultKeychainService.shared
-    
+
     init() {
         self.vault = Vault(name: "Main Vault")
         self.tssType = .Keygen
@@ -102,7 +102,7 @@ class KeygenViewModel: ObservableObject {
         self.oldResharePrefix = ""
         self.isInitiateDevice = false
     }
-    
+
     func setData(vault: Vault,
                  tssType: TssType,
                  keygenCommittee: [String],
@@ -110,7 +110,7 @@ class KeygenViewModel: ObservableObject {
                  mediatorURL: String,
                  sessionID: String,
                  encryptionKeyHex: String,
-                 oldResharePrefix:String,
+                 oldResharePrefix: String,
                  initiateDevice: Bool,
                  keyImportInput: KeyImportInput? = nil
     ) async {
@@ -125,10 +125,10 @@ class KeygenViewModel: ObservableObject {
         self.isInitiateDevice = initiateDevice
         self.keyImportInput = keyImportInput
         let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
-        messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA,
+        messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex, pubKey: vault.pubKeyECDSA,
                                       encryptGCM: isEncryptGCM)
     }
-    
+
     func delaySwitchToMain() {
         Task {
             // when user didn't touch it for 3 seconds , automatically goto home screen
@@ -140,7 +140,7 @@ class KeygenViewModel: ObservableObject {
             self.isLinkActive = true
         }
     }
-    
+
     func rightPadHexString(_ hexString: String) -> String {
         guard hexString.allSatisfy({ $0.isHexDigit }) else {
             self.logger.error("Invalid hex string: \(hexString)")
@@ -155,10 +155,10 @@ class KeygenViewModel: ObservableObject {
     }
     func startKeygen(context: ModelContext) async {
         let vaultLibType = self.vault.libType ?? .GG20
-        switch(vaultLibType){
+        switch vaultLibType {
         case .GG20:
-            switch self.tssType{
-            case .Keygen,.Reshare:
+            switch self.tssType {
+            case .Keygen, .Reshare:
                 await startKeygenGG20(context: context)
             case .Migrate:
                 var localUIECDSA: String?
@@ -169,7 +169,7 @@ class KeygenViewModel: ObservableObject {
                           let eddsaShare = self.vault.getKeyshare(pubKey: self.vault.pubKeyEdDSA) else {
                         throw HelperError.runtimeError("Missing key shares required for migration")
                     }
-                    
+
                     var nsErr: NSError?
                     let ecdsaUIResp = TssGetLocalUIEcdsa(ecdsaShare, &nsErr)
                     if let nsErr {
@@ -183,7 +183,7 @@ class KeygenViewModel: ObservableObject {
                     // the local UI sometimes is less than 32 bytes , we need to pad it
                     // since the library expect the number in little-endian , thus we just add 0 to the end of the hex string
                     localUIEdDSA = rightPadHexString(eddsaUIResp)
-                    
+
                 } catch {
                     self.logger.error("Migration Failed, fail to get local UI: \(error.localizedDescription)")
                     self.status = .KeygenFailed
@@ -206,32 +206,32 @@ class KeygenViewModel: ObservableObject {
             }
         }
     }
-    
+
     func startKeyImportKeygen(modelContext: ModelContext) async throws {
         var wallet: HDWallet?
-        
+
         let steps = 2 + (keyImportInput?.chains.count ?? 0)
         let stepPercentage: Float = 100.0 / Float(steps)
-        
+
         await addProgress(stepPercentage)
         if self.isInitiateDevice {
             guard let keyImportInput else {
                 throw HelperError.runtimeError("Key import keygen should have keyImportInput")
             }
-            
+
             guard let mnemonicWallet = HDWallet(mnemonic: keyImportInput.mnemonic, passphrase: "") else {
                 throw HelperError.runtimeError("Couldn't create HDWallet from mnemonic")
             }
-            
+
             wallet = mnemonicWallet
         }
-        
+
         try await startRootKeyImportKeygen(modelContext: modelContext, wallet: wallet)
-        
+
         guard let chains = keyImportInput?.chains else {
             throw HelperError.runtimeError("KeyImportInput should have at least one chain")
         }
-        
+
         for chain in chains {
             await addProgress(stepPercentage)
             var chainKey: Data?
@@ -275,7 +275,7 @@ class KeygenViewModel: ObservableObject {
                 )
             )
         }
-        
+
         await addProgress(stepPercentage)
         self.vault.signers = self.keygenCommittee
         // ensure all party created vault successfully
@@ -289,11 +289,11 @@ class KeygenViewModel: ObservableObject {
                 .setDefaultCoinsOnce(vault: self.vault)
             modelContext.insert(self.vault)
         }
-        
+
         try modelContext.save()
         self.status = .KeygenFinished
     }
-    
+
     func startRootKeyImportKeygen(modelContext: ModelContext, wallet: HDWallet?) async throws {
         self.logger.info("Starting Root Key import process")
 
@@ -329,7 +329,7 @@ class KeygenViewModel: ObservableObject {
         // Use default derivation
         return wallet.getKeyForCoin(coin: chain.coinType).data
     }
-    
+
     // Import existing ECDSA private key to DKLS vault
     func importDklsKey(context: ModelContext, ecdsaPrivateKeyHex: String?, chain: Chain?) async throws -> DKLSKeyshare {
         do {
@@ -346,10 +346,9 @@ class KeygenViewModel: ObservableObject {
             guard let keyShare = dklsKeygen.getKeyshare() else {
                 throw HelperError.runtimeError("fail to get EdDSA keyshare after import")
             }
-            
+
             return keyShare
-        }
-        catch  {
+        } catch {
             self.logger.error("Failed to import Ecdsa private key, error: \(error.localizedDescription)")
             throw error
         }
@@ -371,15 +370,14 @@ class KeygenViewModel: ObservableObject {
             guard let keyShare = schnorrKeygen.getKeyshare() else {
                 throw HelperError.runtimeError("fail to get EdDSA keyshare after import")
             }
-            
+
             return keyShare
-        }
-        catch  {
+        } catch {
             self.logger.error("Failed to import EdDSA private key, error: \(error.localizedDescription)")
             throw error
         }
     }
-    
+
     // Create DKLS vault via keygen or reshare
     // This function is also used for private key import , but mostly for import root private keys(both ECDSA and EdDSA)
     func startKeygenDKLS(context: ModelContext, localUIEcdsa: String? = nil, localUIEddsa: String? = nil) async {
@@ -395,7 +393,7 @@ class KeygenViewModel: ObservableObject {
                                         isInitiateDevice: self.isInitiateDevice,
                                         localUI: localUIEcdsa)
             switch self.tssType {
-            case .Keygen,.Migrate:
+            case .Keygen, .Migrate:
                 self.status = .KeygenECDSA
                 try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0)
             case .Reshare:
@@ -405,9 +403,9 @@ class KeygenViewModel: ObservableObject {
                 self.status = .KeygenECDSA
                 try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0)
             }
-            
+
             await updateProgress(80)
-            
+
             let schnorrKeygen = SchnorrKeygen(vault: self.vault,
                                               tssType: self.tssType,
                                               keygenCommittee: self.keygenCommittee,
@@ -419,7 +417,7 @@ class KeygenViewModel: ObservableObject {
                                               setupMessage: dklsKeygen.getSetupMessage(),
                                               localUI: localUIEddsa)
             switch self.tssType {
-            case .Keygen,.Migrate:
+            case .Keygen, .Migrate:
                 self.status = .KeygenEdDSA
                 try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0)
             case .Reshare:
@@ -429,9 +427,9 @@ class KeygenViewModel: ObservableObject {
                 self.status = .KeygenEdDSA
                 try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0)
             }
-            
+
             await updateProgress(100)
-            
+
             self.vault.signers = self.keygenCommittee
             let keyshareECDSA = dklsKeygen.getKeyshare()
             let keyshareEdDSA = schnorrKeygen.getKeyshare()
@@ -441,7 +439,7 @@ class KeygenViewModel: ObservableObject {
             guard let keyshareEdDSA else {
                 throw HelperError.runtimeError("fail to get EdDSA keyshare")
             }
-            
+
             // ensure all party created vault successfully
             let keygenVerify = KeygenVerify(serverAddr: self.mediatorURL,
                                             sessionID: self.sessionID,
@@ -452,7 +450,7 @@ class KeygenViewModel: ObservableObject {
             if !allFinished {
                 throw HelperError.runtimeError("partial vault created, not all parties finished successfully")
             }
-            
+
             self.vault.pubKeyECDSA = keyshareECDSA.PubKey
             self.vault.pubKeyEdDSA = keyshareEdDSA.PubKey
             self.vault.hexChainCode = keyshareECDSA.chaincode
@@ -462,23 +460,23 @@ class KeygenViewModel: ObservableObject {
             }
             self.vault.keyshares = [KeyShare(pubkey: keyshareECDSA.PubKey, keyshare: keyshareECDSA.Keyshare),
                                     KeyShare(pubkey: keyshareEdDSA.PubKey, keyshare: keyshareEdDSA.Keyshare)]
-            
-            if self.tssType == .Keygen || !self.vaultOldCommittee.contains(self.vault.localPartyID){
+
+            if self.tssType == .Keygen || !self.vaultOldCommittee.contains(self.vault.localPartyID) {
                 VaultDefaultCoinService(context: context)
                     .setDefaultCoinsOnce(vault: self.vault)
                 context.insert(self.vault)
             }
-            
+
             try context.save()
             self.status = .KeygenFinished
-        } catch{
+        } catch {
             self.logger.error("Failed to generate DKLS key, error: \(error.localizedDescription)")
             self.status = .KeygenFailed
             self.keygenError = error.localizedDescription
             return
         }
     }
-    
+
     func startKeygenGG20(context: ModelContext) async {
         defer {
             self.messagePuller?.stop()
@@ -506,7 +504,7 @@ class KeygenViewModel: ObservableObject {
             try await keygenWithRetry(tssIns: tssService, attempt: 1)
             // if keygenWithRetry return without exception, it means keygen finished successfully
             self.status = .KeygenFinished
-            
+
             self.vault.signers = self.keygenCommittee
             // save the vault
             if let stateAccess {
@@ -545,10 +543,10 @@ class KeygenViewModel: ObservableObject {
             return
         }
     }
-    
+
     // keygenWithRetry is for creating GG20 vault
-    func keygenWithRetry(tssIns: TssServiceImpl,attempt: UInt8) async throws {
-        do{
+    func keygenWithRetry(tssIns: TssServiceImpl, attempt: UInt8) async throws {
+        do {
             self.messagePuller?.pollMessages(mediatorURL: self.mediatorURL,
                                              sessionID: self.sessionID,
                                              localPartyKey: self.vault.localPartyID,
@@ -562,14 +560,14 @@ class KeygenViewModel: ObservableObject {
                 keygenReq.allParties = self.keygenCommittee.joined(separator: ",")
                 keygenReq.chainCodeHex = self.vault.hexChainCode
                 self.logger.info("chaincode:\(self.vault.hexChainCode)")
-                
+
                 let ecdsaResp = try await tssKeygen(service: tssIns, req: keygenReq, keyType: .ECDSA)
                 self.vault.pubKeyECDSA = ecdsaResp.pubKey
-                
+
                 // continue to generate EdDSA Keys
                 self.status = .KeygenEdDSA
                 try await Task.sleep(for: .seconds(1)) // Sleep one sec to allow other parties to get in the same step
-                
+
                 let eddsaResp = try await tssKeygen(service: tssIns, req: keygenReq, keyType: .EdDSA)
                 self.vault.pubKeyEdDSA = eddsaResp.pubKey
             case .Reshare:
@@ -608,28 +606,27 @@ class KeygenViewModel: ObservableObject {
             if !allFinished {
                 throw HelperError.runtimeError("partial vault created, not all parties finished successfully")
             }
-            
+
         } catch {
             self.messagePuller?.stop()
             self.logger.error("Failed to generate key, error: \(error.localizedDescription)")
             if attempt < 3 { // let's retry
                 logger.info("keygen/reshare retry, attemp: \(attempt)")
-                try await keygenWithRetry(tssIns: tssIns,  attempt: attempt + 1)
+                try await keygenWithRetry(tssIns: tssIns, attempt: attempt + 1)
             } else {
                 throw error
             }
         }
-        
+
     }
-    
+
     func saveFastSignConfig(_ config: FastSignConfig, vault: Vault) {
         keychain.setFastPassword(config.password, pubKeyECDSA: vault.pubKeyECDSA)
         keychain.setFastHint(config.hint, pubKeyECDSA: vault.pubKeyECDSA)
     }
-    
+
     private func createTssInstance(messenger: TssMessengerProtocol,
-                                   localStateAccessor: TssLocalStateAccessorProtocol) async throws -> TssServiceImpl?
-    {
+                                   localStateAccessor: TssLocalStateAccessorProtocol) async throws -> TssServiceImpl? {
         let t = Task.detached(priority: .high) {
             var err: NSError?
             let service = await TssNewService(self.tssMessenger, self.stateAccess, true, &err)
@@ -640,11 +637,10 @@ class KeygenViewModel: ObservableObject {
         }
         return try await t.value
     }
-    
+
     private func tssKeygen(service: TssServiceImpl,
                            req: TssKeygenRequest,
-                           keyType: KeyType) async throws -> TssKeygenResponse
-    {
+                           keyType: KeyType) async throws -> TssKeygenResponse {
         let t = Task.detached(priority: .high) {
             switch keyType {
             case .ECDSA:
@@ -655,11 +651,10 @@ class KeygenViewModel: ObservableObject {
         }
         return try await t.value
     }
-    
+
     private func tssReshare(service: TssServiceImpl,
                             req: TssReshareRequest,
-                            keyType: KeyType) async throws -> TssReshareResponse
-    {
+                            keyType: KeyType) async throws -> TssReshareResponse {
         let t = Task.detached(priority: .high) {
             switch keyType {
             case .ECDSA:
@@ -670,13 +665,13 @@ class KeygenViewModel: ObservableObject {
         }
         return try await t.value
     }
-    
+
     private func updateProgress(_ value: Float) async {
         await MainActor.run {
             self.progress = value
         }
     }
-    
+
     private func addProgress(_ value: Float) async {
         await MainActor.run {
             self.progress += value

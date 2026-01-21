@@ -9,11 +9,11 @@ import SwiftUI
 
 struct KeygenProgressBar: View {
     let progress: CGFloat
-    
+
     let primaryGradient = LinearGradient(colors: [Color(hex: "0439C7"), Color(hex: "33E6BF")], startPoint: .leading, endPoint: .trailing)
-    
+
     let greenGlow = LinearGradient(colors: [Color(hex: "33E6BF").opacity(0), Color(hex: "33E6BF").opacity(0.5), Color(hex: "33E6BF")], startPoint: .leading, endPoint: .trailing)
-    
+
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -24,7 +24,7 @@ struct KeygenProgressBar: View {
                 .frame(height: 5)
                 .blur(radius: 5)
                 .offset(x: 5)
-                
+
                 loadingBar(
                     for: geometry.size.width,
                     gradient: primaryGradient
@@ -33,7 +33,7 @@ struct KeygenProgressBar: View {
             }
         }
     }
-    
+
     func loadingBar(for width: CGFloat, gradient: LinearGradient) -> some View {
         RoundedRectangle(cornerRadius: 30)
             .frame(width: width*progress)

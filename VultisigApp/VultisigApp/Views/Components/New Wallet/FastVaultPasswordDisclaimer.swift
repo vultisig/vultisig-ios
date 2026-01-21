@@ -9,12 +9,12 @@ import SwiftUI
 
 struct FastVaultPasswordDisclaimer: View {
     @Binding var showTooltip: Bool
-    
+
     var body: some View {
         content
             .overlay(tooltip.offset(y: 60), alignment: .top)
     }
-    
+
     var content: some View {
         HStack {
             text
@@ -31,11 +31,11 @@ struct FastVaultPasswordDisclaimer: View {
                 .stroke(Theme.colors.alertWarning.opacity(0.25), lineWidth: 1)
         )
     }
-    
+
     var text: some View {
         Text(NSLocalizedString("PasswordCannotBeReset", comment: ""))
     }
-    
+
     var info: some View {
         Button {
             showTooltip.toggle()
@@ -43,7 +43,7 @@ struct FastVaultPasswordDisclaimer: View {
             Image(systemName: "info.circle")
         }
     }
-    
+
     var tooltip: some View {
         VStack(spacing: 0) {
             arrow
@@ -54,18 +54,18 @@ struct FastVaultPasswordDisclaimer: View {
         .animation(.easeInOut, value: showTooltip)
         .clipped()
     }
-    
+
     var arrow: some View {
         HStack {
             Spacer()
-            
+
             Image("TooltipArrow")
                 .resizable()
                 .frame(width: 37, height: 12)
                 .offset(x: -12)
         }
     }
-    
+
     var bubble: some View {
         VStack(spacing: 8) {
             title
@@ -75,18 +75,18 @@ struct FastVaultPasswordDisclaimer: View {
         .background(Theme.colors.textSecondary)
         .cornerRadius(12)
     }
-    
+
     var title: some View {
         HStack {
             Text(NSLocalizedString("moreInfo", comment: ""))
                 .foregroundColor(Theme.colors.textDark)
-            
+
             Spacer()
             closeButton
         }
         .font(Theme.fonts.bodyMMedium)
     }
-    
+
     var closeButton: some View {
         Button {
             showTooltip = false
@@ -95,7 +95,7 @@ struct FastVaultPasswordDisclaimer: View {
                 .foregroundColor(Theme.colors.textButtonDisabled)
         }
     }
-    
+
     var description: some View {
         Text(NSLocalizedString("moreInfoDescription", comment: ""))
             .foregroundColor(Theme.colors.textTertiary)
@@ -103,7 +103,7 @@ struct FastVaultPasswordDisclaimer: View {
             .multilineTextAlignment(.leading)
             .lineLimit(nil)
             .fixedSize(horizontal: false, vertical: true)
-            .frame(maxWidth: .infinity,alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

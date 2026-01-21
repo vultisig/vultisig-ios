@@ -34,7 +34,7 @@ struct MonthlyBackupWarningViewModifier: ViewModifier {
                 }
             }
     }
-    
+
     func checkIfNeeded() {
         let diff = Calendar.current.dateComponents([.day], from: monthlyReminderDate, to: Date())
 

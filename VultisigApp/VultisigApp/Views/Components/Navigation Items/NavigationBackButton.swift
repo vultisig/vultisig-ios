@@ -9,9 +9,9 @@ import SwiftUI
 
 struct NavigationBackButton: View {
     var tint: Color = Theme.colors.textPrimary
-    
+
     @Environment(\.dismiss) var dismiss
-    
+
     var body: some View {
         ToolbarButton(image: "chevron-right", action: { dismiss() })
             .rotationEffect(.radians(.pi))

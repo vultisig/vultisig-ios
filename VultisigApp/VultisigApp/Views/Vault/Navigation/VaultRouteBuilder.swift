@@ -131,12 +131,12 @@ struct VaultRouteBuilder {
     func buildOnChainSecurityScreen() -> some View {
         OnChainSecurityScreen()
     }
-    
+
     @ViewBuilder
     func buildChainDetailScreen(groupedChain: GroupedChain, vault: Vault) -> some View {
         ChainDetailScreenContainer(group: groupedChain, vault: vault)
     }
-    
+
     @ViewBuilder
     func buildDefiChainDetailScreen(groupedChain: GroupedChain, vault: Vault) -> some View {
         DefiChainMainScreen(vault: vault, group: groupedChain)

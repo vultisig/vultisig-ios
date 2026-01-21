@@ -11,7 +11,7 @@ import Tss
 
 class SolanaSwaps {
     init() {}
-    
+
     func getPreSignedImageHash(
         swapPayload: GenericSwapPayload,
         keysignPayload: KeysignPayload
@@ -20,7 +20,7 @@ class SolanaSwaps {
         let imageHash = try SolanaHelper.getPreSignedImageHash(inputData: inputData)
         return imageHash
     }
-    
+
     func getSignedTransaction(
         swapPayload: GenericSwapPayload,
         keysignPayload: KeysignPayload,
@@ -34,24 +34,24 @@ class SolanaSwaps {
         )
         return result
     }
-    
+
     private func getPreSignedInputData(
         quote: EVMQuote,
         keysignPayload: KeysignPayload
     ) throws -> Data {
-        
+
         guard case .Solana(let recentBlockHash, _, _, _, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("Invalid Solana chain specific data")
         }
-        
+
         guard keysignPayload.coin.chain == .solana else {
             throw HelperError.runtimeError("Chain is not Solana")
         }
-        
+
         let updatedTxData = Data(base64Encoded: quote.tx.data) ?? Data()
         let decodedData = TransactionDecoder.decode(coinType: .solana, encodedTx: updatedTxData)
         var decodedOutput = try SolanaDecodingTransactionOutput(serializedBytes: decodedData)
-        
+
         switch decodedOutput.transaction.message {
         case .legacy(var legacyMessage):
             legacyMessage.recentBlockhash = recentBlockHash
@@ -62,12 +62,12 @@ class SolanaSwaps {
         default:
             throw HelperError.runtimeError("Unsupported transaction message type")
         }
-        
+
         let input = SolanaSigningInput.with {
             $0.rawMessage = decodedOutput.transaction
         }
-        
+
         return try input.serializedData()
     }
-    
+
 }

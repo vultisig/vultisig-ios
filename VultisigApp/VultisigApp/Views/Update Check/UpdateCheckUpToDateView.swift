@@ -9,7 +9,7 @@ import SwiftUI
 
 struct UpdateCheckUpToDateView: View {
     let currentVersion: String
-    
+
     var body: some View {
         VStack(spacing: 34) {
             Spacer()
@@ -21,21 +21,21 @@ struct UpdateCheckUpToDateView: View {
             Spacer()
         }
     }
-    
+
     var vultisigLogo: some View {
         Image("VultisigLogo")
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(width: 72)
     }
-    
+
     var upToDateTitle: some View {
         Text(NSLocalizedString("appUpToDate", comment: ""))
             .font(Theme.fonts.bodyMMedium)
             .foregroundColor(Theme.colors.textPrimary)
             .padding(.top, 24)
     }
-    
+
     var upToDateDescription: some View {
         Text(currentVersion)
             .font(Theme.fonts.bodySMedium)

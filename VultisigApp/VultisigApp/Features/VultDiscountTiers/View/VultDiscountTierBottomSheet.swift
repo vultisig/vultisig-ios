@@ -11,9 +11,9 @@ struct VultDiscountTierBottomSheet: View {
     let tier: VultDiscountTier
     @Binding var isPresented: Bool
     var onUnlock: () -> Void
-    
+
     @State var width: CGFloat = 0
-    
+
     var descriptionText: String {
         switch tier {
         case .ultimate:
@@ -30,7 +30,7 @@ struct VultDiscountTierBottomSheet: View {
             )
         }
     }
-    
+
     var highlightedDescriptionText: String {
         switch tier {
         case .ultimate:
@@ -42,7 +42,7 @@ struct VultDiscountTierBottomSheet: View {
             )
         }
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
             VStack(spacing: 20) {

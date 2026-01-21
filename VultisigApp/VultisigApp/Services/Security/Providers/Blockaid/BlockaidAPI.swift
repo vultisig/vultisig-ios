@@ -18,7 +18,7 @@ extension BlockaidAPI: TargetType {
     var baseURL: URL {
         return URL(string: "https://api.vultisig.com/blockaid/v0")!
     }
-    
+
     var path: String {
         switch self {
         case .scanBitcoinTransaction:
@@ -31,11 +31,11 @@ extension BlockaidAPI: TargetType {
             return "/sui/transaction/scan"
         }
     }
-    
+
     var method: HTTPMethod {
         return .post
     }
-    
+
     var task: HTTPTask {
         switch self {
         case .scanBitcoinTransaction(let request):
@@ -48,7 +48,7 @@ extension BlockaidAPI: TargetType {
             return .requestCodable(request, .jsonEncoding)
         }
     }
-    
+
     var headers: [String: String]? {
         return [
             "Content-Type": "application/json",

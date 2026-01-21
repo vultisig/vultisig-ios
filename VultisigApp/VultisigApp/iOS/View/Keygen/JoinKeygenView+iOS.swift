@@ -14,7 +14,7 @@ extension JoinKeygenView {
         ZStack {
             Background()
             shadow
-            
+
             if viewModel.areVaultsMismatched {
                 vaultsMismatchedError
             } else {
@@ -30,7 +30,7 @@ extension JoinKeygenView {
             }
         }
     }
-    
+
     var main: some View {
         VStack(spacing: .zero) {
             Spacer()

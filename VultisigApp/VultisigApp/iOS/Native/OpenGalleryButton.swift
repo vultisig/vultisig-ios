@@ -11,7 +11,7 @@ import SwiftUI
 struct OpenButton: View {
     @State var buttonIcon: String
     @State var buttonLabel: String
-    
+
     var body: some View {
         content
             .padding(.vertical, 5)
@@ -20,13 +20,13 @@ struct OpenButton: View {
             .background(Theme.colors.bgButtonPrimary)
             .cornerRadius(100)
     }
-    
+
     var content: some View {
         HStack(spacing: 10) {
             Image(systemName: buttonIcon)
                 .font(Theme.fonts.bodySMedium)
                 .foregroundColor(Theme.colors.bgSurface1)
-            
+
             Text(NSLocalizedString(buttonLabel, comment: ""))
                 .font(Theme.fonts.bodySMedium)
                 .foregroundColor(Theme.colors.bgSurface1)

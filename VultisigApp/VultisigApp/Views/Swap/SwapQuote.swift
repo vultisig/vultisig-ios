@@ -8,14 +8,14 @@
 import Foundation
 import BigInt
 
-enum SwapQuote {
+enum SwapQuote: Hashable {
     case thorchain(ThorchainSwapQuote)
     case thorchainStagenet(ThorchainSwapQuote)
     case mayachain(ThorchainSwapQuote)
     case oneinch(EVMQuote, fee: BigInt?)
     case kyberswap(EVMQuote, fee: BigInt?)
     case lifi(EVMQuote, fee: BigInt?, integratorFee: Decimal?)
-    
+
     var swapProviderId: SwapProviderId? {
         switch self {
         case .thorchain, .thorchainStagenet, .mayachain:
@@ -59,7 +59,7 @@ enum SwapQuote {
             return quote.tx.to
         }
     }
-    
+
     var displayName: String? {
         switch self {
         case .thorchain:
@@ -100,20 +100,25 @@ enum SwapQuote {
             return nil
         }
     }
-    var hashValue: Int {
+
+    func hash(into hasher: inout Hasher) {
         switch self {
         case .thorchain(let quote):
-            return quote.hashValue
+            hasher.combine(quote)
         case .thorchainStagenet(let quote):
-            return quote.hashValue
+            hasher.combine(quote)
         case .mayachain(let quote):
-            return quote.hashValue
+            hasher.combine(quote)
         case .oneinch(let quote, let fee):
-            return quote.hashValue ^ fee.hashValue
+            hasher.combine(quote)
+            hasher.combine(fee)
         case .kyberswap(let quote, let fee):
-            return quote.hashValue ^ fee.hashValue
-        case .lifi(let quote, let fee, _):
-            return quote.hashValue ^ fee.hashValue
+            hasher.combine(quote)
+            hasher.combine(fee)
+        case .lifi(let quote, let fee, let integratorFee):
+            hasher.combine(quote)
+            hasher.combine(fee)
+            hasher.combine(integratorFee)
         }
     }
 }

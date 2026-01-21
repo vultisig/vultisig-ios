@@ -9,13 +9,13 @@ import SwiftUI
 
 struct VaultDetailQRCodeView: View {
     let vault: Vault
-    
+
     @State var imageName = ""
     @State var isExporting: Bool = false
-    
+
     @StateObject var viewModel = VaultDetailQRCodeViewModel()
     @Environment(\.displayScale) var displayScale
-    
+
     var body: some View {
         Screen(title: "shareVaultQR".localized, edgeInsets: .init(bottom: .zero)) {
             ScrollView(showsIndicators: false) {
@@ -34,11 +34,11 @@ struct VaultDetailQRCodeView: View {
             }
         }
     }
-    
+
     var qrCode: some View {
         VaultDetailQRCode(vault: vault, viewModel: viewModel)
     }
-    
+
     var saveButton: some View {
         ZStack {
             if let renderedImage = viewModel.renderedImage {
@@ -61,7 +61,7 @@ struct VaultDetailQRCodeView: View {
             }
         }
     }
-    
+
     var shareLinkButton: some View {
         ZStack {
             if let renderedImage = viewModel.renderedImage {
@@ -77,7 +77,7 @@ struct VaultDetailQRCodeView: View {
             }
         }
     }
-    
+
     private func setData() {
         imageName = viewModel.generateName(vault: vault)
         viewModel.render(vault: vault, displayScale: displayScale)

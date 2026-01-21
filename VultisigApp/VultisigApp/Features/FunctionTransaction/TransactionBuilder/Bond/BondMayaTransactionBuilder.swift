@@ -14,18 +14,18 @@ struct BondMayaTransactionBuilder: TransactionBuilder {
     let nodeAddress: String
     let selectedAsset: String
     let lpUnits: UInt64
-    
+
     let amount: String = "1"
     let sendMaxAmount: Bool = false
-    
+
     var prefix: String {
         isBond ? "BOND" : "UNBOND"
     }
-    
+
     var memo: String {
         "\(prefix):\(selectedAsset):\(lpUnits):\(nodeAddress)"
     }
-    
+
     var memoFunctionDictionary: ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("asset", selectedAsset)
@@ -34,7 +34,7 @@ struct BondMayaTransactionBuilder: TransactionBuilder {
         dict.set("memo", memo)
         return dict
     }
-    
+
     var transactionType: VSTransactionType { .unspecified }
     var wasmContractPayload: WasmExecuteContractPayload? { nil }
     var toAddress: String { "" }

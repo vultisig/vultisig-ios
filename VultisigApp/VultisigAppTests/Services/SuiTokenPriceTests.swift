@@ -11,10 +11,10 @@ import BigInt
 
 @MainActor
 final class SuiTokenPriceTests: XCTestCase {
-    
+
     var suiService: SuiService!
     var cetusService: CetusAggregatorService!
-    
+
     // Test data: All Sui tokens from TokensStore
     let suiTokens: [(name: String, address: String, decimals: Int)] = [
         ("SUI", "0x2::sui::SUI", 9),
@@ -37,114 +37,114 @@ final class SuiTokenPriceTests: XCTestCase {
         ("WBTC", "0x027792d9fed7f9844eb4839566001bb6f6cb4804f66aa2da6fe1ee242d896881::coin::COIN", 8),
         ("WBNB", "0xb848cce11ef3a8f62eccea6eb5b35a12c4c2b1ee1af7755d02d7bd6218e8226f::coin::COIN", 8)
     ]
-    
+
     override func setUpWithError() throws {
         try super.setUpWithError()
         suiService = SuiService.shared
         cetusService = CetusAggregatorService.shared
     }
-    
+
     override func tearDownWithError() throws {
         suiService = nil
         cetusService = nil
         try super.tearDownWithError()
     }
-    
+
     // MARK: - Test SuiService.getTokenUSDValue
-    
+
     func testSuiServiceGetTokenUSDValue() async throws {
         var successCount = 0
         var failureCount = 0
         var priceResults: [(token: String, price: Double)] = []
-        
+
         for token in suiTokens {
             let price = await SuiService.getTokenUSDValue(contractAddress: token.address)
-            
+
             if price > 0 {
                 successCount += 1
                 priceResults.append((token: token.name, price: price))
             } else {
                 failureCount += 1
             }
-            
+
             // Small delay to avoid rate limiting
             try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
         }
-        
+
         print("\n📊 SuiService Summary:")
         print("✅ Successful: \(successCount)")
         print("❌ Failed: \(failureCount)")
-        
+
         print("\n💰 Token Prices:")
         for result in priceResults {
             print("\(result.token): $\(String(format: "%.6f", result.price))")
         }
-        
+
         // Assert that at least some tokens returned prices
         XCTAssertGreaterThan(successCount, 0, "At least some tokens should return valid prices")
     }
-    
+
     // MARK: - Test SuiService.getTokenUSDValue with decimals
-    
+
     func testSuiServiceGetTokenUSDValueWithDecimals() async throws {
         var successCount = 0
         var failureCount = 0
         var priceResults: [(token: String, price: Double)] = []
-        
+
         for token in suiTokens {
             let price = await SuiService.getTokenUSDValue(
                 contractAddress: token.address,
                 decimals: token.decimals
             )
-            
+
             if price > 0 {
                 successCount += 1
                 priceResults.append((token: token.name, price: price))
             } else {
                 failureCount += 1
             }
-            
+
             // Small delay to avoid rate limiting
             try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
         }
-        
+
         print("\n📊 SuiService (with decimals) Summary:")
         print("✅ Successful: \(successCount)")
         print("❌ Failed: \(failureCount)")
-        
+
         print("\n💰 Token Prices:")
         for result in priceResults {
             print("\(result.token): $\(String(format: "%.6f", result.price))")
         }
-        
+
         XCTAssertGreaterThan(successCount, 0, "At least some tokens should return valid prices with decimals")
     }
-    
+
     // MARK: - Test CetusAggregatorService directly
-    
+
     func testCetusAggregatorServiceGetTokenUSDValue() async throws {
         var successCount = 0
         var failureCount = 0
         var priceComparison: [(token: String, cetusPrice: Double, suiServicePrice: Double)] = []
-        
+
         for token in suiTokens {
             // Skip USDC as it can't be swapped to itself
             if token.name == "USDC" {
                 continue
             }
-            
+
             // Get price from Cetus with proper decimals
             let cetusPrice = await cetusService.getTokenUSDValue(
                 contractAddress: token.address,
                 decimals: token.decimals
             )
-            
+
             // Also get price from SuiService for comparison
             let suiServicePrice = await SuiService.getTokenUSDValue(
                 contractAddress: token.address,
                 decimals: token.decimals
             )
-            
+
             if cetusPrice > 0 {
                 successCount += 1
                 priceComparison.append((
@@ -155,87 +155,87 @@ final class SuiTokenPriceTests: XCTestCase {
             } else {
                 failureCount += 1
             }
-            
+
             // Small delay to avoid rate limiting
             try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
         }
-        
+
         print("\n📊 Results Summary:")
         print("✅ Successful: \(successCount)")
         print("❌ Failed: \(failureCount)")
-        
+
         // Print only the prices
         print("\n💰 Token Prices:")
         for comparison in priceComparison {
             print("\(comparison.token): $\(String(format: "%.6f", comparison.cetusPrice))")
         }
-        
+
         XCTAssertGreaterThan(successCount, 0, "At least some tokens should return valid Cetus prices")
     }
-    
+
     // MARK: - Test specific token: DEEP
-    
+
     func testDEEPTokenPrice() async throws {
         let deepToken = suiTokens.first { $0.name == "DEEP" }!
-        
+
         // Test with SuiService
         let suiPrice = await SuiService.getTokenUSDValue(contractAddress: deepToken.address)
-        
+
         // Test with SuiService including decimals
         let suiPriceWithDecimals = await SuiService.getTokenUSDValue(
             contractAddress: deepToken.address,
             decimals: deepToken.decimals
         )
-        
+
         // Test with CetusAggregatorService
         let cetusPrice = await cetusService.getTokenUSDValue(
             contractAddress: deepToken.address,
             decimals: deepToken.decimals
         )
-        
+
         print("\n💰 DEEP Token Prices:")
         print("SuiService: $\(String(format: "%.6f", suiPrice))")
         print("SuiService (with decimals): $\(String(format: "%.6f", suiPriceWithDecimals))")
         print("CetusAggregatorService: $\(String(format: "%.6f", cetusPrice))")
-        
+
         // Verify DEEP token returns a valid price
         XCTAssertGreaterThan(suiPrice, 0, "DEEP token should have a valid price from SuiService")
         XCTAssertGreaterThan(cetusPrice, 0, "DEEP token should have a valid price from Cetus")
-        
+
         // Verify prices are reasonable (between $0.01 and $10)
         XCTAssertGreaterThan(cetusPrice, 0.01, "DEEP price should be reasonable (> $0.01)")
         XCTAssertLessThan(cetusPrice, 10.0, "DEEP price should be reasonable (< $10)")
     }
-    
+
     // MARK: - Test error handling
-    
+
     func testInvalidTokenAddress() async throws {
         let invalidAddress = "0xinvalid::token::address"
-        
+
         // Test SuiService
         let suiPrice = await SuiService.getTokenUSDValue(contractAddress: invalidAddress)
         XCTAssertEqual(suiPrice, 0.0, "Invalid address should return 0.0")
-        
+
         // Test CetusAggregatorService
         let cetusPrice = await cetusService.getTokenUSDValue(contractAddress: invalidAddress)
         XCTAssertEqual(cetusPrice, 0.0, "Invalid address should return 0.0")
     }
-    
+
     // MARK: - Performance test
-    
+
     func testPerformanceOfPriceFetching() throws {
         // Test performance for a single token
         let testToken = suiTokens.first { $0.name == "SUI" }!
-        
+
         measure {
             let expectation = self.expectation(description: "Price fetch")
-            
+
             Task {
-                let _ = await SuiService.getTokenUSDValue(contractAddress: testToken.address)
+                _ = await SuiService.getTokenUSDValue(contractAddress: testToken.address)
                 expectation.fulfill()
             }
-            
+
             wait(for: [expectation], timeout: 10.0)
         }
     }
-} 
+}

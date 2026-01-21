@@ -10,17 +10,17 @@ import BigInt
 import OSLog
 
 class BlockaidScannerService: BlockaidScannerServiceProtocol {
-    
+
     private let blockaidRpcClient: BlockaidRpcClientProtocol
     private let logger = Logger(subsystem: "com.vultisig.app", category: "blockaid-scanner")
-    
+
     init(blockaidRpcClient: BlockaidRpcClientProtocol) {
         self.blockaidRpcClient = blockaidRpcClient
     }
-    
+
     func scanTransaction(_ transaction: SecurityScannerTransaction) async throws -> SecurityScannerResult {
         let chain = transaction.chain
-        
+
         switch chain {
         case .arbitrum, .avalanche, .base, .blast, .bscChain, .ethereum, .optimism, .polygon, .polygonV2:
             return try await scanEvmTransaction(transaction)
@@ -34,25 +34,25 @@ class BlockaidScannerService: BlockaidScannerServiceProtocol {
             throw BlockaidScannerError.scannerError("Chain \(chain) is not supported", payload: nil)
         }
     }
-    
+
     func getProviderName() -> String {
         return Constants.providerName
     }
-    
+
     func supportsChain(_ chain: Chain, feature: SecurityScannerFeaturesType) -> Bool {
         guard let supportedChainsByFeature = getSupportedChains()[feature] else {
             return false
         }
-        
+
         return supportedChainsByFeature.contains(chain)
     }
-    
+
     func getSupportedChains() -> [SecurityScannerFeaturesType: [Chain]] {
         return [
             .scanTransaction: Constants.supportedChains
         ]
     }
-    
+
     func getSupportedFeatures() -> [SecurityScannerFeaturesType] {
         return [.scanTransaction]
     }
@@ -61,7 +61,7 @@ class BlockaidScannerService: BlockaidScannerServiceProtocol {
 // MARK: - Private Scan Methods
 
 private extension BlockaidScannerService {
-    
+
     func scanEvmTransaction(_ transaction: SecurityScannerTransaction) async throws -> SecurityScannerResult {
         return try await runSecurityScan(transaction) {
             let response = try await blockaidRpcClient.scanEVMTransaction(
@@ -74,7 +74,7 @@ private extension BlockaidScannerService {
             return try response.toSecurityScannerResult(provider: Constants.providerName)
         }
     }
-    
+
     func scanBitcoinTransaction(_ transaction: SecurityScannerTransaction) async throws -> SecurityScannerResult {
         return try await runSecurityScan(transaction) {
             let response = try await blockaidRpcClient.scanBitcoinTransaction(
@@ -84,7 +84,7 @@ private extension BlockaidScannerService {
             return try response.toSecurityScannerResult(provider: Constants.providerName)
         }
     }
-    
+
     func scanSolanaTransaction(_ transaction: SecurityScannerTransaction) async throws -> SecurityScannerResult {
         return try await runSecurityScan(transaction) {
             let response = try await blockaidRpcClient.scanSolanaTransaction(
@@ -94,7 +94,7 @@ private extension BlockaidScannerService {
             return try response.toSolanaSecurityScannerResult(provider: Constants.providerName)
         }
     }
-    
+
     func scanSuiTransaction(_ transaction: SecurityScannerTransaction) async throws -> SecurityScannerResult {
         return try await runSecurityScan(transaction) {
             let response = try await blockaidRpcClient.scanSuiTransaction(
@@ -104,14 +104,14 @@ private extension BlockaidScannerService {
             return try response.toSecurityScannerResult(provider: Constants.providerName)
         }
     }
-    
+
     /// Runs security scan with error handling and logging
     func runSecurityScan(
         _ transaction: SecurityScannerTransaction,
         operation: () async throws -> SecurityScannerResult
     ) async throws -> SecurityScannerResult {
         logger.info("🔍 Starting security scan for \(transaction.chain.name) transaction")
-        
+
         do {
             let result = try await operation()
             logger.info("✅ Security scan completed - Result: \(result.riskLevel.rawValue)")
@@ -141,7 +141,7 @@ private extension BlockaidScannerService {
             .solana,
             .bitcoin
         ]
-        
+
         static let providerName = "blockaid"
     }
 }
@@ -152,7 +152,7 @@ extension BigInt {
     func toHexString() -> String {
         return "0x" + String(self, radix: 16)
     }
-    
+
     func toEvenLengthHexString() -> String {
             var hex = self.toHexString()
             if hex.hasPrefix("0x") {

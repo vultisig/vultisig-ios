@@ -10,7 +10,7 @@ import SwiftUI
 struct SwitchToLocalLink: View {
     let isForKeygen: Bool
     @Binding var selectedNetwork: NetworkPromptType
-    
+
     var body: some View {
         Button {
             toggleNetwork()
@@ -18,7 +18,7 @@ struct SwitchToLocalLink: View {
             label
         }
     }
-    
+
     var label: some View {
         ZStack {
             if selectedNetwork == .Internet {
@@ -30,7 +30,7 @@ struct SwitchToLocalLink: View {
         .font(Theme.fonts.caption12)
         .frame(maxWidth: .infinity, alignment: .center)
     }
-    
+
     var switchToLocalLabel: some View {
         HStack {
             if isForKeygen {
@@ -38,18 +38,18 @@ struct SwitchToLocalLink: View {
             } else {
                 Text(NSLocalizedString("wantToSignPrivately", comment: ""))
             }
-            
+
             Text(NSLocalizedString("switchToLocalMode", comment: ""))
             .underline()
         }
     }
-    
+
     var switchToInternetLabel: some View {
         Text(NSLocalizedString("switchBackToInternetMode", comment: ""))
         .underline()
         .font(Theme.fonts.caption12)
     }
-    
+
     private func toggleNetwork() {
         if selectedNetwork == .Internet {
             selectedNetwork = .Local

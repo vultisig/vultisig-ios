@@ -11,4 +11,3 @@ struct JSONRPCResponse: Decodable {
     let result: String?
     let error: JSONRPCError?
 }
-

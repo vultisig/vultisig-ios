@@ -12,9 +12,9 @@ struct ChainDetailHeaderView: View {
     let nativeCoin: Coin
     let coins: [Coin]
     var onCopy: () -> Void
-    
+
     @EnvironmentObject var homeViewModel: HomeViewModel
-    
+
     var body: some View {
         VStack(spacing: 12) {
             chainNameView
@@ -22,7 +22,7 @@ struct ChainDetailHeaderView: View {
             chainAddressView
         }
     }
-    
+
     var chainNameView: some View {
         HStack(spacing: 4) {
             AsyncImageView(
@@ -31,13 +31,13 @@ struct ChainDetailHeaderView: View {
                 ticker: nativeCoin.chain.ticker,
                 tokenChainLogo: nativeCoin.chain.logo
             )
-            
+
             Text(nativeCoin.chain.name)
                 .font(Theme.fonts.footnote)
                 .foregroundStyle(Theme.colors.textPrimary)
         }
     }
-    
+
     var chainBalanceView: some View {
         Text(homeViewModel.hideVaultBalance ? String.hideBalanceText : coins.totalBalanceInFiatString)
             .font(Theme.fonts.priceTitle1)
@@ -46,7 +46,7 @@ struct ChainDetailHeaderView: View {
             .contentTransition(.numericText())
             .animation(.interpolatingSpring, value: coins.totalBalanceInFiatString)
     }
-    
+
     var chainAddressView: some View {
         Button(action: onCopy) {
             HStack(spacing: 4) {

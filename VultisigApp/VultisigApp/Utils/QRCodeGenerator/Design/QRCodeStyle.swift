@@ -14,7 +14,7 @@ struct QRCodeStyle {
     let eye: FillStyleSolid? = nil
     let pupil: FillStyleSolid? = nil
     let background: FillStyleSolid
-    
+
     init(background: Color? = nil) {
         self.background = FillStyleSolid(background?.toCGColor ?? Theme.colors.bgSurface1.toCGColor)
     }

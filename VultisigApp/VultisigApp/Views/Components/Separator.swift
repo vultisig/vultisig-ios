@@ -10,7 +10,7 @@ import SwiftUI
 struct Separator: View {
     var color: Color = Theme.colors.textPrimary
     var opacity: CGFloat = 0.2
-    
+
     var body: some View {
         Rectangle()
             .frame(height: 1)

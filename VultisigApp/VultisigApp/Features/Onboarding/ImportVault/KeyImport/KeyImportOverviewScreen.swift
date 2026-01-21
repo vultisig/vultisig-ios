@@ -11,21 +11,21 @@ struct KeyImportOverviewScreen: View {
     let vault: Vault
     let email: String?
     let keyImportInput: KeyImportInput?
-    
+
     enum Page: Int, CaseIterable, Hashable {
         case multisig
         case vaultShares
     }
-    
+
     @State private var scrollPosition: Page? = .multisig
-    
+
     @State private var isVerificationLinkActive = false
     @Environment(\.router) var router
-    
+
     var buttonTitle: String {
         "next".localized
     }
-    
+
     var body: some View {
         Screen(edgeInsets: .init(leading: 0, trailing: 0)) {
             VStack(spacing: 0) {
@@ -86,7 +86,7 @@ struct KeyImportOverviewScreen: View {
             }
         }
     }
-    
+
     @ViewBuilder
     var pages: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -109,7 +109,7 @@ struct KeyImportOverviewScreen: View {
         .scrollTargetBehavior(.paging)
         .scrollPosition(id: $scrollPosition)
     }
-    
+
     var pagesIndicator: some View {
         HStack(spacing: 4) {
             ForEach(Page.allCases, id: \.self) { page in
@@ -123,7 +123,7 @@ struct KeyImportOverviewScreen: View {
             }
         }
     }
-    
+
     var multisigPageContent: some View {
         VStack(alignment: .leading, spacing: 24) {
             CustomHighlightText(
@@ -133,13 +133,13 @@ struct KeyImportOverviewScreen: View {
             )
             .foregroundStyle(Theme.colors.textPrimary)
             .font(Theme.fonts.title2)
-            
+
             OnboardingInformationRowView(
                 title: "whatIsMultisig".localized,
                 subtitle: "whatIsMultisigSubtitle".localized,
                 icon: "four-square-circle"
             )
-            
+
             OnboardingInformationRowView(
                 title: "whySwitchFromSeedphrase".localized,
                 subtitle: "whySwitchFromSeedphraseSubtitle".localized,
@@ -148,7 +148,7 @@ struct KeyImportOverviewScreen: View {
         }
         .fixedSize(horizontal: false, vertical: true)
     }
-    
+
     var vaultSharesPageContent: some View {
         VStack(alignment: .leading, spacing: 24) {
             CustomHighlightText(
@@ -158,12 +158,12 @@ struct KeyImportOverviewScreen: View {
             )
             .foregroundStyle(Theme.colors.textPrimary)
             .font(Theme.fonts.title2)
-            
+
             VStack(alignment: .leading, spacing: 8) {
                 Text("whatAreVaultShares".localized)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.subtitle)
-                
+
                 VStack(alignment: .leading, spacing: 0) {
                     Text("whatAreVaultSharesDescription".localized)
                         .foregroundStyle(Theme.colors.textTertiary)

@@ -16,26 +16,26 @@ extension QRShareSheetImage {
         }
         .frame(width: 375, height: 800)
     }
-    
+
     var qrCode: some View {
         image
             .resizable()
             .aspectRatio(contentMode: .fit)
             .padding(24)
             .cornerRadius(cornerRadius)
-            .overlay (
+            .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius)
                     .strokeBorder(Theme.colors.border, lineWidth: 2)
             )
             .padding(.horizontal, padding)
     }
-    
+
     var logo: some View {
         VStack(spacing: 16) {
             Image("VultisigLogo")
                 .resizable()
                 .frame(width: 110, height: 110)
-            
+
             Text("vultisig.com")
         }
         .offset(y: -20)

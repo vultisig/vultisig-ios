@@ -22,13 +22,13 @@ class AddressBookChainSelectionViewModel: ObservableObject {
             }
         }
     }
-    
+
     let vaultChains: [CoinMeta]
-    
+
     init(vaultChains: [CoinMeta]) {
         self.vaultChains = vaultChains
     }
-    
+
     func setup() {
         var chains: [AddressBookChainType] = [.evm]
         chains += vaultChains

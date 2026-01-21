@@ -44,7 +44,7 @@ final class RateProvider {
     private var _rates = Set<Rate>()
     private var ratesLock = os_unfair_lock()
     private let initQueue = DispatchQueue(label: "com.vultisig.rateprovider.init")
-    
+
     /// Thread-safe access to rates
     private var rates: Set<Rate> {
         get {
@@ -65,13 +65,13 @@ final class RateProvider {
         // processing another fetch/register operation
         initQueue.async { [weak self] in
             guard let self = self else { return }
-            
+
             let descriptor = FetchDescriptor<DatabaseRate>()
-            
+
             do {
                 let objects = try Storage.shared.modelContext.fetch(descriptor)
                 let loadedRates = Set(objects.map { Rate(object: $0) })
-                
+
                 // Thread-safe assignment via computed property
                 self.rates = loadedRates
             } catch {
@@ -79,7 +79,7 @@ final class RateProvider {
             }
         }
     }
-    
+
     func fiatBalance(value: Decimal, coin: CoinMeta, rate: Rate, currency: SettingsCurrency = .current) -> Decimal {
         let result = value * Decimal(rate.value)
         // Don't truncate here - let the formatter handle precision
@@ -89,7 +89,7 @@ final class RateProvider {
     func fiatBalance(value: Decimal, coin: Coin, currency: SettingsCurrency = .current) -> Decimal {
         fiatBalance(value: value, coin: coin.toCoinMeta(), currency: currency)
     }
-    
+
     func fiatBalance(value: Decimal, coin: CoinMeta, currency: SettingsCurrency = .current) -> Decimal {
         guard let rate = rate(for: coin, currency: currency) else {
             return .zero
@@ -104,7 +104,7 @@ final class RateProvider {
     func fiatBalanceString(for coin: Coin, currency: SettingsCurrency = .current) -> String {
         return fiatBalanceString(value: coin.balanceDecimal, coin: coin, currency: currency)
     }
-    
+
     func fiatBalanceString(value: Decimal, coin: Coin, rate: Rate, currency: SettingsCurrency = .current) -> String {
         let balance = fiatBalance(value: value, coin: coin.toCoinMeta(), rate: rate, currency: currency)
         return balance.formatToFiat(includeCurrencySymbol: true)
@@ -114,7 +114,7 @@ final class RateProvider {
         let balance = fiatBalance(value: value, coin: coin.toCoinMeta(), currency: currency)
         return balance.formatToFiat(includeCurrencySymbol: true)
     }
-    
+
     /// Format fiat balance for fee display with more decimal places (e.g., $0.0065 instead of $0.00)
     func fiatFeeString(value: Decimal, coin: Coin, currency: SettingsCurrency = .current) -> String {
         let balance = fiatBalance(value: value, coin: coin.toCoinMeta(), currency: currency)
@@ -124,7 +124,7 @@ final class RateProvider {
     func rate(for coin: Coin, currency: SettingsCurrency = .current) -> Rate? {
         rate(for: coin.toCoinMeta(), currency: currency)
     }
-    
+
     func rate(for coin: CoinMeta, currency: SettingsCurrency = .current) -> Rate? {
         let cryptoId = RateProvider.cryptoId(for: coin)
         let identifier = Rate.identifier(fiat: currency.rawValue, crypto: cryptoId.id)
@@ -135,14 +135,14 @@ final class RateProvider {
         // if a rate is newer , we use the newer one
         let newRateIds = Set(newRates.map { $0.id })
         rates = rates.filter { !newRateIds.contains($0.id) }.union(newRates)
-        
+
         // Update existing or insert new rates
         for rate in newRates {
             let rateId = rate.id // Capture the value outside the predicate
             let descriptor = FetchDescriptor<DatabaseRate>(
                 predicate: #Predicate { $0.id == rateId }
             )
-            
+
             if let existingRate = try Storage.shared.modelContext.fetch(descriptor).first {
                 // Update existing rate
                 existingRate.fiat = rate.fiat
@@ -153,7 +153,7 @@ final class RateProvider {
                 Storage.shared.insert(rate.mapToObject())
             }
         }
-        
+
         try Storage.shared.modelContext.save()
     }
 }

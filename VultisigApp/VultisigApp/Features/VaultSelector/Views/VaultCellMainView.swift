@@ -9,9 +9,9 @@ import SwiftUI
 
 struct VaultCellMainView: View {
     let vault: Vault
-    
+
     @EnvironmentObject var homeViewModel: HomeViewModel
-    
+
     var body: some View {
         HStack(spacing: 12) {
             VaultIconTypeView(isFastVault: vault.isFastVault)
@@ -27,7 +27,7 @@ struct VaultCellMainView: View {
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.bodySMedium)
                     .lineLimit(1)
-                
+
                 Text(homeViewModel.balanceText(for: vault))
                     .foregroundStyle(Theme.colors.textSecondary)
                     .font(Theme.fonts.priceFootnote)

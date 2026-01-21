@@ -17,7 +17,7 @@ enum ClipboardManager {
         pasteboard.setString(text, forType: .string)
 #endif
     }
-    
+
     static func pasteFromClipboard() -> String? {
 #if os(iOS)
         return UIPasteboard.general.string

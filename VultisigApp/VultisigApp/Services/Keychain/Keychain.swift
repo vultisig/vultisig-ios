@@ -54,7 +54,7 @@ struct Keychain {
     // MARK: - Bool
 
     func getBool(for key: KeychainIdentifier) -> Bool {
-        guard let _ = getString(for: key) else {
+        guard getString(for: key) != nil else {
             return false
         }
         return true
@@ -78,8 +78,6 @@ struct Keychain {
         let string = value.map { String($0) }
         setString(string, for: key)
     }
-
-    //MARK: - Array
 
     func getObject<T: Codable>(key: KeychainIdentifier) -> T? {
         guard let data = get(for: key) else {
@@ -116,7 +114,6 @@ struct Keychain {
 // MARK: - Privates
 
 private extension Keychain {
-
 
     func set(_ data: Data?, for key: KeychainIdentifier) {
 

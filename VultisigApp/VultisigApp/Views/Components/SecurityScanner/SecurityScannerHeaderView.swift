@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SecurityScannerHeaderView: View {
     let state: SecurityScannerState
-    
+
     var body: some View {
         HStack(spacing: 4) {
             Group {
@@ -31,13 +31,13 @@ struct SecurityScannerHeaderView: View {
         .transition(.opacity)
         .animation(.easeOut, value: state)
     }
-    
+
     @ViewBuilder
     var scanningView: some View {
         InlineLoader()
         Text("securityScannerTransactionScanning".localized)
     }
-    
+
     @ViewBuilder
     func scannedView(provider: String) -> some View {
         Image(systemName: "checkmark")
@@ -49,7 +49,7 @@ struct SecurityScannerHeaderView: View {
         Text("securityScannerTransactionScannedBy".localized)
         providerImage(provider)
     }
-    
+
     @ViewBuilder
     func notScannedView(provider: String) -> some View {
         Image(systemName: "exclamationmark.triangle")
@@ -59,7 +59,7 @@ struct SecurityScannerHeaderView: View {
         Text("securityScannerTransactionNotScanned".localized)
         providerImage(provider)
     }
-    
+
     func providerImage(_ provider: String) -> some View {
         Image(provider)
             .resizable()

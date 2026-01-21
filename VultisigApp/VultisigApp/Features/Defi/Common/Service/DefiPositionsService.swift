@@ -11,7 +11,7 @@ struct DefiPositionsService {
     func positionCoins(for chain: Chain) -> [CoinMeta] {
         bondCoins(for: chain) + stakeCoins(for: chain)
     }
-    
+
     func bondCoins(for chain: Chain) -> [CoinMeta] {
         switch chain {
         case .thorChain:
@@ -22,7 +22,7 @@ struct DefiPositionsService {
             []
         }
     }
-    
+
     func stakeCoins(for chain: Chain) -> [CoinMeta] {
         switch chain {
         case .thorChain:
@@ -40,7 +40,7 @@ struct DefiPositionsService {
             []
         }
     }
-    
+
     func lpCoins(for chain: Chain) async -> [CoinMeta] {
         switch chain {
         case .thorChain:

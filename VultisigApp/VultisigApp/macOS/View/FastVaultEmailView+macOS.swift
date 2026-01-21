@@ -16,23 +16,23 @@ extension FastVaultEmailView {
         }
         .crossPlatformToolbar(showsBackButton: !backButtonHidden)
     }
-    
+
     var view: some View {
         VStack {
             emailField
-            
+
             if isEmptyEmail {
                 emptyEmailLabel
             } else if isInvalidEmail {
                 validEmailLabel
             }
-            
+
             Spacer()
             button
         }
         .padding(.horizontal, 25)
     }
-    
+
     func textfield(title: String, text: Binding<String>) -> some View {
         HStack {
             TextField("", text: text, prompt: Text(NSLocalizedString(title, comment: ""))
@@ -46,7 +46,7 @@ extension FastVaultEmailView {
             .onSubmit {
                 handleTap()
             }
-            
+
             if !email.isEmpty {
                 clearButton
             }

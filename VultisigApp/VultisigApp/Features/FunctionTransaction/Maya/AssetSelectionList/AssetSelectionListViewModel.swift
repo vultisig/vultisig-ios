@@ -16,16 +16,16 @@ class AssetSelectionListViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published private var assets: [THORChainAsset] = []
     private let dataSource: AssetSelectionDataSource
-    
+
     var filteredAssets: [THORChainAsset] {
         guard searchText.isNotEmpty else { return assets }
         return assets.filter { $0.asset.ticker.localizedCaseInsensitiveContains(searchText) }
     }
-    
+
     init(dataSource: AssetSelectionDataSource) {
         self.dataSource = dataSource
     }
-    
+
     func setup() async {
         await MainActor.run { isLoading = true }
         let assets = await dataSource.fetchAssets()

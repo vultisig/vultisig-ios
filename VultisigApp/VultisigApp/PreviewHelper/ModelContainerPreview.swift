@@ -12,7 +12,7 @@ import SwiftData
 struct ModelContainerPreview<Content: View>: View {
     var content: () -> Content
     let container: ModelContainer
-    
+
     /// Creates an instance of the model container preview.
     ///
     /// This view creates the model container before displaying the preview
@@ -44,7 +44,7 @@ struct ModelContainerPreview<Content: View>: View {
             fatalError("Failed to create the model container: \(error.localizedDescription)")
         }
     }
-    
+
     /// Creates a view that creates the provided model container before displaying
     /// the preview content.
     ///
@@ -64,7 +64,7 @@ struct ModelContainerPreview<Content: View>: View {
     init(_ modelContainer: @escaping () throws -> ModelContainer, @ViewBuilder content: @escaping () -> Content) {
         self.init(content: content, modelContainer: modelContainer)
     }
-    
+
     var body: some View {
         content()
             .modelContainer(container)

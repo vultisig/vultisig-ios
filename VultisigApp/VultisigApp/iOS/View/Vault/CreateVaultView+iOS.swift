@@ -43,7 +43,7 @@ extension CreateVaultView {
                 }
             }
     }
-    
+
     var scanButton: some View {
         ZStack {
             if ProcessInfo.processInfo.isiOSAppOnMac {
@@ -53,13 +53,13 @@ extension CreateVaultView {
             }
         }
     }
-    
+
     var scanPhoneButton: some View {
         PrimaryButton(title: "scanQRStartScreen", leadingIcon: "qr-code", type: .secondary) {
             showSheet = true
         }
     }
-    
+
     var scanMacButton: some View {
         PrimaryButton(title: "scanQRStartScreen", leadingIcon: "qr-code", type: .secondary) {
             navigateToGeneralQRImport = true

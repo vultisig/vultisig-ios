@@ -10,7 +10,7 @@ import SwiftUI
 struct UpdateCheckUpdateNowView: View {
     let latestVersion: String
     let link: URL
-    
+
     var body: some View {
         VStack(spacing: 30) {
             Spacer()
@@ -23,7 +23,7 @@ struct UpdateCheckUpdateNowView: View {
             Spacer()
         }
     }
-    
+
     var updateLogo: some View {
         Image("VultisigLogo")
             .resizable()
@@ -31,20 +31,20 @@ struct UpdateCheckUpdateNowView: View {
             .frame(width: 72)
             .padding(.bottom, 4)
     }
-    
+
     var updateTitle: some View {
         Text(NSLocalizedString("newUpdateAvailable", comment: ""))
             .font(Theme.fonts.bodyMMedium)
             .foregroundColor(Theme.colors.textPrimary)
             .padding(.top, 24)
     }
-    
+
     var updateDescription: some View {
         Text(latestVersion)
             .font(Theme.fonts.bodySRegular)
             .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     var updateButton: some View {
         return Link(destination: link) {
             PrimaryButtonView(title: "updateNow")

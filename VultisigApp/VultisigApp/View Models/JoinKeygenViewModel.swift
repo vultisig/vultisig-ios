@@ -26,7 +26,7 @@ class JoinKeygenViewModel: ObservableObject {
     private let logger = Logger(subsystem: "join-keygen", category: "viewmodel")
     var vault: Vault
     var serviceDelegate: ServiceDelegate?
-    
+
     private var keyImportChains: [Chain] = []
     var keyImportInput: KeyImportInput? {
         guard tssType == .KeyImport else { return nil }
@@ -35,7 +35,7 @@ class JoinKeygenViewModel: ObservableObject {
         let chainSettings = keyImportChains.map { ChainImportSetting(chain: $0) }
         return KeyImportInput(mnemonic: "", chainSettings: chainSettings)
     }
-    
+
     @Published var tssType: TssType = .Keygen
     @Published var isShowingScanner = false
     @Published var sessionID: String? = nil
@@ -43,7 +43,7 @@ class JoinKeygenViewModel: ObservableObject {
     @Published var isCameraPermissionGranted: Bool? = nil
     @Published var selectedVault: Vault? = nil
     @Published var areVaultsMismatched: Bool = false
-    
+
     @Published var netService: NetService? = nil
     @Published var status = JoinKeygenStatus.DiscoverSessionID
     @Published var keygenCommittee = [String]()
@@ -53,14 +53,14 @@ class JoinKeygenViewModel: ObservableObject {
     @Published var errorMessage = ""
     @Published var serverAddress: String? = nil
     @Published var oldResharePrefix: String = ""
-    
+
     var encryptionKeyHex: String = ""
     var vaults: [Vault] = []
-    
+
     init() {
         self.vault = Vault(name: "Main Vault")
     }
-    
+
     func setData(
         vault: Vault,
         selectedVault: Vault?,
@@ -73,42 +73,42 @@ class JoinKeygenViewModel: ObservableObject {
         self.vaults = vaults
         self.serviceDelegate = serviceDelegate
         self.isCameraPermissionGranted = isCameraPermissionGranted
-        
+
         if !vault.localPartyID.isEmpty {
             self.localPartyID = vault.localPartyID
         } else {
             self.localPartyID = Utils.getLocalDeviceIdentity()
             vault.localPartyID = self.localPartyID
         }
-        
+
         if let isAllowed = self.isCameraPermissionGranted, !isAllowed {
             status = .NoCameraAccess
         }
     }
-    
+
     func showBarcodeScanner() {
         isShowingScanner = true
     }
-    
+
     func setStatus(status: JoinKeygenStatus) {
         self.status = status
     }
-    
-    func discoverService(){
+
+    func discoverService() {
         self.netService = NetService(domain: "local.", type: "_http._tcp.", name: self.serviceName)
         netService?.delegate = self.serviceDelegate
         netService?.resolve(withTimeout: 10)
     }
-    
+
     func joinKeygenCommittee() {
         guard let serverURL = serverAddress, let sessionID = sessionID else {
             logger.error("Required information for joining key generation committee is missing.")
             return
         }
-        
+
         let urlString = "\(serverURL)/\(sessionID)"
         let body = [localPartyID]
-        Utils.sendRequest(urlString: urlString, 
+        Utils.sendRequest(urlString: urlString,
                           method: "POST",
                           headers: nil,
                           body: body) { success in
@@ -122,11 +122,11 @@ class JoinKeygenViewModel: ObservableObject {
             }
         }
     }
-    func stopJoinKeygen(){
+    func stopJoinKeygen() {
         self.status = .DiscoverService
     }
     func waitForKeygenStart() async {
-        do{
+        do {
             let t = Task {
                 repeat {
                     try await checkKeygenStarted()
@@ -134,8 +134,7 @@ class JoinKeygenViewModel: ObservableObject {
                 } while self.status == .WaitingForKeygenToStart
             }
             try await t.value
-        }
-        catch {
+        } catch {
             logger.error("Failed to wait for keygen to start. Error: \(error.localizedDescription)")
         }
     }
@@ -148,17 +147,17 @@ class JoinKeygenViewModel: ObservableObject {
         guard let serverURL = serverAddress, let sessionID = sessionID else {
             throw HelperError.runtimeError("Required information for checking key generation status is missing.")
         }
-        
+
         let urlString = "\(serverURL)/start/\(sessionID)"
         guard let url = URL(string: urlString) else {
             throw HelperError.runtimeError("Invalid URL: \(urlString)")
         }
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let (data,resp) = try await URLSession.shared.data(for: request)
+
+        let (data, resp) = try await URLSession.shared.data(for: request)
         guard let httpResponse = resp as? HTTPURLResponse else {
             self.logger.error("Invalid response from server")
             return
@@ -189,8 +188,8 @@ class JoinKeygenViewModel: ObservableObject {
             self.logger.error("Server returned status code \(httpResponse.statusCode)")
         }
     }
-    
-    func isVaultNameAlreadyExist(name: String) -> Bool  {
+
+    func isVaultNameAlreadyExist(name: String) -> Bool {
         for v in self.vaults {
             if v.name == name && !v.pubKeyECDSA.isEmpty {
                 return true
@@ -198,14 +197,14 @@ class JoinKeygenViewModel: ObservableObject {
         }
         return false
     }
-    
+
     func handleQrCodeSuccessResult(scanData: String, tssType: TssType) {
         self.tssType = tssType
 
         var useVultisigRelay = false
         do {
             switch tssType {
-            case .Keygen,.KeyImport:
+            case .Keygen, .KeyImport:
                 let keygenMsg: KeygenMessage = try ProtoSerializer.deserialize(
                     base64EncodedString: scanData)
                 sessionID = keygenMsg.sessionID
@@ -223,7 +222,7 @@ class JoinKeygenViewModel: ObservableObject {
                     status = .FailToStart
                     return
                 }
-            case .Reshare,.Migrate:
+            case .Reshare, .Migrate:
                 let reshareMsg: ReshareMessage = try ProtoSerializer.deserialize(
                     base64EncodedString: scanData)
                 oldCommittee = reshareMsg.oldParties
@@ -233,7 +232,7 @@ class JoinKeygenViewModel: ObservableObject {
                 encryptionKeyHex = reshareMsg.encryptionKeyHex
                 useVultisigRelay = reshareMsg.useVultisigRelay
                 oldResharePrefix = reshareMsg.oldResharePrefix
-                
+
                 if tssType == .Migrate {
                     // this logic only applies to migrate
                     guard let selectedVaultKey = selectedVault?.pubKeyECDSA, selectedVaultKey == reshareMsg.pubKeyECDSA else {
@@ -241,7 +240,7 @@ class JoinKeygenViewModel: ObservableObject {
                         return
                     }
                 }
-                
+
                 // this means the vault is new , and it join the reshare to become the new committee
                 if vault.pubKeyECDSA.isEmpty {
                     if !reshareMsg.pubKeyECDSA.isEmpty {
@@ -260,7 +259,7 @@ class JoinKeygenViewModel: ObservableObject {
                             }
                         }
                     }
-                    
+
                 } else {
                     if vault.pubKeyECDSA != reshareMsg.pubKeyECDSA {
                         errorMessage = "wrongVaultSelected".localized
@@ -275,7 +274,7 @@ class JoinKeygenViewModel: ObservableObject {
                     }
                 }
             }
-            
+
         } catch {
             errorMessage = "failedToDecodePeerDiscoveryMessage".localized + ": \(error.localizedDescription)"
             status = .FailToStart
@@ -288,7 +287,7 @@ class JoinKeygenViewModel: ObservableObject {
             status = .DiscoverService
         }
     }
-    
+
     func handleQrCodeFromImage(result: Result<[URL], Error>) {
         do {
             let urlData = try Utils.handleQrCodeFromImage(result: result)
@@ -300,12 +299,12 @@ class JoinKeygenViewModel: ObservableObject {
             print(error)
         }
     }
-    
+
     func handleDeeplinkScan(_ url: URL?) {
         guard let url else {
             return
         }
-        
+
         guard
             let jsonData = DeeplinkViewModel.getJsonData(url),
             let tssTypeString = DeeplinkViewModel.getTssType(url),

@@ -12,17 +12,17 @@ extension FastBackupVaultOverview {
     var container: some View {
         content
     }
-    
+
     var textTabView: some View {
         text
     }
-    
+
     var button: some View {
         nextButton
             .padding(.horizontal, 40)
             .padding(.bottom, 50)
     }
-    
+
     var text: some View {
         VStack {
             Spacer()
@@ -34,9 +34,9 @@ extension FastBackupVaultOverview {
         }
         .frame(maxWidth: .infinity)
     }
-    
+
     var animation: some View {
-        ZStack{
+        ZStack {
             if tabIndex>2 {
                 backupVaultAnimationVM?.view()
             } else {

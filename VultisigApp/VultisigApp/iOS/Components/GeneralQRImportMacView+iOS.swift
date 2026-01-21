@@ -12,9 +12,9 @@ extension GeneralQRImportMacView {
     func setValues(_ urls: [URL]) {
         do {
             if let url = urls.first {
-                let _ = url.startAccessingSecurityScopedResource()
+                _ = url.startAccessingSecurityScopedResource()
                 fileName = url.lastPathComponent
-                
+
                 let imageData = try Data(contentsOf: url)
                 if let uiImage = UIImage(data: imageData) {
                     selectedImage = uiImage

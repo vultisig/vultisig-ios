@@ -13,9 +13,9 @@ import WalletCore
 enum FunctionCallContractType: String, CaseIterable, Identifiable {
     case thorChainMessageDeposit
     case cosmosMessageVote
-    
+
     var id: String { self.rawValue }
-    
+
     func getDescription(for coin: Coin) -> String {
         switch self {
         case .thorChainMessageDeposit:
@@ -24,7 +24,7 @@ enum FunctionCallContractType: String, CaseIterable, Identifiable {
             return String(format: NSLocalizedString("messageVote", comment: ""), coin.chain.name)
         }
     }
-    
+
     static func getCases(for coin: Coin) -> [FunctionCallContractType] {
         switch coin.chain {
         case .thorChain, .mayaChain:
@@ -35,7 +35,7 @@ enum FunctionCallContractType: String, CaseIterable, Identifiable {
             return []
         }
     }
-    
+
     static func getDefault(for coin: Coin) -> FunctionCallContractType {
         switch coin.chain {
         case .thorChain, .mayaChain:
@@ -47,4 +47,3 @@ enum FunctionCallContractType: String, CaseIterable, Identifiable {
         }
     }
 }
-

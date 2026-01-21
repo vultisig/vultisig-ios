@@ -14,12 +14,12 @@ struct FunctionCallVerifyScreen: View {
     @ObservedObject var depositVerifyViewModel: FunctionCallVerifyViewModel
     @ObservedObject var tx: SendTransaction
     let vault: Vault
-    
+
     @EnvironmentObject var settingsViewModel: SettingsViewModel
-    
+
     @State var fastPasswordPresented = false
     @State var isForReferral = false
-    
+
     var body: some View {
         ZStack {
             Background()
@@ -47,7 +47,7 @@ struct FunctionCallVerifyScreen: View {
             }
         }
     }
-    
+
     var content: some View {
         VStack(spacing: 0) {
             if isForReferral {
@@ -59,7 +59,7 @@ struct FunctionCallVerifyScreen: View {
             } else {
                 summary
             }
-            
+
             Spacer()
             pairedSignButton
                 .padding(.bottom, 40)
@@ -68,7 +68,7 @@ struct FunctionCallVerifyScreen: View {
         .blur(radius: depositVerifyViewModel.isLoading ? 1 : 0)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
-    
+
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString("error", comment: "")),
@@ -76,7 +76,7 @@ struct FunctionCallVerifyScreen: View {
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
-    
+
     var summary: some View {
         SendCryptoVerifySummaryView(
             input: SendCryptoVerifySummary(
@@ -97,14 +97,14 @@ struct FunctionCallVerifyScreen: View {
         )
         .padding(.horizontal, 16)
     }
-    
+
     var pairedSignButton: some View {
         VStack {
             if tx.isFastVault {
                 Text(NSLocalizedString("holdForPairedSign", comment: ""))
                     .foregroundColor(Theme.colors.textExtraLight)
                     .font(Theme.fonts.bodySMedium)
-                
+
                 LongPressPrimaryButton(
                     title: NSLocalizedString("signTransaction", comment: "")) {
                         fastPasswordPresented = true
@@ -125,7 +125,7 @@ struct FunctionCallVerifyScreen: View {
             }
         }
     }
-    
+
     private func getAmount() -> String {
         // Check if this is a THORChain LP operation
         if let pool = tx.memoFunctionDictionary.get("pool"), !pool.isEmpty {
@@ -139,23 +139,23 @@ struct FunctionCallVerifyScreen: View {
                 return tx.amountDecimal.formatForDisplay() + " " + tx.coin.ticker + " → " + cleanPoolName + " LP"
             }
         }
-        
+
         // Default display for non-LP operations
         return tx.amountDecimal.formatForDisplay() + " " + tx.coin.ticker
     }
-    
+
     private func onSignPress() {
         let canSign = depositVerifyViewModel.validateSecurityScanner()
         if canSign {
             signAndMoveToNextView()
         }
     }
-    
+
     func signAndMoveToNextView() {
         Task {
-            
+
             keysignPayload = await depositVerifyViewModel.createKeysignPayload(tx: tx, vault: vault)
-            
+
             if keysignPayload != nil {
                 depositViewModel.moveToNextView()
             }

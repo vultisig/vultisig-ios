@@ -12,11 +12,11 @@ final class CircleViewModel: ObservableObject, Hashable, Equatable {
     static func == (lhs: CircleViewModel, rhs: CircleViewModel) -> Bool {
         lhs.id == rhs.id
     }
-    
+
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
-    
+
     private let id = UUID()
     @Published var isLoading = false
     @Published var error: Error?
@@ -28,6 +28,6 @@ final class CircleViewModel: ObservableObject, Hashable, Equatable {
     @Published var currentRewards: String = "0"
     @Published var showDeposit = false
     @Published var showWithdraw = false
-    
+
     let logic = CircleViewLogic()
 }

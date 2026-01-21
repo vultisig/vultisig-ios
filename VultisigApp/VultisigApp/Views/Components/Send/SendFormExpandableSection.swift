@@ -11,12 +11,12 @@ struct SendFormExpandableSection<Header: View, Content: View>: View {
     let isExpanded: Bool
     let header: () -> Header
     let content: () -> Content
-    
+
     @State var opacity: CGFloat = 0
     @State var height: CGFloat? = 0
-    
+
     @State var isExpandedInternal = false
-        
+
     init(
         isExpanded: Bool,
         @ViewBuilder header: @escaping () -> Header,
@@ -27,7 +27,7 @@ struct SendFormExpandableSection<Header: View, Content: View>: View {
         self.content = content
         self._isExpandedInternal = State(initialValue: isExpanded)
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
             header()
@@ -49,7 +49,7 @@ struct SendFormExpandableSection<Header: View, Content: View>: View {
             animate()
         }
     }
-    
+
     private func animate() {
         withAnimation(.easeInOut) {
             isExpandedInternal = isExpanded

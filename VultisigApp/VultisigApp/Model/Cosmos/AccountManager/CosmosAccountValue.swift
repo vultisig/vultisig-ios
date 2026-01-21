@@ -13,7 +13,7 @@ class CosmosAccountValue: Codable {
     var publicKey: CosmosAccountValuePublicKey?
     var accountNumber: String?
     var sequence: String?
-    
+
     enum CodingKeys: String, CodingKey {
         case address, publicKey = "pub_key", accountNumber = "account_number", sequence, type = "@type"
     }
@@ -22,7 +22,7 @@ class CosmosAccountValue: Codable {
 class CosmosAccountValuePublicKey: Codable {
     var type: String
     var value: String
-    enum CodingKeys: String,CodingKey {
+    enum CodingKeys: String, CodingKey {
         case type = "@type", value = "key"
     }
 }

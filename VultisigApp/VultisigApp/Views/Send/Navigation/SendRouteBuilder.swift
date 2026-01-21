@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SendRouteBuilder {
-    
+
     @ViewBuilder
     func buildDetailsScreen(
         coin: Coin?,
@@ -23,12 +23,12 @@ struct SendRouteBuilder {
             vault: vault
         )
     }
-    
+
     @ViewBuilder
     func buildVerifyScreen(tx: SendTransaction, vault: Vault) -> some View {
         SendVerifyScreen(tx: tx, vault: vault)
     }
-    
+
     @ViewBuilder
     func buildPairScreen(
         vault: Vault,
@@ -43,12 +43,12 @@ struct SendRouteBuilder {
             fastVaultPassword: fastVaultPassword
         )
     }
-    
+
     @ViewBuilder
     func buildKeysignScreen(input: KeysignInput, tx: SendTransaction) -> some View {
         SendKeysignScreen(input: input, tx: tx)
     }
-    
+
     @ViewBuilder
     func buildDoneScreen(
         vault: Vault,
@@ -72,7 +72,7 @@ struct SendRouteBuilder {
 
     @ViewBuilder
     func buildBuyScreen(address: String, blockChainCode: String, coinType: String) -> some View {
-        BanxaDisclaimer(url:getBuyURL(address:address, blockChainCode: blockChainCode, coinType: coinType))
+        BanxaDisclaimer(url: getBuyURL(address: address, blockChainCode: blockChainCode, coinType: coinType))
     }
 
     func getBuyURL(address: String, blockChainCode: String, coinType: String) -> URL {
@@ -80,7 +80,7 @@ struct SendRouteBuilder {
         components.queryItems = [
             URLQueryItem(name: "walletAddress", value: address),
             URLQueryItem(name: "blockchain", value: blockChainCode),
-            URLQueryItem(name: "coinType", value: coinType),
+            URLQueryItem(name: "coinType", value: coinType)
         ]
         return components.url!
     }

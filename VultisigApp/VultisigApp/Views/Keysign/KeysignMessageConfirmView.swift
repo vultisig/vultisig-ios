@@ -9,7 +9,7 @@ import SwiftUI
 
 struct KeysignMessageConfirmView: View {
     @ObservedObject var viewModel: JoinKeysignViewModel
-    
+
     var body: some View {
         ZStack {
             VStack(spacing: 24) {
@@ -33,7 +33,7 @@ struct KeysignMessageConfirmView: View {
                     ),
                     securityScannerState: .constant(.idle)
                 )
-                
+
                 PrimaryButton(title: "joinTransactionSigning") {
                     viewModel.joinKeysignCommittee()
                 }
@@ -45,7 +45,7 @@ struct KeysignMessageConfirmView: View {
         }
         .navigationTitle("sendOverview")
     }
-    
+
     var title: some View {
         Text(NSLocalizedString("verify", comment: ""))
             .frame(maxWidth: .infinity, alignment: .center)

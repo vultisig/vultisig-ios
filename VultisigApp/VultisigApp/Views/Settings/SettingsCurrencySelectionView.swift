@@ -16,10 +16,10 @@ struct SettingsCurrencySelectionView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @EnvironmentObject var appViewModel: AppViewModel
-    
+
     @State private var currencies: [SettingsCurrencyViewModel] = []
     @State var isLoading = false
-    
+
     var body: some View {
         Screen(title: "currency".localized, edgeInsets: ScreenEdgeInsets(bottom: 0)) {
             ScrollView(showsIndicators: false) {
@@ -43,11 +43,11 @@ struct SettingsCurrencySelectionView: View {
         .overlay(isLoading ? Loader() : nil)
         .onLoad(perform: onLoad)
     }
-    
+
     func handleSelection(_ currency: SettingsCurrency) {
         isLoading = true
         settingsViewModel.selectedCurrency = currency
-        
+
         // Refresh prices in the background without blocking the UI
         if let currentVault = appViewModel.selectedVault {
             Task.detached {
@@ -57,7 +57,7 @@ struct SettingsCurrencySelectionView: View {
         dismiss()
         isLoading = false
     }
-    
+
     func onLoad() {
         let formatter = NumberFormatter()
         let locale = Locale(identifier: "en_US")

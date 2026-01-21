@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct NavigationQRCodeButton: View {    
+struct NavigationQRCodeButton: View {
     var body: some View {
         Icon(
             named: "qr-code",

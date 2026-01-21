@@ -12,19 +12,19 @@ struct ReceiveQRCodeBottomSheet: View {
     let isNativeCoin: Bool
     var onClose: () -> Void
     var onCopy: (Coin) -> Void
-    
+
     @State var qrCodeImage: Image?
     @Environment(\.displayScale) var displayScale
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
-    
+
     var coinLogo: String {
         isNativeCoin ? coin.chain.logo : coin.logo
     }
-    
+
     var coinName: String {
         isNativeCoin ? coin.chain.name : coin.ticker
     }
-    
+
     var body: some View {
         GeometryReader { proxy in
             VStack(spacing: 24) {
@@ -60,11 +60,11 @@ struct ReceiveQRCodeBottomSheet: View {
                 logoImage: PlatformImage(named: coinLogo),
                 scale: displayScale
             )
-            
+
             guard let qrCodeImage else {
                 return
             }
-            
+
             self.qrCodeImage = qrCodeImage
             shareSheetViewModel.render(
                 qrCodeImage: qrCodeImage,
@@ -86,7 +86,7 @@ struct ReceiveQRCodeBottomSheet: View {
                         .aspectRatio(contentMode: .fit)
                         .padding(8)
                 )
-            
+
             Text("\("receive".localized) \(coinName)")
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
@@ -97,7 +97,7 @@ struct ReceiveQRCodeBottomSheet: View {
         .frame(width: 216, height: 247)
         .background(Image("qr-code-container").resizable())
     }
-    
+
     var bottomSection: some View {
         HStack(spacing: 8) {
             if let image = shareSheetViewModel.renderedImage {
@@ -127,5 +127,5 @@ struct ReceiveQRCodeBottomSheet: View {
             onCopy: { _ in
             }) : nil
     )
-    
+
 }

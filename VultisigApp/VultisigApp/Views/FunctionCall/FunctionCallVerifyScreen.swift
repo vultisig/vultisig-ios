@@ -20,7 +20,7 @@ struct FunctionCallVerifyScreen: View {
     @State var fastPasswordPresented = false
     @State var isForReferral = false
     @State private var error: HelperError?
-    
+
     var body: some View {
         Screen(title: "verify".localized) {
             VStack(spacing: 0) {
@@ -29,7 +29,7 @@ struct FunctionCallVerifyScreen: View {
                 } else {
                     summary
                 }
-                
+
                 Spacer()
                 pairedSignButton
             }
@@ -65,7 +65,7 @@ struct FunctionCallVerifyScreen: View {
             }
         }
     }
-    
+
     var summary: some View {
         SendCryptoVerifySummaryView(
             input: SendCryptoVerifySummary(
@@ -85,14 +85,14 @@ struct FunctionCallVerifyScreen: View {
             securityScannerState: $depositVerifyViewModel.securityScannerState
         )
     }
-    
+
     var pairedSignButton: some View {
         VStack {
             if tx.isFastVault {
                 Text(NSLocalizedString("holdForPairedSign", comment: ""))
                     .foregroundColor(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
-                
+
                 LongPressPrimaryButton(
                     title: NSLocalizedString("signTransaction", comment: "")) {
                         fastPasswordPresented = true
@@ -115,7 +115,7 @@ struct FunctionCallVerifyScreen: View {
             }
         }
     }
-    
+
     private func getAmount() -> String {
         // Check if this is a THORChain LP operation
         if let pool = tx.memoFunctionDictionary.get("pool"), !pool.isEmpty {
@@ -129,18 +129,18 @@ struct FunctionCallVerifyScreen: View {
                 return tx.amountDecimal.formatForDisplay() + " " + tx.coin.ticker + " → " + cleanPoolName + " LP"
             }
         }
-        
+
         // Default display for non-LP operations
         return tx.amountDecimal.formatForDisplay()
     }
-    
+
     private func onSignPress() {
         let canSign = depositVerifyViewModel.validateSecurityScanner()
         if canSign {
             signAndMoveToNextView()
         }
     }
-    
+
     func signAndMoveToNextView() {
         Task {
             do {

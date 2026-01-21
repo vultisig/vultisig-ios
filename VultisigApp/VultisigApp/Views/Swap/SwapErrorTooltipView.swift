@@ -11,7 +11,7 @@ struct SwapErrorTooltipView: View {
     let error: Error
     @Binding var showTooltip: Bool
     let onDismissTooltip: () -> Void
-    
+
     private let circleIconSize: CGFloat = 20
     private let circleIconPadding: CGFloat = 7
     private var circleSize: CGFloat { circleIconSize + circleIconPadding * 2 }
@@ -29,7 +29,7 @@ struct SwapErrorTooltipView: View {
             }
             .animation(.spring(response: 0.3, dampingFraction: 0.8), value: showTooltip)
     }
-    
+
     var warningIcon: some View {
         Button {
             showTooltip.toggle()
@@ -39,21 +39,21 @@ struct SwapErrorTooltipView: View {
                 .background(Circle().fill(Theme.colors.alertError))
         }
     }
-    
+
     var tooltipContent: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .top, spacing: 8) {
                 Text(errorTitle)
                     .font(Theme.fonts.bodyMMedium)
                     .foregroundColor(Theme.colors.textDark)
-                
+
                 Spacer()
-                
+
                 Button(action: onDismissTooltip) {
                     Icon(named: "x", color: Theme.colors.textButtonDisabled, size: 20)
                 }
             }
-            
+
             Text(errorDescription)
                 .font(Theme.fonts.footnote)
                 .foregroundColor(Theme.colors.textTertiary)
@@ -67,7 +67,7 @@ struct SwapErrorTooltipView: View {
         .clipShape(TooltipShape())
         .frame(maxWidth: 220)
     }
-    
+
     private var errorTitle: String {
         if let swapError = error as? SwapCryptoLogic.Errors {
             return swapError.errorTitle
@@ -172,7 +172,7 @@ struct TooltipShape: Shape {
 #Preview {
     ZStack {
         Theme.colors.bgPrimary.ignoresSafeArea()
-        
+
         SwapErrorTooltipView(
             error: SwapCryptoLogic.Errors.insufficientFunds,
             showTooltip: .constant(true),

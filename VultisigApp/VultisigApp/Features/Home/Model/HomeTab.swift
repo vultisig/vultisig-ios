@@ -10,7 +10,7 @@ enum HomeTab: TabBarItem, CaseIterable {
     case defi
     // Only used to fake `camera` button for liquid glass
     case camera
-    
+
     var name: String {
         switch self {
         case .wallet:
@@ -21,7 +21,7 @@ enum HomeTab: TabBarItem, CaseIterable {
             ""
         }
     }
-    
+
     var icon: String {
         switch self {
         case .wallet:

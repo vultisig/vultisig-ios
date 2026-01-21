@@ -7,5 +7,4 @@ import XCTest
 
 final class VultisigAppTests: XCTestCase {
 
-
 }

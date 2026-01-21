@@ -12,7 +12,7 @@ final class Vault: ObservableObject, Codable {
     @Attribute(.unique) var pubKeyECDSA: String = ""
     @Attribute(.unique) var pubKeyEdDSA: String = ""
     var circleWalletAddress: String?
-    
+
     var signers: [String] = []
     var createdAt: Date = Date.now
     var hexChainCode: String = ""
@@ -26,7 +26,7 @@ final class Vault: ObservableObject, Codable {
     var libType: LibType? = LibType.GG20
     var closedBanners: [String] = []
     var defiChains: [Chain] = []
-    
+
     @Relationship(deleteRule: .cascade) var coins = [Coin]()
     @Relationship(deleteRule: .cascade) var hiddenTokens = [HiddenToken]()
     @Relationship(deleteRule: .cascade) var referralCode: ReferralCode?
@@ -38,7 +38,7 @@ final class Vault: ObservableObject, Codable {
     @Relationship(deleteRule: .cascade) var stakePositions: [StakePosition] = []
     @Relationship(deleteRule: .cascade) var lpPositions: [LPPosition] = []
     @Relationship(deleteRule: .cascade) var chainPublicKeys: [ChainPublicKey] = []
-        
+
     enum CodingKeys: CodingKey {
         case name
         case signers
@@ -57,7 +57,7 @@ final class Vault: ObservableObject, Codable {
         case stakePositions
         case lpPositions
     }
-    
+
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         name = try container.decode(String.self, forKey: .name)
@@ -74,12 +74,12 @@ final class Vault: ObservableObject, Codable {
         defiChains = try container.decodeIfPresent([Chain].self, forKey: .defiChains) ?? []
         defiPositions = try container.decodeIfPresent([DefiPositions].self, forKey: .defiPositions) ?? []
     }
-    
+
     init(name: String, libType: LibType? = nil) {
         self.name = name
         self.libType = libType ?? .DKLS
     }
-    
+
     init(
         name: String,
         signers: [String],
@@ -102,7 +102,7 @@ final class Vault: ObservableObject, Codable {
         self.resharePrefix = resharePrefix
         self.libType = libType ?? .DKLS
     }
-    
+
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(name, forKey: .name)
@@ -119,11 +119,11 @@ final class Vault: ObservableObject, Codable {
         try container.encodeIfPresent(defiChains, forKey: .defiChains)
         try container.encodeIfPresent(defiPositions, forKey: .defiPositions)
     }
-    
+
     func setOrder(_ index: Int) {
         order = index
     }
-    
+
     func getThreshold() -> Int {
         let totalSigners = signers.count
         let threshold = Int(ceil(Double(totalSigners) * 2.0 / 3.0)) - 1
@@ -133,16 +133,16 @@ final class Vault: ObservableObject, Codable {
     func coin(for meta: CoinMeta) -> Coin? {
         let normalizedTicker = meta.ticker.lowercased()
         let normalizedContract = meta.contractAddress.lowercased()
-        
+
         return coins.first(where: { coin in
             guard coin.chain == meta.chain else { return false }
-            
+
             let coinTicker = coin.ticker.lowercased()
             let coinContract = coin.contractAddress.lowercased()
-            
+
             let isSameContract = normalizedContract == coinContract
             let isSameTicker = coinTicker == normalizedTicker
-            
+
             // Prefer contract comparison whenever available, fallback to ticker for native tokens
             if normalizedContract.isNotEmpty || coinContract.isNotEmpty {
                 return isSameContract
@@ -155,7 +155,7 @@ final class Vault: ObservableObject, Codable {
     func nativeCoin(for coin: Coin) -> Coin? {
         nativeCoin(for: coin.chain)
     }
-    
+
     func nativeCoin(for chain: Chain) -> Coin? {
         return coins.first(where: { $0.chain == chain && $0.isNativeToken })
     }
@@ -173,55 +173,54 @@ final class Vault: ObservableObject, Codable {
 
         return false
     }
-    
+
     var chains: [Chain] {
         coins
             .filter { $0.isNativeToken }
             .map { $0.chain }
             .uniqueBy { $0 }
     }
-    
+
     func coins(for chain: Chain) -> [Coin] {
         coins.filter { $0.chain == chain }
     }
-    
+
     func getKeyshare(pubKey: String) -> String? {
         return self.keyshares.first(where: {$0.pubkey == pubKey})?.keyshare
     }
 
     static func getUniqueVaultName(modelContext: ModelContext, state: SetupVaultState? = nil) -> String {
         let fetchVaultDescriptor = FetchDescriptor<Vault>()
-        do{
+        do {
             let vaults = try modelContext.fetch(fetchVaultDescriptor)
             let start = vaults.count
             var idx = start
             repeat {
                 let vaultName: String?
-                
+
                 if let state {
                     vaultName = "\(state.title.capitalized) Vault #\(idx + 1)"
                 } else {
                     vaultName = "Vault #\(idx + 1)"
                 }
-                
+
                 let vaultExist = vaults.contains { v in
                     v.name == vaultName && !v.pubKeyECDSA.isEmpty
                 }
-                
+
                 if !vaultExist {
                     return vaultName ?? ""
                 }
-                
+
                 idx += 1
             } while idx < 1000
-        }
-        catch {
+        } catch {
             print("fail to load all vaults")
         }
         return "Main Vault"
     }
 
-    static let example = Vault(name: "Bitcoin", signers: [], pubKeyECDSA: "ECDSAKey", pubKeyEdDSA: "EdDSAKey", keyshares: [], localPartyID: "partyID", hexChainCode: "hexCode", resharePrefix: nil,libType: .GG20)
+    static let example = Vault(name: "Bitcoin", signers: [], pubKeyECDSA: "ECDSAKey", pubKeyEdDSA: "EdDSAKey", keyshares: [], localPartyID: "partyID", hexChainCode: "hexCode", resharePrefix: nil, libType: .GG20)
     static let fastVaultExample = Vault(name: "server-Bitcoin", signers: [], pubKeyECDSA: "ECDSAKey", pubKeyEdDSA: "EdDSAKey", keyshares: [], localPartyID: "partyID", hexChainCode: "hexCode", resharePrefix: nil, libType: nil)
 }
 
@@ -241,7 +240,7 @@ extension Vault {
     var runeCoin: Coin? {
         coins.first(where: { $0.isRune })
     }
-    
+
     var tcyCoin: Coin? {
         coins.first(where: { $0.chain == .thorChain && $0.ticker.uppercased() == "TCY" })
     }

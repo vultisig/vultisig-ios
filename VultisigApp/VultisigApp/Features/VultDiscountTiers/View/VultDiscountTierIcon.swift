@@ -14,7 +14,7 @@ struct VultDiscountTierIcon: View {
     }
     let tier: VultDiscountTier
     let size: IconSize
-    
+
     var iconSize: CGFloat {
         switch size {
         case .big:
@@ -23,7 +23,7 @@ struct VultDiscountTierIcon: View {
             36
         }
     }
-    
+
     var borderWidth: CGFloat {
         switch size {
         case .big:
@@ -32,7 +32,7 @@ struct VultDiscountTierIcon: View {
             1
         }
     }
-    
+
     var body: some View {
         Image(tier.icon)
             .resizable()
@@ -41,12 +41,12 @@ struct VultDiscountTierIcon: View {
             .padding(iconSize / 4)
             .background(backgroundView.overlay(overlayView))
     }
-    
+
     var backgroundView: some View {
         borderBgColor.opacity(0.12)
             .mask(Circle())
     }
-    
+
     var overlayView: some View {
         borderBgColor
             .mask(
@@ -55,7 +55,7 @@ struct VultDiscountTierIcon: View {
                     .stroke(lineWidth: borderWidth)
             )
     }
-    
+
     @ViewBuilder
     var borderBgColor: some View {
         switch tier {

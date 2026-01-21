@@ -11,19 +11,19 @@ struct JoinKeysignDoneSummary: View {
     let vault: Vault
     let viewModel: KeysignViewModel
     @Binding var showAlert: Bool
-    
+
     @Environment(\.openURL) var openURL
     let summaryViewModel = JoinKeysignSummaryViewModel()
-    
+
     @EnvironmentObject var appViewModel: AppViewModel
-    
+
     var body: some View {
         VStack {
             Group {
                 if viewModel.keysignPayload?.swapPayload != nil {
                     // Check if it's an LP operation by looking at the memo
                     if let memo = viewModel.keysignPayload?.memo,
-                       (memo.starts(with: "+:") || memo.starts(with: "-:")) {
+                       memo.starts(with: "+:") || memo.starts(with: "-:") {
                         // LP operation - show regular send content instead of swap
                         sendContent
                     } else {
@@ -38,7 +38,7 @@ struct JoinKeysignDoneSummary: View {
             }
         }
     }
-    
+
     var summary: some View {
         VStack {
             ScrollView {
@@ -54,7 +54,7 @@ struct JoinKeysignDoneSummary: View {
                 .padding(.horizontal, 16)
                 .padding(.bottom, 24)
             }
-            
+
             PrimaryButton(title: "done") {
                 onDoneButtonPressed()
             }
@@ -62,14 +62,14 @@ struct JoinKeysignDoneSummary: View {
         .padding(16)
         .frame(maxHeight: .infinity, alignment: .bottom)
     }
-    
+
     var content: some View {
         Group {
             signMessageContent
         }
         .padding(.horizontal, 16)
     }
-    
+
     var swapContent: some View {
         JoinSwapDoneSummary(
             vault: vault,
@@ -78,7 +78,7 @@ struct JoinKeysignDoneSummary: View {
             showAlert: $showAlert
         )
     }
-    
+
     @ViewBuilder
     var sendContent: some View {
         if let keysignPayload = viewModel.keysignPayload {
@@ -101,7 +101,7 @@ struct JoinKeysignDoneSummary: View {
             )
         }
     }
-    
+
     var signMessageContent: some View {
         VStack(spacing: 18) {
             getGeneralCell(
@@ -109,7 +109,7 @@ struct JoinKeysignDoneSummary: View {
                 description: viewModel.customMessagePayload?.method ?? "",
                 isVerticalStacked: true
             )
-            
+
             Separator()
             // Show decoded message if available, otherwise show raw message
             if let decodedMessage = viewModel.customMessagePayload?.decodedMessage, !decodedMessage.isEmpty {
@@ -132,24 +132,24 @@ struct JoinKeysignDoneSummary: View {
                 isVerticalStacked: true
             )
         }
-        
+
     }
-    
+
     private func onDoneButtonPressed() {
         appViewModel.restart()
     }
-    
+
     var transactionLink: some View {
         VStack {
             Separator()
-            
+
             HStack {
                 Spacer()
                 progressLink(txid: viewModel.txid)
             }
         }
     }
-    
+
     private func getGeneralCell(title: String, description: String, isVerticalStacked: Bool = false) -> some View {
         ZStack {
             if isVerticalStacked {
@@ -157,7 +157,7 @@ struct JoinKeysignDoneSummary: View {
                     Text(NSLocalizedString(title, comment: ""))
                         .font(Theme.fonts.bodySMedium)
                         .foregroundColor(Theme.colors.textTertiary)
-                    
+
                     Text(description)
                         .foregroundColor(Theme.colors.textPrimary)
                         .font(Theme.fonts.bodySMedium)
@@ -175,11 +175,11 @@ struct JoinKeysignDoneSummary: View {
             }
         }
     }
-    
+
     private func card(title: String, txid: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             titleSection(title: title, txid: txid)
-            
+
             Text(txid)
                 .font(Theme.fonts.footnote)
                 .foregroundColor(Theme.colors.textPrimary)
@@ -190,18 +190,18 @@ struct JoinKeysignDoneSummary: View {
         .cornerRadius(10)
         .padding(.horizontal, 16)
     }
-    
+
     private func titleSection(title: String, txid: String) -> some View {
         HStack(spacing: 12) {
             Text(title)
                 .font(Theme.fonts.bodyLMedium)
                 .foregroundColor(Theme.colors.textTertiary)
-            
+
             copyButton(txid: txid)
             linkButton(txid: txid)
         }
     }
-    
+
     private func copyButton(txid: String) -> some View {
         Button {
             copyHash(txid: txid)
@@ -210,9 +210,9 @@ struct JoinKeysignDoneSummary: View {
                 .font(Theme.fonts.bodyLRegular)
                 .foregroundColor(Theme.colors.textPrimary)
         }
-        
+
     }
-    
+
     private func linkButton(txid: String) -> some View {
         Button {
             shareLink(txid: txid)
@@ -221,9 +221,9 @@ struct JoinKeysignDoneSummary: View {
                 .font(Theme.fonts.bodyLRegular)
                 .foregroundColor(Theme.colors.textPrimary)
         }
-        
+
     }
-    
+
     private func progressLink(txid: String) -> some View {
         Button {
             if let link = viewModel.getSwapProgressURL(txid: viewModel.txid) {
@@ -239,14 +239,14 @@ struct JoinKeysignDoneSummary: View {
                 .padding(.vertical, 8)
         }
     }
-    
+
     private func shareLink(txid: String) {
         let urlString = viewModel.getTransactionExplorerURL(txid: txid)
         if !urlString.isEmpty, let url = URL(string: urlString) {
             openURL(url)
         }
     }
-    
+
     private func progressLink(link: String) {
         if !link.isEmpty, let url = URL(string: link) {
             openURL(url)

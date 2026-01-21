@@ -12,7 +12,7 @@ final class RemoveLPTransactionViewModel: ObservableObject {
     let coin: Coin
     let vault: Vault
     let position: LPPosition
-    
+
     var dustAmount: Decimal {
         switch coin.chain {
         case .thorChain:
@@ -27,7 +27,7 @@ final class RemoveLPTransactionViewModel: ObservableObject {
     @Published var percentageSelected: Double? = 100
     @Published var feeError: String? = nil
     @Published var validForm = false
-    
+
     init(
         coin: Coin,
         vault: Vault,
@@ -37,7 +37,7 @@ final class RemoveLPTransactionViewModel: ObservableObject {
         self.vault = vault
         self.position = position
     }
-    
+
     var transactionBuilder: TransactionBuilder? {
         guard validForm, let poolName = position.poolName else { return nil }
         return RemoveLPTransactionBuilder(
@@ -49,7 +49,7 @@ final class RemoveLPTransactionViewModel: ObservableObject {
             sendMaxAmount: false
         )
     }
-    
+
     func onLoad() {
         if coin.balanceDecimal < dustAmount {
             feeError = String(

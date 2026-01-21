@@ -12,18 +12,18 @@ import SwiftUI
 struct ThrottledOnAppearModifier: ViewModifier {
     let interval: TimeInterval
     let action: () -> Void
-    
+
     @State private var lastExecutionTime: Date?
-    
+
     func body(content: Content) -> some View {
         content
             .onAppear {
                 let now = Date()
-                
+
                 // Check if enough time has passed since last execution
                 if let lastTime = lastExecutionTime {
                     let timeSinceLastExecution = now.timeIntervalSince(lastTime)
-                    
+
                     if timeSinceLastExecution >= interval {
                         lastExecutionTime = now
                         action()

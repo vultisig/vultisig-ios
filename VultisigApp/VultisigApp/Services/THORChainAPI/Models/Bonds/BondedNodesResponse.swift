@@ -13,7 +13,7 @@ struct BondedNodesResponse: Decodable {
         let address: String
         let bond: String
     }
-    
+
     let nodes: [BondNodeResponse]
     let totalBonded: String
 }

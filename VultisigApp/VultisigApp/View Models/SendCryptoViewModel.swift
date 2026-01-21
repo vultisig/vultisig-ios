@@ -25,25 +25,25 @@ class SendCryptoViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var hash: String? = nil
     @Published var approveHash: String? = nil
-    
+
     // Logic delegation
     private let logic = SendCryptoLogic()
-    
+
     // State for alerts
     @Published var showAddressAlert: Bool = false
     @Published var showAmountAlert: Bool = false
-    
+
     // State for pending transactions
     @Published var hasPendingTransaction: Bool = false
     @Published var pendingTransactionCountdown: Int = 0
     @Published var isCheckingPendingTransactions: Bool = false
-    
+
     let logger = Logger(subsystem: "send-input-details", category: "transaction")
-    
+
     var continueButtonDisabled: Bool {
         isLoading || isValidatingForm
     }
-    
+
     /// Initialize pending transaction state based on chain
     func initializePendingTransactionState(for chain: Chain) {
         if chain.supportsPendingTransactions {
@@ -54,33 +54,33 @@ class SendCryptoViewModel: ObservableObject {
             pendingTransactionCountdown = 0
         }
     }
-    
+
     var showLoader: Bool {
         isValidatingForm
     }
-    
+
     func loadFastVault(tx: SendTransaction, vault: Vault) async {
         tx.isFastVault = await logic.loadFastVault(tx: tx, vault: vault)
     }
-    
+
     func setMaxValues(tx: SendTransaction, percentage: Double = 100) {
         errorMessage = ""
         isLoading = true
-        
+
         Task {
             await logic.setMaxValues(tx: tx, percentage: percentage)
             isLoading = false
         }
     }
-    
+
     func convertFiatToCoin(newValue: String, tx: SendTransaction) {
         logic.convertFiatToCoin(newValue: newValue, tx: tx)
     }
-    
+
     func convertToFiat(newValue: String, tx: SendTransaction, setMaxValue: Bool = false) {
         logic.convertToFiat(newValue: newValue, tx: tx, setMaxValue: setMaxValue)
     }
-    
+
     func validateAddress(tx: SendTransaction, address: String) {
         guard !isNamespaceResolved else {
             isValidAddress = true
@@ -88,42 +88,42 @@ class SendCryptoViewModel: ObservableObject {
         }
         isValidAddress = AddressService.validateAddress(address: address, chain: tx.coin.chain)
     }
-    
+
     func validateAmount(amount: String) {
         errorTitle = ""
         errorMessage = ""
         isValidForm = true
-        
+
         isValidForm = amount.isValidDecimal()
-        
+
         if !isValidForm {
             errorTitle = "error"
             errorMessage = "The amount must be decimal."
             showAlert = true
         }
     }
-    
+
     func validateForm(tx: SendTransaction) async -> Bool {
         resetStates()
-        
+
         let result = await logic.validateForm(tx: tx, hasPendingTransaction: hasPendingTransaction)
-        
+
         isValidForm = result.isValid
         errorTitle = result.errorTitle
         errorMessage = result.errorMessage
         showAlert = result.showAlert
         showAmountAlert = result.showAmountAlert
         showAddressAlert = result.showAddressAlert
-        
+
         isLoading = false
         return isValidForm
     }
-    
+
     func validateToAddress(tx: SendTransaction) async -> Bool {
         resetStates()
-        
+
         let result = await logic.validateToAddress(tx: tx)
-        
+
         if result.isValid {
             isNamespaceResolved = true
         } else {
@@ -132,32 +132,32 @@ class SendCryptoViewModel: ObservableObject {
              showAddressAlert = result.showAddressAlert
              isValidForm = false
         }
-        
+
         isLoading = false
         return result.isValid
     }
-    
+
     func setHash(_ hash: String) {
         self.hash = hash
     }
-    
+
     func stopMediator() {
         Mediator.shared.stop()
         logger.info("mediator server stopped.")
     }
-    
+
     func feesInReadable(tx: SendTransaction, vault: Vault) -> String {
         guard let nativeCoin = vault.nativeCoin(for: tx.coin) else { return .empty }
         let fee = nativeCoin.decimal(for: tx.fee)
         return RateProvider.shared.fiatFeeString(value: fee, coin: nativeCoin)
     }
-    
+
     func pickerCoins(vault: Vault, tx: SendTransaction) -> [Coin] {
         return vault.coins.sorted(by: {
             Int($0.chain == tx.coin.chain) > Int($1.chain == tx.coin.chain)
         })
     }
-    
+
     private func resetStates() {
         errorTitle = ""
         errorMessage = ""
@@ -173,12 +173,12 @@ class SendCryptoViewModel: ObservableObject {
 // MARK: - SendCryptoLogic (Business Logic Struct)
 
 struct SendCryptoLogic {
-    
+
     private let logger = Logger(subsystem: "send-crypto-logic", category: "transaction")
     private let blockchainService = BlockChainService.shared
     private let mediator = Mediator.shared
     private let fastVaultService = FastVaultService.shared
-    
+
     // Services
     private let sol = SolanaService.shared
     private let sui = SuiService.shared
@@ -187,7 +187,7 @@ struct SendCryptoLogic {
     private let ripple = RippleService.shared
     private let tron = TronService.shared
     private let balanceService = BalanceService.shared
-    
+
     struct ValidationResult {
         var isValid: Bool
         var errorTitle: String = ""
@@ -196,27 +196,25 @@ struct SendCryptoLogic {
         var showAmountAlert: Bool = false
         var showAddressAlert: Bool = false
     }
-    
+
     func loadFastVault(tx: SendTransaction, vault: Vault) async -> Bool {
         let isExist = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
         let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
-        
+
         return isExist && !isLocalBackup
     }
-    
 
-    
     func validateForm(tx: SendTransaction, hasPendingTransaction: Bool) async -> ValidationResult {
         var result = ValidationResult(isValid: true)
-        
+
         // Check for pending Cosmos transactions that could cause nonce conflicts
         if hasPendingTransaction && tx.coin.chain.supportsPendingTransactions {
              result.isValid = false
              return result
         }
-        
+
         let amount = tx.amountDecimal
-        
+
         if amount <= 0 {
             result.errorTitle = "error"
             result.errorMessage = "positiveAmountError"
@@ -225,9 +223,7 @@ struct SendCryptoLogic {
             result.isValid = false
             return result
         }
-        
 
-        
         if tx.isAmountExceeded {
             result.errorTitle = "error"
             result.errorMessage = "walletBalanceExceededError"
@@ -236,9 +232,7 @@ struct SendCryptoLogic {
             result.isValid = false
             return result
         }
-        
 
-        
         // Validate To Address
         let validToAddress = await validateToAddress(tx: tx)
         if !validToAddress.isValid {
@@ -248,19 +242,13 @@ struct SendCryptoLogic {
             result.isValid = false
             return result
         }
-        
 
-        
-
-        
-
-        
         return result
     }
-    
+
     func validateToAddress(tx: SendTransaction) async -> ValidationResult {
         var result = ValidationResult(isValid: true)
-        
+
         guard !tx.toAddress.isEmpty else {
             result.errorTitle = "invalidAddress"
             result.errorMessage = "emptyAddressField"
@@ -269,7 +257,7 @@ struct SendCryptoLogic {
             result.isValid = false
             return result
         }
-        
+
         do {
             let resolvedAddress = try await AddressService.resolveInput(tx.toAddress, chain: tx.coin.chain)
             // Mutate tx address on MainActor
@@ -284,7 +272,7 @@ struct SendCryptoLogic {
             result.isValid = false
             return result
         }
-        
+
         let isValid = AddressService.validateAddress(address: tx.toAddress, chain: tx.coin.chain)
         if !isValid {
              result.errorTitle = "error"
@@ -294,10 +282,10 @@ struct SendCryptoLogic {
              result.isValid = false
              return result
         }
-        
+
         return result
     }
-    
+
     func convertFiatToCoin(newValue: String, tx: SendTransaction) {
         let newValueDecimal = newValue.toDecimal()
         if newValueDecimal > 0 {
@@ -309,7 +297,7 @@ struct SendCryptoLogic {
             tx.amount = ""
         }
     }
-    
+
     func convertToFiat(newValue: String, tx: SendTransaction, setMaxValue: Bool = false) {
         let newValueDecimal = newValue.toDecimal()
         if newValueDecimal > 0 {
@@ -327,26 +315,26 @@ struct SendCryptoLogic {
         let key: String = "\(tx.fromAddress)-\(coinName)"
         let coinMeta = tx.coin.toCoinMeta()
         let address = tx.coin.address
-        
+
         switch tx.coin.chain {
-        case .bitcoin,.dogecoin,.litecoin,.bitcoinCash,.dash, .zcash:
+        case .bitcoin, .dogecoin, .litecoin, .bitcoinCash, .dash, .zcash:
             tx.sendMaxAmount = percentage == 100
             let amount = await utxo.getByKey(key: key)?.address?.balanceInBTC ?? "0.0"
             tx.amount = amount
             setPercentageAmount(tx: tx, for: percentage)
             convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
-            
+
         case .cardano:
             tx.sendMaxAmount = percentage == 100
             await balanceService.updateBalance(for: tx.coin)
-            
+
             let gas = BigInt.zero
             let maxDecimals = tx.coin.decimals > 0 ? tx.coin.decimals : 6 // Fallback to 6 decimals if coin decimals is 0
             let amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: maxDecimals))"
             tx.amount = amount
             setPercentageAmount(tx: tx, for: percentage)
             convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync,.ethereumSepolia, .mantle, .hyperliquid, .sei:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid, .sei:
             do {
                 if tx.coin.isNativeToken {
                     let evm = try await blockchainService.fetchSpecific(tx: tx)
@@ -364,7 +352,7 @@ struct SendCryptoLogic {
             }
             convertToFiat(newValue: tx.amount, tx: tx)
         case .solana:
-            do{
+            do {
                 if tx.coin.isNativeToken {
                     let rawBalance = try await sol.getSolanaBalance(coin: tx.coin)
                     tx.coin.rawBalance = rawBalance
@@ -384,10 +372,10 @@ struct SendCryptoLogic {
             do {
                 let rawBalance = try await sui.getBalance(coin: coinMeta, address: address)
                 tx.coin.rawBalance = rawBalance
-                
+
                 if tx.coin.isNativeToken {
                     var gas = BigInt.zero
-                    
+
                     if percentage == 100 {
                         let originalAmount = tx.amount
                         let maxAmount = tx.coin.rawBalance.toBigInt(decimals: tx.coin.decimals)
@@ -403,7 +391,7 @@ struct SendCryptoLogic {
                             print("⚠️ Sui dynamic fee calculation failed, using default: \(error.localizedDescription)")
                             gas = (BigInt(3000000) * 115) / 100
                         }
-                        
+
                         tx.sendMaxAmount = false
                         tx.amount = originalAmount
                     }
@@ -417,15 +405,15 @@ struct SendCryptoLogic {
             } catch {
                 print("⚠️ Failed to load Sui balance: \(error.localizedDescription)")
             }
-            
+
         case .kujira, .gaiaChain, .mayaChain, .thorChain, .thorChainStagenet, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash:
             await balanceService.updateBalance(for: tx.coin)
-            
+
             var gas = BigInt.zero
             if percentage == 100 && tx.coin.isNativeToken {
-                gas = BigInt(tx.gasDecimal.description,radix:10) ?? 0
+                gas = BigInt(tx.gasDecimal.description, radix: 10) ?? 0
             }
-            
+
             tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
             setPercentageAmount(tx: tx, for: percentage)
             convertToFiat(newValue: tx.amount, tx: tx)
@@ -433,10 +421,10 @@ struct SendCryptoLogic {
             do {
                 tx.sendMaxAmount = percentage == 100
                 await balanceService.updateBalance(for: tx.coin)
-                
+
                 let dot = try await blockchainService.fetchSpecific(tx: tx)
                 let gas = dot.gas
-                
+
                 tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
                 setPercentageAmount(tx: tx, for: percentage)
                 convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
@@ -444,10 +432,10 @@ struct SendCryptoLogic {
                 tx.amount = "\(tx.coin.getMaxValue(0))"
                 setPercentageAmount(tx: tx, for: percentage)
                 convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
-                
+
                 print("Failed to get Polkadot dynamic fee, error: \(error.localizedDescription)")
             }
-            
+
         case .ton:
             do {
                 tx.sendMaxAmount = percentage == 100
@@ -496,7 +484,7 @@ struct SendCryptoLogic {
             }
         }
     }
-    
+
     private func setPercentageAmount(tx: SendTransaction, for percentage: Double) {
         let max = tx.amount
         let multiplier = (Decimal(percentage) / 100)

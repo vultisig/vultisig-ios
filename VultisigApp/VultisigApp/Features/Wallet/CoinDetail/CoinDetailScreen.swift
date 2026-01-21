@@ -21,7 +21,7 @@ struct CoinDetailScreen: View {
     @StateObject var viewModel: CoinDetailViewModel
 
     @Environment(\.openURL) var openURL
-    
+
     init(
         coin: Coin,
         vault: Vault,
@@ -36,11 +36,11 @@ struct CoinDetailScreen: View {
         self._viewModel = StateObject(wrappedValue: .init(coin: coin))
         self.onCoinAction = onCoinAction
     }
-    
+
     var body: some View {
         container
     }
-    
+
     var container: some View {
 #if os(iOS)
         NavigationStack {
@@ -53,7 +53,7 @@ struct CoinDetailScreen: View {
             .transaction { $0.disablesAnimations = true }
 #endif
     }
-    
+
     var content: some View {
         ScrollView {
             VStack(spacing: 32) {
@@ -87,13 +87,14 @@ struct CoinDetailScreen: View {
             ReceiveQRCodeBottomSheet(
                 coin: coin,
                 isNativeCoin: false,
-                onClose: { showReceiveSheet = false }
-            ) { coin in
-                showReceiveSheet = false
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                    addressToCopy = coin
+                onClose: { showReceiveSheet = false },
+                onCopy: { coin in
+                    showReceiveSheet = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                        addressToCopy = coin
+                    }
                 }
-            }
+            )
         }
         .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
             #if os(macOS)
@@ -134,12 +135,11 @@ private extension CoinDetailScreen {
     func onExplorer() {
         if
             let url = Endpoint.getExplorerByCoinURL(coin: coin),
-            let linkURL = URL(string: url)
-        {
+            let linkURL = URL(string: url) {
             openURL(linkURL)
         }
     }
-    
+
     func onAction(_ action: CoinAction) {
         sendTx.reset(coin: coin)
         var vaultAction: VaultAction?
@@ -160,10 +160,9 @@ private extension CoinDetailScreen {
                 coinType: coin.ticker
             )
         case .sell:
-            // TODO: - To add
             break
         }
-        
+
         guard let vaultAction else { return }
         onCoinAction(vaultAction)
     }

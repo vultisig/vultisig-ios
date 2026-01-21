@@ -10,7 +10,7 @@ import SwiftUI
 struct AddressFieldAccessoryButton: View {
     let icon: String
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             Icon(named: icon, color: Theme.colors.textSecondary, size: 20)

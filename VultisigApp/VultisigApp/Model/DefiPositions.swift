@@ -13,16 +13,16 @@ final class DefiPositions: Codable {
     var bonds: [CoinMeta] = []
     var staking: [CoinMeta] = []
     var lps: [CoinMeta] = []
-    
+
     @Relationship(inverse: \Vault.defiPositions) var vault: Vault?
-    
+
     enum CodingKeys: String, CodingKey {
         case chain
         case bonds
         case staking
         case lps
     }
-    
+
     init(
         chain: Chain,
         bonds: [CoinMeta],
@@ -34,7 +34,7 @@ final class DefiPositions: Codable {
         self.staking = staking
         self.lps = lps
     }
-    
+
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.chain = try container.decode(Chain.self, forKey: .chain)
@@ -42,7 +42,7 @@ final class DefiPositions: Codable {
         self.staking = try container.decode([CoinMeta].self, forKey: .staking)
         self.lps = try container.decode([CoinMeta].self, forKey: .lps)
     }
-    
+
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(chain, forKey: .chain)

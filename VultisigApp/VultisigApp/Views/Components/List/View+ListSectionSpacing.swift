@@ -15,7 +15,7 @@ extension View {
         self.listSectionSpacing(spacing)
         #endif
     }
-    
+
     func groupedListStyle() -> some View {
 #if os(macOS)
         self.listStyle(.plain)

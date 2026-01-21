@@ -10,7 +10,7 @@ import SwiftUI
 struct CoinPriceNetworkView: View {
     let chainName: String
     let price: String
-    
+
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
@@ -30,7 +30,7 @@ struct CoinPriceNetworkView: View {
             )
         )
     }
-    
+
     func rowView(title: String, description: String) -> some View {
         HStack {
             Text(title)

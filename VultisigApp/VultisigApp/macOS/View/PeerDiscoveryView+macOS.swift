@@ -20,25 +20,25 @@ extension PeerDiscoveryView {
                         screenHeight = proxy.size.height
                         setData()
                     }
-                    .onChange(of: proxy.size.width) { oldValue, newValue in
+                    .onChange(of: proxy.size.width) { _, _ in
                         screenWidth = proxy.size.width
                     }
-                    .onChange(of: proxy.size.height) { oldValue, newValue in
+                    .onChange(of: proxy.size.height) { _, _ in
                         screenHeight = proxy.size.height
                     }
             }
-            
+
             main
         }
     }
-    
+
     var main: some View {
         VStack {
             headerMac
             states
         }
     }
-    
+
     var headerMac: some View {
         PeerDiscoveryHeader(
             title: getHeaderTitle(),
@@ -49,14 +49,14 @@ extension PeerDiscoveryView {
         )
         .showIf(viewModel.status != .Keygen)
     }
-    
+
     var portraitContent: some View {
         ScrollView {
             qrCode
             list
         }
     }
-    
+
     var paringBarcode: some View {
         ZStack {
             animation
@@ -70,11 +70,11 @@ extension PeerDiscoveryView {
     var animation: some View {
         animationVM?.view()
     }
-    
+
     var scrollList: some View {
         VStack {
             listTitle
-            
+
             LazyVGrid(columns: adaptiveColumnsMac, spacing: 8) {
                 ThisDevicePeerCell(deviceName: "Mac")
                 devices
@@ -86,7 +86,7 @@ extension PeerDiscoveryView {
         .padding(.horizontal, 24)
         .padding(.top, 8)
     }
-    
+
     var devices: some View {
         ForEach(participantDiscovery.peersFound, id: \.self) { peer in
             Button {
@@ -96,11 +96,11 @@ extension PeerDiscoveryView {
             }
         }
     }
-    
+
     @ViewBuilder
     var bottomButton: some View {
         let isButtonDisabled = disableContinueButton()
-        
+
         PrimaryButton(title: isButtonDisabled ? "waitingOnDevices..." : "next") {
             viewModel.startKeygen()
         }
@@ -111,12 +111,12 @@ extension PeerDiscoveryView {
         .padding(.bottom, 10)
         .animation(.easeInOut(duration: 0.2), value: isButtonDisabled)
     }
-    
+
     var switchLink: some View {
         SwitchToLocalLink(isForKeygen: true, selectedNetwork: $viewModel.selectedNetwork)
             .padding(.bottom, 24)
     }
-    
+
     func setData() {
         guard let (qrCodeString, qrCodeImage) = viewModel.getQRCodeData(size: 500, displayScale: displayScale) else {
             return
@@ -130,11 +130,10 @@ extension PeerDiscoveryView {
             type: .Keygen
         )
     }
-    
+
     func getMinSize() -> CGFloat {
         min(screenWidth/2.5, screenHeight/2.5)
     }
-    
-    
+
 }
 #endif

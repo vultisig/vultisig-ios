@@ -21,9 +21,9 @@ struct AddressBookView: View {
     @State var coin: Coin?
 
     @Environment(\.modelContext) var modelContext
-    
+
     var savedAddressesEmpty: Bool { savedAddresses.isEmpty }
-    
+
     var body: some View {
         Screen(showNavigationBar: false, edgeInsets: ScreenEdgeInsets(bottom: savedAddressesEmpty ? nil : 0)) {
             VStack {
@@ -52,7 +52,7 @@ struct AddressBookView: View {
             }
         }
     }
-    
+
     var emptyView: some View {
         VStack(spacing: 12) {
             Text("addressBookEmptyTitle".localized)
@@ -63,19 +63,19 @@ struct AddressBookView: View {
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textTertiary)
                 .multilineTextAlignment(.center)
-            
+
             addAddressButton
                 .frame(maxWidth: 200)
                 .padding(.top, 18)
         }
         .frame(maxWidth: 265)
     }
-    
+
     var list: some View {
         let filteredAddress = savedAddresses.filter {
             coin == nil || (coin != nil && $0.coinMeta.chain.chainType == coin?.chainType)
         }
-        
+
         return ZStack {
             if filteredAddress.count > 0 {
                 List {
@@ -102,13 +102,13 @@ struct AddressBookView: View {
             }
         }
     }
-    
+
     var addAddressButton: some View {
         PrimaryButton(title: "addAddress".localized) {
             router.navigate(to: SettingsRoute.addAddressBook())
         }
     }
-    
+
     var emptyViewChain: some View {
         VStack {
             Spacer()
@@ -116,7 +116,7 @@ struct AddressBookView: View {
             Spacer()
         }
     }
-    
+
     @ViewBuilder
     var navigationButton: some View {
         if isEditing {
@@ -129,13 +129,13 @@ struct AddressBookView: View {
             }
         }
     }
-    
+
     private func toggleEdit() {
         withAnimation {
             isEditing.toggle()
         }
     }
-    
+
     func move(from: IndexSet, to: Int) {
         var s = savedAddresses.sorted(by: { $0.order < $1.order })
         s.move(fromOffsets: from, toOffset: to)
@@ -144,7 +144,7 @@ struct AddressBookView: View {
         }
         try? self.modelContext.save()
     }
-    
+
 }
 
 #Preview {

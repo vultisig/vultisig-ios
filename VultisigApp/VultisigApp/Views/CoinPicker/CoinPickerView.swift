@@ -39,13 +39,13 @@ struct CoinPickerView: View {
                 isSearchFieldFocused = true
             }
     }
-    
+
     var searchBar: some View {
         HStack(spacing: 0) {
             Image(systemName: "magnifyingglass")
                 .font(Theme.fonts.bodyLMedium)
                 .foregroundColor(Theme.colors.textTertiary)
-            
+
             TextField(NSLocalizedString("search...", comment: "Search...").toFormattedTitleCase(), text: $searchText)
                 .font(Theme.fonts.caption12)
                 .foregroundColor(Theme.colors.textTertiary)
@@ -75,7 +75,7 @@ struct CoinPickerView: View {
         .padding(.horizontal, 12)
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
-        .onChange(of: searchText) { oldValue, newValue in
+        .onChange(of: searchText) { _, newValue in
             isSearching = !newValue.isEmpty
         }
         .background(Theme.colors.bgSurface1)
@@ -94,7 +94,7 @@ struct CoinPickerView: View {
             CoinPickerCell(coin: coin)
         }
     }
-    
+
     var scrollView: some View {
         LazyVStack(alignment: .leading, spacing: 24, pinnedViews: []) {
             if searchText.isEmpty {
@@ -109,7 +109,7 @@ struct CoinPickerView: View {
 
         }
     }
-    
+
     var list: some View {
         ForEach(coins, id: \.self) { coin in
             row(for: coin)
@@ -117,7 +117,7 @@ struct CoinPickerView: View {
                 .listRowSeparator(.hidden)
         }
     }
-    
+
     var filteredList: some View {
         ForEach(filtered, id: \.self) { coin in
             row(for: coin)
@@ -125,7 +125,7 @@ struct CoinPickerView: View {
                 .listRowSeparator(.hidden)
         }
     }
-    
+
     var errorMessage: some View {
         ErrorMessage(text: "noResultFound")
             .frame(maxWidth: .infinity)

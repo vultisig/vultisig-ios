@@ -17,11 +17,11 @@ struct KeyImportActiveChainsView: View {
     let activeChains: [KeyImportChain]
     let onImport: () -> Void
     let onCustomize: () -> Void
-    
+
     var minutes: Int {
         activeChains.count * 2
     }
-    
+
     var body: some View {
         VStack(spacing: 24) {
             Spacer()
@@ -39,7 +39,7 @@ struct KeyImportActiveChainsView: View {
                     .frame(maxWidth: 330)
                     .multilineTextAlignment(.center)
             }
-            
+
             ZStack(alignment: .bottom) {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 12) {
@@ -71,10 +71,10 @@ struct KeyImportActiveChainsView: View {
                     }
                 }
                 .contentMargins(.bottom, 150)
-                
+
                 LinearGradient(colors: [Theme.colors.bgPrimary, .clear], startPoint: .bottom, endPoint: .top)
                     .frame(height: 150)
-                
+
                 VStack(spacing: 12) {
                     PrimaryButton(title: "importTheseChains", action: onImport)
                     Button(action: onCustomize) {

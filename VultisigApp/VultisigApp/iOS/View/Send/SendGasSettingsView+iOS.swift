@@ -21,7 +21,7 @@ extension SendGasSettingsView {
             .navigationBarTitleDisplayMode(.inline)
         }
     }
-    
+
     func textField(title: String, text: Binding<String>, label: String? = nil, disabled: Bool = false) -> some View {
         VStack {
             HStack {

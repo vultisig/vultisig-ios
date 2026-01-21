@@ -11,7 +11,7 @@ struct JoinKeysignDoneView: View {
     let vault: Vault
     @ObservedObject var viewModel: KeysignViewModel
     @Binding var showAlert: Bool
-        
+
     var body: some View {
         VStack(spacing: 32) {
             JoinKeysignDoneSummary(

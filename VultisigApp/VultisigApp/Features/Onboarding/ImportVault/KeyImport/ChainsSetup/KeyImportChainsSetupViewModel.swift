@@ -71,7 +71,7 @@ final class KeyImportChainsSetupViewModel: ObservableObject {
     var solanaderivationPath: DerivationPath {
         derivationPath(for: .solana)
     }
-    
+
     var screenTitle: String {
         switch state {
         case .scanningChains:
@@ -85,11 +85,11 @@ final class KeyImportChainsSetupViewModel: ObservableObject {
 
     private let balanceService = BalanceService.shared
     private let priceService = CryptoPriceService.shared
-    
+
     var fetchChainsTask: Task<Void, Never>?
 
     init() {}
-    
+
     func onLoad(mnemonic: String) async {
         fetchChainsTask = Task {
             let activeChains = await fetchActiveChains(mnemonic: mnemonic)
@@ -99,24 +99,24 @@ final class KeyImportChainsSetupViewModel: ObservableObject {
             }
         }
     }
-    
+
     func updateState(with activeChains: [KeyImportChain], skipped: Bool) {
         self.activeChains = activeChains
         let filteredChains = activeChains.isEmpty ? Chain.enabledChains : Chain.enabledChains
             .filter { !activeChains.map(\.chain).contains($0) }
         self.otherChains = filteredChains
             .map { KeyImportChain(chain: $0, balance: Decimal.zero.formatToFiat()) }
-        
+
         let newState: KeyImportChainsState
         if activeChains.isEmpty {
             newState = skipped ? .customizeChains : .noActiveChains
         } else {
             newState = .activeChains
         }
-        
+
         self.state = newState
     }
-    
+
     func fetchActiveChains(mnemonic: String) async -> [KeyImportChain] {
         guard let wallet = createWallet(from: mnemonic) else {
             return []
@@ -150,7 +150,7 @@ final class KeyImportChainsSetupViewModel: ObservableObject {
             selectedChains.removeAll { $0 == chain }
         }
     }
-    
+
     func onSelectChainsManually() {
         fetchChainsTask?.cancel()
         fetchChainsTask = nil

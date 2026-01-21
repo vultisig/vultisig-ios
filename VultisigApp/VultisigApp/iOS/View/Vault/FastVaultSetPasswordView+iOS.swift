@@ -22,11 +22,11 @@ extension FastVaultSetPasswordView {
         .navigationTitle(NSLocalizedString("", comment: ""))
         .navigationBarTitleDisplayMode(.inline)
     }
-    
+
     var main: some View {
         view
     }
-    
+
     var view: some View {
         VStack {
             passwordField

@@ -10,12 +10,12 @@ import RiveRuntime
 
 struct SetupVaultAnimationManager: View {
     let animationVM: RiveViewModel?
-    
+
     var body: some View {
         animation
             .padding(.vertical, 16)
     }
-    
+
     var animation: some View {
         animationVM?.view()
     }

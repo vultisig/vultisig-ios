@@ -18,7 +18,7 @@ struct VaultShareBackupsView: View {
             content
         }
     }
-    
+
     var image: some View {
         Image("VaultShareBackupsImage")
             .resizable()
@@ -27,7 +27,7 @@ struct VaultShareBackupsView: View {
             .scaleEffect(1.1)
             .padding(-36)
     }
-    
+
     var description: some View {
         Group {
             Text(NSLocalizedString("vaultShareBackupsViewTitle1", comment: ""))
@@ -38,7 +38,7 @@ struct VaultShareBackupsView: View {
         .multilineTextAlignment(.center)
         .font(Theme.fonts.title1)
     }
-    
+
     var button: some View {
         ZStack {
             if vault.isFastVault {
@@ -49,7 +49,7 @@ struct VaultShareBackupsView: View {
         }
         .padding(.vertical, 36)
     }
-    
+
     var migrateSecureVault: some View {
         PrimaryButton(title: "next") {
             router.navigate(to: KeygenRoute.peerDiscovery(
@@ -62,7 +62,7 @@ struct VaultShareBackupsView: View {
         }
         .frame(width: 120)
     }
-    
+
     var migrateFastVault: some View {
         PrimaryButton(title: "next") {
             router.navigate(to: KeygenRoute.fastVaultEmail(

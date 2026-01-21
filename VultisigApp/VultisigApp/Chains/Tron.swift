@@ -11,26 +11,26 @@ import WalletCore
 import BigInt
 
 enum TronHelper {
-    
+
     static func getSwapPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         // For TRX swaps, we use the same logic as regular transactions but with swap memo
         return try getPreSignedInputData(keysignPayload: keysignPayload)
     }
-    
+
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        
+
         guard keysignPayload.coin.chain.ticker == "TRX" else {
             throw HelperError.runtimeError("coin is not TRX")
         }
-        
+
         guard case .Tron(let timestamp, let expiration, let blockHeaderTimestamp, let blockHeaderNumber, let blockHeaderVersion, let blockHeaderTxTrieRoot, let blockHeaderParentHash, let blockHeaderWitnessAddress, let gasEstimation) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get Tron chain specific")
         }
-        
+
         guard Data(hexString: keysignPayload.coin.hexPublicKey) != nil else {
             throw HelperError.runtimeError("invalid hex public key")
         }
-        
+
         // Dispatch based on contract payload type (dApp integration)
         if let transferPayload = keysignPayload.tronTransferContractPayload {
             return try buildTronTransferContractInput(
@@ -42,7 +42,7 @@ enum TronHelper {
                 memo: keysignPayload.memo
             )
         }
-        
+
         if let smartContractPayload = keysignPayload.tronTriggerSmartContractPayload {
             return try buildTronSmartContractInput(
                 payload: smartContractPayload,
@@ -53,7 +53,7 @@ enum TronHelper {
                 memo: keysignPayload.memo
             )
         }
-        
+
         if let assetPayload = keysignPayload.tronTransferAssetContractPayload {
             return try buildTronTransferAssetInput(
                 payload: assetPayload,
@@ -64,30 +64,30 @@ enum TronHelper {
                 memo: keysignPayload.memo
             )
         }
-        
+
         // Fallback: validate toAddress for regular transfers
         guard AnyAddress(string: keysignPayload.toAddress, coin: .tron) != nil else {
             throw HelperError.runtimeError("fail to get to address")
         }
-        
+
         // Existing native/TRC20 transfer logic
         if keysignPayload.coin.isNativeToken {
-            
+
             let contract = TronTransferContract.with {
                 $0.ownerAddress = keysignPayload.coin.address
                 $0.toAddress = keysignPayload.toAddress
                 $0.amount = Int64(keysignPayload.toAmount)
             }
-            
+
             let input = try TronSigningInput.with {
                 $0.transaction = try TronTransaction.with {
                     $0.contractOneof = .transfer(contract)
                     $0.timestamp = Int64(timestamp)
-                    
+
                     if let memo = keysignPayload.memo {
                         $0.memo = memo
                     }
-                    
+
                     $0.blockHeader = try buildBlockHeader(
                         timestamp: blockHeaderTimestamp, number: blockHeaderNumber,
                         version: blockHeaderVersion, txTrieRoot: blockHeaderTxTrieRoot,
@@ -96,18 +96,18 @@ enum TronHelper {
                     $0.expiration = Int64(expiration)
                 }
             }
-            
+
             return try input.serializedData()
-            
+
         } else {
-            
+
             let contract = TronTransferTRC20Contract.with {
                 $0.toAddress = keysignPayload.toAddress
                 $0.contractAddress = keysignPayload.coin.contractAddress
                 $0.ownerAddress = keysignPayload.coin.address
                 $0.amount = keysignPayload.toAmount.serialize()
             }
-            
+
             let input = try TronSigningInput.with {
                 $0.transaction = try TronTransaction.with {
                     $0.feeLimit = Int64(gasEstimation)
@@ -124,15 +124,15 @@ enum TronHelper {
                     }
                 }
             }
-            
+
             return try input.serializedData()
-            
+
         }
-        
+
     }
-    
+
     // MARK: - Block Header Helper
-    
+
     private static func buildBlockHeader(
         timestamp: UInt64, number: UInt64, version: UInt64,
         txTrieRoot: String, parentHash: String, witnessAddress: String
@@ -151,9 +151,9 @@ enum TronHelper {
             $0.witnessAddress = witnessAddressData
         }
     }
-    
+
     // MARK: - Contract Payload Builders (dApp Integration)
-    
+
     private static func buildTronTransferContractInput(
         payload: TronTransferContractPayload,
         timestamp: UInt64, expiration: UInt64,
@@ -170,7 +170,7 @@ enum TronHelper {
             $0.toAddress = payload.toAddress
             $0.amount = amount
         }
-        
+
         let input = try TronSigningInput.with {
             $0.transaction = try TronTransaction.with {
                 $0.contractOneof = .transfer(contract)
@@ -186,7 +186,7 @@ enum TronHelper {
         }
         return try input.serializedData()
     }
-    
+
     private static func buildTronSmartContractInput(
         payload: TronTriggerSmartContractPayload,
         timestamp: UInt64, expiration: UInt64, gasEstimation: UInt64,
@@ -218,7 +218,7 @@ enum TronHelper {
                 }
             }
         }
-        
+
         let input = try TronSigningInput.with {
             $0.transaction = try TronTransaction.with {
                 $0.contractOneof = .triggerSmartContract(contract)
@@ -235,7 +235,7 @@ enum TronHelper {
         }
         return try input.serializedData()
     }
-    
+
     private static func buildTronTransferAssetInput(
         payload: TronTransferAssetContractPayload,
         timestamp: UInt64, expiration: UInt64, gasEstimation: UInt64,
@@ -250,7 +250,7 @@ enum TronHelper {
             $0.amount = Int64(payload.amount) ?? 0
             $0.assetName = payload.assetName
         }
-        
+
         let input = try TronSigningInput.with {
             $0.transaction = try TronTransaction.with {
                 $0.contractOneof = .transferAsset(contract)
@@ -267,7 +267,7 @@ enum TronHelper {
         }
         return try input.serializedData()
     }
-    
+
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(
             keysignPayload: keysignPayload
@@ -285,11 +285,10 @@ enum TronHelper {
         }
         return [preSigningOutput.dataHash.hexString]
     }
-    
+
     static func getSignedTransaction(
         keysignPayload: KeysignPayload,
-        signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
-    {
+        signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         guard
             let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey),
             let secp256k1PubKey = PublicKey(data: pubKeyData, type: .secp256k1Extended) else {
@@ -317,27 +316,26 @@ enum TronHelper {
             print("fail to verify signature")
             throw HelperError.runtimeError("fail to verify signature")
         }
-        
+
         allSignatures.add(data: signature)
         publicKeys.add(data: publicKey.data)
         let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .tron,
                                                                              txInputData: inputData,
                                                                              signatures: allSignatures,
                                                                              publicKeys: publicKeys)
-        
+
         let output = try TronSigningOutput(
             serializedBytes: compileWithSignature
         )
-        
+
         if !output.errorMessage.isEmpty {
             print(output.errorMessage)
             throw HelperError.runtimeError("fail to sign transaction")
         }
-        
+
         let result = SignedTransactionResult(rawTransaction: output.json,
                                              transactionHash: output.id.hexString)
-        
+
         return result
     }
 }
-

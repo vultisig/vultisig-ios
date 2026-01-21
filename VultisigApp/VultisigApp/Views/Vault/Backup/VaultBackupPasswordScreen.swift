@@ -11,9 +11,9 @@ struct VaultBackupPasswordScreen: View {
     let tssType: TssType
     let backupType: VaultBackupType
     var isNewVault = false
-    
+
     @State var verifyPassword: String = ""
-    
+
     @StateObject var backupViewModel = EncryptedBackupViewModel()
     @State var presentFileExporter = false
     @State var fileModel: FileExporterModel<EncryptedDataFile>?
@@ -22,7 +22,7 @@ struct VaultBackupPasswordScreen: View {
     @State var passwordVerifyErrorMessage: String = ""
     @FocusState var passwordFieldFocused
     @FocusState var passwordVerifyFieldFocused
-    
+
     var body: some View {
         VaultBackupContainerView(
             presentFileExporter: $presentFileExporter,
@@ -47,38 +47,38 @@ struct VaultBackupPasswordScreen: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 passwordFieldFocused = true
             }
-            
+
             backupViewModel.resetData()
         }
         .onDisappear {
             backupViewModel.resetData()
         }
-        .onChange(of: verifyPassword) { oldValue, newValue in
+        .onChange(of: verifyPassword) { _, _ in
             if backupViewModel.encryptionPassword == verifyPassword {
                 passwordErrorMessage = ""
                 passwordVerifyErrorMessage = ""
             }
         }
     }
-    
+
     @ViewBuilder
     var saveButton: some View {
         PrimaryButton(title: "save") {
             onSave()
         }
     }
-    
+
     var passwordField: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(NSLocalizedString("optionalPasswordProtectBackup", comment: ""))
                 .font(Theme.fonts.bodySMedium)
                 .foregroundColor(Theme.colors.textPrimary)
-            
+
             textfield
             verifyTextfield
         }
     }
-    
+
     var textfield: some View {
         HiddenTextField(placeholder: "enterPassword",
                         password: $backupViewModel.encryptionPassword,
@@ -91,7 +91,7 @@ struct VaultBackupPasswordScreen: View {
                 }
             }
     }
-    
+
     var verifyTextfield: some View {
         HiddenTextField(placeholder: "verifyPassword", password: $verifyPassword, errorMessage: passwordVerifyErrorMessage)
             .focused($passwordVerifyFieldFocused)
@@ -99,7 +99,7 @@ struct VaultBackupPasswordScreen: View {
                 onSave()
             }
     }
-    
+
     var disclaimer: some View {
         OutlinedDisclaimer(text: NSLocalizedString("backupPasswordDisclaimer", comment: ""))
     }
@@ -122,12 +122,12 @@ struct VaultBackupPasswordScreen: View {
         }
         passwordErrorMessage = ""
         passwordVerifyErrorMessage = ""
-        
+
         Task {
             guard let fileModel = await backupViewModel.exportFileWithCustomPassword(backupType) else {
                 return
             }
-            
+
             await MainActor.run {
                 self.fileModel = fileModel
                 presentFileExporter = true

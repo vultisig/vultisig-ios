@@ -11,7 +11,7 @@ import SwiftData
 @Model
 final class LPPosition {
     @Attribute(.unique) var id: String
-    
+
     var coin1: CoinMeta
     var coin1Amount: Decimal
     var coin2: CoinMeta
@@ -20,9 +20,9 @@ final class LPPosition {
     var poolUnits: String?
     var apr: Double
     var lastUpdated: Date = Date.now
-    
+
     @Relationship(inverse: \Vault.lpPositions) var vault: Vault?
-    
+
     init(
         coin1: CoinMeta,
         coin1Amount: Decimal,

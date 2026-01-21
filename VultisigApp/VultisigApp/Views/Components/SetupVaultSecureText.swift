@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SetupVaultSecureText: View {
     let selectedTab: SetupVaultState
-    
+
     var body: some View {
         VStack(spacing: 0) {
             header
@@ -23,7 +23,7 @@ struct SetupVaultSecureText: View {
         .cornerRadius(16)
         .padding(.vertical, 16)
     }
-    
+
     var header: some View {
         ZStack {
             if selectedTab == .fast {
@@ -35,14 +35,14 @@ struct SetupVaultSecureText: View {
             }
         }
     }
-    
+
     var headerText: some View {
         Text(selectedTab.secureTextTitle)
             .font(Theme.fonts.bodyLMedium)
             .padding(.vertical, 16)
             .frame(maxWidth: .infinity)
     }
-    
+
     var dashedLine: some View {
         Rectangle()
            .stroke(style: StrokeStyle(lineWidth: 2, dash: [5]))
@@ -51,24 +51,24 @@ struct SetupVaultSecureText: View {
            .foregroundColor(Theme.colors.bgSurface2)
            .offset(y: 1)
     }
-    
+
     var content: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 12) {
-                ForEach(0..<3) { index in
+                ForEach(0..<3) { _ in
                     Image(systemName: "checkmark")
                         .foregroundColor(Theme.colors.bgButtonPrimary)
                         .frame(width: 16, height: 16)
                 }
             }
-            
+
             Text(selectedTab.secureTextDecription)
                 .foregroundColor(Theme.colors.textPrimary)
                 .lineSpacing(12)
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(maxWidth: .infinity,minHeight: 80)
+        .frame(maxWidth: .infinity, minHeight: 80)
         .font(Theme.fonts.bodySMedium)
         .padding(24)
         .background(Theme.colors.bgSurface1)

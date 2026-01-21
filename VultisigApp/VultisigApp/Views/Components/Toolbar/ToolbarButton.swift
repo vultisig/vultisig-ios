@@ -15,15 +15,15 @@ enum ToolbarButtonType {
 
 struct ToolbarButton<IconContent: View>: View {
     @Environment(\.isNativeToolbarItem) private var isNativeToolbarItem
-    
+
     let image: String
     let iconSize: CGFloat
     let type: ToolbarButtonType
     let action: () -> Void
     let iconContent: (Icon) -> IconContent
-    
+
     @State private var isHovered: Bool = false
-    
+
     init(image: String, iconSize: CGFloat = 20, type: ToolbarButtonType = .outline, action: @escaping () -> Void) where IconContent == Icon {
         self.image = image
         self.type = type
@@ -31,7 +31,7 @@ struct ToolbarButton<IconContent: View>: View {
         self.iconSize = iconSize
         self.iconContent = { icon in icon }
     }
-    
+
     init(image: String, iconSize: CGFloat = 20, type: ToolbarButtonType = .outline, action: @escaping () -> Void, @ViewBuilder iconContent: @escaping (Icon) -> IconContent) {
         self.image = image
         self.type = type
@@ -39,7 +39,7 @@ struct ToolbarButton<IconContent: View>: View {
         self.iconSize = iconSize
         self.iconContent = iconContent
     }
-    
+
     var tintColor: Color {
         switch type {
         case .outline:
@@ -50,7 +50,7 @@ struct ToolbarButton<IconContent: View>: View {
             Theme.colors.alertError
         }
     }
-    
+
     var body: some View {
 #if os(macOS)
         Group {
@@ -102,15 +102,15 @@ struct ToolbarButton<IconContent: View>: View {
         }
 #endif
     }
-    
+
     var transformedIconView: some View {
         iconContent(iconView)
     }
-    
+
     var iconView: Icon {
         Icon(named: image, color: Theme.colors.textPrimary, size: iconSize)
     }
-    
+
     // Custom button with "fake" glass effect for styling
     var customButton: some View {
         Button(action: action) {
@@ -136,7 +136,7 @@ struct ToolbarButton<IconContent: View>: View {
                         .offset(.init(width: 10, height: 10))
                         .blur(radius: 5)
                 )
-  
+
         }
         .buttonStyle(.plain)
         .clipShape(Circle())

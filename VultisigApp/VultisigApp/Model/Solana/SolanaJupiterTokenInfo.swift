@@ -15,7 +15,7 @@ struct SolanaJupiterToken: Codable {
     let decimals: Int?
     let logoURI: String?
     let extensions: SolanaJupiterTokenExtensions?
-    
+
     // Custom init to handle missing fields gracefully
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -30,7 +30,7 @@ struct SolanaJupiterToken: Codable {
 
 struct SolanaJupiterTokenExtensions: Codable {
     let coingeckoId: String?
-    
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         coingeckoId = try? container.decode(String.self, forKey: .coingeckoId)

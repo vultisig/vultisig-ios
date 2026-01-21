@@ -11,13 +11,13 @@ struct UnstakeTransactionScreen: View {
     enum FocusedField {
         case amount
     }
-    
+
     @StateObject var viewModel: UnstakeTransactionViewModel
     var onVerify: (TransactionBuilder) -> Void
-    
+
     @State var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?
-    
+
     var body: some View {
         AmountFunctionTransactionScreen(
             title: String(format: "unstakeCoin".localized, viewModel.coin.ticker),
@@ -39,7 +39,7 @@ struct UnstakeTransactionScreen: View {
             viewModel.onPercentage(newValue)
         }
     }
-    
+
     @ViewBuilder
     var autocompoundToggle: some View {
         if viewModel.supportsAutocompound {

@@ -10,7 +10,7 @@ import SwiftUI
 struct MintTransactionScreen: View {
     @StateObject var viewModel: MintTransactionViewModel
     var onVerify: (TransactionBuilder) -> Void
-    
+
     var body: some View {
         AmountFunctionTransactionScreen(
             title: String(format: "mintCoin".localized, viewModel.yCoin.ticker),

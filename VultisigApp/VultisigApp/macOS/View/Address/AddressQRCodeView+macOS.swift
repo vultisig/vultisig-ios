@@ -16,14 +16,14 @@ extension AddressQRCodeView {
         }
         .navigationBarBackButtonHidden(true)
     }
-    
+
     var main: some View {
         VStack {
             headerMac
             view
         }
     }
-    
+
     var headerMac: some View {
         AddressQRCodeHeader(
             vault: vault,

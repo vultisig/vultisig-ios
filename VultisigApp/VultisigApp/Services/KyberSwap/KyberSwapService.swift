@@ -9,21 +9,21 @@ import Foundation
 import BigInt
 
 struct KyberSwapService {
-    
+
     static let shared = KyberSwapService()
-    
+
     static let sourceIdentifier = "vultisig-ios"
     static let referrerAddress = "0x8E247a480449c84a5fDD25974A8501f3EFa4ABb9"
-    
+
     private var nullAddress: String {
         return "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
     }
-    
+
     func fetchQuotes(chain: String, source: String, destination: String, amount: String, from: String, isAffiliate: Bool) async throws -> (quote: EVMQuote, fee: BigInt?) {
-        
+
         let sourceAddress = source.isEmpty ? nullAddress : source
         let destinationAddress = destination.isEmpty ? nullAddress : destination
-        
+
         let routeUrl = Endpoint.fetchKyberSwapRoute(
             chain: chain,
             tokenIn: sourceAddress,
@@ -36,24 +36,24 @@ struct KyberSwapService {
             sourceIdentifier: isAffiliate ? KyberSwapService.sourceIdentifier : nil,
             referrerAddress: isAffiliate ? KyberSwapService.referrerAddress : nil
         )
-        
+
         var routeRequest = URLRequest(url: routeUrl)
         routeRequest.allHTTPHeaderFields = [
             "accept": "application/json",
             "content-type": "application/json",
             "x-client-id": KyberSwapService.sourceIdentifier
         ]
-        
+
         let (routeData, _) = try await URLSession.shared.data(for: routeRequest)
-        
+
         if let errorResponse = try? JSONDecoder().decode(KyberSwapErrorResponse.self, from: routeData) {
             if errorResponse.code != 0 {
                 throw KyberSwapError.apiError(code: errorResponse.code, message: errorResponse.message, details: errorResponse.details)
             }
         }
-        
+
         let routeResponse = try JSONDecoder().decode(KyberSwapRouteResponse.self, from: routeData)
-        
+
         // Try with gas estimation first, retry without if TransferHelper error occurs
         return try await buildTransactionWithFallback(
             chain: chain,
@@ -62,14 +62,14 @@ struct KyberSwapService {
             isAffiliate: isAffiliate
         )
     }
-    
+
     private func buildTransactionWithFallback(
         chain: String,
         routeResponse: KyberSwapRouteResponse,
         from: String,
         isAffiliate: Bool
     ) async throws -> (quote: EVMQuote, fee: BigInt?) {
-        
+
         // First attempt with gas estimation enabled
         do {
             return try await buildTransaction(
@@ -91,7 +91,7 @@ struct KyberSwapService {
             )
         }
     }
-    
+
     private func buildTransaction(
         chain: String,
         routeResponse: KyberSwapRouteResponse,
@@ -99,9 +99,9 @@ struct KyberSwapService {
         enableGasEstimation: Bool,
         isAffiliate: Bool
     ) async throws -> (quote: EVMQuote, fee: BigInt?) {
-        
+
         let buildUrl = Endpoint.buildKyberSwapTransaction(chain: chain)
-        
+
         let buildPayload = KyberSwapBuildRequest(
             routeSummary: routeResponse.data.routeSummary,
             sender: from,
@@ -113,7 +113,7 @@ struct KyberSwapService {
             referral: isAffiliate ? KyberSwapService.referrerAddress : nil,
             ignoreCappedSlippage: false
         )
-        
+
         var buildRequest = URLRequest(url: buildUrl)
         buildRequest.httpMethod = "POST"
         buildRequest.allHTTPHeaderFields = [
@@ -122,9 +122,9 @@ struct KyberSwapService {
             "x-client-id": KyberSwapService.sourceIdentifier
         ]
         buildRequest.httpBody = try JSONEncoder().encode(buildPayload)
-        
+
         let (buildData, _) = try await URLSession.shared.data(for: buildRequest)
-        
+
         // First check if it's an error response by looking for non-zero code
         do {
             let errorResponse = try JSONDecoder().decode(KyberSwapErrorResponse.self, from: buildData)
@@ -150,17 +150,17 @@ struct KyberSwapService {
 
         // If we get here, try to decode as success response
         var buildResponse = try JSONDecoder().decode(KyberSwapQuote.self, from: buildData)
-        
+
         let gasPrice = routeResponse.data.routeSummary.gasPrice
-        
+
         // Update gasPrice from route response
         buildResponse.data.gasPrice = gasPrice
-        
+
         guard let chainEnum = Chain.allCases.first(where: { (try? getChainName(for: $0)) == chain }) else {
             throw KyberSwapError.apiError(code: -1, message: "Unknown chain: \(chain)", details: nil)
         }
         let calculatedGas = buildResponse.gasForChain(chainEnum)
-        
+
         let finalGas: BigInt
         if calculatedGas == 0 {
             finalGas = BigInt(EVMHelper.defaultETHSwapGasUnit)
@@ -171,9 +171,9 @@ struct KyberSwapService {
         let gasPriceValue = BigInt(gasPrice) ?? BigInt("20000000000")
         let minGasPrice = BigInt("1000000000")
         let finalGasPrice = gasPriceValue < minGasPrice ? minGasPrice : gasPriceValue
-        
+
         let fee = finalGas * finalGasPrice
-        
+
         let evmQuote = EVMQuote(
             dstAmount: buildResponse.dstAmount,
             tx: EVMQuote.Transaction(
@@ -187,17 +187,17 @@ struct KyberSwapService {
                 swapFeeTokenContract: ""
             )
         )
-        
+
         return (evmQuote, fee)
     }
-    
+
     func fetchTokens(chain: Chain) async throws -> [KyberSwapToken] {
         let chainName = try getChainName(for: chain)
         let url = Endpoint.fetchKyberSwapTokens(chainId: chainName)
         let response: KyberSwapTokensResponse = try await Utils.fetchObject(from: url.absoluteString)
         return response.data.tokens
     }
-    
+
     func getChainName(for chain: Chain) throws -> String {
         switch chain {
         case .ethereum:
@@ -226,18 +226,18 @@ struct KyberSwapService {
 
 // MARK: - Support Types
 private extension KyberSwapService {
-    
+
     struct KyberSwapRouteResponse: Codable {
         let code: Int
         let message: String
         let data: RouteData
         let requestId: String
-        
+
         struct RouteData: Codable {
             let routeSummary: RouteSummary
             let routerAddress: String
         }
-        
+
         struct RouteSummary: Codable {
             let tokenIn: String
             let amountIn: String
@@ -258,14 +258,14 @@ private extension KyberSwapService {
             let routeID: String
             let checksum: String
             let timestamp: Int
-            
+
             struct ExtraFee: Codable {
                 let feeAmount: String
                 let chargeFeeBy: String
                 let isInBps: Bool
                 let feeReceiver: String
             }
-            
+
             struct RouteStep: Codable {
                 let pool: String
                 let tokenIn: String
@@ -279,14 +279,14 @@ private extension KyberSwapService {
             }
         }
     }
-    
+
     struct AnyCodable: Codable {
         let value: Any
-        
+
         init(_ value: Any) {
             self.value = value
         }
-        
+
         init(from decoder: Decoder) throws {
             let container = try decoder.singleValueContainer()
             if let intVal = try? container.decode(Int.self) {
@@ -305,16 +305,16 @@ private extension KyberSwapService {
                 value = NSNull()
             }
         }
-        
+
         func encode(to encoder: Encoder) throws {
             var container = encoder.singleValueContainer()
-            
+
             // Handle nil/null first
             if value is NSNull {
                 try container.encodeNil()
                 return
             }
-            
+
             // Handle primitive types
             if let intVal = value as? Int {
                 try container.encode(intVal)
@@ -374,7 +374,7 @@ private extension KyberSwapService {
             }
         }
     }
-    
+
     struct KyberSwapBuildRequest: Codable {
         let routeSummary: KyberSwapRouteResponse.RouteSummary
         let sender: String
@@ -385,7 +385,7 @@ private extension KyberSwapService {
         let source: String?
         let referral: String?
         let ignoreCappedSlippage: Bool?
-        
+
         init(routeSummary: KyberSwapRouteResponse.RouteSummary, sender: String, recipient: String, slippageTolerance: Int = 100, deadline: Int? = nil, enableGasEstimation: Bool = true, source: String? = KyberSwapService.sourceIdentifier, referral: String? = nil, ignoreCappedSlippage: Bool? = false) {
             self.routeSummary = routeSummary
             self.sender = sender
@@ -398,15 +398,15 @@ private extension KyberSwapService {
             self.ignoreCappedSlippage = ignoreCappedSlippage
         }
     }
-    
+
     struct KyberSwapTokensResponse: Codable {
         let data: TokensData
-        
+
         struct TokensData: Codable {
             let tokens: [KyberSwapToken]
         }
     }
-    
+
     struct KyberSwapErrorResponse: Codable {
         let code: Int
         let message: String
@@ -420,7 +420,7 @@ enum KyberSwapError: Error, LocalizedError {
     case transactionWillRevert(message: String)
     case insufficientAllowance(message: String)
     case insufficientFunds(message: String)
-    
+
     var errorDescription: String? {
         switch self {
         case .apiError(let code, let message, let details):
@@ -434,4 +434,4 @@ enum KyberSwapError: Error, LocalizedError {
             return "Insufficient funds: \(message)"
         }
     }
-} 
+}

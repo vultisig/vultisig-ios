@@ -14,24 +14,23 @@ struct IdentifiableString: Identifiable, Equatable {
     let value: String
 }
 
-class FunctionCallBondMayaChain: FunctionCallAddressable, ObservableObject
-{
+class FunctionCallBondMayaChain: FunctionCallAddressable, ObservableObject {
     @Published var amount: Decimal = 1
     @Published var nodeAddress: String = ""
     @Published var fee: Int64 = .zero
-    
+
     // Internal
     @Published var nodeAddressValid: Bool = false
     @Published var feeValid: Bool = true
     @Published var assetValid: Bool = false
-    
+
     @Published var selectedAsset: IdentifiableString = .init(value: NSLocalizedString("assetLabel", comment: ""))
-    
+
     @Published var assets: [IdentifiableString] = []
-    
+
     @Published var isTheFormValid: Bool = false
     @Published var customErrorMessage: String? = nil
-    
+
     var addressFields: [String: String] {
         get {
             let fields = ["nodeAddress": nodeAddress]
@@ -43,22 +42,21 @@ class FunctionCallBondMayaChain: FunctionCallAddressable, ObservableObject
             }
         }
     }
-    
+
     private var cancellables = Set<AnyCancellable>()
-    
+
     required init(assets: [IdentifiableString]?) {
         if assets != nil {
             self.assets = assets ?? []
         }
     }
-    
+
     func initialize() {
         setupValidation()
-        
+
         if assets.isEmpty {
             DispatchQueue.main.async {
-                MayachainService.shared.getDepositAssets {
-                    [weak self] assetsResponse in
+                MayachainService.shared.getDepositAssets {[weak self] assetsResponse in
                     self?.assets = assetsResponse.map {
                         IdentifiableString(value: $0)
                     }
@@ -66,24 +64,24 @@ class FunctionCallBondMayaChain: FunctionCallAddressable, ObservableObject
             }
         }
     }
-    
+
     private func setupValidation() {
         Publishers.CombineLatest3($nodeAddressValid, $feeValid, $assetValid)
             .map { $0 && $1 && $2  }
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }
-    
+
     var description: String {
         return toString()
     }
-    
+
     func toString() -> String {
         let memo =
         "BOND:\(self.selectedAsset.value):\(self.fee):\(self.nodeAddress)"
         return memo
     }
-    
+
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("asset", self.selectedAsset.value)
@@ -92,11 +90,11 @@ class FunctionCallBondMayaChain: FunctionCallAddressable, ObservableObject
         dict.set("memo", self.toString())
         return dict
     }
-    
+
     func getView() -> AnyView {
         AnyView(
             VStack {
-                
+
                 GenericSelectorDropDown(
                     items: .constant(assets),
                     selected: Binding(
@@ -110,7 +108,7 @@ class FunctionCallBondMayaChain: FunctionCallAddressable, ObservableObject
                         self.assetValid = asset.value.lowercased() != NSLocalizedString("assetLabel", comment: "").lowercased()
                     }
                 )
-                
+
                 StyledIntegerField(
                     placeholder: NSLocalizedString("lpUnitsLabel", comment: ""),
                     value: Binding(
@@ -123,7 +121,7 @@ class FunctionCallBondMayaChain: FunctionCallAddressable, ObservableObject
                         set: { self.feeValid = $0 }
                     )
                 )
-                
+
                 FunctionCallAddressTextField(
                     memo: self,
                     addressKey: "nodeAddress",

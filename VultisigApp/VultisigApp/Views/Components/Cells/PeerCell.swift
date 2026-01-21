@@ -10,35 +10,35 @@ import SwiftUI
 struct PeerCell: View {
     let id: String
     let isSelected: Bool
-    
+
     @State var isPhone: Bool = false
-    
+
     var body: some View {
         cell
     }
-    
+
     var cell: some View {
         HStack(spacing: 8) {
             VStack(alignment: .leading, spacing: 2) {
                 deviceId
                 description
             }
-            
+
             Spacer()
-            
+
             check
         }
         .padding(16)
         .frame(height: 70)
         .background(isSelected ? Theme.colors.bgSuccess : Theme.colors.bgSurface1)
         .cornerRadius(16)
-        .overlay (
+        .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .stroke(isSelected ? Theme.colors.alertSuccess : Theme.colors.borderLight, lineWidth: 1)
         )
         .padding(1)
     }
-    
+
     var deviceId: some View {
         Text(getDeviceName())
             .font(Theme.fonts.bodySMedium)
@@ -46,7 +46,7 @@ struct PeerCell: View {
             .lineLimit(1)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     var description: some View {
         Text(id)
             .font(Theme.fonts.caption12)
@@ -54,17 +54,17 @@ struct PeerCell: View {
             .lineLimit(1)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     var check: some View {
         Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
             .font(Theme.fonts.title2)
             .foregroundColor(isSelected ? Theme.colors.alertSuccess : Theme.colors.borderLight)
     }
-    
+
     private func getDeviceName() -> String {
         let idString = id.lowercased()
         let deviceName: String
-        
+
         if idString.contains("mac") {
             deviceName = "Mac"
         } else if idString.contains("iphone") {
@@ -73,11 +73,9 @@ struct PeerCell: View {
             deviceName = "iPad"
         } else if idString.contains("server-") {
             deviceName = "Server"
-        }
-        else if idString.contains("extension-") {
+        } else if idString.contains("extension-") {
             deviceName = "Extension"
-        }
-        else if idString.contains("windows-") {
+        } else if idString.contains("windows-") {
             deviceName = "Windows"
         } else {
             // likely it will be android device , let's treat it as phone
@@ -91,9 +89,9 @@ struct PeerCell: View {
 #Preview {
     let columns = [
         GridItem(.adaptive(minimum: 200)),
-        GridItem(.adaptive(minimum: 200)),
+        GridItem(.adaptive(minimum: 200))
     ]
-    
+
     return ZStack {
         Background()
         LazyVGrid(columns: columns, spacing: 30) {

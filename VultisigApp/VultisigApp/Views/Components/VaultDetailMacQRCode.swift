@@ -9,9 +9,9 @@ import SwiftUI
 
 struct VaultDetailMacQRCode: View {
     let vault: Vault
-    
+
     @StateObject var viewModel = VaultDetailQRCodeViewModel()
-    
+
     var body: some View {
         VStack(spacing: 32) {
             name
@@ -29,14 +29,14 @@ struct VaultDetailMacQRCode: View {
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
     }
-    
+
     var qrCodeContent: some View {
         ZStack {
             qrCode
             logo
         }
     }
-    
+
     var qrCode: some View {
         getQRCode(vault: vault)
             .interpolation(.none)
@@ -50,7 +50,7 @@ struct VaultDetailMacQRCode: View {
                     .stroke(Theme.colors.borderLight, lineWidth: 1)
             )
     }
-    
+
     var logo: some View {
         Image("VultisigLogoTemplate")
             .resizable()
@@ -60,7 +60,7 @@ struct VaultDetailMacQRCode: View {
             .background(Theme.colors.textPrimary)
             .cornerRadius(10)
     }
-    
+
     var name: some View {
         Text(vault.name)
             .font(Theme.fonts.display)
@@ -69,7 +69,7 @@ struct VaultDetailMacQRCode: View {
             .lineLimit(2)
             .multilineTextAlignment(.center)
     }
-    
+
     var uid: some View {
         Group {
             Text("UID\n")
@@ -82,7 +82,7 @@ struct VaultDetailMacQRCode: View {
         .padding(.top, 10)
         .padding(.horizontal, 14)
     }
-    
+
     var webLink: some View {
         Text("vultisig.com")
             .font(Theme.fonts.largeTitle)
@@ -90,11 +90,10 @@ struct VaultDetailMacQRCode: View {
             .multilineTextAlignment(.center)
             .padding(.bottom, 32)
     }
-    
+
     func getQRCode(vault: Vault) -> Image {
         let vaultPublicKeyExport = viewModel.getVaultPublicKeyExport(vault: vault)
-        
-        do{
+        do {
             let data = try JSONEncoder().encode(vaultPublicKeyExport)
             return Utils.generateQRCodeImage(from: String(data: data, encoding: .utf8) ?? "")
         } catch {

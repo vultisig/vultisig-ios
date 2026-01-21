@@ -15,25 +15,25 @@ extension ServerBackupVerificationView {
             content
         }
     }
-    
+
     var header: some View {
         ServerBackupVerificationHeader()
     }
-    
+
     var content: some View {
         VStack(alignment: .leading, spacing: 12) {
             title
             description
             textField
-            
+
             if isLoading {
                 loadingText
             }
-            
+
             if showAlert {
                 alertText
             }
-            
+
             Spacer()
         }
         .padding(.horizontal, 40)
@@ -48,7 +48,7 @@ extension ServerBackupVerificationView {
         .colorScheme(.dark)
         .padding(.top, 32)
     }
-    
+
     var field: some View {
         HStack(spacing: 8) {
             ForEach(0 ..< Self.codeLength, id: \.self) { index in
@@ -73,7 +73,7 @@ extension ServerBackupVerificationView {
             }
         }
     }
-    
+
     private func handleBackspaceTap(index: Int) {
         if otp[index].isEmpty && index > 0 {
             otp[index] = ""

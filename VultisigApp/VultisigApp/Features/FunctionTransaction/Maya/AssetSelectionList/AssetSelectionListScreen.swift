@@ -12,7 +12,7 @@ struct AssetSelectionListScreen: View {
     @Binding var selectedAsset: THORChainAsset?
     var onSelect: () -> Void
     @StateObject var viewModel: AssetSelectionListViewModel
-    
+
     init(
         isPresented: Binding<Bool>,
         selectedAsset: Binding<THORChainAsset?>,
@@ -24,7 +24,7 @@ struct AssetSelectionListScreen: View {
         self._viewModel = .init(wrappedValue: AssetSelectionListViewModel(dataSource: dataSource))
         self.onSelect = onSelect
     }
-    
+
     var body: some View {
         Screen(showNavigationBar: false) {
             VStack(spacing: 8) {
@@ -57,7 +57,7 @@ struct AssetSelectionListScreen: View {
             }
         }
     }
-    
+
     var list: some View {
         LazyVStack(spacing: 0) {
             ForEach(viewModel.filteredAssets, id: \.asset) { asset in
@@ -68,12 +68,12 @@ struct AssetSelectionListScreen: View {
             }
         }
     }
-    
+
     var loadingView: some View {
         VStack(spacing: 16) {
             SpinningLineLoader()
                 .scaleEffect(1.2)
-            
+
             Text(NSLocalizedString("loading", comment: ""))
                 .font(Theme.fonts.bodySMedium)
                 .foregroundColor(Theme.colors.textTertiary)
@@ -81,7 +81,7 @@ struct AssetSelectionListScreen: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.top, 48)
     }
-    
+
     var emptyMessage: some View {
         ErrorMessage(text: "noResultFound")
             .padding(.top, 48)

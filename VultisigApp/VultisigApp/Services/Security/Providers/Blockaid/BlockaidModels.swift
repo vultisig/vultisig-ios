@@ -12,12 +12,12 @@ import Foundation
 struct CommonMetadataJson: Codable {
     let type: String
     let url: String
-    
+
     enum CodingKeys: String, CodingKey {
         case type
         case url
     }
-    
+
     init(type: String = "wallet", url: String) {
         self.type = type
         self.url = url
@@ -34,7 +34,7 @@ struct SolanaScanTransactionRequestJson: Codable {
     let encoding: String
     let transactions: [String]
     let method: String
-    
+
     enum CodingKeys: String, CodingKey {
         case chain
         case metadata
@@ -54,7 +54,7 @@ struct SuiScanTransactionRequestJson: Codable {
     let options: [String]
     let accountAddress: String
     let transaction: String
-    
+
     enum CodingKeys: String, CodingKey {
         case chain
         case metadata
@@ -72,7 +72,7 @@ struct BitcoinScanTransactionRequestJson: Codable {
     let options: [String]
     let accountAddress: String
     let transaction: String
-    
+
     enum CodingKeys: String, CodingKey {
         case chain
         case metadata
@@ -91,7 +91,7 @@ struct EthereumScanTransactionRequestJson: Codable {
     let accountAddress: String
     let data: DataJson
     let simulatedWithEstimatedGas: Bool
-    
+
     enum CodingKeys: String, CodingKey {
         case chain
         case metadata
@@ -100,7 +100,7 @@ struct EthereumScanTransactionRequestJson: Codable {
         case data
         case simulatedWithEstimatedGas = "simulate_with_estimated_gas"
     }
-    
+
     init(chain: String, metadata: MetadataJson, options: [String], accountAddress: String, data: DataJson, simulatedWithEstimatedGas: Bool = false) {
         self.chain = chain
         self.metadata = metadata
@@ -109,21 +109,21 @@ struct EthereumScanTransactionRequestJson: Codable {
         self.data = data
         self.simulatedWithEstimatedGas = simulatedWithEstimatedGas
     }
-    
+
     struct MetadataJson: Codable {
         let domain: String
-        
+
         enum CodingKeys: String, CodingKey {
             case domain
         }
     }
-    
+
     struct DataJson: Codable {
         let from: String
         let to: String
         let data: String
         let value: String
-        
+
         enum CodingKeys: String, CodingKey {
             case from
             case to
@@ -142,7 +142,7 @@ struct BlockaidTransactionScanResponseJson: Codable {
     let validation: BlockaidValidationJson?
     let result: BlockaidSolanaResultJson?
     let error: String?
-    
+
     enum CodingKeys: String, CodingKey {
         case requestId = "request_id"
         case accountAddress = "account_address"
@@ -151,38 +151,38 @@ struct BlockaidTransactionScanResponseJson: Codable {
         case result
         case error
     }
-    
+
     struct BlockaidSolanaResultJson: Codable {
         let validation: BlockaidSolanaValidationJson
-        
+
         enum CodingKeys: String, CodingKey {
             case validation
         }
-        
+
         struct BlockaidSolanaValidationJson: Codable {
             let resultType: String
             let reason: String
             let features: [String]
             let extendedFeatures: [BlockaidSolanaExtendedFeaturesJson]
-            
+
             enum CodingKeys: String, CodingKey {
                 case resultType = "result_type"
                 case reason
                 case features
                 case extendedFeatures = "extended_features"
             }
-            
+
             init(resultType: String, reason: String, features: [String] = [], extendedFeatures: [BlockaidSolanaExtendedFeaturesJson] = []) {
                 self.resultType = resultType
                 self.reason = reason
                 self.features = features
                 self.extendedFeatures = extendedFeatures
             }
-            
+
             struct BlockaidSolanaExtendedFeaturesJson: Codable {
                 let type: String
                 let description: String
-                
+
                 enum CodingKeys: String, CodingKey {
                     case type
                     case description
@@ -190,7 +190,7 @@ struct BlockaidTransactionScanResponseJson: Codable {
             }
         }
     }
-    
+
     struct BlockaidValidationJson: Codable {
         let status: String?
         let classification: String?
@@ -199,7 +199,7 @@ struct BlockaidTransactionScanResponseJson: Codable {
         let reason: String?
         let features: [BlockaidFeatureJson]?
         let error: String?
-        
+
         enum CodingKeys: String, CodingKey {
             case status
             case classification
@@ -209,13 +209,13 @@ struct BlockaidTransactionScanResponseJson: Codable {
             case features
             case error
         }
-        
+
         struct BlockaidFeatureJson: Codable {
             let type: String
             let featureId: String
             let description: String
             let address: String?
-            
+
             enum CodingKeys: String, CodingKey {
                 case type
                 case featureId = "feature_id"

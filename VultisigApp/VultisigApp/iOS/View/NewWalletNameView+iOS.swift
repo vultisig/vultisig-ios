@@ -20,7 +20,7 @@ extension NewWalletNameView {
             hideKeyboard()
         }
     }
-    
+
     var main: some View {
         view
     }

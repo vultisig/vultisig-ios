@@ -12,13 +12,13 @@ struct TransactionCell: View {
     let id: String
     let url: String
     var image: String? = nil
-    
+
     var body: some View {
         Link(destination: URL(string: url)!) {
             cell
         }
     }
-    
+
     var cell: some View {
         HStack(spacing: 24) {
             field
@@ -26,33 +26,33 @@ struct TransactionCell: View {
             chevron
         }
     }
-    
+
     var field: some View {
         VStack(alignment: .leading, spacing: 8) {
             header
             content
         }
     }
-    
+
     var header: some View {
         HStack(spacing: 12) {
             if let image {
                 Image(systemName: image)
             }
-            
+
             Text(NSLocalizedString(title, comment: "Transaction ID"))
         }
         .font(Theme.fonts.bodyLMedium)
         .foregroundColor(Theme.colors.textPrimary)
     }
-    
+
     var content: some View {
         Text(id)
             .font(Theme.fonts.footnote)
             .foregroundColor(Theme.colors.bgButtonPrimary)
             .multilineTextAlignment(.leading)
     }
-    
+
     var chevron: some View {
         Image(systemName: "chevron.forward")
             .foregroundColor(Theme.colors.textPrimary)

@@ -13,7 +13,7 @@ struct KeyImportNewVaultSetupScreen: View {
     let fastSignConfig: FastSignConfig
 
     @Environment(\.router) var router
-    
+
     var body: some View {
         Screen(edgeInsets: .init(leading: 0, trailing: 0)) {
             VStack(spacing: 0) {
@@ -39,7 +39,7 @@ struct KeyImportNewVaultSetupScreen: View {
             }
         }
     }
-    
+
     var informationView: some View {
         VStack(alignment: .leading, spacing: 24) {
             CustomHighlightText(
@@ -49,33 +49,33 @@ struct KeyImportNewVaultSetupScreen: View {
             )
             .foregroundStyle(Theme.colors.textPrimary)
             .font(Theme.fonts.title2)
-            
+
             OnboardingInformationRowView(
                 title: "twoDevicesPlusServer".localized,
                 subtitle: "twoDevicesPlusServerSubtitle".localized,
                 icon: "devices"
             )
-            
+
             OnboardingInformationRowView(
                 title: "whySecureServer".localized,
                 subtitle: "whySecureServerSubtitle".localized,
                 icon: "secure"
             )
-            
+
             appStoreReadyView
         }
         .fixedSize(horizontal: false, vertical: true)
     }
-    
+
     var appStoreReadyView: some View {
         HStack(alignment: .top, spacing: 12) {
             Icon(named: "shield-check", color: Theme.colors.alertInfo, size: 20)
-            
+
             VStack(alignment: .leading, spacing: 8) {
                 Text("appStoreReady".localized)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.subtitle)
-                
+
                 Text("appStoreReadyDescription".localized)
                     .foregroundStyle(Theme.colors.textSecondary)
                     .font(Theme.fonts.footnote)
@@ -99,7 +99,7 @@ struct KeyImportNewVaultSetupScreen: View {
         )
         .background(Color(hex: "376499").opacity(0.3).clipShape(RoundedRectangle(cornerRadius: 12)))
     }
-    
+
 }
 
 #Preview {

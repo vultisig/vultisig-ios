@@ -12,14 +12,14 @@ struct WasmExecuteContractPayload: Codable, Hashable {
     let contractAddress: String
     let executeMsg: String
     let coins: [CosmosCoin]
-    
+
     init(senderAddress: String, contractAddress: String, executeMsg: String, coins: [CosmosCoin]) {
         self.senderAddress = senderAddress
         self.contractAddress = contractAddress
         self.executeMsg = executeMsg
         self.coins = coins
     }
-    
+
     init?(proto: VSWasmExecuteContractPayload) throws {
         guard proto.senderAddress.isNotEmpty, proto.contractAddress.isNotEmpty else {
             return nil
@@ -29,7 +29,7 @@ struct WasmExecuteContractPayload: Codable, Hashable {
         self.executeMsg = proto.executeMsg
         self.coins = proto.coins.compactMap { CosmosCoin(proto: $0) }
     }
-    
+
     func mapToProtobuff() -> VSWasmExecuteContractPayload {
         .with {
             $0.senderAddress = self.senderAddress

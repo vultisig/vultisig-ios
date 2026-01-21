@@ -1,11 +1,9 @@
 disabled_rules:
-  - trailing_whitespace
   - line_length
   - identifier_name
   - shorthand_operator
   - type_body_length
   - cyclomatic_complexity
-  - comma
   - function_body_length
   - type_name
   - file_length
@@ -13,3 +11,11 @@ disabled_rules:
   - function_parameter_count
   - large_tuple
   - implicit_optional_initialization
+  - nesting
+  - inclusive_language
+  - for_where
+  - unused_optional_binding
+  - non_optional_string_data_conversion
+  - todo
+  - compiler_protocol_init
+reporter: "xcode"

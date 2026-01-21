@@ -12,19 +12,19 @@ extension KeysignDiscoveryView {
     var container: some View {
         content
     }
-    
+
     var background: some View {
         GeometryReader { proxy in
             Background()
                 .onAppear {
                     setSize(proxy)
                 }
-                .onChange(of: proxy.size) { oldValue, newValue in
+                .onChange(of: proxy.size) { _, _ in
                     setSize(proxy)
                 }
         }
     }
-    
+
     var view: some View {
         VStack {
             switch viewModel.status {
@@ -39,22 +39,22 @@ extension KeysignDiscoveryView {
         .blur(radius: isLoading ? 1 : 0)
         .padding(.horizontal, 25)
     }
-    
+
     var orientedContent: some View {
         portraitContent
     }
-    
+
     var qrCode: some View {
         qrCodeImage?
             .resizable()
             .padding(32)
             .frame(width: getMinSize(), height: getMinSize())
     }
-    
+
     var deviceList: some View {
         VStack {
             listTitle
-            
+
             LazyVGrid(columns: adaptiveColumnsMac, spacing: 18) {
                 ThisDevicePeerCell(deviceName: "Mac")
                 devices
@@ -63,7 +63,7 @@ extension KeysignDiscoveryView {
             .padding(.bottom, 120)
         }
     }
-    
+
     var devices: some View {
         ForEach(participantDiscovery.peersFound, id: \.self) { peer in
             Button {
@@ -78,16 +78,16 @@ extension KeysignDiscoveryView {
             }
         }
     }
-    
+
     var switchLink: some View {
         SwitchToLocalLink(isForKeygen: false, selectedNetwork: $selectedNetwork)
             .padding(.bottom, 24)
     }
-    
+
     func getMinSize() -> CGFloat {
         min(screenWidth/2.3, screenHeight/1.2)
     }
-    
+
     private func setSize(_ proxy: GeometryProxy) {
         screenWidth = proxy.size.width
         screenHeight = proxy.size.height
