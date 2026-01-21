@@ -100,10 +100,15 @@ struct KeygenView: View {
                 isNewVault: true
             ))
         case .KeyImport:
+            let setupType: KeyImportSetupType = fastSignConfig != nil
+                ? .fast
+                : .secure(numberOfDevices: keygenCommittee.count)
+
             router.navigate(to: KeygenRoute.keyImportOverview(
                 vault: vault,
                 email: fastSignConfig?.email,
-                keyImportInput: keyImportInput
+                keyImportInput: keyImportInput,
+                setupType: setupType
             ))
         }
     }
@@ -183,24 +188,27 @@ struct KeygenView: View {
     }
 
     var doneText: some View {
-        VStack(spacing: 18) {
+        ZStack {
             vaultCreatedAnimationVM?.view()
-                .scaleEffect(0.8)
                 .frame(maxWidth: 512)
+                .offset(y: -120)
 
-            VStack {
-                Text(NSLocalizedString("vaultCreated", comment: ""))
-                    .foregroundColor(Theme.colors.textPrimary)
-                Text(NSLocalizedString("successfully", comment: ""))
-                    .foregroundStyle(LinearGradient.primaryGradient)
+            VStack(spacing: 24) {
+                VStack {
+                    Text(NSLocalizedString("vaultCreated", comment: ""))
+                        .foregroundColor(Theme.colors.textPrimary)
+                    Text(NSLocalizedString("successfully", comment: ""))
+                        .foregroundStyle(LinearGradient.primaryGradient)
+                }
+                .font(Theme.fonts.title1)
+                .opacity(progressCounter == 4 ? 1 : 0)
+                .animation(.easeInOut, value: progressCounter)
+                .padding(.top, 60)
+
+                checkmarkAnimationVM?.view()
+                    .frame(width: 80, height: 80)
             }
-            .font(Theme.fonts.title1)
-            .opacity(progressCounter == 4 ? 1 : 0)
-            .animation(.easeInOut, value: progressCounter)
-            .padding(.top, 60)
-
-            checkmarkAnimationVM?.view()
-                .frame(width: 80, height: 80)
+            .offset(y: 120)
         }
         .onAppear {
             setDoneData()
@@ -359,22 +367,20 @@ struct KeygenView: View {
 }
 
 #Preview("keygen") {
-    ZStack {
-        Background()
-        KeygenView(
-            vault: Vault.example,
-            tssType: .Keygen,
-            keygenCommittee: [],
-            vaultOldCommittee: [],
-            mediatorURL: "",
-            sessionID: "",
-            encryptionKeyHex: "",
-            oldResharePrefix: "",
-            fastSignConfig: nil,
-            keyImportInput: nil,
-            isInitiateDevice: false,
-            hideBackButton: .constant(false)
-        )
-    }
-    .frame(height: 600)
+    KeygenView(
+        vault: Vault.example,
+        tssType: .Keygen,
+        keygenCommittee: [],
+        vaultOldCommittee: [],
+        mediatorURL: "",
+        sessionID: "",
+        encryptionKeyHex: "",
+        oldResharePrefix: "",
+        fastSignConfig: nil,
+        keyImportInput: nil,
+        isInitiateDevice: false,
+        hideBackButton: .constant(false)
+    )
+    .frame(maxWidth: 600, maxHeight: isMacOS ? 600 : .infinity)
+    .background(Theme.colors.bgPrimary)
 }

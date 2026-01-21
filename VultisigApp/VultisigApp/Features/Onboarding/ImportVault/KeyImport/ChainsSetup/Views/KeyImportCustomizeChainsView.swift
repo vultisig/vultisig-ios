@@ -12,8 +12,8 @@ struct KeyImportCustomizeChainsView: View {
     let onImport: () -> Void
 
     @State var searchText: String = ""
-
     @State var items: [Chain] = []
+    @State private var showDerivationSheet = false
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -24,14 +24,31 @@ struct KeyImportCustomizeChainsView: View {
                 emptyStateBuilder: { EmptyView() }
             )
 
-            PrimaryButton(title: "continue".localized, action: onImport)
-                .disabled(viewModel.buttonDisabled)
+            PrimaryButton(title: "continue".localized, action: {
+                if viewModel.selectedChains.contains(.solana) && viewModel.hasMultipleDerivations(for: .solana) {
+                    showDerivationSheet = true
+                } else {
+                    onImport()
+                }
+            })
+            .disabled(viewModel.buttonDisabled)
         }
         .onLoad { items = Chain.enabledChains }
         .onChange(of: searchText) { _, newValue in
             items = newValue.isEmpty ? Chain.enabledChains : Chain.enabledChains.filter {
                 $0.name.localizedCaseInsensitiveContains(newValue) || $0.ticker.localizedCaseInsensitiveContains(newValue)
             }
+        }
+        .crossPlatformSheet(isPresented: $showDerivationSheet) {
+            DerivationPathSelectionSheet(
+                chain: .solana,
+                selectedPath: $viewModel.selectedDerivationPath,
+                isPresented: $showDerivationSheet,
+                onSelect: { path in
+                    viewModel.selectDerivationPath(path, for: .solana)
+                    onImport()
+                }
+            )
         }
     }
 

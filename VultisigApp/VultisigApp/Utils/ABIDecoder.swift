@@ -15,6 +15,15 @@ struct ABIDecoder {
         case indexOutOfBounds
         case unsupportedType(String)
         case decodingFailed(String)
+        case offsetOutOfRange(String)
+    }
+
+    /// Safely converts BigUInt to Int, throwing an error if the value is too large
+    private static func safeIntConversion(_ value: BigUInt, context: String) throws -> Int {
+        guard value <= Int.max else {
+            throw DecodingError.offsetOutOfRange("\(context): value \(value) exceeds Int.max")
+        }
+        return Int(value)
     }
 
     /// Decodes ABI encoded data based on the provided types
@@ -49,7 +58,7 @@ struct ABIDecoder {
             // Read the offset pointer
             guard offset + 32 <= data.count else { throw DecodingError.indexOutOfBounds }
             let pointerData = data.subdata(in: offset..<offset+32)
-            let dataOffset = Int(BigUInt(pointerData))
+            let dataOffset = try safeIntConversion(BigUInt(pointerData), context: "Dynamic type pointer at offset \(offset)")
 
             if type == "string" {
                 let stringValue = try decodeString(data: data, offset: dataOffset)
@@ -136,7 +145,7 @@ struct ABIDecoder {
 
         // Read length
         let lengthData = data.subdata(in: offset..<offset+32)
-        let length = Int(BigUInt(lengthData))
+        let length = try safeIntConversion(BigUInt(lengthData), context: "String length at offset \(offset)")
 
         guard offset + 32 + length <= data.count else { throw DecodingError.indexOutOfBounds }
 
@@ -153,7 +162,7 @@ struct ABIDecoder {
 
         // Read length
         let lengthData = data.subdata(in: offset..<offset+32)
-        let length = Int(BigUInt(lengthData))
+        let length = try safeIntConversion(BigUInt(lengthData), context: "Bytes length at offset \(offset)")
 
         guard offset + 32 + length <= data.count else { throw DecodingError.indexOutOfBounds }
 
@@ -166,7 +175,7 @@ struct ABIDecoder {
 
         // Read array length
         let lengthData = data.subdata(in: offset..<offset+32)
-        let length = Int(BigUInt(lengthData))
+        let length = try safeIntConversion(BigUInt(lengthData), context: "Array length at offset \(offset)")
 
         var result: [Any] = []
         let arrayDataStart = offset + 32 // Position right after the length
@@ -179,7 +188,7 @@ struct ABIDecoder {
                 // For dynamic types, the slot contains a relative pointer
                 guard slotOffset + 32 <= data.count else { throw DecodingError.indexOutOfBounds }
                 let pointerData = data.subdata(in: slotOffset..<slotOffset+32)
-                let relativePointer = Int(BigUInt(pointerData))
+                let relativePointer = try safeIntConversion(BigUInt(pointerData), context: "Array element pointer at slot \(i), offset \(slotOffset)")
                 let elementAbsoluteOffset = arrayDataStart + relativePointer
 
                 let (value, _) = try decodeType(type: baseType, data: data, offset: elementAbsoluteOffset)

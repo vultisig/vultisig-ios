@@ -93,7 +93,8 @@ struct FastVaultSetHintView: View {
             vault: vault,
             selectedTab: selectedTab,
             fastSignConfig: fastSignConfig,
-            keyImportInput: nil
+            keyImportInput: nil,
+            setupType: nil
         ))
     }
 }
