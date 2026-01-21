@@ -167,7 +167,6 @@ struct SendCryptoVerifyLogic {
         let isTronStaking = tx.coin.chain == .tron && tx.isStakingOperation
         
         if isTronStaking {
-            print("DEBUG TRON staking: skipping balance validation")
             return BalanceValidationResult(isValid: true, errorMessage: nil)
         }
         if tx.coin.isNativeToken {
