@@ -213,7 +213,7 @@ struct VaultSetupScreen: View {
             case .passwordConfirm, .hint:
                 break
             case nil:
-                return
+                break
             }
         }
 

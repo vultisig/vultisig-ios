@@ -99,7 +99,7 @@ final class KeyImportChainsSetupViewModel: ObservableObject {
         if let index = chainBalanceResults.firstIndex(where: { $0.chain == chain && $0.derivationPath == path }) {
             // Move this result to be the primary one by ensuring it's first
             let result = chainBalanceResults[index]
-            chainBalanceResults.removeAll { $0.chain == chain }
+            chainBalanceResults.remove(at: index)
             chainBalanceResults.insert(result, at: 0)
         }
         selectedDerivationPath = path

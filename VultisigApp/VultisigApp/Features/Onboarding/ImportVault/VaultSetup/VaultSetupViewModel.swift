@@ -48,7 +48,7 @@ final class VaultSetupViewModel: ObservableObject, Form {
 
     /// Whether to show FastSign fields (email and password)
     var showFastSignFields: Bool {
-        setupType.requiresFastSign ?? true
+        setupType.requiresFastSign
     }
 
     init(setupType: KeyImportSetupType) {
@@ -61,9 +61,9 @@ final class VaultSetupViewModel: ObservableObject, Form {
             validators: [VaultNameValidator()]
         )
 
-        // For fast setup, email and password have no validators (optional)
-        // For secure/default, they are required
-        if setupType.requiresFastSign == false {
+        // For fast setup with FastSign, email and password validators are required
+        // For non-FastSign setup, fields are not visible so no validators needed
+        if setupType.requiresFastSign {
             self.emailField = FormField(
                 label: "email".localized,
                 placeholder: "enterYourEmail".localized,
@@ -80,7 +80,7 @@ final class VaultSetupViewModel: ObservableObject, Form {
                 placeholder: "reEnterPassword".localized,
                 validators: [RequiredValidator(errorMessage: "passwordIsRequired".localized)]
             )
-            
+
             passwordConfirmField.validators.append(ClosureValidator(action: { [weak self] value in
                 guard let self else { return }
                 if !self.isPasswordConfirmValid(value: value) {

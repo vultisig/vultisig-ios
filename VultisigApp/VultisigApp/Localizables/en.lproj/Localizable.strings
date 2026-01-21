@@ -1303,9 +1303,9 @@
 "vaultSetup4Title" = "Secure Vault";
 "vaultSetup4Subtitle" = "4+-device vault";
 "vaultSetup4Feature1Title" = "3-Device or more Signing";
-"vaultSetup4Feature1Description" = "Vaults need 67% of devices to sign a transaction. Have as many signers you want";
+"vaultSetup4Feature1Description" = "Vaults need 67% of devices to sign a transaction. Have as many signers as you want";
 "vaultSetup4Feature2Title" = "Dynamic device management";
-"vaultSetup4Feature2Description" = "Add as many devices you want and receive institutional grade security.";
+"vaultSetup4Feature2Description" = "Add as many devices as you want and receive institutional-grade security.";
 "vaultSetup4Feature3Title" = "Built for teams and treasuries";
 "vaultSetup4Feature3Description" = "Ideal for teams managing shared funds and higher-value vaults, which require more signers.";
 
