@@ -56,7 +56,7 @@ extension OnboardingView {
             .onAppear {
                 getScale()
             }
-            .onChange(of: orientation, { oldValue, newValue in
+            .onChange(of: orientation, { _, _ in
                 getScale()
             })
     }

@@ -87,7 +87,7 @@ struct PhoneCheckUpdateLogic {
             return
         }
         
-        URLSession.shared.dataTask(with: url) { data, response, error in
+        URLSession.shared.dataTask(with: url) { data, _, error in
             if let error = error {
                 print("Error fetching data from App Store: \(error.localizedDescription)")
                 completion(nil)

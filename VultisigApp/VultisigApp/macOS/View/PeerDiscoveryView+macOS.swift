@@ -20,10 +20,10 @@ extension PeerDiscoveryView {
                         screenHeight = proxy.size.height
                         setData()
                     }
-                    .onChange(of: proxy.size.width) { oldValue, newValue in
+                    .onChange(of: proxy.size.width) { _, _ in
                         screenWidth = proxy.size.width
                     }
-                    .onChange(of: proxy.size.height) { oldValue, newValue in
+                    .onChange(of: proxy.size.height) { _, _ in
                         screenHeight = proxy.size.height
                     }
             }

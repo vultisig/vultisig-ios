@@ -53,7 +53,7 @@ struct VaultBackupPasswordScreen: View {
         .onDisappear {
             backupViewModel.resetData()
         }
-        .onChange(of: verifyPassword) { oldValue, newValue in
+        .onChange(of: verifyPassword) { _, _ in
             if backupViewModel.encryptionPassword == verifyPassword {
                 passwordErrorMessage = ""
                 passwordVerifyErrorMessage = ""

@@ -41,17 +41,19 @@ struct SegmentedControl<T: Hashable>: View {
         VStack(spacing: 8) {
             HStack(spacing: 16) {
                 ForEach(Array(items.enumerated()), id: \.offset) { index, item in
-                    Button(action: {
-                        if item.isEnabled {
-                            withAnimation(.interpolatingSpring(duration: 0.3)) {
-                                selection = item.value
+                    Button(
+                        action: {
+                            if item.isEnabled {
+                                withAnimation(.interpolatingSpring(duration: 0.3)) {
+                                    selection = item.value
+                                }
                             }
-                        }
-                    }) {
-                        HStack(spacing: 6) {
-                            Text(item.title)
-                                .font(Theme.fonts.bodySMedium)
-                                .foregroundStyle(item.isEnabled ? Theme.colors.textPrimary : Theme.colors.textButtonDisabled)
+                        },
+                        label: {
+                            HStack(spacing: 6) {
+                                Text(item.title)
+                                    .font(Theme.fonts.bodySMedium)
+                                    .foregroundStyle(item.isEnabled ? Theme.colors.textPrimary : Theme.colors.textButtonDisabled)
                                 
                             if let tag = item.tag {
                                 Text(tag)
@@ -77,6 +79,7 @@ struct SegmentedControl<T: Hashable>: View {
                             }
                         )
                     }
+                        )
                     .disabled(!item.isEnabled)
                     .buttonStyle(PlainButtonStyle())
                 }

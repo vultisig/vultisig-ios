@@ -327,4 +327,3 @@ struct CircleWithdrawView: View {
         }
     }
 }
-

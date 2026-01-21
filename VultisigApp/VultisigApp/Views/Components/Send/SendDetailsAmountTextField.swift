@@ -23,7 +23,7 @@ struct SendDetailsAmountTextField: View {
         }
         .frame(idealHeight: 100, maxHeight: 180)
         .animation(.easeInOut, value: isCryptoSelected)
-        .onChange(of: focusedField) { oldValue, newValue in
+        .onChange(of: focusedField) { _, newValue in
             // Sync the visual state with the focus state
             if newValue == .amount {
                 isCryptoSelected = true
@@ -105,7 +105,7 @@ struct SendDetailsAmountTextField: View {
             onMaxPressed: { sendCryptoViewModel.setMaxValues(tx: tx) }
         )
         .focused($focusedField, equals: .amount)
-        .onChange(of: tx.coin) { oldValue, newValue in
+        .onChange(of: tx.coin) { _, _ in
             sendCryptoViewModel.convertToFiat(newValue: tx.amount, tx: tx)
         }
     }

@@ -16,9 +16,9 @@ class MessagePuller: ObservableObject {
     private let logger = Logger(subsystem: "message-puller", category: "communication")
     private var currentTask: Task<Void,Error>? = nil
     let encryptGCM: Bool
-    init(encryptionKeyHex:String,
+    init(encryptionKeyHex: String,
          pubKey: String,
-         encryptGCM: Bool){
+         encryptGCM: Bool) {
         self.encryptionKeyHex = encryptionKeyHex
         self.vaultPubKey = pubKey
         self.encryptGCM = encryptGCM
@@ -34,8 +34,7 @@ class MessagePuller: ObservableObject {
                       sessionID: String,
                       localPartyKey: String,
                       tssService: TssServiceImpl,
-                      messageID: String?)
-    {
+                      messageID: String?) {
         pollingInboundMessages = true
         currentTask = Task.detached {
             repeat {
@@ -54,7 +53,7 @@ class MessagePuller: ObservableObject {
         }
     }
     
-    func getHeaders(messageID: String?) -> [String:String]{
+    func getHeaders(messageID: String?) -> [String: String] {
         var header = [String: String]()
         // for keygen message id will be nil
         // only keysign will pass message id
@@ -70,7 +69,7 @@ class MessagePuller: ObservableObject {
             switch result {
             case .success(let data):
                 do {
-                    print("Response: \(String(data:data,encoding: .utf8) ?? "")")
+                    print("Response: \(String(data: data,encoding: .utf8) ?? "")")
                     let decoder = JSONDecoder()
                     let msgs = try decoder.decode([Message].self, from: data)
                     let sortedMsgs = msgs.sorted(by: { $0.sequence_no < $1.sequence_no })

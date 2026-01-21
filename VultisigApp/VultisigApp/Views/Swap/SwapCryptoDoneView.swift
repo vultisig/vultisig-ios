@@ -357,7 +357,7 @@ struct SwapCryptoDoneView: View {
 #Preview {
     SwapCryptoDoneView(
         tx: SwapTransaction(),
-        vault:Vault.example,
+        vault: Vault.example,
         hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
         approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
         progressLink: nil,

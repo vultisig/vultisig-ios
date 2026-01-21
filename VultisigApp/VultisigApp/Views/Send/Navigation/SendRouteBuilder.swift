@@ -72,7 +72,7 @@ struct SendRouteBuilder {
 
     @ViewBuilder
     func buildBuyScreen(address: String, blockChainCode: String, coinType: String) -> some View {
-        BanxaDisclaimer(url:getBuyURL(address:address, blockChainCode: blockChainCode, coinType: coinType))
+        BanxaDisclaimer(url: getBuyURL(address: address, blockChainCode: blockChainCode, coinType: coinType))
     }
 
     func getBuyURL(address: String, blockChainCode: String, coinType: String) -> URL {
@@ -80,7 +80,7 @@ struct SendRouteBuilder {
         components.queryItems = [
             URLQueryItem(name: "walletAddress", value: address),
             URLQueryItem(name: "blockchain", value: blockChainCode),
-            URLQueryItem(name: "coinType", value: coinType),
+            URLQueryItem(name: "coinType", value: coinType)
         ]
         return components.url!
     }

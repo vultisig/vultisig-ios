@@ -19,13 +19,16 @@ extension CoinPickerView {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                Button(action: {
-                    dismiss()
-                }) {
-                    Image(systemName: "chevron.backward")
-                        .font(Theme.fonts.bodyLMedium)
-                        .foregroundColor(Theme.colors.textPrimary)
-                }
+                Button(
+                    action: {
+                        dismiss()
+                    },
+                    label: {
+                        Image(systemName: "chevron.backward")
+                            .font(Theme.fonts.bodyLMedium)
+                            .foregroundColor(Theme.colors.textPrimary)
+                    }
+                )
             }
         }
     }

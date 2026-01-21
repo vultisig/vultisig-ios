@@ -87,13 +87,14 @@ struct CoinDetailScreen: View {
             ReceiveQRCodeBottomSheet(
                 coin: coin,
                 isNativeCoin: false,
-                onClose: { showReceiveSheet = false }
-            ) { coin in
-                showReceiveSheet = false
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                    addressToCopy = coin
+                onClose: { showReceiveSheet = false },
+                onCopy: { coin in
+                    showReceiveSheet = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                        addressToCopy = coin
+                    }
                 }
-            }
+            )
         }
         .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
             #if os(macOS)

@@ -21,7 +21,7 @@ struct FolderVaultCell: View {
             .onTapGesture {
                 isSelected.toggle()
             }
-            .onChange(of: isSelected) { oldValue, newValue in
+            .onChange(of: isSelected) { _, _ in
                 handleSelection()
             }
     }

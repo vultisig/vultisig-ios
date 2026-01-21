@@ -41,7 +41,7 @@ struct PickReferralCode: View {
         )
         .layoutPriority(1)
         .frame(maxWidth: .infinity)
-        .onChange(of: referralViewModel.referralCode) { oldValue, newValue in
+        .onChange(of: referralViewModel.referralCode) { _, _ in
             referralViewModel.resetReferralData()
         }
     }

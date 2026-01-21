@@ -138,7 +138,7 @@ private extension VultiTabBar {
             selectedTabPill
             
             HStack(spacing: 0) {
-                ForEach(Array(items.enumerated()), id: \.offset) { index, item in
+                ForEach(Array(items.enumerated()), id: \.offset) { _, item in
                     Button { selectedItem = item } label: {
                         let color = item == selectedItem ? Theme.colors.textPrimary : Theme.colors.textTertiary
                         VStack(spacing: 4) {

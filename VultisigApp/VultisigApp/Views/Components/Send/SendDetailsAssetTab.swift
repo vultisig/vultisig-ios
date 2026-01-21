@@ -20,7 +20,7 @@ struct SendDetailsAssetTab: View {
             .onAppear {
                 setData()
             }
-            .onChange(of: tx.coin, { oldValue, newValue in
+            .onChange(of: tx.coin, { _, _ in
                 setData()
             })
             .onChange(of: viewModel.showCoinPickerSheet) { oldValue, newValue in
@@ -29,7 +29,7 @@ struct SendDetailsAssetTab: View {
             .onChange(of: isExpanded) { oldValue, newValue in
                 handleAssetSelection(oldValue, newValue)
             }
-            .onChange(of: viewModel.selectedChain) { oldValue, newValue in
+            .onChange(of: viewModel.selectedChain) { _, newValue in
                 guard let vault = appViewModel.selectedVault else { return }
                 
                 // ALWAYS select the NATIVE token for the chain, NEVER a regular token

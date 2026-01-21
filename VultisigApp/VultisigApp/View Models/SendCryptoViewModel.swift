@@ -204,8 +204,6 @@ struct SendCryptoLogic {
         return isExist && !isLocalBackup
     }
     
-
-    
     func validateForm(tx: SendTransaction, hasPendingTransaction: Bool) async -> ValidationResult {
         var result = ValidationResult(isValid: true)
         
@@ -225,8 +223,6 @@ struct SendCryptoLogic {
             result.isValid = false
             return result
         }
-        
-
         
         if tx.isAmountExceeded {
             result.errorTitle = "error"

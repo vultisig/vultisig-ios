@@ -80,8 +80,7 @@ struct ChainDetailScreenContainer: View {
     func onExplorer() {
         if
             let url = Endpoint.getExplorerByAddressURLByGroup(chain: group.coins.first?.chain, address: group.address),
-            let linkURL = URL(string: url)
-        {
+            let linkURL = URL(string: url) {
             openURL(linkURL)
         }
     }

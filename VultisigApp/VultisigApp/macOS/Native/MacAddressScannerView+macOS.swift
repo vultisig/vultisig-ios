@@ -62,7 +62,7 @@ struct MacAddressScannerView: View {
             content
         }
         .crossPlatformToolbar("scanQRCode".localized, ignoresTopEdge: true)
-        .onChange(of: scannerViewModel.detectedQRCode) { oldValue, newValue in
+        .onChange(of: scannerViewModel.detectedQRCode) { _, _ in
             handleScan()
         }
     }

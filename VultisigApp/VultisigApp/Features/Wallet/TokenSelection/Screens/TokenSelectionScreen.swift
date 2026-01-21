@@ -49,7 +49,7 @@ struct TokenSelectionScreen: View {
         .onDisappear {
             tokenViewModel.cancelLoading()
         }
-        .onReceive(tokenViewModel.$searchText) { newVault in
+        .onReceive(tokenViewModel.$searchText) { _ in
             tokenViewModel.updateSearchedTokens(groupedChain: group)
         }
     }

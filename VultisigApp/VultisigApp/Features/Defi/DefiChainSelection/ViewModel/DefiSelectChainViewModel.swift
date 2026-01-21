@@ -72,7 +72,7 @@ class DefiSelectChainViewModel: ObservableObject {
                 .filter { CoinAction.defiChains.contains($0) }
             
             try Storage.shared.save()
-        } catch  {
+        } catch {
             print("Error while saving defi chains", error.localizedDescription)
         }
     }

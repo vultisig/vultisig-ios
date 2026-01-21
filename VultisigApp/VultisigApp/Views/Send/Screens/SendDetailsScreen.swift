@@ -125,7 +125,7 @@ struct SendDetailsScreen: View {
     
     var content: some View {
         view
-            .onChange(of: tx.coin) { oldValue, newValue in
+            .onChange(of: tx.coin) { _, _ in
                 setData()
             }
             .onChange(of: focusedField) { _, focusedField in
@@ -149,7 +149,7 @@ struct SendDetailsScreen: View {
             title: getButtonTitle(),
             isLoading: sendCryptoViewModel.isLoading && !sendCryptoViewModel.hasPendingTransaction
         ) {
-            Task{
+            Task {
                 await validateForm()
             }
         }
@@ -473,7 +473,7 @@ private func setMainData() async {
         countdownTimer = nil
     }
     
-    private func updateCountdown()  {
+    private func updateCountdown() {
         guard tx.coin.chain.supportsPendingTransactions else {
             return
         }

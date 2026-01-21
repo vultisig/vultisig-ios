@@ -5,7 +5,6 @@
 //  Created by Gaston Mazzeo on 10/11/2025.
 //
 
-
 import Foundation
 import SwiftData
 
@@ -122,4 +121,3 @@ struct DefiPositionsStorageService {
         try Storage.shared.save()
     }
 }
-

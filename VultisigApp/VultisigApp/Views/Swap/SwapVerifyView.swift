@@ -27,7 +27,7 @@ struct SwapVerifyView: View {
             Background()
             view
         }
-        .onReceive(timer) { input in
+        .onReceive(timer) { _ in
             swapViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
         }
         .onDisappear {
@@ -98,7 +98,7 @@ struct SwapVerifyView: View {
                     getValueCell(
                         for: "swapFee",
                         with: swapViewModel.swapFeeString(tx: tx),
-                        bracketValue:nil
+                        bracketValue: nil
                     )
                     .blur(radius: swapViewModel.isLoadingFees ? 1 : 0)
                 }

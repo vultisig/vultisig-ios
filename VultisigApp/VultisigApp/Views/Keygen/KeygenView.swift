@@ -75,7 +75,7 @@ struct KeygenView: View {
                 progressAnimationTimer?.invalidate()
                 progressAnimationTimer = nil
             }
-            .onChange(of: keygenAnimationVMInstance) { oldValue, instance in
+            .onChange(of: keygenAnimationVMInstance) { _, instance in
                 let connected = instance?.booleanProperty(fromPath: "Connected")
                 connected?.value = true
             }

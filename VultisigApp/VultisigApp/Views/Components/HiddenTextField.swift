@@ -79,14 +79,17 @@ struct HiddenTextField: View {
     }
     
     var button: some View {
-        Button(action: {
-            withAnimation {
-                isPasswordVisible.toggle()
+        Button(
+            action: {
+                withAnimation {
+                    isPasswordVisible.toggle()
+                }
+            },
+            label: {
+                Image(systemName: isPasswordVisible ? "eye": "eye.slash")
+                    .foregroundColor(Theme.colors.textPrimary)
             }
-        }) {
-            Image(systemName: isPasswordVisible ? "eye": "eye.slash")
-                .foregroundColor(Theme.colors.textPrimary)
-        }
+        )
         .buttonStyle(.plain)
         .contentTransition(.symbolEffect(.replace))
     }

@@ -54,13 +54,14 @@ struct ReceiveChainSelectionScreen: View {
             ReceiveQRCodeBottomSheet(
                 coin: coin,
                 isNativeCoin: true,
-                onClose: { selectedCoin = nil }
-            ) { coin in
-                isPresented = false
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                    addressToCopy = coin
+                onClose: { selectedCoin = nil },
+                onCopy: { coin in
+                    isPresented = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                        addressToCopy = coin
+                    }
                 }
-            }
+            )
         }
         .applySheetSize()
         .sheetStyle() 

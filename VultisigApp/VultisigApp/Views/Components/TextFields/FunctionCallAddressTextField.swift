@@ -46,7 +46,7 @@ struct FunctionCallAddressTextField<MemoType: FunctionCallAddressable>: View {
             
             container
         }
-        .onChange(of: memo.addressFields[addressKey]) { oldValue, newValue in
+        .onChange(of: memo.addressFields[addressKey]) { _, newValue in
             validateAddress(newValue ?? "")
         }
     }

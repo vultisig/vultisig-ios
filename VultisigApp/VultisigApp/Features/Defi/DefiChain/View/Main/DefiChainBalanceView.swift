@@ -70,7 +70,7 @@ struct DefiChainBalanceView: View {
         LinearGradient(
             stops: [
                 Gradient.Stop(color: Color(hex: "34E6BF"), location: 0.00),
-                Gradient.Stop(color: Color(red: 0.11, green: 0.5, blue: 0.42).opacity(0), location: 1.00),
+                Gradient.Stop(color: Color(red: 0.11, green: 0.5, blue: 0.42).opacity(0), location: 1.00)
             ],
             startPoint: UnitPoint(x: 0.5, y: 0),
             endPoint: UnitPoint(x: 0.5, y: 1)

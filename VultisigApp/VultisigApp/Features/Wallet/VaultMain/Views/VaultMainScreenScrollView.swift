@@ -111,4 +111,3 @@ private extension VaultMainScreenScrollView {
         }
     }
 }
-

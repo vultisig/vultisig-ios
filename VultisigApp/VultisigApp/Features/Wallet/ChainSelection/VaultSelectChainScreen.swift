@@ -88,7 +88,6 @@ private extension VaultSelectChainScreen {
     }
 }
 
-
 #Preview {
     VaultSelectChainScreen(
         vault: .example,
@@ -96,5 +95,3 @@ private extension VaultSelectChainScreen {
         onSave: {}
     )
 }
-
-

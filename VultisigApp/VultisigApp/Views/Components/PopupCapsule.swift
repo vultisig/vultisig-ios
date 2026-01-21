@@ -21,7 +21,7 @@ struct PopupCapsule: View {
         }
         .ignoresSafeArea()
         .allowsHitTesting(false)
-        .onChange(of: showPopup) { oldValue, newValue in
+        .onChange(of: showPopup) { _, _ in
             startAnimation()
         }
     }

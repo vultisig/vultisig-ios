@@ -79,13 +79,14 @@ struct ChainDetailScreen: View {
             ReceiveQRCodeBottomSheet(
                 coin: nativeCoin,
                 isNativeCoin: true,
-                onClose: { showReceiveSheet = false }
-            ) { coin in
-                showReceiveSheet = false
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                    onAddressCopy?(coin)
+                onClose: { showReceiveSheet = false },
+                onCopy: { coin in
+                    showReceiveSheet = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                        onAddressCopy?(coin)
+                    }
                 }
-            }
+            )
         }
         .crossPlatformSheet(isPresented: $showManageTokens) {
             TokenSelectionContainerScreen(

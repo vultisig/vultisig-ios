@@ -55,7 +55,7 @@ struct SetupVaultSecureText: View {
     var content: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 12) {
-                ForEach(0..<3) { index in
+                ForEach(0..<3) { _ in
                     Image(systemName: "checkmark")
                         .foregroundColor(Theme.colors.bgButtonPrimary)
                         .frame(width: 16, height: 16)

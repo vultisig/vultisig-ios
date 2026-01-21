@@ -6,7 +6,7 @@
 //
 
 import Foundation
-struct ReshareRequest : Hashable,Codable{
+struct ReshareRequest: Hashable,Codable{
     let name: String
     let public_key: String
     let session_id: String

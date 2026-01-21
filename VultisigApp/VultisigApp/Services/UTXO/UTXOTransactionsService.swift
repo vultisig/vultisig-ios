@@ -65,7 +65,7 @@ public class UTXOTransactionsService: ObservableObject {
         request.httpMethod = "POST"
         request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
         request.httpBody = signedTransaction.data(using: .utf8)
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        let task = URLSession.shared.dataTask(with: request) { data, _, error in
             func finish(_ result: Result<String, Error>) {
                 DispatchQueue.main.async {
                     completion(result)
@@ -113,8 +113,7 @@ public class UTXOTransactionsService: ObservableObject {
                 do {
                     if let json = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any],
                        let transactionData = json["data"] as? [String: Any],
-                       let transactionHash = transactionData["transaction_hash"] as? String
-                    {
+                       let transactionHash = transactionData["transaction_hash"] as? String {
                         finish(.success(transactionHash))
                     } else {
                         finish(.failure(NSError(domain: "BlockchairServiceError", code: 4, userInfo: [NSLocalizedDescriptionKey: "Unexpected response format"])))

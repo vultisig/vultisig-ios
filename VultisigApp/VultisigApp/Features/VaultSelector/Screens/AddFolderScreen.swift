@@ -147,4 +147,3 @@ private extension AddFolderScreen {
     AddFolderScreen {}
     .environmentObject(HomeViewModel())
 }
-

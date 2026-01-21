@@ -28,7 +28,7 @@ struct SwapCryptoDetailsView: View {
             .onAppear {
                 setData()
             }
-            .onReceive(timer) { input in
+            .onReceive(timer) { _ in
                 swapViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
             }
             .onChange(of: tx.fromCoin, { _, _ in

@@ -57,7 +57,7 @@ struct FastVaultEnterPasswordView: View {
                     withAnimation(.easeInOut(duration: 0.2)) {
                         showHint.toggle()
                     }
-                }) {
+                }, label: {
                     HStack(spacing: 4) {
                         Text("showHint".localized)
                             .font(Theme.fonts.caption12)
@@ -68,6 +68,7 @@ struct FastVaultEnterPasswordView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                       )
                 .buttonStyle(.plain)
                 
                 // Hint text

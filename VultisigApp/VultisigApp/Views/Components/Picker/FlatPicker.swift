@@ -71,7 +71,7 @@ public struct FlatPicker<ItemView: View, Item: Equatable & Hashable>: View {
                         scrollCheckWorkItem = workItem
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: workItem)
                     }
-                    .onChange(of: lastOffset) { previousOffset, lastOffset in
+                    .onChange(of: lastOffset) { _, lastOffset in
                         let newItemIndex = calculateIndex(newOffset: lastOffset, containerSize: containerSize)
                         
                         if selectedItem != items[newItemIndex] {

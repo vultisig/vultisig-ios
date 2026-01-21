@@ -124,7 +124,7 @@ struct SwapCryptoView: View {
             } else {
                 SendCryptoSigningErrorView(errorString: swapViewModel.error?.localizedDescription ?? "Error")
             }
-        }.onAppear() {
+        }.onAppear {
             Task {
                 try await Task.sleep(for: .seconds(5))
                 swapViewModel.stopMediator()

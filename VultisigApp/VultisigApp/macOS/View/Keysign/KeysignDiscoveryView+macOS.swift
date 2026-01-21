@@ -19,7 +19,7 @@ extension KeysignDiscoveryView {
                 .onAppear {
                     setSize(proxy)
                 }
-                .onChange(of: proxy.size) { oldValue, newValue in
+                .onChange(of: proxy.size) { _, _ in
                     setSize(proxy)
                 }
         }

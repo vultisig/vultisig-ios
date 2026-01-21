@@ -130,7 +130,7 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
         $amount
             .removeDuplicates()
             .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
-            .sink { [weak self] amount in
+            .sink { [weak self] _ in
                 self?.validateAmount()
                 self?.updateErrorMessage()
             }

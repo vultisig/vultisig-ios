@@ -32,12 +32,15 @@ extension SwapPercentageButtons {
     }
     
     func getPercentageButton(for option: Int) -> some View {
-        Button(action: {
-            self.selectedPercentage = option
-            onTap(option)
-        }) {
-            getPercentageCell(for: "\(option)", isSelected: self.selectedPercentage == option && !self.showAllPercentageButtons)
-        }
+        Button(
+            action: {
+                self.selectedPercentage = option
+                onTap(option)
+            },
+            label: {
+                getPercentageCell(for: "\(option)", isSelected: self.selectedPercentage == option && !self.showAllPercentageButtons)
+            }
+        )
         .disabled(self.selectedPercentage == option && !self.showAllPercentageButtons)
     }
     

@@ -56,7 +56,7 @@ class FunctionCallStake: FunctionCallAddressable, ObservableObject {
         $amount
             .removeDuplicates()
             .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
-            .sink { [weak self] newAmount in
+            .sink { [weak self] _ in
                 self?.validateAmount()
             }
             .store(in: &cancellables)

@@ -131,13 +131,16 @@ struct SendGasSettingsView: View {
     }
 
     var backButton: some View {
-        Button(action: {
-            isPresented = false
-        }) {
-            Image("x")
-                .font(Theme.fonts.bodyLMedium)
-                .foregroundColor(Theme.colors.textPrimary)
-        }
+        Button(
+            action: {
+                isPresented = false
+            },
+            label: {
+                Image("x")
+                    .font(Theme.fonts.bodyLMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
+            }
+        )
     }
 
     var saveButton: some View {

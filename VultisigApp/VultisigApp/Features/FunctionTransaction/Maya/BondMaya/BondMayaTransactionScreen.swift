@@ -81,13 +81,16 @@ struct BondMayaTransactionScreen: View {
                             Text(availableUnits)
                                 .font(Theme.fonts.caption12)
                                 .foregroundColor(Theme.colors.textPrimary)
-                            Button(action: {
-                                viewModel.lpUnitsField.value = availableUnits
-                            }) {
-                                Text("max".localized)
-                                    .font(Theme.fonts.caption12)
-                                    .foregroundColor(Theme.colors.alertInfo)
-                            }
+                            Button(
+                                action: {
+                                    viewModel.lpUnitsField.value = availableUnits
+                                },
+                                label: {
+                                    Text("max".localized)
+                                        .font(Theme.fonts.caption12)
+                                        .foregroundColor(Theme.colors.alertInfo)
+                                }
+                            )
                         }
                     }
 

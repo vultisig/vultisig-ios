@@ -38,7 +38,7 @@ struct JoinKeysignGasViewModel {
         var feeToUse = payload.chainSpecific.gas
         if payload.coin.chainType == .UTXO {
             feeToUse = calculateUTXOTotalFee(payload: payload) ?? payload.chainSpecific.gas
-        } else if payload.coin.chainType == .Cardano  {
+        } else if payload.coin.chainType == .Cardano {
             feeToUse = calculateCardanoTotalFee(payload: payload) ?? payload.chainSpecific.gas
         }
 

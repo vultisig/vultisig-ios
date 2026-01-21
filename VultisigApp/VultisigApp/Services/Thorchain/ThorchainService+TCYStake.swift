@@ -16,7 +16,7 @@ extension ThorchainService {
             return
         }
 
-        let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, response, error in
+        let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, _, error in
             if let error = error {
                 print("Error to fetch staked amount: \(error)")
                 completion(.zero)

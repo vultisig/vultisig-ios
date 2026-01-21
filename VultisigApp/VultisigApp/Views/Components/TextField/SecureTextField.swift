@@ -28,19 +28,23 @@ struct SecureTextField: View {
             label: label,
             placeholder: placeholder,
             isSecure: $isSecure,
-            error: $error
-        ) {
-            Button(action: {
-                withAnimation {
-                    isSecure.toggle()
-                }
-            }) {
-                Image(systemName: isSecure ? "eye.slash": "eye")
-                    .foregroundColor(Theme.colors.textPrimary)
+            error: $error,
+            trailingView: {
+                Button(
+                    action: {
+                        withAnimation {
+                            isSecure.toggle()
+                        }
+                    },
+                    label: {
+                        Image(systemName: isSecure ? "eye.slash": "eye")
+                            .foregroundColor(Theme.colors.textPrimary)
+                    }
+                )
+                .buttonStyle(.plain)
+                .contentTransition(.symbolEffect(.replace))
             }
-            .buttonStyle(.plain)
-            .contentTransition(.symbolEffect(.replace))
-        }
+        )
         #if os(iOS)
             .textInputAutocapitalization(.never)
         #endif

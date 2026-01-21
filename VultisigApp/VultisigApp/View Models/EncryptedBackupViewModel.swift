@@ -778,7 +778,7 @@ class EncryptedBackupViewModel: ObservableObject {
             let dragDropData = try await provider.loadItem(forTypeIdentifier: UTType.data.identifier)
             if let urlData = dragDropData as? NSURL {
                 print("File Path as NSURL: \(urlData)")
-                provider.loadDataRepresentation(forTypeIdentifier: UTType.data.identifier) { data,err in
+                provider.loadDataRepresentation(forTypeIdentifier: UTType.data.identifier) { data, _ in
                     if let data {
                         let url = urlData as URL
                         DispatchQueue.main.async {

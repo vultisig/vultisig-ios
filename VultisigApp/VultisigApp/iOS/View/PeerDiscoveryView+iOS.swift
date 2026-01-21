@@ -40,7 +40,7 @@ extension PeerDiscoveryView {
         }
         .navigationBarBackButtonHidden(hideBackButton)
         .detectOrientation($orientation)
-        .onChange(of: orientation) { oldValue, newValue in
+        .onChange(of: orientation) { _, _ in
             setData()
         }
         .onAppear {

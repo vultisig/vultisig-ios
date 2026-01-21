@@ -54,7 +54,7 @@ struct QRCodeGenerator {
         
         #if os(iOS)
         let renderer = UIGraphicsImageRenderer(size: CGSize(width: targetLogoSize, height: targetLogoSize))
-        resizedLogo = renderer.image { context in
+        resizedLogo = renderer.image { _ in
             logoImage.draw(in: CGRect(origin: .zero, size: CGSize(width: targetLogoSize, height: targetLogoSize)))
         }
         #elseif os(macOS)

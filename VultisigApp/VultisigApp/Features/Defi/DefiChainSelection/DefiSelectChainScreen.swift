@@ -66,7 +66,6 @@ private extension DefiSelectChainScreen {
     }
 }
 
-
 #Preview {
     DefiSelectChainScreen(
         vault: .example,
@@ -74,5 +73,3 @@ private extension DefiSelectChainScreen {
         onSave: {}
     )
 }
-
-

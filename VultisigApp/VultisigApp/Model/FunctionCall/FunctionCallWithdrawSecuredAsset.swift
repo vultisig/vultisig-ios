@@ -226,7 +226,7 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
         $amount
             .removeDuplicates()
             .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
-            .sink { [weak self] amount in
+            .sink { [weak self] _ in
                 self?.validateAmount()
             }
             .store(in: &cancellables)
