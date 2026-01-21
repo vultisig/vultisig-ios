@@ -18,7 +18,7 @@ struct QRCodeScannerView: View {
     @State var isFilePresented = false
     @State var showErrorPopup = false
     
-    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+    private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     
     var body: some View {
         ZStack {
@@ -91,7 +91,7 @@ struct QRCodeScannerView: View {
                 switch result {
                 case .success(let success):
                     handleImport(success.string)
-                case .failure(_):
+                case .failure:
                     showErrorPopup = true
                 }
             }

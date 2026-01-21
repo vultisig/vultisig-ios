@@ -35,7 +35,7 @@ enum SuiHelper {
             // [["objectDigest": "", "objectID": "", "version": ""]]
             // NOT key value pair object
             // [[["objectDigest": ""], ["objectID": ""], ["version": ""]]]
-            let suiCoins = coins.filter{ $0["coinType"]?.uppercased().contains(keysignPayload.coin.ticker.uppercased()) == true }.map {
+            let suiCoins = coins.filter { $0["coinType"]?.uppercased().contains(keysignPayload.coin.ticker.uppercased()) == true }.map {
                 var obj = SuiObjectRef()
                 obj.objectID = $0["objectID"] ?? .empty
                 obj.version = UInt64($0["version"] ?? .zero) ?? UInt64.zero
@@ -70,7 +70,7 @@ enum SuiHelper {
             // [["objectDigest": "", "objectID": "", "version": ""]]
             // NOT key value pair object
             // [[["objectDigest": ""], ["objectID": ""], ["version": ""]]]
-            let suiCoins = coins.filter{ $0["coinType"]?.uppercased().contains(keysignPayload.coin.ticker.uppercased()) == true }.map {
+            let suiCoins = coins.filter { $0["coinType"]?.uppercased().contains(keysignPayload.coin.ticker.uppercased()) == true }.map {
                 var obj = SuiObjectRef()
                 obj.objectID = $0["objectID"] ?? .empty
                 obj.version = UInt64($0["version"] ?? .zero) ?? UInt64.zero
@@ -82,7 +82,7 @@ enum SuiHelper {
                 throw HelperError.runtimeError("Non-native token transaction requires the token to be present")
             }
             
-            let suiObjectForGas = coins.filter{ $0["coinType"]?.uppercased().contains("SUI") == true }.map {
+            let suiObjectForGas = coins.filter { $0["coinType"]?.uppercased().contains("SUI") == true }.map {
                 var obj = SuiObjectRef()
                 obj.objectID = $0["objectID"] ?? .empty
                 obj.version = UInt64($0["version"] ?? .zero) ?? UInt64.zero

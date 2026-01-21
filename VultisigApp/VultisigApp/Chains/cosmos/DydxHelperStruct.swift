@@ -57,7 +57,7 @@ struct DydxHelperStruct {
                 memo = signDataMessagesResult.memo
             } else {
                 messages = [WalletCore.CosmosMessage.with {
-                    $0.sendCoinsMessage = WalletCore.CosmosMessage.Send.with{
+                    $0.sendCoinsMessage = WalletCore.CosmosMessage.Send.with {
                         $0.fromAddress = keysignPayload.coin.address
                         $0.amounts = [CosmosAmount.with {
                             $0.denom = "adydx"
@@ -111,17 +111,15 @@ struct DydxHelperStruct {
     }
     
     static func getSignedTransaction(keysignPayload: KeysignPayload,
-                              signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
-    {
+                                     signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let signedTransaction = try getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
         return signedTransaction
     }
     
     static func getSignedTransaction(coinHexPublicKey: String,
-                              inputData: Data,
-                              signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
-    {
+                                     inputData: Data,
+                                     signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         guard let pubkeyData = Data(hexString: coinHexPublicKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {
@@ -155,4 +153,3 @@ struct DydxHelperStruct {
         }
     }
 }
-

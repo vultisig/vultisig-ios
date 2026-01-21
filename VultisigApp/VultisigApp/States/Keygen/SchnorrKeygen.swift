@@ -61,7 +61,7 @@ final class SchnorrKeygen {
         return self.keyshare
     }
     
-    private func getKeyImportSetupMessage(hexPrivateKey: String, hexRootChainCode: String) throws -> ([UInt8],goschnorr.Handle)  {
+    private func getKeyImportSetupMessage(hexPrivateKey: String, hexRootChainCode: String) throws -> ([UInt8],goschnorr.Handle) {
         var buf = goschnorr.tss_buffer()
         defer {
             goschnorr.tss_buffer_free(&buf)
@@ -131,7 +131,7 @@ final class SchnorrKeygen {
         return Array(UnsafeBufferPointer(start: buf_receiver.ptr, count: Int(buf_receiver.len)))
     }
     
-    func processSchnorrOutboundMessage(handle: goschnorr.Handle) async throws  {
+    func processSchnorrOutboundMessage(handle: goschnorr.Handle) async throws {
         repeat {
             let (result,outboundMessage) = GetSchnorrOutboundMessage(handle: handle)
             if result != LIB_OK {
@@ -144,14 +144,14 @@ final class SchnorrKeygen {
             let message = outboundMessage.to_dkls_goslice()
             let encodedOutboundMessage = Data(outboundMessage).base64EncodedString()
             for i in 0..<self.keygenCommittee.count {
-                let receiverArray = getOutboundMessageReceiver(handle:handle,
+                let receiverArray = getOutboundMessageReceiver(handle: handle,
                                                                message: message,
                                                                idx: UInt32(i))
                 
                 if receiverArray.count == 0 {
                     continue
                 }
-                let receiverString = String(bytes:receiverArray,encoding: .utf8)!
+                let receiverString = String(bytes: receiverArray,encoding: .utf8)!
                 print("sending message from \(self.localPartyID) to: \(receiverString)")
                 try await self.messenger.send(self.localPartyID, to: receiverString, body: encodedOutboundMessage)
             }
@@ -202,7 +202,7 @@ final class SchnorrKeygen {
         return false
     }
     
-    func processInboundMessage(handle: goschnorr.Handle,data:Data) async throws -> Bool {
+    func processInboundMessage(handle: goschnorr.Handle,data: Data) async throws -> Bool {
         if data.count == 0 {
             return false
         }
@@ -225,7 +225,7 @@ final class SchnorrKeygen {
             
             let descryptedBodyArr = [UInt8](decodedMsg)
             var decryptedBodySlice = descryptedBodyArr.to_dkls_goslice()
-            var isFinished:UInt32 = 0
+            var isFinished: UInt32 = 0
             var result: goschnorr.schnorr_lib_error
             switch self.tssType {
             case .Keygen,.Migrate,.KeyImport:
@@ -296,7 +296,7 @@ final class SchnorrKeygen {
                     throw HelperError.runtimeError("fail to create migration session from setup message,error:\(result)")
                 }
             case .KeyImport:
-                var keygenSetupMsg:[UInt8]
+                var keygenSetupMsg: [UInt8]
                 if self.isInitiateDevice {
                     guard let localPrivateSecret = self.localPrivateSecret else {
                         throw HelperError.runtimeError("can't import , local private key is empty")
@@ -337,8 +337,7 @@ final class SchnorrKeygen {
                                              chaincode: "")
                 print("publicKeyEdDSA:\(publicKeyEdDSA.toHexString())")
             }
-        }
-        catch {
+        } catch {
             print("Failed to generate key, error: \(error.localizedDescription)")
             if attempt < 3 { // let's retry
                 print("keygen/reshare retry, attemp: \(attempt)")
@@ -349,7 +348,7 @@ final class SchnorrKeygen {
         }
     }
     
-    func getKeyshareBytes(handle: goschnorr.Handle) throws  -> [UInt8] {
+    func getKeyshareBytes(handle: goschnorr.Handle) throws -> [UInt8] {
         var buf = goschnorr.tss_buffer()
         defer {
             goschnorr.tss_buffer_free(&buf)
@@ -361,7 +360,7 @@ final class SchnorrKeygen {
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
     
-    func getPublicKeyBytes(handle: goschnorr.Handle) throws  -> [UInt8] {
+    func getPublicKeyBytes(handle: goschnorr.Handle) throws -> [UInt8] {
         var buf = goschnorr.tss_buffer()
         defer {
             goschnorr.tss_buffer_free(&buf)
@@ -386,10 +385,10 @@ final class SchnorrKeygen {
         }
         
         for(idx,item) in allParties.enumerated() {
-            if oldCommittee.contains(item){
+            if oldCommittee.contains(item) {
                 oldPartiesIdx.append(UInt8(idx))
             }
-            if newCommittee.contains(item){
+            if newCommittee.contains(item) {
                 newPartiesIdx.append(UInt8(idx))
             }
         }
@@ -416,7 +415,7 @@ final class SchnorrKeygen {
         return [UInt8](keyshareData)
     }
     
-    private func getSchnorrReshareSetupMessage(keyshareHandle: goschnorr.Handle) throws ->[UInt8] {
+    private func getSchnorrReshareSetupMessage(keyshareHandle: goschnorr.Handle) throws -> [UInt8] {
         var buf = goschnorr.tss_buffer()
         defer {
             goschnorr.tss_buffer_free(&buf)
@@ -449,9 +448,9 @@ final class SchnorrKeygen {
                 }
             }
             
-            var reshareSetupMsg:[UInt8]
+            var reshareSetupMsg: [UInt8]
             // currently reshare Schnorr need to have it's own setup message, let's set it up
-            //it might not needed
+            // it might not needed
             if self.isInitiateDevice && attempt == 0 {
                 // DKLS/Schnorr reshare need to upload different setup message , thus here pass in an additional header as "eddsa" to make sure
                 // dkls and schnorr setup message will be saved differently
@@ -500,8 +499,7 @@ final class SchnorrKeygen {
                 print("reshare EdDSA successfully")
                 print("publicKeyEdDSA:\(publicKeyEdDSA.toHexString())")
             }
-        }
-        catch {
+        } catch {
             print("Failed to reshare key, error: \(error.localizedDescription)")
             if attempt < 3 { // let's retry
                 print("keygen/reshare retry, attemp: \(attempt)")

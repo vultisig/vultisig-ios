@@ -163,7 +163,7 @@ class PolkadotService: RpcService {
             validToAddress = fromAddress
         } else {
             // Try to validate the address format
-            if let _ = AnyAddress(string: toAddress, coin: .polkadot) {
+            if AnyAddress(string: toAddress, coin: .polkadot) != nil {
                 validToAddress = toAddress
             } else {
                 validToAddress = fromAddress
@@ -213,7 +213,7 @@ class PolkadotService: RpcService {
         }
         
         var partialFee = BigInt(250000000)
-        do{
+        do {
             partialFee = try await getPartialFee(serializedTransaction: serializedTransaction)
         } catch {
             print("PolkadotService > calculateDynamicFee > Error fetching partial fee: \(error)")

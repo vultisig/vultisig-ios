@@ -181,7 +181,7 @@ struct EvmServiceStruct {
             "from": senderAddress,
             "to": contractAddress,
             "value": "0x0",
-            "data": data,
+            "data": data
         ]
         
         return try await rpcService.intRpcCall(method: "eth_estimateGas", params: [transactionObject])
@@ -299,7 +299,7 @@ struct EvmServiceStruct {
     }
     
     private func fetchMaxPriorityFeePerGas() async throws -> BigInt {
-        return try await rpcService.intRpcCall(method: "eth_maxPriorityFeePerGas", params: []) //WEI
+        return try await rpcService.intRpcCall(method: "eth_maxPriorityFeePerGas", params: []) // WEI
     }
     
     private func fetchNonce(address: String) async throws -> BigInt {
@@ -569,4 +569,3 @@ struct EvmServiceStruct {
         return "0x" + addressData.map { String(format: "%02x", $0) }.joined()
     }
 }
-

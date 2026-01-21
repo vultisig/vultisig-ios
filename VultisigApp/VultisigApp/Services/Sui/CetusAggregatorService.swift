@@ -102,7 +102,6 @@ class CetusAggregatorService {
         return data
     }
 
-    
     /// Get token price with proper decimal handling
     /// - Parameters:
     ///   - contractAddress: Token contract address

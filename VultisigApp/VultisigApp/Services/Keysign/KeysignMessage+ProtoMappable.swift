@@ -462,7 +462,7 @@ extension BlockChainSpecific {
                 $0.sequence = sequence
                 $0.gas = gas
                 $0.transactionType = VSTransactionType(rawValue: transactionType) ?? .unspecified
-                $0.ibcDenomTraces = VSCosmosIbcDenomTrace.with{
+                $0.ibcDenomTraces = VSCosmosIbcDenomTrace.with {
                     $0.baseDenom = ibc?.baseDenom ?? ""
                     $0.path = ibc?.path ?? ""
                     $0.latestBlock = ibc?.height ?? "0"
@@ -504,8 +504,7 @@ extension BlockChainSpecific {
                 $0.jettonAddress = jettonAddress
                 $0.isActiveDestination = isActiveDestination
             })
-            
-            
+                
         case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber, let specVersion, let transactionVersion, let genesisHash, let gas):
             return .polkadotSpecific(.with {
                 $0.recentBlockHash = recentBlockHash

@@ -122,7 +122,7 @@ struct SwapDetailsSummary: View {
     }
     
     private func getErrorCell(text: String) -> some View {
-        HStack() {
+        HStack {
             Text(text)
                 .foregroundColor(Theme.colors.alertError)
                 .font(Theme.fonts.caption12)

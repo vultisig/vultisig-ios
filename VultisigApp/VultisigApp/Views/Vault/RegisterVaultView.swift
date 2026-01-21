@@ -30,7 +30,7 @@ struct RegisterVaultView: View {
                                 EllipticalGradient(
                                     stops: [
                                         Gradient.Stop(color: Color(red: 0.2, green: 0.9, blue: 0.75).opacity(0.52), location: 0.00),
-                                        Gradient.Stop(color: Color(red: 0.01, green: 0.07, blue: 0.17).opacity(0), location: 1.00),
+                                        Gradient.Stop(color: Color(red: 0.01, green: 0.07, blue: 0.17).opacity(0), location: 1.00)
                                     ],
                                     center: UnitPoint(x: 0.5, y: 0.5)
                                 )

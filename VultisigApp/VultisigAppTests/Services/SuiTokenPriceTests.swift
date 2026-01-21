@@ -231,7 +231,7 @@ final class SuiTokenPriceTests: XCTestCase {
             let expectation = self.expectation(description: "Price fetch")
             
             Task {
-                let _ = await SuiService.getTokenUSDValue(contractAddress: testToken.address)
+                _ = await SuiService.getTokenUSDValue(contractAddress: testToken.address)
                 expectation.fulfill()
             }
             

@@ -55,11 +55,9 @@ public class UTXOTransactionsService: ObservableObject {
             errorMessage = Utils.handleJsonDecodingError(error)
         }
     }
-    
-    
 
     // Currently there is a bug in Blockchair API that broadcasting Bitcoin transactions sometimes doesn't sync with bitcoin network
-    public static func broadcastBitcoinTransaction(signedTransaction: String,completion: @escaping (Result<String, Error>) -> Void){
+    public static func broadcastBitcoinTransaction(signedTransaction: String,completion: @escaping (Result<String, Error>) -> Void) {
         let url = Endpoint.bitcoinBroadcast()
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -125,8 +123,7 @@ public class UTXOTransactionsService: ObservableObject {
                 do {
                     if let json = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any],
                        let context = json["context"] as? [String: Any],
-                       let errorDescription = context["error"] as? String
-                    {
+                       let errorDescription = context["error"] as? String {
                         finish(.failure(NSError(domain: "BlockchairServiceError", code: 400, userInfo: [NSLocalizedDescriptionKey: "Failed to broadcast transaction. Error: \(errorDescription)"])))
                     }
                 } catch {

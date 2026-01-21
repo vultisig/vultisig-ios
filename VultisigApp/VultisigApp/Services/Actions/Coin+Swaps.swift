@@ -30,7 +30,7 @@ extension Coin {
             let defaultProviders: [SwapProvider] = [
                 .oneinch(chain),
                 .lifi,
-                .kyberswap(chain),
+                .kyberswap(chain)
             ]
             
             var providers: [SwapProvider] = []
@@ -59,9 +59,9 @@ extension Coin {
             }
         case .arbitrum:
             if mayaArbTokens.contains(ticker) {
-                return [.mayachain, .oneinch(chain), .lifi, .kyberswap(chain), ]
+                return [.mayachain, .oneinch(chain), .lifi, .kyberswap(chain)]
             } else {
-                return [.oneinch(chain), .lifi, .kyberswap(chain), ]
+                return [.oneinch(chain), .lifi, .kyberswap(chain)]
             }
         case .base:
             if thorBaseTokens.contains(ticker) {

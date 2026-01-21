@@ -91,7 +91,6 @@ struct SendGasSettingsView: View {
         }
     }
 
-
     func title(text: String) -> some View {
         HStack {
             Text(text)

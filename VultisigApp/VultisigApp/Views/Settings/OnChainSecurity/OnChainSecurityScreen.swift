@@ -71,4 +71,3 @@ struct OnChainSecurityScreen: View {
 #Preview {
     OnChainSecurityScreen()
 }
-

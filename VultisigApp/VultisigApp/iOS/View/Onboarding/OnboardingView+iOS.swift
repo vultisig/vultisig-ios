@@ -9,7 +9,7 @@
 import SwiftUI
 
 extension OnboardingView {
-    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+    private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     
     var container: some View {
         content

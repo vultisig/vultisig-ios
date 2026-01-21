@@ -21,7 +21,6 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
     @Published var destinationAddress: String = ""
     @Published var selectedSecuredAsset: IdentifiableString = .init(value: NSLocalizedString("selectSecuredAssetToWithdraw", comment: ""))
     
-    
     @Published var amountValid: Bool = false
     @Published var destinationAddressValid: Bool = false
     @Published var securedAssetValid: Bool = false
@@ -32,8 +31,6 @@ class FunctionCallWithdrawSecuredAsset: FunctionCallAddressable, ObservableObjec
     @Published var selectedSecuredAssetCoin: Coin? = nil  // Track the actual secured asset coin
     
     private var cancellables = Set<AnyCancellable>()
-    
-    
     
     // Domain models
     var tx: SendTransaction

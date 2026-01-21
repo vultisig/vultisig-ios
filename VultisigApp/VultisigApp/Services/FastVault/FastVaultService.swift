@@ -30,7 +30,7 @@ final class FastVaultService {
             guard let pwd else {
                 return false
             }
-            let _ = try await Utils.asyncGetRequest(urlString: urlString, headers: ["x-password": pwd])
+            _ = try await Utils.asyncGetRequest(urlString: urlString, headers: ["x-password": pwd])
             return true
         } catch {
             return false
@@ -40,7 +40,7 @@ final class FastVaultService {
     func exist(pubKeyECDSA: String) async -> Bool {
         do {
             let urlString = "\(endpoint)/exist/\(pubKeyECDSA)"
-            let _ = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
+            _ = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
             return true
         } catch {
             return false
@@ -88,7 +88,7 @@ final class FastVaultService {
         sessionID: String,
         hexEncryptionKey: String,
         hexChainCode: String,
-        encryptionPassword:String,
+        encryptionPassword: String,
         email: String,
         oldParties: [String],
         oldResharePrefix: String,
@@ -117,7 +117,7 @@ final class FastVaultService {
         keysignMessages: [String],
         sessionID: String,
         hexEncryptionKey: String,
-        derivePath:String,
+        derivePath: String,
         isECDSA: Bool,
         vaultPassword: String,
         chain: String,
@@ -165,7 +165,7 @@ final class FastVaultService {
         publicKeyECDSA: String,
         sessionID: String,
         hexEncryptionKey: String,
-        encryptionPassword:String,
+        encryptionPassword: String,
         email: String) {
         let req = MigrationRequest(public_key: publicKeyECDSA,
                                  session_id: sessionID,

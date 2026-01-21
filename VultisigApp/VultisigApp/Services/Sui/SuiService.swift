@@ -17,7 +17,7 @@ class SuiService {
     private let rpcURL = URL(string: Endpoint.suiServiceRpc)!
     private let jsonDecoder = JSONDecoder()
     
-    func getGasInfo(coin: Coin) async throws -> (BigInt, [[String:String]]) {
+    func getGasInfo(coin: Coin) async throws -> (BigInt, [[String: String]]) {
         async let gasPrice = getReferenceGasPrice(coin: coin)
         async let allCoins = getAllCoins(coin: coin)
         return await (try gasPrice, try allCoins)
@@ -47,7 +47,7 @@ class SuiService {
             
             return "0"
         } catch {
-            print ("Error fetching suix_getAllBalances: \(error.localizedDescription)")
+            print("Error fetching suix_getAllBalances: \(error.localizedDescription)")
             return "0"
         }
     }
@@ -112,9 +112,9 @@ class SuiService {
         }
     }
     
-    func getReferenceGasPrice(coin: Coin) async throws -> BigInt{
+    func getReferenceGasPrice(coin: Coin) async throws -> BigInt {
         do {
-            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getReferenceGasPrice", params:  [])
+            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getReferenceGasPrice", params: [])
             if let result = Utils.extractResultFromJson(fromData: data, path: "result"),
                let resultString = result as? String {
                 let intResult = resultString.toBigInt()
@@ -129,13 +129,13 @@ class SuiService {
         return BigInt.zero
     }
     
-    func getAllCoins(coin: Coin) async throws -> [[String:String]] {
+    func getAllCoins(coin: Coin) async throws -> [[String: String]] {
         
         do {
             let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getAllCoins", params: [coin.address])
             
             if let coins: [SuiCoin] = Utils.extractResultFromJson(fromData: data, path: "result.data", type: [SuiCoin].self) {
-                let allCoins = coins.filter{ $0.coinType.uppercased().contains("SUI") || $0.coinType.uppercased().contains(coin.ticker.uppercased()) }.map { coin in
+                let allCoins = coins.filter { $0.coinType.uppercased().contains("SUI") || $0.coinType.uppercased().contains(coin.ticker.uppercased()) }.map { coin in
                     var coinDict = [String: String]()
                     coinDict["objectID"] = coin.coinObjectId.description
                     coinDict["version"] = String(coin.version)
@@ -242,9 +242,9 @@ class SuiService {
         return tokensWithMetadata.filter { $0.isNativeToken == false }
     }
     
-    func executeTransactionBlock(unsignedTransaction: String, signature: String) async throws -> String{
+    func executeTransactionBlock(unsignedTransaction: String, signature: String) async throws -> String {
         do {
-            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "sui_executeTransactionBlock", params:  [unsignedTransaction, [signature]])
+            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "sui_executeTransactionBlock", params: [unsignedTransaction, [signature]])
             
             if let error = Utils.extractResultFromJson(fromData: data, path: "error.message") as? String {
                 return error.description

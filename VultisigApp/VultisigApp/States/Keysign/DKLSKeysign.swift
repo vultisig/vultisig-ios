@@ -150,7 +150,6 @@ final class DKLSKeysign {
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len))).toHexString()
     }
     
-    
     func getOutboundMessageReceiver(handle: godkls.Handle,message: godkls.go_slice,idx: UInt32) -> [UInt8] {
         var buf_receiver = tss_buffer()
         defer {
@@ -178,7 +177,7 @@ final class DKLSKeysign {
         return (result,Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len))))
     }
     
-    func processDKLSOutboundMessage(handle: godkls.Handle) async throws  {
+    func processDKLSOutboundMessage(handle: godkls.Handle) async throws {
         repeat {
             let (result,outboundMessage) = GetDKLSOutboundMessage(handle: handle)
             if result != DKLS_LIB_OK {
@@ -190,14 +189,14 @@ final class DKLSKeysign {
             let message = outboundMessage.to_dkls_goslice()
             let encodedOutboundMessage = outboundMessage.toBase64()
             for i in 0..<self.keysignCommittee.count {
-                let receiverArray = getOutboundMessageReceiver(handle:handle,
+                let receiverArray = getOutboundMessageReceiver(handle: handle,
                                                                message: message,
                                                                idx: UInt32(i))
                 
                 if receiverArray.count == 0 {
                     break
                 }
-                let receiverString = String(bytes:receiverArray,encoding: .utf8)!
+                let receiverString = String(bytes: receiverArray,encoding: .utf8)!
                 print("sending message from \(self.localPartyID) to: \(receiverString), content length:\(encodedOutboundMessage.count)")
                 try await self.messenger?.send(self.localPartyID,
                                          to: receiverString,
@@ -253,7 +252,7 @@ final class DKLSKeysign {
         return false
     }
     
-    func processInboundMessage(handle: godkls.Handle,data:Data,messageID: String) async throws -> Bool {
+    func processInboundMessage(handle: godkls.Handle,data: Data,messageID: String) async throws -> Bool {
         let decoder = JSONDecoder()
         let msgs = try decoder.decode([Message].self, from: data)
         let sortedMsgs = msgs.sorted(by: { $0.sequence_no < $1.sequence_no })
@@ -276,14 +275,14 @@ final class DKLSKeysign {
             let descryptedBodyArr = [UInt8](decodedMsg)
             
             var decryptedBodySlice = descryptedBodyArr.to_dkls_goslice()
-            var isFinished:UInt32 = 0
+            var isFinished: UInt32 = 0
             let result = dkls_sign_session_input_message(handle, &decryptedBodySlice, &isFinished)
             if result != DKLS_LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
             }
             
             self.cache.setObject(NSObject(), forKey: key)
-            try await deleteMessageFromServer(hash: msg.hash,messageID:messageID)
+            try await deleteMessageFromServer(hash: msg.hash,messageID: messageID)
             try await self.processDKLSOutboundMessage(handle: handle)
             // local party keysign finished
             if isFinished != 0 {
@@ -313,10 +312,10 @@ final class DKLSKeysign {
                                            encryptionKeyHex: self.encryptionKeyHex)
         self.messenger = localMessenger
         do {
-            var keysignSetupMsg:[UInt8]
+            var keysignSetupMsg: [UInt8]
             if self.isInitiateDevice && attempt == 0 {
                 keysignSetupMsg = try getDKLSKeysignSetupMessage(message: messageToSign)
-                try await localMessenger.uploadSetupMessage(message:keysignSetupMsg.toBase64(),nil)
+                try await localMessenger.uploadSetupMessage(message: keysignSetupMsg.toBase64(),nil)
             } else {
                 // download the setup message from relay server
                 let strKeysignSetupMsg = try await localMessenger.downloadSetupMessageWithRetry(nil)
@@ -370,16 +369,15 @@ final class DKLSKeysign {
                 let s = Array(sig[32..<64])
                 resp.r = r.toHexString()
                 resp.s = s.toHexString()
-                resp.recoveryID = String(format:"%02x",sig[64])
+                resp.recoveryID = String(format: "%02x",sig[64])
                 resp.derSignature = encodeCanonicalDERSignature(r: r, s: s).toHexString()
                 let keySignVerify = KeysignVerify(serverAddr: self.mediatorURL,
                                                   sessionID: self.sessionID)
-                await keySignVerify.markLocalPartyKeysignComplete(message: msgHash, sig:resp)
+                await keySignVerify.markLocalPartyKeysignComplete(message: msgHash, sig: resp)
                 self.signatures[messageToSign] = resp
                 try await Task.sleep(for: .milliseconds(500))
             }
-        }
-        catch {
+        } catch {
             print("Failed to sign message (\(messageToSign)), error: \(error.localizedDescription)")
             if attempt < 3 {
                 try await DKLSKeysignOneMessageWithRetry(attempt: attempt+1, messageToSign: messageToSign)
@@ -387,7 +385,7 @@ final class DKLSKeysign {
         }
     }
     
-    func dklsSignSessionFinish(handle: godkls.Handle) throws -> [UInt8]{
+    func dklsSignSessionFinish(handle: godkls.Handle) throws -> [UInt8] {
         var buf = godkls.tss_buffer()
         defer {
             godkls.tss_buffer_free(&buf)
@@ -406,4 +404,3 @@ final class DKLSKeysign {
     }
     
 }
-

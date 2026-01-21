@@ -124,4 +124,3 @@ struct EvmServiceConfig {
         return config
     }
 }
-

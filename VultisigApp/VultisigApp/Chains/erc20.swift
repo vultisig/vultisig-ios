@@ -93,8 +93,7 @@ class ERC20Helper {
     }
     
     func getSignedTransaction(keysignPayload: KeysignPayload,
-                                     signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
-    {
+                                     signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         let coinHexPublicKey = keysignPayload.coin.hexPublicKey
         guard let pubkeyData = Data(hexString: coinHexPublicKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)

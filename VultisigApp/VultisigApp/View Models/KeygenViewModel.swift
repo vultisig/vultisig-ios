@@ -110,7 +110,7 @@ class KeygenViewModel: ObservableObject {
                  mediatorURL: String,
                  sessionID: String,
                  encryptionKeyHex: String,
-                 oldResharePrefix:String,
+                 oldResharePrefix: String,
                  initiateDevice: Bool,
                  keyImportInput: KeyImportInput? = nil
     ) async {
@@ -155,9 +155,9 @@ class KeygenViewModel: ObservableObject {
     }
     func startKeygen(context: ModelContext) async {
         let vaultLibType = self.vault.libType ?? .GG20
-        switch(vaultLibType){
+        switch vaultLibType {
         case .GG20:
-            switch self.tssType{
+            switch self.tssType {
             case .Keygen,.Reshare:
                 await startKeygenGG20(context: context)
             case .Migrate:
@@ -348,8 +348,7 @@ class KeygenViewModel: ObservableObject {
             }
             
             return keyShare
-        }
-        catch  {
+        } catch {
             self.logger.error("Failed to import Ecdsa private key, error: \(error.localizedDescription)")
             throw error
         }
@@ -373,8 +372,7 @@ class KeygenViewModel: ObservableObject {
             }
             
             return keyShare
-        }
-        catch  {
+        } catch {
             self.logger.error("Failed to import EdDSA private key, error: \(error.localizedDescription)")
             throw error
         }
@@ -463,7 +461,7 @@ class KeygenViewModel: ObservableObject {
             self.vault.keyshares = [KeyShare(pubkey: keyshareECDSA.PubKey, keyshare: keyshareECDSA.Keyshare),
                                     KeyShare(pubkey: keyshareEdDSA.PubKey, keyshare: keyshareEdDSA.Keyshare)]
             
-            if self.tssType == .Keygen || !self.vaultOldCommittee.contains(self.vault.localPartyID){
+            if self.tssType == .Keygen || !self.vaultOldCommittee.contains(self.vault.localPartyID) {
                 VaultDefaultCoinService(context: context)
                     .setDefaultCoinsOnce(vault: self.vault)
                 context.insert(self.vault)
@@ -471,7 +469,7 @@ class KeygenViewModel: ObservableObject {
             
             try context.save()
             self.status = .KeygenFinished
-        } catch{
+        } catch {
             self.logger.error("Failed to generate DKLS key, error: \(error.localizedDescription)")
             self.status = .KeygenFailed
             self.keygenError = error.localizedDescription
@@ -548,7 +546,7 @@ class KeygenViewModel: ObservableObject {
     
     // keygenWithRetry is for creating GG20 vault
     func keygenWithRetry(tssIns: TssServiceImpl,attempt: UInt8) async throws {
-        do{
+        do {
             self.messagePuller?.pollMessages(mediatorURL: self.mediatorURL,
                                              sessionID: self.sessionID,
                                              localPartyKey: self.vault.localPartyID,
@@ -628,8 +626,7 @@ class KeygenViewModel: ObservableObject {
     }
     
     private func createTssInstance(messenger: TssMessengerProtocol,
-                                   localStateAccessor: TssLocalStateAccessorProtocol) async throws -> TssServiceImpl?
-    {
+                                   localStateAccessor: TssLocalStateAccessorProtocol) async throws -> TssServiceImpl? {
         let t = Task.detached(priority: .high) {
             var err: NSError?
             let service = await TssNewService(self.tssMessenger, self.stateAccess, true, &err)
@@ -643,8 +640,7 @@ class KeygenViewModel: ObservableObject {
     
     private func tssKeygen(service: TssServiceImpl,
                            req: TssKeygenRequest,
-                           keyType: KeyType) async throws -> TssKeygenResponse
-    {
+                           keyType: KeyType) async throws -> TssKeygenResponse {
         let t = Task.detached(priority: .high) {
             switch keyType {
             case .ECDSA:
@@ -658,8 +654,7 @@ class KeygenViewModel: ObservableObject {
     
     private func tssReshare(service: TssServiceImpl,
                             req: TssReshareRequest,
-                            keyType: KeyType) async throws -> TssReshareResponse
-    {
+                            keyType: KeyType) async throws -> TssReshareResponse {
         let t = Task.detached(priority: .high) {
             switch keyType {
             case .ECDSA:

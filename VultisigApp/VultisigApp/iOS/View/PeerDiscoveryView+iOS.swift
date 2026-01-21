@@ -10,7 +10,7 @@ import SwiftUI
 import RiveRuntime
 
 extension PeerDiscoveryView {
-    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+    private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     
     var qrCodeSize: CGFloat {
         screenHeight / 3.5

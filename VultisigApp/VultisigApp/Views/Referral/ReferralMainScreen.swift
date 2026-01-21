@@ -255,7 +255,6 @@ struct ReferralCodeBoxView: View {
     }
 }
 
-
 #Preview {
     ReferralMainScreen()
 }

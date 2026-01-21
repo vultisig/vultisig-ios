@@ -24,7 +24,7 @@ extension QRShareSheetImage {
             .frame(width: 800, height: 800)
             .background(Theme.colors.bgButtonPrimary.opacity(0.15))
             .cornerRadius(cornerRadius)
-            .overlay (
+            .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius)
                 .strokeBorder(Theme.colors.bgButtonPrimary, style: StrokeStyle(lineWidth: 2, dash: [24]))
             )

@@ -288,8 +288,7 @@ enum TronHelper {
     
     static func getSignedTransaction(
         keysignPayload: KeysignPayload,
-        signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
-    {
+        signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         guard
             let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey),
             let secp256k1PubKey = PublicKey(data: pubKeyData, type: .secp256k1Extended) else {
@@ -340,4 +339,3 @@ enum TronHelper {
         return result
     }
 }
-

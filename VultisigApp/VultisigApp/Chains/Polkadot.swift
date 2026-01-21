@@ -127,8 +127,7 @@ enum PolkadotHelper {
     }
     
     static func getSignedTransaction(keysignPayload: KeysignPayload,
-                                     signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
-    {
+                                     signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         let coinHexPublicKey = keysignPayload.coin.hexPublicKey
         guard let pubkeyData = Data(hexString: coinHexPublicKey) else {
             throw HelperError.runtimeError("public key \(coinHexPublicKey) is invalid")

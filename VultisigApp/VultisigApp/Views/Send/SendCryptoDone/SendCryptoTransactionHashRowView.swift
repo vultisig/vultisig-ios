@@ -5,7 +5,6 @@
 //  Created by Gaston Mazzeo on 28/07/2025.
 //
 
-
 import SwiftUI
 
 struct SendCryptoTransactionHashRowView: View {

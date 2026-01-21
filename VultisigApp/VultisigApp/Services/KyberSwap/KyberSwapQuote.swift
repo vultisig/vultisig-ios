@@ -66,14 +66,5 @@ extension KyberSwapQuote {
         let value: String
         let gasPrice: String
         let gas: Int64
-        
-        init(from: String, to: String, data: String, value: String, gasPrice: String, gas: Int64) {
-            self.from = from
-            self.to = to
-            self.data = data
-            self.value = value
-            self.gasPrice = gasPrice
-            self.gas = gas
-        }
     }
 } 

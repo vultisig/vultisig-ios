@@ -81,7 +81,6 @@ class RpcEvmService: RpcService {
         }
     }
 
-
     func getBaseFee() async throws -> BigInt {
         return try await sendRPCRequest(method: "eth_getBlockByNumber", params: ["latest", true]) { result in
             guard
@@ -133,7 +132,7 @@ class RpcEvmService: RpcService {
             "from": senderAddress,
             "to": contractAddress,
             "value": "0x0",
-            "data": data,
+            "data": data
         ]
         
         return try await intRpcCall(method: "eth_estimateGas", params: [transactionObject])
@@ -239,7 +238,7 @@ class RpcEvmService: RpcService {
     }
     
     func fetchMaxPriorityFeePerGas() async throws -> BigInt {
-        return try await intRpcCall(method: "eth_maxPriorityFeePerGas", params: []) //WEI
+        return try await intRpcCall(method: "eth_maxPriorityFeePerGas", params: []) // WEI
     }
 
     private func fetchNonce(address: String) async throws -> BigInt {

@@ -26,7 +26,7 @@ struct TransactionsView: View {
         return ZStack {
             if bitcoinCondition {
                 UTXOTransactionsView(coin: coin)
-            }  else {
+            } else {
                 errorText
             }
         }
@@ -34,10 +34,10 @@ struct TransactionsView: View {
     }
     
     var errorText: some View {
-        VStack{
+        VStack {
             Spacer()
             ErrorMessage(text: "cannotFindTransactions")
-            if let coin = group.coins.first , let explorerUrl = Endpoint.getExplorerByAddressURL(chain:coin.chain,address:coin.address) {
+            if let coin = group.coins.first , let explorerUrl = Endpoint.getExplorerByAddressURL(chain: coin.chain,address: coin.address) {
                 if let url = URL(string: explorerUrl) {
                     Link("checkExplorer",destination: url)
                         .font(Theme.fonts.bodyMMedium)

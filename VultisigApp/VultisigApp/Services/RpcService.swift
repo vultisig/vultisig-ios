@@ -62,8 +62,7 @@ class RpcService {
                     || message.lowercased().contains("transaction already exists".lowercased())
                     || message.lowercased().contains("many requests for a specific RPC call".lowercased())
                     || message.lowercased().contains("already".lowercased())
-                    || message.lowercased().contains("already mined".lowercased())
-                {
+                    || message.lowercased().contains("already mined".lowercased()) {
                     return try decode("Transaction already broadcasted.")
                 }
                 
@@ -97,7 +96,6 @@ class RpcService {
             throw RpcServiceError.rpcError(code: 500, message: "Error to convert the RPC result to BigInt")
         }
     }
-    
     
     func strRpcCall(method: String, params: [Any]) async throws -> String {
         return try await sendRPCRequest(method: method, params: params) { result in

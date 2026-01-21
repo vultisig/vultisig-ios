@@ -70,7 +70,7 @@ final class DefiMainViewModel: ObservableObject {
                 hexChainCode: vault.hexChainCode,
                 isDerived: isDerived
             )
-        } catch(let error) {
+        } catch {
             print("Error creating Circle Coin: \(error.localizedDescription)")
             return
         }

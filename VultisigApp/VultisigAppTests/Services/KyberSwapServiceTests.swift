@@ -187,7 +187,7 @@ final class KyberSwapServiceTests: XCTestCase {
         // Test different error scenarios
         let testCases = [
             ("Very large amount", "999999999999999999999999999999"), // Should trigger insufficient funds
-            ("Normal amount", "1000000000000000000"),                // 1 ETH
+            ("Normal amount", "1000000000000000000")                // 1 ETH
         ]
         
         for (testName, amount) in testCases {

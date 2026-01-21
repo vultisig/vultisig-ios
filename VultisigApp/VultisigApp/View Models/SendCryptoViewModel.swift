@@ -233,8 +233,6 @@ struct SendCryptoLogic {
             return result
         }
         
-
-        
         // Validate To Address
         let validToAddress = await validateToAddress(tx: tx)
         if !validToAddress.isValid {
@@ -244,13 +242,7 @@ struct SendCryptoLogic {
             result.isValid = false
             return result
         }
-        
 
-        
-
-        
-
-        
         return result
     }
     
@@ -360,7 +352,7 @@ struct SendCryptoLogic {
             }
             convertToFiat(newValue: tx.amount, tx: tx)
         case .solana:
-            do{
+            do {
                 if tx.coin.isNativeToken {
                     let rawBalance = try await sol.getSolanaBalance(coin: tx.coin)
                     tx.coin.rawBalance = rawBalance
@@ -419,7 +411,7 @@ struct SendCryptoLogic {
             
             var gas = BigInt.zero
             if percentage == 100 && tx.coin.isNativeToken {
-                gas = BigInt(tx.gasDecimal.description,radix:10) ?? 0
+                gas = BigInt(tx.gasDecimal.description,radix: 10) ?? 0
             }
             
             tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"

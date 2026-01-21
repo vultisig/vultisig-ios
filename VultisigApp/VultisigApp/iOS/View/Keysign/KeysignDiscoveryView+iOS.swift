@@ -9,7 +9,7 @@
 import SwiftUI
 
 extension KeysignDiscoveryView {
-    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+    private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     
     var container: some View {
         content

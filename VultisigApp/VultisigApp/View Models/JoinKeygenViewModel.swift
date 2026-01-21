@@ -94,7 +94,7 @@ class JoinKeygenViewModel: ObservableObject {
         self.status = status
     }
     
-    func discoverService(){
+    func discoverService() {
         self.netService = NetService(domain: "local.", type: "_http._tcp.", name: self.serviceName)
         netService?.delegate = self.serviceDelegate
         netService?.resolve(withTimeout: 10)
@@ -122,11 +122,11 @@ class JoinKeygenViewModel: ObservableObject {
             }
         }
     }
-    func stopJoinKeygen(){
+    func stopJoinKeygen() {
         self.status = .DiscoverService
     }
     func waitForKeygenStart() async {
-        do{
+        do {
             let t = Task {
                 repeat {
                     try await checkKeygenStarted()
@@ -134,8 +134,7 @@ class JoinKeygenViewModel: ObservableObject {
                 } while self.status == .WaitingForKeygenToStart
             }
             try await t.value
-        }
-        catch {
+        } catch {
             logger.error("Failed to wait for keygen to start. Error: \(error.localizedDescription)")
         }
     }
@@ -190,7 +189,7 @@ class JoinKeygenViewModel: ObservableObject {
         }
     }
     
-    func isVaultNameAlreadyExist(name: String) -> Bool  {
+    func isVaultNameAlreadyExist(name: String) -> Bool {
         for v in self.vaults {
             if v.name == name && !v.pubKeyECDSA.isEmpty {
                 return true

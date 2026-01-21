@@ -10,18 +10,13 @@ import Foundation
 struct CosmosServiceStruct {
     let config: CosmosServiceConfig
     
-    init(config: CosmosServiceConfig) {
-        self.config = config
-    }
-    
     // MARK: - Balance Operations
     
     func fetchBalances(coin: CoinMeta, address: String) async throws -> [CosmosBalance] {
         if coin.isNativeToken
             || (!coin.isNativeToken && coin.contractAddress.contains("ibc/"))
             || (!coin.isNativeToken && coin.contractAddress.contains("factory/"))
-            || (!coin.isNativeToken && !coin.contractAddress.contains("terra"))
-        {
+            || (!coin.isNativeToken && !coin.contractAddress.contains("terra")) {
             guard let url = config.balanceURL(forAddress: address) else {
                 return [CosmosBalance]()
             }
@@ -155,4 +150,3 @@ struct CosmosServiceStruct {
         }
     }
 }
-

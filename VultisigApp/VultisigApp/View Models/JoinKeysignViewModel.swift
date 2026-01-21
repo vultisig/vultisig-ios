@@ -318,21 +318,21 @@ class JoinKeysignViewModel: ObservableObject {
         }
     }
     
-    func ensureKeysignPayload() async  {
+    func ensureKeysignPayload() async {
         if self.payloadID.isEmpty || self.keysignPayload != nil {
             return
         }
-        guard let serverAddress else{
+        guard let serverAddress else {
             return
         }
         
         let payloadService = PayloadService(serverURL: serverAddress)
-        do{
+        do {
             let payload = try await payloadService.getPayload(hash: self.payloadID)
             let kp: KeysignPayload = try ProtoSerializer.deserialize(base64EncodedString: payload)
             self.keysignPayload = kp
             self.prepareKeysignMessages(keysignPayload: kp)
-        }catch{
+        } catch {
             self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
             self.status = .FailedToStart
         }
@@ -346,7 +346,7 @@ class JoinKeysignViewModel: ObservableObject {
         guard let data = DeeplinkViewModel.getJsonData(url) else {
             return
         }
-        Task{
+        Task {
             await handleQrCodeSuccessResult(data: data)
             DispatchQueue.main.async {
                 self.manageQrCodeStates()

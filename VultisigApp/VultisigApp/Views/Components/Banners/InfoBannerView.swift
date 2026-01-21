@@ -29,7 +29,6 @@ struct InfoBannerView: View {
         self.onClose = onClose
     }
     
-    
     var body: some View {
         HStack(spacing: 12) {
             if let leadingIcon {

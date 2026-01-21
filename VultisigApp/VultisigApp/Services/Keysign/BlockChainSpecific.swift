@@ -17,7 +17,7 @@ enum BlockChainSpecific: Codable, Hashable {
     case MayaChain(accountNumber: UInt64, sequence: UInt64, isDeposit: Bool)
     case Cosmos(accountNumber: UInt64, sequence: UInt64, gas: UInt64, transactionType: Int, ibcDenomTrace: CosmosIbcDenomTraceDenomTrace?)
     case Solana(recentBlockHash: String, priorityFee: BigInt, priorityLimit: BigInt, fromAddressPubKey: String?, toAddressPubKey: String?, hasProgramId: Bool) // priority fee is in microlamports
-    case Sui(referenceGasPrice: BigInt, coins: [[String:String]], gasBudget: BigInt)
+    case Sui(referenceGasPrice: BigInt, coins: [[String: String]], gasBudget: BigInt)
     case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String, gas: BigInt? = nil)
     case Ton(sequenceNumber: UInt64, expireAt: UInt64, bounceable: Bool, sendMaxAmount: Bool, jettonAddress: String = "", isActiveDestination: Bool = false)
     case Ripple(sequence: UInt64, gas: UInt64, lastLedgerSequence: UInt64)
@@ -45,7 +45,7 @@ enum BlockChainSpecific: Codable, Hashable {
         case .THORChain(_, _, let fee, _, _):
             return fee.description.toBigInt()
         case .MayaChain:
-            return MayaChainHelper.MayaChainGas.description.toBigInt() //Maya uses 10e10
+            return MayaChainHelper.MayaChainGas.description.toBigInt() // Maya uses 10e10
         case .Cosmos(_,_,let gas, _, _):
             return gas.description.toBigInt()
         case .Solana:
@@ -57,7 +57,7 @@ enum BlockChainSpecific: Codable, Hashable {
                 return 0 // We should throw
             }
             return dynamicGas
-        case .Ton(_,_,_,_,_,_):
+        case .Ton:
             return TonHelper.defaultFee
         case .Ripple(_, let gas, _):
             return gas.description.toBigInt()

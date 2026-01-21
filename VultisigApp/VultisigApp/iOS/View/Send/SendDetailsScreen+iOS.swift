@@ -9,7 +9,7 @@
 import SwiftUI
 
 extension SendDetailsScreen {
-    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+    private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     
     var container: some View {
         Screen(title: "send".localized) {
@@ -30,7 +30,6 @@ extension SendDetailsScreen {
             .background(keyboardObserver.keyboardHeight == 0 ? .clear : Theme.colors.bgPrimary)
             .shadow(color: Theme.colors.bgPrimary, radius: keyboardObserver.keyboardHeight == 0 ? 0 : 15)
     }
-    
     
     func setData() {
         keyboardObserver.keyboardHeight = 0

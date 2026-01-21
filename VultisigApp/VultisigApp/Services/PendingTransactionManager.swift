@@ -72,7 +72,6 @@ class PendingTransactionManager {
             .min(by: { $0.timestamp < $1.timestamp })
     }
     
-    
     /// Get elapsed seconds for a transaction
     func getElapsedSeconds(for transaction: PendingTransaction) -> Int {
         let timeElapsed = Date().timeIntervalSince(transaction.timestamp)
@@ -80,7 +79,6 @@ class PendingTransactionManager {
     }
     
     // MARK: - Private Methods
-    
     
     /// Force check pending transactions immediately (useful for UI refresh)
     func forceCheckPendingTransactions() async {
@@ -177,7 +175,6 @@ class PendingTransactionManager {
         cleanupOldTransactions()
     }
     
-    
     private func checkTransactionConfirmation(transaction: PendingTransaction) async {
         do {
             print("PendingTransactionManager: Checking status for \(transaction.txHash.prefix(8))... on \(transaction.chain)")
@@ -187,7 +184,6 @@ class PendingTransactionManager {
             if isConfirmed {
                 pendingTransactions.remove(transaction.txHash)
                 print("PendingTransactionManager: ✅ Transaction confirmed and removed: \(transaction.txHash.prefix(8))...")
-                
                 
                 // Clear cache to force fresh nonce fetch for next transaction (background thread)
                 BlockChainService.shared.clearCacheForAddress(transaction.address, chain: transaction.chain)

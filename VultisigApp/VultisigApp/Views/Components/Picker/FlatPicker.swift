@@ -124,7 +124,6 @@ private extension FlatPicker {
     }
 }
 
-
 private extension FlatPicker {
     var overlayingGradientsView: some View {
         gradientContainer {

@@ -163,8 +163,8 @@ struct GroupedChainListBuilder {
     }
     
     func addCoin(_ coin: Coin, groups: inout [GroupedChain]) {
-        let group = groups.first {
-            group in group.address == coin.address && group.chain == coin.chain
+        let group = groups.first { group in
+            group.address == coin.address && group.chain == coin.chain
         }
         
         guard let group else {

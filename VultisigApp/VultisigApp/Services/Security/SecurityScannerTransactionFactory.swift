@@ -52,7 +52,7 @@ private extension SecurityScannerTransactionFactory {
         let data: String
         let to: String
         
-        if (!transaction.coin.isNativeToken) {
+        if !transaction.coin.isNativeToken {
             let tokenAmount = transaction.amountInRaw
             transferType = SecurityTransactionType.tokenTransfer
             amount = BigInt.zero
@@ -76,7 +76,7 @@ private extension SecurityScannerTransactionFactory {
     }
     
     func createSOLSecurityScanner(transaction: SendTransaction) async throws -> SecurityScannerTransaction {
-        guard let _ = Base58.decodeNoCheck(string: transaction.fromAddress) else {
+        guard Base58.decodeNoCheck(string: transaction.fromAddress) != nil else {
             throw SecurityScannerTransactionFactoryError.invalidAddress(transaction.fromAddress)
         }
         var blockchainSpecific: BlockChainSpecific = try await BlockChainService.shared.fetchSpecific(tx: transaction)
@@ -174,7 +174,6 @@ private extension SecurityScannerTransactionFactory {
             chainSpecific: specific,
             vault: vault
         )
-        
         
         let inputData = try UTXOChainsHelper(coin: .bitcoin).getUnsignedTransactionHex(keysignPayload: keySignPayload)
         

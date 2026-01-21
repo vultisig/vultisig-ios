@@ -5,15 +5,15 @@
 //  Created by Johnny Luo on 16/5/2025.
 //
 import Foundation
-struct MoonPaySignatureResp : Codable {
+struct MoonPaySignatureResp: Codable {
     let signature: String
 }
-struct MoonPaySignatureReq : Codable {
+struct MoonPaySignatureReq: Codable {
     let url: String
 }
 struct MoonPaySignatureHelper {
     func getSignature(url: String) async -> String {
-        do{
+        do {
             let req = MoonPaySignatureReq(url: url)
             var request = URLRequest(url: Endpoint.moonPaySignatureUrl())
             request.httpMethod = "POST"

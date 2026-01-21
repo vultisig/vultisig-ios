@@ -188,7 +188,6 @@ class CardanoHelper {
         return BigInt(plan.fee)
     }
     
-    
     // MARK: - Helper Functions
         
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {

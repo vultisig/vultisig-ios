@@ -52,8 +52,6 @@ class DeeplinkViewModel: ObservableObject {
         return false
     }
     
-    
-    
     static func getJsonData(_ url: URL?) -> String? {
         DeeplinkLogic.getJsonData(url)
     }

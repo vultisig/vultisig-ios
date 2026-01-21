@@ -150,7 +150,7 @@ class Coin: ObservableObject, Codable, Hashable {
         }
     }
     
-    var feeDefault: String{
+    var feeDefault: String {
         switch self.chain {
         case .thorChain, .thorChainStagenet:
             return "2000000"
@@ -313,7 +313,6 @@ class Coin: ObservableObject, Codable, Hashable {
         return chain.logo
     }
     
-
     var isRune: Bool {
         return chain == .thorChain && ticker.uppercased() == "RUNE" && isNativeToken
     }
@@ -346,14 +345,11 @@ extension Coin: Comparable {
     static func < (lhs: Coin, rhs: Coin) -> Bool {
         if lhs.balanceInFiatDecimal != rhs.balanceInFiatDecimal {
             return lhs.balanceInFiatDecimal > rhs.balanceInFiatDecimal
-        }
-        else if lhs.chain.name != rhs.chain.name {
+        } else if lhs.chain.name != rhs.chain.name {
             return lhs.chain.name < rhs.chain.name
-        }
-        else if lhs.isNativeToken != rhs.isNativeToken {
+        } else if lhs.isNativeToken != rhs.isNativeToken {
             return !lhs.isNativeToken
-        }
-        else {
+        } else {
             return lhs.ticker < rhs.ticker
         }
     }

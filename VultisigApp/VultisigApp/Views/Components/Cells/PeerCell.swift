@@ -32,7 +32,7 @@ struct PeerCell: View {
         .frame(height: 70)
         .background(isSelected ? Theme.colors.bgSuccess : Theme.colors.bgSurface1)
         .cornerRadius(16)
-        .overlay (
+        .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .stroke(isSelected ? Theme.colors.alertSuccess : Theme.colors.borderLight, lineWidth: 1)
         )

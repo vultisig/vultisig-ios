@@ -56,8 +56,7 @@ class ThorchainStagenetService: ThorchainSwapProvider {
                 if ticker.range(of: "yrune", options: [.caseInsensitive, .anchored]) == nil &&
                     ticker.range(of: "ytcy", options: [.caseInsensitive, .anchored]) == nil &&
                     ticker.range(of: "stcy", options: [.caseInsensitive, .anchored]) == nil &&
-                    ticker.range(of: "sruji", options: [.caseInsensitive, .anchored]) == nil
-                {
+                    ticker.range(of: "sruji", options: [.caseInsensitive, .anchored]) == nil {
                     ticker = ticker.uppercased()
                 }
                 
@@ -113,8 +112,8 @@ class ThorchainStagenetService: ThorchainSwapProvider {
         return accountResponse.result.value
     }
     
-    func get9RRequest(url: URL) -> URLRequest{
-        var req = URLRequest(url:url)
+    func get9RRequest(url: URL) -> URLRequest {
+        var req = URLRequest(url: url)
         req.addValue("vultisig", forHTTPHeaderField: "X-Client-ID")
         return req
     }
@@ -187,7 +186,7 @@ class ThorchainStagenetService: ThorchainSwapProvider {
         }
     }
     
-    func getTHORChainChainID() async throws -> String  {
+    func getTHORChainChainID() async throws -> String {
         if !network.isEmpty {
             print("network id\(network)")
             return network
@@ -206,7 +205,7 @@ class ThorchainStagenetService: ThorchainSwapProvider {
         group.enter()
         DispatchQueue.global().async {
             Task {
-                do{
+                do {
                     _ =  try await self.getTHORChainChainID()
                 } catch {
                     print("fail to get thorchain stagenet id \(error.localizedDescription)")
@@ -229,7 +228,7 @@ class ThorchainStagenetService: ThorchainSwapProvider {
         request.httpMethod = "POST"
         request.httpBody = jsonData
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        do{
+        do {
             let (data,resp)  =  try await URLSession.shared.data(for: request)
             guard let httpResponse = resp as? HTTPURLResponse else {
                 return .failure(HelperError.runtimeError("Invalid http response"))
@@ -249,8 +248,7 @@ class ThorchainStagenetService: ThorchainSwapProvider {
             }
             return .failure(HelperError.runtimeError(String(data: data, encoding: .utf8) ?? "Unknown error"))
             
-        }
-        catch{
+        } catch {
             return .failure(error)
         }
     }
@@ -614,4 +612,3 @@ extension ThorchainStagenetService {
         return []
     }
 }
-

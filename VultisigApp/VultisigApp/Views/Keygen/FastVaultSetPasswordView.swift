@@ -170,7 +170,7 @@ struct FastVaultSetPasswordView: View {
         }
         handleNavigation()
     }
-    func validatePassword()->Bool {
+    func validatePassword() -> Bool {
         guard !password.isEmpty else {
             verifyFieldError = ""
             passwordFieldError = "emptyField"
@@ -198,4 +198,3 @@ struct FastVaultSetPasswordView: View {
         }
     }
 }
-

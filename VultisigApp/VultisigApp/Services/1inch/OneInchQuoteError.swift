@@ -8,7 +8,7 @@
 import Foundation
 
 struct OneInchQuoteError: Codable, Error {
-    let error : String
+    let error: String
     let description: String
     let statusCode: Int
 }

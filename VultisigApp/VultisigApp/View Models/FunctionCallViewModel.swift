@@ -31,7 +31,7 @@ class FunctionCallViewModel: ObservableObject {
         
     let logger = Logger(subsystem: "deposit-input-details", category: "deposity")
     
-    func loadGasInfoForSending(tx: SendTransaction) async{
+    func loadGasInfoForSending(tx: SendTransaction) async {
         do {
             let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
             tx.gas = chainSpecific.gas

@@ -191,7 +191,7 @@ final class Vault: ObservableObject, Codable {
 
     static func getUniqueVaultName(modelContext: ModelContext, state: SetupVaultState? = nil) -> String {
         let fetchVaultDescriptor = FetchDescriptor<Vault>()
-        do{
+        do {
             let vaults = try modelContext.fetch(fetchVaultDescriptor)
             let start = vaults.count
             var idx = start
@@ -214,8 +214,7 @@ final class Vault: ObservableObject, Codable {
                 
                 idx += 1
             } while idx < 1000
-        }
-        catch {
+        } catch {
             print("fail to load all vaults")
         }
         return "Main Vault"

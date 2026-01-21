@@ -42,8 +42,6 @@ struct SettingsMainScreen: View {
             title: "support",
             options: [
                 .faq,
-                // TODO: - Unused for now
-                // .education,
                 .checkForUpdates,
                 .shareApp
             ]

@@ -24,4 +24,3 @@ class SheetPresentedCounterManager: ObservableObject {
         self.counter = 0
     }
 }
-

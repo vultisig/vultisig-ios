@@ -20,7 +20,7 @@ func broadcastTransaction(jsonString: String) async -> Result<String,Error> {
         request.httpMethod = "POST"
         request.httpBody = jsonData
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        do{
+        do {
             let (data,resp)  =  try await URLSession.shared.data(for: request)
             guard let httpResponse = resp as? HTTPURLResponse else {
                 return .failure(HelperError.runtimeError("Invalid http response"))
@@ -40,8 +40,7 @@ func broadcastTransaction(jsonString: String) async -> Result<String,Error> {
             }
             return .failure(HelperError.runtimeError(String(data: data, encoding: .utf8) ?? "Unknown error"))
             
-        }
-        catch{
+        } catch {
             return .failure(error)
         }
         

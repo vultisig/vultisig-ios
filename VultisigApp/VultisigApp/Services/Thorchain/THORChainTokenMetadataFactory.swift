@@ -21,7 +21,7 @@ enum THORChainTokenMetadataFactory {
                 symbol = parts[1].uppercased()
                 ticker = parts[1].lowercased()
             }
-        }  else if asset.starts(with: "x/")  {
+        } else if asset.starts(with: "x/") {
             chain = "THOR"
             
             if asset == "x/nami-index-nav-thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt-rcpt" {
@@ -43,7 +43,7 @@ enum THORChainTokenMetadataFactory {
                 symbol = asset
                 ticker = asset
             }
-        }  else if asset.contains("-") {
+        } else if asset.contains("-") {
             let parts = asset.split(separator: "-")
             if parts.count >= 2 {
                 chain = parts[0].uppercased()

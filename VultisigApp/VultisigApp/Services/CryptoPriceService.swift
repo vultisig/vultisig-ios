@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 
-struct CoinGeckoCoin : Decodable {
+struct CoinGeckoCoin: Decodable {
     let id: String
     let symbol: String
     let name: String
@@ -56,11 +56,11 @@ public class CryptoPriceService: ObservableObject {
         await refresh(coins: [coin])
     }
     
-    func resolvePriceProviderID(symbol: String,contract: String) async throws ->  String? {
+    func resolvePriceProviderID(symbol: String,contract: String) async throws -> String? {
         let cachedList = self.cache.object(forKey: coinGeckoListCacheKey)
         // good to cache it for an hour , it doesn't change much
         if let cachedList = cachedList, Date().timeIntervalSince(cachedList.timestamp) < 3600 {
-            let target = cachedList.coins.first{ $0.symbol.lowercased() == symbol.lowercased() && $0.platforms.values.contains(contract)}
+            let target = cachedList.coins.first { $0.symbol.lowercased() == symbol.lowercased() && $0.platforms.values.contains(contract)}
             return target?.id
         }
         let requestUrl = Endpoint.coinGeckoCoinsList()
@@ -74,9 +74,9 @@ public class CryptoPriceService: ObservableObject {
         let decoder = JSONDecoder()
         let coinsList = try decoder.decode([CoinGeckoCoin].self, from: data)
         if !coinsList.isEmpty {   
-            self.cache.setObject(CacheCoinGeckoCoin(coins:coinsList, timestamp: Date()), forKey: coinGeckoListCacheKey)
+            self.cache.setObject(CacheCoinGeckoCoin(coins: coinsList, timestamp: Date()), forKey: coinGeckoListCacheKey)
         }
-        let target = coinsList.first{ $0.symbol.lowercased() == symbol.lowercased() && $0.platforms.values.contains(contract)}
+        let target = coinsList.first { $0.symbol.lowercased() == symbol.lowercased() && $0.platforms.values.contains(contract)}
         return target?.id
     }
 }
@@ -152,7 +152,6 @@ private extension CryptoPriceService {
             
             try await RateProvider.shared.save(rates: rates)
             
-            
         } else if chain == .sui {
             
             var rates: [Rate] = []
@@ -223,8 +222,7 @@ private extension CryptoPriceService {
             
             let response = try JSONDecoder().decode([String: [String: Double]].self, from: data)
             
-            
-            let contractsNotFoundOnCoingecko = contracts.filter{ !response.keys.contains($0) }
+            let contractsNotFoundOnCoingecko = contracts.filter { !response.keys.contains($0) }
             
             var rates = mapRates(response: response)
             

@@ -29,7 +29,7 @@ struct PrimaryBackgroundWithGradient: View {
         EllipticalGradient(
             stops: [
                 Gradient.Stop(color: Color(red: 0.02, green: 0.22, blue: 1), location: 0.00),
-                Gradient.Stop(color: Color(red: 0.01, green: 0.07, blue: 1).opacity(0), location: 1.00),
+                Gradient.Stop(color: Color(red: 0.01, green: 0.07, blue: 1).opacity(0), location: 1.00)
             ],
             center: UnitPoint(x: 0.5, y: 0.5)
         )
@@ -41,7 +41,7 @@ struct PrimaryBackgroundWithGradient: View {
         LinearGradient(
             stops: [
                 Gradient.Stop(color: Color(red: 0, green: 0.01, blue: 0.04), location: 0.00),
-                Gradient.Stop(color: Color(red: 0.02, green: 0.18, blue: 0.44), location: 1.00),
+                Gradient.Stop(color: Color(red: 0.02, green: 0.18, blue: 0.44), location: 1.00)
             ],
             startPoint: UnitPoint(x: 0.5, y: 0),
             endPoint: UnitPoint(x: 0.5, y: 1)

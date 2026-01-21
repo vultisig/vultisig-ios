@@ -37,7 +37,7 @@ class EncryptedBackupViewModel: ObservableObject {
     private let logger = Logger(subsystem: "import-wallet", category: "communication")
     private let keychain = DefaultKeychainService.shared
     
-    enum VultisigDocumentError : Error{
+    enum VultisigDocumentError: Error {
         case customError(String)
     }
     
@@ -170,7 +170,7 @@ class EncryptedBackupViewModel: ObservableObject {
         }
     }
     
-    func importDragDropFile(content: Data){
+    func importDragDropFile(content: Data) {
         do {
             if isBakFile() {
                 try importBakFile(data: content)
@@ -190,7 +190,7 @@ class EncryptedBackupViewModel: ObservableObject {
     
     // Import
     func importFile(from url: URL) {
-        let _ = url.startAccessingSecurityScopedResource()
+        _ = url.startAccessingSecurityScopedResource()
         defer { url.stopAccessingSecurityScopedResource() }
         
         do {
@@ -490,7 +490,6 @@ class EncryptedBackupViewModel: ObservableObject {
         return try? Vault(proto: vsVault)
     }
     
-    
     func processEncryptedVaults(encryptedVaultData: [(fileName: String, data: Data)], processedVaults: [Vault], password: String) {
         var allVaults = processedVaults
         var failedVaults: [String] = []
@@ -620,7 +619,7 @@ class EncryptedBackupViewModel: ObservableObject {
     }
     
     func isDKLS(filename: String) -> Bool {
-        do{
+        do {
             let regex = try NSRegularExpression(pattern: "share\\d+of\\d+") // share2of3, share3of5
             let matches = regex.matches(in: filename, range: NSRange(filename.startIndex..., in: filename))
             return matches.count > 0
@@ -631,10 +630,10 @@ class EncryptedBackupViewModel: ObservableObject {
     }
     
     func restoreVaultBack(modelContext: ModelContext,vaults: [Vault], vaultData: Data) {
-        do{
+        do {
             let vsVault = try VSVault(serializedBytes: vaultData)
             let vault = try Vault(proto: vsVault)
-            if !isVaultUnique(backupVault: vault,vaults:vaults){
+            if !isVaultUnique(backupVault: vault,vaults: vaults) {
                 alertTitle = "vaultAlreadyExists"
                 showAlert = true
                 isVaultImported = false
@@ -649,8 +648,7 @@ class EncryptedBackupViewModel: ObservableObject {
             modelContext.insert(vault)
             selectedVault = vault
             isVaultImported = true
-        }
-        catch {
+        } catch {
             logger.error("fail to restore vault: \(error.localizedDescription)")
             alertTitle = "vaultRestoreFailed"
             showAlert = true
@@ -676,7 +674,7 @@ class EncryptedBackupViewModel: ObservableObject {
             let backupVault = try decoder.decode(BackupVault.self,
                                                  from: vaultData)
             // if version get updated , then we can process the migration here
-            if !isVaultUnique(backupVault: backupVault.vault,vaults:vaults){
+            if !isVaultUnique(backupVault: backupVault.vault,vaults: vaults) {
                 alertTitle = "vaultAlreadyExists"
                 showAlert = true
                 isVaultImported = false
@@ -688,14 +686,14 @@ class EncryptedBackupViewModel: ObservableObject {
             selectedVault = backupVault.vault
             showAlert = false
             isVaultImported = true
-        }  catch {
+        } catch {
             print("failed to import with new format , fallback to the old format instead. \(error.localizedDescription)")
             
             // fallback
-            do{
+            do {
                 let vault = try decoder.decode(Vault.self, from: vaultData)
                 
-                if !isVaultUnique(backupVault: vault,vaults:vaults){
+                if !isVaultUnique(backupVault: vault,vaults: vaults) {
                     alertTitle = "vaultAlreadyExists"
                     showAlert = true
                     isVaultImported = false
@@ -774,7 +772,7 @@ class EncryptedBackupViewModel: ObservableObject {
             print("Invalid file type.")
             return
         }
-        do{
+        do {
             let dragDropData = try await provider.loadItem(forTypeIdentifier: UTType.data.identifier)
             if let urlData = dragDropData as? NSURL {
                 print("File Path as NSURL: \(urlData)")
@@ -793,7 +791,7 @@ class EncryptedBackupViewModel: ObservableObject {
                 }
             }
         } catch {
-            DispatchQueue.main.async{
+            DispatchQueue.main.async {
                 self.alertTitle = "failedToLoadFileData"
                 self.showAlert = true
             }

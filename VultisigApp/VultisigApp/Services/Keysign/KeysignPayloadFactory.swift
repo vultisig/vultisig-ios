@@ -43,7 +43,7 @@ struct KeysignPayloadFactory {
         var utxos: [UtxoInfo] = []
         
         switch chainSpecific {
-        case .UTXO(_, _), .Cardano(_, _, _):
+        case .UTXO, .Cardano:
             // Use WalletCore transaction planning for UTXO selection (both UTXO and Cardano chains)
             let payload = KeysignPayload(
                 coin: coin,

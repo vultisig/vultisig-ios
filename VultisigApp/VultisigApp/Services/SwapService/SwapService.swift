@@ -104,7 +104,7 @@ struct SwapService {
                 isAffiliate: isAffiliate,
                 vultTierDiscount: vultTierDiscount
             )
-        case .kyberswap(_):
+        case .kyberswap:
             guard let fromChainID = fromCoin.chain.chainID,
                   let toChainID = toCoin.chain.chainID, fromChainID == toChainID else {
                   throw SwapError.routeUnavailable
@@ -174,8 +174,7 @@ private extension SwapService {
             default:
                 return .thorchain(quote)
             }
-        }
-        catch let error as ThorchainSwapError {
+        } catch let error as ThorchainSwapError {
             print("❌ [COSMOS DEBUG] THORChain error: code=\(error.code), message=\(error.message)")
             if error.code == 3 {
                 if error.message.contains("not enough asset to pay for fees") {
@@ -188,18 +187,14 @@ private extension SwapService {
                 } else {
                     throw SwapError.serverError(message: error.message)
                 }
-            }
-            else {
+            } else {
                 throw SwapError.routeUnavailable
             }
-        }
-        catch let error as MayachainSwapError {
+        } catch let error as MayachainSwapError {
             throw SwapError.serverError(message: error.error)
-        }
-        catch let error as SwapError {
+        } catch let error as SwapError {
             throw error
-        }
-        catch {
+        } catch {
             throw SwapError.swapAmountTooSmall
         }
     }

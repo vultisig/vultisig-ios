@@ -36,7 +36,7 @@ extension Vault: ProtoMappable {
         }
     }
     
-    func mapToProtobuff()->  VSVault {
+    func mapToProtobuff() -> VSVault {
         return VSVault.with {
             $0.name = name
             $0.publicKeyEcdsa = pubKeyECDSA

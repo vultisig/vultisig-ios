@@ -141,9 +141,9 @@ class AppViewModel: ObservableObject {
     
     func getBiometricType() {
         let authContext = LAContext()
-        let _ = authContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
+         _ = authContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
         
-        switch(authContext.biometryType) {
+        switch authContext.biometryType {
         case .none:
             authenticationType = .None
         case .touchID:

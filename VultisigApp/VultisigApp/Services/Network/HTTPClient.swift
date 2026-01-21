@@ -280,7 +280,7 @@ private extension HTTPClient {
         // Log response body for debugging (only if it's reasonable size and JSON/text)
         if data.count < 2048,
            let contentType = response.value(forHTTPHeaderField: "Content-Type"),
-           (contentType.contains("json") || contentType.contains("text")),
+           contentType.contains("json") || contentType.contains("text"),
            let responseString = String(data: data, encoding: .utf8) {
             logger.debug("📥 Response: \(responseString)")
         }

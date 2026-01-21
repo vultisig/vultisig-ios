@@ -9,7 +9,7 @@ import Foundation
 struct SwapFeatureGate {
     static func canSwap() -> Bool {
         let localeCode = Locale.current.region?.identifier
-        if localeCode == "GB" || localeCode == "JP" || localeCode == "MY"{
+        if localeCode == "GB" || localeCode == "JP" || localeCode == "MY" {
             return false
         }
         return true

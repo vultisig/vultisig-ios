@@ -79,7 +79,6 @@ class TonService {
         return "uninit" // Default to uninitialized if status not found
     }
     
-    
     func getJettonBalance(coin: CoinMeta, address: String) async throws -> String {
         // Use Vultisig proxy jetton wallets endpoint (matches Android)
         guard let url = URL(string: Endpoint.fetchTonJettonBalance(address: address, jettonAddress: coin.contractAddress)) else {
@@ -122,7 +121,6 @@ class TonService {
         let now = Date()
         let futureDate = now.addingTimeInterval(600)
         let expireAt = UInt64(futureDate.timeIntervalSince1970)
-        
         
         guard let url = URL(string: Endpoint.fetchExtendedAddressInformation(address: coin.address)) else {
             throw URLError(.badURL)
@@ -171,7 +169,7 @@ class TonService {
             
             // Fallback: flexible model that matches array- or object-shaped stack entries
             if let flex = try? JSONDecoder().decode(RunGetMethodFlexibleResponse.self, from: data),
-               (flex.ok == nil || flex.ok == true),
+               flex.ok == nil || flex.ok == true,
                let stack = flex.result?.stack {
                 for entry in stack {
                     switch entry {

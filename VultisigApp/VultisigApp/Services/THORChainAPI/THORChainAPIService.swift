@@ -138,5 +138,3 @@ struct THORChainAPIService {
         return response.data
     }
 }
-
-

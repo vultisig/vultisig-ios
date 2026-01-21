@@ -35,7 +35,6 @@ extension ServerBackupVerificationView {
         .padding(.horizontal, 16)
     }
     
-    
     var textField: some View {
         HStack(spacing: 8) {
             field

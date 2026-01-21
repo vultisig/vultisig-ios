@@ -82,8 +82,7 @@ class FunctionCallCosmosIBC: FunctionCallAddressable, ObservableObject {
         }
     }
     
-    private func getChainAddress() -> Void {
-        
+    private func getChainAddress() {
         if selectedChainObject != nil {
             let chainAddress = self.vault.coins.first { $0.chain == selectedChainObject && $0.isNativeToken }
             if let chainAddress = chainAddress {

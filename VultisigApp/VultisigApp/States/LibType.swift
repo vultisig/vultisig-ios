@@ -8,11 +8,11 @@
 import VultisigCommonData
 import Foundation
 
-enum LibType : Int,Codable, CaseIterable {
+enum LibType: Int,Codable, CaseIterable {
     case GG20 = 0
     case DKLS = 1
     case KeyImport = 2
-    func toVSLibType()->VSLibType{
+    func toVSLibType() -> VSLibType {
         switch self {
         case .GG20:
             return .gg20
@@ -23,7 +23,7 @@ enum LibType : Int,Codable, CaseIterable {
         }
     }
     
-    func toString()->String{
+    func toString() -> String {
         switch self {
         case .GG20:
             return "GG20"
@@ -36,7 +36,7 @@ enum LibType : Int,Codable, CaseIterable {
 }
 
 extension VSLibType {
-    func toLibType()->LibType{
+    func toLibType() -> LibType {
         switch self {
         case .gg20:
             return .GG20

@@ -647,7 +647,7 @@ extension VSTHORChainSwapPayload: @retroactive Codable {
         expirationTime = try container.decode(UInt64.self, forKey: .expirationTime)
     }
 }
-extension VSErc20ApprovePayload : @retroactive Codable {
+extension VSErc20ApprovePayload: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case amount
         case spender
@@ -705,7 +705,7 @@ extension VSOneInchQuote: @retroactive Codable {
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(dstAmount, forKey: .dstAmount)
-        if hasTx{
+        if hasTx {
             try container.encode(tx, forKey: .tx)
         }
     }
@@ -719,7 +719,7 @@ extension VSOneInchQuote: @retroactive Codable {
     }
 }
 
-extension VSOneInchSwapPayload : @retroactive Codable {
+extension VSOneInchSwapPayload: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case fromCoin = "from_coin"
         case toCoin = "to_coin"
@@ -782,7 +782,7 @@ extension VSKyberSwapQuote: @retroactive Codable {
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(dstAmount, forKey: .dstAmount)
-        if hasTx{
+        if hasTx {
             try container.encode(tx, forKey: .tx)
         }
     }
@@ -980,7 +980,7 @@ extension VSKeysignPayload: @retroactive Codable {
         try container.encode(utxoInfo, forKey: .utxoInfo)
         try container.encode(memo, forKey: .memo)
         var swapPayloadContainer = container.nestedContainer(keyedBy: DynamicCodingKey.self, forKey: .swapPayload)
-        switch swapPayload{
+        switch swapPayload {
         case .thorchainSwapPayload(let payload):
             try swapPayloadContainer.encode(payload, forKey: DynamicCodingKey("ThorchainSwapPayload"))
         case .kyberswapSwapPayload(let payload):
@@ -992,7 +992,6 @@ extension VSKeysignPayload: @retroactive Codable {
         case .none:
             print("No swap payload to encode")
         }
-        
         
         try container.encodeIfPresent(erc20ApprovePayload, forKey: .erc20ApprovePayload)
         try container.encode(vaultPublicKeyEcdsa, forKey: .vaultPubKeyECDSA)

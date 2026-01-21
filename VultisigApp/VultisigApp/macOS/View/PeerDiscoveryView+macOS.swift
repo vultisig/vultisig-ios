@@ -135,6 +135,5 @@ extension PeerDiscoveryView {
         min(screenWidth/2.5, screenHeight/2.5)
     }
     
-    
 }
 #endif

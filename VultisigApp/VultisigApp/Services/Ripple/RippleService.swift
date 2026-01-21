@@ -27,9 +27,9 @@ class RippleService {
                     
                     [
                         "tx_blob": hex
-                    ],
+                    ]
 
-                ],
+                ]
             ]
 
             let data = try await postRequest(with: requestBody, url: rpcURL2)
@@ -106,10 +106,8 @@ class RippleService {
         }
     }
     
-    
     func fetchAccountsInfo(for walletAddress: String) async throws
-        -> RippleAccountResponse?
-    {
+        -> RippleAccountResponse? {
         do {
             let requestBody: [String: Any] = [
                 "jsonrpc": "2.0",
@@ -121,13 +119,12 @@ class RippleService {
                         "account": walletAddress,
                         "ledger_index": "current",
                         "queue": true
-                    ],
+                    ]
 
-                ],
+                    ]
             ]
 
             let data = try await postRequest(with: requestBody, url: rpcURL2)
-            
             
             let decoder = JSONDecoder()
             guard let response = try? decoder.decode(RippleAccountResponse.self, from: data) else { return nil }
@@ -139,9 +136,7 @@ class RippleService {
         }
     }
     
-    private func postRequest(with body: [String: Any], url: URL) async throws
-        -> Data
-    {
+    private func postRequest(with body: [String: Any], url: URL) async throws -> Data {
         do {
             var request = URLRequest(url: url)
             request.cachePolicy = .returnCacheDataElseLoad
@@ -155,10 +150,8 @@ class RippleService {
                 for: request)
 
             if let httpResponse = response as? HTTPURLResponse,
-                let cacheControl = httpResponse.allHeaderFields["Cache-Control"]
-                    as? String,
-                cacheControl.contains("max-age") == false
-            {
+                let cacheControl = httpResponse.allHeaderFields["Cache-Control"] as? String,
+                cacheControl.contains("max-age") == false {
 
                 // Set a default caching duration if none is provided
                 let userInfo = ["Cache-Control": "max-age=120"]  // 2 minutes

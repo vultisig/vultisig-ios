@@ -75,8 +75,7 @@ class MayachainService: ThorchainSwapProvider {
     }
 
     func fetchAccountNumber(_ address: String) async throws
-        -> THORChainAccountValue?
-    {
+        -> THORChainAccountValue? {
         guard
             let url = URL(string: Endpoint.fetchAccountNumberMayachain(address))
         else {
@@ -129,8 +128,7 @@ class MayachainService: ThorchainSwapProvider {
         }
     }
 
-    func broadcastTransaction(jsonString: String) async -> Result<String, Error>
-    {
+    func broadcastTransaction(jsonString: String) async -> Result<String, Error> {
         let url = URL(string: Endpoint.broadcastTransactionMayachain)!
 
         guard let jsonData = jsonString.data(using: .utf8) else {

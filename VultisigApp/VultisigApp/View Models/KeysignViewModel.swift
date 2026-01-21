@@ -95,7 +95,7 @@ class KeysignViewModel: ObservableObject {
         self.customMessagePayload = customMessagePayload
         self.encryptionKeyHex = encryptionKeyHex
         let isEncryptGCM =  await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
-        self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA, encryptGCM:isEncryptGCM)
+        self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA, encryptGCM: isEncryptGCM)
         self.isInitiateDevice = isInitiateDevice
         
         // Load extension memo decoding
@@ -148,7 +148,6 @@ class KeysignViewModel: ObservableObject {
             return nil
         }
     }
-    
     
     func startKeysign() async {
         switch vault.libType {
@@ -333,7 +332,7 @@ class KeysignViewModel: ObservableObject {
                     throw TssKeysignError.keysignFail
                 }
                 self.signatures[msg] = resp
-                await keySignVerify.markLocalPartyKeysignComplete(message: msgHash, sig:resp)
+                await keySignVerify.markLocalPartyKeysignComplete(message: msgHash, sig: resp)
             }
             
             self.messagePuller?.stop()
@@ -357,7 +356,7 @@ class KeysignViewModel: ObservableObject {
         }
     }
     
-    func stopMessagePuller(){
+    func stopMessagePuller() {
         messagePuller?.stop()
     }
     
@@ -374,8 +373,6 @@ class KeysignViewModel: ObservableObject {
     }
     
     func getSignedTransaction(keysignPayload: KeysignPayload) throws -> SignedTransactionType {
-        
-        // TODO: Refactor into Signed transaction factory
         var signedTransactions: [SignedTransactionResult] = []
         
         if let approvePayload = keysignPayload.approvePayload {
@@ -404,7 +401,7 @@ class KeysignViewModel: ObservableObject {
                     signedTransactions.append(transaction)
                 }
             case .mayachain(let payload):
-                if keysignPayload.coin.chainType != .EVM || keysignPayload.coin.isNativeToken{
+                if keysignPayload.coin.chainType != .EVM || keysignPayload.coin.isNativeToken {
                     break
                 }
                 let swaps = THORChainSwaps()
@@ -466,7 +463,6 @@ class KeysignViewModel: ObservableObject {
             let transaction = try helper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
             return .regular(transaction)
             
-            
         case .Ton:
             let transaction = try TonHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
             return .regular(transaction)
@@ -491,7 +487,6 @@ class KeysignViewModel: ObservableObject {
             self.txid = ""
             return
         }
-        
         
         let transactionType: SignedTransactionType
         
@@ -664,8 +659,7 @@ class KeysignViewModel: ObservableObject {
             print("code:\(code), message:\(message)")
             if message == "already known"
                 || message == "replacement transaction underpriced"
-                || message.contains("This transaction has already been processed")
-            {
+                || message.contains("This transaction has already been processed") {
                 print("the transaction already broadcast,code:\(code)")
                 self.txid = transactionType.transactionHash
                 return

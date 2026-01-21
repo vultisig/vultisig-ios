@@ -14,8 +14,7 @@ struct IdentifiableString: Identifiable, Equatable {
     let value: String
 }
 
-class FunctionCallBondMayaChain: FunctionCallAddressable, ObservableObject
-{
+class FunctionCallBondMayaChain: FunctionCallAddressable, ObservableObject {
     @Published var amount: Decimal = 1
     @Published var nodeAddress: String = ""
     @Published var fee: Int64 = .zero

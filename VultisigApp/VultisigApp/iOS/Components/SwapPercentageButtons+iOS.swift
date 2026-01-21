@@ -16,7 +16,7 @@ extension SwapPercentageButtons {
     }
     
     var buttons: some View {
-        HStack{
+        HStack {
             ForEach(buttonOptions, id: \.self) { option in
                 getPercentageButton(for: option)
             }

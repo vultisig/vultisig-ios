@@ -29,10 +29,9 @@ final class UTXOChainsHelperTest: XCTestCase {
         XCTAssertEqual(btc.address, "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu")
         XCTAssertEqual(btc.hexPublicKey, "026724d27f668b88513c925360ba5c5888cc03641eccbe70e6d85023e7c511b969")
         
-        
         let bch = try CoinFactory.create(
             asset: TokensStore.Token.bitcoinCash,
-            publicKeyECDSA:hexPublicKey,
+            publicKeyECDSA: hexPublicKey,
             publicKeyEdDSA: "",
             hexChainCode: hexChainCode,
             isDerived: false
@@ -44,22 +43,20 @@ final class UTXOChainsHelperTest: XCTestCase {
         
         let ltc = try CoinFactory.create(
             asset: TokensStore.Token.litecoin,
-            publicKeyECDSA:hexPublicKey,
+            publicKeyECDSA: hexPublicKey,
             publicKeyEdDSA: "",
             hexChainCode: hexChainCode,
             isDerived: false
         )
-        
         
         XCTAssertNotNil(ltc)
         XCTAssertEqual(ltc.chain.ticker, "LTC")
         XCTAssertEqual(ltc.address, "ltc1q94hcz4uhl8gvw3pkqpfrhrxsglnlnrrr7lftpn")
         XCTAssertEqual(ltc.hexPublicKey, "0278fb4446eb161e89e33e4bf365dc465c9117c7a9808899eefced1bf905b57256")
         
-        
         let doge = try CoinFactory.create(
             asset: TokensStore.Token.dogecoin,
-            publicKeyECDSA:hexPublicKey,
+            publicKeyECDSA: hexPublicKey,
             publicKeyEdDSA: "",
             hexChainCode: hexChainCode,
             isDerived: false
@@ -119,14 +116,14 @@ final class UTXOChainsHelperTest: XCTestCase {
         vaultForTest.hexChainCode = hexChainCode
         let bch = try CoinFactory.create(
             asset: TokensStore.Token.bitcoinCash,
-            publicKeyECDSA:hexPublicKey,
+            publicKeyECDSA: hexPublicKey,
             publicKeyEdDSA: "",
             hexChainCode: hexChainCode,
             isDerived: false
         )
         let result = try utxoHelper.getPreSignedImageHash(
             keysignPayload: KeysignPayload(
-                coin:bch,
+                coin: bch,
                 toAddress: "bitcoincash:qqxjcn4u4fgxvclqyaprkem3hptm3nf5yq3ryq70ry",
                 toAmount: 1000000,
                 chainSpecific: BlockChainSpecific.UTXO(byteFee: 20,sendMaxAmount: false),

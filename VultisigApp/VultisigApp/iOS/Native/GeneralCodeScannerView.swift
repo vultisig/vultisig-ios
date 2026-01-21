@@ -24,7 +24,7 @@ struct GeneralCodeScannerView: View {
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     
-    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+    private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     
     var body: some View {
         QRCodeScannerView(

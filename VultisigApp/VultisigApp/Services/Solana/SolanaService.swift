@@ -64,7 +64,7 @@ class SolanaService {
             "jsonrpc": "2.0",
             "id": 1,
             "method": "sendTransaction",
-            "params": [encodedTransaction],
+            "params": [encodedTransaction]
         ]
         
         do {
@@ -140,7 +140,7 @@ class SolanaService {
                 "jsonrpc": "2.0",
                 "id": 1,
                 "method": "getLatestBlockhash",
-                "params": [["commitment": "finalized"]],
+                "params": [["commitment": "finalized"]]
             ]
             
             let data = try await postRequest(with: requestBody, url: rpcURL)
@@ -155,8 +155,7 @@ class SolanaService {
     }
     
     func fetchSolanaTokenInfoList(contractAddresses: [String]) async throws
-    -> [String: SolanaFmTokenInfo]
-    {
+    -> [String: SolanaFmTokenInfo] {
         guard !contractAddresses.isEmpty else {
             return [:]
         }
@@ -178,8 +177,7 @@ class SolanaService {
     }
     
     func fetchSolanaJupiterTokenInfoList(contractAddress: String) async throws
-    -> SolanaJupiterToken
-    {
+    -> SolanaJupiterToken {
         do {
             let urlString = Endpoint.solanaTokenInfoServiceRpc2(
                 tokenAddress: contractAddress)
@@ -286,8 +284,8 @@ class SolanaService {
                 "params": [
                     walletAddress,
                     ["mint": mintAddress],
-                    ["encoding": "jsonParsed"],
-                ],
+                    ["encoding": "jsonParsed"]
+                ]
             ]
             
             let data = try await postRequest(with: requestBody, url: rpcURL)
@@ -316,8 +314,7 @@ class SolanaService {
     }
     
     func fetchTokenAccountsByOwner(for walletAddress: String) async throws
-    -> [SolanaService.SolanaTokenAccount]
-    {
+    -> [SolanaService.SolanaTokenAccount] {
         let programs: [String] = [
             "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", // spl-token
             "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb" // spl-token-2022
@@ -336,8 +333,8 @@ class SolanaService {
                         [
                             "programId": program
                         ],
-                        ["encoding": "jsonParsed"],
-                    ],
+                        ["encoding": "jsonParsed"]
+                    ]
                 ]
                 
                 let data = try await postRequest(with: requestBody, url: rpcURL)
@@ -355,9 +352,7 @@ class SolanaService {
         return returnPrograms
     }
     
-    func fetchTokenBalance(for walletAddress: String, contractAddress: String)
-    async throws -> String?
-    {
+    func fetchTokenBalance(for walletAddress: String, contractAddress: String) async throws -> String? {
         do {
             let accounts: [SolanaTokenAccount] =
             try await fetchTokenAccountsByOwner(for: walletAddress)
@@ -395,9 +390,7 @@ class SolanaService {
         }
     }
     
-    func fetchTokensInfos(for contractAddresses: [String]) async throws
-    -> [CoinMeta]
-    {
+    func fetchTokensInfos(for contractAddresses: [String]) async throws -> [CoinMeta] {
         guard !contractAddresses.isEmpty else {
             return []
         }
@@ -456,7 +449,7 @@ class SolanaService {
                 "jsonrpc": "2.0",
                 "id": 1,
                 "method": "getRecentPrioritizationFees",
-                "params": [[account]],
+                "params": [[account]]
             ]
             
             let data = try await postRequest(with: requestBody, url: rpcURL)
@@ -487,11 +480,7 @@ class SolanaService {
         return data
     }
     
-    private func parseSolanaTokenResponse(jsonData: Data) throws
-    -> SolanaService.SolanaDetailedRPCResult<
-        [SolanaService.SolanaTokenAccount]
-    >
-    {
+    private func parseSolanaTokenResponse(jsonData: Data) throws -> SolanaService.SolanaDetailedRPCResult<[SolanaService.SolanaTokenAccount]> {
         do {
             return try JSONDecoder().decode(
                 SolanaService.SolanaDetailedRPCResult<
@@ -533,7 +522,7 @@ class SolanaService {
             "jsonrpc": "2.0",
             "id": 1,
             "method": "getAccountInfo",
-            "params": [address, ["encoding": "jsonParsed"]],
+            "params": [address, ["encoding": "jsonParsed"]]
         ]
         
         let data = try await postRequest(with: requestBody, url: rpcURL)

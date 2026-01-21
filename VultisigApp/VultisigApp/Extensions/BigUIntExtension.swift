@@ -31,4 +31,3 @@ extension BigUInt {
         self = bigInt
     }
 }
-

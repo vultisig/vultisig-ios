@@ -589,7 +589,6 @@ private extension BlockChainService {
             
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: gas, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
             
-            
         case .ton:
             let (seqno, expireAt) = try await ton.getSpecificTransactionInfo(coin)
             
@@ -621,7 +620,7 @@ private extension BlockChainService {
             
             let lastLedgerSequence = account?.result?.ledgerCurrentIndex ?? 0
             
-            //60 is bc of tss to wait till 5min so all devices can sign.
+            // 60 is bc of tss to wait till 5min so all devices can sign.
             return .Ripple(sequence: UInt64(sequence), gas: 180000, lastLedgerSequence: UInt64(lastLedgerSequence) + 60)
         case .tron:
             return try await tron.getBlockInfo(coin: coin, to: toAddress, memo: memo)
@@ -641,8 +640,8 @@ private extension BlockChainService {
         }
     }
     
-    func estimateERC20GasLimit(tx: SendTransaction) async  -> BigInt {
-        do{
+    func estimateERC20GasLimit(tx: SendTransaction) async -> BigInt {
+        do {
             let service = try EvmService.getService(forChain: tx.coin.chain)
             let gas = try await service.estimateGasForERC20Transfer(
                 senderAddress: tx.coin.address,
@@ -673,8 +672,8 @@ private extension BlockChainService {
             return nil
         }
         let service = try EvmService.getService(forChain: tx.fromCoin.chain)
-        switch(tx.quote){
-        case .mayachain(_), .thorchain(_), .thorchainStagenet(_):
+        switch tx.quote {
+        case .mayachain, .thorchain, .thorchainStagenet:
             // Swapping native ETH/AVAX/BSC to THORChain router is a contract call, not a simple transfer.
             // 23000 is too low. Using 120000 (same as ERC20) is safer.
             return BigInt(EVMHelper.defaultERC20TransferGasUnit)

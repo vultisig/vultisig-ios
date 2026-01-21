@@ -76,7 +76,6 @@ struct RuneBondCell: View {
         }
     }
     
-
     private var statusColor: Color {
         switch bondNode.status.lowercased() {
         case "active":
@@ -101,4 +100,3 @@ struct RuneBondCell: View {
         }
     }
 }
-

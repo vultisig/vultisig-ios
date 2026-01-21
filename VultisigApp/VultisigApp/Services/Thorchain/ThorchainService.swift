@@ -56,8 +56,7 @@ class ThorchainService: ThorchainSwapProvider {
                 if ticker.range(of: "yrune", options: [.caseInsensitive, .anchored]) == nil &&
                     ticker.range(of: "ytcy", options: [.caseInsensitive, .anchored]) == nil &&
                     ticker.range(of: "stcy", options: [.caseInsensitive, .anchored]) == nil &&
-                    ticker.range(of: "sruji", options: [.caseInsensitive, .anchored]) == nil
-                {
+                    ticker.range(of: "sruji", options: [.caseInsensitive, .anchored]) == nil {
                     ticker = ticker.uppercased()
                 }
                 
@@ -113,8 +112,8 @@ class ThorchainService: ThorchainSwapProvider {
         return accountResponse.result.value
     }
     
-    func get9RRequest(url: URL) -> URLRequest{
-        var req = URLRequest(url:url)
+    func get9RRequest(url: URL) -> URLRequest {
+        var req = URLRequest(url: url)
         req.addValue("vultisig", forHTTPHeaderField: "X-Client-ID")
         return req
     }
@@ -187,7 +186,7 @@ class ThorchainService: ThorchainSwapProvider {
         }
     }
     
-    func getTHORChainChainID() async throws -> String  {
+    func getTHORChainChainID() async throws -> String {
         if !network.isEmpty {
             print("network id\(network)")
             return network
@@ -206,8 +205,8 @@ class ThorchainService: ThorchainSwapProvider {
         group.enter()
         DispatchQueue.global().async {
             Task {
-                do{
-                    _ =  try await self.getTHORChainChainID()
+                do {
+                    _ = try await self.getTHORChainChainID()
                 } catch {
                     print("fail to get thorchain id \(error.localizedDescription)")
                 }
@@ -422,7 +421,6 @@ extension ThorchainService {
         
         return RujiBalance(ruji: ruji, shares: shares, price: price)
     }
-    
     
     /// Fetch all merged RUJI positions for an address
     /// - Parameter thorAddress: The THORChain address to query

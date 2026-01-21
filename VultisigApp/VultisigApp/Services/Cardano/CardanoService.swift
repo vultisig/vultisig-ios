@@ -303,6 +303,4 @@ class CardanoService {
         let jsonString = String(data: data, encoding: .utf8) ?? "invalid data"
         throw NSError(domain: "CardanoServiceError", code: 10, userInfo: [NSLocalizedDescriptionKey: "Missing result in RPC response: \(jsonString)"])
     }
-
-    
 }

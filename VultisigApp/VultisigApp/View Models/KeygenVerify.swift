@@ -36,7 +36,7 @@ class KeygenVerify: ObservableObject {
     func checkCompletedParties() async -> Bool {
         let urlString = "\(serverAddr)/complete/\(sessionID)"
         let start = Date()
-        repeat{
+        repeat {
             do {
                 let result = try await Utils.asyncGetRequest(urlString: urlString, headers: nil)
                 if !result.isEmpty {

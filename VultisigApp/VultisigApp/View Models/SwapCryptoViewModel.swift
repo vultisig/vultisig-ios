@@ -537,7 +537,7 @@ struct SwapCryptoLogic {
             let pubKey = vault.chainPublicKeys.first { $0.chain == chain }?.publicKeyHex
             let isDerived = pubKey != nil
             guard let coinMeta, let coin = try? CoinFactory.create(asset: coinMeta,
-                                                                   publicKeyECDSA:  pubKey ?? vault.pubKeyECDSA,
+                                                                   publicKeyECDSA: pubKey ?? vault.pubKeyECDSA,
                                                                    publicKeyEdDSA: pubKey ?? vault.pubKeyEdDSA,
                                                                    hexChainCode: vault.hexChainCode,
                                                                    isDerived: isDerived) else {

@@ -27,7 +27,7 @@ enum FeeEnum {
 }
 
 protocol FeeService {
-    func calculateFees(chain: Chain, limit: BigInt, isSwap: Bool, fromAddress:String,feeMode: FeeMode) async throws -> FeeEnum
+    func calculateFees(chain: Chain, limit: BigInt, isSwap: Bool, fromAddress: String,feeMode: FeeMode) async throws -> FeeEnum
 }
 
 class EthereumFeeService: FeeService {
@@ -39,7 +39,7 @@ class EthereumFeeService: FeeService {
         self.evmService = try EvmService.getService(forChain: chain)
     }
     
-    func calculateFees(chain: Chain, limit: BigInt, isSwap: Bool, fromAddress:String,feeMode: FeeMode) async throws -> FeeEnum {
+    func calculateFees(chain: Chain, limit: BigInt, isSwap: Bool, fromAddress: String,feeMode: FeeMode) async throws -> FeeEnum {
         let (gasPrice, priorityFee, nonce) = try await self.evmService.getGasInfo(fromAddress: fromAddress, mode: feeMode)
         var newLimit = limit
         if isSwap {

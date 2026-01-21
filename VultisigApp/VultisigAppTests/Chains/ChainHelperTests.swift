@@ -94,12 +94,11 @@ final class ChainHelperTests: XCTestCase {
         let chain = keysignPayload.coin.chain
         if keysignPayload.swapPayload != nil {
             switch keysignPayload.swapPayload {
-            case .mayachain(_):
-                if keysignPayload.coin.chainType == .EVM  && !keysignPayload.coin.isNativeToken{
+            case .mayachain:
+                if keysignPayload.coin.chainType == .EVM  && !keysignPayload.coin.isNativeToken {
                     try runTestCaseWithSwap(testCase, keysignPayload: keysignPayload)
                     return
                 }
-                break
             default:
                 try runTestCaseWithSwap(testCase, keysignPayload: keysignPayload)
                 return
@@ -149,4 +148,3 @@ final class ChainHelperTests: XCTestCase {
         XCTAssertEqual(result, testCase.expectedImageHash, "Test case \(testCase.name) failed for \(chain.name)")
     }
 }
-

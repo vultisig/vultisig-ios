@@ -51,8 +51,7 @@ struct RpcServiceStruct {
                     || message.lowercased().contains("transaction already exists".lowercased())
                     || message.lowercased().contains("many requests for a specific RPC call".lowercased())
                     || message.lowercased().contains("already".lowercased())
-                    || message.lowercased().contains("already mined".lowercased())
-                {
+                    || message.lowercased().contains("already mined".lowercased()) {
                     return try decode("Transaction already broadcasted.")
                 }
                 
@@ -93,4 +92,3 @@ struct RpcServiceStruct {
         }
     }
 }
-

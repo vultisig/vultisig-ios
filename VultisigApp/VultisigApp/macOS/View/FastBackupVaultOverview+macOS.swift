@@ -36,7 +36,7 @@ extension FastBackupVaultOverview {
     }
     
     var animation: some View {
-        ZStack{
+        ZStack {
             if tabIndex>2 {
                 backupVaultAnimationVM?.view()
             } else {

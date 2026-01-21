@@ -27,7 +27,7 @@ final class DKLSKeygen {
     var messenger: DKLSMessenger
     let localPartyID: String
     var cache = NSCache<NSString, AnyObject>()
-    var setupMessage:[UInt8] = []
+    var setupMessage: [UInt8] = []
     var keyshare: DKLSKeyshare?
     let publicKeyECDSA: String
     let localPrivateSecret: String?
@@ -67,7 +67,7 @@ final class DKLSKeygen {
         return self.keyshare
     }
     
-    private func getDklsSetupMessage() throws -> [UInt8]  {
+    private func getDklsSetupMessage() throws -> [UInt8] {
         var buf = godkls.tss_buffer()
         defer {
             godkls.tss_buffer_free(&buf)
@@ -84,7 +84,7 @@ final class DKLSKeygen {
         return self.setupMessage
     }
     
-    private func getDklsKeyImportSetupMessage(hexPrivateKey: String, hexRootChainCode: String) throws -> ([UInt8],godkls.Handle)  {
+    private func getDklsKeyImportSetupMessage(hexPrivateKey: String, hexRootChainCode: String) throws -> ([UInt8],godkls.Handle) {
         var buf = godkls.tss_buffer()
         defer {
             godkls.tss_buffer_free(&buf)
@@ -156,7 +156,7 @@ final class DKLSKeygen {
         return Array(UnsafeBufferPointer(start: buf_receiver.ptr, count: Int(buf_receiver.len)))
     }
     
-    func processDKLSOutboundMessage(handle: godkls.Handle) async throws  {
+    func processDKLSOutboundMessage(handle: godkls.Handle) async throws {
         repeat {
             let (result,outboundMessage) = GetDKLSOutboundMessage(handle: handle)
             if result != DKLS_LIB_OK {
@@ -168,14 +168,14 @@ final class DKLSKeygen {
             let message = outboundMessage.to_dkls_goslice()
             let encodedOutboundMessage = Data(outboundMessage).base64EncodedString()
             for i in 0..<self.keygenCommittee.count {
-                let receiverArray = getOutboundMessageReceiver(handle:handle,
+                let receiverArray = getOutboundMessageReceiver(handle: handle,
                                                                message: message,
                                                                idx: UInt32(i))
                 
                 if receiverArray.count == 0 {
                     break
                 }
-                let receiverString = String(bytes:receiverArray,encoding: .utf8)!
+                let receiverString = String(bytes: receiverArray,encoding: .utf8)!
                 print("sending message from \(self.localPartyID) to: \(receiverString) , length:\(outboundMessage.count)")
                 try await self.messenger.send(self.localPartyID, to: receiverString, body: encodedOutboundMessage)
             }
@@ -225,7 +225,7 @@ final class DKLSKeygen {
         return false
     }
     
-    func processInboundMessage(handle: godkls.Handle,data:Data) async throws -> Bool {
+    func processInboundMessage(handle: godkls.Handle,data: Data) async throws -> Bool {
         if data.count == 0 {
             return false
         }
@@ -239,7 +239,7 @@ final class DKLSKeygen {
                 continue
             }
             
-            //print("Got message from: \(msg.from), to: \(msg.to), key:\(key) , seq: \(msg.sequence_no)")
+            // print("Got message from: \(msg.from), to: \(msg.to), key:\(key) , seq: \(msg.sequence_no)")
             guard let decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex) else {
                 throw HelperError.runtimeError("fail to decrypted message body")
             }
@@ -250,7 +250,7 @@ final class DKLSKeygen {
             
             let descryptedBodyArr = [UInt8](decodedMsg)
             var decryptedBodySlice = descryptedBodyArr.to_dkls_goslice()
-            var isFinished:UInt32 = 0
+            var isFinished: UInt32 = 0
             var result: godkls.lib_error
             switch self.tssType {
             case .Keygen,.Migrate,.KeyImport:
@@ -291,7 +291,7 @@ final class DKLSKeygen {
         print("keygen committee: \(self.keygenCommittee)")
         self.cache.removeAllObjects()
         do {
-            var keygenSetupMsg:[UInt8]
+            var keygenSetupMsg: [UInt8]
             var handler = godkls.Handle()
             if self.isInitiateDevice && attempt == 0 {
                 switch self.tssType {
@@ -387,8 +387,7 @@ final class DKLSKeygen {
                 print("chaincode: \(chainCodeBytes.toHexString())")
                 try await Task.sleep(for: .milliseconds(500))
             }
-        }
-        catch {
+        } catch {
             print("Failed to generate key, error: \(error.localizedDescription)")
             if attempt < 3 { // let's retry
                 print("keygen/reshare retry, attemp: \(attempt)")
@@ -399,7 +398,7 @@ final class DKLSKeygen {
         }
     }
     
-    func getKeyshareBytes(handle: godkls.Handle) throws  -> [UInt8] {
+    func getKeyshareBytes(handle: godkls.Handle) throws -> [UInt8] {
         var buf = godkls.tss_buffer()
         defer {
             godkls.tss_buffer_free(&buf)
@@ -411,7 +410,7 @@ final class DKLSKeygen {
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
     
-    func getPublicKeyBytes(handle: godkls.Handle) throws  -> [UInt8] {
+    func getPublicKeyBytes(handle: godkls.Handle) throws -> [UInt8] {
         var buf = godkls.tss_buffer()
         defer {
             godkls.tss_buffer_free(&buf)
@@ -448,10 +447,10 @@ final class DKLSKeygen {
         }
         
         for(idx,item) in allParties.enumerated() {
-            if oldCommittee.contains(item){
+            if oldCommittee.contains(item) {
                 oldPartiesIdx.append(UInt8(idx))
             }
-            if newCommittee.contains(item){
+            if newCommittee.contains(item) {
                 newPartiesIdx.append(UInt8(idx))
             }
         }
@@ -478,7 +477,7 @@ final class DKLSKeygen {
         return [UInt8](keyshareData)
     }
     
-    private func getDklsReshareSetupMessage(keyshareHandle: godkls.Handle) throws ->[UInt8] {
+    private func getDklsReshareSetupMessage(keyshareHandle: godkls.Handle) throws -> [UInt8] {
         var buf = godkls.tss_buffer()
         defer {
             godkls.tss_buffer_free(&buf)
@@ -510,7 +509,7 @@ final class DKLSKeygen {
                 }
             }
             
-            var reshareSetupMsg:[UInt8]
+            var reshareSetupMsg: [UInt8]
             if self.isInitiateDevice && attempt == 0 {
                 reshareSetupMsg = try getDklsReshareSetupMessage(keyshareHandle: keyshareHandle)
                 try await messenger.uploadSetupMessage(message: Data(reshareSetupMsg).base64EncodedString(),nil)
@@ -563,8 +562,7 @@ final class DKLSKeygen {
                 print("chaincode: \(chainCodeBytes.toHexString())")
                 try await Task.sleep(for: .milliseconds(500))
             }
-        }
-        catch {
+        } catch {
             print("Failed to reshare key, error: \(error.localizedDescription)")
             if attempt < 3 { // let's retry
                 print("keygen/reshare retry, attemp: \(attempt)")

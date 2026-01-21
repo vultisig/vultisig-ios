@@ -9,7 +9,6 @@ import SwiftUI
 import BigInt
 import WalletCore
 
-
 @MainActor
 class SendCryptoVerifyViewModel: ObservableObject {
     let securityScanViewModel = SecurityScannerViewModel()

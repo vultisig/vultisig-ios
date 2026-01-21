@@ -144,7 +144,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                          oldResharePrefix: vault.resharePrefix ?? "",
                                          lib_type: vault.libType == .DKLS ? 1 : 0)
             case .Migrate:
-                fastVaultService.migrate(publicKeyECDSA:vault.pubKeyECDSA, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, encryptionPassword: config.password, email: config.email)
+                fastVaultService.migrate(publicKeyECDSA: vault.pubKeyECDSA, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, encryptionPassword: config.password, email: config.email)
             }
         }
         self.isLoading = false
@@ -158,7 +158,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         peersFoundCancellable = nil
         peersFoundCancellable = participantDiscovery.$peersFound
             .removeDuplicates()
-            .filter{!$0.isEmpty}
+            .filter { !$0.isEmpty }
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
                 guard let self else { return }
@@ -178,7 +178,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.selections.insert(self.localPartyID)
     }
     
-    func autoSelectPeer(_ peer: String){
+    func autoSelectPeer(_ peer: String) {
         if !selections.contains(peer) {
             selections.insert(peer)
         }
@@ -267,8 +267,6 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
     }
     
-
-
     private func startKeygen(allParticipants: [String]) {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
         
@@ -298,7 +296,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         
         self.keygenCommittee = sortedParticipants
         
-        Utils.sendRequest(urlString: urlString, method: "POST",headers:nil, body: sortedParticipants) { _ in
+        Utils.sendRequest(urlString: urlString, method: "POST",headers: nil, body: sortedParticipants) { _ in
             self.logger.info("kicked off keygen successfully")
         }
     }

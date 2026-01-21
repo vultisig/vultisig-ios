@@ -21,7 +21,6 @@ enum SetupVaultState: CaseIterable {
         }
     }
 
-
     var hasOtherDevices: Bool {
         switch self {
         case .fast:

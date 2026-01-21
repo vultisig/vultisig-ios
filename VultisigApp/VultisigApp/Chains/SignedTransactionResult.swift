@@ -43,7 +43,7 @@ enum SignedTransactionType {
 
     var approveTransactionHash: String? {
         switch self {
-        case .regular(_):
+        case .regular:
             return nil
         case .regularWithApprove(let approve, _):
             return approve.transactionHash

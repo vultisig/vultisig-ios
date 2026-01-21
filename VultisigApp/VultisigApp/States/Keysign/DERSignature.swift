@@ -9,7 +9,7 @@ import Foundation
 import BigInt
 
 func encodeCanonicalDERSignature(r: [UInt8], s: [UInt8]) -> Data {
-    let curveOrder = Data(hex:"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141")
+    let curveOrder = Data(hex: "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141")
     func derInteger(_ value: Data) -> Data {
         var value = value
         

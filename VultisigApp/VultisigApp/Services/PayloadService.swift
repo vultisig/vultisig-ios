@@ -13,13 +13,13 @@ enum PayloadServiceError: Error {
 final class PayloadService {
     internal let serverURL: String
     
-    init(serverURL: String){
+    init(serverURL: String) {
         self.serverURL = serverURL
     }
-    func getUrl(hash: String) -> String{
+    func getUrl(hash: String) -> String {
         return "\(serverURL)/payload/\(hash)"
     }
-    func shouldUploadToRelay(payload: String)-> Bool {
+    func shouldUploadToRelay(payload: String) -> Bool {
         // when the payload is m
         if payload.lengthOfBytes(using: .utf8) > 2048 {
             return true
@@ -34,7 +34,7 @@ final class PayloadService {
             throw PayloadServiceError.NetworkError(message: "invalid url: \(urlStr)")
         }
         
-        var request = URLRequest(url:url)
+        var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.httpBody = payload.data(using: .utf8)
         let (_,resp) = try await URLSession.shared.data(for: request)
@@ -52,7 +52,7 @@ final class PayloadService {
             throw PayloadServiceError.NetworkError(message: "invalid url: \(urlStr)")
         }
         
-        var request = URLRequest(url:url)
+        var request = URLRequest(url: url)
         request.httpMethod = "GET"
         let (data,resp) = try await URLSession.shared.data(for: request)
         if let httpResponse = resp as? HTTPURLResponse {
@@ -60,6 +60,6 @@ final class PayloadService {
                 throw PayloadServiceError.NetworkError(message: "fail to get payload to relay server")
             }
         }
-        return String(data:data,encoding: .utf8) ?? ""
+        return String(data: data,encoding: .utf8) ?? ""
     }
 }

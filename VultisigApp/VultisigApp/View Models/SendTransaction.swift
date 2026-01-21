@@ -3,8 +3,6 @@ import OSLog
 import SwiftUI
 import VultisigCommonData
 
-
-
 import UniformTypeIdentifiers
 import WalletCore
 import BigInt
@@ -104,7 +102,6 @@ class SendTransaction: ObservableObject, Hashable {
         errorMessage = "unableToVerifyGasTokenError".localized
         return (false, errorMessage)
     }
-    
     
     func getNativeTokenBalance() async -> String {
         guard !coin.isNativeToken else { return .zero }

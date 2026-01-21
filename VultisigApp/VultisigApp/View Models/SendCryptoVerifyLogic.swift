@@ -114,7 +114,7 @@ struct SendCryptoVerifyLogic {
         // Force fresh UTXO fetch for fee calculation (ONLY for UTXO chains, not Cardano)
         if tx.coin.chain.chainType == .UTXO {
             await BlockchairService.shared.clearUTXOCache(for: tx.coin)
-            let _ = try await BlockchairService.shared.fetchBlockchairData(coin: tx.coin.toCoinMeta(), address: tx.coin.address)
+            _ = try await BlockchairService.shared.fetchBlockchairData(coin: tx.coin.toCoinMeta(), address: tx.coin.address)
         }
         // Cardano uses CardanoService.getUTXOs() which is called inside KeysignPayloadFactory
         

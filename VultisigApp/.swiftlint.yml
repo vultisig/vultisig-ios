@@ -16,3 +16,4 @@ disabled_rules:
   - nesting
   - inclusive_language
   - for_where
+  - unused_optional_binding

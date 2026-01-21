@@ -223,7 +223,6 @@ final class ExtensionMemoServiceTests: XCTestCase {
         
         print("\n🚀 Real-World DEX Memo Integration Test:")
         
-        
         for (index, testCase) in realWorldMemos.enumerated() {
             let decoded = testCase.memo.decodedExtensionMemo
             

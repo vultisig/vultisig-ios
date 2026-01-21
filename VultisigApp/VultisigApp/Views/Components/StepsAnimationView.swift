@@ -135,7 +135,7 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
     }
     
     private func setData() {
-        showCells.enumerated().forEach { index, _ in
+        showCells.indices.forEach { index in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1 * (Double(index) + 1)) {
                 showCells[index] = true
             }

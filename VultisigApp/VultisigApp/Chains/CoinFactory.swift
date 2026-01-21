@@ -76,7 +76,7 @@ struct CoinFactory {
             address = try createCardanoEnterpriseAddress(spendingKeyHex: publicKeyEdDSA)
             
             // Validate Cardano address using WalletCore's own validation
-            guard let _ = AnyAddress(string: address, coin: .cardano) else {
+            guard AnyAddress(string: address, coin: .cardano) != nil else {
                 throw Errors.invalidPublicKey(pubKey: "WalletCore validation failed for Cardano address: \(address)")
             }
         default:
@@ -103,8 +103,6 @@ extension CoinFactory {
             }
         }
     }
-    
-    
     
     static func publicKey(
         chain: Chain,
@@ -162,4 +160,3 @@ extension CoinFactory {
     }
     
 }
-

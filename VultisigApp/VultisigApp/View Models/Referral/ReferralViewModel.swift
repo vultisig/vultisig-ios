@@ -188,7 +188,7 @@ class ReferralViewModel: ObservableObject {
         }
     }
     
-    func loadGasInfoForSending(tx: SendTransaction) async{
+    func loadGasInfoForSending(tx: SendTransaction) async {
         do {
             let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
             tx.gas = chainSpecific.gas
@@ -206,8 +206,7 @@ class ReferralViewModel: ObservableObject {
         
         showReferralAlert = false
         referralAlertMessage = ""
-        
-        
+
         nativeCoin = nil
         registrationFee = 0
         feePerBlock = 0

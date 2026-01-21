@@ -159,7 +159,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             
             participantDiscovery.$peersFound
                 .removeDuplicates()
-                .filter{!$0.isEmpty}
+                .filter { !$0.isEmpty }
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] in
                 guard let self else { return }
@@ -239,7 +239,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.participantDiscovery?.stop()
     }
     
-    func restartParticipantDiscovery(){
+    func restartParticipantDiscovery() {
         self.participantDiscovery?.stop()
         if VultisigRelay.IsRelayEnabled {
             serverAddr = Endpoint.vultisigRelay

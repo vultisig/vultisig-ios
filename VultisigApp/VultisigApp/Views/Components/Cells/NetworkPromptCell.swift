@@ -11,7 +11,6 @@ struct NetworkPromptCell: View {
     let network: NetworkPromptType
     let isSelected: Bool
     
-    
     var body: some View {
         content
     }
@@ -47,7 +46,7 @@ struct NetworkPromptCell: View {
         .padding(.vertical, 12)
         .background(isSelected ? Theme.colors.border : Theme.colors.bgSurface2)
         .cornerRadius(20)
-        .overlay (
+        .overlay(
             RoundedRectangle(cornerRadius: 20)
                 .stroke(Theme.colors.textPrimary, lineWidth: 2)
                 .opacity(isSelected ? 1 : 0)

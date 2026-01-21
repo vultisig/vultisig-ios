@@ -5,7 +5,6 @@
 //  Created by Johnny Luo on 12/12/2024.
 //
 
-
 import Foundation
 import goschnorr
 import OSLog
@@ -25,7 +24,7 @@ final class SchnorrKeysign {
     var messenger: DKLSMessenger? = nil
     var cache = NSCache<NSString, AnyObject>()
     var signatures = [String: TssKeysignResponse]()
-    var keyshare:[UInt8] = []
+    var keyshare: [UInt8] = []
     
     init(keysignCommittee: [String],
          mediatorURL: String,
@@ -129,7 +128,6 @@ final class SchnorrKeysign {
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len))).toHexString()
     }
     
-    
     func getOutboundMessageReceiver(handle: goschnorr.Handle,message: goschnorr.go_slice,idx: UInt32) -> [UInt8] {
         var buf_receiver = goschnorr.tss_buffer()
         defer {
@@ -157,7 +155,7 @@ final class SchnorrKeysign {
         return (result,Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len))))
     }
     
-    func processSchnorrOutboundMessage(handle: goschnorr.Handle) async throws  {
+    func processSchnorrOutboundMessage(handle: goschnorr.Handle) async throws {
         repeat {
             let (result,outboundMessage) = GetSchnorrOutboundMessage(handle: handle)
             if result != LIB_OK {
@@ -169,14 +167,14 @@ final class SchnorrKeysign {
             let message = outboundMessage.to_dkls_goslice()
             let encodedOutboundMessage = outboundMessage.toBase64()
             for i in 0..<self.keysignCommittee.count {
-                let receiverArray = getOutboundMessageReceiver(handle:handle,
+                let receiverArray = getOutboundMessageReceiver(handle: handle,
                                                                message: message,
                                                                idx: UInt32(i))
                 
                 if receiverArray.count == 0 {
                     break
                 }
-                let receiverString = String(bytes:receiverArray,encoding: .utf8)!
+                let receiverString = String(bytes: receiverArray,encoding: .utf8)!
                 print("sending message from \(self.localPartyID) to: \(receiverString), content length:\(encodedOutboundMessage.count)")
                 try await self.messenger?.send(self.localPartyID,
                                          to: receiverString,
@@ -232,7 +230,7 @@ final class SchnorrKeysign {
         return false
     }
     
-    func processInboundMessage(handle: goschnorr.Handle,data:Data,messageID: String) async throws -> Bool {
+    func processInboundMessage(handle: goschnorr.Handle,data: Data,messageID: String) async throws -> Bool {
         let decoder = JSONDecoder()
         let msgs = try decoder.decode([Message].self, from: data)
         let sortedMsgs = msgs.sorted(by: { $0.sequence_no < $1.sequence_no })
@@ -266,14 +264,14 @@ final class SchnorrKeysign {
                 throw HelperError.runtimeError("Invalid message slice: length is 0")
             }
             
-            var isFinished:UInt32 = 0
+            var isFinished: UInt32 = 0
             let result = schnorr_sign_session_input_message(handle, &decryptedBodySlice, &isFinished)
             if result != LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to schnorr session, error code: \(result)")
             }
             self.cache.setObject(NSObject(), forKey: key)
-            try await deleteMessageFromServer(hash: msg.hash,messageID:messageID)
-            try await self.processSchnorrOutboundMessage(handle:handle)
+            try await deleteMessageFromServer(hash: msg.hash,messageID: messageID)
+            try await self.processSchnorrOutboundMessage(handle: handle)
             // local party keysign finished
             if isFinished != 0 {
                 return true
@@ -302,10 +300,10 @@ final class SchnorrKeysign {
                                            encryptionKeyHex: self.encryptionKeyHex)
         self.messenger = localMessenger
         do {
-            var keysignSetupMsg:[UInt8]
+            var keysignSetupMsg: [UInt8]
             if self.isInitiateDevice && attempt == 0 {
                 keysignSetupMsg = try getKeysignSetupMessage(message: messageToSign)
-                try await localMessenger.uploadSetupMessage(message:keysignSetupMsg.toBase64(),nil)
+                try await localMessenger.uploadSetupMessage(message: keysignSetupMsg.toBase64(),nil)
             } else {
                 // download the setup message from relay server
                 let strKeysignSetupMsg = try await localMessenger.downloadSetupMessageWithRetry(nil)
@@ -363,11 +361,10 @@ final class SchnorrKeysign {
                 
                 let keySignVerify = KeysignVerify(serverAddr: self.mediatorURL,
                                                   sessionID: self.sessionID)
-                await keySignVerify.markLocalPartyKeysignComplete(message: msgHash, sig:resp)
+                await keySignVerify.markLocalPartyKeysignComplete(message: msgHash, sig: resp)
                 self.signatures[messageToSign] = resp
             }
-        }
-        catch {
+        } catch {
             print("Failed to sign message (\(messageToSign)), error: \(error.localizedDescription)")
             if attempt < 3 {
                 try await KeysignOneMessageWithRetry(attempt: attempt+1, messageToSign: messageToSign)
@@ -375,7 +372,7 @@ final class SchnorrKeysign {
         }
     }
     
-    func SignSessionFinish(handle: goschnorr.Handle) throws -> [UInt8]{
+    func SignSessionFinish(handle: goschnorr.Handle) throws -> [UInt8] {
         var buf = goschnorr.tss_buffer()
         defer {
             goschnorr.tss_buffer_free(&buf)

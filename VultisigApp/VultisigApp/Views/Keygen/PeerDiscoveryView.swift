@@ -187,7 +187,7 @@ struct PeerDiscoveryView: View {
     }
     
     var failureText: some View {
-        VStack{
+        VStack {
             Text(self.viewModel.errorMessage)
                 .font(Theme.fonts.bodyMMedium)
                 .multilineTextAlignment(.center)

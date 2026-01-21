@@ -123,7 +123,7 @@ private extension VultiTabBar {
             stops: [
                 Gradient.Stop(color: Color(red: 0.01, green: 0.07, blue: 0.17), location: 0.50),
                 Gradient.Stop(color: Color(red: 0.01, green: 0.07, blue: 0.17).opacity(0.5), location: 0.85),
-                Gradient.Stop(color: Color(red: 0.01, green: 0.07, blue: 0.17).opacity(0), location: 1.00),
+                Gradient.Stop(color: Color(red: 0.01, green: 0.07, blue: 0.17).opacity(0), location: 1.00)
             ],
             startPoint: UnitPoint(x: 0.5, y: 1),
             endPoint: UnitPoint(x: 0.5, y: 0)

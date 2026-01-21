@@ -47,4 +47,3 @@ enum FunctionCallContractType: String, CaseIterable, Identifiable {
         }
     }
 }
-

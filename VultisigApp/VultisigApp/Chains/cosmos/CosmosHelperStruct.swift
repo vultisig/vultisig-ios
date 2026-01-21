@@ -76,7 +76,7 @@ struct CosmosHelperStruct {
         switch transactionType {
         case .ibcTransfer:
             var memo = ""
-            let splitedMemo = keysignPayload.memo?.split(separator: ":");
+            let splitedMemo = keysignPayload.memo?.split(separator: ":")
             if splitedMemo?.count == 0 {
                 throw HelperError.runtimeError("To send IBC transaction, memo should be specified")
             }
@@ -160,8 +160,7 @@ struct CosmosHelperStruct {
             || keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/")
             || keysignPayload.coin.contractAddress.lowercased().starts(with: "factory/")
             || keysignPayload.coin.contractAddress.lowercased().starts(with: "u")
-            || (keysignPayload.memo?.lowercased().starts(with: "switch:") == true)
-        {
+            || (keysignPayload.memo?.lowercased().starts(with: "switch:") == true) {
          
             let fee = try buildCosmosFee(gas: gas, keysignPayload: keysignPayload)
             let input = CosmosSigningInput.with {
@@ -175,7 +174,7 @@ struct CosmosHelperStruct {
                     $0.memo = memo
                 }
                 $0.messages = [WalletCore.CosmosMessage.with {
-                    $0.sendCoinsMessage = WalletCore.CosmosMessage.Send.with{
+                    $0.sendCoinsMessage = WalletCore.CosmosMessage.Send.with {
                         $0.fromAddress = keysignPayload.coin.address
                         $0.amounts = [CosmosAmount.with {
                             $0.denom = keysignPayload.coin.isNativeToken ? config.denom : keysignPayload.coin.contractAddress
@@ -209,8 +208,7 @@ struct CosmosHelperStruct {
     }
     
     func getSignedTransaction(keysignPayload: KeysignPayload,
-                              signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
-    {
+                              signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let signedTransaction = try getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
         return signedTransaction
@@ -218,8 +216,7 @@ struct CosmosHelperStruct {
     
     func getSignedTransaction(coinHexPublicKey: String,
                               inputData: Data,
-                              signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
-    {
+                              signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         guard let pubkeyData = Data(hexString: coinHexPublicKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {
@@ -317,4 +314,3 @@ struct CosmosHelperStruct {
         CosmosSignDataBuilder.getSigningMode(keysignPayload: keysignPayload)
     }
 }
-

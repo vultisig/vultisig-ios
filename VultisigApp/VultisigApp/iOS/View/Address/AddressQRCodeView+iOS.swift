@@ -9,7 +9,7 @@
 import SwiftUI
 
 extension AddressQRCodeView {
-    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+    private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     
     var content: some View {
         ZStack {

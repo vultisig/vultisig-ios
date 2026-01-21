@@ -4,7 +4,7 @@
 
 import Foundation
 
-enum KeyType : Codable{
+enum KeyType: Codable {
     case ECDSA
     case EdDSA
 }
