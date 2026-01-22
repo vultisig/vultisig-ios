@@ -212,7 +212,7 @@ class JoinKeysignViewModel: ObservableObject {
     func prepareKeysignMessages(keysignPayload: KeysignPayload) {
         do {
             let keysignFactory = KeysignMessageFactory(payload: keysignPayload)
-            let preSignedImageHash = try keysignFactory.getKeysignMessages(vault: vault)
+            let preSignedImageHash = try keysignFactory.getKeysignMessages()
             self.logger.info("Successfully prepared messages for keysigning.")
             self.keysignMessages = preSignedImageHash.sorted()
             if self.keysignMessages.isEmpty {

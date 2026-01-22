@@ -101,7 +101,7 @@ struct UTXOTransactionCell: View {
     var amountCell: some View {
         getSummaryCell(
             title: "amount",
-            value: utxoTransactionsService.getAmount(for: transaction, tx: tx)
+            value: utxoTransactionsService.getAmount(for: transaction)
         )
     }
 

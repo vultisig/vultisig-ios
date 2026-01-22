@@ -15,7 +15,7 @@ struct KeysignMessageFactory {
         self.payload = payload
     }
 
-    func getKeysignMessages(vault: Vault) throws -> [String] {
+    func getKeysignMessages() throws -> [String] {
         var messages: [String] = []
 
         if let approvePayload =  payload.approvePayload {

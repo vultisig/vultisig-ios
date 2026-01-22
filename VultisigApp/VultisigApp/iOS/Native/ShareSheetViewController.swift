@@ -79,7 +79,7 @@ private struct ShareSheetViewController: UIViewControllerRepresentable {
 
         return controller
     }
-
+    // swiftlint:disable:next unused_parameter
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: UIViewControllerRepresentableContext<ShareSheetViewController>) {
         // No updates needed
     }

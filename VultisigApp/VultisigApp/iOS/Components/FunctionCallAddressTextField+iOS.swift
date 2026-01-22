@@ -79,7 +79,7 @@ extension FunctionCallAddressTextField {
         )
     }
 
-    private func binding(for key: String) -> Binding<String> {
+    private func binding() -> Binding<String> {
         return Binding(
             get: { self.memo.addressFields[addressKey, default: ""] },
             set: { self.memo.addressFields[addressKey] = $0 }

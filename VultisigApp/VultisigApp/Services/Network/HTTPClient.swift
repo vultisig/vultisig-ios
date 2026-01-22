@@ -55,7 +55,7 @@ public final class HTTPClient: HTTPClientProtocol {
             }
 
             let duration = CFAbsoluteTimeGetCurrent() - startTime
-            logResponse(httpResponse, data: data, duration: duration, target: target)
+            logResponse(httpResponse, data: data, duration: duration)
 
             try validateResponse(httpResponse, data: data, validationType: target.validationType)
 
@@ -63,7 +63,7 @@ public final class HTTPClient: HTTPClientProtocol {
 
         } catch let error as HTTPError {
             let duration = CFAbsoluteTimeGetCurrent() - startTime
-            logError(error, duration: duration, target: target)
+            logError(error, duration: duration)
             throw error
         } catch {
             let duration = CFAbsoluteTimeGetCurrent() - startTime
@@ -86,7 +86,7 @@ public final class HTTPClient: HTTPClientProtocol {
             } else {
                 httpError = HTTPError.networkError(error)
             }
-            logError(httpError, duration: duration, target: target)
+            logError(httpError, duration: duration)
             throw httpError
         }
     }
@@ -271,7 +271,7 @@ private extension HTTPClient {
     }
 
     /// Logs the HTTP response
-    func logResponse(_ response: HTTPURLResponse, data: Data, duration: TimeInterval, target: TargetType) {
+    func logResponse(_ response: HTTPURLResponse, data: Data, duration: TimeInterval) {
         let statusIcon = getStatusIcon(for: response.statusCode)
         let durationMs = Int(duration * 1000)
 
@@ -287,7 +287,7 @@ private extension HTTPClient {
     }
 
     /// Logs HTTP errors
-    func logError(_ error: HTTPError, duration: TimeInterval, target: TargetType) {
+    func logError(_ error: HTTPError, duration: TimeInterval) {
         let durationMs = Int(duration * 1000)
 
         switch error {

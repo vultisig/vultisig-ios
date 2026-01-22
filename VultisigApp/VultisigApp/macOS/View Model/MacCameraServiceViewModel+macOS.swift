@@ -105,6 +105,7 @@ class MacCameraServiceViewModel: NSObject, ObservableObject {
 }
 
 extension MacCameraServiceViewModel: AVCaptureVideoDataOutputSampleBufferDelegate {
+    // swiftlint:disable:next unused_parameter
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
 

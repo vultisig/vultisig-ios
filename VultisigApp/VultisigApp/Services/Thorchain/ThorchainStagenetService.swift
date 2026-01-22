@@ -39,7 +39,7 @@ class ThorchainStagenetService: ThorchainSwapProvider {
                 var logo: String
 
                 do {
-                    let metadata = try await getCosmosTokenMetadata(chain: .thorChainStagenet, denom: balance.denom)
+                    let metadata = try await getCosmosTokenMetadata(denom: balance.denom)
                     ticker = metadata.ticker
                     decimals = metadata.decimals
                     logo = ticker.replacingOccurrences(of: "/", with: "")
@@ -265,8 +265,8 @@ class ThorchainStagenetService: ThorchainSwapProvider {
 
 // MARK: - THORChain Stagenet Pool Prices & Token Metadata
 extension ThorchainStagenetService {
-
-    func fetchYieldTokenPrice(for contract: String) async -> Double? {
+    // swiftlint:disable:next unused_parameter
+    func fetchYieldTokenPrice(for contract: String) -> Double? {
         // Stagenet doesn't support yield tokens (yRUNE, yTCY)
         // Return nil to indicate no price available
         return nil
@@ -275,7 +275,7 @@ extension ThorchainStagenetService {
     func getAssetPriceInUSD(assetName: String) async -> Double {
         let cacheKey = "\(assetName.lowercased())-stagenet-price"
 
-        if let cachedData = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheAssetPrices, timeInSeconds: 60*5) {
+        if let cachedData = Utils.getCachedData(cacheKey: cacheKey, cache: cacheAssetPrices, timeInSeconds: 60*5) {
             return cachedData
         }
 
@@ -335,7 +335,7 @@ extension ThorchainStagenetService {
         return price
     }
 
-    private func getCosmosTokenMetadata(chain: Chain, denom: String) async throws -> CosmosTokenMetadata {
+    private func getCosmosTokenMetadata(denom: String) async throws -> CosmosTokenMetadata {
         guard let metadata = try await getDenomMetaFromLCD(denom: denom) else {
             throw CosmosTokenMetadataError.noDenomMetaAvailable
         }
@@ -596,17 +596,17 @@ extension ThorchainStagenetService {
     }
 
     // MARK: - TCY Staking Methods (Not supported on Stagenet)
-
+    // swiftlint:disable:next unused_parameter
     func fetchTcyStakedAmount(address: String) async -> Decimal {
         // Stagenet doesn't support TCY staking
         return 0
     }
-
+    // swiftlint:disable:next unused_parameter
     func fetchTcyAutoCompoundAmount(address: String) async -> Decimal {
         // Stagenet doesn't support TCY auto-compound
         return 0
     }
-
+    // swiftlint:disable:next unused_parameter
     func fetchMergeAccounts(address: String) async -> [MergeAccountResponse.ResponseData.Node.AccountMerge.MergeAccount] {
         // Stagenet doesn't support merge accounts
         return []

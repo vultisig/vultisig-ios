@@ -22,7 +22,7 @@ enum TonHelper {
             throw HelperError.runtimeError("coin is not TON")
         }
 
-        guard case .Ton(let sequenceNumber, let expireAt, let bounceable, let sendMaxAmount, let jettonAddress, let isActiveDestination) = keysignPayload.chainSpecific else {
+        guard case .Ton(let sequenceNumber, let expireAt, let bounceable, let sendMaxAmount, let jettonAddress, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get Ton chain specific")
         }
 
@@ -35,7 +35,7 @@ enum TonHelper {
         // Check if this is a jetton transfer
         if !jettonAddress.isEmpty {
             // Build jetton transfer
-            transfer = try buildJettonTransfer(keysignPayload: keysignPayload, jettonAddress: jettonAddress, isActiveDestination: isActiveDestination)
+            transfer = try buildJettonTransfer(keysignPayload: keysignPayload, jettonAddress: jettonAddress)
         } else {
 
             // Build native TON transfer
@@ -85,7 +85,7 @@ enum TonHelper {
         return serializedData
     }
 
-    static func buildJettonTransfer(keysignPayload: KeysignPayload, jettonAddress: String, isActiveDestination: Bool) throws -> TheOpenNetworkTransfer {
+    static func buildJettonTransfer(keysignPayload: KeysignPayload, jettonAddress: String) throws -> TheOpenNetworkTransfer {
 
         // Use canonical AnyAddress.description for all TON addresses to match WalletCore expectations
         guard let toAny = AnyAddress(string: keysignPayload.toAddress, coin: .ton) else {

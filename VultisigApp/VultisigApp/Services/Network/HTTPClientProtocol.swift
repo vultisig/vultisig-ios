@@ -30,6 +30,7 @@ public protocol HTTPClientProtocol {
 /// Default implementations for HTTPClientProtocol
 public extension HTTPClientProtocol {
     /// Convenience method to perform request and decode response
+    // swiftlint:disable:next unused_parameter
     func request<T: Decodable>(_ target: TargetType, responseType: T.Type) async throws -> HTTPResponse<T> {
         let response = try await request(target)
 

@@ -39,7 +39,7 @@ class ThorchainService: ThorchainSwapProvider {
                 var logo: String
 
                 do {
-                    let metadata = try await getCosmosTokenMetadata(chain: .thorChain, denom: balance.denom)
+                    let metadata = try await getCosmosTokenMetadata(denom: balance.denom)
                     ticker = metadata.ticker
                     decimals = metadata.decimals
                     logo = ticker.replacingOccurrences(of: "/", with: "")
@@ -460,7 +460,7 @@ extension ThorchainService {
         return positions
     }
 
-    func fetchRujiStakeBalance(thorAddr: String, tokenSymbol: String) async throws -> RujiStakeBalance {
+    func fetchRujiStakeBalance(thorAddr: String) async throws -> RujiStakeBalance {
         let id = "Account:\(thorAddr)".data(using: .utf8)?.base64EncodedString() ?? ""
 
         guard let url = URL(string: Endpoint.fetchThorchainMergedAssets()) else {
@@ -766,7 +766,7 @@ struct CosmosTokenMetadata {
 
 extension ThorchainService {
 
-    private func getCosmosTokenMetadata(chain: Chain, denom: String) async throws -> CosmosTokenMetadata {
+    private func getCosmosTokenMetadata(denom: String) async throws -> CosmosTokenMetadata {
         guard let metadata = try await getDenomMetaFromLCD(denom: denom) else {
             throw CosmosTokenMetadataError.noDenomMetaAvailable
         }
