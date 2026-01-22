@@ -302,8 +302,7 @@ struct TronUnfreezeView: View {
     }
     
     func handleUnfreeze() async {
-        let amountDecimal = amount.toDecimal()
-        guard amountDecimal > 0 else {
+        guard let amountDecimal = amount.parseInput(), amountDecimal > 0 else {
             return
         }
         
