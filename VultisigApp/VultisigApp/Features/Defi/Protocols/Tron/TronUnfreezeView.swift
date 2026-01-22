@@ -32,14 +32,30 @@ struct TronUnfreezeView: View {
     }
 
     var body: some View {
-        ZStack {
-            VaultMainScreenBackground()
-            content
+        content
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+    }
+
+    var content: some View {
+        Screen(
+            title: NSLocalizedString("tronUnfreezeTitle", comment: "Unfreeze TRX"),
+            showNavigationBar: true,
+            backgroundType: .plain
+        ) {
+            ZStack {
+                VStack(spacing: 0) {
+                    scrollableContent
+                    footerView
+                }
+
+                if isLoading {
+                    Theme.colors.bgPrimary.opacity(0.8).ignoresSafeArea()
+                    ProgressView()
+                }
+            }
         }
-        .navigationBarBackButtonHidden(true)
-        #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-        #endif
         .task {
             await loadData()
             await loadFastVaultStatus()
@@ -51,46 +67,6 @@ struct TronUnfreezeView: View {
                 onSubmit: { Task { await handleUnfreeze() } }
             )
         }
-    }
-
-    var content: some View {
-        ZStack {
-            VStack(spacing: 0) {
-                headerView
-                scrollableContent
-                footerView
-            }
-
-            if isLoading {
-                Theme.colors.bgPrimary.opacity(0.8).ignoresSafeArea()
-                ProgressView()
-            }
-        }
-    }
-
-    var headerView: some View {
-        HStack {
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(Theme.fonts.title3)
-                    .foregroundColor(Theme.colors.textPrimary)
-                    .frame(width: 40, height: 40)
-                    .background(Circle().fill(Theme.colors.bgSurface1))
-            }
-
-            Spacer()
-
-            Text(NSLocalizedString("tronUnfreezeTitle", comment: "Unfreeze TRX"))
-                .font(Theme.fonts.bodyLMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
-
-            Spacer()
-
-            Color.clear.frame(width: 40, height: 40)
-        }
-        .padding(TronConstants.Design.horizontalPadding)
     }
 
     var footerView: some View {
