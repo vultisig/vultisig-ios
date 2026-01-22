@@ -275,7 +275,8 @@ struct TronUnfreezeView: View {
     
     func updatePercentage(from amountStr: String) async {
         let balance = frozenBalanceForSelectedType
-        guard let amountDec = Decimal(string: amountStr), balance > 0 else {
+        let amountDec = amountStr.toDecimal()
+        guard amountDec > 0, balance > 0 else {
             await MainActor.run {
                 self.percentage = 0
             }
