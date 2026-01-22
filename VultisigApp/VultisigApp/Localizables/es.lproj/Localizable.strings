@@ -124,7 +124,6 @@
 "createReferralCode" = "Crear código de referencia";
 "createYourCodeAndEarn" = "Crea tu propio código y gana 10 bps en swaps";
 "creatingTssInstance" = "CREANDO INSTANCIA TSS...";
-"creatingVault" = "Creando Bóveda";
 "Croatian" = "Croata";
 "Chinese" = "Chino";
 "currency" = "Moneda";
@@ -514,6 +513,7 @@
 "peerDiscoveryInfoTitle2" = "código QR";
 "peerDiscoveryScanDeviceDisclaimer" = "Escanea el QR con otro dispositivo. Se recomienda una configuración de 3 dispositivos, 2 son suficientes.";
 "pendingRewards" = "Recompensas pendientes";
+"phantomWallet" = "Phantom wallet";
 "photoLibrary" = "Biblioteca";
 "pickPayoutAsset" = "Elige una opción de activo para el pago";
 "pickReferralCode" = "Elige código de referido";
@@ -721,6 +721,7 @@
 "somethingWentWrongTryAgain" = "Algo salió mal, por favor intenta de nuevo.";
 "soon" = "Próximamente";
 "Spanish" = "Español";
+"standardSolanaWallet" = "Standard Solana wallet";
 "start" = "Iniciar";
 "startFastVaultReshare" = "Iniciar compartir con Vultiserver";
 "startFromOneDevice" = "Comience desde un dispositivo";
@@ -1163,7 +1164,7 @@
 "scanningForChainsSubtitleHighlight" = "Este proceso puede tardar hasta 2 minutos.";
 "selectChainsManually" = "Seleccionar cadenas manualmente";
 "noActiveChainsFound" = "No se encontraron chains activas";
-"noActiveChainsFoundSubtitle" = "No detectamos ningún activo en esta frase semilla.\nCada chain adicional aumenta el tiempo para generar tu bóveda y la posibilidad de un tiempo de espera.";
+"noActiveChainsFoundSubtitle" = "No detectamos ningún activo en esta frase semilla.\n\nCada cadena adicional aumenta el tiempo para generar tu bóveda y la posibilidad de timeout.";
 "addCustomChains" = "Agregar chains personalizadas";
 "foundActiveChainsTitle" = "Encontramos %d cadenas activas";
 "foundActiveChainsSubtitle" = "Cada cadena adicional duplica aproximadamente el tiempo para generar tu bóveda. Tiempo estimado para todas las cadenas seleccionadas: %d minutos";
@@ -1224,3 +1225,57 @@
 // Maya Unbond Node Status
 "nodeActiveCannotUnbond" = "El nodo está %@ - no se puede hacer unbond mientras está activo";
 "nodeChurnedCanUnbond" = "El nodo está rotado - unbond disponible";
+
+"seedPhraseImportTip" = "Consejo: Puedes usar un navegador como dispositivo";
+"whereDoYouMigrateFrom" = "¿De dónde migras?";
+
+// Vault Setup Screens
+"yourVaultSetup" = "Tu configuración de bóveda";
+
+// Screen 1 - Fast Vault (2-device setup)
+"vaultSetup1Title" = "Bóveda rápida";
+"vaultSetup1Subtitle" = "Configuración de 2 dispositivos";
+"vaultSetup1Feature1Title" = "Firma de 1 dispositivo";
+"vaultSetup1Feature1Description" = "Firma conveniente con un dispositivo sobre la marcha. Perfecto para transacciones diarias o pequeñas cantidades de trading.";
+"vaultSetup1Feature2Title" = "Configuración rápida y segura";
+"vaultSetup1Feature2Description" = "Sin configuración larga. Solo tu correo y contraseña, más dos copias de seguridad.";
+"vaultSetup1Feature3Title" = "Tú mantienes el control";
+"vaultSetup1Feature3Description" = "Un co-firmante nunca puede iniciar transacciones; solo ayuda a firmarlas.";
+
+// Screen 2 - Secure Vault (2-device vault)
+"vaultSetup2Title" = "Bóveda segura";
+"vaultSetup2Subtitle" = "Bóveda de 2 dispositivos";
+"vaultSetup2Feature1Title" = "Firma de 2 dispositivos";
+"vaultSetup2Feature1Description" = "Cada transacción necesita aprobaciones de ambos dispositivos.";
+"vaultSetup2Feature2Title" = "Sin punto único de fallo";
+"vaultSetup2Feature2Description" = "Un dispositivo solo no puede mover fondos. Si un dispositivo se pierde o se ve comprometido, no puede aprobar por sí solo.";
+"vaultSetup2Feature3Title" = "Ideal para almacenamiento en frío simple";
+"vaultSetup2Feature3Description" = "Configuración perfecta para usuarios con solo 2 dispositivos.";
+
+// Screen 3 - Secure Vault (3-device vault)
+"vaultSetup3Title" = "Bóveda segura";
+"vaultSetup3Subtitle" = "Bóveda de 3 dispositivos";
+"vaultSetup3Feature1Title" = "Firma de 2 dispositivos";
+"vaultSetup3Feature1Description" = "Cada transacción necesita aprobaciones de 2 de tus 3 dispositivos.";
+"vaultSetup3Feature2Title" = "Sin punto único de fallo";
+"vaultSetup3Feature2Description" = "Un dispositivo solo no puede mover fondos. Si un dispositivo se pierde o se ve comprometido, no puede aprobar por sí solo.";
+"vaultSetup3Feature3Title" = "Ideal para almacenamiento en frío";
+"vaultSetup3Feature3Description" = "Balance perfecto para la mayoría de usuarios. 2 firmantes y 1 dispositivo de respaldo. Almacena activos sin estrés.";
+
+// Screen 4 - Secure Vault (4-device vault)
+"vaultSetup4Title" = "Bóveda segura";
+"vaultSetup4Subtitle" = "Bóveda de 4+ dispositivos";
+"vaultSetup4Feature1Title" = "Firma de 3 dispositivos o más";
+"vaultSetup4Feature1Description" = "Las bóvedas necesitan el 67% de los dispositivos para firmar una transacción. Ten tantos firmantes como quieras";
+"vaultSetup4Feature2Title" = "Gestión dinámica de dispositivos";
+"vaultSetup4Feature2Description" = "Agrega tantos dispositivos como quieras y recibe seguridad de grado institucional.";
+"vaultSetup4Feature3Title" = "Construido para equipos y tesorerías";
+"vaultSetup4Feature3Description" = "Ideal para equipos que gestionan fondos compartidos y bóvedas de alto valor, que requieren más firmantes.";
+
+"backupEachDevice" = "Respalda cada dispositivo";
+"backupEachDeviceDescription" = "Este es solo 1 respaldo de tu bóveda, repite este proceso para los otros dispositivos.";
+"backupsDescription" = "En lugar de una sola frase semilla, tu bóveda está asegurada por múltiples dispositivos. Cada dispositivo tiene su propio respaldo. Un respaldo solo no puede mover fondos. Los respaldos son solo para recuperación.";
+"backupsTitle" = "Respaldos, tu nuevo método de recuperación";
+"backupsTitleHighlight" = "Respaldos";
+"storeBackupsSeparately" = "Almacena los respaldos por separado";
+"storeBackupsSeparatelyDescription" = "Guarda cada respaldo en un lugar diferente. Si uno se ve comprometido, tus fondos permanecen seguros.";

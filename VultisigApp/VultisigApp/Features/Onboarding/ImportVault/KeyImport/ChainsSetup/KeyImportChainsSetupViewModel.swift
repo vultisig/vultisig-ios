@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 import WalletCore
 
 enum KeyImportChainsState {
@@ -44,8 +45,10 @@ final class KeyImportChainsSetupViewModel: ObservableObject {
     @Published var selectedChains = [Chain]()
     @Published var activeChains = [KeyImportChain]()
     @Published var otherChains = [KeyImportChain]()
+    @Published var selectedDerivationPath: DerivationPath = .default
 
     private var chainBalanceResults = [ChainBalanceResult]()
+    private let logger = Logger(subsystem: "com.vultisig.VultisigApp", category: "KeyImport")
 
     /// Chains that have alternative derivation paths to check during import.
     /// The array order determines priority when balances are equal (first match wins).
@@ -65,11 +68,41 @@ final class KeyImportChainsSetupViewModel: ObservableObject {
     }
 
     func derivationPath(for chain: Chain) -> DerivationPath {
-        chainBalanceResults.first { $0.chain == chain }?.derivationPath ?? .default
+        // Get all results for this chain
+        let chainResults = chainBalanceResults.filter { $0.chain == chain }
+
+        // If user has manually selected a path, use it
+        if chainResults.contains(where: { $0.derivationPath == selectedDerivationPath }) {
+            return selectedDerivationPath
+        }
+
+        // Otherwise, return the first result (which should be the one with highest balance)
+        return chainResults.first?.derivationPath ?? .default
     }
 
     var solanaderivationPath: DerivationPath {
         derivationPath(for: .solana)
+    }
+
+    /// Checks if a chain has multiple derivation options with balances
+    func hasMultipleDerivations(for chain: Chain) -> Bool {
+        guard let _ = alternativeDerivations[chain] else {
+            return false
+        }
+        // Check if we found multiple balance results for this chain during scanning
+        return chainBalanceResults.filter { $0.chain == chain }.count > 1
+    }
+
+    /// Updates the derivation path for a specific chain
+    func selectDerivationPath(_ path: DerivationPath, for chain: Chain) {
+        // Find the chain balance result and update it
+        if let index = chainBalanceResults.firstIndex(where: { $0.chain == chain && $0.derivationPath == path }) {
+            // Move this result to be the primary one by ensuring it's first
+            let result = chainBalanceResults[index]
+            chainBalanceResults.remove(at: index)
+            chainBalanceResults.insert(result, at: 0)
+        }
+        selectedDerivationPath = path
     }
 
     var screenTitle: String {
@@ -118,25 +151,37 @@ final class KeyImportChainsSetupViewModel: ObservableObject {
     }
 
     func fetchActiveChains(mnemonic: String) async -> [KeyImportChain] {
+        logger.info("🚀 Starting active chains discovery...")
+
         guard let wallet = createWallet(from: mnemonic) else {
+            logger.error("❌ Failed to create wallet from mnemonic")
             return []
         }
 
         let groupedByChain = groupTokensByChain()
+        logger.info("📋 Scanning \(groupedByChain.count) chains for balances")
+
         let results = await fetchBalancesForChains(groupedByChain: groupedByChain, wallet: wallet)
-        guard !Task.isCancelled else { return [] }
+        guard !Task.isCancelled else {
+            logger.warning("⚠️ Fetch cancelled")
+            return []
+        }
 
         // Store results to access derivation types later
         await MainActor.run {
             self.chainBalanceResults = results
         }
 
+        logger.info("💵 Fetching current prices for tokens...")
         await fetchPricesForTokens(results: results)
 
         let chainBalances = calculateChainFiatBalances(results: results)
         let sortedChains = sortChainsByBalance(chainBalances: chainBalances)
 
-        return topChainsAsKeyImportChains(sortedChains: sortedChains)
+        let activeChains = topChainsAsKeyImportChains(sortedChains: sortedChains)
+        logger.info("✨ Discovery complete! Found \(activeChains.count) active chain(s)")
+
+        return activeChains
     }
 
     func isSelected(chain: Chain) -> Bool {
@@ -163,7 +208,7 @@ final class KeyImportChainsSetupViewModel: ObservableObject {
 private extension KeyImportChainsSetupViewModel {
     func createWallet(from mnemonic: String) -> HDWallet? {
         guard let wallet = HDWallet(mnemonic: mnemonic, passphrase: "") else {
-            print("Failed to create HDWallet from mnemonic")
+            logger.error("Failed to create HDWallet from mnemonic")
             return nil
         }
         return wallet
@@ -178,16 +223,25 @@ private extension KeyImportChainsSetupViewModel {
         wallet: HDWallet
     ) async -> [ChainBalanceResult] {
         var results = [ChainBalanceResult]()
+        let totalChains = groupedByChain.count
+        var processedChains = 0
+
+        logger.info("📊 Starting balance fetch for \(totalChains) chains")
 
         for (chain, tokens) in groupedByChain {
-            guard !Task.isCancelled else { return [] }
-
-            let result = await fetchBalancesForChain(chain: chain, tokens: tokens, wallet: wallet)
-            if !result.tokens.isEmpty {
-                results.append(result)
+            guard !Task.isCancelled else {
+                logger.warning("⚠️ Balance fetch cancelled after \(processedChains)/\(totalChains) chains")
+                return []
             }
+
+            let chainResults = await fetchBalancesForChain(chain: chain, tokens: tokens, wallet: wallet)
+            results.append(contentsOf: chainResults)
+
+            processedChains += 1
+            logger.debug("✅ Completed \(processedChains)/\(totalChains) chains")
         }
 
+        logger.info("🎉 Finished balance fetch for all chains. Found balances on \(results.count) derivation paths")
         return results
     }
 
@@ -195,45 +249,62 @@ private extension KeyImportChainsSetupViewModel {
         chain: Chain,
         tokens: [CoinMeta],
         wallet: HDWallet
-    ) async -> ChainBalanceResult {
+    ) async -> [ChainBalanceResult] {
+        let startTime = Date()
+        let alternativeCount = alternativeDerivations[chain]?.count ?? 0
+        let totalDerivations = 1 + alternativeCount // default + alternatives
+
+        logger.debug("🔍 [\(chain.ticker)] Starting balance check for \(totalDerivations) derivation path(s)")
+
         var derivationResults = [DerivationBalanceResult]()
 
         // Check default derivation
         let defaultAddress = wallet.getAddressForCoin(coin: chain.coinType).description
+        logger.debug("   📍 [\(chain.ticker)] Checking default derivation: \(defaultAddress)")
         let defaultResult = await fetchBalancesForDerivation(
             address: defaultAddress,
             tokens: tokens,
             derivationPath: nil
         )
         derivationResults.append(defaultResult)
+        logger.debug("   💰 [\(chain.ticker)] Default balance: $\(defaultResult.fiatBalance)")
 
         // Check all alternative derivations for this chain
         if let alternatives = alternativeDerivations[chain] {
             for option in alternatives {
                 let address = wallet.getAddressDerivation(coin: chain.coinType, derivation: option.derivation)
+                logger.debug("   📍 [\(chain.ticker)] Checking \(option.derivationPath.rawValue) derivation: \(address)")
                 let result = await fetchBalancesForDerivation(
                     address: address,
                     tokens: tokens,
                     derivationPath: option.derivationPath
                 )
                 derivationResults.append(result)
+                logger.debug("   💰 [\(chain.ticker)] \(option.derivationPath.rawValue) balance: $\(result.fiatBalance)")
             }
         }
 
-        // Find the derivation with the highest balance
-        let bestResult = derivationResults.max { $0.fiatBalance < $1.fiatBalance }
+        // Filter results to only those with balances
+        let resultsWithBalance = derivationResults.filter { $0.fiatBalance > 0 }
 
-        guard let best = bestResult else {
-            return ChainBalanceResult(chain: chain, tokens: [], derivationPath: nil)
+        let elapsed = Date().timeIntervalSince(startTime)
+
+        // If no derivations have balance, return empty array
+        guard !resultsWithBalance.isEmpty else {
+            logger.debug("❌ [\(chain.ticker)] No balance found on any derivation path (took \(String(format: "%.2f", elapsed))s)")
+            return []
         }
 
-        // If best has balance, use it; otherwise check if any has balance
-        if best.fiatBalance > 0 {
-            return ChainBalanceResult(chain: chain, tokens: best.tokens, derivationPath: best.derivationPath)
-        }
+        logger.info("✅ [\(chain.ticker)] Found balance on \(resultsWithBalance.count)/\(totalDerivations) derivation path(s) (took \(String(format: "%.2f", elapsed))s)")
 
-        // No balance on any derivation - return default
-        return ChainBalanceResult(chain: chain, tokens: [], derivationPath: nil)
+        // Convert all derivation results with balances to ChainBalanceResults
+        return resultsWithBalance.map { result in
+            ChainBalanceResult(
+                chain: chain,
+                tokens: result.tokens,
+                derivationPath: result.derivationPath
+            )
+        }
     }
 
     func fetchBalancesForDerivation(
@@ -270,7 +341,7 @@ private extension KeyImportChainsSetupViewModel {
             return uniqueTokens
         } catch {
             // If fetching discovered tokens fails, return original tokens
-            print("Failed to fetch discovered tokens for \(nativeToken.chain): \(error.localizedDescription)")
+            logger.warning("Failed to fetch discovered tokens for \(nativeToken.chain.name): \(error.localizedDescription)")
             return tokens
         }
     }
@@ -309,13 +380,19 @@ private extension KeyImportChainsSetupViewModel {
     func calculateChainFiatBalances(
         results: [ChainBalanceResult]
     ) -> [(chain: Chain, fiatBalance: Decimal)] {
+        // Group results by chain
+        let groupedByChain = Dictionary(grouping: results) { $0.chain }
+
         var chainBalances: [(chain: Chain, fiatBalance: Decimal)] = []
 
-        for result in results {
-            let totalFiatBalance = calculateTotalFiatBalance(for: result.tokens)
+        for (chain, chainResults) in groupedByChain {
+            // For each chain, calculate balances for all derivations and take the max
+            let balances = chainResults.map { result in
+                calculateTotalFiatBalance(for: result.tokens)
+            }
 
-            if totalFiatBalance > 0 {
-                chainBalances.append((result.chain, totalFiatBalance))
+            if let maxBalance = balances.max(), maxBalance > 0 {
+                chainBalances.append((chain, maxBalance))
             }
         }
 

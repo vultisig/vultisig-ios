@@ -134,7 +134,8 @@ struct NewWalletNameView: View {
                 vault: vault,
                 selectedTab: selectedTab,
                 fastSignConfig: nil,
-                keyImportInput: nil
+                keyImportInput: nil,
+                setupType: nil
             ))
         }
     }

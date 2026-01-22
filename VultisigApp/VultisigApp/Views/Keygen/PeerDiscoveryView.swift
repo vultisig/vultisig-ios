@@ -12,19 +12,22 @@ struct PeerDiscoveryView: View {
     let selectedTab: SetupVaultState
     let fastSignConfig: FastSignConfig?
     let keyImportInput: KeyImportInput?
+    let setupType: KeyImportSetupType?
 
     init(
         tssType: TssType,
         vault: Vault,
         selectedTab: SetupVaultState,
         fastSignConfig: FastSignConfig?,
-        keyImportInput: KeyImportInput? = nil
+        keyImportInput: KeyImportInput? = nil,
+        setupType: KeyImportSetupType? = nil
     ) {
         self.tssType = tssType
         self.vault = vault
         self.selectedTab = selectedTab
         self.fastSignConfig = fastSignConfig
         self.keyImportInput = keyImportInput
+        self.setupType = setupType
     }
 
     @StateObject var viewModel = KeygenPeerDiscoveryViewModel()
@@ -165,7 +168,24 @@ struct PeerDiscoveryView: View {
         case .Migrate:
             return Set(viewModel.selections) != Set(viewModel.vault.signers)
         case .KeyImport:
-            return viewModel.selections.count != 3
+            return showWaitingOnDevice
+        }
+    }
+
+    var showWaitingOnDevice: Bool {
+        // Key import requires setupType, and this screen shouldn't be shown for fast
+        guard
+            let setupType,
+            case let .secure(numberOfDevices) = setupType
+        else {
+            return false
+        }
+
+        switch numberOfDevices {
+        case 0...3:
+            return viewModel.selections.count != numberOfDevices
+        default:
+            return viewModel.selections.count < numberOfDevices
         }
     }
 
@@ -237,7 +257,7 @@ struct PeerDiscoveryView: View {
         } else if tssType == .Migrate {
             return ""
         } else {
-            return "creatingVault"
+            return ""
         }
     }
 }
