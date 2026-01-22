@@ -10,12 +10,13 @@ import SwiftUI
 struct VaultSetupScreen: View {
     let tssType: TssType
     let keyImportInput: KeyImportInput?
+    let setupType: KeyImportSetupType
 
     enum FocusedField {
         case name, referral, email, password, passwordConfirm, hint
     }
 
-    @StateObject var viewModel = VaultSetupViewModel()
+    @StateObject var viewModel: VaultSetupViewModel
 
     @State var scrollViewProxy: ScrollViewProxy?
     @State var focusedFieldBinding: FocusedField? = .none
@@ -24,9 +25,11 @@ struct VaultSetupScreen: View {
     @State var referralExpanded = false
     @Environment(\.router) var router
 
-    init(tssType: TssType, keyImportInput: KeyImportInput?) {
+    init(tssType: TssType, keyImportInput: KeyImportInput?, setupType: KeyImportSetupType? = nil) {
         self.tssType = tssType
         self.keyImportInput = keyImportInput
+        self.setupType = setupType ?? .fast
+        _viewModel = StateObject(wrappedValue: VaultSetupViewModel(setupType: setupType ?? .fast))
     }
 
     var body: some View {
@@ -37,8 +40,11 @@ struct VaultSetupScreen: View {
             onContinue: onContinue
         ) {
             nameSection
-            emailSection
-            passwordSection
+
+            if viewModel.showFastSignFields {
+                emailSection
+                passwordSection
+            }
         }
         .onLoad {
             focusedFieldBinding = .name
@@ -196,24 +202,27 @@ struct VaultSetupScreen: View {
     }
 
     func onContinue() {
-        switch focusedField {
-        case .name, .referral:
-            focusedFieldBinding = .email
-        case .email:
-            focusedFieldBinding = .password
-        case .password:
-            focusedFieldBinding = .passwordConfirm
-        case .passwordConfirm, .hint:
-            break
-        case nil:
-            return
+        if viewModel.showFastSignFields {
+            switch focusedField {
+            case .name, .referral:
+                focusedFieldBinding = .email
+            case .email:
+                focusedFieldBinding = .password
+            case .password:
+                focusedFieldBinding = .passwordConfirm
+            case .passwordConfirm, .hint:
+                break
+            case nil:
+                break
+            }
         }
 
         guard viewModel.validForm else { return }
         router.navigate(to: OnboardingRoute.keyImportNewVaultSetup(
             vault: viewModel.getVault(keyImportInput: keyImportInput),
             keyImportInput: keyImportInput,
-            fastSignConfig: viewModel.fastConfig
+            fastSignConfig: viewModel.showFastSignFields ? viewModel.fastConfig : nil,
+            setupType: setupType
         ))
     }
 }

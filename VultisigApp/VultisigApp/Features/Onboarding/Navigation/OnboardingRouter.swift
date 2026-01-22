@@ -13,17 +13,20 @@ struct OnboardingRouter {
     @ViewBuilder
     func build(_ route: OnboardingRoute) -> some View {
         switch route {
-        case .vaultSetup(let tssType, let keyImportInput):
-            viewBuilder.buildVaultSetupScreen(tssType: tssType, keyImportInput: keyImportInput)
-        case .importSeedphrase:
-            viewBuilder.buildImportSeedphraseScreen()
+        case .vaultSetup(let tssType, let keyImportInput, let setupType):
+            viewBuilder.buildVaultSetupScreen(tssType: tssType, keyImportInput: keyImportInput, setupType: setupType)
+        case .importSeedphrase(let keyImportInput):
+            viewBuilder.buildImportSeedphraseScreen(keyImportInput: keyImportInput)
         case .chainsSetup(let mnemonic):
             viewBuilder.buildChainsSetupScreen(mnemonic: mnemonic)
-        case .keyImportNewVaultSetup(let vault, let keyImportInput, let fastSignConfig):
+        case .keyImportDeviceCount(let mnemonic, let chainSettings):
+            viewBuilder.buildKeyImportDeviceCountScreen(mnemonic: mnemonic, chainSettings: chainSettings)
+        case .keyImportNewVaultSetup(let vault, let keyImportInput, let fastSignConfig, let setupType):
             viewBuilder.buildKeyImportNewVaultSetupScreen(
                 vault: vault,
                 keyImportInput: keyImportInput,
-                fastSignConfig: fastSignConfig
+                fastSignConfig: fastSignConfig,
+                setupType: setupType
             )
         case .keyImportOnboarding:
             viewBuilder.buildKeyImportOnboardingScreen()

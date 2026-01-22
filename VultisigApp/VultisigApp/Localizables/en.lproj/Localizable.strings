@@ -124,7 +124,6 @@
 "createReferralCode" = "Create referral code";
 "createYourCodeAndEarn" = "Create your own code and earn %@ on referred swaps";
 "creatingTssInstance" = "CREATING TSS INSTANCE...";
-"creatingVault" = "Creating Vault";
 "Croatian" = "Croatian";
 "Chinese" = "Chinese";
 "currency" = "Currency";
@@ -150,6 +149,13 @@
 "devicesOnSameNetwork" = "Connect all devices to the same\nNetwork with Vultisig App open.";
 "devicesOnSameWifi" = "Keep devices on the same network with Vultisig open.";
 "devicesOnSameWifiNoHotel" = "Keep all devices on same network with Vultisig App open. (May not work on hotel/airport wifi).";
+"deviceSetup" = "Device Setup";
+"howManyDevicesTitle" = "How many devices will you use?";
+"howManyDevicesSubtitle" = "Select the number of devices you'll use to secure your vault";
+"oneDevicePlusServer" = "1 Device + Server";
+"oneDevicePlusServerSubtitle" = "Fast setup with server backup for quick access";
+"nDevicesSetup" = "%d Devices";
+"nDevicesSetupSubtitle" = "Secure multi-device setup for enhanced protection";
 "discord" = "Discord";
 "discoveringMediator" = "Discovering mediator service, please wait...";
 "dismiss" = "Dismiss";
@@ -514,6 +520,7 @@
 "peerDiscoveryInfoTitle2" = "QR code";
 "peerDiscoveryScanDeviceDisclaimer" = "Scan QR with other device. 3-device setup recommended, 2 is sufficient.";
 "pendingRewards" = "Pending Rewards";
+"phantomWallet" = "Phantom wallet";
 "photoLibrary" = "Photo Library";
 "pickPayoutAsset" = "Please pick a payout asset option from the selection";
 "pickReferralCode" = "Pick Referral Code";
@@ -720,6 +727,7 @@
 "somethingWentWrongTryAgain" = "Something went wrong, please try again.";
 "soon" = "SOON";
 "Spanish" = "Spanish";
+"standardSolanaWallet" = "Standard Solana wallet";
 "start" = "Start";
 "startFastVaultReshare" = "Start Reshare with Vultiserver";
 "startFromOneDevice" = "START from one device";
@@ -1196,7 +1204,7 @@
 
 "selectChainsManually" = "Select chains manually";
 "noActiveChainsFound" = "No active chains found";
-"noActiveChainsFoundSubtitle" = "We didn’t detect any assets on this seed phrase.\nEach extra chain increases the time to generate your vault and possibility of an timeout.";
+"noActiveChainsFoundSubtitle" = "We didn’t detect any assets on this seed phrase.\n\nEach extra chain increases the time to generate your vault and possibility of a timeout.";
 "addCustomChains" = "Add custom chains";
 
 "yourNewVaultSetup" = "Your new vault setup";
@@ -1254,4 +1262,58 @@
 // Maya Unbond Node Status
 "nodeActiveCannotUnbond" = "Node is %@ - cannot unbond while active";
 "nodeChurnedCanUnbond" = "Node is churned out - unbonding available";
+
+"seedPhraseImportTip" = "Tip: You can use a browser as a device";
+"whereDoYouMigrateFrom" = "Where do you migrate from";
+
+// Vault Setup Screens
+"yourVaultSetup" = "Your vault setup";
+
+// Screen 1 - Fast Vault (2-device setup)
+"vaultSetup1Title" = "Fast Vault";
+"vaultSetup1Subtitle" = "2-device setup";
+"vaultSetup1Feature1Title" = "1-Device Signing";
+"vaultSetup1Feature1Description" = "Convenient one-device signing on the go. Perfect for daily transactions or trading smaller amounts.";
+"vaultSetup1Feature2Title" = "Fast and Secure Setup";
+"vaultSetup1Feature2Description" = "No long setup. Just your email and password, plus two backups.";
+"vaultSetup1Feature3Title" = "You stay in control";
+"vaultSetup1Feature3Description" = "A co-signer can never initiate transactions; only assists with signing them.";
+
+// Screen 2 - Secure Vault (2-device vault)
+"vaultSetup2Title" = "Secure Vault";
+"vaultSetup2Subtitle" = "2-device vault";
+"vaultSetup2Feature1Title" = "2-Device Signing";
+"vaultSetup2Feature1Description" = "Every transaction needs approvals from both of your 2 devices.";
+"vaultSetup2Feature2Title" = "No single point of failure";
+"vaultSetup2Feature2Description" = "One device alone can't move funds. If one device is lost or exposed, it can't approve on its own.";
+"vaultSetup2Feature3Title" = "Ideal for simple cold storage";
+"vaultSetup2Feature3Description" = "Perfect setup for users with only 2 devices.";
+
+// Screen 3 - Secure Vault (3-device vault)
+"vaultSetup3Title" = "Secure Vault";
+"vaultSetup3Subtitle" = "3-device vault";
+"vaultSetup3Feature1Title" = "2-Device Signing";
+"vaultSetup3Feature1Description" = "Every transaction needs approvals from 2 of your 3 devices.";
+"vaultSetup3Feature2Title" = "No single point of failure";
+"vaultSetup3Feature2Description" = "One device alone can't move funds. If one device is lost or exposed, it can't approve on its own.";
+"vaultSetup3Feature3Title" = "Ideal for cold storage";
+"vaultSetup3Feature3Description" = "Perfect balance for most users. 2 signers and 1 backup device. Store assets without stress.";
+
+// Screen 4 - Secure Vault (4+-device vault)
+"vaultSetup4Title" = "Secure Vault";
+"vaultSetup4Subtitle" = "4+-device vault";
+"vaultSetup4Feature1Title" = "3-Device or more Signing";
+"vaultSetup4Feature1Description" = "Vaults need 67% of devices to sign a transaction. Have as many signers as you want";
+"vaultSetup4Feature2Title" = "Dynamic device management";
+"vaultSetup4Feature2Description" = "Add as many devices as you want and receive institutional-grade security.";
+"vaultSetup4Feature3Title" = "Built for teams and treasuries";
+"vaultSetup4Feature3Description" = "Ideal for teams managing shared funds and higher-value vaults, which require more signers.";
+
+"backupEachDevice" = "Back up each device";
+"backupEachDeviceDescription" = "This is only 1 backup of your vault, repeat this process for the other devices.";
+"backupsDescription" = "Instead of a single seed phrase, your vault is secured by multiple devices. Each device has its own backup. A backup on its own can't move funds. Backups are only for recovery.";
+"backupsTitle" = "Backups, your new recovery method";
+"backupsTitleHighlight" = "Backups";
+"storeBackupsSeparately" = "Store backups separately";
+"storeBackupsSeparatelyDescription" = "Keep each backup in a different place. If one is compromised, your funds stay safe.";
 "message" = "Message";

@@ -24,7 +24,6 @@ struct KeyImportNoActiveChainsView: View {
                 Text("noActiveChainsFoundSubtitle".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
-                    .frame(maxWidth: 300)
                     .multilineTextAlignment(.center)
             }
             PrimaryButton(
