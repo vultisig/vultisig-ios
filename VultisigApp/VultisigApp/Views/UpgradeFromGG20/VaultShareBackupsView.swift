@@ -57,7 +57,8 @@ struct VaultShareBackupsView: View {
                 vault: vault,
                 selectedTab: .secure,
                 fastSignConfig: nil,
-                keyImportInput: nil
+                keyImportInput: nil,
+                setupType: nil
             ))
         }
         .frame(width: 120)
