@@ -55,7 +55,6 @@ final class BlockChainService {
     private let cardano = CardanoService.shared
     private var localCache = ThreadSafeDictionary<String, BlockSpecificCacheItem>()
 
-    /// Clear cache for a specific address to force fresh nonce fetch
     func clearCacheForAddress() {
         localCache.clear()
     }

@@ -228,7 +228,7 @@ private extension HTTPClient {
     /// Validates HTTP response based on validation type
     func validateResponse(_ response: HTTPURLResponse, data: Data, validationType: ValidationType) throws {
         switch validationType {
-        case .NoValiation:
+        case .noValidation:
             break
 
         case .successCodes:
