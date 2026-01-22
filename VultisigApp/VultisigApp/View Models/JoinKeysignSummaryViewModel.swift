@@ -25,7 +25,7 @@ class JoinKeysignSummaryViewModel {
         return keysignPayload?.approvePayload?.spender ?? .empty
     }
 
-    func getAmount(_ keysignPayload: KeysignPayload?, selectedCurrency: SettingsCurrency) -> String {
+    func getAmount(_ keysignPayload: KeysignPayload?) -> String {
         guard let fromCoin = keysignPayload?.coin, let amount = keysignPayload?.approvePayload?.amount else {
             return .empty
         }

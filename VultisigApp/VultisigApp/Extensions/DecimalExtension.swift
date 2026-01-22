@@ -19,7 +19,7 @@ extension Decimal {
     }
 
     /// Base method for formatting fiat values with configurable decimal places
-    private func formatToFiat(includeCurrencySymbol: Bool = true, useAbbreviation: Bool = false, maximumFractionDigits: Int) -> String {
+    private func formatToFiat(includeCurrencySymbol: Bool = true, maximumFractionDigits: Int) -> String {
         let formatter = NumberFormatter()
         if includeCurrencySymbol {
             formatter.numberStyle = .currency
@@ -38,13 +38,13 @@ extension Decimal {
     }
 
     /// Format fiat value with standard 2 decimal places
-    func formatToFiat(includeCurrencySymbol: Bool = true, useAbbreviation: Bool = false) -> String {
-        return formatToFiat(includeCurrencySymbol: includeCurrencySymbol, useAbbreviation: useAbbreviation, maximumFractionDigits: 2)
+    func formatToFiat(includeCurrencySymbol: Bool = true) -> String {
+        return formatToFiat(includeCurrencySymbol: includeCurrencySymbol, maximumFractionDigits: 2)
     }
 
     /// Format fiat value for fee display with more decimal places to show small fees
     func formatToFiatForFee(includeCurrencySymbol: Bool = true) -> String {
-        return formatToFiat(includeCurrencySymbol: includeCurrencySymbol, useAbbreviation: false, maximumFractionDigits: 5)
+        return formatToFiat(includeCurrencySymbol: includeCurrencySymbol, maximumFractionDigits: 5)
     }
 
     func formatDecimalToLocale(locale: Locale = Locale.current) -> String {

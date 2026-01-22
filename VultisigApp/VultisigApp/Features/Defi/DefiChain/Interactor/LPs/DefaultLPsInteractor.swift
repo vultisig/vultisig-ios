@@ -6,6 +6,7 @@
 //
 
 struct DefaultLPsInteractor: LPsInteractor {
+    // swiftlint:disable:next unused_parameter
     func fetchLPPositions(vault: Vault) async -> [LPPosition] {
         []
     }

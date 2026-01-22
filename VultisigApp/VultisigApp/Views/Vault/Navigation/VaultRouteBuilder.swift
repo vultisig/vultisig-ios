@@ -65,15 +65,9 @@ struct VaultRouteBuilder {
     }
 
     @ViewBuilder
-    func buildHomeScreen(
-        vault: Vault,
-        showVaultsList: Bool,
-        shouldJoinKeygen: Bool
-    ) -> some View {
+    func buildHomeScreen(showVaultsList: Bool) -> some View {
         HomeScreen(
             showingVaultSelector: showVaultsList
-//            selectedVault: vault,
-//            shouldJoinKeygen: shouldJoinKeygen
         )
     }
 

@@ -83,12 +83,12 @@ class EncryptedBackupViewModel: ObservableObject {
         switch backupType {
         case .single(let vault):
             return try await createSingleBackupFile(vault: vault, encryptionPassword: encryptionPassword)
-        case .multiple(let vaults, let selectedVault):
-            return try await createMultipleBackupFile(vaults: vaults, selectedVault: selectedVault, encryptionPassword: encryptionPassword)
+        case .multiple(let vaults, _):
+            return try createMultipleBackupFile(vaults: vaults, encryptionPassword: encryptionPassword)
         }
     }
 
-    func createMultipleBackupFile(vaults: [Vault], selectedVault: Vault, encryptionPassword: String?) async throws -> FileExporterModel<EncryptedDataFile>? {
+    func createMultipleBackupFile(vaults: [Vault], encryptionPassword: String?) throws -> FileExporterModel<EncryptedDataFile>? {
         let timestamp = Int(Date().timeIntervalSince1970)
         let backupFolderName = "vultisig_backups_\(timestamp)"
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(backupFolderName)

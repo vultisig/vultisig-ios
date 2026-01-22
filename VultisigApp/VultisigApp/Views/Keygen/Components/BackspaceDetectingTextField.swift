@@ -41,7 +41,7 @@ struct BackspaceDetectingTextField: NSViewRepresentable {
 
         return textField
     }
-
+    // swiftlint:disable:next unused_parameter
     func updateNSView(_ nsView: NSTextField, context: Context) {
         if nsView.stringValue != text {
             nsView.stringValue = text

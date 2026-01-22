@@ -182,7 +182,7 @@ struct KeysignDiscoveryView: View {
             onFastKeysign: { startKeysign() }
         )
 
-        guard let (qrCodeData, qrCodeImage) = await viewModel.getQrImage(size: 100) else {
+        guard let (qrCodeData, qrCodeImage) = await viewModel.getQrImage() else {
             return
         }
 

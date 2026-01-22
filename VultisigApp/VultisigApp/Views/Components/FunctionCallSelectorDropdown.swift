@@ -37,7 +37,7 @@ struct FunctionCallSelectorDropdown: View {
 
     var cell: some View {
         HStack(spacing: 12) {
-            Text(selected.display(coin: coin))
+            Text(selected.display())
             Spacer()
 
             Image(systemName: "chevron.down")
@@ -63,7 +63,7 @@ struct FunctionCallSelectorDropdown: View {
 
     private func getCell(for item: FunctionCallType) -> some View {
         HStack(spacing: 12) {
-            Text(item.display(coin: coin))
+            Text(item.display())
                 .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(Theme.colors.textPrimary)
 

@@ -226,7 +226,7 @@ class KeygenViewModel: ObservableObject {
             wallet = mnemonicWallet
         }
 
-        try await startRootKeyImportKeygen(modelContext: modelContext, wallet: wallet)
+        try await startRootKeyImportKeygen(wallet: wallet)
 
         guard let chains = keyImportInput?.chains else {
             throw HelperError.runtimeError("KeyImportInput should have at least one chain")
@@ -243,7 +243,6 @@ class KeygenViewModel: ObservableObject {
             if chain.isECDSA {
                 self.logger.info("Starting DKLS process for chain \(chain.name)")
                 keyshare = try await importDklsKey(
-                    context: modelContext,
                     ecdsaPrivateKeyHex: chainKey?.hexString,
                     chain: chain
                 )
@@ -259,7 +258,6 @@ class KeygenViewModel: ObservableObject {
 
                 self.logger.info("Starting Schnorr process for chain \(chain.name)")
                 keyshare = try await importSchnorrKey(
-                    context: modelContext,
                     eddsaPrivateKeyHex: chainSeed?.hexString,
                     chain: chain
                 )
@@ -294,12 +292,12 @@ class KeygenViewModel: ObservableObject {
         self.status = .KeygenFinished
     }
 
-    func startRootKeyImportKeygen(modelContext: ModelContext, wallet: HDWallet?) async throws {
+    func startRootKeyImportKeygen(wallet: HDWallet?) async throws {
         self.logger.info("Starting Root Key import process")
 
         self.logger.info("Starting DKLS process for root key")
         let ecDSAKey = wallet?.getMasterKey(curve: .secp256k1)
-        let keyshareECDSA = try await importDklsKey(context: modelContext, ecdsaPrivateKeyHex: ecDSAKey?.data.hexString, chain: nil)
+        let keyshareECDSA = try await importDklsKey(ecdsaPrivateKeyHex: ecDSAKey?.data.hexString, chain: nil)
         self.logger.info("Finished DKLS process for root key. Generated pub key: \(keyshareECDSA.PubKey)")
 
         self.logger.info("Starting Schnorr process for root key")
@@ -308,7 +306,7 @@ class KeygenViewModel: ObservableObject {
         if let edDSAKey {
             edDSAKeySerialized = Data.clampThenUniformScalar(from: edDSAKey.data)
         }
-        let keyshareEdDSA = try await importSchnorrKey(context: modelContext, eddsaPrivateKeyHex: edDSAKeySerialized?.hexString, chain: nil)
+        let keyshareEdDSA = try await importSchnorrKey(eddsaPrivateKeyHex: edDSAKeySerialized?.hexString, chain: nil)
         self.logger.info("Finished Schnorr process for root key. Generated pub key: \(keyshareEdDSA.PubKey)")
 
         self.vault.pubKeyECDSA = keyshareECDSA.PubKey
@@ -331,7 +329,7 @@ class KeygenViewModel: ObservableObject {
     }
 
     // Import existing ECDSA private key to DKLS vault
-    func importDklsKey(context: ModelContext, ecdsaPrivateKeyHex: String?, chain: Chain?) async throws -> DKLSKeyshare {
+    func importDklsKey(ecdsaPrivateKeyHex: String?, chain: Chain?) async throws -> DKLSKeyshare {
         do {
             let dklsKeygen = DKLSKeygen(vault: self.vault,
                                         tssType: self.tssType,
@@ -354,7 +352,7 @@ class KeygenViewModel: ObservableObject {
         }
     }
     // Import existing EdDSA private key to DKLS vault
-    func importSchnorrKey(context: ModelContext, eddsaPrivateKeyHex: String?, chain: Chain?) async throws -> DKLSKeyshare {
+    func importSchnorrKey(eddsaPrivateKeyHex: String?, chain: Chain?) async throws -> DKLSKeyshare {
         do {
             let schnorrKeygen = SchnorrKeygen(vault: self.vault,
                                               tssType: self.tssType,
@@ -496,8 +494,7 @@ class KeygenViewModel: ObservableObject {
             let stateAccessorImp = LocalStateAccessorImpl(vault: self.vault)
             self.tssMessenger = messengerImp
             self.stateAccess = stateAccessorImp
-            self.tssService = try await self.createTssInstance(messenger: messengerImp,
-                                                               localStateAccessor: stateAccessorImp)
+            self.tssService = try await self.createTssInstance()
             guard let tssService = self.tssService else {
                 throw HelperError.runtimeError("TSS instance is nil")
             }
@@ -625,8 +622,7 @@ class KeygenViewModel: ObservableObject {
         keychain.setFastHint(config.hint, pubKeyECDSA: vault.pubKeyECDSA)
     }
 
-    private func createTssInstance(messenger: TssMessengerProtocol,
-                                   localStateAccessor: TssLocalStateAccessorProtocol) async throws -> TssServiceImpl? {
+    private func createTssInstance() async throws -> TssServiceImpl? {
         let t = Task.detached(priority: .high) {
             var err: NSError?
             let service = await TssNewService(self.tssMessenger, self.stateAccess, true, &err)

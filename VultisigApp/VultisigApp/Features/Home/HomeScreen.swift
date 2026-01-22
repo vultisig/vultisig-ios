@@ -176,7 +176,7 @@ struct HomeScreen: View {
             .sensoryFeedback(
                 homeViewModel.showAlert ? .stop : .impact, trigger: homeViewModel.showAlert
             )
-            .customNavigationBarHidden(true)
+            .customNavigationBarHidden()
             .withAddressCopy(coin: $addressToCopy)
             .withUpgradeVault(vault: selectedVault, shouldShow: $showUpgradeVaultSheet)
             .withBiweeklyPasswordVerification(vault: selectedVault)

@@ -219,8 +219,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.startSession()
         self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr,
                                                    sessionID: self.sessionID,
-                                                   localParty: self.localPartyID,
-                                                   pubKeyECDSA: vault.pubKeyECDSA)
+                                                   localParty: self.localPartyID)
     }
 
     func restartParticipantDiscovery() {
@@ -236,8 +235,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.participantDiscovery?.getParticipants(
             serverAddr: self.serverAddr,
             sessionID: self.sessionID,
-            localParty: self.localPartyID,
-            pubKeyECDSA: vault.pubKeyECDSA
+            localParty: self.localPartyID
         )
     }
 

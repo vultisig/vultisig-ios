@@ -15,8 +15,8 @@ struct OnboardingRouter {
         switch route {
         case .vaultSetup(let tssType, let keyImportInput):
             viewBuilder.buildVaultSetupScreen(tssType: tssType, keyImportInput: keyImportInput)
-        case .importSeedphrase(let keyImportInput):
-            viewBuilder.buildImportSeedphraseScreen(keyImportInput: keyImportInput)
+        case .importSeedphrase:
+            viewBuilder.buildImportSeedphraseScreen()
         case .chainsSetup(let mnemonic):
             viewBuilder.buildChainsSetupScreen(mnemonic: mnemonic)
         case .keyImportNewVaultSetup(let vault, let keyImportInput, let fastSignConfig):

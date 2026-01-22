@@ -174,6 +174,7 @@ struct SendGasSettingsView: View {
 
 #Preview {
     struct Output: SendGasSettingsOutput {
+        // swiftlint:disable:next unused_parameter
         func didSetFeeSettings(chain: Chain, mode: FeeMode, gasLimit: BigInt?, byteFee: BigInt?) { }
     }
     let viewModel = SendGasSettingsViewModel(coin: .example, vault: .example, gasLimit: "21000", byteFee: "2", baseFee: "6.559000", selectedMode: .default)

@@ -182,8 +182,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.participantDiscovery?.getParticipants(
             serverAddr: self.serverAddr,
             sessionID: self.sessionID,
-            localParty: self.localPartyID,
-            pubKeyECDSA: vault.pubKeyECDSA
+            localParty: self.localPartyID
         )
     }
 
@@ -250,8 +249,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.startKeysignSession()
         self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr,
                                                    sessionID: self.sessionID,
-                                                   localParty: self.localPartyID,
-                                                   pubKeyECDSA: vault.pubKeyECDSA)
+                                                   localParty: self.localPartyID)
     }
     private func startKeysignSession() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
@@ -268,7 +266,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         }
     }
 
-    func getQrImage(size: CGFloat) async -> (String, Image)? {
+    func getQrImage() async -> (String, Image)? {
         guard let qrCodeData = await generateQRdata() else {
             return nil
         }

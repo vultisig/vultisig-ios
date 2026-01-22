@@ -143,7 +143,7 @@ extension MacCameraServiceViewModel {
         return NSLocalizedString(text, comment: "")
     }
 
-    func handleScan(vaults: [Vault], sendTx: SendTransaction, deeplinkViewModel: DeeplinkViewModel, vaultDetailViewModel: VaultDetailViewModel, coinSelectionViewModel: CoinSelectionViewModel) {
+    func handleScan(vaults: [Vault], deeplinkViewModel: DeeplinkViewModel) {
         guard let result = detectedQRCode, !result.isEmpty else {
             return
         }

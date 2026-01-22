@@ -13,12 +13,12 @@ struct DefiBalanceService {
             .filter { CoinAction.defiChains.contains($0) }
             .map { totalBalanceInFiat(for: $0, vault: vault) }
             .reduce(Decimal.zero, +)
-        return totalBalance.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
+        return totalBalance.formatToFiat(includeCurrencySymbol: true)
     }
 
     func totalBalanceInFiatString(for chain: Chain, vault: Vault) -> String {
         let balanceDecimal = totalBalanceInFiat(for: chain, vault: vault)
-        return balanceDecimal.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
+        return balanceDecimal.formatToFiat(includeCurrencySymbol: true)
     }
 
     func totalBalanceInFiat(for chain: Chain, vault: Vault) -> Decimal {
