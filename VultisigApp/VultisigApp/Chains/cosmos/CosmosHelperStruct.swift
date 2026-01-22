@@ -77,7 +77,7 @@ struct CosmosHelperStruct {
         case .ibcTransfer:
             var memo = ""
             let splitedMemo = keysignPayload.memo?.split(separator: ":")
-            if splitedMemo?.count == 0 {
+            if splitedMemo?.isEmpty ?? true {
                 throw HelperError.runtimeError("To send IBC transaction, memo should be specified")
             }
 

@@ -35,5 +35,4 @@ opt_in_rules:
 analyzer_rules:
   - unused_declaration
   - unused_import
-empty_count: warning 
 reporter: "xcode"

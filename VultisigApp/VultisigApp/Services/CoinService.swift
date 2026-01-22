@@ -33,7 +33,7 @@ struct CoinService {
     static func saveAssets(for vault: Vault, selection: Set<CoinMeta>) async {
         do {
             // Step 1: Remove coins that are no longer selected
-            try await removeDeselectedCoins(vault: vault, selection: selection)
+            try removeDeselectedCoins(vault: vault, selection: selection)
 
             // Step 2: Add newly selected coins
             try await addNewlySelectedCoins(vault: vault, selection: selection)

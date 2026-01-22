@@ -32,11 +32,11 @@ struct SecurityScannerTransactionFactory: SecurityScannerTransactionFactoryProto
         }
     }
 
-    func createSecurityScanner(transaction: SwapTransaction) async throws -> SecurityScannerTransaction {
+    func createSecurityScanner(transaction: SwapTransaction) throws -> SecurityScannerTransaction {
         let chain = transaction.fromCoin.chain
         switch chain.chainType {
         case .EVM:
-            return try await createEVMSecurityScanner(transaction: transaction)
+            return try createEVMSecurityScanner(transaction: transaction)
         default:
             throw SecurityScannerTransactionFactoryError.notSupported(chain: chain)
         }

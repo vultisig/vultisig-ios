@@ -152,7 +152,7 @@ class ThorchainStagenetService: ThorchainSwapProvider {
 
     func fetchFeePrice() async throws -> UInt64 {
         let cacheKey = "thorchain-stagenet-fee-price"
-        if let cachedData = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheFeePrice, timeInSeconds: 60*5) {
+        if let cachedData = Utils.getCachedData(cacheKey: cacheKey, cache: cacheFeePrice, timeInSeconds: 60*5) {
             return UInt64(cachedData.native_tx_fee_rune) ?? 0
         }
 
@@ -167,7 +167,7 @@ class ThorchainStagenetService: ThorchainSwapProvider {
         do {
             let cacheKey = "thorchain-stagenet-inbound-address"
 
-            if let cachedData = await Utils.getCachedData(
+            if let cachedData = Utils.getCachedData(
                 cacheKey: cacheKey,
                 cache: cacheInboundAddresses,
                 timeInSeconds: 60 * 5

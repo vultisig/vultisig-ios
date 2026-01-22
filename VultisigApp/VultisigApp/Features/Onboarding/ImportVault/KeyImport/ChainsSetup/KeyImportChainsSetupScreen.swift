@@ -43,7 +43,7 @@ struct KeyImportChainsSetupScreen: View {
             .transition(.opacity)
         }
         .animation(.interpolatingSpring, value: viewModel.state)
-        .onLoad(perform: { await viewModel.onLoad(mnemonic: mnemonic) })
+        .onLoad(perform: { viewModel.onLoad(mnemonic: mnemonic) })
     }
 
     func onCustomizeChains() {

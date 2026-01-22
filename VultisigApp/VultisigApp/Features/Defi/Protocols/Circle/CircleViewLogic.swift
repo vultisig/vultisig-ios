@@ -74,7 +74,7 @@ struct CircleViewLogic {
 
         let withdrawalInfo = CircleWithdrawalInfo(usdcContract: usdcContract)
 
-        let (to, value, data) = try await CircleService.shared.getWithdrawalValues(
+        let (to, value, data) = try CircleService.shared.getWithdrawalValues(
             vault: vault,
             recipientAddress: recipient,
             amount: amount,

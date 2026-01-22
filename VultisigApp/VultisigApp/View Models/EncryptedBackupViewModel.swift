@@ -62,27 +62,27 @@ class EncryptedBackupViewModel: ObservableObject {
         extractedFilesDirectory = nil
     }
 
-    func exportFileWithoutPassword(_ backupType: VaultBackupType) async -> FileExporterModel<EncryptedDataFile>? {
-        return try? await createBackupFile(backupType, encryptionPassword: nil)
+    func exportFileWithoutPassword(_ backupType: VaultBackupType) -> FileExporterModel<EncryptedDataFile>? {
+        return try? createBackupFile(backupType, encryptionPassword: nil)
     }
 
-    func exportFileWithVaultPassword(_ backupType: VaultBackupType) async -> FileExporterModel<EncryptedDataFile>? {
+    func exportFileWithVaultPassword(_ backupType: VaultBackupType) -> FileExporterModel<EncryptedDataFile>? {
         guard let vaultPassword = keychain.getFastPassword(pubKeyECDSA: backupType.vault.pubKeyECDSA) else {
             debugPrint("Couldn't fetch password for vault")
             return nil
         }
 
-        return try? await createBackupFile(backupType, encryptionPassword: vaultPassword)
+        return try? createBackupFile(backupType, encryptionPassword: vaultPassword)
     }
 
-    func exportFileWithCustomPassword(_ backupType: VaultBackupType) async -> FileExporterModel<EncryptedDataFile>? {
-        return try? await createBackupFile(backupType, encryptionPassword: encryptionPassword)
+    func exportFileWithCustomPassword(_ backupType: VaultBackupType) -> FileExporterModel<EncryptedDataFile>? {
+        return try? createBackupFile(backupType, encryptionPassword: encryptionPassword)
     }
 
-    func createBackupFile(_ backupType: VaultBackupType, encryptionPassword: String?) async throws -> FileExporterModel<EncryptedDataFile>? {
+    func createBackupFile(_ backupType: VaultBackupType, encryptionPassword: String?) throws -> FileExporterModel<EncryptedDataFile>? {
         switch backupType {
         case .single(let vault):
-            return try await createSingleBackupFile(vault: vault, encryptionPassword: encryptionPassword)
+            return try createSingleBackupFile(vault: vault, encryptionPassword: encryptionPassword)
         case .multiple(let vaults, _):
             return try createMultipleBackupFile(vaults: vaults, encryptionPassword: encryptionPassword)
         }
