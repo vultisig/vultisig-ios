@@ -108,7 +108,7 @@ private extension EditReferralViewModel {
     }
 
     @MainActor
-    func createTransaction(tx: SendTransaction, preferredAsset: THORChainAsset?) async {
+    func createTransaction(tx: SendTransaction, preferredAsset: THORChainAsset?) {
         var preferredAssetCoin: Coin?
         if let preferredAsset {
             preferredAssetCoin = try? CoinService.addIfNeeded(asset: preferredAsset.asset, to: vault, priceProviderId: preferredAsset.asset.priceProviderId)

@@ -243,7 +243,7 @@ struct CosmosHelperStruct {
                                                                                  publicKeys: publicKeys)
             let output = try CosmosSigningOutput(serializedBytes: compileWithSignature)
 
-            if output.errorMessage.count > 0 {
+            if output.errorMessage.isNotEmpty {
                 print("getSignedTransaction Error message: \(output.errorMessage)")
             }
 

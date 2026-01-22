@@ -422,7 +422,7 @@ private func setMainData() async {
     }
 
     @MainActor
-    private func checkPendingTransactions() async {
+    private func checkPendingTransactions() {
         guard tx.coin.chain.supportsPendingTransactions else {
             // For non-Cosmos chains, immediately enable button
             sendCryptoViewModel.hasPendingTransaction = false

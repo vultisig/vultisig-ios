@@ -224,7 +224,7 @@ private extension BalanceService {
         try await fetchBalance(for: coin.toCoinMeta(), address: coin.address)
     }
 
-    @MainActor func updateCoin(_ coin: Coin, rawBalance: String) async throws {
+    @MainActor func updateCoin(_ coin: Coin, rawBalance: String) throws {
         guard coin.rawBalance != rawBalance else {
             return
         }
@@ -232,7 +232,7 @@ private extension BalanceService {
         coin.rawBalance = rawBalance
     }
 
-    @MainActor func updateCoin(_ coin: Coin, stakedBalance: String) async throws {
+    @MainActor func updateCoin(_ coin: Coin, stakedBalance: String) throws {
         guard coin.stakedBalance != stakedBalance else {
             return
         }

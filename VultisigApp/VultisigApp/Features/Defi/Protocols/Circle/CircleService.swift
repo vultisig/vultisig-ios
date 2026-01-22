@@ -90,7 +90,7 @@ struct CircleService {
         amount: BigInt,
         info: CircleViewLogic.CircleWithdrawalInfo,
         isNative: Bool = false
-    ) async throws -> (to: String, amount: BigInt, data: Data) {
+    ) throws -> (to: String, amount: BigInt, data: Data) {
 
         let usdcContract = info.usdcContract
 

@@ -162,7 +162,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
                 guard let self else { return }
-                if $0.count == 0 {
+                if $0.isEmpty {
                     return
                 }
 

@@ -35,7 +35,7 @@ struct DefiBalanceService {
 
 private extension DefiBalanceService {
     func thorChainTotalBalanceFiatDecimal(for vault: Vault) -> Decimal {
-        guard vault.defiPositions.first(where: { $0.chain == .thorChain }) != nil else {
+        guard vault.defiPositions.contains(where: { $0.chain == .thorChain }) else {
             return .zero
         }
 
@@ -46,7 +46,7 @@ private extension DefiBalanceService {
     }
 
     func mayaChainTotalBalanceFiatDecimal(for vault: Vault) -> Decimal {
-        guard vault.defiPositions.first(where: { $0.chain == .mayaChain }) != nil  else {
+        guard vault.defiPositions.contains(where: { $0.chain == .mayaChain }) else {
             return .zero
         }
 

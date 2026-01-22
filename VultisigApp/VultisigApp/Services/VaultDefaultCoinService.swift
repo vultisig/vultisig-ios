@@ -28,7 +28,7 @@ class VaultDefaultCoinService {
     func setDefaultCoins(for vault: Vault) {
         // Add default coins when the vault doesn't have any coins in it
         print("set default chains to vault")
-        if vault.coins.count == 0 {
+        if vault.coins.isEmpty {
             let defaultChains = getDefaultChains(for: vault)
             let chains: [CoinMeta] = TokensStore.TokenSelectionAssets
                     .filter { asset in defaultChains.contains(where: { $0 == asset.chain }) }

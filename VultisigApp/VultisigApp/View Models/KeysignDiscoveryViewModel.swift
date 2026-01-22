@@ -163,7 +163,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] in
                 guard let self else { return }
-                if $0.count == 0 {
+                    if $0.isEmpty {
                     return
                 }
                 $0.forEach { peer in
@@ -175,8 +175,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         }
     }
 
-    func startDiscovery() async {
-
+    func startDiscovery() {
         self.logger.info("mediator server started")
         self.startKeysignSession()
         self.participantDiscovery?.getParticipants(

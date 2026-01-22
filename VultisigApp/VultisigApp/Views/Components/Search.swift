@@ -18,7 +18,7 @@ struct Search: View {
 
             textField
 
-            if searchText != "" {
+            if !searchText.isEmpty {
                 closeButton
             }
         }

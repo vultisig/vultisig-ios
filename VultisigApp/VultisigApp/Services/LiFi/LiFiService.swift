@@ -87,7 +87,7 @@ struct LiFiService {
             return (quote, response.fee, integratorFee)
         case .solana(let quote):
             var gas: Int64 = 0
-            if quote.estimate.gasCosts.count > 0 {
+            if !quote.estimate.gasCosts.isEmpty {
                 gas = Int64(quote.estimate.gasCosts[0].estimate) ?? 0
             }
 

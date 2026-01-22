@@ -37,7 +37,7 @@ struct DefiChainAvailableNodesView: View {
                 .padding(.top, 16)
             }
         }
-        .showIf(availableNodes.count > 0)
+        .showIf(!availableNodes.isEmpty)
         .onChange(of: availableNodes.count) { oldValue, newValue in
             if oldValue == 0, newValue > 0 {
                 isExpanded = true

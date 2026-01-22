@@ -51,7 +51,7 @@ struct BannersCarousel<Banner: CarouselBannerType>: View {
                     LazyHStack(spacing: 0) {
                         ForEach(internalBanners.indices, id: \.self) { index in
                             let banner = internalBanners[index]
-                            let shouldRemove = bannersToRemove.contains(AnyHashable(banner.id)) && banners.count > 0
+                            let shouldRemove = bannersToRemove.contains(AnyHashable(banner.id)) && !banners.isEmpty
                             VStack {
                                 CarouselBannerView(
                                     banner: banner,

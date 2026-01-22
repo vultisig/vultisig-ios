@@ -69,13 +69,13 @@ struct SendCryptoAddressBookView: View {
     var list: some View {
         ScrollView {
             if isSavedAddressesSelected {
-                if savedAddresses.count > 0 {
+                if !savedAddresses.isEmpty {
                     savedAddressesList
                 } else {
                     errorMessage
                 }
             } else {
-                if vaults.count > 0 {
+                if !vaults.isEmpty {
                     myAddressesList
                 } else {
                     errorMessage

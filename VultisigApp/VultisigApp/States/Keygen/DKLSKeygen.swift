@@ -162,7 +162,7 @@ final class DKLSKeygen {
             if result != DKLS_LIB_OK {
                 print("fail to get outbound message,\(result)")
             }
-            if outboundMessage.count == 0 {
+            if outboundMessage.isEmpty {
                 return
             }
             let message = outboundMessage.to_dkls_goslice()
@@ -172,7 +172,7 @@ final class DKLSKeygen {
                                                                message: message,
                                                                idx: UInt32(i))
 
-                if receiverArray.count == 0 {
+                if receiverArray.isEmpty {
                     break
                 }
                 let receiverString = String(bytes: receiverArray, encoding: .utf8)!
@@ -201,7 +201,7 @@ final class DKLSKeygen {
             }
             switch httpResp.statusCode {
             case 200 ... 299:
-                if data.count > 0 {
+                if !data.isEmpty {
                     isFinished = try await processInboundMessage(handle: handle, data: data)
                     if isFinished {
                         return true
@@ -226,7 +226,7 @@ final class DKLSKeygen {
     }
 
     func processInboundMessage(handle: godkls.Handle, data: Data) async throws -> Bool {
-        if data.count == 0 {
+        if data.isEmpty {
             return false
         }
         let decoder = JSONDecoder()

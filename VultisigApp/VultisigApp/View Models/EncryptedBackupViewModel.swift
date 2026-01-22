@@ -145,7 +145,7 @@ class EncryptedBackupViewModel: ObservableObject {
         return fileURL
     }
 
-    func createSingleBackupFile(vault: Vault, encryptionPassword: String?) async throws -> FileExporterModel<EncryptedDataFile>? {
+    func createSingleBackupFile(vault: Vault, encryptionPassword: String?) throws -> FileExporterModel<EncryptedDataFile>? {
         let tempURL = try generateBackupFile(vault: vault, encryptionPassword: encryptionPassword)
         guard let tempURL, let file = EncryptedDataFile(url: tempURL) else {
             return nil
@@ -622,7 +622,7 @@ class EncryptedBackupViewModel: ObservableObject {
         do {
             let regex = try NSRegularExpression(pattern: "share\\d+of\\d+") // share2of3, share3of5
             let matches = regex.matches(in: filename, range: NSRange(filename.startIndex..., in: filename))
-            return matches.count > 0
+            return !matches.isEmpty
         } catch {
             print("Error checking if filename is a DKLS backup: \(error.localizedDescription)")
             return false

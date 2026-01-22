@@ -77,7 +77,7 @@ struct AddressBookView: View {
         }
 
         return ZStack {
-            if filteredAddress.count > 0 {
+            if !filteredAddress.isEmpty {
                 List {
                     ForEach(filteredAddress.sorted(by: {
                         $0.order < $1.order

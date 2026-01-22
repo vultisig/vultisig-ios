@@ -36,6 +36,7 @@ struct AddressBookHeader: View {
 
     var trailingAction: some View {
         ZStack {
+            // swiftlint:disable:next empty_count
             if count != 0 {
                 navigationButton
             }
