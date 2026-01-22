@@ -249,6 +249,10 @@ enum SolanaHelper {
             throw HelperError.runtimeError(decodedOutput.errorMessage)
         }
 
+        guard decodedOutput.hasTransaction else {
+            throw SolanaParsingError.invalidTransactionFormat
+        }
+
         // Wrap in SolanaSigningInput with rawMessage
         let input = SolanaSigningInput.with {
             $0.rawMessage = decodedOutput.transaction
@@ -289,6 +293,10 @@ enum SolanaHelper {
 
         if decodedOutput.errorMessage.isNotEmpty {
             throw HelperError.runtimeError(decodedOutput.errorMessage)
+        }
+
+        guard decodedOutput.hasTransaction else {
+            throw SolanaParsingError.invalidTransactionFormat
         }
 
         // 3. Wrap in SolanaSigningInput with rawMessage
