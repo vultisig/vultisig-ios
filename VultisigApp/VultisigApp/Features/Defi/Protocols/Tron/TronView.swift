@@ -19,7 +19,7 @@ struct TronView: View {
             .navigationBarTitleDisplayMode(.inline)
             #endif
     }
-    
+
     var content: some View {
         Screen(
             title: NSLocalizedString("tronTitle", comment: "TRON Staking"),
@@ -30,21 +30,21 @@ struct TronView: View {
                 // Show warning to add TRX
                 VStack(spacing: 24) {
                     Spacer()
-                    
+
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(Theme.fonts.largeTitle)
                         .foregroundStyle(Theme.colors.alertWarning)
-                    
+
                     Text(NSLocalizedString("tronTrxRequired", comment: "TRX Required"))
                         .font(Theme.fonts.title2)
                         .foregroundStyle(Theme.colors.textPrimary)
-                    
+
                     Text(NSLocalizedString("tronTrxRequiredDescription", comment: "Please add TRX to your vault to use TRON staking."))
                         .font(Theme.fonts.bodyMRegular)
                         .foregroundStyle(Theme.colors.textSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
-                    
+
                     Spacer()
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -57,7 +57,7 @@ struct TronView: View {
             Task { await loadData() }
         }
     }
-    
+
     private func loadData() async {
         // Set all loading states upfront so skeletons appear and clear previous errors
         await MainActor.run {
@@ -66,7 +66,7 @@ struct TronView: View {
             model.isLoadingResources = true
             model.error = nil
         }
-        
+
         // Check if vault has TRX
         guard let trxCoin = TronViewLogic.getTrxCoin(vault: vault) else {
             await MainActor.run {
@@ -77,15 +77,15 @@ struct TronView: View {
             }
             return
         }
-        
+
         // Clear missingTrx flag when TRX is found
         await MainActor.run {
             model.missingTrx = false
         }
-        
+
         let address = trxCoin.address
         let tronService = TronService.shared
-        
+
         // Use structured concurrency for proper cancellation handling
         await withTaskGroup(of: Void.self) { group in
             // Task 1: Fetch account info (balance data)
@@ -96,14 +96,14 @@ struct TronView: View {
                         // Calculate available balance (in TRX, not SUN)
                         let balanceSun = account.balance ?? 0
                         self.model.availableBalance = Decimal(balanceSun) / Decimal(1_000_000)
-                        
+
                         // Parse frozen balances from frozenV2 array (Stake 2.0)
                         self.model.frozenBandwidthBalance = Decimal(account.frozenBandwidthSun) / Decimal(1_000_000)
                         self.model.frozenEnergyBalance = Decimal(account.frozenEnergySun) / Decimal(1_000_000)
-                        
+
                         // Parse unfreezing balance
                         self.model.unfreezingBalance = Decimal(account.unfreezingTotalSun) / Decimal(1_000_000)
-                        
+
                         // Parse pending withdrawals
                         self.model.pendingWithdrawals = (account.unfrozenV2 ?? []).compactMap { entry in
                             guard let amountSun = entry.unfreeze_amount, let expireTime = entry.unfreeze_expire_time else {
@@ -113,7 +113,7 @@ struct TronView: View {
                             let expirationDate = Date(timeIntervalSince1970: TimeInterval(expireTime / 1000))
                             return TronPendingWithdrawal(amount: amountTrx, expirationDate: expirationDate)
                         }.sorted { $0.expirationDate < $1.expirationDate }
-                        
+
                         self.model.isLoadingBalance = false
                     }
                 } catch {
@@ -125,7 +125,7 @@ struct TronView: View {
                     }
                 }
             }
-            
+
             // Task 2: Fetch resource info (bandwidth/energy)
             group.addTask {
                 do {
@@ -147,7 +147,7 @@ struct TronView: View {
                 }
             }
         }
-        
+
         // Clear global loading state after task group completes
         await MainActor.run { model.isLoading = false }
     }

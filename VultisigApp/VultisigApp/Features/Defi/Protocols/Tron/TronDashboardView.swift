@@ -15,17 +15,17 @@ struct TronDashboardView: View {
     @Environment(\.router) var router
 
     @AppStorage("appClosedBanners") var appClosedBanners: [String] = []
-    
+
     let tronDashboardBannerId = "tronDashboardInfoBanner"
-    
+
     var showInfoBanner: Bool {
         !appClosedBanners.contains(tronDashboardBannerId)
     }
-    
+
     var walletTrxBalance: Decimal {
         return TronViewLogic.getWalletTrxBalance(vault: vault)
     }
-    
+
     /// Frozen balance in fiat (using TRX coin price)
     var frozenBalanceFiat: String {
         guard let trxCoin = vault.coins.first(where: { $0.chain == .tron && $0.isNativeToken }) else {
@@ -34,7 +34,7 @@ struct TronDashboardView: View {
         let fiatValue = model.totalFrozenBalance * Decimal(trxCoin.price)
         return fiatValue.formatToFiat(includeCurrencySymbol: true)
     }
-    
+
     /// Available balance in fiat (using TRX coin price)
     var availableBalanceFiat: String {
         guard let trxCoin = vault.coins.first(where: { $0.chain == .tron && $0.isNativeToken }) else {
@@ -43,26 +43,26 @@ struct TronDashboardView: View {
         let fiatValue = model.availableBalance * Decimal(trxCoin.price)
         return fiatValue.formatToFiat(includeCurrencySymbol: true)
     }
-    
+
     var body: some View {
         ZStack {
             VaultMainScreenBackground()
-            
+
             VStack(spacing: 0) {
                 scrollContent
             }
         }
     }
-    
+
     var scrollContent: some View {
         ScrollView {
             VStack(spacing: TronConstants.Design.verticalSpacing) {
                 topBanner
-                
+
                 resourcesCard
-                
+
                 actionsCard
-                
+
                 if let error = model.error, !(error is CancellationError) && error.localizedDescription.lowercased() != "cancelled" {
                     InfoBannerView(
                         description: error.localizedDescription,
@@ -73,7 +73,7 @@ struct TronDashboardView: View {
                         }
                     )
                 }
-                
+
                 pendingWithdrawalsCard
             }
             .padding(.top, TronConstants.Design.mainViewTopPadding)
@@ -86,14 +86,14 @@ struct TronDashboardView: View {
         }
         #endif
     }
-    
+
     var topBanner: some View {
         HStack {
             VStack(alignment: .leading, spacing: 8) {
                 Text("TRON")
                     .font(Theme.fonts.headline)
                     .foregroundStyle(Theme.colors.textSecondary)
-                
+
                 if model.isLoadingBalance {
                     // Skeleton placeholder
                     RoundedRectangle(cornerRadius: 4)
@@ -116,8 +116,7 @@ struct TronDashboardView: View {
         .padding(TronConstants.Design.cardPadding)
         .background(cardBackground)
     }
-    
-    
+
     var cardBackground: some View {
         RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
             .inset(by: 0.5)
@@ -126,14 +125,14 @@ struct TronDashboardView: View {
                 LinearGradient(
                     stops: [
                         Gradient.Stop(color: Color(hex: "FF0013"), location: 0.00),
-                        Gradient.Stop(color: Color(red: 0.5, green: 0.11, blue: 0.11).opacity(0), location: 1.00),
+                        Gradient.Stop(color: Color(red: 0.5, green: 0.11, blue: 0.11).opacity(0), location: 1.00)
                     ],
                     startPoint: UnitPoint(x: 0.5, y: 0),
                     endPoint: UnitPoint(x: 0.5, y: 1)
                 ).opacity(0.09)
             )
     }
-    
+
     var actionsCard: some View {
         VStack(spacing: 16) {
             // Header: Logo + Title + Fiat Balance
@@ -142,12 +141,12 @@ struct TronDashboardView: View {
                     .resizable()
                     .frame(width: 48, height: 48)
                     .clipShape(Circle())
-                
+
                 VStack(alignment: .leading, spacing: 4) {
                     Text(NSLocalizedString("tronFreezeTitle", comment: "TRON Freeze"))
                         .font(Theme.fonts.bodyMMedium)
                         .foregroundStyle(Theme.colors.textSecondary)
-                    
+
                     if model.isLoadingBalance {
                         RoundedRectangle(cornerRadius: 4)
                             .fill(Theme.colors.bgSurface1)
@@ -159,20 +158,20 @@ struct TronDashboardView: View {
                             .foregroundStyle(Theme.colors.textPrimary)
                     }
                 }
-                
+
                 Spacer()
             }
-            
+
             // Divider
             Divider()
                 .overlay(Theme.colors.textSecondary.opacity(0.2))
-            
+
             // Frozen Balance Section
             VStack(alignment: .leading, spacing: 4) {
                 Text(NSLocalizedString("tronFrozenLabel", comment: "Frozen"))
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textSecondary)
-                
+
                 if model.isLoadingBalance {
                     RoundedRectangle(cornerRadius: 4)
                         .fill(Theme.colors.bgSurface1)
@@ -185,7 +184,7 @@ struct TronDashboardView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            
+
             // Action Buttons - Side by side
             HStack(spacing: 12) {
                 DefiButton(
@@ -212,9 +211,9 @@ struct TronDashboardView: View {
                 .fill(Theme.colors.bgSurface1)
         )
     }
-    
+
     // MARK: - Resources Card (Bandwidth & Energy)
-    
+
     var resourcesCard: some View {
         HStack(spacing: 12) {
             // Bandwidth Section (Green)
@@ -226,7 +225,7 @@ struct TronDashboardView: View {
                 accentColor: Theme.colors.alertSuccess,
                 unit: "KB"
             )
-            
+
             // Energy Section (Yellow/Orange)
             resourceSection(
                 title: NSLocalizedString("tronEnergy", comment: "Energy"),
@@ -243,14 +242,14 @@ struct TronDashboardView: View {
                 .fill(Theme.colors.bgSurface1)
         )
     }
-    
+
     func resourceSection(title: String, icon: String, available: Int64, total: Int64, accentColor: Color, unit: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             // Title Label
             Text(title)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textSecondary)
-            
+
             // Content box with accent color
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 8) {
@@ -259,12 +258,12 @@ struct TronDashboardView: View {
                         RoundedRectangle(cornerRadius: 8)
                             .fill(Theme.colors.bgPrimary)
                             .frame(width: 36, height: 36)
-                        
+
                         Image(systemName: icon)
                             .font(Theme.fonts.bodySMedium)
                             .foregroundStyle(accentColor)
                     }
-                    
+
                     VStack(alignment: .leading, spacing: 4) {
                         // Value display
                         if model.isLoadingResources {
@@ -277,7 +276,7 @@ struct TronDashboardView: View {
                                 .font(Theme.fonts.bodyMMedium)
                                 .foregroundStyle(Theme.colors.textPrimary)
                         }
-                        
+
                         // Progress bar
                         GeometryReader { geometry in
                             ZStack(alignment: .leading) {
@@ -285,7 +284,7 @@ struct TronDashboardView: View {
                                 RoundedRectangle(cornerRadius: 2)
                                     .fill(Theme.colors.bgSurface1)
                                     .frame(height: 4)
-                                
+
                                 if model.isLoadingResources {
                                     // Shimmer loading state
                                     RoundedRectangle(cornerRadius: 2)
@@ -312,7 +311,7 @@ struct TronDashboardView: View {
         }
         .frame(maxWidth: .infinity)
     }
-    
+
     func formatResourceValue(available: Int64, total: Int64, unit: String) -> String {
         // Format as K if large enough and unit is provided
         if total >= 1000 && !unit.isEmpty {
@@ -326,13 +325,13 @@ struct TronDashboardView: View {
         }
         return "\(available)/\(total)"
     }
-    
+
     func progressValue(available: Int64, total: Int64) -> CGFloat {
         guard total > 0 else { return 0 }
         // Progress shows available percentage - full bar = all resources available
         return min(CGFloat(available) / CGFloat(total), 1.0)
     }
-    
+
     @ViewBuilder
     var pendingWithdrawalsCard: some View {
         if model.hasPendingWithdrawals {
@@ -340,28 +339,28 @@ struct TronDashboardView: View {
                 HStack {
                     Image(systemName: "clock.arrow.circlepath")
                         .foregroundStyle(Theme.colors.textSecondary)
-                    
+
                     Text(NSLocalizedString("tronPendingWithdrawals", comment: "Pending Withdrawals"))
                         .font(Theme.fonts.bodyLMedium)
                         .foregroundStyle(Theme.colors.textPrimary)
-                    
+
                     Spacer()
-                    
+
                     Text("\(model.unfreezingBalance.formatted()) TRX")
                         .font(Theme.fonts.bodyLMedium)
                         .foregroundStyle(Theme.colors.textSecondary)
                 }
-                
+
                 Divider()
                     .overlay(Theme.colors.textSecondary.opacity(0.3))
-                
+
                 ForEach(model.pendingWithdrawals) { withdrawal in
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("\(withdrawal.amount.formatted()) TRX")
                                 .font(Theme.fonts.bodyMRegular)
                                 .foregroundStyle(Theme.colors.textPrimary)
-                            
+
                             if withdrawal.isClaimable {
                                 Text(NSLocalizedString("tronReadyToClaim", comment: "Ready to claim"))
                                     .font(Theme.fonts.caption12)
@@ -372,9 +371,9 @@ struct TronDashboardView: View {
                                     .foregroundStyle(Theme.colors.textSecondary)
                             }
                         }
-                        
+
                         Spacer()
-                        
+
                         if withdrawal.isClaimable {
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundStyle(Theme.colors.textSecondary)
@@ -393,18 +392,18 @@ struct TronDashboardView: View {
             )
         }
     }
-    
+
     func withdrawalTimeRemaining(_ date: Date) -> String {
         let now = Date()
         let remaining = date.timeIntervalSince(now)
-        
+
         if remaining <= 0 {
             return NSLocalizedString("tronReadyToClaim", comment: "Ready to claim")
         }
-        
+
         let days = Int(remaining / 86400)
         let hours = Int((remaining.truncatingRemainder(dividingBy: 86400)) / 3600)
-        
+
         if days > 0 {
             return String(format: NSLocalizedString("tronTimeRemainingDays", comment: "%d days, %d hours"), days, hours)
         } else {
@@ -418,7 +417,7 @@ struct TronDashboardView: View {
 
 private struct ShimmerModifier: ViewModifier {
     @State private var phase: CGFloat = 0
-    
+
     func body(content: Content) -> some View {
         content
             .overlay(
