@@ -116,6 +116,9 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 } else if let signAmino = input.keysignPayload?.signAmino {
                     Separator()
                     SignAminoDisplayView(signAmino: signAmino)
+                } else if let signSolana = input.keysignPayload?.signSolana {
+                    Separator()
+                    SignSolanaDisplayView(signSolana: signSolana)
                 }
             }
         }

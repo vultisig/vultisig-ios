@@ -39,6 +39,13 @@ struct KeysignPayload: Codable, Hashable {
         return direct
     }
 
+    var signSolana: SignSolana? {
+        guard case let .signSolana(solana) = signData else {
+            return nil
+        }
+        return solana
+    }
+
     var fromAmountString: String {
         let decimalAmount = Decimal(string: swapPayload?.fromAmount.description ?? "") ?? Decimal.zero
         let power = Decimal(sign: .plus, exponent: -(swapPayload?.fromCoin.decimals ?? 1), significand: 1)
