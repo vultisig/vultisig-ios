@@ -15,8 +15,8 @@ struct OnboardingRouter {
         switch route {
         case .vaultSetup(let tssType, let keyImportInput, let setupType):
             viewBuilder.buildVaultSetupScreen(tssType: tssType, keyImportInput: keyImportInput, setupType: setupType)
-        case .importSeedphrase(let keyImportInput):
-            viewBuilder.buildImportSeedphraseScreen(keyImportInput: keyImportInput)
+        case .importSeedphrase:
+            viewBuilder.buildImportSeedphraseScreen()
         case .chainsSetup(let mnemonic):
             viewBuilder.buildChainsSetupScreen(mnemonic: mnemonic)
         case .keyImportDeviceCount(let mnemonic, let chainSettings):

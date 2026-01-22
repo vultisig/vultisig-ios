@@ -60,7 +60,7 @@ class SendCryptoViewModel: ObservableObject {
     }
 
     func loadFastVault(tx: SendTransaction, vault: Vault) async {
-        tx.isFastVault = await logic.loadFastVault(tx: tx, vault: vault)
+        tx.isFastVault = await logic.loadFastVault(vault: vault)
     }
 
     func setMaxValues(tx: SendTransaction, percentage: Double = 100) {
@@ -197,7 +197,7 @@ struct SendCryptoLogic {
         var showAddressAlert: Bool = false
     }
 
-    func loadFastVault(tx: SendTransaction, vault: Vault) async -> Bool {
+    func loadFastVault(vault: Vault) async -> Bool {
         let isExist = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
         let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
 
@@ -456,7 +456,7 @@ struct SendCryptoLogic {
 
         case .ripple:
             do {
-                let rawBalance = try await ripple.getBalance(coin: coinMeta, address: address)
+                let rawBalance = try await ripple.getBalance(address: address)
                 tx.coin.rawBalance = rawBalance
                 var gas = BigInt.zero
                 if percentage == 100 {

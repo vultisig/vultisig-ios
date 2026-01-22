@@ -95,7 +95,6 @@ private extension SendGasSettingsViewModel {
         let service = BlockChainService.shared
         let fee =  try await service.fetchUTXOFee(
             coin: coin,
-            action: .transfer,
             feeMode: selectedMode
         )
         await MainActor.run {

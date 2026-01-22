@@ -102,8 +102,7 @@ struct SendCryptoDoneSummary: View {
             getGeneralCell(
                 title: "from",
                 description: sendSummaryViewModel.getFromAmount(
-                    tx,
-                    selectedCurrency: settingsViewModel.selectedCurrency
+                    tx
                 )
             )
 
@@ -111,8 +110,7 @@ struct SendCryptoDoneSummary: View {
             getGeneralCell(
                 title: "to",
                 description: sendSummaryViewModel.getToAmount(
-                    tx,
-                    selectedCurrency: settingsViewModel.selectedCurrency
+                    tx
                 )
             )
 

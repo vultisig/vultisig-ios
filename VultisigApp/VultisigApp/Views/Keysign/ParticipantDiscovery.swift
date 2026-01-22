@@ -19,7 +19,7 @@ class ParticipantDiscovery: ObservableObject {
         self.peersFound = []
     }
 
-    func getParticipants(serverAddr: String, sessionID: String, localParty: String, pubKeyECDSA: String) {
+    func getParticipants(serverAddr: String, sessionID: String, localParty: String) {
         let urlString = "\(serverAddr)/\(sessionID)"
         guard let url = URL(string: urlString) else {
             self.logger.error("Invalid URL: \(urlString)")

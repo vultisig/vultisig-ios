@@ -31,8 +31,8 @@ class SwapCryptoVerifyViewModel: ObservableObject {
         }
     }
 
-    func scan(transaction: SwapTransaction, vault: Vault) async {
-        await securityScanViewModel.scan(transaction: transaction, vault: vault)
+    func scan(transaction: SwapTransaction) async {
+        await securityScanViewModel.scan(transaction: transaction)
     }
 
     func validateSecurityScanner() -> Bool {

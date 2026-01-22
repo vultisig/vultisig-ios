@@ -77,7 +77,7 @@ struct CosmosHelperStruct {
         case .ibcTransfer:
             var memo = ""
             let splitedMemo = keysignPayload.memo?.split(separator: ":")
-            if splitedMemo?.count == 0 {
+            if splitedMemo?.isEmpty ?? true {
                 throw HelperError.runtimeError("To send IBC transaction, memo should be specified")
             }
 
@@ -243,7 +243,7 @@ struct CosmosHelperStruct {
                                                                                  publicKeys: publicKeys)
             let output = try CosmosSigningOutput(serializedBytes: compileWithSignature)
 
-            if output.errorMessage.count > 0 {
+            if output.errorMessage.isNotEmpty {
                 print("getSignedTransaction Error message: \(output.errorMessage)")
             }
 

@@ -25,7 +25,7 @@ struct EditFolderScreen: View {
     @EnvironmentObject var appViewModel: AppViewModel
 
     var saveButtonDisabled: Bool {
-        folderName.isEmpty || folderViewModel.selectedVaults.count == 0
+        folderName.isEmpty || folderViewModel.selectedVaults.isEmpty
     }
 
     var body: some View {

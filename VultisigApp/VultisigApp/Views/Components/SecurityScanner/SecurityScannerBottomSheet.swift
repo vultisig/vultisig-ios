@@ -108,7 +108,7 @@ private extension SecurityScannerResult {
             title = "securityScannerHighRiskTitle".localized
         case .critical:
             title = "securityScannerCriticalRiskTitle".localized
-        case .none, .low:
+        case .noRisk, .low:
             title = "securityScannerLowRiskTitle".localized
         }
 

@@ -51,20 +51,20 @@ extension QRCode {
         let eyeOuterPath = self.path(rect.size, components: .eyeOuter, shape: shape)
         ctx.usingGState { context in
             let outerStyle = style.eye ?? style.onPixels
-            outerStyle.fill(ctx: context, rect: rect, path: eyeOuterPath)
+            outerStyle.fill(ctx: context, path: eyeOuterPath)
         }
 
         // Draw the eye 'pupil'
         let eyePupilPath = self.path(rect.size, components: .eyePupil, shape: shape)
         ctx.usingGState { context in
             let pupilStyle = style.pupil ?? style.eye ?? style.onPixels
-            pupilStyle.fill(ctx: context, rect: rect, path: eyePupilPath)
+            pupilStyle.fill(ctx: context, path: eyePupilPath)
         }
 
         // Now, the 'on' pixels
         let qrPath = self.path(rect.size, components: .onPixels, shape: shape)
         ctx.usingGState { context in
-            style.onPixels.fill(ctx: context, rect: rect, path: qrPath)
+            style.onPixels.fill(ctx: context, path: qrPath)
         }
     }
 }

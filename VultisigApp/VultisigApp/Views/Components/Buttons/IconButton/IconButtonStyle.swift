@@ -17,10 +17,10 @@ struct IconButtonStyle: ButtonStyle {
             .font(font(for: size))
             .padding(padding(for: size))
             .background(backgroundColor(for: type, isPressed: configuration.isPressed, isEnabled: isEnabled))
-            .foregroundColor(foregroundColor(for: type, isPressed: configuration.isPressed, isEnabled: isEnabled))
+            .foregroundColor(foregroundColor(for: type, isEnabled: isEnabled))
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius(for: size))
-                    .stroke(borderColor(for: type, isPressed: configuration.isPressed, isEnabled: isEnabled),
+                    .stroke(borderColor(for: type, isEnabled: isEnabled),
                            lineWidth: borderWidth(for: type))
             )
             .cornerRadius(cornerRadius(for: size))
@@ -83,7 +83,7 @@ private extension IconButtonStyle {
         }
     }
 
-    func foregroundColor(for type: ButtonType, isPressed: Bool, isEnabled: Bool) -> Color {
+    func foregroundColor(for type: ButtonType, isEnabled: Bool) -> Color {
         switch type {
         case .primary, .alert, .primarySuccess:
             if !isEnabled {
@@ -106,7 +106,7 @@ private extension IconButtonStyle {
         }
     }
 
-    func borderColor(for type: ButtonType, isPressed: Bool, isEnabled: Bool) -> Color {
+    func borderColor(for type: ButtonType, isEnabled: Bool) -> Color {
         switch type {
         case .primary, .alert, .primarySuccess:
             return .clear

@@ -40,7 +40,7 @@ struct EditReferralDetailsView: View {
         }
         .onLoad {
             Task {
-                await viewModel.setup(tx: sendTx)
+                await viewModel.setup()
             }
         }
     }

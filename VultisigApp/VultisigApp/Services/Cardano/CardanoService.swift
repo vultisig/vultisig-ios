@@ -12,8 +12,8 @@ class CardanoService {
 
     private init() {}
 
-    func getBalance(coin: CoinMeta, address: String) async throws -> String {
-        let url = URL(string: Endpoint.fetchCardanoBalance(address: address))!
+    func getBalance(address: String) async throws -> String {
+        let url = URL(string: Endpoint.fetchCardanoBalance())!
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -58,7 +58,7 @@ class CardanoService {
     }
 
     func getUTXOs(coin: Coin) async throws -> [UtxoInfo] {
-        let url = URL(string: Endpoint.fetchCardanoUTXOs(address: coin.address))!
+        let url = URL(string: Endpoint.fetchCardanoUTXOs())!
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"

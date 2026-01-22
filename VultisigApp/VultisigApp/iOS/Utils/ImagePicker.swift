@@ -19,7 +19,7 @@ struct ImagePicker: UIViewControllerRepresentable {
         picker.sourceType = .photoLibrary
         return picker
     }
-
+    // swiftlint:disable:next unused_parameter
     func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {
         // Nothing to update
     }
@@ -34,14 +34,14 @@ struct ImagePicker: UIViewControllerRepresentable {
         init(_ parent: ImagePicker) {
             self.parent = parent
         }
-
+        // swiftlint:disable:next unused_parameter
         func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
             if let image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
                 parent.selectedImage = image
             }
             parent.presentationMode.wrappedValue.dismiss()
         }
-
+        // swiftlint:disable:next unused_parameter
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
             parent.presentationMode.wrappedValue.dismiss()
         }

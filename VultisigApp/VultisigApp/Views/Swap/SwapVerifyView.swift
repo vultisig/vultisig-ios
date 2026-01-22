@@ -41,7 +41,7 @@ struct SwapVerifyView: View {
             referredViewModel.setData()
             verifyViewModel.onLoad()
             Task {
-                await verifyViewModel.scan(transaction: tx, vault: vault)
+                await verifyViewModel.scan(transaction: tx)
             }
         }
         .bottomSheet(isPresented: $verifyViewModel.showSecurityScannerSheet) {

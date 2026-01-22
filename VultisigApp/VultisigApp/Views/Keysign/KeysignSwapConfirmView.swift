@@ -88,7 +88,6 @@ struct KeysignSwapConfirmView: View {
             if let fromCoin = payload?.fromCoin {
                 getSwapAssetCell(
                     for: viewModel.getFromAmount(),
-                    with: payload?.fromCoin.ticker,
                     fiatValue: viewModel.getFromFiatAmount(),
                     on: payload?.fromCoin.chain,
                     coin: fromCoin,
@@ -101,7 +100,6 @@ struct KeysignSwapConfirmView: View {
             if let toCoin = payload?.toCoin {
                 getSwapAssetCell(
                     for: viewModel.getToAmount(),
-                    with: payload?.toCoin.ticker,
                     fiatValue: viewModel.getToFiatAmount(),
                     on: payload?.toCoin.chain,
                     coin: toCoin,
@@ -181,7 +179,6 @@ struct KeysignSwapConfirmView: View {
 
     private func getSwapAssetCell(
         for amount: String?,
-        with ticker: String?,
         fiatValue: String,
         on chain: Chain? = nil,
         coin: Coin,

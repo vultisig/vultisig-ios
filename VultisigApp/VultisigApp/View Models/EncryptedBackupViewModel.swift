@@ -62,33 +62,33 @@ class EncryptedBackupViewModel: ObservableObject {
         extractedFilesDirectory = nil
     }
 
-    func exportFileWithoutPassword(_ backupType: VaultBackupType) async -> FileExporterModel<EncryptedDataFile>? {
-        return try? await createBackupFile(backupType, encryptionPassword: nil)
+    func exportFileWithoutPassword(_ backupType: VaultBackupType) -> FileExporterModel<EncryptedDataFile>? {
+        return try? createBackupFile(backupType, encryptionPassword: nil)
     }
 
-    func exportFileWithVaultPassword(_ backupType: VaultBackupType) async -> FileExporterModel<EncryptedDataFile>? {
+    func exportFileWithVaultPassword(_ backupType: VaultBackupType) -> FileExporterModel<EncryptedDataFile>? {
         guard let vaultPassword = keychain.getFastPassword(pubKeyECDSA: backupType.vault.pubKeyECDSA) else {
             debugPrint("Couldn't fetch password for vault")
             return nil
         }
 
-        return try? await createBackupFile(backupType, encryptionPassword: vaultPassword)
+        return try? createBackupFile(backupType, encryptionPassword: vaultPassword)
     }
 
-    func exportFileWithCustomPassword(_ backupType: VaultBackupType) async -> FileExporterModel<EncryptedDataFile>? {
-        return try? await createBackupFile(backupType, encryptionPassword: encryptionPassword)
+    func exportFileWithCustomPassword(_ backupType: VaultBackupType) -> FileExporterModel<EncryptedDataFile>? {
+        return try? createBackupFile(backupType, encryptionPassword: encryptionPassword)
     }
 
-    func createBackupFile(_ backupType: VaultBackupType, encryptionPassword: String?) async throws -> FileExporterModel<EncryptedDataFile>? {
+    func createBackupFile(_ backupType: VaultBackupType, encryptionPassword: String?) throws -> FileExporterModel<EncryptedDataFile>? {
         switch backupType {
         case .single(let vault):
-            return try await createSingleBackupFile(vault: vault, encryptionPassword: encryptionPassword)
-        case .multiple(let vaults, let selectedVault):
-            return try await createMultipleBackupFile(vaults: vaults, selectedVault: selectedVault, encryptionPassword: encryptionPassword)
+            return try createSingleBackupFile(vault: vault, encryptionPassword: encryptionPassword)
+        case .multiple(let vaults, _):
+            return try createMultipleBackupFile(vaults: vaults, encryptionPassword: encryptionPassword)
         }
     }
 
-    func createMultipleBackupFile(vaults: [Vault], selectedVault: Vault, encryptionPassword: String?) async throws -> FileExporterModel<EncryptedDataFile>? {
+    func createMultipleBackupFile(vaults: [Vault], encryptionPassword: String?) throws -> FileExporterModel<EncryptedDataFile>? {
         let timestamp = Int(Date().timeIntervalSince1970)
         let backupFolderName = "vultisig_backups_\(timestamp)"
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(backupFolderName)
@@ -145,7 +145,7 @@ class EncryptedBackupViewModel: ObservableObject {
         return fileURL
     }
 
-    func createSingleBackupFile(vault: Vault, encryptionPassword: String?) async throws -> FileExporterModel<EncryptedDataFile>? {
+    func createSingleBackupFile(vault: Vault, encryptionPassword: String?) throws -> FileExporterModel<EncryptedDataFile>? {
         let tempURL = try generateBackupFile(vault: vault, encryptionPassword: encryptionPassword)
         guard let tempURL, let file = EncryptedDataFile(url: tempURL) else {
             return nil
@@ -622,7 +622,7 @@ class EncryptedBackupViewModel: ObservableObject {
         do {
             let regex = try NSRegularExpression(pattern: "share\\d+of\\d+") // share2of3, share3of5
             let matches = regex.matches(in: filename, range: NSRange(filename.startIndex..., in: filename))
-            return matches.count > 0
+            return !matches.isEmpty
         } catch {
             print("Error checking if filename is a DKLS backup: \(error.localizedDescription)")
             return false

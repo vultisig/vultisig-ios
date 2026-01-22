@@ -102,7 +102,7 @@ struct FileQRCodeImporterMac: View {
         print("RESET")
     }
 
-    func handleFileImport(result: Result<[URL], Error>) {
+    func handleFileImport(_: Result<[URL], Error>) {
         print("IMPORTED")
     }
 

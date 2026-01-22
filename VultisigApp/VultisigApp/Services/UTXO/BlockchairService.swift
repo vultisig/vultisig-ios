@@ -43,7 +43,7 @@ actor BlockchairService {
 
     func fetchSatsPrice(coin: Coin) async throws -> BigInt {
         let cacheKey = "utxo-\(coin.chain.name.lowercased())-fee-price"
-        if let cachedData: BigInt = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheFeePrice, timeInSeconds: 60*5) {
+        if let cachedData: BigInt = Utils.getCachedData(cacheKey: cacheKey, cache: cacheFeePrice, timeInSeconds: 60*5) {
             return cachedData
         }
         let urlString = Endpoint.blockchairStats(coin.chain.name.lowercased()).absoluteString

@@ -123,7 +123,7 @@ final class KeyImportChainsSetupViewModel: ObservableObject {
 
     init() {}
 
-    func onLoad(mnemonic: String) async {
+    func onLoad(mnemonic: String) {
         fetchChainsTask = Task {
             let activeChains = await fetchActiveChains(mnemonic: mnemonic)
             guard !Task.isCancelled else { return }

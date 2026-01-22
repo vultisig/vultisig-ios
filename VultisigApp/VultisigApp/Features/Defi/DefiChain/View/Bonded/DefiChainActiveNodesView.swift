@@ -47,7 +47,7 @@ struct DefiChainActiveNodesView: View {
             }
         }
         .transition(.verticalGrowAndFade)
-        .showIf(activeNodes.count > 0)
+        .showIf(!activeNodes.isEmpty)
         .onChange(of: activeNodes.count) { oldValue, newValue in
             if oldValue == 0, newValue > 0 {
                 isExpanded = true

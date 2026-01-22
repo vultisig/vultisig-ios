@@ -19,7 +19,7 @@ class PolkadotService: RpcService {
 
     private func fetchBalance(address: String) async throws -> BigInt {
         let cacheKey = "polkadot-\(address)-balance"
-        if let cachedData: BigInt = await Utils.getCachedData(cacheKey: cacheKey, cache: cachePolkadotBalance, timeInSeconds: 60*1) {
+        if let cachedData: BigInt = Utils.getCachedData(cacheKey: cacheKey, cache: cachePolkadotBalance, timeInSeconds: 60*1) {
             return cachedData
         }
 
@@ -60,7 +60,7 @@ class PolkadotService: RpcService {
 
     private func fetchGenesisBlockHash() async throws -> String {
         let cacheKey = "polkadot-chain_getBlockHash-genesis"
-        if let cachedData: String = await Utils.getCachedData(cacheKey: cacheKey, cache: cachePolkadotGenesisBlockHash, timeInSeconds: 60*60*24) {
+        if let cachedData: String = Utils.getCachedData(cacheKey: cacheKey, cache: cachePolkadotGenesisBlockHash, timeInSeconds: 60*60*24) {
             return cachedData
         }
 
