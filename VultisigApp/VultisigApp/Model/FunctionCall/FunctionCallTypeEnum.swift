@@ -29,7 +29,7 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
 
     var id: String { self.rawValue }
 
-    func display(coin: Coin) -> String {
+    func display() -> String {
         switch self {
         case .rebond:
             return NSLocalizedString("Rebond", comment: "")

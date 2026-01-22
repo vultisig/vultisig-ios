@@ -23,7 +23,7 @@ class HomeViewModel: ObservableObject {
         return vaults
             .map(\.coins.totalBalanceInFiatDecimal)
             .reduce(0, +)
-            .formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
+            .formatToFiat(includeCurrencySymbol: true)
     }
 
     func balanceText(for vault: Vault?) -> String {

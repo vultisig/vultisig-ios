@@ -21,7 +21,7 @@ struct FillStyleSolid {
         ctx.fill(rect)
     }
 
-    func fill(ctx: CGContext, rect: CGRect, path: CGPath) {
+    func fill(ctx: CGContext, path: CGPath) {
         ctx.setFillColor(color)
         ctx.addPath(path)
         ctx.fillPath()

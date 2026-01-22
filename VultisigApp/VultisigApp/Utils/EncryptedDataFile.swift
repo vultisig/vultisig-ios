@@ -28,7 +28,7 @@ struct EncryptedDataFile: FileDocument {
         }
         self.data = data
     }
-
+    // swiftlint:disable:next unused_parameter
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
         return FileWrapper(regularFileWithContents: data)
     }

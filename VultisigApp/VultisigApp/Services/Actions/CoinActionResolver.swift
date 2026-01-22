@@ -18,7 +18,7 @@ final class CoinActionResolver {
     }
 
     func resolveActions(for chain: Chain) async -> [CoinAction] {
-        guard let config = try? await getConfig(for: chain) else {
+        guard let config = try? await getConfig() else {
             return chain.defaultActions
         }
         guard let disabled = config.disabled[chain.rawValue] else {
@@ -35,7 +35,7 @@ private extension CoinActionResolver {
         let disabled: [String: [CoinAction]]
     }
 
-    private func getConfig(for chain: Chain) async throws -> Config {
+    private func getConfig() async throws -> Config {
         if let config {
             return config
         }

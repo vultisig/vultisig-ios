@@ -186,7 +186,7 @@ class PendingTransactionManager {
                 print("PendingTransactionManager: ✅ Transaction confirmed and removed: \(transaction.txHash.prefix(8))...")
 
                 // Clear cache to force fresh nonce fetch for next transaction (background thread)
-                BlockChainService.shared.clearCacheForAddress(transaction.address, chain: transaction.chain)
+                BlockChainService.shared.clearCacheForAddress()
 
                 // Stop polling for this chain if no more pending transactions for it
                 let stillHasPendingForChain = self.pendingTransactions.allItems().values.contains {

@@ -137,16 +137,16 @@ public class UTXOTransactionsService: ObservableObject {
         task.resume()
     }
 
-    func getAmount(for transaction: UTXOTransactionMempool, tx: SendTransaction) -> String {
+    func getAmount(for transaction: UTXOTransactionMempool) -> String {
         if transaction.isSent {
-            return formatAmount(transaction.amountSent, tx: tx)
+            return formatAmount(transaction.amountSent)
         } else if transaction.isReceived {
-            return formatAmount(transaction.amountReceived, tx: tx)
+            return formatAmount(transaction.amountReceived)
         }
         return ""
     }
 
-    func formatAmount(_ amountSatoshis: Int, tx: SendTransaction) -> String {
+    func formatAmount(_ amountSatoshis: Int) -> String {
         let amountBTC = Decimal(amountSatoshis) / 100_000_000 // Convert satoshis to BTC
         return  amountBTC.formatForDisplay()
     }

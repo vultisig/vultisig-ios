@@ -33,7 +33,7 @@ struct CoinService {
     static func saveAssets(for vault: Vault, selection: Set<CoinMeta>) async {
         do {
             // Step 1: Remove coins that are no longer selected
-            try await removeDeselectedCoins(vault: vault, selection: selection)
+            try removeDeselectedCoins(vault: vault, selection: selection)
 
             // Step 2: Add newly selected coins
             try await addNewlySelectedCoins(vault: vault, selection: selection)
@@ -45,7 +45,7 @@ struct CoinService {
 
     // MARK: - Main Flow Methods
 
-    private static func removeDeselectedCoins(vault: Vault, selection: Set<CoinMeta>) async throws {
+    private static func removeDeselectedCoins(vault: Vault, selection: Set<CoinMeta>) throws {
         // Find all coins that need to be removed
         let coinsToRemove = findAllCoinsToRemove(vault: vault, selection: selection)
 
@@ -60,7 +60,7 @@ struct CoinService {
         // Check which remaining coins should be hidden (auto-discovered tokens being removed individually)
         for coin in coinsToRemove {
             // Only hide if the chain is NOT being removed entirely
-            if !chainsBeingRemoved.contains(coin.chain) && shouldHideToken(coin, vault: vault) {
+            if !chainsBeingRemoved.contains(coin.chain) && shouldHideToken(coin) {
                 addToHiddenTokens(coin, vault: vault)
             }
         }
@@ -407,7 +407,7 @@ struct CoinService {
     // MARK: - Hidden Token Management
 
     /// Check if a token should be hidden when removed
-    private static func shouldHideToken(_ coin: Coin, vault: Vault) -> Bool {
+    private static func shouldHideToken(_ coin: Coin) -> Bool {
         // Hide token if:
         // 1. It's not a native token
         // 2. It was auto-discovered (has or had a balance)

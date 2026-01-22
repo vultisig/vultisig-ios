@@ -55,7 +55,7 @@ struct SwapChainPickerView: View {
             searchBar
             ScrollView {
                 VStack(spacing: 12) {
-                    if viewModel.filteredChains.count > 0 {
+                    if !viewModel.filteredChains.isEmpty {
                         listHeader
                         list
                     } else {

@@ -123,7 +123,7 @@ extension String {
             return self
         }
 
-        return number.formatToFiat(includeCurrencySymbol: includeCurrencySymbol, useAbbreviation: false)
+        return number.formatToFiat(includeCurrencySymbol: includeCurrencySymbol)
     }
 
     func formatToDecimal(digits: Int = 8) -> String {

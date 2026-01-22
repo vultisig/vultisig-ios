@@ -98,7 +98,7 @@ private struct IOSShareButton<Content: View>: View {
 
 private struct ActivityViewController: UIViewControllerRepresentable {
     let items: [Any]
-
+    // swiftlint:disable:next unused_parameter
     func makeUIViewController(context: Context) -> UIActivityViewController {
         let vc = UIActivityViewController(activityItems: items, applicationActivities: nil)
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
@@ -107,7 +107,7 @@ private struct ActivityViewController: UIViewControllerRepresentable {
         }
         return vc
     }
-
+    // swiftlint:disable:next unused_parameter
     func updateUIViewController(_ vc: UIActivityViewController, context: Context) {}
 }
 #endif
@@ -179,7 +179,7 @@ private struct SharePickerView: NSViewRepresentable {
         context.coordinator.parentView = view
         return view
     }
-
+    // swiftlint:disable:next unused_parameter
     func updateNSView(_ nsView: NSView, context: Context) {
         if isPresented {
             context.coordinator.showSharePicker(items: items, sourceRect: sourceRect)

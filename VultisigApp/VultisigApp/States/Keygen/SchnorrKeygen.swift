@@ -137,7 +137,7 @@ final class SchnorrKeygen {
             if result != LIB_OK {
                 print("fail to get outbound message")
             }
-            if outboundMessage.count == 0 {
+            if outboundMessage.isEmpty {
                 return
             }
 
@@ -148,7 +148,7 @@ final class SchnorrKeygen {
                                                                message: message,
                                                                idx: UInt32(i))
 
-                if receiverArray.count == 0 {
+                if receiverArray.isEmpty {
                     continue
                 }
                 let receiverString = String(bytes: receiverArray, encoding: .utf8)!
@@ -178,7 +178,7 @@ final class SchnorrKeygen {
             }
             switch httpResp.statusCode {
             case 200 ... 299:
-                if data.count > 0 {
+                if !data.isEmpty {
                     isFinished = try await processInboundMessage(handle: handle, data: data)
                     if isFinished {
                         return true
@@ -203,7 +203,7 @@ final class SchnorrKeygen {
     }
 
     func processInboundMessage(handle: goschnorr.Handle, data: Data) async throws -> Bool {
-        if data.count == 0 {
+        if data.isEmpty {
             return false
         }
         let decoder = JSONDecoder()

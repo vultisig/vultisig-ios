@@ -123,7 +123,7 @@ struct ContentView: View {
             return
         }
 
-        guard !appViewModel.showOnboarding && vaults.count>0 else {
+        guard !appViewModel.showOnboarding && !vaults.isEmpty else {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 appViewModel.showSplashView = false
             }

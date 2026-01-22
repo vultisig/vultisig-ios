@@ -55,8 +55,7 @@ final class BlockChainService {
     private let cardano = CardanoService.shared
     private var localCache = ThreadSafeDictionary<String, BlockSpecificCacheItem>()
 
-    /// Clear cache for a specific address to force fresh nonce fetch
-    func clearCacheForAddress(_ address: String, chain: Chain) {
+    func clearCacheForAddress() {
         localCache.clear()
     }
 
@@ -193,7 +192,6 @@ final class BlockChainService {
             isDeposit: tx.isDeposit,
             transactionType: .unspecified,
             gasLimit: gasLimit,
-            byteFee: nil,
             fromAddress: tx.fromCoin.address,
             toAddress: nil,  // Swaps don't have a specific toAddress in the same way
             memo: nil,  // Swaps don't have memos
@@ -205,7 +203,7 @@ final class BlockChainService {
         return specific
     }
 
-    func fetchUTXOFee(coin: Coin, action: Action, feeMode: FeeMode) async throws -> BigInt {
+    func fetchUTXOFee(coin: Coin, feeMode: FeeMode) async throws -> BigInt {
         let sats = try await utxo.fetchSatsPrice(coin: coin)
 
         // DOGE has extremely high base fees from API, need to reduce significantly
@@ -272,7 +270,6 @@ private extension BlockChainService {
             isDeposit: tx.isDeposit,
             transactionType: tx.transactionType,
             gasLimit: tx.gasLimit,
-            byteFee: tx.byteFee,
             fromAddress: tx.fromAddress,
             toAddress: tx.toAddress,
             memo: tx.memo,
@@ -313,7 +310,6 @@ private extension BlockChainService {
             isDeposit: tx.isDeposit,
             transactionType: tx.transactionType,
             gasLimit: max(gasLimit, tx.gasLimit),
-            byteFee: tx.gasLimit,
             fromAddress: tx.fromAddress,
             toAddress: tx.toAddress,
             memo: tx.memo,
@@ -330,7 +326,6 @@ private extension BlockChainService {
                        isDeposit: Bool,
                        transactionType: VSTransactionType,
                        gasLimit: BigInt?,
-                       byteFee: BigInt?,
                        fromAddress: String?,
                        toAddress: String?,
                        memo: String?,
@@ -340,7 +335,7 @@ private extension BlockChainService {
         case .zcash:
             return .UTXO(byteFee: coin.feeDefault.toBigInt(), sendMaxAmount: sendMaxAmount)
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
-            let  byteFeeValue = try await fetchUTXOFee(coin: coin, action: action, feeMode: feeMode)
+            let  byteFeeValue = try await fetchUTXOFee(coin: coin, feeMode: feeMode)
             return .UTXO(byteFee: byteFeeValue, sendMaxAmount: sendMaxAmount)
         case .cardano:
             let ttl = try await cardano.calculateDynamicTTL()
@@ -557,7 +552,7 @@ private extension BlockChainService {
                     let tenMinutesFromNow = now.addingTimeInterval(10 * 60)
                     let timeoutInNanoseconds = UInt64(tenMinutesFromNow.timeIntervalSince1970 * 1_000_000_000)
 
-                    let latestBlock = try await service.fetchLatestBlock(coin: coin)
+                    let latestBlock = try await service.fetchLatestBlock()
 
                     // Update existing ibcDenomTrace or create a new one with timeout info
                     if ibcDenomTrace != nil {

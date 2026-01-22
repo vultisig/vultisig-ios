@@ -49,7 +49,7 @@ public protocol TargetType {
 
 /// Validation type for SSL certificate validation
 public enum ValidationType {
-    case none           // No validation
+    case noValidation           // No validation
     case successCodes   // Validate success status codes (200-299)
     case customCodes([Int])  // Validate custom status codes
 }

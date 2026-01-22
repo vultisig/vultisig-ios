@@ -13,12 +13,12 @@ struct DefiBalanceService {
             .filter { CoinAction.defiChains.contains($0) }
             .map { totalBalanceInFiat(for: $0, vault: vault) }
             .reduce(Decimal.zero, +)
-        return totalBalance.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
+        return totalBalance.formatToFiat(includeCurrencySymbol: true)
     }
 
     func totalBalanceInFiatString(for chain: Chain, vault: Vault) -> String {
         let balanceDecimal = totalBalanceInFiat(for: chain, vault: vault)
-        return balanceDecimal.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
+        return balanceDecimal.formatToFiat(includeCurrencySymbol: true)
     }
 
     func totalBalanceInFiat(for chain: Chain, vault: Vault) -> Decimal {
@@ -37,7 +37,7 @@ struct DefiBalanceService {
 
 private extension DefiBalanceService {
     func thorChainTotalBalanceFiatDecimal(for vault: Vault) -> Decimal {
-        guard vault.defiPositions.first(where: { $0.chain == .thorChain }) != nil else {
+        guard vault.defiPositions.contains(where: { $0.chain == .thorChain }) else {
             return .zero
         }
 
@@ -48,7 +48,7 @@ private extension DefiBalanceService {
     }
 
     func mayaChainTotalBalanceFiatDecimal(for vault: Vault) -> Decimal {
-        guard vault.defiPositions.first(where: { $0.chain == .mayaChain }) != nil  else {
+        guard vault.defiPositions.contains(where: { $0.chain == .mayaChain }) else {
             return .zero
         }
 

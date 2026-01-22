@@ -328,7 +328,7 @@ enum Utils {
         return bytes.map { String(format: "%02x", $0) }.joined()
     }
 
-    public static func extractResultFromJson<T: Decodable>(fromData data: Data, path: String, type: T.Type) -> T? {
+    public static func extractResultFromJson<T: Decodable>(fromData data: Data, path: String) -> T? {
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary
             if let result = getValueFromJson(for: path, in: json) {
@@ -424,7 +424,7 @@ enum Utils {
         return elapsedTime <= timeInSeconds
     }
 
-    public static func getCachedData<T>(cacheKey: String, cache: [String: (data: T, timestamp: Date)], timeInSeconds: TimeInterval) async -> T? {
+    public static func getCachedData<T>(cacheKey: String, cache: [String: (data: T, timestamp: Date)], timeInSeconds: TimeInterval) -> T? {
         if let cacheEntry = cache[cacheKey], isCacheValid(for: cacheKey, in: cache, timeInSeconds: timeInSeconds) {
             return cacheEntry.data
         } else {
@@ -432,15 +432,15 @@ enum Utils {
         }
     }
 
-    public static func getCachedData<T>(cacheKey: String, cache: ThreadSafeDictionary<String, (data: T, timestamp: Date)>, timeInSeconds: TimeInterval) async -> T? {
-        if let cacheEntry = cache.get(cacheKey), isCacheValid(for: cacheKey, entry: cacheEntry, timeInSeconds: timeInSeconds) {
+    public static func getCachedData<T>(cacheKey: String, cache: ThreadSafeDictionary<String, (data: T, timestamp: Date)>, timeInSeconds: TimeInterval) -> T? {
+        if let cacheEntry = cache.get(cacheKey), isCacheValid(entry: cacheEntry, timeInSeconds: timeInSeconds) {
             return cacheEntry.data
         } else {
             return nil
         }
     }
 
-    public static func isCacheValid<T>(for cacheKey: String, entry: (data: T, timestamp: Date), timeInSeconds: TimeInterval) -> Bool {
+    public static func isCacheValid<T>(entry: (data: T, timestamp: Date), timeInSeconds: TimeInterval) -> Bool {
         let elapsedTime = Date().timeIntervalSince(entry.timestamp)
         return elapsedTime < timeInSeconds
     }

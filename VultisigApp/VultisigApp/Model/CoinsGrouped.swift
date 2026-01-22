@@ -37,7 +37,7 @@ class GroupedChain: ObservableObject, Identifiable, Hashable {
     }
 
     var totalBalanceInFiatString: String {
-        return totalBalanceInFiatDecimal.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
+        return totalBalanceInFiatDecimal.formatToFiat(includeCurrencySymbol: true)
     }
 
     var defiBalanceInFiatDecimal: Decimal {
@@ -47,7 +47,7 @@ class GroupedChain: ObservableObject, Identifiable, Hashable {
     }
 
     var defiBalanceInFiatString: String {
-        return defiBalanceInFiatDecimal.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
+        return defiBalanceInFiatDecimal.formatToFiat(includeCurrencySymbol: true)
     }
 
     var name: String

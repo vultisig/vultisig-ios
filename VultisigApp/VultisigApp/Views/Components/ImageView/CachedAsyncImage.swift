@@ -369,7 +369,7 @@ private extension CachedAsyncImage {
 private class URLSessionTaskController: NSObject, URLSessionTaskDelegate {
 
     var metrics: URLSessionTaskMetrics?
-
+    // swiftlint:disable:next unused_parameter
     func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
         self.metrics = metrics
     }

@@ -91,6 +91,7 @@ class MacAddressScannerViewModel: NSObject, ObservableObject {
 }
 
 extension MacAddressScannerViewModel: AVCaptureVideoDataOutputSampleBufferDelegate {
+    // swiftlint:disable:next unused_parameter
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
 

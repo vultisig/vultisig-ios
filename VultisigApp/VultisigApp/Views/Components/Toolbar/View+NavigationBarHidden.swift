@@ -8,7 +8,7 @@
 import SwiftUI
 
 extension View {
-    func customNavigationBarHidden(_ hidden: Bool) -> some View {
+    func customNavigationBarHidden() -> some View {
         #if os(macOS)
         self
         #else

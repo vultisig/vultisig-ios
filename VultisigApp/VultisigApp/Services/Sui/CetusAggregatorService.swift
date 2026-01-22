@@ -120,7 +120,7 @@ class CetusAggregatorService {
                 amount: amount
             )
 
-            if routes.routes.count > 0 {
+            if !routes.routes.isEmpty {
                 let amountOut = Double(routes.amount_out) ?? 0
                 let amountIn = Double(routes.amount_in) ?? 0
 
@@ -144,7 +144,7 @@ class CetusAggregatorService {
                 amount: amount
             )
 
-            if tokenToSuiRoutes.routes.count > 0 {
+            if !tokenToSuiRoutes.routes.isEmpty {
                 let suiAmountOut = tokenToSuiRoutes.amount_out
 
                 // Then get SUI -> USDC rate
@@ -154,7 +154,7 @@ class CetusAggregatorService {
                     amount: suiAmountOut
                 )
 
-                if suiToUsdcRoutes.routes.count > 0 {
+                if !suiToUsdcRoutes.routes.isEmpty {
                     let usdcAmountOut = Double(suiToUsdcRoutes.amount_out) ?? 0
                     let amountIn = Double(amount) ?? 0
 

@@ -66,10 +66,7 @@ struct MacScannerView: View {
             if let newValue = newValue, !newValue.isEmpty {
                 cameraViewModel.handleScan(
                     vaults: vaults,
-                    sendTx: sendTx,
-                    deeplinkViewModel: deeplinkViewModel,
-                    vaultDetailViewModel: vaultDetailViewModel,
-                    coinSelectionViewModel: coinSelectionViewModel
+                    deeplinkViewModel: deeplinkViewModel
                 )
             }
         }

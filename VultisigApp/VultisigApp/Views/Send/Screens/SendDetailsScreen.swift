@@ -48,16 +48,14 @@ struct SendDetailsScreen: View {
             .onAppear {
                 // Initialize button state immediately based on chain
                 sendCryptoViewModel.initializePendingTransactionState(for: tx.coin.chain)
-                Task {
-                    await checkPendingTransactions()
-                }
+                checkPendingTransactions()
             }
             .onLoad {
                 sendDetailsViewModel.onLoad()
                 Task {
                     await setMainData()
                     // Fee calculation moved to Verify screen
-                    await checkPendingTransactions()
+                    checkPendingTransactions()
 
                     // Start polling for current chain if there are pending transactions
                     PendingTransactionManager.shared.startPollingForChain(tx.coin.chain)
@@ -73,7 +71,7 @@ struct SendDetailsScreen: View {
                     PendingTransactionManager.shared.stopPollingForChain(oldValue.chain)
 
                     // Fee calculation moved to Verify screen
-                    await checkPendingTransactions()
+                    checkPendingTransactions()
 
                     // Só inicia polling se a NOVA chain suportar pending transactions
                     if newValue.chain.supportsPendingTransactions {
@@ -349,7 +347,7 @@ struct SendDetailsScreen: View {
         await MainActor.run {
             coinBalance = tx.coin.balanceString
         }
-        await checkPendingTransactions()
+        checkPendingTransactions()
     }
 }
 
@@ -422,7 +420,7 @@ private func setMainData() async {
     }
 
     @MainActor
-    private func checkPendingTransactions() async {
+    private func checkPendingTransactions() {
         guard tx.coin.chain.supportsPendingTransactions else {
             // For non-Cosmos chains, immediately enable button
             sendCryptoViewModel.hasPendingTransaction = false

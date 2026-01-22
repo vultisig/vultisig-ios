@@ -42,7 +42,7 @@ extension BlockaidTransactionScanResponseJson {
         }
 
         let riskLevel = result.validation.toSolanaValidationRiskLevel()
-        let isSecure = riskLevel == .none || riskLevel == .low
+        let isSecure = riskLevel == .noRisk || riskLevel == .low
 
         var description: String?
         if isSecure {
@@ -82,7 +82,7 @@ extension BlockaidTransactionScanResponseJson {
         } ?? []
 
         let recommendations = validation?.classification?.toRecommendations() ?? ""
-        let isSecure = riskLevel == .none || riskLevel == .low
+        let isSecure = riskLevel == .noRisk || riskLevel == .low
 
         return SecurityScannerResult(
             provider: provider,
@@ -108,7 +108,7 @@ private extension BlockaidTransactionScanResponseJson.BlockaidSolanaResultJson.B
         let isBenign = resultType.lowercased() == "benign" && features.isEmpty
 
         if isBenign {
-            return .none
+            return .noRisk
         }
 
         return resultType.toWarningType()
@@ -138,7 +138,7 @@ private extension BlockaidTransactionScanResponseJson {
                       !hasFeatures
 
         if isBenign {
-            return .none
+            return .noRisk
         }
 
         let label = resultType ?? classification

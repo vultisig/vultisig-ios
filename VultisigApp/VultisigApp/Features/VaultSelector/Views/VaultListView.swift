@@ -39,7 +39,7 @@ struct VaultListView: View {
     }
 
     var showListHeaders: Bool {
-        filteredVaults.count > 0 && folders.count > 0
+        !filteredVaults.isEmpty && !folders.isEmpty
     }
 
     var body: some View {

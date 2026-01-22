@@ -32,7 +32,7 @@ struct THORChainLPsInteractor: LPsInteractor {
             )
 
             // Convert THORChainLPPosition to LPPosition
-            let positions = try await convertToLPPositions(apiPositions, vault: vault)
+            let positions = try convertToLPPositions(apiPositions, vault: vault)
             await savePositions(positions: positions)
             return positions
 
@@ -44,7 +44,7 @@ struct THORChainLPsInteractor: LPsInteractor {
 }
 
 private extension THORChainLPsInteractor {
-    func convertToLPPositions(_ apiPositions: [THORChainLPPosition], vault: Vault) async throws -> [LPPosition] {
+    func convertToLPPositions(_ apiPositions: [THORChainLPPosition], vault: Vault) throws -> [LPPosition] {
         var result: [LPPosition] = []
 
         for apiPosition in apiPositions {
@@ -98,7 +98,7 @@ private extension THORChainLPsInteractor {
     }
 
     @MainActor
-    func savePositions(positions: [LPPosition]) async {
+    func savePositions(positions: [LPPosition]) {
         do {
             try DefiPositionsStorageService().upsert(positions)
         } catch {

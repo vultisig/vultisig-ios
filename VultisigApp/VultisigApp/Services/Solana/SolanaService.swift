@@ -272,7 +272,7 @@ class SolanaService {
         // Check cache first
         let cacheKey = "solana-token-account-\(walletAddress)-\(mintAddress)"
 
-        if let cachedValue = await Utils.getCachedData(cacheKey: cacheKey, cache: tokenAccountCache, timeInSeconds: cacheExpirationTime) {
+        if let cachedValue = Utils.getCachedData(cacheKey: cacheKey, cache: tokenAccountCache, timeInSeconds: cacheExpirationTime) {
             return (cachedValue.accountAddress, cachedValue.isToken2022)
         }
 

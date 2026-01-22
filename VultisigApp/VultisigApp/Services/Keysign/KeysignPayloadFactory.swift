@@ -67,9 +67,9 @@ struct KeysignPayloadFactory {
 
             // Select appropriate UTXO selection method based on chain
             if coin.chain == .cardano {
-                utxos = try await selectCardanoUTXOs(vault: vault, keysignPayload: payload)
+                utxos = try await selectCardanoUTXOs(keysignPayload: payload)
             } else {
-                utxos = try await selectUTXOs(vault: vault, keysignPayload: payload)
+                utxos = try await selectUTXOs(keysignPayload: payload)
             }
 
         default:
@@ -98,7 +98,7 @@ struct KeysignPayloadFactory {
         )
     }
 
-    private func selectUTXOs(vault: Vault, keysignPayload: KeysignPayload) async throws -> [UtxoInfo] {
+    private func selectUTXOs(keysignPayload: KeysignPayload) async throws -> [UtxoInfo] {
         let info = await utxo.getByKey(key: keysignPayload.coin.blockchairKey)?.utxo?.map({
             UtxoInfo(
                 hash: $0.transactionHash ?? "",
@@ -152,7 +152,7 @@ struct KeysignPayloadFactory {
         }
     }
 
-    private func selectCardanoUTXOs(vault: Vault, keysignPayload: KeysignPayload) async throws -> [UtxoInfo] {
+    private func selectCardanoUTXOs(keysignPayload: KeysignPayload) async throws -> [UtxoInfo] {
         // Fetch all available UTXOs for Cardano using Koios API
         let cardanoUTXOs = try await CardanoService.shared.getUTXOs(coin: keysignPayload.coin)
 

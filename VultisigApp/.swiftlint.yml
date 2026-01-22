@@ -18,4 +18,21 @@ disabled_rules:
   - non_optional_string_data_conversion
   - todo
   - compiler_protocol_init
+opt_in_rules:
+  - unused_parameter
+  - async_without_await
+  - empty_string
+  - empty_count
+  - contains_over_filter_count
+  - contains_over_filter_is_empty
+  - contains_over_first_not_nil
+  - contains_over_range_nil_comparison
+  - discouraged_none_name
+  - empty_collection_literal
+  - fallthrough
+  - identical_operands
+  - unhandled_throwing_task
+analyzer_rules:
+  - unused_declaration
+  - unused_import
 reporter: "xcode"

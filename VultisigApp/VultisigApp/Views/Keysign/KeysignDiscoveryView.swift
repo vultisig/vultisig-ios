@@ -79,7 +79,7 @@ struct KeysignDiscoveryView: View {
             Task { @MainActor in
                 qrScannedAnimation = RiveViewModel(fileName: "QRScanner", autoPlay: true)
                 await setData()
-                await viewModel.startDiscovery()
+                viewModel.startDiscovery()
             }
         }
         .onDisappear {
@@ -182,7 +182,7 @@ struct KeysignDiscoveryView: View {
             onFastKeysign: { startKeysign() }
         )
 
-        guard let (qrCodeData, qrCodeImage) = await viewModel.getQrImage(size: 100) else {
+        guard let (qrCodeData, qrCodeImage) = await viewModel.getQrImage() else {
             return
         }
 

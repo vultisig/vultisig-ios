@@ -84,8 +84,7 @@ struct SwapCryptoDoneView: View {
                 getFromToCard(
                     coin: tx.fromCoin,
                     title: sendSummaryViewModel.getFromAmount(
-                        tx,
-                        selectedCurrency: settingsViewModel.selectedCurrency
+                        tx
                     ),
                     description: swapSummaryViewModel.fromFiatAmount(tx: tx),
                     isFrom: true
@@ -94,8 +93,7 @@ struct SwapCryptoDoneView: View {
                 getFromToCard(
                     coin: tx.toCoin,
                     title: sendSummaryViewModel.getToAmount(
-                        tx,
-                        selectedCurrency: settingsViewModel.selectedCurrency
+                        tx
                     ),
                     description: swapSummaryViewModel.toFiatAmount(tx: tx),
                     isFrom: false

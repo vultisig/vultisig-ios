@@ -208,7 +208,7 @@ class KeysignViewModel: ObservableObject {
                                               publicKeyECDSA: publicKey ?? vault.pubKeyECDSA)
                 try await dklsKeysign.DKLSKeysignWithRetry()
                 self.signatures = dklsKeysign.getSignatures()
-                if self.signatures.count == 0 {
+                if self.signatures.isEmpty {
                     throw HelperError.runtimeError("fail to sign transaction")
                 }
             case .EdDSA:
@@ -223,7 +223,7 @@ class KeysignViewModel: ObservableObject {
                                                     publicKeyEdDSA: publicKey ?? vault.pubKeyEdDSA)
                 try await schnorrKeysign.KeysignWithRetry()
                 self.signatures = schnorrKeysign.getSignatures()
-                if self.signatures.count == 0 {
+                if self.signatures.isEmpty {
                     throw HelperError.runtimeError("fail to sign transaction")
                 }
             }

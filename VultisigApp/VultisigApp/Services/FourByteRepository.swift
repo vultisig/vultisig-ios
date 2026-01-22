@@ -98,7 +98,7 @@ struct FourByteRepository {
         }
     }
 
-    private func formatJSON(_ value: Any, indentLevel: Int = 0) -> String {
+    private func formatJSON(_ value: Any) -> String {
         // Use JSONSerialization for proper escaping of special characters
         if let arrayValue = value as? [Any] {
             // Convert to JSON-serializable format

@@ -124,7 +124,7 @@ struct VaultBackupPasswordScreen: View {
         passwordVerifyErrorMessage = ""
 
         Task {
-            guard let fileModel = await backupViewModel.exportFileWithCustomPassword(backupType) else {
+            guard let fileModel = backupViewModel.exportFileWithCustomPassword(backupType) else {
                 return
             }
 

@@ -92,7 +92,7 @@ struct MayaChainStakeInteractor: StakeInteractor {
 
 private extension MayaChainStakeInteractor {
     @MainActor
-    func savePositions(positions: [StakePosition]) async {
+    func savePositions(positions: [StakePosition]) {
         do {
             try DefiPositionsStorageService().upsert(positions)
         } catch {
