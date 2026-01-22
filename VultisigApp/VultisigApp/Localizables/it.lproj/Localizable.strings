@@ -1164,7 +1164,7 @@
 "tronDashboardTitle" = "TRON Staking";
 "tronDashboardStaking" = "Staking";
 "tronDashboardStakingDescription" = "Congela i tuoi TRX per ottenere larghezza di banda ed energia per transazioni gratuite.";
-"tronDashboardInfoText" = "I TRX congelati forniscono risorse di larghezza di banda ed energia. Puoi scongelare in qualsiasi momento per riavere i tuoi TRX.";
+"tronDashboardInfoText" = "I TRX congelati forniscono risorse di larghezza di banda ed energia. Lo scongelamento avvia un periodo di attesa di 14 giorni. Successivamente, reclama i tuoi TRX nei prelievi in attesa.";
 "tronFrozenBalance" = "TRX Congelati";
 "tronAvailableBalance" = "TRX Disponibili";
 "tronBandwidth" = "Larghezza di Banda";

@@ -68,7 +68,7 @@ struct TronFreezeView: View {
                 dismiss()
             } label: {
                 Image(systemName: "chevron.left")
-                    .font(.title3)
+                    .font(Theme.fonts.title3)
                     .foregroundColor(Theme.colors.textPrimary)
                     .frame(width: 40, height: 40)
                     .background(Circle().fill(Theme.colors.bgSurface1))
@@ -285,14 +285,16 @@ struct TronFreezeView: View {
         // The memo encodes the freeze operation type for TronHelper
         let memo = "FREEZE:\(selectedResourceType.tronResourceString)"
         
-        tx.coin = coin
-        tx.fromAddress = coin.address
-        tx.toAddress = coin.address  // Freeze goes to self
-        tx.amount = amountDec.description
-        tx.memo = memo
-        tx.isFastVault = isFastVault
-        tx.fastVaultPassword = fastVaultPassword
-        tx.isStakingOperation = true
+        await MainActor.run {
+            tx.coin = coin
+            tx.fromAddress = coin.address
+            tx.toAddress = coin.address  // Freeze goes to self
+            tx.amount = amountDec.description
+            tx.memo = memo
+            tx.isFastVault = isFastVault
+            tx.fastVaultPassword = fastVaultPassword
+            tx.isStakingOperation = true
+        }
         
         await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
         

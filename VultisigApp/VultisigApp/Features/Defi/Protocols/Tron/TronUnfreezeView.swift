@@ -242,7 +242,7 @@ struct TronUnfreezeView: View {
     }
     
     var isButtonDisabled: Bool {
-        amount.isEmpty || (Decimal(string: amount) ?? 0) <= 0 || (Decimal(string: amount) ?? 0) > frozenBalanceForSelectedType || isLoading
+        amount.isEmpty || amount.toDecimal() <= 0 || amount.toDecimal() > frozenBalanceForSelectedType || isLoading
     }
     
     func loadData() async {
@@ -302,7 +302,8 @@ struct TronUnfreezeView: View {
     }
     
     func handleUnfreeze() async {
-        guard let amountDecimal = Decimal(string: amount) else {
+        let amountDecimal = amount.toDecimal()
+        guard amountDecimal > 0 else {
             return
         }
         
