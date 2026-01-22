@@ -175,6 +175,7 @@ Theme.fonts.caption12            // 12pt - Captions
 Theme.fonts.buttonRegularSemibold // 16pt - Button text
 
 // Price fonts (Satoshi family - for crypto amounts)
+// IMPORTANT: Always use price fonts for numbers, prices, and balances
 Theme.fonts.priceTitle1          // 28pt
 Theme.fonts.priceBodyL           // 18pt
 Theme.fonts.priceBodyS           // 14pt
@@ -298,6 +299,8 @@ Icon(named: "checkmark", isSystem: true)  // SF Symbol
 The `Screen` component is the standard wrapper for all screens in the app. It provides consistent layout, background, padding, and navigation bar handling across iOS and macOS.
 
 **Reference:** `Views/Components/Screen/Screen.swift`
+
+**Important:** Always use the `Screen` component for views that represent a whole screen. Use the `Screen` suffix in your struct name for consistency (e.g., `HomeScreen`, `VaultSettingsScreen`, not `HomeView` or `Home`).
 
 ### Basic Usage
 
@@ -733,7 +736,8 @@ Add to `ContentView.swift`:
 
 | Type | Pattern | Example |
 |------|---------|---------|
-| Views | `*View.swift` or `*Screen.swift` | `HomeScreen.swift`, `VaultCellView.swift` |
+| Screens (full screen views with `Screen` component) | `*Screen.swift` | `HomeScreen.swift`, `VaultSettingsScreen.swift` |
+| Components (reusable UI elements) | `*View.swift` | `VaultCellView.swift`, `ButtonView.swift` |
 | ViewModels | `*ViewModel.swift` | `HomeViewModel.swift` |
 | Services | `*Service.swift` | `THORChainAPIService.swift` |
 | API Endpoints | `*API.swift` | `THORChainAPI.swift` |
@@ -757,6 +761,8 @@ Add to `ContentView.swift`:
 - Create new button styles; use `PrimaryButton` with appropriate type
 - Use callbacks/completion handlers; use async/await
 - Put business logic in views; use ViewModels or Services
+- Use `.foregroundColor()` modifier; it's deprecated in favor of `.foregroundStyle()`
+- Create platform-specific view files (e.g., `MyView_iOS.swift`, `MyView_macOS.swift`); use cross-platform modifiers and components (`crossPlatformToolbar`, `crossPlatformSheet`, `#if os(macOS)` blocks) to keep code in a single file
 
 ## Common Patterns
 
