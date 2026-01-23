@@ -14,13 +14,6 @@ struct TronDashboardView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.router) var router
 
-    @AppStorage("appClosedBanners") var appClosedBanners: [String] = []
-
-    let tronDashboardBannerId = "tronDashboardInfoBanner"
-
-    var showInfoBanner: Bool {
-        !appClosedBanners.contains(tronDashboardBannerId)
-    }
 
     var walletTrxBalance: Decimal {
         return TronViewLogic.getWalletTrxBalance(vault: vault)
@@ -97,12 +90,12 @@ struct TronDashboardView: View {
                 ZStack {
                     // Outer ring (larger, thinner stroke)
                     Circle()
-                        .stroke(Color(hex: "FF0013").opacity(0.25), lineWidth: 2)
+                        .stroke(TronConstants.Colors.tronRed.opacity(0.25), lineWidth: 2)
                         .frame(width: 160, height: 160)
                     
                     // Inner ring (smaller, thicker stroke)
                     Circle()
-                        .stroke(Color(hex: "FF0013").opacity(0.4), lineWidth: 4)
+                        .stroke(TronConstants.Colors.tronRed.opacity(0.4), lineWidth: 4)
                         .frame(width: 120, height: 120)
                 }
                 .position(x: geometry.size.width - 50, y: geometry.size.height * 0.75)
@@ -147,8 +140,8 @@ struct TronDashboardView: View {
             .fill(
                 LinearGradient(
                     stops: [
-                        Gradient.Stop(color: Color(hex: "FF0013").opacity(0.15), location: 0.00),
-                        Gradient.Stop(color: Color(hex: "FF0013").opacity(0), location: 1.00)
+                        Gradient.Stop(color: TronConstants.Colors.tronRed.opacity(0.15), location: 0.00),
+                        Gradient.Stop(color: TronConstants.Colors.tronRed.opacity(0), location: 1.00)
                     ],
                     startPoint: UnitPoint(x: 0.5, y: 0),
                     endPoint: UnitPoint(x: 0.5, y: 1)
@@ -156,7 +149,7 @@ struct TronDashboardView: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
-                    .stroke(Color(hex: "FF0013").opacity(0.3), lineWidth: 1)
+                    .stroke(TronConstants.Colors.tronRed.opacity(0.3), lineWidth: 1)
             )
     }
 
@@ -253,6 +246,12 @@ struct TronDashboardView: View {
                 unit: "KB"
             )
 
+            // Vertical divider
+            Rectangle()
+                .fill(Theme.colors.textSecondary.opacity(0.3))
+                .frame(width: 1)
+                .padding(.vertical, 8)
+
             // Energy Section (Yellow/Orange)
             resourceSection(
                 title: NSLocalizedString("tronEnergy", comment: "Energy"),
@@ -268,6 +267,10 @@ struct TronDashboardView: View {
             RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
                 .fill(Theme.colors.bgSurface1)
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+                .stroke(Theme.colors.textSecondary.opacity(0.2), lineWidth: 1)
+        )
     }
 
     func resourceSection(title: String, icon: String, available: Int64, total: Int64, accentColor: Color, unit: String) -> some View {
@@ -275,65 +278,63 @@ struct TronDashboardView: View {
             // Title Label
             Text(title)
                 .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textSecondary)
+                .foregroundStyle(accentColor)
 
-            // Content box with accent color
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 8) {
-                    // Icon with dark background
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Theme.colors.bgPrimary)
-                            .frame(width: 36, height: 36)
+            // Content box with dark background
+            HStack(spacing: 8) {
+                // Icon with accent color background
+                ZStack {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(accentColor.opacity(0.15))
+                        .frame(width: 40, height: 40)
 
-                        Image(systemName: icon)
-                            .font(Theme.fonts.bodySMedium)
-                            .foregroundStyle(accentColor)
+                    Image(systemName: icon)
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(accentColor)
+                }
+
+                VStack(alignment: .leading, spacing: 6) {
+                    // Value display
+                    if model.isLoadingResources {
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Theme.colors.bgSurface1)
+                            .frame(width: 80, height: 16)
+                            .shimmer()
+                    } else {
+                        Text(formatResourceValue(available: available, total: total, unit: unit))
+                            .font(Theme.fonts.bodyMMedium)
+                            .foregroundStyle(Theme.colors.textPrimary)
                     }
 
-                    VStack(alignment: .leading, spacing: 4) {
-                        // Value display
-                        if model.isLoadingResources {
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Theme.colors.bgSurface1)
-                                .frame(width: 80, height: 16)
-                                .shimmer()
-                        } else {
-                            Text(formatResourceValue(available: available, total: total, unit: unit))
-                                .font(Theme.fonts.bodyMMedium)
-                                .foregroundStyle(Theme.colors.textPrimary)
-                        }
+                    // Progress bar
+                    GeometryReader { geometry in
+                        ZStack(alignment: .leading) {
+                            // Background track
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(Theme.colors.bgPrimary)
+                                .frame(height: 4)
 
-                        // Progress bar
-                        GeometryReader { geometry in
-                            ZStack(alignment: .leading) {
-                                // Background track
+                            if model.isLoadingResources {
+                                // Shimmer loading state
                                 RoundedRectangle(cornerRadius: 2)
-                                    .fill(Theme.colors.bgSurface1)
-                                    .frame(height: 4)
-
-                                if model.isLoadingResources {
-                                    // Shimmer loading state
-                                    RoundedRectangle(cornerRadius: 2)
-                                        .fill(accentColor.opacity(0.3))
-                                        .frame(width: geometry.size.width * 0.5, height: 4)
-                                        .shimmer()
-                                } else {
-                                    // Progress fill
-                                    RoundedRectangle(cornerRadius: 2)
-                                        .fill(accentColor)
-                                        .frame(width: geometry.size.width * progressValue(available: available, total: total), height: 4)
-                                }
+                                    .fill(accentColor.opacity(0.3))
+                                    .frame(width: geometry.size.width * 0.5, height: 4)
+                                    .shimmer()
+                            } else {
+                                // Progress fill
+                                RoundedRectangle(cornerRadius: 2)
+                                    .fill(accentColor)
+                                    .frame(width: geometry.size.width * progressValue(available: available, total: total), height: 4)
                             }
                         }
-                        .frame(height: 4)
                     }
+                    .frame(height: 4)
                 }
             }
             .padding(12)
             .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(accentColor.opacity(0.1))
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Theme.colors.bgSurface1)
             )
         }
         .frame(maxWidth: .infinity)
