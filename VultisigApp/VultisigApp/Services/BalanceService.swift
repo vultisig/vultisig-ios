@@ -93,7 +93,7 @@ class BalanceService {
             return blockChairData.address?.balance?.description ?? "0"
 
         case .cardano:
-            return try await cardano.getBalance(coin: coin, address: address)
+            return try await cardano.getBalance(address: address)
 
         case .thorChain, .thorChainStagenet:
             let service = ThorchainServiceFactory.getService(for: coin.chain)
@@ -140,7 +140,7 @@ class BalanceService {
             }
 
         case .ripple:
-            return try await ripple.getBalance(coin: coin, address: address)
+            return try await ripple.getBalance(address: address)
 
         case .tron:
             return try await tron.getBalance(coin: coin, address: address)
@@ -174,7 +174,7 @@ private extension BalanceService {
                 let totalStakedBalance = tcyStakedBalance
                 return totalStakedBalance.description
             case "RUJI":
-                return (try? await ThorchainService.shared.fetchRujiStakeBalance(thorAddr: coin.address, tokenSymbol: "RUJI"))?.stakeAmount.description ?? "0"
+                return (try? await ThorchainService.shared.fetchRujiStakeBalance(thorAddr: coin.address))?.stakeAmount.description ?? "0"
             default:
                 break
             }
@@ -224,7 +224,7 @@ private extension BalanceService {
         try await fetchBalance(for: coin.toCoinMeta(), address: coin.address)
     }
 
-    @MainActor func updateCoin(_ coin: Coin, rawBalance: String) async throws {
+    @MainActor func updateCoin(_ coin: Coin, rawBalance: String) throws {
         guard coin.rawBalance != rawBalance else {
             return
         }
@@ -232,7 +232,7 @@ private extension BalanceService {
         coin.rawBalance = rawBalance
     }
 
-    @MainActor func updateCoin(_ coin: Coin, stakedBalance: String) async throws {
+    @MainActor func updateCoin(_ coin: Coin, stakedBalance: String) throws {
         guard coin.stakedBalance != stakedBalance else {
             return
         }

@@ -40,7 +40,7 @@ class TonService {
         }
     }
 
-    func getTONBalance(_ coin: CoinMeta, address: String) async throws -> String {
+    func getTONBalance(address: String) async throws -> String {
 
         guard let url = URL(string: Endpoint.fetchTonBalance(address: address)) else {
             throw URLError(.badURL)
@@ -58,7 +58,7 @@ class TonService {
 
     func getBalance(coin: CoinMeta, address: String) async throws -> String {
         if coin.isNativeToken {
-            return try await getTONBalance(coin, address: address)
+            return try await getTONBalance(address: address)
         } else {
             return try await getJettonBalance(coin: coin, address: address)
         }

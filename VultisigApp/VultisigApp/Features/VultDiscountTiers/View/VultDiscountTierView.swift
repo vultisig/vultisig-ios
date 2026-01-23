@@ -192,7 +192,7 @@ private extension VultDiscountTierView {
         let rate = RateProvider.shared.rate(for: vultToken.toCoinMeta())
         // If rate == 0, we default to 1 for displaying purposes till provider returns $VULT
         let rateToUse: Rate = (rate == nil || rate?.value == 0) ? Rate.identity : (rate ?? .identity)
-        let fiatValue: String = RateProvider.shared.fiatBalanceString(value: tier.balanceToUnlock, coin: vultToken, rate: rateToUse)
+        let fiatValue: String = RateProvider.shared.fiatBalanceString(value: tier.balanceToUnlock, rate: rateToUse)
         return "(~\(fiatValue))"
     }
 }

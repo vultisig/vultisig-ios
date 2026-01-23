@@ -181,7 +181,7 @@ class MayachainService: ThorchainSwapProvider {
             let bondable: Bool
         }
 
-        let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, response, error in
+        let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, _, error in
             // Verifica se houve erro
             if let error = error {
                 print("Erro ao buscar ativos: \(error)")

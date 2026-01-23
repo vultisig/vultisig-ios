@@ -42,10 +42,8 @@ struct CircleService {
         toAddress: String,
         amount: BigInt,
         memo: String?,
-        fee: BigInt,
         chainSpecific: BlockChainSpecific
-    ) async throws -> KeysignMessage {
-
+    ) throws -> KeysignMessage {
         let (chain, _) = CircleViewLogic.getChainDetails(vault: vault)
 
         guard let coin = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken }) else {
@@ -92,7 +90,7 @@ struct CircleService {
         amount: BigInt,
         info: CircleViewLogic.CircleWithdrawalInfo,
         isNative: Bool = false
-    ) async throws -> (to: String, amount: BigInt, data: Data) {
+    ) throws -> (to: String, amount: BigInt, data: Data) {
 
         let usdcContract = info.usdcContract
 

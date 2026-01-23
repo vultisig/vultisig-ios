@@ -107,7 +107,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
                 }
 
                 let keysignFactory = KeysignMessageFactory(payload: finalPayload)
-                let preSignedImageHash = try keysignFactory.getKeysignMessages(vault: vault)
+                let preSignedImageHash = try keysignFactory.getKeysignMessages()
                 self.keysignMessages = preSignedImageHash.sorted()
                 coin = keysignPayload.coin
             } catch {
@@ -163,7 +163,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] in
                 guard let self else { return }
-                if $0.count == 0 {
+                    if $0.isEmpty {
                     return
                 }
                 $0.forEach { peer in
@@ -175,15 +175,13 @@ class KeysignDiscoveryViewModel: ObservableObject {
         }
     }
 
-    func startDiscovery() async {
-
+    func startDiscovery() {
         self.logger.info("mediator server started")
         self.startKeysignSession()
         self.participantDiscovery?.getParticipants(
             serverAddr: self.serverAddr,
             sessionID: self.sessionID,
-            localParty: self.localPartyID,
-            pubKeyECDSA: vault.pubKeyECDSA
+            localParty: self.localPartyID
         )
     }
 
@@ -250,8 +248,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.startKeysignSession()
         self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr,
                                                    sessionID: self.sessionID,
-                                                   localParty: self.localPartyID,
-                                                   pubKeyECDSA: vault.pubKeyECDSA)
+                                                   localParty: self.localPartyID)
     }
     private func startKeysignSession() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
@@ -268,7 +265,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         }
     }
 
-    func getQrImage(size: CGFloat) async -> (String, Image)? {
+    func getQrImage() async -> (String, Image)? {
         guard let qrCodeData = await generateQRdata() else {
             return nil
         }

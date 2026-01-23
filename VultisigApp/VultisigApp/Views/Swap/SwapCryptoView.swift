@@ -126,7 +126,7 @@ struct SwapCryptoView: View {
             }
         }.onAppear {
             Task {
-                try await Task.sleep(for: .seconds(5))
+                try? await Task.sleep(for: .seconds(5))
                 swapViewModel.stopMediator()
             }
         }

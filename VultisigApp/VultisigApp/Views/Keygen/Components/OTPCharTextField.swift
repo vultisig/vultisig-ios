@@ -30,7 +30,7 @@ struct OTPCharTextField: UIViewRepresentable {
         init(parent: OTPCharTextField) {
             self.parent = parent
         }
-
+        // swiftlint:disable:next unused_parameter
         func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
             // Handle backspace
             if string.isEmpty {
@@ -69,7 +69,7 @@ struct OTPCharTextField: UIViewRepresentable {
         textField.addTarget(context.coordinator, action: #selector(Coordinator.textFieldDidChange(_:)), for: .editingChanged)
         return textField
     }
-
+    // swiftlint:disable:next unused_parameter
     func updateUIView(_ uiView: OTPTextField, context: Context) {
         uiView.onDeleteWhenEmpty = onDeleteWhenEmpty
         if uiView.text != text {

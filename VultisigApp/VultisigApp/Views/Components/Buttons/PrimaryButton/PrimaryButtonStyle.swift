@@ -35,15 +35,15 @@ struct PrimaryButtonStyle: ButtonStyle {
                     backgroundColor(for: type, isPressed: configuration.isPressed, isEnabled: isEnabled)
                     Rectangle()
                         .fill(.white.opacity(0.15))
-                        .stroke(borderColor(for: type, isPressed: configuration.isPressed, isEnabled: isEnabled),
+                        .stroke(borderColor(for: type, isEnabled: isEnabled),
                                 lineWidth: borderWidth(for: type))
                         .scaleEffect(CGSize(width: progress, height: 1), anchor: .leading)
                 }
             )
-            .foregroundColor(foregroundColor(for: type, isPressed: configuration.isPressed, isEnabled: isEnabled))
+            .foregroundColor(foregroundColor(for: type, isEnabled: isEnabled))
             .overlay(
                     RoundedRectangle(cornerRadius: cornerRadius(for: size))
-                        .stroke(borderColor(for: type, isPressed: configuration.isPressed, isEnabled: isEnabled),
+                        .stroke(borderColor(for: type, isEnabled: isEnabled),
                                 lineWidth: borderWidth(for: type))
             )
             .cornerRadius(cornerRadius(for: size))
@@ -120,7 +120,7 @@ private extension PrimaryButtonStyle {
         }
     }
 
-    func foregroundColor(for type: ButtonType, isPressed: Bool, isEnabled: Bool) -> Color {
+    func foregroundColor(for type: ButtonType, isEnabled: Bool) -> Color {
         if !isEnabled {
             return Theme.colors.textButtonDisabled
         }
@@ -135,7 +135,7 @@ private extension PrimaryButtonStyle {
 
     }
 
-    func borderColor(for type: ButtonType, isPressed: Bool, isEnabled: Bool) -> Color {
+    func borderColor(for type: ButtonType, isEnabled: Bool) -> Color {
         switch type {
         case .primary, .alert, .primarySuccess:
             return .clear

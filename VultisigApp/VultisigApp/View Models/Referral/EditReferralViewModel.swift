@@ -29,7 +29,7 @@ class EditReferralViewModel: ObservableObject {
 
     var totalFeeFiatAmountText: String {
         let fiatAmount = RateProvider.shared.fiatBalance(value: totalFeeAmount, coin: nativeCoin)
-        return fiatAmount.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
+        return fiatAmount.formatToFiat(includeCurrencySymbol: true)
     }
 
     var totalFeeAmount: Decimal {
@@ -66,7 +66,7 @@ class EditReferralViewModel: ObservableObject {
         self.currentBlockHeight = currentBlockHeight
     }
 
-    func setup(tx: SendTransaction) async {
+    func setup() async {
         do {
             let feePerBlock = try await thorchainService.getNetwork().tns_fee_per_block_rune.toDecimal()
             await MainActor.run {
@@ -108,7 +108,7 @@ private extension EditReferralViewModel {
     }
 
     @MainActor
-    func createTransaction(tx: SendTransaction, preferredAsset: THORChainAsset?) async {
+    func createTransaction(tx: SendTransaction, preferredAsset: THORChainAsset?) {
         var preferredAssetCoin: Coin?
         if let preferredAsset {
             preferredAssetCoin = try? CoinService.addIfNeeded(asset: preferredAsset.asset, to: vault, priceProviderId: preferredAsset.asset.priceProviderId)

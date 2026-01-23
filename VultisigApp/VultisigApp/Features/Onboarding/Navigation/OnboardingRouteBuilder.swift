@@ -15,7 +15,7 @@ struct OnboardingRouteBuilder {
     }
 
     @ViewBuilder
-    func buildImportSeedphraseScreen(keyImportInput: KeyImportInput?) -> some View {
+    func buildImportSeedphraseScreen() -> some View {
         ImportSeedphraseScreen()
     }
 

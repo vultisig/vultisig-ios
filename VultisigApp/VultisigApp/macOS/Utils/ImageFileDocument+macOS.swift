@@ -39,7 +39,7 @@ struct ImageFileDocument: FileDocument {
         }
         self.image = image
     }
-
+    // swiftlint:disable:next unused_parameter
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
         guard let data = image.tiffRepresentation,
               let bitmap = NSBitmapImageRep(data: data),

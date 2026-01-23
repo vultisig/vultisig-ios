@@ -74,7 +74,7 @@ struct SecurityWarning: Equatable {
 }
 
 enum SecurityRiskLevel: String, Equatable {
-    case none = "NONE"
+    case noRisk = "NONE"
     case low = "LOW"
     case medium = "MEDIUM"
     case high = "HIGH"

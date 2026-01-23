@@ -52,7 +52,7 @@ class RpcEvmService: RpcService {
             return [.safeLow: low, .normal: normal, .fast: fast]
         }
 
-        guard history.count > 0 else {
+        guard !history.isEmpty else {
             let value = try await fetchMaxPriorityFeePerGas()
             return priorityFeesMap(low: value, normal: value, fast: value)
         }

@@ -43,6 +43,7 @@ struct VULTFileDocument: FileDocument {
     }
 
     // Required function to save the document content
+    // swiftlint:disable:next unused_parameter
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
         // Get the URLs from the result, if it's a success
         switch content {

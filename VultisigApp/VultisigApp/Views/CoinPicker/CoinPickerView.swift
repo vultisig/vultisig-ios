@@ -100,7 +100,7 @@ struct CoinPickerView: View {
             if searchText.isEmpty {
                 list
             } else {
-                if filtered.count == 0 {
+                if filtered.isEmpty {
                     errorMessage
                 } else {
                     filteredList

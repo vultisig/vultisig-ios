@@ -18,7 +18,7 @@ class SuiService {
     private let jsonDecoder = JSONDecoder()
 
     func getGasInfo(coin: Coin) async throws -> (BigInt, [[String: String]]) {
-        async let gasPrice = getReferenceGasPrice(coin: coin)
+        async let gasPrice = getReferenceGasPrice()
         async let allCoins = getAllCoins(coin: coin)
         return await (try gasPrice, try allCoins)
     }
@@ -112,7 +112,7 @@ class SuiService {
         }
     }
 
-    func getReferenceGasPrice(coin: Coin) async throws -> BigInt {
+    func getReferenceGasPrice() async throws -> BigInt {
         do {
             let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getReferenceGasPrice", params: [])
             if let result = Utils.extractResultFromJson(fromData: data, path: "result"),
@@ -134,7 +134,7 @@ class SuiService {
         do {
             let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getAllCoins", params: [coin.address])
 
-            if let coins: [SuiCoin] = Utils.extractResultFromJson(fromData: data, path: "result.data", type: [SuiCoin].self) {
+            if let coins: [SuiCoin] = Utils.extractResultFromJson(fromData: data, path: "result.data") {
                 let allCoins = coins.filter { $0.coinType.uppercased().contains("SUI") || $0.coinType.uppercased().contains(coin.ticker.uppercased()) }.map { coin in
                     var coinDict = [String: String]()
                     coinDict["objectID"] = coin.coinObjectId.description

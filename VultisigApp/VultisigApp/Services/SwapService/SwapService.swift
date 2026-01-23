@@ -123,7 +123,6 @@ struct SwapService {
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
-                isAffiliate: isAffiliate,
                 vultTierDiscount: vultTierDiscount
             )
         }
@@ -246,7 +245,6 @@ private extension SwapService {
         amount: Decimal,
         fromCoin: Coin,
         toCoin: Coin,
-        isAffiliate: Bool,
         vultTierDiscount: Int
     ) async throws -> SwapQuote {
         let fromAmount = fromCoin.raw(for: amount)

@@ -54,7 +54,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
 
     func loadFastVault(tx: SwapTransaction, vault: Vault) async {
-        tx.isFastVault = await logic.loadFastVault(tx: tx, vault: vault)
+        tx.isFastVault = await logic.loadFastVault(vault: vault)
     }
 
     func updateCoinLists(tx: SwapTransaction) {
@@ -389,7 +389,7 @@ struct SwapCryptoLogic {
         tx.load(fromCoin: resolvedFromCoin, toCoin: toCoin, fromCoins: fromCoins, toCoins: toCoins)
     }
 
-    func loadFastVault(tx: SwapTransaction, vault: Vault) async -> Bool {
+    func loadFastVault(vault: Vault) async -> Bool {
         let isExist = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
         let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
         return isExist && !isLocalBackup

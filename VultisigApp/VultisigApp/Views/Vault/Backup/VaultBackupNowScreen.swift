@@ -70,7 +70,7 @@ struct VaultBackupNowScreen: View {
 
         Task {
             if backupType.vault.isFastVault, isNewVault {
-                let fileModel = await backupViewModel.exportFileWithVaultPassword(backupType)
+                let fileModel = backupViewModel.exportFileWithVaultPassword(backupType)
                 await MainActor.run { self.fileModel = fileModel }
             }
         }

@@ -9,7 +9,7 @@ import Foundation
 
 @MainActor
 class SendSummaryViewModel: ObservableObject {
-    func getFromAmount(_ tx: SwapTransaction, selectedCurrency: SettingsCurrency) -> String {
+    func getFromAmount(_ tx: SwapTransaction) -> String {
         let formattedAmount = tx.fromAmountDecimal.formatForDisplay()
 
         if tx.fromCoin.chain == tx.toCoin.chain {
@@ -19,7 +19,7 @@ class SendSummaryViewModel: ObservableObject {
         }
     }
 
-    func getToAmount(_ tx: SwapTransaction, selectedCurrency: SettingsCurrency) -> String {
+    func getToAmount(_ tx: SwapTransaction) -> String {
         let formattedAmount = tx.toAmountDecimal.formatForDisplay()
 
         if tx.fromCoin.chain == tx.toCoin.chain {

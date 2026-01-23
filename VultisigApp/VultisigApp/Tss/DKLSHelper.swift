@@ -14,7 +14,7 @@ class DKLSHelper {
     }
 
     static func arrayToBytes(parties: [String]) -> [UInt8] {
-        if parties.count == 0 {
+        if parties.isEmpty {
             return []
         }
         var byteArray: [UInt8] = []

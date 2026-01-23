@@ -90,7 +90,7 @@ struct CosmosServiceStruct {
 
     // MARK: - Block Operations
 
-    func fetchLatestBlock(coin: Coin) async throws -> String {
+    func fetchLatestBlock() async throws -> String {
         guard let url = config.latestBlockURL() else {
             return "0"
         }

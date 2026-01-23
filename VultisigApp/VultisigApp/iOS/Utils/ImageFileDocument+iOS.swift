@@ -38,7 +38,7 @@ struct ImageFileDocument: FileDocument {
         }
         self.image = image
     }
-
+    // swiftlint:disable:next unused_parameter
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
         guard let pngData = image.pngData() else {
             throw CocoaError(.fileWriteUnknown)
