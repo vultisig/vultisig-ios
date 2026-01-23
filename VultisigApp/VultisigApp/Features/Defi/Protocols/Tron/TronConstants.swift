@@ -32,8 +32,4 @@ struct TronConstants {
         static let body = Theme.fonts.bodySMedium
         static let headline = Theme.fonts.bodyLMedium
     }
-
-    struct Colors {
-        static let tronRed = Color(hex: "FF0013")
-    }
 }

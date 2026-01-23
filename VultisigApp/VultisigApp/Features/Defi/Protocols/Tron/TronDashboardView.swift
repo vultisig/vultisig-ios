@@ -90,12 +90,12 @@ struct TronDashboardView: View {
                 ZStack {
                     // Outer ring (larger, thinner stroke)
                     Circle()
-                        .stroke(TronConstants.Colors.tronRed.opacity(0.25), lineWidth: 2)
+                        .stroke(Theme.colors.tronRed.opacity(0.25), lineWidth: 2)
                         .frame(width: 160, height: 160)
                     
                     // Inner ring (smaller, thicker stroke)
                     Circle()
-                        .stroke(TronConstants.Colors.tronRed.opacity(0.4), lineWidth: 4)
+                        .stroke(Theme.colors.tronRed.opacity(0.4), lineWidth: 4)
                         .frame(width: 120, height: 120)
                 }
                 .position(x: geometry.size.width - 50, y: geometry.size.height * 0.75)
@@ -117,7 +117,7 @@ struct TronDashboardView: View {
                             .shimmer()
                     } else {
                         Text(availableBalanceFiat)
-                            .font(Theme.fonts.title2)
+                            .font(Theme.fonts.priceTitle1)
                             .foregroundStyle(Theme.colors.textPrimary)
                     }
                 }
@@ -140,8 +140,8 @@ struct TronDashboardView: View {
             .fill(
                 LinearGradient(
                     stops: [
-                        Gradient.Stop(color: TronConstants.Colors.tronRed.opacity(0.15), location: 0.00),
-                        Gradient.Stop(color: TronConstants.Colors.tronRed.opacity(0), location: 1.00)
+                        Gradient.Stop(color: Theme.colors.tronRed.opacity(0.15), location: 0.00),
+                        Gradient.Stop(color: Theme.colors.tronRed.opacity(0), location: 1.00)
                     ],
                     startPoint: UnitPoint(x: 0.5, y: 0),
                     endPoint: UnitPoint(x: 0.5, y: 1)
@@ -149,7 +149,7 @@ struct TronDashboardView: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
-                    .stroke(TronConstants.Colors.tronRed.opacity(0.3), lineWidth: 1)
+                    .stroke(Theme.colors.tronRed.opacity(0.3), lineWidth: 1)
             )
     }
 
@@ -174,7 +174,7 @@ struct TronDashboardView: View {
                             .shimmer()
                     } else {
                         Text(frozenBalanceFiat)
-                            .font(Theme.fonts.title2)
+                            .font(Theme.fonts.priceTitle1)
                             .foregroundStyle(Theme.colors.textPrimary)
                     }
                 }
