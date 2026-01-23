@@ -106,7 +106,7 @@ struct TronDashboardView: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("TRON")
-                        .font(Theme.fonts.headline)
+                        .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textSecondary)
 
                     if model.isLoadingBalance {
@@ -123,13 +123,13 @@ struct TronDashboardView: View {
                 }
                 Spacer()
                 
-                // Logo on top of the rings - positioned lower and to the right
+                // Logo on top of the rings
                 Image("tron")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 70, height: 70)
                     .clipShape(Circle())
-                    .offset(x: 12, y: 40)
+                    .offset(x: 12, y: 20)
             }
             .padding(TronConstants.Design.cardPadding)
         }
@@ -230,12 +230,16 @@ struct TronDashboardView: View {
             RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
                 .fill(Theme.colors.bgSurface1)
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+                .stroke(Theme.colors.textSecondary.opacity(0.2), lineWidth: 1)
+        )
     }
 
     // MARK: - Resources Card (Bandwidth & Energy)
 
     var resourcesCard: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 0) {
             // Bandwidth Section (Green)
             resourceSection(
                 title: NSLocalizedString("tronBandwidth", comment: "Bandwidth"),
@@ -245,12 +249,13 @@ struct TronDashboardView: View {
                 accentColor: Theme.colors.alertSuccess,
                 unit: "KB"
             )
+            .padding(.leading, 16)
+            .padding(.trailing, 12)
 
-            // Vertical divider
+            // Vertical divider - touches top and bottom
             Rectangle()
                 .fill(Theme.colors.textSecondary.opacity(0.3))
                 .frame(width: 1)
-                .padding(.vertical, 8)
 
             // Energy Section (Yellow/Orange)
             resourceSection(
@@ -261,8 +266,10 @@ struct TronDashboardView: View {
                 accentColor: Theme.colors.alertWarning,
                 unit: ""
             )
+            .padding(.leading, 12)
+            .padding(.trailing, 16)
         }
-        .padding(TronConstants.Design.cardPadding)
+        .padding(.vertical, 12)
         .background(
             RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
                 .fill(Theme.colors.bgSurface1)
@@ -274,31 +281,31 @@ struct TronDashboardView: View {
     }
 
     func resourceSection(title: String, icon: String, available: Int64, total: Int64, accentColor: Color, unit: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             // Title Label
             Text(title)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(accentColor)
 
-            // Content box with dark background
+            // Content row with icon and value
             HStack(spacing: 8) {
                 // Icon with accent color background
                 ZStack {
                     RoundedRectangle(cornerRadius: 8)
                         .fill(accentColor.opacity(0.15))
-                        .frame(width: 40, height: 40)
+                        .frame(width: 36, height: 36)
 
                     Image(systemName: icon)
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(accentColor)
                 }
 
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 4) {
                     // Value display
                     if model.isLoadingResources {
                         RoundedRectangle(cornerRadius: 4)
                             .fill(Theme.colors.bgSurface1)
-                            .frame(width: 80, height: 16)
+                            .frame(width: 60, height: 14)
                             .shimmer()
                     } else {
                         Text(formatResourceValue(available: available, total: total, unit: unit))
@@ -312,32 +319,27 @@ struct TronDashboardView: View {
                             // Background track
                             RoundedRectangle(cornerRadius: 2)
                                 .fill(Theme.colors.bgPrimary)
-                                .frame(height: 4)
+                                .frame(height: 3)
 
                             if model.isLoadingResources {
                                 // Shimmer loading state
                                 RoundedRectangle(cornerRadius: 2)
                                     .fill(accentColor.opacity(0.3))
-                                    .frame(width: geometry.size.width * 0.5, height: 4)
+                                    .frame(width: geometry.size.width * 0.5, height: 3)
                                     .shimmer()
                             } else {
                                 // Progress fill
                                 RoundedRectangle(cornerRadius: 2)
                                     .fill(accentColor)
-                                    .frame(width: geometry.size.width * progressValue(available: available, total: total), height: 4)
+                                    .frame(width: geometry.size.width * progressValue(available: available, total: total), height: 3)
                             }
                         }
                     }
-                    .frame(height: 4)
+                    .frame(height: 3)
                 }
             }
-            .padding(12)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Theme.colors.bgSurface1)
-            )
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     func formatResourceValue(available: Int64, total: Int64, unit: String) -> String {
