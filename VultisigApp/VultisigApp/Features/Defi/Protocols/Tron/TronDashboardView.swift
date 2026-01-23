@@ -88,48 +88,75 @@ struct TronDashboardView: View {
     }
 
     var topBanner: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("TRON")
-                    .font(Theme.fonts.headline)
-                    .foregroundStyle(Theme.colors.textSecondary)
-
-                if model.isLoadingBalance {
-                    // Skeleton placeholder
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(Theme.colors.bgSurface1)
-                        .frame(width: 120, height: 24)
-                        .shimmer()
-                } else {
-                    Text(availableBalanceFiat)
-                        .font(Theme.fonts.title2)
-                        .foregroundStyle(Theme.colors.textPrimary)
+        ZStack(alignment: .trailing) {
+            // Background with gradient fill
+            cardBackground
+            
+            // Decorative circles - large and clipped by the card
+            GeometryReader { geometry in
+                ZStack {
+                    // Outer ring (larger, thinner stroke)
+                    Circle()
+                        .stroke(Color(hex: "FF0013").opacity(0.25), lineWidth: 2)
+                        .frame(width: 160, height: 160)
+                    
+                    // Inner ring (smaller, thicker stroke)
+                    Circle()
+                        .stroke(Color(hex: "FF0013").opacity(0.4), lineWidth: 4)
+                        .frame(width: 120, height: 120)
                 }
+                .position(x: geometry.size.width - 50, y: geometry.size.height * 0.75)
             }
-            Spacer()
-            Image("tron")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 60, height: 60)
-                .clipShape(Circle())
+            .clipShape(RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius))
+            
+            // Content
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("TRON")
+                        .font(Theme.fonts.headline)
+                        .foregroundStyle(Theme.colors.textSecondary)
+
+                    if model.isLoadingBalance {
+                        // Skeleton placeholder
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Theme.colors.bgSurface1)
+                            .frame(width: 120, height: 24)
+                            .shimmer()
+                    } else {
+                        Text(availableBalanceFiat)
+                            .font(Theme.fonts.title2)
+                            .foregroundStyle(Theme.colors.textPrimary)
+                    }
+                }
+                Spacer()
+                
+                // Logo on top of the rings - positioned lower and to the right
+                Image("tron")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 70, height: 70)
+                    .clipShape(Circle())
+                    .offset(x: 12, y: 40)
+            }
+            .padding(TronConstants.Design.cardPadding)
         }
-        .padding(TronConstants.Design.cardPadding)
-        .background(cardBackground)
     }
 
     var cardBackground: some View {
         RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
-            .inset(by: 0.5)
-            .stroke(Color(hex: "FF0013").opacity(0.17))
             .fill(
                 LinearGradient(
                     stops: [
-                        Gradient.Stop(color: Color(hex: "FF0013"), location: 0.00),
-                        Gradient.Stop(color: Color(red: 0.5, green: 0.11, blue: 0.11).opacity(0), location: 1.00)
+                        Gradient.Stop(color: Color(hex: "FF0013").opacity(0.15), location: 0.00),
+                        Gradient.Stop(color: Color(hex: "FF0013").opacity(0), location: 1.00)
                     ],
                     startPoint: UnitPoint(x: 0.5, y: 0),
                     endPoint: UnitPoint(x: 0.5, y: 1)
-                ).opacity(0.09)
+                )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+                    .stroke(Color(hex: "FF0013").opacity(0.3), lineWidth: 1)
             )
     }
 
