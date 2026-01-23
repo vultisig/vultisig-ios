@@ -700,7 +700,7 @@ class Endpoint {
     static func getLifiSwapTracker(txid: String) -> String {
         return "https://scan.li.fi/tx/\(txid)"
     }
-    static let tronEvmServiceRpc = "https://go.getblock.us/fdfe3fd3c4c0427ca52e7e859a68817e"
+    static let tronEvmServiceRpc = "https://api.vultisig.com/tron-rpc"
     // Cardano endpoints - Using Koios API (free, open source, no API key required)
     static let cardanoServiceRpc = "https://api.koios.rest/api/v1"
 
