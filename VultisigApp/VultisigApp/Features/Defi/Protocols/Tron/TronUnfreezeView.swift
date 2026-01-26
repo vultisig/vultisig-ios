@@ -103,7 +103,6 @@ struct TronUnfreezeView: View {
                     }
                 }
             }
-            .padding(.horizontal, TronConstants.Design.horizontalPadding)
 
             VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 8) {
@@ -152,8 +151,16 @@ struct TronUnfreezeView: View {
                 }
             }
             .padding(TronConstants.Design.cardPadding)
-            .padding(.horizontal, TronConstants.Design.horizontalPadding)
+            .background(
+                RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+                    .fill(Theme.colors.bgSurface1)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
+                    .stroke(Theme.colors.textSecondary.opacity(0.2), lineWidth: 1)
+            )
         }
+        .padding(.horizontal, TronConstants.Design.horizontalPadding)
         .padding(.top, TronConstants.Design.verticalSpacing)
         .frame(maxHeight: .infinity)
     }
