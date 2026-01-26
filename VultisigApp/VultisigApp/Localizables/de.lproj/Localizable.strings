@@ -828,6 +828,8 @@
 "value" = "Wert";
 "vault" = "Tresore";
 "vaultAlreadyExists" = "Tresor existiert bereits";
+"vaultNotImportedDescription" = "Bitte importieren Sie den richtigen Anteil.";
+"vaultNotImportedTitle" = "Vault ist nicht geladen";
 "vaultCreated" = "Tresor erstellt";
 "vaultDetailsDescription" = "Details zu deinem Tresor ansehen";
 "vaultDetailsTitle" = "Tresor-Details";

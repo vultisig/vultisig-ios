@@ -14,11 +14,9 @@ struct GeneralQRImportMacView: View {
     var onParsedAddress: (String) -> Void
 
     @State var fileName: String? = nil
-    @State var alertDescription = ""
     @State var importResult: Result<[URL], Error>? = nil
-
-    @State var showAlert = false
     @State var isButtonEnabled = false
+    @State private var deeplinkError: Error?
 
 #if os(iOS)
     @State var selectedImage: UIImage?
@@ -38,6 +36,12 @@ struct GeneralQRImportMacView: View {
         }
         .navigationBarBackButtonHidden(true)
         .crossPlatformToolbar(getTitle())
+        .withError(error: $deeplinkError, errorType: .warning) {}
+        .onChange(of: deeplinkError == nil) {
+            if deeplinkError == nil {
+                resetData()
+            }
+        }
     }
 
     var main: some View {
@@ -67,9 +71,6 @@ struct GeneralQRImportMacView: View {
             handleFileImport: handleFileImport,
             selectedImage: selectedImage
         )
-        .alert(isPresented: $showAlert) {
-            alert
-        }
     }
 
     var button: some View {
@@ -77,14 +78,6 @@ struct GeneralQRImportMacView: View {
             handleTap()
         }
         .disabled(!isButtonEnabled)
-    }
-
-    var alert: Alert {
-        Alert(
-            title: Text(NSLocalizedString("error", comment: "")),
-            message: Text(NSLocalizedString(alertDescription, comment: "")),
-            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-        )
     }
 
     private func getTitle() -> String {
@@ -151,13 +144,9 @@ struct GeneralQRImportMacView: View {
                 return
             }
 
-            deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
+            try deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
         } catch {
-            if let description = error as? UtilsQrCodeFromImageError {
-                alertDescription = description.localizedDescription
-                showAlert = true
-            }
-            print(error)
+            deeplinkError = error
         }
     }
 }

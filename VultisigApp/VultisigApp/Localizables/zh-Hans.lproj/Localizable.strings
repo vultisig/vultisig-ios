@@ -830,6 +830,8 @@
 "value" = "价值";
 "vault" = "保险库";
 "vaultAlreadyExists" = "保险库已存在";
+"vaultNotImportedDescription" = "请导入正确的份额。";
+"vaultNotImportedTitle" = "保险库未加载";
 "vaultCreated" = "保险库已创建";
 "vaultDetailsDescription" = "查看保险库名称、部分和类型";
 "vaultDetailsTitle" = "详情";

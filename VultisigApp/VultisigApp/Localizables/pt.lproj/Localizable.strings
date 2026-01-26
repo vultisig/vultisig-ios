@@ -828,6 +828,8 @@
 "value" = "Valor";
 "vault" = "Cofre";
 "vaultAlreadyExists" = "O cofre já existe";
+"vaultNotImportedDescription" = "Por favor, importe a parte correta.";
+"vaultNotImportedTitle" = "O cofre não está carregado";
 "vaultCreated" = "Cofre criado";
 "vaultDetailsDescription" = "Ver os detalhes do seu cofre";
 "vaultDetailsTitle" = "Detalhes";

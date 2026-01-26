@@ -295,6 +295,7 @@
 		1390D8CC2E394778003F3E20 /* SecurityScannerServiceFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8CB2E394770003F3E20 /* SecurityScannerServiceFactory.swift */; };
 		13924F442ED88EB200F458D5 /* AppMigrationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13924F412ED88EB200F458D5 /* AppMigrationService.swift */; };
 		13924F482ED88F6000F458D5 /* THORChainDuplicateTokensMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13924F472ED88F5700F458D5 /* THORChainDuplicateTokensMigration.swift */; };
+		1392BDA32F27A1D2007F6140 /* WithError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1392BDA22F27A1D2007F6140 /* WithError.swift */; };
 		139450102EBB866D00A72AE9 /* StakeTransactionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1394500F2EBB866D00A72AE9 /* StakeTransactionScreen.swift */; };
 		139450112EBB866D00A72AE9 /* StakeTransactionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1394500E2EBB866D00A72AE9 /* StakeTransactionViewModel.swift */; };
 		139450152EBB8A3000A72AE9 /* UnstakeTransactionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139450132EBB8A3000A72AE9 /* UnstakeTransactionScreen.swift */; };
@@ -1597,6 +1598,7 @@
 		1390D8CB2E394770003F3E20 /* SecurityScannerServiceFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerServiceFactory.swift; sourceTree = "<group>"; };
 		13924F412ED88EB200F458D5 /* AppMigrationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMigrationService.swift; sourceTree = "<group>"; };
 		13924F472ED88F5700F458D5 /* THORChainDuplicateTokensMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainDuplicateTokensMigration.swift; sourceTree = "<group>"; };
+		1392BDA22F27A1D2007F6140 /* WithError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithError.swift; sourceTree = "<group>"; };
 		1394500E2EBB866D00A72AE9 /* StakeTransactionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StakeTransactionViewModel.swift; sourceTree = "<group>"; };
 		1394500F2EBB866D00A72AE9 /* StakeTransactionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StakeTransactionScreen.swift; sourceTree = "<group>"; };
 		139450122EBB8A3000A72AE9 /* UnstakeTransactionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnstakeTransactionViewModel.swift; sourceTree = "<group>"; };
@@ -3133,6 +3135,7 @@
 		1334C73D2E30079000CBAA3E /* ViewModifiers */ = {
 			isa = PBXGroup;
 			children = (
+				1392BDA22F27A1D2007F6140 /* WithError.swift */,
 				132354542ECB5C9500BAFE7C /* ThrottledOnAppearModifier.swift */,
 				1305A1282E988BB4005873CA /* ReadSize.swift */,
 				138C5E662E79E85A00C559C7 /* GlassEffect.swift */,
@@ -7323,6 +7326,7 @@
 				DEEADCF72B916676007978DE /* Solana.swift in Sources */,
 				D7620B1D2DF6BFD700294396 /* FunctionCallNodeMaintenance.swift in Sources */,
 				132E016D2F1AA3C6007E717C /* KeyImportSetupType.swift in Sources */,
+				1392BDA32F27A1D2007F6140 /* WithError.swift in Sources */,
 				1385E63D2EC271F200CE634F /* DefiPositionsStorageService.swift in Sources */,
 				B57DD59A2C3DA5EA00934CBB /* SolanaFmTokenInfo.swift in Sources */,
 				13155A302ED4AE5D0042549B /* CacaoUnstakeTransactionBuilder.swift in Sources */,

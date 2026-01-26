@@ -25,6 +25,7 @@ struct ContentView: View {
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
 
     @State private var rootRoute: RootRoute?
+    @State private var deeplinkError: Error?
 
     init(navigationRouter: NavigationRouter) {
         self.navigationRouter = navigationRouter
@@ -80,6 +81,10 @@ struct ContentView: View {
             guard newValue else { return }
             navigateToHome()
             appViewModel.restartNavigation = false
+        }
+        .withError(error: $deeplinkError, errorType: .warning) {
+            // Retry action - clear error to allow user to try again
+            deeplinkError = nil
         }
     }
 
@@ -147,9 +152,17 @@ struct ContentView: View {
                 return
             }
 
-            deeplinkViewModel.extractParameters(url, vaults: vaults)
+            do {
+                try deeplinkViewModel.extractParameters(url, vaults: vaults)
+            } catch {
+                deeplinkError = error
+            }
         } else {
-            deeplinkViewModel.extractParameters(incomingURL, vaults: vaults)
+            do {
+                try deeplinkViewModel.extractParameters(incomingURL, vaults: vaults)
+            } catch {
+                deeplinkError = error
+            }
         }
 
         NotificationCenter.default.post(name: NSNotification.Name("ProcessDeeplink"), object: nil)

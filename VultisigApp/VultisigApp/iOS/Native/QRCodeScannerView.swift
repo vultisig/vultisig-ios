@@ -12,6 +12,7 @@ import AVFoundation
 
 struct QRCodeScannerView: View {
     @Binding var showScanner: Bool
+    @Binding var isPaused: Bool
     var handleImport: (String) -> Void
 
     @State var isGalleryPresented = false
@@ -23,6 +24,7 @@ struct QRCodeScannerView: View {
     var body: some View {
         ZStack {
             cameraView
+                .showIf(!isPaused)
             content
             PopupCapsule(text: "noBarcodesFound".localized, showPopup: $showErrorPopup)
         }
@@ -85,6 +87,7 @@ struct QRCodeScannerView: View {
         ZStack {
             CodeScannerView(
                 codeTypes: [.qr],
+                isPaused: isPaused,
                 isGalleryPresented: $isGalleryPresented,
                 videoCaptureDevice: AVCaptureDevice.zoomedCameraForQRCode(withMinimumCodeSize: 100)
             ) { result in
