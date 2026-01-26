@@ -1,0 +1,131 @@
+//
+//  TransactionStatusHeaderView.swift
+//  VultisigApp
+//
+//  Created by Gaston Mazzeo on 26/01/2026.
+//
+
+import SwiftUI
+import RiveRuntime
+
+struct TransactionStatusHeaderView: View {
+    let status: TransactionStatus
+    @State private var pulseScale: CGFloat = 1.0
+    @State private var successAnimationVM: RiveViewModel?
+    @State private var errorAnimationVM: RiveViewModel?
+
+    var body: some View {
+        VStack(spacing: 4) {
+            statusIndicator
+
+            VStack(spacing: 12) {
+                statusText
+                statusDescription
+            }
+        }
+        .animation(.interpolatingSpring, value: status)
+        .onLoad {
+            successAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: false)
+            errorAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: false)
+        }
+    }
+
+    @ViewBuilder
+    var statusIndicator: some View {
+        VStack {
+            Group {
+                switch status {
+                case .broadcasted, .pending:
+                    pulsingCircle
+                        .frame(width: 32, height: 32)
+                        .onAppear {
+                            pulseScale = 1.2
+                        }
+                case .confirmed:
+                    if let successAnimationVM {
+                        successAnimationVM.view()
+                            .frame(width: 280, height: 280)
+                            .onAppear {
+                                successAnimationVM.play()
+                            }
+                    }
+                case .failed, .timeout:
+                    if let errorAnimationVM {
+                        errorAnimationVM.view()
+                            .frame(width: 280, height: 280)
+                            .onAppear {
+                                errorAnimationVM.play()
+                            }
+                    }
+                }
+            }
+            .transition(.opacity)
+        }
+        .frame(height: 120)
+    }
+
+    @ViewBuilder
+    private var statusText: some View {
+        Group {
+            switch status {
+            case .broadcasted:
+                Text("transactionBroadcasted")
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .font(Theme.fonts.bodyLMedium)
+            case .pending:
+                Text("transactionPending")
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .font(Theme.fonts.bodyLMedium)
+            case .confirmed:
+                CustomHighlightText(
+                    "transactionSuccessful".localized,
+                    highlight: "transactionSuccessfulHighlight".localized,
+                    style: LinearGradient.primaryGradientHorizontal
+                )
+                .foregroundStyle(Theme.colors.textPrimary)
+                .font(Theme.fonts.bodyLMedium)
+            case .timeout, .failed:
+                HighlightedText(
+                    text: "transactionFailed".localized,
+                    highlightedText: "transactionFailedHighlight".localized
+                ) { text in
+                    text.foregroundColor = Theme.colors.textPrimary
+                    text.font = Theme.fonts.bodyLMedium
+                } highlightedTextStyle: { text in
+                    text.foregroundColor = Theme.colors.alertError
+                }
+            }
+        }
+        .multilineTextAlignment(.center)
+        .transition(.opacity)
+    }
+
+    @ViewBuilder
+    var statusDescription: some View {
+        if case let .failed(reason) = status {
+            Text(reason)
+                .foregroundStyle(Theme.colors.textTertiary)
+                .font(Theme.fonts.bodySMedium)
+                .multilineTextAlignment(.center)
+        }
+    }
+
+    var pulsingCircle: some View {
+        ZStack {
+            Circle()
+                .fill(Theme.colors.turquoise.opacity(0.3))
+                .frame(width: 32, height: 32)
+                .scaleEffect(pulseScale)
+                .animation(
+                    .easeInOut(duration: 1.5)
+                    .repeatForever(autoreverses: true),
+                    value: pulseScale
+                )
+
+            Circle()
+                .fill(Theme.colors.turquoise)
+                .frame(width: 16, height: 16)
+        }
+    }
+
+}

@@ -1317,3 +1317,10 @@
 "storeBackupsSeparately" = "Store backups separately";
 "storeBackupsSeparatelyDescription" = "Keep each backup in a different place. If one is compromised, your funds stay safe.";
 "message" = "Message";
+
+"transactionBroadcasted" = "Transaction broadcasted";
+"transactionPending" = "Transaction pending...";
+"transactionSuccessful" = "Transaction successful";
+"transactionSuccessfulHighlight" = "successful";
+"transactionFailed" = "Transaction failed";
+"transactionFailedHighlight" = "failed";

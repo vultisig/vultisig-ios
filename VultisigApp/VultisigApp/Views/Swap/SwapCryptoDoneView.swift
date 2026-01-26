@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import RiveRuntime
 
 struct SwapCryptoDoneView: View {
     let tx: SwapTransaction
@@ -20,7 +19,6 @@ struct SwapCryptoDoneView: View {
     @Binding var alertTitle: String
 
     @State var showFees: Bool = false
-    @State var animationVM: RiveViewModel? = nil
 
     @Environment(\.openURL) var openURL
     @EnvironmentObject var settingsViewModel: SettingsViewModel
@@ -32,20 +30,28 @@ struct SwapCryptoDoneView: View {
             buttons
         }
         .buttonStyle(BorderlessButtonStyle())
-        .onLoad {
-            animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
-        }
     }
 
     var cards: some View {
         ScrollView {
-            VStack {
-                animation
+            VStack(spacing: 8) {
+                TransactionStatusHeaderView(status: .confirmed)
                 fromToCards
                 summary
             }
             .padding(.horizontal)
         }
+    }
+
+    var buttons: some View {
+        VStack(spacing: 12) {
+            if progressLink != nil {
+                trackButton
+            }
+            doneButton
+        }
+        .padding(.horizontal)
+        .padding(.bottom)
     }
 
     var trackButton: some View {
@@ -60,22 +66,6 @@ struct SwapCryptoDoneView: View {
         PrimaryButton(title: "done") {
             appViewModel.restart()
         }
-    }
-
-    var animation: some View {
-        ZStack {
-            animationVM?.view()
-                .frame(width: 280, height: 280)
-
-            animationText
-                .offset(y: 50)
-        }
-    }
-
-    var animationText: some View {
-        Text(NSLocalizedString("transactionSuccessful", comment: ""))
-            .foregroundStyle(LinearGradient.primaryGradient)
-            .font(Theme.fonts.bodyLMedium)
     }
 
     var fromToCards: some View {

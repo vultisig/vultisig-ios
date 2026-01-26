@@ -638,6 +638,31 @@ class KeysignViewModel: ObservableObject {
             txid = transactionType.transactionHash
             approveTxid = transactionType.approveTransactionHash
         }
+
+        // Save to pending transactions for status tracking
+        savePendingTransaction()
+    }
+
+    private func savePendingTransaction() {
+        guard let keysignPayload = keysignPayload,
+              !txid.isEmpty,
+              txid != "Transaction already broadcasted." else {
+            return
+        }
+
+        let storage = StoredPendingTransactionStorage.shared
+        let config = ChainStatusConfig.config(for: keysignPayload.coin.chain)
+
+        Task {
+            try? await storage.save(
+                txHash: txid,
+                chain: keysignPayload.coin.chain,
+                status: .broadcasted(estimatedTime: config.estimatedTime),
+                coinTicker: keysignPayload.coin.ticker,
+                amount: keysignPayload.toAmount.description,
+                toAddress: keysignPayload.toAddress
+            )
+        }
     }
 
     func customMessageSignature() -> String {
