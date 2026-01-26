@@ -21,7 +21,7 @@ struct TronDashboardView: View {
 
     /// Frozen balance in fiat (using TRX coin price)
     var frozenBalanceFiat: String {
-        guard let trxCoin = vault.coins.first(where: { $0.chain == .tron && $0.isNativeToken }) else {
+        guard let trxCoin = vault.nativeCoin(for: .tron) else {
             return "$0.00"
         }
         let fiatValue = model.totalFrozenBalance * Decimal(trxCoin.price)
@@ -30,7 +30,7 @@ struct TronDashboardView: View {
 
     /// Available balance in fiat (using TRX coin price)
     var availableBalanceFiat: String {
-        guard let trxCoin = vault.coins.first(where: { $0.chain == .tron && $0.isNativeToken }) else {
+        guard let trxCoin = vault.nativeCoin(for: .tron) else {
             return "$0.00"
         }
         let fiatValue = model.availableBalance * Decimal(trxCoin.price)

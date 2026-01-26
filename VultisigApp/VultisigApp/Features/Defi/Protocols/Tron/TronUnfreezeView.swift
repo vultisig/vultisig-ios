@@ -144,8 +144,7 @@ struct TronUnfreezeView: View {
                         Spacer()
 
                         Text("\(frozenBalanceForSelectedType.formatted()) TRX")
-                            .font(Theme.fonts.caption12)
-                            .bold()
+                            .font(Theme.fonts.bodyMMedium)
                             .foregroundStyle(Theme.colors.textPrimary)
                     }
                 }
@@ -196,7 +195,7 @@ struct TronUnfreezeView: View {
         if isFastVault {
             VStack {
                 Text(NSLocalizedString("holdForPairedSign", comment: ""))
-                    .foregroundColor(Theme.colors.textTertiary)
+                    .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
 
                 LongPressPrimaryButton(title: NSLocalizedString("tronUnfreezeConfirm", comment: "Continue")) {

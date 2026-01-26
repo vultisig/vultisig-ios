@@ -60,7 +60,7 @@ private extension DefiBalanceService {
     func tronTotalBalanceFiatDecimal(for vault: Vault) -> Decimal {
         // For TRON, we show the native TRX balance in fiat
         // Frozen/staked balance is fetched separately from TRON API in the dashboard
-        guard let trxCoin = vault.coins.first(where: { $0.chain == .tron && $0.isNativeToken }) else {
+        guard let trxCoin = vault.nativeCoin(for: .tron) else {
             return .zero
         }
         return trxCoin.balanceInFiatDecimal
