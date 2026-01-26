@@ -152,19 +152,13 @@ struct ContentView: View {
                 return
             }
 
-            do {
-                try deeplinkViewModel.extractParameters(url, vaults: vaults)
-            } catch {
-                deeplinkError = error
-            }
+           handleDeepLinkURL(url)
         } else {
-            do {
-                try deeplinkViewModel.extractParameters(incomingURL, vaults: vaults)
-            } catch {
-                deeplinkError = error
-            }
+            handleDeepLinkURL(incomingURL)
         }
 
+        guard deeplinkError == nil else { return }
+        
         NotificationCenter.default.post(name: NSNotification.Name("ProcessDeeplink"), object: nil)
 
         Task { @MainActor in
@@ -173,6 +167,15 @@ struct ContentView: View {
             if deeplinkViewModel.type != nil {
                 NotificationCenter.default.post(name: NSNotification.Name("ProcessDeeplink"), object: nil)
             }
+        }
+    }
+    
+    private func handleDeepLinkURL(_ url: URL) {
+        do {
+            try deeplinkViewModel.extractParameters(url, vaults: vaults)
+            deeplinkError = nil
+        } catch {
+            deeplinkError = error
         }
     }
 }

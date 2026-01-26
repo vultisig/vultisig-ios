@@ -51,7 +51,6 @@ private struct WithErrorModifier: ViewModifier {
             .onChange(of: presentableError) { _, presentable in
                 if presentable == nil {
                     error = nil
-                    onRetry()
                 }
             }
             #if os(iOS)

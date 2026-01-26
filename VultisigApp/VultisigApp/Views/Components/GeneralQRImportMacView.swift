@@ -36,7 +36,9 @@ struct GeneralQRImportMacView: View {
         }
         .navigationBarBackButtonHidden(true)
         .crossPlatformToolbar(getTitle())
-        .withError(error: $deeplinkError, errorType: .warning) {}
+        .withError(error: $deeplinkError, errorType: .warning) {
+            deeplinkError = nil
+        }
         .onChange(of: deeplinkError == nil) {
             if deeplinkError == nil {
                 resetData()
