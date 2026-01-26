@@ -94,6 +94,9 @@
 		132666C42E42920C007FDAC5 /* ContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666C32E42920A007FDAC5 /* ContainerView.swift */; };
 		132666C62E429550007FDAC5 /* Icon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666C52E42954F007FDAC5 /* Icon.swift */; };
 		132666C82E429C91007FDAC5 /* ReferralMainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666C72E429C91007FDAC5 /* ReferralMainScreen.swift */; };
+		1326BEE52F2127FE007F18F8 /* SignSolanaDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1326BEE42F2127FE007F18F8 /* SignSolanaDisplayView.swift */; };
+		1326BEE72F212807007F18F8 /* SolanaTransactionParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1326BEE62F212807007F18F8 /* SolanaTransactionParser.swift */; };
+		1326BEEA2F212827007F18F8 /* SignSolana.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1326BEE92F212827007F18F8 /* SignSolana.swift */; };
 		1326EBB92E4637FE008A3F8F /* SendCryptoDoneHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1326EBB82E4637F5008A3F8F /* SendCryptoDoneHeaderView.swift */; };
 		1326EBBB2E463C59008A3F8F /* ReferralCodeMemoFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1326EBBA2E463C58008A3F8F /* ReferralCodeMemoFactory.swift */; };
 		1328E64E2ED5F32C0080BEE1 /* VaultPairDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1328E64C2ED5F32C0080BEE1 /* VaultPairDetailViewModel.swift */; };
@@ -1406,6 +1409,9 @@
 		132666C32E42920A007FDAC5 /* ContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainerView.swift; sourceTree = "<group>"; };
 		132666C52E42954F007FDAC5 /* Icon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Icon.swift; sourceTree = "<group>"; };
 		132666C72E429C91007FDAC5 /* ReferralMainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralMainScreen.swift; sourceTree = "<group>"; };
+		1326BEE42F2127FE007F18F8 /* SignSolanaDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignSolanaDisplayView.swift; sourceTree = "<group>"; };
+		1326BEE62F212807007F18F8 /* SolanaTransactionParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaTransactionParser.swift; sourceTree = "<group>"; };
+		1326BEE92F212827007F18F8 /* SignSolana.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignSolana.swift; sourceTree = "<group>"; };
 		1326EBB82E4637F5008A3F8F /* SendCryptoDoneHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneHeaderView.swift; sourceTree = "<group>"; };
 		1326EBBA2E463C58008A3F8F /* ReferralCodeMemoFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralCodeMemoFactory.swift; sourceTree = "<group>"; };
 		1328E64C2ED5F32C0080BEE1 /* VaultPairDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultPairDetailViewModel.swift; sourceTree = "<group>"; };
@@ -2632,6 +2638,7 @@
 				maya.json,
 				mayaswap.json,
 				pol.json,
+				"solana-sign-data.json",
 				solana.json,
 				sui.json,
 				terra.json,
@@ -3845,6 +3852,7 @@
 		13988BA52EFEF07C005AD1C8 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				1326BEE42F2127FE007F18F8 /* SignSolanaDisplayView.swift */,
 				13988BA32EFEF07C005AD1C8 /* SignAminoDisplayView.swift */,
 				13988BA42EFEF07C005AD1C8 /* SignDirectDisplayView.swift */,
 			);
@@ -4811,6 +4819,7 @@
 		465A8D512B9E6887006E7457 /* Solana */ = {
 			isa = PBXGroup;
 			children = (
+				1326BEE62F212807007F18F8 /* SolanaTransactionParser.swift */,
 				465A8D522B9E689B006E7457 /* SolanaService.swift */,
 			);
 			path = Solana;
@@ -5092,6 +5101,7 @@
 		A58CC3442C32EDDB0086D16B /* Keysign */ = {
 			isa = PBXGroup;
 			children = (
+				1326BEE92F212827007F18F8 /* SignSolana.swift */,
 				1344BD1A2E4B9D7900CBD493 /* Swap */,
 				1398804F2E39007900EC5D3F /* Cosmos+ProtoMappable.swift */,
 				1369C2202E34006D0002D815 /* WasmExecuteContractPayload.swift */,
@@ -6896,6 +6906,7 @@
 				A6521C582C6ECA1A002D5C5F /* MacCameraPreview.swift in Sources */,
 				46E98FFC2BAE407300C53D97 /* DecodingErrorExtension.swift in Sources */,
 				137FA5922EABC38D00843DB1 /* THORChainStakingAPI.swift in Sources */,
+				1326BEE72F212807007F18F8 /* SolanaTransactionParser.swift in Sources */,
 				135C7ADA2EA13824002F879A /* DefiChainListView.swift in Sources */,
 				DEFF58FA2BCF85FA005DFDF9 /* maya.swift in Sources */,
 				132666C02E428B76007FDAC5 /* CounterView.swift in Sources */,
@@ -7429,6 +7440,7 @@
 				13D178FE2E57644F00007B48 /* AddressBookChainSelector.swift in Sources */,
 				A622C8622C9BEC2100908332 /* PhoneCheckUpdateViewModel.swift in Sources */,
 				A698222C2CB398E700966D19 /* FolderCell.swift in Sources */,
+				1326BEE52F2127FE007F18F8 /* SignSolanaDisplayView.swift in Sources */,
 				A53287B52C4DB874009FD3D3 /* CoinPickerView.swift in Sources */,
 				A6C670CD2C9E8D3500F59B6A /* SetupQRCodeView+iOS.swift in Sources */,
 				A60CA7EB2BB1020900FDEB5C /* DetectOrientation.swift in Sources */,
@@ -7857,6 +7869,7 @@
 				13D3AC982E85B5F000BA4273 /* UpgradeVaultViewModifier.swift in Sources */,
 				A6C670DD2C9E91A900F59B6A /* SendDetailsScreen+iOS.swift in Sources */,
 				13AF0D182E4CE655004D4FD2 /* NavigationRouter.swift in Sources */,
+				1326BEEA2F212827007F18F8 /* SignSolana.swift in Sources */,
 				A6F7B6FC2D4D5BE600AC8104 /* BackupVaultSuccessView.swift in Sources */,
 				A68696252C1B777A004EDE0B /* EncryptedDataFile.swift in Sources */,
 				A63953B02BA7BEDA000802EC /* Checkbox.swift in Sources */,

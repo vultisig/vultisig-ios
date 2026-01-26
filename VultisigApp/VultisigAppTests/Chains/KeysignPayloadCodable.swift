@@ -888,6 +888,7 @@ extension VSKeysignPayload.OneOf_SignData: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case signDirect = "sign_direct"
         case signAmino = "sign_amino"
+        case signSolana = "sign_solana"
     }
 
     public init(from decoder: any Decoder) throws {
@@ -900,6 +901,9 @@ extension VSKeysignPayload.OneOf_SignData: @retroactive Codable {
         } else if container.contains(.signDirect) {
             let signDirect = try container.decode(VSSignDirect.self, forKey: .signDirect)
             self = .signDirect(signDirect)
+        } else if container.contains(.signSolana) {
+            let signSolana = try container.decode(VSSignSolana.self, forKey: .signSolana)
+            self = .signSolana(signSolana)
         } else {
             throw DecodingError.dataCorrupted(
                 DecodingError.Context(
@@ -917,6 +921,8 @@ extension VSKeysignPayload.OneOf_SignData: @retroactive Codable {
             try container.encode(vSSignAmino, forKey: .signAmino)
         case .signDirect(let vSSignDirect):
             try container.encode(vSSignDirect, forKey: .signDirect)
+        case .signSolana(let vSSignSolana):
+            try container.encode(vSSignSolana, forKey: .signSolana)
         }
     }
 }
@@ -1146,6 +1152,23 @@ extension VSSignAmino: @retroactive Codable {
         self.init()
         fee = try container.decode(VSCosmosFee.self, forKey: .fee)
         msgs = try container.decode([VSCosmosMsg].self, forKey: .msgs)
+    }
+}
+
+extension VSSignSolana: @retroactive Codable {
+    enum CodingKeys: String, CodingKey {
+        case rawTransactions = "raw_transactions"
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(rawTransactions, forKey: .rawTransactions)
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        rawTransactions = try container.decode([String].self, forKey: .rawTransactions)
     }
 }
 
