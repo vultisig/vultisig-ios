@@ -828,6 +828,8 @@
 "value" = "Valore";
 "vault" = "Cassaforte";
 "vaultAlreadyExists" = "Il caveau esiste già";
+"vaultNotImportedDescription" = "Si prega di importare la condivisione corretta.";
+"vaultNotImportedTitle" = "Il vault non è caricato";
 "vaultCreated" = "Vault creato";
 "vaultDetailsDescription" = "Visualizza i dettagli della tua cassaforte";
 "vaultDetailsTitle" = "Dettagli";

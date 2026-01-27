@@ -834,6 +834,8 @@
 "value" = "Value";
 "vault" = "Vault";
 "vaultAlreadyExists" = "Vault already exists";
+"vaultNotImportedDescription" = "Please import the correct share.";
+"vaultNotImportedTitle" = "Vault is not loaded";
 "vaultCreated" = "Vault created";
 "vaultDetailsDescription" = "View vault name, part and type";
 "vaultDetailsTitle" = "Details";

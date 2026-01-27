@@ -8,6 +8,7 @@
 #if os(macOS)
 import AVFoundation
 import AppKit
+import SwiftUI
 
 @MainActor
 class MacCameraServiceViewModel: NSObject, ObservableObject {
@@ -144,7 +145,7 @@ extension MacCameraServiceViewModel {
         return NSLocalizedString(text, comment: "")
     }
 
-    func handleScan(vaults: [Vault], deeplinkViewModel: DeeplinkViewModel) {
+    func handleScan(vaults: [Vault], deeplinkViewModel: DeeplinkViewModel, error: Binding<Error?>) {
         guard let result = detectedQRCode, !result.isEmpty else {
             return
         }
@@ -153,7 +154,11 @@ extension MacCameraServiceViewModel {
             return
         }
 
-        deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
+        do {
+            try deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
+        } catch let scanError {
+            error.wrappedValue = scanError
+        }
     }
 }
 #endif
