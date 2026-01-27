@@ -13,7 +13,7 @@ struct ErrorScreen: View {
     let description: String
     let buttonTitle: String
     var action: () -> Void
-    
+
     var body: some View {
         Screen {
             ErrorView(

@@ -212,17 +212,17 @@ struct DeeplinkLogic {
 
     private func processKeygenOrKeysignDeeplink(queryItems: [URLQueryItem]?, vaults: [Vault]) throws -> DeeplinkResult {
         var result = DeeplinkResult()
-        
+
         let typeData = queryItems?.first(where: { $0.name == "type" })?.value
         result.type = parseFlowType(typeData)
 
         let vaultPubKey = queryItems?.first(where: { $0.name == "vault" })?.value
         let vault = getVault(for: vaultPubKey, vaults: vaults)
-        
+
         if vault == nil && result.type == .SignTransaction {
             throw UtilsQrCodeFromImageError.VaultNotImported(publicKey: vaultPubKey ?? "")
         }
-        
+
         result.selectedVault = vault
 
         let tssData = queryItems?.first(where: { $0.name == "tssType" })?.value
