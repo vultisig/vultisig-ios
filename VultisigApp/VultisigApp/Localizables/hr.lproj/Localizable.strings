@@ -828,6 +828,8 @@
 "value" = "Vrijednost";
 "vault" = "Sefovi";
 "vaultAlreadyExists" = "Spremište već postoji";
+"vaultNotImportedDescription" = "Molimo uvezite ispravan udio.";
+"vaultNotImportedTitle" = "Spremište nije učitano";
 "vaultCreated" = "Trezoor stvoren";
 "vaultDetailsDescription" = "Pogledajte detalje vašeg sefa";
 "vaultDetailsTitle" = "Detalji";

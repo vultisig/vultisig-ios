@@ -828,6 +828,8 @@
 "value" = "Valor";
 "vault" = "Caja Fuerte";
 "vaultAlreadyExists" = "El almacén ya existe";
+"vaultNotImportedDescription" = "Por favor, importe la parte correcta.";
+"vaultNotImportedTitle" = "La bóveda no está cargada";
 "vaultCreated" = "Bóveda creada";
 "vaultDetailsDescription" = "Ver los detalles de tu caja fuerte";
 "vaultDetailsTitle" = "Detalles";

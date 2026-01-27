@@ -35,13 +35,13 @@ class DeeplinkViewModel: ObservableObject {
     private let logic = DeeplinkLogic()
 
     @discardableResult
-    func extractParameters(_ url: URL, vaults: [Vault], isInternal: Bool = false) -> Bool {
+    func extractParameters(_ url: URL, vaults: [Vault], isInternal: Bool = false) throws -> Bool {
         resetFieldsForExtraction()
         isInternalDeeplink = isInternal
         viewID = UUID()
         receivedUrl = url
 
-        let result = logic.extractParameters(url, vaults: vaults)
+        let result = try logic.extractParameters(url, vaults: vaults)
         apply(result: result)
 
         if result.shouldNotify {
@@ -112,7 +112,7 @@ struct DeeplinkLogic {
         var shouldNotify: Bool = false
     }
 
-    func extractParameters(_ url: URL, vaults: [Vault]) -> DeeplinkResult {
+    func extractParameters(_ url: URL, vaults: [Vault]) throws -> DeeplinkResult {
         guard let urlComponents = URLComponents(string: url.absoluteString) else {
             return buildAddressOnlyResult(url: url)
         }
@@ -135,7 +135,7 @@ struct DeeplinkLogic {
         } else if queryItems == nil {
             return buildAddressOnlyResult(url: url)
         } else {
-            var result = processKeygenOrKeysignDeeplink(queryItems: queryItems, vaults: vaults)
+            var result = try processKeygenOrKeysignDeeplink(queryItems: queryItems, vaults: vaults)
             if result.type != nil {
                 result.shouldNotify = true
             }
@@ -210,17 +210,23 @@ struct DeeplinkLogic {
         return result
     }
 
-    private func processKeygenOrKeysignDeeplink(queryItems: [URLQueryItem]?, vaults: [Vault]) -> DeeplinkResult {
+    private func processKeygenOrKeysignDeeplink(queryItems: [URLQueryItem]?, vaults: [Vault]) throws -> DeeplinkResult {
         var result = DeeplinkResult()
-
+        
         let typeData = queryItems?.first(where: { $0.name == "type" })?.value
         result.type = parseFlowType(typeData)
 
+        let vaultPubKey = queryItems?.first(where: { $0.name == "vault" })?.value
+        let vault = getVault(for: vaultPubKey, vaults: vaults)
+        
+        if vault == nil && result.type == .SignTransaction {
+            throw UtilsQrCodeFromImageError.VaultNotImported(publicKey: vaultPubKey ?? "")
+        }
+        
+        result.selectedVault = vault
+
         let tssData = queryItems?.first(where: { $0.name == "tssType" })?.value
         result.tssType = parseTssType(tssData)
-
-        let vaultPubKey = queryItems?.first(where: { $0.name == "vault" })?.value
-        result.selectedVault = getVault(for: vaultPubKey, vaults: vaults)
 
         result.jsonData = queryItems?.first(where: { $0.name == "jsonData" })?.value
         return result

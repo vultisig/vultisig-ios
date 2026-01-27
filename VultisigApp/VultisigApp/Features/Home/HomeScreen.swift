@@ -36,6 +36,7 @@ struct HomeScreen: View {
     @State var shouldRefresh: Bool = false
     @State var showChainMissingAlert: Bool = false
     @State var missingChainName: String = ""
+    @State private var deeplinkError: Error?
 
     @State private var capturedGeometryHeight: CGFloat = 600
 
@@ -233,8 +234,12 @@ struct HomeScreen: View {
                 if ProcessInfo.processInfo.isiOSAppOnMac {
                     GeneralQRImportMacView(type: .SignTransaction, selectedVault: selectedVault) {
                         guard let url = URL(string: $0) else { return }
-                        deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
-                        presetValuesForDeeplink()
+                        do {
+                            try deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
+                            presetValuesForDeeplink()
+                        } catch {
+                            deeplinkError = error
+                        }
                     }
                 } else {
                     GeneralCodeScannerView(
@@ -310,6 +315,10 @@ struct HomeScreen: View {
                         }
                     }
                 }
+            }
+            .withError(error: $deeplinkError, errorType: .warning) {
+                // Retry action - reopen scanner
+                showScanner = true
             }
     }
 
