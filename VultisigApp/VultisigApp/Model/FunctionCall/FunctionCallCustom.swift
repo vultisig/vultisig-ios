@@ -33,7 +33,7 @@ class FunctionCallCustom: FunctionCallAddressable, ObservableObject {
 
     var addressFields: [String: String] {
         get { [:] }
-        set { }
+        set { _ = newValue }
     }
 
     required init(tx: SendTransaction, vault: Vault) {

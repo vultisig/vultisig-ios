@@ -80,7 +80,7 @@ enum TronHelper {
                 blockHeaderParentHash: blockHeaderParentHash, blockHeaderWitnessAddress: blockHeaderWitnessAddress
             )
         }
-        
+
         // UnfreezeBalanceV2 (Stake 2.0) - detect from memo
         if let memo = keysignPayload.memo, memo.hasPrefix("UNFREEZE:") {
             let resourceString = String(memo.dropFirst("UNFREEZE:".count))
@@ -300,7 +300,7 @@ enum TronHelper {
         return try input.serializedData()
     }
     // MARK: - FreezeBalanceV2 (Stake 2.0)
-    
+
     private static func buildTronFreezeBalanceV2Input(
         ownerAddress: String,
         frozenBalance: BigInt,
@@ -314,13 +314,13 @@ enum TronHelper {
         guard let safeFrozenBalance = Int64(exactly: frozenBalance), safeFrozenBalance > 0 else {
             throw HelperError.runtimeError("Invalid frozen balance: must be strictly positive and fit in Int64")
         }
-        
+
         let contract = TronFreezeBalanceV2Contract.with {
             $0.ownerAddress = ownerAddress
             $0.frozenBalance = safeFrozenBalance
             $0.resource = resource
         }
-        
+
         let input = try TronSigningInput.with {
             $0.transaction = try TronTransaction.with {
                 $0.contractOneof = .freezeBalanceV2(contract)
@@ -336,9 +336,9 @@ enum TronHelper {
         }
         return try input.serializedData()
     }
-    
+
     // MARK: - UnfreezeBalanceV2 (Stake 2.0)
-    
+
     private static func buildTronUnfreezeBalanceV2Input(
         ownerAddress: String,
         unfreezeBalance: BigInt,
@@ -352,13 +352,13 @@ enum TronHelper {
         guard let safeUnfreezeBalance = Int64(exactly: unfreezeBalance), safeUnfreezeBalance > 0 else {
             throw HelperError.runtimeError("Invalid unfreeze balance: must be strictly positive and fit in Int64")
         }
-        
+
         let contract = TronUnfreezeBalanceV2Contract.with {
             $0.ownerAddress = ownerAddress
             $0.unfreezeBalance = safeUnfreezeBalance
             $0.resource = resource
         }
-        
+
         let input = try TronSigningInput.with {
             $0.transaction = try TronTransaction.with {
                 $0.contractOneof = .unfreezeBalanceV2(contract)
