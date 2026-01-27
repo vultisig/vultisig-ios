@@ -54,7 +54,9 @@ struct DydxHelperStruct {
 
             if let signDataMessagesResult = try CosmosSignDataBuilder.getMessages(keysignPayload: keysignPayload) {
                 messages = signDataMessagesResult.messages
-                memo = signDataMessagesResult.memo
+                if let signDataMemo = signDataMessagesResult.memo {
+                    memo = signDataMemo
+                }
             } else {
                 messages = [WalletCore.CosmosMessage.with {
                     $0.sendCoinsMessage = WalletCore.CosmosMessage.Send.with {
