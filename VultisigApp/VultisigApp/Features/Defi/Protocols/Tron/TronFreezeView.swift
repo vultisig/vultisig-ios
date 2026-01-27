@@ -180,15 +180,21 @@ struct TronFreezeView: View {
     }
 
     func loadData() async {
-        if let coin = vault.nativeCoin(for: .tron) {
-            await BalanceService.shared.updateBalance(for: coin)
-
+        guard let coin = vault.nativeCoin(for: .tron) else {
             await MainActor.run {
-                self.trxCoin = coin
-                tx.reset(coin: coin)
+                self.error = TronStakingError.noTrxCoin
             }
-            await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
+            return
         }
+
+        await BalanceService.shared.updateBalance(for: coin)
+
+        await MainActor.run {
+            self.trxCoin = coin
+            tx.reset(coin: coin)
+        }
+
+        await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
     }
 
     func updatePercentage(from amountStr: String) async {

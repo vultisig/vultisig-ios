@@ -1166,7 +1166,7 @@
 "tronDashboardTitle" = "TRON Staking";
 "tronDashboardStaking" = "Staking";
 "tronDashboardStakingDescription" = "Zamrznite svoj TRX za dobivanje propusnosti i energije za besplatne transakcije.";
-"tronDashboardInfoText" = "Zamrznuti TRX pruža resurse propusnosti i energije. Možete odmrznuti u bilo kojem trenutku da vratite svoj TRX.";
+"tronDashboardInfoText" = "Zamrznuti TRX (TRON Stake 2.0) pruža resurse propusnosti i energije. Odmrzavanje zahtijeva 14 dana čekanja prije nego što možete zatražiti povrat TRX-a.";
 "tronFrozenBalance" = "Zamrznuti TRX";
 "tronAvailableBalance" = "Dostupni TRX";
 "tronBandwidth" = "Propusnost";
