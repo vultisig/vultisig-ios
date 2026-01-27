@@ -39,18 +39,13 @@ struct CircleDashboardView: View {
         }
     }
 
-    @ViewBuilder
     var scrollViewContent: some View {
-        #if os(iOS)
         ScrollView {
             dashboardContent
         }
+        #if os(iOS)
         .refreshable {
             await loadData()
-        }
-        #else
-        ScrollView {
-            dashboardContent
         }
         #endif
     }

@@ -18,9 +18,6 @@ struct CircleView: View {
 
     var body: some View {
         content
-            #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-            #endif
     }
 
     var content: some View {

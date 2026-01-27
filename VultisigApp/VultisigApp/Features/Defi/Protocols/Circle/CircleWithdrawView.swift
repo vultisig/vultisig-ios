@@ -33,9 +33,6 @@ struct CircleWithdrawView: View {
 
     var body: some View {
         content
-            #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-            #endif
     }
 
     var content: some View {
@@ -44,18 +41,12 @@ struct CircleWithdrawView: View {
             showNavigationBar: true,
             backgroundType: .plain
         ) {
-            ZStack {
-                VStack(spacing: 0) {
-                    scrollableContent
-                    footerView
-                }
-
-                if isLoading {
-                    Theme.colors.bgPrimary.opacity(0.8).ignoresSafeArea()
-                    ProgressView()
-                }
+            VStack(spacing: 0) {
+                scrollableContent
+                footerView
             }
         }
+        .withLoading(isLoading: $isLoading)
         .task {
             await loadFastVaultStatus()
         }
