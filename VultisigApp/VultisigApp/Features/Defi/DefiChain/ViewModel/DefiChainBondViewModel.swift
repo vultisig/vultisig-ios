@@ -30,8 +30,7 @@ final class DefiChainBondViewModel: ObservableObject {
     var hasBondPositions: Bool {
         vault.defiPositions.contains { $0.chain == chain && !$0.bonds.isEmpty }
     }
-
-    private let interactor: BondInteractor
+    private let interactor: BondInteractor?
     private let chain: Chain
 
     init(vault: Vault, chain: Chain) {
@@ -46,8 +45,7 @@ final class DefiChainBondViewModel: ObservableObject {
 
     @MainActor
     func refresh() async {
-        guard hasBondPositions else { return }
-
+        guard hasBondPositions, let interactor = interactor else { return }
         activeBondedNodes = vault.bondPositions.filter { $0.node.coin.chain == chain }
 
         self.canUnbond = await interactor.canUnbond()

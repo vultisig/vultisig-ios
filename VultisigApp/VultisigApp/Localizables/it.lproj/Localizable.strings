@@ -1161,6 +1161,46 @@
 "circleErrorInvalidDetails" = "Dettagli non validi";
 "circleErrorWalletNotDeployed" = "Wallet Circle non ancora distribuito. Per favore riprova più tardi.";
 
+// TRON Staking (Freeze/Unfreeze)
+"tronTitle" = "TRON Staking";
+"tronDashboardTitle" = "TRON Staking";
+"tronDashboardStaking" = "Staking";
+"tronDashboardStakingDescription" = "Congela i tuoi TRX per ottenere larghezza di banda ed energia per transazioni gratuite.";
+"tronDashboardInfoText" = "I TRX congelati forniscono risorse di larghezza di banda ed energia. Lo scongelamento avvia un periodo di attesa di 14 giorni. Successivamente, reclama i tuoi TRX nei prelievi in attesa.";
+"tronFrozenBalance" = "TRX Congelati";
+"tronAvailableBalance" = "TRX Disponibili";
+"tronBandwidth" = "Larghezza di Banda";
+"tronEnergy" = "Energia";
+"tronFreezeButton" = "Congela";
+"tronUnfreezeButton" = "Scongela";
+"tronFreezeTitle" = "Congela TRX";
+"tronFrozenLabel" = "Congelato";
+"tronFreezeAmount" = "Importo";
+"tronFreezeBalanceAvailable" = "Saldo disponibile:";
+"tronFreezeContinue" = "Continua";
+"tronUnfreezeTitle" = "Scongela TRX";
+"tronUnfreezeAmount" = "Importo";
+"tronUnfreezeBalanceAvailable" = "Saldo congelato:";
+"tronUnfreezeConfirm" = "Continua";
+"tronResourceType" = "Tipo di Risorsa";
+"tronResourceBandwidth" = "Larghezza di Banda";
+"tronResourceEnergy" = "Energia";
+"tronRowFrozenBalance" = "Saldo Congelato";
+"tronRowFrozen" = "Congelato";
+"tronRowAvailable" = "Disponibile";
+"tronRowAddTRX" = "Aggiungi TRX";
+"tronRowGetStarted" = "Inizia";
+"tronTrxRequired" = "TRX Richiesto";
+"tronTrxRequiredDescription" = "Per favore aggiungi TRX al tuo vault per usare lo staking TRON.";
+"tronErrorNoTrxCoin" = "Nessun token TRX trovato nel vault. Per favore aggiungi prima TRX.";
+"tronErrorInvalidBlockInfo" = "Impossibile ottenere le informazioni del blocco TRON. Per favore riprova.";
+"tronErrorFreezeFailed" = "Congelamento fallito: %@";
+"tronErrorUnfreezeFailed" = "Scongelamento fallito: %@";
+"tronPendingWithdrawals" = "Prelievi in Attesa";
+"tronReadyToClaim" = "Pronto per il ritiro";
+"tronTimeRemainingDays" = "%d giorni, %d ore rimanenti";
+"tronTimeRemainingHours" = "%d ore, %d minuti rimanenti";
+
 "scanningForChainsSubtitle" = "Stiamo verificando quali blockchain hanno indirizzi attivi associati alla tua seed phrase. Questo processo può richiedere fino a 2 minuti.";
 "scanningForChainsSubtitleHighlight" = "Questo processo può richiedere fino a 2 minuti.";
 "selectChainsManually" = "Seleziona chain manualmente";

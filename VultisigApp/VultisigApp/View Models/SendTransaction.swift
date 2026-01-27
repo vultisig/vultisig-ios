@@ -22,6 +22,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var sendMaxAmount: Bool = false
     @Published var isFastVault: Bool = false
     @Published var fastVaultPassword: String = .empty
+    @Published var isStakingOperation: Bool = false
     @Published var memoFunctionDictionary: ThreadSafeDictionary<String, String> = ThreadSafeDictionary()
     var wasmContractPayload: WasmExecuteContractPayload?
 
@@ -40,6 +41,14 @@ class SendTransaction: ObservableObject, Hashable {
     }
 
     var isAmountExceeded: Bool {
+        // TRON staking operations: skip validation entirely
+        // The balance is already validated in TronFreezeView/TronUnfreezeView
+        let isTronStaking = coin.chain == .tron && isStakingOperation
+        
+        if isTronStaking {
+            return false
+        }
+        
         if (sendMaxAmount && (coin.chainType == .UTXO || coin.chainType == .Cardano || coin.chainType == .Ton)) || !coin.isNativeToken {
             let comparison = amountInRaw > coin.rawBalance.toBigInt(decimals: coin.decimals)
             return comparison
@@ -215,6 +224,7 @@ class SendTransaction: ObservableObject, Hashable {
         self.transactionType = .unspecified  // Reset transaction type
         self.memoFunctionDictionary = ThreadSafeDictionary()  // Clear memo functions
         self.fastVaultPassword = .empty  // Clear password state
+        self.isStakingOperation = false // Reset staking operation flag
     }
 
     func parseCryptoURI(_ uri: String) {

@@ -879,7 +879,7 @@ struct DynamicCodingKey: CodingKey {
         self.stringValue = stringValue
     }
 
-    init?(intValue: Int) {
+    init?(intValue _: Int) {
         return nil
     }
 }

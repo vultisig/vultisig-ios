@@ -1161,6 +1161,46 @@
 "circleErrorInvalidDetails" = "Nevažeći detalji";
 "circleErrorWalletNotDeployed" = "Circle novčanik još nije postavljen. Molimo pokušajte kasnije.";
 
+// TRON Staking (Freeze/Unfreeze)
+"tronTitle" = "TRON Staking";
+"tronDashboardTitle" = "TRON Staking";
+"tronDashboardStaking" = "Staking";
+"tronDashboardStakingDescription" = "Zamrznite svoj TRX za dobivanje propusnosti i energije za besplatne transakcije.";
+"tronDashboardInfoText" = "Zamrznuti TRX (TRON Stake 2.0) pruža resurse propusnosti i energije. Odmrzavanje zahtijeva 14 dana čekanja prije nego što možete zatražiti povrat TRX-a.";
+"tronFrozenBalance" = "Zamrznuti TRX";
+"tronAvailableBalance" = "Dostupni TRX";
+"tronBandwidth" = "Propusnost";
+"tronEnergy" = "Energija";
+"tronFreezeButton" = "Zamrzni";
+"tronUnfreezeButton" = "Odmrzni";
+"tronFreezeTitle" = "TRON Zamrzavanje";
+"tronFrozenLabel" = "Zamrznuto";
+"tronFreezeAmount" = "Iznos";
+"tronFreezeBalanceAvailable" = "Dostupno stanje:";
+"tronFreezeContinue" = "Nastavi";
+"tronUnfreezeTitle" = "Odmrzni TRX";
+"tronUnfreezeAmount" = "Iznos";
+"tronUnfreezeBalanceAvailable" = "Zamrznuto stanje:";
+"tronUnfreezeConfirm" = "Nastavi";
+"tronResourceType" = "Vrsta Resursa";
+"tronResourceBandwidth" = "Propusnost";
+"tronResourceEnergy" = "Energija";
+"tronRowFrozenBalance" = "Zamrznuto Stanje";
+"tronRowFrozen" = "Zamrznuto";
+"tronRowAvailable" = "Dostupno";
+"tronRowAddTRX" = "Dodaj TRX";
+"tronRowGetStarted" = "Započni";
+"tronTrxRequired" = "TRX Potreban";
+"tronTrxRequiredDescription" = "Molimo dodajte TRX u svoj trezor za korištenje TRON stakinga.";
+"tronErrorNoTrxCoin" = "TRX token nije pronađen u trezoru. Molimo prvo dodajte TRX.";
+"tronErrorInvalidBlockInfo" = "Nije moguće dohvatiti TRON blok informacije. Molimo pokušajte ponovo.";
+"tronErrorFreezeFailed" = "Zamrzavanje nije uspjelo: %@";
+"tronErrorUnfreezeFailed" = "Odmrzavanje nije uspjelo: %@";
+"tronPendingWithdrawals" = "Podizanja na Čekanju";
+"tronReadyToClaim" = "Spremno za preuzimanje";
+"tronTimeRemainingDays" = "%d dana, %d sati preostalo";
+"tronTimeRemainingHours" = "%d sati, %d minuta preostalo";
+
 "scanningForChainsSubtitle" = "Provjeravamo koji blockchaini imaju aktivne adrese povezane s vašom seed frazom. Ovaj proces može potrajati do 2 minute.";
 "scanningForChainsSubtitleHighlight" = "Ovaj proces može potrajati do 2 minute.";
 "selectChainsManually" = "Odaberi chainove ručno";
