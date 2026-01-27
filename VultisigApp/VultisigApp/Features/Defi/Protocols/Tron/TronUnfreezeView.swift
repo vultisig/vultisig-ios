@@ -18,9 +18,6 @@ struct TronUnfreezeView: View {
     @State var percentage: Double = 0.0
     @State var isLoading = false
     @State var error: Error?
-    @State var isFastVault = false
-    @State var fastPasswordPresented = false
-    @State var fastVaultPassword: String = ""
     @State var selectedResourceType: TronResourceType = .bandwidth
 
     @StateObject var sendTransaction = SendTransaction()
@@ -58,14 +55,6 @@ struct TronUnfreezeView: View {
         }
         .task {
             await loadData()
-            await loadFastVaultStatus()
-        }
-        .crossPlatformSheet(isPresented: $fastPasswordPresented) {
-            FastVaultEnterPasswordView(
-                password: $fastVaultPassword,
-                vault: vault,
-                onSubmit: { Task { await handleUnfreeze() } }
-            )
         }
     }
 
@@ -190,28 +179,11 @@ struct TronUnfreezeView: View {
         abs(percentage - Double(value)) < 1.0
     }
 
-    @ViewBuilder
     var unfreezeButton: some View {
-        if isFastVault {
-            VStack {
-                Text(NSLocalizedString("holdForPairedSign", comment: ""))
-                    .foregroundStyle(Theme.colors.textTertiary)
-                    .font(Theme.fonts.bodySMedium)
-
-                LongPressPrimaryButton(title: NSLocalizedString("tronUnfreezeConfirm", comment: "Continue")) {
-                    fastPasswordPresented = true
-                } longPressAction: {
-                    fastVaultPassword = ""
-                    Task { await handleUnfreeze() }
-                }
-            }
-            .disabled(isButtonDisabled)
-        } else {
-            PrimaryButton(title: NSLocalizedString("tronUnfreezeConfirm", comment: "Continue")) {
-                Task { await handleUnfreeze() }
-            }
-            .disabled(isButtonDisabled)
+        PrimaryButton(title: NSLocalizedString("tronUnfreezeConfirm", comment: "Continue")) {
+            Task { await handleUnfreeze() }
         }
+        .disabled(isButtonDisabled)
     }
 
     var frozenBalanceForSelectedType: Decimal {
@@ -243,15 +215,6 @@ struct TronUnfreezeView: View {
                 model.error = error
                 self.isLoading = false
             }
-        }
-    }
-
-    func loadFastVaultStatus() async {
-        let isExist = await FastVaultService.shared.exist(pubKeyECDSA: vault.pubKeyECDSA)
-        let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
-
-        await MainActor.run {
-            isFastVault = isExist && !isLocalBackup
         }
     }
 
@@ -309,8 +272,6 @@ struct TronUnfreezeView: View {
             sendTransaction.toAddress = trxCoin.address  // Unfreeze returns to self
             sendTransaction.amount = amountDecimal.description
             sendTransaction.memo = memo
-            sendTransaction.isFastVault = isFastVault
-            sendTransaction.fastVaultPassword = fastVaultPassword
             sendTransaction.isStakingOperation = true
         }
 

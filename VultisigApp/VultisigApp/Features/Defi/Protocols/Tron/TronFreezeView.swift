@@ -21,9 +21,6 @@ struct TronFreezeView: View {
     @State var error: Error?
     @State var isLoading = false
     @State var selectedResourceType: TronResourceType = .bandwidth
-    @State var isFastVault = false
-    @State var fastPasswordPresented = false
-    @State var fastVaultPassword: String = ""
 
     var body: some View {
         content
@@ -52,14 +49,6 @@ struct TronFreezeView: View {
         }
         .task {
             await loadData()
-            await loadFastVaultStatus()
-        }
-        .crossPlatformSheet(isPresented: $fastPasswordPresented) {
-            FastVaultEnterPasswordView(
-                password: $fastVaultPassword,
-                vault: vault,
-                onSubmit: { Task { await handleContinue() } }
-            )
         }
     }
 
@@ -77,28 +66,11 @@ struct TronFreezeView: View {
         .background(Theme.colors.bgPrimary)
     }
 
-    @ViewBuilder
     var freezeButton: some View {
-        if isFastVault {
-            VStack {
-                Text(NSLocalizedString("holdForPairedSign", comment: ""))
-                    .foregroundStyle(Theme.colors.textTertiary)
-                    .font(Theme.fonts.bodySMedium)
-
-                LongPressPrimaryButton(title: NSLocalizedString("tronFreezeContinue", comment: "Continue")) {
-                    fastPasswordPresented = true
-                } longPressAction: {
-                    fastVaultPassword = ""
-                    Task { await handleContinue() }
-                }
-            }
-            .disabled(isButtonDisabled)
-        } else {
-            PrimaryButton(title: NSLocalizedString("tronFreezeContinue", comment: "Continue")) {
-                Task { await handleContinue() }
-            }
-            .disabled(isButtonDisabled)
+        PrimaryButton(title: NSLocalizedString("tronFreezeContinue", comment: "Continue")) {
+            Task { await handleContinue() }
         }
+        .disabled(isButtonDisabled)
     }
 
     var isButtonDisabled: Bool {
@@ -219,15 +191,6 @@ struct TronFreezeView: View {
         }
     }
 
-    func loadFastVaultStatus() async {
-        let isExist = await FastVaultService.shared.exist(pubKeyECDSA: vault.pubKeyECDSA)
-        let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
-
-        await MainActor.run {
-            isFastVault = isExist && !isLocalBackup
-        }
-    }
-
     func updatePercentage(from amountStr: String) async {
         guard let coin = trxCoin, coin.balanceDecimal > 0 else {
             return
@@ -270,8 +233,6 @@ struct TronFreezeView: View {
             tx.toAddress = coin.address  // Freeze goes to self
             tx.amount = amountDec.description
             tx.memo = memo
-            tx.isFastVault = isFastVault
-            tx.fastVaultPassword = fastVaultPassword
             tx.isStakingOperation = true
         }
 
