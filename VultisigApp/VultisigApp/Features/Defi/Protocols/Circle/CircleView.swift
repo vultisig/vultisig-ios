@@ -16,6 +16,13 @@ struct CircleView: View {
     @StateObject private var model = CircleViewModel()
     @State private var hasCheckedBackend = false
 
+    var body: some View {
+        content
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+    }
+
     var content: some View {
         Screen(
             title: NSLocalizedString("circleTitle", comment: "Circle"),

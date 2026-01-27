@@ -156,10 +156,7 @@ struct CircleViewLogic {
     }
 
     static func getChainDetails(vault: Vault) -> (chain: Chain, usdcContract: String) {
-        let isSepolia = vault.coins.contains { $0.chain == .ethereumSepolia }
-        let chain: Chain = isSepolia ? .ethereumSepolia : .ethereum
-        let usdcContract = isSepolia ? CircleConstants.usdcSepolia : CircleConstants.usdcMainnet
-        return (chain, usdcContract)
+        return (.ethereum, CircleConstants.usdcMainnet)
     }
 
     static func getWalletUSDCBalance(vault: Vault) -> Decimal {

@@ -516,8 +516,6 @@
 		13FB8AB82EA93B5700712A51 /* THORChainDepthHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13FB8AB72EA93B5700712A51 /* THORChainDepthHistory.swift */; };
 		13FB8ABA2EA93B6A00712A51 /* THORChainLPPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13FB8AB92EA93B6900712A51 /* THORChainLPPosition.swift */; };
 		1C7BFBF50387F766821B21C2 /* CircleDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25397BD8D2AFBC8FB7C3DDBB /* CircleDashboardView.swift */; };
-		1C7BFBF50387F766821B21C3 /* CircleDashboardView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25397BD8D2AFBC8FB7C3DDC1 /* CircleDashboardView+iOS.swift */; };
-		1C7BFBF50387F766821B21C4 /* CircleDashboardView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25397BD8D2AFBC8FB7C3DDC2 /* CircleDashboardView+macOS.swift */; };
 		3438005C33774BADE4B163FD /* KyberSwapService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */; };
 		43E0C072714FC369B3B91499 /* HiddenToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCB0CAFF343CC6FF8986E07F /* HiddenToken.swift */; };
 		4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */; };
@@ -553,14 +551,10 @@
 		6F9D0331A5913F75BDE1B874 /* KyberSwapToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C796F13B6313681B4F992A /* KyberSwapToken.swift */; };
 		744B8E55385C46399CB8AEC8 /* ExtensionMemoServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7DBBE9179D24F73ADF22596 /* ExtensionMemoServiceTests.swift */; };
 		784957DA9E44EAC291A4E593 /* CircleSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2082307F2DAAB6FA5911FFDC /* CircleSetupView.swift */; };
-		784957DA9E44EAC291A4E594 /* CircleSetupView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2082307F2DAAB6FA5911FFDD /* CircleSetupView+iOS.swift */; };
-		784957DA9E44EAC291A4E595 /* CircleSetupView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2082307F2DAAB6FA5911FFDE /* CircleSetupView+macOS.swift */; };
 		8EE0EF7FEAA0B5C09FF9C79D /* KyberSwapPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADA7840E8472A961595D3663 /* KyberSwapPayload.swift */; };
 		8F55CD3B2DC382E500B53E85 /* TokensStore+Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F55CD3A2DC382E400B53E85 /* TokensStore+Token.swift */; };
 		927BE27A46C4476AA7DA2901 /* Services/SuiTokenPriceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927BE27A46C4476AA7DA2902 /* Services/SuiTokenPriceTests.swift */; };
 		9802909F69AF78B4BCE010CE /* CircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35953B42171F515630BA7E9B /* CircleView.swift */; };
-		9802909F69AF78B4BCE010CF /* CircleView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35953B42171F515630BA7E9C /* CircleView+iOS.swift */; };
-		9802909F69AF78B4BCE010D0 /* CircleView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35953B42171F515630BA7E9D /* CircleView+macOS.swift */; };
 		9976DC2B005ADF44E38FE464 /* CircleApiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29B3EE2059C84ADD4F8C4F16 /* CircleApiService.swift */; };
 		A500603F2C10E3EA008237D9 /* ThorchainSwapProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A500603E2C10E3EA008237D9 /* ThorchainSwapProvider.swift */; };
 		A506B59D2D3AB77A00490BEB /* LifiQuoteResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A506B59C2D3AB77A00490BEB /* LifiQuoteResponse.swift */; };
@@ -1194,8 +1188,6 @@
 		D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */; };
 		D9AD8EE62B6730A40009F8D5 /* PeerDiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryView.swift */; };
 		DB6653B223D15AFB8C3A8105 /* CircleWithdrawView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA94F61754C5BFEECCC60925 /* CircleWithdrawView.swift */; };
-		DB6653B223D15AFB8C3A8106 /* CircleWithdrawView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA94F61754C5BFEECCC60926 /* CircleWithdrawView+iOS.swift */; };
-		DB6653B223D15AFB8C3A8107 /* CircleWithdrawView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA94F61754C5BFEECCC60927 /* CircleWithdrawView+macOS.swift */; };
 		DE03EA0E2D0D3D0700AA4BB0 /* godkls.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE03EA0A2D0D3C6B00AA4BB0 /* godkls.xcframework */; };
 		DE03EA112D0D3D0900AA4BB0 /* goschnorr.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE03EA0C2D0D3C7700AA4BB0 /* goschnorr.xcframework */; };
 		DE0893562C47C8FA007632F7 /* Chain+extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0893552C47C8FA007632F7 /* Chain+extensions.swift */; };
@@ -1300,8 +1292,6 @@
 		DEFF59012BD238CF005DFDF9 /* SignedTransactionResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF59002BD238CF005DFDF9 /* SignedTransactionResult.swift */; };
 		F6MAHZO7QADAUEOCUKP14KWW /* ThorchainLP.swift in Sources */ = {isa = PBXBuildFile; fileRef = VX9GYT3ZT7ENIW24C32BA8O7 /* ThorchainLP.swift */; };
 		FB000BDFB76736F8CCD80FDF /* CircleDepositView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B96312D2493F377B159E118 /* CircleDepositView.swift */; };
-		FB000BDFB76736F8CCD80FE0 /* CircleDepositView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B96312D2493F377B159E119 /* CircleDepositView+iOS.swift */; };
-		FB000BDFB76736F8CCD80FE1 /* CircleDepositView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B96312D2493F377B159E11A /* CircleDepositView+macOS.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1832,15 +1822,9 @@
 		13FB8AB72EA93B5700712A51 /* THORChainDepthHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainDepthHistory.swift; sourceTree = "<group>"; };
 		13FB8AB92EA93B6900712A51 /* THORChainLPPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainLPPosition.swift; sourceTree = "<group>"; };
 		2082307F2DAAB6FA5911FFDC /* CircleSetupView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CircleSetupView.swift; sourceTree = "<group>"; };
-		2082307F2DAAB6FA5911FFDD /* CircleSetupView+iOS.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "CircleSetupView+iOS.swift"; sourceTree = "<group>"; };
-		2082307F2DAAB6FA5911FFDE /* CircleSetupView+macOS.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "CircleSetupView+macOS.swift"; sourceTree = "<group>"; };
 		25397BD8D2AFBC8FB7C3DDBB /* CircleDashboardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CircleDashboardView.swift; sourceTree = "<group>"; };
-		25397BD8D2AFBC8FB7C3DDC1 /* CircleDashboardView+iOS.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "CircleDashboardView+iOS.swift"; sourceTree = "<group>"; };
-		25397BD8D2AFBC8FB7C3DDC2 /* CircleDashboardView+macOS.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "CircleDashboardView+macOS.swift"; sourceTree = "<group>"; };
 		29B3EE2059C84ADD4F8C4F16 /* CircleApiService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CircleApiService.swift; sourceTree = "<group>"; };
 		35953B42171F515630BA7E9B /* CircleView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CircleView.swift; sourceTree = "<group>"; };
-		35953B42171F515630BA7E9C /* CircleView+iOS.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "CircleView+iOS.swift"; sourceTree = "<group>"; };
-		35953B42171F515630BA7E9D /* CircleView+macOS.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "CircleView+macOS.swift"; sourceTree = "<group>"; };
 		4600167D2B71A12D00CE17C7 /* Tss.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:G8Q5XUAJD9:Cortina Ventures PTY LTD"; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsService.swift; sourceTree = "<group>"; };
 		461AD1B62BC6706500959278 /* VaultPairDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultPairDetailView.swift; sourceTree = "<group>"; };
@@ -1879,8 +1863,6 @@
 		5C1F4585DF366BFCCCC513A9 /* DerivationPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivationPath.swift; sourceTree = "<group>"; };
 		5E7878748BB9E16298184860 /* KyberSwapQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapQuote.swift; sourceTree = "<group>"; };
 		6B96312D2493F377B159E118 /* CircleDepositView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CircleDepositView.swift; sourceTree = "<group>"; };
-		6B96312D2493F377B159E119 /* CircleDepositView+iOS.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "CircleDepositView+iOS.swift"; sourceTree = "<group>"; };
-		6B96312D2493F377B159E11A /* CircleDepositView+macOS.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "CircleDepositView+macOS.swift"; sourceTree = "<group>"; };
 		8BE8825D6F0DBD6E8F28CB49 /* DefiCircleRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DefiCircleRow.swift; sourceTree = "<group>"; };
 		8F55CD3A2DC382E400B53E85 /* TokensStore+Token.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TokensStore+Token.swift"; sourceTree = "<group>"; };
 		927BE27A46C4476AA7DA2902 /* Services/SuiTokenPriceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SuiTokenPriceTests.swift; sourceTree = "<group>"; };
@@ -2504,8 +2486,6 @@
 		B5FF07022ED9424E00B0FD55 /* SendCryptoVerifyLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifyLogic.swift; sourceTree = "<group>"; };
 		B5FFB0F32E7858E90062F63C /* PendingTransactionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingTransactionManager.swift; sourceTree = "<group>"; };
 		BA94F61754C5BFEECCC60925 /* CircleWithdrawView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CircleWithdrawView.swift; sourceTree = "<group>"; };
-		BA94F61754C5BFEECCC60926 /* CircleWithdrawView+iOS.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "CircleWithdrawView+iOS.swift"; sourceTree = "<group>"; };
-		BA94F61754C5BFEECCC60927 /* CircleWithdrawView+macOS.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "CircleWithdrawView+macOS.swift"; sourceTree = "<group>"; };
 		BWXBB99J8F32LB10N1PT9BIH /* FunctionCallAddThorLP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallAddThorLP.swift; sourceTree = "<group>"; };
 		CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapService.swift; sourceTree = "<group>"; };
 		D70D65FB2DF48824001C4492 /* RuneBondCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuneBondCell.swift; sourceTree = "<group>"; };
@@ -4984,22 +4964,12 @@
 				B5B47B552EF37188007F2150 /* CircleViewModel.swift */,
 				29B3EE2059C84ADD4F8C4F16 /* CircleApiService.swift */,
 				25397BD8D2AFBC8FB7C3DDBB /* CircleDashboardView.swift */,
-				25397BD8D2AFBC8FB7C3DDC1 /* CircleDashboardView+iOS.swift */,
-				25397BD8D2AFBC8FB7C3DDC2 /* CircleDashboardView+macOS.swift */,
 				03EC7383A8308BD94F081C10 /* CircleService.swift */,
 				2082307F2DAAB6FA5911FFDC /* CircleSetupView.swift */,
-				2082307F2DAAB6FA5911FFDD /* CircleSetupView+iOS.swift */,
-				2082307F2DAAB6FA5911FFDE /* CircleSetupView+macOS.swift */,
 				35953B42171F515630BA7E9B /* CircleView.swift */,
-				35953B42171F515630BA7E9C /* CircleView+iOS.swift */,
-				35953B42171F515630BA7E9D /* CircleView+macOS.swift */,
 				8BE8825D6F0DBD6E8F28CB49 /* DefiCircleRow.swift */,
 				6B96312D2493F377B159E118 /* CircleDepositView.swift */,
-				6B96312D2493F377B159E119 /* CircleDepositView+iOS.swift */,
-				6B96312D2493F377B159E11A /* CircleDepositView+macOS.swift */,
 				BA94F61754C5BFEECCC60925 /* CircleWithdrawView.swift */,
-				BA94F61754C5BFEECCC60926 /* CircleWithdrawView+iOS.swift */,
-				BA94F61754C5BFEECCC60927 /* CircleWithdrawView+macOS.swift */,
 			);
 			path = Circle;
 			sourceTree = "<group>";
@@ -8032,20 +8002,10 @@
 				43E0C072714FC369B3B91499 /* HiddenToken.swift in Sources */,
 				1385741C2E2DAC50002532BF /* PrimaryButtonStyle.swift in Sources */,
 				9802909F69AF78B4BCE010CE /* CircleView.swift in Sources */,
-				9802909F69AF78B4BCE010CF /* CircleView+iOS.swift in Sources */,
-				9802909F69AF78B4BCE010D0 /* CircleView+macOS.swift in Sources */,
 				784957DA9E44EAC291A4E593 /* CircleSetupView.swift in Sources */,
-				784957DA9E44EAC291A4E594 /* CircleSetupView+iOS.swift in Sources */,
-				784957DA9E44EAC291A4E595 /* CircleSetupView+macOS.swift in Sources */,
 				1C7BFBF50387F766821B21C2 /* CircleDashboardView.swift in Sources */,
-				1C7BFBF50387F766821B21C3 /* CircleDashboardView+iOS.swift in Sources */,
-				1C7BFBF50387F766821B21C4 /* CircleDashboardView+macOS.swift in Sources */,
 				FB000BDFB76736F8CCD80FDF /* CircleDepositView.swift in Sources */,
-				FB000BDFB76736F8CCD80FE0 /* CircleDepositView+iOS.swift in Sources */,
-				FB000BDFB76736F8CCD80FE1 /* CircleDepositView+macOS.swift in Sources */,
 				DB6653B223D15AFB8C3A8105 /* CircleWithdrawView.swift in Sources */,
-				DB6653B223D15AFB8C3A8106 /* CircleWithdrawView+iOS.swift in Sources */,
-				DB6653B223D15AFB8C3A8107 /* CircleWithdrawView+macOS.swift in Sources */,
 				60A0614473DB30544D99C624 /* DefiCircleRow.swift in Sources */,
 				9976DC2B005ADF44E38FE464 /* CircleApiService.swift in Sources */,
 				6AE564F37876C2BB01674194 /* CircleService.swift in Sources */,

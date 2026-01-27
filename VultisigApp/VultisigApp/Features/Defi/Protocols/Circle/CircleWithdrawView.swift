@@ -32,50 +32,40 @@ struct CircleWithdrawView: View {
     }
 
     var body: some View {
-        main
+        content
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
     }
 
     var content: some View {
-        ZStack {
-            VStack(spacing: 0) {
-                headerView
-                scrollableContent
-                footerView
-            }
+        Screen(
+            title: NSLocalizedString("circleWithdrawTitle", comment: "Withdraw from Circle"),
+            showNavigationBar: true,
+            backgroundType: .plain
+        ) {
+            ZStack {
+                VStack(spacing: 0) {
+                    scrollableContent
+                    footerView
+                }
 
-            if isLoading {
-                Color.black.opacity(0.5).ignoresSafeArea()
-                ProgressView()
+                if isLoading {
+                    Theme.colors.bgPrimary.opacity(0.8).ignoresSafeArea()
+                    ProgressView()
+                }
             }
         }
         .task {
             await loadFastVaultStatus()
         }
-    }
-
-    var headerView: some View {
-        HStack {
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.title3)
-                    .foregroundColor(Theme.colors.textPrimary)
-                    .frame(width: 40, height: 40)
-                    .background(Circle().fill(Color.white.opacity(0.1)))
-            }
-
-            Spacer()
-
-            Text(NSLocalizedString("circleWithdrawTitle", comment: "Withdraw from Circle"))
-                .font(Theme.fonts.bodyLMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
-
-            Spacer()
-
-            Color.clear.frame(width: 40, height: 40)
+        .crossPlatformSheet(isPresented: $fastPasswordPresented) {
+            FastVaultEnterPasswordView(
+                password: $fastVaultPassword,
+                vault: vault,
+                onSubmit: { Task { await handleWithdraw() } }
+            )
         }
-        .padding(CircleConstants.Design.horizontalPadding)
     }
 
     var footerView: some View {
