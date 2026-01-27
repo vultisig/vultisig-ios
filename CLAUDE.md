@@ -764,6 +764,57 @@ Add to `ContentView.swift`:
 - Use `.foregroundColor()` modifier; it's deprecated in favor of `.foregroundStyle()`
 - Create platform-specific view files (e.g., `MyView_iOS.swift`, `MyView_macOS.swift`); use cross-platform modifiers and components (`crossPlatformToolbar`, `crossPlatformSheet`, `#if os(macOS)` blocks) to keep code in a single file
 
+### SwiftLint Compliance
+
+**CRITICAL:** Never introduce new SwiftLint warnings. The codebase uses SwiftLint for code quality enforcement.
+
+**Before submitting code:**
+
+1. Ensure all code changes are SwiftLint-compliant
+2. Do not introduce any new warnings
+3. Follow existing code patterns to maintain consistency
+
+**Common warnings to avoid:**
+
+- `unused_setter_value` - Always use setter parameters or explicitly ignore with `_ = newValue`
+- `force_unwrapping` - Avoid force unwrapping (`!`); use optional binding or guard statements
+- `force_cast` - Use conditional casting (`as?`) instead of force casting (`as!`)
+- `line_length` - Keep lines under the configured limit (typically 120-140 characters)
+- `function_body_length` - Break down large functions into smaller, focused functions
+- `type_body_length` - Split large types into smaller, focused types or extensions
+- `trailing_whitespace` - Remove trailing spaces from lines
+- `unused_closure_parameter` - Use `_` for unused closure parameters
+
+**Suppressing warnings (use sparingly):**
+
+Only suppress warnings when absolutely necessary and the code is intentionally designed that way:
+
+```swift
+// For unused setter values (when implementing protocol requirements):
+var myProperty: String {
+    get { storedValue }
+    set { _ = newValue }  // Preferred: explicit ignore
+}
+
+// OR with SwiftLint comment (last resort):
+var myProperty: String {
+    get { storedValue }
+    // swiftlint:disable:next unused_setter_value
+    set { }
+}
+
+// For other legitimate cases:
+// swiftlint:disable:next rule_name
+let value = someCode()
+```
+
+**Guidelines for suppressions:**
+
+- Use `_ = newValue` for unused setters (preferred over comments)
+- Only use `// swiftlint:disable:next` comments when there's no code-level solution
+- Always add a brief comment explaining why the suppression is necessary
+- Never disable rules globally or for entire files without explicit approval
+
 ## Common Patterns
 
 ### Async Data Loading in Views

@@ -86,5 +86,69 @@
         "expected_image_hash": [
             "235ed1789c6acd39f020c4b4ef80565bb154d97fb52fc8e76d3fa0253762c653"
         ]
+    },
+    {
+        "name": "SignAmino - THORChain transaction memo",
+        "keysign_payload": {
+            "coin": {
+                "chain": "THORChain",
+                "ticker": "RUNE",
+                "address": "thor1zgmsl5g25mfrtyuyrgdxh7r35wyyreh3p89jgq",
+                "decimals": 8,
+                "price_provider_id": "thorchain",
+                "is_native_token": true,
+                "hex_public_key": "03d0fa17aba7cb57c2bfe4308ea7a7e55227e2efd9d5ddb5bd73e33357cb66e1ea",
+                "contract_address": "",
+                "logo": "rune"
+            },
+            "to_address": "thor1zgmsl5g25mfrtyuyrgdxh7r35wyyreh3p89jgq",
+            "to_amount": "0",
+            "memo": "Test memo for THORChain transaction",
+            "skipBroadcast": true,
+            "BlockchainSpecific": {
+                "ThorchainSpecific": {
+                    "account_number": 139521,
+                    "sequence": 425,
+                    "transaction_type": 0,
+                    "fee": 2000000,
+                    "is_deposit": false
+                }
+            },
+            "sign_data": {
+                "sign_amino": {
+                    "fee": {
+                        "amount": [
+                            {
+                                "denom": "rune",
+                                "amount": "1000"
+                            }
+                        ],
+                        "gas": "200000"
+                    },
+                    "msgs": [
+                        {
+                            "type": "thorchain/MsgSend",
+                            "value": {
+                                "amount": [
+                                    {
+                                        "amount": "1000",
+                                        "denom": "rune"
+                                    }
+                                ],
+                                "from_address": "thor1zgmsl5g25mfrtyuyrgdxh7r35wyyreh3p89jgq",
+                                "to_address": "thor1zgmsl5g25mfrtyuyrgdxh7r35wyyreh3p89jgq"
+                            }
+                        }
+                    ]
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "03a4d9b5d643f9a08846295e3010b26fe37c12611020853d526b96cdd0e09d12af",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": [
+            "5792e34eef53d3daf5ef10747b5c9c99a8a160c681e6f65896f00ddca7dddec0"
+        ]
     }
 ]

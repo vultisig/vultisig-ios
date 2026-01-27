@@ -165,7 +165,7 @@ struct SendCryptoVerifyLogic {
         // The balance is already validated in TronFreezeView/TronUnfreezeView
         // and the user sees the available balance on the screen
         let isTronStaking = tx.coin.chain == .tron && tx.isStakingOperation
-        
+
         if isTronStaking {
             return BalanceValidationResult(isValid: true, errorMessage: nil)
         }

@@ -159,7 +159,7 @@ struct ContentView: View {
         }
 
         guard deeplinkError == nil else { return }
-        
+
         NotificationCenter.default.post(name: NSNotification.Name("ProcessDeeplink"), object: nil)
 
         Task { @MainActor in
@@ -170,7 +170,7 @@ struct ContentView: View {
             }
         }
     }
-    
+
     private func handleDeepLinkURL(_ url: URL) {
         do {
             try deeplinkViewModel.extractParameters(url, vaults: vaults)

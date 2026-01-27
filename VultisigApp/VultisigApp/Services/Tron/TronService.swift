@@ -79,13 +79,13 @@ class TronService {
             return String(balance)
         }
     }
-    
+
     // MARK: - Account Info
-    
+
     func getAccount(address: String) async throws -> TronAccountResponse {
         return try await apiService.getAccount(address: address)
     }
-    
+
     func getAccountResource(address: String) async throws -> TronAccountResourceResponse {
         return try await apiService.getAccountResource(address: address)
     }

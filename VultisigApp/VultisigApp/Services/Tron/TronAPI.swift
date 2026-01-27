@@ -111,12 +111,12 @@ struct TronAccountResponse: Codable {
     let balance: Int64?
     let frozenV2: [TronFrozenV2]?
     let unfrozenV2: [TronUnfrozenV2]?
-    
+
     struct TronFrozenV2: Codable {
         let type: String?  // nil or "BANDWIDTH" = bandwidth, "ENERGY" = energy
         let amount: Int64?
     }
-    
+
     struct TronUnfrozenV2: Codable {
         let unfreeze_amount: Int64?
         let unfreeze_expire_time: Int64?
@@ -136,7 +136,7 @@ struct TronAccountResponse: Codable {
         case frozenV2
         case unfrozenV2
     }
-    
+
     /// Returns frozen TRX for bandwidth (in SUN) - sums all bandwidth entries
     var frozenBandwidthSun: Int64 {
         // TRON API: type is nil or "BANDWIDTH" for bandwidth
@@ -145,7 +145,7 @@ struct TronAccountResponse: Codable {
             .compactMap { $0.amount }
             .reduce(0, +) ?? 0
     }
-    
+
     /// Returns frozen TRX for energy (in SUN) - sums all energy entries
     var frozenEnergySun: Int64 {
         return frozenV2?
@@ -153,7 +153,7 @@ struct TronAccountResponse: Codable {
             .compactMap { $0.amount }
             .reduce(0, +) ?? 0
     }
-    
+
     /// Returns total TRX in unfreezing process (in SUN) - awaiting withdrawal
     var unfreezingTotalSun: Int64 {
         return unfrozenV2?
