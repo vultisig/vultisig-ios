@@ -53,15 +53,10 @@ struct CircleDepositView: View {
                     .padding(.bottom, 8)
             }
 
-            if isLoading {
-                ProgressView()
-                    .padding()
-            } else {
-                PrimaryButton(title: NSLocalizedString("circleDepositContinue", comment: "Continue")) {
-                    Task { await handleContinue() }
-                }
-                .disabled(amount.isEmpty || (Decimal(string: amount) ?? 0) <= 0 || (Decimal(string: amount) ?? 0) > (usdcCoin?.balanceDecimal ?? 0))
+            PrimaryButton(title: NSLocalizedString("circleDepositContinue", comment: "Continue")) {
+                Task { await handleContinue() }
             }
+            .disabled(isLoading || amount.isEmpty || (Decimal(string: amount) ?? 0) <= 0 || (Decimal(string: amount) ?? 0) > (usdcCoin?.balanceDecimal ?? 0))
         }
         .padding(CircleConstants.Design.horizontalPadding)
         .background(Theme.colors.bgPrimary)
