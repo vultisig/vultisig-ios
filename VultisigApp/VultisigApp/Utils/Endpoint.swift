@@ -37,6 +37,11 @@ class Endpoint {
     static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
     static let broadcastTransactionMayachain = "https://mayanode.mayachain.info/cosmos/tx/v1beta1/txs"
 
+    // Transaction status endpoints (Midgard)
+    static let thorchainMidgard = "https://midgard.ninerealms.com"
+    static let thorchainMidgardStagenet = "https://stagenet-midgard.ninerealms.com"
+    static let mayachainMidgard = "https://midgard.mayachain.info"
+
     static let updateVersionCheck = "https://api.github.com/repos/vultisig/vultisig-ios/releases"
     static let githubMacUpdateBase = "https://github.com/vultisig/vultisig-ios/releases/tag/"
     static let githubMacDownloadBase = "https://github.com/vultisig/vultisig-ios/releases/download/"
@@ -422,7 +427,12 @@ class Endpoint {
 
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"
 
-    static let polkadotServiceRpc = "https://api.vultisig.com/dot/" // "https://polkadot-rpc.publicnode.com"
+    // Polkadot RPC endpoint for JSON-RPC calls
+    static let polkadotServiceRpc = "https://api.vultisig.com/dot/"
+
+    // Polkadot transaction status endpoint - using public Subscan API temporarily
+    // TODO: Switch to Vultisig proxy once ready: "https://api.vultisig.com/dot/"
+    static let polkadotTransactionStatusRpc = "https://polkadot.api.subscan.io"
 
     static let polkadotServiceBalance = "https://assethub-polkadot.api.subscan.io/api/v2/scan/search"
 
@@ -702,6 +712,7 @@ class Endpoint {
     }
 
     static let tronEvmServiceRpc = "https://api.vultisig.com/tron/jsonrpc"
+    static let tronWalletApi = "https://api.vultisig.com/tron"
 
     // Cardano endpoints - Using Koios API (free, open source, no API key required)
     static let cardanoServiceRpc = "https://api.koios.rest/api/v1"

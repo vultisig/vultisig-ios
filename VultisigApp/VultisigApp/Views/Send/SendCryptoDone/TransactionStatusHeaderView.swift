@@ -13,9 +13,10 @@ struct TransactionStatusHeaderView: View {
     @State private var pulseScale: CGFloat = 1.0
     @State private var successAnimationVM: RiveViewModel?
     @State private var errorAnimationVM: RiveViewModel?
+    @State private var pendingAnimationVM: RiveViewModel?
 
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 0) {
             statusIndicator
 
             VStack(spacing: 12) {
@@ -25,8 +26,13 @@ struct TransactionStatusHeaderView: View {
         }
         .animation(.interpolatingSpring, value: status)
         .onLoad {
+            // TODO: - To be updated with state based animations
+            pendingAnimationVM = RiveViewModel(fileName: "transaction_pending", autoPlay: false)
+            pendingAnimationVM?.fit = .contain
             successAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: false)
+            successAnimationVM?.fit = .contain
             errorAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: false)
+            errorAnimationVM?.fit = .contain
         }
     }
 
@@ -36,15 +42,15 @@ struct TransactionStatusHeaderView: View {
             Group {
                 switch status {
                 case .broadcasted, .pending:
-                    pulsingCircle
-                        .frame(width: 32, height: 32)
-                        .onAppear {
-                            pulseScale = 1.2
-                        }
+                    if let pendingAnimationVM {
+                        pendingAnimationVM.view()
+                            .onAppear {
+                                pendingAnimationVM.play()
+                            }
+                    }
                 case .confirmed:
                     if let successAnimationVM {
                         successAnimationVM.view()
-                            .frame(width: 280, height: 280)
                             .onAppear {
                                 successAnimationVM.play()
                             }
@@ -52,7 +58,6 @@ struct TransactionStatusHeaderView: View {
                 case .failed, .timeout:
                     if let errorAnimationVM {
                         errorAnimationVM.view()
-                            .frame(width: 280, height: 280)
                             .onAppear {
                                 errorAnimationVM.play()
                             }
@@ -61,7 +66,6 @@ struct TransactionStatusHeaderView: View {
             }
             .transition(.opacity)
         }
-        .frame(height: 120)
     }
 
     @ViewBuilder
@@ -128,4 +132,10 @@ struct TransactionStatusHeaderView: View {
         }
     }
 
+}
+
+#Preview {
+    Screen {
+        TransactionStatusHeaderView(status: .confirmed)
+    }
 }

@@ -172,6 +172,28 @@
 		134A9FCB2E96AD1B00030C56 /* BannerLayoutProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FCA2E96AD1400030C56 /* BannerLayoutProperties.swift */; };
 		134A9FCD2E96B49800030C56 /* VaultBannerCarouselIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FCC2E96B49700030C56 /* VaultBannerCarouselIndicator.swift */; };
 		134A9FCF2E96B4B500030C56 /* VaultBannerCarouselIndicators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FCE2E96B4B000030C56 /* VaultBannerCarouselIndicators.swift */; };
+		134DFE0F2F28EEFE0087C9D5 /* CardanoTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE082F28EEFE0087C9D5 /* CardanoTransactionStatusProvider.swift */; };
+		134DFE102F28EEFE0087C9D5 /* SuiTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE0B2F28EEFE0087C9D5 /* SuiTransactionStatusProvider.swift */; };
+		134DFE112F28EEFE0087C9D5 /* PolkadotTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE092F28EEFE0087C9D5 /* PolkadotTransactionStatusProvider.swift */; };
+		134DFE122F28EEFE0087C9D5 /* TronTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE0E2F28EEFE0087C9D5 /* TronTransactionStatusProvider.swift */; };
+		134DFE132F28EEFE0087C9D5 /* TonTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE0D2F28EEFE0087C9D5 /* TonTransactionStatusProvider.swift */; };
+		134DFE142F28EEFE0087C9D5 /* THORChainTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE0C2F28EEFE0087C9D5 /* THORChainTransactionStatusProvider.swift */; };
+		134DFE152F28EEFE0087C9D5 /* RippleTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE0A2F28EEFE0087C9D5 /* RippleTransactionStatusProvider.swift */; };
+		134DFE1D2F28EF120087C9D5 /* TronTransactionStatusAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE1C2F28EF120087C9D5 /* TronTransactionStatusAPI.swift */; };
+		134DFE1E2F28EF120087C9D5 /* THORChainTransactionStatusAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE1A2F28EF120087C9D5 /* THORChainTransactionStatusAPI.swift */; };
+		134DFE1F2F28EF120087C9D5 /* TonTransactionStatusAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE1B2F28EF120087C9D5 /* TonTransactionStatusAPI.swift */; };
+		134DFE202F28EF120087C9D5 /* PolkadotTransactionStatusAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE172F28EF120087C9D5 /* PolkadotTransactionStatusAPI.swift */; };
+		134DFE212F28EF120087C9D5 /* SuiTransactionStatusAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE192F28EF120087C9D5 /* SuiTransactionStatusAPI.swift */; };
+		134DFE222F28EF120087C9D5 /* CardanoTransactionStatusAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE162F28EF120087C9D5 /* CardanoTransactionStatusAPI.swift */; };
+		134DFE232F28EF120087C9D5 /* RippleTransactionStatusAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE182F28EF120087C9D5 /* RippleTransactionStatusAPI.swift */; };
+		134DFE2B2F28EF1A0087C9D5 /* SuiTransactionStatusResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE272F28EF1A0087C9D5 /* SuiTransactionStatusResponse.swift */; };
+		134DFE2C2F28EF1A0087C9D5 /* RippleTransactionStatusResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE262F28EF1A0087C9D5 /* RippleTransactionStatusResponse.swift */; };
+		134DFE2D2F28EF1A0087C9D5 /* PolkadotTransactionStatusResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE252F28EF1A0087C9D5 /* PolkadotTransactionStatusResponse.swift */; };
+		134DFE2E2F28EF1A0087C9D5 /* THORChainTransactionStatusResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE282F28EF1A0087C9D5 /* THORChainTransactionStatusResponse.swift */; };
+		134DFE2F2F28EF1A0087C9D5 /* TonTransactionStatusResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE292F28EF1A0087C9D5 /* TonTransactionStatusResponse.swift */; };
+		134DFE302F28EF1A0087C9D5 /* CardanoTransactionStatusResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE242F28EF1A0087C9D5 /* CardanoTransactionStatusResponse.swift */; };
+		134DFE312F28EF1A0087C9D5 /* TronTransactionStatusResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE2A2F28EF1A0087C9D5 /* TronTransactionStatusResponse.swift */; };
+		134DFE5D2F2921D30087C9D5 /* transaction_pending.riv in Resources */ = {isa = PBXBuildFile; fileRef = 134DFE5C2F2921D30087C9D5 /* transaction_pending.riv */; };
 		134E23F22EAA61CD00952600 /* DefiPositions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E23F12EAA61C500952600 /* DefiPositions.swift */; };
 		134E23F72EAA6F5500952600 /* THORChainAssetFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E23F62EAA6F5100952600 /* THORChainAssetFactory.swift */; };
 		134E8D7F2E451F6F0086EBC4 /* THORChainAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D7E2E451F6C0086EBC4 /* THORChainAsset.swift */; };
@@ -1489,6 +1511,28 @@
 		134A9FCA2E96AD1400030C56 /* BannerLayoutProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerLayoutProperties.swift; sourceTree = "<group>"; };
 		134A9FCC2E96B49700030C56 /* VaultBannerCarouselIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBannerCarouselIndicator.swift; sourceTree = "<group>"; };
 		134A9FCE2E96B4B000030C56 /* VaultBannerCarouselIndicators.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBannerCarouselIndicators.swift; sourceTree = "<group>"; };
+		134DFE082F28EEFE0087C9D5 /* CardanoTransactionStatusProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardanoTransactionStatusProvider.swift; sourceTree = "<group>"; };
+		134DFE092F28EEFE0087C9D5 /* PolkadotTransactionStatusProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolkadotTransactionStatusProvider.swift; sourceTree = "<group>"; };
+		134DFE0A2F28EEFE0087C9D5 /* RippleTransactionStatusProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RippleTransactionStatusProvider.swift; sourceTree = "<group>"; };
+		134DFE0B2F28EEFE0087C9D5 /* SuiTransactionStatusProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuiTransactionStatusProvider.swift; sourceTree = "<group>"; };
+		134DFE0C2F28EEFE0087C9D5 /* THORChainTransactionStatusProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainTransactionStatusProvider.swift; sourceTree = "<group>"; };
+		134DFE0D2F28EEFE0087C9D5 /* TonTransactionStatusProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TonTransactionStatusProvider.swift; sourceTree = "<group>"; };
+		134DFE0E2F28EEFE0087C9D5 /* TronTransactionStatusProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronTransactionStatusProvider.swift; sourceTree = "<group>"; };
+		134DFE162F28EF120087C9D5 /* CardanoTransactionStatusAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardanoTransactionStatusAPI.swift; sourceTree = "<group>"; };
+		134DFE172F28EF120087C9D5 /* PolkadotTransactionStatusAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolkadotTransactionStatusAPI.swift; sourceTree = "<group>"; };
+		134DFE182F28EF120087C9D5 /* RippleTransactionStatusAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RippleTransactionStatusAPI.swift; sourceTree = "<group>"; };
+		134DFE192F28EF120087C9D5 /* SuiTransactionStatusAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuiTransactionStatusAPI.swift; sourceTree = "<group>"; };
+		134DFE1A2F28EF120087C9D5 /* THORChainTransactionStatusAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainTransactionStatusAPI.swift; sourceTree = "<group>"; };
+		134DFE1B2F28EF120087C9D5 /* TonTransactionStatusAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TonTransactionStatusAPI.swift; sourceTree = "<group>"; };
+		134DFE1C2F28EF120087C9D5 /* TronTransactionStatusAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronTransactionStatusAPI.swift; sourceTree = "<group>"; };
+		134DFE242F28EF1A0087C9D5 /* CardanoTransactionStatusResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardanoTransactionStatusResponse.swift; sourceTree = "<group>"; };
+		134DFE252F28EF1A0087C9D5 /* PolkadotTransactionStatusResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolkadotTransactionStatusResponse.swift; sourceTree = "<group>"; };
+		134DFE262F28EF1A0087C9D5 /* RippleTransactionStatusResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RippleTransactionStatusResponse.swift; sourceTree = "<group>"; };
+		134DFE272F28EF1A0087C9D5 /* SuiTransactionStatusResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuiTransactionStatusResponse.swift; sourceTree = "<group>"; };
+		134DFE282F28EF1A0087C9D5 /* THORChainTransactionStatusResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainTransactionStatusResponse.swift; sourceTree = "<group>"; };
+		134DFE292F28EF1A0087C9D5 /* TonTransactionStatusResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TonTransactionStatusResponse.swift; sourceTree = "<group>"; };
+		134DFE2A2F28EF1A0087C9D5 /* TronTransactionStatusResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronTransactionStatusResponse.swift; sourceTree = "<group>"; };
+		134DFE5C2F2921D30087C9D5 /* transaction_pending.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = transaction_pending.riv; sourceTree = "<group>"; };
 		134E23F12EAA61C500952600 /* DefiPositions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiPositions.swift; sourceTree = "<group>"; };
 		134E23F62EAA6F5100952600 /* THORChainAssetFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainAssetFactory.swift; sourceTree = "<group>"; };
 		134E8D7E2E451F6C0086EBC4 /* THORChainAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainAsset.swift; sourceTree = "<group>"; };
@@ -4773,6 +4817,13 @@
 		18EE005289AE2A1BB168B097 /* Providers */ = {
 			isa = PBXGroup;
 			children = (
+				134DFE082F28EEFE0087C9D5 /* CardanoTransactionStatusProvider.swift */,
+				134DFE092F28EEFE0087C9D5 /* PolkadotTransactionStatusProvider.swift */,
+				134DFE0A2F28EEFE0087C9D5 /* RippleTransactionStatusProvider.swift */,
+				134DFE0B2F28EEFE0087C9D5 /* SuiTransactionStatusProvider.swift */,
+				134DFE0C2F28EEFE0087C9D5 /* THORChainTransactionStatusProvider.swift */,
+				134DFE0D2F28EEFE0087C9D5 /* TonTransactionStatusProvider.swift */,
+				134DFE0E2F28EEFE0087C9D5 /* TronTransactionStatusProvider.swift */,
 				1DC3C4A790D620AB105DF39D /* EVMTransactionStatusProvider.swift */,
 				D0C75B7553CE05272D632058 /* UTXOTransactionStatusProvider.swift */,
 				9FB8B4E59B83927709B99177 /* CosmosTransactionStatusProvider.swift */,
@@ -5958,6 +6009,7 @@
 				A6EF93512D690BC8004D7EBF /* Onboarding.riv */,
 				A5AB69C62D63E26500E54DEB /* backupvault_splash.riv */,
 				1377FE402F02A5DF00EF3B85 /* keygen_animation.riv */,
+				134DFE5C2F2921D30087C9D5 /* transaction_pending.riv */,
 				A6C58D7D2D7AD7F6000D2833 /* fastvault_summary.riv */,
 				A53065FB2D5AA5D3000B82E6 /* securevault_overview.riv */,
 				A6621B842D67D98900757B43 /* vaultCreatedAnimation.riv */,
@@ -6064,6 +6116,13 @@
 		B4A3249B8BCC2C8C0CE3D660 /* TargetType */ = {
 			isa = PBXGroup;
 			children = (
+				134DFE162F28EF120087C9D5 /* CardanoTransactionStatusAPI.swift */,
+				134DFE172F28EF120087C9D5 /* PolkadotTransactionStatusAPI.swift */,
+				134DFE182F28EF120087C9D5 /* RippleTransactionStatusAPI.swift */,
+				134DFE192F28EF120087C9D5 /* SuiTransactionStatusAPI.swift */,
+				134DFE1A2F28EF120087C9D5 /* THORChainTransactionStatusAPI.swift */,
+				134DFE1B2F28EF120087C9D5 /* TonTransactionStatusAPI.swift */,
+				134DFE1C2F28EF120087C9D5 /* TronTransactionStatusAPI.swift */,
 				E423B7D2BCCD2F1943ED30F8 /* UTXOTransactionStatusAPI.swift */,
 				7CD3665CC777D1BD45B08AC8 /* CosmosTransactionStatusAPI.swift */,
 				B08FAA81BD1AD27E98344042 /* SolanaTransactionStatusAPI.swift */,
@@ -6213,6 +6272,13 @@
 		CE39DC57FC5EC4DF4C5A0888 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				134DFE242F28EF1A0087C9D5 /* CardanoTransactionStatusResponse.swift */,
+				134DFE252F28EF1A0087C9D5 /* PolkadotTransactionStatusResponse.swift */,
+				134DFE262F28EF1A0087C9D5 /* RippleTransactionStatusResponse.swift */,
+				134DFE272F28EF1A0087C9D5 /* SuiTransactionStatusResponse.swift */,
+				134DFE282F28EF1A0087C9D5 /* THORChainTransactionStatusResponse.swift */,
+				134DFE292F28EF1A0087C9D5 /* TonTransactionStatusResponse.swift */,
+				134DFE2A2F28EF1A0087C9D5 /* TronTransactionStatusResponse.swift */,
 				BD1A1FCF78FFFE8E23B38F0E /* UTXOTransactionStatusResponse.swift */,
 				E422D27702256FB07565C6D0 /* CosmosTransactionStatusResponse.swift */,
 				0ABEFADAC7EF33E20A932CD6 /* SolanaTransactionStatusResponse.swift */,
@@ -6793,6 +6859,7 @@
 				A6621B852D67D98900757B43 /* vaultCreatedAnimation.riv in Resources */,
 				A65F8A172D42224100CF4DDB /* Brockmann-SemiBold.otf in Resources */,
 				A53065FA2D5A9FEF000B82E6 /* fastvault_overview.riv in Resources */,
+				134DFE5D2F2921D30087C9D5 /* transaction_pending.riv in Resources */,
 				A65F8A182D42224100CF4DDB /* Brockmann-Regular.otf in Resources */,
 				1387FDA82E32C2CC007ECDB4 /* QRScanner.riv in Resources */,
 				A65F8A192D42224100CF4DDB /* Brockmann-Medium.otf in Resources */,
@@ -7500,6 +7567,13 @@
 				1348561E2EB511C8003D10BE /* FunctionTransactionType.swift in Sources */,
 				A6BB9BBC2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift in Sources */,
 				A6ECA1A02C93FC0000456110 /* VaultSetupCard+iOS.swift in Sources */,
+				134DFE0F2F28EEFE0087C9D5 /* CardanoTransactionStatusProvider.swift in Sources */,
+				134DFE102F28EEFE0087C9D5 /* SuiTransactionStatusProvider.swift in Sources */,
+				134DFE112F28EEFE0087C9D5 /* PolkadotTransactionStatusProvider.swift in Sources */,
+				134DFE122F28EEFE0087C9D5 /* TronTransactionStatusProvider.swift in Sources */,
+				134DFE132F28EEFE0087C9D5 /* TonTransactionStatusProvider.swift in Sources */,
+				134DFE142F28EEFE0087C9D5 /* THORChainTransactionStatusProvider.swift in Sources */,
+				134DFE152F28EEFE0087C9D5 /* RippleTransactionStatusProvider.swift in Sources */,
 				135C14902ED0E46300459EFC /* THORChainStakeInteractor.swift in Sources */,
 				13FB8ABA2EA93B6A00712A51 /* THORChainLPPosition.swift in Sources */,
 				A670CEBF2DD7CFC600E33B09 /* NavigationBlankBackButton+iOS.swift in Sources */,
@@ -7678,6 +7752,13 @@
 				A6C670882C9CFA9B00F59B6A /* KeysignDiscoveryView+iOS.swift in Sources */,
 				A6E0C92A2DEF717500A01543 /* ReferredViewModel.swift in Sources */,
 				A6CBF2DC2C251D4100FD8080 /* LookingForDevicesLoader.swift in Sources */,
+				134DFE1D2F28EF120087C9D5 /* TronTransactionStatusAPI.swift in Sources */,
+				134DFE1E2F28EF120087C9D5 /* THORChainTransactionStatusAPI.swift in Sources */,
+				134DFE1F2F28EF120087C9D5 /* TonTransactionStatusAPI.swift in Sources */,
+				134DFE202F28EF120087C9D5 /* PolkadotTransactionStatusAPI.swift in Sources */,
+				134DFE212F28EF120087C9D5 /* SuiTransactionStatusAPI.swift in Sources */,
+				134DFE222F28EF120087C9D5 /* CardanoTransactionStatusAPI.swift in Sources */,
+				134DFE232F28EF120087C9D5 /* RippleTransactionStatusAPI.swift in Sources */,
 				A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */,
 				138E1D602E9480740085EA8E /* SheetPresentedCounterManagerKey.swift in Sources */,
 				13DD005C2EF2F4420091F833 /* SettingsRouter.swift in Sources */,
@@ -8054,6 +8135,13 @@
 				DB6653B223D15AFB8C3A8107 /* CircleWithdrawView+macOS.swift in Sources */,
 				60A0614473DB30544D99C624 /* DefiCircleRow.swift in Sources */,
 				9976DC2B005ADF44E38FE464 /* CircleApiService.swift in Sources */,
+				134DFE2B2F28EF1A0087C9D5 /* SuiTransactionStatusResponse.swift in Sources */,
+				134DFE2C2F28EF1A0087C9D5 /* RippleTransactionStatusResponse.swift in Sources */,
+				134DFE2D2F28EF1A0087C9D5 /* PolkadotTransactionStatusResponse.swift in Sources */,
+				134DFE2E2F28EF1A0087C9D5 /* THORChainTransactionStatusResponse.swift in Sources */,
+				134DFE2F2F28EF1A0087C9D5 /* TonTransactionStatusResponse.swift in Sources */,
+				134DFE302F28EF1A0087C9D5 /* CardanoTransactionStatusResponse.swift in Sources */,
+				134DFE312F28EF1A0087C9D5 /* TronTransactionStatusResponse.swift in Sources */,
 				6AE564F37876C2BB01674194 /* CircleService.swift in Sources */,
 				D2485B3E2107573C94899396 /* PendingTransaction.swift in Sources */,
 				381B08598606C73AB7BED741 /* TransactionStatus.swift in Sources */,

@@ -35,44 +35,44 @@ struct SendCryptoDoneContentView: View {
     }
 
     var body: some View {
-        VStack {
-            ScrollView {
-                VStack(spacing: 8) {
-                    // Status-aware header
-                    SendCryptoDoneHeaderView(
-                        coin: input.coin,
-                        cryptoAmount: input.amountCrypto,
-                        fiatAmount: input.amountFiat.formatToFiat(includeCurrencySymbol: true),
-                        status: statusViewModel.status
-                    )
+        VStack(spacing: 0) {
+            VStack(spacing: 8) {
+                // Status-aware header
+                SendCryptoDoneHeaderView(
+                    coin: input.coin,
+                    cryptoAmount: input.amountCrypto,
+                    fiatAmount: input.amountFiat.formatToFiat(includeCurrencySymbol: true),
+                    status: statusViewModel.status
+                )
 
-                    VStack(spacing: 16) {
-                        Group {
-                            SendCryptoTransactionHashRowView(
-                                hash: input.hash,
-                                explorerLink: input.explorerLink,
-                                showCopy: true,
-                                showAlert: $showAlert
-                            )
-                            Separator()
-                                .opacity(0.8)
-                        }
-                        .showIf(input.hash.isNotEmpty)
-
-                        transactionDetailsButton
+                VStack(spacing: 16) {
+                    Group {
+                        SendCryptoTransactionHashRowView(
+                            hash: input.hash,
+                            explorerLink: input.explorerLink,
+                            showCopy: true,
+                            showAlert: $showAlert
+                        )
+                        Separator()
+                            .opacity(0.8)
                     }
-                    .font(Theme.fonts.bodySMedium)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 16)
-                    .foregroundStyle(Theme.colors.textSecondary)
-                    .background(Theme.colors.bgSurface1)
-                    .cornerRadius(16)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(Theme.colors.bgSurface2, lineWidth: 1)
-                    )
+                    .showIf(input.hash.isNotEmpty)
+
+                    transactionDetailsButton
                 }
+                .font(Theme.fonts.bodySMedium)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 16)
+                .foregroundStyle(Theme.colors.textSecondary)
+                .background(Theme.colors.bgSurface1)
+                .cornerRadius(16)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Theme.colors.bgSurface2, lineWidth: 1)
+                )
             }
+            
+            Spacer()
 
             PrimaryButton(title: "done") {
                 onDoneButtonPressed()
@@ -119,7 +119,7 @@ struct SendCryptoDoneContentView: View {
         approveHash: "",
         chain: .thorChain,
         sendTransaction: nil,
-        swapTransaction: nil,
+        swapTransaction: SwapTransaction(),
         isSend: true
     )
     .environmentObject(AppViewModel())

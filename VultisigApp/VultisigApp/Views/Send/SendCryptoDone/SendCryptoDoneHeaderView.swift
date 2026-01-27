@@ -14,8 +14,9 @@ struct SendCryptoDoneHeaderView: View {
     let status: TransactionStatus
 
     var body: some View {
-        VStack {
+        VStack(spacing: 36) {
             TransactionStatusHeaderView(status: status)
+                .frame(minHeight: 150, maxHeight: 200)
 
             VStack(spacing: 8) {
                 if let coin {

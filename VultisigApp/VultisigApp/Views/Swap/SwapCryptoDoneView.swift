@@ -23,35 +23,32 @@ struct SwapCryptoDoneView: View {
     @Environment(\.openURL) var openURL
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @EnvironmentObject var appViewModel: AppViewModel
-
+    
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 8) {
             cards
             buttons
         }
-        .buttonStyle(BorderlessButtonStyle())
     }
 
     var cards: some View {
-        ScrollView {
+        VStack(spacing: 24) {
+            TransactionStatusHeaderView(status: .confirmed)
+            
             VStack(spacing: 8) {
-                TransactionStatusHeaderView(status: .confirmed)
                 fromToCards
                 summary
             }
-            .padding(.horizontal)
         }
     }
 
     var buttons: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 9) {
             if progressLink != nil {
                 trackButton
             }
             doneButton
         }
-        .padding(.horizontal)
-        .padding(.bottom)
     }
 
     var trackButton: some View {
@@ -343,17 +340,19 @@ struct SwapCryptoDoneView: View {
 }
 
 #Preview {
-    SwapCryptoDoneView(
-        tx: SwapTransaction(),
-        vault: Vault.example,
-        hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
-        approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
-        progressLink: nil,
-        sendSummaryViewModel: SendSummaryViewModel(),
-        swapSummaryViewModel: SwapCryptoViewModel(),
-        showAlert: .constant(false),
-        alertTitle: .constant("")
-    )
-    .environmentObject(SettingsViewModel())
-    .environmentObject(AppViewModel())
+    Screen(backgroundType: .gradient) {
+        SwapCryptoDoneView(
+            tx: SwapTransaction(),
+            vault: Vault.example,
+            hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
+            approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
+            progressLink: nil,
+            sendSummaryViewModel: SendSummaryViewModel(),
+            swapSummaryViewModel: SwapCryptoViewModel(),
+            showAlert: .constant(false),
+            alertTitle: .constant("")
+        )
+        .environmentObject(SettingsViewModel())
+        .environmentObject(AppViewModel())
+    }
 }

@@ -14,6 +14,13 @@ class TransactionStatusService {
     private let utxoProvider = UTXOTransactionStatusProvider()
     private let cosmosProvider = CosmosTransactionStatusProvider()
     private let solanaProvider = SolanaTransactionStatusProvider()
+    private let thorchainProvider = THORChainTransactionStatusProvider()
+    private let cardanoProvider = CardanoTransactionStatusProvider()
+    private let polkadotProvider = PolkadotTransactionStatusProvider()
+    private let suiProvider = SuiTransactionStatusProvider()
+    private let tonProvider = TonTransactionStatusProvider()
+    private let rippleProvider = RippleTransactionStatusProvider()
+    private let tronProvider = TronTransactionStatusProvider()
 
     private init() {}
 
@@ -31,11 +38,22 @@ class TransactionStatusService {
             return utxoProvider
         case .Solana:
             return solanaProvider
-        case .Cosmos, .THORChain:
+        case .Cosmos:
             return cosmosProvider
-        default:
-            // Default to cosmos provider for other chains
-            return cosmosProvider
+        case .THORChain:
+            return thorchainProvider
+        case .Cardano:
+            return cardanoProvider
+        case .Polkadot:
+            return polkadotProvider
+        case .Sui:
+            return suiProvider
+        case .Ton:
+            return tonProvider
+        case .Ripple:
+            return rippleProvider
+        case .Tron:
+            return tronProvider
         }
     }
 }
