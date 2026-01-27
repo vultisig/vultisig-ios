@@ -21,7 +21,7 @@ struct TronViewLogic {
     /// Fetches account data including frozen balances and resources
     /// Returns: (availableBalance, frozenBandwidth, frozenEnergy, unfreezing, pendingWithdrawals, accountResource)
     func fetchData(vault: Vault) async throws -> (Decimal, Decimal, Decimal, Decimal, [TronPendingWithdrawal], TronAccountResourceResponse?) {
-        guard let trxCoin = vault.coins.first(where: { $0.chain == .tron && $0.isNativeToken }) else {
+        guard let trxCoin = vault.nativeCoin(for: .tron) else {
             throw TronStakingError.noTrxCoin
         }
 
@@ -60,12 +60,12 @@ struct TronViewLogic {
 
     /// Gets the TRX coin from vault
     static func getTrxCoin(vault: Vault) -> Coin? {
-        return vault.coins.first(where: { $0.chain == .tron && $0.isNativeToken })
+        return vault.nativeCoin(for: .tron)
     }
 
     /// Gets the wallet TRX balance
     static func getWalletTrxBalance(vault: Vault) -> Decimal {
-        if let trxCoin = vault.coins.first(where: { $0.chain == .tron && $0.isNativeToken }) {
+        if let trxCoin = vault.nativeCoin(for: .tron) {
             return trxCoin.balanceDecimal
         }
         return .zero
@@ -77,7 +77,7 @@ struct TronViewLogic {
         amount: BigInt,
         resourceType: TronResourceType
     ) async throws -> KeysignPayload {
-        guard let trxCoin = vault.coins.first(where: { $0.chain == .tron && $0.isNativeToken }) else {
+        guard let trxCoin = vault.nativeCoin(for: .tron) else {
             throw TronStakingError.noTrxCoin
         }
 
@@ -120,7 +120,7 @@ struct TronViewLogic {
         amount: BigInt,
         resourceType: TronResourceType
     ) async throws -> KeysignPayload {
-        guard let trxCoin = vault.coins.first(where: { $0.chain == .tron && $0.isNativeToken }) else {
+        guard let trxCoin = vault.nativeCoin(for: .tron) else {
             throw TronStakingError.noTrxCoin
         }
 
@@ -155,6 +155,49 @@ struct TronViewLogic {
         )
 
         return payload
+    }
+
+    // MARK: - Formatting Helpers
+
+    /// Formats a fiat value from TRX balance and price
+    static func formatFiat(balance: Decimal, trxPrice: Double) -> String {
+        let fiatValue = balance * Decimal(trxPrice)
+        return fiatValue.formatToFiat(includeCurrencySymbol: true)
+    }
+
+    /// Formats resource values (Bandwidth/Energy)
+    static func formatResourceValue(available: Int64, total: Int64, unit: String) -> String {
+        // Format as K if large enough and unit is provided
+        if total >= 1000 && !unit.isEmpty {
+            let availableK = Double(available) / 1000.0
+            let totalK = Double(total) / 1000.0
+            return String(format: "%.2f/%.2f%@", availableK, totalK, unit)
+        } else if total >= 1000 {
+            let availableK = Double(available) / 1000.0
+            let totalK = Double(total) / 1000.0
+            return String(format: "%.2fK/%.2fK", availableK, totalK)
+        }
+        return "\(available)/\(total)"
+    }
+
+    /// Formats withdrawal time remaining
+    static func withdrawalTimeRemaining(_ date: Date) -> String {
+        let now = Date()
+        let remaining = date.timeIntervalSince(now)
+
+        if remaining <= 0 {
+            return NSLocalizedString("tronReadyToClaim", comment: "Ready to claim")
+        }
+
+        let days = Int(remaining / 86400)
+        let hours = Int((remaining.truncatingRemainder(dividingBy: 86400)) / 3600)
+
+        if days > 0 {
+            return String(format: NSLocalizedString("tronTimeRemainingDays", comment: "%d days, %d hours"), days, hours)
+        } else {
+            let minutes = Int((remaining.truncatingRemainder(dividingBy: 3600)) / 60)
+            return String(format: NSLocalizedString("tronTimeRemainingHours", comment: "%d hours, %d minutes"), hours, minutes)
+        }
     }
 }
 

@@ -24,8 +24,7 @@ struct TronDashboardView: View {
         guard let trxCoin = vault.nativeCoin(for: .tron) else {
             return "$0.00"
         }
-        let fiatValue = model.totalFrozenBalance * Decimal(trxCoin.price)
-        return fiatValue.formatToFiat(includeCurrencySymbol: true)
+        return TronViewLogic.formatFiat(balance: model.totalFrozenBalance, trxPrice: trxCoin.price)
     }
 
     /// Available balance in fiat (using TRX coin price)
@@ -33,8 +32,7 @@ struct TronDashboardView: View {
         guard let trxCoin = vault.nativeCoin(for: .tron) else {
             return "$0.00"
         }
-        let fiatValue = model.availableBalance * Decimal(trxCoin.price)
-        return fiatValue.formatToFiat(includeCurrencySymbol: true)
+        return TronViewLogic.formatFiat(balance: model.availableBalance, trxPrice: trxCoin.price)
     }
 
     var body: some View {
@@ -308,7 +306,7 @@ struct TronDashboardView: View {
                             .frame(width: 60, height: 14)
                             .shimmer()
                     } else {
-                        Text(formatResourceValue(available: available, total: total, unit: unit))
+                        Text(TronViewLogic.formatResourceValue(available: available, total: total, unit: unit))
                             .font(Theme.fonts.bodyMMedium)
                             .foregroundStyle(Theme.colors.textPrimary)
                     }
@@ -340,20 +338,6 @@ struct TronDashboardView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    func formatResourceValue(available: Int64, total: Int64, unit: String) -> String {
-        // Format as K if large enough and unit is provided
-        if total >= 1000 && !unit.isEmpty {
-            let availableK = Double(available) / 1000.0
-            let totalK = Double(total) / 1000.0
-            return String(format: "%.2f/%.2f%@", availableK, totalK, unit)
-        } else if total >= 1000 {
-            let availableK = Double(available) / 1000.0
-            let totalK = Double(total) / 1000.0
-            return String(format: "%.2fK/%.2fK", availableK, totalK)
-        }
-        return "\(available)/\(total)"
     }
 
     func progressValue(available: Int64, total: Int64) -> CGFloat {
@@ -396,7 +380,7 @@ struct TronDashboardView: View {
                                     .font(Theme.fonts.caption12)
                                     .foregroundStyle(Theme.colors.textSecondary)
                             } else {
-                                Text(withdrawalTimeRemaining(withdrawal.expirationDate))
+                                Text(TronViewLogic.withdrawalTimeRemaining(withdrawal.expirationDate))
                                     .font(Theme.fonts.caption12)
                                     .foregroundStyle(Theme.colors.textSecondary)
                             }
@@ -420,25 +404,6 @@ struct TronDashboardView: View {
                 RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
                     .fill(Theme.colors.bgSurface1)
             )
-        }
-    }
-
-    func withdrawalTimeRemaining(_ date: Date) -> String {
-        let now = Date()
-        let remaining = date.timeIntervalSince(now)
-
-        if remaining <= 0 {
-            return NSLocalizedString("tronReadyToClaim", comment: "Ready to claim")
-        }
-
-        let days = Int(remaining / 86400)
-        let hours = Int((remaining.truncatingRemainder(dividingBy: 86400)) / 3600)
-
-        if days > 0 {
-            return String(format: NSLocalizedString("tronTimeRemainingDays", comment: "%d days, %d hours"), days, hours)
-        } else {
-            let minutes = Int((remaining.truncatingRemainder(dividingBy: 3600)) / 60)
-            return String(format: NSLocalizedString("tronTimeRemainingHours", comment: "%d hours, %d minutes"), hours, minutes)
         }
     }
 }

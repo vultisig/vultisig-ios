@@ -208,7 +208,7 @@ struct TronFreezeView: View {
     }
 
     func loadData() async {
-        if let coin = vault.coins.first(where: { $0.chain == .tron && $0.isNativeToken }) {
+        if let coin = vault.nativeCoin(for: .tron) {
             await BalanceService.shared.updateBalance(for: coin)
 
             await MainActor.run {
