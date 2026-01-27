@@ -14,7 +14,6 @@ struct TronDashboardView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.router) var router
 
-
     var walletTrxBalance: Decimal {
         return TronViewLogic.getWalletTrxBalance(vault: vault)
     }
@@ -82,7 +81,7 @@ struct TronDashboardView: View {
         ZStack(alignment: .trailing) {
             // Background with gradient fill
             cardBackground
-            
+
             // Decorative circles - large and clipped by the card
             GeometryReader { geometry in
                 ZStack {
@@ -90,7 +89,7 @@ struct TronDashboardView: View {
                     Circle()
                         .stroke(Theme.colors.tronRed.opacity(0.25), lineWidth: 2)
                         .frame(width: 160, height: 160)
-                    
+
                     // Inner ring (smaller, thicker stroke)
                     Circle()
                         .stroke(Theme.colors.tronRed.opacity(0.4), lineWidth: 4)
@@ -99,7 +98,7 @@ struct TronDashboardView: View {
                 .position(x: geometry.size.width - 50, y: geometry.size.height * 0.75)
             }
             .clipShape(RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius))
-            
+
             // Content
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 8) {
@@ -120,7 +119,7 @@ struct TronDashboardView: View {
                     }
                 }
                 Spacer()
-                
+
                 // Logo on top of the rings
                 Image("tron")
                     .resizable()

@@ -8,6 +8,18 @@
 import SwiftUI
 import BigInt
 
+// MARK: - Result Types
+
+/// Result structure for fetchData to avoid large tuple violation
+struct TronFetchDataResult {
+    let availableBalance: Decimal
+    let frozenBandwidth: Decimal
+    let frozenEnergy: Decimal
+    let unfreezing: Decimal
+    let pendingWithdrawals: [TronPendingWithdrawal]
+    let accountResource: TronAccountResourceResponse?
+}
+
 // MARK: - Logic (Methods)
 struct TronViewLogic {
 
@@ -19,8 +31,7 @@ struct TronViewLogic {
     }
 
     /// Fetches account data including frozen balances and resources
-    /// Returns: (availableBalance, frozenBandwidth, frozenEnergy, unfreezing, pendingWithdrawals, accountResource)
-    func fetchData(vault: Vault) async throws -> (Decimal, Decimal, Decimal, Decimal, [TronPendingWithdrawal], TronAccountResourceResponse?) {
+    func fetchData(vault: Vault) async throws -> TronFetchDataResult {
         guard let trxCoin = vault.nativeCoin(for: .tron) else {
             throw TronStakingError.noTrxCoin
         }
@@ -55,7 +66,14 @@ struct TronViewLogic {
             return TronPendingWithdrawal(amount: amountTrx, expirationDate: expirationDate)
         }.sorted { $0.expirationDate < $1.expirationDate }
 
-        return (availableBalance, frozenBandwidth, frozenEnergy, unfreezing, pendingWithdrawals, resource)
+        return TronFetchDataResult(
+            availableBalance: availableBalance,
+            frozenBandwidth: frozenBandwidth,
+            frozenEnergy: frozenEnergy,
+            unfreezing: unfreezing,
+            pendingWithdrawals: pendingWithdrawals,
+            accountResource: resource
+        )
     }
 
     /// Gets the TRX coin from vault

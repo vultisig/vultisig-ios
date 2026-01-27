@@ -201,13 +201,13 @@ struct TronUnfreezeView: View {
 
     func loadData() async {
         do {
-            let (available, frozenBandwidth, frozenEnergy, unfreezing, pendingWithdrawals, _) = try await model.logic.fetchData(vault: vault)
+            let result = try await model.logic.fetchData(vault: vault)
             await MainActor.run {
-                model.availableBalance = available
-                model.frozenBandwidthBalance = frozenBandwidth
-                model.frozenEnergyBalance = frozenEnergy
-                model.unfreezingBalance = unfreezing
-                model.pendingWithdrawals = pendingWithdrawals
+                model.availableBalance = result.availableBalance
+                model.frozenBandwidthBalance = result.frozenBandwidth
+                model.frozenEnergyBalance = result.frozenEnergy
+                model.unfreezingBalance = result.unfreezing
+                model.pendingWithdrawals = result.pendingWithdrawals
                 model.error = nil // Clear error on success
             }
         } catch {
