@@ -1201,6 +1201,7 @@
 
 "scanningForChainsSubtitle" = "Wir prüfen, welche Blockchains aktive Adressen haben, die mit Ihrer Seed-Phrase verknüpft sind. Dieser Vorgang kann bis zu 2 Minuten dauern.";
 "scanningForChainsSubtitleHighlight" = "Dieser Vorgang kann bis zu 2 Minuten dauern.";
+"importTheseChains" = "Diese Chains importieren";
 "selectChainsManually" = "Chains manuell auswählen";
 "noActiveChainsFound" = "Keine aktiven Chains gefunden";
 "noActiveChainsFoundSubtitle" = "Wir haben keine Assets auf dieser Seed-Phrase erkannt.\n\nJede zusätzliche Chain erhöht die Zeit zur Generierung deines Vaults und die Wahrscheinlichkeit eines Timeouts.";

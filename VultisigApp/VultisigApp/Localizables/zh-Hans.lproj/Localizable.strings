@@ -1099,8 +1099,8 @@
 "youAreEnteringAnewEraHighlight" = "将旧助记词抛在身后。";
 "yourSeedphrase" = "您的助记词";
 "yourSeedphraseSubtitle" = "输入它，创建保险库，永不回头";
-"atLeastOneDevice" = "至少一台设备";
-"atLeastOneDeviceSubtitle" = "任何可以运行Vultisig的设备都可以使用。";
+"atLeastOneDevice" = "至少一台 Vultisig 设备";
+"atLeastOneDeviceSubtitle" = "任何可以运行 Vultisig 的设备都可以使用。";
 "mnemonicPlaceholder" = "输入您的助记词的12个或24个单词";
 "enterYourSeedphrase" = "输入您的助记词";
 "enterYourSeedphraseSubtitle" = "在每个单词之间留一个空格。支持12或24个单词的助记词。";
@@ -1203,6 +1203,7 @@
 
 "scanningForChainsSubtitle" = "我们正在检查哪些区块链有与您的助记词相关联的活跃地址。此过程可能需要长达2分钟。";
 "scanningForChainsSubtitleHighlight" = "此过程可能需要长达2分钟。";
+"importTheseChains" = "导入这些链";
 "selectChainsManually" = "手动选择链";
 "noActiveChainsFound" = "未找到活跃链";
 "noActiveChainsFoundSubtitle" = "我们未在此助记词中检测到任何资产。\n\n每增加一条链都会增加生成保险库的时间和超时的可能性。";

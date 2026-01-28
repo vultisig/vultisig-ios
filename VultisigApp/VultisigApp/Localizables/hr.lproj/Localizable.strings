@@ -1201,6 +1201,7 @@
 
 "scanningForChainsSubtitle" = "Provjeravamo koji blockchaini imaju aktivne adrese povezane s vašom seed frazom. Ovaj proces može potrajati do 2 minute.";
 "scanningForChainsSubtitleHighlight" = "Ovaj proces može potrajati do 2 minute.";
+"importTheseChains" = "Uvezi ove chainove";
 "selectChainsManually" = "Odaberi chainove ručno";
 "noActiveChainsFound" = "Nisu pronađeni aktivni chainovi";
 "noActiveChainsFoundSubtitle" = "Nismo otkrili nikakvu imovinu na ovoj seed frazi.\n\nSvaki dodatni chain povećava vrijeme potrebno za generiranje vašeg vaulta i mogućnost timeouta.";

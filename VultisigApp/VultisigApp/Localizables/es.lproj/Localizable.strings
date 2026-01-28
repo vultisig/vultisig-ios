@@ -1202,6 +1202,7 @@
 
 "scanningForChainsSubtitle" = "Estamos verificando qué cadenas de bloques tienen direcciones activas asociadas con tu frase semilla. Este proceso puede tardar hasta 2 minutos.";
 "scanningForChainsSubtitleHighlight" = "Este proceso puede tardar hasta 2 minutos.";
+"importTheseChains" = "Importar estas cadenas";
 "selectChainsManually" = "Seleccionar cadenas manualmente";
 "noActiveChainsFound" = "No se encontraron chains activas";
 "noActiveChainsFoundSubtitle" = "No detectamos ningún activo en esta frase semilla.\n\nCada cadena adicional aumenta el tiempo para generar tu bóveda y la posibilidad de timeout.";

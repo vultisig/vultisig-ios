@@ -76,7 +76,7 @@ struct KeyImportActiveChainsView: View {
 
                 VStack(spacing: 12) {
                     PrimaryButton(
-                        title: "importTheseChains",
+                        title: "importTheseChains".localized,
                         action: onImport
                     )
                     Button(action: onCustomize) {
