@@ -42,9 +42,9 @@ struct CosmosTransactionStatusProvider: TransactionStatusProvider {
                 }
             }
 
-            // No tx_response but 200 = assume success
+            // No tx_response but 200 = pending (mirrors EVM/Solana behavior)
             return TransactionStatusResult(
-                status: .confirmed,
+                status: .pending,
                 blockNumber: nil,
                 confirmations: nil
             )

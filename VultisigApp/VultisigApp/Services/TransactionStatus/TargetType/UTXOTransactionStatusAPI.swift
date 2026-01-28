@@ -19,8 +19,21 @@ enum UTXOTransactionStatusAPI: TargetType {
 
     var path: String {
         switch self {
-        case .getTransactionStatus(let txHash, _):
-            return "/api/tx/\(txHash)"
+        case .getTransactionStatus(let txHash, let chain):
+            switch chain {
+            case .bitcoin, .litecoin:
+                // Mempool.space / Litecoinspace.org API
+                return "/api/tx/\(txHash)"
+            case .bitcoinCash:
+                // Blockchair API
+                return "/api/v2/bitcoin-cash/dashboards/transaction/\(txHash)"
+            case .dogecoin:
+                // Dogechain API
+                return "/api/v1/transaction/\(txHash)"
+            default:
+                // Fallback to mempool.space style
+                return "/api/tx/\(txHash)"
+            }
         }
     }
 

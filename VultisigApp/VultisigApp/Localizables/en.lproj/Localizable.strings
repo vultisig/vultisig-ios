@@ -782,10 +782,12 @@
 "transactionComplete" = "Done";
 "transactionDetails" = "Transaction details";
 "transactionFailed" = "Transaction failed";
+"transactionFailedHighlight" = "failed";
 "transactionHash" = "Transaction Hash";
 "transactionID" = "Transaction ID";
 "transactions" = "Transactions";
 "transactionSuccessful" = "Transaction successful";
+"transactionSuccessfulHighlight" = "successful";
 "transactionTrackingLink" = "Transaction tracking link";
 "tryAgain" = "Try Again";
 "tryFaceIDAgain" = "Try Face ID again";
@@ -1362,7 +1364,3 @@
 
 "transactionBroadcasted" = "Transaction broadcasted";
 "transactionPending" = "Transaction pending...";
-"transactionSuccessful" = "Transaction successful";
-"transactionSuccessfulHighlight" = "successful";
-"transactionFailed" = "Transaction failed";
-"transactionFailedHighlight" = "failed";

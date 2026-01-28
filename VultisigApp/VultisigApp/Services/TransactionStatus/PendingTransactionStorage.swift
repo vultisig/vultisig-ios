@@ -87,8 +87,8 @@ actor StoredPendingTransactionStorage {
     }
 
     /// Delete a transaction
-    func delete(txHash: String) async throws {
-        if let transaction = try await get(txHash: txHash) {
+    func delete(txHash: String) throws {
+        if let transaction = try get(txHash: txHash) {
             modelContext.delete(transaction)
             try modelContext.save()
         }
