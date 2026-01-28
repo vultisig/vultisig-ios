@@ -68,10 +68,10 @@ struct VaultBackupNowScreen: View {
         FileManager.default.clearTmpDirectory()
         animation = RiveViewModel(fileName: "backupvault_splash", autoPlay: true)
 
-        Task {
+        Task { @MainActor in
             if backupType.vault.isFastVault, isNewVault {
                 let fileModel = backupViewModel.exportFileWithVaultPassword(backupType)
-                await MainActor.run { self.fileModel = fileModel }
+                self.fileModel = fileModel
             }
         }
     }

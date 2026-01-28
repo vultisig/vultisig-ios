@@ -76,8 +76,8 @@ struct KeyImportOnboardingScreen: View {
                 )
 
                 OnboardingInformationRowView(
-                    title: "twoDevices".localized,
-                    subtitle: "twoDevicesSubtitle".localized,
+                    title: "atLeastOneDevice".localized,
+                    subtitle: "atLeastOneDeviceSubtitle".localized,
                     icon: "devices"
                 )
             }
