@@ -12,14 +12,30 @@
 				<string>vult</string>
 			</array>
 			<key>CFBundleTypeName</key>
-			<string>Custom File Type</string>
+			<string>Vultisig Vault File</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>LSHandlerRank</key>
 			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>com.vultisig.wallet</string>
+				<string>com.vultisig.vault</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>bak</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Vultisig Vault Backup</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.vultisig.backup</string>
 			</array>
 		</dict>
 	</array>
@@ -85,9 +101,9 @@
 				<string>public.data</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>Custom File</string>
+			<string>Vultisig Vault File</string>
 			<key>UTTypeIdentifier</key>
-			<string>com.vultisig.wallet</string>
+			<string>com.vultisig.vault</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
@@ -95,7 +111,26 @@
 					<string>vult</string>
 				</array>
 				<key>public.mime-type</key>
-				<string>application/myapp</string>
+				<string>application/vultisig-vault</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Vultisig Vault Backup</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.vultisig.backup</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>bak</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/vultisig-backup</string>
 			</dict>
 		</dict>
 	</array>
