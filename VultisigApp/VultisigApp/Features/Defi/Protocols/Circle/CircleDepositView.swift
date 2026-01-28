@@ -24,40 +24,24 @@ struct CircleDepositView: View {
     @State var isLoading = false
 
     var body: some View {
-        main
+        content
     }
 
     var content: some View {
-        VStack(spacing: 0) {
-            headerView
-            scrollableContent
-            footerView
-        }
-    }
-
-    var headerView: some View {
-        HStack {
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.title3)
-                    .foregroundColor(Theme.colors.textPrimary)
-                    .frame(width: 40, height: 40)
-                    .background(Circle().fill(Color.white.opacity(0.1)))
+        Screen(
+            title: NSLocalizedString("circleDepositTitle", comment: "Deposit to Circle Account"),
+            showNavigationBar: true,
+            backgroundType: .plain
+        ) {
+            VStack(spacing: 0) {
+                scrollableContent
+                footerView
             }
-
-            Spacer()
-
-            Text(NSLocalizedString("circleDepositTitle", comment: "Deposit to Circle Account"))
-                .font(Theme.fonts.bodyLMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
-
-            Spacer()
-
-            Color.clear.frame(width: 40, height: 40)
         }
-        .padding(CircleConstants.Design.horizontalPadding)
+        .withLoading(isLoading: $isLoading)
+        .task {
+            await loadData()
+        }
     }
 
     var footerView: some View {
@@ -69,15 +53,10 @@ struct CircleDepositView: View {
                     .padding(.bottom, 8)
             }
 
-            if isLoading {
-                ProgressView()
-                    .padding()
-            } else {
-                PrimaryButton(title: NSLocalizedString("circleDepositContinue", comment: "Continue")) {
-                    Task { await handleContinue() }
-                }
-                .disabled(amount.isEmpty || (Decimal(string: amount) ?? 0) <= 0 || (Decimal(string: amount) ?? 0) > (usdcCoin?.balanceDecimal ?? 0))
+            PrimaryButton(title: NSLocalizedString("circleDepositContinue", comment: "Continue")) {
+                Task { await handleContinue() }
             }
+            .disabled(isLoading || amount.isEmpty || (Decimal(string: amount) ?? 0) <= 0 || (Decimal(string: amount) ?? 0) > (usdcCoin?.balanceDecimal ?? 0))
         }
         .padding(CircleConstants.Design.horizontalPadding)
         .background(Theme.colors.bgPrimary)
@@ -166,6 +145,9 @@ struct CircleDepositView: View {
     }
 
     func loadData() async {
+        await MainActor.run { isLoading = true }
+        defer { Task { @MainActor in isLoading = false } }
+
         let (chain, _) = CircleViewLogic.getChainDetails(vault: vault)
 
         if let coin = vault.coins.first(where: { $0.chain == chain && $0.ticker == "USDC" }) {
