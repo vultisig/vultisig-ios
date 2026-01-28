@@ -23,6 +23,7 @@ struct EditAddressBookScreen: View {
     @State var presentSelector = false
 
     @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) var modelContext
 
     var body: some View {
         Screen(title: "editAddress".localized) {
@@ -112,6 +113,7 @@ struct EditAddressBookScreen: View {
         addressBookItem.title = title
         addressBookItem.address = address
         addressBookItem.coinMeta = coin
+        try? modelContext.save()
 
         dismiss()
     }

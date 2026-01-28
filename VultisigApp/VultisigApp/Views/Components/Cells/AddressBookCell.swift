@@ -92,6 +92,7 @@ struct AddressBookCell: View {
     var deleteIcon: some View {
         Button {
             modelContext.delete(address)
+            try? modelContext.save()
         } label: {
             deleteIconLabel
         }

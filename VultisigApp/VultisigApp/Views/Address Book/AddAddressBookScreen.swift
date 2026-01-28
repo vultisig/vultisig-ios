@@ -147,6 +147,7 @@ struct AddAddressBookScreen: View {
 
         DispatchQueue.main.asyncAfter(deadline: .now()) {
             modelContext.insert(data)
+            try? modelContext.save()
             if shouldDismiss {
                 dismiss()
             } else {
