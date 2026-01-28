@@ -645,8 +645,6 @@
 "secureVaultSummaryText2" = "Backup de cada cofre compartilhe separadamente";
 "secureVaultSummaryText3" = "Mantenha as ações da Vault em diferentes locais";
 "secureVaultSummaryText4" = "Todas as ações do Vault garantem acesso seguro aos seus fundos";
-"keyImportVaultSummaryText1" = "Seu cofre tem 3 partes do cofre: 2 dos seus dispositivos e 1 servidor";
-"keyImportVaultSummaryText5" = "A senha definida antes concede acesso ao backup do servidor";
 "security" = "Segurança";
 "securityScannerContinueAnyway" = "Continue de qualquer maneira";
 "securityScannerContinueGoBack" = "Volte";
@@ -1099,8 +1097,8 @@
 "youAreEnteringAnewEraHighlight" = "deixando frases semente antigas para trás.";
 "yourSeedphrase" = "Sua frase semente";
 "yourSeedphraseSubtitle" = "Digite-a, crie um cofre, nunca olhe para trás";
-"twoDevices" = "2 dispositivos";
-"twoDevicesSubtitle" = "Qualquer dispositivo que possa executar o Vultisig funcionará.";
+"atLeastOneDevice" = "Pelo menos um dispositivo";
+"atLeastOneDeviceSubtitle" = "Qualquer dispositivo que possa executar o Vultisig funcionará.";
 "mnemonicPlaceholder" = "Digite as 12 ou 24 palavras da sua frase semente";
 "enterYourSeedphrase" = "Digite sua frase semente";
 "enterYourSeedphraseSubtitle" = "Deixe um espaço entre cada palavra. Frases semente de 12 ou 24 palavras são suportadas.";
@@ -1203,6 +1201,7 @@
 
 "scanningForChainsSubtitle" = "Estamos verificando quais blockchains têm endereços ativos associados à sua frase semente. Este processo pode levar até 2 minutos.";
 "scanningForChainsSubtitleHighlight" = "Este processo pode levar até 2 minutos.";
+"importTheseChains" = "Importar estas chains";
 "selectChainsManually" = "Selecionar chains manualmente";
 "noActiveChainsFound" = "Nenhuma chain ativa encontrada";
 "noActiveChainsFoundSubtitle" = "Não detectamos nenhum ativo nesta frase semente.\n\nCada chain adicional aumenta o tempo para gerar seu vault e a possibilidade de timeout.";

@@ -10,7 +10,6 @@ import SwiftUI
 struct KeyImportChain: Identifiable, Hashable {
     var id: String { chain.name }
     let chain: Chain
-    let balance: String
 }
 
 struct KeyImportActiveChainsView: View {
@@ -47,7 +46,7 @@ struct KeyImportActiveChainsView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 12) {
                         ForEach(activeChains) { chain in
-                            HStack(spacing: 12) {
+                            HStack(spacing: 4) {
                                 AsyncImageView(
                                     logo: chain.chain.logo,
                                     size: .init(width: 32, height: 32),
@@ -57,11 +56,8 @@ struct KeyImportActiveChainsView: View {
                                 Text(chain.chain.name)
                                     .foregroundStyle(Theme.colors.textPrimary)
                                     .font(Theme.fonts.bodySMedium)
-                                Spacer()
-                                Text(chain.balance)
-                                    .foregroundStyle(Theme.colors.textPrimary)
-                                    .font(Theme.fonts.priceBodyS)
                             }
+                            .frame(maxWidth: .infinity)
                             .padding(12)
                             .padding(.trailing, 16)
                             .background(
@@ -79,14 +75,10 @@ struct KeyImportActiveChainsView: View {
                     .frame(height: 150)
 
                 VStack(spacing: 12) {
-                    PrimaryButton(title: "importTheseChains", action: {
-                        if activeChains.contains(where: { $0.chain == .solana }) &&
-                           viewModel.hasMultipleDerivations(for: .solana) {
-                            showDerivationSheet = true
-                        } else {
-                            onImport()
-                        }
-                    })
+                    PrimaryButton(
+                        title: "importTheseChains".localized,
+                        action: onImport
+                    )
                     Button(action: onCustomize) {
                         HStack(spacing: 8) {
                             Icon(
