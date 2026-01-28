@@ -16,7 +16,7 @@ enum TronAPI: TargetType {
     case triggerConstantContract(ownerAddress: String, contractAddress: String, functionSelector: String, parameter: String)
 
     var baseURL: URL {
-        URL(string: "https://api.vultisig.com/tron")!
+        URL(string: "https://api.vultisig.com/tron-rest")!
     }
 
     var path: String {
@@ -109,16 +109,56 @@ struct TronNowBlockResponse: Codable {
 struct TronAccountResponse: Codable {
     let address: String
     let balance: Int64?
+    let frozenV2: [TronFrozenV2]?
+    let unfrozenV2: [TronUnfrozenV2]?
+
+    struct TronFrozenV2: Codable {
+        let type: String?  // nil or "BANDWIDTH" = bandwidth, "ENERGY" = energy
+        let amount: Int64?
+    }
+
+    struct TronUnfrozenV2: Codable {
+        let unfreeze_amount: Int64?
+        let unfreeze_expire_time: Int64?
+    }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.address = (try? container.decode(String.self, forKey: .address)) ?? ""
         self.balance = try? container.decode(Int64.self, forKey: .balance)
+        self.frozenV2 = try? container.decode([TronFrozenV2].self, forKey: .frozenV2)
+        self.unfrozenV2 = try? container.decode([TronUnfrozenV2].self, forKey: .unfrozenV2)
     }
 
     private enum CodingKeys: String, CodingKey {
         case address
         case balance
+        case frozenV2
+        case unfrozenV2
+    }
+
+    /// Returns frozen TRX for bandwidth (in SUN) - sums all bandwidth entries
+    var frozenBandwidthSun: Int64 {
+        // TRON API: type is nil or "BANDWIDTH" for bandwidth
+        return frozenV2?
+            .filter { $0.type == nil || $0.type == TronResourceType.bandwidth.rawValue }
+            .compactMap { $0.amount }
+            .reduce(0, +) ?? 0
+    }
+
+    /// Returns frozen TRX for energy (in SUN) - sums all energy entries
+    var frozenEnergySun: Int64 {
+        return frozenV2?
+            .filter { $0.type == TronResourceType.energy.rawValue }
+            .compactMap { $0.amount }
+            .reduce(0, +) ?? 0
+    }
+
+    /// Returns total TRX in unfreezing process (in SUN) - awaiting withdrawal
+    var unfreezingTotalSun: Int64 {
+        return unfrozenV2?
+            .compactMap { $0.unfreeze_amount }
+            .reduce(0, +) ?? 0
     }
 }
 

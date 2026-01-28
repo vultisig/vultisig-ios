@@ -29,6 +29,75 @@ struct CircleDashboardView: View {
         content
     }
 
+    var content: some View {
+        VStack(spacing: 0) {
+            scrollViewContent
+        }
+        .frame(maxHeight: .infinity)
+        .onAppear {
+            Task { await loadData() }
+        }
+    }
+
+    var scrollViewContent: some View {
+        ScrollView {
+            dashboardContent
+        }
+        #if os(iOS)
+        .refreshable {
+            await loadData()
+        }
+        #endif
+    }
+
+    var dashboardContent: some View {
+        VStack(spacing: CircleConstants.Design.verticalSpacing) {
+            topBanner
+
+            headerDescription
+
+            InfoBannerView(
+                description: NSLocalizedString("circleDashboardInfoText", comment: "Funds remain..."),
+                type: .info,
+                leadingIcon: nil,
+                onClose: {
+                    withAnimation { appClosedBanners.append(circleDashboardBannerId) }
+                }
+            )
+            .showIf(showInfoBanner)
+
+            if let error = model.error, !error.localizedDescription.lowercased().contains("cancelled") {
+                InfoBannerView(
+                    description: error.localizedDescription,
+                    type: .error,
+                    leadingIcon: nil,
+                    onClose: {
+                        withAnimation { model.error = nil }
+                    }
+                )
+            }
+
+            usdcDepositedCard
+        }
+        .padding(.top, CircleConstants.Design.mainViewTopPadding)
+        .padding(.bottom, CircleConstants.Design.mainViewBottomPadding)
+        .padding(.horizontal, CircleConstants.Design.horizontalPadding)
+    }
+
+    var headerDescription: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(NSLocalizedString("circleDashboardDeposited", comment: "Deposited"))
+                .font(Theme.fonts.bodyLMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+
+            Text(NSLocalizedString("circleDashboardDepositDescription", comment: "Deposit your $USDC..."))
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundStyle(Theme.colors.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
     var topBanner: some View {
         HStack {
             VStack(alignment: .leading, spacing: 8) {

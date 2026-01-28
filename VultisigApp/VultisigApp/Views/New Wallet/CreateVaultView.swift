@@ -120,17 +120,10 @@ struct CreateVaultView: View {
                 type: .secondary,
                 reserveTrailingIconSpace: true
             ) {
-                #if DEBUG
-                    showImportSelectionSheet = true
-                #else
-                    router.navigate(to: OnboardingRoute.importVaultShare)
-                #endif
+                showImportSelectionSheet = true
             }
-
-            #if DEBUG
-                newTag
-                    .offset(x: 48)
-            #endif
+            newTag
+                .offset(x: 48)
         }
     }
 

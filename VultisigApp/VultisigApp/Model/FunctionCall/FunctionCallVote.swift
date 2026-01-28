@@ -20,7 +20,7 @@ class FunctionCallVote: FunctionCallAddressable, ObservableObject {
 
     var addressFields: [String: String] {
         get { [:] }
-        set { }
+        set { _ = newValue }
     }
 
     required init() {

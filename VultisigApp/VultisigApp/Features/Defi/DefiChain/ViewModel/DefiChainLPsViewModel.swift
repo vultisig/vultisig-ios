@@ -22,7 +22,7 @@ final class DefiChainLPsViewModel: ObservableObject {
         vault.defiPositions.first { $0.chain == chain }?.lps ?? []
     }
 
-    private let interactor: LPsInteractor
+    private let interactor: LPsInteractor?
     private let chain: Chain
 
     init(vault: Vault, chain: Chain) {
@@ -47,6 +47,11 @@ final class DefiChainLPsViewModel: ObservableObject {
         }
         if !lpPositions.isEmpty {
             initialLoadingDone = true
+        }
+
+        guard let interactor = interactor else {
+            initialLoadingDone = true
+            return
         }
 
         let positions = await interactor.fetchLPPositions(vault: vault)

@@ -7,6 +7,26 @@
 
 import SwiftUI
 
+struct ErrorScreen: View {
+    let type: ErrorView.ErrorType
+    let title: String
+    let description: String
+    let buttonTitle: String
+    var action: () -> Void
+
+    var body: some View {
+        Screen {
+            ErrorView(
+                type: type,
+                title: title,
+                description: description,
+                buttonTitle: buttonTitle,
+                action: action
+            )
+        }
+    }
+}
+
 struct ErrorView: View {
     let type: ErrorType
     let title: String
@@ -47,6 +67,7 @@ struct ErrorView: View {
         .padding(.vertical, 12)
     }
 }
+
 private extension ErrorView {
     var icon: String {
         switch type {

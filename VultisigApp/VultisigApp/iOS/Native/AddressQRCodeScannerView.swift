@@ -15,7 +15,10 @@ struct AddressQRCodeScannerView: View {
     let onAddress: (String) -> Void
 
     var body: some View {
-        QRCodeScannerView(showScanner: $showScanner) { address in
+        QRCodeScannerView(
+            showScanner: $showScanner,
+            isPaused: .constant(false)
+        ) { address in
             onAddress(address)
         }
     }

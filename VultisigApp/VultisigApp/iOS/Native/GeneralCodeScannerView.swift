@@ -24,13 +24,23 @@ struct GeneralCodeScannerView: View {
 
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
 
+    @State private var localError: Error?
+    @State private var isPaused: Bool = false
+
     private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 
     var body: some View {
         QRCodeScannerView(
-            showScanner: $showSheet
+            showScanner: $showSheet,
+            isPaused: $isPaused
         ) { result in
             handle(urlString: result)
+        }
+        .withError(error: $localError, errorType: .warning) {
+            localError = nil
+        }
+        .onChange(of: localError != nil) { _, newValue in
+            isPaused = newValue
         }
     }
 
@@ -38,9 +48,13 @@ struct GeneralCodeScannerView: View {
         guard let url = URL(string: urlString) else {
             return
         }
-        let validDeeplink = deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
-        if validDeeplink {
-            showSheet = false
+        do {
+            let validDeeplink = try deeplinkViewModel.extractParameters(url, vaults: vaults, isInternal: true)
+            if validDeeplink {
+                showSheet = false
+            }
+        } catch let scanError {
+            localError = scanError
         }
     }
 }

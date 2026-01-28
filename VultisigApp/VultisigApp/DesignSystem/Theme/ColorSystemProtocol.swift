@@ -52,4 +52,7 @@ public protocol ColorSystemProtocol {
     var alertInfo: Color { get }
 
     var turquoise: Color { get }
+
+    // Chain-specific colors
+    var tronRed: Color { get }
 }

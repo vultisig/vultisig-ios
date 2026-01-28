@@ -27,6 +27,7 @@ struct MacScannerView: View {
     @StateObject var cameraViewModel = MacCameraServiceViewModel()
 
     @State var navigateToUploadQR = false
+    @State private var deeplinkError: Error?
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -56,6 +57,10 @@ struct MacScannerView: View {
             ))
             navigateToUploadQR = false
         }
+        .withError(error: $deeplinkError, errorType: .warning) {
+            // Retry action - clear error to allow user to try again
+            deeplinkError = nil
+        }
     }
 
     var main: some View {
@@ -66,7 +71,8 @@ struct MacScannerView: View {
             if let newValue = newValue, !newValue.isEmpty {
                 cameraViewModel.handleScan(
                     vaults: vaults,
-                    deeplinkViewModel: deeplinkViewModel
+                    deeplinkViewModel: deeplinkViewModel,
+                    error: $deeplinkError
                 )
             }
         }

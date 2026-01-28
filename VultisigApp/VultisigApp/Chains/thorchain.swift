@@ -100,7 +100,9 @@ enum THORChainHelper {
 
         if let signDataMessagesResult = try CosmosSignDataBuilder.getMessages(keysignPayload: keysignPayload) {
             messages = signDataMessagesResult.messages
-            memo = signDataMessagesResult.memo
+            if let signDataMemo = signDataMessagesResult.memo {
+                memo = signDataMemo
+            }
         } else if isDeposit {
             // This should invoke the wasm contract for RUJI merge/unmerge
             if transactionType.isGenericWasmMessage {

@@ -27,6 +27,8 @@ struct DefiBalanceService {
             thorChainTotalBalanceFiatDecimal(for: vault)
         case .mayaChain:
             mayaChainTotalBalanceFiatDecimal(for: vault)
+        case .tron:
+            tronTotalBalanceFiatDecimal(for: vault)
         default:
             defaultTotalBalanceFiatDecimal(chain: chain, for: vault)
         }
@@ -55,7 +57,14 @@ private extension DefiBalanceService {
         let lpBalances = getLPBalances(for: vault, chain: .mayaChain)
         return bondsBalance + stakedBalances + lpBalances
     }
-
+    func tronTotalBalanceFiatDecimal(for vault: Vault) -> Decimal {
+        // For TRON, we show the native TRX balance in fiat
+        // Frozen/staked balance is fetched separately from TRON API in the dashboard
+        guard let trxCoin = vault.nativeCoin(for: .tron) else {
+            return .zero
+        }
+        return trxCoin.balanceInFiatDecimal
+    }
     func defaultTotalBalanceFiatDecimal(chain: Chain, for vault: Vault) -> Decimal {
         let coins = vault.coins
             .filter { $0.chain == chain }

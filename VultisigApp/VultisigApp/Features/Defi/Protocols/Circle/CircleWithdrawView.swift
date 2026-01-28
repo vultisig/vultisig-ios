@@ -32,50 +32,31 @@ struct CircleWithdrawView: View {
     }
 
     var body: some View {
-        main
+        content
     }
 
     var content: some View {
-        ZStack {
+        Screen(
+            title: NSLocalizedString("circleWithdrawTitle", comment: "Withdraw from Circle"),
+            showNavigationBar: true,
+            backgroundType: .plain
+        ) {
             VStack(spacing: 0) {
-                headerView
                 scrollableContent
                 footerView
             }
-
-            if isLoading {
-                Color.black.opacity(0.5).ignoresSafeArea()
-                ProgressView()
-            }
         }
+        .withLoading(isLoading: $isLoading)
         .task {
             await loadFastVaultStatus()
         }
-    }
-
-    var headerView: some View {
-        HStack {
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.title3)
-                    .foregroundColor(Theme.colors.textPrimary)
-                    .frame(width: 40, height: 40)
-                    .background(Circle().fill(Color.white.opacity(0.1)))
-            }
-
-            Spacer()
-
-            Text(NSLocalizedString("circleWithdrawTitle", comment: "Withdraw from Circle"))
-                .font(Theme.fonts.bodyLMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
-
-            Spacer()
-
-            Color.clear.frame(width: 40, height: 40)
+        .crossPlatformSheet(isPresented: $fastPasswordPresented) {
+            FastVaultEnterPasswordView(
+                password: $fastVaultPassword,
+                vault: vault,
+                onSubmit: { Task { await handleWithdraw() } }
+            )
         }
-        .padding(CircleConstants.Design.horizontalPadding)
     }
 
     var footerView: some View {
@@ -268,8 +249,13 @@ struct CircleWithdrawView: View {
             let amountVal = BigInt(cleanAmountUnits) ?? BigInt(0)
 
             let (chain, _) = CircleViewLogic.getChainDetails(vault: vault)
-            guard let recipientCoin = vault.coins.first(where: { $0.chain == chain }) else {
+            guard let recipientCoin = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken }) else {
                 throw NSError(domain: "CircleWithdraw", code: 404, userInfo: [NSLocalizedDescriptionKey: "ETH address not found"])
+            }
+
+            // Use USDC coin for display purposes on success screen
+            guard let usdcCoin = vault.coins.first(where: { $0.chain == chain && $0.ticker == "USDC" }) else {
+                throw NSError(domain: "CircleWithdraw", code: 404, userInfo: [NSLocalizedDescriptionKey: "USDC coin not found"])
             }
 
             func attemptPayload() async throws -> KeysignPayload {
@@ -300,10 +286,8 @@ struct CircleWithdrawView: View {
                 throw error
             }
 
-            let coinToUse = recipientCoin
-
             await MainActor.run {
-                self.sendTransaction.reset(coin: coinToUse)
+                self.sendTransaction.reset(coin: usdcCoin)
                 self.sendTransaction.isFastVault = isFastVault
                 self.sendTransaction.fastVaultPassword = fastVaultPassword
 

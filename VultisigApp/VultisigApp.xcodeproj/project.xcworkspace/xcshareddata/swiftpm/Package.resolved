@@ -33,7 +33,7 @@
       "location" : "https://github.com/vultisig/commondata",
       "state" : {
         "branch" : "main",
-        "revision" : "60524665961c432927253db0a25a8f168eb27ad4"
+        "revision" : "2fd8b5e5bbdadba4426e53ed1f8970e8ce60ee0e"
       }
     },
     {
@@ -50,8 +50,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/rive-app/rive-ios",
       "state" : {
-        "revision" : "d2919b9f21fb0584705c557fbb67b681f0cd847f",
-        "version" : "6.12.3"
+        "revision" : "aee5815cf0e7ed72c9e2087e7d867d806add9d6b",
+        "version" : "6.14.0"
       }
     },
     {
@@ -66,7 +66,7 @@
     {
       "identity" : "swifter",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/httpswift/swifter.git",
+      "location" : "https://github.com/httpswift/swifter",
       "state" : {
         "revision" : "9483a5d459b45c3ffd059f7b55f9638e268632fd",
         "version" : "1.5.0"

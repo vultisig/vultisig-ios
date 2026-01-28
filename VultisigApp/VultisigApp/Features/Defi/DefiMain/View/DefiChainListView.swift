@@ -34,6 +34,8 @@ struct DefiChainListView: View {
                     switch group.chain {
                     case .thorChain, .mayaChain:
                         router.navigate(to: VaultRoute.defiChain(group: group, vault: vault))
+                    case .tron:
+                        router.navigate(to: TronRoute.main(vault: vault))
                     default:
                         break
                     }

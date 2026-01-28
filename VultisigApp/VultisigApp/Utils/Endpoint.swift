@@ -712,7 +712,7 @@ class Endpoint {
         return "https://scan.li.fi/tx/\(txid)"
     }
 
-    static let tronEvmServiceRpc = "https://api.vultisig.com/tron/jsonrpc"
+    static let tronEvmServiceRpc = "https://api.vultisig.com/tron-rpc"
     static let tronWalletApi = "https://api.vultisig.com/tron"
 
     // Cardano endpoints - Using Koios API (free, open source, no API key required)

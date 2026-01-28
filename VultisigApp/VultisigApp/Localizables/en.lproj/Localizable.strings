@@ -834,6 +834,8 @@
 "value" = "Value";
 "vault" = "Vault";
 "vaultAlreadyExists" = "Vault already exists";
+"vaultNotImportedDescription" = "Please import the correct share.";
+"vaultNotImportedTitle" = "Vault is not loaded";
 "vaultCreated" = "Vault created";
 "vaultDetailsDescription" = "View vault name, part and type";
 "vaultDetailsTitle" = "Details";
@@ -1201,6 +1203,46 @@
 "circleEthereumRequiredDescription" = "Please add Ethereum to your vault to use Circle.";
 "circleErrorInvalidDetails" = "Invalid details";
 "circleErrorWalletNotDeployed" = "Circle wallet not yet deployed. Please try again later.";
+
+// TRON Staking (Freeze/Unfreeze)
+"tronTitle" = "TRON Staking";
+"tronDashboardTitle" = "TRON Staking";
+"tronDashboardStaking" = "Staking";
+"tronDashboardStakingDescription" = "Freeze your TRX to gain bandwidth and energy for free transactions.";
+"tronDashboardInfoText" = "Frozen TRX provides bandwidth and energy resources. Unfreezing starts a 14-day waiting period. After 14 days, claim your TRX from the pending withdrawals.";
+"tronFrozenBalance" = "Frozen TRX";
+"tronAvailableBalance" = "Available TRX";
+"tronBandwidth" = "Bandwidth";
+"tronEnergy" = "Energy";
+"tronFreezeButton" = "Freeze";
+"tronUnfreezeButton" = "Unfreeze";
+"tronFreezeTitle" = "TRON Freeze";
+"tronFrozenLabel" = "Frozen";
+"tronFreezeAmount" = "Amount";
+"tronFreezeBalanceAvailable" = "Balance available:";
+"tronFreezeContinue" = "Continue";
+"tronUnfreezeTitle" = "Unfreeze TRX";
+"tronUnfreezeAmount" = "Amount";
+"tronUnfreezeBalanceAvailable" = "Frozen balance:";
+"tronUnfreezeConfirm" = "Continue";
+"tronResourceType" = "Resource Type";
+"tronResourceBandwidth" = "Bandwidth";
+"tronResourceEnergy" = "Energy";
+"tronRowFrozenBalance" = "Frozen Balance";
+"tronRowFrozen" = "Frozen";
+"tronRowAvailable" = "Available";
+"tronRowAddTRX" = "Add TRX";
+"tronRowGetStarted" = "Get Started";
+"tronTrxRequired" = "TRX Required";
+"tronTrxRequiredDescription" = "Please add TRX to your vault to use TRON staking.";
+"tronErrorNoTrxCoin" = "No TRX coin found in vault. Please add TRX first.";
+"tronErrorInvalidBlockInfo" = "Failed to get TRON block info. Please try again.";
+"tronErrorFreezeFailed" = "Freeze failed: %@";
+"tronErrorUnfreezeFailed" = "Unfreeze failed: %@";
+"tronPendingWithdrawals" = "Pending Withdrawals";
+"tronReadyToClaim" = "Ready to claim";
+"tronTimeRemainingDays" = "%d days, %d hours remaining";
+"tronTimeRemainingHours" = "%d hours, %d minutes remaining";
 
 "selectChainsManually" = "Select chains manually";
 "noActiveChainsFound" = "No active chains found";

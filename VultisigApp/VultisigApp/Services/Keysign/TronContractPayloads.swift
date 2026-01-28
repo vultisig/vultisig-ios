@@ -55,3 +55,29 @@ struct TronTransferAssetContractPayload: Codable, Hashable {
         case assetName = "asset_name"
     }
 }
+
+/// Payload for freezing TRX to gain bandwidth/energy (Stake 2.0)
+struct TronFreezeBalanceV2Payload: Codable, Hashable {
+    let ownerAddress: String
+    let frozenBalance: String  // Amount in SUN (1 TRX = 1,000,000 SUN)
+    let resource: String       // "BANDWIDTH" or "ENERGY"
+
+    enum CodingKeys: String, CodingKey {
+        case ownerAddress = "owner_address"
+        case frozenBalance = "frozen_balance"
+        case resource
+    }
+}
+
+/// Payload for unfreezing TRX (Stake 2.0)
+struct TronUnfreezeBalanceV2Payload: Codable, Hashable {
+    let ownerAddress: String
+    let unfreezeBalance: String  // Amount in SUN (1 TRX = 1,000,000 SUN)
+    let resource: String          // "BANDWIDTH" or "ENERGY"
+
+    enum CodingKeys: String, CodingKey {
+        case ownerAddress = "owner_address"
+        case unfreezeBalance = "unfreeze_balance"
+        case resource
+    }
+}

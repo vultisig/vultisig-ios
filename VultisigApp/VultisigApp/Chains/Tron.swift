@@ -64,7 +64,39 @@ enum TronHelper {
                 memo: keysignPayload.memo
             )
         }
+        // FreezeBalanceV2 (Stake 2.0) - detect from memo
+        if let memo = keysignPayload.memo, memo.hasPrefix("FREEZE:") {
+            let resourceString = String(memo.dropFirst("FREEZE:".count))
+            guard resourceString == "BANDWIDTH" || resourceString == "ENERGY" else {
+                throw HelperError.runtimeError("Invalid TRON resource type: \(resourceString)")
+            }
+            return try buildTronFreezeBalanceV2Input(
+                ownerAddress: keysignPayload.coin.address,
+                frozenBalance: keysignPayload.toAmount,
+                resource: resourceString,
+                timestamp: timestamp, expiration: expiration, gasEstimation: gasEstimation,
+                blockHeaderTimestamp: blockHeaderTimestamp, blockHeaderNumber: blockHeaderNumber,
+                blockHeaderVersion: blockHeaderVersion, blockHeaderTxTrieRoot: blockHeaderTxTrieRoot,
+                blockHeaderParentHash: blockHeaderParentHash, blockHeaderWitnessAddress: blockHeaderWitnessAddress
+            )
+        }
 
+        // UnfreezeBalanceV2 (Stake 2.0) - detect from memo
+        if let memo = keysignPayload.memo, memo.hasPrefix("UNFREEZE:") {
+            let resourceString = String(memo.dropFirst("UNFREEZE:".count))
+            guard resourceString == "BANDWIDTH" || resourceString == "ENERGY" else {
+                throw HelperError.runtimeError("Invalid TRON resource type: \(resourceString)")
+            }
+            return try buildTronUnfreezeBalanceV2Input(
+                ownerAddress: keysignPayload.coin.address,
+                unfreezeBalance: keysignPayload.toAmount,
+                resource: resourceString,
+                timestamp: timestamp, expiration: expiration, gasEstimation: gasEstimation,
+                blockHeaderTimestamp: blockHeaderTimestamp, blockHeaderNumber: blockHeaderNumber,
+                blockHeaderVersion: blockHeaderVersion, blockHeaderTxTrieRoot: blockHeaderTxTrieRoot,
+                blockHeaderParentHash: blockHeaderParentHash, blockHeaderWitnessAddress: blockHeaderWitnessAddress
+            )
+        }
         // Fallback: validate toAddress for regular transfers
         guard AnyAddress(string: keysignPayload.toAddress, coin: .tron) != nil else {
             throw HelperError.runtimeError("fail to get to address")
@@ -267,7 +299,81 @@ enum TronHelper {
         }
         return try input.serializedData()
     }
+    // MARK: - FreezeBalanceV2 (Stake 2.0)
 
+    private static func buildTronFreezeBalanceV2Input(
+        ownerAddress: String,
+        frozenBalance: BigInt,
+        resource: String,
+        timestamp: UInt64, expiration: UInt64, gasEstimation: UInt64,
+        blockHeaderTimestamp: UInt64, blockHeaderNumber: UInt64,
+        blockHeaderVersion: UInt64, blockHeaderTxTrieRoot: String,
+        blockHeaderParentHash: String, blockHeaderWitnessAddress: String
+    ) throws -> Data {
+        // Validate frozenBalance is positive and fits in Int64
+        guard let safeFrozenBalance = Int64(exactly: frozenBalance), safeFrozenBalance > 0 else {
+            throw HelperError.runtimeError("Invalid frozen balance: must be strictly positive and fit in Int64")
+        }
+
+        let contract = TronFreezeBalanceV2Contract.with {
+            $0.ownerAddress = ownerAddress
+            $0.frozenBalance = safeFrozenBalance
+            $0.resource = resource
+        }
+
+        let input = try TronSigningInput.with {
+            $0.transaction = try TronTransaction.with {
+                $0.contractOneof = .freezeBalanceV2(contract)
+                $0.timestamp = Int64(timestamp)
+                $0.expiration = Int64(expiration)
+                $0.feeLimit = Int64(gasEstimation)
+                $0.blockHeader = try buildBlockHeader(
+                    timestamp: blockHeaderTimestamp, number: blockHeaderNumber,
+                    version: blockHeaderVersion, txTrieRoot: blockHeaderTxTrieRoot,
+                    parentHash: blockHeaderParentHash, witnessAddress: blockHeaderWitnessAddress
+                )
+            }
+        }
+        return try input.serializedData()
+    }
+
+    // MARK: - UnfreezeBalanceV2 (Stake 2.0)
+
+    private static func buildTronUnfreezeBalanceV2Input(
+        ownerAddress: String,
+        unfreezeBalance: BigInt,
+        resource: String,
+        timestamp: UInt64, expiration: UInt64, gasEstimation: UInt64,
+        blockHeaderTimestamp: UInt64, blockHeaderNumber: UInt64,
+        blockHeaderVersion: UInt64, blockHeaderTxTrieRoot: String,
+        blockHeaderParentHash: String, blockHeaderWitnessAddress: String
+    ) throws -> Data {
+        // Validate unfreezeBalance is positive
+        guard let safeUnfreezeBalance = Int64(exactly: unfreezeBalance), safeUnfreezeBalance > 0 else {
+            throw HelperError.runtimeError("Invalid unfreeze balance: must be strictly positive and fit in Int64")
+        }
+
+        let contract = TronUnfreezeBalanceV2Contract.with {
+            $0.ownerAddress = ownerAddress
+            $0.unfreezeBalance = safeUnfreezeBalance
+            $0.resource = resource
+        }
+
+        let input = try TronSigningInput.with {
+            $0.transaction = try TronTransaction.with {
+                $0.contractOneof = .unfreezeBalanceV2(contract)
+                $0.timestamp = Int64(timestamp)
+                $0.expiration = Int64(expiration)
+                $0.feeLimit = Int64(gasEstimation)
+                $0.blockHeader = try buildBlockHeader(
+                    timestamp: blockHeaderTimestamp, number: blockHeaderNumber,
+                    version: blockHeaderVersion, txTrieRoot: blockHeaderTxTrieRoot,
+                    parentHash: blockHeaderParentHash, witnessAddress: blockHeaderWitnessAddress
+                )
+            }
+        }
+        return try input.serializedData()
+    }
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(
             keysignPayload: keysignPayload

@@ -133,6 +133,17 @@ enum SolanaHelper {
     }
 
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
+        // Handle SignSolana (raw transactions)
+        if let signSolana = keysignPayload.signSolana {
+            var allHashes: [String] = []
+            for base64Tx in signSolana.rawTransactions {
+                let hashes = try getPreSignedImageHashForRaw(base64Transaction: base64Tx)
+                allHashes.append(contentsOf: hashes)
+            }
+            return allHashes
+        }
+
+        // Regular Solana transaction flow
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let imageHash = try SolanaHelper.getPreSignedImageHash(inputData: inputData)
         return imageHash
@@ -150,6 +161,24 @@ enum SolanaHelper {
 
     static func getSignedTransaction(keysignPayload: KeysignPayload,
                                      signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
+        // Handle SignSolana (raw transactions)
+        if let signSolana = keysignPayload.signSolana {
+            let hexPubKey = keysignPayload.coin.hexPublicKey
+
+            // For multiple transactions, return the first one
+            // TODO: Handle multiple transactions properly if needed
+            guard let firstTx = signSolana.rawTransactions.first else {
+                throw HelperError.runtimeError("No transactions to sign")
+            }
+
+            return try signRawTransaction(
+                coinHexPubKey: hexPubKey,
+                base64Transaction: firstTx,
+                signatures: signatures
+            )
+        }
+
+        // Regular transaction flow
         let coinHexPublicKey = keysignPayload.coin.hexPublicKey
         guard let pubkeyData = Data(hexString: coinHexPublicKey) else {
             throw HelperError.runtimeError("public key \(coinHexPublicKey) is invalid")
@@ -203,6 +232,117 @@ enum SolanaHelper {
                                              transactionHash: getHashFromRawTransaction(tx: output.encoded))
 
         return result
+    }
+
+    // MARK: - Raw Transaction Signing
+
+    static func getPreSignedImageHashForRaw(base64Transaction: String) throws -> [String] {
+        guard let txData = Data(base64Encoded: base64Transaction) else {
+            throw HelperError.runtimeError("Invalid base64 transaction")
+        }
+
+        // Decode the transaction using TransactionDecoder
+        let decodedData = TransactionDecoder.decode(coinType: .solana, encodedTx: txData)
+        let decodedOutput = try SolanaDecodingTransactionOutput(serializedBytes: decodedData)
+
+        if decodedOutput.errorMessage.isNotEmpty {
+            throw HelperError.runtimeError(decodedOutput.errorMessage)
+        }
+
+        guard decodedOutput.hasTransaction else {
+            throw SolanaParsingError.invalidTransactionFormat
+        }
+
+        // Wrap in SolanaSigningInput with rawMessage
+        let input = SolanaSigningInput.with {
+            $0.rawMessage = decodedOutput.transaction
+        }
+
+        let inputData = try input.serializedData()
+
+        // Get pre-image hashes
+        let hashes = TransactionCompiler.preImageHashes(coinType: .solana, txInputData: inputData)
+        let preSigningOutput = try SolanaPreSigningOutput(serializedBytes: hashes)
+
+        if !preSigningOutput.errorMessage.isEmpty {
+            throw HelperError.runtimeError(preSigningOutput.errorMessage)
+        }
+
+        return [preSigningOutput.data.hexString]
+    }
+
+    static func signRawTransaction(
+        coinHexPubKey: String,
+        base64Transaction: String,
+        signatures: [String: TssKeysignResponse]
+    ) throws -> SignedTransactionResult {
+        // 1. Validate inputs
+        guard let pubkeyData = Data(hexString: coinHexPubKey) else {
+            throw HelperError.runtimeError("Invalid public key: \(coinHexPubKey)")
+        }
+        guard let publicKey = PublicKey(data: pubkeyData, type: .ed25519) else {
+            throw HelperError.runtimeError("Invalid public key format")
+        }
+        guard let txData = Data(base64Encoded: base64Transaction) else {
+            throw HelperError.runtimeError("Invalid base64 transaction")
+        }
+
+        // 2. Decode the transaction using TransactionDecoder
+        let decodedData = TransactionDecoder.decode(coinType: .solana, encodedTx: txData)
+        let decodedOutput = try SolanaDecodingTransactionOutput(serializedBytes: decodedData)
+
+        if decodedOutput.errorMessage.isNotEmpty {
+            throw HelperError.runtimeError(decodedOutput.errorMessage)
+        }
+
+        guard decodedOutput.hasTransaction else {
+            throw SolanaParsingError.invalidTransactionFormat
+        }
+
+        // 3. Wrap in SolanaSigningInput with rawMessage
+        let input = SolanaSigningInput.with {
+            $0.rawMessage = decodedOutput.transaction
+        }
+
+        let inputData = try input.serializedData()
+
+        // 4. Get pre-image hash
+        let hashes = TransactionCompiler.preImageHashes(coinType: .solana, txInputData: inputData)
+        let preSigningOutput = try SolanaPreSigningOutput(serializedBytes: hashes)
+
+        if !preSigningOutput.errorMessage.isEmpty {
+            throw HelperError.runtimeError(preSigningOutput.errorMessage)
+        }
+
+        // 5. Get signature from MPC results
+        let signatureProvider = SignatureProvider(signatures: signatures)
+        let signature = signatureProvider.getSignature(preHash: preSigningOutput.data)
+
+        // 6. Verify signature
+        guard publicKey.verify(signature: signature, message: preSigningOutput.data) else {
+            throw HelperError.runtimeError("Signature verification failed")
+        }
+
+        // 7. Compile with TransactionCompiler.compileWithSignatures
+        let allSignatures = DataVector()
+        let publicKeys = DataVector()
+        allSignatures.add(data: signature)
+        publicKeys.add(data: pubkeyData)
+
+        let compiled = TransactionCompiler.compileWithSignatures(
+            coinType: .solana,
+            txInputData: inputData,
+            signatures: allSignatures,
+            publicKeys: publicKeys
+        )
+
+        // 8. Return SignedTransactionResult
+        let output = try SolanaSigningOutput(serializedBytes: compiled)
+
+        return SignedTransactionResult(
+            rawTransaction: output.encoded,
+            transactionHash: getHashFromRawTransaction(tx: output.encoded)
+        )
     }
 
     static func getHashFromRawTransaction(tx: String) -> String {
