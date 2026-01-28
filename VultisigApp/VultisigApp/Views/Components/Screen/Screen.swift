@@ -77,12 +77,15 @@ struct Screen<Content: View>: View {
             Theme.colors.bgPrimary
         case .gradient:
             VaultMainScreenBackground()
+        case .clear:
+            Color.clear
         }
     }
 
     enum BackgroundType {
         case plain
         case gradient
+        case clear
     }
 }
 

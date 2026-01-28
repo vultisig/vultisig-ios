@@ -47,7 +47,7 @@ struct CommonTextEditor: View {
                         .scrollContentBackground(.hidden)
                         .foregroundColor(Theme.colors.textPrimary)
                         .font(Theme.fonts.bodyMMedium)
-                        .submitLabel(.done)
+                        .submitLabel(.continue)
                         .autocorrectionDisabled()
                         .focused(isFocused)
                         .onSubmit {
