@@ -27,7 +27,7 @@ struct KeyImportChainsSetupScreen: View {
                 case .activeChains:
                     KeyImportActiveChainsView(
                         activeChains: viewModel.activeChains,
-                        onImport: { presentVaultSetup() },
+                        onImport: { presentVaultSetup(customized: false) },
                         onCustomize: onCustomizeChains,
                         viewModel: viewModel
                     )
@@ -36,7 +36,7 @@ struct KeyImportChainsSetupScreen: View {
                 case .customizeChains:
                     KeyImportCustomizeChainsView(
                         viewModel: viewModel,
-                        onImport: { presentVaultSetup() }
+                        onImport: { presentVaultSetup(customized: true) }
                     )
                 }
             }
@@ -44,28 +44,26 @@ struct KeyImportChainsSetupScreen: View {
         }
         .animation(.interpolatingSpring, value: viewModel.state)
         .onLoad(perform: { viewModel.onLoad(mnemonic: mnemonic) })
+        .withLoading(isLoading: $viewModel.isLoading)
     }
 
     func onCustomizeChains() {
         viewModel.state = .customizeChains
     }
 
-    func presentVaultSetup() {
-        // Build chain settings with derivations
-        let chainSettings = viewModel.chainsToImport.map { chain -> ChainImportSetting in
-            let derivationPath = viewModel.derivationPath(for: chain)
-            // Only store non-default derivations
-            if derivationPath != .default {
-                return ChainImportSetting(chain: chain, derivationPath: derivationPath)
-            }
-            return ChainImportSetting(chain: chain)
-        }
+    func presentVaultSetup(customized: Bool) {
+        Task {
+            // Prepare chain settings with derivation paths
+            let chainSettings = await viewModel.prepareChainSettings(customized: customized)
 
-        // Navigate to device count selection screen
-        router.navigate(to: OnboardingRoute.keyImportDeviceCount(
-            mnemonic: mnemonic,
-            chainSettings: chainSettings
-        ))
+            // Navigate to device count selection screen
+            await MainActor.run {
+                router.navigate(to: OnboardingRoute.keyImportDeviceCount(
+                    mnemonic: mnemonic,
+                    chainSettings: chainSettings
+                ))
+            }
+        }
     }
 }
 
