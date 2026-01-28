@@ -25,18 +25,19 @@ struct KeyImportNewVaultSetupScreen: View {
     var body: some View {
         Screen(edgeInsets: .init(leading: 24, trailing: 24)) {
             VStack(alignment: .leading, spacing: 14) {
-                VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 20) {
                     Text("yourVaultSetup".localized)
                         .foregroundStyle(Theme.colors.textPrimary)
                         .font(Theme.fonts.title2)
                     vaultTypeBadge
-                }.frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 16)
                 Spacer()
                 animation
                 Spacer()
-                VStack(spacing: 0) {
+                VStack(spacing: 32) {
                     informationView
-                    Spacer().frame(maxHeight: 32)
                     PrimaryButton(title: "next") {
                         router.navigate(to: KeygenRoute.peerDiscovery(
                             tssType: .KeyImport,

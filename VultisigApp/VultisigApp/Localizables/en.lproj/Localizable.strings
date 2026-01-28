@@ -651,8 +651,6 @@
 "secureVaultSummaryText2" = "Backup each vault share separately";
 "secureVaultSummaryText3" = "Keep vault shares in different locations";
 "secureVaultSummaryText4" = "Access to all vault shares ensures maximum security for your funds";
-"keyImportVaultSummaryText1" = "Your vault has 3 Vault Shares: 2 of your devices and 1 server";
-"keyImportVaultSummaryText5" = "The password set before grants access to the Server backup";
 "security" = "Security";
 "securityScannerContinueAnyway" = "Continue anyway";
 "securityScannerContinueGoBack" = "Go Back";
@@ -1135,8 +1133,8 @@
 "youAreEnteringAnewEraHighlight" = "leaving old seed phrases behind.";
 "yourSeedphrase" = "Your seedphrase";
 "yourSeedphraseSubtitle" = "Enter it, create a vault, never look back";
-"twoDevices" = "2 devices";
-"twoDevicesSubtitle" = "Any device that can run Vultisig will work.";
+"atLeastOneDevice" = "At least one device";
+"atLeastOneDeviceSubtitle" = "Any device that can run Vultisig will work.";
 "mnemonicPlaceholder" = "Enter the 12 or 24 words of your seedphrase";
 "enterYourSeedphrase" = "Enter your seedphrase";
 "enterYourSeedphraseSubtitle" = "Leave a space between each word. Seed phrases of 12 or 24 words are supported.";

@@ -167,7 +167,7 @@ struct OnboardingSummaryView: View {
     }
     .crossPlatformSheet(isPresented: $isPresented) {
         OnboardingSummaryView(
-            kind: .secure,
+            kind: .keyImport,
             isPresented: .constant(true),
             onDismiss: {}
         ).environmentObject(HomeViewModel())

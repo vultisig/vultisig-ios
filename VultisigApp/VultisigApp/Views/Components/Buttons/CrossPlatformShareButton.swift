@@ -11,25 +11,28 @@ public struct CrossPlatformShareButton<Content: View>: View {
     private let image: Image
     private let caption: String
     private let scale: CGFloat
+    private let onComplete: (() -> Void)?
     private let content: (@escaping () -> Void) -> Content
 
     public init(
         image: Image,
         caption: String,
         scale: CGFloat = 2,
+        onComplete: (() -> Void)? = nil,
         @ViewBuilder content: @escaping (@escaping () -> Void) -> Content
     ) {
         self.image = image
         self.caption = caption
         self.scale = scale
+        self.onComplete = onComplete
         self.content = content
     }
 
     public var body: some View {
         #if os(iOS)
-        IOSShareButton(image: image, caption: caption, scale: scale, content: content)
+        IOSShareButton(image: image, caption: caption, scale: scale, onComplete: onComplete, content: content)
         #elseif os(macOS)
-        MacShareButton(image: image, caption: caption, scale: scale, content: content)
+        MacShareButton(image: image, caption: caption, scale: scale, onComplete: onComplete, content: content)
         #endif
     }
 }
@@ -62,6 +65,7 @@ private struct IOSShareButton<Content: View>: View {
     let image: Image
     let caption: String
     let scale: CGFloat
+    let onComplete: (() -> Void)?
     let content: (@escaping () -> Void) -> Content
 
     @State private var cachedImage: UIImage?
@@ -77,7 +81,7 @@ private struct IOSShareButton<Content: View>: View {
                 }
             }
             .sheet(item: $payload) { payload in
-                ActivityViewController(items: payload.items)
+                ActivityViewController(items: payload.items, onComplete: onComplete)
                     .ignoresSafeArea()
             }
     }
@@ -98,6 +102,8 @@ private struct IOSShareButton<Content: View>: View {
 
 private struct ActivityViewController: UIViewControllerRepresentable {
     let items: [Any]
+    let onComplete: (() -> Void)?
+
     // swiftlint:disable:next unused_parameter
     func makeUIViewController(context: Context) -> UIActivityViewController {
         let vc = UIActivityViewController(activityItems: items, applicationActivities: nil)
@@ -105,6 +111,12 @@ private struct ActivityViewController: UIViewControllerRepresentable {
            let window = windowScene.windows.first {
             vc.popoverPresentationController?.sourceView = window.rootViewController?.view
         }
+
+        // Set completion handler
+        vc.completionWithItemsHandler = { _, _, _, _ in
+            onComplete?()
+        }
+
         return vc
     }
     // swiftlint:disable:next unused_parameter
@@ -119,6 +131,7 @@ private struct MacShareButton<Content: View>: View {
     let image: Image
     let caption: String
     let scale: CGFloat
+    let onComplete: (() -> Void)?
     let content: (@escaping () -> Void) -> Content
 
     @State private var cachedImage: NSImage?
@@ -147,7 +160,8 @@ private struct MacShareButton<Content: View>: View {
                 SharePickerView(
                     items: shareItems,
                     isPresented: $showSharePicker,
-                    sourceRect: buttonFrame
+                    sourceRect: buttonFrame,
+                    onComplete: onComplete
                 )
             )
     }
@@ -173,10 +187,12 @@ private struct SharePickerView: NSViewRepresentable {
     let items: [Any]
     @Binding var isPresented: Bool
     let sourceRect: CGRect
+    let onComplete: (() -> Void)?
 
     func makeNSView(context: Context) -> NSView {
         let view = NSView()
         context.coordinator.parentView = view
+        context.coordinator.onComplete = onComplete
         return view
     }
     // swiftlint:disable:next unused_parameter
@@ -193,20 +209,28 @@ private struct SharePickerView: NSViewRepresentable {
         Coordinator()
     }
 
-    class Coordinator: NSObject {
+    class Coordinator: NSObject, NSSharingServicePickerDelegate {
         weak var parentView: NSView?
+        var onComplete: (() -> Void)?
 
         func showSharePicker(items: [Any], sourceRect: CGRect) {
             guard let parentView = parentView,
                   let window = parentView.window else { return }
 
             let picker = NSSharingServicePicker(items: items)
+            picker.delegate = self
 
             // Convert the global frame to the window's coordinate system
             let windowRect = window.convertFromScreen(sourceRect)
             let viewRect = parentView.convert(windowRect, from: nil)
 
             picker.show(relativeTo: viewRect, of: parentView, preferredEdge: .minY)
+        }
+
+        // NSSharingServicePickerDelegate method - called when picker is dismissed
+        func sharingServicePicker(_ sharingServicePicker: NSSharingServicePicker, didChoose service: NSSharingService?) {
+            // Call onComplete regardless of whether a service was chosen or cancelled
+            onComplete?()
         }
     }
 }

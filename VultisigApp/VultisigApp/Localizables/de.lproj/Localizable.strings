@@ -645,8 +645,6 @@
 "secureVaultSummaryText2" = "Sicherstellen Sie jede Tresorfreigabe separat";
 "secureVaultSummaryText3" = "Halten Sie Vault Shares an verschiedenen Orten";
 "secureVaultSummaryText4" = "Alle Vault -Freigaben gewährleisten sicheren Zugriff auf Ihre Mittel";
-"keyImportVaultSummaryText1" = "Ihr Tresor hat 3 Tresor-Anteile: 2 Ihrer Geräte und 1 Server";
-"keyImportVaultSummaryText5" = "Das zuvor festgelegte Passwort gewährt Zugriff auf das Server-Backup";
 "security" = "Sicherheit";
 "securityScannerContinueAnyway" = "Trotzdem weitermachen";
 "securityScannerContinueGoBack" = "Geh zurück";
@@ -1099,8 +1097,8 @@
 "youAreEnteringAnewEraHighlight" = "alte Seed-Phrasen hinter sich lassen.";
 "yourSeedphrase" = "Ihre Seed-Phrase";
 "yourSeedphraseSubtitle" = "Geben Sie sie ein, erstellen Sie einen Tresor, schauen Sie nie zurück";
-"twoDevices" = "2 Geräte";
-"twoDevicesSubtitle" = "Jedes Gerät, auf dem Vultisig ausgeführt werden kann, funktioniert.";
+"atLeastOneDevice" = "Mindestens ein Gerät";
+"atLeastOneDeviceSubtitle" = "Jedes Gerät, auf dem Vultisig ausgeführt werden kann, funktioniert.";
 "mnemonicPlaceholder" = "Geben Sie die 12 oder 24 Wörter Ihrer Seed-Phrase ein";
 "enterYourSeedphrase" = "Geben Sie Ihre Seed-Phrase ein";
 "enterYourSeedphraseSubtitle" = "Lassen Sie ein Leerzeichen zwischen jedem Wort. Seed-Phrasen mit 12 oder 24 Wörtern werden unterstützt.";
@@ -1203,6 +1201,7 @@
 
 "scanningForChainsSubtitle" = "Wir prüfen, welche Blockchains aktive Adressen haben, die mit Ihrer Seed-Phrase verknüpft sind. Dieser Vorgang kann bis zu 2 Minuten dauern.";
 "scanningForChainsSubtitleHighlight" = "Dieser Vorgang kann bis zu 2 Minuten dauern.";
+"importTheseChains" = "Diese Chains importieren";
 "selectChainsManually" = "Chains manuell auswählen";
 "noActiveChainsFound" = "Keine aktiven Chains gefunden";
 "noActiveChainsFoundSubtitle" = "Wir haben keine Assets auf dieser Seed-Phrase erkannt.\n\nJede zusätzliche Chain erhöht die Zeit zur Generierung deines Vaults und die Wahrscheinlichkeit eines Timeouts.";
