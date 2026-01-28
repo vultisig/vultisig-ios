@@ -87,11 +87,11 @@ struct CircleDashboardView: View {
     var headerDescription: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(NSLocalizedString("circleDashboardDeposited", comment: "Deposited"))
-                .font(.headline)
+                .font(Theme.fonts.bodyLMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
 
             Text(NSLocalizedString("circleDashboardDepositDescription", comment: "Deposit your $USDC..."))
-                .font(.body)
+                .font(Theme.fonts.bodyMRegular)
                 .foregroundStyle(Theme.colors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }

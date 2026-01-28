@@ -145,6 +145,9 @@ struct CircleDepositView: View {
     }
 
     func loadData() async {
+        await MainActor.run { isLoading = true }
+        defer { Task { @MainActor in isLoading = false } }
+
         let (chain, _) = CircleViewLogic.getChainDetails(vault: vault)
 
         if let coin = vault.coins.first(where: { $0.chain == chain && $0.ticker == "USDC" }) {

@@ -249,8 +249,13 @@ struct CircleWithdrawView: View {
             let amountVal = BigInt(cleanAmountUnits) ?? BigInt(0)
 
             let (chain, _) = CircleViewLogic.getChainDetails(vault: vault)
-            guard let recipientCoin = vault.coins.first(where: { $0.chain == chain }) else {
+            guard let recipientCoin = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken }) else {
                 throw NSError(domain: "CircleWithdraw", code: 404, userInfo: [NSLocalizedDescriptionKey: "ETH address not found"])
+            }
+
+            // Use USDC coin for display purposes on success screen
+            guard let usdcCoin = vault.coins.first(where: { $0.chain == chain && $0.ticker == "USDC" }) else {
+                throw NSError(domain: "CircleWithdraw", code: 404, userInfo: [NSLocalizedDescriptionKey: "USDC coin not found"])
             }
 
             func attemptPayload() async throws -> KeysignPayload {
@@ -281,10 +286,8 @@ struct CircleWithdrawView: View {
                 throw error
             }
 
-            let coinToUse = recipientCoin
-
             await MainActor.run {
-                self.sendTransaction.reset(coin: coinToUse)
+                self.sendTransaction.reset(coin: usdcCoin)
                 self.sendTransaction.isFastVault = isFastVault
                 self.sendTransaction.fastVaultPassword = fastVaultPassword
 
