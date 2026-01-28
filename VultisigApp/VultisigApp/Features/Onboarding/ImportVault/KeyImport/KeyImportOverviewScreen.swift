@@ -28,7 +28,7 @@ struct KeyImportOverviewScreen: View {
     }
 
     var body: some View {
-        Screen(edgeInsets: .init(leading: 24, trailing: 24)) {
+        Screen(showNavigationBar: false, edgeInsets: .init(leading: 24, trailing: 24)) {
             VStack(alignment: .leading, spacing: 0) {
                 Spacer()
                 animation
@@ -70,6 +70,8 @@ struct KeyImportOverviewScreen: View {
                 isVerificationLinkActive = true
             }
         }
+        .crossPlatformToolbar(.empty, showsBackButton: false)
+        .navigationBarBackButtonHidden(true)
     }
 
     var animation: some View {
