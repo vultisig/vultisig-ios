@@ -23,6 +23,7 @@ struct EditAddressBookScreen: View {
     @State var presentSelector = false
 
     @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) var modelContext
 
     var body: some View {
         Screen(title: "editAddress".localized) {
