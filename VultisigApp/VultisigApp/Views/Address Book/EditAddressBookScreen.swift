@@ -112,6 +112,7 @@ struct EditAddressBookScreen: View {
         addressBookItem.title = title
         addressBookItem.address = address
         addressBookItem.coinMeta = coin
+        try? modelContext.save()
 
         dismiss()
     }
