@@ -16,6 +16,7 @@ struct KeyImportChainsSetupScreen: View {
     var body: some View {
         Screen(
             title: viewModel.screenTitle,
+            showNavigationBar: false,
             backgroundType: viewModel.state == .activeChains ? .gradient : .plain
         ) {
             Group {
@@ -45,6 +46,7 @@ struct KeyImportChainsSetupScreen: View {
         .animation(.interpolatingSpring, value: viewModel.state)
         .onLoad(perform: { viewModel.onLoad(mnemonic: mnemonic) })
         .withLoading(isLoading: $viewModel.isLoading)
+        .crossPlatformToolbar(viewModel.screenTitle, ignoresTopEdge: viewModel.state == .activeChains)
     }
 
     func onCustomizeChains() {
