@@ -24,7 +24,7 @@ struct ImportVaultShareScreen: View {
         }
         .fileImporter(
             isPresented: $backupViewModel.showVaultImporter,
-            allowedContentTypes: [.data],
+            allowedContentTypes: [.vaultBackup, .vaultFile],
             allowsMultipleSelection: false
         ) { result in
             backupViewModel.handleFileImporter(result)
