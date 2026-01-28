@@ -15,7 +15,7 @@ struct PolkadotTransactionStatusResponse: Codable {
 
     struct PolkadotExtrinsicData: Codable {
         let extrinsic_hash: String?
-        let success: Bool  // true = successful, false = failed
+        let success: Bool  // true = successful, false = failed (only meaningful when pending = false)
         let block_num: Int?  // Block number
         let block_timestamp: Int?  // Unix timestamp
         let call_module: String?  // e.g., "balances"
@@ -24,10 +24,8 @@ struct PolkadotTransactionStatusResponse: Codable {
         let signature: String?
         let nonce: Int?
         let finalized: Bool?  // Whether the transaction is finalized
+        let pending: Bool?  // IMPORTANT: true = still being processed, false = completed
         let error: PolkadotExtrinsicError?  // Present when success = false
-
-        // Additional fields that might be in response
-        let extrinsic_index: String?
         let fee: String?
     }
 

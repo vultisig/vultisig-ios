@@ -19,10 +19,10 @@ struct TronTransactionStatusProvider: TransactionStatusProvider {
         self.httpClient = httpClient
     }
 
-    func checkStatus(txHash: String, chain: Chain) async throws -> TransactionStatusResult {
+    func checkStatus(query: TransactionStatusQuery) async throws -> TransactionStatusResult {
         do {
             let response = try await httpClient.request(
-                TronTransactionStatusAPI.getTransactionInfo(txHash: txHash),
+                TronTransactionStatusAPI.getTransactionInfo(txHash: query.txHash),
                 responseType: TronTransactionStatusResponse.self
             )
 

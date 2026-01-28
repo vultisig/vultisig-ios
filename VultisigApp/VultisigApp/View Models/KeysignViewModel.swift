@@ -599,6 +599,7 @@ class KeysignViewModel: ObservableObject {
                 case .sui:
                     self.txid = try await SuiService.shared.executeTransactionBlock(unsignedTransaction: tx.rawTransaction, signature: tx.signature ?? .empty)
                 case .polkadot:
+                    // Fast broadcast - extrinsic index will be discovered lazily during status checks
                     self.txid = try await PolkadotService.shared.broadcastTransaction(hex: tx.rawTransaction)
 
                 case .ton:

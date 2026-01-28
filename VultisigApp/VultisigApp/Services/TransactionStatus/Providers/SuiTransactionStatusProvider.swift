@@ -14,10 +14,10 @@ struct SuiTransactionStatusProvider: TransactionStatusProvider {
         self.httpClient = httpClient
     }
 
-    func checkStatus(txHash: String, chain: Chain) async throws -> TransactionStatusResult {
+    func checkStatus(query: TransactionStatusQuery) async throws -> TransactionStatusResult {
         do {
             let response = try await httpClient.request(
-                SuiTransactionStatusAPI.getTransactionBlock(txHash: txHash),
+                SuiTransactionStatusAPI.getTransactionBlock(txHash: query.txHash),
                 responseType: SuiTransactionStatusResponse.self
             )
 

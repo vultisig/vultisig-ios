@@ -26,8 +26,9 @@ class TransactionStatusService {
 
     /// Check transaction status for any chain
     func checkTransactionStatus(txHash: String, chain: Chain) async throws -> TransactionStatusResult {
+        let query = TransactionStatusQuery(txHash: txHash, chain: chain)
         let provider = getProvider(for: chain)
-        return try await provider.checkStatus(txHash: txHash, chain: chain)
+        return try await provider.checkStatus(query: query)
     }
 
     private func getProvider(for chain: Chain) -> TransactionStatusProvider {

@@ -8,11 +8,10 @@
 import Foundation
 
 /// Polkadot Transaction Status API
-/// - Uses Subscan API format
-/// - Currently: https://polkadot.api.subscan.io/api/scan/extrinsic (public API)
-/// - TODO: Switch to Vultisig proxy once ready: https://api.vultisig.com/dot/api/scan/extrinsic
+/// - Uses Subscan API format for AssetHub Polkadot
+/// - Endpoint: https://assethub-polkadot.api.subscan.io/api/scan/extrinsic
 enum PolkadotTransactionStatusAPI: TargetType {
-    case getExtrinsic(extrinsicHash: String)
+    case getExtrinsicByHash(extrinsicHash: String)
 
     var baseURL: URL {
         URL(string: Endpoint.polkadotTransactionStatusRpc)!
@@ -28,8 +27,7 @@ enum PolkadotTransactionStatusAPI: TargetType {
 
     var task: HTTPTask {
         switch self {
-        case .getExtrinsic(let extrinsicHash):
-            // Subscan API format: query by extrinsic hash
+        case .getExtrinsicByHash(let extrinsicHash):
             let body: [String: Any] = [
                 "hash": extrinsicHash
             ]

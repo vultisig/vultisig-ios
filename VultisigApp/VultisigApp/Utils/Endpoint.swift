@@ -430,9 +430,10 @@ class Endpoint {
     // Polkadot RPC endpoint for JSON-RPC calls
     static let polkadotServiceRpc = "https://api.vultisig.com/dot/"
 
-    // Polkadot transaction status endpoint - using public Subscan API temporarily
+    // Polkadot transaction status endpoint - AssetHub Polkadot (where DOT/USDT/USDC transactions happen)
+    // Using public Subscan API temporarily
     // TODO: Switch to Vultisig proxy once ready: "https://api.vultisig.com/dot/"
-    static let polkadotTransactionStatusRpc = "https://polkadot.api.subscan.io"
+    static let polkadotTransactionStatusRpc = "https://assethub-polkadot.api.subscan.io"
 
     static let polkadotServiceBalance = "https://assethub-polkadot.api.subscan.io/api/v2/scan/search"
 

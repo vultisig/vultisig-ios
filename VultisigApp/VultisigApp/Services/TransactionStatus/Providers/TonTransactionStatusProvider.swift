@@ -19,10 +19,10 @@ struct TonTransactionStatusProvider: TransactionStatusProvider {
         self.httpClient = httpClient
     }
 
-    func checkStatus(txHash: String, chain: Chain) async throws -> TransactionStatusResult {
+    func checkStatus(query: TransactionStatusQuery) async throws -> TransactionStatusResult {
         do {
             let response = try await httpClient.request(
-                TonTransactionStatusAPI.getTransactionsByMessage(msgHash: txHash),
+                TonTransactionStatusAPI.getTransactionsByMessage(msgHash: query.txHash),
                 responseType: TonTransactionStatusResponse.self
             )
 

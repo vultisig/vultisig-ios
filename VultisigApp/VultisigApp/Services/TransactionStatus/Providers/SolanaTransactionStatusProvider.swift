@@ -14,9 +14,9 @@ struct SolanaTransactionStatusProvider: TransactionStatusProvider {
         self.httpClient = httpClient
     }
 
-    func checkStatus(txHash: String, chain _: Chain) async throws -> TransactionStatusResult {
+    func checkStatus(query: TransactionStatusQuery) async throws -> TransactionStatusResult {
         let response = try await httpClient.request(
-            SolanaTransactionStatusAPI.getSignatureStatuses(txHash: txHash),
+            SolanaTransactionStatusAPI.getSignatureStatuses(txHash: query.txHash),
             responseType: SolanaTransactionStatusResponse.self
         )
 

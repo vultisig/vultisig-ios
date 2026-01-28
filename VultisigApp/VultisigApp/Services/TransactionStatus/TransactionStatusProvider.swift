@@ -7,7 +7,18 @@
 
 import Foundation
 
+/// Query parameters for checking transaction status
+struct TransactionStatusQuery {
+    let txHash: String
+    let chain: Chain
+
+    init(txHash: String, chain: Chain) {
+        self.txHash = txHash
+        self.chain = chain
+    }
+}
+
 protocol TransactionStatusProvider {
     /// Check if transaction is confirmed on chain
-    func checkStatus(txHash: String, chain: Chain) async throws -> TransactionStatusResult
+    func checkStatus(query: TransactionStatusQuery) async throws -> TransactionStatusResult
 }

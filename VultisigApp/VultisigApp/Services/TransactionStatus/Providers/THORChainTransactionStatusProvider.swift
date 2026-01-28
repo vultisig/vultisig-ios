@@ -27,10 +27,10 @@ struct THORChainTransactionStatusProvider: TransactionStatusProvider {
         self.httpClient = httpClient
     }
 
-    func checkStatus(txHash: String, chain: Chain) async throws -> TransactionStatusResult {
+    func checkStatus(query: TransactionStatusQuery) async throws -> TransactionStatusResult {
         do {
             let response = try await httpClient.request(
-                THORChainTransactionStatusAPI.getActions(txHash: txHash, chain: chain),
+                THORChainTransactionStatusAPI.getActions(txHash: query.txHash, chain: query.chain),
                 responseType: THORChainActionsResponse.self
             )
 

@@ -10,14 +10,14 @@ import BigInt
 
 struct EVMTransactionStatusProvider: TransactionStatusProvider {
 
-    func checkStatus(txHash: String, chain: Chain) async throws -> TransactionStatusResult {
-        let config = try EvmServiceConfig.getConfig(forChain: chain)
+    func checkStatus(query: TransactionStatusQuery) async throws -> TransactionStatusResult {
+        let config = try EvmServiceConfig.getConfig(forChain: query.chain)
         let service = RpcEvmService(config.rpcEndpoint)
 
         // Call eth_getTransactionReceipt
         let receipt = try await service.sendRPCRequest(
             method: "eth_getTransactionReceipt",
-            params: [txHash]
+            params: [query.txHash]
         ) { result in
             return result as? [String: Any]
         }

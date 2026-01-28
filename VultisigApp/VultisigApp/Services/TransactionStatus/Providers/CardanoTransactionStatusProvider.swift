@@ -20,10 +20,10 @@ struct CardanoTransactionStatusProvider: TransactionStatusProvider {
         self.httpClient = httpClient
     }
 
-    func checkStatus(txHash: String, chain: Chain) async throws -> TransactionStatusResult {
+    func checkStatus(query: TransactionStatusQuery) async throws -> TransactionStatusResult {
         do {
             let response = try await httpClient.request(
-                CardanoTransactionStatusAPI.getTxStatus(txHash: txHash),
+                CardanoTransactionStatusAPI.getTxStatus(txHash: query.txHash),
                 responseType: CardanoTransactionStatusResponse.self
             )
 

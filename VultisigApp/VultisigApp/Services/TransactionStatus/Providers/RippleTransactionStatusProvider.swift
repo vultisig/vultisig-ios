@@ -18,10 +18,10 @@ struct RippleTransactionStatusProvider: TransactionStatusProvider {
         self.httpClient = httpClient
     }
 
-    func checkStatus(txHash: String, chain: Chain) async throws -> TransactionStatusResult {
+    func checkStatus(query: TransactionStatusQuery) async throws -> TransactionStatusResult {
         do {
             let response = try await httpClient.request(
-                RippleTransactionStatusAPI.getTx(txHash: txHash),
+                RippleTransactionStatusAPI.getTx(txHash: query.txHash),
                 responseType: RippleTransactionStatusResponse.self
             )
 
