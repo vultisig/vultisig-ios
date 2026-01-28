@@ -20,7 +20,7 @@ struct BackupGuideAnimationView: View {
         ScrollView(showsIndicators: false) {
             StepsAnimationView(
                 title: "backupGuide".localized,
-                steps: type == .secure ? 4 : 5
+                steps: 4
             ) { animationCell(index: $0)
             } header: {
                 animationHeader
@@ -31,15 +31,8 @@ struct BackupGuideAnimationView: View {
 
     @ViewBuilder
     func animationCell(index: Int) -> some View {
-        switch type {
-        case .secure:
-            if let cell = secureAnimationCells[safe: index] {
-                getCell(icon: cell.icon, text: cell.text)
-            }
-        case .keyImport:
-            if let cell = keyImportAnimationCells[safe: index] {
-                getCell(icon: cell.icon, text: cell.text)
-            }
+        if let cell = secureAnimationCells[safe: index] {
+            getCell(icon: cell.icon, text: cell.text)
         }
     }
 
@@ -49,16 +42,6 @@ struct BackupGuideAnimationView: View {
             (icon: "cloud-check", text: "secureVaultSummaryText2"),
             (icon: "arrow-split", text: "secureVaultSummaryText3"),
             (icon: "cloud-check-2", text: "secureVaultSummaryText4")
-        ]
-    }
-
-    var keyImportAnimationCells: [(icon: String, text: String)] {
-        [
-            (icon: "devices", text: "keyImportVaultSummaryText1"),
-            (icon: "cloud-check", text: "secureVaultSummaryText2"),
-            (icon: "arrow-split", text: "secureVaultSummaryText3"),
-            (icon: "cloud-check-2", text: "secureVaultSummaryText4"),
-            (icon: "unlocked", text: "keyImportVaultSummaryText5")
         ]
     }
 

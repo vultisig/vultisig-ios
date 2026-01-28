@@ -24,13 +24,10 @@ struct KeyImportCustomizeChainsView: View {
                 emptyStateBuilder: { EmptyView() }
             )
 
-            PrimaryButton(title: "continue".localized, action: {
-                if viewModel.selectedChains.contains(.solana) && viewModel.hasMultipleDerivations(for: .solana) {
-                    showDerivationSheet = true
-                } else {
-                    onImport()
-                }
-            })
+            PrimaryButton(
+                title: "continue".localized,
+                action: onImport
+            )
             .disabled(viewModel.buttonDisabled)
         }
         .onLoad { items = Chain.enabledChains }
