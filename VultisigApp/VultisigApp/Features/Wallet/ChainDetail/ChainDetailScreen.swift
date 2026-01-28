@@ -292,4 +292,5 @@ private extension ChainDetailScreen {
         nativeCoin: .example,
         vault: .example
     )
+    .environmentObject(HomeViewModel())
 }

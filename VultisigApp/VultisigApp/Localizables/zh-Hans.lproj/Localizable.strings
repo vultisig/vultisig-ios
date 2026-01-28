@@ -646,8 +646,6 @@
 "secureVaultSummaryText2" = "分别备份每个保险库份额";
 "secureVaultSummaryText3" = "将保险库份额保存在不同位置";
 "secureVaultSummaryText4" = "所有保险库份额确保安全访问您的资金";
-"keyImportVaultSummaryText1" = "您的保险库有 3 个保险库份额：2 个您的设备和 1 个服务器";
-"keyImportVaultSummaryText5" = "之前设置的密码授予对服务器备份的访问权限";
 "security" = "安全";
 "securityScannerContinueAnyway" = "仍然继续";
 "securityScannerContinueGoBack" = "返回";
@@ -1101,8 +1099,8 @@
 "youAreEnteringAnewEraHighlight" = "将旧助记词抛在身后。";
 "yourSeedphrase" = "您的助记词";
 "yourSeedphraseSubtitle" = "输入它，创建保险库，永不回头";
-"twoDevices" = "2台设备";
-"twoDevicesSubtitle" = "任何可以运行Vultisig的设备都可以使用。";
+"atLeastOneDevice" = "至少一台设备";
+"atLeastOneDeviceSubtitle" = "任何可以运行Vultisig的设备都可以使用。";
 "mnemonicPlaceholder" = "输入您的助记词的12个或24个单词";
 "enterYourSeedphrase" = "输入您的助记词";
 "enterYourSeedphraseSubtitle" = "在每个单词之间留一个空格。支持12或24个单词的助记词。";

@@ -645,8 +645,6 @@
 "secureVaultSummaryText2" = "Respaldo de cada bóveda compartida por separado";
 "secureVaultSummaryText3" = "Mantenga las acciones de Vault en diferentes ubicaciones";
 "secureVaultSummaryText4" = "Todas las acciones de bóveda aseguran un acceso seguro a sus fondos";
-"keyImportVaultSummaryText1" = "Tu bóveda tiene 3 partes de bóveda: 2 de tus dispositivos y 1 servidor";
-"keyImportVaultSummaryText5" = "La contraseña establecida antes otorga acceso a la copia de seguridad del servidor";
 "security" = "Seguridad";
 "securityScannerContinueAnyway" = "Continuar de todos modos";
 "securityScannerContinueGoBack" = "Volver";
@@ -1099,8 +1097,8 @@
 "youAreEnteringAnewEraHighlight" = "dejando atrás las viejas frases semilla.";
 "yourSeedphrase" = "Tu frase semilla";
 "yourSeedphraseSubtitle" = "Ingrésala, crea una bóveda, nunca mires atrás";
-"twoDevices" = "2 dispositivos";
-"twoDevicesSubtitle" = "Cualquier dispositivo que pueda ejecutar Vultisig funcionará.";
+"atLeastOneDevice" = "Al menos un dispositivo";
+"atLeastOneDeviceSubtitle" = "Cualquier dispositivo que pueda ejecutar Vultisig funcionará.";
 "mnemonicPlaceholder" = "Ingresa las 12 o 24 palabras de tu frase semilla";
 "enterYourSeedphrase" = "Ingresa tu frase semilla";
 "enterYourSeedphraseSubtitle" = "Deja un espacio entre cada palabra. Se admiten frases semilla de 12 o 24 palabras.";

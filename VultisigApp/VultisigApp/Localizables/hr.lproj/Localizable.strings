@@ -645,8 +645,6 @@
 "secureVaultSummaryText2" = "Sigurnosno kopiranje svakog udjela u trezoru odvojeno";
 "secureVaultSummaryText3" = "Držite udjele trezora na različitim mjestima";
 "secureVaultSummaryText4" = "Sve dionice trezora osiguravaju siguran pristup vašim sredstvima";
-"keyImportVaultSummaryText1" = "Vaš trezor ima 3 udjela trezora: 2 vaša uređaja i 1 poslužitelj";
-"keyImportVaultSummaryText5" = "Lozinka postavljena prije daje pristup sigurnosnoj kopiji poslužitelja";
 "security" = "Sigurnost";
 "securityScannerContinueAnyway" = "Nastavite svejedno";
 "securityScannerContinueGoBack" = "Vratiti se";
@@ -1099,8 +1097,8 @@
 "youAreEnteringAnewEraHighlight" = "ostavljajući stare seed fraze iza sebe.";
 "yourSeedphrase" = "Vaša seed fraza";
 "yourSeedphraseSubtitle" = "Unesite je, stvorite trezor, nikad ne gledajte natrag";
-"twoDevices" = "2 uređaja";
-"twoDevicesSubtitle" = "Bilo koji uređaj koji može pokrenuti Vultisig će raditi.";
+"atLeastOneDevice" = "Barem jedan uređaj";
+"atLeastOneDeviceSubtitle" = "Bilo koji uređaj koji može pokrenuti Vultisig će raditi.";
 "mnemonicPlaceholder" = "Unesite 12 ili 24 riječi svoje seed fraze";
 "enterYourSeedphrase" = "Unesite svoju seed frazu";
 "enterYourSeedphraseSubtitle" = "Ostavite razmak između svake riječi. Podržane su seed fraze od 12 ili 24 riječi.";
