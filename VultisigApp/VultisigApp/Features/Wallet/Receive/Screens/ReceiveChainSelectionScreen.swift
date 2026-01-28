@@ -55,6 +55,9 @@ struct ReceiveChainSelectionScreen: View {
                 coin: coin,
                 isNativeCoin: true,
                 onClose: { selectedCoin = nil },
+                onShare: {
+                    isPresented = false
+                },
                 onCopy: { coin in
                     isPresented = false
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {

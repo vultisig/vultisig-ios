@@ -80,6 +80,7 @@ struct ChainDetailScreen: View {
                 coin: nativeCoin,
                 isNativeCoin: true,
                 onClose: { showReceiveSheet = false },
+                onShare: { showReceiveSheet = false },
                 onCopy: { coin in
                     showReceiveSheet = false
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
