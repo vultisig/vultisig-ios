@@ -228,6 +228,7 @@ private struct SharePickerView: NSViewRepresentable {
         }
 
         // NSSharingServicePickerDelegate method - called when picker is dismissed
+        // swiftlint:disable:next unused_parameter
         func sharingServicePicker(_ sharingServicePicker: NSSharingServicePicker, didChoose service: NSSharingService?) {
             // Call onComplete regardless of whether a service was chosen or cancelled
             onComplete?()

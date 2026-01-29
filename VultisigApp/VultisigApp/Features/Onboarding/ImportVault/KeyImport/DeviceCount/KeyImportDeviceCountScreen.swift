@@ -23,7 +23,7 @@ struct KeyImportDeviceCountScreen: View {
                 animationVM?.view()
                     .frame(maxWidth: 400)
                 Spacer()
-                
+
                 VStack(spacing: 16) {
                     tipView
                     PrimaryButton(title: "getStarted".localized, action: onContinue)
@@ -77,7 +77,7 @@ struct KeyImportDeviceCountScreen: View {
 
         return .secure(numberOfDevices: selectedDeviceCount + 1)
     }
-    
+
     var background: some View {
         GeometryReader { proxy in
             let width = min(proxy.size.height, proxy.size.width)
