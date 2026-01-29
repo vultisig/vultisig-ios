@@ -191,7 +191,7 @@ struct CircleDashboardView: View {
     func loadData() async {
         guard let mscaAddress = vault.circleWalletAddress else { return }
 
-        let (chain, _) = CircleViewLogic.getChainDetails(vault: vault)
+        let (chain, _) = CircleViewLogic.getChainDetails()
 
         let coinsToRefresh = vault.coins.filter { coin in
             coin.chain == chain && (coin.ticker == "USDC" || coin.isNativeToken)

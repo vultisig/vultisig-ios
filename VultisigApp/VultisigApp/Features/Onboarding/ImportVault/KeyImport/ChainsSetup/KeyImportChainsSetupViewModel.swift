@@ -218,7 +218,7 @@ final class KeyImportChainsSetupViewModel: ObservableObject {
             }
             return ChainImportSetting(chain: chain)
         }
-        
+
         await MainActor.run { isLoading = false }
 
         return chainSettings
