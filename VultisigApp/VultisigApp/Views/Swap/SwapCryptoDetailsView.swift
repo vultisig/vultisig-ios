@@ -58,9 +58,6 @@ struct SwapCryptoDetailsView: View {
     var screenContainer: some View {
         ZStack(alignment: .bottom) {
             screenContent
-            #if os(iOS)
-            percentageButtons
-            #endif
         }
     }
 

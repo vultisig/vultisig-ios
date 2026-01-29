@@ -139,10 +139,6 @@ struct TronUnfreezeView: View {
                 }
             }
             .padding(TronConstants.Design.cardPadding)
-            .background(
-                RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
-                    .fill(Theme.colors.bgSurface1)
-            )
             .overlay(
                 RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
                     .stroke(Theme.colors.textSecondary.opacity(0.2), lineWidth: 1)
