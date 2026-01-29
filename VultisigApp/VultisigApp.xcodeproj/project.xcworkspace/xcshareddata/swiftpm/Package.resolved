@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vultisig/commondata",
       "state" : {
-        "branch" : "fix/build-custom-payload-id",
-        "revision" : "0ba4c595faa79b6fc4f22977c90b5d69823c7085"
+        "branch" : "main",
+        "revision" : "cab07d89706965667146bae4b7b0f53aed9a3475"
       }
     },
     {
