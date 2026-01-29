@@ -13,8 +13,8 @@ enum THORChainHelper {
     /// Validates and returns an AnyAddress for THORChain or Stagenet based on the chain type
     private static func validateThorchainAddress(_ address: String, chain: Chain) throws -> AnyAddress {
         if chain == .thorChainStagenet {
-            guard let addr = AnyAddress(string: address, coin: .thorchain, hrp: "sthor") else {
-                throw HelperError.runtimeError("\(address) is invalid stagenet address (expected sthor1...)")
+            guard let addr = AnyAddress(string: address, coin: .thorchain, hrp: "cthor") else {
+                throw HelperError.runtimeError("\(address) is invalid stagenet address (expected cthor1...)")
             }
             return addr
         } else {
