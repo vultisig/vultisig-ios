@@ -36,8 +36,9 @@ struct KeyImportNewVaultSetupScreen: View {
                 Spacer()
                 animation
                 Spacer()
-                VStack(spacing: 32) {
+                VStack(spacing: 8) {
                     informationView
+                    Spacer()
                     PrimaryButton(title: "next") {
                         router.navigate(to: KeygenRoute.peerDiscovery(
                             tssType: .KeyImport,
@@ -81,6 +82,7 @@ struct KeyImportNewVaultSetupScreen: View {
                 icon: "lock"
             )
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .fixedSize(horizontal: false, vertical: true)
     }
 
@@ -309,5 +311,6 @@ private extension KeyImportNewVaultSetupScreen {
             Button("test") {}
         }
     }
-    .frame(maxHeight: isMacOS ? 600 : nil)
+    .frame(width: 1500)
+    .frame(maxWidth: 1500, maxHeight: isMacOS ? 800 : nil)
 }
