@@ -161,7 +161,11 @@ struct CircleViewLogic {
 
     static func getWalletUSDCBalance(vault: Vault) -> Decimal {
         let (chain, _) = getChainDetails(vault: vault)
-        if let usdcCoin = vault.coins.first(where: { $0.chain == chain && $0.ticker == "USDC" }) {
+        guard let ethCoin = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken }) else {
+            return .zero
+        }
+        
+        if let usdcCoin = vault.coins.first(where: { $0.chain == chain && $0.ticker == "USDC" && $0.address == ethCoin.address }) {
             return usdcCoin.balanceDecimal
         }
         return .zero
