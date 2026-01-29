@@ -25,7 +25,7 @@ public struct AddressService {
         }
 
         // Special handling for ThorChain Stagenet
-        if AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor") {
+        if AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "cthor") {
             return vault.coins.contains(where: { $0.chain == .thorChainStagenet && $0.isNativeToken }) ? .thorChainStagenet : nil
         }
 
@@ -69,7 +69,7 @@ public struct AddressService {
         }
 
         if chain == .thorChainStagenet {
-            let isValid = AnyAddress.isValidBech32(string: input, coin: .thorchain, hrp: "sthor")
+            let isValid = AnyAddress.isValidBech32(string: input, coin: .thorchain, hrp: "cthor")
 
             if isValid {
                 return input
@@ -103,7 +103,7 @@ public struct AddressService {
         }
 
         if chain == .thorChainStagenet {
-            return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor")
+            return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "cthor")
         }
 
         return chain.coinType.validate(address: address)
@@ -116,7 +116,7 @@ public struct AddressService {
                 return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
             }
             if firstCoin.chain == .thorChainStagenet {
-                return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor")
+                return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "cthor")
             }
             return firstCoin.coinType.validate(address: address)
         }
