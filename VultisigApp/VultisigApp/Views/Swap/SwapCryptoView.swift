@@ -121,6 +121,8 @@ struct SwapCryptoView: View {
                     swapTransaction: tx,
                     isSend: false
                 )
+                .padding(.vertical, 16)
+                .padding(.horizontal, 16)
             } else {
                 SendCryptoSigningErrorView(errorString: swapViewModel.error?.localizedDescription ?? "Error")
             }

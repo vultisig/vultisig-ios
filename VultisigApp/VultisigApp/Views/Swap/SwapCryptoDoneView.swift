@@ -19,22 +19,62 @@ struct SwapCryptoDoneView: View {
     @Binding var alertTitle: String
 
     @State var showFees: Bool = false
+    @StateObject private var statusViewModel: TransactionStatusViewModel
 
     @Environment(\.openURL) var openURL
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @EnvironmentObject var appViewModel: AppViewModel
+
+    init(
+        tx: SwapTransaction,
+        vault: Vault,
+        hash: String,
+        approveHash: String?,
+        progressLink: String?,
+        sendSummaryViewModel: SendSummaryViewModel,
+        swapSummaryViewModel: SwapCryptoViewModel,
+        showAlert: Binding<Bool>,
+        alertTitle: Binding<String>
+    ) {
+        self.tx = tx
+        self.vault = vault
+        self.hash = hash
+        self.approveHash = approveHash
+        self.progressLink = progressLink
+        self.sendSummaryViewModel = sendSummaryViewModel
+        self.swapSummaryViewModel = swapSummaryViewModel
+        self._showAlert = showAlert
+        self._alertTitle = alertTitle
+
+        // Initialize status view model with swap transaction details
+        _statusViewModel = StateObject(wrappedValue: TransactionStatusViewModel(
+            txHash: hash,
+            chain: tx.fromCoin.chain,
+            coinTicker: tx.fromCoin.ticker,
+            amount: "\(tx.fromAmount) \(tx.fromCoin.ticker)",
+            toAddress: tx.toCoin.address
+        ))
+    }
     
     var body: some View {
         VStack(spacing: 8) {
             cards
             buttons
         }
+        .onAppear {
+            // Start polling for transaction status
+            statusViewModel.startPolling()
+        }
+        .onDisappear {
+            // Stop polling when view disappears
+            statusViewModel.stopPolling()
+        }
     }
 
     var cards: some View {
         VStack(spacing: 24) {
-            TransactionStatusHeaderView(status: .confirmed)
-            
+            TransactionStatusHeaderView(status: statusViewModel.status)
+
             VStack(spacing: 8) {
                 fromToCards
                 summary
