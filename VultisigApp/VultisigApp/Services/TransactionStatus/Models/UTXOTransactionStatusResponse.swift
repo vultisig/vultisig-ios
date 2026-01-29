@@ -7,16 +7,35 @@
 
 import Foundation
 
+/// Response format for UTXO transaction status
+/// Supports Blockchair format for all UTXO chains
 struct UTXOTransactionStatusResponse: Codable {
-    let status: UTXOStatus?
+    // Blockchair format
+    // Note: Blockchair returns [] when no results, or {txHash: {...}} when found
+    let data: [String: BlockchairTransactionData]?
 
-    struct UTXOStatus: Codable {
-        let confirmed: Bool
-        let blockHeight: Int?
+    struct BlockchairTransactionData: Codable {
+        let transaction: BlockchairTransaction
 
-        enum CodingKeys: String, CodingKey {
-            case confirmed
-            case blockHeight = "block_height"
+        struct BlockchairTransaction: Codable {
+            let blockId: Int
+            let hash: String?
+
+            enum CodingKeys: String, CodingKey {
+                case blockId = "block_id"
+                case hash
+            }
+
+            /// Returns true if transaction is confirmed (in a block)
+            /// block_id == -1 means transaction is in mempool (unconfirmed)
+            var isConfirmed: Bool {
+                blockId != -1
+            }
+
+            /// Returns block number if confirmed, nil if pending
+            var blockNumber: Int? {
+                isConfirmed ? blockId : nil
+            }
         }
     }
 }

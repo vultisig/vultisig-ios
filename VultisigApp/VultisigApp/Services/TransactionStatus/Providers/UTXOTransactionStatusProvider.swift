@@ -21,17 +21,17 @@ struct UTXOTransactionStatusProvider: TransactionStatusProvider {
                 responseType: UTXOTransactionStatusResponse.self
             )
 
-            // Check for status field
-            if let status = response.data.status {
-                if status.confirmed {
-                    // Transaction confirmed
+            // Handle Blockchair format
+            if let txDict = response.data.data, let txData = txDict[query.txHash] {
+                let transaction = txData.transaction
+
+                if transaction.isConfirmed {
                     return TransactionStatusResult(
                         status: .confirmed,
-                        blockNumber: status.blockHeight,
+                        blockNumber: transaction.blockNumber,
                         confirmations: nil
                     )
                 } else {
-                    // In mempool but not confirmed
                     return TransactionStatusResult(
                         status: .pending,
                         blockNumber: nil,
@@ -40,9 +40,9 @@ struct UTXOTransactionStatusProvider: TransactionStatusProvider {
                 }
             }
 
-            // No status field = pending
+            // No data or transaction not in dictionary = transaction not found
             return TransactionStatusResult(
-                status: .pending,
+                status: .notFound,
                 blockNumber: nil,
                 confirmations: nil
             )

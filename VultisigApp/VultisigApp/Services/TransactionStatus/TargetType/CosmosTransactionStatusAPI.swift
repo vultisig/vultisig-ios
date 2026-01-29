@@ -38,12 +38,6 @@ enum CosmosTransactionStatusAPI: TargetType {
 
     private func getBaseURL(for chain: Chain) -> String {
         switch chain {
-        case .thorChain:
-            return "https://thornode.ninerealms.com"
-        case .thorChainStagenet:
-            return "https://testnet.thornode.thorchain.info"
-        case .mayaChain:
-            return "https://mayanode.mayachain.info"
         case .gaiaChain:
             return "https://cosmos-rest.publicnode.com"
         case .kujira:
