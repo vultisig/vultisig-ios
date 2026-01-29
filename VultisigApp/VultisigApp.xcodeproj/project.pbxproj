@@ -8477,7 +8477,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/vultisig/commondata";
 			requirement = {
-				branch = main;
+				branch = "fix/build-custom-payload-id";
 				kind = branch;
 			};
 		};

@@ -77,7 +77,8 @@ struct CircleService {
             customMessagePayload: nil,
             encryptionKeyHex: encryptionKeyHex,
             useVultisigRelay: false,
-            payloadID: UUID().uuidString
+            payloadID: UUID().uuidString,
+            customPayloadID: ""
         )
     }
 
