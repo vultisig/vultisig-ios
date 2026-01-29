@@ -6,18 +6,21 @@
 //
 
 import SwiftUI
+import SwiftData
 import WalletCore
 
 struct ImportSeedphraseScreen: View {
     let wordsCountType = [12, 24]
-    
+
     @State private var validationTask: Task<Void, Never>?
-    
+    @State private var duplicateSeedError: Error?
+
     @FocusState var isFocused: Bool
     @State var mnemonicInput: String = ""
     @State var validMnemonic: Bool? = false
     @State var errorMessage: String?
     @Environment(\.router) var router
+    @Environment(\.modelContext) private var modelContext
     
     var importButtonDisabled: Bool {
         validMnemonic == false
@@ -55,7 +58,7 @@ struct ImportSeedphraseScreen: View {
                         .multilineTextAlignment(.center)
                         .fixedSize()
                     }
-                    
+
                     CommonTextEditor(
                         value: $mnemonicInput,
                         placeholder: "mnemonicPlaceholder".localized,
@@ -77,6 +80,13 @@ struct ImportSeedphraseScreen: View {
                 }
                 .disabled(importButtonDisabled)
             }
+        }
+        .withError(
+            error: $duplicateSeedError,
+            errorType: .warning,
+            buttonTitle: "tryAgain".localized
+        ) {
+            duplicateSeedError = nil
         }
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -130,10 +140,23 @@ struct ImportSeedphraseScreen: View {
     
     func onImport() {
         guard validMnemonic == true else { return }
-        isFocused = false
-        router.navigate(to: OnboardingRoute.chainsSetup(
-            mnemonic: cleanMnemonic(text: mnemonicInput)
-        ))
+
+        let cleanedMnemonic = cleanMnemonic(text: mnemonicInput)
+
+        // Check if seed phrase is already imported
+        Task {
+            let isAlreadyImported = await checkIfSeedAlreadyImported(mnemonic: cleanedMnemonic)
+            await MainActor.run {
+                if isAlreadyImported {
+                    duplicateSeedError = SeedPhraseImportError.alreadyImported
+                } else {
+                    isFocused = false
+                    router.navigate(to: OnboardingRoute.chainsSetup(
+                        mnemonic: cleanedMnemonic
+                    ))
+                }
+            }
+        }
     }
     
     @MainActor
@@ -143,10 +166,10 @@ struct ImportSeedphraseScreen: View {
             errorMessage = nil
             return
         }
-        
+
         let words = cleaned.split(separator: " ")
         let wordCount = words.count
-        
+
         // Check if word count is valid (12 or 24)
         guard wordsCountType.contains(wordCount) else {
             if wordCount > 0 {
@@ -154,16 +177,83 @@ struct ImportSeedphraseScreen: View {
             }
             return
         }
-        
+
         // Check if mnemonic is valid
         guard Mnemonic.isValid(mnemonic: cleaned) else {
             errorMessage = "seedPhraseInvalidError".localized
             return
         }
-        
+
         // Valid mnemonic
         errorMessage = nil
         validMnemonic = true
+    }
+
+    /// Checks if the seed phrase has already been imported by comparing addresses
+    /// across all chains and derivation paths with existing vaults
+    func checkIfSeedAlreadyImported(mnemonic: String) async -> Bool {
+        // Create wallet from mnemonic
+        guard let wallet = HDWallet(mnemonic: mnemonic, passphrase: "") else {
+            return false
+        }
+
+        // Fetch all existing vaults
+        let descriptor = FetchDescriptor<Vault>()
+        guard let existingVaults = try? modelContext.fetch(descriptor) else {
+            return false
+        }
+
+        // Get all addresses from existing vaults
+        let existingAddresses = Set(
+            existingVaults.flatMap { vault in
+                vault.coins.map { $0.address.lowercased() }
+            }
+        )
+
+        // Generate addresses for all enabled chains and derivation paths
+        let chainsToCheck = Chain.enabledChains
+        let derivationPaths: [DerivationPath] = [.default, .phantom]
+
+        for chain in chainsToCheck {
+            for derivationPath in derivationPaths {
+                // Generate address for this chain and derivation path
+                let address: String
+                if derivationPath == .phantom && chain == .solana {
+                    // Use phantom derivation for Solana
+                    address = wallet.getAddressDerivation(coin: chain.coinType, derivation: .solanaSolana)
+                } else {
+                    // Use default derivation
+                    address = wallet.getAddressForCoin(coin: chain.coinType).description
+                }
+
+                // Check if this address exists in any vault
+                if existingAddresses.contains(address.lowercased()) {
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+}
+
+// MARK: - Error Types
+
+enum SeedPhraseImportError: ErrorWithCustomPresentation, LocalizedError {    
+    case alreadyImported
+    
+    var errorTitle: String {
+        switch self {
+        case .alreadyImported:
+            return "seedPhraseAlreadyImported".localized
+        }
+    }
+
+    var errorDescription: String {
+        switch self {
+        case .alreadyImported:
+            return "seedPhraseAlreadyImportedDescription".localized
+        }
     }
 }
 
