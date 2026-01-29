@@ -11,6 +11,7 @@ struct ReceiveQRCodeBottomSheet: View {
     let coin: Coin
     let isNativeCoin: Bool
     var onClose: () -> Void
+    var onShare: () -> Void
     var onCopy: (Coin) -> Void
 
     @State var qrCodeImage: Image?
@@ -101,12 +102,16 @@ struct ReceiveQRCodeBottomSheet: View {
     var bottomSection: some View {
         HStack(spacing: 8) {
             if let image = shareSheetViewModel.renderedImage {
-                CrossPlatformShareButton(image: image, caption: shareSheetViewModel.qrCodeData ?? .empty) { onShare in
-                    PrimaryButton(title: "share".localized, type: .secondary, action: onShare)
+                CrossPlatformShareButton(
+                    image: image,
+                    caption: shareSheetViewModel.qrCodeData ?? .empty,
+                    onComplete: onShare
+                ) { onShareAction in
+                    PrimaryButton(title: "share".localized, type: .secondary, action: onShareAction)
                 }
             }
             PrimaryButton(title: "copyAddress".localized) {
-                    onCopy(coin)
+                onCopy(coin)
             }
         }
     }
@@ -114,7 +119,7 @@ struct ReceiveQRCodeBottomSheet: View {
 
 #Preview {
     @Previewable @State var show = true
-    return VStack {
+    VStack {
         Button("Show QR Code") {
             show = true
         }
@@ -124,8 +129,8 @@ struct ReceiveQRCodeBottomSheet: View {
             coin: .example,
             isNativeCoin: false,
             onClose: { show.toggle() },
+            onShare: { show.toggle() },
             onCopy: { _ in
             }) : nil
     )
-
 }

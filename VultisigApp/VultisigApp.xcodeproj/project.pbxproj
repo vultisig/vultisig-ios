@@ -107,7 +107,6 @@
 		132E01612F1AA2E6007E717C /* DerivationPathSelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132E015C2F1AA2E6007E717C /* DerivationPathSelectionSheet.swift */; };
 		132E01672F1AA2FA007E717C /* vault_setup_device4.riv in Resources */ = {isa = PBXBuildFile; fileRef = 132E01662F1AA2FA007E717C /* vault_setup_device4.riv */; };
 		132E01682F1AA2FA007E717C /* vault_setup_device3.riv in Resources */ = {isa = PBXBuildFile; fileRef = 132E01652F1AA2FA007E717C /* vault_setup_device3.riv */; };
-		132E01692F1AA2FA007E717C /* devices_component.riv in Resources */ = {isa = PBXBuildFile; fileRef = 132E01622F1AA2FA007E717C /* devices_component.riv */; };
 		132E016A2F1AA2FA007E717C /* vault_setup_device2.riv in Resources */ = {isa = PBXBuildFile; fileRef = 132E01642F1AA2FA007E717C /* vault_setup_device2.riv */; };
 		132E016B2F1AA2FA007E717C /* vault_setup_device1.riv in Resources */ = {isa = PBXBuildFile; fileRef = 132E01632F1AA2FA007E717C /* vault_setup_device1.riv */; };
 		132E016D2F1AA3C6007E717C /* KeyImportSetupType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132E016C2F1AA3C6007E717C /* KeyImportSetupType.swift */; };
@@ -336,6 +335,7 @@
 		13A657BA2EA2972200323E4C /* ExpandableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657B92EA2971C00323E4C /* ExpandableView.swift */; };
 		13A657C92EA2BCC400323E4C /* HiddenBalanceText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657C82EA2BCBE00323E4C /* HiddenBalanceText.swift */; };
 		13A65B5B2F2A884800349AD0 /* UTType+VaultBackup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A65B5A2F2A884800349AD0 /* UTType+VaultBackup.swift */; };
+		13A65B2D2F2A582500349AD0 /* devices_component.riv in Resources */ = {isa = PBXBuildFile; fileRef = 13A65B2C2F2A582500349AD0 /* devices_component.riv */; };
 		13A74CBB2ED3D1CF00B97173 /* MayaChainBondInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A74CBA2ED3D1C900B97173 /* MayaChainBondInteractor.swift */; };
 		13A74CBD2ED3D1F700B97173 /* MayaChainStakeInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A74CBC2ED3D1F100B97173 /* MayaChainStakeInteractor.swift */; };
 		13A74CBF2ED3D2CA00B97173 /* DefaultLPsInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A74CBE2ED3D2C500B97173 /* DefaultLPsInteractor.swift */; };
@@ -1412,7 +1412,6 @@
 		132B04362E70C4E500745651 /* VaultMainScreenBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainScreenBackground.swift; sourceTree = "<group>"; };
 		132E015C2F1AA2E6007E717C /* DerivationPathSelectionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivationPathSelectionSheet.swift; sourceTree = "<group>"; };
 		132E015E2F1AA2E6007E717C /* KeyImportDeviceCountScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyImportDeviceCountScreen.swift; sourceTree = "<group>"; };
-		132E01622F1AA2FA007E717C /* devices_component.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = devices_component.riv; sourceTree = "<group>"; };
 		132E01632F1AA2FA007E717C /* vault_setup_device1.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = vault_setup_device1.riv; sourceTree = "<group>"; };
 		132E01642F1AA2FA007E717C /* vault_setup_device2.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = vault_setup_device2.riv; sourceTree = "<group>"; };
 		132E01652F1AA2FA007E717C /* vault_setup_device3.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = vault_setup_device3.riv; sourceTree = "<group>"; };
@@ -1644,6 +1643,7 @@
 		13A657B92EA2971C00323E4C /* ExpandableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpandableView.swift; sourceTree = "<group>"; };
 		13A657C82EA2BCBE00323E4C /* HiddenBalanceText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HiddenBalanceText.swift; sourceTree = "<group>"; };
 		13A65B5A2F2A884800349AD0 /* UTType+VaultBackup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UTType+VaultBackup.swift"; sourceTree = "<group>"; };
+		13A65B2C2F2A582500349AD0 /* devices_component.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = devices_component.riv; sourceTree = "<group>"; };
 		13A74CBA2ED3D1C900B97173 /* MayaChainBondInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaChainBondInteractor.swift; sourceTree = "<group>"; };
 		13A74CBC2ED3D1F100B97173 /* MayaChainStakeInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaChainStakeInteractor.swift; sourceTree = "<group>"; };
 		13A74CBE2ED3D2C500B97173 /* DefaultLPsInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultLPsInteractor.swift; sourceTree = "<group>"; };
@@ -5907,7 +5907,6 @@
 				1377092D2F1FC57D00970668 /* backup_device2.riv */,
 				1377092E2F1FC57D00970668 /* backup_device3.riv */,
 				1377092F2F1FC57D00970668 /* backup_device4.riv */,
-				132E01622F1AA2FA007E717C /* devices_component.riv */,
 				132E01632F1AA2FA007E717C /* vault_setup_device1.riv */,
 				132E01642F1AA2FA007E717C /* vault_setup_device2.riv */,
 				132E01652F1AA2FA007E717C /* vault_setup_device3.riv */,
@@ -5915,6 +5914,7 @@
 				130C058B2EE9A42200A7303A /* import_seedphrase.riv */,
 				DEE8B2AB2E40842B0020DA63 /* upgrade_success.riv */,
 				1387FDA72E32C2CC007ECDB4 /* QRScanner.riv */,
+				13A65B2C2F2A582500349AD0 /* devices_component.riv */,
 				A6C58D832D7B6F3C000D2833 /* backup_vault.riv */,
 				A6EF93512D690BC8004D7EBF /* Onboarding.riv */,
 				A5AB69C62D63E26500E54DEB /* backupvault_splash.riv */,
@@ -6764,13 +6764,13 @@
 				137709322F1FC57E00970668 /* backup_device2.riv in Resources */,
 				137709332F1FC57E00970668 /* backup_device3.riv in Resources */,
 				132E01682F1AA2FA007E717C /* vault_setup_device3.riv in Resources */,
-				132E01692F1AA2FA007E717C /* devices_component.riv in Resources */,
 				132E016A2F1AA2FA007E717C /* vault_setup_device2.riv in Resources */,
 				132E016B2F1AA2FA007E717C /* vault_setup_device1.riv in Resources */,
 				A6BB9BCF2DA9E43B0085E117 /* all_devices_animation.riv in Resources */,
 				130C058C2EE9A42200A7303A /* import_seedphrase.riv in Resources */,
 				DE49A16D2B65F6DB000F3AFB /* Assets.xcassets in Resources */,
 				A53065FC2D5AA5D3000B82E6 /* securevault_overview.riv in Resources */,
+				13A65B2D2F2A582500349AD0 /* devices_component.riv in Resources */,
 				A6C58D822D7AD81D000D2833 /* securevault_summary.riv in Resources */,
 				1377FE412F02A5DF00EF3B85 /* keygen_animation.riv in Resources */,
 				134716B92EF99530004DDC43 /* keygen_animation_haptic.ahap in Resources */,

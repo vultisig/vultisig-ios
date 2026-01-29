@@ -130,6 +130,10 @@ struct CircleWithdrawView: View {
                 }
             }
             .padding(CircleConstants.Design.cardPadding)
+            .overlay(
+                RoundedRectangle(cornerRadius: CircleConstants.Design.cornerRadius)
+                    .stroke(Theme.colors.textSecondary.opacity(0.2), lineWidth: 1)
+            )
             .padding(.horizontal, CircleConstants.Design.horizontalPadding)
         }
         .padding(.top, CircleConstants.Design.verticalSpacing)

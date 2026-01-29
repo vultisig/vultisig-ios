@@ -645,8 +645,6 @@
 "secureVaultSummaryText2" = "Eseguire il backup di ogni condivisione di Vault separatamente";
 "secureVaultSummaryText3" = "Conservare le azioni Vault in diverse posizioni";
 "secureVaultSummaryText4" = "Tutte le azioni Vault assicurano un accesso sicuro ai tuoi fondi";
-"keyImportVaultSummaryText1" = "Il tuo vault ha 3 parti del vault: 2 dei tuoi dispositivi e 1 server";
-"keyImportVaultSummaryText5" = "La password impostata in precedenza garantisce l'accesso al backup del server";
 "security" = "Sicurezza";
 "securityScannerContinueAnyway" = "Continua comunque";
 "securityScannerContinueGoBack" = "Torna indietro";
@@ -1099,8 +1097,8 @@
 "youAreEnteringAnewEraHighlight" = "lasciando indietro le vecchie seed phrase.";
 "yourSeedphrase" = "La tua seed phrase";
 "yourSeedphraseSubtitle" = "Inseriscila, crea un vault, non voltarti mai indietro";
-"twoDevices" = "2 dispositivi";
-"twoDevicesSubtitle" = "Qualsiasi dispositivo in grado di eseguire Vultisig funzionerà.";
+"atLeastOneDevice" = "Almeno un dispositivo";
+"atLeastOneDeviceSubtitle" = "Qualsiasi dispositivo in grado di eseguire Vultisig funzionerà.";
 "mnemonicPlaceholder" = "Inserisci le 12 o 24 parole della tua seed phrase";
 "enterYourSeedphrase" = "Inserisci la tua seed phrase";
 "enterYourSeedphraseSubtitle" = "Lascia uno spazio tra ogni parola. Sono supportate seed phrase di 12 o 24 parole.";
@@ -1203,6 +1201,7 @@
 
 "scanningForChainsSubtitle" = "Stiamo verificando quali blockchain hanno indirizzi attivi associati alla tua seed phrase. Questo processo può richiedere fino a 2 minuti.";
 "scanningForChainsSubtitleHighlight" = "Questo processo può richiedere fino a 2 minuti.";
+"importTheseChains" = "Importa queste chain";
 "selectChainsManually" = "Seleziona chain manualmente";
 "noActiveChainsFound" = "Nessuna chain attiva trovata";
 "noActiveChainsFoundSubtitle" = "Non abbiamo rilevato alcun asset su questa seed phrase.\n\nOgni chain aggiuntiva aumenta il tempo per generare il tuo vault e la possibilità di timeout.";
