@@ -18,7 +18,7 @@ struct CircleViewLogic {
     }
 
     func checkExistingWallet(vault: Vault) async throws -> String? {
-        let (chain, _) = CircleViewLogic.getChainDetails(vault: vault)
+        let (chain, _) = CircleViewLogic.getChainDetails()
 
         guard let ethCoin = vault.coins.first(where: { $0.chain == chain }) else {
             throw CircleServiceError.keysignError("No Ethereum found in vault. Please add Ethereum first.")
@@ -28,7 +28,7 @@ struct CircleViewLogic {
     }
 
     func createWallet(vault: Vault) async throws -> String {
-        let (chain, _) = CircleViewLogic.getChainDetails(vault: vault)
+        let (chain, _) = CircleViewLogic.getChainDetails()
 
         guard let ethCoin = vault.coins.first(where: { $0.chain == chain }) else {
             throw CircleServiceError.keysignError("No ETH coin found in vault. Please add Ethereum first.")
@@ -39,7 +39,7 @@ struct CircleViewLogic {
 
     /// Returns: (USDC Balance, ETH Balance)
     func fetchData(address: String, vault: Vault) async throws -> (Decimal, Decimal) {
-        let (chain, usdcContract) = CircleViewLogic.getChainDetails(vault: vault)
+        let (chain, usdcContract) = CircleViewLogic.getChainDetails()
 
         do {
             let service = try EvmService.getService(forChain: chain)
@@ -70,7 +70,7 @@ struct CircleViewLogic {
             throw CircleServiceError.keysignError("Missing Circle Wallet Address")
         }
 
-        let (chain, usdcContract) = CircleViewLogic.getChainDetails(vault: vault)
+        let (chain, usdcContract) = CircleViewLogic.getChainDetails()
 
         let withdrawalInfo = CircleWithdrawalInfo(usdcContract: usdcContract)
 
@@ -155,12 +155,12 @@ struct CircleViewLogic {
         return payloadWithData
     }
 
-    static func getChainDetails(vault: Vault) -> (chain: Chain, usdcContract: String) {
+    static func getChainDetails() -> (chain: Chain, usdcContract: String) {
         return (.ethereum, CircleConstants.usdcMainnet)
     }
 
     static func getWalletUSDCBalance(vault: Vault) -> Decimal {
-        let (chain, _) = getChainDetails(vault: vault)
+        let (chain, _) = getChainDetails()
         if let usdcCoin = vault.coins.first(where: { $0.chain == chain && $0.ticker == "USDC" }) {
             return usdcCoin.balanceDecimal
         }
