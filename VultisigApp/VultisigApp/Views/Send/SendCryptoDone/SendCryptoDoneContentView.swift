@@ -14,47 +14,65 @@ struct SendCryptoDoneContentView: View {
     var onDone: () -> Void = {}
 
     @State var navigateToHome = false
-    @State var animationVM: RiveViewModel? = nil
+    @StateObject private var statusViewModel: TransactionStatusViewModel
+
     @EnvironmentObject var appViewModel: AppViewModel
     @Environment(\.router) var router
 
-    var body: some View {
-        VStack {
-            ScrollView {
-                VStack(spacing: 8) {
-                    animation
-                    SendCryptoDoneHeaderView(
-                        coin: input.coin,
-                        cryptoAmount: input.amountCrypto,
-                        fiatAmount: input.amountFiat.formatToFiat(includeCurrencySymbol: true)
-                    )
-                    VStack(spacing: 16) {
-                        Group {
-                            SendCryptoTransactionHashRowView(
-                                hash: input.hash,
-                                explorerLink: input.explorerLink,
-                                showCopy: true,
-                                showAlert: $showAlert
-                            )
-                            Separator()
-                                .opacity(0.8)
-                        }
-                        .showIf(input.hash.isNotEmpty)
+    init(input: SendCryptoContent, showAlert: Binding<Bool>, onDone: @escaping () -> Void = {}) {
+        self.input = input
+        self._showAlert = showAlert
+        self.onDone = onDone
 
-                        transactionDetailsButton
+        // Initialize status view model with metadata
+        _statusViewModel = StateObject(wrappedValue: TransactionStatusViewModel(
+            txHash: input.hash,
+            chain: input.coin.chain,
+            coinTicker: input.coin.ticker,
+            amount: input.amountCrypto,
+            toAddress: input.toAddress
+        ))
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            VStack(spacing: 8) {
+                // Status-aware header
+                SendCryptoDoneHeaderView(
+                    coin: input.coin,
+                    cryptoAmount: input.amountCrypto,
+                    fiatAmount: input.amountFiat.formatToFiat(includeCurrencySymbol: true),
+                    status: statusViewModel.status
+                )
+
+                VStack(spacing: 16) {
+                    Group {
+                        SendCryptoTransactionHashRowView(
+                            hash: input.hash,
+                            explorerLink: input.explorerLink,
+                            showCopy: true,
+                            showAlert: $showAlert
+                        )
+                        Separator()
+                            .opacity(0.8)
                     }
-                    .font(Theme.fonts.bodySMedium)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 16)
-                    .foregroundColor(Theme.colors.textSecondary)
-                    .background(Theme.colors.bgSurface1)
-                    .cornerRadius(16)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(Theme.colors.bgSurface2, lineWidth: 1)
-                    )
+                    .showIf(input.hash.isNotEmpty)
+
+                    transactionDetailsButton
                 }
+                .font(Theme.fonts.bodySMedium)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 16)
+                .foregroundStyle(Theme.colors.textSecondary)
+                .background(Theme.colors.bgSurface1)
+                .cornerRadius(16)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Theme.colors.bgSurface2, lineWidth: 1)
+                )
             }
+            
+            Spacer()
 
             PrimaryButton(title: "done") {
                 onDoneButtonPressed()
@@ -64,8 +82,13 @@ struct SendCryptoDoneContentView: View {
             guard newValue else { return }
             appViewModel.restart()
         }
-        .onLoad {
-            animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
+        .onAppear {
+            // Start polling for transaction status
+            statusViewModel.startPolling()
+        }
+        .onDisappear {
+            // Stop polling when view disappears
+            statusViewModel.stopPolling()
         }
     }
 
@@ -87,22 +110,6 @@ struct SendCryptoDoneContentView: View {
         }
         .buttonStyle(.plain)
     }
-
-    var animation: some View {
-        ZStack {
-            animationVM?.view()
-                .frame(width: 280, height: 280)
-
-            animationText
-                .offset(y: 50)
-        }
-    }
-
-    var animationText: some View {
-        Text(NSLocalizedString("transactionSuccessful", comment: ""))
-            .foregroundStyle(LinearGradient.primaryGradient)
-            .font(Theme.fonts.bodyLMedium)
-    }
 }
 
 #Preview {
@@ -112,7 +119,7 @@ struct SendCryptoDoneContentView: View {
         approveHash: "",
         chain: .thorChain,
         sendTransaction: nil,
-        swapTransaction: nil,
+        swapTransaction: SwapTransaction(),
         isSend: true
     )
     .environmentObject(AppViewModel())

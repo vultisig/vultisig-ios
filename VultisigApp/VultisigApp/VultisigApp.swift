@@ -67,7 +67,8 @@ struct VultisigApp: App {
             DefiPositions.self,
             BondPosition.self,
             StakePosition.self,
-            LPPosition.self
+            LPPosition.self,
+            StoredPendingTransaction.self
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,

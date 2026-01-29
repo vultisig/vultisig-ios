@@ -599,6 +599,7 @@ class KeysignViewModel: ObservableObject {
                 case .sui:
                     self.txid = try await SuiService.shared.executeTransactionBlock(unsignedTransaction: tx.rawTransaction, signature: tx.signature ?? .empty)
                 case .polkadot:
+                    // Fast broadcast - extrinsic index will be discovered lazily during status checks
                     self.txid = try await PolkadotService.shared.broadcastTransaction(hex: tx.rawTransaction)
 
                 case .ton:
@@ -637,6 +638,31 @@ class KeysignViewModel: ObservableObject {
         if txid == "Transaction already broadcasted." {
             txid = transactionType.transactionHash
             approveTxid = transactionType.approveTransactionHash
+        }
+
+        // Save to pending transactions for status tracking
+        savePendingTransaction()
+    }
+
+    private func savePendingTransaction() {
+        guard let keysignPayload = keysignPayload,
+              !txid.isEmpty,
+              txid != "Transaction already broadcasted." else {
+            return
+        }
+
+        let storage = StoredPendingTransactionStorage.shared
+        let config = ChainStatusConfig.config(for: keysignPayload.coin.chain)
+
+        Task {
+            try? await storage.save(
+                txHash: txid,
+                chain: keysignPayload.coin.chain,
+                status: .broadcasted(estimatedTime: config.estimatedTime),
+                coinTicker: keysignPayload.coin.ticker,
+                amount: keysignPayload.toAmount.description,
+                toAddress: keysignPayload.toAddress
+            )
         }
     }
 

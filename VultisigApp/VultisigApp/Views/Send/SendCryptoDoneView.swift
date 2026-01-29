@@ -18,7 +18,6 @@ struct SendCryptoDoneView: View {
 
     let sendTransaction: SendTransaction?
     let swapTransaction: SwapTransaction?
-    let contentPadding: CGFloat
     let keysignPayload: KeysignPayload?
 
     @StateObject private var sendSummaryViewModel = SendSummaryViewModel()
@@ -40,7 +39,6 @@ struct SendCryptoDoneView: View {
         sendTransaction: SendTransaction?,
         swapTransaction: SwapTransaction?,
         isSend: Bool,
-        contentPadding: CGFloat = 16,
         keysignPayload: KeysignPayload? = nil
     ) {
         self.vault = vault
@@ -51,7 +49,6 @@ struct SendCryptoDoneView: View {
         self.sendTransaction = sendTransaction
         self.swapTransaction = swapTransaction
         self.isSend = isSend
-        self.contentPadding = contentPadding
         self.keysignPayload = keysignPayload
     }
 
@@ -59,13 +56,12 @@ struct SendCryptoDoneView: View {
         ZStack {
             Background()
             view
-            PopupCapsule(text: alertTitle, showPopup: $showAlert)
         }
+        .overlay(PopupCapsule(text: alertTitle, showPopup: $showAlert))
     }
 
     func sendView(tx: SendTransaction) -> some View {
         sendContent(tx: tx)
-            .padding(contentPadding)
     }
 
     func sendContent(tx: SendTransaction) -> some View {
@@ -139,8 +135,8 @@ struct SendCryptoDoneView: View {
         approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
         chain: .thorChain,
         progressLink: "https://blockstream.info/tx/",
-        sendTransaction: nil,
-        swapTransaction: SwapTransaction(),
+        sendTransaction: SendTransaction(),
+        swapTransaction: nil,
         isSend: true
     )
     .environmentObject(SettingsViewModel())

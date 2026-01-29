@@ -110,6 +110,7 @@ class PolkadotService: RpcService {
         return result
     }
 
+
     func getBalance(address: String) async throws -> String {
         let balance = try await fetchBalance(address: address)
         return String(balance)
