@@ -44,7 +44,7 @@ struct CircleService {
         memo: String?,
         chainSpecific: BlockChainSpecific
     ) throws -> KeysignMessage {
-        let (chain, _) = CircleViewLogic.getChainDetails(vault: vault)
+        let (chain, _) = CircleViewLogic.getChainDetails()
 
         guard let coin = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken }) else {
             throw CircleServiceError.invalidDetails
