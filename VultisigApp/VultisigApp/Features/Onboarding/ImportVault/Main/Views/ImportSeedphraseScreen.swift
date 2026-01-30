@@ -25,18 +25,18 @@ struct ImportSeedphraseScreen: View {
     var importButtonDisabled: Bool {
         validMnemonic == false
     }
-    
+
     var wordsCount: Int {
         cleanMnemonic(text: mnemonicInput)
             .split(separator: " ")
             .count
     }
-    
+
     var wordsCountAccessory: String {
         let maxWords = wordsCount > 12 ? 24 : 12
         return "\(wordsCount)/\(maxWords)"
     }
-    
+
     var body: some View {
         Screen {
             VStack(spacing: 0) {
@@ -130,14 +130,14 @@ struct ImportSeedphraseScreen: View {
             }
         }
     }
-    
+
     func cleanMnemonic(text: String) -> String {
         text
             .components(separatedBy: .whitespacesAndNewlines)
             .filter { !$0.isEmpty }
             .joined(separator: " ")
     }
-    
+
     func onImport() {
         guard validMnemonic == true else { return }
 
@@ -158,7 +158,7 @@ struct ImportSeedphraseScreen: View {
             }
         }
     }
-    
+
     @MainActor
     func validateMnemonic(_ cleaned: String) {
         // Don't validate if input is empty

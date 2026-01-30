@@ -191,7 +191,7 @@ struct CircleWithdrawView: View {
     }
 
     var vaultEthBalance: Decimal {
-        let (chain, _) = CircleViewLogic.getChainDetails(vault: vault)
+        let (chain, _) = CircleViewLogic.getChainDetails()
         return vault.coins.first(where: { $0.chain == chain && $0.isNativeToken })?.balanceDecimal ?? 0
     }
 
@@ -252,7 +252,7 @@ struct CircleWithdrawView: View {
             let cleanAmountUnits = amountUnits.components(separatedBy: ".").first ?? amountUnits
             let amountVal = BigInt(cleanAmountUnits) ?? BigInt(0)
 
-            let (chain, _) = CircleViewLogic.getChainDetails(vault: vault)
+            let (chain, _) = CircleViewLogic.getChainDetails()
             guard let recipientCoin = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken }) else {
                 throw NSError(domain: "CircleWithdraw", code: 404, userInfo: [NSLocalizedDescriptionKey: "ETH address not found"])
             }
