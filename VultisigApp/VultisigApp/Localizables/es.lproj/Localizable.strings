@@ -523,6 +523,7 @@
 "pleaseBackupVaultNote" = "Por favor, realiza el respaldo de todas tus partes del Vault ahora.";
 "pleaseWait" = "Por favor espera...";
 "pleaseWaitMinutes" = "Por favor espera %@ minutos";
+"pleaseChooseDifferentVaultName" = "Por favor elige un nombre de Vault diferente.";
 "plusMore" = "+%d más";
 "polkadotExistentialDepositError" = "Asegúrese de dejar suficientes fondos para cubrir las tarifas. Si el saldo de una cuenta cae por debajo de 1 DOT (Depósito Existencial), la cuenta será desactivada (eliminada) y cualquier fondo restante se perderá. Puede reactivar la dirección con un nuevo depósito mayor que el depósito existencial en cualquier momento. Sin embargo, esto no recuperará los fondos perdidos.";
 "portfolio" = "Portafolio";
@@ -836,6 +837,7 @@
 "vaultLibType" = "tipo de bóveda";
 "vaultManagement" = "Gestión de bóveda";
 "vaultName" = "Nombre de la Caja Fuerte";
+"vaultNameAlreadyInUse" = "Nombre de Vault ya en uso";
 "vaultNameExists" = "El nombre de la bóveda %s ya existe";
 "vaultNameUnique" = "El nombre del almacén debe ser único.";
 "vaultOverview" = "Resumen del Bóveda";
@@ -857,6 +859,7 @@
 "vaultType" = "Participación del Bóveda";
 "vaultTypeDoesnotMatch" = " El tipo de bóveda no coincide";
 "vaultTypeMismatch" = "El tipo de bóveda no coincide, el dispositivo iniciador y el dispositivo emparejado tienen tipos de bóveda diferentes";
+"vaultTypeMismatchDescription" = "El dispositivo iniciador y el dispositivo de emparejamiento tienen diferentes tipos de Vault. Asegúrate de que ambos dispositivos usen el mismo tipo de Vault.";
 "vaultUpgraded" = "Bóveda actualizada";
 "vaultValue" = "Valor del almacén";
 "vaultWillBeDeletedPermanentlyPrompt" = "Soy consciente de que el almacén será eliminado permanentemente";
@@ -892,6 +895,7 @@
 "wrongPasswordHint" = "Tu pista de contraseña es: ";
 "wrongVaultPassword" = "Contraseña de bóveda incorrecta. Por favor, intente de nuevo.";
 "wrongVaultSelected" = "Elegiste la bóveda incorrecta";
+"wrongVaultSelectedDescription" = "El Vault que seleccionaste no coincide con la sesión de keygen. Por favor selecciona el Vault correcto.";
 "wrongVaultTryAgain" = "Caja Fuerte o Dispositivo Emparejado Incorrecto.";
 "x" = "x";
 "youAreCreatingA" = "Estás creando un";

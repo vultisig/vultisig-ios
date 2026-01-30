@@ -522,6 +522,7 @@
 "pleaseBackupVault" = "Cada dispositivo tem sua própria participação única.";
 "pleaseBackupVaultNote" = "Por favor, faça backup de todas as suas ações do Vault agora.";
 "pleaseWait" = "Por favor, espere...";
+"pleaseChooseDifferentVaultName" = "Por favor, escolha um nome de Vault diferente.";
 "pleaseWaitMinutes" = "Por favor, espere %@ minutos";
 "plusMore" = "+%d mais";
 "polkadotExistentialDepositError" = "Certifique-se de deixar fundos suficientes para cobrir as taxas. Se o saldo de uma conta cair abaixo de 1 DOT (Depósito Existencial), a conta será desativada (removida) e quaisquer fundos restantes serão perdidos. Você pode reativar o endereço com um novo depósito maior que o depósito existencial a qualquer momento. No entanto, isso não recuperará os fundos perdidos.";
@@ -835,6 +836,7 @@
 "vaultInfo" = "Informações do cofre";
 "vaultLibType" = "tipo de cofre";
 "vaultManagement" = "Gerenciamento de cofre";
+"vaultNameAlreadyInUse" = "Nome do Vault já em uso";
 "vaultName" = "Nome do Cofre";
 "vaultNameExists" = "O nome do cofre %s já existe";
 "vaultNameUnique" = "O nome do cofre precisa ser único.";
@@ -856,6 +858,7 @@
 "vaultShareBackupsViewTitle2" = ", armazene-os como antes";
 "vaultType" = "Parte do Cofre";
 "vaultTypeDoesnotMatch" = "O tipo de cofre não corresponde";
+"vaultTypeMismatchDescription" = "O dispositivo iniciador e o dispositivo de emparelhamento têm tipos de Vault diferentes. Certifique-se de que ambos os dispositivos usem o mesmo tipo de Vault.";
 "vaultTypeMismatch" = "O tipo de cofre não corresponde, o dispositivo iniciador e o dispositivo emparelhado têm tipos de cofre diferentes";
 "vaultUpgraded" = "Cofre atualizado";
 "vaultValue" = "Valor do cofre";
@@ -890,6 +893,7 @@
 "withTheseDevices" = "Com estes dispositivos";
 "wrongPassword" = "Senha incorreta";
 "wrongPasswordHint" = "Sua dica de senha é: ";
+"wrongVaultSelectedDescription" = "O Vault que você selecionou não corresponde à sessão de keygen. Por favor, selecione o Vault correto.";
 "wrongVaultPassword" = "Senha do cofre errada. Por favor, tente novamente.";
 "wrongVaultSelected" = "Você escolheu o cofre errado";
 "wrongVaultTryAgain" = "Cofre ou Dispositivo Emparelhado Incorreto.";

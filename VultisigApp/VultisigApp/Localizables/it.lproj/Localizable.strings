@@ -522,6 +522,7 @@
 "pleaseBackupVault" = "Ogni dispositivo ha la propria quota unica.";
 "pleaseBackupVaultNote" = "Effettua subito il backup di tutte le tue quote del Vault.";
 "pleaseWait" = "Per favore, aspetta...";
+"pleaseChooseDifferentVaultName" = "Si prega di scegliere un nome Vault diverso.";
 "pleaseWaitMinutes" = "Per favore aspetta %@ minuti";
 "plusMore" = "+%d altro";
 "polkadotExistentialDepositError" = "Assicurati di lasciare fondi sufficienti per coprire le commissioni. Se il saldo di un conto scende sotto 1 DOT (Deposito Esistenziale), il conto verrà disattivato (cancellato) e eventuali fondi rimanenti saranno persi. Puoi riattivare l'indirizzo con un nuovo deposito maggiore del deposito esistenziale in qualsiasi momento. Tuttavia, questo non recupererà i fondi persi.";
@@ -835,6 +836,7 @@
 "vaultInfo" = "Informazioni sul Vault";
 "vaultLibType" = "Tipo di cassaforte";
 "vaultManagement" = "Gestione del caveau";
+"vaultNameAlreadyInUse" = "Nome Vault già in uso";
 "vaultName" = "Nome Cassaforte";
 "vaultNameExists" = "Il nome del deposito %s esiste già";
 "vaultNameUnique" = "Il nome del caveau deve essere univoco.";
@@ -856,6 +858,7 @@
 "vaultShareBackupsViewTitle2" = ", conservali come fatto in precedenza";
 "vaultType" = "Quota della Cassaforte";
 "vaultTypeDoesnotMatch" = " Il tipo di cassaforte non corrisponde";
+"vaultTypeMismatchDescription" = "Il dispositivo di avvio e il dispositivo di associazione hanno tipi di Vault diversi. Assicurati che entrambi i dispositivi utilizzino lo stesso tipo di Vault.";
 "vaultTypeMismatch" = "Il tipo di vault non corrisponde, il dispositivo di avvio e il dispositivo accoppiato hanno tipi di vault diversi";
 "vaultUpgraded" = "Vault aggiornato";
 "vaultValue" = "Valore del caveau";
@@ -890,6 +893,7 @@
 "withTheseDevices" = "Con questi dispositivi";
 "wrongPassword" = "Password errata";
 "wrongPasswordHint" = "Il suggerimento per la tua password è: ";
+"wrongVaultSelectedDescription" = "Il Vault che hai selezionato non corrisponde alla sessione di keygen. Si prega di selezionare il Vault corretto.";
 "wrongVaultPassword" = "Password di Vault sbagliata. Per favore, riprova.";
 "wrongVaultSelected" = "Hai scelto il vault sbagliato";
 "wrongVaultTryAgain" = "Cassaforte o Dispositivo Accoppiato Errato.";

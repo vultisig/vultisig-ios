@@ -112,15 +112,17 @@ struct JoinKeygenView: View {
             .multilineTextAlignment(.center)
     }
 
+    @ViewBuilder
     var failToStartKeygen: some View {
-        VStack {
-            Text(viewModel.errorMessage)
-                .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(Theme.colors.textPrimary)
-                .multilineTextAlignment(.center)
-                .padding(.vertical, 30)
-
-            filePicker
+        if let error = viewModel.error {
+            ErrorView(
+                type: .warning,
+                title: error.errorTitle,
+                description: error.errorDescription,
+                buttonTitle: "tryAgain".localized
+            ) {
+                showFileImporter.toggle()
+            }
         }
     }
 
@@ -202,17 +204,6 @@ struct JoinKeygenView: View {
         .padding(.vertical, 30)
         .onAppear {
             viewModel.joinKeygenCommittee()
-        }
-    }
-
-    var filePicker: some View {
-        Button {
-            showFileImporter.toggle()
-        } label: {
-            Image(systemName: "photo.on.rectangle.angled")
-                .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(Theme.colors.textPrimary)
-                .frame(width: 40, height: 40)
         }
     }
 
