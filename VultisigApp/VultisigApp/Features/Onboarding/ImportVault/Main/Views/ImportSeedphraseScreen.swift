@@ -21,7 +21,7 @@ struct ImportSeedphraseScreen: View {
     @State var errorMessage: String?
     @Environment(\.router) var router
     @Environment(\.modelContext) private var modelContext
-    
+
     var importButtonDisabled: Bool {
         validMnemonic == false
     }
@@ -191,7 +191,7 @@ struct ImportSeedphraseScreen: View {
 
     /// Checks if the seed phrase has already been imported by comparing addresses
     /// across all chains and derivation paths with existing vaults
-    func checkIfSeedAlreadyImported(mnemonic: String) async -> Bool {
+    func checkIfSeedAlreadyImported(mnemonic: String) -> Bool {
         // Create wallet from mnemonic
         guard let wallet = HDWallet(mnemonic: mnemonic, passphrase: "") else {
             return false
@@ -239,9 +239,9 @@ struct ImportSeedphraseScreen: View {
 
 // MARK: - Error Types
 
-enum SeedPhraseImportError: ErrorWithCustomPresentation, LocalizedError {    
+enum SeedPhraseImportError: ErrorWithCustomPresentation, LocalizedError {
     case alreadyImported
-    
+
     var errorTitle: String {
         switch self {
         case .alreadyImported:
