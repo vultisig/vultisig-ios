@@ -8,7 +8,8 @@
 import Foundation
 import SwiftData
 
-actor StoredPendingTransactionStorage {
+@MainActor
+final class StoredPendingTransactionStorage {
     static let shared = StoredPendingTransactionStorage()
 
     private let modelContext: ModelContext
