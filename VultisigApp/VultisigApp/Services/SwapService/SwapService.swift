@@ -27,17 +27,23 @@ struct SwapService {
         }
 
         // Start all requests in parallel
+
         let tasks = providers.map { provider in
             Task {
-                try await self.fetchQuoteForProvider(
-                    provider: provider,
-                    amount: amount,
-                    fromCoin: fromCoin,
-                    toCoin: toCoin,
-                    isAffiliate: isAffiliate,
-                    referredCode: referredCode,
-                    vultTierDiscount: vultTierDiscount
-                )
+                do {
+                    let quote = try await self.fetchQuoteForProvider(
+                        provider: provider,
+                        amount: amount,
+                        fromCoin: fromCoin,
+                        toCoin: toCoin,
+                        isAffiliate: isAffiliate,
+                        referredCode: referredCode,
+                        vultTierDiscount: vultTierDiscount
+                    )
+                    return Result<SwapQuote, Error>.success(quote)
+                } catch {
+                    return Result<SwapQuote, Error>.failure(error)
+                }
             }
         }
 
@@ -45,7 +51,7 @@ struct SwapService {
 
         // Await results in priority order
         for task in tasks {
-            switch await task.result {
+            switch await task.value {
             case .success(let quote):
                 // Found a successful quote from the highest priority provider available
                 // Cancel remaining tasks to save resources
