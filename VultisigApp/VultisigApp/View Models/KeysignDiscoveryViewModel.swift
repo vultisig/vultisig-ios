@@ -285,24 +285,41 @@ class KeysignDiscoveryViewModel: ObservableObject {
                 customMessagePayload: customMessagePayload,
                 encryptionKeyHex: encryptionKeyHex,
                 useVultisigRelay: VultisigRelay.IsRelayEnabled,
-                payloadID: ""
+                payloadID: "",
+                customPayloadID: ""
             )
             let protoKeysignMsg = try ProtoSerializer.serialize(message)
             let payloadService = PayloadService(serverURL: serverAddr)
             var jsonData = ""
 
-            if let keysignPayload, payloadService.shouldUploadToRelay(payload: protoKeysignMsg) {
-                let keysignPayload = try ProtoSerializer.serialize(keysignPayload)
-                let hash = try await payloadService.uploadPayload(payload: keysignPayload)
-                let messageWithoutPayload = KeysignMessage(sessionID: sessionID,
-                                                           serviceName: serviceName,
-                                                           payload: nil,
-                                                           customMessagePayload: nil,
-                                                           encryptionKeyHex: encryptionKeyHex,
-                                                           useVultisigRelay: VultisigRelay.IsRelayEnabled,
-                                                           payloadID: hash)
-                jsonData = try ProtoSerializer.serialize(messageWithoutPayload)
-
+            if payloadService.shouldUploadToRelay(payload: protoKeysignMsg) {
+                if let keysignPayload {
+                    let keysignPayloadSerialized = try ProtoSerializer.serialize(keysignPayload)
+                    let hash = try await payloadService.uploadPayload(payload: keysignPayloadSerialized)
+                    let messageWithoutPayload = KeysignMessage(sessionID: sessionID,
+                                                               serviceName: serviceName,
+                                                               payload: nil,
+                                                               customMessagePayload: nil,
+                                                               encryptionKeyHex: encryptionKeyHex,
+                                                               useVultisigRelay: VultisigRelay.IsRelayEnabled,
+                                                               payloadID: hash,
+                                                               customPayloadID: "")
+                    jsonData = try ProtoSerializer.serialize(messageWithoutPayload)
+                } else if let customMessagePayload {
+                    let customPayloadSerialized = try ProtoSerializer.serialize(customMessagePayload)
+                    let hash = try await payloadService.uploadPayload(payload: customPayloadSerialized)
+                    let messageWithoutPayload = KeysignMessage(sessionID: sessionID,
+                                                               serviceName: serviceName,
+                                                               payload: nil,
+                                                               customMessagePayload: nil,
+                                                               encryptionKeyHex: encryptionKeyHex,
+                                                               useVultisigRelay: VultisigRelay.IsRelayEnabled,
+                                                               payloadID: "",
+                                                               customPayloadID: hash)
+                    jsonData = try ProtoSerializer.serialize(messageWithoutPayload)
+                } else {
+                    jsonData = protoKeysignMsg
+                }
             } else {
                 jsonData = protoKeysignMsg
             }

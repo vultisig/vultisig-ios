@@ -1109,6 +1109,8 @@
 "enterYourSeedphraseSubtitleHighlight" = "12 ili 24";
 "seedPhraseWordCountError" = "Unijeli ste %d riječi. Seed fraza mora imati 12 ili 24 riječi.";
 "seedPhraseInvalidError" = "Neispravna seed fraza. Molimo provjerite svoje riječi.";
+"seedPhraseAlreadyImported" = "Seed fraza već uvezena";
+"seedPhraseAlreadyImportedDescription" = "Molimo uvezite drugu seed frazu";
 // Circle
 "circleTitle" = "Circle američki dolar";
 "circleRowGetStarted" = "Započni";

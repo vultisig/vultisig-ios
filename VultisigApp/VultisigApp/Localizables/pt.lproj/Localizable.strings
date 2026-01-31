@@ -1109,6 +1109,8 @@
 "enterYourSeedphraseSubtitleHighlight" = "12 ou 24";
 "seedPhraseWordCountError" = "Você digitou %d palavras. A frase semente deve ter 12 ou 24 palavras.";
 "seedPhraseInvalidError" = "Frase semente inválida. Por favor, verifique suas palavras.";
+"seedPhraseAlreadyImported" = "Frase semente já importada";
+"seedPhraseAlreadyImportedDescription" = "Por favor importe outra frase semente";
 // Circle
 "circleTitle" = "Circle U.S. Dollar";
 "circleRowGetStarted" = "Começar";

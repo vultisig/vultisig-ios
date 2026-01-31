@@ -55,15 +55,24 @@ private struct WithErrorModifier: ViewModifier {
             }
             #if os(iOS)
             .fullScreenCover(item: $presentableError) { presentable in
-                ErrorScreen(
-                    type: errorType,
-                    title: presentable.title,
-                    description: presentable.description,
-                    buttonTitle: buttonTitle
-                ) {
-                    presentableError = nil
-                    error = nil
-                    onRetry()
+                NavigationStack {
+                    ErrorScreen(
+                        type: errorType,
+                        title: presentable.title,
+                        description: presentable.description,
+                        buttonTitle: buttonTitle
+                    ) {
+                        presentableError = nil
+                        error = nil
+                        onRetry()
+                    }
+                    .crossPlatformToolbar("") {
+                        CustomToolbarItem(placement: .trailing) {
+                            ToolbarButton(image: "x") {
+                                presentableError = nil
+                            }
+                        }
+                    }
                 }
             }
         #else

@@ -334,8 +334,8 @@
 		13A078722E8488960093496F /* View+SheetStyling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A078712E84888E0093496F /* View+SheetStyling.swift */; };
 		13A657BA2EA2972200323E4C /* ExpandableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657B92EA2971C00323E4C /* ExpandableView.swift */; };
 		13A657C92EA2BCC400323E4C /* HiddenBalanceText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657C82EA2BCBE00323E4C /* HiddenBalanceText.swift */; };
-		13A65B5B2F2A884800349AD0 /* UTType+VaultBackup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A65B5A2F2A884800349AD0 /* UTType+VaultBackup.swift */; };
 		13A65B2D2F2A582500349AD0 /* devices_component.riv in Resources */ = {isa = PBXBuildFile; fileRef = 13A65B2C2F2A582500349AD0 /* devices_component.riv */; };
+		13A65B5B2F2A884800349AD0 /* UTType+VaultBackup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A65B5A2F2A884800349AD0 /* UTType+VaultBackup.swift */; };
 		13A74CBB2ED3D1CF00B97173 /* MayaChainBondInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A74CBA2ED3D1C900B97173 /* MayaChainBondInteractor.swift */; };
 		13A74CBD2ED3D1F700B97173 /* MayaChainStakeInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A74CBC2ED3D1F100B97173 /* MayaChainStakeInteractor.swift */; };
 		13A74CBF2ED3D2CA00B97173 /* DefaultLPsInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A74CBE2ED3D2C500B97173 /* DefaultLPsInteractor.swift */; };
@@ -1642,8 +1642,8 @@
 		13A078712E84888E0093496F /* View+SheetStyling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+SheetStyling.swift"; sourceTree = "<group>"; };
 		13A657B92EA2971C00323E4C /* ExpandableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpandableView.swift; sourceTree = "<group>"; };
 		13A657C82EA2BCBE00323E4C /* HiddenBalanceText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HiddenBalanceText.swift; sourceTree = "<group>"; };
-		13A65B5A2F2A884800349AD0 /* UTType+VaultBackup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UTType+VaultBackup.swift"; sourceTree = "<group>"; };
 		13A65B2C2F2A582500349AD0 /* devices_component.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = devices_component.riv; sourceTree = "<group>"; };
+		13A65B5A2F2A884800349AD0 /* UTType+VaultBackup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UTType+VaultBackup.swift"; sourceTree = "<group>"; };
 		13A74CBA2ED3D1C900B97173 /* MayaChainBondInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaChainBondInteractor.swift; sourceTree = "<group>"; };
 		13A74CBC2ED3D1F100B97173 /* MayaChainStakeInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaChainStakeInteractor.swift; sourceTree = "<group>"; };
 		13A74CBE2ED3D2C500B97173 /* DefaultLPsInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultLPsInteractor.swift; sourceTree = "<group>"; };

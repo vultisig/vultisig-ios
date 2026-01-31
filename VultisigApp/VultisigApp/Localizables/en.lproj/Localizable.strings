@@ -1143,6 +1143,8 @@
 "enterYourSeedphraseSubtitleHighlight" = "12 or 24";
 "seedPhraseWordCountError" = "You entered %d words. Seed phrase must be 12 or 24 words.";
 "seedPhraseInvalidError" = "Invalid seed phrase. Please double-check your words.";
+"seedPhraseAlreadyImported" = "Seed Phrase already imported";
+"seedPhraseAlreadyImportedDescription" = "Please import another seed phrase";
 // Circle
 "circleTitle" = "Circle";
 "circleWithdrawTitle" = "Withdraw USDC";
