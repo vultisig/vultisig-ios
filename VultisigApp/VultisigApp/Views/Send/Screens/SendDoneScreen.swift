@@ -24,7 +24,6 @@ struct SendDoneScreen: View {
                 sendTransaction: tx,
                 swapTransaction: nil,
                 isSend: true,
-                contentPadding: 0,
                 keysignPayload: keysignPayload
             )
         }

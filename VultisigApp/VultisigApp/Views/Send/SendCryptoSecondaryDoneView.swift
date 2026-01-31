@@ -74,7 +74,8 @@ struct SendCryptoSecondaryDoneView: View {
         SendCryptoDoneHeaderView(
             coin: input.coin,
             cryptoAmount: input.amountCrypto,
-            fiatAmount: input.amountFiat.formatToFiat(includeCurrencySymbol: true)
+            fiatAmount: input.amountFiat.formatToFiat(includeCurrencySymbol: true),
+            status: .confirmed
         )
     }
 
