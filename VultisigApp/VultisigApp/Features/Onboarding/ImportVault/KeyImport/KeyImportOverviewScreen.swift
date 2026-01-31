@@ -28,16 +28,13 @@ struct KeyImportOverviewScreen: View {
     }
 
     var body: some View {
-        Screen(showNavigationBar: false, edgeInsets: .init(leading: 24, trailing: 24)) {
+        Screen(showNavigationBar: false) {
             VStack(alignment: .leading, spacing: 0) {
                 Spacer()
                 animation
                 Spacer()
-                VStack(spacing: 0) {
+                VStack(spacing: 32) {
                     informationView
-
-                    Spacer().frame(maxHeight: 32)
-
                     PrimaryButton(title: "continue") {
                         router.navigate(to: KeygenRoute.backupNow(
                             tssType: .KeyImport,
@@ -65,7 +62,7 @@ struct KeyImportOverviewScreen: View {
                 }
             )
         }
-        .onLoad {
+        .onAppear {
             if email != nil {
                 isVerificationLinkActive = true
             }
@@ -76,7 +73,7 @@ struct KeyImportOverviewScreen: View {
 
     var animation: some View {
         animationVM?.view()
-            .frame(width: 350, height: 240)
+            .frame(maxWidth: 350, maxHeight: 240)
             .offset(x: -48)
     }
 
@@ -127,5 +124,6 @@ struct KeyImportOverviewScreen: View {
         keyImportInput: nil,
         setupType: .secure(numberOfDevices: 1)
     )
-    .frame(maxHeight: isMacOS ? 600 : nil)
+    .frame(width: 1500)
+    .frame(maxHeight: isMacOS ? 800 : nil)
 }
