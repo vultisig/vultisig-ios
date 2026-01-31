@@ -219,7 +219,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         // it will update the quotes after a short delay to avoid excessive requests
         updateQuoteTask?.cancel()
         updateQuoteTask = Task { [weak self] in
-            try? await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds delay
+            try? await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds delay
             guard !Task.isCancelled else { return }
 
             self?.isLoadingQuotes = true
@@ -229,8 +229,14 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 self?.isLoadingFees = false
             }
 
-            await self?.updateQuotes(tx: tx, vault: vault, referredCode: referredCode)
-            await self?.updateFees(tx: tx, vault: vault)
+            await withTaskGroup(of: Void.self) { group in
+                group.addTask { [weak self] in
+                    await self?.updateQuotes(tx: tx, vault: vault, referredCode: referredCode)
+                }
+                group.addTask { [weak self] in
+                    await self?.updateFees(tx: tx, vault: vault)
+                }
+            }
         }
     }
 

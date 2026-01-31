@@ -26,27 +26,44 @@ struct SwapService {
             throw SwapError.routeUnavailable
         }
 
+        // Start all requests in parallel
+
+        let tasks = providers.map { provider in
+            Task {
+                do {
+                    let quote = try await self.fetchQuoteForProvider(
+                        provider: provider,
+                        amount: amount,
+                        fromCoin: fromCoin,
+                        toCoin: toCoin,
+                        isAffiliate: isAffiliate,
+                        referredCode: referredCode,
+                        vultTierDiscount: vultTierDiscount
+                    )
+                    return Result<SwapQuote, Error>.success(quote)
+                } catch {
+                    return Result<SwapQuote, Error>.failure(error)
+                }
+            }
+        }
+
         var lastError: Error?
 
-        // Try each provider in order until one succeeds
-        for provider in providers {
-            do {
-                return try await fetchQuoteForProvider(
-                    provider: provider,
-                    amount: amount,
-                    fromCoin: fromCoin,
-                    toCoin: toCoin,
-                    isAffiliate: isAffiliate,
-                    referredCode: referredCode,
-                    vultTierDiscount: vultTierDiscount
-                )
-            } catch {
+        // Await results in priority order
+        for task in tasks {
+            switch await task.value {
+            case .success(let quote):
+                // Found a successful quote from the highest priority provider available
+                // Cancel remaining tasks to save resources
+                tasks.forEach { $0.cancel() }
+                return quote
+            case .failure(let error):
+                // This provider failed, try the next one (which is already running)
                 lastError = error
                 continue
             }
         }
-
-        // If all providers failed, throw the last error
+        
         throw lastError ?? SwapError.routeUnavailable
     }
 
