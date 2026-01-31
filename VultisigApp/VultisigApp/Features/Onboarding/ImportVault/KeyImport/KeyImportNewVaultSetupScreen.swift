@@ -24,7 +24,7 @@ struct KeyImportNewVaultSetupScreen: View {
 
     var body: some View {
         Screen(edgeInsets: .init(leading: 24, trailing: 24)) {
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 0) {
                 VStack(alignment: .leading, spacing: 20) {
                     Text("yourVaultSetup".localized)
                         .foregroundStyle(Theme.colors.textPrimary)
@@ -57,7 +57,7 @@ struct KeyImportNewVaultSetupScreen: View {
 
     var animation: some View {
         animationVM?.view()
-            .frame(width: 350, height: 240)
+            .frame(maxWidth: 350, maxHeight: 240)
             .offset(x: -48)
     }
 
@@ -81,6 +81,7 @@ struct KeyImportNewVaultSetupScreen: View {
                 icon: "lock"
             )
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .fixedSize(horizontal: false, vertical: true)
     }
 
@@ -309,5 +310,6 @@ private extension KeyImportNewVaultSetupScreen {
             Button("test") {}
         }
     }
-    .frame(maxHeight: isMacOS ? 600 : nil)
+    .frame(width: 1500)
+    .frame(maxWidth: 1500, maxHeight: isMacOS ? 800 : nil)
 }
