@@ -51,6 +51,7 @@ class JoinKeysignViewModel: ObservableObject {
 
     var encryptionKeyHex: String = ""
     var payloadID: String = ""
+    var customPayloadID: String = ""
 
     var memo: String? {
         guard let decodedMemo = decodedMemo, !decodedMemo.isEmpty else {
@@ -277,6 +278,7 @@ class JoinKeysignViewModel: ObservableObject {
             }
 
             self.payloadID = keysignMsg.payloadID
+            self.customPayloadID = keysignMsg.customPayloadID
             self.useVultisigRelay = keysignMsg.useVultisigRelay
 
             if useVultisigRelay {
@@ -284,6 +286,7 @@ class JoinKeysignViewModel: ObservableObject {
             }
 
             await ensureKeysignPayload()
+            await ensureCustomMessagePayload()
         } catch {
             self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
             self.status = .FailedToStart
@@ -334,6 +337,26 @@ class JoinKeysignViewModel: ObservableObject {
             self.prepareKeysignMessages(keysignPayload: kp)
         } catch {
             self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
+            self.status = .FailedToStart
+        }
+    }
+
+    func ensureCustomMessagePayload() async {
+        if self.customPayloadID.isEmpty || self.customMessagePayload != nil {
+            return
+        }
+        guard let serverAddress else {
+            return
+        }
+
+        let payloadService = PayloadService(serverURL: serverAddress)
+        do {
+            let payload = try await payloadService.getPayload(hash: self.customPayloadID)
+            let cmp: CustomMessagePayload = try ProtoSerializer.deserialize(base64EncodedString: payload)
+            self.customMessagePayload = cmp
+            self.prepareKeysignMessages(customMessagePayload: cmp)
+        } catch {
+            self.errorMsg = "Error decoding custom message payload: \(error.localizedDescription)"
             self.status = .FailedToStart
         }
     }
