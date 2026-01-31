@@ -50,7 +50,6 @@ struct CoinDetailScreen: View {
         content
             .presentationSizingFitted()
             .applySheetSize(700, 450)
-            .transaction { $0.disablesAnimations = true }
 #endif
     }
 

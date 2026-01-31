@@ -18,6 +18,7 @@ struct ChainDetailScreen: View {
     @State var showManageTokens: Bool = false
     @State var showSearchHeader: Bool = false
     @State var coinToShow: Coin?
+    @State var showCoinDetail: Bool = false
     @State var focusSearch: Bool = false
     @State var showReceiveSheet: Bool = false
     @State var scrollProxy: ScrollViewProxy?
@@ -103,14 +104,35 @@ struct ChainDetailScreen: View {
         .onChange(of: refreshTrigger) { _, _ in
             refresh()
         }
-        .crossPlatformSheet(item: $coinToShow) {
-            CoinDetailScreen(
-                coin: $0,
-                vault: vault,
-                sendTx: sendTx,
-                isPresented: Binding(get: { coinToShow != nil}, set: { _ in coinToShow = nil }),
-                onCoinAction: onCoinAction
-            )
+        .crossPlatformSheet(isPresented: $showCoinDetail) {
+            if let coin = coinToShow {
+                CoinDetailScreen(
+                    coin: coin,
+                    vault: vault,
+                    sendTx: sendTx,
+                    isPresented: $showCoinDetail,
+                    onCoinAction: onCoinAction
+                )
+            }
+        }
+        .onChange(of: coinToShow) { _, newValue in
+            if newValue != nil {
+                #if os(macOS)
+                // Add a small delay on macOS to prevent state conflicts
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    showCoinDetail = true
+                }
+                #else
+                showCoinDetail = true
+                #endif
+            } else {
+                showCoinDetail = false
+            }
+        }
+        .onChange(of: showCoinDetail) { _, isShowing in
+            if !isShowing {
+                coinToShow = nil
+            }
         }
         .onChange(of: coins) { _, _ in
             refresh()
