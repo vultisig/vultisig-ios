@@ -26,35 +26,39 @@ struct SwapService {
             throw SwapError.routeUnavailable
         }
 
-        // Parallelize fetching from all providers
-        return try await withThrowingTaskGroup(of: SwapQuote.self) { group in
-            for provider in providers {
-                group.addTask {
-                    try await self.fetchQuoteForProvider(
-                        provider: provider,
-                        amount: amount,
-                        fromCoin: fromCoin,
-                        toCoin: toCoin,
-                        isAffiliate: isAffiliate,
-                        referredCode: referredCode,
-                        vultTierDiscount: vultTierDiscount
-                    )
-                }
+        // Start all requests in parallel
+        let tasks = providers.map { provider in
+            Task {
+                try await self.fetchQuoteForProvider(
+                    provider: provider,
+                    amount: amount,
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    isAffiliate: isAffiliate,
+                    referredCode: referredCode,
+                    vultTierDiscount: vultTierDiscount
+                )
             }
-
-            // Return the first successful quote
-            while let result = await group.nextResult() {
-                switch result {
-                case .success(let quote):
-                    group.cancelAll()
-                    return quote
-                case .failure:
-                    continue
-                }
-            }
-            
-            throw SwapError.routeUnavailable
         }
+
+        var lastError: Error?
+
+        // Await results in priority order
+        for task in tasks {
+            switch await task.result {
+            case .success(let quote):
+                // Found a successful quote from the highest priority provider available
+                // Cancel remaining tasks to save resources
+                tasks.forEach { $0.cancel() }
+                return quote
+            case .failure(let error):
+                // This provider failed, try the next one (which is already running)
+                lastError = error
+                continue
+            }
+        }
+        
+        throw lastError ?? SwapError.routeUnavailable
     }
 
     private func fetchQuoteForProvider(
