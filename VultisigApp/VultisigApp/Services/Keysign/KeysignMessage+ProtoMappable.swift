@@ -30,7 +30,8 @@ extension KeysignMessage: ProtoMappable {
         }
         self.encryptionKeyHex = proto.encryptionKeyHex
         self.useVultisigRelay = proto.useVultisigRelay
-        self.payloadID =  proto.payloadID
+        self.payloadID = proto.payloadID
+        self.customPayloadID = proto.hasCustomPayloadID ? proto.customPayloadID : ""
     }
 
     func mapToProtobuff() -> VSKeysignMessage {
@@ -45,6 +46,9 @@ extension KeysignMessage: ProtoMappable {
             }
             if !payloadID.isEmpty {
                 $0.payloadID = payloadID
+            }
+            if !customPayloadID.isEmpty {
+                $0.customPayloadID = customPayloadID
             }
             $0.encryptionKeyHex = encryptionKeyHex
             $0.useVultisigRelay = useVultisigRelay
