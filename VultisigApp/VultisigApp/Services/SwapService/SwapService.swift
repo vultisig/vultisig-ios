@@ -26,28 +26,35 @@ struct SwapService {
             throw SwapError.routeUnavailable
         }
 
-        var lastError: Error?
-
-        // Try each provider in order until one succeeds
-        for provider in providers {
-            do {
-                return try await fetchQuoteForProvider(
-                    provider: provider,
-                    amount: amount,
-                    fromCoin: fromCoin,
-                    toCoin: toCoin,
-                    isAffiliate: isAffiliate,
-                    referredCode: referredCode,
-                    vultTierDiscount: vultTierDiscount
-                )
-            } catch {
-                lastError = error
-                continue
+        // Parallelize fetching from all providers
+        return try await withThrowingTaskGroup(of: SwapQuote.self) { group in
+            for provider in providers {
+                group.addTask {
+                    try await self.fetchQuoteForProvider(
+                        provider: provider,
+                        amount: amount,
+                        fromCoin: fromCoin,
+                        toCoin: toCoin,
+                        isAffiliate: isAffiliate,
+                        referredCode: referredCode,
+                        vultTierDiscount: vultTierDiscount
+                    )
+                }
             }
-        }
 
-        // If all providers failed, throw the last error
-        throw lastError ?? SwapError.routeUnavailable
+            // Return the first successful quote
+            while let result = await group.nextResult() {
+                switch result {
+                case .success(let quote):
+                    group.cancelAll()
+                    return quote
+                case .failure:
+                    continue
+                }
+            }
+            
+            throw SwapError.routeUnavailable
+        }
     }
 
     private func fetchQuoteForProvider(
