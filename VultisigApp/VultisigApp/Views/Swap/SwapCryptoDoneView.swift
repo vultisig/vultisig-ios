@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import RiveRuntime
 
 struct SwapCryptoDoneView: View {
     let tx: SwapTransaction
@@ -20,31 +19,75 @@ struct SwapCryptoDoneView: View {
     @Binding var alertTitle: String
 
     @State var showFees: Bool = false
-    @State var animationVM: RiveViewModel? = nil
+    @StateObject private var statusViewModel: TransactionStatusViewModel
 
     @Environment(\.openURL) var openURL
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @EnvironmentObject var appViewModel: AppViewModel
 
+    init(
+        tx: SwapTransaction,
+        vault: Vault,
+        hash: String,
+        approveHash: String?,
+        progressLink: String?,
+        sendSummaryViewModel: SendSummaryViewModel,
+        swapSummaryViewModel: SwapCryptoViewModel,
+        showAlert: Binding<Bool>,
+        alertTitle: Binding<String>
+    ) {
+        self.tx = tx
+        self.vault = vault
+        self.hash = hash
+        self.approveHash = approveHash
+        self.progressLink = progressLink
+        self.sendSummaryViewModel = sendSummaryViewModel
+        self.swapSummaryViewModel = swapSummaryViewModel
+        self._showAlert = showAlert
+        self._alertTitle = alertTitle
+
+        // Initialize status view model with swap transaction details
+        _statusViewModel = StateObject(wrappedValue: TransactionStatusViewModel(
+            txHash: hash,
+            chain: tx.fromCoin.chain,
+            coinTicker: tx.fromCoin.ticker,
+            amount: "\(tx.fromAmount) \(tx.fromCoin.ticker)",
+            toAddress: tx.toCoin.address
+        ))
+    }
+    
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 8) {
             cards
             buttons
         }
-        .buttonStyle(BorderlessButtonStyle())
-        .onLoad {
-            animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
+        .onAppear {
+            // Start polling for transaction status
+            statusViewModel.startPolling()
+        }
+        .onDisappear {
+            // Stop polling when view disappears
+            statusViewModel.stopPolling()
         }
     }
 
     var cards: some View {
-        ScrollView {
-            VStack {
-                animation
+        VStack(spacing: 24) {
+            TransactionStatusHeaderView(status: statusViewModel.status)
+
+            VStack(spacing: 8) {
                 fromToCards
                 summary
             }
-            .padding(.horizontal)
+        }
+    }
+
+    var buttons: some View {
+        VStack(spacing: 9) {
+            if progressLink != nil {
+                trackButton
+            }
+            doneButton
         }
     }
 
@@ -60,22 +103,6 @@ struct SwapCryptoDoneView: View {
         PrimaryButton(title: "done") {
             appViewModel.restart()
         }
-    }
-
-    var animation: some View {
-        ZStack {
-            animationVM?.view()
-                .frame(width: 280, height: 280)
-
-            animationText
-                .offset(y: 50)
-        }
-    }
-
-    var animationText: some View {
-        Text(NSLocalizedString("transactionSuccessful", comment: ""))
-            .foregroundStyle(LinearGradient.primaryGradient)
-            .font(Theme.fonts.bodyLMedium)
     }
 
     var fromToCards: some View {
@@ -353,17 +380,19 @@ struct SwapCryptoDoneView: View {
 }
 
 #Preview {
-    SwapCryptoDoneView(
-        tx: SwapTransaction(),
-        vault: Vault.example,
-        hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
-        approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
-        progressLink: nil,
-        sendSummaryViewModel: SendSummaryViewModel(),
-        swapSummaryViewModel: SwapCryptoViewModel(),
-        showAlert: .constant(false),
-        alertTitle: .constant("")
-    )
-    .environmentObject(SettingsViewModel())
-    .environmentObject(AppViewModel())
+    Screen(backgroundType: .gradient) {
+        SwapCryptoDoneView(
+            tx: SwapTransaction(),
+            vault: Vault.example,
+            hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
+            approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
+            progressLink: nil,
+            sendSummaryViewModel: SendSummaryViewModel(),
+            swapSummaryViewModel: SwapCryptoViewModel(),
+            showAlert: .constant(false),
+            alertTitle: .constant("")
+        )
+        .environmentObject(SettingsViewModel())
+        .environmentObject(AppViewModel())
+    }
 }

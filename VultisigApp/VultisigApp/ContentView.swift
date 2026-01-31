@@ -73,6 +73,11 @@ struct ContentView: View {
             } else {
                 appViewModel.loadSelectedVault(for: vaults)
             }
+
+            // Resume polling for pending transactions on app launch
+            Task {
+                await BackgroundTransactionPoller.shared.resumePendingTransactions()
+            }
         }
         .onChange(of: appViewModel.selectedVault) { _, _ in
             guard appViewModel.restartNavigation else { return }
