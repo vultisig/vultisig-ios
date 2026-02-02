@@ -13,12 +13,12 @@ import AVFoundation
 
 struct GeneralCodeScannerView: View {
     @Binding var showSheet: Bool
-    @Binding var shouldJoinKeygen: Bool
-    @Binding var shouldKeysignTransaction: Bool
-    @Binding var shouldSendCrypto: Bool
     @Binding var selectedChain: Chain?
 
     let sendTX: SendTransaction
+    var onJoinKeygen: (() -> Void)?
+    var onKeysignTransaction: (() -> Void)?
+    var onSendCrypto: (() -> Void)?
 
     @Query var vaults: [Vault]
 
@@ -62,11 +62,11 @@ struct GeneralCodeScannerView: View {
 #Preview {
     GeneralCodeScannerView(
         showSheet: .constant(true),
-        shouldJoinKeygen: .constant(true),
-        shouldKeysignTransaction: .constant(true),
-        shouldSendCrypto: .constant(true),
         selectedChain: .constant(nil),
-        sendTX: SendTransaction()
+        sendTX: SendTransaction(),
+        onJoinKeygen: { print("Join Keygen") },
+        onKeysignTransaction: { print("Keysign Transaction") },
+        onSendCrypto: { print("Send Crypto") }
     )
 }
 #endif

@@ -16,14 +16,7 @@ extension SettingsCustomMessageView {
         }
         .navigationTitle(NSLocalizedString(viewModel.state.title, comment: ""))
         .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(viewModel.state != .initial)
-        .toolbar {
-            if viewModel.state != .initial {
-                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                    backButton
-                }
-            }
-        }
+        .navigationBarBackButtonHidden(viewModel.canGoBack() == false)
     }
 
     var customMessageContent: some View {

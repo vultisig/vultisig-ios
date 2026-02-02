@@ -25,6 +25,8 @@ struct JoinKeygenView: View {
 
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var appViewModel: ApplicationState
+    @EnvironmentObject var homeViewModel: HomeViewModel
+    @Environment(\.router) var router
 
     let logger = Logger(subsystem: "join-keygen", category: "communication")
 
@@ -112,15 +114,23 @@ struct JoinKeygenView: View {
             .multilineTextAlignment(.center)
     }
 
+    @ViewBuilder
     var failToStartKeygen: some View {
-        VStack {
-            Text(viewModel.errorMessage)
-                .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(Theme.colors.textPrimary)
-                .multilineTextAlignment(.center)
-                .padding(.vertical, 30)
+        if let error = viewModel.error {
+            ErrorView(
+                type: .warning,
+                title: error.errorTitle,
+                description: error.errorDescription,
+                buttonTitle: "tryAgain".localized
+            ) {
+                // Close the current screen
+                router.navigateBack()
 
-            filePicker
+                // Show scanner again after navigation
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    homeViewModel.shouldShowScanner = true
+                }
+            }
         }
     }
 
@@ -202,17 +212,6 @@ struct JoinKeygenView: View {
         .padding(.vertical, 30)
         .onAppear {
             viewModel.joinKeygenCommittee()
-        }
-    }
-
-    var filePicker: some View {
-        Button {
-            showFileImporter.toggle()
-        } label: {
-            Image(systemName: "photo.on.rectangle.angled")
-                .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(Theme.colors.textPrimary)
-                .frame(width: 40, height: 40)
         }
     }
 
@@ -299,4 +298,5 @@ struct JoinKeygenView: View {
     JoinKeygenView(vault: Vault.example, selectedVault: Vault.example)
         .environmentObject(DeeplinkViewModel())
         .environmentObject(ApplicationState())
+        .environmentObject(HomeViewModel())
 }
