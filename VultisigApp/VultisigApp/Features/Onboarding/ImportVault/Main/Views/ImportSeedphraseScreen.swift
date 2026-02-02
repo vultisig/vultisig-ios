@@ -37,6 +37,26 @@ struct ImportSeedphraseScreen: View {
         return "\(wordsCount)/\(maxWords)"
     }
 
+    /// Custom binding that prevents newlines while preserving spaces
+    var mnemonicInputBinding: Binding<String> {
+        Binding(
+            get: { mnemonicInput },
+            set: { newValue in
+                // Detect if user pressed Enter/Return
+                let containsNewline = newValue.contains("\n")
+
+                // Remove newlines, preserving existing spaces
+                let filtered = newValue.replacingOccurrences(of: "\n", with: "")
+                mnemonicInput = filtered
+
+                // Treat newline as submit action
+                if containsNewline {
+                    onImport()
+                }
+            }
+        )
+    }
+
     var body: some View {
         Screen {
             VStack(spacing: 0) {
@@ -60,7 +80,7 @@ struct ImportSeedphraseScreen: View {
                     }
 
                     CommonTextEditor(
-                        value: $mnemonicInput,
+                        value: mnemonicInputBinding,
                         placeholder: "mnemonicPlaceholder".localized,
                         isFocused: $isFocused,
                         onSubmit: onImport,
@@ -96,14 +116,6 @@ struct ImportSeedphraseScreen: View {
         .onDisappear { isFocused = false }
         .onChange(of: mnemonicInput) { oldValue, newValue in
             let cleaned = cleanMnemonic(text: newValue)
-
-            // Detect new line - attempt import and clean the text
-            if cleaned != newValue {
-                mnemonicInput = cleaned
-                // Trigger import if new line was detected
-                onImport()
-                return
-            }
 
             let words = cleaned.split(separator: " ")
 
