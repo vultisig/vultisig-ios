@@ -11,11 +11,6 @@ import Foundation
 struct TransactionStatusQuery {
     let txHash: String
     let chain: Chain
-
-    init(txHash: String, chain: Chain) {
-        self.txHash = txHash
-        self.chain = chain
-    }
 }
 
 protocol TransactionStatusProvider {

@@ -71,7 +71,7 @@ struct SendCryptoDoneContentView: View {
                         .stroke(Theme.colors.bgSurface2, lineWidth: 1)
                 )
             }
-            
+
             Spacer()
 
             PrimaryButton(title: "done") {
