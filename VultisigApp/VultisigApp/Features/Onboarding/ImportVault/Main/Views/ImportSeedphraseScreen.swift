@@ -14,6 +14,7 @@ struct ImportSeedphraseScreen: View {
 
     @State private var validationTask: Task<Void, Never>?
     @State private var duplicateSeedError: Error?
+    @State private var isImporting = false
 
     @FocusState var isFocused: Bool
     @State var mnemonicInput: String = ""
@@ -153,12 +154,19 @@ struct ImportSeedphraseScreen: View {
     func onImport() {
         guard validMnemonic == true else { return }
 
+        // Prevent concurrent import attempts
+        guard !isImporting else { return }
+
         let cleanedMnemonic = cleanMnemonic(text: mnemonicInput)
+
+        isImporting = true
 
         // Check if seed phrase is already imported
         Task {
             let isAlreadyImported = await checkIfSeedAlreadyImported(mnemonic: cleanedMnemonic)
             await MainActor.run {
+                defer { isImporting = false }
+
                 if isAlreadyImported {
                     duplicateSeedError = SeedPhraseImportError.alreadyImported
                 } else {
