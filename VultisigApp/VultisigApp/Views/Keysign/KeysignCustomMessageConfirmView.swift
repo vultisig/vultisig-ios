@@ -9,6 +9,7 @@ import SwiftUI
 
 struct KeysignCustomMessageConfirmView: View {
     @ObservedObject var viewModel: JoinKeysignViewModel
+    @State private var isMessageExpanded: Bool = false
 
     var body: some View {
         ZStack {
@@ -33,7 +34,6 @@ struct KeysignCustomMessageConfirmView: View {
                 method
                 Separator()
                 message
-                Separator()
             }
             .padding(16)
             .background(Theme.colors.bgSurface1)
@@ -48,15 +48,36 @@ struct KeysignCustomMessageConfirmView: View {
 
     var message: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(NSLocalizedString("message", comment: "") + ":")
-                .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textTertiary)
+            Button {
+                withAnimation {
+                    isMessageExpanded.toggle()
+                }
+            } label: {
+                HStack(alignment: .center) {
+                    Text(NSLocalizedString("message", comment: "") + ":")
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundColor(Theme.colors.textTertiary)
+                    Spacer()
+                    Icon(named: "chevron-down", color: Theme.colors.textTertiary, size: 16)
+                        .rotationEffect(.degrees(isMessageExpanded ? 180 : 0))
+                }
+            }
+            .buttonStyle(.borderless)
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                Text(formattedMessage)
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(Theme.colors.textPrimary)
-                    .fixedSize(horizontal: false, vertical: true)
+            if isMessageExpanded {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(formattedMessage)
+                            .font(Theme.fonts.bodySMedium)
+                            .foregroundColor(Theme.colors.textPrimary)
+                            .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(16)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .frame(maxWidth: .infinity, maxHeight: 300)
+                .background(RoundedRectangle(cornerRadius: 16).fill(Theme.colors.bgSurface2))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

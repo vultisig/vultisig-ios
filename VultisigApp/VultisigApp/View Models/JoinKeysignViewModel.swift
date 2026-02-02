@@ -245,15 +245,6 @@ class JoinKeysignViewModel: ObservableObject {
             self.logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")
 
             var vaultPublicKeyECDSAInQrCode: String = .empty
-            // Decode custom message if present
-            if let customMessage = keysignMsg.customMessagePayload {
-                if let decodedMessage = await customMessage.message.decodedExtensionMemoAsync() {
-                    self.customMessagePayload?.decodedMessage = decodedMessage
-                }
-                if customMessage.vaultPublicKeyECDSA != .empty {
-                    vaultPublicKeyECDSAInQrCode = customMessage.vaultPublicKeyECDSA
-                }
-            }
 
             if let keysignPayload = keysignMsg.payload {
                 vaultPublicKeyECDSAInQrCode = keysignPayload.vaultPubKeyECDSA
@@ -287,6 +278,16 @@ class JoinKeysignViewModel: ObservableObject {
 
             await ensureKeysignPayload()
             await ensureCustomMessagePayload()
+            
+            // Decode custom message if present
+            if let customMessage = customMessagePayload {
+                if let decodedMessage = await customMessage.message.decodedExtensionMemoAsync() {
+                    self.customMessagePayload?.decodedMessage = decodedMessage
+                }
+                if customMessage.vaultPublicKeyECDSA != .empty {
+                    vaultPublicKeyECDSAInQrCode = customMessage.vaultPublicKeyECDSA
+                }
+            }
         } catch {
             self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
             self.status = .FailedToStart
