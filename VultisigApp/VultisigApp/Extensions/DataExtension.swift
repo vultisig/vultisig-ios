@@ -46,8 +46,19 @@ extension Data {
     }
 
     static func ed25519ClampedScalar(from seed: Data) -> Data? {
-        guard seed.count == 32 else { return nil }
-        let digest = SHA512.hash(data: seed)
+        // Handle Cardano's extended key format (192 bytes)
+        // Extract the first 32 bytes which contains the actual Ed25519 private key scalar
+        let keyData: Data
+        if seed.count == 192 {
+            // Cardano extended key format: first 32 bytes is the private key scalar
+            keyData = seed.prefix(32)
+        } else if seed.count == 32 {
+            keyData = seed
+        } else {
+            return nil
+        }
+
+        let digest = SHA512.hash(data: keyData)
         var scalar = Data(digest.prefix(32)) // little-endian per spec
         scalar[0] &= 0xF8
         scalar[31] &= 0x3F
