@@ -174,6 +174,7 @@
 		134A9FCB2E96AD1B00030C56 /* BannerLayoutProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FCA2E96AD1400030C56 /* BannerLayoutProperties.swift */; };
 		134A9FCD2E96B49800030C56 /* VaultBannerCarouselIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FCC2E96B49700030C56 /* VaultBannerCarouselIndicator.swift */; };
 		134A9FCF2E96B4B500030C56 /* VaultBannerCarouselIndicators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FCE2E96B4B000030C56 /* VaultBannerCarouselIndicators.swift */; };
+		134D610F2F30EB22008F034D /* devices_component.riv in Resources */ = {isa = PBXBuildFile; fileRef = 134D610E2F30EB22008F034D /* devices_component.riv */; };
 		134DFE0F2F28EEFE0087C9D5 /* CardanoTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE082F28EEFE0087C9D5 /* CardanoTransactionStatusProvider.swift */; };
 		134DFE102F28EEFE0087C9D5 /* SuiTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE0B2F28EEFE0087C9D5 /* SuiTransactionStatusProvider.swift */; };
 		134DFE112F28EEFE0087C9D5 /* PolkadotTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE092F28EEFE0087C9D5 /* PolkadotTransactionStatusProvider.swift */; };
@@ -358,7 +359,6 @@
 		13A078722E8488960093496F /* View+SheetStyling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A078712E84888E0093496F /* View+SheetStyling.swift */; };
 		13A657BA2EA2972200323E4C /* ExpandableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657B92EA2971C00323E4C /* ExpandableView.swift */; };
 		13A657C92EA2BCC400323E4C /* HiddenBalanceText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657C82EA2BCBE00323E4C /* HiddenBalanceText.swift */; };
-		13A65B2D2F2A582500349AD0 /* devices_component.riv in Resources */ = {isa = PBXBuildFile; fileRef = 13A65B2C2F2A582500349AD0 /* devices_component.riv */; };
 		13A65B5B2F2A884800349AD0 /* UTType+VaultBackup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A65B5A2F2A884800349AD0 /* UTType+VaultBackup.swift */; };
 		13A74CBB2ED3D1CF00B97173 /* MayaChainBondInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A74CBA2ED3D1C900B97173 /* MayaChainBondInteractor.swift */; };
 		13A74CBD2ED3D1F700B97173 /* MayaChainStakeInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A74CBC2ED3D1F100B97173 /* MayaChainStakeInteractor.swift */; };
@@ -1518,6 +1518,7 @@
 		134A9FCA2E96AD1400030C56 /* BannerLayoutProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerLayoutProperties.swift; sourceTree = "<group>"; };
 		134A9FCC2E96B49700030C56 /* VaultBannerCarouselIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBannerCarouselIndicator.swift; sourceTree = "<group>"; };
 		134A9FCE2E96B4B000030C56 /* VaultBannerCarouselIndicators.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBannerCarouselIndicators.swift; sourceTree = "<group>"; };
+		134D610E2F30EB22008F034D /* devices_component.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = devices_component.riv; sourceTree = "<group>"; };
 		134DFE082F28EEFE0087C9D5 /* CardanoTransactionStatusProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardanoTransactionStatusProvider.swift; sourceTree = "<group>"; };
 		134DFE092F28EEFE0087C9D5 /* PolkadotTransactionStatusProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolkadotTransactionStatusProvider.swift; sourceTree = "<group>"; };
 		134DFE0A2F28EEFE0087C9D5 /* RippleTransactionStatusProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RippleTransactionStatusProvider.swift; sourceTree = "<group>"; };
@@ -1703,7 +1704,6 @@
 		13A078712E84888E0093496F /* View+SheetStyling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+SheetStyling.swift"; sourceTree = "<group>"; };
 		13A657B92EA2971C00323E4C /* ExpandableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpandableView.swift; sourceTree = "<group>"; };
 		13A657C82EA2BCBE00323E4C /* HiddenBalanceText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HiddenBalanceText.swift; sourceTree = "<group>"; };
-		13A65B2C2F2A582500349AD0 /* devices_component.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = devices_component.riv; sourceTree = "<group>"; };
 		13A65B5A2F2A884800349AD0 /* UTType+VaultBackup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UTType+VaultBackup.swift"; sourceTree = "<group>"; };
 		13A74CBA2ED3D1C900B97173 /* MayaChainBondInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaChainBondInteractor.swift; sourceTree = "<group>"; };
 		13A74CBC2ED3D1F100B97173 /* MayaChainStakeInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaChainStakeInteractor.swift; sourceTree = "<group>"; };
@@ -6003,13 +6003,13 @@
 				1377092E2F1FC57D00970668 /* backup_device3.riv */,
 				1377092F2F1FC57D00970668 /* backup_device4.riv */,
 				132E01632F1AA2FA007E717C /* vault_setup_device1.riv */,
+				134D610E2F30EB22008F034D /* devices_component.riv */,
 				132E01642F1AA2FA007E717C /* vault_setup_device2.riv */,
 				132E01652F1AA2FA007E717C /* vault_setup_device3.riv */,
 				132E01662F1AA2FA007E717C /* vault_setup_device4.riv */,
 				130C058B2EE9A42200A7303A /* import_seedphrase.riv */,
 				DEE8B2AB2E40842B0020DA63 /* upgrade_success.riv */,
 				1387FDA72E32C2CC007ECDB4 /* QRScanner.riv */,
-				13A65B2C2F2A582500349AD0 /* devices_component.riv */,
 				A6C58D832D7B6F3C000D2833 /* backup_vault.riv */,
 				A6EF93512D690BC8004D7EBF /* Onboarding.riv */,
 				A5AB69C62D63E26500E54DEB /* backupvault_splash.riv */,
@@ -6900,6 +6900,7 @@
 				DE49A1712B65F6DB000F3AFB /* Preview Assets.xcassets in Resources */,
 				A6CBF2E02C268D1400FD8080 /* Montserrat-Italic.ttf in Resources */,
 				A6C58D672D7A3E4B000D2833 /* FastVaultBackupSucces.riv in Resources */,
+				134D610F2F30EB22008F034D /* devices_component.riv in Resources */,
 				A6F7B6EB2D4B0D8500AC8104 /* CreatingVaultCheckmark.riv in Resources */,
 				A6F7B6C22D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv in Resources */,
 				468029362BC8E4CE005A9EEF /* Localizable.strings in Resources */,
@@ -6917,7 +6918,6 @@
 				130C058C2EE9A42200A7303A /* import_seedphrase.riv in Resources */,
 				DE49A16D2B65F6DB000F3AFB /* Assets.xcassets in Resources */,
 				A53065FC2D5AA5D3000B82E6 /* securevault_overview.riv in Resources */,
-				13A65B2D2F2A582500349AD0 /* devices_component.riv in Resources */,
 				A6C58D822D7AD81D000D2833 /* securevault_summary.riv in Resources */,
 				1377FE412F02A5DF00EF3B85 /* keygen_animation.riv in Resources */,
 				134716B92EF99530004DDC43 /* keygen_animation_haptic.ahap in Resources */,

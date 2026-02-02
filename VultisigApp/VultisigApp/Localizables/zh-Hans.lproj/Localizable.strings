@@ -524,6 +524,7 @@
 "pleaseBackupVault" = "需要在 Vultisig 中的每个设备上进行备份";
 "pleaseBackupVaultNote" = "每个设备都有自己独特的保险库份额，这些份额是恢复所需的";
 "pleaseWait" = "请稍候...";
+"pleaseChooseDifferentVaultName" = "请选择其他Vault名称。";
 "pleaseWaitMinutes" = "请等待 %@ 分钟";
 "plusMore" = "+%d 更多";
 "polkadotExistentialDepositError" = "确保您留下足够的资金来支付费用。如果账户余额低于 1 DOT（存在性存款），账户将被停用（收割），任何剩余资金将丢失。您可以随时通过大于存在性存款的新存款重新激活地址。但是，这不会恢复丢失的资金";
@@ -837,6 +838,7 @@
 "vaultInfo" = "保险库信息";
 "vaultLibType" = "保险库类型";
 "vaultManagement" = "保险库管理";
+"vaultNameAlreadyInUse" = "Vault名称已被使用";
 "vaultName" = "保险库名称";
 "vaultNameExists" = "保险库名称 %s 已存在";
 "vaultNameUnique" = "保险库名称需要是唯一的";
@@ -858,6 +860,7 @@
 "vaultShareBackupsViewTitle2" = "，像以前一样存储它们";
 "vaultType" = "保险库份额";
 "vaultTypeDoesnotMatch" = "保险库类型不匹配";
+"vaultTypeMismatchDescription" = "发起设备和配对设备具有不同的Vault类型。请确保两个设备使用相同的Vault类型。";
 "vaultTypeMismatch" = "保险库类型不匹配，发起设备和配对设备的保险库类型不同";
 "vaultUpgraded" = "保险库已升级";
 "vaultValue" = "保险库价值";
@@ -892,6 +895,7 @@
 "withTheseDevices" = "使用这些保险库份额";
 "wrongPassword" = "密码错误";
 "wrongPasswordHint" = "您的密码提示是：";
+"wrongVaultSelectedDescription" = "您选择的Vault与keygen会话不匹配。请选择正确的Vault。";
 "wrongVaultPassword" = "保险库密码错误。请重试";
 "wrongVaultSelected" = "您选择了错误的保险库";
 "wrongVaultTryAgain" = "错误的保险库或配对";

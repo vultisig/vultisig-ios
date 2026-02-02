@@ -41,11 +41,11 @@ extension ReshareView {
         .crossPlatformSheet(isPresented: $showJoinReshare) {
             GeneralCodeScannerView(
                 showSheet: $showJoinReshare,
-                shouldJoinKeygen: $shouldJoinKeygen,
-                shouldKeysignTransaction: .constant(false), // CodeScanner used for keygen only
-                shouldSendCrypto: .constant(false),         // -
-                selectedChain: .constant(nil),              // -
-                sendTX: SendTransaction()                   // -
+                selectedChain: .constant(nil),
+                sendTX: SendTransaction(),
+                onJoinKeygen: {
+                    shouldJoinKeygen = true
+                }
             )
         }
     }

@@ -522,6 +522,7 @@
 "pleaseBackupVault" = "Svaki uređaj ima svoj jedinstveni dio.";
 "pleaseBackupVaultNote" = "Molimo napravite sigurnosnu kopiju svih svojih dijelova Vaulta sada.";
 "pleaseWait" = "Molimo pričekajte...";
+"pleaseChooseDifferentVaultName" = "Molimo odaberite drugo ime Vault-a.";
 "pleaseWaitMinutes" = "Molimo pričekajte %@ minuta";
 "plusMore" = "+%d više";
 "polkadotExistentialDepositError" = "Pobrinite se da ostavite dovoljno sredstava za pokrivanje naknada. Ako stanje računa padne ispod 1 DOT (Egzistencijalni Depozit), račun će biti deaktiviran i preostala sredstva će biti izgubljena. Možete ponovno aktivirati adresu s novim depozitom većim od egzistencijalnog depozita u bilo kojem trenutku. Međutim, ovo neće vratiti izgubljena sredstva.";
@@ -835,6 +836,7 @@
 "vaultInfo" = "Informacije o trezorima";
 "vaultLibType" = "tip svoda";
 "vaultManagement" = "Upravljanje trezorima";
+"vaultNameAlreadyInUse" = "Ime Vault-a već se koristi";
 "vaultName" = "Ime sefa";
 "vaultNameExists" = "Naziv trezora %s već postoji";
 "vaultNameUnique" = "Naziv spremišta mora biti jedinstven.";
@@ -856,6 +858,7 @@
 "vaultShareBackupsViewTitle2" = ", pohrani ih kao i prije";
 "vaultType" = "Dio trezora";
 "vaultTypeDoesnotMatch" = " Vrsta trezora se ne podudara";
+"vaultTypeMismatchDescription" = "Pokretni uređaj i uređaj za uparivanje imaju različite tipove Vault-a. Molimo osigurajte da oba uređaja koriste isti tip Vault-a.";
 "vaultTypeMismatch" = "Vrsta trezora se ne podudara, pokretni uređaj i upareni uređaj imaju različite vrste trezora";
 "vaultUpgraded" = "Trezor nadograđen";
 "vaultValue" = "Vrijednost spremišta";
@@ -890,6 +893,7 @@
 "withTheseDevices" = "S ovim uređajima";
 "wrongPassword" = "Pogrešna lozinka";
 "wrongPasswordHint" = "Vaš savjet za lozinku je: ";
+"wrongVaultSelectedDescription" = "Vault koji ste odabrali ne odgovara keygen sesiji. Molimo odaberite ispravan Vault.";
 "wrongVaultPassword" = "Pogrešna lozinka trezora. Molim vas, pokušajte ponovo.";
 "wrongVaultSelected" = "Odabrali ste pogrešan trezor";
 "wrongVaultTryAgain" = "Pogrešan sef ili upareni uređaj.";

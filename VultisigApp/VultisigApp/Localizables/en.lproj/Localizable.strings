@@ -530,6 +530,7 @@
 "pleaseBackupVaultNote" = "Each device has its own unique vault share, which are needed for recovery ";
 "pleaseWait" = "Please wait...";
 "pleaseWaitMinutes" = "Please wait %@ minutes";
+"pleaseChooseDifferentVaultName" = "Please choose a different Vault name.";
 "plusMore" = "+%d more";
 "polkadotExistentialDepositError" = "Ensure you leave enough funds to cover the fees. If an account balance falls below 1 DOT (Existential Deposit), the account will be deactivated (reaped) and any remaining funds will be lost. You can reactivate the address with a new deposit larger than the existential deposit at any time. However, this will not recover the lost funds.";
 "portfolio" = "Portfolio";
@@ -844,6 +845,7 @@
 "vaultLibType" = "Vault Type";
 "vaultManagement" = "Vault Management";
 "vaultName" = "Vault Name";
+"vaultNameAlreadyInUse" = "Vault name already in use";
 "vaultNameExists" = "Vault name %s already exists";
 "vaultNameUnique" = "Vault's name needs to be unique.";
 "vaultOverview" = "Vault Overview";
@@ -865,6 +867,7 @@
 "vaultType" = "Vault Share";
 "vaultTypeDoesnotMatch" = "Vault type doesn't match";
 "vaultTypeMismatch" = "Vault type doesn't match, initiate device and pair device's vault type are different";
+"vaultTypeMismatchDescription" = "The initiating device and pairing device have different vault types. Please ensure both devices use the same vault type.";
 "vaultUpgraded" = "Vault upgraded";
 "vaultValue" = "Vault Value";
 "vaultWillBeDeletedPermanentlyPrompt" = "I am aware that the vault will be deleted permanently";
@@ -900,6 +903,7 @@
 "wrongPasswordHint" = "Your password hint is: ";
 "wrongVaultPassword" = "Wrong vault password. Please, try again.";
 "wrongVaultSelected" = "You chose the wrong vault";
+"wrongVaultSelectedDescription" = "The vault you selected doesn't match the keygen session. Please select the correct vault.";
 "wrongVaultTryAgain" = "Wrong Vault or Pair";
 "x" = "X (Twitter)";
 "youAreCreatingA" = "You are creating a";
