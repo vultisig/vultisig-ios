@@ -22,11 +22,11 @@ extension CreateVaultView {
             .crossPlatformSheet(isPresented: $showSheet) {
                 GeneralCodeScannerView(
                     showSheet: $showSheet,
-                    shouldJoinKeygen: $shouldJoinKeygen,
-                    shouldKeysignTransaction: .constant(false), // CodeScanner used for keygen only
-                    shouldSendCrypto: .constant(false),         // -
-                    selectedChain: .constant(nil),              // -
-                    sendTX: SendTransaction()                   // -
+                    selectedChain: .constant(nil),
+                    sendTX: SendTransaction(),
+                    onJoinKeygen: {
+                        shouldJoinKeygen = true
+                    }
                 )
             }
             .onChange(of: showSheet) { _, isShowing in
