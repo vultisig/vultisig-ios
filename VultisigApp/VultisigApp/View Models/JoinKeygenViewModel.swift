@@ -50,7 +50,7 @@ class JoinKeygenViewModel: ObservableObject {
     @Published var oldCommittee = [String]()
     @Published var localPartyID: String = ""
     @Published var serviceName = ""
-    @Published var errorMessage = ""
+    @Published var error: JoinKeygenError? = nil
     @Published var serverAddress: String? = nil
     @Published var oldResharePrefix: String = ""
 
@@ -217,8 +217,8 @@ class JoinKeygenViewModel: ObservableObject {
                 vault.libType = keygenMsg.libType
                 keyImportChains = keygenMsg.chains
                 if isVaultNameAlreadyExist(name: keygenMsg.vaultName) {
-                    errorMessage = "vaultExistsError".localized
-                    logger.error("\(self.errorMessage)")
+                    error = .vaultNameAlreadyExists
+                    logger.error("Vault name already exists: \(keygenMsg.vaultName)")
                     status = .FailToStart
                     return
                 }
@@ -252,8 +252,8 @@ class JoinKeygenViewModel: ObservableObject {
                             vault.libType = reshareMsg.libType
                             vault.name = reshareMsg.vaultName
                             if isVaultNameAlreadyExist(name: reshareMsg.vaultName) {
-                                errorMessage = "vaultExistsError".localized
-                                logger.error("\(self.errorMessage)")
+                                error = .vaultNameAlreadyExists
+                                logger.error("Vault name already exists: \(reshareMsg.vaultName)")
                                 status = .FailToStart
                                 return
                             }
@@ -262,13 +262,13 @@ class JoinKeygenViewModel: ObservableObject {
 
                 } else {
                     if vault.pubKeyECDSA != reshareMsg.pubKeyECDSA {
-                        errorMessage = "wrongVaultSelected".localized
+                        error = .wrongVaultSelected
                         logger.error("The vault's public key doesn't match the reshare message's public key")
                         status = .FailToStart
                         return
                     }
                     if vault.libType != reshareMsg.libType {
-                        errorMessage = "vaultTypeMismatch".localized
+                        error = .vaultTypeMismatch
                         status = .FailToStart
                         return
                     }
@@ -276,7 +276,7 @@ class JoinKeygenViewModel: ObservableObject {
             }
 
         } catch {
-            errorMessage = "failedToDecodePeerDiscoveryMessage".localized + ": \(error.localizedDescription)"
+            self.error = .failedToDecodeMessage(error.localizedDescription)
             status = .FailToStart
             return
         }
@@ -313,5 +313,40 @@ class JoinKeygenViewModel: ObservableObject {
             return
         }
         handleQrCodeSuccessResult(scanData: jsonData, tssType: tssType)
+    }
+}
+
+// MARK: - Error Types
+
+enum JoinKeygenError: Error, LocalizedError {
+    case vaultNameAlreadyExists
+    case wrongVaultSelected
+    case vaultTypeMismatch
+    case failedToDecodeMessage(String)
+
+    var errorTitle: String {
+        switch self {
+        case .vaultNameAlreadyExists:
+            return "vaultNameAlreadyInUse".localized
+        case .wrongVaultSelected:
+            return "wrongVaultSelected".localized
+        case .vaultTypeMismatch:
+            return "vaultTypeMismatch".localized
+        case .failedToDecodeMessage:
+            return "failedToDecodePeerDiscoveryMessage".localized
+        }
+    }
+
+    var errorDescription: String {
+        switch self {
+        case .vaultNameAlreadyExists:
+            return "pleaseChooseDifferentVaultName".localized
+        case .wrongVaultSelected:
+            return "wrongVaultSelectedDescription".localized
+        case .vaultTypeMismatch:
+            return "vaultTypeMismatchDescription".localized
+        case .failedToDecodeMessage(let details):
+            return details
+        }
     }
 }

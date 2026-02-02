@@ -22,10 +22,6 @@ struct HomeScreen: View {
     @State var vaultRoute: VaultMainRoute?
 
     @State var showScanner: Bool = false
-    @State var shouldJoinKeygen = false
-    @State var shouldKeysignTransaction = false
-    @State var shouldSendCrypto = false
-    @State var shouldImportBackup = false
     @State var showBackupNow = false
     @StateObject var sendTx = SendTransaction()
     @State var selectedChain: Chain? = nil
@@ -244,44 +240,21 @@ struct HomeScreen: View {
                 } else {
                     GeneralCodeScannerView(
                         showSheet: $showScanner,
-                        shouldJoinKeygen: $shouldJoinKeygen,
-                        shouldKeysignTransaction: $shouldKeysignTransaction,
-                        shouldSendCrypto: $shouldSendCrypto,
                         selectedChain: $selectedChain,
-                        sendTX: sendTx
+                        sendTX: sendTx,
+                        onJoinKeygen: {
+                            navigateToJoinKeygen(selectedVault: selectedVault)
+                        },
+                        onKeysignTransaction: {
+                            navigateToJoinKeysign()
+                        },
+                        onSendCrypto: {
+                            navigateToSendCrypto(selectedVault: selectedVault)
+                        }
                     )
                 }
             }
 #endif
-            .onChange(of: shouldJoinKeygen) { _, shouldNavigate in
-                guard shouldNavigate else { return }
-                router.navigate(to: OnboardingRoute.joinKeygen(
-                    vault: Vault(name: "Main Vault"),
-                    selectedVault: selectedVault
-                ))
-                shouldJoinKeygen = false
-            }
-            .onChange(of: shouldSendCrypto) { _, newValue in
-                guard newValue else { return }
-                shouldSendCrypto = false
-                let deeplinkChain = selectedVault.coins.first(where: {
-                    $0.isNativeToken && selectedChain == $0.chain
-                })
-                vaultRoute = .mainAction(
-                    .send(
-                        coin: deeplinkChain ?? vaultDetailViewModel.selectedGroup?.nativeCoin,
-                        hasPreselectedCoin: true))
-            }
-            .onChange(of: shouldKeysignTransaction) { _, shouldNavigate in
-                guard shouldNavigate, let vault = appViewModel.selectedVault else { return }
-                router.navigate(to: KeygenRoute.joinKeysign(vault: vault))
-                shouldKeysignTransaction = false
-            }
-            .onChange(of: shouldImportBackup) { _, shouldNavigate in
-                guard shouldNavigate else { return }
-                router.navigate(to: OnboardingRoute.importVaultShare)
-                shouldImportBackup = false
-            }
             .onChange(of: showBackupNow) { _, shouldNavigate in
                 guard shouldNavigate, let vault = appViewModel.selectedVault else { return }
                 router.navigate(to: KeygenRoute.backupNow(
@@ -290,6 +263,12 @@ struct HomeScreen: View {
                     isNewVault: false
                 ))
                 showBackupNow = false
+            }
+            .onChange(of: homeViewModel.shouldShowScanner) { _, newValue in
+                if newValue {
+                    showScanner = true
+                    homeViewModel.shouldShowScanner = false
+                }
             }
             .crossPlatformSheet(isPresented: $showVaultSelector) {
                 VaultManagementSheet(
@@ -357,10 +336,8 @@ extension HomeScreen {
 
         appViewModel.set(selectedVault: vault, restartNavigation: false)
         showVaultSelector = false
-        // Reset first to ensure SwiftUI detects the change
-        shouldKeysignTransaction = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            shouldKeysignTransaction = true
+            navigateToJoinKeysign()
         }
     }
 
@@ -369,11 +346,10 @@ extension HomeScreen {
     }
 
     fileprivate func moveToCreateVaultView() {
+        guard let selectedVault = appViewModel.selectedVault else { return }
         showVaultSelector = false
-        // Reset first to ensure SwiftUI detects the change
-        shouldJoinKeygen = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            shouldJoinKeygen = true
+            navigateToJoinKeygen(selectedVault: selectedVault)
         }
     }
 
@@ -404,8 +380,6 @@ extension HomeScreen {
     fileprivate func setData() {
         appViewModel.authenticateUserIfNeeded()
         fetchVaults()
-        shouldJoinKeygen = false
-        shouldKeysignTransaction = false
         checkUpdate()
 
         if deeplinkViewModel.type == .NewVault {
@@ -425,7 +399,7 @@ extension HomeScreen {
 
     fileprivate func presetValuesForDeeplink() {
         if vultExtensionViewModel.documentData != nil {
-            shouldImportBackup = true
+            navigateToImportBackup()
         }
 
         guard let type = deeplinkViewModel.type else {
@@ -616,6 +590,34 @@ extension HomeScreen {
         } else {
             completion()
         }
+    }
+
+    // MARK: - Navigation Methods
+
+    fileprivate func navigateToJoinKeygen(selectedVault: Vault) {
+        router.navigate(to: OnboardingRoute.joinKeygen(
+            vault: Vault(name: "Main Vault"),
+            selectedVault: selectedVault
+        ))
+    }
+
+    fileprivate func navigateToJoinKeysign() {
+        guard let vault = appViewModel.selectedVault else { return }
+        router.navigate(to: KeygenRoute.joinKeysign(vault: vault))
+    }
+
+    fileprivate func navigateToSendCrypto(selectedVault: Vault) {
+        let deeplinkChain = selectedVault.coins.first(where: {
+            $0.isNativeToken && selectedChain == $0.chain
+        })
+        vaultRoute = .mainAction(
+            .send(
+                coin: deeplinkChain ?? vaultDetailViewModel.selectedGroup?.nativeCoin,
+                hasPreselectedCoin: true))
+    }
+
+    fileprivate func navigateToImportBackup() {
+        router.navigate(to: OnboardingRoute.importVaultShare)
     }
 }
 
