@@ -245,31 +245,10 @@ class JoinKeysignViewModel: ObservableObject {
             self.logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")
 
             var vaultPublicKeyECDSAInQrCode: String = .empty
-            // Decode custom message if present
-            if let customMessage = keysignMsg.customMessagePayload {
-                if let decodedMessage = await customMessage.message.decodedExtensionMemoAsync() {
-                    self.customMessagePayload?.decodedMessage = decodedMessage
-                }
-                if customMessage.vaultPublicKeyECDSA != .empty {
-                    vaultPublicKeyECDSAInQrCode = customMessage.vaultPublicKeyECDSA
-                }
-            }
 
             if let keysignPayload = keysignMsg.payload {
                 vaultPublicKeyECDSAInQrCode = keysignPayload.vaultPubKeyECDSA
             }
-            // Auto-select correct vault BEFORE preparing messages
-            if vaultPublicKeyECDSAInQrCode != .empty && vault.pubKeyECDSA != vaultPublicKeyECDSAInQrCode {
-                if let correctVault = fetchVaults().first(where: { $0.pubKeyECDSA == vaultPublicKeyECDSAInQrCode }),
-                   !correctVault.localPartyID.isEmpty {
-                    self.vault = correctVault
-                    self.localPartyID = correctVault.localPartyID
-                    // Update AppViewModel so fee calculations can access the correct vault
-                    AppViewModel.shared.set(selectedVault: correctVault)
-                    logger.info("Auto-selected correct vault: \(correctVault.name) with pubKey: \(correctVault.pubKeyECDSA)")
-                }
-            }
-
             if let payload = keysignMsg.payload {
                 self.prepareKeysignMessages(keysignPayload: payload)
             }
@@ -287,6 +266,28 @@ class JoinKeysignViewModel: ObservableObject {
 
             await ensureKeysignPayload()
             await ensureCustomMessagePayload()
+            
+            // Decode custom message if present
+            if let customMessage = customMessagePayload {
+                if let decodedMessage = await customMessage.message.decodedExtensionMemoAsync() {
+                    self.customMessagePayload?.decodedMessage = decodedMessage
+                }
+                if customMessage.vaultPublicKeyECDSA != .empty {
+                    vaultPublicKeyECDSAInQrCode = customMessage.vaultPublicKeyECDSA
+                }
+            }
+            
+            // Auto-select correct vault BEFORE preparing messages
+            if vaultPublicKeyECDSAInQrCode != .empty && vault.pubKeyECDSA != vaultPublicKeyECDSAInQrCode {
+                if let correctVault = fetchVaults().first(where: { $0.pubKeyECDSA == vaultPublicKeyECDSAInQrCode }),
+                   !correctVault.localPartyID.isEmpty {
+                    self.vault = correctVault
+                    self.localPartyID = correctVault.localPartyID
+                    // Update AppViewModel so fee calculations can access the correct vault
+                    AppViewModel.shared.set(selectedVault: correctVault)
+                    logger.info("Auto-selected correct vault: \(correctVault.name) with pubKey: \(correctVault.pubKeyECDSA)")
+                }
+            }
         } catch {
             self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
             self.status = .FailedToStart
