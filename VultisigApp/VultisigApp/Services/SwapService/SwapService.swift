@@ -63,7 +63,7 @@ struct SwapService {
                 continue
             }
         }
-        
+
         throw lastError ?? SwapError.routeUnavailable
     }
 

@@ -55,7 +55,7 @@ struct SwapCryptoDoneView: View {
             toAddress: tx.toCoin.address
         ))
     }
-    
+
     var body: some View {
         VStack(spacing: 8) {
             cards
