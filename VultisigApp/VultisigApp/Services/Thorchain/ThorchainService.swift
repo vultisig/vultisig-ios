@@ -140,6 +140,10 @@ class ThorchainService: ThorchainSwapProvider {
         )
 
         let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
+        
+        if let jsonString = String(data: data, encoding: .utf8) {
+            print("[ThorchainService] Raw Quote Response: \(jsonString)")
+        }
 
         do {
             let response = try JSONDecoder().decode(ThorchainSwapQuote.self, from: data)

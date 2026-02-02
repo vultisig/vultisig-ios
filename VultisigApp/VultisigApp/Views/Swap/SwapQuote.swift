@@ -101,6 +101,25 @@ enum SwapQuote: Hashable {
         }
     }
 
+    var priceImpact: Decimal? {
+        switch self {
+        case .thorchain(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
+            guard let slippageBps = quote.slippageBps else { return nil }
+            return Decimal(slippageBps) / 10000
+        case .oneinch, .kyberswap, .lifi:
+            return nil
+        }
+    }
+    
+    var totalFees: String? {
+        switch self {
+        case .thorchain(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
+            return quote.fees.total
+        case .oneinch, .kyberswap, .lifi:
+            return nil
+        }
+    }
+
     func hash(into hasher: inout Hasher) {
         switch self {
         case .thorchain(let quote):

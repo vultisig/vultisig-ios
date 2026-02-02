@@ -13,6 +13,8 @@ class SwapTransaction: ObservableObject {
     @Published var fromAmount: String = .empty
     @Published var thorchainFee: BigInt = .zero
     @Published var gas: BigInt = .zero
+    @Published var vultDiscountBps: Int = 0
+    @Published var referralDiscountBps: Int = 0
     @Published var quote: SwapQuote?
     @Published var isFastVault: Bool = false
     @Published var fastVaultPassword: String = .empty
