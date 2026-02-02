@@ -25,6 +25,8 @@ struct JoinKeygenView: View {
 
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var appViewModel: ApplicationState
+    @EnvironmentObject var homeViewModel: HomeViewModel
+    @Environment(\.router) var router
 
     let logger = Logger(subsystem: "join-keygen", category: "communication")
 
@@ -121,7 +123,13 @@ struct JoinKeygenView: View {
                 description: error.errorDescription,
                 buttonTitle: "tryAgain".localized
             ) {
-                showFileImporter.toggle()
+                // Close the current screen
+                router.navigateBack()
+
+                // Show scanner again after navigation
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    homeViewModel.shouldShowScanner = true
+                }
             }
         }
     }
@@ -290,4 +298,5 @@ struct JoinKeygenView: View {
     JoinKeygenView(vault: Vault.example, selectedVault: Vault.example)
         .environmentObject(DeeplinkViewModel())
         .environmentObject(ApplicationState())
+        .environmentObject(HomeViewModel())
 }
