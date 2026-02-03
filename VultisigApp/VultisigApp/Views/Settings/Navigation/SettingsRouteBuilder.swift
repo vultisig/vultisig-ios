@@ -40,7 +40,7 @@ struct SettingsRouteBuilder {
 
     @ViewBuilder
     func buildAddressBookScreen() -> some View {
-        AddressBookView(
+        AddressBookScreen(
             shouldReturnAddress: false,
             returnAddress: .constant("")
         )

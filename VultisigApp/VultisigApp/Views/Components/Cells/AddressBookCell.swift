@@ -22,10 +22,7 @@ struct AddressBookCell: View {
         HStack {
             rearrangeIcon
                 .showIf(isEditing)
-
-            ContainerView {
-                label
-            }
+            label
         }
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
@@ -40,16 +37,28 @@ struct AddressBookCell: View {
                 content
             }
             .disabled(isEditing)
-            deleteIcon
-                .showIf(isEditing)
         }
     }
 
     var content: some View {
-        HStack(spacing: 12) {
-            logo
-            text
+        HStack(spacing: 0) {
+            HStack(spacing: 12) {
+                logo
+                text
+            }
+            Spacer(minLength: 20)
+            deleteIcon
+                .showIf(isEditing)
         }
+        .padding(.vertical, 16)
+        .padding(.leading, 16)
+        .padding(.trailing, isEditing ? 20 : 16)
+        .background(
+            RoundedRectangle(cornerRadius: isEditing ? 99 : 12)
+                .inset(by: 1)
+                .fill(Theme.colors.bgSurface1)
+                .stroke(Theme.colors.borderLight, lineWidth: 1)
+        )
     }
 
     var logo: some View {
