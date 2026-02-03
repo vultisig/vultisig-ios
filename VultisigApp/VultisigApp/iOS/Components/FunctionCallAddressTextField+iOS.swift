@@ -25,7 +25,7 @@ extension FunctionCallAddressTextField {
                 ImagePicker(selectedImage: $selectedImage)
             }
             .crossPlatformSheet(isPresented: $showAddressBookSheet) {
-                AddressBookView(returnAddress: Binding<String>(
+                AddressBookScreen(returnAddress: Binding<String>(
                     get: { memo.addressFields[addressKey] ?? "" },
                     set: { newValue in
                         memo.addressFields[addressKey] = newValue
