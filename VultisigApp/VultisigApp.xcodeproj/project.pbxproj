@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		049BBB5E2B71E83D004C231F /* VultisigLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5D2B71E83D004C231F /* VultisigLogo.swift */; };
 		049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB672B71E9C5004C231F /* WifiInstruction.swift */; };
 		064D3D2833A07505317CC841 /* CosmosTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB8B4E59B83927709B99177 /* CosmosTransactionStatusProvider.swift */; };
 		12C88E627244748C55FB97F2 /* EVMTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DC3C4A790D620AB105DF39D /* EVMTransactionStatusProvider.swift */; };
@@ -138,6 +137,7 @@
 		133CA3D22E8ADEE1009588F3 /* CoinDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CA3D12E8ADEDC009588F3 /* CoinDetailViewModel.swift */; };
 		133CA3D42E8ADFFF009588F3 /* CoinPriceNetworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CA3D32E8ADFFB009588F3 /* CoinPriceNetworkView.swift */; };
 		133CA3D62E8AE230009588F3 /* ModalBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CA3D52E8AE229009588F3 /* ModalBackgroundView.swift */; };
+		133CEA3F2F32632600FD7471 /* splash_logo.riv in Resources */ = {isa = PBXBuildFile; fileRef = 133CEA3E2F32632600FD7471 /* splash_logo.riv */; };
 		133EEA192E68787900E18280 /* SettingsCommonOptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133EEA182E68785F00E18280 /* SettingsCommonOptionView.swift */; };
 		133EEA1C2E6885A300E18280 /* SecureTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133EEA1B2E68859F00E18280 /* SecureTextField.swift */; };
 		133EEA1E2E68864000E18280 /* FastSigningPasswordSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133EEA1D2E68863600E18280 /* FastSigningPasswordSheetView.swift */; };
@@ -174,6 +174,8 @@
 		134A9FCB2E96AD1B00030C56 /* BannerLayoutProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FCA2E96AD1400030C56 /* BannerLayoutProperties.swift */; };
 		134A9FCD2E96B49800030C56 /* VaultBannerCarouselIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FCC2E96B49700030C56 /* VaultBannerCarouselIndicator.swift */; };
 		134A9FCF2E96B4B500030C56 /* VaultBannerCarouselIndicators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FCE2E96B4B000030C56 /* VaultBannerCarouselIndicators.swift */; };
+		134D610F2F30EB22008F034D /* devices_component.riv in Resources */ = {isa = PBXBuildFile; fileRef = 134D610E2F30EB22008F034D /* devices_component.riv */; };
+		134D61A62F323011008F034D /* VultisigLogoAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134D61A52F32300B008F034D /* VultisigLogoAnimation.swift */; };
 		134DFE0F2F28EEFE0087C9D5 /* CardanoTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE082F28EEFE0087C9D5 /* CardanoTransactionStatusProvider.swift */; };
 		134DFE102F28EEFE0087C9D5 /* SuiTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE0B2F28EEFE0087C9D5 /* SuiTransactionStatusProvider.swift */; };
 		134DFE112F28EEFE0087C9D5 /* PolkadotTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE092F28EEFE0087C9D5 /* PolkadotTransactionStatusProvider.swift */; };
@@ -358,7 +360,6 @@
 		13A078722E8488960093496F /* View+SheetStyling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A078712E84888E0093496F /* View+SheetStyling.swift */; };
 		13A657BA2EA2972200323E4C /* ExpandableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657B92EA2971C00323E4C /* ExpandableView.swift */; };
 		13A657C92EA2BCC400323E4C /* HiddenBalanceText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A657C82EA2BCBE00323E4C /* HiddenBalanceText.swift */; };
-		13A65B2D2F2A582500349AD0 /* devices_component.riv in Resources */ = {isa = PBXBuildFile; fileRef = 13A65B2C2F2A582500349AD0 /* devices_component.riv */; };
 		13A65B5B2F2A884800349AD0 /* UTType+VaultBackup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A65B5A2F2A884800349AD0 /* UTType+VaultBackup.swift */; };
 		13A74CBB2ED3D1CF00B97173 /* MayaChainBondInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A74CBA2ED3D1C900B97173 /* MayaChainBondInteractor.swift */; };
 		13A74CBD2ED3D1F700B97173 /* MayaChainStakeInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A74CBC2ED3D1F100B97173 /* MayaChainStakeInteractor.swift */; };
@@ -963,7 +964,7 @@
 		A6C0D5652BB3BD0F00156689 /* UTXOTransactionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5642BB3BD0F00156689 /* UTXOTransactionCell.swift */; };
 		A6C0D5692BB3C6D400156689 /* ErrorMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5682BB3C6D400156689 /* ErrorMessage.swift */; };
 		A6C344982D642AD20072B528 /* ThisDevicePeerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C344972D642AD20072B528 /* ThisDevicePeerCell.swift */; };
-		A6C3ABC82C3E595000F13ED0 /* AddressBookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C3ABC72C3E595000F13ED0 /* AddressBookView.swift */; };
+		A6C3ABC82C3E595000F13ED0 /* AddressBookScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C3ABC72C3E595000F13ED0 /* AddressBookScreen.swift */; };
 		A6C556F22CE59A3F00E5E44E /* BackupNowDisclaimer+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C556F12CE59A3F00E5E44E /* BackupNowDisclaimer+macOS.swift */; };
 		A6C556F42CE59A5500E5E44E /* BackupNowDisclaimer+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C556F32CE59A4D00E5E44E /* BackupNowDisclaimer+iOS.swift */; };
 		A6C58D672D7A3E4B000D2833 /* FastVaultBackupSucces.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6C58D662D7A3E4B000D2833 /* FastVaultBackupSucces.riv */; };
@@ -1042,8 +1043,6 @@
 		A6E5823D2BE98C4F006DA410 /* NavigationBlankBackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E5823C2BE98C4F006DA410 /* NavigationBlankBackButton.swift */; };
 		A6ECA1882C93F4E800456110 /* SetupVaultImageManager+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1872C93F4E800456110 /* SetupVaultImageManager+iOS.swift */; };
 		A6ECA18A2C93F4F400456110 /* SetupVaultImageManager+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1892C93F4F400456110 /* SetupVaultImageManager+macOS.swift */; };
-		A6ECA18C2C93F65D00456110 /* VultisigLogo+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA18B2C93F65D00456110 /* VultisigLogo+iOS.swift */; };
-		A6ECA18E2C93F6CF00456110 /* VultisigLogo+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA18D2C93F6CF00456110 /* VultisigLogo+macOS.swift */; };
 		A6ECA1942C93F98D00456110 /* InstructionPrompt+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1932C93F98D00456110 /* InstructionPrompt+iOS.swift */; };
 		A6ECA1962C93F99700456110 /* InstructionPrompt+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1952C93F99700456110 /* InstructionPrompt+macOS.swift */; };
 		A6ECA19C2C93FB7200456110 /* Search+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA19B2C93FB7200456110 /* Search+iOS.swift */; };
@@ -1352,7 +1351,6 @@
 
 /* Begin PBXFileReference section */
 		03EC7383A8308BD94F081C10 /* CircleService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CircleService.swift; sourceTree = "<group>"; };
-		049BBB5D2B71E83D004C231F /* VultisigLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultisigLogo.swift; sourceTree = "<group>"; };
 		049BBB672B71E9C5004C231F /* WifiInstruction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WifiInstruction.swift; sourceTree = "<group>"; };
 		0ABEFADAC7EF33E20A932CD6 /* SolanaTransactionStatusResponse.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SolanaTransactionStatusResponse.swift; sourceTree = "<group>"; };
 		13052B962E8C5511000285D2 /* CrossPlatformToolbarModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossPlatformToolbarModifier.swift; sourceTree = "<group>"; };
@@ -1482,6 +1480,7 @@
 		133CA3D12E8ADEDC009588F3 /* CoinDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDetailViewModel.swift; sourceTree = "<group>"; };
 		133CA3D32E8ADFFB009588F3 /* CoinPriceNetworkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinPriceNetworkView.swift; sourceTree = "<group>"; };
 		133CA3D52E8AE229009588F3 /* ModalBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalBackgroundView.swift; sourceTree = "<group>"; };
+		133CEA3E2F32632600FD7471 /* splash_logo.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = splash_logo.riv; sourceTree = "<group>"; };
 		133EEA182E68785F00E18280 /* SettingsCommonOptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCommonOptionView.swift; sourceTree = "<group>"; };
 		133EEA1B2E68859F00E18280 /* SecureTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureTextField.swift; sourceTree = "<group>"; };
 		133EEA1D2E68863600E18280 /* FastSigningPasswordSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FastSigningPasswordSheetView.swift; sourceTree = "<group>"; };
@@ -1518,6 +1517,8 @@
 		134A9FCA2E96AD1400030C56 /* BannerLayoutProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerLayoutProperties.swift; sourceTree = "<group>"; };
 		134A9FCC2E96B49700030C56 /* VaultBannerCarouselIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBannerCarouselIndicator.swift; sourceTree = "<group>"; };
 		134A9FCE2E96B4B000030C56 /* VaultBannerCarouselIndicators.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBannerCarouselIndicators.swift; sourceTree = "<group>"; };
+		134D610E2F30EB22008F034D /* devices_component.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = devices_component.riv; sourceTree = "<group>"; };
+		134D61A52F32300B008F034D /* VultisigLogoAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultisigLogoAnimation.swift; sourceTree = "<group>"; };
 		134DFE082F28EEFE0087C9D5 /* CardanoTransactionStatusProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardanoTransactionStatusProvider.swift; sourceTree = "<group>"; };
 		134DFE092F28EEFE0087C9D5 /* PolkadotTransactionStatusProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolkadotTransactionStatusProvider.swift; sourceTree = "<group>"; };
 		134DFE0A2F28EEFE0087C9D5 /* RippleTransactionStatusProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RippleTransactionStatusProvider.swift; sourceTree = "<group>"; };
@@ -1703,7 +1704,6 @@
 		13A078712E84888E0093496F /* View+SheetStyling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+SheetStyling.swift"; sourceTree = "<group>"; };
 		13A657B92EA2971C00323E4C /* ExpandableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpandableView.swift; sourceTree = "<group>"; };
 		13A657C82EA2BCBE00323E4C /* HiddenBalanceText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HiddenBalanceText.swift; sourceTree = "<group>"; };
-		13A65B2C2F2A582500349AD0 /* devices_component.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = devices_component.riv; sourceTree = "<group>"; };
 		13A65B5A2F2A884800349AD0 /* UTType+VaultBackup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UTType+VaultBackup.swift"; sourceTree = "<group>"; };
 		13A74CBA2ED3D1C900B97173 /* MayaChainBondInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaChainBondInteractor.swift; sourceTree = "<group>"; };
 		13A74CBC2ED3D1F100B97173 /* MayaChainStakeInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaChainStakeInteractor.swift; sourceTree = "<group>"; };
@@ -2311,7 +2311,7 @@
 		A6C0D5642BB3BD0F00156689 /* UTXOTransactionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionCell.swift; sourceTree = "<group>"; };
 		A6C0D5682BB3C6D400156689 /* ErrorMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessage.swift; sourceTree = "<group>"; };
 		A6C344972D642AD20072B528 /* ThisDevicePeerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThisDevicePeerCell.swift; sourceTree = "<group>"; };
-		A6C3ABC72C3E595000F13ED0 /* AddressBookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookView.swift; sourceTree = "<group>"; };
+		A6C3ABC72C3E595000F13ED0 /* AddressBookScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookScreen.swift; sourceTree = "<group>"; };
 		A6C556F12CE59A3F00E5E44E /* BackupNowDisclaimer+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupNowDisclaimer+macOS.swift"; sourceTree = "<group>"; };
 		A6C556F32CE59A4D00E5E44E /* BackupNowDisclaimer+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupNowDisclaimer+iOS.swift"; sourceTree = "<group>"; };
 		A6C58D662D7A3E4B000D2833 /* FastVaultBackupSucces.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = FastVaultBackupSucces.riv; sourceTree = "<group>"; };
@@ -2387,8 +2387,6 @@
 		A6E5823C2BE98C4F006DA410 /* NavigationBlankBackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBlankBackButton.swift; sourceTree = "<group>"; };
 		A6ECA1872C93F4E800456110 /* SetupVaultImageManager+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SetupVaultImageManager+iOS.swift"; sourceTree = "<group>"; };
 		A6ECA1892C93F4F400456110 /* SetupVaultImageManager+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SetupVaultImageManager+macOS.swift"; sourceTree = "<group>"; };
-		A6ECA18B2C93F65D00456110 /* VultisigLogo+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VultisigLogo+iOS.swift"; sourceTree = "<group>"; };
-		A6ECA18D2C93F6CF00456110 /* VultisigLogo+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VultisigLogo+macOS.swift"; sourceTree = "<group>"; };
 		A6ECA1932C93F98D00456110 /* InstructionPrompt+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstructionPrompt+iOS.swift"; sourceTree = "<group>"; };
 		A6ECA1952C93F99700456110 /* InstructionPrompt+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstructionPrompt+macOS.swift"; sourceTree = "<group>"; };
 		A6ECA19B2C93FB7200456110 /* Search+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Search+iOS.swift"; sourceTree = "<group>"; };
@@ -2758,6 +2756,7 @@
 		049BBB4E2B71E37B004C231F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				134D61A42F323006008F034D /* Animations */,
 				13C8E18A2EEC8A5D0037C2A9 /* Background */,
 				130C059B2EE9CDF400A7303A /* Icons */,
 				130C05992EE9B0A800A7303A /* CustomHighlightText.swift */,
@@ -2793,7 +2792,6 @@
 				A6F9E7A32BED6BA200BA36E1 /* New Wallet */,
 				A608E3752C01BD6800E40B85 /* Swap */,
 				A617B67A2CEC63F6006E5122 /* Send */,
-				049BBB5D2B71E83D004C231F /* VultisigLogo.swift */,
 				DE1509C12DCD8FA70030C9A0 /* ChainDetailActionButtons+iOS.swift */,
 				B2ADDD772E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift */,
 				A6AF960F2C2E2DC900992578 /* FileQRCodeImporterMac.swift */,
@@ -3399,6 +3397,14 @@
 				1348FA642E6895B3001551F6 /* CommonTextEditor.swift */,
 			);
 			path = TextEditor;
+			sourceTree = "<group>";
+		};
+		134D61A42F323006008F034D /* Animations */ = {
+			isa = PBXGroup;
+			children = (
+				134D61A52F32300B008F034D /* VultisigLogoAnimation.swift */,
+			);
+			path = Animations;
 			sourceTree = "<group>";
 		};
 		134E8D7D2E451F600086EBC4 /* PreferredAsset */ = {
@@ -5386,7 +5392,6 @@
 				A6182F562C9299370059BFDD /* SwapCryptoAmountTextField+iOS.swift */,
 				A6182F5A2C9299DC0059BFDD /* MemoTextField+iOS.swift */,
 				A6ECA1872C93F4E800456110 /* SetupVaultImageManager+iOS.swift */,
-				A6ECA18B2C93F65D00456110 /* VultisigLogo+iOS.swift */,
 				A6ECA1932C93F98D00456110 /* InstructionPrompt+iOS.swift */,
 				A6ECA19B2C93FB7200456110 /* Search+iOS.swift */,
 				A6ECA19F2C93FC0000456110 /* VaultSetupCard+iOS.swift */,
@@ -5420,7 +5425,6 @@
 				A6182F582C9299410059BFDD /* SwapCryptoAmountTextField+macOS.swift */,
 				A6182F5C2C9299ED0059BFDD /* MemoTextField+imacOS.swift */,
 				A6ECA1892C93F4F400456110 /* SetupVaultImageManager+macOS.swift */,
-				A6ECA18D2C93F6CF00456110 /* VultisigLogo+macOS.swift */,
 				A6ECA1952C93F99700456110 /* InstructionPrompt+macOS.swift */,
 				A6ECA19D2C93FB7B00456110 /* Search+macOS.swift */,
 				A6ECA1A12C93FC0D00456110 /* VaultSetupCard+macOS.swift */,
@@ -5945,7 +5949,7 @@
 				13D179092E57889E00007B48 /* AddressBookChainCell.swift */,
 				13D178FD2E57644B00007B48 /* AddressBookChainSelector.swift */,
 				13D178F82E5753DB00007B48 /* AddressBookChainSelectionScreen.swift */,
-				A6C3ABC72C3E595000F13ED0 /* AddressBookView.swift */,
+				A6C3ABC72C3E595000F13ED0 /* AddressBookScreen.swift */,
 				A6725D392C3F9B4400D47716 /* AddAddressBookScreen.swift */,
 				A63001B02C54AC0100D18E25 /* EditAddressBookScreen.swift */,
 			);
@@ -6003,13 +6007,13 @@
 				1377092E2F1FC57D00970668 /* backup_device3.riv */,
 				1377092F2F1FC57D00970668 /* backup_device4.riv */,
 				132E01632F1AA2FA007E717C /* vault_setup_device1.riv */,
+				134D610E2F30EB22008F034D /* devices_component.riv */,
 				132E01642F1AA2FA007E717C /* vault_setup_device2.riv */,
 				132E01652F1AA2FA007E717C /* vault_setup_device3.riv */,
 				132E01662F1AA2FA007E717C /* vault_setup_device4.riv */,
 				130C058B2EE9A42200A7303A /* import_seedphrase.riv */,
 				DEE8B2AB2E40842B0020DA63 /* upgrade_success.riv */,
 				1387FDA72E32C2CC007ECDB4 /* QRScanner.riv */,
-				13A65B2C2F2A582500349AD0 /* devices_component.riv */,
 				A6C58D832D7B6F3C000D2833 /* backup_vault.riv */,
 				A6EF93512D690BC8004D7EBF /* Onboarding.riv */,
 				A5AB69C62D63E26500E54DEB /* backupvault_splash.riv */,
@@ -6017,6 +6021,7 @@
 				134DFE5C2F2921D30087C9D5 /* transaction_pending.riv */,
 				A6C58D7D2D7AD7F6000D2833 /* fastvault_summary.riv */,
 				A53065FB2D5AA5D3000B82E6 /* securevault_overview.riv */,
+				133CEA3E2F32632600FD7471 /* splash_logo.riv */,
 				A6621B842D67D98900757B43 /* vaultCreatedAnimation.riv */,
 				A6F7B6BD2D4975E900AC8104 /* QRCodeScanned.riv */,
 				A6F7B6C12D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv */,
@@ -6900,6 +6905,7 @@
 				DE49A1712B65F6DB000F3AFB /* Preview Assets.xcassets in Resources */,
 				A6CBF2E02C268D1400FD8080 /* Montserrat-Italic.ttf in Resources */,
 				A6C58D672D7A3E4B000D2833 /* FastVaultBackupSucces.riv in Resources */,
+				134D610F2F30EB22008F034D /* devices_component.riv in Resources */,
 				A6F7B6EB2D4B0D8500AC8104 /* CreatingVaultCheckmark.riv in Resources */,
 				A6F7B6C22D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv in Resources */,
 				468029362BC8E4CE005A9EEF /* Localizable.strings in Resources */,
@@ -6914,10 +6920,10 @@
 				132E016A2F1AA2FA007E717C /* vault_setup_device2.riv in Resources */,
 				132E016B2F1AA2FA007E717C /* vault_setup_device1.riv in Resources */,
 				A6BB9BCF2DA9E43B0085E117 /* all_devices_animation.riv in Resources */,
+				133CEA3F2F32632600FD7471 /* splash_logo.riv in Resources */,
 				130C058C2EE9A42200A7303A /* import_seedphrase.riv in Resources */,
 				DE49A16D2B65F6DB000F3AFB /* Assets.xcassets in Resources */,
 				A53065FC2D5AA5D3000B82E6 /* securevault_overview.riv in Resources */,
-				13A65B2D2F2A582500349AD0 /* devices_component.riv in Resources */,
 				A6C58D822D7AD81D000D2833 /* securevault_summary.riv in Resources */,
 				1377FE412F02A5DF00EF3B85 /* keygen_animation.riv in Resources */,
 				134716B92EF99530004DDC43 /* keygen_animation_haptic.ahap in Resources */,
@@ -6986,7 +6992,6 @@
 				13A964132EBB9FA90025FB7A /* RUJIStakeTransactionBuilder.swift in Sources */,
 				A5DA62092BF79C1D00CBEAEE /* ThorchainSwapError.swift in Sources */,
 				13D179082E5787D100007B48 /* AddressBookChainType.swift in Sources */,
-				049BBB5E2B71E83D004C231F /* VultisigLogo.swift in Sources */,
 				A6E0C90F2DE4E8CE00A01543 /* ReferredCodeFormScreen.swift in Sources */,
 				1345D1372EA8135600FC7BFD /* THORChainHealth.swift in Sources */,
 				DE1572A02B70F284009BC7C5 /* KeysignView.swift in Sources */,
@@ -7249,7 +7254,6 @@
 				A6D07E412C366F7300594687 /* MemoTextField.swift in Sources */,
 				A6C670C92C9E773300F59B6A /* VULTFileDocument.swift in Sources */,
 				DEE4AD0E2DC1A86D003A2FC0 /* KeysignWrongVaultTypeErrorView.swift in Sources */,
-				A6ECA18E2C93F6CF00456110 /* VultisigLogo+macOS.swift in Sources */,
 				DE63AE4F2BB4E96E001BBE5C /* JSONRPCError.swift in Sources */,
 				469ED3992B98E896008D4951 /* CosmosBalanceResponse.swift in Sources */,
 				13C880582E70A32B009C67F1 /* VaultMainScreen.swift in Sources */,
@@ -7364,7 +7368,7 @@
 				A6182F312C922B750059BFDD /* AsyncImageView+macOS.swift in Sources */,
 				13D9EC022E84584A0089B2A7 /* VaultCellMainView.swift in Sources */,
 				A6F7B6FA2D4D515100AC8104 /* SecureBackupVaultOverview.swift in Sources */,
-				A6C3ABC82C3E595000F13ED0 /* AddressBookView.swift in Sources */,
+				A6C3ABC82C3E595000F13ED0 /* AddressBookScreen.swift in Sources */,
 				13052B9B2E8C574C000285D2 /* IOSToolbarView.swift in Sources */,
 				A6ECA19E2C93FB7B00456110 /* Search+macOS.swift in Sources */,
 				A6F9E7A92BED6BDB00BA36E1 /* SetupVaultAnimationManager.swift in Sources */,
@@ -7781,6 +7785,7 @@
 				A65518032BF849FC006BB924 /* CoverView.swift in Sources */,
 				A6C9D5C12BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift in Sources */,
 				A6182F2F2C922B6B0059BFDD /* AsyncImageView+iOS.swift in Sources */,
+				134D61A62F323011008F034D /* VultisigLogoAnimation.swift in Sources */,
 				A56386822C3A2148008B848E /* ProtoCoinResolver.swift in Sources */,
 				A69FBB9C2C8AD68E00A4B78B /* CreateVaultView+iOS.swift in Sources */,
 				A575F2CC2D50D3DB000C4F14 /* FastVaultSetHintView+iOS.swift in Sources */,
@@ -8028,7 +8033,6 @@
 				13A964182EBBD8F60025FB7A /* TCYUnstakeTransactionBuilder.swift in Sources */,
 				A6CEFE762D8E32B9005AB80C /* VaultBackupPasswordOptionsScreen.swift in Sources */,
 				B5B47B562EF3718E007F2150 /* CircleViewModel.swift in Sources */,
-				A6ECA18C2C93F65D00456110 /* VultisigLogo+iOS.swift in Sources */,
 				B54E317B2BF57D9300D4FC0A /* FunctionCallContractSelectorDropDown.swift in Sources */,
 				B5F758182BD8E65D0097B5B9 /* Sui.swift in Sources */,
 				13B1C2C82E65E40000050637 /* VaultServerBackupScreen.swift in Sources */,

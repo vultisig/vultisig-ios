@@ -34,7 +34,7 @@ extension FunctionCallAddressTextField {
                 OnDropQRUtils.handleOnDrop(providers: providers, handleImageQrCode: handleImageQrCode)
             }
             .crossPlatformSheet(isPresented: $showAddressBookSheet) {
-                AddressBookView(returnAddress: Binding<String>(
+                AddressBookScreen(returnAddress: Binding<String>(
                     get: { memo.addressFields[addressKey] ?? "" },
                     set: { newValue in
                         memo.addressFields[addressKey] = newValue

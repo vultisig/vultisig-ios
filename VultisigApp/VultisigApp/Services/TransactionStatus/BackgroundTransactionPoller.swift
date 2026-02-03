@@ -18,9 +18,9 @@ class BackgroundTransactionPoller: ObservableObject {
     private init() {}
 
     /// Resume polling for all pending transactions on app launch
-    func resumePendingTransactions() async {
+    func resumePendingTransactions() {
         do {
-            let pendingTransactions = try await storage.getAllPending()
+            let pendingTransactions = try storage.getAllPending()
 
             print("BackgroundTransactionPoller: Found \(pendingTransactions.count) pending transactions")
 
@@ -39,7 +39,7 @@ class BackgroundTransactionPoller: ObservableObject {
             }
 
             // Cleanup old transactions
-            try await storage.cleanupOld()
+            try storage.cleanupOld()
         } catch {
             print("BackgroundTransactionPoller: Error resuming transactions: \(error)")
         }

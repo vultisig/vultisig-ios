@@ -15,6 +15,8 @@ class HomeViewModel: ObservableObject {
     @Published var showAlert: Bool = false
     @Published var alertTitle: String = ""
 
+    @Published var shouldShowScanner: Bool = false
+
     func balanceText(for vaults: [Vault]) -> String {
         guard !hideVaultBalance else {
             return String.hideBalanceText

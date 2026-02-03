@@ -26,7 +26,7 @@ struct CustomMessagePayload: Codable, Hashable {
         } else {
             data = Data(message.utf8)
         }
-        
+
         if method == "eth_signTypedData_v4" {
             // Handle eth_signTypedData_v4 (EIP-712)
             return keysignMessagesForTypedData()
@@ -47,7 +47,7 @@ struct CustomMessagePayload: Codable, Hashable {
         // This handles all edge cases: BigInt, arrays, nested structs, etc.
         let hash = EthereumAbi.encodeTyped(messageJson: message)
         let parsedHash = hash.hexString.stripHexPrefix()
-        
+
         // Return hex string without 0x prefix (matching the Windows implementation)
         return [parsedHash]
     }

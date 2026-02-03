@@ -74,8 +74,7 @@ struct CreateVaultView: View {
     var view: some View {
         VStack(spacing: 0) {
             Spacer()
-            VultisigLogo()
-                .offset(y: 64)
+            VultisigLogoAnimation()
             Spacer()
             buttons
         }

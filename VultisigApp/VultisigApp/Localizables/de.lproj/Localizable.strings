@@ -522,6 +522,7 @@
 "pleaseBackupVault" = "Jedes Gerät hat seinen eigenen, einzigartigen Anteil.";
 "pleaseBackupVaultNote" = "Bitte sichere jetzt alle deine Tresoranteile.";
 "pleaseWait" = "Bitte warten...";
+"pleaseChooseDifferentVaultName" = "Bitte wählen Sie einen anderen Vault-Namen.";
 "pleaseWaitMinutes" = "Bitte warten Sie %@ Minuten...";
 "plusMore" = "+%d mehr";
 "polkadotExistentialDepositError" = "Stellen Sie sicher, dass genügend Mittel vorhanden sind, um die Gebühren zu decken. Wenn das Guthaben eines Kontos unter 1 DOT (Existenzeinlage) fällt, wird das Konto deaktiviert und verbleibende Gelder werden verloren gehen. Sie können die Adresse jederzeit mit einer neuen Einzahlung über dem Existenzeinlage wieder aktivieren. Dies wird jedoch die verlorenen Gelder nicht wiederherstellen.";
@@ -835,6 +836,7 @@
 "vaultInfo" = "Vault -Info";
 "vaultLibType" = "Tresortyp";
 "vaultManagement" = "Tresorverwaltung";
+"vaultNameAlreadyInUse" = "Vault-Name wird bereits verwendet";
 "vaultName" = "Tresorname";
 "vaultNameExists" = "Tresorname %s existiert bereits";
 "vaultNameUnique" = "Der Name des Tresors muss einzigartig sein.";
@@ -856,6 +858,7 @@
 "vaultShareBackupsViewTitle2" = ", speichere sie wie zuvor";
 "vaultType" = "Tresorteil";
 "vaultTypeDoesnotMatch" = "Tresortyp stimmt nicht überein";
+"vaultTypeMismatchDescription" = "Das initiierende Gerät und das Kopplungsgerät haben unterschiedliche Vault-Typen. Bitte stellen Sie sicher, dass beide Geräte denselben Vault-Typ verwenden.";
 "vaultTypeMismatch" = "Tresortyp stimmt nicht überein, initiierende Gerät und gekoppeltes Gerät haben unterschiedliche Tresortypen";
 "vaultUpgraded" = "Vault aktualisiert";
 "vaultValue" = "Tresorwert";
@@ -890,6 +893,7 @@
 "withTheseDevices" = "Mit diesen Geräten";
 "wrongPassword" = "Falsches Passwort";
 "wrongPasswordHint" = "Dein Passwort-Hinweis ist: ";
+"wrongVaultSelectedDescription" = "Der von Ihnen ausgewählte Vault stimmt nicht mit der Keygen-Sitzung überein. Bitte wählen Sie den richtigen Vault aus.";
 "wrongVaultPassword" = "Falsches Gewölbekennwort. Bitte versuchen Sie es erneut.";
 "wrongVaultSelected" = "Sie haben den falschen Tresor gewählt";
 "wrongVaultTryAgain" = "Falscher Tresor oder gekoppeltes Gerät.";

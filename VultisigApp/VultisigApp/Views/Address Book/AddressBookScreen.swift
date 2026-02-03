@@ -1,5 +1,5 @@
 //
-//  AddressBookView.swift
+//  AddressBookScreen.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2024-07-10.
@@ -8,7 +8,7 @@
 import SwiftUI
 import SwiftData
 
-struct AddressBookView: View {
+struct AddressBookScreen: View {
     @Environment(\.router) var router
     var shouldReturnAddress = true
     @Binding var returnAddress: String
@@ -120,8 +120,8 @@ struct AddressBookView: View {
     @ViewBuilder
     var navigationButton: some View {
         if isEditing {
-            Button { toggleEdit() } label: {
-                NavigationBarButtonView(title: "done".localized)
+            ToolbarButton(image: "check", type: .confirmation) {
+                toggleEdit()
             }
         } else {
             ToolbarButton(image: "pencil") {
@@ -148,7 +148,7 @@ struct AddressBookView: View {
 }
 
 #Preview {
-    AddressBookView(returnAddress: .constant(""), coin: Coin.example)
+    AddressBookScreen(returnAddress: .constant(""), coin: Coin.example)
         .environmentObject(CoinSelectionViewModel())
         .environmentObject(HomeViewModel())
 }

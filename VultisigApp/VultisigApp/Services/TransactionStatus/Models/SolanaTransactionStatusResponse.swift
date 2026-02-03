@@ -21,7 +21,7 @@ struct SolanaTransactionStatusResponse: Codable {
 
         enum CodingKeys: String, CodingKey {
             case slot
-            case confirmationStatus = "confirmationStatus"
+            case confirmationStatus
             case err
         }
     }

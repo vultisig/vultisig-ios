@@ -14,6 +14,7 @@ struct ImportSeedphraseScreen: View {
 
     @State private var validationTask: Task<Void, Never>?
     @State private var duplicateSeedError: Error?
+    @State private var isImporting = false
 
     @FocusState var isFocused: Bool
     @State var mnemonicInput: String = ""
@@ -35,6 +36,26 @@ struct ImportSeedphraseScreen: View {
     var wordsCountAccessory: String {
         let maxWords = wordsCount > 12 ? 24 : 12
         return "\(wordsCount)/\(maxWords)"
+    }
+
+    /// Custom binding that prevents newlines while preserving spaces
+    var mnemonicInputBinding: Binding<String> {
+        Binding(
+            get: { mnemonicInput },
+            set: { newValue in
+                // Detect if user pressed Enter/Return
+                let containsNewline = newValue.contains("\n")
+
+                // Remove newlines, preserving existing spaces
+                let filtered = newValue.replacingOccurrences(of: "\n", with: "")
+                mnemonicInput = filtered
+
+                // Treat newline as submit action
+                if containsNewline {
+                    onImport()
+                }
+            }
+        )
     }
 
     var body: some View {
@@ -60,7 +81,7 @@ struct ImportSeedphraseScreen: View {
                     }
 
                     CommonTextEditor(
-                        value: $mnemonicInput,
+                        value: mnemonicInputBinding,
                         placeholder: "mnemonicPlaceholder".localized,
                         isFocused: $isFocused,
                         onSubmit: onImport,
@@ -96,14 +117,6 @@ struct ImportSeedphraseScreen: View {
         .onDisappear { isFocused = false }
         .onChange(of: mnemonicInput) { oldValue, newValue in
             let cleaned = cleanMnemonic(text: newValue)
-
-            // Detect new line - attempt import and clean the text
-            if cleaned != newValue {
-                mnemonicInput = cleaned
-                // Trigger import if new line was detected
-                onImport()
-                return
-            }
 
             let words = cleaned.split(separator: " ")
 
@@ -141,12 +154,18 @@ struct ImportSeedphraseScreen: View {
     func onImport() {
         guard validMnemonic == true else { return }
 
+        // Prevent concurrent import attempts
+        guard !isImporting else { return }
+
         let cleanedMnemonic = cleanMnemonic(text: mnemonicInput)
+
+        isImporting = true
 
         // Check if seed phrase is already imported
         Task {
-            let isAlreadyImported = await checkIfSeedAlreadyImported(mnemonic: cleanedMnemonic)
             await MainActor.run {
+                defer { isImporting = false }
+                let isAlreadyImported = checkIfSeedAlreadyImported(mnemonic: cleanedMnemonic)
                 if isAlreadyImported {
                     duplicateSeedError = SeedPhraseImportError.alreadyImported
                 } else {

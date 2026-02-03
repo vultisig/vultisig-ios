@@ -48,4 +48,13 @@ class SettingsCustomMessageViewModel: ObservableObject, TransferViewModel {
         currentIndex-=1
         state = KeysignState.allCases[currentIndex-1]
     }
+
+    func canGoBack() -> Bool {
+        switch state {
+        case .done, .keysign:
+            return false
+        case .initial, .pair:
+            return true
+        }
+    }
 }
