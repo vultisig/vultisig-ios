@@ -266,7 +266,7 @@ class JoinKeysignViewModel: ObservableObject {
 
             await ensureKeysignPayload()
             await ensureCustomMessagePayload()
-            
+
             // Decode custom message if present
             if let customMessage = customMessagePayload {
                 if let decodedMessage = await customMessage.message.decodedExtensionMemoAsync() {
@@ -276,7 +276,7 @@ class JoinKeysignViewModel: ObservableObject {
                     vaultPublicKeyECDSAInQrCode = customMessage.vaultPublicKeyECDSA
                 }
             }
-            
+
             // Auto-select correct vault BEFORE preparing messages
             if vaultPublicKeyECDSAInQrCode != .empty && vault.pubKeyECDSA != vaultPublicKeyECDSAInQrCode {
                 if let correctVault = fetchVaults().first(where: { $0.pubKeyECDSA == vaultPublicKeyECDSAInQrCode }),
