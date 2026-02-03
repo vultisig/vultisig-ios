@@ -75,7 +75,7 @@ class TransactionStatusViewModel: ObservableObject {
 
         // Save initial state to SwiftData
         Task {
-            try? await storage.save(
+            try? storage.save(
                 txHash: txHash,
                 chain: chain,
                 status: status,
@@ -94,7 +94,7 @@ class TransactionStatusViewModel: ObservableObject {
                         chain: chain
                     )
 
-                    await updateStatus(from: result)
+                    updateStatus(from: result)
 
                     // Exit if terminal state reached
                     if status.isTerminal {
@@ -105,7 +105,7 @@ class TransactionStatusViewModel: ObservableObject {
                     if let start = startTime,
                        Date().timeIntervalSince(start) > config.maxWaitTime {
                         status = .timeout
-                        await saveStatus()
+                        saveStatus()
                         break
                     }
 
@@ -129,7 +129,7 @@ class TransactionStatusViewModel: ObservableObject {
         pollingTask = nil
     }
 
-    private func updateStatus(from result: TransactionStatusResult) async {
+    private func updateStatus(from result: TransactionStatusResult) {
         let previousStatus = status
 
         switch result.status {
@@ -148,13 +148,13 @@ class TransactionStatusViewModel: ObservableObject {
 
         // Save to SwiftData if status changed
         if previousStatus != status {
-            await saveStatus()
+            saveStatus()
         }
     }
 
-    private func saveStatus() async {
+    private func saveStatus() {
         do {
-            try await storage.save(
+            try storage.save(
                 txHash: txHash,
                 chain: chain,
                 status: status,
