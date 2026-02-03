@@ -15,7 +15,6 @@ struct VultisigLogoAnimation: View {
         VStack(spacing: 0) {
             Spacer()
             animationVM?.view()
-                .onAppear(perform: playAnimation)
             Spacer()
         }
         .onLoad(perform: onLoad)
@@ -23,22 +22,13 @@ struct VultisigLogoAnimation: View {
     }
 
     func onLoad() {
-        animationVM = RiveViewModel(fileName: "splash_logo", autoPlay: false)
+        animationVM = RiveViewModel(fileName: "splash_logo", autoPlay: true)
         animationVM?.fit = .contain
     }
 
     func onDisappear() {
         animationVM?.stop()
         animationVM = nil
-    }
-
-    func playAnimation() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            animationVM?.play(loop: .oneShot)
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            animationVM?.pause()
-        }
     }
 }
 

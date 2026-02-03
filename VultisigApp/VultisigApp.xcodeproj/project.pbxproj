@@ -137,6 +137,7 @@
 		133CA3D22E8ADEE1009588F3 /* CoinDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CA3D12E8ADEDC009588F3 /* CoinDetailViewModel.swift */; };
 		133CA3D42E8ADFFF009588F3 /* CoinPriceNetworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CA3D32E8ADFFB009588F3 /* CoinPriceNetworkView.swift */; };
 		133CA3D62E8AE230009588F3 /* ModalBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CA3D52E8AE229009588F3 /* ModalBackgroundView.swift */; };
+		133CEA3F2F32632600FD7471 /* splash_logo.riv in Resources */ = {isa = PBXBuildFile; fileRef = 133CEA3E2F32632600FD7471 /* splash_logo.riv */; };
 		133EEA192E68787900E18280 /* SettingsCommonOptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133EEA182E68785F00E18280 /* SettingsCommonOptionView.swift */; };
 		133EEA1C2E6885A300E18280 /* SecureTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133EEA1B2E68859F00E18280 /* SecureTextField.swift */; };
 		133EEA1E2E68864000E18280 /* FastSigningPasswordSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133EEA1D2E68863600E18280 /* FastSigningPasswordSheetView.swift */; };
@@ -174,7 +175,6 @@
 		134A9FCD2E96B49800030C56 /* VaultBannerCarouselIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FCC2E96B49700030C56 /* VaultBannerCarouselIndicator.swift */; };
 		134A9FCF2E96B4B500030C56 /* VaultBannerCarouselIndicators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FCE2E96B4B000030C56 /* VaultBannerCarouselIndicators.swift */; };
 		134D610F2F30EB22008F034D /* devices_component.riv in Resources */ = {isa = PBXBuildFile; fileRef = 134D610E2F30EB22008F034D /* devices_component.riv */; };
-		134D61A32F322649008F034D /* splash_logo.riv in Resources */ = {isa = PBXBuildFile; fileRef = 134D61A22F322649008F034D /* splash_logo.riv */; };
 		134D61A62F323011008F034D /* VultisigLogoAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134D61A52F32300B008F034D /* VultisigLogoAnimation.swift */; };
 		134DFE0F2F28EEFE0087C9D5 /* CardanoTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE082F28EEFE0087C9D5 /* CardanoTransactionStatusProvider.swift */; };
 		134DFE102F28EEFE0087C9D5 /* SuiTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE0B2F28EEFE0087C9D5 /* SuiTransactionStatusProvider.swift */; };
@@ -1480,6 +1480,7 @@
 		133CA3D12E8ADEDC009588F3 /* CoinDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDetailViewModel.swift; sourceTree = "<group>"; };
 		133CA3D32E8ADFFB009588F3 /* CoinPriceNetworkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinPriceNetworkView.swift; sourceTree = "<group>"; };
 		133CA3D52E8AE229009588F3 /* ModalBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalBackgroundView.swift; sourceTree = "<group>"; };
+		133CEA3E2F32632600FD7471 /* splash_logo.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = splash_logo.riv; sourceTree = "<group>"; };
 		133EEA182E68785F00E18280 /* SettingsCommonOptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCommonOptionView.swift; sourceTree = "<group>"; };
 		133EEA1B2E68859F00E18280 /* SecureTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureTextField.swift; sourceTree = "<group>"; };
 		133EEA1D2E68863600E18280 /* FastSigningPasswordSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FastSigningPasswordSheetView.swift; sourceTree = "<group>"; };
@@ -1517,7 +1518,6 @@
 		134A9FCC2E96B49700030C56 /* VaultBannerCarouselIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBannerCarouselIndicator.swift; sourceTree = "<group>"; };
 		134A9FCE2E96B4B000030C56 /* VaultBannerCarouselIndicators.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBannerCarouselIndicators.swift; sourceTree = "<group>"; };
 		134D610E2F30EB22008F034D /* devices_component.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = devices_component.riv; sourceTree = "<group>"; };
-		134D61A22F322649008F034D /* splash_logo.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = splash_logo.riv; sourceTree = "<group>"; };
 		134D61A52F32300B008F034D /* VultisigLogoAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultisigLogoAnimation.swift; sourceTree = "<group>"; };
 		134DFE082F28EEFE0087C9D5 /* CardanoTransactionStatusProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardanoTransactionStatusProvider.swift; sourceTree = "<group>"; };
 		134DFE092F28EEFE0087C9D5 /* PolkadotTransactionStatusProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolkadotTransactionStatusProvider.swift; sourceTree = "<group>"; };
@@ -6021,6 +6021,7 @@
 				134DFE5C2F2921D30087C9D5 /* transaction_pending.riv */,
 				A6C58D7D2D7AD7F6000D2833 /* fastvault_summary.riv */,
 				A53065FB2D5AA5D3000B82E6 /* securevault_overview.riv */,
+				133CEA3E2F32632600FD7471 /* splash_logo.riv */,
 				A6621B842D67D98900757B43 /* vaultCreatedAnimation.riv */,
 				A6F7B6BD2D4975E900AC8104 /* QRCodeScanned.riv */,
 				A6F7B6C12D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv */,
@@ -6028,7 +6029,6 @@
 				A65505142D66918200EDEB8C /* SecureVaultBackupSuccess.riv */,
 				A646DFAE2E15F2D6006E8ECC /* ChooseVault.riv */,
 				A6F7B6E82D4B0D6D00AC8104 /* CreatingVaultCircles.riv */,
-				134D61A22F322649008F034D /* splash_logo.riv */,
 				A6F7B6EA2D4B0D8500AC8104 /* CreatingVaultCheckmark.riv */,
 				A6C58D662D7A3E4B000D2833 /* FastVaultBackupSucces.riv */,
 				A6F7B6F72D4C94D700AC8104 /* ConnectingWithServer.riv */,
@@ -6920,8 +6920,8 @@
 				132E016A2F1AA2FA007E717C /* vault_setup_device2.riv in Resources */,
 				132E016B2F1AA2FA007E717C /* vault_setup_device1.riv in Resources */,
 				A6BB9BCF2DA9E43B0085E117 /* all_devices_animation.riv in Resources */,
+				133CEA3F2F32632600FD7471 /* splash_logo.riv in Resources */,
 				130C058C2EE9A42200A7303A /* import_seedphrase.riv in Resources */,
-				134D61A32F322649008F034D /* splash_logo.riv in Resources */,
 				DE49A16D2B65F6DB000F3AFB /* Assets.xcassets in Resources */,
 				A53065FC2D5AA5D3000B82E6 /* securevault_overview.riv in Resources */,
 				A6C58D822D7AD81D000D2833 /* securevault_summary.riv in Resources */,
