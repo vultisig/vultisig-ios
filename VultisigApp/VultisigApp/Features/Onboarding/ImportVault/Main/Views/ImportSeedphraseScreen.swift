@@ -163,7 +163,7 @@ struct ImportSeedphraseScreen: View {
 
         // Check if seed phrase is already imported
         Task {
-            let isAlreadyImported = await checkIfSeedAlreadyImported(mnemonic: cleanedMnemonic)
+            let isAlreadyImported = checkIfSeedAlreadyImported(mnemonic: cleanedMnemonic)
             await MainActor.run {
                 defer { isImporting = false }
 

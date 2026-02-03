@@ -655,7 +655,7 @@ class KeysignViewModel: ObservableObject {
         let config = ChainStatusConfig.config(for: keysignPayload.coin.chain)
 
         Task {
-            try? await storage.save(
+            try? storage.save(
                 txHash: txid,
                 chain: keysignPayload.coin.chain,
                 status: .broadcasted(estimatedTime: config.estimatedTime),
