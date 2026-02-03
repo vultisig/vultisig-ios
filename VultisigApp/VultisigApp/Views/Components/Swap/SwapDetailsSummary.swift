@@ -125,7 +125,7 @@ struct SwapDetailsSummary: View {
     
     var vultDiscount: some View {
         HStack {
-            Image(systemName: "star.circle") 
+            Image(systemName: "star.circle.fill") 
                 .font(Theme.fonts.caption12)
                 .foregroundColor(Theme.colors.turquoise)
             
@@ -150,7 +150,7 @@ struct SwapDetailsSummary: View {
     
     var referralDiscount: some View {
         HStack {
-            Image(systemName: "megaphone")
+            Image(systemName: "megaphone.fill")
                 .font(Theme.fonts.caption12)
                 .foregroundColor(Theme.colors.turquoise) 
             

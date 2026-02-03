@@ -1178,6 +1178,7 @@
 		B5B47B5D2EF372B2007F2150 /* CircleViewLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B47B5C2EF372B2007F2150 /* CircleViewLogic.swift */; };
 		B5B5E2782CCADD69001167C3 /* FunctionCallStake.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B5E2772CCADD69001167C3 /* FunctionCallStake.swift */; };
 		B5B5E27A2CCADE85001167C3 /* FunctionCallUnstake.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B5E2792CCADE85001167C3 /* FunctionCallUnstake.swift */; };
+		B5B621AF2F32B98400938CC2 /* SwapCryptoLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B621AE2F32B98400938CC2 /* SwapCryptoLogic.swift */; };
 		B5B974A42E7DC76100816454 /* FunctionCallSecuredAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B974A32E7DC74B00816454 /* FunctionCallSecuredAsset.swift */; };
 		B5B974A62E7DDB1200816454 /* FunctionCallWithdrawSecuredAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B974A52E7DDB1200816454 /* FunctionCallWithdrawSecuredAsset.swift */; };
 		B5BCC2602EC26D79007B5A2F /* EvmServiceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BCC25E2EC26D79007B5A2F /* EvmServiceConfig.swift */; };
@@ -2524,6 +2525,7 @@
 		B5B47B5C2EF372B2007F2150 /* CircleViewLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleViewLogic.swift; sourceTree = "<group>"; };
 		B5B5E2772CCADD69001167C3 /* FunctionCallStake.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallStake.swift; sourceTree = "<group>"; };
 		B5B5E2792CCADE85001167C3 /* FunctionCallUnstake.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallUnstake.swift; sourceTree = "<group>"; };
+		B5B621AE2F32B98400938CC2 /* SwapCryptoLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoLogic.swift; sourceTree = "<group>"; };
 		B5B974A32E7DC74B00816454 /* FunctionCallSecuredAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallSecuredAsset.swift; sourceTree = "<group>"; };
 		B5B974A52E7DDB1200816454 /* FunctionCallWithdrawSecuredAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallWithdrawSecuredAsset.swift; sourceTree = "<group>"; };
 		B5BCC25E2EC26D79007B5A2F /* EvmServiceConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvmServiceConfig.swift; sourceTree = "<group>"; };
@@ -5641,6 +5643,7 @@
 		A65649D52B965FC400E4B329 /* View Models */ = {
 			isa = PBXGroup;
 			children = (
+				B5B621AE2F32B98400938CC2 /* SwapCryptoLogic.swift */,
 				B5FF07022ED9424E00B0FD55 /* SendCryptoVerifyLogic.swift */,
 				1328E6502ED5F32F0080BEE1 /* VaultPairDetailViewModel */,
 				13B1C2C92E65FC3200050637 /* Vault */,
@@ -7485,6 +7488,7 @@
 				A5125F082BEBBFAB008A79AA /* OneInchService.swift in Sources */,
 				A522C34A2C46948A00BC4311 /* SwapError.swift in Sources */,
 				13DD00632EF2F5750091F833 /* VaultRouter.swift in Sources */,
+				B5B621AF2F32B98400938CC2 /* SwapCryptoLogic.swift in Sources */,
 				13DD00642EF2F5750091F833 /* VaultRoute.swift in Sources */,
 				13DD00652EF2F5750091F833 /* VaultRouteBuilder.swift in Sources */,
 				1390D8B82E3938BF003F3E20 /* BlockaidRpcClientProtocol.swift in Sources */,
