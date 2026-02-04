@@ -755,6 +755,8 @@
 "swapErrorAmountTooSmallDescription" = "Der Tauschbetrag ist zu klein. Bitte erhöhen Sie den Betrag.";
 "swapErrorInboundAddressTitle" = "Ungültige Adresse";
 "swapErrorInboundAddressDescription" = "Die Eingangsadresse ist ungültig. Bitte versuchen Sie es erneut.";
+"swapErrorSameAssetTitle" = "Gleicher Vermögenswert";
+"swapErrorSameAssetDescription" = "Tausch zwischen gleichen Vermögenswerten nicht möglich. Bitte wählen Sie unterschiedliche Vermögenswerte.";
 "noLiquidityPool" = "Kein Liquiditätspool für dieses Token-Paar verfügbar. Dieser Asset wird möglicherweise nicht unterstützt.";
 "switchBackToInternetMode" = "Wechsle zurück in den Internetmodus";
 "switchToLocalMode" = "Wechsle in den lokalen Modus";

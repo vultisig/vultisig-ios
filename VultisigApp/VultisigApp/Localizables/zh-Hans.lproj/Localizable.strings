@@ -756,6 +756,8 @@
 "swapErrorAmountTooSmallDescription" = "交换金额太小。请增加金额。";
 "swapErrorInboundAddressTitle" = "地址无效";
 "swapErrorInboundAddressDescription" = "入站地址无效。请重试。";
+"swapErrorSameAssetTitle" = "相同资产";
+"swapErrorSameAssetDescription" = "无法在相同资产之间进行兑换。请选择不同的资产。";
 "noLiquidityPool" = "此代币对没有可用的流动性池。此资产可能不受支持";
 "switchBackToInternetMode" = " 切换回互联网模式";
 "switchToLocalMode" = "切换到本地模式";
