@@ -66,7 +66,7 @@ class DefiSelectChainViewModel: ObservableObject {
             let vaultChainsToEnable: [CoinMeta] = coinsMeta.filter { !vaultCoinsMeta.contains($0) }
 
             // Enable chains on vault
-            try await CoinService.addNewlySelectedCoins(vault: vault, selection: Set(vaultChainsToEnable))
+            try await CoinService.shared.addNewlySelectedCoins(vault: vault, selection: Set(vaultChainsToEnable))
 
             vault.defiChains = Array(selection)
                 .filter { CoinAction.defiChains.contains($0) }

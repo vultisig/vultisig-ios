@@ -52,7 +52,7 @@ class VaultDefaultCoinService {
                     vault.coins.append(coin)
 
                     Task {
-                        await CoinService.addDiscoveredTokens(nativeToken: coin, to: vault)
+                        await CoinService.shared.addDiscoveredTokens(nativeToken: coin, to: vault)
                     }
                 }
             }

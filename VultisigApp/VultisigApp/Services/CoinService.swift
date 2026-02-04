@@ -9,9 +9,11 @@ import Foundation
 import SwiftData
 
 @MainActor
-struct CoinService {
+class CoinService: ObservableObject {
 
-    static func removeCoins(coins: [Coin], vault: Vault) throws {
+    static let shared = CoinService()
+
+    func removeCoins(coins: [Coin], vault: Vault) throws {
         for coin in coins {
             let coinsToRemove = vault.coins.filter {
                 $0.chain == coin.chain &&
@@ -30,7 +32,7 @@ struct CoinService {
         }
     }
 
-    static func saveAssets(for vault: Vault, selection: Set<CoinMeta>) async {
+    func saveAssets(for vault: Vault, selection: Set<CoinMeta>) async {
         do {
             // Step 1: Remove coins that are no longer selected
             try removeDeselectedCoins(vault: vault, selection: selection)
@@ -45,7 +47,7 @@ struct CoinService {
 
     // MARK: - Main Flow Methods
 
-    private static func removeDeselectedCoins(vault: Vault, selection: Set<CoinMeta>) throws {
+    private func removeDeselectedCoins(vault: Vault, selection: Set<CoinMeta>) throws {
         // Find all coins that need to be removed
         let coinsToRemove = findAllCoinsToRemove(vault: vault, selection: selection)
 
@@ -70,7 +72,7 @@ struct CoinService {
         vault.defiChains.removeAll { chainsBeingRemoved.contains($0) }
     }
 
-    static func addNewlySelectedCoins(vault: Vault, selection: Set<CoinMeta>) async throws {
+    func addNewlySelectedCoins(vault: Vault, selection: Set<CoinMeta>) async throws {
         // Find chains where the native token is being removed from the selection
         let chainsBeingRemoved = findChainsBeingRemoved(selection: selection)
 
@@ -97,7 +99,7 @@ struct CoinService {
         try await addToChain(assets: newCoins, to: vault)
     }
 
-    private static func findAllCoinsToRemove(vault: Vault, selection: Set<CoinMeta>) -> [Coin] {
+    private func findAllCoinsToRemove(vault: Vault, selection: Set<CoinMeta>) -> [Coin] {
         // Find directly deselected coins
         let directlyRemovedCoins = findRemovedCoins(vault: vault, selection: selection)
 
@@ -114,7 +116,7 @@ struct CoinService {
         return allToRemove
     }
 
-    static func addToChain(assets: [CoinMeta], to vault: Vault) async throws {
+    func addToChain(assets: [CoinMeta], to vault: Vault) async throws {
         for asset in assets {
             var assetPriceProviderId = asset.priceProviderId
             if assetPriceProviderId.isEmpty {
@@ -138,7 +140,7 @@ struct CoinService {
         }
     }
 
-    static func addToChain(asset: CoinMeta, to vault: Vault, priceProviderId: String?) throws -> Coin? {
+    func addToChain(asset: CoinMeta, to vault: Vault, priceProviderId: String?) throws -> Coin? {
         let pubKey = vault.chainPublicKeys.first { $0.chain == asset.chain }?.publicKeyHex
         let isDerived = pubKey != nil
         let newCoin = try CoinFactory.create(
@@ -166,7 +168,7 @@ struct CoinService {
         return newCoin
     }
 
-    static func addIfNeeded(asset: CoinMeta, to vault: Vault, priceProviderId: String?) throws -> Coin? {
+    func addIfNeeded(asset: CoinMeta, to vault: Vault, priceProviderId: String?) throws -> Coin? {
         if let coin = vault.coin(for: asset) {
             return coin
         }
@@ -174,7 +176,7 @@ struct CoinService {
         return try addToChain(asset: asset, to: vault, priceProviderId: priceProviderId)
     }
 
-    static func fetchDiscoveredTokens(nativeCoin: CoinMeta, address: String) async throws -> [CoinMeta] {
+    func fetchDiscoveredTokens(nativeCoin: CoinMeta, address: String) async throws -> [CoinMeta] {
         var tokens: [CoinMeta] = []
         switch nativeCoin.chain.chainType {
         case .EVM:
@@ -201,7 +203,7 @@ struct CoinService {
         return tokens
     }
 
-    static func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async {
+    func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async {
         do {
             let tokens = try await fetchDiscoveredTokens(nativeCoin: nativeToken.toCoinMeta(), address: nativeToken.address)
 
@@ -235,7 +237,7 @@ struct CoinService {
     // MARK: - Helper Functions
 
     /// Check if a token appears to be spam based on its name and characteristics
-    private static func isSpamToken(_ token: CoinMeta) async -> Bool {
+    private func isSpamToken(_ token: CoinMeta) async -> Bool {
         // Additional spam filtering patterns
         let suspiciousPatterns = [
             "t.me/",           // Telegram links
@@ -299,7 +301,7 @@ struct CoinService {
     }
 
     /// Check if a logo URL is invalid (404, unreachable, or not a valid URL)
-    private static func isInvalidLogoURL(_ logo: String) async -> Bool {
+    private func isInvalidLogoURL(_ logo: String) async -> Bool {
         // Skip local asset names (not URLs) - these are fine
         guard logo.contains("http://") || logo.contains("https://") || logo.contains("://") else {
             return false // Not a URL, so we can't validate it - assume it's fine (local asset name)
@@ -358,7 +360,7 @@ struct CoinService {
         }
     }
 
-    private static func findChainsBeingRemoved(selection: Set<CoinMeta>) -> Set<Chain> {
+    private func findChainsBeingRemoved(selection: Set<CoinMeta>) -> Set<Chain> {
         // Get all unique chains from the selection
         let allChains = Set(selection.map { $0.chain })
 
@@ -372,14 +374,14 @@ struct CoinService {
         return chainsWithoutNative
     }
 
-    private static func findRemovedCoins(vault: Vault, selection: Set<CoinMeta>) -> [Coin] {
+    private func findRemovedCoins(vault: Vault, selection: Set<CoinMeta>) -> [Coin] {
         return vault.coins.filter { coin in
             let coinMeta = coin.toCoinMeta()
             return !selection.contains(coinMeta)
         }
     }
 
-    private static func findChainsWithRemovedNativeToken(vault: Vault, selection: Set<CoinMeta>) -> Set<Chain> {
+    private func findChainsWithRemovedNativeToken(vault: Vault, selection: Set<CoinMeta>) -> Set<Chain> {
         let removedNativeTokens = vault.coins.filter { coin in
             // Only check native tokens
             guard coin.isNativeToken else { return false }
@@ -395,7 +397,7 @@ struct CoinService {
         return Set(removedNativeTokens.map { $0.chain })
     }
 
-    private static func findNewCoins(vault: Vault, selection: Set<CoinMeta>, excludedChains: Set<Chain>) -> [CoinMeta] {
+    private func findNewCoins(vault: Vault, selection: Set<CoinMeta>, excludedChains: Set<Chain>) -> [CoinMeta] {
         let vaultCoinMetas = vault.coins.map { $0.toCoinMeta() }
         return selection.filter { asset in
             // Don't add coins from chains that were removed
@@ -407,7 +409,7 @@ struct CoinService {
     // MARK: - Hidden Token Management
 
     /// Check if a token should be hidden when removed
-    private static func shouldHideToken(_ coin: Coin) -> Bool {
+    private func shouldHideToken(_ coin: Coin) -> Bool {
         // Hide token if:
         // 1. It's not a native token
         // 2. It was auto-discovered (has or had a balance)
@@ -416,7 +418,7 @@ struct CoinService {
     }
 
     /// Add a coin to the hidden tokens list
-    private static func addToHiddenTokens(_ coin: Coin, vault: Vault) {
+    private func addToHiddenTokens(_ coin: Coin, vault: Vault) {
         // Check if already hidden
         let alreadyHidden = vault.hiddenTokens.contains { hidden in
             hidden.chain == coin.chain.rawValue &&
@@ -435,14 +437,14 @@ struct CoinService {
     }
 
     /// Check if a token is in the hidden list
-    private static func isTokenHidden(_ token: CoinMeta, vault: Vault) -> Bool {
+    private func isTokenHidden(_ token: CoinMeta, vault: Vault) -> Bool {
         return vault.hiddenTokens.contains { hidden in
             hidden.matches(token)
         }
     }
 
     /// Remove a token from the hidden list (when user re-selects it)
-    static func unhideToken(_ token: CoinMeta, vault: Vault) {
+    func unhideToken(_ token: CoinMeta, vault: Vault) {
         if let index = vault.hiddenTokens.firstIndex(where: { hidden in
             hidden.matches(token)
         }) {
@@ -455,7 +457,7 @@ struct CoinService {
     // MARK: - Diagnostic Functions
 
     /// Check if vault is in an invalid state (has tokens without native token)
-    static func detectOrphanedTokens(vault: Vault) -> [Chain: [Coin]] {
+    func detectOrphanedTokens(vault: Vault) -> [Chain: [Coin]] {
         var orphanedTokens: [Chain: [Coin]] = [:]
 
         // Group coins by chain
@@ -473,7 +475,7 @@ struct CoinService {
     }
 
     /// Clear all hidden tokens for a specific chain
-    static func clearHiddenTokensForChain(_ chain: Chain, vault: Vault) {
+    func clearHiddenTokensForChain(_ chain: Chain, vault: Vault) {
         // Find all hidden tokens for this chain
         let hiddenTokensToRemove = vault.hiddenTokens.filter { hidden in
             hidden.chain == chain.rawValue

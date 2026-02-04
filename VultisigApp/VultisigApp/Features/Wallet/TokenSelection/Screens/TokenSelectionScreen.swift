@@ -20,6 +20,7 @@ struct TokenSelectionScreen: View {
 
     @StateObject var tokenViewModel = TokenSelectionViewModel()
     @EnvironmentObject var coinViewModel: CoinSelectionViewModel
+    @EnvironmentObject var coinService: CoinService
 
     var elements: [TokenSelectionAsset] {
         let assets = tokenViewModel.searchText.isEmpty ?
@@ -72,7 +73,7 @@ struct TokenSelectionScreen: View {
 
     func onSave() {
         Task {
-            await CoinService.saveAssets(for: vault, selection: coinViewModel.selection)
+            await coinService.saveAssets(for: vault, selection: coinViewModel.selection)
             await MainActor.run { isPresented = false }
         }
     }
@@ -85,4 +86,6 @@ struct TokenSelectionScreen: View {
         isPresented: .constant(true),
         onCustomToken: {}
     )
+    .environmentObject(CoinSelectionViewModel())
+    .environmentObject(CoinService())
 }

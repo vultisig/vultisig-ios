@@ -28,6 +28,7 @@ struct ChainDetailScreen: View {
     private let scrollReferenceId = "chainDetailScreenBottomContentId"
 
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
+    @EnvironmentObject var coinService: CoinService
     @Environment(\.dismiss) var dismiss
 
     var coins: [Coin] {
@@ -240,7 +241,7 @@ private extension ChainDetailScreen {
                 taskGroup.addTask {
                     await coinSelectionViewModel.loadData(coin: coin)
                     if coin.isNativeToken {
-                        await CoinService.addDiscoveredTokens(nativeToken: coin, to: vault)
+                        await coinService.addDiscoveredTokens(nativeToken: coin, to: vault)
                     }
                 }
             }
@@ -316,4 +317,5 @@ private extension ChainDetailScreen {
         vault: .example
     )
     .environmentObject(HomeViewModel())
+    .environmentObject(CoinService())
 }

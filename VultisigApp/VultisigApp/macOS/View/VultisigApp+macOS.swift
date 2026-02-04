@@ -22,6 +22,7 @@ extension VultisigApp {
             .environmentObject(homeViewModel)
             .environmentObject(coinSelectionViewModel)
             .environmentObject(deeplinkViewModel)
+            .environmentObject(coinService)
             .buttonStyle(BorderlessButtonStyle())
             .frame(minWidth: 900, minHeight: 600)
             .onAppear {

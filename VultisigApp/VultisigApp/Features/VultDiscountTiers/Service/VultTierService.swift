@@ -143,7 +143,7 @@ private extension VultTierService {
     func addVultToken(to vault: Vault) async {
         let vultTokenMeta = TokensStore.TokenSelectionAssets.first(where: { $0.chain == .ethereum && $0.ticker == vultTicker })
         guard let vultTokenMeta else { return }
-        try? await CoinService.addToChain(assets: [vultTokenMeta], to: vault)
+        try? await CoinService.shared.addToChain(assets: [vultTokenMeta], to: vault)
     }
 
     func addEthChainIfNeeded(for vault: Vault) async {
@@ -153,6 +153,6 @@ private extension VultTierService {
 
         let ethNativeToken = TokensStore.TokenSelectionAssets.first(where: { $0.chain == .ethereum && $0.isNativeToken })
         guard let ethNativeToken else { return }
-        try? await CoinService.addToChain(assets: [ethNativeToken], to: vault)
+        try? await CoinService.shared.addToChain(assets: [ethNativeToken], to: vault)
     }
 }

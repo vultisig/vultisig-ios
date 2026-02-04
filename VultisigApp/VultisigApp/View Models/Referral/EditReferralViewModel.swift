@@ -111,7 +111,7 @@ private extension EditReferralViewModel {
     func createTransaction(tx: SendTransaction, preferredAsset: THORChainAsset?) {
         var preferredAssetCoin: Coin?
         if let preferredAsset {
-            preferredAssetCoin = try? CoinService.addIfNeeded(asset: preferredAsset.asset, to: vault, priceProviderId: preferredAsset.asset.priceProviderId)
+            preferredAssetCoin = try? CoinService.shared.addIfNeeded(asset: preferredAsset.asset, to: vault, priceProviderId: preferredAsset.asset.priceProviderId)
         }
 
         tx.amount = totalFeeAmount.formatDecimalToLocale()

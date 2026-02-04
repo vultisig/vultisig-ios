@@ -24,6 +24,7 @@ struct VultisigApp: App {
     @StateObject var globalStateViewModel = GlobalStateViewModel()
     @StateObject var navigationRouter = NavigationRouter()
     @StateObject var sheetPresentedCounterManager = SheetPresentedCounterManager()
+    @StateObject var coinService = CoinService.shared
 
     init() {
 #if os(macOS)

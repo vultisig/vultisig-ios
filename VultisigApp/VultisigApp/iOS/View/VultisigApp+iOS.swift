@@ -22,6 +22,7 @@ extension VultisigApp {
             .environmentObject(homeViewModel)
             .environmentObject(coinSelectionViewModel)
             .environmentObject(deeplinkViewModel)
+            .environmentObject(coinService)
             .onChange(of: scenePhase) {
                 switch scenePhase {
                 case .active:

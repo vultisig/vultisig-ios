@@ -19,6 +19,7 @@ struct DefiChainMainScreen: View {
     @State private var showPositionSelection = false
     @State private var isLoading = false
     @State private var error: HelperError?
+    @EnvironmentObject var coinService: CoinService
 
     init(vault: Vault, group: GroupedChain) {
         self.vault = vault
@@ -184,7 +185,7 @@ struct DefiChainMainScreen: View {
             if shouldAdd {
                 isLoading = true
                 do {
-                    try await CoinService.addToChain(assets: type.coins, to: vault)
+                    try await coinService.addToChain(assets: type.coins, to: vault)
                 } catch {
                     self.error = HelperError.runtimeError("Failed to add coins")
                     isLoading = false
@@ -262,4 +263,5 @@ private extension DefiChainMainScreen {
 #Preview {
     DefiChainMainScreen(vault: .example, group: .example)
         .environmentObject(HomeViewModel())
+        .environmentObject(CoinService())
 }

@@ -16,6 +16,7 @@ struct VaultSelectChainScreen: View {
     @State var isLoading: Bool = false
 
     @StateObject var viewModel = CoinSelectionViewModel()
+    @EnvironmentObject var coinService: CoinService
 
     init(
         vault: Vault,
@@ -84,7 +85,7 @@ private extension VaultSelectChainScreen {
             return
         }
 
-        await CoinService.saveAssets(for: vault, selection: viewModel.selection)
+        await coinService.saveAssets(for: vault, selection: viewModel.selection)
     }
 }
 
@@ -94,4 +95,5 @@ private extension VaultSelectChainScreen {
         isPresented: .constant(true),
         onSave: {}
     )
+    .environmentObject(CoinService())
 }

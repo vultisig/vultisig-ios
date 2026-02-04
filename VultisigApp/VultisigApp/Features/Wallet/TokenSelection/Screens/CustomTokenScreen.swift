@@ -29,6 +29,7 @@ struct CustomTokenScreen: View {
 
     @StateObject var tokenViewModel = TokenSelectionViewModel()
     @EnvironmentObject var coinViewModel: CoinSelectionViewModel
+    @EnvironmentObject var coinService: CoinService
 
     @Environment(\.dismiss) var dismiss
 
@@ -231,7 +232,7 @@ struct CustomTokenScreen: View {
             isAddingToken = true
             Task {
                 coinViewModel.handleSelection(isSelected: true, asset: customToken)
-                await CoinService.saveAssets(for: vault, selection: coinViewModel.selection)
+                await coinService.saveAssets(for: vault, selection: coinViewModel.selection)
                 try? await Task.sleep(for: .seconds(1)) // Small delay to improve UX
                 isAddingToken = false
                 dismiss()

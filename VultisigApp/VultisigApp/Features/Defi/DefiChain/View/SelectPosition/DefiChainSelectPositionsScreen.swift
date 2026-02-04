@@ -13,6 +13,7 @@ struct DefiChainSelectPositionsScreen: View {
 
     @State var selection: [[CoinMeta]] = []
     @State var isLoading: Bool = false
+    @EnvironmentObject var coinService: CoinService
 
     var body: some View {
         ZStack {
@@ -84,7 +85,7 @@ struct DefiChainSelectPositionsScreen: View {
                 !vaultCoins.contains($0)
             }
 
-            try? await CoinService.addToChain(assets: Array(filteredDefiCoins), to: viewModel.vault)
+            try? await coinService.addToChain(assets: Array(filteredDefiCoins), to: viewModel.vault)
             isLoading = false
             isPresented = false
         }
@@ -111,4 +112,5 @@ struct DefiChainSelectPositionsScreen: View {
         viewModel: DefiChainMainViewModel(vault: .example, chain: .thorChain),
         isPresented: .constant(true)
     )
+    .environmentObject(CoinService())
 }
