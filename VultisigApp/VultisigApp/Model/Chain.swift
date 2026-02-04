@@ -556,4 +556,15 @@ extension Chain {
             }
         }
     }
+    
+    static var keyImportEnabledChains: [Chain] {
+        enabledChains.filter {
+            switch $0 {
+            case .cardano:
+                return false
+            default:
+                return true
+            }
+        }
+    }
 }

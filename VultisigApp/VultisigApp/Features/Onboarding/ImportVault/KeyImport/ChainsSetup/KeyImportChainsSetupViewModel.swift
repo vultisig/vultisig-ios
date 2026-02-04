@@ -160,7 +160,8 @@ final class KeyImportChainsSetupViewModel: ObservableObject {
             return []
         }
 
-        let nativeCoins = TokensStore.TokenSelectionAssets.filter { $0.isNativeToken }
+        let nativeCoins = TokensStore.TokenSelectionAssets
+            .filter { $0.isNativeToken && Chain.keyImportEnabledChains.contains($0.chain) }
         logger.info("📋 Scanning \(nativeCoins.count) chains for balances")
 
         let results = await fetchBalancesForChains(nativeCoins: nativeCoins, wallet: wallet)
