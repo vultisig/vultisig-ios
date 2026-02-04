@@ -10,6 +10,7 @@ import Combine
 
 final class VaultSetupViewModel: ObservableObject, Form {
     @Published var validForm: Bool = false
+    @Published var validatingReferralCode: Bool = false
     private let setupType: KeyImportSetupType
 
     private(set) lazy var form: [FormField] = {
@@ -49,6 +50,10 @@ final class VaultSetupViewModel: ObservableObject, Form {
     /// Whether to show FastSign fields (email and password)
     var showFastSignFields: Bool {
         setupType.requiresFastSign
+    }
+    
+    var canContinue: Bool {
+        validForm && !validatingReferralCode
     }
 
     init(setupType: KeyImportSetupType) {
@@ -132,24 +137,32 @@ final class VaultSetupViewModel: ObservableObject, Form {
                 }
 
                 guard value.count <= 4 else {
-                    viewModel.referralField.error = "referralLaunchCodeLengthError".localized
+                    viewModel.setReferralError("referralLaunchCodeLengthError".localized)
                     return
                 }
 
                 viewModel.task?.cancel()
                 viewModel.task = Task {
                     do {
+                        await MainActor.run { viewModel.validatingReferralCode = true }
                         try await ReferredCodeInteractor().verify(code: value)
                         if Task.isCancelled { return }
-                        await MainActor.run { viewModel.referralField.error = nil }
+                        await MainActor.run { viewModel.setReferralError(nil) }
                     } catch {
                         if Task.isCancelled { return }
-                        await MainActor.run { viewModel.referralField.error = error.localizedDescription }
+                        await MainActor.run { viewModel.setReferralError(error.localizedDescription) }
                     }
+                    await MainActor.run { viewModel.validatingReferralCode = false }
                 }
             }
             .store(in: &cancellables)
 
+    }
+    
+    private func setReferralError(_ error: String?) {
+        referralField.error = error ?? .empty
+        referralField.valid = error == nil
+        validForm = validForm && error == nil
     }
 
     func isPasswordConfirmValid(value: String) -> Bool {

@@ -217,7 +217,7 @@ struct VaultSetupScreen: View {
             }
         }
 
-        guard viewModel.validForm else { return }
+        guard viewModel.canContinue else { return }
         router.navigate(to: OnboardingRoute.keyImportNewVaultSetup(
             vault: viewModel.getVault(keyImportInput: keyImportInput),
             keyImportInput: keyImportInput,
