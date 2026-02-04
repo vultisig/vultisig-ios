@@ -349,6 +349,7 @@ struct SwapCryptoLogic {
         case insufficientFunds
         case swapAmountTooSmall
         case inboundAddress
+        case sameAsset
 
         var errorTitle: String {
             switch self {
@@ -360,6 +361,8 @@ struct SwapCryptoLogic {
                 return "swapErrorAmountTooSmallTitle".localized
             case .inboundAddress:
                 return "swapErrorInboundAddressTitle".localized
+            case .sameAsset:
+                return "swapErrorSameAssetTitle".localized
             }
         }
 
@@ -373,6 +376,8 @@ struct SwapCryptoLogic {
                 return "swapErrorAmountTooSmallDescription".localized
             case .inboundAddress:
                 return "swapErrorInboundAddressDescription".localized
+            case .sameAsset:
+                return "swapErrorSameAssetDescription".localized
             }
         }
     }
@@ -602,8 +607,11 @@ struct SwapCryptoLogic {
     // MARK: - Core Operations (Quotes & Fees)
 
     func fetchQuote(tx: SwapTransaction, vault: Vault, referredCode: String) async throws -> SwapQuote {
-        guard !tx.fromAmountDecimal.isZero, tx.fromCoin != tx.toCoin else {
-            throw Errors.unexpectedError // Or just return? Logic upstream handles this check usually
+        guard tx.fromCoin != tx.toCoin else {
+            throw Errors.sameAsset
+        }
+        guard !tx.fromAmountDecimal.isZero else {
+            throw Errors.unexpectedError
         }
 
         let vultTier = await VultTierService().fetchDiscountTier(for: vault)

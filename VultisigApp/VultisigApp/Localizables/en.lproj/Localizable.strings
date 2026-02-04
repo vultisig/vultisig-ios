@@ -761,6 +761,8 @@
 "swapErrorAmountTooSmallDescription" = "The swap amount is too small. Please increase the amount.";
 "swapErrorInboundAddressTitle" = "Invalid Address";
 "swapErrorInboundAddressDescription" = "The inbound address is invalid. Please try again.";
+"swapErrorSameAssetTitle" = "Same Asset";
+"swapErrorSameAssetDescription" = "Cannot swap between the same asset. Please select different assets.";
 "noLiquidityPool" = "No liquidity pool available for this token pair. This asset may not be supported.";
 "switchBackToInternetMode" = " Switch back to internet mode";
 "switchToLocalMode" = "Switch to local mode";
