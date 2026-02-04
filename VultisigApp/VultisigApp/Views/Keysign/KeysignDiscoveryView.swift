@@ -187,19 +187,17 @@ struct KeysignDiscoveryView: View {
         }
 
         self.qrCodeImage = qrCodeImage
-        if let keysignPayload {
-            shareSheetViewModel.render(
-                qrCodeImage: qrCodeImage,
-                qrCodeData: qrCodeData,
-                displayScale: displayScale,
-                type: previewType,
-                vaultName: vault.name,
-                amount: previewType == .Send ? keysignPayload.toAmountWithTickerString : "",
-                toAddress: previewType == .Send ? keysignPayload.toAddress : "",
-                fromAmount: previewType == .Swap ? getSwapFromAmount() : "",
-                toAmount: previewType == .Swap ? getSwapToAmount() : ""
-            )
-        }
+        shareSheetViewModel.render(
+            qrCodeImage: qrCodeImage,
+            qrCodeData: qrCodeData,
+            displayScale: displayScale,
+            type: previewType,
+            vaultName: vault.name,
+            amount: previewType == .Send ? keysignPayload?.toAmountWithTickerString ?? "" : "",
+            toAddress: previewType == .Send ? keysignPayload?.toAddress ?? "" : "",
+            fromAmount: previewType == .Swap ? getSwapFromAmount() : "",
+            toAmount: previewType == .Swap ? getSwapToAmount() : ""
+        )
     }
 
     func getSwapFromAmount() -> String {

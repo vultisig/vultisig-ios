@@ -19,13 +19,13 @@ class SettingsCustomMessageViewModel: ObservableObject, TransferViewModel {
         var title: String {
             switch self {
             case .initial:
-                return "Sign message"
+                return "Sign message".localized
             case .pair:
-                return "pair"
+                return "pair".localized
             case .keysign:
-                return "keysign"
+                return "keysign".localized
             case .done:
-                return "overview"
+                return "overview".localized
             }
         }
     }
