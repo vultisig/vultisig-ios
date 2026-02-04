@@ -12,7 +12,6 @@ extension SettingsCustomMessageView {
 
     var main: some View {
         view
-            .crossPlatformToolbar(viewModel.state.title)
     }
 
     var customMessageContent: some View {
