@@ -1112,7 +1112,7 @@
 "enterYourSeedphraseSubtitle" = "在每个单词之间留一个空格。支持12或24个单词的助记词。";
 "enterYourSeedphraseSubtitleHighlight" = "12或24";
 "seedPhraseWordCountError" = "您输入了%d个单词。助记词必须是12个或24个单词。";
-"seedPhraseInvalidError" = "无效的助记词。请仔细检查您的单词。";
+"seedPhraseInvalidError" = "助记词不正确，请验证所有单词。";
 "seedPhraseAlreadyImported" = "助记词已导入";
 "seedPhraseAlreadyImportedDescription" = "请导入另一个助记词";
 // Circle

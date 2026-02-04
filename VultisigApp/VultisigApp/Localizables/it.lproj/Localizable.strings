@@ -1110,7 +1110,7 @@
 "enterYourSeedphraseSubtitle" = "Lascia uno spazio tra ogni parola. Sono supportate seed phrase di 12 o 24 parole.";
 "enterYourSeedphraseSubtitleHighlight" = "12 o 24";
 "seedPhraseWordCountError" = "Hai inserito %d parole. La seed phrase deve contenere 12 o 24 parole.";
-"seedPhraseInvalidError" = "Seed phrase non valida. Controlla le tue parole.";
+"seedPhraseInvalidError" = "La frase seed non è corretta, verifica tutte le parole.";
 "seedPhraseAlreadyImported" = "Seed phrase già importata";
 "seedPhraseAlreadyImportedDescription" = "Si prega di importare un'altra seed phrase";
 // Circle
