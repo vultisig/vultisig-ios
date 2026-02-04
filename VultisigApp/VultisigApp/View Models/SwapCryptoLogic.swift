@@ -195,13 +195,13 @@ struct SwapCryptoLogic {
 
     func baseAffiliateFee(tx: SwapTransaction) -> String {
         guard let quote = tx.quote else { return .empty }
-        
+
         // 1. Get Affiliate Fee directly from quote
         // Determine which quote type we have and extract fee string
         var affiliateFeeString: String?
         var feeDecimals: Int = 8 // Default to 8 (THORChain standard)
         var feeCoin: Coin = tx.toCoin // Assumption based on existing pattern (fees in output asset)
-        
+
         switch quote {
         case .thorchain(let q), .thorchainStagenet(let q), .mayachain(let q):
             affiliateFeeString = q.fees.affiliate
@@ -209,20 +209,20 @@ struct SwapCryptoLogic {
         default:
             return .empty // Other providers might not have affiliate fees structured same way
         }
-        
+
         guard let affiliateFeeString = affiliateFeeString,
               let feeAmount = Decimal(string: affiliateFeeString) else {
             return .empty
         }
-        
+
         // 2. Convert to Fiat
         // If fee is in 'toCoin' units (e.g. 1e8)
         let feeDecimal = feeAmount / pow(10, feeDecimals)
         let fiatValue = feeCoin.fiat(decimal: feeDecimal)
-        
+
         return fiatValue.formatToFiat(includeCurrencySymbol: true)
     }
-    
+
     func swapFeeLabel(tx: SwapTransaction) -> String {
         // Calculate effective BPS from the quote vs input?
         // Or simply display the theoretical BPS if we can't reverse math it easily due to price fluctuations?
@@ -230,13 +230,13 @@ struct SwapCryptoLogic {
         // ThorchainQuote doesn't have "affiliate_bps" field explicitly in the struct we saw?
         // Struct: `slippageBps`.
         // If not present, we can calculate: (AffiliateFeeFiat / InputFiat) * 10000
-        
+
         guard let quote = tx.quote else { return "Swap Fee" }
-        
+
         // Get affiliate fee fiat value
         let affiliateFeeString = baseAffiliateFee(tx: tx)
         guard !affiliateFeeString.isEmpty else { return "Swap Fee (0.00%)" }
-       
+
         // We need raw numbers for math, reusing logic for efficiency
         var feeAmt: Decimal = 0
         switch quote {
@@ -245,51 +245,51 @@ struct SwapCryptoLogic {
         default:
              break
         }
-        
+
         // Calculate BPS: (Fee Amt / Expected Output Amount * ?? )
         // Usually Swap Fee is on INPUT.
         // Let's use currency values for comparsion to handle asset mismatch
         let feeFiat = tx.toCoin.fiat(decimal: feeAmt)
-        
+
         let inputFiat = tx.fromCoin.fiat(decimal: tx.fromAmountDecimal)
-        
+
         guard inputFiat > 0 else { return "Swap Fee" }
-        
+
         let rate = (feeFiat / inputFiat)
         let percentage = rate * 100
-        
+
         return "Swap Fee (\(String(format: "%.2f", NSDecimalNumber(decimal: percentage).doubleValue))%)"
     }
-    
+
     func outboundFeeString(tx: SwapTransaction) -> String {
         guard let quote = tx.quote else { return .empty }
-        
+
         var outboundFeeString: String?
         let feeDecimals: Int = 8 // Default to 8 (THORChain standard)
         let feeCoin: Coin = tx.toCoin // Outbound fee is in output asset
-        
+
         switch quote {
         case .thorchain(let q), .thorchainStagenet(let q), .mayachain(let q):
             outboundFeeString = q.fees.outbound
         default:
             return .empty
         }
-        
+
         guard let outboundFeeString = outboundFeeString,
               let feeAmount = Decimal(string: outboundFeeString) else {
             return .empty
         }
-        
+
         let feeDecimal = feeAmount / pow(10, feeDecimals)
         let fiatValue = feeCoin.fiat(decimal: feeDecimal)
-        
+
         return fiatValue.formatToFiat(includeCurrencySymbol: true)
     }
 
     func vultDiscountLabel(tx: SwapTransaction) -> String {
         return "VULT (-\(tx.vultDiscountBps) bps)"
     }
-    
+
     func referralDiscountLabel(tx: SwapTransaction) -> String {
         return "Referral (-\(tx.referralDiscountBps) bps)"
     }
@@ -297,40 +297,40 @@ struct SwapCryptoLogic {
     func vultDiscount(tx: SwapTransaction) -> String {
         return getDiscountString(tx: tx, shareBps: tx.vultDiscountBps)
     }
-    
+
     func referralDiscount(tx: SwapTransaction) -> String {
         return getDiscountString(tx: tx, shareBps: tx.referralDiscountBps)
     }
 
     private func getDiscountString(tx: SwapTransaction, shareBps: Int) -> String {
         guard shareBps > 0 else { return .empty }
-        
+
         let totalSaving = calculateTotalSaving(tx: tx)
-        
+
         guard totalSaving > 0 else { return .empty }
-        
+
         // Split if referral exists
         let totalDiscountBps = Decimal(tx.vultDiscountBps + tx.referralDiscountBps)
         guard totalDiscountBps > 0 else { return .empty }
-        
+
         let share = Decimal(shareBps) / totalDiscountBps
         let saving = totalSaving * share
-        
+
         // Handle tiny savings
         if saving < 0.01 {
              return "-< " + "0.01".formatToFiat(includeCurrencySymbol: true)
         }
-        
+
         let formattedCcy = saving.formatToFiat(includeCurrencySymbol: true)
         return "-" + formattedCcy
     }
 
     private func calculateTotalSaving(tx: SwapTransaction) -> Decimal {
         let inputFiat = tx.fromCoin.fiat(decimal: tx.fromAmountDecimal)
-        
+
         // Theoretical Base Fee (0.50%)
         let baseFeeFiat = inputFiat * 0.0050
-        
+
         // Actual Fee from Quote
         // Re-calculate local to avoid string parsing
         var actualFeeFiat: Decimal = 0
@@ -342,13 +342,13 @@ struct SwapCryptoLogic {
             default: break
             }
         }
-        
+
         // Total Saving
         return max(baseFeeFiat - actualFeeFiat, 0)
     }
-    
+
     // MARK: - Price Impact
-    
+
     func priceImpactString(tx: SwapTransaction) -> String {
         guard let impact = tx.quote?.priceImpact else { return .empty }
         // Price impact is usually negative (cost), but THORChain returns positive slippage bps.
@@ -361,20 +361,20 @@ struct SwapCryptoLogic {
         formatter.minimumFractionDigits = 2
         formatter.positivePrefix = "+"
         formatter.negativePrefix = "-"
-        
+
         guard let string = formatter.string(from: NSDecimalNumber(decimal: percentage)) else { return .empty }
-        
+
         if displayImpact > -0.01 { // Less than 1% slippage is usually considered "Good" or "Neutral"
             return "\(string) (Good)"
         } else {
             return "\(string) (High)"
         }
     }
-    
+
     func priceImpactColor(tx: SwapTransaction) -> Color {
         guard let impact = tx.quote?.priceImpact else { return Theme.colors.textSecondary }
         let displayImpact = -impact
-        
+
         if displayImpact > -0.01 {
             return Theme.colors.alertSuccess
         } else if displayImpact > -0.03 {
@@ -471,19 +471,19 @@ struct SwapCryptoLogic {
         }
 
         let vultTier = await VultTierService().fetchDiscountTier(for: vault)
-        
+
         var vultDiscountBps = vultTier?.bpsDiscount ?? 0
         var referralDiscountBps = THORChainSwaps.referredAffiliateFeeRateBp // Assuming user is referred if code exists, logic can be refined
-        
+
         #if DEBUG
         // Mock values for UI verification in Debug mode
         if vultDiscountBps == 0 { vultDiscountBps = 30 } // Mock Gold Tier
         if referralDiscountBps == 0 { referralDiscountBps = 10 }
         #endif
-        
+
         await MainActor.run {
             tx.vultDiscountBps = vultDiscountBps
-            
+
             #if DEBUG
             // Always show referral discount in DEBUG for verification
             tx.referralDiscountBps = referralDiscountBps
@@ -491,7 +491,7 @@ struct SwapCryptoLogic {
             tx.referralDiscountBps = referredCode.isEmpty ? 0 : referralDiscountBps
             #endif
         }
-        
+
         let quote = try await swapService.fetchQuote(
             amount: tx.fromAmountDecimal,
             fromCoin: tx.fromCoin,
@@ -500,7 +500,7 @@ struct SwapCryptoLogic {
             referredCode: referredCode,
             vultTierDiscount: vultDiscountBps
         )
-        
+
         return quote
     }
 

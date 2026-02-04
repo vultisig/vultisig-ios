@@ -80,23 +80,23 @@ struct SwapDetailsSummary: View {
             if swapViewModel.showGas(tx: tx) {
                 swapGas
             }
-            
+
             if !swapViewModel.baseAffiliateFee(tx: tx).isEmpty {
                 affiliateFee
             }
-            
+
             if !outboundFeeString.isEmpty {
                 outboundFee
             }
-            
+
             if !swapViewModel.vultDiscount(tx: tx).isEmpty {
                 vultDiscount
             }
-            
+
             if !swapViewModel.referralDiscount(tx: tx).isEmpty {
                 referralDiscount
             }
-            
+
             if !swapViewModel.priceImpactString(tx: tx).isEmpty {
                 priceImpact
             }
@@ -109,70 +109,70 @@ struct SwapDetailsSummary: View {
             trailingText: "\(swapViewModel.swapGasString(tx: tx)) (\(swapViewModel.approveFeeString(tx: tx)))"
         )
     }
-    
+
     var affiliateFee: some View {
         HStack {
             Text(swapViewModel.swapFeeLabel(tx: tx))
                 .foregroundColor(Theme.colors.textTertiary)
-            
+
             Spacer()
-            
+
             Text(swapViewModel.baseAffiliateFee(tx: tx))
                 .foregroundColor(Theme.colors.textSecondary)
         }
         .font(Theme.fonts.caption12)
     }
-    
+
     var vultDiscount: some View {
         HStack {
-            Image(systemName: "star.circle.fill") 
+            Image(systemName: "star.circle.fill")
                 .font(Theme.fonts.caption12)
                 .foregroundColor(Theme.colors.turquoise)
-            
+
             Text(swapViewModel.vultDiscountLabel(tx: tx))
                 .foregroundColor(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption12)
-            
+
             Spacer()
-            
+
             Text(swapViewModel.vultDiscount(tx: tx))
                 .foregroundColor(Theme.colors.textSecondary)
                 .font(Theme.fonts.caption12)
         }
     }
-    
+
     var outboundFee: some View {
         getSummaryCell(
             leadingText: "swap.outbound_fee",
             trailingText: outboundFeeString
         )
     }
-    
+
     var referralDiscount: some View {
         HStack {
             Image(systemName: "megaphone.fill")
                 .font(Theme.fonts.caption12)
-                .foregroundColor(Theme.colors.turquoise) 
-            
+                .foregroundColor(Theme.colors.turquoise)
+
             Text(swapViewModel.referralDiscountLabel(tx: tx))
                 .foregroundColor(Theme.colors.textTertiary)
                 .font(Theme.fonts.caption12)
-            
+
             Spacer()
-            
+
             Text(swapViewModel.referralDiscount(tx: tx))
                 .foregroundColor(Theme.colors.textSecondary)
                 .font(Theme.fonts.caption12)
         }
     }
-    
+
     var priceImpact: some View {
         HStack {
             Text(NSLocalizedString("swap.price_impact", comment: "Price Impact"))
                 .foregroundColor(Theme.colors.textTertiary)
-            
+
             Spacer()
-            
+
             Text(swapViewModel.priceImpactString(tx: tx))
                 .foregroundColor(swapViewModel.priceImpactColor(tx: tx))
         }
@@ -210,30 +210,30 @@ struct SwapDetailsSummary: View {
             Spacer()
         }
     }
-    
+
     private var outboundFeeString: String {
         guard let quote = tx.quote else { return .empty }
-        
+
         var outboundFeeString: String?
         let feeDecimals: Int = 8 // Default to 8 (THORChain standard)
-        
+
         switch quote {
         case .thorchain(let q), .thorchainStagenet(let q), .mayachain(let q):
             outboundFeeString = q.fees.outbound
         default:
             return .empty
         }
-        
+
         guard let outboundFeeString = outboundFeeString,
               let feeAmount = Decimal(string: outboundFeeString) else {
             return .empty
         }
-        
+
         // Fee is in output asset
         let feeCoin = tx.toCoin
         let feeDecimal = feeAmount / pow(10, feeDecimals)
         let fiatValue = feeCoin.fiat(decimal: feeDecimal)
-        
+
         return fiatValue.formatToFiat(includeCurrencySymbol: true)
     }
 }
