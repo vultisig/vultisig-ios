@@ -12,7 +12,7 @@ struct SwapDetailsSummary: View {
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
 
-    @State var showFees: Bool = true
+    @State private var showFees: Bool = true
 
     var body: some View {
         content
@@ -143,7 +143,7 @@ struct SwapDetailsSummary: View {
     
     var outboundFee: some View {
         getSummaryCell(
-            leadingText: "Outbound Fee", // Need localizable key ideally, or hardcode for now
+            leadingText: "swap.outbound_fee",
             trailingText: outboundFeeString
         )
     }
@@ -168,7 +168,7 @@ struct SwapDetailsSummary: View {
     
     var priceImpact: some View {
         HStack {
-            Text("Price Impact")
+            Text(NSLocalizedString("swap.price_impact", comment: "Price Impact"))
                 .foregroundColor(Theme.colors.textTertiary)
             
             Spacer()

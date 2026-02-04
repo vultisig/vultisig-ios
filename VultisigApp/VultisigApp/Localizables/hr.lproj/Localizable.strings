@@ -1325,3 +1325,6 @@
 "backupsTitleHighlight" = "Sigurnosne kopije";
 "storeBackupsSeparately" = "Čuvajte sigurnosne kopije odvojeno";
 "storeBackupsSeparatelyDescription" = "Čuvajte svaku sigurnosnu kopiju na drugom mjestu. Ako je jedna kompromitirana, vaša sredstva ostaju sigurna.";
+
+"swap.outbound_fee" = "Izlazna naknada";
+"swap.price_impact" = "Utjecaj na cijenu";

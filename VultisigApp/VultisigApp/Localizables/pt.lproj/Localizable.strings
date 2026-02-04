@@ -1325,3 +1325,6 @@
 "backupsTitleHighlight" = "Backups";
 "storeBackupsSeparately" = "Armazene backups separadamente";
 "storeBackupsSeparatelyDescription" = "Mantenha cada backup em um local diferente. Se um for comprometido, seus fundos permanecem seguros.";
+
+"swap.outbound_fee" = "Taxa de Saída";
+"swap.price_impact" = "Impacto no Preço";

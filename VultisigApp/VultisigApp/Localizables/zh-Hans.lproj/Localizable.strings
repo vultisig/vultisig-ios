@@ -1327,3 +1327,6 @@
 "backupsTitleHighlight" = "备份";
 "storeBackupsSeparately" = "分别存储备份";
 "storeBackupsSeparatelyDescription" = "将每个备份保存在不同的地方。如果一个被泄露，您的资金仍然安全。";
+
+"swap.outbound_fee" = "出站费用";
+"swap.price_impact" = "价格影响";

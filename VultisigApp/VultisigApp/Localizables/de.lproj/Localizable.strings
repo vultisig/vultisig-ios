@@ -1325,3 +1325,6 @@
 "backupsTitleHighlight" = "Backups";
 "storeBackupsSeparately" = "Backups getrennt speichern";
 "storeBackupsSeparatelyDescription" = "Bewahren Sie jedes Backup an einem anderen Ort auf. Wenn eines kompromittiert wird, bleiben Ihre Gelder sicher.";
+
+"swap.outbound_fee" = "Ausgangsgebühr";
+"swap.price_impact" = "Preisauswirkung";

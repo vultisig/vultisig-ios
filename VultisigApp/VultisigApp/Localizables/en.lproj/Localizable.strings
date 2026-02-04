@@ -744,6 +744,8 @@
 "minPayout" = "min. payout";
 "swapFrom" = "Swapping From";
 "swapOverview" = "Swap overview";
+"swap.outbound_fee" = "Outbound Fee";
+"swap.price_impact" = "Price Impact";
 "swapProgress" = "Swap progress";
 "swapTrackingLink" = "Swap tracking link";
 "swapTXHash" = "Swap Tx Hash";

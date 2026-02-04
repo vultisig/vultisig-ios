@@ -307,8 +307,7 @@ struct SwapCryptoLogic {
         
         let totalSaving = calculateTotalSaving(tx: tx)
         
-        // If Total Saving is ~0, return empty
-        guard totalSaving > 0.01 else { return .empty }
+        guard totalSaving > 0 else { return .empty }
         
         // Split if referral exists
         let totalDiscountBps = Decimal(tx.vultDiscountBps + tx.referralDiscountBps)
@@ -317,11 +316,12 @@ struct SwapCryptoLogic {
         let share = Decimal(shareBps) / totalDiscountBps
         let saving = totalSaving * share
         
-        let formattedCcy = saving.formatToFiat(includeCurrencySymbol: true)
-        if saving < 0.01 && saving > 0 {
-             return "-< " + "0.01".formatToFiat(includeCurrencySymbol: true) // Approximation
+        // Handle tiny savings
+        if saving < 0.01 {
+             return "-< " + "0.01".formatToFiat(includeCurrencySymbol: true)
         }
         
+        let formattedCcy = saving.formatToFiat(includeCurrencySymbol: true)
         return "-" + formattedCcy
     }
 

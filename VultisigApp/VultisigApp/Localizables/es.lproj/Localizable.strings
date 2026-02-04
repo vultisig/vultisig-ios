@@ -1325,3 +1325,6 @@
 "backupsTitleHighlight" = "Respaldos";
 "storeBackupsSeparately" = "Almacena los respaldos por separado";
 "storeBackupsSeparatelyDescription" = "Guarda cada respaldo en un lugar diferente. Si uno se ve comprometido, tus fondos permanecen seguros.";
+
+"swap.outbound_fee" = "Tarifa de Salida";
+"swap.price_impact" = "Impacto del Precio";
