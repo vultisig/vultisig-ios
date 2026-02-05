@@ -116,10 +116,10 @@ struct SwapDetailsSummary: View {
 
     var swapGas: some View {
         let gasString = swapViewModel.swapGasString(tx: tx)
-        let approveFee = swapViewModel.approveFeeString(tx: tx)
-        // Only show approval fee suffix when approval is required and fee is non-zero
-        let showApproveFee = tx.isApproveRequired && !approveFee.isEmpty && approveFee != "$0.00"
-        let trailingText = showApproveFee ? "\(gasString) (\(approveFee))" : gasString
+        // Only show approval fee suffix when approval is required and fee is non-zero (using numeric check)
+        let showApproveFee = tx.isApproveRequired && !swapViewModel.isApproveFeeZero(tx: tx)
+        let approveFeeString = swapViewModel.approveFeeString(tx: tx)
+        let trailingText = showApproveFee ? "\(gasString) (\(approveFeeString))" : gasString
         return getSummaryCell(
             leadingText: "networkFee",
             trailingText: trailingText

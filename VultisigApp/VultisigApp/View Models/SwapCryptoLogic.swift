@@ -169,6 +169,11 @@ struct SwapCryptoLogic {
         return fee.formatToFiat(includeCurrencySymbol: true)
     }
 
+    func isApproveFeeZero(tx: SwapTransaction) -> Bool {
+        return tx.fee == .zero
+    }
+
+
     func totalFeeString(tx: SwapTransaction) -> String {
         guard let inboundFeeDecimal = tx.inboundFeeDecimal else { return .empty }
 
