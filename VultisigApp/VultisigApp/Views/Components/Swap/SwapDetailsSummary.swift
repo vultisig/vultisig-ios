@@ -14,6 +14,15 @@ struct SwapDetailsSummary: View {
 
     @State private var showFees: Bool = true
 
+    private var hasExpandableFees: Bool {
+        swapViewModel.showGas(tx: tx) ||
+        !swapViewModel.baseAffiliateFee(tx: tx).isEmpty ||
+        !outboundFeeString.isEmpty ||
+        !swapViewModel.vultDiscount(tx: tx).isEmpty ||
+        !swapViewModel.referralDiscount(tx: tx).isEmpty ||
+        !swapViewModel.priceImpactString(tx: tx).isEmpty
+    }
+
     var body: some View {
         content
             .animation(.easeInOut, value: showFees)
@@ -32,7 +41,9 @@ struct SwapDetailsSummary: View {
                 totalFees
             }
 
-            otherFees
+            if hasExpandableFees {
+                otherFees
+            }
         }
         .padding(.top, 8)
     }

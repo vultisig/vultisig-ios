@@ -250,6 +250,14 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         // this method is called when the user changes the amount, from/to coins, or chains
         // it will update the quotes after a short delay to avoid excessive requests
         updateQuoteTask?.cancel()
+
+        // Don't show loading spinner if there's no amount to quote
+        guard !tx.fromAmount.isEmpty else {
+            isLoadingQuotes = false
+            isLoadingFees = false
+            return
+        }
+
         updateQuoteTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds delay
             guard !Task.isCancelled else { return }
