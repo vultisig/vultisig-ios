@@ -180,7 +180,7 @@ final class Vault: ObservableObject, Codable {
             .map { $0.chain }
             .uniqueBy { $0 }
     }
-    
+
     var availableChains: [Chain] {
         switch libType {
         case .GG20, .DKLS, nil:
@@ -189,13 +189,13 @@ final class Vault: ObservableObject, Codable {
             chains
         }
     }
-    
+
     var availableDefiChains: [Chain] {
         CoinAction.defiChains.filter {
             availableChains.contains($0)
         }
     }
-    
+
     var canCustomizeChains: Bool {
         switch libType {
         case .GG20, .DKLS, nil:

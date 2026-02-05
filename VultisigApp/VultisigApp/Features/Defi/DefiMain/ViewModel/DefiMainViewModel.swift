@@ -33,7 +33,7 @@ final class DefiMainViewModel: ObservableObject {
             ) { vault.defiChains.contains($0.nativeCoin.chain) && CoinAction.defiChains.contains($0.nativeCoin.chain) }
 
         self.groups = groups
-        
+
         if vault.availableDefiChains.contains(.ethereum) {
             createCircleGroup(vault: vault, groups: groups)
         }
