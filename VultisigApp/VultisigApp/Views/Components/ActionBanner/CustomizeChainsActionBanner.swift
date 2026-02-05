@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct CustomizeChainsActionBanner: View {
+    let showButton: Bool
     var onCustomizeChains: () -> Void
 
     var body: some View {
@@ -15,11 +16,12 @@ struct CustomizeChainsActionBanner: View {
             title: "noChainsFound".localized,
             subtitle: "noChainsFoundSubtitle".localized,
             buttonTitle: "customizeChains".localized,
+            showsActionButton: showButton,
             action: onCustomizeChains
         )
     }
 }
 
 #Preview {
-    CustomizeChainsActionBanner(onCustomizeChains: {})
+    CustomizeChainsActionBanner(showButton: true, onCustomizeChains: {})
 }
