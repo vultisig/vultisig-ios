@@ -240,10 +240,10 @@ struct SwapDetailsSummary: View {
             return .empty
         }
 
-        guard let outboundFeeString = outboundFeeString,
-              let feeAmount = Decimal(string: outboundFeeString) else {
+        guard let outboundFeeString = outboundFeeString else {
             return .empty
         }
+        let feeAmount = outboundFeeString.toDecimal()
 
         // Fee is in output asset
         let feeCoin = tx.toCoin

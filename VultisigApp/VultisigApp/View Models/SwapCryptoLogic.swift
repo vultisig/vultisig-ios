@@ -215,10 +215,10 @@ struct SwapCryptoLogic {
             return .empty // Other providers might not have affiliate fees structured same way
         }
 
-        guard let affiliateFeeString = affiliateFeeString,
-              let feeAmount = Decimal(string: affiliateFeeString) else {
+        guard let affiliateFeeString = affiliateFeeString else {
             return .empty
         }
+        let feeAmount = affiliateFeeString.toDecimal()
 
         // 2. Convert to Fiat
         // If fee is in 'toCoin' units (e.g. 1e8)
@@ -246,7 +246,7 @@ struct SwapCryptoLogic {
         var feeAmt: Decimal = 0
         switch quote {
         case .thorchain(let q), .thorchainStagenet(let q), .mayachain(let q):
-            feeAmt = (Decimal(string: q.fees.affiliate) ?? 0) / pow(10, 8)
+            feeAmt = q.fees.affiliate.toDecimal() / pow(10, 8)
         default:
              break
         }
@@ -280,10 +280,10 @@ struct SwapCryptoLogic {
             return .empty
         }
 
-        guard let outboundFeeString = outboundFeeString,
-              let feeAmount = Decimal(string: outboundFeeString) else {
+        guard let outboundFeeString = outboundFeeString else {
             return .empty
         }
+        let feeAmount = outboundFeeString.toDecimal()
 
         let feeDecimal = feeAmount / pow(10, feeDecimals)
         let fiatValue = feeCoin.fiat(decimal: feeDecimal)
@@ -357,7 +357,7 @@ struct SwapCryptoLogic {
          if let quote = tx.quote {
             switch quote {
             case .thorchain(let q), .thorchainStagenet(let q), .mayachain(let q):
-                 let feeAmt = (Decimal(string: q.fees.affiliate) ?? 0) / pow(10, 8)
+                 let feeAmt = q.fees.affiliate.toDecimal() / pow(10, 8)
                  actualFeeFiat = tx.toCoin.fiat(decimal: feeAmt)
             default: break
             }
