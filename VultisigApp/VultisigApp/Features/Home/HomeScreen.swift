@@ -43,7 +43,9 @@ struct HomeScreen: View {
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
     @EnvironmentObject var appViewModel: AppViewModel
     @Environment(\.modelContext) private var modelContext
-    private let tabs: [HomeTab] = [.wallet, .defi]
+    var tabs: [HomeTab] {
+        !(appViewModel.selectedVault?.availableDefiChains.isEmpty ?? true) ? [.wallet, .defi] : [.wallet]
+    }
 
     init(showingVaultSelector: Bool = false) {
         self.showingVaultSelector = showingVaultSelector

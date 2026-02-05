@@ -22,7 +22,7 @@ struct ChainDetailScreenContainer: View {
     init(group: GroupedChain, vault: Vault) {
         self.group = group
         self.vault = vault
-        let supportsDefiTab = CoinAction.defiChains.contains(group.chain)
+        let supportsDefiTab = vault.availableDefiChains.contains(group.chain)
         tabs = supportsDefiTab ? [.wallet, .defi] : [.wallet]
     }
 
