@@ -180,6 +180,21 @@ final class Vault: ObservableObject, Codable {
             .map { $0.chain }
             .uniqueBy { $0 }
     }
+    
+    var availableChains: [Chain] {
+        switch libType {
+        case .GG20, .DKLS, nil:
+            Chain.allCases
+        case .KeyImport:
+            chains
+        }
+    }
+    
+    var availableDefiChains: [Chain] {
+        CoinAction.defiChains.filter {
+            availableChains.contains($0)
+        }
+    }
 
     func coins(for chain: Chain) -> [Coin] {
         coins.filter { $0.chain == chain }
