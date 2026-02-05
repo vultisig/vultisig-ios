@@ -36,7 +36,7 @@ struct VaultSetupScreen: View {
         FormScreen(
             title: "vaultSetup".localized,
             fixedHeight: false,
-            validForm: $viewModel.validForm,
+            validForm: $viewModel.validFormWithReferral,
             onContinue: onContinue
         ) {
             nameSection
@@ -217,7 +217,7 @@ struct VaultSetupScreen: View {
             }
         }
 
-        guard viewModel.validForm else { return }
+        guard viewModel.canContinue else { return }
         router.navigate(to: OnboardingRoute.keyImportNewVaultSetup(
             vault: viewModel.getVault(keyImportInput: keyImportInput),
             keyImportInput: keyImportInput,
