@@ -20,7 +20,10 @@ struct DefiChainListView: View {
             if !viewModel.filteredGroups.isEmpty {
                 chainList
             } else {
-                CustomizeChainsActionBanner(onCustomizeChains: onCustomizeChains)
+                CustomizeChainsActionBanner(
+                    showButton: true,
+                    onCustomizeChains: onCustomizeChains
+                )
             }
         }
     }

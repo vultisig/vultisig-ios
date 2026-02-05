@@ -19,7 +19,10 @@ struct VaultMainChainListView: View {
             if !viewModel.filteredGroups.isEmpty {
                 chainList
             } else {
-                CustomizeChainsActionBanner(onCustomizeChains: onCustomizeChains)
+                CustomizeChainsActionBanner(
+                    showButton: vault.canCustomizeChains,
+                    onCustomizeChains: onCustomizeChains
+                )
             }
         }
     }
