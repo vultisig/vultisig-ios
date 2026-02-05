@@ -17,7 +17,7 @@ final class ReshareViewModel: ObservableObject {
 
     @MainActor func load(vault: Vault) async {
         isLoading = true
-        isFastVault = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
+        isFastVault = await fastVaultService.isEligibleForFastSign(vault: vault)
         isLoading = false
     }
 }

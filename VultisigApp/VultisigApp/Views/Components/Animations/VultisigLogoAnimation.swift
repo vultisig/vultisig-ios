@@ -18,17 +18,11 @@ struct VultisigLogoAnimation: View {
             Spacer()
         }
         .onLoad(perform: onLoad)
-        .onDisappear(perform: onDisappear)
     }
 
     func onLoad() {
         animationVM = RiveViewModel(fileName: "splash_logo", autoPlay: true)
         animationVM?.fit = .contain
-    }
-
-    func onDisappear() {
-        animationVM?.stop()
-        animationVM = nil
     }
 }
 

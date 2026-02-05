@@ -39,7 +39,7 @@ class DefiSelectChainViewModel: ObservableObject {
     }
 
     func setData(for vault: Vault) {
-        setupChains()
+        setupChains(for: vault)
         checkSelected(for: vault)
     }
 
@@ -49,8 +49,8 @@ class DefiSelectChainViewModel: ObservableObject {
         isCircleEnabled = vault.isCircleEnabled
     }
 
-    private func setupChains() {
-        chains = CoinAction.defiChains
+    private func setupChains(for vault: Vault) {
+        chains = vault.availableDefiChains
             .sorted(by: { $0.name < $1.name })
     }
 
