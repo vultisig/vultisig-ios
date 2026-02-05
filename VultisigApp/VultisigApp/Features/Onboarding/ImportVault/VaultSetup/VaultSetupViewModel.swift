@@ -152,17 +152,17 @@ final class VaultSetupViewModel: ObservableObject, Form {
                 }
 
                 viewModel.task?.cancel()
-                viewModel.task = Task {
+                viewModel.task = Task { @MainActor in
+                    defer { viewModel.validatingReferralCode = false }
                     do {
-                        await MainActor.run { viewModel.validatingReferralCode = true }
+                        viewModel.validatingReferralCode = true
                         try await ReferredCodeInteractor().verify(code: value)
                         if Task.isCancelled { return }
-                        await MainActor.run { viewModel.setReferralError(nil) }
+                        viewModel.setReferralError(nil)
                     } catch {
                         if Task.isCancelled { return }
-                        await MainActor.run { viewModel.setReferralError(error.localizedDescription) }
+                        viewModel.setReferralError(error.localizedDescription)
                     }
-                    await MainActor.run { viewModel.validatingReferralCode = false }
                 }
             }
             .store(in: &cancellables)
