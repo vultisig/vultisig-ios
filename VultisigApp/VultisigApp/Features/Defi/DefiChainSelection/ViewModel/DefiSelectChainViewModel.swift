@@ -12,6 +12,7 @@ class DefiSelectChainViewModel: ObservableObject {
 
     @Published var searchText: String = .empty
     @Published var selection = Set<Chain>()
+    @Published var isCircleEnabled: Bool = true
 
     @Published var chains: [Chain] = []
 
@@ -28,6 +29,14 @@ class DefiSelectChainViewModel: ObservableObject {
             return assets
         }
     }
+    
+    /// Returns true if Circle matches the current search filter
+    var shouldShowCircle: Bool {
+        guard !searchText.isEmpty else { return true }
+        let circleTitle = NSLocalizedString("circleTitle", comment: "Circle")
+        return circleTitle.lowercased().contains(searchText.lowercased()) ||
+               "usdc".contains(searchText.lowercased())
+    }
 
     func setData(for vault: Vault) {
         setupChains()
@@ -37,6 +46,7 @@ class DefiSelectChainViewModel: ObservableObject {
     private func checkSelected(for vault: Vault) {
         // Filter Defi enabled chains for selection
         selection = Set(vault.defiChains)
+        isCircleEnabled = vault.isCircleEnabled
     }
 
     private func setupChains() {
@@ -55,6 +65,10 @@ class DefiSelectChainViewModel: ObservableObject {
             selection.remove(chain)
         }
     }
+    
+    func handleCircleSelection(isSelected: Bool) {
+        isCircleEnabled = isSelected
+    }
 
     func save(for vault: Vault) async {
         do {
@@ -70,6 +84,9 @@ class DefiSelectChainViewModel: ObservableObject {
 
             vault.defiChains = Array(selection)
                 .filter { CoinAction.defiChains.contains($0) }
+            
+            // Save Circle enabled state
+            vault.isCircleEnabled = isCircleEnabled
 
             try Storage.shared.save()
         } catch {
@@ -77,3 +94,4 @@ class DefiSelectChainViewModel: ObservableObject {
         }
     }
 }
+

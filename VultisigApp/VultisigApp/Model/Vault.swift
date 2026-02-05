@@ -26,6 +26,7 @@ final class Vault: ObservableObject, Codable {
     var libType: LibType? = LibType.GG20
     var closedBanners: [String] = []
     var defiChains: [Chain] = []
+    var isCircleEnabled: Bool = true  // Controls Circle visibility in DeFi section
 
     @Relationship(deleteRule: .cascade) var coins = [Coin]()
     @Relationship(deleteRule: .cascade) var hiddenTokens = [HiddenToken]()
@@ -52,6 +53,7 @@ final class Vault: ObservableObject, Codable {
         case circleWalletAddress
         case libType
         case defiChains
+        case isCircleEnabled
         case defiPositions
         case activeBondedNodes
         case stakePositions
@@ -72,6 +74,7 @@ final class Vault: ObservableObject, Codable {
         circleWalletAddress = try container.decodeIfPresent(String.self, forKey: .circleWalletAddress)
         libType = try container.decodeIfPresent(LibType.self, forKey: .libType) ?? .DKLS
         defiChains = try container.decodeIfPresent([Chain].self, forKey: .defiChains) ?? []
+        isCircleEnabled = try container.decodeIfPresent(Bool.self, forKey: .isCircleEnabled) ?? true
         defiPositions = try container.decodeIfPresent([DefiPositions].self, forKey: .defiPositions) ?? []
     }
 
@@ -117,6 +120,7 @@ final class Vault: ObservableObject, Codable {
         try container.encodeIfPresent(circleWalletAddress, forKey: .circleWalletAddress)
         try container.encodeIfPresent(libType, forKey: .libType)
         try container.encodeIfPresent(defiChains, forKey: .defiChains)
+        try container.encodeIfPresent(isCircleEnabled, forKey: .isCircleEnabled)
         try container.encodeIfPresent(defiPositions, forKey: .defiPositions)
     }
 

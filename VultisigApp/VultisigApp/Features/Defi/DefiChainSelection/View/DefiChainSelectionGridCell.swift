@@ -31,6 +31,31 @@ struct DefiChainSelectionGridCell: View {
     }
 }
 
+// MARK: - Circle Selection Cell
+
+struct DefiCircleSelectionGridCell: View {
+    @ObservedObject var viewModel: DefiSelectChainViewModel
+    var onSelection: (Bool) -> Void
+
+    @State var isSelected = false
+
+    var body: some View {
+        AssetSelectionGridCell(
+            name: NSLocalizedString("circleTitle", comment: "Circle"),
+            ticker: "USDC",
+            logo: "circle-logo",
+            isSelected: $isSelected
+        ) {
+            onSelection(isSelected)
+        }
+        .onAppear(perform: onAppear)
+    }
+
+    func onAppear() {
+        isSelected = viewModel.isCircleEnabled
+    }
+}
+
 #Preview {
     DefiChainSelectionGridCell(
         chain: .thorChain,
@@ -39,3 +64,4 @@ struct DefiChainSelectionGridCell: View {
     .environmentObject(CoinSelectionViewModel())
 
 }
+

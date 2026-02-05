@@ -37,6 +37,9 @@ final class DefiMainViewModel: ObservableObject {
     }
 
     private func createCircleGroup(vault: Vault, groups: [GroupedChain]) {
+        // Check if Circle is enabled in the vault settings
+        guard vault.isCircleEnabled else { return }
+        
         let chain: Chain = .ethereum
         let address = vault.circleWalletAddress ?? "" // If there is no address you will be able to create one, after refresh it will be updated
 
