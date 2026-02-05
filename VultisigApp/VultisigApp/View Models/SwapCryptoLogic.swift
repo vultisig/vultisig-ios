@@ -181,7 +181,7 @@ struct SwapCryptoLogic {
     }
 
     func durationString(tx: SwapTransaction) -> String {
-        guard let duration = tx.quote?.totalSwapSeconds else { return "Instant" }
+        guard let duration = tx.quote?.totalSwapSeconds else { return "swap.duration.instant".localized }
         let formatter = DateComponentsFormatter()
         formatter.unitsStyle = .full
         formatter.includesApproximationPhrase = false
@@ -288,13 +288,13 @@ struct SwapCryptoLogic {
 
     func vultDiscountLabel(tx: SwapTransaction) -> String {
         if tx.vultDiscountBps == Int.max {
-            return "VULT (100% waiver)"
+            return "swap.vult_waiver".localized
         }
-        return "VULT (-\(tx.vultDiscountBps) bps)"
+        return String(format: "swap.vult_discount".localized, tx.vultDiscountBps)
     }
 
     func referralDiscountLabel(tx: SwapTransaction) -> String {
-        return "Referral (-\(tx.referralDiscountBps) bps)"
+        return String(format: "swap.referral_discount".localized, tx.referralDiscountBps)
     }
 
     func vultDiscount(tx: SwapTransaction) -> String {
@@ -369,20 +369,19 @@ struct SwapCryptoLogic {
         // Price impact is usually negative (cost), but THORChain returns positive slippage bps.
         // We negate it for consistent display (e.g. -0.19%).
         let displayImpact = -impact
-        let percentage = displayImpact * 100
         let formatter = NumberFormatter()
         formatter.numberStyle = .percent
         formatter.maximumFractionDigits = 2
         formatter.minimumFractionDigits = 2
         formatter.positivePrefix = "+"
         formatter.negativePrefix = "-"
-
-        guard let string = formatter.string(from: NSDecimalNumber(decimal: percentage)) else { return .empty }
+        // .percent style expects fractional value (0.01 = 1%), don't multiply by 100
+        guard let string = formatter.string(from: NSDecimalNumber(decimal: displayImpact)) else { return .empty }
 
         if displayImpact > -0.01 { // Less than 1% slippage is usually considered "Good" or "Neutral"
-            return "\(string) (Good)"
+            return "\(string) (\("swap.price_impact.good".localized))"
         } else {
-            return "\(string) (High)"
+            return "\(string) (\("swap.price_impact.high".localized))"
         }
     }
 
@@ -473,7 +472,7 @@ struct SwapCryptoLogic {
         && !tx.fromAmount.isEmpty
         && !tx.toAmountDecimal.isZero
         && tx.quote != nil
-        && tx.gas != .zero
+        && tx.fee != .zero
         && isSufficientBalance(tx: tx)
         && !isLoading
     }

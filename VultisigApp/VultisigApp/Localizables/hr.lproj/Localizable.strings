@@ -1330,3 +1330,9 @@
 
 "swap.outbound_fee" = "Izlazna naknada";
 "swap.price_impact" = "Utjecaj na cijenu";
+"swap.duration.instant" = "Trenutno";
+"swap.vult_waiver" = "VULT (100% oslobođenje)";
+"swap.vult_discount" = "VULT (-%d bps)";
+"swap.referral_discount" = "Preporuka (-%d bps)";
+"swap.price_impact.good" = "Dobro";
+"swap.price_impact.high" = "Visoko";

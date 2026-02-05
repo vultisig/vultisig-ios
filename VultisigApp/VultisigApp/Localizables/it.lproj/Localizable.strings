@@ -1330,3 +1330,9 @@
 
 "swap.outbound_fee" = "Commissione in Uscita";
 "swap.price_impact" = "Impatto sul Prezzo";
+"swap.duration.instant" = "Istantaneo";
+"swap.vult_waiver" = "VULT (100% esenzione)";
+"swap.vult_discount" = "VULT (-%d bps)";
+"swap.referral_discount" = "Referral (-%d bps)";
+"swap.price_impact.good" = "Buono";
+"swap.price_impact.high" = "Alto";
