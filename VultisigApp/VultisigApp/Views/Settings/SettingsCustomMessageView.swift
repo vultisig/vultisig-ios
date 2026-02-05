@@ -112,6 +112,16 @@ struct SettingsCustomMessageView: View {
             )
             viewModel.moveToNextView()
         }
+        .crossPlatformToolbar(viewModel.state.title) {
+            CustomToolbarItem(placement: .trailing) {
+                NavigationQRShareButton(
+                    vault: vault,
+                    type: .Keysign,
+                    viewModel: shareSheetViewModel
+                )
+                .showIf(!isFastVault)
+            }
+        }
     }
 
     var backButton: some View {

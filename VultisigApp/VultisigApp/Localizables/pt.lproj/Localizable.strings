@@ -755,6 +755,8 @@
 "swapErrorAmountTooSmallDescription" = "O valor da troca é muito pequeno. Por favor, aumente o valor.";
 "swapErrorInboundAddressTitle" = "Endereço Inválido";
 "swapErrorInboundAddressDescription" = "O endereço de entrada é inválido. Por favor, tente novamente.";
+"swapErrorSameAssetTitle" = "Mesmo Ativo";
+"swapErrorSameAssetDescription" = "Não é possível trocar entre o mesmo ativo. Por favor, selecione ativos diferentes.";
 "noLiquidityPool" = "Não há pool de liquidez disponível para este par de tokens. Este ativo pode não ser suportado.";
 "switchBackToInternetMode" = "Voltar para o modo internet";
 "switchToLocalMode" = "Mudar para o modo local";

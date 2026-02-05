@@ -79,7 +79,7 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
             title: title,
             subtitle: subtitle,
             searchText: $searchText,
-            insets: EdgeInsets(top: 24, leading: 16, bottom: 0, trailing: 0),
+            insets: EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 0),
             elements: elements,
             cellBuilder: cellBuilder,
             emptyStateBuilder: emptyStateBuilder
@@ -88,14 +88,16 @@ struct AssetSelectionContainerSheet<Asset: Hashable, SectionType: Hashable, Cell
             view.padding(.bottom, isSupported ? 0 : 16)
         }
         .crossPlatformToolbar(showsBackButton: false) {
-            CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "x") {
-                    isPresented.toggle()
+            #if os(macOS)
+                CustomToolbarItem(placement: .leading) {
+                    ToolbarButton(image: "x") {
+                        isPresented.toggle()
+                    }
+                    .supportsLiquidGlass { view, isSupported in
+                        view.padding(.top, isSupported ? 0 : 16)
+                    }
                 }
-                .supportsLiquidGlass { view, isSupported in
-                    view.padding(.top, isSupported ? 0 : 16)
-                }
-            }
+            #endif
 
             CustomToolbarItem(placement: .trailing) {
                 ToolbarButton(image: "check", type: .confirmation) {

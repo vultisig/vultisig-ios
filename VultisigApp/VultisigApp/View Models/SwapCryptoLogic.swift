@@ -199,8 +199,8 @@ struct SwapCryptoLogic {
         // 1. Get Affiliate Fee directly from quote
         // Determine which quote type we have and extract fee string
         var affiliateFeeString: String?
-        var feeDecimals: Int = 8 // Default to 8 (THORChain standard)
-        var feeCoin: Coin = tx.toCoin // Assumption based on existing pattern (fees in output asset)
+        let feeDecimals: Int = 8 // Default to 8 (THORChain standard)
+        let feeCoin: Coin = tx.toCoin // Assumption based on existing pattern (fees in output asset)
 
         switch quote {
         case .thorchain(let q), .thorchainStagenet(let q), .mayachain(let q):
@@ -287,6 +287,9 @@ struct SwapCryptoLogic {
     }
 
     func vultDiscountLabel(tx: SwapTransaction) -> String {
+        if tx.vultDiscountBps == Int.max {
+            return "VULT (100% waiver)"
+        }
         return "VULT (-\(tx.vultDiscountBps) bps)"
     }
 
@@ -308,6 +311,18 @@ struct SwapCryptoLogic {
         let totalSaving = calculateTotalSaving(tx: tx)
 
         guard totalSaving > 0 else { return .empty }
+
+        // Handle Ultimate tier (Int.max) - they get 100% waiver, no need to split
+        if tx.vultDiscountBps == Int.max {
+            // Ultimate tier gets full savings
+            if shareBps == tx.vultDiscountBps {
+                let formattedCcy = totalSaving.formatToFiat(includeCurrencySymbol: true)
+                return "-" + formattedCcy
+            } else {
+                // Referral discount not applicable when Ultimate tier
+                return .empty
+            }
+        }
 
         // Split if referral exists
         let totalDiscountBps = Decimal(tx.vultDiscountBps + tx.referralDiscountBps)
@@ -472,24 +487,13 @@ struct SwapCryptoLogic {
 
         let vultTier = await VultTierService().fetchDiscountTier(for: vault)
 
-        var vultDiscountBps = vultTier?.bpsDiscount ?? 0
-        var referralDiscountBps = THORChainSwaps.referredAffiliateFeeRateBp // Assuming user is referred if code exists, logic can be refined
-
-        #if DEBUG
-        // Mock values for UI verification in Debug mode
-        if vultDiscountBps == 0 { vultDiscountBps = 30 } // Mock Gold Tier
-        if referralDiscountBps == 0 { referralDiscountBps = 10 }
-        #endif
+        let vultDiscountBps = vultTier?.bpsDiscount ?? 0
+        // Referral discount only applies if user was referred (has a referredCode)
+        let referralDiscountBps = referredCode.isEmpty ? 0 : THORChainSwaps.referredAffiliateFeeRateBp
 
         await MainActor.run {
             tx.vultDiscountBps = vultDiscountBps
-
-            #if DEBUG
-            // Always show referral discount in DEBUG for verification
             tx.referralDiscountBps = referralDiscountBps
-            #else
-            tx.referralDiscountBps = referredCode.isEmpty ? 0 : referralDiscountBps
-            #endif
         }
 
         let quote = try await swapService.fetchQuote(

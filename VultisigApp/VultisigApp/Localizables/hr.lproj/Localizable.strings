@@ -755,6 +755,8 @@
 "swapErrorAmountTooSmallDescription" = "Iznos zamjene je premali. Molimo povećajte iznos.";
 "swapErrorInboundAddressTitle" = "Nevažeća Adresa";
 "swapErrorInboundAddressDescription" = "Ulazna adresa je nevažeća. Molimo pokušajte ponovo.";
+"swapErrorSameAssetTitle" = "Isti Asset";
+"swapErrorSameAssetDescription" = "Nije moguće zamijeniti između istog asseta. Molimo odaberite različite assete.";
 "noLiquidityPool" = "Nema dostupnog pool likvidnosti za ovaj par tokena. Ovaj asset možda nije podržan.";
 "switchBackToInternetMode" = "Vrati se na internetski način rada";
 "switchToLocalMode" = "Prijeđi na lokalni način rada";

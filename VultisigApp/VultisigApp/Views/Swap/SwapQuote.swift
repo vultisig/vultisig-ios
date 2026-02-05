@@ -110,7 +110,7 @@ enum SwapQuote: Hashable {
             return nil
         }
     }
-    
+
     var totalFees: String? {
         switch self {
         case .thorchain(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
