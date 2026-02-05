@@ -14,39 +14,33 @@ struct AddressBookCell: View {
     let shouldReturnAddress: Bool
     let isEditing: Bool
     @Binding var returnAddress: String
-
+    
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
-
+    
     var body: some View {
         HStack {
             rearrangeIcon
                 .showIf(isEditing)
-            label
+            content
         }
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
         .padding(.vertical, 8)
     }
-
-    var label: some View {
-        HStack(spacing: 8) {
+    
+    var content: some View {
+        HStack(spacing: 0) {
             Button {
                 handleSelection()
             } label: {
-                content
+                HStack(spacing: 12) {
+                    logo
+                    text
+                }
+                Spacer(minLength: 20)
             }
             .disabled(isEditing)
-        }
-    }
-
-    var content: some View {
-        HStack(spacing: 0) {
-            HStack(spacing: 12) {
-                logo
-                text
-            }
-            Spacer(minLength: 20)
             deleteIcon
                 .showIf(isEditing)
         }
@@ -60,14 +54,14 @@ struct AddressBookCell: View {
                 .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
     }
-
+    
     var logo: some View {
         Image(address.coinMeta.logo)
             .resizable()
             .frame(width: 32, height: 32)
             .cornerRadius(30)
     }
-
+    
     var text: some View {
         VStack(alignment: .leading, spacing: 4) {
             titleContent
@@ -75,7 +69,7 @@ struct AddressBookCell: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-
+    
     var titleContent: some View {
         Text(address.title)
             .foregroundColor(Theme.colors.textPrimary)
@@ -83,7 +77,7 @@ struct AddressBookCell: View {
             .lineLimit(1)
             .truncationMode(.tail)
     }
-
+    
     var addressContent: some View {
         Text(address.address)
             .foregroundColor(Theme.colors.textPrimary)
@@ -91,13 +85,13 @@ struct AddressBookCell: View {
             .lineLimit(1)
             .truncationMode(.middle)
     }
-
+    
     var rearrangeIcon: some View {
         Icon(named: "grip-vertical", color: Theme.colors.textSecondary)
             .scaleEffect(isEditing ? 1 : 0)
             .frame(width: isEditing ? nil : 0)
     }
-
+    
     var deleteIcon: some View {
         Button {
             modelContext.delete(address)
@@ -105,14 +99,15 @@ struct AddressBookCell: View {
         } label: {
             deleteIconLabel
         }
+        .contentShape(Rectangle())
     }
-
+    
     var deleteIconLabel: some View {
         Icon(named: "trash", color: Theme.colors.textTertiary)
             .scaleEffect(isEditing ? 1 : 0)
             .frame(width: isEditing ? nil : 0)
     }
-
+    
     private func handleSelection() {
         if shouldReturnAddress {
             returnAddress = address.address
