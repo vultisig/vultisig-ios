@@ -1148,7 +1148,7 @@
 "enterYourSeedphraseSubtitle" = "Leave a space between each word. Seed phrases of 12 or 24 words are supported.";
 "enterYourSeedphraseSubtitleHighlight" = "12 or 24";
 "seedPhraseWordCountError" = "You entered %d words. Seed phrase must be 12 or 24 words.";
-"seedPhraseInvalidError" = "Invalid seed phrase. Please double-check your words.";
+"seedPhraseInvalidError" = "Seed phrase is not correct, please verify all words.";
 "seedPhraseAlreadyImported" = "Seed Phrase already imported";
 "seedPhraseAlreadyImportedDescription" = "Please import another seed phrase";
 // Circle

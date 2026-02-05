@@ -198,10 +198,7 @@ struct SendCryptoLogic {
     }
 
     func loadFastVault(vault: Vault) async -> Bool {
-        let isExist = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
-        let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
-
-        return isExist && !isLocalBackup && vault.isFastVault
+        return await fastVaultService.isEligibleForFastSign(vault: vault)
     }
 
     func validateForm(tx: SendTransaction, hasPendingTransaction: Bool) async -> ValidationResult {

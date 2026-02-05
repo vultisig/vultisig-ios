@@ -1110,7 +1110,7 @@
 "enterYourSeedphraseSubtitle" = "Deja un espacio entre cada palabra. Se admiten frases semilla de 12 o 24 palabras.";
 "enterYourSeedphraseSubtitleHighlight" = "12 o 24";
 "seedPhraseWordCountError" = "Ingresaste %d palabras. La frase semilla debe tener 12 o 24 palabras.";
-"seedPhraseInvalidError" = "Frase semilla inválida. Por favor, verifica tus palabras.";
+"seedPhraseInvalidError" = "La frase semilla no es correcta, por favor verifica todas las palabras.";
 "seedPhraseAlreadyImported" = "Frase semilla ya importada";
 "seedPhraseAlreadyImportedDescription" = "Por favor importa otra frase semilla";
 // Circle
