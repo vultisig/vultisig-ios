@@ -141,9 +141,7 @@ struct SwapDetailsSummary: View {
 
     var vultDiscount: some View {
         HStack {
-            Image(systemName: "star.circle.fill")
-                .font(Theme.fonts.caption12)
-                .foregroundColor(Theme.colors.turquoise)
+            vultTierIcon
 
             Text(swapViewModel.vultDiscountLabel(tx: tx))
                 .foregroundColor(Theme.colors.textTertiary)
@@ -154,6 +152,20 @@ struct SwapDetailsSummary: View {
             Text(swapViewModel.vultDiscount(tx: tx))
                 .foregroundColor(Theme.colors.textSecondary)
                 .font(Theme.fonts.caption12)
+        }
+    }
+
+    @ViewBuilder
+    private var vultTierIcon: some View {
+        if let tier = VultDiscountTier.from(bpsDiscount: tx.vultDiscountBps) {
+            Image(tier.icon)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 14, height: 14)
+        } else {
+            Image(systemName: "star.circle.fill")
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.turquoise)
         }
     }
 
@@ -168,7 +180,7 @@ struct SwapDetailsSummary: View {
         HStack {
             Image(systemName: "megaphone.fill")
                 .font(Theme.fonts.caption12)
-                .foregroundColor(Theme.colors.turquoise)
+                .foregroundColor(Theme.colors.primaryAccent4)
 
             Text(swapViewModel.referralDiscountLabel(tx: tx))
                 .foregroundColor(Theme.colors.textTertiary)

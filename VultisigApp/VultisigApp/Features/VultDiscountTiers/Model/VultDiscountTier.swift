@@ -83,4 +83,9 @@ enum VultDiscountTier: String, Identifiable, CaseIterable {
             .clear
         }
     }
+
+    /// Returns the tier matching the given BPS discount, or nil if no match
+    static func from(bpsDiscount: Int) -> VultDiscountTier? {
+        allCases.first { $0.bpsDiscount == bpsDiscount }
+    }
 }
