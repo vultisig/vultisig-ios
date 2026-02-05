@@ -258,8 +258,10 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
         // Don't show loading spinner if there's no amount to quote
         guard !tx.fromAmount.isEmpty else {
-            tx.quote = nil // Clear stale quote state
-            error = nil    // Clear any previous error
+            tx.quote = nil       // Clear stale quote state
+            tx.gas = .zero       // Clear stale gas fee
+            tx.thorchainFee = .zero // Clear stale thorchain fee
+            error = nil          // Clear any previous error
             isLoadingQuotes = false
             isLoadingFees = false
             return
