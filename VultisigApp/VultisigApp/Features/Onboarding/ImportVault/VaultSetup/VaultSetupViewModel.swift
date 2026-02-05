@@ -12,7 +12,7 @@ final class VaultSetupViewModel: ObservableObject, Form {
     @Published var validForm: Bool = false
     @Published var validatingReferralCode: Bool = false
     private let setupType: KeyImportSetupType
-    
+
     @Published var validFormWithReferral: Bool = false
 
     private(set) lazy var form: [FormField] = {
@@ -53,7 +53,7 @@ final class VaultSetupViewModel: ObservableObject, Form {
     var showFastSignFields: Bool {
         setupType.requiresFastSign
     }
-    
+
     var canContinue: Bool {
         validFormWithReferral && !validatingReferralCode
     }
@@ -137,7 +137,7 @@ final class VaultSetupViewModel: ObservableObject, Form {
                 viewModel.validFormWithReferral = valid.0 && valid.1
             }
             .store(in: &cancellables)
-        
+
         referralField.$value
             .debounce(for: 0.3, scheduler: DispatchQueue.main)
             .sink(weak: self) { viewModel, value in
@@ -168,7 +168,7 @@ final class VaultSetupViewModel: ObservableObject, Form {
             .store(in: &cancellables)
 
     }
-    
+
     private func setReferralError(_ error: String?) {
         referralField.error = error
         referralField.valid = error == nil
