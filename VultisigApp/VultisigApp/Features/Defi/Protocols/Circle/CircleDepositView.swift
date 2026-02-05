@@ -79,12 +79,12 @@ struct CircleDepositView: View {
                 VStack(spacing: 8) {
                     HStack(spacing: 4) {
                         amountTextField
+                            .fixedSize()
 
                         Text("USDC")
                             .font(Theme.fonts.bodyLMedium)
                             .foregroundStyle(Theme.colors.textSecondary)
                     }
-                    .frame(maxWidth: .infinity)
 
                     Text("\(Int(min(percentage, 100)))%")
                         .font(CircleConstants.Fonts.subtitle)
