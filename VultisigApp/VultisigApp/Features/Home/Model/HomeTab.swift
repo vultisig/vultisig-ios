@@ -16,7 +16,7 @@ enum HomeTab: TabBarItem, CaseIterable {
         case .wallet:
             "Wallet"
         case .defi:
-            "Defi"
+            "DeFi"
         case .camera:
             ""
         }
