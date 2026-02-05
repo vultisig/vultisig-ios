@@ -36,7 +36,7 @@ struct VaultSetupScreen: View {
         FormScreen(
             title: "vaultSetup".localized,
             fixedHeight: false,
-            validForm: $viewModel.validForm,
+            validForm: $viewModel.validFormWithReferral,
             onContinue: onContinue
         ) {
             nameSection
