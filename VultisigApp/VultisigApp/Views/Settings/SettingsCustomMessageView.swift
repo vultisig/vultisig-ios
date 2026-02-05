@@ -180,9 +180,7 @@ struct SettingsCustomMessageView: View {
 
     func onLoad() {
         Task { @MainActor in
-            let isExist = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
-            let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
-            isFastVault = isExist && !isLocalBackup
+            isFastVault = await fastVaultService.isEligibleForFastSign(vault: vault)
         }
     }
 

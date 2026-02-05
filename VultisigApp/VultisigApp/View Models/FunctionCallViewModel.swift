@@ -41,9 +41,7 @@ class FunctionCallViewModel: ObservableObject {
     }
 
     func loadFastVault(tx: SendTransaction, vault: Vault) async {
-        let isExist = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
-        let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
-        tx.isFastVault = isExist && !isLocalBackup
+        tx.isFastVault = await fastVaultService.isEligibleForFastSign(vault: vault)
     }
 
     func validateAddress(tx: SendTransaction, address: String) {

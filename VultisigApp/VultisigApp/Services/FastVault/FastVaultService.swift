@@ -47,6 +47,14 @@ final class FastVaultService {
         }
     }
 
+    /// Determines if a vault is eligible for fast signing
+    /// - Parameter vault: The vault to check
+    /// - Returns: `true` if the vault exists in the backend, is not a local backup, and is configured as a fast vault
+    func isEligibleForFastSign(vault: Vault) async -> Bool {
+        let isExist = await exist(pubKeyECDSA: vault.pubKeyECDSA)
+        return isExist && vault.isFastVault
+    }
+
     func create(
         name: String,
         sessionID: String,
