@@ -1327,3 +1327,12 @@
 "backupsTitleHighlight" = "Backups";
 "storeBackupsSeparately" = "Armazene backups separadamente";
 "storeBackupsSeparatelyDescription" = "Mantenha cada backup em um local diferente. Se um for comprometido, seus fundos permanecem seguros.";
+
+"swap.outbound_fee" = "Taxa de Saída";
+"swap.price_impact" = "Impacto no Preço";
+"swap.duration.instant" = "Instantâneo";
+"swap.vult_waiver" = "VULT (100% isento)";
+"swap.vult_discount" = "VULT (-%d bps)";
+"swap.referral_discount" = "Indicação (-%d bps)";
+"swap.price_impact.good" = "Bom";
+"swap.price_impact.high" = "Alto";

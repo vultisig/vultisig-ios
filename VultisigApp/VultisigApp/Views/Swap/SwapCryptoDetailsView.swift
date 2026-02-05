@@ -280,21 +280,26 @@ extension SwapCryptoDetailsView {
 
         switch percentage {
         case 25:
-            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.25).formatToDecimal(digits: decimalsToUse)
+            let amount = (tx.fromCoin.balanceDecimal / 4).truncated(toPlaces: decimalsToUse)
+            tx.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
             swapViewModel.updateFromAmount(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
         case 50:
-            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.5).formatToDecimal(digits: decimalsToUse)
+            let amount = (tx.fromCoin.balanceDecimal / 2).truncated(toPlaces: decimalsToUse)
+            tx.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
             swapViewModel.updateFromAmount(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
         case 75:
-            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.75).formatToDecimal(digits: decimalsToUse)
+            let amount = (tx.fromCoin.balanceDecimal * 3 / 4).truncated(toPlaces: decimalsToUse)
+            tx.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
             swapViewModel.updateFromAmount(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
         case 100:
             if tx.fromCoin.isNativeToken {
                 let amountLessFee = tx.fromCoin.rawBalance.toBigInt() - tx.fee
                 let amountLessFeeDecimal = amountLessFee.toDecimal(decimals: tx.fromCoin.decimals) / pow(10, tx.fromCoin.decimals)
-                tx.fromAmount = amountLessFeeDecimal.formatToDecimal(digits: decimalsToUse)
+                let amount = amountLessFeeDecimal.truncated(toPlaces: decimalsToUse)
+                tx.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
             } else {
-                tx.fromAmount = tx.fromCoin.balanceDecimal.formatToDecimal(digits: decimalsToUse)
+                let amount = tx.fromCoin.balanceDecimal.truncated(toPlaces: decimalsToUse)
+                tx.fromAmount = amount.formatToDecimal(digits: decimalsToUse)
             }
             swapViewModel.updateFromAmount(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
         default:

@@ -1329,3 +1329,12 @@
 "backupsTitleHighlight" = "备份";
 "storeBackupsSeparately" = "分别存储备份";
 "storeBackupsSeparatelyDescription" = "将每个备份保存在不同的地方。如果一个被泄露，您的资金仍然安全。";
+
+"swap.outbound_fee" = "出站费用";
+"swap.price_impact" = "价格影响";
+"swap.duration.instant" = "即时";
+"swap.vult_waiver" = "VULT (100% 豁免)";
+"swap.vult_discount" = "VULT (-%d bps)";
+"swap.referral_discount" = "推荐 (-%d bps)";
+"swap.price_impact.good" = "良好";
+"swap.price_impact.high" = "较高";

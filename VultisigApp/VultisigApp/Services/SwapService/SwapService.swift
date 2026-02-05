@@ -160,12 +160,14 @@ private extension SwapService {
         do {
             /// https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
             let normalizedAmount = amount * fromCoin.thorswapMultiplier
+            // THORChain expects integer amounts - truncate any floating point residuals
+            let truncatedAmount = normalizedAmount.truncated(toPlaces: 0)
 
             let quote = try await service.fetchSwapQuotes(
                 address: toCoin.address,
                 fromAsset: fromCoin.swapAsset,
                 toAsset: toCoin.swapAsset,
-                amount: normalizedAmount.description,
+                amount: truncatedAmount.description,
                 interval: provider.streamingInterval,
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount
