@@ -744,6 +744,8 @@
 "minPayout" = "min. payout";
 "swapFrom" = "Swapping From";
 "swapOverview" = "Swap overview";
+"swap.outbound_fee" = "Outbound Fee";
+"swap.price_impact" = "Price Impact";
 "swapProgress" = "Swap progress";
 "swapTrackingLink" = "Swap tracking link";
 "swapTXHash" = "Swap Tx Hash";
@@ -1370,3 +1372,11 @@
 
 "transactionBroadcasted" = "Transaction broadcasted";
 "transactionPending" = "Transaction pending...";
+
+// MARK: - Swap
+"swap.duration.instant" = "Instant";
+"swap.vult_waiver" = "VULT (100% waiver)";
+"swap.vult_discount" = "VULT (-%d bps)";
+"swap.referral_discount" = "Referral (-%d bps)";
+"swap.price_impact.good" = "Good";
+"swap.price_impact.high" = "High";
