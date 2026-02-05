@@ -50,6 +50,7 @@ struct ActionBannerView: View {
 
                 PrimaryButton(title: buttonTitle, size: .mini, action: action)
                     .fixedSize()
+                    .showIf(showsActionButton)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 32)

@@ -401,9 +401,7 @@ struct SwapCryptoLogic {
     }
 
     func loadFastVault(vault: Vault) async -> Bool {
-        let isExist = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
-        let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
-        return isExist && !isLocalBackup
+        return await fastVaultService.isEligibleForFastSign(vault: vault)
     }
 
     func updateCoinLists(tx: SwapTransaction) {
