@@ -1336,3 +1336,4 @@
 "swap.referral_discount" = "Referral (-%d bps)";
 "swap.price_impact.good" = "Buono";
 "swap.price_impact.high" = "Alto";
+"noPositionsFound" = "Nessuna posizione trovata";

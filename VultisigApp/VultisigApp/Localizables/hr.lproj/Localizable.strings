@@ -1336,3 +1336,4 @@
 "swap.referral_discount" = "Preporuka (-%d bps)";
 "swap.price_impact.good" = "Dobro";
 "swap.price_impact.high" = "Visoko";
+"noPositionsFound" = "Nema pronađenih pozicija";
