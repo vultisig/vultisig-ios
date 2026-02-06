@@ -18,23 +18,33 @@ struct TransactionStatusHeaderView: View {
     var body: some View {
         VStack(spacing: 0) {
             statusIndicator
-
+            
             VStack(spacing: 12) {
                 statusText
                 statusDescription
             }
         }
         .animation(.interpolatingSpring, value: status)
+        .onChange(of: status) { _, _ in
+            updateAnimation()
+        }
         .onLoad {
-            // TODO: - To be updated with state based animations
             pendingAnimationVM = RiveViewModel(fileName: "transaction_pending", autoPlay: false)
             pendingAnimationVM?.fit = .contain
-            pendingAnimationVM?.play()
             successAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: false)
             successAnimationVM?.fit = .contain
-            successAnimationVM?.play()
             errorAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: false)
             errorAnimationVM?.fit = .contain
+        }
+    }
+    
+    func updateAnimation() {
+        switch status {
+        case .broadcasted, .pending:
+            pendingAnimationVM?.play()
+        case .confirmed:
+            successAnimationVM?.play()
+        case .failed, .timeout:
             errorAnimationVM?.play()
         }
     }
