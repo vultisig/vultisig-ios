@@ -28,7 +28,6 @@ class VaultDetailViewModel: ObservableObject {
     }
 
     func updateBalance(vault: Vault) {
-        print("Updating balance for vault: \(vault.name)")
         updateBalanceTask?.cancel()
         updateBalanceTask = Task.detached { [weak self] in
             guard let self else { return }

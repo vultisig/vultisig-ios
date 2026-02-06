@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import SwiftUI
 
 struct CoinGeckoCoin: Decodable {
@@ -19,6 +20,8 @@ class CacheCoinGeckoCoin {
 }
 
 public class CryptoPriceService: ObservableObject {
+    private let logger = Logger(subsystem: "com.vultisig.app", category: "crypto-price-service")
+    
     struct ResolvedSources {
         let providerIds: [String]
         let contracts: [Chain: [String]]
@@ -131,11 +134,8 @@ private extension CryptoPriceService {
 
             try await RateProvider.shared.save(rates: mapRates(response: response))
         } catch {
-            if let error = error as? URLError, error.code == .cancelled {
-                print("request cancelled")
-            } else {
-                throw error
-            }
+            guard (error as? URLError)?.code != .cancelled else { return }
+            throw error
         }
     }
 

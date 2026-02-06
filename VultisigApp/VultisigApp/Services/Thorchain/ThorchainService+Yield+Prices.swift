@@ -35,7 +35,7 @@ extension ThorchainService {
             let decodedResponse = try JSONDecoder().decode(YieldTokenPriceResponse.self, from: data)
             return Double(decodedResponse.data.navPerShare)
         } catch {
-            print("Error fetching or decoding yield token price for \(contract): \(error)")
+            logger.debug("Failed to fetch yield token price for \(contract): \(error.localizedDescription)")
             return nil
         }
     }

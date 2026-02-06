@@ -112,7 +112,7 @@ extension ThorchainService {
 
             return decoded.data.node?.merge?.accounts ?? []
         } catch {
-            print("Failed to fetch merge accounts: \(error)")
+            logger.debug("Failed to fetch merge accounts: \(error.localizedDescription)")
             return []
         }
     }
