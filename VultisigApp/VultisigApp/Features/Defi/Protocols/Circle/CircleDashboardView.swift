@@ -166,7 +166,7 @@ struct CircleDashboardView: View {
                 Spacer()
             }
 
-            VStack {
+            HStack(spacing: 12) {
                 DefiButton(
                     title: NSLocalizedString("circleDashboardWithdraw", comment: "Withdraw"),
                     icon: "arrow.down",
