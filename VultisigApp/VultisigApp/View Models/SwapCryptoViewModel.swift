@@ -346,7 +346,7 @@ private extension SwapCryptoViewModel {
             tx.thorchainFee = try await logic.thorchainFee(for: chainSpecific, tx: tx, vault: vault)
 
         } catch {
-            print("Update fees error: \(error.localizedDescription)")
+            logger.warning("Update fees error: \(error.localizedDescription)")
 
             // Handle UTXO-specific errors for better user experience
             switch error {
