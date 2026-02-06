@@ -12,7 +12,7 @@ struct DefiChainSelectionGridCell: View {
     @ObservedObject var viewModel: DefiSelectChainViewModel
     var onSelection: (DefiChainSelection) -> Void
 
-    @State private var isSelected = false
+    @State var isSelected = false
 
     var body: some View {
         AssetSelectionGridCell(
@@ -37,7 +37,7 @@ struct DefiCircleSelectionGridCell: View {
     @ObservedObject var viewModel: DefiSelectChainViewModel
     var onSelection: (Bool) -> Void
 
-    @State private var isSelected = false
+    @State var isSelected = false
 
     var body: some View {
         AssetSelectionGridCell(

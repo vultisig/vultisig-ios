@@ -34,7 +34,8 @@ final class DefiMainViewModel: ObservableObject {
 
         self.groups = groups
 
-        if vault.availableDefiChains.contains(.ethereum) {
+        // Circle requires Ethereum chain available (not necessarily as a DeFi chain)
+        if vault.chains.contains(.ethereum) {
             createCircleGroup(vault: vault, groups: groups)
         }
     }
