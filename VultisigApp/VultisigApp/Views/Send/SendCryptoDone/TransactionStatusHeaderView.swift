@@ -29,10 +29,13 @@ struct TransactionStatusHeaderView: View {
             // TODO: - To be updated with state based animations
             pendingAnimationVM = RiveViewModel(fileName: "transaction_pending", autoPlay: false)
             pendingAnimationVM?.fit = .contain
+            pendingAnimationVM?.play()
             successAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: false)
             successAnimationVM?.fit = .contain
+            successAnimationVM?.play()
             errorAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: false)
             errorAnimationVM?.fit = .contain
+            errorAnimationVM?.play()
         }
     }
 
@@ -42,26 +45,11 @@ struct TransactionStatusHeaderView: View {
             Group {
                 switch status {
                 case .broadcasted, .pending:
-                    if let pendingAnimationVM {
-                        pendingAnimationVM.view()
-                            .onAppear {
-                                pendingAnimationVM.play()
-                            }
-                    }
+                    pendingAnimationVM?.view()
                 case .confirmed:
-                    if let successAnimationVM {
-                        successAnimationVM.view()
-                            .onAppear {
-                                successAnimationVM.play()
-                            }
-                    }
+                    successAnimationVM?.view()
                 case .failed, .timeout:
-                    if let errorAnimationVM {
-                        errorAnimationVM.view()
-                            .onAppear {
-                                errorAnimationVM.play()
-                            }
-                    }
+                    errorAnimationVM?.view()
                 }
             }
             .transition(.opacity)
