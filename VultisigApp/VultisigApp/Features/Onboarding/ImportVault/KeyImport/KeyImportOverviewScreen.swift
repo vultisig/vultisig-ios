@@ -62,7 +62,7 @@ struct KeyImportOverviewScreen: View {
                 }
             )
         }
-        .onAppear {
+        .onLoad {
             if email != nil {
                 isVerificationLinkActive = true
             }
