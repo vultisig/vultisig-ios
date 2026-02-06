@@ -34,12 +34,16 @@ final class DefiMainViewModel: ObservableObject {
 
         self.groups = groups
 
-        if vault.availableDefiChains.contains(.ethereum) {
+        // Circle requires Ethereum chain available (not necessarily as a DeFi chain)
+        if vault.chains.contains(.ethereum) {
             createCircleGroup(vault: vault, groups: groups)
         }
     }
 
     private func createCircleGroup(vault: Vault, groups: [GroupedChain]) {
+        // Check if Circle is enabled in the vault settings
+        guard vault.isCircleEnabled else { return }
+        
         let chain: Chain = .ethereum
         let address = vault.circleWalletAddress ?? "" // If there is no address you will be able to create one, after refresh it will be updated
 
