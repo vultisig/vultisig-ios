@@ -13,6 +13,9 @@ class DefiSelectChainViewModel: ObservableObject {
     @Published var searchText: String = .empty
     @Published var selection = Set<Chain>()
     @Published var isCircleEnabled: Bool = true
+    
+    /// Indicates if Ethereum is available in the vault (required for Circle)
+    private var hasEthereum: Bool = false
 
     @Published var chains: [Chain] = []
 
@@ -30,8 +33,11 @@ class DefiSelectChainViewModel: ObservableObject {
         }
     }
     
-    /// Returns true if Circle matches the current search filter
+    /// Returns true if Circle should be visible (vault has Ethereum and matches search filter)
     var shouldShowCircle: Bool {
+        // Circle requires Ethereum chain in the vault
+        guard hasEthereum else { return false }
+        
         guard !searchText.isEmpty else { return true }
         let circleTitle = NSLocalizedString("circleTitle", comment: "Circle")
         return circleTitle.lowercased().contains(searchText.lowercased()) ||
@@ -52,6 +58,9 @@ class DefiSelectChainViewModel: ObservableObject {
     private func setupChains(for vault: Vault) {
         chains = vault.availableDefiChains
             .sorted(by: { $0.name < $1.name })
+        
+        // Check if vault has Ethereum (required for Circle)
+        hasEthereum = vault.chains.contains(.ethereum)
     }
 
     func isSelected(asset: CoinMeta) -> Bool {
