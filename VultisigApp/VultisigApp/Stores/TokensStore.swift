@@ -1924,7 +1924,7 @@ class TokensStore {
         logo: "xruji", // Use same logo as RUJI
         decimals: 8,
         priceProviderId: "rujira",
-        contractAddress: "x/staking-x/ruji",
+        contractAddress: "x/staking-ruji",
         isNativeToken: false
     )
 
@@ -1934,7 +1934,7 @@ class TokensStore {
         logo: "sTCY", // Use same logo as TCY
         decimals: 8,
         priceProviderId: "tcy",
-        contractAddress: "x/staking-x/tcy",
+        contractAddress: "x/staking-tcy",
         isNativeToken: false
     )
 
