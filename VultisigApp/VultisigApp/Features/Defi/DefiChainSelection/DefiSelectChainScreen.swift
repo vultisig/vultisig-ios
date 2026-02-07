@@ -11,7 +11,7 @@ import SwiftUI
 enum DefiSelectableItem: Hashable, Identifiable {
     case circle
     case chain(Chain)
-    
+
     var id: String {
         switch self {
         case .circle:
@@ -33,18 +33,18 @@ struct DefiSelectChainScreen: View {
 
     var selectableItems: [DefiSelectableItem] {
         var items: [DefiSelectableItem] = []
-        
+
         // Add Circle if it matches the search filter
         if viewModel.shouldShowCircle {
             items.append(.circle)
         }
-        
+
         // Add filtered chains
         items.append(contentsOf: viewModel.filteredChains.map { .chain($0) })
-        
+
         return items
     }
-    
+
     var sections: [AssetSection<Int, DefiSelectableItem>] {
         !selectableItems.isEmpty ? [AssetSection(assets: selectableItems)] : []
     }
@@ -65,9 +65,9 @@ struct DefiSelectChainScreen: View {
             viewModel.setData(for: vault)
         }
     }
-    
+
     @ViewBuilder
-    func cellBuilder(item: DefiSelectableItem, sectionType: Int) -> some View {
+    func cellBuilder(item: DefiSelectableItem, sectionType _: Int) -> some View {
         switch item {
         case .circle:
             DefiCircleSelectionGridCell(
@@ -100,7 +100,7 @@ private extension DefiSelectChainScreen {
     func onSelection(_ chainSelection: DefiChainSelection) {
         viewModel.handleSelection(isSelected: chainSelection.selected, chain: chainSelection.chain)
     }
-    
+
     func onCircleSelection(_ isSelected: Bool) {
         viewModel.handleCircleSelection(isSelected: isSelected)
     }
@@ -117,4 +117,3 @@ private extension DefiSelectChainScreen {
         onSave: {}
     )
 }
-
