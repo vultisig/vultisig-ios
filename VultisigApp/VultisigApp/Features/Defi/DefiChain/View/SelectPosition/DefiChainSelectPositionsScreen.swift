@@ -24,7 +24,7 @@ struct DefiChainSelectPositionsScreen: View {
                 elements: viewModel.filteredAvailablePositions,
                 onSave: onSave,
                 cellBuilder: cellBuilder,
-                emptyStateBuilder: { EmptyView() }
+                emptyStateBuilder: { PositionNotFoundEmptyStateView() }
             )
             .showIf(!selection.isEmpty)
             .withLoading(isLoading: $isLoading)
@@ -103,6 +103,24 @@ struct DefiChainSelectPositionsScreen: View {
         )
 
         try? Storage.shared.save()
+    }
+}
+
+private struct PositionNotFoundEmptyStateView: View {
+    var body: some View {
+        VStack {
+            VStack(spacing: 12) {
+                Icon(named: "crypto", color: Theme.colors.primaryAccent4, size: 24)
+                Text("noPositionsFound")
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .font(Theme.fonts.subtitle)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 32)
+            .frame(maxWidth: .infinity)
+            .background(RoundedRectangle(cornerRadius: 12).fill(Theme.colors.bgSurface1))
+            Spacer()
+        }
     }
 }
 

@@ -440,6 +440,7 @@
 "noCameraPermissionError" = "Camera permission denied.\n\nPlease enable it in the Settings.";
 "noChainSelected" = "No Chain Selected";
 "noChainsFound" = "No chains found";
+"noPositionsFound" = "No positions found";
 "noChainsFoundSubtitle" = "Make sure that the chain you’re looking for is enabled.";
 "noGasEstimation" = "No gas estimation possible. Please refresh the page";
 "noGasTokenFoundError" = "No gas token found for %@ chain. Please add the native token to your vault.";
