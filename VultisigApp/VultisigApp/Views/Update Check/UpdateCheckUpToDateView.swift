@@ -6,6 +6,9 @@
 //
 
 import SwiftUI
+#if os(macOS)
+import AppKit
+#endif
 
 struct UpdateCheckUpToDateView: View {
     let currentVersion: String
@@ -18,6 +21,9 @@ struct UpdateCheckUpToDateView: View {
                 upToDateTitle
                 upToDateDescription
             }
+            #if os(macOS)
+            downloadViaWebsiteButton
+            #endif
             Spacer()
         }
     }
@@ -41,6 +47,15 @@ struct UpdateCheckUpToDateView: View {
             .font(Theme.fonts.bodySMedium)
             .foregroundColor(Theme.colors.textTertiary)
     }
+
+    #if os(macOS)
+    var downloadViaWebsiteButton: some View {
+        PrimaryButton(title: "downloadViaWebsite") {
+            NSWorkspace.shared.open(StaticURL.GitHubReleasesURL)
+        }
+        .frame(maxWidth: 200)
+    }
+    #endif
 }
 
 #Preview {

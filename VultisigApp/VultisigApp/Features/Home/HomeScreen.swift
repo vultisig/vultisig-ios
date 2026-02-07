@@ -100,6 +100,12 @@ struct HomeScreen: View {
                 Text(NSLocalizedString("updateNow", comment: ""))
             }
 
+            #if os(macOS)
+            Link(destination: StaticURL.GitHubReleasesURL) {
+                Text(NSLocalizedString("downloadViaWebsite", comment: ""))
+            }
+            #endif
+
             Button(NSLocalizedString("dismiss", comment: ""), role: .cancel) {}
         } message: {
             Text(phoneCheckUpdateViewModel.latestVersionString)

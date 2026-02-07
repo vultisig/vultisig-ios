@@ -806,6 +806,7 @@
 "unstakeFromAutoCompoundingTCYDeposits" = "Unstake from auto-compounding TCY deposits";
 "unsupportedFileTypeError" = "Unsupported file type, please try again";
 "updateNow" = "Update Now";
+"downloadViaWebsite" = "Download via Website";
 "upgradeNow" = "Upgrade now";
 "upgradeYourVault" = "Upgrade your vault";
 "upgradeYourVaultNow" = "Upgrade your vault now";

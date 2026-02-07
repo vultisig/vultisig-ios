@@ -795,6 +795,7 @@
 "unstakeFromAutoCompoundingTCYDeposits" = "Povuci iz auto-compounding TCY depozita";
 "unsupportedFileTypeError" = "Nepodržana vrsta datoteke, pokušajte ponovno";
 "updateNow" = "Ažuriraj sada";
+"downloadViaWebsite" = "Preuzmi putem web stranice";
 "upgradeNow" = "Nadogradi sada";
 "upgradeYourVault" = "Nadogradi trezor";
 "upgradeYourVaultNow" = "Nadogradi svoj trezor sada";
