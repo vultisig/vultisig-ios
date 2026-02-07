@@ -6,12 +6,11 @@
 //
 
 import SwiftUI
-#if os(macOS)
-import AppKit
-#endif
 
 struct UpdateCheckUpToDateView: View {
     let currentVersion: String
+
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
         VStack(spacing: 34) {
@@ -50,8 +49,8 @@ struct UpdateCheckUpToDateView: View {
 
     #if os(macOS)
     var downloadViaWebsiteButton: some View {
-        PrimaryButton(title: "downloadViaWebsite") {
-            NSWorkspace.shared.open(StaticURL.GitHubReleasesURL)
+        PrimaryButton(title: "downloadViaWebsite", type: .secondary) {
+            openURL(StaticURL.GitHubReleasesURL)
         }
         .frame(maxWidth: 200)
     }

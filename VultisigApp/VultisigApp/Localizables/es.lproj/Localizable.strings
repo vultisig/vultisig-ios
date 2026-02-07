@@ -751,6 +751,8 @@
 "swapErrorUnexpectedDescription" = "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.";
 "swapErrorInsufficientFundsTitle" = "Fondos Insuficientes";
 "swapErrorInsufficientFundsDescription" = "Fondos insuficientes para ejecutar el intercambio. Por favor, recarga tu billetera.";
+"swapErrorInsufficientGasTitle" = "Gas Insuficiente";
+"swapErrorInsufficientGasDescription" = "Token de gas insuficiente para cubrir la tarifa de red. Por favor, agrega gas a tu billetera.";
 "swapErrorAmountTooSmallTitle" = "Cantidad Muy Pequeña";
 "swapErrorAmountTooSmallDescription" = "La cantidad del intercambio es muy pequeña. Por favor, aumenta la cantidad.";
 "swapErrorInboundAddressTitle" = "Dirección Inválida";

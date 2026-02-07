@@ -752,6 +752,8 @@
 "swapErrorUnexpectedDescription" = "发生意外错误。请重试。";
 "swapErrorInsufficientFundsTitle" = "余额不足";
 "swapErrorInsufficientFundsDescription" = "余额不足以执行交换。请为钱包充值。";
+"swapErrorInsufficientGasTitle" = "Gas 不足";
+"swapErrorInsufficientGasDescription" = "Gas 代币不足以支付网络费用。请向钱包添加 Gas。";
 "swapErrorAmountTooSmallTitle" = "金额太小";
 "swapErrorAmountTooSmallDescription" = "交换金额太小。请增加金额。";
 "swapErrorInboundAddressTitle" = "地址无效";
