@@ -20,6 +20,7 @@ struct SwapCryptoLogic {
     enum Errors: String, Error, LocalizedError {
         case unexpectedError
         case insufficientFunds
+        case insufficientGas
         case swapAmountTooSmall
         case inboundAddress
 
@@ -29,6 +30,8 @@ struct SwapCryptoLogic {
                 return "swapErrorUnexpectedTitle".localized
             case .insufficientFunds:
                 return "swapErrorInsufficientFundsTitle".localized
+            case .insufficientGas:
+                return "swapErrorInsufficientGasTitle".localized
             case .swapAmountTooSmall:
                 return "swapErrorAmountTooSmallTitle".localized
             case .inboundAddress:
@@ -42,6 +45,8 @@ struct SwapCryptoLogic {
                 return "swapErrorUnexpectedDescription".localized
             case .insufficientFunds:
                 return "swapErrorInsufficientFundsDescription".localized
+            case .insufficientGas:
+                return "swapErrorInsufficientGasDescription".localized
             case .swapAmountTooSmall:
                 return "swapErrorAmountTooSmallDescription".localized
             case .inboundAddress:
@@ -455,6 +460,12 @@ struct SwapCryptoLogic {
     // MARK: - Validation
 
     func isSufficientBalance(tx: SwapTransaction) -> Bool {
+        return balanceError(tx: tx) == nil
+    }
+
+    /// Returns the specific balance error, or nil if balance is sufficient.
+    /// Differentiates between insufficient token balance and insufficient gas.
+    func balanceError(tx: SwapTransaction) -> Errors? {
         let feeCoin = feeCoin(tx: tx)
         let fromFee = feeCoin.decimal(for: tx.fee)
 
@@ -464,10 +475,24 @@ struct SwapCryptoLogic {
         let amount = tx.fromAmount.toDecimal()
 
         if feeCoin == tx.fromCoin {
-            return fromFee + amount <= fromBalance
+            // Same coin pays for amount + gas
+            if fromFee + amount > fromBalance {
+                // If the amount alone fits but amount+fee doesn't, it's a gas issue
+                if amount <= fromBalance && fromFee > 0 {
+                    return .insufficientGas
+                }
+                return .insufficientFunds
+            }
         } else {
-            return fromFee <= feeCoinBalance && amount <= fromBalance
+            // Different coins: check gas token separately
+            if amount > fromBalance {
+                return .insufficientFunds
+            }
+            if fromFee > feeCoinBalance {
+                return .insufficientGas
+            }
         }
+        return nil
     }
 
     func validateForm(tx: SwapTransaction, isLoading: Bool) -> Bool {

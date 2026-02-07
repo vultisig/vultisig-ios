@@ -760,6 +760,8 @@
 "swapErrorUnexpectedDescription" = "An unexpected error occurred. Please try again.";
 "swapErrorInsufficientFundsTitle" = "Insufficient Funds";
 "swapErrorInsufficientFundsDescription" = "Insufficient funds to execute the swap. Please fund the wallet.";
+"swapErrorInsufficientGasTitle" = "Insufficient Gas";
+"swapErrorInsufficientGasDescription" = "Not enough gas token to cover the network fee. Please add gas to your wallet.";
 "swapErrorAmountTooSmallTitle" = "Amount Too Small";
 "swapErrorAmountTooSmallDescription" = "The swap amount is too small. Please increase the amount.";
 "swapErrorInboundAddressTitle" = "Invalid Address";

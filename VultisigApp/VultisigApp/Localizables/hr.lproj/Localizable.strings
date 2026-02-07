@@ -751,6 +751,8 @@
 "swapErrorUnexpectedDescription" = "Došlo je do neočekivane greške. Molimo pokušajte ponovo.";
 "swapErrorInsufficientFundsTitle" = "Nedovoljna Sredstva";
 "swapErrorInsufficientFundsDescription" = "Nedovoljna sredstva za izvršenje zamjene. Molimo dopunite novčanik.";
+"swapErrorInsufficientGasTitle" = "Nedovoljan Gas";
+"swapErrorInsufficientGasDescription" = "Nedovoljno gas tokena za pokrivanje mrežne naknade. Molimo dodajte gas u svoj novčanik.";
 "swapErrorAmountTooSmallTitle" = "Iznos Premali";
 "swapErrorAmountTooSmallDescription" = "Iznos zamjene je premali. Molimo povećajte iznos.";
 "swapErrorInboundAddressTitle" = "Nevažeća Adresa";
