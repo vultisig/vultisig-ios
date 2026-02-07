@@ -21,10 +21,6 @@ struct CircleDashboardView: View {
         !appClosedBanners.contains(circleDashboardBannerId)
     }
 
-    var walletUSDCBalance: Decimal {
-        return CircleViewLogic.getWalletUSDCBalance(vault: vault)
-    }
-
     var body: some View {
         content
     }
@@ -86,9 +82,16 @@ struct CircleDashboardView: View {
 
     var headerDescription: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(NSLocalizedString("circleDashboardDeposited", comment: "Deposited"))
-                .font(Theme.fonts.bodyLMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
+            VStack(spacing: 4) {
+                Text(NSLocalizedString("circleDashboardDeposited", comment: "Deposited"))
+                    .font(Theme.fonts.bodyLMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
+
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(Theme.colors.primaryAccent3)
+                    .frame(height: 3)
+            }
+            .fixedSize(horizontal: true, vertical: false)
 
             Text(NSLocalizedString("circleDashboardDepositDescription", comment: "Deposit your $USDC..."))
                 .font(Theme.fonts.bodyMRegular)
@@ -99,31 +102,52 @@ struct CircleDashboardView: View {
     }
 
     var topBanner: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(NSLocalizedString("circleSetupAccountTitle", comment: "Circle USDC Account"))
-                    .font(CircleConstants.Fonts.title)
-                    .foregroundStyle(Theme.colors.textSecondary)
+        ZStack(alignment: .trailing) {
+            cardBackground
 
-                Text("$\(walletUSDCBalance.formatted())")
-                    .font(CircleConstants.Fonts.balance)
-                    .foregroundStyle(Theme.colors.textPrimary)
+            // Decorative circles around the logo
+            GeometryReader { geometry in
+                ZStack {
+                    Circle()
+                        .stroke(Theme.colors.turquoise.opacity(0.25), lineWidth: 2)
+                        .frame(width: 160, height: 160)
+
+                    Circle()
+                        .stroke(Theme.colors.turquoise.opacity(0.4), lineWidth: 4)
+                        .frame(width: 120, height: 120)
+                }
+                .position(x: geometry.size.width - 50, y: geometry.size.height * 0.75)
             }
-            Spacer()
-            Image("circle-logo")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 60, height: 60)
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [Theme.colors.primaryAccent1, Theme.colors.primaryAccent4],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+            .clipShape(RoundedRectangle(cornerRadius: CircleConstants.Design.cornerRadius))
+
+            // Content
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(NSLocalizedString("circleSetupAccountTitle", comment: "Circle USDC Account"))
+                        .font(CircleConstants.Fonts.title)
+                        .foregroundStyle(Theme.colors.textSecondary)
+
+                    Text("$\(model.balance.formatted())")
+                        .font(CircleConstants.Fonts.balance)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                }
+                Spacer()
+
+                Image("circle-logo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 60, height: 60)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Theme.colors.primaryAccent1, Theme.colors.primaryAccent4],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
                     )
-                )
+                    .offset(x: 5, y: 27)
+            }
+            .padding(CircleConstants.Design.cardPadding)
         }
-        .padding(CircleConstants.Design.cardPadding)
-        .background(cardBackground)
     }
 
     var cardBackground: some View {
@@ -143,27 +167,19 @@ struct CircleDashboardView: View {
     }
 
     var usdcDepositedCard: some View {
-        VStack(spacing: 24) {
-            HStack(spacing: 12) {
-                Image("usdc")
-                    .resizable()
-                    .frame(width: 39, height: 39)
-                    .clipShape(Circle())
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(NSLocalizedString("circleDashboardUSDCDeposited", comment: "USDC deposited"))
-                        .font(CircleConstants.Fonts.subtitle)
+        VStack(spacing: 16) {
+            HStack {
+                HStack(spacing: 6) {
+                    Image(systemName: "divide.circle")
                         .foregroundStyle(Theme.colors.textSecondary)
-
-                    Text("\(model.balance.formatted()) USDC")
-                        .font(Theme.fonts.priceBodyL)
-                        .foregroundStyle(Theme.colors.textPrimary)
-
-                    Text("$\(model.balance.formatted())")
+                    Text(NSLocalizedString("circleAPYLabel", comment: "APY (Approx.)"))
                         .font(CircleConstants.Fonts.subtitle)
                         .foregroundStyle(Theme.colors.textSecondary)
                 }
                 Spacer()
+                Text("4.00%")
+                    .font(CircleConstants.Fonts.subtitle)
+                    .foregroundStyle(Theme.colors.turquoise)
             }
 
             HStack(spacing: 12) {
