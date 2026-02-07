@@ -18,21 +18,34 @@ struct TransactionStatusHeaderView: View {
     var body: some View {
         VStack(spacing: 0) {
             statusIndicator
-
+            
             VStack(spacing: 12) {
                 statusText
                 statusDescription
             }
         }
         .animation(.interpolatingSpring, value: status)
+        .onChange(of: status) { _, _ in
+            updateAnimation()
+        }
         .onLoad {
-            // TODO: - To be updated with state based animations
             pendingAnimationVM = RiveViewModel(fileName: "transaction_pending", autoPlay: false)
             pendingAnimationVM?.fit = .contain
             successAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: false)
             successAnimationVM?.fit = .contain
             errorAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: false)
             errorAnimationVM?.fit = .contain
+        }
+    }
+    
+    func updateAnimation() {
+        switch status {
+        case .broadcasted, .pending:
+            pendingAnimationVM?.play()
+        case .confirmed:
+            successAnimationVM?.play()
+        case .failed, .timeout:
+            errorAnimationVM?.play()
         }
     }
 
@@ -42,26 +55,11 @@ struct TransactionStatusHeaderView: View {
             Group {
                 switch status {
                 case .broadcasted, .pending:
-                    if let pendingAnimationVM {
-                        pendingAnimationVM.view()
-                            .onAppear {
-                                pendingAnimationVM.play()
-                            }
-                    }
+                    pendingAnimationVM?.view()
                 case .confirmed:
-                    if let successAnimationVM {
-                        successAnimationVM.view()
-                            .onAppear {
-                                successAnimationVM.play()
-                            }
-                    }
+                    successAnimationVM?.view()
                 case .failed, .timeout:
-                    if let errorAnimationVM {
-                        errorAnimationVM.view()
-                            .onAppear {
-                                errorAnimationVM.play()
-                            }
-                    }
+                    errorAnimationVM?.view()
                 }
             }
             .transition(.opacity)
