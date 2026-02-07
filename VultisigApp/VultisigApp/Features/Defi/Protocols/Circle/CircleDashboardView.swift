@@ -177,7 +177,7 @@ struct CircleDashboardView: View {
                         .foregroundStyle(Theme.colors.textSecondary)
                 }
                 Spacer()
-                Text("4.00%")
+                Text("1%")
                     .font(CircleConstants.Fonts.subtitle)
                     .foregroundStyle(Theme.colors.turquoise)
             }
