@@ -21,7 +21,7 @@ class CacheCoinGeckoCoin {
 
 public class CryptoPriceService: ObservableObject {
     private let logger = Logger(subsystem: "com.vultisig.app", category: "crypto-price-service")
-    
+
     struct ResolvedSources {
         let providerIds: [String]
         let contracts: [Chain: [String]]

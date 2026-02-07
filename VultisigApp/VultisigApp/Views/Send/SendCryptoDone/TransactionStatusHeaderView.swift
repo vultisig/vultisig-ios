@@ -18,7 +18,7 @@ struct TransactionStatusHeaderView: View {
     var body: some View {
         VStack(spacing: 0) {
             statusIndicator
-            
+
             VStack(spacing: 12) {
                 statusText
                 statusDescription
@@ -37,7 +37,7 @@ struct TransactionStatusHeaderView: View {
             errorAnimationVM?.fit = .contain
         }
     }
-    
+
     func updateAnimation() {
         switch status {
         case .broadcasted, .pending:
