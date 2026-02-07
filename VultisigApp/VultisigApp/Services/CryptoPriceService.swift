@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import SwiftUI
 
 struct CoinGeckoCoin: Decodable {
@@ -19,6 +20,8 @@ class CacheCoinGeckoCoin {
 }
 
 public class CryptoPriceService: ObservableObject {
+    private let logger = Logger(subsystem: "com.vultisig.app", category: "crypto-price-service")
+    
     struct ResolvedSources {
         let providerIds: [String]
         let contracts: [Chain: [String]]
@@ -68,7 +71,7 @@ public class CryptoPriceService: ObservableObject {
         let (data, resp) = try await URLSession.shared.data(for: request)
 
         guard let httpResp = resp as? HTTPURLResponse, httpResp.statusCode == 200 else {
-            print("Error: Invalid response from server")
+            logger.error("Invalid response from server for CoinGecko coins list")
             return nil
         }
         let decoder = JSONDecoder()
@@ -131,11 +134,10 @@ private extension CryptoPriceService {
 
             try await RateProvider.shared.save(rates: mapRates(response: response))
         } catch {
-            if let error = error as? URLError, error.code == .cancelled {
-                print("request cancelled")
-            } else {
-                throw error
+            if let urlError = error as? URLError, urlError.code == .cancelled {
+                logger.debug("Price fetch cancelled")
             }
+            throw error
         }
     }
 
@@ -161,7 +163,7 @@ private extension CryptoPriceService {
                     asset.chain == .sui && asset.contractAddress.lowercased() == contract.lowercased()
                 }) else {
                     // Skip tokens without metadata instead of using default decimals
-                    print("Warning: No metadata found for SUI token \(contract), skipping price fetch")
+                    logger.warning("No metadata found for SUI token \(contract), skipping price fetch")
                     continue
                 }
 

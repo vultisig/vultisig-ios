@@ -7,10 +7,12 @@
 
 import Foundation
 import BigInt
+import OSLog
 
 class ThorchainService: ThorchainSwapProvider {
     var network: String = ""
     static let shared = ThorchainService()
+    let logger = Logger(subsystem: "com.vultisig.app", category: "thorchain-service")
 
     private var cacheFeePrice = ThreadSafeDictionary<String, (data: ThorchainNetworkInfo, timestamp: Date)>()
     private var cacheInboundAddresses = ThreadSafeDictionary<String, (data: [InboundAddress], timestamp: Date)>()
@@ -76,7 +78,7 @@ class ThorchainService: ThorchainSwapProvider {
             }
             return coinMetaList
         } catch {
-            print("Error in fetchTokens: \(error)")
+            logger.debug("Error in fetchTokens: \(error)")
             throw error
         }
     }
@@ -181,14 +183,14 @@ class ThorchainService: ThorchainSwapProvider {
             self.cacheInboundAddresses.set(cacheKey, (data: inboundAddresses, timestamp: Date()))
             return inboundAddresses
         } catch {
-            print("JSON decoding error: \(error.localizedDescription)")
+            logger.warning("JSON decoding error: \(error.localizedDescription)")
             return []
         }
     }
 
     func getTHORChainChainID() async throws -> String {
         if !network.isEmpty {
-            print("network id\(network)")
+            logger.debug("network id: \(self.network)")
             return network
         }
         let (data, _) = try await URLSession.shared.data(from: Endpoint.thorchainNetworkInfo)
@@ -208,7 +210,7 @@ class ThorchainService: ThorchainSwapProvider {
                 do {
                     _ = try await self.getTHORChainChainID()
                 } catch {
-                    print("fail to get thorchain id \(error.localizedDescription)")
+                    self.logger.warning("fail to get thorchain id \(error.localizedDescription)")
                 }
                 group.leave()
             }
@@ -284,7 +286,7 @@ extension ThorchainService {
             }
             return price
         } catch {
-            print("Error in getAssetPriceInUSD: \(error.localizedDescription)")
+            logger.warning("Error in getAssetPriceInUSD: \(error.localizedDescription)")
             return 0.0
         }
     }
@@ -297,7 +299,7 @@ extension ThorchainService {
             _ = try await fetchAssetPrice(assetName: assetName)
             return true
         } catch {
-            print("Error in assetExistsInPools: \(error.localizedDescription)")
+            logger.warning("Error in assetExistsInPools: \(error.localizedDescription)")
             return false
         }
     }

@@ -6,11 +6,13 @@
 //
 
 import Foundation
+import OSLog
 import SwiftData
 
 class BalanceService {
 
     static let shared = BalanceService()
+    private let logger = Logger(subsystem: "com.vultisig.app", category: "balance-service")
 
     private let utxo = BlockchairService.shared
     private let sol = SolanaService.shared
@@ -31,8 +33,9 @@ class BalanceService {
         do {
             try await cryptoPriceService.fetchPrices(vault: vault)
         } catch {
-            print("error \(error)")
-            print("Fetch Rates error: \(error.localizedDescription)")
+            if (error as? URLError)?.code != .cancelled {
+                logger.warning("Fetch Rates error: \(error.localizedDescription)")
+            }
         }
 
         do {
@@ -50,7 +53,7 @@ class BalanceService {
 
                                 try await updateBondedIfNeeded(for: coin)
                             } catch {
-                                print("Fetch Balances error: \(error.localizedDescription)")
+                                self.logger.warning("Fetch Balances error: \(error.localizedDescription)")
                             }
                         }
                     }
@@ -59,16 +62,17 @@ class BalanceService {
 
             try await Storage.shared.save()
         } catch {
-            print("Update Balances error: \(error.localizedDescription)")
+            logger.error("Update Balances error: \(error.localizedDescription)")
         }
     }
 
     func updateBalance(for coin: Coin) async {
-        print("Updating balance for coin: \(coin.ticker) on chain: \(coin.chain.rawValue)")
         do {
             try await cryptoPriceService.fetchPrice(coin: coin)
         } catch {
-            print("Fetch Price error: \(error.localizedDescription)")
+            if (error as? URLError)?.code != .cancelled {
+                logger.warning("Fetch Price error: \(error.localizedDescription)")
+            }
         }
         do {
             let rawBalance = try await fetchBalance(for: coin)
@@ -82,7 +86,9 @@ class BalanceService {
                 try Storage.shared.save()
             }
         } catch {
-            print("Fetch Balance error: \(error.localizedDescription)")
+            if (error as? URLError)?.code != .cancelled {
+                logger.warning("Fetch Balance error: \(error.localizedDescription)")
+            }
         }
     }
 
