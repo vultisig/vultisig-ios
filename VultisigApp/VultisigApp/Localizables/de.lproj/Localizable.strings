@@ -751,6 +751,8 @@
 "swapErrorUnexpectedDescription" = "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.";
 "swapErrorInsufficientFundsTitle" = "Unzureichendes Guthaben";
 "swapErrorInsufficientFundsDescription" = "Unzureichendes Guthaben für den Tausch. Bitte laden Sie Ihr Wallet auf.";
+"swapErrorInsufficientGasTitle" = "Unzureichendes Gas";
+"swapErrorInsufficientGasDescription" = "Nicht genügend Gas-Token, um die Netzwerkgebühr zu decken. Bitte fügen Sie Gas zu Ihrem Wallet hinzu.";
 "swapErrorAmountTooSmallTitle" = "Betrag zu klein";
 "swapErrorAmountTooSmallDescription" = "Der Tauschbetrag ist zu klein. Bitte erhöhen Sie den Betrag.";
 "swapErrorInboundAddressTitle" = "Ungültige Adresse";
