@@ -78,8 +78,8 @@ class FunctionCallCustom: FunctionCallAddressable, ObservableObject {
             let mayaChainTokens = TokensStore.TokenSelectionAssets.filter { $0.chain == .mayaChain }
             for token in mayaChainTokens {
                 let ticker = token.ticker.uppercased()
-                // Add CACAO (native token) and MAYA
-                if ticker == "CACAO" || ticker == "MAYA" {
+                // Add CACAO (native token), MAYA, and AZTEC
+                if ticker == "CACAO" || ticker == "MAYA" || ticker == "AZTEC" {
                     tokens.append(.init(value: ticker))
                 }
             }
