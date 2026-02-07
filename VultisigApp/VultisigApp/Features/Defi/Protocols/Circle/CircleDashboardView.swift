@@ -166,10 +166,10 @@ struct CircleDashboardView: View {
                 Spacer()
             }
 
-            VStack {
+            HStack(spacing: 12) {
                 DefiButton(
                     title: NSLocalizedString("circleDashboardWithdraw", comment: "Withdraw"),
-                    icon: "arrow.down",
+                    icon: "minus.circle",
                     type: .outline,
                     isSystemIcon: true,
                     action: { router.navigate(to: CircleRoute.withdraw(vault: vault, model: model)) }
@@ -177,8 +177,8 @@ struct CircleDashboardView: View {
                 .disabled(model.balance <= 0)
 
                 DefiButton(
-                    title: NSLocalizedString("circleDashboardDepositUSDC", comment: "Deposit"),
-                    icon: "arrow.up",
+                    title: NSLocalizedString("circleDashboardDeposit", comment: "Deposit"),
+                    icon: "plus.circle",
                     isSystemIcon: true,
                     action: { router.navigate(to: CircleRoute.deposit(vault: vault)) }
                 )
