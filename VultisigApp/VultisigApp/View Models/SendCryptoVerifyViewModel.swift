@@ -18,6 +18,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
     @Published var showAlert = false
     @Published var isLoading = false
     @Published var errorMessage = ""
+    @Published var hasBalanceError = false
 
     @Published var showSecurityScannerSheet: Bool = false
     @Published var securityScannerState: SecurityScannerState = .idle
@@ -34,6 +35,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         tx.isCalculatingFee = true
         isLoading = true
         errorMessage = ""
+        hasBalanceError = false
         // Ensure balance is loaded before validation (protects against stale/empty balances)
         await BalanceService.shared.updateBalance(for: tx.coin)
 
@@ -82,6 +84,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
             errorMessage = result.errorMessage ?? ""
             showAlert = true
             isAmountCorrect = false
+            hasBalanceError = true
         }
     }
 
@@ -90,7 +93,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
     }
 
     var signButtonDisabled: Bool {
-        !isValidForm || isLoading
+        !isValidForm || isLoading || hasBalanceError
     }
 
     func validateForm(tx: SendTransaction, vault: Vault) async throws -> KeysignPayload {

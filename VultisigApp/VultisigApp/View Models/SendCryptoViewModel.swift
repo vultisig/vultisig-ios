@@ -404,6 +404,7 @@ struct SendCryptoLogic {
             }
 
         case .kujira, .gaiaChain, .mayaChain, .thorChain, .thorChainStagenet, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash:
+            tx.sendMaxAmount = percentage == 100
             await balanceService.updateBalance(for: tx.coin)
 
             var gas = BigInt.zero
@@ -413,7 +414,7 @@ struct SendCryptoLogic {
 
             tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
             setPercentageAmount(tx: tx, for: percentage)
-            convertToFiat(newValue: tx.amount, tx: tx)
+            convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
         case .polkadot:
             do {
                 tx.sendMaxAmount = percentage == 100
