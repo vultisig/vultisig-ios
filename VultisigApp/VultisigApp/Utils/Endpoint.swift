@@ -395,6 +395,10 @@ class Endpoint {
         "https://lite-api.jup.ag/swap/v1/quote?inputMint=\(inputMint)&outputMint=\(outputMint)&amount=\(amount)&slippageBps=\(slippageBps)"
     }
 
+    static func raydiumMintPrice(mint: String) -> String {
+        "https://api-v3.raydium.io/mint/price?mints=\(mint)"
+    }
+
     static func suiTokenQuote() -> String {
         "https://api-sui.cetus.zone/v2/sui/swap/count"
     }

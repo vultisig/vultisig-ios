@@ -492,11 +492,12 @@ class SolanaService {
         }
     }
 
-    static func getTokenUSDValue(contractAddress: String) async -> Double {
+    static func getTokenUSDValue(contractAddress: String, decimals: Int = 6) async -> Double {
 
+        // Try Jupiter quote first
         do {
 
-            let amountDecimal = 1_000_000 // 1 USDC
+            let amountDecimal = 1_000_000
 
             let urlString: String = Endpoint.solanaTokenQuote(
                 inputMint: contractAddress,
@@ -506,15 +507,53 @@ class SolanaService {
             )
 
             let dataResponse = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
-            let rawAmount = Utils.extractResultFromJson(fromData: dataResponse, path: "swapUsdValue") as? String ?? "0"
 
-            return Double(rawAmount) ?? 0.0
+            // Try both String and Double for swapUsdValue
+            let swapUsdValueAny = Utils.extractResultFromJson(fromData: dataResponse, path: "swapUsdValue")
+
+            let rawAmount: String
+            if let strVal = swapUsdValueAny as? String {
+                rawAmount = strVal
+            } else if let numVal = swapUsdValueAny as? Double {
+                rawAmount = String(numVal)
+            } else if let numVal = swapUsdValueAny as? NSNumber {
+                rawAmount = numVal.stringValue
+            } else {
+                rawAmount = "0"
+            }
+
+            let totalSwapUsd = Double(rawAmount) ?? 0.0
+
+            // swapUsdValue is the total USD for ALL tokens in the swap.
+            // Divide by the number of tokens to get per-token price.
+            let tokensInSwap = Double(amountDecimal) / pow(10.0, Double(decimals))
+            let pricePerToken = tokensInSwap > 0 ? totalSwapUsd / tokensInSwap : 0.0
+
+            print("🔍 [SOL PRICE] \(contractAddress) | decimals: \(decimals) | swapUsd: \(totalSwapUsd) | tokens: \(tokensInSwap) | pricePerToken: \(pricePerToken)")
+
+            return pricePerToken
 
         } catch {
-            print("Error in fetchSolanaJupiterTokenInfoList:")
-            return 0.0
+            print("⚠️ [SOL PRICE] Jupiter quote failed for \(contractAddress), trying Raydium fallback...")
         }
 
+        // Fallback: Raydium mint price API (covers CLMM pools Jupiter doesn't route to)
+        do {
+            let raydiumUrl = Endpoint.raydiumMintPrice(mint: contractAddress)
+            let raydiumData = try await Utils.asyncGetRequest(urlString: raydiumUrl, headers: [:])
+
+            if let json = try JSONSerialization.jsonObject(with: raydiumData) as? [String: Any],
+               let data = json["data"] as? [String: Any],
+               let priceStr = data[contractAddress] as? String,
+               let price = Double(priceStr), price > 0 {
+                print("🔍 [SOL PRICE] Raydium fallback for \(contractAddress) | price: \(price)")
+                return price
+            }
+        } catch {
+            print("❌ [SOL PRICE] Raydium fallback also failed for \(contractAddress): \(error.localizedDescription)")
+        }
+
+        return 0.0
     }
 
     func checkAccountExists(address: String) async throws -> (exists: Bool, isToken2022: Bool) {

@@ -48,7 +48,7 @@ public class CryptoPriceService: ObservableObject {
 
         if !sources.contracts.isEmpty {
             for (chain, contracts) in sources.contracts {
-                try await fetchPrices(contracts: contracts, chain: chain)
+                try await fetchPrices(contracts: contracts, chain: chain, coins: coins)
             }
         }
     }
@@ -106,8 +106,14 @@ private extension CryptoPriceService {
         for coin in coins {
             switch RateProvider.cryptoId(for: coin) {
             case .priceProvider(let id):
+                if coin.chain == .solana {
+                    print("🔍 [PRICE ROUTING] \(coin.ticker) → CoinGecko (priceProviderId: '\(id)')")
+                }
                 providerIds.append(id)
             case .contract(let id):
+                if coin.chain == .solana {
+                    print("🔍 [PRICE ROUTING] \(coin.ticker) → Jupiter Pool Quote (contract: '\(id)')")
+                }
                 contracts[coin.chain, default: []].append(id)
             }
         }
@@ -141,14 +147,19 @@ private extension CryptoPriceService {
         }
     }
 
-    func fetchPrices(contracts: [String], chain: Chain) async throws {
+    func fetchPrices(contracts: [String], chain: Chain, coins: [CoinMeta] = []) async throws {
 
         if chain == .solana {
 
             var rates: [Rate] = []
             for contract in contracts {
-                let poolPrice = await SolanaService.getTokenUSDValue(contractAddress: contract)
+                let decimals = coins.first(where: {
+                    $0.chain == .solana && $0.contractAddress == contract
+                })?.decimals ?? 6
+
+                let poolPrice = await SolanaService.getTokenUSDValue(contractAddress: contract, decimals: decimals)
                 let poolRate: Rate = .init(fiat: "usd", crypto: contract, value: poolPrice)
+                print("🔍 [PRICE ROUTING] Solana contract: \(contract) | decimals: \(decimals) | pricePerToken: \(poolPrice)")
                 rates.append(poolRate)
             }
 
