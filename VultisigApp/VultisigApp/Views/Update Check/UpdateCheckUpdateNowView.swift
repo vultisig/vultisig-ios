@@ -11,6 +11,8 @@ struct UpdateCheckUpdateNowView: View {
     let latestVersion: String
     let link: URL
 
+    @Environment(\.openURL) private var openURL
+
     var body: some View {
         VStack(spacing: 30) {
             Spacer()
@@ -20,6 +22,9 @@ struct UpdateCheckUpdateNowView: View {
                 updateDescription
             }
             updateButton
+            #if os(macOS)
+            downloadViaWebsiteButton
+            #endif
             Spacer()
         }
     }
@@ -52,6 +57,15 @@ struct UpdateCheckUpdateNowView: View {
         .buttonStyle(PrimaryButtonStyle())
         .frame(maxWidth: 160)
     }
+
+    #if os(macOS)
+    var downloadViaWebsiteButton: some View {
+        PrimaryButton(title: "downloadViaWebsite", type: .secondary) {
+            openURL(StaticURL.GitHubReleasesURL)
+        }
+        .frame(maxWidth: 200)
+    }
+    #endif
 }
 
 #Preview {

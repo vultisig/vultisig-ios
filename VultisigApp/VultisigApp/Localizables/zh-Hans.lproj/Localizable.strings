@@ -799,6 +799,7 @@
 "unstakeFromAutoCompoundingTCYDeposits" = "从自动复利 TCY 存款中取消质押";
 "unsupportedFileTypeError" = "不支持的文件类型，请重试";
 "updateNow" = "立即更新";
+"downloadViaWebsite" = "通过网站下载";
 "upgradeNow" = "立即升级";
 "upgradeYourVault" = "升级您的保险库";
 "upgradeYourVaultNow" = "立即升级您的保险库";
