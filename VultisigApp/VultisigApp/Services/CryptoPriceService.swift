@@ -106,14 +106,8 @@ private extension CryptoPriceService {
         for coin in coins {
             switch RateProvider.cryptoId(for: coin) {
             case .priceProvider(let id):
-                if coin.chain == .solana {
-                    print("🔍 [PRICE ROUTING] \(coin.ticker) → CoinGecko (priceProviderId: '\(id)')")
-                }
                 providerIds.append(id)
             case .contract(let id):
-                if coin.chain == .solana {
-                    print("🔍 [PRICE ROUTING] \(coin.ticker) → Jupiter Pool Quote (contract: '\(id)')")
-                }
                 contracts[coin.chain, default: []].append(id)
             }
         }
@@ -159,7 +153,6 @@ private extension CryptoPriceService {
 
                 let poolPrice = await SolanaService.getTokenUSDValue(contractAddress: contract, decimals: decimals)
                 let poolRate: Rate = .init(fiat: "usd", crypto: contract, value: poolPrice)
-                print("🔍 [PRICE ROUTING] Solana contract: \(contract) | decimals: \(decimals) | pricePerToken: \(poolPrice)")
                 rates.append(poolRate)
             }
 

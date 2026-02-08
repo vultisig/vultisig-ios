@@ -529,12 +529,11 @@ class SolanaService {
             let tokensInSwap = Double(amountDecimal) / pow(10.0, Double(decimals))
             let pricePerToken = tokensInSwap > 0 ? totalSwapUsd / tokensInSwap : 0.0
 
-            print("🔍 [SOL PRICE] \(contractAddress) | decimals: \(decimals) | swapUsd: \(totalSwapUsd) | tokens: \(tokensInSwap) | pricePerToken: \(pricePerToken)")
 
             return pricePerToken
 
         } catch {
-            print("⚠️ [SOL PRICE] Jupiter quote failed for \(contractAddress), trying Raydium fallback...")
+            // Jupiter quote failed, try Raydium fallback
         }
 
         // Fallback: Raydium mint price API (covers CLMM pools Jupiter doesn't route to)
@@ -546,11 +545,10 @@ class SolanaService {
                let data = json["data"] as? [String: Any],
                let priceStr = data[contractAddress] as? String,
                let price = Double(priceStr), price > 0 {
-                print("🔍 [SOL PRICE] Raydium fallback for \(contractAddress) | price: \(price)")
                 return price
             }
         } catch {
-            print("❌ [SOL PRICE] Raydium fallback also failed for \(contractAddress): \(error.localizedDescription)")
+            // Raydium fallback also failed
         }
 
         return 0.0
