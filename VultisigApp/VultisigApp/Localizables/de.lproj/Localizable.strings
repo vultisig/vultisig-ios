@@ -1150,6 +1150,7 @@
 "circleDashboardDepositDescription" = "Zahlen Sie Ihre $USDC auf ein Circle-Konto ein und verdienen Sie sicher in Ihrem Vultisig-Tresor.";
 "circleDashboardInfoText" = "Das Guthaben bleibt vollständig unter der Kontrolle Ihres Tresors. Circle-Konten sind selbstverwahrt und Erträge werden durch sichere Off-Chain-Treasuries generiert.";
 "circleDashboardUSDCDeposited" = "USDC eingezahlt";
+"circleAPYLabel" = "APY (ca.)";
 "circleDashboardDepositUSDC" = "USDC einzahlen";
 "circleDashboardYieldDetails" = "Circle Ertragsdetails";
 "circleDashboardTotalRewards" = "Gesamtprämien";

@@ -1150,6 +1150,7 @@
 "circleDashboardDepositDescription" = "Deposite seus $USDC em uma conta Circle e ganhe rendimento de forma segura dentro do seu cofre Vultisig.";
 "circleDashboardInfoText" = "Os fundos permanecem totalmente sob o controle do seu cofre. As contas Circle são de auto-custódia e o rendimento é gerado através de tesourarias seguras fora da cadeia.";
 "circleDashboardUSDCDeposited" = "USDC depositado";
+"circleAPYLabel" = "APY (Aprox.)";
 "circleDashboardDepositUSDC" = "Depositar USDC";
 "circleDashboardYieldDetails" = "Detalhes de Rendimento Circle";
 "circleDashboardTotalRewards" = "Recompensas Totais";

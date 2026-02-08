@@ -1150,6 +1150,7 @@
 "circleDashboardDepositDescription" = "Deposita i tuoi $USDC su un account Circle e guadagna rendimento in modo sicuro nel tuo vault Vultisig.";
 "circleDashboardInfoText" = "I fondi rimangono completamente sotto il controllo del tuo vault. Gli account Circle sono auto-custoditi e il rendimento viene generato attraverso tesorerie sicure off-chain.";
 "circleDashboardUSDCDeposited" = "USDC depositato";
+"circleAPYLabel" = "APY (Appross.)";
 "circleDashboardDepositUSDC" = "Deposita USDC";
 "circleDashboardYieldDetails" = "Dettagli Rendimento Circle";
 "circleDashboardTotalRewards" = "Ricompense Totali";
