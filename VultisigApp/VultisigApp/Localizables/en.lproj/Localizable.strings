@@ -1190,6 +1190,7 @@
 "circleDashboardDepositDescription" = "Deposit your $USDC into a Circle account and earn yield securely within your Vultisig vault.";
 "circleDashboardInfoText" = "Funds remain fully under your vault’s control. Circle accounts are self-custodial and yield is generated through secure off-chain treasuries.";
 "circleDashboardUSDCDeposited" = "USDC deposited";
+"circleAPYLabel" = "APY (Approx.)";
 "circleDashboardDepositUSDC" = "Deposit USDC";
 "circleDashboardYieldDetails" = "Circle Yield Details";
 "circleDashboardTotalRewards" = "Total Rewards";

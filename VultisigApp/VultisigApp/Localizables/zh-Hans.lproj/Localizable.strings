@@ -1151,6 +1151,7 @@
 "circleDashboardDepositDescription" = "将您的 $USDC 存入 Circle 账户，在 Vultisig 保险库中安全赚取收益。";
 "circleDashboardInfoText" = "资金完全由您的保险库控制。Circle 账户是自托管的，收益通过安全的链下金库生成。";
 "circleDashboardUSDCDeposited" = "USDC 已存入";
+"circleAPYLabel" = "APY（大约）";
 "circleDashboardDepositUSDC" = "存入 USDC";
 "circleDashboardYieldDetails" = "Circle 收益详情";
 "circleDashboardTotalRewards" = "总奖励";
