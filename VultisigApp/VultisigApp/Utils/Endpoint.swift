@@ -392,7 +392,7 @@ class Endpoint {
     }
 
     static func solanaTokenQuote(inputMint: String, outputMint: String, amount: String, slippageBps: String) -> String {
-        "https://quote-api.jup.ag/v6/quote?inputMint=\(inputMint)&outputMint=\(outputMint)&amount=\(amount)&slippageBps=\(slippageBps)"
+        "https://lite-api.jup.ag/swap/v1/quote?inputMint=\(inputMint)&outputMint=\(outputMint)&amount=\(amount)&slippageBps=\(slippageBps)"
     }
 
     static func suiTokenQuote() -> String {
