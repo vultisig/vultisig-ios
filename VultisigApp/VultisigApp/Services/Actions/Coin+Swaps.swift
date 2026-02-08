@@ -83,7 +83,7 @@ extension Coin {
         case .dogecoin, .bitcoinCash, .litecoin, .gaiaChain:
             return [.thorchain, .thorchainStagenet]
         case .solana:
-            return [.lifi]
+            return [.thorchain, .thorchainStagenet, .lifi]
         case .hyperliquid:
             return [.lifi]
         case .cronosChain:
