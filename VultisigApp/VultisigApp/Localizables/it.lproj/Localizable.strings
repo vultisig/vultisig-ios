@@ -797,6 +797,7 @@
 "unstakeFromAutoCompoundingTCYDeposits" = "Rimuovi dai depositi TCY auto-compounding";
 "unsupportedFileTypeError" = "Tipo di file non supportato, riprova";
 "updateNow" = "Aggiorna ora";
+"downloadViaWebsite" = "Scarica dal sito web";
 "upgradeNow" = "Aggiorna ora";
 "upgradeYourVault" = "Aggiorna il tuo vault";
 "upgradeYourVaultNow" = "Aggiorna il tuo vault ora";

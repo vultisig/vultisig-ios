@@ -109,7 +109,7 @@ struct KeyImportOverviewScreen: View {
     private func onLoad() {
         animationVM = RiveViewModel(fileName: animationFileName)
         animationVM?.fit = .fitHeight
-        
+
         if email != nil {
             isVerificationLinkActive = true
         }

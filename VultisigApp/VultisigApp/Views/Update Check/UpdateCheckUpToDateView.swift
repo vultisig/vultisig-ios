@@ -10,6 +10,8 @@ import SwiftUI
 struct UpdateCheckUpToDateView: View {
     let currentVersion: String
 
+    @Environment(\.openURL) private var openURL
+
     var body: some View {
         VStack(spacing: 34) {
             Spacer()
@@ -18,6 +20,9 @@ struct UpdateCheckUpToDateView: View {
                 upToDateTitle
                 upToDateDescription
             }
+            #if os(macOS)
+            downloadViaWebsiteButton
+            #endif
             Spacer()
         }
     }
@@ -41,6 +46,15 @@ struct UpdateCheckUpToDateView: View {
             .font(Theme.fonts.bodySMedium)
             .foregroundColor(Theme.colors.textTertiary)
     }
+
+    #if os(macOS)
+    var downloadViaWebsiteButton: some View {
+        PrimaryButton(title: "downloadViaWebsite", type: .secondary) {
+            openURL(StaticURL.GitHubReleasesURL)
+        }
+        .frame(maxWidth: 200)
+    }
+    #endif
 }
 
 #Preview {
