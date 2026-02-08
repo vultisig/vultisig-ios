@@ -529,7 +529,6 @@ class SolanaService {
             let tokensInSwap = Double(amountDecimal) / pow(10.0, Double(decimals))
             let pricePerToken = tokensInSwap > 0 ? totalSwapUsd / tokensInSwap : 0.0
 
-
             return pricePerToken
 
         } catch {
