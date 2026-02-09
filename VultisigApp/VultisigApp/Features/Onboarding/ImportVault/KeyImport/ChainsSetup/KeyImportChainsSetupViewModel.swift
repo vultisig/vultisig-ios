@@ -136,7 +136,7 @@ final class KeyImportChainsSetupViewModel: ObservableObject {
 
     func updateState(with activeChains: [KeyImportChain], skipped: Bool) {
         self.activeChains = activeChains
-        let filteredChains = activeChains.isEmpty ? Chain.enabledChains : Chain.enabledChains
+        let filteredChains = activeChains.isEmpty ? Chain.keyImportEnabledChains : Chain.keyImportEnabledChains
             .filter { !activeChains.map(\.chain).contains($0) }
         self.otherChains = filteredChains
             .map { KeyImportChain(chain: $0) }
