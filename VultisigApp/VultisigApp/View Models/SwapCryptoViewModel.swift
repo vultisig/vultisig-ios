@@ -115,7 +115,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         return logic.isApproveFeeZero(tx: tx)
     }
 
-
     func totalFeeString(tx: SwapTransaction) -> String {
         return logic.totalFeeString(tx: tx)
     }

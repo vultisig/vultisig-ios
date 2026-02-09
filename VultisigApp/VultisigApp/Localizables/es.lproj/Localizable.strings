@@ -797,6 +797,7 @@
 "unstakeFromAutoCompoundingTCYDeposits" = "Retirar de depósitos TCY auto-compounding";
 "unsupportedFileTypeError" = "Tipo de archivo no soportado, inténtalo de nuevo";
 "updateNow" = "Actualizar ahora";
+"downloadViaWebsite" = "Descargar desde el sitio web";
 "upgradeNow" = "Actualizar ahora";
 "upgradeYourVault" = "Actualizar bóveda";
 "upgradeYourVaultNow" = "Actualiza tu bóveda ahora";
@@ -1149,6 +1150,7 @@
 "circleDashboardDepositDescription" = "Deposite sus $USDC en una cuenta Circle y gane rendimiento de forma segura dentro de su bóveda Vultisig.";
 "circleDashboardInfoText" = "Los fondos permanecen totalmente bajo el control de su bóveda. Las cuentas Circle son de auto-custodia y el rendimiento se genera a través de tesorerías seguras fuera de la cadena.";
 "circleDashboardUSDCDeposited" = "USDC depositado";
+"circleAPYLabel" = "APY (Aprox.)";
 "circleDashboardDepositUSDC" = "Depositar USDC";
 "circleDashboardYieldDetails" = "Detalles de Rendimiento Circle";
 "circleDashboardTotalRewards" = "Recompensas Totales";
