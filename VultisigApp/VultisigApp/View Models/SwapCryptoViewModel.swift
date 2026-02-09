@@ -115,7 +115,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         return logic.isApproveFeeZero(tx: tx)
     }
 
-
     func totalFeeString(tx: SwapTransaction) -> String {
         return logic.totalFeeString(tx: tx)
     }
@@ -320,8 +319,8 @@ private extension SwapCryptoViewModel {
             let quote = try await logic.fetchQuote(tx: tx, vault: vault, referredCode: referredCode)
             tx.quote = quote
 
-            if !logic.isSufficientBalance(tx: tx) {
-                throw SwapCryptoLogic.Errors.insufficientFunds
+            if let balanceError = logic.balanceError(tx: tx) {
+                throw balanceError
             }
         } catch {
             guard (error as? URLError)?.code != .cancelled else { return }
@@ -356,7 +355,7 @@ private extension SwapCryptoViewModel {
                 // These are UTXO-specific errors that should be shown directly
                 self.error = error
             default:
-                self.error = SwapCryptoLogic.Errors.insufficientFunds
+                self.error = SwapCryptoLogic.Errors.insufficientGas
             }
         }
     }

@@ -18,4 +18,10 @@ class StaticURL {
     static let VultisigWebsiteURL = URL(string: "https://vultisig.com")!
     static let VultisigVultURL = URL(string: "https://vultisig.com/vult")!
     static let VultBackupURL = URL(string: "https://docs.vultisig.com/vultisig-app-actions/managing-your-vault/vault-backup")!
+    static let GitHubReleasesURL: URL = {
+        guard let url = URL(string: "https://github.com/vultisig/vultisig-ios/releases") else {
+            preconditionFailure("Invalid GitHubReleasesURL")
+        }
+        return url
+    }()
 }

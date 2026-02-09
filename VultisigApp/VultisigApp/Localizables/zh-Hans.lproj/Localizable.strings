@@ -752,6 +752,8 @@
 "swapErrorUnexpectedDescription" = "发生意外错误。请重试。";
 "swapErrorInsufficientFundsTitle" = "余额不足";
 "swapErrorInsufficientFundsDescription" = "余额不足以执行交换。请为钱包充值。";
+"swapErrorInsufficientGasTitle" = "Gas 不足";
+"swapErrorInsufficientGasDescription" = "Gas 代币不足以支付网络费用。请向钱包添加 Gas。";
 "swapErrorAmountTooSmallTitle" = "金额太小";
 "swapErrorAmountTooSmallDescription" = "交换金额太小。请增加金额。";
 "swapErrorInboundAddressTitle" = "地址无效";
@@ -797,6 +799,7 @@
 "unstakeFromAutoCompoundingTCYDeposits" = "从自动复利 TCY 存款中取消质押";
 "unsupportedFileTypeError" = "不支持的文件类型，请重试";
 "updateNow" = "立即更新";
+"downloadViaWebsite" = "通过网站下载";
 "upgradeNow" = "立即升级";
 "upgradeYourVault" = "升级您的保险库";
 "upgradeYourVaultNow" = "立即升级您的保险库";
@@ -1149,6 +1152,7 @@
 "circleDashboardDepositDescription" = "将您的 $USDC 存入 Circle 账户，在 Vultisig 保险库中安全赚取收益。";
 "circleDashboardInfoText" = "资金完全由您的保险库控制。Circle 账户是自托管的，收益通过安全的链下金库生成。";
 "circleDashboardUSDCDeposited" = "USDC 已存入";
+"circleAPYLabel" = "APY（大约）";
 "circleDashboardDepositUSDC" = "存入 USDC";
 "circleDashboardYieldDetails" = "Circle 收益详情";
 "circleDashboardTotalRewards" = "总奖励";

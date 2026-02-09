@@ -751,6 +751,8 @@
 "swapErrorUnexpectedDescription" = "Došlo je do neočekivane greške. Molimo pokušajte ponovo.";
 "swapErrorInsufficientFundsTitle" = "Nedovoljna Sredstva";
 "swapErrorInsufficientFundsDescription" = "Nedovoljna sredstva za izvršenje zamjene. Molimo dopunite novčanik.";
+"swapErrorInsufficientGasTitle" = "Nedovoljan Gas";
+"swapErrorInsufficientGasDescription" = "Nedovoljno gas tokena za pokrivanje mrežne naknade. Molimo dodajte gas u svoj novčanik.";
 "swapErrorAmountTooSmallTitle" = "Iznos Premali";
 "swapErrorAmountTooSmallDescription" = "Iznos zamjene je premali. Molimo povećajte iznos.";
 "swapErrorInboundAddressTitle" = "Nevažeća Adresa";
@@ -795,6 +797,7 @@
 "unstakeFromAutoCompoundingTCYDeposits" = "Povuci iz auto-compounding TCY depozita";
 "unsupportedFileTypeError" = "Nepodržana vrsta datoteke, pokušajte ponovno";
 "updateNow" = "Ažuriraj sada";
+"downloadViaWebsite" = "Preuzmi putem web stranice";
 "upgradeNow" = "Nadogradi sada";
 "upgradeYourVault" = "Nadogradi trezor";
 "upgradeYourVaultNow" = "Nadogradi svoj trezor sada";
@@ -1147,6 +1150,7 @@
 "circleDashboardDepositDescription" = "Deponirajte svoje $USDC na Circle račun i zarađujte prinos sigurno unutar vašeg Vultisig trezora.";
 "circleDashboardInfoText" = "Sredstva ostaju potpuno pod kontrolom vašeg trezora. Circle računi su samoskrbnički i prinos se generira kroz sigurne off-chain riznice.";
 "circleDashboardUSDCDeposited" = "USDC deponiran";
+"circleAPYLabel" = "APY (Približno)";
 "circleDashboardDepositUSDC" = "Deponiraj USDC";
 "circleDashboardYieldDetails" = "Circle Detalji Prinosa";
 "circleDashboardTotalRewards" = "Ukupne Nagrade";

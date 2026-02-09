@@ -64,4 +64,3 @@ struct DefiCircleSelectionGridCell: View {
     .environmentObject(CoinSelectionViewModel())
 
 }
-

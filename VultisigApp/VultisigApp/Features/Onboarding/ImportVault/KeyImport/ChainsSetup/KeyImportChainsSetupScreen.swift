@@ -9,10 +9,10 @@ import SwiftUI
 
 struct KeyImportChainsSetupScreen: View {
     let mnemonic: String
-    
+
     @StateObject var viewModel = KeyImportChainsSetupViewModel()
     @Environment(\.router) var router
-    
+
     var body: some View {
         Screen(
             title: viewModel.screenTitle,
@@ -50,16 +50,16 @@ struct KeyImportChainsSetupScreen: View {
         .withLoading(isLoading: $viewModel.isLoading)
         .crossPlatformToolbar(viewModel.screenTitle, ignoresTopEdge: viewModel.state == .activeChains)
     }
-    
+
     func onCustomizeChains() {
         viewModel.state = .customizeChains
     }
-    
+
     func presentVaultSetup(customized: Bool) {
         Task {
             // Prepare chain settings with derivation paths
             let chainSettings = await viewModel.prepareChainSettings(customized: customized)
-            
+
             // Navigate to device count selection screen
             await MainActor.run {
                 router.navigate(to: OnboardingRoute.keyImportDeviceCount(

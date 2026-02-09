@@ -751,6 +751,8 @@
 "swapErrorUnexpectedDescription" = "Ocorreu um erro inesperado. Por favor, tente novamente.";
 "swapErrorInsufficientFundsTitle" = "Fundos Insuficientes";
 "swapErrorInsufficientFundsDescription" = "Fundos insuficientes para executar a troca. Por favor, recarregue sua carteira.";
+"swapErrorInsufficientGasTitle" = "Gas Insuficiente";
+"swapErrorInsufficientGasDescription" = "Token de gas insuficiente para cobrir a taxa de rede. Por favor, adicione gas à sua carteira.";
 "swapErrorAmountTooSmallTitle" = "Valor Muito Pequeno";
 "swapErrorAmountTooSmallDescription" = "O valor da troca é muito pequeno. Por favor, aumente o valor.";
 "swapErrorInboundAddressTitle" = "Endereço Inválido";
@@ -795,6 +797,7 @@
 "unstakeFromAutoCompoundingTCYDeposits" = "Retirar de depósitos TCY auto-compounding";
 "unsupportedFileTypeError" = "Tipo de arquivo não suportado, tente novamente";
 "updateNow" = "Atualizar agora";
+"downloadViaWebsite" = "Baixar pelo site";
 "upgradeNow" = "Atualizar agora";
 "upgradeYourVault" = "Atualizar cofre";
 "upgradeYourVaultNow" = "Atualize seu cofre agora";
@@ -1147,6 +1150,7 @@
 "circleDashboardDepositDescription" = "Deposite seus $USDC em uma conta Circle e ganhe rendimento de forma segura dentro do seu cofre Vultisig.";
 "circleDashboardInfoText" = "Os fundos permanecem totalmente sob o controle do seu cofre. As contas Circle são de auto-custódia e o rendimento é gerado através de tesourarias seguras fora da cadeia.";
 "circleDashboardUSDCDeposited" = "USDC depositado";
+"circleAPYLabel" = "APY (Aprox.)";
 "circleDashboardDepositUSDC" = "Depositar USDC";
 "circleDashboardYieldDetails" = "Detalhes de Rendimento Circle";
 "circleDashboardTotalRewards" = "Recompensas Totais";
