@@ -53,9 +53,7 @@ class BalanceService {
 
                                 try await updateBondedIfNeeded(for: coin)
                             } catch {
-                                if error is CancellationError || (error as? URLError)?.code == .cancelled {
-                                    self.logger.debug("Fetch Balances cancelled (expected during navigation)")
-                                } else {
+                                if !(error is CancellationError) && (error as? URLError)?.code != .cancelled {
                                     self.logger.warning("Fetch Balances error: \(error.localizedDescription)")
                                 }
                             }

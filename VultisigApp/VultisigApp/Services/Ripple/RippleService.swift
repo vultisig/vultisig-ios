@@ -52,7 +52,6 @@ class RippleService {
             }
 
         } catch {
-            print("Error in Broadcast XRP Transaction")
             throw error
         }
 
@@ -101,7 +100,6 @@ class RippleService {
 
             return response
         } catch {
-            print("Error in fetchServerState: \(error)")
             throw error
         }
     }
@@ -131,7 +129,6 @@ class RippleService {
 
             return response
         } catch {
-            print("Error in fetchTokenAccountsByOwner:")
             throw error
         }
     }
@@ -164,7 +161,6 @@ class RippleService {
 
             return data
         } catch {
-            print("Error in postRequest:")
             throw error
         }
     }

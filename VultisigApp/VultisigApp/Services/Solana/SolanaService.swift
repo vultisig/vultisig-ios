@@ -149,7 +149,6 @@ class SolanaService {
                 fromData: data, path: "result.value.blockhash") as? String
             return blockHash
         } catch {
-            print("Error in fetchRecentBlockhash:")
             throw error
         }
     }
@@ -189,15 +188,7 @@ class SolanaService {
                 throw NSError(domain: "SolanaService", code: -1, userInfo: [NSLocalizedDescriptionKey: "No token info found for address: \(contractAddress)"])
             }
             return tokenInfo
-        } catch let error as NSError {
-            if error.code == 429 {
-                print("Error in fetchSolanaJupiterTokenInfoList: Rate limit exceeded (429)")
-            } else {
-                print("Error in fetchSolanaJupiterTokenInfoList: \(error.localizedDescription) (Code: \(error.code))")
-            }
-            throw error
         } catch {
-            print("Error in fetchSolanaJupiterTokenInfoList: \(error.localizedDescription)")
             throw error
         }
     }
@@ -222,15 +213,7 @@ class SolanaService {
                 )
                 return coinMeta
             }
-        } catch let error as NSError {
-            if error.code == 429 {
-                print("Error in fetchSolanaJupiterTokenList: Rate limit exceeded (429)")
-            } else {
-                print("Error in fetchSolanaJupiterTokenList: \(error.localizedDescription) (Code: \(error.code))")
-            }
-            throw error
         } catch {
-            print("Error in fetchSolanaJupiterTokenList: \(error.localizedDescription)")
             throw error
         }
     }
@@ -345,7 +328,6 @@ class SolanaService {
                 }
             }
         } catch {
-            print("Error in fetchTokenAccountsByOwner: \(error.localizedDescription)")
             return []
         }
         return returnPrograms
@@ -364,7 +346,6 @@ class SolanaService {
 
             return nil
         } catch {
-            print("Error in fetchTokenBalance: \(error.localizedDescription)")
             throw error
         }
     }
@@ -384,7 +365,6 @@ class SolanaService {
             let tokens = try await fetchTokensInfos(for: tokenAddresses)
             return tokens
         } catch {
-            print("Error in fetchTokens: \(error)")
             throw error
         }
     }
@@ -462,7 +442,6 @@ class SolanaService {
             let highPriorityFee = nonZeroFees.max() ?? 0
             return UInt64(highPriorityFee)
         } catch {
-            print("Error in fetchHighPriorityFee:")
             throw error
         }
     }
@@ -486,7 +465,6 @@ class SolanaService {
                 [SolanaService.SolanaTokenAccount]
                 >.self, from: jsonData)
         } catch {
-            print("Error in parseSolanaTokenResponse:")
             throw error
         }
     }

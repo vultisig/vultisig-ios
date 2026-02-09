@@ -76,7 +76,6 @@ class ThorchainStagenetService: ThorchainSwapProvider {
             }
             return coinMetaList
         } catch {
-            print("Error in fetchTokens: \(error)")
             throw error
         }
     }
@@ -181,14 +180,12 @@ class ThorchainStagenetService: ThorchainSwapProvider {
             self.cacheInboundAddresses.set(cacheKey, (data: inboundAddresses, timestamp: Date()))
             return inboundAddresses
         } catch {
-            print("JSON decoding error: \(error.localizedDescription)")
             return []
         }
     }
 
     func getTHORChainChainID() async throws -> String {
         if !network.isEmpty {
-            print("network id\(network)")
             return network
         }
         let (data, _) = try await URLSession.shared.data(from: Endpoint.thorchainStagenetNetworkInfo)
@@ -208,7 +205,7 @@ class ThorchainStagenetService: ThorchainSwapProvider {
                 do {
                     _ =  try await self.getTHORChainChainID()
                 } catch {
-                    print("fail to get thorchain stagenet id \(error.localizedDescription)")
+                    // Silently ignore
                 }
                 group.leave()
             }
@@ -286,7 +283,6 @@ extension ThorchainStagenetService {
             }
             return price
         } catch {
-            print("Error in getAssetPriceInUSD: \(error.localizedDescription)")
             return 0.0
         }
     }
@@ -296,7 +292,6 @@ extension ThorchainStagenetService {
             _ = try await fetchAssetPrice(assetName: assetName)
             return true
         } catch {
-            print("Error in assetExistsInPools: \(error.localizedDescription)")
             return false
         }
     }

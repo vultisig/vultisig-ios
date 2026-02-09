@@ -69,7 +69,6 @@ class MayachainService: ThorchainSwapProvider {
             }
             return coinMetaList
         } catch {
-            print("Error in fetchTokens: \(error)")
             throw error
         }
     }

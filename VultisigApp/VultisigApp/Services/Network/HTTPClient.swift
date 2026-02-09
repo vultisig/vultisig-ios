@@ -41,8 +41,6 @@ public final class HTTPClient: HTTPClientProtocol {
 
         let urlRequest = try buildURLRequest(from: target)
 
-        // Log the request
-        logRequest(urlRequest, target: target)
 
         let startTime = CFAbsoluteTimeGetCurrent()
 
@@ -54,8 +52,6 @@ public final class HTTPClient: HTTPClientProtocol {
                 throw HTTPError.invalidResponse
             }
 
-            let duration = CFAbsoluteTimeGetCurrent() - startTime
-            logResponse(httpResponse, data: data, duration: duration)
 
             try validateResponse(httpResponse, data: data, validationType: target.validationType)
 
@@ -73,15 +69,11 @@ public final class HTTPClient: HTTPClientProtocol {
                 case .timedOut:
                     httpError = HTTPError.timeout
                 case .cancelled:
-                    // Re-throw the cancellation error directly so it can be handled upstream
-                    logger.debug("Request cancelled - \(Int(duration * 1000))ms")
                     throw CancellationError()
                 default:
                     httpError = HTTPError.networkError(error)
                 }
             } else if error is CancellationError {
-                // Handle Swift Concurrency cancellation
-                logger.debug("Request cancelled - \(Int(duration * 1000))ms")
                 throw error
             } else {
                 httpError = HTTPError.networkError(error)
@@ -247,78 +239,23 @@ private extension HTTPClient {
 // MARK: - Logging Methods
 private extension HTTPClient {
 
-    /// Logs the outgoing HTTP request
-    func logRequest(_ request: URLRequest, target: TargetType) {
-        guard let url = request.url else { return }
-
-        logger.debug("🚀 HTTP Request: \(request.httpMethod ?? "GET") \(url.absoluteString)")
-
-        // Log headers
-        if let headers = request.allHTTPHeaderFields, !headers.isEmpty {
-            logger.debug("📋 Headers: \(headers)")
-        }
-
-        // Log body (if present and reasonable size)
-        if let body = request.httpBody {
-            if body.count < 1024, let bodyString = String(data: body, encoding: .utf8) {
-                logger.debug("📦 Body: \(bodyString)")
-            } else {
-                logger.debug("📦 Body: \(body.count) bytes")
-            }
-        }
-
-        logger.debug("⏱️ Timeout: \(target.timeoutInterval)s")
-    }
-
-    /// Logs the HTTP response
-    func logResponse(_ response: HTTPURLResponse, data: Data, duration: TimeInterval) {
-        let statusIcon = getStatusIcon(for: response.statusCode)
-        let durationMs = Int(duration * 1000)
-
-        logger.debug("\(statusIcon) HTTP Response: \(response.statusCode) - \(durationMs)ms - \(data.count) bytes")
-
-        // Log response body for debugging (only if it's reasonable size and JSON/text)
-        if data.count < 2048,
-           let contentType = response.value(forHTTPHeaderField: "Content-Type"),
-           contentType.contains("json") || contentType.contains("text"),
-           let responseString = String(data: data, encoding: .utf8) {
-            logger.debug("📥 Response: \(responseString)")
-        }
-    }
-
-    /// Logs HTTP errors
+    /// Logs HTTP errors only (not routine request/response data)
     func logError(_ error: HTTPError, duration: TimeInterval) {
         let durationMs = Int(duration * 1000)
 
         switch error {
         case .statusCode(let code, let data):
-            logger.error("❌ HTTP Error: \(code) - \(durationMs)ms")
+            logger.error("HTTP Error: \(code) - \(durationMs)ms")
             if let data = data, data.count < 1024,
                let errorString = String(data: data, encoding: .utf8) {
-                logger.error("🔍 Error Details: \(errorString)")
+                logger.error("Error Details: \(errorString)")
             }
         case .timeout:
-            logger.error("⏰ HTTP Timeout after \(durationMs)ms")
+            logger.error("HTTP Timeout after \(durationMs)ms")
         case .networkError(let underlying):
-            logger.error("🌐 Network Error: \(underlying.localizedDescription) - \(durationMs)ms")
+            logger.error("Network Error: \(underlying.localizedDescription) - \(durationMs)ms")
         default:
-            logger.error("💥 HTTP Error: \(error.localizedDescription) - \(durationMs)ms")
-        }
-    }
-
-    /// Gets appropriate emoji for HTTP status code
-    func getStatusIcon(for statusCode: Int) -> String {
-        switch statusCode {
-        case 200...299:
-            return "✅"
-        case 300...399:
-            return "🔄"
-        case 400...499:
-            return "⚠️"
-        case 500...599:
-            return "❌"
-        default:
-            return "❓"
+            logger.error("HTTP Error: \(error.localizedDescription) - \(durationMs)ms")
         }
     }
 }

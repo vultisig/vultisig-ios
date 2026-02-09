@@ -134,9 +134,7 @@ private extension CryptoPriceService {
 
             try await RateProvider.shared.save(rates: mapRates(response: response))
         } catch {
-            if let urlError = error as? URLError, urlError.code == .cancelled {
-                logger.debug("Price fetch cancelled")
-            }
+            // Cancellations are expected during navigation; only rethrow
             throw error
         }
     }
@@ -166,8 +164,7 @@ private extension CryptoPriceService {
                 guard let tokenMeta = TokensStore.TokenSelectionAssets.first(where: { asset in
                     asset.chain == .sui && asset.contractAddress.lowercased() == contract.lowercased()
                 }) else {
-                    // Skip tokens without metadata instead of using default decimals
-                    logger.warning("No metadata found for SUI token \(contract), skipping price fetch")
+                    // Skip tokens without metadata
                     continue
                 }
 

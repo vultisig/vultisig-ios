@@ -47,7 +47,6 @@ class SuiService {
 
             return "0"
         } catch {
-            print("Error fetching suix_getAllBalances: \(error.localizedDescription)")
             return "0"
         }
     }
@@ -120,10 +119,9 @@ class SuiService {
                 let intResult = resultString.toBigInt()
                 return intResult
             } else {
-                print("JSON decoding error")
+                // Could not parse gas price
             }
         } catch {
-            print("Error fetching balance: \(error.localizedDescription)")
             throw error
         }
         return BigInt.zero
@@ -147,10 +145,9 @@ class SuiService {
 
                 return allCoins
             } else {
-                print("Failed to decode coins")
+                // Could not decode coins
             }
         } catch {
-            print("Error fetching balance: \(error.localizedDescription)")
             throw error
         }
         return []
@@ -185,10 +182,9 @@ class SuiService {
 
                 return tokens
             } else {
-                print("Failed to decode owned objects")
+                // Could not decode owned objects
             }
         } catch {
-            print("Error fetching tokens: \(error.localizedDescription)")
             throw error
         }
         return []
@@ -234,7 +230,7 @@ class SuiService {
 
                     tokensWithMetadata.append(coinMeta)
                 } catch {
-                    print("Error fetching metadata for \(objType): \(error.localizedDescription)")
+                    // Skip tokens with metadata fetch failures
                 }
             }
         }
@@ -289,7 +285,6 @@ class SuiService {
         } catch let error as Errors {
             throw error
         } catch {
-            print("Error in dry run transaction: \(error.localizedDescription)")
             throw Errors.dryRunFailed(error.localizedDescription)
         }
     }
