@@ -22,7 +22,6 @@ class BackgroundTransactionPoller: ObservableObject {
         do {
             let pendingTransactions = try storage.getAllPending()
 
-            print("BackgroundTransactionPoller: Found \(pendingTransactions.count) pending transactions")
 
             for transaction in pendingTransactions {
                 // Check if already being polled
@@ -35,13 +34,12 @@ class BackgroundTransactionPoller: ObservableObject {
                 pollingViewModels[transaction.txHash] = viewModel
                 viewModel.startPolling()
 
-                print("BackgroundTransactionPoller: Resumed polling for \(transaction.txHash.prefix(8))...")
             }
 
             // Cleanup old transactions
             try storage.cleanupOld()
         } catch {
-            print("BackgroundTransactionPoller: Error resuming transactions: \(error)")
+            // Polling errors are non-critical; silently ignore
         }
     }
 

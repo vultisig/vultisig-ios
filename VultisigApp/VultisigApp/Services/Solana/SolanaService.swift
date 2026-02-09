@@ -171,7 +171,6 @@ class SolanaService {
                 [String: SolanaFmTokenInfo].self, from: dataResponse)
             return tokenInfo
         } catch {
-            print("Error in fetchSolanaTokenInfoList:")
             return [:]
         }
     }

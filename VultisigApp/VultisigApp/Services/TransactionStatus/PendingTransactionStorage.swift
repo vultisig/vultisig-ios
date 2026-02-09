@@ -112,7 +112,6 @@ final class StoredPendingTransactionStorage {
 
         if !oldTransactions.isEmpty {
             try modelContext.save()
-            print("StoredPendingTransactionStorage: Cleaned up \(oldTransactions.count) old transactions")
         }
     }
 }

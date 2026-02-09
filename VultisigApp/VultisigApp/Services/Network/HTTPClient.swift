@@ -74,14 +74,14 @@ public final class HTTPClient: HTTPClientProtocol {
                     httpError = HTTPError.timeout
                 case .cancelled:
                     // Re-throw the cancellation error directly so it can be handled upstream
-                    logger.warning("⚠️ Request cancelled - \(Int(duration * 1000))ms")
+                    logger.debug("Request cancelled - \(Int(duration * 1000))ms")
                     throw CancellationError()
                 default:
                     httpError = HTTPError.networkError(error)
                 }
             } else if error is CancellationError {
                 // Handle Swift Concurrency cancellation
-                logger.warning("⚠️ Request cancelled - \(Int(duration * 1000))ms")
+                logger.debug("Request cancelled - \(Int(duration * 1000))ms")
                 throw error
             } else {
                 httpError = HTTPError.networkError(error)
@@ -251,7 +251,7 @@ private extension HTTPClient {
     func logRequest(_ request: URLRequest, target: TargetType) {
         guard let url = request.url else { return }
 
-        logger.info("🚀 HTTP Request: \(request.httpMethod ?? "GET") \(url.absoluteString)")
+        logger.debug("🚀 HTTP Request: \(request.httpMethod ?? "GET") \(url.absoluteString)")
 
         // Log headers
         if let headers = request.allHTTPHeaderFields, !headers.isEmpty {
@@ -275,7 +275,7 @@ private extension HTTPClient {
         let statusIcon = getStatusIcon(for: response.statusCode)
         let durationMs = Int(duration * 1000)
 
-        logger.info("\(statusIcon) HTTP Response: \(response.statusCode) - \(durationMs)ms - \(data.count) bytes")
+        logger.debug("\(statusIcon) HTTP Response: \(response.statusCode) - \(durationMs)ms - \(data.count) bytes")
 
         // Log response body for debugging (only if it's reasonable size and JSON/text)
         if data.count < 2048,
