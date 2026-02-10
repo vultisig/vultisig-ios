@@ -1385,3 +1385,6 @@
 "swap.referral_discount" = "Referral (-%d bps)";
 "swap.price_impact.good" = "Good";
 "swap.price_impact.high" = "High";
+
+"unrelatedQRCode" = "Unrelated QR Code";
+"unrelatedQRCodeMessage" = "Unrelated QR code is scanned.";
