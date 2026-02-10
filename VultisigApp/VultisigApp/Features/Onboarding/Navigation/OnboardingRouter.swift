@@ -19,8 +19,8 @@ struct OnboardingRouter {
             viewBuilder.buildImportSeedphraseScreen()
         case .chainsSetup(let mnemonic):
             viewBuilder.buildChainsSetupScreen(mnemonic: mnemonic)
-        case .devicesSelection(let mnemonic, let chainSettings):
-            viewBuilder.buildOnboardingDevicesSelectionScreen(mnemonic: mnemonic, chainSettings: chainSettings)
+        case .devicesSelection(let tssType, let keyImportInput):
+            viewBuilder.buildOnboardingDevicesSelectionScreen(tssType: tssType, keyImportInput: keyImportInput)
         case .keyImportNewVaultSetup(let vault, let keyImportInput, let fastSignConfig, let setupType):
             viewBuilder.buildKeyImportNewVaultSetupScreen(
                 vault: vault,
@@ -32,8 +32,6 @@ struct OnboardingRouter {
             viewBuilder.buildKeyImportOnboardingScreen()
         case .importVaultShare:
             viewBuilder.buildImportVaultShareScreen()
-        case .setupQRCode(let tssType, let vault):
-            viewBuilder.buildSetupQRCodeScreen(tssType: tssType, vault: vault)
         case .joinKeygen(let vault, let selectedVault):
             viewBuilder.buildJoinKeygenScreen(vault: vault, selectedVault: selectedVault)
         case .onboarding:

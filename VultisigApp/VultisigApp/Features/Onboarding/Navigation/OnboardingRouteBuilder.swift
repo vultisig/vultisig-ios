@@ -25,8 +25,8 @@ struct OnboardingRouteBuilder {
     }
 
     @ViewBuilder
-    func buildOnboardingDevicesSelectionScreen(mnemonic: String, chainSettings: [ChainImportSetting]) -> some View {
-        OnboardingDevicesSelectionScreen(mnemonic: mnemonic, chainSettings: chainSettings)
+    func buildOnboardingDevicesSelectionScreen(tssType: TssType, keyImportInput: KeyImportInput?) -> some View {
+        OnboardingDevicesSelectionScreen(tssType: tssType, keyImportInput: keyImportInput)
     }
 
     @ViewBuilder
@@ -52,11 +52,6 @@ struct OnboardingRouteBuilder {
     @ViewBuilder
     func buildImportVaultShareScreen() -> some View {
         ImportVaultShareScreen()
-    }
-
-    @ViewBuilder
-    func buildSetupQRCodeScreen(tssType: TssType, vault: Vault?) -> some View {
-        SetupQRCodeView(tssType: tssType, vault: vault)
     }
 
     @ViewBuilder

@@ -9,8 +9,8 @@ import SwiftUI
 import RiveRuntime
 
 struct OnboardingDevicesSelectionScreen: View {
-    let mnemonic: String
-    let chainSettings: [ChainImportSetting]
+    let tssType: TssType
+    let keyImportInput: KeyImportInput?
 
     @State private var selectedDeviceCount: Int = 0
     @State private var animationVM: RiveViewModel? = nil
@@ -61,11 +61,8 @@ struct OnboardingDevicesSelectionScreen: View {
 
     private func onContinue() {
         router.navigate(to: OnboardingRoute.vaultSetup(
-            tssType: .KeyImport,
-            keyImportInput: KeyImportInput(
-                mnemonic: mnemonic,
-                chainSettings: chainSettings
-            ),
+            tssType: tssType,
+            keyImportInput: keyImportInput,
             setupType: setupType
         ))
     }
@@ -123,7 +120,7 @@ struct OnboardingDevicesSelectionScreen: View {
 
 #Preview {
     OnboardingDevicesSelectionScreen(
-        mnemonic: "test mnemonic",
-        chainSettings: [ChainImportSetting(chain: .bitcoin)]
+        tssType: .Keygen,
+        keyImportInput: nil
     )
 }

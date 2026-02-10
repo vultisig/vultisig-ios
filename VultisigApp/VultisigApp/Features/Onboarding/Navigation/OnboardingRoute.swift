@@ -12,11 +12,10 @@ enum OnboardingRoute: Hashable {
     case importSeedphrase(keyImportInput: KeyImportInput?)
     case keyImportOnboarding
     case chainsSetup(mnemonic: String)
-    case devicesSelection(mnemonic: String, chainSettings: [ChainImportSetting])
+    case devicesSelection(tssType: TssType, keyImportInput: KeyImportInput?)
     case keyImportNewVaultSetup(vault: Vault, keyImportInput: KeyImportInput?, fastSignConfig: FastSignConfig?, setupType: KeyImportSetupType)
 
     case importVaultShare
-    case setupQRCode(tssType: TssType, vault: Vault?)
     case joinKeygen(vault: Vault, selectedVault: Vault?)
     case newWalletName(tssType: TssType, selectedTab: SetupVaultState, vault: Vault)
 }

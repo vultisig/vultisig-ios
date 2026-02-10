@@ -59,7 +59,7 @@ struct OnboardingView: View {
         .crossPlatformSheet(isPresented: $showSummary) {
             OnboardingSummaryView(kind: .initial, isPresented: $showSummary, onDismiss: {
                 appViewModel.showOnboarding = false
-                router.navigate(to: OnboardingRoute.setupQRCode(tssType: .Keygen, vault: nil))
+                router.navigate(to: OnboardingRoute.devicesSelection(tssType: .Keygen, keyImportInput: nil))
             })
         }
     }
