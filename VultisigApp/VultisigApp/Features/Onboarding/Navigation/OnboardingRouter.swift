@@ -19,8 +19,8 @@ struct OnboardingRouter {
             viewBuilder.buildImportSeedphraseScreen()
         case .chainsSetup(let mnemonic):
             viewBuilder.buildChainsSetupScreen(mnemonic: mnemonic)
-        case .keyImportDeviceCount(let mnemonic, let chainSettings):
-            viewBuilder.buildKeyImportDeviceCountScreen(mnemonic: mnemonic, chainSettings: chainSettings)
+        case .devicesSelection(let mnemonic, let chainSettings):
+            viewBuilder.buildOnboardingDevicesSelectionScreen(mnemonic: mnemonic, chainSettings: chainSettings)
         case .keyImportNewVaultSetup(let vault, let keyImportInput, let fastSignConfig, let setupType):
             viewBuilder.buildKeyImportNewVaultSetupScreen(
                 vault: vault,

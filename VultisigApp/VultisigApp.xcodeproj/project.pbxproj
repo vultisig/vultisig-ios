@@ -58,7 +58,7 @@
 		13194DB22EF5908500BEC93C /* CircleRouteBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13194DAE2EF5908500BEC93C /* CircleRouteBuilder.swift */; };
 		13194DB32EF5908500BEC93C /* CircleRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13194DAF2EF5908500BEC93C /* CircleRouter.swift */; };
 		131F96E62E7887CF0018BA7B /* Satoshi-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 131F96E22E7887CF0018BA7B /* Satoshi-Medium.otf */; };
-		13204DD52EEB129E00297D01 /* KeyImportNewVaultSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13204DD42EEB129800297D01 /* KeyImportNewVaultSetupScreen.swift */; };
+		13204DD52EEB129E00297D01 /* OnboardingVaultSetupInformationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13204DD42EEB129800297D01 /* OnboardingVaultSetupInformationScreen.swift */; };
 		13204DD72EEB1B3D00297D01 /* KeyImportOverviewScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13204DD62EEB1B3600297D01 /* KeyImportOverviewScreen.swift */; };
 		13204DDC2EEB1CCA00297D01 /* OnboardingInformationRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13204DDB2EEB1CC300297D01 /* OnboardingInformationRowView.swift */; };
 		1321A82C2ED0A4ED004CBB99 /* DefiChainBondedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A8162ED0A4ED004CBB99 /* DefiChainBondedView.swift */; };
@@ -104,7 +104,7 @@
 		1328E64F2ED5F32C0080BEE1 /* VaultPairDetailViewModel+Render.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1328E64D2ED5F32C0080BEE1 /* VaultPairDetailViewModel+Render.swift */; };
 		1328E6542ED5F4BE0080BEE1 /* VaultPairDetailCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1328E6532ED5F4BE0080BEE1 /* VaultPairDetailCard.swift */; };
 		132B04372E70C4EB00745651 /* VaultMainScreenBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132B04362E70C4E500745651 /* VaultMainScreenBackground.swift */; };
-		132E01602F1AA2E6007E717C /* KeyImportDeviceCountScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132E015E2F1AA2E6007E717C /* KeyImportDeviceCountScreen.swift */; };
+		132E01602F1AA2E6007E717C /* OnboardingDevicesSelectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132E015E2F1AA2E6007E717C /* OnboardingDevicesSelectionScreen.swift */; };
 		132E01612F1AA2E6007E717C /* DerivationPathSelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132E015C2F1AA2E6007E717C /* DerivationPathSelectionSheet.swift */; };
 		132E01672F1AA2FA007E717C /* vault_setup_device4.riv in Resources */ = {isa = PBXBuildFile; fileRef = 132E01662F1AA2FA007E717C /* vault_setup_device4.riv */; };
 		132E01682F1AA2FA007E717C /* vault_setup_device3.riv in Resources */ = {isa = PBXBuildFile; fileRef = 132E01652F1AA2FA007E717C /* vault_setup_device3.riv */; };
@@ -1402,7 +1402,7 @@
 		13194DAE2EF5908500BEC93C /* CircleRouteBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleRouteBuilder.swift; sourceTree = "<group>"; };
 		13194DAF2EF5908500BEC93C /* CircleRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleRouter.swift; sourceTree = "<group>"; };
 		131F96E22E7887CF0018BA7B /* Satoshi-Medium.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Satoshi-Medium.otf"; sourceTree = "<group>"; };
-		13204DD42EEB129800297D01 /* KeyImportNewVaultSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyImportNewVaultSetupScreen.swift; sourceTree = "<group>"; };
+		13204DD42EEB129800297D01 /* OnboardingVaultSetupInformationScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingVaultSetupInformationScreen.swift; sourceTree = "<group>"; };
 		13204DD62EEB1B3600297D01 /* KeyImportOverviewScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyImportOverviewScreen.swift; sourceTree = "<group>"; };
 		13204DDB2EEB1CC300297D01 /* OnboardingInformationRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingInformationRowView.swift; sourceTree = "<group>"; };
 		1321A80C2ED0A4ED004CBB99 /* BondNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondNode.swift; sourceTree = "<group>"; };
@@ -1449,7 +1449,7 @@
 		1328E6532ED5F4BE0080BEE1 /* VaultPairDetailCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultPairDetailCard.swift; sourceTree = "<group>"; };
 		132B04362E70C4E500745651 /* VaultMainScreenBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainScreenBackground.swift; sourceTree = "<group>"; };
 		132E015C2F1AA2E6007E717C /* DerivationPathSelectionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivationPathSelectionSheet.swift; sourceTree = "<group>"; };
-		132E015E2F1AA2E6007E717C /* KeyImportDeviceCountScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyImportDeviceCountScreen.swift; sourceTree = "<group>"; };
+		132E015E2F1AA2E6007E717C /* OnboardingDevicesSelectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingDevicesSelectionScreen.swift; sourceTree = "<group>"; };
 		132E01632F1AA2FA007E717C /* vault_setup_device1.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = vault_setup_device1.riv; sourceTree = "<group>"; };
 		132E01642F1AA2FA007E717C /* vault_setup_device2.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = vault_setup_device2.riv; sourceTree = "<group>"; };
 		132E01652F1AA2FA007E717C /* vault_setup_device3.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = vault_setup_device3.riv; sourceTree = "<group>"; };
@@ -3194,7 +3194,7 @@
 		132E015F2F1AA2E6007E717C /* DeviceCount */ = {
 			isa = PBXGroup;
 			children = (
-				132E015E2F1AA2E6007E717C /* KeyImportDeviceCountScreen.swift */,
+				132E015E2F1AA2E6007E717C /* OnboardingDevicesSelectionScreen.swift */,
 			);
 			path = DeviceCount;
 			sourceTree = "<group>";
@@ -4540,7 +4540,7 @@
 				132E015D2F1AA2E6007E717C /* Components */,
 				132E015F2F1AA2E6007E717C /* DeviceCount */,
 				13204DD62EEB1B3600297D01 /* KeyImportOverviewScreen.swift */,
-				13204DD42EEB129800297D01 /* KeyImportNewVaultSetupScreen.swift */,
+				13204DD42EEB129800297D01 /* OnboardingVaultSetupInformationScreen.swift */,
 				13C286702EE8B823004D8AC8 /* KeyImportOnboardingScreen.swift */,
 				13C2866F2EE8B80F004D8AC8 /* ChainsSetup */,
 			);
@@ -7059,7 +7059,7 @@
 				A6F2C54B2BA003E10095C8E3 /* CoinSelectionCell.swift in Sources */,
 				1334C7412E301B5300CBAA3E /* JoinKeysignGasViewModel.swift in Sources */,
 				A6E0C9112DE4F89100A01543 /* ReferralTextField.swift in Sources */,
-				132E01602F1AA2E6007E717C /* KeyImportDeviceCountScreen.swift in Sources */,
+				132E01602F1AA2E6007E717C /* OnboardingDevicesSelectionScreen.swift in Sources */,
 				132E01612F1AA2E6007E717C /* DerivationPathSelectionSheet.swift in Sources */,
 				A571F4682C7E48A1000F46D3 /* FeeMode.swift in Sources */,
 				A66729CB2D810CD5002308D8 /* KeysignDiscoveryDisclaimer.swift in Sources */,
@@ -7428,7 +7428,7 @@
 				13DD3B1A2E3CFE7D00D46FA0 /* FlatPicker.swift in Sources */,
 				135B6BBF2EA1470F00DD7140 /* ChainNotFoundEmptyStateView.swift in Sources */,
 				135677A62E391A6E002C10A2 /* SecurityScannerTransactionFactory.swift in Sources */,
-				13204DD52EEB129E00297D01 /* KeyImportNewVaultSetupScreen.swift in Sources */,
+				13204DD52EEB129E00297D01 /* OnboardingVaultSetupInformationScreen.swift in Sources */,
 				A6BFE1BD2D945AA5000B73C0 /* SwapFromToField.swift in Sources */,
 				A6B84B102CE580DB006929A0 /* ServerBackupVerificationView+macOS.swift in Sources */,
 				A65649F52B966F3E00E4B329 /* DecodableDefault.swift in Sources */,

@@ -25,8 +25,8 @@ struct OnboardingRouteBuilder {
     }
 
     @ViewBuilder
-    func buildKeyImportDeviceCountScreen(mnemonic: String, chainSettings: [ChainImportSetting]) -> some View {
-        KeyImportDeviceCountScreen(mnemonic: mnemonic, chainSettings: chainSettings)
+    func buildOnboardingDevicesSelectionScreen(mnemonic: String, chainSettings: [ChainImportSetting]) -> some View {
+        OnboardingDevicesSelectionScreen(mnemonic: mnemonic, chainSettings: chainSettings)
     }
 
     @ViewBuilder
@@ -36,7 +36,7 @@ struct OnboardingRouteBuilder {
         fastSignConfig: FastSignConfig?,
         setupType: KeyImportSetupType
     ) -> some View {
-        KeyImportNewVaultSetupScreen(
+        OnboardingVaultSetupInformationScreen(
             vault: vault,
             keyImportInput: keyImportInput,
             fastSignConfig: fastSignConfig,

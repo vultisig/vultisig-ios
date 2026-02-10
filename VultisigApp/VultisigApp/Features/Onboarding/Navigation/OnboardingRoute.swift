@@ -12,7 +12,7 @@ enum OnboardingRoute: Hashable {
     case importSeedphrase(keyImportInput: KeyImportInput?)
     case keyImportOnboarding
     case chainsSetup(mnemonic: String)
-    case keyImportDeviceCount(mnemonic: String, chainSettings: [ChainImportSetting])
+    case devicesSelection(mnemonic: String, chainSettings: [ChainImportSetting])
     case keyImportNewVaultSetup(vault: Vault, keyImportInput: KeyImportInput?, fastSignConfig: FastSignConfig?, setupType: KeyImportSetupType)
 
     case importVaultShare

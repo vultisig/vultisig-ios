@@ -1,5 +1,5 @@
 //
-//  KeyImportDeviceCountScreen.swift
+//  OnboardingDevicesSelectionScreen.swift
 //  VultisigApp
 //
 //  Created by Gaston Mazzeo on 16/01/2026.
@@ -8,7 +8,7 @@
 import SwiftUI
 import RiveRuntime
 
-struct KeyImportDeviceCountScreen: View {
+struct OnboardingDevicesSelectionScreen: View {
     let mnemonic: String
     let chainSettings: [ChainImportSetting]
 
@@ -122,7 +122,7 @@ struct KeyImportDeviceCountScreen: View {
 }
 
 #Preview {
-    KeyImportDeviceCountScreen(
+    OnboardingDevicesSelectionScreen(
         mnemonic: "test mnemonic",
         chainSettings: [ChainImportSetting(chain: .bitcoin)]
     )

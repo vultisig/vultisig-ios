@@ -62,7 +62,7 @@ struct KeyImportChainsSetupScreen: View {
 
             // Navigate to device count selection screen
             await MainActor.run {
-                router.navigate(to: OnboardingRoute.keyImportDeviceCount(
+                router.navigate(to: OnboardingRoute.devicesSelection(
                     mnemonic: mnemonic,
                     chainSettings: chainSettings
                 ))
