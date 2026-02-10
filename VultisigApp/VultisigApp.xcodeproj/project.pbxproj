@@ -1099,11 +1099,13 @@
 		A6SEC0072E1234567890AB01 /* BlockaidScannerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0072E1234567890AB02 /* BlockaidScannerService.swift */; };
 		A6SEC0132E1234567890AB01 /* SecurityScannerBottomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0132E1234567890AB02 /* SecurityScannerBottomSheet.swift */; };
 		AEF2CEAD64A344FB85D7E3DE /* PendingTransactionStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F3285329CA1572874A8F92 /* PendingTransactionStorage.swift */; };
+		B20C65452F3AFEFF00AF8334 /* DilithiumKeygen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20C65442F3AFEF900AF8334 /* DilithiumKeygen.swift */; };
 		B21561E02F18A5D90052C892 /* Vultisig-Logo.icon in Resources */ = {isa = PBXBuildFile; fileRef = B21561DF2F18A5D90052C892 /* Vultisig-Logo.icon */; };
 		B217CEA92ED5A01B00503503 /* ChainPublicKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = B217CEA82ED5A00800503503 /* ChainPublicKey.swift */; };
 		B217D44E2EDE80B700503503 /* KeyImportRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B217D44D2EDE80B300503503 /* KeyImportRequest.swift */; };
 		B23481202E6E7DCF00AA655D /* WalletCore in Frameworks */ = {isa = PBXBuildFile; productRef = B2482ADF2E6E47D900B29B6F /* WalletCore */; };
 		B2482AE22E6E47D900B29B6F /* WalletCoreSwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = B2482AE12E6E47D900B29B6F /* WalletCoreSwiftProtobuf */; };
+		B28352932F3B27DA008378F0 /* dilithium.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = B28352922F3B27DA008378F0 /* dilithium.xcframework */; };
 		B2ADDD782E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2ADDD772E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift */; };
 		B2ADDDC52E5D63AD00DB3B98 /* BanxaDisclaimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2ADDDC42E5D639700DB3B98 /* BanxaDisclaimer.swift */; };
 		B2C8B53A2E684A4200DFA097 /* SwapFeatureGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C8B5392E684A3700DFA097 /* SwapFeatureGate.swift */; };
@@ -2448,9 +2450,11 @@
 		ADA7840E8472A961595D3663 /* KyberSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapPayload.swift; sourceTree = "<group>"; };
 		B08FAA81BD1AD27E98344042 /* SolanaTransactionStatusAPI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SolanaTransactionStatusAPI.swift; sourceTree = "<group>"; };
 		B0F3285329CA1572874A8F92 /* PendingTransactionStorage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PendingTransactionStorage.swift; sourceTree = "<group>"; };
+		B20C65442F3AFEF900AF8334 /* DilithiumKeygen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DilithiumKeygen.swift; sourceTree = "<group>"; };
 		B21561DF2F18A5D90052C892 /* Vultisig-Logo.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = "Vultisig-Logo.icon"; sourceTree = "<group>"; };
 		B217CEA82ED5A00800503503 /* ChainPublicKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainPublicKey.swift; sourceTree = "<group>"; };
 		B217D44D2EDE80B300503503 /* KeyImportRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyImportRequest.swift; sourceTree = "<group>"; };
+		B28352922F3B27DA008378F0 /* dilithium.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:5BP27CHH4Y:Vulti Holdings Limited"; lastKnownFileType = wrapper.xcframework; path = dilithium.xcframework; sourceTree = "<group>"; };
 		B2ADDD772E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChainDetailActionButtons+macOS.swift"; sourceTree = "<group>"; };
 		B2ADDDC42E5D639700DB3B98 /* BanxaDisclaimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BanxaDisclaimer.swift; sourceTree = "<group>"; };
 		B2C8B5392E684A3700DFA097 /* SwapFeatureGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapFeatureGate.swift; sourceTree = "<group>"; };
@@ -2723,6 +2727,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B500DFBD2EB4F864009F5C68 /* ZIPFoundation in Frameworks */,
+				B28352932F3B27DA008378F0 /* dilithium.xcframework in Frameworks */,
 				B23481202E6E7DCF00AA655D /* WalletCore in Frameworks */,
 				B2482AE22E6E47D900B29B6F /* WalletCoreSwiftProtobuf in Frameworks */,
 				DE03EA112D0D3D0900AA4BB0 /* goschnorr.xcframework in Frameworks */,
@@ -5915,6 +5920,7 @@
 		A6A793E22BB508C000CC5950 /* Keygen */ = {
 			isa = PBXGroup;
 			children = (
+				B20C65442F3AFEF900AF8334 /* DilithiumKeygen.swift */,
 				DEEB571C2D08F80500B120D1 /* SchnorrKeygen.swift */,
 				DE6EF0522D068BE200A36D6A /* DKLSKeygen.swift */,
 				DE9EB0EB2BA2CC3C001747D9 /* TssType.swift */,
@@ -6593,6 +6599,7 @@
 				DE49A1642B65F6D9000F3AFB /* Products */,
 				DE49A1A12B67158A000F3AFB /* Frameworks */,
 				D7347C222B74717F00887E57 /* Recovered References */,
+				B28352922F3B27DA008378F0 /* dilithium.xcframework */,
 			);
 			sourceTree = "<group>";
 		};
@@ -7396,6 +7403,7 @@
 				1321A8332ED0A4ED004CBB99 /* DefiChainStakedPositionView.swift in Sources */,
 				1321A8342ED0A4ED004CBB99 /* DefiChainMainScreen.swift in Sources */,
 				1321A8352ED0A4ED004CBB99 /* DefiChainMainViewModel.swift in Sources */,
+				B20C65452F3AFEFF00AF8334 /* DilithiumKeygen.swift in Sources */,
 				1321A8362ED0A4ED004CBB99 /* BondNode.swift in Sources */,
 				1321A8372ED0A4ED004CBB99 /* DefiChainPositionType.swift in Sources */,
 				1321A8382ED0A4ED004CBB99 /* DefiChainActiveNodeView.swift in Sources */,
