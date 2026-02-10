@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 import SwiftUI
 
 @MainActor
@@ -14,6 +15,7 @@ class BackgroundTransactionPoller: ObservableObject {
 
     private var pollingViewModels: [String: TransactionStatusViewModel] = [:]
     private let storage = StoredPendingTransactionStorage.shared
+    private let logger = Logger(subsystem: "com.vultisig.app", category: "background-tx-poller")
 
     private init() {}
 
@@ -21,7 +23,6 @@ class BackgroundTransactionPoller: ObservableObject {
     func resumePendingTransactions() {
         do {
             let pendingTransactions = try storage.getAllPending()
-
 
             for transaction in pendingTransactions {
                 // Check if already being polled
@@ -33,13 +34,14 @@ class BackgroundTransactionPoller: ObservableObject {
                 let viewModel = TransactionStatusViewModel(pendingTransaction: transaction)
                 pollingViewModels[transaction.txHash] = viewModel
                 viewModel.startPolling()
-
             }
 
             // Cleanup old transactions
             try storage.cleanupOld()
         } catch {
-            // Polling errors are non-critical; silently ignore
+            if !(error is CancellationError) && (error as? URLError)?.code != .cancelled {
+                logger.debug("Resume pending transactions error: \(error.localizedDescription)")
+            }
         }
     }
 
