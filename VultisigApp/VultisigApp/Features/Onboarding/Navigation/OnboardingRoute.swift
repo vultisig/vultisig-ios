@@ -7,13 +7,13 @@
 
 enum OnboardingRoute: Hashable {
     case onboarding
-    case vaultSetup(tssType: TssType, keyImportInput: KeyImportInput?, setupType: KeyImportSetupType? = nil)
 
     case importSeedphrase(keyImportInput: KeyImportInput?)
     case keyImportOnboarding
     case chainsSetup(mnemonic: String)
     case devicesSelection(tssType: TssType, keyImportInput: KeyImportInput?)
-    case keyImportNewVaultSetup(vault: Vault, keyImportInput: KeyImportInput?, fastSignConfig: FastSignConfig?, setupType: KeyImportSetupType)
+    case vaultSetupInformation(tssType: TssType, keyImportInput: KeyImportInput?, setupType: KeyImportSetupType)
+    case vaultSetup(tssType: TssType, keyImportInput: KeyImportInput?, setupType: KeyImportSetupType? = nil)
 
     case importVaultShare
     case joinKeygen(vault: Vault, selectedVault: Vault?)

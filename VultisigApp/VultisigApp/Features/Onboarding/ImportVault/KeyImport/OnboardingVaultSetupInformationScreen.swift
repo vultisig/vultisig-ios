@@ -9,18 +9,14 @@ import SwiftUI
 import RiveRuntime
 
 struct OnboardingVaultSetupInformationScreen: View {
-    let vault: Vault
+    let tssType: TssType
     let keyImportInput: KeyImportInput?
-    let fastSignConfig: FastSignConfig?
     let setupType: KeyImportSetupType
 
     @State private var animationVM: RiveViewModel? = nil
+    @State private var visibleRowCount = 0
 
     @Environment(\.router) var router
-
-    var selectedTab: SetupVaultState {
-        setupType == .fast ? .fast : .secure
-    }
 
     var body: some View {
         Screen(edgeInsets: .init(leading: 24, trailing: 24)) {
@@ -39,11 +35,8 @@ struct OnboardingVaultSetupInformationScreen: View {
                 VStack(spacing: 32) {
                     informationView
                     PrimaryButton(title: "next") {
-                        router.navigate(to: KeygenRoute.peerDiscovery(
-                            tssType: .KeyImport,
-                            vault: vault,
-                            selectedTab: selectedTab,
-                            fastSignConfig: fastSignConfig,
+                        router.navigate(to: OnboardingRoute.vaultSetup(
+                            tssType: tssType,
                             keyImportInput: keyImportInput,
                             setupType: setupType
                         ))
@@ -61,28 +54,37 @@ struct OnboardingVaultSetupInformationScreen: View {
             .offset(x: -48)
     }
 
+    var informationRows: [(title: String, subtitle: String, icon: String)] {
+        [
+            (feature1Title, feature1Description, "signature"),
+            (feature2Title, feature2Description, "shield-check-filled"),
+            (feature3Title, feature3Description, "lock")
+        ]
+    }
+
     var informationView: some View {
         VStack(alignment: .leading, spacing: 24) {
-            OnboardingInformationRowView(
-                title: feature1Title,
-                subtitle: feature1Description,
-                icon: "signature"
-            )
-
-            OnboardingInformationRowView(
-                title: feature2Title,
-                subtitle: feature2Description,
-                icon: "shield-check-filled"
-            )
-
-            OnboardingInformationRowView(
-                title: feature3Title,
-                subtitle: feature3Description,
-                icon: "lock"
-            )
+            ForEach(Array(informationRows.enumerated()), id: \.offset) { index, row in
+                OnboardingInformationRowView(
+                    title: row.title,
+                    subtitle: row.subtitle,
+                    icon: row.icon
+                )
+                .opacity(index < visibleRowCount ? 1 : 0)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .fixedSize(horizontal: false, vertical: true)
+        .onAppear(perform: animateRows)
+    }
+
+    private func animateRows() {
+        for index in informationRows.indices {
+            let delay = Double(index + 1) * 0.4
+            withAnimation(.linear(duration: 0.3).delay(delay)) {
+                visibleRowCount = index + 1
+            }
+        }
     }
 
     var vaultTypeBadge: some View {
@@ -292,17 +294,8 @@ private extension OnboardingVaultSetupInformationScreen {
 
 #Preview {
     OnboardingVaultSetupInformationScreen(
-        vault: .example,
-        keyImportInput: .init(
-            mnemonic: "",
-            chainSettings: []
-        ),
-        fastSignConfig: .init(
-            email: "",
-            password: "",
-            hint: nil,
-            isExist: false
-        ),
+        tssType: .Keygen,
+        keyImportInput: nil,
         setupType: .fast
     )
     .toolbar {

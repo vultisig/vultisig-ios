@@ -60,7 +60,7 @@ struct OnboardingDevicesSelectionScreen: View {
     }
 
     private func onContinue() {
-        router.navigate(to: OnboardingRoute.vaultSetup(
+        router.navigate(to: OnboardingRoute.vaultSetupInformation(
             tssType: tssType,
             keyImportInput: keyImportInput,
             setupType: setupType

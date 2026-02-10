@@ -30,16 +30,14 @@ struct OnboardingRouteBuilder {
     }
 
     @ViewBuilder
-    func buildKeyImportNewVaultSetupScreen(
-        vault: Vault,
+    func buildOnboardingVaultSetupInformationScreen(
+        tssType: TssType,
         keyImportInput: KeyImportInput?,
-        fastSignConfig: FastSignConfig?,
         setupType: KeyImportSetupType
     ) -> some View {
         OnboardingVaultSetupInformationScreen(
-            vault: vault,
+            tssType: tssType,
             keyImportInput: keyImportInput,
-            fastSignConfig: fastSignConfig,
             setupType: setupType
         )
     }

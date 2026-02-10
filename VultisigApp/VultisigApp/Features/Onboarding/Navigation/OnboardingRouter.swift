@@ -21,11 +21,10 @@ struct OnboardingRouter {
             viewBuilder.buildChainsSetupScreen(mnemonic: mnemonic)
         case .devicesSelection(let tssType, let keyImportInput):
             viewBuilder.buildOnboardingDevicesSelectionScreen(tssType: tssType, keyImportInput: keyImportInput)
-        case .keyImportNewVaultSetup(let vault, let keyImportInput, let fastSignConfig, let setupType):
-            viewBuilder.buildKeyImportNewVaultSetupScreen(
-                vault: vault,
+        case .vaultSetupInformation(let tssType, let keyImportInput, let setupType):
+            viewBuilder.buildOnboardingVaultSetupInformationScreen(
+                tssType: tssType,
                 keyImportInput: keyImportInput,
-                fastSignConfig: fastSignConfig,
                 setupType: setupType
             )
         case .keyImportOnboarding:

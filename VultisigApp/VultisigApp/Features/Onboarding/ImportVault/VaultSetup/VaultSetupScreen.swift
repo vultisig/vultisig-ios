@@ -218,10 +218,14 @@ struct VaultSetupScreen: View {
         }
 
         guard viewModel.canContinue else { return }
-        router.navigate(to: OnboardingRoute.keyImportNewVaultSetup(
+
+        let selectedTab: SetupVaultState = setupType == .fast ? .fast : .secure
+        router.navigate(to: KeygenRoute.peerDiscovery(
+            tssType: tssType,
             vault: viewModel.getVault(keyImportInput: keyImportInput),
-            keyImportInput: keyImportInput,
+            selectedTab: selectedTab,
             fastSignConfig: viewModel.showFastSignFields ? viewModel.fastConfig : nil,
+            keyImportInput: keyImportInput,
             setupType: setupType
         ))
     }
