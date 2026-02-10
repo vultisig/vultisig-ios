@@ -119,6 +119,7 @@ struct SwapCryptoDetailsView: View {
                     error: error,
                     showTooltip: $showErrorTooltip,
                     onDismissTooltip: {
+                        swapViewModel.error = nil
                         showErrorTooltip = false
                     }
                 )
