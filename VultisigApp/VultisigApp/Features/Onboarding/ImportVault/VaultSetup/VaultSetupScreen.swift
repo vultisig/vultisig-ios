@@ -13,16 +13,15 @@ struct VaultSetupScreen: View {
     let setupType: KeyImportSetupType
 
     enum FocusedField {
-        case name, referral, email, password, passwordConfirm, hint
+        case name, referral, email, password, passwordConfirm
     }
 
     @StateObject var viewModel: VaultSetupViewModel
 
-    @State var scrollViewProxy: ScrollViewProxy?
-    @State var focusedFieldBinding: FocusedField? = .none
+    @State private var currentStep = 2
+    @State private var referralExpanded = false
+    @State private var showPasswordTooltip = false
     @FocusState private var focusedField: FocusedField?
-    @State var hintExpanded = false
-    @State var referralExpanded = false
     @Environment(\.router) var router
 
     init(tssType: TssType, keyImportInput: KeyImportInput?, setupType: KeyImportSetupType? = nil) {
@@ -32,70 +31,137 @@ struct VaultSetupScreen: View {
         _viewModel = StateObject(wrappedValue: VaultSetupViewModel(setupType: setupType ?? .fast))
     }
 
-    var body: some View {
-        FormScreen(
-            title: "vaultSetup".localized,
-            fixedHeight: false,
-            validForm: $viewModel.validFormWithReferral,
-            onContinue: onContinue
-        ) {
-            nameSection
+    private var stepIcons: [String] {
+        var icons = ["feather"]
+        if viewModel.showFastSignFields {
+            icons.append(contentsOf: ["email", "focus-lock"])
+        }
+        return icons
+    }
 
-            if viewModel.showFastSignFields {
-                emailSection
-                passwordSection
+    private var totalSteps: Int { stepIcons.count }
+    private var isLastStep: Bool { currentStep >= totalSteps - 1 }
+
+    private var isCurrentStepValid: Bool {
+        switch currentStep {
+        case 0:
+            return viewModel.nameField.valid
+                && viewModel.referralField.valid
+                && !viewModel.validatingReferralCode
+        case 1:
+            return viewModel.emailField.valid
+        case 2:
+            return viewModel.passwordField.valid
+                && viewModel.passwordConfirmField.valid
+        default:
+            return false
+        }
+    }
+
+    // MARK: - Body
+
+    var body: some View {
+        Screen(edgeInsets: .init(leading: 24, trailing: 24)) {
+            VStack(spacing: 0) {
+                stepIndicator
+                    .padding(.top, 24)
+                    .padding(.bottom, 32)
+
+                stepContent
+
+                Spacer()
+
+                PrimaryButton(
+                    title: isLastStep && isCurrentStepValid
+                        ? "createVault".localized
+                        : "next".localized
+                ) {
+                    onContinue()
+                }
+            }
+            .overlay(alignment: .top) {
+                if showPasswordTooltip {
+                    tooltipOverlay
+                }
             }
         }
+        .crossPlatformToolbar("")
         .onLoad {
-            focusedFieldBinding = .name
             viewModel.onLoad()
-        }
-        .onChange(of: focusedFieldBinding) { _, newValue in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                focusedField = newValue
-            }
+            focusedField = .name
         }
         .onSubmit {
             onContinue()
         }
     }
 
-    var nameSection: some View {
-        FormExpandableSection(
-            title: "name".localized,
-            isValid: viewModel.nameField.valid,
-            value: viewModel.nameField.value,
-            showValue: true,
-            focusedField: $focusedFieldBinding,
-            focusedFieldEquals: .name
-        ) {
-            focusedFieldBinding = $0 ? .name : .email
-        } content: {
-            VStack(alignment: .leading, spacing: 20) {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("nameYourVault".localized)
-                        .font(Theme.fonts.title1)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                    Text("newWalletNameDescription".localized)
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
+    // MARK: - Step Indicator
 
+    private var stepIndicator: some View {
+        HStack(spacing: 12) {
+            ForEach(Array(stepIcons.enumerated()), id: \.offset) { index, icon in
+                if index > 0 {
+                    RoundedRectangle(cornerRadius: 1)
+                        .fill(Theme.colors.border)
+                        .frame(width: 16, height: 1)
+                }
+                VaultSetupStepIcon(state: stepState(for: index), icon: icon)
+            }
+        }
+    }
+
+    private func stepState(for index: Int) -> VaultSetupStepState {
+        if index < currentStep { return .valid }
+        if index == currentStep { return .active }
+        return .inactive
+    }
+
+    // MARK: - Step Content
+
+    @ViewBuilder
+    private var stepContent: some View {
+        Group {
+            switch currentStep {
+            case 0:
+                nameStep
+            case 1:
+                emailStep
+            case 2:
+                passwordStep
+            default:
+                EmptyView()
+            }
+        }
+        .transition(.asymmetric(
+            insertion: .move(edge: .trailing).combined(with: .opacity),
+            removal: .move(edge: .leading).combined(with: .opacity)
+        ))
+    }
+
+    private var nameStep: some View {
+        VStack(spacing: 20) {
+            stepHeader(
+                title: "nameYourVault".localized,
+                subtitle: "newWalletNameDescription".localized
+            )
+
+            VStack(spacing: 16) {
                 CommonTextField(
                     text: $viewModel.nameField.value,
                     placeholder: viewModel.nameField.placeholder,
-                    error: $viewModel.nameField.error
+                    error: $viewModel.nameField.error,
+                    isValid: isValidBinding(for: viewModel.nameField)
                 )
                 .focused($focusedField, equals: .name)
 
                 ExpandableView(isExpanded: $referralExpanded) {
-                    expandableSecondaryFieldHeader(isExpanded: $referralExpanded, label: "addReferral".localized)
+                    expandableHeader(label: "addReferral".localized)
                 } content: {
                     CommonTextField(
                         text: $viewModel.referralField.value,
                         placeholder: viewModel.referralField.placeholder ?? .empty,
                         error: $viewModel.referralField.error,
+                        isValid: isValidBinding(for: viewModel.referralField)
                     )
                     .focused($focusedField, equals: .referral)
                 }
@@ -103,89 +169,129 @@ struct VaultSetupScreen: View {
         }
     }
 
-    var emailSection: some View {
-        FormExpandableSection(
-            title: viewModel.emailField.label ?? .empty,
-            isValid: viewModel.emailField.valid,
-            value: viewModel.emailField.value,
-            showValue: true,
-            focusedField: $focusedFieldBinding,
-            focusedFieldEquals: .email
-        ) {
-            focusedFieldBinding = $0 ? .email : .password
-        } content: {
-            VStack(alignment: .leading, spacing: 20) {
-                Text("enterYourEmail".localized)
-                    .font(Theme.fonts.title1)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                Text("enterVaultEmail".localized)
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textTertiary)
+    private var emailStep: some View {
+        VStack(spacing: 20) {
+            stepHeader(
+                title: "enterYourEmail".localized,
+                subtitle: "enterVaultEmail".localized
+            )
 
-                CommonTextField(
-                    text: $viewModel.emailField.value,
-                    placeholder: viewModel.emailField.placeholder ?? .empty,
-                    error: $viewModel.emailField.error,
-                )
-                .focused($focusedField, equals: .email)
+            CommonTextField(
+                text: $viewModel.emailField.value,
+                placeholder: viewModel.emailField.placeholder ?? .empty,
+                error: $viewModel.emailField.error,
+                isValid: isValidBinding(for: viewModel.emailField)
+            )
+            .focused($focusedField, equals: .email)
 #if os(iOS)
-                .textInputAutocapitalization(.never)
-                .keyboardType(.emailAddress)
+            .textInputAutocapitalization(.never)
+            .keyboardType(.emailAddress)
 #endif
-            }
         }
     }
 
-    var passwordSection: some View {
-        FormExpandableSection(
-            title: "password".localized,
-            isValid: viewModel.passwordField.valid && viewModel.passwordConfirmField.valid,
-            value: "",
-            showValue: false,
-            focusedField: $focusedFieldBinding,
-            focusedFieldEquals: [.password, .passwordConfirm]
-        ) {
-            focusedFieldBinding = $0 ? .password : .email
-        } content: {
-            VStack(alignment: .leading, spacing: 20) {
-                InfoBannerView(
-                    description: "PasswordCannotBeReset".localized,
-                    type: .warning,
-                    leadingIcon: "circle-info"
-                )
+    private var passwordStep: some View {
+        VStack(spacing: 20) {
+            passwordStepHeader
 
+            VStack(spacing: 16) {
                 SecureTextField(
                     value: $viewModel.passwordField.value,
                     placeholder: viewModel.passwordField.placeholder,
-                    error: $viewModel.passwordField.error
+                    error: $viewModel.passwordField.error,
+                    isValid: isValidBinding(for: viewModel.passwordField)
                 )
                 .focused($focusedField, equals: .password)
 
                 SecureTextField(
                     value: $viewModel.passwordConfirmField.value,
                     placeholder: viewModel.passwordConfirmField.placeholder,
-                    error: $viewModel.passwordConfirmField.error
+                    error: $viewModel.passwordConfirmField.error,
+                    isValid: isValidBinding(for: viewModel.passwordConfirmField)
                 )
                 .focused($focusedField, equals: .passwordConfirm)
-
-                ExpandableView(isExpanded: $hintExpanded) {
-                    expandableSecondaryFieldHeader(isExpanded: $hintExpanded, label: "addHint".localized)
-                } content: {
-                    CommonTextField(
-                        text: $viewModel.hintField.value,
-                        placeholder: viewModel.hintField.placeholder ?? .empty,
-                        error: $viewModel.hintField.error,
-                    )
-                    .focused($focusedField, equals: .hint)
-                }
             }
         }
     }
 
-    func expandableSecondaryFieldHeader(isExpanded: Binding<Bool>, label: String) -> some View {
+    private func stepHeader(title: String, subtitle: String) -> some View {
+        VStack(spacing: 12) {
+            Text(title)
+                .font(Theme.fonts.title1)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .multilineTextAlignment(.center)
+
+            Text(subtitle)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textTertiary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private var passwordStepHeader: some View {
+        VStack(spacing: 12) {
+            Text("chooseAPassword".localized)
+                .font(Theme.fonts.title1)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .multilineTextAlignment(.center)
+
+            passwordSubtitle
+        }
+    }
+
+    private var passwordSubtitle: some View {
+        var attributed = AttributedString("choosePasswordDescription".localized)
+        attributed.font = Theme.fonts.bodySMedium
+        attributed.foregroundColor = Theme.colors.textTertiary
+
+        if let range = attributed.range(of: "choosePasswordHighlight".localized) {
+            attributed[range].foregroundColor = Theme.colors.textPrimary
+        }
+
+        return (
+            Text(attributed) + Text(" \(Image(systemName: "info.circle.fill"))"
+            )
+            .foregroundStyle(Theme.colors.textPrimary)
+            .font(.callout)
+        )
+            .multilineTextAlignment(.center)
+            .onTapGesture {
+                withAnimation(.interpolatingSpring) {
+                    showPasswordTooltip.toggle()
+                }
+            }
+    }
+
+    private var tooltipOverlay: some View {
+        ZStack(alignment: .top) {
+            Color.clear
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    withAnimation(.interpolatingSpring) {
+                        showPasswordTooltip = false
+                    }
+                }
+
+            Tooltip(text: "choosePasswordTooltip".localized)
+                .padding(.top, 180)
+                .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .top)))
+        }
+    }
+
+    private func isValidBinding(for field: FormField) -> Binding<Bool?> {
+        Binding<Bool?>(
+            get: { field.touched ? field.valid : nil },
+            set: { _ in }
+        )
+    }
+
+    // MARK: - Expandable Header
+
+    private func expandableHeader(label: String) -> some View {
         Button {
             withAnimation(.interpolatingSpring) {
-                isExpanded.wrappedValue.toggle()
+                referralExpanded.toggle()
             }
         } label: {
             HStack {
@@ -194,43 +300,50 @@ struct VaultSetupScreen: View {
                     .font(Theme.fonts.footnote)
                 Spacer()
                 Icon(named: "chevron-down-small", color: Theme.colors.textPrimary, size: 16)
-                    .rotationEffect(.degrees(isExpanded.wrappedValue ? 180 : 0))
+                    .rotationEffect(.degrees(referralExpanded ? 180 : 0))
             }
-            .padding(.bottom, isExpanded.wrappedValue ? 12 : 0)
+            .padding(.bottom, referralExpanded ? 12 : 0)
         }
         .contentShape(Rectangle())
     }
 
-    func onContinue() {
-        if viewModel.showFastSignFields {
-            switch focusedField {
-            case .name, .referral:
-                focusedFieldBinding = .email
-            case .email:
-                focusedFieldBinding = .password
-            case .password:
-                focusedFieldBinding = .passwordConfirm
-            case .passwordConfirm, .hint:
-                break
-            case nil:
-                break
+    // MARK: - Actions
+
+    private func onContinue() {
+        guard isCurrentStepValid else { return }
+
+        if isLastStep {
+            let selectedTab: SetupVaultState = setupType == .fast ? .fast : .secure
+            router.navigate(to: KeygenRoute.peerDiscovery(
+                tssType: tssType,
+                vault: viewModel.getVault(keyImportInput: keyImportInput),
+                selectedTab: selectedTab,
+                fastSignConfig: viewModel.showFastSignFields ? viewModel.fastConfig : nil,
+                keyImportInput: keyImportInput,
+                setupType: setupType
+            ))
+        } else {
+            withAnimation(.interpolatingSpring(mass: 1, stiffness: 100, damping: 15)) {
+                currentStep += 1
+            }
+            focusNextStepField()
+        }
+    }
+
+    private func focusNextStepField() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            switch currentStep {
+            case 1: focusedField = .email
+            case 2: focusedField = .password
+            default: break
             }
         }
-
-        guard viewModel.canContinue else { return }
-
-        let selectedTab: SetupVaultState = setupType == .fast ? .fast : .secure
-        router.navigate(to: KeygenRoute.peerDiscovery(
-            tssType: tssType,
-            vault: viewModel.getVault(keyImportInput: keyImportInput),
-            selectedTab: selectedTab,
-            fastSignConfig: viewModel.showFastSignFields ? viewModel.fastConfig : nil,
-            keyImportInput: keyImportInput,
-            setupType: setupType
-        ))
     }
 }
 
 #Preview {
-    VaultSetupScreen(tssType: .KeyImport, keyImportInput: .init(mnemonic: "test", chainSettings: [ChainImportSetting(chain: .bitcoin)]))
+    VaultSetupScreen(
+        tssType: .KeyImport,
+        keyImportInput: .init(mnemonic: "test", chainSettings: [ChainImportSetting(chain: .bitcoin)])
+    )
 }

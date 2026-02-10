@@ -89,6 +89,11 @@
 "chain" = "Chain";
 "chains" = "Chains";
 "changeEmailAndRestart" = "Change email and restart keygen";
+"chooseAPassword" = "Choose a password";
+"choosePasswordDescription" = "If you want an extra layer of security, choose a password. Password cannot be recovered.";
+"choosePasswordHighlight" = "Password cannot be recovered.";
+"choosePasswordTooltip" = "This occurs because the password is used to locally encrypt the backup file, similar to how a hard drive is encrypted. In the following step, you have the option to add a hint.";
+"createVault" = "Create vault";
 "changeFriendsReferralCode" = "Change friends Referral Code used for swaps";
 "changesInSetup" = "Changes in Setup";
 "changeVault" = "Change Vault";
