@@ -6,8 +6,6 @@
 //
 
 enum OnboardingRoute: Hashable {
-    case onboarding
-
     case importSeedphrase(keyImportInput: KeyImportInput?)
     case keyImportOnboarding
     case chainsSetup(mnemonic: String)

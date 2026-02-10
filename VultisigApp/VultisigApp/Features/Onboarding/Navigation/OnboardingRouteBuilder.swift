@@ -58,11 +58,6 @@ struct OnboardingRouteBuilder {
     }
 
     @ViewBuilder
-    func buildOnboardingScreen() -> some View {
-        OnboardingView()
-    }
-
-    @ViewBuilder
     func buildNewWalletNameScreen(
         tssType: TssType,
         selectedTab: SetupVaultState,

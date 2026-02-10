@@ -33,8 +33,6 @@ struct OnboardingRouter {
             viewBuilder.buildImportVaultShareScreen()
         case .joinKeygen(let vault, let selectedVault):
             viewBuilder.buildJoinKeygenScreen(vault: vault, selectedVault: selectedVault)
-        case .onboarding:
-            viewBuilder.buildOnboardingScreen()
         case .newWalletName(let tssType, let selectedTab, let vault):
             viewBuilder.buildNewWalletNameScreen(
                 tssType: tssType,
