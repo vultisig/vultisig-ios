@@ -30,8 +30,6 @@ struct HomeScreen: View {
     @State var defiShowPortfolioHeader: Bool = false
     @State var showPortfolioHeader: Bool = false
     @State var shouldRefresh: Bool = false
-    @State var showChainMissingAlert: Bool = false
-    @State var missingChainName: String = ""
     @State private var deeplinkError: Error?
 
     @State private var capturedGeometryHeight: CGFloat = 600
@@ -80,17 +78,6 @@ struct HomeScreen: View {
             if newValue != nil {
                 presetValuesForDeeplink()
             }
-        }
-        .alert(
-            NSLocalizedString("chainNotAdded", comment: ""),
-            isPresented: $showChainMissingAlert
-        ) {
-            Button(NSLocalizedString("ok", comment: ""), role: .cancel) {}
-        } message: {
-            Text(
-                String(
-                    format: NSLocalizedString("chainNotAddedMessage", comment: ""), missingChainName
-                ))
         }
         .alert(
             NSLocalizedString("newUpdateAvailable", comment: ""),
@@ -479,11 +466,8 @@ extension HomeScreen {
 
         // Check if user specified a chain/token but it wasn't found in vault
         if coin == nil && deeplinkViewModel.assetChain != nil {
-            // Chain/token missing in vault - alert user
-            missingChainName = deeplinkViewModel.assetChain?.capitalized ?? "Unknown"
-            showChainMissingAlert = true
-
-            // Reset deeplink data to prevent stuck state
+            let chainName = deeplinkViewModel.assetChain?.capitalized ?? "Unknown"
+            deeplinkError = DeeplinkError.chainNotAdded(chainName: chainName)
             deeplinkViewModel.resetData()
             return
         }
@@ -547,31 +531,37 @@ extension HomeScreen {
         appViewModel.set(selectedVault: vault, restartNavigation: false)
 
         var coinToUse: Coin?
-
-        if address.lowercased().contains("maya") {
-            coinToUse = vault.coins.first(where: { $0.chain == .mayaChain && $0.isNativeToken })
-        }
-
-        if coinToUse == nil {
-            for coin in vault.coins where coin.isNativeToken {
-                if coin.chain == .mayaChain {
-                    if AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya") {
-                        coinToUse = coin
-                        break
-                    }
-                } else {
-                    let isValid = coin.chain.coinType.validate(address: address)
-                    if isValid {
-                        coinToUse = coin
-                        break
-                    }
+        var chainToUse: Chain?
+        for chain in Chain.allCases {
+            if chain == .mayaChain {
+                if AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya") {
+                    chainToUse = chain
+                    break
+                }
+            } else {
+                let isValid = chain.coinType.validate(address: address)
+                if isValid {
+                    chainToUse = chain
+                    break
                 }
             }
         }
+        
+        if let chainToUse {
+            coinToUse = vault.coins.first { $0.chain == chainToUse && $0.isNativeToken }
+        } else if address.lowercased().contains("maya") {
+            coinToUse = vault.coins.first(where: { $0.chain == .mayaChain && $0.isNativeToken })
+        }
+
+        if chainToUse == nil {
+            deeplinkError = DeeplinkError.unrelatedQRCode
+            deeplinkViewModel.resetData()
+            return
+        }
 
         if coinToUse == nil {
-            missingChainName = "Unknown"
-            showChainMissingAlert = true
+            let chainName = chainToUse?.name ?? "Unknown"
+            deeplinkError = DeeplinkError.chainNotAdded(chainName: chainName)
             deeplinkViewModel.resetData()
             return
         }
