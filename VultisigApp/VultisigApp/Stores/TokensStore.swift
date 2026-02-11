@@ -1214,8 +1214,8 @@ class TokensStore {
             chain: .mayaChain,
             ticker: "AZTEC",
             logo: "aztec",
-            decimals: 4,
-            priceProviderId: "aztec",
+            decimals: 8,
+            priceProviderId: "",
             contractAddress: "aztec",
             isNativeToken: false
         ),
