@@ -18,7 +18,7 @@ struct VaultSetupScreen: View {
 
     @StateObject var viewModel: VaultSetupViewModel
 
-    @State private var currentStep = 2
+    @State private var currentStep = 0
     @State private var referralExpanded = false
     @State private var showPasswordTooltip = false
     @FocusState private var focusedField: FocusedField?

@@ -64,7 +64,7 @@ struct KeygenRouteBuilder {
         keyImportInput: KeyImportInput?,
         setupType: KeyImportSetupType?
     ) -> some View {
-        PeerDiscoveryView(
+        PeerDiscoveryScreen(
             tssType: tssType,
             vault: vault,
             selectedTab: selectedTab,

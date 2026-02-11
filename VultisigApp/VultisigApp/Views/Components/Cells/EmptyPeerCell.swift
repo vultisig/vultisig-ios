@@ -9,6 +9,9 @@ import SwiftUI
 import RiveRuntime
 
 struct EmptyPeerCell: View {
+    var index: Int? = nil
+    var totalCount: Int? = nil
+
     @State var animationVM: RiveViewModel? = nil
 
     var body: some View {
@@ -22,25 +25,30 @@ struct EmptyPeerCell: View {
     }
 
     var cell: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 12) {
             animation
             text
             Spacer()
+
+            if let index, let totalCount {
+                badge(index: index, totalCount: totalCount)
+            }
         }
-        .padding(16)
-        .frame(height: 70)
-        .cornerRadius(16)
+        .padding(.horizontal, 16)
+        .frame(height: 68)
+        .background(Theme.colors.bgSurface1)
+        .cornerRadius(24)
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .strokeBorder(Theme.colors.border, style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
+            RoundedRectangle(cornerRadius: 24)
+                .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
         .padding(1)
     }
 
     var text: some View {
-        Text(NSLocalizedString("waitingOnDevice", comment: ""))
-            .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+        Text(NSLocalizedString("waitingForDeviceToJoin", comment: ""))
+            .font(Theme.fonts.bodyMMedium)
+            .foregroundStyle(Theme.colors.textSecondary)
             .lineLimit(2)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -50,8 +58,21 @@ struct EmptyPeerCell: View {
             .frame(width: 24, height: 24)
     }
 
+    private func badge(index: Int, totalCount: Int) -> some View {
+        Text("\(index) of \(totalCount)")
+            .font(Theme.fonts.caption12)
+            .foregroundStyle(Theme.colors.textTertiary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(Theme.colors.bgSurface2)
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Theme.colors.border, lineWidth: 1)
+            )
+    }
 }
 
 #Preview {
-    EmptyPeerCell()
+    EmptyPeerCell(index: 3, totalCount: 3)
 }

@@ -4,9 +4,8 @@
 //
 
 import SwiftUI
-import RiveRuntime
 
-struct PeerDiscoveryView: View {
+struct PeerDiscoveryScreen: View {
     let tssType: TssType
     let vault: Vault
     let selectedTab: SetupVaultState
@@ -46,54 +45,131 @@ struct PeerDiscoveryView: View {
 
 #if os(iOS)
     @State var orientation = UIDevice.current.orientation
+    private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 #endif
-
-    @State var animationVM: RiveViewModel? = nil
-
-    let adaptiveColumns = [
-        GridItem(.adaptive(minimum: 350, maximum: 500), spacing: 12),
-        GridItem(.adaptive(minimum: 350, maximum: 500), spacing: 12)
-    ]
-
-    let adaptiveColumnsMac = [
-        GridItem(.adaptive(minimum: 400, maximum: 800), spacing: 12)
-    ]
 
     var localModeAvailable: Bool { tssType != .KeyImport }
 
-    var body: some View {
-        content
-            .onLoad {
-                animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
-                viewModel.setData(
-                    vault: vault,
-                    tssType: tssType,
-                    state: selectedTab,
-                    participantDiscovery: participantDiscovery,
-                    fastSignConfig: fastSignConfig,
-                    chains: keyImportInput?.chains
-                )
-                setData()
-                viewModel.startDiscovery()
-                if selectedTab == .fast {
-                    hideBackButton = true
+    var isShareButtonVisible: Bool {
+        viewModel.status == .WaitingForDevices && selectedTab.hasOtherDevices
+    }
+
+    var qrCodeSize: CGFloat {
+#if os(iOS)
+        screenHeight / 3.5
+#else
+        min(screenWidth / 2.5, screenHeight / 2.5)
+#endif
+    }
+
+    var totalDeviceCount: Int {
+        switch tssType {
+        case .Keygen:
+            switch selectedTab {
+            case .fast:
+                return 2
+            case .active:
+                return 4
+            case .secure:
+                return 3
+            }
+        case .Reshare:
+            return vault.signers.count
+        case .Migrate:
+            return vault.signers.count
+        case .KeyImport:
+            if let setupType {
+                switch setupType {
+                case .fast:
+                    return 2
+                case .secure(let numberOfDevices):
+                    return numberOfDevices
                 }
             }
-            .onDisappear {
-                viewModel.stopMediator()
-                animationVM?.stop()
+            return 2
+        }
+    }
+
+    var isInternetMode: Bool {
+        viewModel.selectedNetwork == .Internet
+    }
+
+    var body: some View {
+        GeometryReader { proxy in
+            Screen(
+                showNavigationBar: false,
+                edgeInsets: ScreenEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0),
+                backgroundType: .gradient
+            ) {
+                states
             }
-            .onLoad {
-                showInfo()
-            }
-            .crossPlatformSheet(isPresented: $showInfoSheet) {
-                PeerDiscoveryInfoBanner(isPresented: $showInfoSheet)
-                    .presentationDetents([.height(450)])
-            }
-            .onChange(of: viewModel.selectedNetwork) {
-                viewModel.restartParticipantDiscovery()
+            .onAppear {
+                screenWidth = proxy.size.width
+                screenHeight = proxy.size.height
                 setData()
             }
+#if os(macOS)
+            .onChange(of: proxy.size.width) { _, _ in
+                screenWidth = proxy.size.width
+            }
+            .onChange(of: proxy.size.height) { _, _ in
+                screenHeight = proxy.size.height
+            }
+#endif
+        }
+        .crossPlatformToolbar("", showsBackButton: !hideBackButton) {
+            CustomToolbarItem(placement: .trailing) {
+                if isShareButtonVisible {
+                    NavigationQRShareButton(
+                        vault: vault,
+                        type: .Keygen,
+                        viewModel: shareSheetViewModel
+                    )
+                }
+            }
+        }
+        .navigationBarBackButtonHidden(hideBackButton)
+#if os(iOS)
+        .detectOrientation($orientation)
+        .onChange(of: orientation) { _, _ in
+            setData()
+        }
+        .onAppear {
+            UIApplication.shared.isIdleTimerDisabled = true
+        }
+        .onDisappear {
+            UIApplication.shared.isIdleTimerDisabled = false
+        }
+#endif
+        .onLoad {
+            viewModel.setData(
+                vault: vault,
+                tssType: tssType,
+                state: selectedTab,
+                participantDiscovery: participantDiscovery,
+                fastSignConfig: fastSignConfig,
+                chains: keyImportInput?.chains
+            )
+            setData()
+            viewModel.startDiscovery()
+            if selectedTab == .fast {
+                hideBackButton = true
+            }
+        }
+        .onDisappear {
+            viewModel.stopMediator()
+        }
+        .onLoad {
+            showInfo()
+        }
+        .crossPlatformSheet(isPresented: $showInfoSheet) {
+            PeerDiscoveryInfoBanner(isPresented: $showInfoSheet)
+                .presentationDetents([.height(450)])
+        }
+        .onChange(of: viewModel.selectedNetwork) {
+            viewModel.restartParticipantDiscovery()
+            setData()
+        }
     }
 
     var states: some View {
@@ -101,10 +177,8 @@ struct PeerDiscoveryView: View {
             switch (viewModel.status, selectedTab.hasOtherDevices) {
             case (.WaitingForDevices, false):
                 if viewModel.isLookingForDevices {
-                    /// Wait until server join to go to keygen view
                     lookingForDevices
                 } else {
-                    /// Direct to Keygen for FastVaults
                     keygenView
                 }
             case (.WaitingForDevices, true):
@@ -122,26 +196,147 @@ struct PeerDiscoveryView: View {
 
     var waitingForDevices: some View {
         VStack(spacing: 0) {
-            views
+            portraitContent
             bottomButton
             switchLink
                 .showIf(localModeAvailable)
         }
     }
 
-    var views: some View {
-        portraitContent
-    }
-
-    var qrCode: some View {
-        VStack(spacing: 16) {
-            paringBarcode
+    var portraitContent: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                paringBarcode
+                statusText
+                deviceList
+            }
         }
     }
 
-    var list: some View {
-        scrollList
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+    var paringBarcode: some View {
+        qrCodeImage?
+            .resizable()
+            .frame(maxWidth: qrCodeSize, maxHeight: qrCodeSize)
+            .padding(20)
+            .background(Theme.colors.bgSurface1)
+            .cornerRadius(33)
+            .overlay(
+                RoundedRectangle(cornerRadius: 33)
+                    .stroke(
+                        isInternetMode
+                            ? AnyShapeStyle(LinearGradient.qrBorderGradient)
+                            : AnyShapeStyle(Theme.colors.borderLight),
+                        lineWidth: 8
+                    )
+            )
+    }
+
+    var statusText: some View {
+        VStack(spacing: 4) {
+            if isInternetMode {
+                Text(NSLocalizedString("waitingForDevicesToConnect", comment: ""))
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textSecondary)
+            } else {
+                Text(NSLocalizedString("localModeWaitingOnDevices", comment: ""))
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textSecondary)
+
+                Text(NSLocalizedString("localModeDescription", comment: ""))
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textTertiary)
+            }
+        }
+        .multilineTextAlignment(.center)
+        .padding(.horizontal, 16)
+    }
+
+    var deviceList: some View {
+        VStack(spacing: 12) {
+#if os(iOS)
+            ThisDevicePeerCell(
+                deviceName: idiom == .phone ? "iPhone" : "iPad",
+                index: 1,
+                totalCount: totalDeviceCount
+            )
+#else
+            ThisDevicePeerCell(
+                deviceName: "Mac",
+                index: 1,
+                totalCount: totalDeviceCount
+            )
+#endif
+
+            devices
+
+            if let nextEmptyIndex = nextEmptySlotIndex {
+                EmptyPeerCell(
+                    index: nextEmptyIndex,
+                    totalCount: totalDeviceCount
+                )
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: viewModel.selections)
+        .frame(maxWidth: .infinity)
+#if os(iOS)
+        .padding(.horizontal, idiom == .pad ? 24 : 16)
+#else
+        .padding(.horizontal, 24)
+        .padding(.top, 8)
+#endif
+    }
+
+    var devices: some View {
+        ForEach(
+            Array(participantDiscovery.peersFound.enumerated()),
+            id: \.element
+        ) { offset, peer in
+            Button {
+                viewModel.handleSelection(peer)
+            } label: {
+                PeerCell(
+                    id: peer,
+                    isSelected: viewModel.selections.contains(peer),
+                    index: offset + 2,
+                    totalCount: totalDeviceCount
+                )
+            }
+        }
+    }
+
+    var nextEmptySlotIndex: Int? {
+        let filledCount = 1 + participantDiscovery.peersFound.count
+        guard filledCount < totalDeviceCount else { return nil }
+        return filledCount + 1
+    }
+
+    @ViewBuilder
+    var bottomButton: some View {
+        let isButtonDisabled = disableContinueButton()
+
+        PrimaryButton(title: isButtonDisabled ? "waitingOnDevices..." : "next") {
+            viewModel.startKeygen()
+        }
+        .padding(.horizontal, 40)
+        .padding(.top, 20)
+#if os(iOS)
+        .padding(.bottom, idiom == .phone ? 10 : 30)
+#else
+        .padding(.bottom, 10)
+#endif
+        .disabled(isButtonDisabled)
+#if os(macOS)
+        .padding(.bottom, 10)
+#endif
+        .animation(.easeInOut(duration: 0.2), value: isButtonDisabled)
+    }
+
+    var switchLink: some View {
+        SwitchToLocalLink(isForKeygen: true, selectedNetwork: $viewModel.selectedNetwork)
+            .disabled(viewModel.isLoading)
+#if os(macOS)
+            .padding(.bottom, 24)
+#endif
     }
 
     var lookingForDevices: some View {
@@ -173,7 +368,6 @@ struct PeerDiscoveryView: View {
     }
 
     var showWaitingOnDevice: Bool {
-        // Key import requires setupType, and this screen shouldn't be shown for fast
         guard
             let setupType,
             case let .secure(numberOfDevices) = setupType
@@ -194,7 +388,7 @@ struct PeerDiscoveryView: View {
             vault: viewModel.vault,
             tssType: tssType,
             keygenCommittee: viewModel.keygenCommittee,
-            vaultOldCommittee: viewModel.vault.signers.filter { viewModel.selections.contains($0)},
+            vaultOldCommittee: viewModel.vault.signers.filter { viewModel.selections.contains($0) },
             mediatorURL: viewModel.serverAddr,
             sessionID: viewModel.sessionID,
             encryptionKeyHex: viewModel.encryptionKeyHex ?? "",
@@ -215,22 +409,6 @@ struct PeerDiscoveryView: View {
         }
     }
 
-    var listTitle: some View {
-        HStack(spacing: 8) {
-            Text(NSLocalizedString("devices", comment: ""))
-
-            if tssType == .Migrate {
-                Text("(\(viewModel.selections.count)/\(vault.signers.count))")
-            } else {
-                Text("(\(viewModel.selections.count) \(NSLocalizedString("Selected", comment: "")))")
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .font(Theme.fonts.title2)
-        .foregroundColor(Theme.colors.textPrimary)
-        .animation(.easeInOut, value: viewModel.selections)
-    }
-
     private func showInfo() {
         guard selectedTab == .secure else {
             showInfoSheet = false
@@ -248,20 +426,33 @@ struct PeerDiscoveryView: View {
             showInfoSheet = false
         }
     }
-    func getHeaderTitle() -> String {
-        if viewModel.status == .WaitingForDevices {
-            if selectedTab == .fast {
-                return ""
-            }
-            return tssType == .Migrate ? "" : "scanQR"
-        } else if tssType == .Migrate {
-            return ""
-        } else {
-            return ""
+
+    func setData() {
+#if os(iOS)
+        guard self.qrCodeImage == nil, qrCodeSize > 0 else { return }
+        guard let (qrCodeString, qrCodeImage) = viewModel.getQRCodeData(
+            size: qrCodeSize, displayScale: displayScale
+        ) else {
+            return
         }
+#else
+        guard let (qrCodeString, qrCodeImage) = viewModel.getQRCodeData(
+            size: 500, displayScale: displayScale
+        ) else {
+            return
+        }
+#endif
+
+        self.qrCodeImage = qrCodeImage
+        shareSheetViewModel.render(
+            qrCodeImage: qrCodeImage,
+            qrCodeData: qrCodeString,
+            displayScale: displayScale,
+            type: .Keygen
+        )
     }
 }
 
 #Preview {
-    PeerDiscoveryView(tssType: .Keygen, vault: Vault.example, selectedTab: .fast, fastSignConfig: nil)
+    PeerDiscoveryScreen(tssType: .Keygen, vault: Vault.example, selectedTab: .fast, fastSignConfig: nil)
 }

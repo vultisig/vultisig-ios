@@ -12,42 +12,67 @@ struct SwitchToLocalLink: View {
     @Binding var selectedNetwork: NetworkPromptType
 
     var body: some View {
+        if selectedNetwork == .Internet {
+            internetModeView
+        } else {
+            localModeView
+        }
+    }
+
+    var internetModeView: some View {
+        VStack(spacing: 8) {
+            if isForKeygen {
+                Text(NSLocalizedString("wantToCreateVaultPrivately", comment: ""))
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textTertiary)
+            } else {
+                Text(NSLocalizedString("wantToSignPrivately", comment: ""))
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textTertiary)
+            }
+
+            modeButton(
+                title: NSLocalizedString("useLocalMode", comment: ""),
+                background: Color(red: 0.07, green: 0.16, blue: 0.29),
+                borderColor: .white.opacity(0.03)
+            )
+        }
+    }
+
+    var localModeView: some View {
+        VStack(spacing: 8) {
+            Text(NSLocalizedString("switchBackToInternetMode", comment: ""))
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            modeButton(
+                title: NSLocalizedString("useStandardMode", comment: ""),
+                background: Theme.colors.bgButtonTertiary,
+                borderColor: .clear
+            )
+        }
+    }
+
+    private func modeButton(
+        title: String,
+        background: Color,
+        borderColor: Color
+    ) -> some View {
         Button {
             toggleNetwork()
         } label: {
-            label
+            Text(title)
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(background)
+                .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(borderColor, lineWidth: 1)
+                )
         }
-    }
-
-    var label: some View {
-        ZStack {
-            if selectedNetwork == .Internet {
-                switchToLocalLabel
-            } else {
-                switchToInternetLabel
-            }
-        }
-        .font(Theme.fonts.caption12)
-        .frame(maxWidth: .infinity, alignment: .center)
-    }
-
-    var switchToLocalLabel: some View {
-        HStack {
-            if isForKeygen {
-                Text(NSLocalizedString("wantToCreateVaultPrivately", comment: ""))
-            } else {
-                Text(NSLocalizedString("wantToSignPrivately", comment: ""))
-            }
-
-            Text(NSLocalizedString("switchToLocalMode", comment: ""))
-            .underline()
-        }
-    }
-
-    var switchToInternetLabel: some View {
-        Text(NSLocalizedString("switchBackToInternetMode", comment: ""))
-        .underline()
-        .font(Theme.fonts.caption12)
     }
 
     private func toggleNetwork() {
@@ -60,5 +85,8 @@ struct SwitchToLocalLink: View {
 }
 
 #Preview {
-    SwitchToLocalLink(isForKeygen: true, selectedNetwork: .constant(.Internet))
+    VStack(spacing: 40) {
+        SwitchToLocalLink(isForKeygen: true, selectedNetwork: .constant(.Internet))
+        SwitchToLocalLink(isForKeygen: true, selectedNetwork: .constant(.Local))
+    }
 }

@@ -70,7 +70,7 @@ struct OnboardingRouteBuilder {
                 selectedTab: selectedTab
             )
         } else {
-            PeerDiscoveryView(
+            PeerDiscoveryScreen(
                 tssType: tssType,
                 vault: vault,
                 selectedTab: selectedTab,
