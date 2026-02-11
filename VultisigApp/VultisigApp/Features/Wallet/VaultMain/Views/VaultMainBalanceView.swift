@@ -19,15 +19,17 @@ struct VaultMainBalanceView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
 
     var body: some View {
-        Button {
-            homeViewModel.hideVaultBalance.toggle()
-        } label: {
-            VStack(spacing: spacing) {
-                balanceLabel
+        VStack(spacing: spacing) {
+            balanceLabel
+                .allowsHitTesting(false)
+            Button {
+                homeViewModel.hideVaultBalance.toggle()
+            } label: {
                 toggleBalanceVisibilityButton
             }
-            .frame(maxWidth: .infinity)
+            .buttonStyle(PlainButtonStyle())
         }
+        .frame(maxWidth: .infinity)
     }
 
     var balanceLabel: some View {
