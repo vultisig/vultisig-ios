@@ -49,7 +49,7 @@ struct VaultBackupScreen: View {
                     animation?.view()
                     VaultSetupStepIcon(
                         state: .active,
-                        icon: "cloud-upload"
+                        icon: "cloud-upload-filled"
                     )
                     VStack(spacing: 16) {
                         titleView
