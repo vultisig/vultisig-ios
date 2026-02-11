@@ -50,6 +50,8 @@
 "backupGuide" = "Backup guide";
 "backupNotNeededDisclaimer" = "Your backup device is not needed unless you lose one of your main devices.";
 "backupNow" = "Backup Now";
+"backupSaveCheckbox" = "I understand how to save this backup";
+"backupSaveButton" = "Save backup";
 "backupNowCheckbox" = "I understand that by skipping the backup I may lose access to my funds.";
 "backupNowSubtitle" = "Each device has its own unique vault share, which are needed for recovery";
 "backupNowTitle" = "Backups need to be done on every device in Vultisig";
@@ -64,8 +66,10 @@
 "backupPart1" = "Backup Share 1";
 "backupPart2" = "Backup Share 2";
 "backupPasswordDisclaimer" = "Never store Vault Shares from different devices in the same location";
-"backupSetupSubtitle" = "Online storage is recommended and safe -\nvault shares are designed for this.";
-"backupSetupTitle" = "Backup your vault\nshare online";
+"backupSetupSubtitle" = "Export this backup file, then save it to the cloud. Use a different cloud service or account for each backup. When you're finished, delete the file from this device.";
+"backupSetupSubtitleHighlight" = "Use a different cloud service or account for each backup. When you're finished, delete the file from this device.";
+"backupSetupTitle" = "Save backup to the cloud";
+"backupSetupTitleSecure" = "Save backup %d of %d to the cloud";
 "backupShareSent" = "Backup share sent!";
 "backupVault" = "Backup your vault share";
 "backupVaultOnEveryDeviceIndividually!" = "Backup your vault on every device individually!";

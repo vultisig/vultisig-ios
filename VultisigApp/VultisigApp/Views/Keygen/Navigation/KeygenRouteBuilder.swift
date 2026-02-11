@@ -33,7 +33,7 @@ struct KeygenRouteBuilder {
         backupType: VaultBackupType,
         isNewVault: Bool
     ) -> some View {
-        VaultBackupNowScreen(
+        VaultBackupScreen(
             tssType: tssType,
             backupType: backupType,
             isNewVault: isNewVault
