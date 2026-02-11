@@ -183,8 +183,8 @@
 "enableDKLS" = "DKLS aktivieren";
 "EnglishUK" = "Englisch (UK)";
 "enter4Characters" = "Gib 4 Zeichen ein";
-"enter5DigitVerificationCode" = "Geben Sie den 4-stelligen Code ein, den wir Ihnen per E-Mail gesendet haben";
-"enter5DigitVerificationCodeDescription" = "Dieser Code bestätigt, dass Sie Ihren Tresoranteil per E-Mail erhalten haben";
+"enter5DigitVerificationCode" = "4-stelliger Code per E-Mail erhalten";
+"enter5DigitVerificationCodeDescription" = "Dies aktiviert den Co-Unterzeichner";
 "enterAddress" = "Adresse eingeben";
 "enterAddressHere" = "Adresse hier eingeben";
 "enterAmount" = "Menge eingeben";

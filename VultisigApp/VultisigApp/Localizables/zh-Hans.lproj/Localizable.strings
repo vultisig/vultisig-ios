@@ -185,8 +185,8 @@
 "enableDKLS" = "启用 DKLS";
 "EnglishUK" = "英语（英国）";
 "enter4Characters" = "输入最多 4 个字符";
-"enter5DigitVerificationCode" = "输入我们通过电子邮件发送给您的 4 位验证码";
-"enter5DigitVerificationCodeDescription" = "此代码将确认您已通过电子邮件收到保险库份额";
+"enter5DigitVerificationCode" = "通过电子邮件收到的4位验证码";
+"enter5DigitVerificationCodeDescription" = "这将激活联合签名者";
 "enterAddress" = "输入地址";
 "enterAddressHere" = "在此输入地址";
 "enterAmount" = "输入金额";

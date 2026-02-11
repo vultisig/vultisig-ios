@@ -183,8 +183,8 @@
 "enableDKLS" = "Omogući DKLS";
 "EnglishUK" = "Engleski (UK)";
 "enter4Characters" = "Unesi 4 znaka";
-"enter5DigitVerificationCode" = "Unesite 4-znamenkasti kod koji smo vam poslali e-mailom";
-"enter5DigitVerificationCodeDescription" = "Ovaj kod potvrđuje da ste primili svoj vault dio putem e-maila";
+"enter5DigitVerificationCode" = "4-znamenkasti kod primljen putem e-maila";
+"enter5DigitVerificationCodeDescription" = "Ovo će aktivirati su-potpisnika";
 "enterAddress" = "Unesite adresu";
 "enterAddressHere" = "Unesite adresu ovdje";
 "enterAmount" = "Unesite iznos";

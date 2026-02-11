@@ -183,8 +183,8 @@
 "enableDKLS" = "Abilita DKLS";
 "EnglishUK" = "Inglese (UK)";
 "enter4Characters" = "Inserisci 4 caratteri";
-"enter5DigitVerificationCode" = "Inserisci il codice di 4 cifre che ti abbiamo inviato via e-mail";
-"enter5DigitVerificationCodeDescription" = "Questo codice confermerà che hai ricevuto la tua quota di vault via e-mail";
+"enter5DigitVerificationCode" = "Codice a 4 cifre ricevuto via email";
+"enter5DigitVerificationCodeDescription" = "Questo attiverà il co-firmatario";
 "enterAddress" = "Inserisci Indirizzo";
 "enterAddressHere" = "Inserisci l'indirizzo qui";
 "enterAmount" = "Inserisci Quantità";

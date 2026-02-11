@@ -195,8 +195,8 @@
 "enableDKLS" = "Enable DKLS";
 "EnglishUK" = "English (UK)";
 "enter4Characters" = "Enter up to 4 characters";
-"enter5DigitVerificationCode" = "Enter the 4 digit code we emailed you";
-"enter5DigitVerificationCodeDescription" = "This code will confirm that you’ve received your vault share via email";
+"enter5DigitVerificationCode" = "4-digit code received via email";
+"enter5DigitVerificationCodeDescription" = "This will activate the co-signer";
 "enterAddress" = "Enter Address";
 "enterAddressHere" = "Enter address here";
 "enterAmount" = "Enter Amount";
@@ -327,6 +327,8 @@
 "importVault" = "Import Vault";
 "importYourVaultShare" = "Import your vault share";
 "incorrectCode" = "Incorrect Code";
+"incorrectCodeTryAgain" = "Incorrect code. Try again.";
+
 "incorrectPassword" = "Incorrect Password";
 "incorrectPasswordTryAgain" = "Incorrect password, please try again";
 "informationNote" = "Keep devices on the same WiFi Network, correct vault and pair devices.\nMake sure no other devices are running Vultisig.";
@@ -815,6 +817,7 @@
 "updateNow" = "Update Now";
 "downloadViaWebsite" = "Download via Website";
 "upgradeNow" = "Upgrade now";
+"useDifferentEmail" = "Use a different email";
 "upgradeYourVault" = "Upgrade your vault";
 "upgradeYourVaultNow" = "Upgrade your vault now";
 "upgradeYourVaultTitle1" = "Upgrade this vault to the";

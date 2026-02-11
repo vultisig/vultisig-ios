@@ -183,8 +183,8 @@
 "enableDKLS" = "Ativar DKLS";
 "EnglishUK" = "Inglês (UK)";
 "enter4Characters" = "Digite 4 caracteres";
-"enter5DigitVerificationCode" = "Digite o código de 4 dígitos que enviamos por e-mail";
-"enter5DigitVerificationCodeDescription" = "Este código confirmará que você recebeu sua parte do cofre por e-mail";
+"enter5DigitVerificationCode" = "Código de 4 dígitos recebido por email";
+"enter5DigitVerificationCodeDescription" = "Isso ativará o co-assinante";
 "enterAddress" = "Inserir Endereço";
 "enterAddressHere" = "Digite o endereço aqui";
 "enterAmount" = "Inserir Quantidade";
