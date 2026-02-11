@@ -16,6 +16,7 @@ struct CustomizeChainsActionBanner: View {
             title: "noChainsFound".localized,
             subtitle: "noChainsFoundSubtitle".localized,
             buttonTitle: "customizeChains".localized,
+            buttonIcon: "crypto-wallet-pen",
             showsActionButton: showButton,
             action: onCustomizeChains
         )

@@ -230,7 +230,7 @@ struct ImportSeedphraseScreen: View {
         )
 
         // Generate addresses for all enabled chains and derivation paths
-        let chainsToCheck = Chain.enabledChains
+        let chainsToCheck = Chain.keyImportEnabledChains
         let derivationPaths: [DerivationPath] = [.default, .phantom]
 
         for chain in chainsToCheck {

@@ -546,21 +546,10 @@ extension Chain {
         }
     }
 
-    static var enabledChains: [Chain] {
+    static var keyImportEnabledChains: [Chain] {
         allCases.filter {
             switch $0 {
-            case .thorChainStagenet, .polygon:
-                return false
-            default:
-                return true
-            }
-        }
-    }
-
-    static var keyImportEnabledChains: [Chain] {
-        enabledChains.filter {
-            switch $0 {
-            case .cardano:
+            case .cardano, .thorChainStagenet, .polygonV2:
                 return false
             default:
                 return true
