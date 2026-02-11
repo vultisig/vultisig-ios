@@ -546,7 +546,7 @@ extension HomeScreen {
                 }
             }
         }
-        
+
         if let chainToUse {
             coinToUse = vault.coins.first { $0.chain == chainToUse && $0.isNativeToken }
         } else if address.lowercased().contains("maya") {

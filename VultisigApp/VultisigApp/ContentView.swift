@@ -76,7 +76,7 @@ struct ContentView: View {
 
             // Resume polling for pending transactions on app launch
             Task {
-                await BackgroundTransactionPoller.shared.resumePendingTransactions()
+                BackgroundTransactionPoller.shared.resumePendingTransactions()
             }
         }
         .onChange(of: appViewModel.selectedVault) { _, _ in
