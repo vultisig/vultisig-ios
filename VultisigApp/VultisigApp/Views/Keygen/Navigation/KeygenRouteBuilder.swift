@@ -170,4 +170,23 @@ struct KeygenRouteBuilder {
             sendTx?.toAddress = address
         }
     }
+
+    @ViewBuilder
+    func buildReviewYourVaultsScreen(
+        vault: Vault,
+        tssType: TssType,
+        keygenCommittee: [String],
+        email: String?,
+        keyImportInput: KeyImportInput?,
+        isInitiateDevice: Bool
+    ) -> some View {
+        ReviewYourVaultsScreen(
+            vault: vault,
+            tssType: tssType,
+            keygenCommittee: keygenCommittee,
+            email: email,
+            keyImportInput: keyImportInput,
+            isInitiateDevice: isInitiateDevice
+        )
+    }
 }

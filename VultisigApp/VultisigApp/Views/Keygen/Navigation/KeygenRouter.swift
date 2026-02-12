@@ -84,6 +84,15 @@ struct KeygenRouter {
                 selectedVault: selectedVault,
                 sendTx: sendTx
             )
+        case .reviewYourVaults(let vault, let tssType, let keygenCommittee, let email, let keyImportInput, let isInitiateDevice):
+            viewBuilder.buildReviewYourVaultsScreen(
+                vault: vault,
+                tssType: tssType,
+                keygenCommittee: keygenCommittee,
+                email: email,
+                keyImportInput: keyImportInput,
+                isInitiateDevice: isInitiateDevice
+            )
         }
     }
 }

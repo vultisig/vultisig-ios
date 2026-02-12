@@ -90,16 +90,23 @@ struct KeygenView: View {
                 isNewVault: true
             ))
         case .KeyImport, .Keygen, .Reshare:
-            let setupType: KeyImportSetupType = fastSignConfig != nil
-                ? .fast
-                : .secure(numberOfDevices: keygenCommittee.count)
-
-            router.navigate(to: KeygenRoute.keyImportOverview(
-                vault: vault,
-                email: fastSignConfig?.email,
-                keyImportInput: keyImportInput,
-                setupType: setupType
-            ))
+            if fastSignConfig != nil {
+                router.navigate(to: KeygenRoute.keyImportOverview(
+                    vault: vault,
+                    email: fastSignConfig?.email,
+                    keyImportInput: keyImportInput,
+                    setupType: .fast
+                ))
+            } else {
+                router.navigate(to: KeygenRoute.reviewYourVaults(
+                    vault: vault,
+                    tssType: tssType,
+                    keygenCommittee: keygenCommittee,
+                    email: nil,
+                    keyImportInput: keyImportInput,
+                    isInitiateDevice: isInitiateDevice
+                ))
+            }
         }
     }
 

@@ -19,4 +19,12 @@ enum KeygenRoute: Hashable {
     case macScanner(type: DeeplinkFlowType, sendTx: SendTransaction, selectedVault: Vault?)
     case macAddressScanner(selectedVault: Vault?, resultId: UUID)
     case generalQRImport(type: DeeplinkFlowType, selectedVault: Vault?, sendTx: SendTransaction?)
+    case reviewYourVaults(
+        vault: Vault,
+        tssType: TssType,
+        keygenCommittee: [String],
+        email: String?,
+        keyImportInput: KeyImportInput?,
+        isInitiateDevice: Bool
+    )
 }

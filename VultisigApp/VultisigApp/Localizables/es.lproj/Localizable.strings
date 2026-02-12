@@ -50,6 +50,8 @@
 "backupGuide" = "Guía de respaldo";
 "backupNotNeededDisclaimer" = "Tu dispositivo de respaldo no es necesario a menos que pierdas uno de tus dispositivos principales.";
 "backupNow" = "Realiza copia de seguridad ahora";
+"backupSaveCheckbox" = "Entiendo cómo guardar este respaldo";
+"backupSaveButton" = "Guardar respaldo";
 "backupNowCheckbox" = "Entiendo que al omitir la copia de seguridad, puedo perder el acceso a mis fondos.";
 "backupNowSubtitle" = "Cada dispositivo tiene su propia parte única de la bóveda, necesaria para la recuperación";
 "backupNowTitle" = "Es necesario realizar copias de seguridad en cada dispositivo en Vultisig";
@@ -64,8 +66,10 @@
 "backupPart1" = "Copia de Seguridad 1";
 "backupPart2" = "Copia de Seguridad 2";
 "backupPasswordDisclaimer" = "Nunca almacene las partes del Vault de diferentes dispositivos en la misma ubicación";
-"backupSetupSubtitle" = "El almacenamiento en línea es recomendado y seguro –\nlos fragmentos de la bóveda están diseñados para ello.";
-"backupSetupTitle" = "Realiza copia de seguridad de tu bóveda\ncompártela online";
+"backupSetupSubtitle" = "Exporta este archivo de respaldo y guárdalo en la nube. Usa un servicio o cuenta de nube diferente para cada respaldo. Cuando termines, elimina el archivo de este dispositivo.";
+"backupSetupSubtitleHighlight" = "Usa un servicio o cuenta de nube diferente para cada respaldo. Cuando termines, elimina el archivo de este dispositivo.";
+"backupSetupTitle" = "Guardar respaldo en la nube";
+"backupSetupTitleSecure" = "Guardar respaldo %d de %d en la nube";
 "backupShareSent" = "¡Comparación de copias de seguridad enviada!";
 "backupVault" = "Respaldar tu caja fuerte";
 "backupVaultOnEveryDeviceIndividually!" = "¡Realice una copia de seguridad de su bóveda en cada dispositivo individualmente!";
@@ -89,6 +93,11 @@
 "chain" = "Cadena";
 "chains" = "Cadenas";
 "changeEmailAndRestart" = "Cambiar correo electrónico y reiniciar keygen";
+"chooseAPassword" = "Elige una contraseña";
+"choosePasswordDescription" = "Si deseas una capa adicional de seguridad, elige una contraseña. La contraseña no se puede recuperar.";
+"choosePasswordHighlight" = "La contraseña no se puede recuperar.";
+"choosePasswordTooltip" = "Esto ocurre porque la contraseña se usa para encriptar localmente el archivo de respaldo, similar a cómo se encripta un disco duro. En el siguiente paso, tienes la opción de agregar una pista.";
+"createVault" = "Crear bóveda";
 "changeFriendsReferralCode" = "Cambiar el código de referencia de amigos utilizado para swaps";
 "changesInSetup" = "Cambios en la Configuración";
 "changeVault" = "Cambiar Caja Fuerte";
@@ -109,8 +118,11 @@
 "coinAddressCopied" = "Dirección de moneda copiada";
 "collectedRewards" = "Recompensas recolectadas";
 "complete" = "Completo";
+"congratsExclamation" = "¡Felicidades!";
+"congratsSummaryDescription" = "¡Todo listo! Mantienes el control de cada transacción.";
 "confirm" = "Confirmar";
 "confirmToSign" = "Confirmar para firmar el mensaje?";
+"connected" = "Conectado";
 "connectingWithServer..." = "Conectando con el servidor...";
 "continue" = "Continuar";
 "copyAddress" = "Copiar dirección";
@@ -315,6 +327,7 @@
 "importVault" = "Importar Vault";
 "importYourVaultShare" = "Importa tu parte del vault";
 "incorrectCode" = "Código incorrecto";
+"incorrectCodeTryAgain" = "Código incorrecto. Inténtalo de nuevo.";
 "incorrectPassword" = "Contraseña incorrecta";
 "incorrectPasswordTryAgain" = "Contraseña incorrecta, inténtalo de nuevo";
 "informationNote" = "Mantenga dispositivos en la misma red WiFi, dispositivos de bóveda y par correcto.";
@@ -397,10 +410,14 @@
 "loginUsingFaceID" = "Iniciar sesión usando Face ID";
 "loginUsingOpticID" = "Iniciar sesión con Optic ID";
 "loginUsingTouchID" = "Iniciar sesión con Touch ID";
+"localModeDescription" = "Descripción breve del modo local";
+"localModeWaitingOnDevices" = "Modo local, esperando dispositivos...";
+"looksGood" = "Se ve bien";
 "lookingForDevices" = "Buscando dispositivos... ";
 "madeVaultBackupPrompt" = "He hecho una copia de seguridad del almacén";
 "main" = "Principal";
 "mainDevice" = "Dispositivo Principal";
+"makeSureCorrectDevices" = "Asegúrate de que estos son los dispositivos correctos que has añadido:";
 "mainVault" = "Bóveda principal";
 "maxTotalFee" = "Tarifa total máx.";
 "memo" = "Memorándum";
@@ -595,6 +612,7 @@
 "restart" = "Por favor, reinicie la aplicación para aplicar los nuevos ajustes de idioma.";
 "retry" = "Reintentar";
 "reviewConditions" = "Revisar Condiciones";
+"reviewYourVaultDevices" = "Revisa los dispositivos de tu bóveda";
 "reviewConditionsMessage" = "Por favor, revise y acepte todas las condiciones listadas.";
 "rippleExistentialDepositError" = "XRP requiere un saldo mínimo de 1 XRP. La blockchain bloqueará cualquier transacción que reduzca el saldo por debajo de esa cantidad. Para enviar el saldo completo, la cuenta debe ser eliminada.";
 "sameDeviceShareError" = "Misma compartir bóveda";
@@ -717,6 +735,7 @@
 "signCustomMessage" = "Firmar mensaje personalizado";
 "skip" = "Saltar";
 "skipPassword" = "Omitir contraseña";
+"somethingsWrong" = "Algo está mal";
 "somethingWentWrongTryAgain" = "Algo salió mal, por favor intenta de nuevo.";
 "soon" = "Próximamente";
 "Spanish" = "Español";
@@ -760,7 +779,7 @@
 "swapErrorSameAssetTitle" = "Mismo Activo";
 "swapErrorSameAssetDescription" = "No se puede intercambiar entre el mismo activo. Por favor, selecciona activos diferentes.";
 "noLiquidityPool" = "No hay pool de liquidez disponible para este par de tokens. Este activo puede no estar soportado.";
-"switchBackToInternetMode" = "Volver al modo internet";
+"switchBackToInternetMode" = "¿No quieres usar el modo local? Volver.";
 "switchToLocalMode" = "Cambiar al modo local";
 "systemErrorMessage" = "Error del sistema. Inténtalo de nuevo.";
 "termsOfService" = "Términos de Servicio";
@@ -799,6 +818,7 @@
 "updateNow" = "Actualizar ahora";
 "downloadViaWebsite" = "Descargar desde el sitio web";
 "upgradeNow" = "Actualizar ahora";
+"useDifferentEmail" = "Usar un correo diferente";
 "upgradeYourVault" = "Actualizar bóveda";
 "upgradeYourVaultNow" = "Actualiza tu bóveda ahora";
 "upgradeYourVaultTitle1" = "Actualiza esta bóveda al";
@@ -818,11 +838,13 @@
 "uploadQRCodeImageKeysign" = "Subir código QR para unirse a Keysign";
 "urlCopied" = "URL copiado";
 "URLInaccessible" = "No se pudo acceder a la URL";
+"useLocalMode" = "Usar modo local";
 "useMyVaultPassword" = "Use mi contraseña de bóveda";
 "usePassword" = "Usar contraseña";
 "useReferral" = "Usar referido";
 "useReferralCode" = "Usar código de referido";
 "useSkipInstead" = "Use Skip en su lugar";
+"useStandardMode" = "Usar modo estándar";
 "utxoSelectionFailedError" = "Falló la selección de UTXO. No se pudieron encontrar salidas de transacción adecuadas para cubrir el monto más las tarifas estimadas. Intenta reducir el monto de la transacción.";
 "utxoSuggestionMessage" = "Para criptomonedas basadas en UTXO como Dogecoin:\n\n• Intenta enviar una cantidad menor\n• Espera a que se confirmen las transacciones pendientes\n• Considera consolidar UTXOs pequeños primero\n• Verifica que tengas suficiente saldo para las tarifas";
 "utxoSuggestionTitle" = "Consejos para Transacciones UTXO";
@@ -884,6 +906,8 @@
 "vultisigWebsite" = "Sitio web de Vultisig";
 "waitingForKeygenStart" = "Esperando que comience la generación de clave...";
 "waitingForKeygenToStart" = "Esperando que comience la generación de clave, por favor espera...";
+"waitingForDeviceToJoin" = "Esperando que el dispositivo se una";
+"waitingForDevicesToConnect" = "Esperando a que los dispositivos se conecten";
 "waitingForKeySignStart" = "Esperando que comience el proceso de firma...";
 "waitingOnDevice" = "Esperando al dispositivo";
 "waitingOnDevices..." = "Esperando dispositivos...";
@@ -1282,6 +1306,7 @@
 "whereDoYouMigrateFrom" = "¿De dónde migras?";
 
 // Vault Setup Screens
+"yourVaultIsReadyToUse" = "Tu bóveda está lista para usar";
 "yourVaultSetup" = "Tu configuración de bóveda";
 
 // Screen 1 - Fast Vault (2-device setup)

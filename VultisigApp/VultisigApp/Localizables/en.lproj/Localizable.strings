@@ -420,10 +420,12 @@
 "loginUsingTouchID" = "Login using Touch ID";
 "localModeDescription" = "Short description of local mode goes here";
 "localModeWaitingOnDevices" = "Local mode, waiting on devices...";
+"looksGood" = "Looks good";
 "lookingForDevices" = "Looking for devices... ";
 "madeVaultBackupPrompt" = "I have made a vault backup";
 "main" = "Main";
 "mainDevice" = "Main Device";
+"makeSureCorrectDevices" = "Make sure that these are the correct devices you've added:";
 "mainVault" = "Main Vault";
 "maxTotalFee" = "Max. Total Fee";
 "memo" = "Memo";
@@ -619,6 +621,7 @@
 "restart" = "Please restart the app to apply the new language settings.";
 "retry" = "Retry";
 "reviewConditions" = "Review Conditions";
+"reviewYourVaultDevices" = "Review your vault devices";
 "reviewConditionsMessage" = "Kindly review and agree to all the listed conditions.";
 "rippleExistentialDepositError" = "XRP requires a minimum balance of 1 XRP. The blockchain will block any transaction that would reduce the account balance below this amount. To send your full balance, the account must be deleted.";
 "sameDeviceShareError" = "Same vault share";
@@ -740,6 +743,7 @@
 "signCustomMessage" = "Sign custom message";
 "skip" = "Skip";
 "skipPassword" = "Skip Password";
+"somethingsWrong" = "Something's wrong";
 "somethingWentWrongTryAgain" = "Something went wrong, please try again.";
 "soon" = "SOON";
 "Spanish" = "Spanish";
