@@ -261,3 +261,29 @@ struct DeeplinkLogic {
         return vaults.first(where: { $0.pubKeyECDSA == vaultPubKey })
     }
 }
+
+enum DeeplinkError: Error, ErrorWithCustomPresentation {
+    case unrelatedQRCode
+    case chainNotAdded(chainName: String)
+
+    var errorTitle: String {
+        switch self {
+        case .unrelatedQRCode:
+            return NSLocalizedString("unrelatedQRCode", comment: "")
+        case .chainNotAdded:
+            return NSLocalizedString("chainNotAdded", comment: "")
+        }
+    }
+
+    var errorDescription: String {
+        switch self {
+        case .unrelatedQRCode:
+            return NSLocalizedString("unrelatedQRCodeMessage", comment: "")
+        case .chainNotAdded(let chainName):
+            return String(
+                format: NSLocalizedString("chainNotAddedMessage", comment: ""),
+                chainName
+            )
+        }
+    }
+}

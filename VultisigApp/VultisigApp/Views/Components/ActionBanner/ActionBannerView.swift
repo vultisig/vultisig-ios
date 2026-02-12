@@ -12,6 +12,7 @@ struct ActionBannerView: View {
     let title: String
     let subtitle: String
     let buttonTitle: String
+    let buttonIcon: String?
     let showsActionButton: Bool
     let action: () -> Void
 
@@ -20,6 +21,7 @@ struct ActionBannerView: View {
         title: String,
         subtitle: String,
         buttonTitle: String,
+        buttonIcon: String? = nil,
         showsActionButton: Bool = true,
         action: @escaping () -> Void
     ) {
@@ -27,6 +29,7 @@ struct ActionBannerView: View {
         self.title = title
         self.subtitle = subtitle
         self.buttonTitle = buttonTitle
+        self.buttonIcon = buttonIcon
         self.showsActionButton = showsActionButton
         self.action = action
     }
@@ -48,7 +51,12 @@ struct ActionBannerView: View {
                 }
                 .frame(maxWidth: 263)
 
-                PrimaryButton(title: buttonTitle, size: .mini, action: action)
+                PrimaryButton(
+                    title: buttonTitle,
+                    leadingIcon: buttonIcon,
+                    size: .mini,
+                    action: action
+                )
                     .fixedSize()
                     .showIf(showsActionButton)
             }

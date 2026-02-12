@@ -53,6 +53,7 @@ struct ErrorView: View {
                     .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.bodySMedium)
                     .frame(maxWidth: .infinity, maxHeight: description.isNotEmpty ? 40 : 0, alignment: .top)
+                    .multilineTextAlignment(.center)
                 PrimaryButton(
                     title: buttonTitle,
                     type: .secondary,
