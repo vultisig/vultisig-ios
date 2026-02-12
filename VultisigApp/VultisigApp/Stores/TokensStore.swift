@@ -1211,6 +1211,15 @@ class TokensStore {
             isNativeToken: false
         ),
         CoinMeta(
+            chain: .mayaChain,
+            ticker: "AZTEC",
+            logo: "aztec",
+            decimals: 8,
+            priceProviderId: "",
+            contractAddress: "aztec",
+            isNativeToken: false
+        ),
+        CoinMeta(
             chain: .noble,
             ticker: "USDC",
             logo: "usdc",
