@@ -6,7 +6,7 @@
 	<dict>
 		<key>ios-arm64/dilithium.framework/Headers/dilithium.h</key>
 		<data>
-		01vNZwy63Rvv3lNjSL7yq9l3LxY=
+		QiuKX5BmcYe7v5dgC/He5GfWHQo=
 		</data>
 		<key>ios-arm64/dilithium.framework/Info.plist</key>
 		<data>
@@ -22,7 +22,7 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/dilithium.framework/Headers/dilithium.h</key>
 		<data>
-		01vNZwy63Rvv3lNjSL7yq9l3LxY=
+		QiuKX5BmcYe7v5dgC/He5GfWHQo=
 		</data>
 		<key>ios-arm64_x86_64-simulator/dilithium.framework/Info.plist</key>
 		<data>
@@ -42,7 +42,7 @@
 		</data>
 		<key>macos-arm64_x86_64/dilithium.framework/Versions/A/Headers/dilithium.h</key>
 		<data>
-		01vNZwy63Rvv3lNjSL7yq9l3LxY=
+		QiuKX5BmcYe7v5dgC/He5GfWHQo=
 		</data>
 		<key>macos-arm64_x86_64/dilithium.framework/Versions/A/Resources/Info.plist</key>
 		<data>
@@ -59,7 +59,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			5fBjmxp/A7pxiy7i3cqJEOfznS0miplJpGZjlicXh+A=
+			A5qFhCF+mLlTqBBkmmXukm4yIpFDwRJqD+b1FzaxT9A=
 			</data>
 		</dict>
 		<key>ios-arm64/dilithium.framework/Info.plist</key>
@@ -87,7 +87,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			5fBjmxp/A7pxiy7i3cqJEOfznS0miplJpGZjlicXh+A=
+			A5qFhCF+mLlTqBBkmmXukm4yIpFDwRJqD+b1FzaxT9A=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/dilithium.framework/Info.plist</key>
@@ -132,7 +132,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			5fBjmxp/A7pxiy7i3cqJEOfznS0miplJpGZjlicXh+A=
+			A5qFhCF+mLlTqBBkmmXukm4yIpFDwRJqD+b1FzaxT9A=
 			</data>
 		</dict>
 		<key>macos-arm64_x86_64/dilithium.framework/Versions/A/Resources/Info.plist</key>

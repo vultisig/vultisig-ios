@@ -1105,6 +1105,7 @@
 		B217D44E2EDE80B700503503 /* KeyImportRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B217D44D2EDE80B300503503 /* KeyImportRequest.swift */; };
 		B23481202E6E7DCF00AA655D /* WalletCore in Frameworks */ = {isa = PBXBuildFile; productRef = B2482ADF2E6E47D900B29B6F /* WalletCore */; };
 		B2482AE22E6E47D900B29B6F /* WalletCoreSwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = B2482AE12E6E47D900B29B6F /* WalletCoreSwiftProtobuf */; };
+		B2626CE42F3D5E8400D2C934 /* DilithiumHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2626CE32F3D5E8400D2C934 /* DilithiumHelper.swift */; };
 		B28352932F3B27DA008378F0 /* dilithium.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = B28352922F3B27DA008378F0 /* dilithium.xcframework */; };
 		B2ADDD782E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2ADDD772E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift */; };
 		B2ADDDC52E5D63AD00DB3B98 /* BanxaDisclaimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2ADDDC42E5D639700DB3B98 /* BanxaDisclaimer.swift */; };
@@ -2454,6 +2455,7 @@
 		B21561DF2F18A5D90052C892 /* Vultisig-Logo.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = "Vultisig-Logo.icon"; sourceTree = "<group>"; };
 		B217CEA82ED5A00800503503 /* ChainPublicKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainPublicKey.swift; sourceTree = "<group>"; };
 		B217D44D2EDE80B300503503 /* KeyImportRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyImportRequest.swift; sourceTree = "<group>"; };
+		B2626CE32F3D5E8400D2C934 /* DilithiumHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DilithiumHelper.swift; sourceTree = "<group>"; };
 		B28352922F3B27DA008378F0 /* dilithium.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:5BP27CHH4Y:Vulti Holdings Limited"; lastKnownFileType = wrapper.xcframework; path = dilithium.xcframework; sourceTree = "<group>"; };
 		B2ADDD772E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChainDetailActionButtons+macOS.swift"; sourceTree = "<group>"; };
 		B2ADDDC42E5D639700DB3B98 /* BanxaDisclaimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BanxaDisclaimer.swift; sourceTree = "<group>"; };
@@ -6497,6 +6499,7 @@
 		DE1572932B70F254009BC7C5 /* Tss */ = {
 			isa = PBXGroup;
 			children = (
+				B2626CE32F3D5E8400D2C934 /* DilithiumHelper.swift */,
 				DE6EF0502D06708C00A36D6A /* DKLSMessenger.swift */,
 				DE6EF04E2D06610800A36D6A /* DKLSHelper.swift */,
 				DE1572942B70F254009BC7C5 /* TssMessenger.swift */,
@@ -7676,6 +7679,7 @@
 				13A078702E8484280093496F /* ListBottomSection.swift in Sources */,
 				A6505AF72CA678B30002FBF4 /* OnDropQRUtils.swift in Sources */,
 				132354552ECB5C9500BAFE7C /* ThrottledOnAppearModifier.swift in Sources */,
+				B2626CE42F3D5E8400D2C934 /* DilithiumHelper.swift in Sources */,
 				DED05FE42BBB824D00E0496C /* ThorchainAccountValue.swift in Sources */,
 				A6386DA42C90236100DDD58E /* CoinSelectionCell+macOS.swift in Sources */,
 				A60CA7E52BB0D37D00FDEB5C /* ContentView.swift in Sources */,
