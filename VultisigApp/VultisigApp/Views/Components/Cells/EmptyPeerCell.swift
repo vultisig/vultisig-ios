@@ -17,7 +17,7 @@ struct EmptyPeerCell: View {
     var body: some View {
         cell
             .onAppear {
-                animationVM = RiveViewModel(fileName: "WaitingForDevice", autoPlay: true)
+                animationVM = RiveViewModel(fileName: "searching_device", autoPlay: true)
             }
             .onDisappear {
                 animationVM?.stop()
@@ -55,20 +55,19 @@ struct EmptyPeerCell: View {
 
     var animation: some View {
         animationVM?.view()
-            .frame(width: 24, height: 24)
+            .frame(width: 32, height: 32)
     }
 
     private func badge(index: Int, totalCount: Int) -> some View {
         Text("\(index) of \(totalCount)")
             .font(Theme.fonts.caption12)
-            .foregroundStyle(Theme.colors.textTertiary)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(Theme.colors.bgSurface2)
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Theme.colors.border, lineWidth: 1)
+            .foregroundStyle(Theme.colors.textSecondary)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 99)
+                    .stroke(Theme.colors.borderExtraLight, lineWidth: 1)
+                    .fill(Theme.colors.bgSurface2)
             )
     }
 }

@@ -10,24 +10,6 @@ import SwiftUI
 struct KeygenRouteBuilder {
 
     @ViewBuilder
-    func buildFastBackupOverviewScreen(
-        tssType: TssType,
-        vault: Vault,
-        email: String
-    ) -> some View {
-        FastBackupVaultOverview(
-            tssType: tssType,
-            vault: vault,
-            email: email
-        )
-    }
-
-    @ViewBuilder
-    func buildSecureBackupOverviewScreen(vault: Vault) -> some View {
-        SecureBackupVaultOverview(vault: vault)
-    }
-
-    @ViewBuilder
     func buildBackupNowScreen(
         tssType: TssType,
         backupType: VaultBackupType,

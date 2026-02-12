@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import RiveRuntime
 
 struct PeerDiscoveryScreen: View {
     let tssType: TssType
@@ -40,6 +41,8 @@ struct PeerDiscoveryScreen: View {
 
     @State var screenWidth: CGFloat = .zero
     @State var screenHeight: CGFloat = .zero
+
+    @State var dotsIndicatorVM: RiveViewModel? = nil
 
     @Environment(\.displayScale) var displayScale
 
@@ -206,8 +209,11 @@ struct PeerDiscoveryScreen: View {
     var portraitContent: some View {
         ScrollView {
             VStack(spacing: 16) {
-                paringBarcode
-                statusText
+                VStack(spacing: 32) {
+                    paringBarcode
+                    statusText
+                }
+                .padding(.bottom, 8)
                 deviceList
             }
         }
@@ -234,9 +240,20 @@ struct PeerDiscoveryScreen: View {
     var statusText: some View {
         VStack(spacing: 4) {
             if isInternetMode {
-                Text(NSLocalizedString("waitingForDevicesToConnect", comment: ""))
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textSecondary)
+                HStack(alignment: .bottom, spacing: 2) {
+                    Text(NSLocalizedString("waitingForDevicesToConnect", comment: ""))
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(Theme.colors.textSecondary)
+
+                    dotsIndicatorAnimation
+                        .offset(y: 2)
+                }
+                .onAppear {
+                    dotsIndicatorVM = RiveViewModel(fileName: "dots_indicator", autoPlay: true)
+                }
+                .onDisappear {
+                    dotsIndicatorVM?.stop()
+                }
             } else {
                 Text(NSLocalizedString("localModeWaitingOnDevices", comment: ""))
                     .font(Theme.fonts.bodySMedium)
@@ -251,17 +268,24 @@ struct PeerDiscoveryScreen: View {
         .padding(.horizontal, 16)
     }
 
+    var dotsIndicatorAnimation: some View {
+        dotsIndicatorVM?.view()
+            .frame(width: 12, height: 12)
+    }
+
     var deviceList: some View {
         VStack(spacing: 12) {
 #if os(iOS)
-            ThisDevicePeerCell(
-                deviceName: idiom == .phone ? "iPhone" : "iPad",
+            PeerCell(
+                id: idiom == .phone ? "iPhone" : "iPad",
+                isThisDevice: true,
                 index: 1,
                 totalCount: totalDeviceCount
             )
 #else
-            ThisDevicePeerCell(
-                deviceName: "Mac",
+            PeerCell(
+                id: "Mac",
+                isThisDevice: true,
                 index: 1,
                 totalCount: totalDeviceCount
             )

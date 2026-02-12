@@ -76,10 +76,8 @@ struct SwitchToLocalLink: View {
     }
 
     private func toggleNetwork() {
-        if selectedNetwork == .Internet {
-            selectedNetwork = .Local
-        } else {
-            selectedNetwork = .Internet
+        withAnimation(.interpolatingSpring) {
+            selectedNetwork = selectedNetwork == .Internet ? .Local : .Internet
         }
     }
 }

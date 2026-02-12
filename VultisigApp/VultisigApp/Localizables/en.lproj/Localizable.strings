@@ -118,6 +118,8 @@
 "coinAddressCopied" = "%@ address copied";
 "collectedRewards" = "Collected rewards";
 "complete" = "Complete";
+"congratsExclamation" = "Congrats!";
+"congratsSummaryDescription" = "You're all set! You stay in control of every transaction.";
 "confirm" = "Confirm";
 "confirmToSign" = "Confirm to sign the message?";
 "connected" = "Connected";
@@ -913,7 +915,7 @@
 "waitingForKeygenStart" = "Waiting for key generation to start...";
 "waitingForKeygenToStart" = "Waiting for key generation to start, please wait...";
 "waitingForDeviceToJoin" = "Waiting for device to join";
-"waitingForDevicesToConnect" = "Waiting for devices to connect...";
+"waitingForDevicesToConnect" = "Waiting for devices to connect";
 "waitingForKeySignStart" = "Waiting for the signing process to begin...";
 "waitingOnDevice" = "Waiting on device";
 "waitingOnDevices..." = "Waiting on devices...";
@@ -1343,6 +1345,7 @@
 "whereDoYouMigrateFrom" = "Where do you migrate from";
 
 // Vault Setup Screens
+"yourVaultIsReadyToUse" = "Your vault is ready to use";
 "yourVaultSetup" = "Your vault setup";
 
 // Screen 1 - Fast Vault (2-device setup)

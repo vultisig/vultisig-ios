@@ -13,14 +13,6 @@ struct KeygenRouter {
     @ViewBuilder
     func build(_ route: KeygenRoute) -> some View {
         switch route {
-        case .fastBackupOverview(let tssType, let vault, let email):
-            viewBuilder.buildFastBackupOverviewScreen(
-                tssType: tssType,
-                vault: vault,
-                email: email
-            )
-        case .secureBackupOverview(let vault):
-            viewBuilder.buildSecureBackupOverviewScreen(vault: vault)
         case .backupNow(let tssType, let backupType, let isNewVault):
             viewBuilder.buildBackupNowScreen(
                 tssType: tssType,

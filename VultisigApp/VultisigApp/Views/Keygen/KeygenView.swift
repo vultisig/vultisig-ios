@@ -61,7 +61,7 @@ struct KeygenView: View {
                 vaultCreatedAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
                 checkmarkAnimationVM = RiveViewModel(fileName: "CreatingVaultCheckmark", autoPlay: true)
                 keygenAnimationVM = RiveViewModel(
-                    fileName: "keygen_animation",
+                    fileName: fastSignConfig != nil ? "keygen_fast" : "keygen_secure",
                     autoPlay: true,
                 )
                 keygenAnimationVM?.fit = .layout
@@ -83,23 +83,13 @@ struct KeygenView: View {
 
     private func handleNavigation() {
         switch tssType {
-        case .Keygen, .Reshare:
-            if let fastSignConfig, showVerificationView {
-                router.navigate(to: KeygenRoute.fastBackupOverview(
-                    tssType: tssType,
-                    vault: vault,
-                    email: fastSignConfig.email
-                ))
-            } else {
-                router.navigate(to: KeygenRoute.secureBackupOverview(vault: vault))
-            }
         case .Migrate:
             router.navigate(to: KeygenRoute.backupNow(
                 tssType: tssType,
                 backupType: .single(vault: vault),
                 isNewVault: true
             ))
-        case .KeyImport:
+        case .KeyImport, .Keygen, .Reshare:
             let setupType: KeyImportSetupType = fastSignConfig != nil
                 ? .fast
                 : .secure(numberOfDevices: keygenCommittee.count)

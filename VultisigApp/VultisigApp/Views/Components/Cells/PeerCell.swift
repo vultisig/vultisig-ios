@@ -9,9 +9,14 @@ import SwiftUI
 
 struct PeerCell: View {
     let id: String
-    let isSelected: Bool
+    var isSelected: Bool = false
+    var isThisDevice: Bool = false
     var index: Int? = nil
     var totalCount: Int? = nil
+
+    private var isHighlighted: Bool {
+        isThisDevice || isSelected
+    }
 
     var body: some View {
         cell
@@ -32,35 +37,27 @@ struct PeerCell: View {
                 badge(index: index, totalCount: totalCount)
             }
         }
-        .padding(16)
-        .background(isSelected ? Theme.colors.bgSuccess : Theme.colors.bgSurface1)
-        .cornerRadius(16)
+        .padding(.horizontal, 16)
+        .frame(height: 68)
+        .background(Theme.colors.bgSurface1)
+        .cornerRadius(24)
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(
-                    isSelected ? Theme.colors.alertSuccess.opacity(0.25) : Theme.colors.border,
-                    lineWidth: 1
-                )
+            RoundedRectangle(cornerRadius: 24)
+                .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
-        .padding(1)
     }
 
     var deviceIcon: some View {
         Circle()
-            .fill(
-                isSelected
-                    ? Theme.colors.alertSuccess.opacity(0.15)
-                    : Theme.colors.bgSurface2
-            )
-            .frame(width: 40, height: 40)
+            .fill(Theme.colors.alertSuccess.opacity(0.05))
+            .stroke(Theme.colors.alertSuccess, lineWidth: 1.5)
+            .frame(width: 32, height: 32)
             .overlay(
-                Image(systemName: "desktopcomputer")
-                    .font(.system(size: 16))
-                    .foregroundStyle(
-                        isSelected
-                            ? Theme.colors.alertSuccess
-                            : Theme.colors.textTertiary
-                    )
+                Icon(
+                    named: DeviceInfo.iconName(for: id),
+                    color: Theme.colors.alertSuccess,
+                    size: 16
+                )
             )
     }
 
@@ -74,7 +71,10 @@ struct PeerCell: View {
 
     var description: some View {
         Group {
-            if isSelected {
+            if isThisDevice {
+                Text(NSLocalizedString("thisDevice", comment: ""))
+                    .foregroundStyle(Theme.colors.alertSuccess)
+            } else if isSelected {
                 Text(NSLocalizedString("connected", comment: ""))
                     .foregroundStyle(Theme.colors.alertSuccess)
             } else {
@@ -90,14 +90,13 @@ struct PeerCell: View {
     private func badge(index: Int, totalCount: Int) -> some View {
         Text("\(index) of \(totalCount)")
             .font(Theme.fonts.caption12)
-            .foregroundStyle(Theme.colors.textTertiary)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(Theme.colors.bgSurface2)
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Theme.colors.border, lineWidth: 1)
+            .foregroundStyle(Theme.colors.textSecondary)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 99)
+                    .stroke(Theme.colors.borderExtraLight, lineWidth: 1)
+                    .fill(Theme.colors.bgSurface2)
             )
     }
 
@@ -126,7 +125,8 @@ struct PeerCell: View {
 
 #Preview {
     VStack {
-        PeerCell(id: "iPhone 15 Pro-5D2F5D984A37", isSelected: true, index: 2, totalCount: 3)
-        PeerCell(id: "iPad 15 Pro-5D2F5D984A37", isSelected: false, index: 3, totalCount: 3)
+        PeerCell(id: "iPhone", isThisDevice: true, index: 1, totalCount: 3)
+        PeerCell(id: "MacBook Pro-5D2F5D984A37", isSelected: true, index: 2, totalCount: 3)
+        PeerCell(id: "iPad 15 Pro-5D2F5D984A37", index: 3, totalCount: 3)
     }
 }

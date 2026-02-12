@@ -8,8 +8,6 @@
 import Foundation
 
 enum KeygenRoute: Hashable {
-    case fastBackupOverview(tssType: TssType, vault: Vault, email: String)
-    case secureBackupOverview(vault: Vault)
     case backupNow(tssType: TssType, backupType: VaultBackupType, isNewVault: Bool)
     case keyImportOverview(vault: Vault, email: String?, keyImportInput: KeyImportInput?, setupType: KeyImportSetupType)
     case peerDiscovery(tssType: TssType, vault: Vault, selectedTab: SetupVaultState, fastSignConfig: FastSignConfig?, keyImportInput: KeyImportInput?, setupType: KeyImportSetupType?)
