@@ -20,7 +20,7 @@ struct CosmosHelperStruct {
         }
         let thorChainSwapPayload: THORChainSwapPayload
         switch swapPayload {
-        case .thorchain(let payload), .thorchainStagenet(let payload):
+        case .thorchain(let payload), .thorchainStagenet(let payload), .thorchainStagenet2(let payload):
             thorChainSwapPayload = payload
         default:
             throw HelperError.runtimeError("fail to get swap payload")

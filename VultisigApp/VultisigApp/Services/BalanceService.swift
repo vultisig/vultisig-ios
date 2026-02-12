@@ -101,7 +101,7 @@ class BalanceService {
         case .cardano:
             return try await cardano.getBalance(address: address)
 
-        case .thorChain, .thorChainStagenet:
+        case .thorChain, .thorChainStagenet, .thorChainStagenet2:
             let service = ThorchainServiceFactory.getService(for: coin.chain)
             let thorBalances = try await service.fetchBalances(address)
             return thorBalances.balance(denom: coin.chain.ticker.lowercased(), coin: coin)
@@ -250,7 +250,7 @@ private extension BalanceService {
 private extension BalanceService {
     func updateBondedIfNeeded(for coin: Coin) async throws {
         switch coin.chain {
-        case .thorChain, .thorChainStagenet:
+        case .thorChain, .thorChainStagenet, .thorChainStagenet2:
             // Handle RUNE bonds
             guard coin.ticker.caseInsensitiveCompare("RUNE") == .orderedSame else {
                 return

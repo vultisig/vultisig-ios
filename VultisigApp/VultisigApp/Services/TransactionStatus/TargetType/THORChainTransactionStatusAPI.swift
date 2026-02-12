@@ -17,7 +17,9 @@ enum THORChainTransactionStatusAPI: TargetType {
             if chain == .mayaChain {
                 urlString = Endpoint.mayachainMidgard
             } else if chain == .thorChainStagenet {
-                urlString = Endpoint.thorchainMidgardStagenet
+                urlString = "https://chainnet-thornode.thorchain.network"
+            } else if chain == .thorChainStagenet2 {
+                urlString = "https://stagenet-thornode.ninerealms.com"
             } else {
                 urlString = Endpoint.thorchainMidgard
             }

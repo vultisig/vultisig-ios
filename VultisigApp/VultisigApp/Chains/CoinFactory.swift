@@ -70,6 +70,9 @@ struct CoinFactory {
         case .thorChainStagenet:
             let anyAddress = AnyAddress(publicKey: publicKey, coin: .thorchain, hrp: "cthor")
             address = anyAddress.description
+        case .thorChainStagenet2:
+            let anyAddress = AnyAddress(publicKey: publicKey, coin: .thorchain, hrp: "sthor")
+            address = anyAddress.description
         case .cardano:
             // Always create Enterprise address to avoid "stake address" component
             // Use WalletCore's proper Blake2b hashing for deterministic results across all devices

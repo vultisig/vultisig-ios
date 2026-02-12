@@ -29,6 +29,11 @@ public struct AddressService {
             return vault.coins.contains(where: { $0.chain == .thorChainStagenet && $0.isNativeToken }) ? .thorChainStagenet : nil
         }
 
+        // Special handling for ThorChain Stagenet-2
+        if AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor") {
+            return vault.coins.contains(where: { $0.chain == .thorChainStagenet2 && $0.isNativeToken }) ? .thorChainStagenet2 : nil
+        }
+
         // Check if it's an EVM address - don't auto-switch for safety
         if isEVMAddress(address) {
             // Don't auto-switch between EVM chains for safety
@@ -80,6 +85,17 @@ public struct AddressService {
             }
         }
 
+        if chain == .thorChainStagenet2 {
+            let isValid = AnyAddress.isValidBech32(string: input, coin: .thorchain, hrp: "sthor")
+
+            if isValid {
+                return input
+            } else {
+                let service = ThorchainServiceFactory.getService(for: .thorChainStagenet2)
+                return try await service.resolveTNS(name: input, chain: chain)
+            }
+        }
+
         let isValid = chain.coinType.validate(address: input)
 
         if isValid {
@@ -106,6 +122,10 @@ public struct AddressService {
             return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "cthor")
         }
 
+        if chain == .thorChainStagenet2 {
+            return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor")
+        }
+
         return chain.coinType.validate(address: address)
     }
 
@@ -117,6 +137,9 @@ public struct AddressService {
             }
             if firstCoin.chain == .thorChainStagenet {
                 return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "cthor")
+            }
+            if firstCoin.chain == .thorChainStagenet2 {
+                return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor")
             }
             return firstCoin.coinType.validate(address: address)
         }
