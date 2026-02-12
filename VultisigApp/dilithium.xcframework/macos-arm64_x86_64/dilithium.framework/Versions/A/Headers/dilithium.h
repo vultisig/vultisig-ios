@@ -9,6 +9,10 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+#ifdef __cplusplus
+namespace mldsa {
+#endif  // __cplusplus
+
 enum mldsa_lib_error
 #ifdef __cplusplus
   : uintptr_t
@@ -562,6 +566,10 @@ mldsa_lib_error mldsa_sign_session_free(struct Handle session);
 
 #ifdef __cplusplus
 }  // extern "C"
+#endif  // __cplusplus
+
+#ifdef __cplusplus
+}  // namespace mldsa
 #endif  // __cplusplus
 
 #endif  /* _VS_MLDSA_CORE_H */
