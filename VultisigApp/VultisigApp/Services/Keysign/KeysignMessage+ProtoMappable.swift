@@ -260,7 +260,7 @@ extension SwapPayload {
 
     func mapToProtobuff() -> VSKeysignPayload.OneOf_SwapPayload {
         switch self {
-        case .thorchain(let payload), .thorchainStagenet(let payload):
+        case .thorchain(let payload), .thorchainStagenet(let payload), .thorchainStagenet2(let payload):
             return .thorchainSwapPayload(.with {
                 $0.fromAddress = payload.fromAddress
                 $0.fromCoin = ProtoCoinResolver.proto(from: payload.fromCoin)

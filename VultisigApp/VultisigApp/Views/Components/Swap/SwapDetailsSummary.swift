@@ -246,7 +246,7 @@ struct SwapDetailsSummary: View {
         let feeDecimals: Int = 8 // Default to 8 (THORChain standard)
 
         switch quote {
-        case .thorchain(let q), .thorchainStagenet(let q), .mayachain(let q):
+        case .thorchain(let q), .thorchainStagenet(let q), .thorchainStagenet2(let q), .mayachain(let q):
             outboundFeeString = q.fees.outbound
         default:
             return .empty

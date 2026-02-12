@@ -1769,6 +1769,15 @@ class TokensStore {
             contractAddress: "",
             isNativeToken: true
         ),
+        CoinMeta(
+            chain: .thorChainStagenet2,
+            ticker: "RUNE",
+            logo: "rune",
+            decimals: 8,
+            priceProviderId: "thorchain",
+            contractAddress: "",
+            isNativeToken: true
+        ),
         tcy,
         stcy,
         ruji,
