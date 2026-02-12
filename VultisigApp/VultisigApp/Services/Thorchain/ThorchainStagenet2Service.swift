@@ -22,7 +22,7 @@ class ThorchainStagenet2Service: ThorchainSwapProvider {
 
     func fetchBalances(_ address: String) async throws -> [CosmosBalance] {
         guard let url = URL(string: Endpoint.fetchAccountBalanceThorchainStagenet2(address: address)) else {
-            return [CosmosBalance]()
+            throw Errors.invalidURL
         }
         let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
         let balanceResponse = try JSONDecoder().decode(CosmosBalanceResponse.self, from: data)
@@ -217,7 +217,9 @@ class ThorchainStagenet2Service: ThorchainSwapProvider {
     }
 
     func broadcastTransaction(jsonString: String) async -> Result<String, Error> {
-        let url = URL(string: Endpoint.broadcastTransactionThorchainStagenet2)!
+        guard let url = URL(string: Endpoint.broadcastTransactionThorchainStagenet2) else {
+            return .failure(HelperError.runtimeError("invalid broadcast URL"))
+        }
 
         guard let jsonData = jsonString.data(using: .utf8) else {
             return .failure(HelperError.runtimeError("fail to convert input json to data"))
@@ -262,7 +264,7 @@ class ThorchainStagenet2Service: ThorchainSwapProvider {
 // MARK: - THORChain Stagenet-2 Pool Prices & Token Metadata
 extension ThorchainStagenet2Service {
     // swiftlint:disable:next unused_parameter
-    func fetchYieldTokenPrice(for contract: String) -> Double? {
+    func fetchYieldTokenPrice(for contract: String) async -> Double? {
         return nil
     }
 
@@ -589,15 +591,15 @@ extension ThorchainStagenet2Service {
 
     // MARK: - TCY Staking Methods (Not supported on Stagenet-2)
     // swiftlint:disable:next unused_parameter
-    func fetchTcyStakedAmount(address: String) -> Decimal {
+    func fetchTcyStakedAmount(address: String) async -> Decimal {
         return 0
     }
     // swiftlint:disable:next unused_parameter
-    func fetchTcyAutoCompoundAmount(address: String) -> Decimal {
+    func fetchTcyAutoCompoundAmount(address: String) async -> Decimal {
         return 0
     }
     // swiftlint:disable:next unused_parameter
-    func fetchMergeAccounts(address: String) -> [MergeAccountResponse.ResponseData.Node.AccountMerge.MergeAccount] {
+    func fetchMergeAccounts(address: String) async -> [MergeAccountResponse.ResponseData.Node.AccountMerge.MergeAccount] {
         return []
     }
 }
