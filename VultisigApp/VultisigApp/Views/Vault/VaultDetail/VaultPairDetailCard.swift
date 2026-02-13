@@ -200,12 +200,7 @@ struct VaultPairDetailCard: View {
     }
 
     func iconName(for signer: String) -> String {
-        let laptopSigners = ["windows", "extension", "mac"]
-        let isLaptoSigner = laptopSigners.contains {
-            signer.lowercased().contains($0)
-        }
-
-        return isLaptoSigner ? "laptop" : "smartphone"
+        DeviceInfo.iconName(for: signer)
     }
 }
 

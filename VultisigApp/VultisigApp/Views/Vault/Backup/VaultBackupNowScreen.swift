@@ -1,5 +1,5 @@
 //
-//  BackupPasswordSetupView.swift
+//  VaultBackupScreen.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2024-06-13.
@@ -8,7 +8,7 @@
 import SwiftUI
 import RiveRuntime
 
-struct VaultBackupNowScreen: View {
+struct VaultBackupScreen: View {
     let tssType: TssType
     let backupType: VaultBackupType
     var isNewVault = false
@@ -17,7 +17,23 @@ struct VaultBackupNowScreen: View {
     @State var animation: RiveViewModel?
     @State var fileModel: FileExporterModel<EncryptedDataFile>?
     @State var presentFileExporter = false
+    @State private var checkboxChecked = false
     @Environment(\.router) var router
+
+    private var vault: Vault { backupType.vault }
+
+    private var titleText: String {
+        if vault.isFastVault {
+            return "backupSetupTitle".localized
+        }
+        return String(
+            format: "backupSetupTitleSecure".localized,
+            1,
+            vault.signers.count
+        )
+    }
+
+    // MARK: - Body
 
     var body: some View {
         VaultBackupContainerView(
@@ -28,13 +44,26 @@ struct VaultBackupNowScreen: View {
             backupType: backupType,
             isNewVault: isNewVault
         ) {
-            Screen {
-                VStack {
+            Screen(edgeInsets: .init(leading: 24, trailing: 24)) {
+                VStack(spacing: 32) {
                     animation?.view()
-                    labels
-                    Spacer().frame(height: 100)
-                    PrimaryButton(title: "backupNow", leadingIcon: "download") {
-                        onBackupNow()
+                    VaultSetupStepIcon(
+                        state: .active,
+                        icon: "cloud-upload-filled"
+                    )
+                    VStack(spacing: 16) {
+                        titleView
+                        subtitleView
+                    }
+
+                    Spacer()
+
+                    VStack(spacing: 24) {
+                        checkboxView
+                        PrimaryButton(title: "backupSaveButton".localized) {
+                            onBackupNow()
+                        }
+                        .disabled(!checkboxChecked)
                     }
                 }
             }
@@ -42,34 +71,49 @@ struct VaultBackupNowScreen: View {
         .onLoad(perform: onLoad)
     }
 
-    var labels: some View {
-        VStack(spacing: 0) {
-            Text(NSLocalizedString("backupSetupTitle", comment: ""))
-                .font(Theme.fonts.largeTitle)
-                .foregroundColor(Theme.colors.textPrimary)
-                .multilineTextAlignment(.center)
-                .padding(.bottom, 16)
+    // MARK: - Title & Subtitle
 
-            Text(NSLocalizedString("backupSetupSubtitle", comment: ""))
-                .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textTertiary)
-                .multilineTextAlignment(.center)
-
-            Link(destination: StaticURL.VultBackupURL) {
-                Text(NSLocalizedString("learnMore", comment: ""))
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(Theme.colors.textSecondary)
-                    .underline()
-            }
-        }
+    private var titleView: some View {
+        Text(titleText)
+            .font(Theme.fonts.title2)
+            .foregroundStyle(Theme.colors.textPrimary)
+            .multilineTextAlignment(.center)
     }
+
+    private var subtitleView: some View {
+        HighlightedText(
+            text: "backupSetupSubtitle".localized,
+            highlightedText: "backupSetupSubtitleHighlight".localized,
+            textStyle: { attributedString in
+                attributedString.font = Theme.fonts.bodySMedium
+                attributedString.foregroundColor = Theme.colors.textTertiary
+            },
+            highlightedTextStyle: { substring in
+                substring.foregroundColor = Theme.colors.textPrimary
+            }
+        )
+        .multilineTextAlignment(.center)
+        .frame(maxWidth: 321)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    // MARK: - Checkbox
+
+    private var checkboxView: some View {
+        Checkbox(
+            isChecked: $checkboxChecked,
+            text: "backupSaveCheckbox".localized
+        )
+    }
+
+    // MARK: - Actions
 
     func onLoad() {
         FileManager.default.clearTmpDirectory()
         animation = RiveViewModel(fileName: "backupvault_splash", autoPlay: true)
 
         Task { @MainActor in
-            if backupType.vault.isFastVault, isNewVault {
+            if vault.isFastVault, isNewVault {
                 let fileModel = backupViewModel.exportFileWithVaultPassword(backupType)
                 self.fileModel = fileModel
             }
@@ -77,8 +121,10 @@ struct VaultBackupNowScreen: View {
     }
 
     func onBackupNow() {
+        guard checkboxChecked else { return }
+
         // Only export backup directly if it's fast vault during creation
-        guard backupType.vault.isFastVault, isNewVault, fileModel != nil else {
+        guard vault.isFastVault, isNewVault, fileModel != nil else {
             router.navigate(to: VaultRoute.backupPasswordOptions(
                 tssType: tssType,
                 backupType: backupType,
@@ -92,5 +138,5 @@ struct VaultBackupNowScreen: View {
 }
 
 #Preview {
-    VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: .example))
+    VaultBackupScreen(tssType: .Keygen, backupType: .single(vault: .example))
 }

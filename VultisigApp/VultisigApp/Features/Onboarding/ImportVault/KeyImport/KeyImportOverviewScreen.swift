@@ -47,7 +47,7 @@ struct KeyImportOverviewScreen: View {
         }
         .onLoad(perform: onLoad)
         .crossPlatformSheet(isPresented: $isVerificationLinkActive) {
-            ServerBackupVerificationView(
+            ServerBackupVerificationScreen(
                 tssType: .KeyImport,
                 vault: vault,
                 email: email ?? .empty,

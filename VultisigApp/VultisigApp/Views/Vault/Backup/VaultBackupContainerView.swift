@@ -53,7 +53,9 @@ struct VaultBackupContainerView<Content: View>: View {
 
     func dismissView() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            if isNewVault {
+            if isNewVault && tssType == .Migrate {
+                appViewModel.set(selectedVault: backupType.vault)
+            } else if isNewVault {
                 router.navigate(to: VaultRoute.backupSuccess(
                     tssType: tssType,
                     vault: backupType.vault

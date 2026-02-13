@@ -62,9 +62,12 @@ struct KeyImportChainsSetupScreen: View {
 
             // Navigate to device count selection screen
             await MainActor.run {
-                router.navigate(to: OnboardingRoute.keyImportDeviceCount(
-                    mnemonic: mnemonic,
-                    chainSettings: chainSettings
+                router.navigate(to: OnboardingRoute.devicesSelection(
+                    tssType: .KeyImport,
+                    keyImportInput: KeyImportInput(
+                        mnemonic: mnemonic,
+                        chainSettings: chainSettings
+                    )
                 ))
             }
         }

@@ -22,6 +22,11 @@ extension LinearGradient {
     static let solidWhite = LinearGradient(colors: [Theme.colors.textPrimary], startPoint: .topLeading, endPoint: .bottomTrailing)
     static let solidGray = LinearGradient(colors: [Theme.colors.textSecondary], startPoint: .topLeading, endPoint: .bottomTrailing)
     static let borderGreen = LinearGradient(colors: [Color(hex: "0FBF93"), Color(hex: "0FBF93").opacity(0)], startPoint: .top, endPoint: .bottom)
+    static let qrBorderGradient = LinearGradient(
+        colors: [Color(hex: "4879FD"), Color(hex: "0D39B1")],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
 }
 
 extension AngularGradient {

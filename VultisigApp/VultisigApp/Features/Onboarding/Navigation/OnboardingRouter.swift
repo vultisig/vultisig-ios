@@ -19,25 +19,20 @@ struct OnboardingRouter {
             viewBuilder.buildImportSeedphraseScreen()
         case .chainsSetup(let mnemonic):
             viewBuilder.buildChainsSetupScreen(mnemonic: mnemonic)
-        case .keyImportDeviceCount(let mnemonic, let chainSettings):
-            viewBuilder.buildKeyImportDeviceCountScreen(mnemonic: mnemonic, chainSettings: chainSettings)
-        case .keyImportNewVaultSetup(let vault, let keyImportInput, let fastSignConfig, let setupType):
-            viewBuilder.buildKeyImportNewVaultSetupScreen(
-                vault: vault,
+        case .devicesSelection(let tssType, let keyImportInput):
+            viewBuilder.buildOnboardingDevicesSelectionScreen(tssType: tssType, keyImportInput: keyImportInput)
+        case .vaultSetupInformation(let tssType, let keyImportInput, let setupType):
+            viewBuilder.buildOnboardingVaultSetupInformationScreen(
+                tssType: tssType,
                 keyImportInput: keyImportInput,
-                fastSignConfig: fastSignConfig,
                 setupType: setupType
             )
         case .keyImportOnboarding:
             viewBuilder.buildKeyImportOnboardingScreen()
         case .importVaultShare:
             viewBuilder.buildImportVaultShareScreen()
-        case .setupQRCode(let tssType, let vault):
-            viewBuilder.buildSetupQRCodeScreen(tssType: tssType, vault: vault)
         case .joinKeygen(let vault, let selectedVault):
             viewBuilder.buildJoinKeygenScreen(vault: vault, selectedVault: selectedVault)
-        case .onboarding:
-            viewBuilder.buildOnboardingScreen()
         case .newWalletName(let tssType, let selectedTab, let vault):
             viewBuilder.buildNewWalletNameScreen(
                 tssType: tssType,
