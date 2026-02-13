@@ -1369,3 +1369,5 @@
 "swap.price_impact.good" = "良好";
 "swap.price_impact.high" = "较高";
 "noPositionsFound" = "未找到任何持仓";
+"unrelatedQRCode" = "无关的二维码";
+"unrelatedQRCodeMessage" = "扫描到无关的二维码。";

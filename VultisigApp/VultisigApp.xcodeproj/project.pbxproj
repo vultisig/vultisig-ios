@@ -137,6 +137,7 @@
 		13398B0F2EE08952002419F0 /* EmailValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13398B0E2EE08950002419F0 /* EmailValidator.swift */; };
 		13398B112EE08AE4002419F0 /* VaultNameValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13398B102EE08AE0002419F0 /* VaultNameValidator.swift */; };
 		13398B162EE0F262002419F0 /* Wallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13398B152EE0F261002419F0 /* Wallet.swift */; };
+		133B966D2F3B84AE005FA4DA /* devices_component.riv in Resources */ = {isa = PBXBuildFile; fileRef = 133B966C2F3B84AE005FA4DA /* devices_component.riv */; };
 		133CA3CC2E8AD183009588F3 /* CoinDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CA3CB2E8AD180009588F3 /* CoinDetailScreen.swift */; };
 		133CA3CF2E8ADC5A009588F3 /* CoinDetailHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CA3CE2E8ADC56009588F3 /* CoinDetailHeaderView.swift */; };
 		133CA3D22E8ADEE1009588F3 /* CoinDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133CA3D12E8ADEDC009588F3 /* CoinDetailViewModel.swift */; };
@@ -179,7 +180,6 @@
 		134A9FCB2E96AD1B00030C56 /* BannerLayoutProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FCA2E96AD1400030C56 /* BannerLayoutProperties.swift */; };
 		134A9FCD2E96B49800030C56 /* VaultBannerCarouselIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FCC2E96B49700030C56 /* VaultBannerCarouselIndicator.swift */; };
 		134A9FCF2E96B4B500030C56 /* VaultBannerCarouselIndicators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A9FCE2E96B4B000030C56 /* VaultBannerCarouselIndicators.swift */; };
-		134D610F2F30EB22008F034D /* devices_component.riv in Resources */ = {isa = PBXBuildFile; fileRef = 134D610E2F30EB22008F034D /* devices_component.riv */; };
 		134D61A62F323011008F034D /* VultisigLogoAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134D61A52F32300B008F034D /* VultisigLogoAnimation.swift */; };
 		134DFE0F2F28EEFE0087C9D5 /* CardanoTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE082F28EEFE0087C9D5 /* CardanoTransactionStatusProvider.swift */; };
 		134DFE102F28EEFE0087C9D5 /* SuiTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134DFE0B2F28EEFE0087C9D5 /* SuiTransactionStatusProvider.swift */; };
@@ -1469,6 +1469,7 @@
 		13398B0E2EE08950002419F0 /* EmailValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailValidator.swift; sourceTree = "<group>"; };
 		13398B102EE08AE0002419F0 /* VaultNameValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultNameValidator.swift; sourceTree = "<group>"; };
 		13398B152EE0F261002419F0 /* Wallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Wallet.swift; sourceTree = "<group>"; };
+		133B966C2F3B84AE005FA4DA /* devices_component.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = devices_component.riv; sourceTree = "<group>"; };
 		133CA3CB2E8AD180009588F3 /* CoinDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDetailScreen.swift; sourceTree = "<group>"; };
 		133CA3CE2E8ADC56009588F3 /* CoinDetailHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDetailHeaderView.swift; sourceTree = "<group>"; };
 		133CA3D12E8ADEDC009588F3 /* CoinDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDetailViewModel.swift; sourceTree = "<group>"; };
@@ -1511,7 +1512,6 @@
 		134A9FCA2E96AD1400030C56 /* BannerLayoutProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerLayoutProperties.swift; sourceTree = "<group>"; };
 		134A9FCC2E96B49700030C56 /* VaultBannerCarouselIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBannerCarouselIndicator.swift; sourceTree = "<group>"; };
 		134A9FCE2E96B4B000030C56 /* VaultBannerCarouselIndicators.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBannerCarouselIndicators.swift; sourceTree = "<group>"; };
-		134D610E2F30EB22008F034D /* devices_component.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = devices_component.riv; sourceTree = "<group>"; };
 		134D61A52F32300B008F034D /* VultisigLogoAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultisigLogoAnimation.swift; sourceTree = "<group>"; };
 		134DFE082F28EEFE0087C9D5 /* CardanoTransactionStatusProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardanoTransactionStatusProvider.swift; sourceTree = "<group>"; };
 		134DFE092F28EEFE0087C9D5 /* PolkadotTransactionStatusProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolkadotTransactionStatusProvider.swift; sourceTree = "<group>"; };
@@ -5958,8 +5958,8 @@
 			isa = PBXGroup;
 			children = (
 				132E01632F1AA2FA007E717C /* vault_setup_device1.riv */,
-				134D610E2F30EB22008F034D /* devices_component.riv */,
 				13333D002F3511CF00AB9E6F /* backup_device1.riv */,
+				133B966C2F3B84AE005FA4DA /* devices_component.riv */,
 				13333D012F3511CF00AB9E6F /* backup_device2.riv */,
 				13333D022F3511CF00AB9E6F /* backup_device3.riv */,
 				13333D032F3511CF00AB9E6F /* backup_device4.riv */,
@@ -6871,7 +6871,6 @@
 				A6CBF2E02C268D1400FD8080 /* Montserrat-Italic.ttf in Resources */,
 				136A08612F3E1E1B004B3153 /* searching_device.riv in Resources */,
 				A6C58D672D7A3E4B000D2833 /* FastVaultBackupSucces.riv in Resources */,
-				134D610F2F30EB22008F034D /* devices_component.riv in Resources */,
 				A6F7B6EB2D4B0D8500AC8104 /* CreatingVaultCheckmark.riv in Resources */,
 				A6F7B6C22D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv in Resources */,
 				468029362BC8E4CE005A9EEF /* Localizable.strings in Resources */,
@@ -6886,6 +6885,7 @@
 				132E016A2F1AA2FA007E717C /* vault_setup_device2.riv in Resources */,
 				132E016B2F1AA2FA007E717C /* vault_setup_device1.riv in Resources */,
 				A6BB9BCF2DA9E43B0085E117 /* all_devices_animation.riv in Resources */,
+				133B966D2F3B84AE005FA4DA /* devices_component.riv in Resources */,
 				133CEA3F2F32632600FD7471 /* splash_logo.riv in Resources */,
 				130C058C2EE9A42200A7303A /* import_seedphrase.riv in Resources */,
 				DE49A16D2B65F6DB000F3AFB /* Assets.xcassets in Resources */,
@@ -8350,7 +8350,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 43;
+				CURRENT_PROJECT_VERSION = 44;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
@@ -8414,7 +8414,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 43;
+				CURRENT_PROJECT_VERSION = 44;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
@@ -8474,7 +8474,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 43;
+				CURRENT_PROJECT_VERSION = 44;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -8500,7 +8500,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 43;
+				CURRENT_PROJECT_VERSION = 44;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5BP27CHH4Y;
 				ENABLE_TESTABILITY = NO;
@@ -8526,7 +8526,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 43;
+				CURRENT_PROJECT_VERSION = 44;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
@@ -8547,7 +8547,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 43;
+				CURRENT_PROJECT_VERSION = 44;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;

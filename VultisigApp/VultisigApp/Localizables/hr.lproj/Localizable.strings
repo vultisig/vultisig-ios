@@ -1366,3 +1366,5 @@
 "swap.price_impact.good" = "Dobro";
 "swap.price_impact.high" = "Visoko";
 "noPositionsFound" = "Nema pronađenih pozicija";
+"unrelatedQRCode" = "Nepovezani QR kod";
+"unrelatedQRCodeMessage" = "Skeniran je nepovezani QR kod.";

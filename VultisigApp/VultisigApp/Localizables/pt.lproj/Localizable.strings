@@ -1366,3 +1366,5 @@
 "swap.price_impact.good" = "Bom";
 "swap.price_impact.high" = "Alto";
 "noPositionsFound" = "Nenhuma posição encontrada";
+"unrelatedQRCode" = "Código QR não relacionado";
+"unrelatedQRCodeMessage" = "Foi escaneado um código QR não relacionado.";
