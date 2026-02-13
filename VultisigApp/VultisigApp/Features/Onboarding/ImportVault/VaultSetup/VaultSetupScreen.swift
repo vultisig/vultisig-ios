@@ -85,7 +85,6 @@ struct VaultSetupScreen: View {
                 }
             }
         }
-        .crossPlatformToolbar("")
         .onLoad {
             viewModel.onLoad()
             focusedField = .name

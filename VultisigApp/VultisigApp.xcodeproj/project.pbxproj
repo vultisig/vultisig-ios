@@ -737,8 +737,6 @@
 		A622C8542C9BC9E500908332 /* FastVaultSetPasswordView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8532C9BC9E500908332 /* FastVaultSetPasswordView+macOS.swift */; };
 		A622C8562C9BCCB800908332 /* JoinKeygenView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8552C9BCCB800908332 /* JoinKeygenView+iOS.swift */; };
 		A622C8582C9BCCC600908332 /* JoinKeygenView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8572C9BCCC600908332 /* JoinKeygenView+macOS.swift */; };
-		A622C85A2C9BCD6600908332 /* KeygenView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8592C9BCD6600908332 /* KeygenView+iOS.swift */; };
-		A622C85C2C9BCD6E00908332 /* KeygenView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C85B2C9BCD6E00908332 /* KeygenView+macOS.swift */; };
 		A622C8622C9BEC2100908332 /* PhoneCheckUpdateViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8612C9BEC2100908332 /* PhoneCheckUpdateViewModel.swift */; };
 		A622C8642C9BED5100908332 /* PhoneCheckUpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8632C9BED5100908332 /* PhoneCheckUpdateView.swift */; };
 		A623A09F2BF09FEE00AA2F8D /* NewWalletNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A623A09E2BF09FEE00AA2F8D /* NewWalletNameView.swift */; };
@@ -2073,8 +2071,6 @@
 		A622C8532C9BC9E500908332 /* FastVaultSetPasswordView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FastVaultSetPasswordView+macOS.swift"; sourceTree = "<group>"; };
 		A622C8552C9BCCB800908332 /* JoinKeygenView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoinKeygenView+iOS.swift"; sourceTree = "<group>"; };
 		A622C8572C9BCCC600908332 /* JoinKeygenView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoinKeygenView+macOS.swift"; sourceTree = "<group>"; };
-		A622C8592C9BCD6600908332 /* KeygenView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeygenView+iOS.swift"; sourceTree = "<group>"; };
-		A622C85B2C9BCD6E00908332 /* KeygenView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeygenView+macOS.swift"; sourceTree = "<group>"; };
 		A622C8612C9BEC2100908332 /* PhoneCheckUpdateViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneCheckUpdateViewModel.swift; sourceTree = "<group>"; };
 		A622C8632C9BED5100908332 /* PhoneCheckUpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneCheckUpdateView.swift; sourceTree = "<group>"; };
 		A623A09E2BF09FEE00AA2F8D /* NewWalletNameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewWalletNameView.swift; sourceTree = "<group>"; };
@@ -5550,7 +5546,6 @@
 			isa = PBXGroup;
 			children = (
 				A622C8552C9BCCB800908332 /* JoinKeygenView+iOS.swift */,
-				A622C8592C9BCD6600908332 /* KeygenView+iOS.swift */,
 			);
 			path = Keygen;
 			sourceTree = "<group>";
@@ -5558,7 +5553,6 @@
 		A6505B012CA67B910002FBF4 /* Keygen */ = {
 			isa = PBXGroup;
 			children = (
-				A622C85B2C9BCD6E00908332 /* KeygenView+macOS.swift */,
 			);
 			path = Keygen;
 			sourceTree = "<group>";
@@ -7163,7 +7157,6 @@
 				A65618032CB6500A00E9CF19 /* RegisterVaultView.swift in Sources */,
 				A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */,
 				A594EC2D2D072DAA00B74EBC /* SettingsCustomMessageView+iOS.swift in Sources */,
-				A622C85A2C9BCD6600908332 /* KeygenView+iOS.swift in Sources */,
 				A6F2C54F2BA009420095C8E3 /* CoinSelectionViewModel.swift in Sources */,
 				13AB0C072E5CA17100F52F24 /* ReferralCode.swift in Sources */,
 				13AB0C082E5CA17100F52F24 /* ReferredCode.swift in Sources */,
@@ -7659,7 +7652,6 @@
 				A66E90A12D778B1A00BF7BCB /* IconCapsule.swift in Sources */,
 				A6C6713D2CA3C87600F59B6A /* KeygenViewInstructions+macOS.swift in Sources */,
 				13204DDC2EEB1CCA00297D01 /* OnboardingInformationRowView.swift in Sources */,
-				A622C85C2C9BCD6E00908332 /* KeygenView+macOS.swift in Sources */,
 				B57DD59E2C3E69F500934CBB /* TokenAccountsByOwner.swift in Sources */,
 				135C7ACD2EA12C69002F879A /* DefiSelectChainScreen.swift in Sources */,
 				A66BFCCD2C1347D5004DCD4F /* NavigationQRShareButton.swift in Sources */,

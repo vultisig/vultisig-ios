@@ -110,6 +110,27 @@ struct KeygenView: View {
         }
     }
 
+    var content: some View {
+        container
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .onLoad {
+                Task {
+                    await setData()
+                    await viewModel.startKeygen(context: context)
+                }
+            }
+            #if os(iOS)
+            .onAppear {
+                UIApplication.shared.isIdleTimerDisabled = true
+            }
+            .onDisappear {
+                UIApplication.shared.isIdleTimerDisabled = false
+            }
+            #endif
+    }
+
     var container: some View {
         ZStack {
             states
@@ -123,6 +144,7 @@ struct KeygenView: View {
                 }
             }
         }
+        .ignoresSafeArea()
     }
 
     var migrateView: some View {
@@ -207,6 +229,8 @@ struct KeygenView: View {
             }
             .offset(y: 120)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Theme.colors.bgPrimary)
         .onAppear {
             setDoneData()
         }

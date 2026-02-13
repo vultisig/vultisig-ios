@@ -68,7 +68,6 @@ struct VaultBackupScreen: View {
                 }
             }
         }
-        .crossPlatformToolbar("")
         .onLoad(perform: onLoad)
     }
 

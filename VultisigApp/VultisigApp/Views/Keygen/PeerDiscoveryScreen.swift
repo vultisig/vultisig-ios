@@ -120,14 +120,16 @@ struct PeerDiscoveryScreen: View {
             }
 #endif
         }
-        .crossPlatformToolbar("", showsBackButton: !hideBackButton) {
-            CustomToolbarItem(placement: .trailing) {
-                if isShareButtonVisible {
-                    NavigationQRShareButton(
-                        vault: vault,
-                        type: .Keygen,
-                        viewModel: shareSheetViewModel
-                    )
+        .if(viewModel.status == .WaitingForDevices) {
+            $0.crossPlatformToolbar("", showsBackButton: !hideBackButton) {
+                CustomToolbarItem(placement: .trailing) {
+                    if isShareButtonVisible {
+                        NavigationQRShareButton(
+                            vault: vault,
+                            type: .Keygen,
+                            viewModel: shareSheetViewModel
+                        )
+                    }
                 }
             }
         }
@@ -341,7 +343,7 @@ struct PeerDiscoveryScreen: View {
         PrimaryButton(title: isButtonDisabled ? "waitingOnDevices..." : "next") {
             viewModel.startKeygen()
         }
-        .padding(.horizontal, 40)
+        .padding(.horizontal, 16)
         .padding(.top, 20)
 #if os(iOS)
         .padding(.bottom, idiom == .phone ? 10 : 30)
@@ -349,9 +351,6 @@ struct PeerDiscoveryScreen: View {
         .padding(.bottom, 10)
 #endif
         .disabled(isButtonDisabled)
-#if os(macOS)
-        .padding(.bottom, 10)
-#endif
         .animation(.easeInOut(duration: 0.2), value: isButtonDisabled)
     }
 
