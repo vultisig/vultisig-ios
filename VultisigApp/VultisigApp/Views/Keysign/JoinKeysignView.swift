@@ -12,6 +12,7 @@ struct JoinKeysignView: View {
 
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var appViewModel: ApplicationState
+    @EnvironmentObject var appViewModelLegacy: AppViewModel
     @EnvironmentObject var globalStateViewModel: GlobalStateViewModel
 
     var body: some View {
@@ -99,14 +100,14 @@ struct JoinKeysignView: View {
     }
 
     var keysignFailedText: some View {
-        VStack(spacing: 8) {
-            Text(NSLocalizedString("keysignFail", comment: "Failed to start the keysign process"))
-            Text(viewModel.errorMsg)
+        ErrorView(
+            type: .warning,
+            title: "failToStartKesign".localized,
+            description: viewModel.errorMsg,
+            buttonTitle: "tryAgain".localized
+        ) {
+            appViewModelLegacy.restart()
         }
-        .font(Theme.fonts.bodyMMedium)
-        .foregroundColor(Theme.colors.textPrimary)
-        .multilineTextAlignment(.center)
-        .padding(.horizontal, 30)
     }
 
     var keysignMessageConfirm: some View {
@@ -163,5 +164,6 @@ struct JoinKeysignView: View {
     JoinKeysignView(vault: Vault.example)
         .environmentObject(DeeplinkViewModel())
         .environmentObject(ApplicationState())
+        .environmentObject(AppViewModel())
         .environmentObject(GlobalStateViewModel())
 }
