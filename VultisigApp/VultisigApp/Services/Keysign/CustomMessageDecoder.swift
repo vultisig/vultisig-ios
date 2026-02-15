@@ -39,8 +39,13 @@ struct CustomMessageDecoder {
         guard decoded.hasPrefix(prefix) else { return decoded }
 
         let afterPrefix = decoded.dropFirst(prefix.count)
-        let messageStart = afterPrefix.drop(while: { $0.isNumber })
-        return String(messageStart)
+        let lengthString = String(afterPrefix.prefix(while: { $0.isNumber }))
+        guard let length = Int(lengthString),
+              afterPrefix.count >= lengthString.count + length else {
+            return decoded
+        }
+        let messageBody = afterPrefix.dropFirst(lengthString.count).prefix(length)
+        return String(messageBody)
     }
 
     /// personal_sign: hex -> UTF-8
