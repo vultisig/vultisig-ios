@@ -55,7 +55,7 @@ struct VaultRouteBuilder {
     }
 
     @ViewBuilder
-    func buildBackupSuccessScreen(tssType: TssType, vault: Vault) -> some View {
+    func buildBackupSuccessScreen(tssType _: TssType, vault: Vault) -> some View {
         OnboardingSummaryScreen(
             vault: vault
         )

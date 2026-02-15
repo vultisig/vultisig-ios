@@ -47,12 +47,12 @@ struct ServerBackupVerificationScreen: View {
                     titleView
                     subtitleView
                 }
-                
+
                 VStack(alignment: .leading, spacing: 12) {
                     otpField
                     statusView
                 }
-                
+
                 Spacer()
 
                 footerView

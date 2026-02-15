@@ -10,7 +10,7 @@ import SwiftUI
 struct VaultSetupStepIcon: View {
     let state: VaultSetupStepState
     let icon: String
-    
+
     var body: some View {
         Icon(named: icon, color: iconColor, size: 24, isSystem: false)
             .padding(10)
@@ -25,13 +25,13 @@ struct VaultSetupStepIcon: View {
             )
             .clipShape(Circle())
     }
-    
+
     var shadowView: some View {
         Rectangle().fill(Color(hex: "0C4EFF"))
             .frame(width: 16, height: 8)
             .blur(radius: 9.5)
     }
-    
+
     var iconColor: Color {
         switch state {
         case .valid:
@@ -42,7 +42,7 @@ struct VaultSetupStepIcon: View {
             Theme.colors.borderLight
         }
     }
-    
+
     var bgColor: Color {
         switch state {
         case .valid:
@@ -51,7 +51,7 @@ struct VaultSetupStepIcon: View {
             Color(hex: "03132C")
         }
     }
-    
+
     var borderColor: Color {
         switch state {
         case .valid:
