@@ -406,6 +406,10 @@ extension HomeScreen {
         switch type {
         case .NewVault:
             moveToCreateVaultView()
+            // Clear fields that CreateVaultView also checks, preventing double navigation.
+            // Keep receivedUrl intact — JoinKeygenView reads it for QR data.
+            deeplinkViewModel.tssType = nil
+            deeplinkViewModel.jsonData = nil
         case .SignTransaction:
             moveToVaultsView()
         case .Send:

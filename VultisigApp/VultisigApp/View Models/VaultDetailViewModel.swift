@@ -29,7 +29,7 @@ class VaultDetailViewModel: ObservableObject {
 
     func updateBalance(vault: Vault) {
         updateBalanceTask?.cancel()
-        updateBalanceTask = Task.detached { [weak self] in
+        updateBalanceTask = Task { [weak self] in
             guard let self else { return }
             let updatedGroups = await self.logic.updateBalance(vault: vault)
             if !Task.isCancelled {
