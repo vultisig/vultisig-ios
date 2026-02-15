@@ -676,6 +676,7 @@
 		A5D49F582BE26C63001766C8 /* CoinActionResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D49F572BE26C63001766C8 /* CoinActionResolver.swift */; };
 		A5D49F5A2BE26C87001766C8 /* Coin+ChainAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D49F592BE26C87001766C8 /* Coin+ChainAction.swift */; };
 		A5D8A3442CF8D5B0005A20A8 /* CustomMessagePayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D8A3432CF8D5B0005A20A8 /* CustomMessagePayload.swift */; };
+		5EB3252A1288D9B9D78B55E6 /* CustomMessageDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD426AD3A78890574917DE6 /* CustomMessageDecoder.swift */; };
 		A5DA62092BF79C1D00CBEAEE /* ThorchainSwapError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DA62082BF79C1D00CBEAEE /* ThorchainSwapError.swift */; };
 		A5E66B512CCA472000B6DA47 /* WarningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E66B502CCA472000B6DA47 /* WarningView.swift */; };
 		A5E841CB2C639556009325CB /* DatabaseRate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E841CA2C639556009325CB /* DatabaseRate.swift */; };
@@ -2022,6 +2023,7 @@
 		A5D49F572BE26C63001766C8 /* CoinActionResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinActionResolver.swift; sourceTree = "<group>"; };
 		A5D49F592BE26C87001766C8 /* Coin+ChainAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Coin+ChainAction.swift"; sourceTree = "<group>"; };
 		A5D8A3432CF8D5B0005A20A8 /* CustomMessagePayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomMessagePayload.swift; sourceTree = "<group>"; };
+		0BD426AD3A78890574917DE6 /* CustomMessageDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomMessageDecoder.swift; sourceTree = "<group>"; };
 		A5DA62082BF79C1D00CBEAEE /* ThorchainSwapError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainSwapError.swift; sourceTree = "<group>"; };
 		A5E66B502CCA472000B6DA47 /* WarningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningView.swift; sourceTree = "<group>"; };
 		A5E841CA2C639556009325CB /* DatabaseRate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseRate.swift; sourceTree = "<group>"; };
@@ -5190,6 +5192,7 @@
 				A58CC34E2C32FC530086D16B /* BlockChainSpecific.swift */,
 				A58CC34C2C32FB800086D16B /* KeysignMessage.swift */,
 				A5D8A3432CF8D5B0005A20A8 /* CustomMessagePayload.swift */,
+				0BD426AD3A78890574917DE6 /* CustomMessageDecoder.swift */,
 				A56386852C3A21B8008B848E /* KeysignMessage+ProtoMappable.swift */,
 				A5D00E402BD65CE7009E025F /* ERC20ApprovePayload.swift */,
 				13A9B8C7D6E5F4A3B2C1D0E9 /* TronContractPayloads.swift */,
@@ -7053,6 +7056,7 @@
 				A6182F4D2C92944A0059BFDD /* SendCryptoAmountTextField+macOS.swift in Sources */,
 				DE9EB0FC2BA463F7001747D9 /* KeygenViewModel.swift in Sources */,
 				A5D8A3442CF8D5B0005A20A8 /* CustomMessagePayload.swift in Sources */,
+				5EB3252A1288D9B9D78B55E6 /* CustomMessageDecoder.swift in Sources */,
 				13FB8AB82EA93B5700712A51 /* THORChainDepthHistory.swift in Sources */,
 				138C5E672E79E86B00C559C7 /* GlassEffect.swift in Sources */,
 				A683EDED2BCF67D100BB706E /* NetworkPromptCell.swift in Sources */,
