@@ -13,7 +13,7 @@ struct PeerDiscoveryScreen: View {
     let fastSignConfig: FastSignConfig?
     let keyImportInput: KeyImportInput?
     let setupType: KeyImportSetupType?
-
+    
     init(
         tssType: TssType,
         vault: Vault,
@@ -29,34 +29,34 @@ struct PeerDiscoveryScreen: View {
         self.keyImportInput = keyImportInput
         self.setupType = setupType
     }
-
+    
     @StateObject var viewModel = KeygenPeerDiscoveryViewModel()
     @StateObject var participantDiscovery = ParticipantDiscovery()
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
-
+    
     @State var qrCodeImage: Image? = nil
-
+    
     @State var showInfoSheet: Bool = false
     @State var hideBackButton: Bool = false
-
+    
     @State var screenWidth: CGFloat = .zero
     @State var screenHeight: CGFloat = .zero
-
+    
     @State var dotsIndicatorVM: RiveViewModel? = nil
-
+    
     @Environment(\.displayScale) var displayScale
-
+    
 #if os(iOS)
     @State var orientation = UIDevice.current.orientation
     private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 #endif
-
+    
     var localModeAvailable: Bool { tssType != .KeyImport }
-
+    
     var isShareButtonVisible: Bool {
         viewModel.status == .WaitingForDevices && selectedTab.hasOtherDevices
     }
-
+    
     var qrCodeSize: CGFloat {
 #if os(iOS)
         screenHeight / 3.5
@@ -64,7 +64,7 @@ struct PeerDiscoveryScreen: View {
         min(screenWidth / 2.5, screenHeight / 2.5)
 #endif
     }
-
+    
     var totalDeviceCount: Int {
         switch tssType {
         case .Keygen:
@@ -92,11 +92,11 @@ struct PeerDiscoveryScreen: View {
             return 2
         }
     }
-
+    
     var isInternetMode: Bool {
         viewModel.selectedNetwork == .Internet
     }
-
+    
     var body: some View {
         GeometryReader { proxy in
             Screen(
@@ -176,7 +176,7 @@ struct PeerDiscoveryScreen: View {
             setData()
         }
     }
-
+    
     var states: some View {
         VStack {
             switch (viewModel.status, selectedTab.hasOtherDevices) {
@@ -198,7 +198,7 @@ struct PeerDiscoveryScreen: View {
         .blur(radius: showInfoSheet ? 1 : 0)
         .animation(.easeInOut, value: showInfoSheet)
     }
-
+    
     var waitingForDevices: some View {
         VStack(spacing: 0) {
             portraitContent
@@ -207,7 +207,7 @@ struct PeerDiscoveryScreen: View {
                 .showIf(localModeAvailable)
         }
     }
-
+    
     var portraitContent: some View {
         ScrollView {
             VStack(spacing: 16) {
@@ -220,7 +220,7 @@ struct PeerDiscoveryScreen: View {
             }
         }
     }
-
+    
     var paringBarcode: some View {
         qrCodeImage?
             .resizable()
@@ -232,49 +232,45 @@ struct PeerDiscoveryScreen: View {
                 RoundedRectangle(cornerRadius: 33)
                     .stroke(
                         isInternetMode
-                            ? AnyShapeStyle(LinearGradient.qrBorderGradient)
-                            : AnyShapeStyle(Theme.colors.borderLight),
+                        ? AnyShapeStyle(LinearGradient.qrBorderGradient)
+                        : AnyShapeStyle(Theme.colors.borderLight),
                         lineWidth: 8
                     )
             )
     }
-
+    
     var statusText: some View {
         VStack(spacing: 4) {
-            if isInternetMode {
-                HStack(alignment: .bottom, spacing: 2) {
-                    Text(NSLocalizedString("waitingForDevicesToConnect", comment: ""))
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(Theme.colors.textSecondary)
-
-                    dotsIndicatorAnimation
-                        .offset(y: 2)
-                }
-                .onAppear {
-                    dotsIndicatorVM = RiveViewModel(fileName: "dots_indicator", autoPlay: true)
-                }
-                .onDisappear {
-                    dotsIndicatorVM?.stop()
-                }
-            } else {
-                Text(NSLocalizedString("localModeWaitingOnDevices", comment: ""))
+            let description = isInternetMode ? "waitingForDevicesToConnect" : "bodySMedium"
+            HStack(alignment: .bottom, spacing: 2) {
+                Text(description.localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textSecondary)
-
-                Text(NSLocalizedString("localModeDescription", comment: ""))
-                    .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.textTertiary)
+                
+                dotsIndicatorAnimation
+                    .offset(y: 2)
             }
+            .onAppear {
+                dotsIndicatorVM = RiveViewModel(fileName: "dots_indicator", autoPlay: true)
+            }
+            .onDisappear {
+                dotsIndicatorVM?.stop()
+            }
+            
+            // TODO: - Add local mode description if needed
+            //                Text(NSLocalizedString("localModeDescription", comment: ""))
+            //                    .font(Theme.fonts.caption12)
+            //                    .foregroundStyle(Theme.colors.textTertiary)
         }
         .multilineTextAlignment(.center)
         .padding(.horizontal, 16)
     }
-
+    
     var dotsIndicatorAnimation: some View {
         dotsIndicatorVM?.view()
             .frame(width: 12, height: 12)
     }
-
+    
     var deviceList: some View {
         VStack(spacing: 12) {
 #if os(iOS)
@@ -292,9 +288,9 @@ struct PeerDiscoveryScreen: View {
                 totalCount: totalDeviceCount
             )
 #endif
-
+            
             devices
-
+            
             if let nextEmptyIndex = nextEmptySlotIndex {
                 EmptyPeerCell(
                     index: nextEmptyIndex,
@@ -311,7 +307,7 @@ struct PeerDiscoveryScreen: View {
         .padding(.top, 8)
 #endif
     }
-
+    
     var devices: some View {
         ForEach(
             Array(participantDiscovery.peersFound.enumerated()),
@@ -329,17 +325,17 @@ struct PeerDiscoveryScreen: View {
             }
         }
     }
-
+    
     var nextEmptySlotIndex: Int? {
         let filledCount = 1 + participantDiscovery.peersFound.count
         guard filledCount < totalDeviceCount else { return nil }
         return filledCount + 1
     }
-
+    
     @ViewBuilder
     var bottomButton: some View {
         let isButtonDisabled = disableContinueButton()
-
+        
         PrimaryButton(title: isButtonDisabled ? "waitingOnDevices..." : "next") {
             viewModel.startKeygen()
         }
@@ -353,7 +349,7 @@ struct PeerDiscoveryScreen: View {
         .disabled(isButtonDisabled)
         .animation(.easeInOut(duration: 0.2), value: isButtonDisabled)
     }
-
+    
     var switchLink: some View {
         SwitchToLocalLink(isForKeygen: true, selectedNetwork: $viewModel.selectedNetwork)
             .disabled(viewModel.isLoading)
@@ -361,14 +357,14 @@ struct PeerDiscoveryScreen: View {
             .padding(.bottom, 24)
 #endif
     }
-
+    
     var lookingForDevices: some View {
         LookingForDevicesLoader(
             tssType: tssType,
             selectedTab: selectedTab
         )
     }
-
+    
     func disableContinueButton() -> Bool {
         switch viewModel.tssType {
         case .Keygen:
@@ -389,7 +385,7 @@ struct PeerDiscoveryScreen: View {
             return showWaitingOnDevice
         }
     }
-
+    
     var showWaitingOnDevice: Bool {
         guard
             let setupType,
@@ -397,7 +393,7 @@ struct PeerDiscoveryScreen: View {
         else {
             return false
         }
-
+        
         switch numberOfDevices {
         case 0...3:
             return viewModel.selections.count != numberOfDevices
@@ -405,7 +401,7 @@ struct PeerDiscoveryScreen: View {
             return viewModel.selections.count < numberOfDevices
         }
     }
-
+    
     var keygenView: some View {
         KeygenView(
             vault: viewModel.vault,
@@ -422,7 +418,7 @@ struct PeerDiscoveryScreen: View {
             hideBackButton: $hideBackButton
         )
     }
-
+    
     var failureText: some View {
         VStack {
             Text(self.viewModel.errorMessage)
@@ -431,13 +427,13 @@ struct PeerDiscoveryScreen: View {
                 .foregroundColor(.red)
         }
     }
-
+    
     private func showInfo() {
         guard selectedTab == .secure else {
             showInfoSheet = false
             return
         }
-
+        
         switch self.tssType {
         case .Keygen:
             showInfoSheet = true
@@ -449,7 +445,7 @@ struct PeerDiscoveryScreen: View {
             showInfoSheet = false
         }
     }
-
+    
     func setData() {
 #if os(iOS)
         guard self.qrCodeImage == nil, qrCodeSize > 0 else { return }
@@ -465,7 +461,7 @@ struct PeerDiscoveryScreen: View {
             return
         }
 #endif
-
+        
         self.qrCodeImage = qrCodeImage
         shareSheetViewModel.render(
             qrCodeImage: qrCodeImage,

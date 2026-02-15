@@ -195,8 +195,8 @@
 "enableDKLS" = "Ativar DKLS";
 "EnglishUK" = "Inglês (UK)";
 "enter4Characters" = "Digite 4 caracteres";
-"enter5DigitVerificationCode" = "Código de 4 dígitos recebido por email";
-"enter5DigitVerificationCodeDescription" = "Isso ativará o co-assinante";
+"enter4DigitVerificationCode" = "Código de 4 dígitos recebido por email";
+"enter4DigitVerificationCodeDescription" = "Isso ativará o co-assinante";
 "enterAddress" = "Inserir Endereço";
 "enterAddressHere" = "Digite o endereço aqui";
 "enterAmount" = "Inserir Quantidade";
@@ -410,7 +410,6 @@
 "loginUsingFaceID" = "Login usando Face ID";
 "loginUsingOpticID" = "Entrar usando Optic ID";
 "loginUsingTouchID" = "Entrar usando Touch ID";
-"localModeDescription" = "Breve descrição do modo local";
 "localModeWaitingOnDevices" = "Modo local, aguardando dispositivos...";
 "looksGood" = "Parece bom";
 "lookingForDevices" = "Procurando dispositivos... ";

@@ -21,11 +21,11 @@ struct ServerBackupVerificationScreen: View {
 
     @FocusState var focusedField: Int?
 
-    @State var otp: [String] = Array(repeating: "", count: codeLength)
-    @State var isLoading: Bool = false
-    @State var showAlert: Bool = false
-    @State var alertDescription = "incorrectCodeTryAgain"
-    @State var animationVM: RiveViewModel?
+    @State private var otp: [String] = Array(repeating: "", count: codeLength)
+    @State private var isLoading: Bool = false
+    @State private var showAlert: Bool = false
+    @State private var alertDescription = "incorrectCodeTryAgain"
+    @State private var animationVM: RiveViewModel?
 
     @Environment(\.modelContext) private var modelContext
 
@@ -77,7 +77,7 @@ struct ServerBackupVerificationScreen: View {
     // MARK: - Header
 
     private var titleView: some View {
-        Text("enter5DigitVerificationCode".localized)
+        Text("enter4DigitVerificationCode".localized)
             .font(Theme.fonts.title2)
             .foregroundStyle(Theme.colors.textPrimary)
             .multilineTextAlignment(.center)
@@ -86,7 +86,7 @@ struct ServerBackupVerificationScreen: View {
     }
 
     private var subtitleView: some View {
-        Text("enter5DigitVerificationCodeDescription".localized)
+        Text("enter4DigitVerificationCodeDescription".localized)
             .font(Theme.fonts.bodySMedium)
             .foregroundStyle(Theme.colors.textTertiary)
             .multilineTextAlignment(.center)

@@ -9,16 +9,6 @@ import SwiftUI
 import RiveRuntime
 
 struct OnboardingSummaryScreen: View {
-    enum Kind: String, Identifiable {
-        case initial
-        case fast
-        case secure
-        case keyImport
-
-        var id: String { rawValue }
-    }
-
-    let kind: Kind
     let vault: Vault
 
     @EnvironmentObject var appViewModel: AppViewModel
@@ -131,7 +121,6 @@ struct OnboardingSummaryScreen: View {
 
 #Preview {
     OnboardingSummaryScreen(
-        kind: .fast,
         vault: Vault.example
     ).environmentObject(HomeViewModel())
         .environmentObject(AppViewModel())

@@ -195,8 +195,8 @@
 "enableDKLS" = "DKLS aktivieren";
 "EnglishUK" = "Englisch (UK)";
 "enter4Characters" = "Gib 4 Zeichen ein";
-"enter5DigitVerificationCode" = "4-stelliger Code per E-Mail erhalten";
-"enter5DigitVerificationCodeDescription" = "Dies aktiviert den Co-Unterzeichner";
+"enter4DigitVerificationCode" = "4-stelliger Code per E-Mail erhalten";
+"enter4DigitVerificationCodeDescription" = "Dies aktiviert den Co-Unterzeichner";
 "enterAddress" = "Adresse eingeben";
 "enterAddressHere" = "Adresse hier eingeben";
 "enterAmount" = "Menge eingeben";
@@ -410,7 +410,6 @@
 "loginUsingFaceID" = "Mit Face ID anmelden";
 "loginUsingOpticID" = "Anmelden mit Optic ID";
 "loginUsingTouchID" = "Anmelden mit Touch ID";
-"localModeDescription" = "Kurzbeschreibung des lokalen Modus";
 "localModeWaitingOnDevices" = "Lokaler Modus, warte auf Geräte...";
 "looksGood" = "Sieht gut aus";
 "lookingForDevices" = "Suche nach Geräten...";

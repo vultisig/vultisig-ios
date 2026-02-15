@@ -197,8 +197,8 @@
 "enableDKLS" = "启用 DKLS";
 "EnglishUK" = "英语（英国）";
 "enter4Characters" = "输入最多 4 个字符";
-"enter5DigitVerificationCode" = "通过电子邮件收到的4位验证码";
-"enter5DigitVerificationCodeDescription" = "这将激活联合签名者";
+"enter4DigitVerificationCode" = "通过电子邮件收到的4位验证码";
+"enter4DigitVerificationCodeDescription" = "这将激活联合签名者";
 "enterAddress" = "输入地址";
 "enterAddressHere" = "在此输入地址";
 "enterAmount" = "输入金额";
@@ -412,7 +412,6 @@
 "loginUsingFaceID" = "使用 Face ID 登录";
 "loginUsingOpticID" = "使用 Optic ID 登录";
 "loginUsingTouchID" = "使用 Touch ID 登录";
-"localModeDescription" = "本地模式简要说明";
 "localModeWaitingOnDevices" = "本地模式，等待设备...";
 "looksGood" = "看起来不错";
 "lookingForDevices" = "正在寻找设备...";

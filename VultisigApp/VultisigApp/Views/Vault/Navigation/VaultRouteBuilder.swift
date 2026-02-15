@@ -57,7 +57,6 @@ struct VaultRouteBuilder {
     @ViewBuilder
     func buildBackupSuccessScreen(tssType: TssType, vault: Vault) -> some View {
         OnboardingSummaryScreen(
-            kind: vault.libType == .KeyImport ? .keyImport : (vault.isFastVault ? .fast : .secure),
             vault: vault
         )
     }

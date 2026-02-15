@@ -12,7 +12,7 @@ struct EmptyPeerCell: View {
     var index: Int? = nil
     var totalCount: Int? = nil
 
-    @State var animationVM: RiveViewModel? = nil
+    @State private var animationVM: RiveViewModel? = nil
 
     var body: some View {
         cell

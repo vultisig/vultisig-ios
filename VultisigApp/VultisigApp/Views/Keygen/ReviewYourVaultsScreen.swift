@@ -14,7 +14,7 @@ struct ReviewYourVaultsScreen: View {
     let keyImportInput: KeyImportInput?
     let isInitiateDevice: Bool
 
-    @State var animationVM: RiveViewModel?
+    @State private var animationVM: RiveViewModel?
 
     @Environment(\.router) var router
 
@@ -22,28 +22,34 @@ struct ReviewYourVaultsScreen: View {
         Screen(
             title: "",
             showNavigationBar: false,
-            edgeInsets: .init(leading: 0, trailing: 0)
+            edgeInsets: .init(top: 0, leading: 0, trailing: 0)
         ) {
             VStack(spacing: 0) {
-                icon
-                animation
-                content
-                Spacer()
+                Group {
+                    animation
+                    content
+                }
+                .offset(y: -30)
                 buttons
             }
         }
         .onAppear {
             animationVM = RiveViewModel(fileName: "review_devices", autoPlay: true)
+            animationVM?.fit = .layout
         }
-    }
-
-    var icon: some View {
-        VaultSetupStepIcon(state: .active, icon: "devices")
-            .padding(.top, 24)
     }
 
     var animation: some View {
         animationVM?.view()
+            .frame(maxWidth: 395)
+            .overlay(
+                LinearGradient(
+                    colors: [Theme.colors.bgPrimary, .clear],
+                    startPoint: .top,
+                    endPoint: .bottom
+                ).frame(height: 120),
+                alignment: .top
+            )
     }
 
     var content: some View {
@@ -61,7 +67,6 @@ struct ReviewYourVaultsScreen: View {
             deviceList
         }
         .padding(.horizontal, 16)
-        .padding(.top, 24)
     }
 
     var deviceList: some View {
@@ -94,7 +99,6 @@ struct ReviewYourVaultsScreen: View {
             }
         }
         .padding(.horizontal, 16)
-        .padding(.bottom, 16)
     }
 
     private func navigateToOverview() {
