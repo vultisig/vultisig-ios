@@ -267,15 +267,18 @@ struct ServerBackupVerificationScreen: View {
     #endif
 
     private func verifyCode() {
+        guard !isLoading else { return }
+
         guard !verificationCode.isEmpty else {
             alertDescription = "emptyField"
             showAlert = true
             return
         }
 
+        isLoading = true
+
         Task {
             alertDescription = "incorrectCodeTryAgain"
-            isLoading = true
 
             let isSuccess = await FastVaultService.shared.verifyBackupOTP(
                 ecdsaKey: vault.pubKeyECDSA,

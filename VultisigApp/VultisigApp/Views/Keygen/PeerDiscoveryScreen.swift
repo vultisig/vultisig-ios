@@ -1,5 +1,5 @@
 //
-//  PeerDiscoveryView.swift
+//  PeerDiscoveryScreen.swift
 //  VultisigApp
 //
 
@@ -213,7 +213,7 @@ struct PeerDiscoveryScreen: View {
         ScrollView {
             VStack(spacing: 16) {
                 VStack(spacing: 32) {
-                    paringBarcode
+                    pairingBarcode
                     statusText
                 }
                 .padding(.bottom, 8)
@@ -222,7 +222,7 @@ struct PeerDiscoveryScreen: View {
         }
     }
 
-    var paringBarcode: some View {
+    var pairingBarcode: some View {
         qrCodeImage?
             .resizable()
             .frame(maxWidth: qrCodeSize, maxHeight: qrCodeSize)
