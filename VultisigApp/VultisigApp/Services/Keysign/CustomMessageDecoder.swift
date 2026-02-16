@@ -38,14 +38,15 @@ struct CustomMessageDecoder {
         let prefix = "\u{19}TRON Signed Message:\n"
         guard decoded.hasPrefix(prefix) else { return decoded }
 
-        let afterPrefix = decoded.dropFirst(prefix.count)
+        let afterPrefix = String(decoded.dropFirst(prefix.count))
         let lengthString = String(afterPrefix.prefix(while: { $0.isNumber }))
-        guard let length = Int(lengthString),
-              afterPrefix.count >= lengthString.count + length else {
+        guard let length = Int(lengthString) else { return decoded }
+        let afterLength = Data(afterPrefix.dropFirst(lengthString.count).utf8)
+        guard afterLength.count >= length,
+              let messageBody = String(data: afterLength.prefix(length), encoding: .utf8) else {
             return decoded
         }
-        let messageBody = afterPrefix.dropFirst(lengthString.count).prefix(length)
-        return String(messageBody)
+        return messageBody
     }
 
     /// personal_sign: hex -> UTF-8
