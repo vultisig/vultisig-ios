@@ -1,5 +1,5 @@
 //
-//  KeyImportDeviceCountScreen.swift
+//  OnboardingDevicesSelectionScreen.swift
 //  VultisigApp
 //
 //  Created by Gaston Mazzeo on 16/01/2026.
@@ -8,9 +8,9 @@
 import SwiftUI
 import RiveRuntime
 
-struct KeyImportDeviceCountScreen: View {
-    let mnemonic: String
-    let chainSettings: [ChainImportSetting]
+struct OnboardingDevicesSelectionScreen: View {
+    let tssType: TssType
+    let keyImportInput: KeyImportInput?
 
     @State private var selectedDeviceCount: Int = 0
     @State private var animationVM: RiveViewModel? = nil
@@ -60,12 +60,9 @@ struct KeyImportDeviceCountScreen: View {
     }
 
     private func onContinue() {
-        router.navigate(to: OnboardingRoute.vaultSetup(
-            tssType: .KeyImport,
-            keyImportInput: KeyImportInput(
-                mnemonic: mnemonic,
-                chainSettings: chainSettings
-            ),
+        router.navigate(to: OnboardingRoute.vaultSetupInformation(
+            tssType: tssType,
+            keyImportInput: keyImportInput,
             setupType: setupType
         ))
     }
@@ -122,8 +119,8 @@ struct KeyImportDeviceCountScreen: View {
 }
 
 #Preview {
-    KeyImportDeviceCountScreen(
-        mnemonic: "test mnemonic",
-        chainSettings: [ChainImportSetting(chain: .bitcoin)]
+    OnboardingDevicesSelectionScreen(
+        tssType: .Keygen,
+        keyImportInput: nil
     )
 }
