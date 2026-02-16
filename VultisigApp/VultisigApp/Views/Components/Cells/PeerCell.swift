@@ -9,16 +9,23 @@ import SwiftUI
 
 struct PeerCell: View {
     let id: String
-    let isSelected: Bool
+    var isSelected: Bool = false
+    var isThisDevice: Bool = false
+    var index: Int? = nil
+    var totalCount: Int? = nil
 
-    @State var isPhone: Bool = false
+    private var isHighlighted: Bool {
+        isThisDevice || isSelected
+    }
 
     var body: some View {
         cell
     }
 
     var cell: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 12) {
+            deviceIcon
+
             VStack(alignment: .leading, spacing: 2) {
                 deviceId
                 description
@@ -26,39 +33,71 @@ struct PeerCell: View {
 
             Spacer()
 
-            check
+            if let index, let totalCount {
+                badge(index: index, totalCount: totalCount)
+            }
         }
-        .padding(16)
-        .frame(height: 70)
-        .background(isSelected ? Theme.colors.bgSuccess : Theme.colors.bgSurface1)
-        .cornerRadius(16)
+        .padding(.horizontal, 16)
+        .frame(height: 68)
+        .background(Theme.colors.bgSurface1)
+        .cornerRadius(24)
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(isSelected ? Theme.colors.alertSuccess : Theme.colors.borderLight, lineWidth: 1)
+            RoundedRectangle(cornerRadius: 24)
+                .stroke(Theme.colors.borderLight, lineWidth: 1)
         )
-        .padding(1)
+    }
+
+    var deviceIcon: some View {
+        Circle()
+            .fill(Theme.colors.alertSuccess.opacity(0.05))
+            .stroke(Theme.colors.alertSuccess, lineWidth: 1.5)
+            .frame(width: 32, height: 32)
+            .overlay(
+                Icon(
+                    named: DeviceInfo.iconName(for: id),
+                    color: Theme.colors.alertSuccess,
+                    size: 16
+                )
+            )
     }
 
     var deviceId: some View {
         Text(getDeviceName())
-            .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodyMMedium)
+            .foregroundStyle(Theme.colors.textPrimary)
             .lineLimit(1)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     var description: some View {
-        Text(id)
-            .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textSecondary)
-            .lineLimit(1)
-            .frame(maxWidth: .infinity, alignment: .leading)
+        Group {
+            if isThisDevice {
+                Text(NSLocalizedString("thisDevice", comment: ""))
+                    .foregroundStyle(Theme.colors.alertSuccess)
+            } else if isSelected {
+                Text(NSLocalizedString("connected", comment: ""))
+                    .foregroundStyle(Theme.colors.alertSuccess)
+            } else {
+                Text(id)
+                    .foregroundStyle(Theme.colors.textSecondary)
+            }
+        }
+        .font(Theme.fonts.caption12)
+        .lineLimit(1)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    var check: some View {
-        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-            .font(Theme.fonts.title2)
-            .foregroundColor(isSelected ? Theme.colors.alertSuccess : Theme.colors.borderLight)
+    private func badge(index: Int, totalCount: Int) -> some View {
+        Text("\(index) of \(totalCount)")
+            .font(Theme.fonts.caption12)
+            .foregroundStyle(Theme.colors.textSecondary)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 99)
+                    .stroke(Theme.colors.borderExtraLight, lineWidth: 1)
+                    .fill(Theme.colors.bgSurface2)
+            )
     }
 
     private func getDeviceName() -> String {
@@ -78,8 +117,6 @@ struct PeerCell: View {
         } else if idString.contains("windows-") {
             deviceName = "Windows"
         } else {
-            // likely it will be android device , let's treat it as phone
-            // android eco-system has too many types of devices, hard to know what phone or tablet it is
             deviceName = "Phone"
         }
         return deviceName
@@ -87,20 +124,9 @@ struct PeerCell: View {
 }
 
 #Preview {
-    let columns = [
-        GridItem(.adaptive(minimum: 200)),
-        GridItem(.adaptive(minimum: 200))
-    ]
-
-    return ZStack {
-        Background()
-        LazyVGrid(columns: columns, spacing: 30) {
-            PeerCell(id: "iPhone 15 Pro-5D2F5D984A37", isSelected: true)
-            PeerCell(id: "iPhone 15 Pro-5D2F 5D984A37erere reretgjkhgijerh gje rhgr e jhg wd wdr", isSelected: false)
-            PeerCell(id: "iPad 15 Pro-5D2F5D984A37", isSelected: false)
-            PeerCell(id: "iPhone 15 Pro-5D2F 5D984A37erere reretgjkhgijerh gje rhgr e jhg wd wdr", isSelected: true)
-            PeerCell(id: "Pro-5D2F 5D984A37erere reretgjkhgijerh gje rhgr e jhg wd wdr", isSelected: true)
-        }
+    VStack {
+        PeerCell(id: "iPhone", isThisDevice: true, index: 1, totalCount: 3)
+        PeerCell(id: "MacBook Pro-5D2F5D984A37", isSelected: true, index: 2, totalCount: 3)
+        PeerCell(id: "iPad 15 Pro-5D2F5D984A37", index: 3, totalCount: 3)
     }
-    .frame(minWidth: 900, minHeight: 600)
 }

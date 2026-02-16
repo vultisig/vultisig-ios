@@ -50,6 +50,8 @@
 "backupGuide" = "备份指南";
 "backupNotNeededDisclaimer" = "除非您丢失了一个主要设备，否则不需要您的备份设备";
 "backupNow" = "立即备份";
+"backupSaveCheckbox" = "我了解如何保存此备份";
+"backupSaveButton" = "保存备份";
 "backupNowCheckbox" = "我理解，跳过备份可能会导致我无法访问我的资金";
 "backupNowSubtitle" = "每个设备都有自己独特的保险库份额，这些份额是恢复所需的";
 "backupNowTitle" = "需要在 Vultisig 中的每个设备上进行备份";
@@ -64,8 +66,10 @@
 "backupPart1" = "备份份额 1";
 "backupPart2" = "备份份额 2";
 "backupPasswordDisclaimer" = "切勿将来自不同设备的保险库份额存储在同一位置";
-"backupSetupSubtitle" = "推荐在线存储且安全 -\n保险库份额专为此设计";
-"backupSetupTitle" = "在线备份您的\n保险库份额";
+"backupSetupSubtitle" = "导出此备份文件，然后将其保存到云端。每次备份请使用不同的云服务或账户。完成后，从此设备删除该文件。";
+"backupSetupSubtitleHighlight" = "每次备份请使用不同的云服务或账户。完成后，从此设备删除该文件。";
+"backupSetupTitle" = "将备份保存到云端";
+"backupSetupTitleSecure" = "将备份 %d/%d 保存到云端";
 "backupShareSent" = "备份份额已发送！";
 "backupVault" = "备份您的保险库份额";
 "backupVaultOnEveryDeviceIndividually!" = "在每个设备上单独备份您的保险库！";
@@ -89,6 +93,11 @@
 "chain" = "链";
 "chains" = "链";
 "changeEmailAndRestart" = "更改电子邮件并重新启动密钥生成";
+"chooseAPassword" = "选择密码";
+"choosePasswordDescription" = "如果你想要额外的安全保障，请选择一个密码。密码无法恢复。";
+"choosePasswordHighlight" = "密码无法恢复。";
+"choosePasswordTooltip" = "这是因为密码用于在本地加密备份文件，类似于加密硬盘。在下一步中，你可以选择添加提示。";
+"createVault" = "创建保险库";
 "changeFriendsReferralCode" = "更改用于交换的好友推荐码";
 "changesInSetup" = "设置中的更改";
 "changeVault" = "更改保险库";
@@ -109,8 +118,11 @@
 "coinAddressCopied" = "%@ 地址已复制";
 "collectedRewards" = "已收集的奖励";
 "complete" = "完成";
+"congratsExclamation" = "恭喜！";
+"congratsSummaryDescription" = "一切就绪！你始终掌控每笔交易。";
 "confirm" = "确认";
 "confirmToSign" = "确认签署消息？";
+"connected" = "已连接";
 "connectingWithServer..." = "正在连接服务器...";
 "continue" = "继续";
 "no_unencrypted_vaults_to_import" = "没有未加密的保险库可导入";
@@ -185,8 +197,8 @@
 "enableDKLS" = "启用 DKLS";
 "EnglishUK" = "英语（英国）";
 "enter4Characters" = "输入最多 4 个字符";
-"enter5DigitVerificationCode" = "输入我们通过电子邮件发送给您的 4 位验证码";
-"enter5DigitVerificationCodeDescription" = "此代码将确认您已通过电子邮件收到保险库份额";
+"enter4DigitVerificationCode" = "通过电子邮件收到的4位验证码";
+"enter4DigitVerificationCodeDescription" = "这将激活联合签名者";
 "enterAddress" = "输入地址";
 "enterAddressHere" = "在此输入地址";
 "enterAmount" = "输入金额";
@@ -317,6 +329,7 @@
 "importVault" = "导入保险库";
 "importYourVaultShare" = "导入您的保险库份额";
 "incorrectCode" = "代码错误";
+"incorrectCodeTryAgain" = "验证码错误。请重试。";
 "incorrectPassword" = "密码错误";
 "incorrectPasswordTryAgain" = "密码错误，请重试";
 "informationNote" = "保持设备在同一 WiFi 网络上，正确的保险库和配对设备。\n确保没有其他设备正在运行 Vultisig";
@@ -399,10 +412,13 @@
 "loginUsingFaceID" = "使用 Face ID 登录";
 "loginUsingOpticID" = "使用 Optic ID 登录";
 "loginUsingTouchID" = "使用 Touch ID 登录";
+"localModeWaitingOnDevices" = "本地模式，等待设备...";
+"looksGood" = "看起来不错";
 "lookingForDevices" = "正在寻找设备...";
 "madeVaultBackupPrompt" = "我已进行保险库备份";
 "main" = "主要";
 "mainDevice" = "主设备";
+"makeSureCorrectDevices" = "确保这些是你添加的正确设备：";
 "mainVault" = "主保险库";
 "maxTotalFee" = "最大总费用";
 "memo" = "备忘录";
@@ -597,6 +613,7 @@
 "restart" = "请重新启动应用程序以应用新的语言设置";
 "retry" = "重试";
 "reviewConditions" = "审查条件";
+"reviewYourVaultDevices" = "检查你的保险库设备";
 "reviewConditionsMessage" = "请审查并同意所有列出的条件";
 "rippleExistentialDepositError" = "XRP 需要最低余额 1 XRP。区块链将阻止任何会使账户余额低于此金额的交易。要发送全部余额，必须删除账户";
 "sameDeviceShareError" = "相同的保险库份额";
@@ -718,6 +735,7 @@
 "signCustomMessage" = "签署自定义消息";
 "skip" = "跳过";
 "skipPassword" = "跳过密码";
+"somethingsWrong" = "有问题";
 "somethingWentWrongTryAgain" = "出了点问题，请重试";
 "soon" = "即将推出";
 "Spanish" = "西班牙语";
@@ -761,7 +779,7 @@
 "swapErrorSameAssetTitle" = "相同资产";
 "swapErrorSameAssetDescription" = "无法在相同资产之间进行兑换。请选择不同的资产。";
 "noLiquidityPool" = "此代币对没有可用的流动性池。此资产可能不受支持";
-"switchBackToInternetMode" = " 切换回互联网模式";
+"switchBackToInternetMode" = "不想使用本地模式？切换回去。";
 "switchToLocalMode" = "切换到本地模式";
 "systemErrorMessage" = "系统错误。请重试";
 "termsOfService" = "服务条款";
@@ -801,6 +819,7 @@
 "updateNow" = "立即更新";
 "downloadViaWebsite" = "通过网站下载";
 "upgradeNow" = "立即升级";
+"useDifferentEmail" = "使用不同的电子邮件";
 "upgradeYourVault" = "升级您的保险库";
 "upgradeYourVaultNow" = "立即升级您的保险库";
 "upgradeYourVaultTitle1" = "将此保险库升级到";
@@ -820,11 +839,13 @@
 "uploadQRCodeImageKeysign" = "上传二维码以加入密钥签名";
 "urlCopied" = "URL 已复制";
 "URLInaccessible" = "无法访问 URL";
+"useLocalMode" = "使用本地模式";
 "useMyVaultPassword" = "使用我的保险库密码";
 "usePassword" = "使用密码";
 "useReferral" = "使用推荐";
 "useReferralCode" = "使用推荐码";
 "useSkipInstead" = "改用跳过";
+"useStandardMode" = "使用标准模式";
 "utxoSelectionFailedError" = "UTXO 选择失败。无法找到合适的交易输出来支付金额加估算费用。尝试减少交易金额";
 "utxoSuggestionMessage" = "对于基于 UTXO 的加密货币，如狗狗币：\n\n• 尝试发送较小的金额\n• 等待待处理的交易确认\n• 考虑先合并小的 UTXO\n• 检查您是否有足够的余额来支付费用";
 "utxoSuggestionTitle" = "UTXO 交易提示";
@@ -886,6 +907,8 @@
 "vultisigWebsite" = "Vultisig 网站";
 "waitingForKeygenStart" = "等待密钥生成开始...";
 "waitingForKeygenToStart" = "等待密钥生成开始，请稍候...";
+"waitingForDeviceToJoin" = "等待设备加入";
+"waitingForDevicesToConnect" = "等待设备连接";
 "waitingForKeySignStart" = "等待签名过程开始...";
 "waitingOnDevice" = "等待设备";
 "waitingOnDevices..." = "等待设备...";
@@ -1282,6 +1305,8 @@
 
 "seedPhraseImportTip" = "提示：您可以使用浏览器作为设备";
 "whereDoYouMigrateFrom" = "您从哪里迁移？";
+
+"yourVaultIsReadyToUse" = "你的保险库已可使用";
 
 // Vault Setup Screens
 "yourVaultSetup" = "您的保险库设置";

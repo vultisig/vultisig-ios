@@ -61,7 +61,7 @@ struct KeygenView: View {
                 vaultCreatedAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
                 checkmarkAnimationVM = RiveViewModel(fileName: "CreatingVaultCheckmark", autoPlay: true)
                 keygenAnimationVM = RiveViewModel(
-                    fileName: "keygen_animation",
+                    fileName: fastSignConfig != nil ? "keygen_fast" : "keygen_secure",
                     autoPlay: true,
                 )
                 keygenAnimationVM?.fit = .layout
@@ -83,34 +83,52 @@ struct KeygenView: View {
 
     private func handleNavigation() {
         switch tssType {
-        case .Keygen, .Reshare:
-            if let fastSignConfig, showVerificationView {
-                router.navigate(to: KeygenRoute.fastBackupOverview(
-                    tssType: tssType,
-                    vault: vault,
-                    email: fastSignConfig.email
-                ))
-            } else {
-                router.navigate(to: KeygenRoute.secureBackupOverview(vault: vault))
-            }
         case .Migrate:
             router.navigate(to: KeygenRoute.backupNow(
                 tssType: tssType,
                 backupType: .single(vault: vault),
                 isNewVault: true
             ))
-        case .KeyImport:
-            let setupType: KeyImportSetupType = fastSignConfig != nil
-                ? .fast
-                : .secure(numberOfDevices: keygenCommittee.count)
-
-            router.navigate(to: KeygenRoute.keyImportOverview(
-                vault: vault,
-                email: fastSignConfig?.email,
-                keyImportInput: keyImportInput,
-                setupType: setupType
-            ))
+        case .KeyImport, .Keygen, .Reshare:
+            if fastSignConfig != nil {
+                router.navigate(to: KeygenRoute.keyImportOverview(
+                    vault: vault,
+                    email: fastSignConfig?.email,
+                    keyImportInput: keyImportInput,
+                    setupType: .fast
+                ))
+            } else {
+                router.navigate(to: KeygenRoute.reviewYourVaults(
+                    vault: vault,
+                    tssType: tssType,
+                    keygenCommittee: keygenCommittee,
+                    email: nil,
+                    keyImportInput: keyImportInput,
+                    isInitiateDevice: isInitiateDevice
+                ))
+            }
         }
+    }
+
+    var content: some View {
+        container
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .onLoad {
+                Task {
+                    await setData()
+                    await viewModel.startKeygen(context: context)
+                }
+            }
+            #if os(iOS)
+            .onAppear {
+                UIApplication.shared.isIdleTimerDisabled = true
+            }
+            .onDisappear {
+                UIApplication.shared.isIdleTimerDisabled = false
+            }
+            #endif
     }
 
     var container: some View {
@@ -126,6 +144,7 @@ struct KeygenView: View {
                 }
             }
         }
+        .ignoresSafeArea()
     }
 
     var migrateView: some View {
@@ -210,6 +229,8 @@ struct KeygenView: View {
             }
             .offset(y: 120)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Theme.colors.bgPrimary)
         .onAppear {
             setDoneData()
         }
