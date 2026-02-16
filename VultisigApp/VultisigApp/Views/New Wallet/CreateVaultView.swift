@@ -99,11 +99,7 @@ struct CreateVaultView: View {
 
     var newVaultButton: some View {
         PrimaryButton(title: "getStarted") {
-            if appViewModel.showOnboarding {
-                router.navigate(to: OnboardingRoute.onboarding)
-            } else {
-                router.navigate(to: OnboardingRoute.setupQRCode(tssType: .Keygen, vault: nil))
-            }
+            router.navigate(to: OnboardingRoute.devicesSelection(tssType: .Keygen, keyImportInput: nil))
         }
         .opacity(showNewVaultButton ? 1 : 0)
         .offset(y: showNewVaultButton ? 0 : 20)

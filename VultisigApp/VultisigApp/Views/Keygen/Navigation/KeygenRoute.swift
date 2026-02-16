@@ -8,8 +8,6 @@
 import Foundation
 
 enum KeygenRoute: Hashable {
-    case fastBackupOverview(tssType: TssType, vault: Vault, email: String)
-    case secureBackupOverview(vault: Vault)
     case backupNow(tssType: TssType, backupType: VaultBackupType, isNewVault: Bool)
     case keyImportOverview(vault: Vault, email: String?, keyImportInput: KeyImportInput?, setupType: KeyImportSetupType)
     case peerDiscovery(tssType: TssType, vault: Vault, selectedTab: SetupVaultState, fastSignConfig: FastSignConfig?, keyImportInput: KeyImportInput?, setupType: KeyImportSetupType?)
@@ -21,4 +19,12 @@ enum KeygenRoute: Hashable {
     case macScanner(type: DeeplinkFlowType, sendTx: SendTransaction, selectedVault: Vault?)
     case macAddressScanner(selectedVault: Vault?, resultId: UUID)
     case generalQRImport(type: DeeplinkFlowType, selectedVault: Vault?, sendTx: SendTransaction?)
+    case reviewYourVaults(
+        vault: Vault,
+        tssType: TssType,
+        keygenCommittee: [String],
+        email: String?,
+        keyImportInput: KeyImportInput?,
+        isInitiateDevice: Bool
+    )
 }
