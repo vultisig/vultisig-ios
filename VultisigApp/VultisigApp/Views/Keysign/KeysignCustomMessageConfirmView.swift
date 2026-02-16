@@ -87,31 +87,19 @@ struct KeysignCustomMessageConfirmView: View {
     private var formattedMessage: String {
         guard let payload = viewModel.customMessagePayload else { return "" }
 
-        let rawMessage = payload.message
-
-        // For personal_sign, always try to decode hex first (it contains the actual message)
-        if payload.method == "personal_sign" && rawMessage.hasPrefix("0x") {
-            let hex = String(rawMessage.dropFirst(2))
-            if let data = Data(hexString: hex), let decoded = String(data: data, encoding: .utf8) {
-                return decoded
-            }
-        }
-
-        // For other methods, try decoded message from ViewModel
         if let decoded = payload.decodedMessage, !decoded.isEmpty {
             return decoded
         }
 
-        // Try to decode hex to UTF8 (generic fallback)
-        if rawMessage.hasPrefix("0x") {
-            let hex = String(rawMessage.dropFirst(2))
+        // Fallback: try hex to UTF-8
+        if payload.message.hasPrefix("0x") {
+            let hex = String(payload.message.dropFirst(2))
             if let data = Data(hexString: hex), let decoded = String(data: data, encoding: .utf8) {
                 return decoded
             }
         }
 
-        // Fallback to raw message
-        return rawMessage
+        return payload.message
     }
 
     var button: some View {
