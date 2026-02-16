@@ -74,6 +74,9 @@ class CoinSelectionViewModel: ObservableObject {
             if asset.chain == .thorChainStagenet {
                 return enableThorchainStagenet
             }
+            if asset.chain == .thorChainStagenet2 {
+                return enableThorchainStagenet
+            }
             return true
         }
 

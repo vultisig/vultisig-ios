@@ -97,7 +97,7 @@ struct ChainStatusConfig {
             )
 
         // Cosmos chains
-        case .thorChain, .thorChainStagenet, .mayaChain:
+        case .thorChain, .thorChainStagenet, .thorChainStagenet2, .mayaChain:
             return ChainStatusConfig(
                 estimatedTime: "~6 sec",
                 pollInterval: 3,
