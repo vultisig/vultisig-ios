@@ -26,7 +26,6 @@ struct MacScannerView: View {
 
     @StateObject var cameraViewModel = MacCameraServiceViewModel()
 
-    @State var navigateToUploadQR = false
     @State private var deeplinkError: Error?
 
     var body: some View {
@@ -48,18 +47,16 @@ struct MacScannerView: View {
             router.navigate(to: KeygenRoute.joinKeysign(vault: vault))
             cameraViewModel.shouldKeysignTransaction = false
         }
-        .onChange(of: navigateToUploadQR) { _, shouldNavigate in
-            guard shouldNavigate else { return }
-            router.navigate(to: KeygenRoute.generalQRImport(
-                type: type,
-                selectedVault: selectedVault,
-                sendTx: sendTx
-            ))
-            navigateToUploadQR = false
-        }
         .withError(error: $deeplinkError, errorType: .warning) {
             // Retry action - clear error to allow user to try again
             deeplinkError = nil
+        }
+        .onNavigationStackChange { isVisible in
+            if isVisible {
+                startCamera()
+            } else {
+                stopCamera()
+            }
         }
     }
 
@@ -138,7 +135,11 @@ struct MacScannerView: View {
 
     var uploadQRCodeButton: some View {
         PrimaryButton(title: "uploadQRCodeImage") {
-            navigateToUploadQR = true
+            router.navigate(to: KeygenRoute.generalQRImport(
+                type: type,
+                selectedVault: selectedVault,
+                sendTx: sendTx
+            ))
         }
     }
 
@@ -157,15 +158,19 @@ struct MacScannerView: View {
         .allowsHitTesting(false)
     }
 
+    private func startCamera() {
+        cameraViewModel.setupSession()
+        cameraViewModel.startSession()
+    }
+
+    private func stopCamera() {
+        cameraViewModel.stopSession()
+        cameraViewModel.resetData()
+    }
+
     private func getScanner(_ session: AVCaptureSession) -> some View {
         ZStack(alignment: .bottom) {
             MacCameraPreview(session: session)
-                .onAppear {
-                    cameraViewModel.startSession()
-                }
-                .onDisappear {
-                    cameraViewModel.stopSession()
-                }
 
             overlay
 
