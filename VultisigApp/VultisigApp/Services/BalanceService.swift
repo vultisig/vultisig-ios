@@ -190,6 +190,7 @@ class BalanceService {
         try Storage.shared.save()
     }
 
+    @MainActor
     func updateBalance(for coin: Coin) async {
         // Fetch price
         do {
@@ -200,29 +201,27 @@ class BalanceService {
             }
         }
 
-        // Extract identifier on MainActor
-        let identifier = await MainActor.run { CoinIdentifier(from: coin) }
+        // Extract identifier (already on MainActor)
+        let identifier = CoinIdentifier(from: coin)
 
-        // Fetch update
+        // Fetch update (async work happens off MainActor internally)
         let update = await fetchBalanceUpdate(for: identifier)
 
-        // Apply update on MainActor
+        // Apply update (already on MainActor)
         do {
-            try await MainActor.run {
-                if let rawBalance = update.rawBalance, coin.rawBalance != rawBalance {
-                    coin.rawBalance = rawBalance
-                }
-
-                if let stakedBalance = update.stakedBalance, coin.stakedBalance != stakedBalance {
-                    coin.stakedBalance = stakedBalance
-                }
-
-                if let bondedNodes = update.bondedNodes {
-                    coin.bondedNodes = bondedNodes
-                }
-
-                try Storage.shared.save()
+            if let rawBalance = update.rawBalance, coin.rawBalance != rawBalance {
+                coin.rawBalance = rawBalance
             }
+
+            if let stakedBalance = update.stakedBalance, coin.stakedBalance != stakedBalance {
+                coin.stakedBalance = stakedBalance
+            }
+
+            if let bondedNodes = update.bondedNodes {
+                coin.bondedNodes = bondedNodes
+            }
+
+            try Storage.shared.save()
         } catch {
             if (error as? URLError)?.code != .cancelled {
                 logger.warning("Update Balance error: \(error.localizedDescription)")
