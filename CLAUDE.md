@@ -669,6 +669,195 @@ struct MyView: View {
 }
 ```
 
+## SwiftData & Concurrency
+
+**CRITICAL:** SwiftData models (`@Model` classes like `Vault`, `Coin`) have strict thread affinity requirements and MUST be accessed only from MainActor. Violating this causes crashes with `NSManagedObjectContext` errors.
+
+### Core Rules
+
+1. **Never access SwiftData models from non-MainActor contexts**
+2. **Never capture SwiftData models in concurrent tasks or closures**
+3. **Use value types (structs) to pass data across actor boundaries**
+4. **Batch updates with a single `Storage.shared.save()` call**
+5. **Mark functions that work with SwiftData models as `@MainActor`**
+
+### Anti-Pattern: Direct Model Access in Concurrent Code
+
+❌ **WRONG** - Accessing models in concurrent tasks causes crashes:
+
+```swift
+func updateBalances(vault: Vault) async {
+    await withTaskGroup(of: Void.self) { group in
+        for coin in vault.coins {  // ❌ Accessing SwiftData models off MainActor!
+            group.addTask {
+                let balance = try await fetchBalance(for: coin)  // ❌ Capturing model
+                coin.balance = balance  // ❌ Modifying model off MainActor
+            }
+        }
+    }
+}
+```
+
+**Problems:**
+- Accessing `vault.coins` from non-MainActor context
+- Capturing `coin` (SwiftData model) in concurrent task
+- Modifying model properties off MainActor
+- Multiple saves per iteration (inefficient)
+
+### Correct Pattern: Three-Phase Architecture
+
+✅ **CORRECT** - Use value types to decouple data fetching from model updates:
+
+```swift
+// Step 1: Define value types (no SwiftData dependencies)
+private struct CoinIdentifier: Hashable {
+    let coinId: String
+    let coinMeta: CoinMeta  // Reuse existing value types
+    let address: String
+
+    init(from coin: Coin) {
+        self.coinId = coin.id
+        self.coinMeta = coin.toCoinMeta()
+        self.address = coin.address
+    }
+}
+
+private struct CoinUpdate {
+    let coinId: String
+    let balance: String?
+    let error: Error?
+}
+
+// Step 2: Extract identifiers on MainActor
+@MainActor
+private func extractCoinIdentifiers(from vault: Vault) -> [CoinIdentifier] {
+    return vault.coins.map { CoinIdentifier(from: $0) }
+}
+
+// Step 3: Fetch data concurrently using value types
+private func fetchUpdates(for identifiers: [CoinIdentifier]) async -> [CoinUpdate] {
+    await withTaskGroup(of: CoinUpdate.self) { group in
+        var updates: [CoinUpdate] = []
+
+        for identifier in identifiers {
+            group.addTask {
+                do {
+                    let balance = try await self.fetchBalance(
+                        for: identifier.coinMeta,
+                        address: identifier.address
+                    )
+                    return CoinUpdate(coinId: identifier.coinId, balance: balance, error: nil)
+                } catch {
+                    return CoinUpdate(coinId: identifier.coinId, balance: nil, error: error)
+                }
+            }
+        }
+
+        for await update in group {
+            updates.append(update)
+        }
+
+        return updates
+    }
+}
+
+// Step 4: Apply updates in batch on MainActor
+@MainActor
+private func applyUpdates(_ updates: [CoinUpdate], to vault: Vault) throws {
+    let coinsByID = Dictionary(uniqueKeysWithValues: vault.coins.map { ($0.id, $0) })
+
+    for update in updates {
+        guard let coin = coinsByID[update.coinId] else { continue }
+        if let balance = update.balance {
+            coin.balance = balance
+        }
+    }
+
+    // Single save for all changes
+    try Storage.shared.save()
+}
+
+// Step 5: Orchestrate the phases
+func updateBalances(vault: Vault) async {
+    let identifiers = await extractCoinIdentifiers(from: vault)  // Phase 1: MainActor
+    let updates = await fetchUpdates(for: identifiers)            // Phase 2: Concurrent
+    try await applyUpdates(updates, to: vault)                    // Phase 3: MainActor
+}
+```
+
+### Swift 6 Sendable Compliance
+
+When working with SwiftData models and Swift 6's strict concurrency checking:
+
+❌ **WRONG** - Capturing non-Sendable models in closures:
+
+```swift
+func updateBalance(for coin: Coin) async {
+    let identifier = await MainActor.run { CoinIdentifier(from: coin) }  // ❌ Capturing coin
+
+    try await MainActor.run {
+        coin.balance = newBalance  // ❌ Capturing coin
+    }
+}
+```
+
+✅ **CORRECT** - Mark entire function as `@MainActor`:
+
+```swift
+@MainActor
+func updateBalance(for coin: Coin) async {
+    // Already on MainActor, no closure needed
+    let identifier = CoinIdentifier(from: coin)
+
+    // Async work happens off MainActor internally via await
+    let update = await fetchBalanceUpdate(for: identifier)
+
+    // Back on MainActor for model updates
+    coin.balance = update.balance
+    try Storage.shared.save()
+}
+```
+
+**Why this works:**
+- Function is `@MainActor`, so all SwiftData access is safe
+- `await` suspends and hops off MainActor for async work
+- Resumes back on MainActor when async work completes
+- No `@Sendable` closures capturing non-Sendable types
+
+### Performance Best Practices
+
+1. **Minimize MainActor context switches:**
+   - Extract all needed data in one MainActor phase
+   - Apply all updates in one MainActor phase
+   - Do all I/O work off MainActor between phases
+
+2. **Batch saves:**
+   - One `Storage.shared.save()` per batch operation
+   - Avoid saving in loops
+   - Use dictionary lookup (`coinsByID`) for O(1) access
+
+3. **Use value types:**
+   - Structs for identifiers and updates
+   - No SwiftData dependencies in concurrent code
+   - Easier to test and reason about
+
+### Checklist for SwiftData Operations
+
+Before writing code that works with SwiftData models, verify:
+
+- [ ] Is the function marked `@MainActor` if it accesses models directly?
+- [ ] Are value types used to pass data across actor boundaries?
+- [ ] Are models extracted on MainActor before concurrent work?
+- [ ] Are updates applied on MainActor after concurrent work?
+- [ ] Is there a single `save()` call per batch operation?
+- [ ] Are models never captured in concurrent tasks?
+- [ ] Does the code avoid Swift 6 Sendable warnings?
+
+### Reference Implementation
+
+**File:** `Services/BalanceService.swift` - Complete three-phase architecture example
+**Pattern:** `Services/Defi/Common/Service/DefiPositionsStorageService.swift` - Batch upsert pattern
+
 ## Navigation
 
 ### Route Definition
