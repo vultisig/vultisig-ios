@@ -26,7 +26,6 @@ class MacCameraServiceViewModel: NSObject, ObservableObject {
 
     override init() {
         super.init()
-        setupSession()
     }
 
     func resetData() {

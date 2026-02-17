@@ -234,6 +234,7 @@
 		135C149A2ED0E71800459EFC /* THORChainBondInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C14972ED0E71800459EFC /* THORChainBondInteractor.swift */; };
 		135C149E2ED0E96A00459EFC /* THORChainLPsInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C149C2ED0E96A00459EFC /* THORChainLPsInteractor.swift */; };
 		135C149F2ED0E96A00459EFC /* LPsInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C149D2ED0E96A00459EFC /* LPsInteractor.swift */; };
+		135C27B52F44C00F006315FF /* NavigationStackVisibilityModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C27B42F44C00F006315FF /* NavigationStackVisibilityModifier.swift */; };
 		135C7AC52EA12649002F879A /* DefiMainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7AC42EA12646002F879A /* DefiMainViewModel.swift */; };
 		135C7ACD2EA12C69002F879A /* DefiSelectChainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7ACA2EA12C69002F879A /* DefiSelectChainScreen.swift */; };
 		135C7AD22EA13037002F879A /* DefiSelectChainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C7AD12EA13033002F879A /* DefiSelectChainViewModel.swift */; };
@@ -1568,6 +1569,7 @@
 		135C14982ED0E71800459EFC /* BondInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondInteractor.swift; sourceTree = "<group>"; };
 		135C149C2ED0E96A00459EFC /* THORChainLPsInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainLPsInteractor.swift; sourceTree = "<group>"; };
 		135C149D2ED0E96A00459EFC /* LPsInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LPsInteractor.swift; sourceTree = "<group>"; };
+		135C27B42F44C00F006315FF /* NavigationStackVisibilityModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackVisibilityModifier.swift; sourceTree = "<group>"; };
 		135C7AC42EA12646002F879A /* DefiMainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiMainViewModel.swift; sourceTree = "<group>"; };
 		135C7ACA2EA12C69002F879A /* DefiSelectChainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiSelectChainScreen.swift; sourceTree = "<group>"; };
 		135C7AD12EA13033002F879A /* DefiSelectChainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiSelectChainViewModel.swift; sourceTree = "<group>"; };
@@ -3198,6 +3200,7 @@
 		1334C73D2E30079000CBAA3E /* ViewModifiers */ = {
 			isa = PBXGroup;
 			children = (
+				135C27B42F44C00F006315FF /* NavigationStackVisibilityModifier.swift */,
 				1392BDA22F27A1D2007F6140 /* WithError.swift */,
 				132354542ECB5C9500BAFE7C /* ThrottledOnAppearModifier.swift */,
 				1305A1282E988BB4005873CA /* ReadSize.swift */,
@@ -7210,6 +7213,7 @@
 				B54B019C2BDE135C00FDA472 /* RpcService.swift in Sources */,
 				13D9EBF92E8456BE0089B2A7 /* AddFolderVaultCellView.swift in Sources */,
 				DE15729F2B70F284009BC7C5 /* KeysignDiscoveryView.swift in Sources */,
+				135C27B52F44C00F006315FF /* NavigationStackVisibilityModifier.swift in Sources */,
 				134A9FC32E959FB700030C56 /* CarouselBannerType.swift in Sources */,
 				13204DD72EEB1B3D00297D01 /* KeyImportOverviewScreen.swift in Sources */,
 				13D7643A2E4127B100F048DE /* Array.swift in Sources */,
