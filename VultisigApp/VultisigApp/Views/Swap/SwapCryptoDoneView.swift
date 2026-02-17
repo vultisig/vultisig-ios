@@ -83,7 +83,7 @@ struct SwapCryptoDoneView: View {
     }
 
     var buttons: some View {
-        VStack(spacing: 9) {
+        HStack(spacing: 8) {
             if progressLink != nil {
                 trackButton
             }
