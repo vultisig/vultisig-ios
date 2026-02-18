@@ -67,20 +67,11 @@ struct PeerDiscoveryScreen: View {
 
     var totalDeviceCount: Int {
         switch tssType {
-        case .Keygen:
-            switch selectedTab {
-            case .fast:
-                return 2
-            case .active:
-                return 4
-            case .secure:
-                return 3
-            }
         case .Reshare:
             return vault.signers.count
         case .Migrate:
             return vault.signers.count
-        case .KeyImport:
+        case .KeyImport, .Keygen:
             if let setupType {
                 switch setupType {
                 case .fast:
