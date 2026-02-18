@@ -92,6 +92,7 @@ struct KeygenView: View {
         case .KeyImport, .Keygen, .Reshare:
             if fastSignConfig != nil {
                 router.navigate(to: KeygenRoute.keyImportOverview(
+                    tssType: tssType,
                     vault: vault,
                     email: fastSignConfig?.email,
                     keyImportInput: keyImportInput,
