@@ -50,6 +50,8 @@
 "backupGuide" = "Guia de backup";
 "backupNotNeededDisclaimer" = "Seu dispositivo de backup não é necessário a menos que você perca um dos seus dispositivos principais.";
 "backupNow" = "Faça backup agora";
+"backupSaveCheckbox" = "Eu entendo como salvar este backup";
+"backupSaveButton" = "Salvar backup";
 "backupNowCheckbox" = "Entendo que, ao pular o backup, posso perder o acesso aos meus fundos.";
 "backupNowSubtitle" = "Cada dispositivo possui uma parte exclusiva do cofre, necessária para a recuperação";
 "backupNowTitle" = "É necessário fazer backup em cada dispositivo no Vultisig";
@@ -64,8 +66,10 @@
 "backupPart1" = "Cópia de Segurança 1";
 "backupPart2" = "Cópia de Segurança 2";
 "backupPasswordDisclaimer" = "Nunca armazene ações do Vault de diferentes dispositivos no mesmo local";
-"backupSetupSubtitle" = "O armazenamento online é recomendado e seguro –\nas partilhas do cofre foram concebidas para isso.";
-"backupSetupTitle" = "Faça backup do seu cofre\ncompartilhe online";
+"backupSetupSubtitle" = "Exporte este arquivo de backup e salve-o na nuvem. Use um serviço de nuvem ou conta diferente para cada backup. Quando terminar, apague o arquivo deste dispositivo.";
+"backupSetupSubtitleHighlight" = "Use um serviço de nuvem ou conta diferente para cada backup. Quando terminar, apague o arquivo deste dispositivo.";
+"backupSetupTitle" = "Salvar backup na nuvem";
+"backupSetupTitleSecure" = "Salvar backup %d de %d na nuvem";
 "backupShareSent" = "Backup Share enviado!";
 "backupVault" = "Fazer backup do seu cofre";
 "backupVaultOnEveryDeviceIndividually!" = "Faça backup do seu cofre em todos os dispositivos individualmente!";
@@ -89,6 +93,11 @@
 "chain" = "Cadeia";
 "chains" = "Cadeias";
 "changeEmailAndRestart" = "Alterar email e reiniciar o keygen";
+"chooseAPassword" = "Escolha uma senha";
+"choosePasswordDescription" = "Se quiser uma camada extra de segurança, escolha uma senha. A senha não pode ser recuperada.";
+"choosePasswordHighlight" = "A senha não pode ser recuperada.";
+"choosePasswordTooltip" = "Isso ocorre porque a senha é usada para criptografar localmente o arquivo de backup, semelhante à criptografia de um disco rígido. No próximo passo, você terá a opção de adicionar uma dica.";
+"createVault" = "Criar cofre";
 "changeFriendsReferralCode" = "Alterar o código de referência de amigos usados ​​para swaps";
 "changesInSetup" = "Alterações na Configuração";
 "changeVault" = "Mudar Cofre";
@@ -109,8 +118,11 @@
 "coinAddressCopied" = "Endereço %@ copiado";
 "collectedRewards" = "Recompensas coletadas";
 "complete" = "Completo";
+"congratsExclamation" = "Parabéns!";
+"congratsSummaryDescription" = "Tudo pronto! Você mantém o controle de cada transação.";
 "confirm" = "Confirmar";
 "confirmToSign" = "Confirmar para assinar a mensagem?";
+"connected" = "Conectado";
 "connectingWithServer..." = "Conectando-se ao servidor...";
 "continue" = "Continuar";
 "copyAddress" = "Copiar endereço";
@@ -183,8 +195,8 @@
 "enableDKLS" = "Ativar DKLS";
 "EnglishUK" = "Inglês (UK)";
 "enter4Characters" = "Digite 4 caracteres";
-"enter5DigitVerificationCode" = "Digite o código de 4 dígitos que enviamos por e-mail";
-"enter5DigitVerificationCodeDescription" = "Este código confirmará que você recebeu sua parte do cofre por e-mail";
+"enter4DigitVerificationCode" = "Código de 4 dígitos recebido por email";
+"enter4DigitVerificationCodeDescription" = "Isso ativará o co-assinante";
 "enterAddress" = "Inserir Endereço";
 "enterAddressHere" = "Digite o endereço aqui";
 "enterAmount" = "Inserir Quantidade";
@@ -315,6 +327,7 @@
 "importVault" = "Importar Cofre";
 "importYourVaultShare" = "Importe sua parte do cofre";
 "incorrectCode" = "Código incorreto";
+"incorrectCodeTryAgain" = "Código incorreto. Tente novamente.";
 "incorrectPassword" = "Senha incorreta";
 "incorrectPasswordTryAgain" = "Senha incorreta, tente novamente";
 "informationNote" = "Mantenha os dispositivos na mesma rede Wi -Fi, dispositivos de cofre correto e pares.";
@@ -397,10 +410,13 @@
 "loginUsingFaceID" = "Login usando Face ID";
 "loginUsingOpticID" = "Entrar usando Optic ID";
 "loginUsingTouchID" = "Entrar usando Touch ID";
+"localModeWaitingOnDevices" = "Modo local, aguardando dispositivos...";
+"looksGood" = "Parece bom";
 "lookingForDevices" = "Procurando dispositivos... ";
 "madeVaultBackupPrompt" = "Fiz um backup do cofre";
 "main" = "Principal";
 "mainDevice" = "Dispositivo Principal";
+"makeSureCorrectDevices" = "Certifique-se de que estes são os dispositivos corretos que você adicionou:";
 "mainVault" = "Cofre principal";
 "maxTotalFee" = "Taxa total máx.";
 "memo" = "Memorando";
@@ -596,6 +612,7 @@
 "retry" = "Tentar novamente";
 "reviewConditions" = "Revisar Condições";
 "reviewConditionsMessage" = "Por favor, reveja e concorde com todas as condições listadas.";
+"reviewYourVaultDevices" = "Revise os dispositivos do seu cofre";
 "rippleExistentialDepositError" = "A XRP exige um saldo mínimo de 1 XRP. A blockchain bloqueará qualquer transação que reduza o saldo abaixo desse valor. Para enviar o saldo completo, a conta precisa ser excluída.";
 "sameDeviceShareError" = "Mesmo compartilhamento de cofre";
 "sameNameFolder" = "Já existe uma pasta com o mesmo nome";
@@ -717,6 +734,7 @@
 "signCustomMessage" = "Assinar mensagem personalizada";
 "skip" = "Pular";
 "skipPassword" = "Pular senha";
+"somethingsWrong" = "Algo está errado";
 "somethingWentWrongTryAgain" = "Algo deu errado, por favor tente novamente.";
 "soon" = "Em breve";
 "Spanish" = "Espanhol";
@@ -760,7 +778,7 @@
 "swapErrorSameAssetTitle" = "Mesmo Ativo";
 "swapErrorSameAssetDescription" = "Não é possível trocar entre o mesmo ativo. Por favor, selecione ativos diferentes.";
 "noLiquidityPool" = "Não há pool de liquidez disponível para este par de tokens. Este ativo pode não ser suportado.";
-"switchBackToInternetMode" = "Voltar para o modo internet";
+"switchBackToInternetMode" = "Não quer usar o modo local? Voltar.";
 "switchToLocalMode" = "Mudar para o modo local";
 "systemErrorMessage" = "Erro do sistema. Tente novamente.";
 "termsOfService" = "Termos de Serviço";
@@ -799,6 +817,7 @@
 "updateNow" = "Atualizar agora";
 "downloadViaWebsite" = "Baixar pelo site";
 "upgradeNow" = "Atualizar agora";
+"useDifferentEmail" = "Usar um email diferente";
 "upgradeYourVault" = "Atualizar cofre";
 "upgradeYourVaultNow" = "Atualize seu cofre agora";
 "upgradeYourVaultTitle1" = "Atualize este cofre para o";
@@ -818,11 +837,13 @@
 "uploadQRCodeImageKeysign" = "Carregar código QR para ingressar no Keysign";
 "urlCopied" = "URL copiado";
 "URLInaccessible" = "Falha ao acessar a URL";
+"useLocalMode" = "Usar modo local";
 "useMyVaultPassword" = "Use minha senha do cofre";
 "usePassword" = "Usar senha";
 "useReferral" = "Usar indicação";
 "useReferralCode" = "Usar código de indicação";
 "useSkipInstead" = "Use Skip em vez disso";
+"useStandardMode" = "Usar modo padrão";
 "utxoSelectionFailedError" = "Falha na seleção de UTXO. Não foi possível encontrar saídas de transação adequadas para cobrir o valor mais as taxas estimadas. Tente reduzir o valor da transação.";
 "utxoSuggestionMessage" = "Para criptomoedas baseadas em UTXO como o DogEcoin: \ n \ n • Tente enviar uma quantidade menor \ n • Aguarde as transações pendentes para confirmar \ n • Considere consolidar pequenos utxos primeiro \ n • Verifique se você tem saldo suficiente para taxas";
 "utxoSuggestionTitle" = "Dicas de transação UTXO";
@@ -884,6 +905,8 @@
 "vultisigWebsite" = "Site do Vultisig";
 "waitingForKeygenStart" = "Aguardando o início da geração de chave...";
 "waitingForKeygenToStart" = "Aguardando o início da geração de chave, por favor, espere...";
+"waitingForDeviceToJoin" = "Aguardando dispositivo para entrar";
+"waitingForDevicesToConnect" = "Aguardando conexão dos dispositivos";
 "waitingForKeySignStart" = "Aguardando o início do processo de assinatura...";
 "waitingOnDevice" = "Aguardando o dispositivo";
 "waitingOnDevices..." = "Aguardando dispositivos...";
@@ -1282,6 +1305,7 @@
 "whereDoYouMigrateFrom" = "De onde você está migrando?";
 
 // Vault Setup Screens
+"yourVaultIsReadyToUse" = "Seu cofre está pronto para uso";
 "yourVaultSetup" = "Sua configuração de cofre";
 
 // Screen 1 - Fast Vault (2-device setup)

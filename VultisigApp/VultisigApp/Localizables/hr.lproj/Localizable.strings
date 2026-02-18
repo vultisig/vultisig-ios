@@ -50,6 +50,8 @@
 "backupGuide" = "Rezervni vodič";
 "backupNotNeededDisclaimer" = "Vaš rezervni uređaj nije potreban osim ako ne izgubite jedan od svojih glavnih uređaja.";
 "backupNow" = "Napravite sigurnosnu kopiju sada";
+"backupSaveCheckbox" = "Razumijem kako spremiti ovu sigurnosnu kopiju";
+"backupSaveButton" = "Spremi sigurnosnu kopiju";
 "backupNowCheckbox" = "Razumijem da preskakanjem sigurnosne kopije mogu izgubiti pristup svojim sredstvima.";
 "backupNowSubtitle" = "Svaki uređaj ima svoj jedinstveni dio trezora, potreban za oporavak";
 "backupNowTitle" = "Potrebno je napraviti sigurnosnu kopiju na svakom uređaju u Vultisigu";
@@ -64,8 +66,10 @@
 "backupPart1" = "Rezervna Kopija 1";
 "backupPart2" = "Rezervna Kopija 2";
 "backupPasswordDisclaimer" = "Nikada ne pohranjujte dionice Vaulta s različitih uređaja na istom mjestu";
-"backupSetupSubtitle" = "Online pohrana je preporučena i sigurna –\ndijelovi trezora su dizajnirani za to.";
-"backupSetupTitle" = "Napravite sigurnosnu kopiju svog trezora\npodijelite ga online";
+"backupSetupSubtitle" = "Izvezite ovu sigurnosnu kopiju, zatim je spremite u oblak. Koristite različite usluge oblaka ili račune za svaku sigurnosnu kopiju. Kada završite, izbrišite datoteku s ovog uređaja.";
+"backupSetupSubtitleHighlight" = "Koristite različite usluge oblaka ili račune za svaku sigurnosnu kopiju. Kada završite, izbrišite datoteku s ovog uređaja.";
+"backupSetupTitle" = "Spremite sigurnosnu kopiju u oblak";
+"backupSetupTitleSecure" = "Spremi sigurnosnu kopiju %d od %d u oblak";
 "backupShareSent" = "Poslad sigurnosne kopije posla!";
 "backupVault" = "Napravite sigurnosnu kopiju vašeg sefa";
 "backupVaultOnEveryDeviceIndividually!" = "Sigurnosno kopiranje svoda na svakom uređaju pojedinačno!";
@@ -89,6 +93,11 @@
 "chain" = "Lanac";
 "chains" = "Lanci";
 "changeEmailAndRestart" = "Promijeni email i ponovno pokreni keygen";
+"chooseAPassword" = "Odaberite lozinku";
+"choosePasswordDescription" = "Ako želite dodatni sloj sigurnosti, odaberite lozinku. Lozinka se ne može oporaviti.";
+"choosePasswordHighlight" = "Lozinka se ne može oporaviti.";
+"choosePasswordTooltip" = "To je zato što se lozinka koristi za lokalno šifriranje sigurnosne kopije, slično šifriranju tvrdog diska. U sljedećem koraku imate mogućnost dodavanja nagovještaja.";
+"createVault" = "Stvori trezor";
 "changeFriendsReferralCode" = "Promijenite upute prijatelja koji se koristi za zamjene";
 "changesInSetup" = "Promjene u postavkama";
 "changeVault" = "Promijeni sef";
@@ -109,8 +118,11 @@
 "coinAddressCopied" = "Adresa kopirana";
 "collectedRewards" = "Prikupljene nagrade";
 "complete" = "Završeno";
+"congratsExclamation" = "Čestitamo!";
+"congratsSummaryDescription" = "Sve je spremno! Vi kontrolirate svaku transakciju.";
 "confirm" = "Potvrdi";
 "confirmToSign" = "Potvrdite za potpis poruke?";
+"connected" = "Povezano";
 "connectingWithServer..." = "Povezivanje sa serverom...";
 "continue" = "Nastavi";
 "copyAddress" = "Kopiraj adresu";
@@ -183,8 +195,8 @@
 "enableDKLS" = "Omogući DKLS";
 "EnglishUK" = "Engleski (UK)";
 "enter4Characters" = "Unesi 4 znaka";
-"enter5DigitVerificationCode" = "Unesite 4-znamenkasti kod koji smo vam poslali e-mailom";
-"enter5DigitVerificationCodeDescription" = "Ovaj kod potvrđuje da ste primili svoj vault dio putem e-maila";
+"enter4DigitVerificationCode" = "4-znamenkasti kod primljen putem e-maila";
+"enter4DigitVerificationCodeDescription" = "Ovo će aktivirati su-potpisnika";
 "enterAddress" = "Unesite adresu";
 "enterAddressHere" = "Unesite adresu ovdje";
 "enterAmount" = "Unesite iznos";
@@ -315,6 +327,7 @@
 "importVault" = "Uvezi trezor";
 "importYourVaultShare" = "Uvezi svoj dio trezora";
 "incorrectCode" = "Netočan kod";
+"incorrectCodeTryAgain" = "Netočan kod. Pokušajte ponovo.";
 "incorrectPassword" = "Netočna lozinka";
 "incorrectPasswordTryAgain" = "Neispravna lozinka, pokušajte ponovno";
 "informationNote" = "Držite uređaje na istoj WiFi mreži, ispravite trezor i uparine uređaje. \ Nmake Sigurno da nijedan drugi uređaji ne pokreću Vultisig.";
@@ -397,10 +410,13 @@
 "loginUsingFaceID" = "Prijava pomoću Face ID";
 "loginUsingOpticID" = "Prijava pomoću Optic ID-a";
 "loginUsingTouchID" = "Prijava pomoću Touch ID-a";
+"localModeWaitingOnDevices" = "Lokalni način, čekanje na uređaje...";
+"looksGood" = "Izgleda dobro";
 "lookingForDevices" = "Traženje uređaja... ";
 "madeVaultBackupPrompt" = "Napravio sam sigurnosnu kopiju spremišta";
 "main" = "Glavni";
 "mainDevice" = "Glavni uređaj";
+"makeSureCorrectDevices" = "Provjerite jesu li to ispravni uređaji koje ste dodali:";
 "mainVault" = "Glavni trezor";
 "maxTotalFee" = "Maks. ukupna naknada";
 "memo" = "Bilješka";
@@ -595,6 +611,7 @@
 "restart" = "Molimo ponovno pokrenite aplikaciju kako biste primijenili nove postavke jezika.";
 "retry" = "Pokušaj ponovo";
 "reviewConditions" = "Pregled uvjeta";
+"reviewYourVaultDevices" = "Pregledajte uređaje svog trezora";
 "reviewConditionsMessage" = "Molimo pregledajte i prihvatite sve navedene uvjete.";
 "rippleExistentialDepositError" = "XRP zahtijeva minimalni saldo od 1 XRP. Blockchain će blokirati svaku transakciju koja bi smanjila stanje ispod tog iznosa. Za slanje cijelog iznosa račun mora biti izbrisan.";
 "sameDeviceShareError" = "Isti udio trezora";
@@ -717,6 +734,7 @@
 "signCustomMessage" = "Potpiši prilagođenu poruku";
 "skip" = "Preskoči";
 "skipPassword" = "Preskoči lozinku";
+"somethingsWrong" = "Nešto nije u redu";
 "somethingWentWrongTryAgain" = "Nešto je pošlo po zlu, pokušajte ponovo.";
 "soon" = "Uskoro";
 "Spanish" = "Španjolski";
@@ -760,7 +778,7 @@
 "swapErrorSameAssetTitle" = "Isti Asset";
 "swapErrorSameAssetDescription" = "Nije moguće zamijeniti između istog asseta. Molimo odaberite različite assete.";
 "noLiquidityPool" = "Nema dostupnog pool likvidnosti za ovaj par tokena. Ovaj asset možda nije podržan.";
-"switchBackToInternetMode" = "Vrati se na internetski način rada";
+"switchBackToInternetMode" = "Ne želite koristiti lokalni način? Vratite se.";
 "switchToLocalMode" = "Prijeđi na lokalni način rada";
 "systemErrorMessage" = "Sistemska greška. Pokušajte ponovno.";
 "termsOfService" = "Uvjeti korištenja";
@@ -799,6 +817,7 @@
 "updateNow" = "Ažuriraj sada";
 "downloadViaWebsite" = "Preuzmi putem web stranice";
 "upgradeNow" = "Nadogradi sada";
+"useDifferentEmail" = "Koristite drugu e-mail adresu";
 "upgradeYourVault" = "Nadogradi trezor";
 "upgradeYourVaultNow" = "Nadogradi svoj trezor sada";
 "upgradeYourVaultTitle1" = "Nadogradi ovaj trezor na";
@@ -818,11 +837,13 @@
 "uploadQRCodeImageKeysign" = "Prenesite QR kod za pridruživanje Keysign-u";
 "urlCopied" = "URL kopiran";
 "URLInaccessible" = "Neuspješan pristup URL-u";
+"useLocalMode" = "Koristi lokalni način";
 "useMyVaultPassword" = "Koristite moju lozinku trezora";
 "usePassword" = "Koristi lozinku";
 "useReferral" = "Iskoristi referalu";
 "useReferralCode" = "Iskoristi referalni kod";
 "useSkipInstead" = "Umjesto toga koristite Skip";
+"useStandardMode" = "Koristi standardni način";
 "utxoSelectionFailedError" = "Odabir UTXO-a neuspješan. Nije moguće pronaći prikladne izlaze transakcije za pokrivanje iznosa plus procijenjene naknade. Pokušajte smanjiti iznos transakcije.";
 "utxoSuggestionMessage" = "Za kripto valute sa sjedištem u UTXO-u poput dogecoin: \ n \ n • Pokušajte poslati manji iznos \ n • Pričekajte da transakcije u tijeku potvrde \ n • Razmislite o konsolidaciji malih UTXOS-a prvo \ n • Provjerite imate li dovoljno salda za naknade za naknade";
 "utxoSuggestionTitle" = "UTXO savjeti za transakciju";
@@ -884,6 +905,8 @@
 "vultisigWebsite" = "Web stranica Vultisig";
 "waitingForKeygenStart" = "Čekanje na početak generiranja ključa...";
 "waitingForKeygenToStart" = "Čekanje na početak generiranja ključa, molimo pričekajte...";
+"waitingForDeviceToJoin" = "Čekanje da se uređaj pridruži";
+"waitingForDevicesToConnect" = "Čekanje na povezivanje uređaja";
 "waitingForKeySignStart" = "Čekanje na početak procesa potpisivanja...";
 "waitingOnDevice" = "Čekanje uređaja";
 "waitingOnDevices..." = "Čekanje na uređaje...";
@@ -1282,6 +1305,7 @@
 "whereDoYouMigrateFrom" = "Odakle migrirate?";
 
 // Vault Setup Screens
+"yourVaultIsReadyToUse" = "Vaš trezor je spreman za korištenje";
 "yourVaultSetup" = "Vaša postavka trezora";
 
 // Screen 1 - Fast Vault (2-device setup)

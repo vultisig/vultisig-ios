@@ -26,4 +26,5 @@ struct ScreenEdgeInsets {
     }
 
     static let noInsets = ScreenEdgeInsets()
+    static let zero = ScreenEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
 }
