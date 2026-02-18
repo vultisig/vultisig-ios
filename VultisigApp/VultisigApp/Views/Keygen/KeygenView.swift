@@ -129,6 +129,29 @@ struct KeygenView: View {
                 UIApplication.shared.isIdleTimerDisabled = false
             }
             #endif
+            .alert(
+                NSLocalizedString("vaultAlreadyExists", comment: ""),
+                isPresented: $viewModel.showDuplicateVaultAlert
+            ) {
+                Button(NSLocalizedString("replaceExistingVault", comment: ""), role: .destructive) {
+                    viewModel.resolveDuplicateVault(shouldReplace: true)
+                }
+                Button(NSLocalizedString("cancel", comment: ""), role: .cancel) {
+                    viewModel.resolveDuplicateVault(shouldReplace: false)
+                }
+            } message: {
+                Text(
+                    String(
+                        format: NSLocalizedString("duplicateVaultMessage", comment: ""),
+                        viewModel.duplicateVaultName
+                    )
+                )
+            }
+            .onChange(of: viewModel.didCancelDuplicateVault) { _, didCancel in
+                if didCancel {
+                    router.navigateToRoot()
+                }
+            }
     }
 
     var container: some View {

@@ -11,26 +11,27 @@ struct VaultSetupScreen: View {
     let tssType: TssType
     let keyImportInput: KeyImportInput?
     let setupType: KeyImportSetupType
-
+    
     enum FocusedField {
         case name, referral, email, password, passwordConfirm
     }
-
+    
     @StateObject var viewModel: VaultSetupViewModel
-
+    
     @State private var currentStep = 0
+    @State private var navigatingForward = true
     @State private var referralExpanded = false
     @State private var showPasswordTooltip = false
     @FocusState private var focusedField: FocusedField?
     @Environment(\.router) var router
-
+    
     init(tssType: TssType, keyImportInput: KeyImportInput?, setupType: KeyImportSetupType? = nil) {
         self.tssType = tssType
         self.keyImportInput = keyImportInput
         self.setupType = setupType ?? .fast
         _viewModel = StateObject(wrappedValue: VaultSetupViewModel(setupType: setupType ?? .fast))
     }
-
+    
     private var stepIcons: [String] {
         var icons = ["feather"]
         if viewModel.showFastSignFields {
@@ -38,43 +39,56 @@ struct VaultSetupScreen: View {
         }
         return icons
     }
-
+    
     private var totalSteps: Int { stepIcons.count }
     private var isLastStep: Bool { currentStep >= totalSteps - 1 }
-
+    
     private var isCurrentStepValid: Bool {
-        switch currentStep {
+        isStepValid(at: currentStep)
+    }
+
+    private func isStepValid(at step: Int) -> Bool {
+        switch step {
         case 0:
             return viewModel.nameField.valid
-                && viewModel.referralField.valid
-                && !viewModel.validatingReferralCode
+            && viewModel.referralField.valid
+            && !viewModel.validatingReferralCode
         case 1:
             return viewModel.emailField.valid
         case 2:
             return viewModel.passwordField.valid
-                && viewModel.passwordConfirmField.valid
+            && viewModel.passwordConfirmField.valid
         default:
             return false
         }
     }
 
+    private func canNavigateToStep(_ target: Int) -> Bool {
+        guard target >= 0, target < totalSteps, target != currentStep else { return false }
+        return (0..<target).allSatisfy { isStepValid(at: $0) }
+    }
+    
     // MARK: - Body
-
+    
     var body: some View {
         Screen(edgeInsets: .init(leading: 24, trailing: 24)) {
             VStack(spacing: 0) {
-                stepIndicator
-                    .padding(.top, 24)
-                    .padding(.bottom, 32)
-
-                stepContent
-
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        stepIndicator
+                            .padding(.top, 24)
+                            .padding(.bottom, 24)
+                        
+                        stepContent
+                    }
+                }
+                
                 Spacer()
-
+                
                 PrimaryButton(
                     title: isLastStep && isCurrentStepValid
-                        ? "createVault".localized
-                        : "next".localized
+                    ? "createVault".localized
+                    : "next".localized
                 ) {
                     onContinue()
                 }
@@ -93,9 +107,9 @@ struct VaultSetupScreen: View {
             onContinue()
         }
     }
-
+    
     // MARK: - Step Indicator
-
+    
     private var stepIndicator: some View {
         HStack(spacing: 12) {
             ForEach(Array(stepIcons.enumerated()), id: \.offset) { index, icon in
@@ -104,19 +118,25 @@ struct VaultSetupScreen: View {
                         .fill(Theme.colors.border)
                         .frame(width: 16, height: 1)
                 }
-                VaultSetupStepIcon(state: stepState(for: index), icon: icon)
+                Button {
+                    navigateToStep(index)
+                } label: {
+                    VaultSetupStepIcon(state: stepState(for: index), icon: icon)
+                }
+                .buttonStyle(.plain)
+                .disabled(!canNavigateToStep(index))
             }
         }
     }
-
+    
     private func stepState(for index: Int) -> VaultSetupStepState {
         if index < currentStep { return .valid }
         if index == currentStep { return .active }
         return .inactive
     }
-
+    
     // MARK: - Step Content
-
+    
     @ViewBuilder
     private var stepContent: some View {
         Group {
@@ -132,18 +152,18 @@ struct VaultSetupScreen: View {
             }
         }
         .transition(.asymmetric(
-            insertion: .move(edge: .trailing).combined(with: .opacity),
-            removal: .move(edge: .leading).combined(with: .opacity)
+            insertion: .move(edge: navigatingForward ? .trailing : .leading).combined(with: .opacity),
+            removal: .move(edge: navigatingForward ? .leading : .trailing).combined(with: .opacity)
         ))
     }
-
+    
     private var nameStep: some View {
         VStack(spacing: 20) {
             stepHeader(
                 title: "nameYourVault".localized,
                 subtitle: "newWalletNameDescription".localized
             )
-
+            
             VStack(spacing: 16) {
                 CommonTextField(
                     text: $viewModel.nameField.value,
@@ -152,7 +172,7 @@ struct VaultSetupScreen: View {
                     isValid: isValidBinding(for: viewModel.nameField)
                 )
                 .focused($focusedField, equals: .name)
-
+                
                 ExpandableView(isExpanded: $referralExpanded) {
                     expandableHeader(label: "addReferral".localized)
                 } content: {
@@ -167,14 +187,14 @@ struct VaultSetupScreen: View {
             }
         }
     }
-
+    
     private var emailStep: some View {
         VStack(spacing: 20) {
             stepHeader(
                 title: "enterYourEmail".localized,
                 subtitle: "enterVaultEmail".localized
             )
-
+            
             CommonTextField(
                 text: $viewModel.emailField.value,
                 placeholder: viewModel.emailField.placeholder ?? .empty,
@@ -188,11 +208,11 @@ struct VaultSetupScreen: View {
 #endif
         }
     }
-
+    
     private var passwordStep: some View {
         VStack(spacing: 20) {
             passwordStepHeader
-
+            
             VStack(spacing: 16) {
                 SecureTextField(
                     value: $viewModel.passwordField.value,
@@ -201,7 +221,7 @@ struct VaultSetupScreen: View {
                     isValid: isValidBinding(for: viewModel.passwordField)
                 )
                 .focused($focusedField, equals: .password)
-
+                
                 SecureTextField(
                     value: $viewModel.passwordConfirmField.value,
                     placeholder: viewModel.passwordConfirmField.placeholder,
@@ -212,14 +232,14 @@ struct VaultSetupScreen: View {
             }
         }
     }
-
+    
     private func stepHeader(title: String, subtitle: String) -> some View {
         VStack(spacing: 12) {
             Text(title)
                 .font(Theme.fonts.title1)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
-
+            
             Text(subtitle)
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textTertiary)
@@ -227,41 +247,40 @@ struct VaultSetupScreen: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
-
+    
     private var passwordStepHeader: some View {
         VStack(spacing: 12) {
             Text("chooseAPassword".localized)
                 .font(Theme.fonts.title1)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
-
+            
             passwordSubtitle
         }
     }
-
+    
     private var passwordSubtitle: some View {
         var attributed = AttributedString("choosePasswordDescription".localized)
         attributed.font = Theme.fonts.bodySMedium
         attributed.foregroundColor = Theme.colors.textTertiary
-
+        
         if let range = attributed.range(of: "choosePasswordHighlight".localized) {
             attributed[range].foregroundColor = Theme.colors.textPrimary
         }
-
+        
         return (
-            Text(attributed) + Text(" \(Image(systemName: "info.circle.fill"))"
-            )
-            .foregroundStyle(Theme.colors.textPrimary)
-            .font(.callout)
+            Text(attributed) + Text(" \(Image(systemName: "info.circle.fill"))")
+                .foregroundStyle(Theme.colors.textPrimary)
+                .font(.callout)
         )
-            .multilineTextAlignment(.center)
-            .onTapGesture {
-                withAnimation(.interpolatingSpring) {
-                    showPasswordTooltip.toggle()
-                }
+        .multilineTextAlignment(.center)
+        .onTapGesture {
+            withAnimation(.interpolatingSpring) {
+                showPasswordTooltip.toggle()
             }
+        }
     }
-
+    
     private var tooltipOverlay: some View {
         ZStack(alignment: .top) {
             Color.clear
@@ -271,22 +290,22 @@ struct VaultSetupScreen: View {
                         showPasswordTooltip = false
                     }
                 }
-
+            
             Tooltip(text: "choosePasswordTooltip".localized)
                 .padding(.top, 180)
                 .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .top)))
         }
     }
-
+    
     private func isValidBinding(for field: FormField) -> Binding<Bool?> {
         Binding<Bool?>(
             get: { field.touched ? field.valid : nil },
             set: { _ in }
         )
     }
-
+    
     // MARK: - Expandable Header
-
+    
     private func expandableHeader(label: String) -> some View {
         Button {
             withAnimation(.interpolatingSpring) {
@@ -305,8 +324,20 @@ struct VaultSetupScreen: View {
         }
         .contentShape(Rectangle())
     }
-
+    
     // MARK: - Actions
+
+    private func navigateToStep(_ target: Int) {
+        guard canNavigateToStep(target) else { return }
+
+        focusedField = nil
+        navigatingForward = target > currentStep
+
+        withAnimation(.easeInOut(duration: 0.3)) {
+            currentStep = target
+        }
+        focusNextStepField()
+    }
 
     private func onContinue() {
         guard isCurrentStepValid else { return }
@@ -322,16 +353,20 @@ struct VaultSetupScreen: View {
                 setupType: setupType
             ))
         } else {
-            withAnimation(.interpolatingSpring(mass: 1, stiffness: 100, damping: 15)) {
+            focusedField = nil
+            navigatingForward = true
+
+            withAnimation(.easeInOut(duration: 0.3)) {
                 currentStep += 1
             }
             focusNextStepField()
         }
     }
-
+    
     private func focusNextStepField() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
             switch currentStep {
+            case 0: focusedField = .name
             case 1: focusedField = .email
             case 2: focusedField = .password
             default: break

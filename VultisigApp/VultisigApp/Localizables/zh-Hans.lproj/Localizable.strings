@@ -1370,3 +1370,5 @@
 "noPositionsFound" = "未找到任何持仓";
 "unrelatedQRCode" = "无关的二维码";
 "unrelatedQRCodeMessage" = "扫描到无关的二维码。";
+"replaceExistingVault" = "替换";
+"duplicateVaultMessage" = "名为\"%@\"的保险库已拥有相同的密钥。替换将覆盖其数据。";
