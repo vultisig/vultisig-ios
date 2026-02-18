@@ -1367,3 +1367,5 @@
 "noPositionsFound" = "Nema pronađenih pozicija";
 "unrelatedQRCode" = "Nepovezani QR kod";
 "unrelatedQRCodeMessage" = "Skeniran je nepovezani QR kod.";
+"replaceExistingVault" = "Zamijeni";
+"duplicateVaultMessage" = "Spremište pod nazivom \"%@\" već ima iste ključeve. Zamjenom će se prebrisati njegovi podatci.";
