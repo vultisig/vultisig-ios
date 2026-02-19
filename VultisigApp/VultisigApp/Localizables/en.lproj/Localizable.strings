@@ -1418,5 +1418,6 @@
 
 "unrelatedQRCode" = "Unrelated QR Code";
 "unrelatedQRCodeMessage" = "Unrelated QR code is scanned.";
+"iUnderstand" = "I understand";
 "replaceExistingVault" = "Replace";
 "duplicateVaultMessage" = "A vault named \"%@\" already has the same keys. Replacing it will overwrite its data.";

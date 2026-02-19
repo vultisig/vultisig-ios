@@ -1372,5 +1372,6 @@
 "noPositionsFound" = "Nenhuma posição encontrada";
 "unrelatedQRCode" = "Código QR não relacionado";
 "unrelatedQRCodeMessage" = "Foi escaneado um código QR não relacionado.";
+"iUnderstand" = "Eu entendo";
 "replaceExistingVault" = "Substituir";
 "duplicateVaultMessage" = "Um cofre chamado \"%@\" já possui as mesmas chaves. Substituí-lo sobrescreverá seus dados.";
