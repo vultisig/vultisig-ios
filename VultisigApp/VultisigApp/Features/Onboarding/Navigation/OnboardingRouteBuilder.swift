@@ -35,7 +35,7 @@ struct OnboardingRouteBuilder {
         keyImportInput: KeyImportInput?,
         setupType: KeyImportSetupType
     ) -> some View {
-        OnboardingVaultSetupInformationScreen(
+        OnboardingYourVaultSetupScreen(
             tssType: tssType,
             keyImportInput: keyImportInput,
             setupType: setupType
