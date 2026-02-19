@@ -15,16 +15,13 @@ import Mediator
 class SendCryptoViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var isValidatingForm = false
-    @Published var isValidAddress = false
     @Published var isValidForm = true
     @Published var isNamespaceResolved = false
     @Published var showAlert = false
     @Published var currentIndex = 1
-    @Published var currentTitle = "send"
     @Published var errorTitle = ""
     @Published var errorMessage: String?
     @Published var hash: String? = nil
-    @Published var approveHash: String? = nil
 
     // Logic delegation
     private let logic = SendCryptoLogic()
@@ -83,10 +80,9 @@ class SendCryptoViewModel: ObservableObject {
 
     func validateAddress(tx: SendTransaction, address: String) {
         guard !isNamespaceResolved else {
-            isValidAddress = true
             return
         }
-        isValidAddress = AddressService.validateAddress(address: address, chain: tx.coin.chain)
+        _ = AddressService.validateAddress(address: address, chain: tx.coin.chain)
     }
 
     func validateAmount(amount: String) {
@@ -137,10 +133,6 @@ class SendCryptoViewModel: ObservableObject {
         return result.isValid
     }
 
-    func setHash(_ hash: String) {
-        self.hash = hash
-    }
-
     func stopMediator() {
         Mediator.shared.stop()
         logger.info("mediator server stopped.")
@@ -150,12 +142,6 @@ class SendCryptoViewModel: ObservableObject {
         guard let nativeCoin = vault.nativeCoin(for: tx.coin) else { return .empty }
         let fee = nativeCoin.decimal(for: tx.fee)
         return RateProvider.shared.fiatFeeString(value: fee, coin: nativeCoin)
-    }
-
-    func pickerCoins(vault: Vault, tx: SendTransaction) -> [Coin] {
-        return vault.coins.sorted(by: {
-            Int($0.chain == tx.coin.chain) > Int($1.chain == tx.coin.chain)
-        })
     }
 
     private func resetStates() {
@@ -176,7 +162,6 @@ struct SendCryptoLogic {
 
     private let logger = Logger(subsystem: "send-crypto-logic", category: "transaction")
     private let blockchainService = BlockChainService.shared
-    private let mediator = Mediator.shared
     private let fastVaultService = FastVaultService.shared
 
     // Services

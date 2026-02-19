@@ -24,12 +24,4 @@ struct TronConstants {
 
         static let mainViewBottomPadding: CGFloat = 32
     }
-
-    struct Fonts {
-        static let title = Theme.fonts.bodyLMedium
-        static let subtitle = Theme.fonts.caption12
-        static let balance = Theme.fonts.priceTitle1
-        static let body = Theme.fonts.bodySMedium
-        static let headline = Theme.fonts.bodyLMedium
-    }
 }

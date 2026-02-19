@@ -37,10 +37,6 @@ class EncryptedBackupViewModel: ObservableObject {
     private let logger = Logger(subsystem: "import-wallet", category: "communication")
     private let keychain = DefaultKeychainService.shared
 
-    enum VultisigDocumentError: Error {
-        case customError(String)
-    }
-
     func resetData() {
         showVaultExporter = false
         showVaultImporter = false
@@ -367,49 +363,6 @@ class EncryptedBackupViewModel: ObservableObject {
                 }
             } catch {
                 print("  ⚠️ Error checking file: \(fileURL.lastPathComponent) - \(error)")
-            }
-        }
-
-        return vaultFiles
-    }
-
-    private func findVaultFiles(in extractedURL: URL) -> [URL] {
-
-        guard extractedURL.isDirectory else {
-            return [extractedURL]
-        }
-
-        let fileManager = FileManager.default
-        guard let enumerator = fileManager.enumerator(at: extractedURL, includingPropertiesForKeys: [.isDirectoryKey]) else {
-            print("❌ DEBUG: Failed to create enumerator")
-            return []
-        }
-
-        var allFiles: [URL] = []
-        var vaultFiles: [URL] = []
-
-        for item in enumerator {
-            guard let fileURL = item as? URL else { continue }
-            allFiles.append(fileURL)
-
-            guard let resourceValues = try? fileURL.resourceValues(forKeys: [.isDirectoryKey]),
-                  !resourceValues.isDirectory! else {
-                continue
-            }
-
-            let fileName = fileURL.lastPathComponent
-
-            let hasBak = fileName.hasSuffix(".bak")
-            let hasVult = fileName.hasSuffix(".vult")
-            let hasDat = fileName.hasSuffix(".dat")
-            let isVaultFile = hasBak || hasVult || hasDat
-
-            let startsWithDot = fileName.hasPrefix(".")
-            let hasMacOSX = fileName.contains("__MACOSX")
-            let isNotMetadata = !startsWithDot && !hasMacOSX
-
-            if isVaultFile && isNotMetadata {
-                vaultFiles.append(fileURL)
             }
         }
 

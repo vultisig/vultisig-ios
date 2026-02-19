@@ -9,7 +9,7 @@ import Foundation
 import OSLog
 
 /// Concrete implementation of HTTPClientProtocol using URLSession
-public final class HTTPClient: HTTPClientProtocol {
+final class HTTPClient: HTTPClientProtocol {
 
     private let session: URLSession
     private let jsonEncoder: JSONEncoder
@@ -22,7 +22,7 @@ public final class HTTPClient: HTTPClientProtocol {
     ///   - jsonEncoder: JSONEncoder for encoding request bodies (default: JSONEncoder())
     ///   - jsonDecoder: JSONDecoder for decoding responses (default: JSONDecoder())
     ///   - logger: Logger for request/response logging (default: Logger for http-client)
-    public init(
+    init(
         session: URLSession = .shared,
         jsonEncoder: JSONEncoder = JSONEncoder(),
         jsonDecoder: JSONDecoder = JSONDecoder(),
@@ -35,7 +35,7 @@ public final class HTTPClient: HTTPClientProtocol {
     }
 
     /// Performs a network request and returns raw data
-    public func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
+    func request(_ target: TargetType) async throws -> HTTPResponse<Data> {
         // Check for cancellation before starting
         try Task.checkCancellation()
 

@@ -13,10 +13,6 @@ struct EncryptedDataFile: FileDocument {
 
     var data: Data
 
-    init(data: Data) {
-        self.data = data
-    }
-
     init?(url: URL?) {
         guard let url = url, let data = try? Data(contentsOf: url) else { return nil }
         self.data = data
