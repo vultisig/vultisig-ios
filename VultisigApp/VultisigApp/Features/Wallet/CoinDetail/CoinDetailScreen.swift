@@ -62,6 +62,16 @@ struct CoinDetailScreen: View {
                     onAction: onAction
                 )
                 .padding(.bottom, 8)
+
+                if viewModel.isTron {
+                    TronResourcesCardView(
+                        availableBandwidth: viewModel.availableBandwidth,
+                        totalBandwidth: viewModel.totalBandwidth,
+                        availableEnergy: viewModel.availableEnergy,
+                        totalEnergy: viewModel.totalEnergy,
+                        isLoading: viewModel.isLoadingResources
+                    )
+                }
                 CoinPriceNetworkView(
                     chainName: coin.chain.name,
                     price: Decimal(coin.price).formatToFiat()
@@ -71,7 +81,10 @@ struct CoinDetailScreen: View {
             .padding(.top, isMacOS ? 40 : 0)
         }
         .background(ModalBackgroundView(width: size ?? 0))
-        .onLoad(perform: viewModel.setup)
+        .onLoad {
+            viewModel.setup()
+            viewModel.loadTronResources()
+        }
         .onAppear(perform: onAppear)
         .withAddressCopy(coin: $addressToCopy)
         .refreshable {

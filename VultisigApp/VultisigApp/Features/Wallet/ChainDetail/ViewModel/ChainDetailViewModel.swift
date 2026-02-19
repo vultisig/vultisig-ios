@@ -22,6 +22,15 @@ final class ChainDetailViewModel: ObservableObject {
 
     @Published var availableActions: [CoinAction] = []
 
+    // Tron resources
+    @Published var availableBandwidth: Int64 = 0
+    @Published var totalBandwidth: Int64 = 0
+    @Published var availableEnergy: Int64 = 0
+    @Published var totalEnergy: Int64 = 0
+    @Published var isLoadingResources: Bool = false
+
+    var isTron: Bool { nativeCoin.chain == .tron }
+
     init(vault: Vault, nativeCoin: Coin) {
         self.vault = vault
         self.nativeCoin = nativeCoin
@@ -30,6 +39,33 @@ final class ChainDetailViewModel: ObservableObject {
     func refresh() {
         Task { @MainActor in
             availableActions = await actionResolver.resolveActions(for: nativeCoin.chain).filtered
+        }
+    }
+
+    func loadTronResources() {
+        guard isTron else { return }
+
+        Task { @MainActor in
+            isLoadingResources = true
+        }
+
+        Task {
+            do {
+                let resource = try await TronService.shared.getAccountResource(address: nativeCoin.address)
+                await MainActor.run {
+                    availableBandwidth = resource.calculateAvailableBandwidth()
+                    totalBandwidth = resource.freeNetLimit + resource.NetLimit
+                    availableEnergy = resource.EnergyLimit - resource.EnergyUsed
+                    totalEnergy = resource.EnergyLimit
+                    isLoadingResources = false
+                }
+            } catch {
+                if !(error is CancellationError) {
+                    await MainActor.run {
+                        isLoadingResources = false
+                    }
+                }
+            }
         }
     }
 
