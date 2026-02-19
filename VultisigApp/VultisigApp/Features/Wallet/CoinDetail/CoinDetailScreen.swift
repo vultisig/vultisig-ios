@@ -81,11 +81,8 @@ struct CoinDetailScreen: View {
             .padding(.top, isMacOS ? 40 : 0)
         }
         .background(ModalBackgroundView(width: size ?? 0))
-        .onLoad {
+        .task {
             viewModel.setup()
-            if viewModel.isTron {
-                viewModel.tronLoader?.load()
-            }
         }
         .onAppear(perform: onAppear)
         .withAddressCopy(coin: $addressToCopy)

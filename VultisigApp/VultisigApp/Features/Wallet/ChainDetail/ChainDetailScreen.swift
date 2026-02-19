@@ -99,9 +99,7 @@ struct ChainDetailScreen: View {
         }
         .onLoad {
             viewModel.refresh()
-            if viewModel.isTron {
-                viewModel.tronLoader?.load()
-            }
+
             refresh()
         }
         .onChange(of: refreshTrigger) { _, _ in

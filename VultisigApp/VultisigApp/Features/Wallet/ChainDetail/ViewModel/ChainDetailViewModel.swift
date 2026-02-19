@@ -35,6 +35,7 @@ final class ChainDetailViewModel: ObservableObject {
         self.tronLoader = nativeCoin.chain == .tron ? TronResourcesLoader(address: nativeCoin.address) : nil
 
         tronLoader?.objectWillChange
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in self?.objectWillChange.send() }
             .store(in: &cancellables)
     }
