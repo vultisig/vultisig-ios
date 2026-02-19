@@ -50,6 +50,12 @@ final class ChainDetailViewModel: ObservableObject {
         }
 
         Task {
+            defer {
+                Task { @MainActor in
+                    isLoadingResources = false
+                }
+            }
+
             do {
                 let resource = try await TronService.shared.getAccountResource(address: nativeCoin.address)
                 await MainActor.run {
@@ -57,14 +63,9 @@ final class ChainDetailViewModel: ObservableObject {
                     totalBandwidth = resource.freeNetLimit + resource.NetLimit
                     availableEnergy = resource.EnergyLimit - resource.EnergyUsed
                     totalEnergy = resource.EnergyLimit
-                    isLoadingResources = false
                 }
             } catch {
-                if !(error is CancellationError) {
-                    await MainActor.run {
-                        isLoadingResources = false
-                    }
-                }
+                // Silently handle errors — loading indicator is cleared by defer
             }
         }
     }
