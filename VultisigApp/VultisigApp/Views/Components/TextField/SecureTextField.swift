@@ -12,14 +12,22 @@ struct SecureTextField: View {
     let label: String?
     let placeholder: String?
     @Binding var error: String?
+    @Binding var isValid: Bool?
 
     @State var isSecure: Bool = true
 
-    init(value: Binding<String>, label: String? = nil, placeholder: String?, error: Binding<String?>) {
+    init(
+        value: Binding<String>,
+        label: String? = nil,
+        placeholder: String?,
+        error: Binding<String?>,
+        isValid: Binding<Bool?> = .constant(nil)
+    ) {
         self._value = value
         self.label = label
         self.placeholder = placeholder
         self._error = error
+        self._isValid = isValid
     }
 
     var body: some View {
@@ -29,6 +37,7 @@ struct SecureTextField: View {
             placeholder: placeholder,
             isSecure: $isSecure,
             error: $error,
+            isValid: $isValid,
             trailingView: {
                 Button(
                     action: {

@@ -50,6 +50,8 @@
 "backupGuide" = "Backup guide";
 "backupNotNeededDisclaimer" = "Your backup device is not needed unless you lose one of your main devices.";
 "backupNow" = "Backup Now";
+"backupSaveCheckbox" = "I understand how to save this backup";
+"backupSaveButton" = "Save backup";
 "backupNowCheckbox" = "I understand that by skipping the backup I may lose access to my funds.";
 "backupNowSubtitle" = "Each device has its own unique vault share, which are needed for recovery";
 "backupNowTitle" = "Backups need to be done on every device in Vultisig";
@@ -64,8 +66,10 @@
 "backupPart1" = "Backup Share 1";
 "backupPart2" = "Backup Share 2";
 "backupPasswordDisclaimer" = "Never store Vault Shares from different devices in the same location";
-"backupSetupSubtitle" = "Online storage is recommended and safe -\nvault shares are designed for this.";
-"backupSetupTitle" = "Backup your vault\nshare online";
+"backupSetupSubtitle" = "Export this backup file, then save it to the cloud. Use a different cloud service or account for each backup. When you're finished, delete the file from this device.";
+"backupSetupSubtitleHighlight" = "Use a different cloud service or account for each backup. When you're finished, delete the file from this device.";
+"backupSetupTitle" = "Save backup to the cloud";
+"backupSetupTitleSecure" = "Save backup %d of %d to the cloud";
 "backupShareSent" = "Backup share sent!";
 "backupVault" = "Backup your vault share";
 "backupVaultOnEveryDeviceIndividually!" = "Backup your vault on every device individually!";
@@ -89,6 +93,11 @@
 "chain" = "Chain";
 "chains" = "Chains";
 "changeEmailAndRestart" = "Change email and restart keygen";
+"chooseAPassword" = "Choose a password";
+"choosePasswordDescription" = "If you want an extra layer of security, choose a password. Password cannot be recovered.";
+"choosePasswordHighlight" = "Password cannot be recovered.";
+"choosePasswordTooltip" = "This occurs because the password is used to locally encrypt the backup file, similar to how a hard drive is encrypted. In the following step, you have the option to add a hint.";
+"createVault" = "Create vault";
 "changeFriendsReferralCode" = "Change friends Referral Code used for swaps";
 "changesInSetup" = "Changes in Setup";
 "changeVault" = "Change Vault";
@@ -109,8 +118,11 @@
 "coinAddressCopied" = "%@ address copied";
 "collectedRewards" = "Collected rewards";
 "complete" = "Complete";
+"congratsExclamation" = "Congrats!";
+"congratsSummaryDescription" = "You're all set! You stay in control of every transaction.";
 "confirm" = "Confirm";
 "confirmToSign" = "Confirm to sign the message?";
+"connected" = "Connected";
 "connectingWithServer..." = "Connecting with server...";
 "continue" = "Continue";
 "copyAddress" = "Copy address";
@@ -190,8 +202,8 @@
 "enableDKLS" = "Enable DKLS";
 "EnglishUK" = "English (UK)";
 "enter4Characters" = "Enter up to 4 characters";
-"enter5DigitVerificationCode" = "Enter the 4 digit code we emailed you";
-"enter5DigitVerificationCodeDescription" = "This code will confirm that you’ve received your vault share via email";
+"enter4DigitVerificationCode" = "4-digit code received via email";
+"enter4DigitVerificationCodeDescription" = "This will activate the co-signer";
 "enterAddress" = "Enter Address";
 "enterAddressHere" = "Enter address here";
 "enterAmount" = "Enter Amount";
@@ -322,6 +334,8 @@
 "importVault" = "Import Vault";
 "importYourVaultShare" = "Import your vault share";
 "incorrectCode" = "Incorrect Code";
+"incorrectCodeTryAgain" = "Incorrect code. Try again.";
+
 "incorrectPassword" = "Incorrect Password";
 "incorrectPasswordTryAgain" = "Incorrect password, please try again";
 "informationNote" = "Keep devices on the same WiFi Network, correct vault and pair devices.\nMake sure no other devices are running Vultisig.";
@@ -404,10 +418,13 @@
 "loginUsingFaceID" = "Login using Face ID";
 "loginUsingOpticID" = "Login using Optic ID";
 "loginUsingTouchID" = "Login using Touch ID";
+"localModeWaitingOnDevices" = "Local mode, waiting on devices...";
+"looksGood" = "Looks good";
 "lookingForDevices" = "Looking for devices... ";
 "madeVaultBackupPrompt" = "I have made a vault backup";
 "main" = "Main";
 "mainDevice" = "Main Device";
+"makeSureCorrectDevices" = "Make sure that these are the correct devices you've added:";
 "mainVault" = "Main Vault";
 "maxTotalFee" = "Max. Total Fee";
 "memo" = "Memo";
@@ -603,6 +620,7 @@
 "restart" = "Please restart the app to apply the new language settings.";
 "retry" = "Retry";
 "reviewConditions" = "Review Conditions";
+"reviewYourVaultDevices" = "Review your vault devices";
 "reviewConditionsMessage" = "Kindly review and agree to all the listed conditions.";
 "rippleExistentialDepositError" = "XRP requires a minimum balance of 1 XRP. The blockchain will block any transaction that would reduce the account balance below this amount. To send your full balance, the account must be deleted.";
 "sameDeviceShareError" = "Same vault share";
@@ -724,6 +742,7 @@
 "signCustomMessage" = "Sign custom message";
 "skip" = "Skip";
 "skipPassword" = "Skip Password";
+"somethingsWrong" = "Something's wrong";
 "somethingWentWrongTryAgain" = "Something went wrong, please try again.";
 "soon" = "SOON";
 "Spanish" = "Spanish";
@@ -769,7 +788,7 @@
 "swapErrorSameAssetTitle" = "Same Asset";
 "swapErrorSameAssetDescription" = "Cannot swap between the same asset. Please select different assets.";
 "noLiquidityPool" = "No liquidity pool available for this token pair. This asset may not be supported.";
-"switchBackToInternetMode" = " Switch back to internet mode";
+"switchBackToInternetMode" = "Not want to use local? Switch back.";
 "switchToLocalMode" = "Switch to local mode";
 "systemErrorMessage" = "System error. Please try again.";
 "termsOfService" = "Terms of Service";
@@ -810,6 +829,7 @@
 "updateNow" = "Update Now";
 "downloadViaWebsite" = "Download via Website";
 "upgradeNow" = "Upgrade now";
+"useDifferentEmail" = "Use a different email";
 "upgradeYourVault" = "Upgrade your vault";
 "upgradeYourVaultNow" = "Upgrade your vault now";
 "upgradeYourVaultTitle1" = "Upgrade this vault to the";
@@ -829,11 +849,13 @@
 "uploadQRCodeImageKeysign" = "Upload QR-Code to join Keysign";
 "urlCopied" = "URL Copied";
 "URLInaccessible" = "Failed to access URL";
+"useLocalMode" = "Use local mode";
 "useMyVaultPassword" = "Use My Vault Password";
 "usePassword" = "Use password";
 "useReferral" = "Use Referral";
 "useReferralCode" = "Use referred code";
 "useSkipInstead" = "Use Skip instead";
+"useStandardMode" = "Use standard mode";
 "utxoSelectionFailedError" = "UTXO selection failed. Unable to find suitable transaction outputs to cover the amount plus estimated fees. Try reducing the transaction amount.";
 "utxoSuggestionMessage" = "For UTXO-based cryptocurrencies like Dogecoin:\n\n• Try sending a smaller amount\n• Wait for pending transactions to confirm\n• Consider consolidating small UTXOs first\n• Check if you have enough balance for fees";
 "utxoSuggestionTitle" = "UTXO Transaction Tips";
@@ -895,6 +917,8 @@
 "vultisigWebsite" = "Vultisig Website";
 "waitingForKeygenStart" = "Waiting for key generation to start...";
 "waitingForKeygenToStart" = "Waiting for key generation to start, please wait...";
+"waitingForDeviceToJoin" = "Waiting for device to join";
+"waitingForDevicesToConnect" = "Waiting for devices to connect";
 "waitingForKeySignStart" = "Waiting for the signing process to begin...";
 "waitingOnDevice" = "Waiting on device";
 "waitingOnDevices..." = "Waiting on devices...";
@@ -1324,6 +1348,7 @@
 "whereDoYouMigrateFrom" = "Where do you migrate from";
 
 // Vault Setup Screens
+"yourVaultIsReadyToUse" = "Your vault is ready to use";
 "yourVaultSetup" = "Your vault setup";
 
 // Screen 1 - Fast Vault (2-device setup)
@@ -1385,3 +1410,8 @@
 "swap.referral_discount" = "Referral (-%d bps)";
 "swap.price_impact.good" = "Good";
 "swap.price_impact.high" = "High";
+
+"unrelatedQRCode" = "Unrelated QR Code";
+"unrelatedQRCodeMessage" = "Unrelated QR code is scanned.";
+"replaceExistingVault" = "Replace";
+"duplicateVaultMessage" = "A vault named \"%@\" already has the same keys. Replacing it will overwrite its data.";

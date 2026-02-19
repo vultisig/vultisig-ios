@@ -268,9 +268,7 @@ class JoinKeysignViewModel: ObservableObject {
             await ensureCustomMessagePayload()
             // Decode custom message if present
             if let customMessage = customMessagePayload {
-                if let decodedMessage = await customMessage.message.decodedExtensionMemoAsync() {
-                    self.customMessagePayload?.decodedMessage = decodedMessage
-                }
+                self.customMessagePayload?.decodedMessage = await CustomMessageDecoder.decode(customMessage)
                 if customMessage.vaultPublicKeyECDSA != .empty {
                     vaultPublicKeyECDSAInQrCode = customMessage.vaultPublicKeyECDSA
                 }
@@ -471,4 +469,5 @@ class JoinKeysignViewModel: ObservableObject {
         let fiatDecimal = payload.toCoin.fiat(decimal: payload.toAmountDecimal)
         return fiatDecimal.formatToFiat(includeCurrencySymbol: true)
     }
+
 }

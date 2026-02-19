@@ -25,21 +25,19 @@ struct OnboardingRouteBuilder {
     }
 
     @ViewBuilder
-    func buildKeyImportDeviceCountScreen(mnemonic: String, chainSettings: [ChainImportSetting]) -> some View {
-        KeyImportDeviceCountScreen(mnemonic: mnemonic, chainSettings: chainSettings)
+    func buildOnboardingDevicesSelectionScreen(tssType: TssType, keyImportInput: KeyImportInput?) -> some View {
+        OnboardingDevicesSelectionScreen(tssType: tssType, keyImportInput: keyImportInput)
     }
 
     @ViewBuilder
-    func buildKeyImportNewVaultSetupScreen(
-        vault: Vault,
+    func buildOnboardingVaultSetupInformationScreen(
+        tssType: TssType,
         keyImportInput: KeyImportInput?,
-        fastSignConfig: FastSignConfig?,
         setupType: KeyImportSetupType
     ) -> some View {
-        KeyImportNewVaultSetupScreen(
-            vault: vault,
+        OnboardingVaultSetupInformationScreen(
+            tssType: tssType,
             keyImportInput: keyImportInput,
-            fastSignConfig: fastSignConfig,
             setupType: setupType
         )
     }
@@ -55,18 +53,8 @@ struct OnboardingRouteBuilder {
     }
 
     @ViewBuilder
-    func buildSetupQRCodeScreen(tssType: TssType, vault: Vault?) -> some View {
-        SetupQRCodeView(tssType: tssType, vault: vault)
-    }
-
-    @ViewBuilder
     func buildJoinKeygenScreen(vault: Vault, selectedVault: Vault?) -> some View {
         JoinKeygenView(vault: vault, selectedVault: selectedVault)
-    }
-
-    @ViewBuilder
-    func buildOnboardingScreen() -> some View {
-        OnboardingView()
     }
 
     @ViewBuilder
@@ -82,7 +70,7 @@ struct OnboardingRouteBuilder {
                 selectedTab: selectedTab
             )
         } else {
-            PeerDiscoveryView(
+            PeerDiscoveryScreen(
                 tssType: tssType,
                 vault: vault,
                 selectedTab: selectedTab,

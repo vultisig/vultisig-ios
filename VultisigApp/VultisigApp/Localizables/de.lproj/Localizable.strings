@@ -50,6 +50,8 @@
 "backupGuide" = "Backup -Handbuch";
 "backupNotNeededDisclaimer" = "Dein Backup-Gerät wird nicht benötigt, es sei denn, du verlierst eines deiner Hauptgeräte.";
 "backupNow" = "Jetzt sichern";
+"backupSaveCheckbox" = "Ich verstehe, wie ich diese Sicherung speichere";
+"backupSaveButton" = "Sicherung speichern";
 "backupNowCheckbox" = "Ich verstehe, dass ich durch das Überspringen des Backups den Zugang zu meinen Geldern verlieren könnte.";
 "backupNowSubtitle" = "Jedes Gerät hat seinen eigenen einzigartigen Tresoranteil, der für die Wiederherstellung benötigt wird";
 "backupNowTitle" = "Backups müssen auf jedem Gerät in Vultisig durchgeführt werden";
@@ -64,8 +66,10 @@
 "backupPart1" = "Sicherungsanteil 1";
 "backupPart2" = "Sicherungsanteil 2";
 "backupPasswordDisclaimer" = "Speichere niemals Tresoranteile von verschiedenen Geräten am selben Ort";
-"backupSetupSubtitle" = "Online-Speicher wird empfohlen und ist sicher –\nTresorfreigaben sind dafür konzipiert.";
-"backupSetupTitle" = "Sichere deinen Tresor\nteile ihn online";
+"backupSetupSubtitle" = "Exportiere diese Sicherungsdatei und speichere sie in der Cloud. Verwende für jede Sicherung einen anderen Cloud-Dienst oder ein anderes Konto. Wenn du fertig bist, lösche die Datei von diesem Gerät.";
+"backupSetupSubtitleHighlight" = "Verwende für jede Sicherung einen anderen Cloud-Dienst oder ein anderes Konto. Wenn du fertig bist, lösche die Datei von diesem Gerät.";
+"backupSetupTitle" = "Sicherung in der Cloud speichern";
+"backupSetupTitleSecure" = "Sicherung %d von %d in der Cloud speichern";
 "backupShareSent" = "Backup -Aktie gesendet!";
 "backupVault" = "Mache ein Backup deines Tresors";
 "backupVaultOnEveryDeviceIndividually!" = "Sichern Sie Ihr Gewölbe auf jedem Gerät einzeln!";
@@ -89,6 +93,11 @@
 "chain" = "Blockchain";
 "chains" = "Ketten";
 "changeEmailAndRestart" = "E-Mail ändern und Keygen neu starten";
+"chooseAPassword" = "Wähle ein Passwort";
+"choosePasswordDescription" = "Wenn du eine zusätzliche Sicherheitsebene möchtest, wähle ein Passwort. Das Passwort kann nicht wiederhergestellt werden.";
+"choosePasswordHighlight" = "Das Passwort kann nicht wiederhergestellt werden.";
+"choosePasswordTooltip" = "Dies liegt daran, dass das Passwort verwendet wird, um die Sicherungsdatei lokal zu verschlüsseln, ähnlich wie eine Festplatte verschlüsselt wird. Im nächsten Schritt hast du die Möglichkeit, einen Hinweis hinzuzufügen.";
+"createVault" = "Tresor erstellen";
 "changeFriendsReferralCode" = "Ändern Sie den für Swaps verwendeten Empfehlungscode von Freunden";
 "changesInSetup" = "Änderungen in der Konfiguration";
 "changeVault" = "Tresor wechseln";
@@ -109,8 +118,11 @@
 "coinAddressCopied" = "Münzadresse kopiert";
 "collectedRewards" = "Gesammelte Belohnungen";
 "complete" = "Abgeschlossen";
+"congratsExclamation" = "Glückwunsch!";
+"congratsSummaryDescription" = "Alles bereit! Du behältst die Kontrolle über jede Transaktion.";
 "confirm" = "Bestätigen";
 "confirmToSign" = "Bestätigen, um die Nachricht zu unterschreiben?";
+"connected" = "Verbunden";
 "connectingWithServer..." = "Verbindung mit dem Server wird hergestellt...";
 "continue" = "Fortfahren";
 "copyAddress" = "Adresse kopieren";
@@ -183,8 +195,8 @@
 "enableDKLS" = "DKLS aktivieren";
 "EnglishUK" = "Englisch (UK)";
 "enter4Characters" = "Gib 4 Zeichen ein";
-"enter5DigitVerificationCode" = "Geben Sie den 4-stelligen Code ein, den wir Ihnen per E-Mail gesendet haben";
-"enter5DigitVerificationCodeDescription" = "Dieser Code bestätigt, dass Sie Ihren Tresoranteil per E-Mail erhalten haben";
+"enter4DigitVerificationCode" = "4-stelliger Code per E-Mail erhalten";
+"enter4DigitVerificationCodeDescription" = "Dies aktiviert den Co-Unterzeichner";
 "enterAddress" = "Adresse eingeben";
 "enterAddressHere" = "Adresse hier eingeben";
 "enterAmount" = "Menge eingeben";
@@ -315,6 +327,7 @@
 "importVault" = "Tresor importieren";
 "importYourVaultShare" = "Importiere deinen Vault-Anteil";
 "incorrectCode" = "Falscher Code";
+"incorrectCodeTryAgain" = "Falscher Code. Versuche es erneut.";
 "incorrectPassword" = "Falsches Passwort";
 "incorrectPasswordTryAgain" = "Falsches Passwort, bitte versuche es erneut";
 "informationNote" = "Halten Sie Geräte auf demselben WLAN -Netzwerk, korrigieren Sie Gewölbe und Paargeräte.";
@@ -397,10 +410,13 @@
 "loginUsingFaceID" = "Mit Face ID anmelden";
 "loginUsingOpticID" = "Anmelden mit Optic ID";
 "loginUsingTouchID" = "Anmelden mit Touch ID";
+"localModeWaitingOnDevices" = "Lokaler Modus, warte auf Geräte...";
+"looksGood" = "Sieht gut aus";
 "lookingForDevices" = "Suche nach Geräten...";
 "madeVaultBackupPrompt" = "Ich habe eine Sicherung des Tresors erstellt";
 "main" = "Haupt";
 "mainDevice" = "Hauptgerät";
+"makeSureCorrectDevices" = "Stelle sicher, dass dies die richtigen Geräte sind, die du hinzugefügt hast:";
 "mainVault" = "Haupttresor";
 "maxTotalFee" = "Max. Gesamtgebühr";
 "memo" = "Memo";
@@ -595,6 +611,7 @@
 "restart" = "Bitte starte die App neu, um die neuen Spracheinstellungen zu übernehmen.";
 "retry" = "Erneut versuchen";
 "reviewConditions" = "Bedingungen überprüfen";
+"reviewYourVaultDevices" = "Überprüfe deine Tresor-Geräte";
 "reviewConditionsMessage" = "Bitte überprüfe und stimme allen aufgeführten Bedingungen zu.";
 "rippleExistentialDepositError" = "XRP erfordert ein Mindestguthaben von 1 XRP. Die Blockchain blockiert jede Transaktion, die das Guthaben unter diesen Betrag senken würde. Um das gesamte Guthaben zu senden, muss das Konto gelöscht werden.";
 "sameDeviceShareError" = "Gleicher Tresor Teil";
@@ -717,6 +734,7 @@
 "signCustomMessage" = "Benutzerdefinierte Nachricht signieren";
 "skip" = "Überspringen";
 "skipPassword" = "Passwort überspringen";
+"somethingsWrong" = "Etwas stimmt nicht";
 "somethingWentWrongTryAgain" = "Etwas ist schiefgelaufen, bitte versuche es erneut.";
 "soon" = "Bald";
 "Spanish" = "Spanisch";
@@ -760,7 +778,7 @@
 "swapErrorSameAssetTitle" = "Gleicher Vermögenswert";
 "swapErrorSameAssetDescription" = "Tausch zwischen gleichen Vermögenswerten nicht möglich. Bitte wählen Sie unterschiedliche Vermögenswerte.";
 "noLiquidityPool" = "Kein Liquiditätspool für dieses Token-Paar verfügbar. Dieser Asset wird möglicherweise nicht unterstützt.";
-"switchBackToInternetMode" = "Wechsle zurück in den Internetmodus";
+"switchBackToInternetMode" = "Kein lokaler Modus gewünscht? Zurückwechseln.";
 "switchToLocalMode" = "Wechsle in den lokalen Modus";
 "systemErrorMessage" = "Systemfehler. Bitte versuche es erneut.";
 "termsOfService" = "Nutzungsbedingungen";
@@ -799,6 +817,7 @@
 "updateNow" = "Jetzt updaten";
 "downloadViaWebsite" = "Über Website herunterladen";
 "upgradeNow" = "Jetzt aktualisieren";
+"useDifferentEmail" = "Andere E-Mail verwenden";
 "upgradeYourVault" = "Tresor aktualisieren";
 "upgradeYourVaultNow" = "Aktualisiere deinen Tresor jetzt";
 "upgradeYourVaultTitle1" = "Aktualisiere diesen Tresor auf das";
@@ -818,11 +837,13 @@
 "uploadQRCodeImageKeysign" = "QR-Code hochladen, um dem Keysign beizutreten";
 "urlCopied" = "URL kopiert";
 "URLInaccessible" = "Zugriff auf URL fehlgeschlagen";
+"useLocalMode" = "Lokalen Modus verwenden";
 "useMyVaultPassword" = "Verwenden Sie mein Gewölbekennwort";
 "usePassword" = "Passwort verwenden";
 "useReferral" = "Empfehlung verwenden";
 "useReferralCode" = "Empfehlungscode verwenden";
 "useSkipInstead" = "Verwenden Sie stattdessen „Überspringen“";
+"useStandardMode" = "Standardmodus verwenden";
 "utxoSelectionFailedError" = "UTXO-Auswahl fehlgeschlagen. Konnte keine geeigneten Transaktionsausgaben finden, um den Betrag plus geschätzte Gebühren zu decken. Versuche den Transaktionsbetrag zu reduzieren.";
 "utxoSuggestionMessage" = "Für UTXO-basierte Kryptowährungen wie Dogecoin: \ n \ n • Versuchen Sie, einen geringeren Betrag zu senden.";
 "utxoSuggestionTitle" = "UTXO -Transaktionstipps";
@@ -884,6 +905,8 @@
 "vultisigWebsite" = "Vultisig -Website";
 "waitingForKeygenStart" = "Warten auf den Beginn der Schlüsselgenerierung...";
 "waitingForKeygenToStart" = "Warten auf den Start der Schlüsselgenerierung, bitte warten...";
+"waitingForDeviceToJoin" = "Warte auf Gerät zum Beitreten";
+"waitingForDevicesToConnect" = "Warte auf Verbindung der Geräte";
 "waitingForKeySignStart" = "Warten auf Unterzeichnungsbeginn...";
 "waitingOnDevice" = "Warte auf Gerät";
 "waitingOnDevices..." = "Warten auf Geräte...";
@@ -1282,6 +1305,7 @@
 "whereDoYouMigrateFrom" = "Von wo migrierst du?";
 
 // Vault Setup Screens
+"yourVaultIsReadyToUse" = "Dein Tresor ist einsatzbereit";
 "yourVaultSetup" = "Ihre Tresor-Einrichtung";
 
 // Screen 1 - Fast Vault (2-device setup)
@@ -1341,3 +1365,7 @@
 "swap.price_impact.good" = "Gut";
 "swap.price_impact.high" = "Hoch";
 "noPositionsFound" = "Keine Positionen gefunden";
+"unrelatedQRCode" = "Unbekannter QR-Code";
+"unrelatedQRCodeMessage" = "Es wurde ein nicht zugehöriger QR-Code gescannt.";
+"replaceExistingVault" = "Ersetzen";
+"duplicateVaultMessage" = "Ein Tresor namens \"%@\" hat bereits dieselben Schlüssel. Durch das Ersetzen werden seine Daten überschrieben.";

@@ -222,7 +222,7 @@ private extension ChainDetailScreen {
     }
 
     func refresh() {
-        Task.detached {
+        Task {
             await updateBalances()
             await MainActor.run {
                 coinSelectionViewModel.setData(for: vault)

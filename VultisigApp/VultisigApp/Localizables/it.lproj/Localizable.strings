@@ -50,6 +50,8 @@
 "backupGuide" = "Guida di backup";
 "backupNotNeededDisclaimer" = "Il tuo dispositivo di backup non è necessario a meno che non perdi uno dei tuoi dispositivi principali.";
 "backupNow" = "Effettua il backup ora";
+"backupSaveCheckbox" = "Capisco come salvare questo backup";
+"backupSaveButton" = "Salva backup";
 "backupNowCheckbox" = "Capisco che, saltando il backup, potrei perdere l'accesso ai miei fondi.";
 "backupNowSubtitle" = "Ogni dispositivo ha una propria quota di caveau unica, necessaria per il recupero";
 "backupNowTitle" = "È necessario eseguire il backup su ogni dispositivo in Vultisig";
@@ -64,8 +66,10 @@
 "backupPart1" = "Copia di Backup 1";
 "backupPart2" = "Copia di Backup 2";
 "backupPasswordDisclaimer" = "Non memorizzare mai le quote del Vault di dispositivi diversi nello stesso luogo";
-"backupSetupSubtitle" = "L'archiviazione online è consigliata ed è sicura –\nle condivisioni del vault sono state create per questo.";
-"backupSetupTitle" = "Effettua il backup del tuo vault\ncondividi online";
+"backupSetupSubtitle" = "Esporta questo file di backup, poi salvalo nel cloud. Usa un servizio cloud o un account diverso per ogni backup. Quando hai finito, elimina il file da questo dispositivo.";
+"backupSetupSubtitleHighlight" = "Usa un servizio cloud o un account diverso per ogni backup. Quando hai finito, elimina il file da questo dispositivo.";
+"backupSetupTitle" = "Salva il backup nel cloud";
+"backupSetupTitleSecure" = "Salva il backup %d di %d nel cloud";
 "backupShareSent" = "Condivisione di backup inviata!";
 "backupVault" = "Effettua il backup della tua cassaforte";
 "backupVaultOnEveryDeviceIndividually!" = "Backup del tuo Vault su ogni dispositivo individualmente!";
@@ -89,6 +93,11 @@
 "chain" = "Catena";
 "chains" = "Catene";
 "changeEmailAndRestart" = "Cambia email e riavvia il keygen";
+"chooseAPassword" = "Scegli una password";
+"choosePasswordDescription" = "Se vuoi un livello extra di sicurezza, scegli una password. La password non può essere recuperata.";
+"choosePasswordHighlight" = "La password non può essere recuperata.";
+"choosePasswordTooltip" = "Questo accade perché la password viene utilizzata per crittografare localmente il file di backup, in modo simile alla crittografia di un disco rigido. Nel passaggio successivo, hai la possibilità di aggiungere un suggerimento.";
+"createVault" = "Crea vault";
 "changeFriendsReferralCode" = "Modifica il codice di riferimento degli amici utilizzato per gli swap";
 "changesInSetup" = "Modifiche nella Configurazione";
 "changeVault" = "Cambia Cassaforte";
@@ -109,8 +118,11 @@
 "coinAddressCopied" = "Indirizzo %@ copiato";
 "collectedRewards" = "Premi raccolti";
 "complete" = "Completo";
+"congratsExclamation" = "Congratulazioni!";
+"congratsSummaryDescription" = "Tutto pronto! Mantieni il controllo di ogni transazione.";
 "confirm" = "Conferma";
 "confirmToSign" = "Conferma per firmare il messaggio?";
+"connected" = "Connesso";
 "connectingWithServer..." = "Connessione al server in corso...";
 "continue" = "Continua";
 "copyAddress" = "Copia indirizzo";
@@ -183,8 +195,8 @@
 "enableDKLS" = "Abilita DKLS";
 "EnglishUK" = "Inglese (UK)";
 "enter4Characters" = "Inserisci 4 caratteri";
-"enter5DigitVerificationCode" = "Inserisci il codice di 4 cifre che ti abbiamo inviato via e-mail";
-"enter5DigitVerificationCodeDescription" = "Questo codice confermerà che hai ricevuto la tua quota di vault via e-mail";
+"enter4DigitVerificationCode" = "Codice a 4 cifre ricevuto via email";
+"enter4DigitVerificationCodeDescription" = "Questo attiverà il co-firmatario";
 "enterAddress" = "Inserisci Indirizzo";
 "enterAddressHere" = "Inserisci l'indirizzo qui";
 "enterAmount" = "Inserisci Quantità";
@@ -315,6 +327,7 @@
 "importVault" = "Importa Vault";
 "importYourVaultShare" = "Importa la tua quota di vault";
 "incorrectCode" = "Codice errato";
+"incorrectCodeTryAgain" = "Codice errato. Riprova.";
 "incorrectPassword" = "Password errata";
 "incorrectPasswordTryAgain" = "Password errata, riprova";
 "informationNote" = "Conservare i dispositivi sulla stessa rete WiFi, correggere i dispositivi Vault e coppia. \ Nmake Sicuro che nessun altro dispositivo sta eseguendo Vultisig.";
@@ -397,10 +410,13 @@
 "loginUsingFaceID" = "Accedi usando Face ID";
 "loginUsingOpticID" = "Accedi con Optic ID";
 "loginUsingTouchID" = "Accedi con Touch ID";
+"localModeWaitingOnDevices" = "Modalità locale, in attesa dei dispositivi...";
+"looksGood" = "Sembra a posto";
 "lookingForDevices" = "Ricerca dispositivi... ";
 "madeVaultBackupPrompt" = "Ho fatto un backup del caveau";
 "main" = "Principale";
 "mainDevice" = "Dispositivo Principale";
+"makeSureCorrectDevices" = "Assicurati che questi siano i dispositivi corretti che hai aggiunto:";
 "mainVault" = "Vault principale";
 "maxTotalFee" = "Commissione totale max.";
 "memo" = "Memo";
@@ -595,6 +611,7 @@
 "restart" = "Si prega di riavviare l'app per applicare le nuove impostazioni della lingua.";
 "retry" = "Riprova";
 "reviewConditions" = "Rivedi le Condizioni";
+"reviewYourVaultDevices" = "Controlla i dispositivi del tuo vault";
 "reviewConditionsMessage" = "Si prega di rivedere e accettare tutte le condizioni elencate.";
 "rippleExistentialDepositError" = "XRP richiede un saldo minimo di 1 XRP. La blockchain bloccherà qualsiasi transazione che riduca il saldo al di sotto di questa soglia. Per inviare l’intero saldo, l’account deve essere eliminato.";
 "sameDeviceShareError" = "Stessa condivisione del Vault";
@@ -717,6 +734,7 @@
 "signCustomMessage" = "Firma messaggio personalizzato";
 "skip" = "Salta";
 "skipPassword" = "Salta password";
+"somethingsWrong" = "Qualcosa non va";
 "somethingWentWrongTryAgain" = "Qualcosa è andato storto, riprova.";
 "soon" = "Presto";
 "Spanish" = "Spagnolo";
@@ -760,7 +778,7 @@
 "swapErrorSameAssetTitle" = "Stesso Asset";
 "swapErrorSameAssetDescription" = "Impossibile scambiare tra lo stesso asset. Per favore seleziona asset diversi.";
 "noLiquidityPool" = "Nessun pool di liquidità disponibile per questa coppia di token. Questo asset potrebbe non essere supportato.";
-"switchBackToInternetMode" = "Torna alla modalità internet";
+"switchBackToInternetMode" = "Non vuoi usare la modalità locale? Torna indietro.";
 "switchToLocalMode" = "Passa alla modalità locale";
 "systemErrorMessage" = "Errore di sistema. Riprova.";
 "termsOfService" = "Termini di servizio";
@@ -799,6 +817,7 @@
 "updateNow" = "Aggiorna ora";
 "downloadViaWebsite" = "Scarica dal sito web";
 "upgradeNow" = "Aggiorna ora";
+"useDifferentEmail" = "Usa un'email diversa";
 "upgradeYourVault" = "Aggiorna il tuo vault";
 "upgradeYourVaultNow" = "Aggiorna il tuo vault ora";
 "upgradeYourVaultTitle1" = "Aggiorna questo vault al";
@@ -818,11 +837,13 @@
 "uploadQRCodeImageKeysign" = "Carica QR-Code per partecipare a Keysign";
 "urlCopied" = "URL copiato";
 "URLInaccessible" = "Accesso all'URL non riuscito";
+"useLocalMode" = "Usa la modalità locale";
 "useMyVaultPassword" = "Usa la mia password del Vault";
 "usePassword" = "Usa password";
 "useReferral" = "Usa invito";
 "useReferralCode" = "Usa codice di invito";
 "useSkipInstead" = "Usa invece Skip";
+"useStandardMode" = "Usa la modalità standard";
 "utxoSelectionFailedError" = "Selezione UTXO fallita. Impossibile trovare output di transazione adatti per coprire l'importo più le commissioni stimate. Prova a ridurre l'importo della transazione.";
 "utxoSuggestionMessage" = "Per le criptovalute basate su UTXO come Dogecoin: \ n \ n • Prova a inviare un importo inferiore \ n • Attendere le transazioni in sospeso per confermare \ n • Considera il consolidamento di piccoli utxos prima \ n • Verifica se si dispone di un saldo sufficiente per le commissioni";
 "utxoSuggestionTitle" = "Suggerimenti per le transazioni UTXO";
@@ -884,6 +905,8 @@
 "vultisigWebsite" = "Sito Web Vultisig";
 "waitingForKeygenStart" = "In attesa dell'inizio della generazione della chiave...";
 "waitingForKeygenToStart" = "In attesa dell'inizio della generazione della chiave, per favore aspetta...";
+"waitingForDeviceToJoin" = "In attesa che il dispositivo si unisca";
+"waitingForDevicesToConnect" = "In attesa della connessione dei dispositivi";
 "waitingForKeySignStart" = "In attesa dell'inizio del processo di firma...";
 "waitingOnDevice" = "In attesa del dispositivo";
 "waitingOnDevices..." = "In attesa dei dispositivi...";
@@ -1282,6 +1305,7 @@
 "whereDoYouMigrateFrom" = "Da dove stai migrando?";
 
 // Vault Setup Screens
+"yourVaultIsReadyToUse" = "Il tuo vault è pronto all'uso";
 "yourVaultSetup" = "La tua configurazione del vault";
 
 // Screen 1 - Fast Vault (2-device setup)
@@ -1341,3 +1365,7 @@
 "swap.price_impact.good" = "Buono";
 "swap.price_impact.high" = "Alto";
 "noPositionsFound" = "Nessuna posizione trovata";
+"unrelatedQRCode" = "Codice QR non correlato";
+"unrelatedQRCodeMessage" = "È stato scansionato un codice QR non correlato.";
+"replaceExistingVault" = "Sostituisci";
+"duplicateVaultMessage" = "Un caveau chiamato \"%@\" ha già le stesse chiavi. Sostituendolo, i suoi dati verranno sovrascritti.";
