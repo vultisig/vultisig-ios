@@ -65,11 +65,11 @@ struct CoinDetailScreen: View {
 
                 if viewModel.isTron {
                     TronResourcesCardView(
-                        availableBandwidth: viewModel.tronLoader.availableBandwidth,
-                        totalBandwidth: viewModel.tronLoader.totalBandwidth,
-                        availableEnergy: viewModel.tronLoader.availableEnergy,
-                        totalEnergy: viewModel.tronLoader.totalEnergy,
-                        isLoading: viewModel.tronLoader.isLoading
+                        availableBandwidth: viewModel.tronLoader?.availableBandwidth ?? 0,
+                        totalBandwidth: viewModel.tronLoader?.totalBandwidth ?? 0,
+                        availableEnergy: viewModel.tronLoader?.availableEnergy ?? 0,
+                        totalEnergy: viewModel.tronLoader?.totalEnergy ?? 0,
+                        isLoading: viewModel.tronLoader?.isLoading ?? false
                     )
                 }
                 CoinPriceNetworkView(
@@ -84,7 +84,7 @@ struct CoinDetailScreen: View {
         .onLoad {
             viewModel.setup()
             if viewModel.isTron {
-                viewModel.tronLoader.load()
+                viewModel.tronLoader?.load()
             }
         }
         .onAppear(perform: onAppear)
@@ -145,6 +145,9 @@ private extension CoinDetailScreen {
 
     func refresh() async {
         await BalanceService.shared.updateBalance(for: coin)
+        if viewModel.isTron {
+            await MainActor.run { viewModel.tronLoader?.load() }
+        }
     }
 
     func onExplorer() {

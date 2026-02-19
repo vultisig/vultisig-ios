@@ -24,7 +24,7 @@ final class ChainDetailViewModel: ObservableObject {
     @Published var availableActions: [CoinAction] = []
 
     // Tron resources
-    let tronLoader: TronResourcesLoader
+    let tronLoader: TronResourcesLoader?
     var isTron: Bool { nativeCoin.chain == .tron }
 
     private var cancellables = Set<AnyCancellable>()
@@ -32,9 +32,9 @@ final class ChainDetailViewModel: ObservableObject {
     init(vault: Vault, nativeCoin: Coin) {
         self.vault = vault
         self.nativeCoin = nativeCoin
-        self.tronLoader = TronResourcesLoader(address: nativeCoin.address)
+        self.tronLoader = nativeCoin.chain == .tron ? TronResourcesLoader(address: nativeCoin.address) : nil
 
-        tronLoader.objectWillChange
+        tronLoader?.objectWillChange
             .sink { [weak self] _ in self?.objectWillChange.send() }
             .store(in: &cancellables)
     }

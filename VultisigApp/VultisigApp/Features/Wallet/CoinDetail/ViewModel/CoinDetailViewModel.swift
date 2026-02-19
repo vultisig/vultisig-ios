@@ -14,17 +14,17 @@ final class CoinDetailViewModel: ObservableObject {
     @Published var availableActions: [CoinAction] = []
     private let actionResolver = CoinActionResolver()
 
-    // Tron resources
-    let tronLoader: TronResourcesLoader
+    // Tron resources (only allocated for Tron chains)
+    let tronLoader: TronResourcesLoader?
     var isTron: Bool { coin.chain == .tron }
 
     private var cancellables = Set<AnyCancellable>()
 
     init(coin: Coin) {
         self.coin = coin
-        self.tronLoader = TronResourcesLoader(address: coin.address)
+        self.tronLoader = coin.chain == .tron ? TronResourcesLoader(address: coin.address) : nil
 
-        tronLoader.objectWillChange
+        tronLoader?.objectWillChange
             .sink { [weak self] _ in self?.objectWillChange.send() }
             .store(in: &cancellables)
     }

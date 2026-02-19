@@ -27,20 +27,14 @@ final class TronResourcesLoader: ObservableObject {
         isLoading = true
 
         Task {
-            defer {
-                Task { @MainActor in
-                    self.isLoading = false
-                }
-            }
+            defer { self.isLoading = false }
 
             do {
                 let resource = try await TronService.shared.getAccountResource(address: address)
-                await MainActor.run {
-                    self.availableBandwidth = resource.calculateAvailableBandwidth()
-                    self.totalBandwidth = resource.freeNetLimit + resource.NetLimit
-                    self.availableEnergy = resource.EnergyLimit - resource.EnergyUsed
-                    self.totalEnergy = resource.EnergyLimit
-                }
+                self.availableBandwidth = resource.calculateAvailableBandwidth()
+                self.totalBandwidth = resource.freeNetLimit + resource.NetLimit
+                self.availableEnergy = resource.EnergyLimit - resource.EnergyUsed
+                self.totalEnergy = resource.EnergyLimit
             } catch {
                 logger.error("Failed to load Tron resources: \(error)")
             }
