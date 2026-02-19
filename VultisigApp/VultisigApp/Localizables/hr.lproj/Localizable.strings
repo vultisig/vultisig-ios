@@ -1368,3 +1368,5 @@
 "unrelatedQRCode" = "Nepovezani QR kod";
 "unrelatedQRCodeMessage" = "Skeniran je nepovezani QR kod.";
 "iUnderstand" = "Razumijem";
+"replaceExistingVault" = "Zamijeni";
+"duplicateVaultMessage" = "Spremište pod nazivom \"%@\" već ima iste ključeve. Zamjenom će se prebrisati njegovi podatci.";

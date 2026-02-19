@@ -1368,3 +1368,5 @@
 "unrelatedQRCode" = "Unbekannter QR-Code";
 "unrelatedQRCodeMessage" = "Es wurde ein nicht zugehöriger QR-Code gescannt.";
 "iUnderstand" = "Ich verstehe";
+"replaceExistingVault" = "Ersetzen";
+"duplicateVaultMessage" = "Ein Tresor namens \"%@\" hat bereits dieselben Schlüssel. Durch das Ersetzen werden seine Daten überschrieben.";

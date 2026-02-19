@@ -28,8 +28,8 @@ struct KeygenView: View {
 
     @StateObject var viewModel = KeygenViewModel()
 
-    let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-    let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
+
+
 
     @State var progressCounter: Double = 1
     @State var showProgressRing = true
@@ -130,6 +130,29 @@ struct KeygenView: View {
                 UIApplication.shared.isIdleTimerDisabled = false
             }
             #endif
+            .alert(
+                NSLocalizedString("vaultAlreadyExists", comment: ""),
+                isPresented: $viewModel.showDuplicateVaultAlert
+            ) {
+                Button(NSLocalizedString("replaceExistingVault", comment: ""), role: .destructive) {
+                    viewModel.resolveDuplicateVault(shouldReplace: true)
+                }
+                Button(NSLocalizedString("cancel", comment: ""), role: .cancel) {
+                    viewModel.resolveDuplicateVault(shouldReplace: false)
+                }
+            } message: {
+                Text(
+                    String(
+                        format: NSLocalizedString("duplicateVaultMessage", comment: ""),
+                        viewModel.duplicateVaultName
+                    )
+                )
+            }
+            .onChange(of: viewModel.didCancelDuplicateVault) { _, didCancel in
+                if didCancel {
+                    router.navigateToRoot()
+                }
+            }
     }
 
     var container: some View {
@@ -188,24 +211,20 @@ struct KeygenView: View {
     }
 
     var migrationFailedText: some View {
-        VStack(spacing: 32) {
-            Spacer()
-            ErrorMessage(text: viewModel.keygenError)
-            Spacer()
-            appVersion
-            migrateRetryButton
+        ErrorView(
+            type: .alert,
+            title: "migrationFailed".localized,
+            description: viewModel.keygenError,
+            buttonTitle: "retry".localized
+        ) {
+            dismiss()
         }
-        .padding(32)
         .onAppear {
             showError = true
         }
     }
 
-    var migrateRetryButton: some View {
-        PrimaryButton(title: "retry") {
-            dismiss()
-        }
-    }
+
 
     var doneText: some View {
         ZStack {
@@ -256,28 +275,24 @@ struct KeygenView: View {
     }
 
     var migrateFailedText: some View {
-        VStack(spacing: 18) {
-            Text(NSLocalizedString("migrationFailed", comment: "migration failed"))
-                .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(Theme.colors.textPrimary)
-                .multilineTextAlignment(.center)
-            Text(viewModel.keygenError)
-                .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(Theme.colors.textPrimary)
-                .multilineTextAlignment(.center)
+        ErrorView(
+            type: .alert,
+            title: "migrationFailed".localized,
+            description: viewModel.keygenError,
+            buttonTitle: "retry".localized
+        ) {
+            dismiss()
         }
     }
 
     var keygenFailedText: some View {
-        VStack(spacing: 18) {
-            Text(NSLocalizedString("keygenFailed", comment: "key generation failed"))
-                .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(Theme.colors.textPrimary)
-                .multilineTextAlignment(.center)
-            Text(viewModel.keygenError)
-                .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(Theme.colors.textPrimary)
-                .multilineTextAlignment(.center)
+        ErrorView(
+            type: .alert,
+            title: "keygenFailed".localized,
+            description: viewModel.keygenError,
+            buttonTitle: "retry".localized
+        ) {
+            dismiss()
         }
     }
 
@@ -285,29 +300,9 @@ struct KeygenView: View {
         ErrorMessage(text: "thresholdNotReachedMessage", width: 300)
     }
 
-    var retryButton: some View {
-        VStack(spacing: 32) {
-            appVersion
-            button
-        }
-        .padding(.horizontal, 16)
-    }
 
-    var appVersion: some View {
-        return VStack {
-            Text("Vultisig APP V\(version ?? "1")")
-            Text("(Build \(build ?? "1"))")
-        }
-        .textCase(.uppercase)
-        .font(Theme.fonts.bodySRegular)
-        .foregroundColor(Theme.colors.bgButtonPrimary)
-    }
 
-    var button: some View {
-        PrimaryButton(title: "retry") {
-            dismiss()
-        }
-    }
+
 
     func setData() async {
         await viewModel.setData(
