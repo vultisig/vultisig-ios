@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct TronResourcesInfoSheet: View {
-    var onClose: () -> Void
 
     @State private var bandwidthExpanded = true
     @State private var energyExpanded = false

@@ -68,7 +68,7 @@ struct TronResourcesCardView: View {
             .padding(12)
         }
         .crossPlatformSheet(isPresented: $showInfoSheet) {
-            TronResourcesInfoSheet(onClose: { showInfoSheet = false })
+            TronResourcesInfoSheet()
         }
     }
 

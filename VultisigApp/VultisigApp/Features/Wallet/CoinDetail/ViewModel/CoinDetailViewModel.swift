@@ -5,6 +5,7 @@
 //  Created by Gaston Mazzeo on 29/09/2025.
 //
 
+import Combine
 import Foundation
 
 final class CoinDetailViewModel: ObservableObject {
@@ -14,49 +15,23 @@ final class CoinDetailViewModel: ObservableObject {
     private let actionResolver = CoinActionResolver()
 
     // Tron resources
-    @Published var availableBandwidth: Int64 = 0
-    @Published var totalBandwidth: Int64 = 0
-    @Published var availableEnergy: Int64 = 0
-    @Published var totalEnergy: Int64 = 0
-    @Published var isLoadingResources: Bool = false
-
+    let tronLoader: TronResourcesLoader
     var isTron: Bool { coin.chain == .tron }
+
+    private var cancellables = Set<AnyCancellable>()
 
     init(coin: Coin) {
         self.coin = coin
+        self.tronLoader = TronResourcesLoader(address: coin.address)
+
+        tronLoader.objectWillChange
+            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &cancellables)
     }
 
     func setup() {
         Task { @MainActor in
             availableActions = await actionResolver.resolveActions(for: coin.chain).filtered
-        }
-    }
-
-    func loadTronResources() {
-        guard isTron else { return }
-
-        Task { @MainActor in
-            isLoadingResources = true
-        }
-
-        Task {
-            defer {
-                Task { @MainActor in
-                    isLoadingResources = false
-                }
-            }
-
-            do {
-                let resource = try await TronService.shared.getAccountResource(address: coin.address)
-                await MainActor.run {
-                    availableBandwidth = resource.calculateAvailableBandwidth()
-                    totalBandwidth = resource.freeNetLimit + resource.NetLimit
-                    availableEnergy = resource.EnergyLimit - resource.EnergyUsed
-                    totalEnergy = resource.EnergyLimit
-                }
-            } catch {
-                // Silently handle errors — loading indicator is cleared by defer
-            }
         }
     }
 }

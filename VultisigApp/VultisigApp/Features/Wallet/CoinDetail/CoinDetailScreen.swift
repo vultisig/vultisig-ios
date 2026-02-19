@@ -65,11 +65,11 @@ struct CoinDetailScreen: View {
 
                 if viewModel.isTron {
                     TronResourcesCardView(
-                        availableBandwidth: viewModel.availableBandwidth,
-                        totalBandwidth: viewModel.totalBandwidth,
-                        availableEnergy: viewModel.availableEnergy,
-                        totalEnergy: viewModel.totalEnergy,
-                        isLoading: viewModel.isLoadingResources
+                        availableBandwidth: viewModel.tronLoader.availableBandwidth,
+                        totalBandwidth: viewModel.tronLoader.totalBandwidth,
+                        availableEnergy: viewModel.tronLoader.availableEnergy,
+                        totalEnergy: viewModel.tronLoader.totalEnergy,
+                        isLoading: viewModel.tronLoader.isLoading
                     )
                 }
                 CoinPriceNetworkView(
@@ -83,7 +83,9 @@ struct CoinDetailScreen: View {
         .background(ModalBackgroundView(width: size ?? 0))
         .onLoad {
             viewModel.setup()
-            viewModel.loadTronResources()
+            if viewModel.isTron {
+                viewModel.tronLoader.load()
+            }
         }
         .onAppear(perform: onAppear)
         .withAddressCopy(coin: $addressToCopy)

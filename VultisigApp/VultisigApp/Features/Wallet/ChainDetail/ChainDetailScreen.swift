@@ -99,7 +99,9 @@ struct ChainDetailScreen: View {
         }
         .onLoad {
             viewModel.refresh()
-            viewModel.loadTronResources()
+            if viewModel.isTron {
+                viewModel.tronLoader.load()
+            }
             refresh()
         }
         .onChange(of: refreshTrigger) { _, _ in
@@ -155,11 +157,11 @@ struct ChainDetailScreen: View {
 
             if viewModel.isTron {
                 TronResourcesCardView(
-                    availableBandwidth: viewModel.availableBandwidth,
-                    totalBandwidth: viewModel.totalBandwidth,
-                    availableEnergy: viewModel.availableEnergy,
-                    totalEnergy: viewModel.totalEnergy,
-                    isLoading: viewModel.isLoadingResources
+                    availableBandwidth: viewModel.tronLoader.availableBandwidth,
+                    totalBandwidth: viewModel.tronLoader.totalBandwidth,
+                    availableEnergy: viewModel.tronLoader.availableEnergy,
+                    totalEnergy: viewModel.tronLoader.totalEnergy,
+                    isLoading: viewModel.tronLoader.isLoading
                 )
             }
         }

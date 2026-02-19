@@ -1104,6 +1104,7 @@
 		B50F26522F182DBE0015DCCB /* TronViewLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F264D2F182DBE0015DCCB /* TronViewLogic.swift */; };
 		03FC7C642AC179BADB973C88 /* TronResourcesCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1BE569DF07B97F7C31210E2 /* TronResourcesCardView.swift */; };
 		F60EA90567B7702B28A569C8 /* TronResourcesInfoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A9A754C4091B21ACE6FB82D /* TronResourcesInfoSheet.swift */; };
+		B3D2F81A92C4E05D7F1A38E9 /* TronResourcesLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E4C8B2D53A1F06E8D2B49FA /* TronResourcesLoader.swift */; };
 		B50F26572F182DBE0015DCCB /* TronDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F26412F182DBE0015DCCB /* TronDashboardView.swift */; };
 		B50F26582F182DBE0015DCCB /* TronRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F263B2F182DBE0015DCCB /* TronRoute.swift */; };
 		B50F26592F182DBE0015DCCB /* TronRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F263D2F182DBE0015DCCB /* TronRouter.swift */; };
@@ -2443,6 +2444,7 @@
 		B50F26402F182DBE0015DCCB /* TronConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronConstants.swift; sourceTree = "<group>"; };
 		A1BE569DF07B97F7C31210E2 /* TronResourcesCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronResourcesCardView.swift; sourceTree = "<group>"; };
 		6A9A754C4091B21ACE6FB82D /* TronResourcesInfoSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronResourcesInfoSheet.swift; sourceTree = "<group>"; };
+		7E4C8B2D53A1F06E8D2B49FA /* TronResourcesLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronResourcesLoader.swift; sourceTree = "<group>"; };
 		B50F26412F182DBE0015DCCB /* TronDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronDashboardView.swift; sourceTree = "<group>"; };
 		B50F26442F182DBE0015DCCB /* TronFreezeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronFreezeView.swift; sourceTree = "<group>"; };
 		B50F26472F182DBE0015DCCB /* TronUnfreezeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronUnfreezeView.swift; sourceTree = "<group>"; };
@@ -6128,6 +6130,7 @@
 				B50F26412F182DBE0015DCCB /* TronDashboardView.swift */,
 				A1BE569DF07B97F7C31210E2 /* TronResourcesCardView.swift */,
 				6A9A754C4091B21ACE6FB82D /* TronResourcesInfoSheet.swift */,
+				7E4C8B2D53A1F06E8D2B49FA /* TronResourcesLoader.swift */,
 				B50F26442F182DBE0015DCCB /* TronFreezeView.swift */,
 				B50F26472F182DBE0015DCCB /* TronUnfreezeView.swift */,
 				B50F264A2F182DBE0015DCCB /* TronView.swift */,
@@ -8111,6 +8114,7 @@
 				B50F26572F182DBE0015DCCB /* TronDashboardView.swift in Sources */,
 				03FC7C642AC179BADB973C88 /* TronResourcesCardView.swift in Sources */,
 				F60EA90567B7702B28A569C8 /* TronResourcesInfoSheet.swift in Sources */,
+				B3D2F81A92C4E05D7F1A38E9 /* TronResourcesLoader.swift in Sources */,
 				B50F26582F182DBE0015DCCB /* TronRoute.swift in Sources */,
 				B50F26592F182DBE0015DCCB /* TronRouter.swift in Sources */,
 				B50F265A2F182DBE0015DCCB /* TronView.swift in Sources */,
