@@ -58,8 +58,8 @@
 		13194DB22EF5908500BEC93C /* CircleRouteBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13194DAE2EF5908500BEC93C /* CircleRouteBuilder.swift */; };
 		13194DB32EF5908500BEC93C /* CircleRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13194DAF2EF5908500BEC93C /* CircleRouter.swift */; };
 		131F96E62E7887CF0018BA7B /* Satoshi-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 131F96E22E7887CF0018BA7B /* Satoshi-Medium.otf */; };
-		13204DD52EEB129E00297D01 /* OnboardingVaultSetupInformationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13204DD42EEB129800297D01 /* OnboardingVaultSetupInformationScreen.swift */; };
-		13204DD72EEB1B3D00297D01 /* KeyImportOverviewScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13204DD62EEB1B3600297D01 /* KeyImportOverviewScreen.swift */; };
+		13204DD52EEB129E00297D01 /* OnboardingYourVaultSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13204DD42EEB129800297D01 /* OnboardingYourVaultSetupScreen.swift */; };
+		13204DD72EEB1B3D00297D01 /* OnboardingOverviewScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13204DD62EEB1B3600297D01 /* OnboardingOverviewScreen.swift */; };
 		13204DDC2EEB1CCA00297D01 /* OnboardingInformationRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13204DDB2EEB1CC300297D01 /* OnboardingInformationRowView.swift */; };
 		1321A82C2ED0A4ED004CBB99 /* DefiChainBondedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A8162ED0A4ED004CBB99 /* DefiChainBondedView.swift */; };
 		1321A82D2ED0A4ED004CBB99 /* DefiChainLPsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1321A8262ED0A4ED004CBB99 /* DefiChainLPsViewModel.swift */; };
@@ -1393,8 +1393,8 @@
 		13194DAE2EF5908500BEC93C /* CircleRouteBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleRouteBuilder.swift; sourceTree = "<group>"; };
 		13194DAF2EF5908500BEC93C /* CircleRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleRouter.swift; sourceTree = "<group>"; };
 		131F96E22E7887CF0018BA7B /* Satoshi-Medium.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Satoshi-Medium.otf"; sourceTree = "<group>"; };
-		13204DD42EEB129800297D01 /* OnboardingVaultSetupInformationScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingVaultSetupInformationScreen.swift; sourceTree = "<group>"; };
-		13204DD62EEB1B3600297D01 /* KeyImportOverviewScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyImportOverviewScreen.swift; sourceTree = "<group>"; };
+		13204DD42EEB129800297D01 /* OnboardingYourVaultSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingYourVaultSetupScreen.swift; sourceTree = "<group>"; };
+		13204DD62EEB1B3600297D01 /* OnboardingOverviewScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingOverviewScreen.swift; sourceTree = "<group>"; };
 		13204DDB2EEB1CC300297D01 /* OnboardingInformationRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingInformationRowView.swift; sourceTree = "<group>"; };
 		1321A80C2ED0A4ED004CBB99 /* BondNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondNode.swift; sourceTree = "<group>"; };
 		1321A80D2ED0A4ED004CBB99 /* BondPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BondPosition.swift; sourceTree = "<group>"; };
@@ -4520,8 +4520,8 @@
 			children = (
 				132E015D2F1AA2E6007E717C /* Components */,
 				132E015F2F1AA2E6007E717C /* DeviceCount */,
-				13204DD62EEB1B3600297D01 /* KeyImportOverviewScreen.swift */,
-				13204DD42EEB129800297D01 /* OnboardingVaultSetupInformationScreen.swift */,
+				13204DD62EEB1B3600297D01 /* OnboardingOverviewScreen.swift */,
+				13204DD42EEB129800297D01 /* OnboardingYourVaultSetupScreen.swift */,
 				13C286702EE8B823004D8AC8 /* KeyImportOnboardingScreen.swift */,
 				13C2866F2EE8B80F004D8AC8 /* ChainsSetup */,
 			);
@@ -7215,7 +7215,7 @@
 				DE15729F2B70F284009BC7C5 /* KeysignDiscoveryView.swift in Sources */,
 				135C27B52F44C00F006315FF /* NavigationStackVisibilityModifier.swift in Sources */,
 				134A9FC32E959FB700030C56 /* CarouselBannerType.swift in Sources */,
-				13204DD72EEB1B3D00297D01 /* KeyImportOverviewScreen.swift in Sources */,
+				13204DD72EEB1B3D00297D01 /* OnboardingOverviewScreen.swift in Sources */,
 				13D7643A2E4127B100F048DE /* Array.swift in Sources */,
 				A601D3AB2DBB687E004B6A0A /* PasswordVerifyReminderView.swift in Sources */,
 				DE64A4C82BA7EBEC00C342E3 /* JoinKeygenViewModel.swift in Sources */,
@@ -7391,7 +7391,7 @@
 				13DD3B1A2E3CFE7D00D46FA0 /* FlatPicker.swift in Sources */,
 				135B6BBF2EA1470F00DD7140 /* ChainNotFoundEmptyStateView.swift in Sources */,
 				135677A62E391A6E002C10A2 /* SecurityScannerTransactionFactory.swift in Sources */,
-				13204DD52EEB129E00297D01 /* OnboardingVaultSetupInformationScreen.swift in Sources */,
+				13204DD52EEB129E00297D01 /* OnboardingYourVaultSetupScreen.swift in Sources */,
 				A6BFE1BD2D945AA5000B73C0 /* SwapFromToField.swift in Sources */,
 				A65649F52B966F3E00E4B329 /* DecodableDefault.swift in Sources */,
 				DE491CEF2B708260007C88D5 /* KeygenView.swift in Sources */,

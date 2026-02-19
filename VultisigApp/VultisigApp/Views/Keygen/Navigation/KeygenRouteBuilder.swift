@@ -24,12 +24,14 @@ struct KeygenRouteBuilder {
 
     @ViewBuilder
     func buildKeyImportOverviewScreen(
+        tssType: TssType,
         vault: Vault,
         email: String?,
         keyImportInput: KeyImportInput?,
         setupType: KeyImportSetupType
     ) -> some View {
-        KeyImportOverviewScreen(
+        OnboardingOverviewScreen(
+            tssType: tssType,
             vault: vault,
             email: email,
             keyImportInput: keyImportInput,
