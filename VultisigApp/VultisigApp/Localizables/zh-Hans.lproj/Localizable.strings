@@ -1236,6 +1236,11 @@
 "tronTimeRemainingDays" = "剩余 %d 天 %d 小时";
 "tronTimeRemainingHours" = "剩余 %d 小时 %d 分钟";
 
+// Tron Resources Info Modal
+"tronResourcesInfoTitle" = "带宽与能量";
+"tronBandwidthDescription" = "带宽点数是 TRON 上每笔交易所必需的，包括标准代币发送和智能合约交互。每个 TRON 用户每天获得 600 个免费带宽点数，大约可以覆盖两次基本发送。此外，您可以通过质押 TRX 获得额外的带宽点数，增加每日配额以支持更多交易。如果您有足够的带宽点数，您可以发送代币、质押 TRX 或与智能合约交互，而无需支付 TRX 作为 Gas 费用。";
+"tronEnergyDescription" = "能量是专门用于在 TRON 上执行智能合约的资源。与带宽不同，能量不是免费提供的——必须通过质押（冻结）TRX 来获取。如果您没有足够的能量，TRON 网络将从您的余额中燃烧 TRX 来支付费用。质押 TRX 获取能量使您能够与 DeFi 协议交互、转移 TRC-20 代币以及使用 dApp，而无需支付 TRX Gas 费用。";
+
 "scanningForChainsSubtitle" = "我们正在检查哪些区块链有与您的助记词相关联的活跃地址。此过程可能需要长达2分钟。";
 "scanningForChainsSubtitleHighlight" = "此过程可能需要长达2分钟。";
 "importTheseChains" = "导入这些链";

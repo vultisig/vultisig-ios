@@ -14,6 +14,8 @@ struct TronResourcesCardView: View {
     let totalEnergy: Int64
     let isLoading: Bool
 
+    @State private var showInfoSheet = false
+
     var body: some View {
         HStack(spacing: 0) {
             // Bandwidth Section (Green)
@@ -54,6 +56,20 @@ struct TronResourcesCardView: View {
             RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
                 .stroke(Theme.colors.textSecondary.opacity(0.2), lineWidth: 1)
         )
+        .overlay(alignment: .topTrailing) {
+            Button {
+                showInfoSheet = true
+            } label: {
+                Image(systemName: "info.circle")
+                    .font(.system(size: 20))
+                    .foregroundStyle(Theme.colors.textSecondary.opacity(0.6))
+            }
+            .buttonStyle(.plain)
+            .padding(12)
+        }
+        .crossPlatformSheet(isPresented: $showInfoSheet) {
+            TronResourcesInfoSheet(onClose: { showInfoSheet = false })
+        }
     }
 
     // MARK: - Resource Section
