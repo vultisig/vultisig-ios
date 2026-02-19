@@ -154,6 +154,12 @@ struct CoinService {
             return vault.coins.first(where: { $0.id == newCoin.id })
         }
 
+        // Secondary check: also verify by semantic identity (chain + ticker + contract)
+        // This catches duplicates where contract address format differs between sources
+        if let existingCoin = vault.coin(for: asset) {
+            return existingCoin
+        }
+
         if let priceProviderId {
             newCoin.priceProviderId = priceProviderId
         }
