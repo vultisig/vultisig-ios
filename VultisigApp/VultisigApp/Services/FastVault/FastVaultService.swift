@@ -11,7 +11,8 @@ final class FastVaultService {
 
     static let shared = FastVaultService()
 
-    private let endpoint = "https://api.vultisig.com/vault"
+    // private let endpoint = "https://api.vultisig.com/vault"
+    private let endpoint = "http://localhost:8080/vault"
 
     static func localPartyID(sessionID: String) -> String {
         guard let data = sessionID.data(using: .utf8) else {
@@ -65,7 +66,7 @@ final class FastVaultService {
         lib_type: Int
     ) {
         let localPartyID = Self.localPartyID(sessionID: sessionID)
-        let req = VaultCreateRequest(name: name, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email, lib_type: lib_type)
+        let req = VaultCreateRequest(name: name, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email, lib_type: lib_type, mldsa: true)
 
         Utils.sendRequest(urlString: "\(endpoint)/create", method: "POST", headers: [:], body: req) { _ in
             print("Send create request to Vultiserver successfully")

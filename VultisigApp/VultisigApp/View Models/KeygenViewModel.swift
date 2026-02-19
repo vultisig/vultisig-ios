@@ -462,7 +462,20 @@ class KeygenViewModel: ObservableObject {
                 try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0)
             }
 
-            await updateProgress(100)
+            await updateProgress(90)
+            
+            let mldsaKeygen = DilithiumKeygen(vault: self.vault,
+                                              tssType: self.tssType,
+                                              keygenCommittee: self.keygenCommittee,
+                                              vaultOldCommittee: self.vaultOldCommittee,
+                                              mediatorURL: self.mediatorURL,
+                                              sessionID: self.sessionID,
+                                              encryptionKeyHex: self.encryptionKeyHex,
+                                              isInitiateDevice: self.isInitiateDevice,
+                                              setupMessage: dklsKeygen.getSetupMessage())
+            try await mldsaKeygen.DilithiumKeygenWithRetry(attempt: 0)
+            
+            await updateProgress(90)
 
             self.vault.signers = self.keygenCommittee
             let keyshareECDSA = dklsKeygen.getKeyshare()

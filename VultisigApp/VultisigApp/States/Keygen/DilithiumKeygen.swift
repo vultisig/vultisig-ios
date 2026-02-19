@@ -39,7 +39,8 @@ final class DilithiumKeygen {
          mediatorURL: String,
          sessionID: String,
          encryptionKeyHex: String,
-         isInitiateDevice: Bool
+         isInitiateDevice: Bool,
+         setupMessage: [UInt8]
     ) {
         self.vault = vault
         self.tssType = tssType
@@ -51,6 +52,7 @@ final class DilithiumKeygen {
         self.isInitiateDevice = isInitiateDevice
         self.messenger = DKLSMessenger(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil, encryptionKeyHex: self.encryptionKeyHex)
         self.localPartyID = vault.localPartyID
+        self.setupMessage = setupMessage
     }
 
     func getSetupMessage() -> [UInt8] {
