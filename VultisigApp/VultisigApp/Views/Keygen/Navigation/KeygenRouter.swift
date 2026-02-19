@@ -19,8 +19,9 @@ struct KeygenRouter {
                 backupType: backupType,
                 isNewVault: isNewVault
             )
-        case .keyImportOverview(let vault, let email, let keyImportInput, let setupType):
+        case .keyImportOverview(let tssType, let vault, let email, let keyImportInput, let setupType):
             viewBuilder.buildKeyImportOverviewScreen(
+                tssType: tssType,
                 vault: vault,
                 email: email,
                 keyImportInput: keyImportInput,
