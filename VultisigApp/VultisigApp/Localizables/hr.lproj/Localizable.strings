@@ -1234,6 +1234,11 @@
 "tronTimeRemainingDays" = "%d dana, %d sati preostalo";
 "tronTimeRemainingHours" = "%d sati, %d minuta preostalo";
 
+// Tron Resources Info Modal
+"tronResourcesInfoTitle" = "Propusnost & Energija";
+"tronBandwidthDescription" = "Bodovi propusnosti potrebni su za svaku transakciju na TRON-u, uključujući standardna slanja tokena i interakcije s pametnim ugovorima. Svaki TRON korisnik dnevno dobiva 600 besplatnih bodova propusnosti, koji mogu pokriti otprilike dva osnovna slanja. Dodatno, možete zaraditi dodatne bodove propusnosti stakingom TRX-a, povećavajući svoju dnevnu kvotu za podršku većem broju transakcija. Ako imate dovoljno bodova propusnosti, možete slati tokene, stakati TRX ili komunicirati s pametnim ugovorima bez plaćanja TRX-a za gas naknade.";
+"tronEnergyDescription" = "Energija je resurs koji se koristi isključivo za izvršavanje pametnih ugovora na TRON-u. Za razliku od propusnosti, energija se ne pruža besplatno — mora se steći stakingom (zamrzavanjem) TRX-a. Ako nemate dovoljno energije, TRON mreža će spaliti TRX iz vašeg salda za pokrivanje troška. Staking TRX-a za energiju omogućuje vam interakciju s DeFi protokolima, prijenos TRC-20 tokena i korištenje dApp-ova bez plaćanja gas naknada u TRX-u.";
+
 "scanningForChainsSubtitle" = "Provjeravamo koji blockchaini imaju aktivne adrese povezane s vašom seed frazom. Ovaj proces može potrajati do 2 minute.";
 "scanningForChainsSubtitleHighlight" = "Ovaj proces može potrajati do 2 minute.";
 "importTheseChains" = "Uvezi ove chainove";
