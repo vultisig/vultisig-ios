@@ -28,9 +28,6 @@ struct KeygenView: View {
 
     @StateObject var viewModel = KeygenViewModel()
 
-
-
-
     @State var progressCounter: Double = 1
     @State var showProgressRing = true
     @State var showDoneText = false
@@ -223,8 +220,6 @@ struct KeygenView: View {
         }
     }
 
-
-
     var doneText: some View {
         ZStack {
             vaultCreatedAnimationVM?.view()
@@ -298,10 +293,6 @@ struct KeygenView: View {
     var keygenReshareFailedText: some View {
         ErrorMessage(text: "thresholdNotReachedMessage", width: 300)
     }
-
-
-
-
 
     func setData() async {
         await viewModel.setData(

@@ -65,8 +65,9 @@ final class FastVaultService {
         email: String,
         lib_type: Int
     ) {
+        let enableMLDSA = UserDefaults.standard.bool(forKey: "isMLDSAEnabled")
         let localPartyID = Self.localPartyID(sessionID: sessionID)
-        let req = VaultCreateRequest(name: name, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email, lib_type: lib_type, mldsa: true)
+        let req = VaultCreateRequest(name: name, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email, lib_type: lib_type, mldsa: enableMLDSA)
 
         Utils.sendRequest(urlString: "\(endpoint)/create", method: "POST", headers: [:], body: req) { _ in
             print("Send create request to Vultiserver successfully")
