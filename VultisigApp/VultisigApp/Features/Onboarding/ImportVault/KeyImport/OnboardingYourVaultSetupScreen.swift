@@ -1,5 +1,5 @@
 //
-//  OnboardingVaultSetupInformationScreen.swift
+//  OnboardingYourVaultSetupScreen.swift
 //  VultisigApp
 //
 //  Created by Gaston Mazzeo on 11/12/2025.
@@ -8,7 +8,7 @@
 import SwiftUI
 import RiveRuntime
 
-struct OnboardingVaultSetupInformationScreen: View {
+struct OnboardingYourVaultSetupScreen: View {
     let tssType: TssType
     let keyImportInput: KeyImportInput?
     let setupType: KeyImportSetupType
@@ -153,7 +153,7 @@ struct OnboardingVaultSetupInformationScreen: View {
     }
 }
 
-private extension OnboardingVaultSetupInformationScreen {
+private extension OnboardingYourVaultSetupScreen {
     var vaultSetupTitle: String {
         switch setupType {
         case .fast:
@@ -293,7 +293,7 @@ private extension OnboardingVaultSetupInformationScreen {
 }
 
 #Preview {
-    OnboardingVaultSetupInformationScreen(
+    OnboardingYourVaultSetupScreen(
         tssType: .Keygen,
         keyImportInput: nil,
         setupType: .fast

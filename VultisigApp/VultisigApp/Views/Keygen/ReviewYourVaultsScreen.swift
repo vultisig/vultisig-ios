@@ -103,6 +103,7 @@ struct ReviewYourVaultsScreen: View {
 
     private func navigateToOverview() {
         router.navigate(to: KeygenRoute.keyImportOverview(
+            tssType: tssType,
             vault: vault,
             email: email,
             keyImportInput: keyImportInput,

@@ -1372,5 +1372,6 @@
 "noPositionsFound" = "Nessuna posizione trovata";
 "unrelatedQRCode" = "Codice QR non correlato";
 "unrelatedQRCodeMessage" = "È stato scansionato un codice QR non correlato.";
+"iUnderstand" = "Ho capito";
 "replaceExistingVault" = "Sostituisci";
 "duplicateVaultMessage" = "Un caveau chiamato \"%@\" ha già le stesse chiavi. Sostituendolo, i suoi dati verranno sovrascritti.";
