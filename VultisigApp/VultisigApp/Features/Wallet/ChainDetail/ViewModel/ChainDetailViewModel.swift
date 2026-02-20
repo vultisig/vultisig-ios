@@ -5,6 +5,7 @@
 //  Created by Gaston Mazzeo on 22/09/2025.
 //
 
+import Combine
 import Foundation
 
 final class ChainDetailViewModel: ObservableObject {
@@ -22,9 +23,21 @@ final class ChainDetailViewModel: ObservableObject {
 
     @Published var availableActions: [CoinAction] = []
 
+    // Tron resources
+    let tronLoader: TronResourcesLoader?
+    var isTron: Bool { nativeCoin.chain == .tron }
+
+    private var cancellables = Set<AnyCancellable>()
+
     init(vault: Vault, nativeCoin: Coin) {
         self.vault = vault
         self.nativeCoin = nativeCoin
+        self.tronLoader = nativeCoin.chain == .tron ? TronResourcesLoader(address: nativeCoin.address) : nil
+
+        tronLoader?.objectWillChange
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &cancellables)
     }
 
     func refresh() {

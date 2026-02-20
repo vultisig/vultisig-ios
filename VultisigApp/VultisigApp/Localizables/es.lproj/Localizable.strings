@@ -1234,6 +1234,11 @@
 "tronTimeRemainingDays" = "%d días, %d horas restantes";
 "tronTimeRemainingHours" = "%d horas, %d minutos restantes";
 
+// Tron Resources Info Modal
+"tronResourcesInfoTitle" = "Ancho de Banda & Energía";
+"tronBandwidthDescription" = "Los Puntos de Ancho de Banda son necesarios para cada transacción en TRON, incluyendo envíos estándar de tokens e interacciones con contratos inteligentes. Cada usuario de TRON recibe 600 Puntos de Ancho de Banda gratuitos por día, que pueden cubrir aproximadamente dos envíos básicos. Además, puedes ganar Puntos de Ancho de Banda adicionales haciendo staking de TRX, aumentando tu cuota diaria para soportar más transacciones. Si tienes suficientes Puntos de Ancho de Banda, puedes enviar tokens, hacer staking de TRX o interactuar con contratos inteligentes sin pagar TRX en tarifas de gas.";
+"tronEnergyDescription" = "La Energía es un recurso utilizado exclusivamente para ejecutar contratos inteligentes en TRON. A diferencia del Ancho de Banda, la Energía no se proporciona gratuitamente — debe obtenerse haciendo staking (congelando) TRX. Si no tienes suficiente Energía, la red TRON quemará TRX de tu saldo para cubrir el costo. Hacer staking de TRX para Energía te permite interactuar con protocolos DeFi, transferir tokens TRC-20 y usar dApps sin pagar tarifas de gas en TRX.";
+
 "scanningForChainsSubtitle" = "Estamos verificando qué cadenas de bloques tienen direcciones activas asociadas con tu frase semilla. Este proceso puede tardar hasta 2 minutos.";
 "scanningForChainsSubtitleHighlight" = "Este proceso puede tardar hasta 2 minutos.";
 "importTheseChains" = "Importar estas cadenas";

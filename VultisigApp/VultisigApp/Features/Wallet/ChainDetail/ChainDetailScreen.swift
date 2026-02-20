@@ -99,6 +99,7 @@ struct ChainDetailScreen: View {
         }
         .onLoad {
             viewModel.refresh()
+
             refresh()
         }
         .onChange(of: refreshTrigger) { _, _ in
@@ -151,6 +152,16 @@ struct ChainDetailScreen: View {
                 actions: viewModel.availableActions,
                 onAction: onAction
             )
+
+            if viewModel.isTron {
+                TronResourcesCardView(
+                    availableBandwidth: viewModel.tronLoader?.availableBandwidth ?? 0,
+                    totalBandwidth: viewModel.tronLoader?.totalBandwidth ?? 0,
+                    availableEnergy: viewModel.tronLoader?.availableEnergy ?? 0,
+                    totalEnergy: viewModel.tronLoader?.totalEnergy ?? 0,
+                    isLoading: viewModel.tronLoader?.isLoading ?? false
+                )
+            }
         }
     }
 
@@ -228,6 +239,9 @@ private extension ChainDetailScreen {
                 coinSelectionViewModel.setData(for: vault)
                 // Notify viewModel and group to update the tokens list
                 viewModel.objectWillChange.send()
+            }
+            if viewModel.isTron {
+                await MainActor.run { viewModel.tronLoader?.load() }
             }
         }
     }
