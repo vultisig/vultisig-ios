@@ -13,14 +13,14 @@ struct VaultSetupScreen: View {
     let setupType: KeyImportSetupType
     
     enum FocusedField {
-        case name, referral, email, password, passwordConfirm
+        case name, email, password, passwordConfirm
     }
     
-    @StateObject var viewModel: VaultSetupViewModel
+    @StateObject private var viewModel: VaultSetupViewModel
     
     @State private var currentStep = 0
     @State private var navigatingForward = true
-    @State private var referralExpanded = false
+    @State private var showReferralSheet = false
     @State private var showPasswordTooltip = false
     @FocusState private var focusedField: FocusedField?
     @Environment(\.router) var router
@@ -51,8 +51,6 @@ struct VaultSetupScreen: View {
         switch step {
         case 0:
             return viewModel.nameField.valid
-            && viewModel.referralField.valid
-            && !viewModel.validatingReferralCode
         case 1:
             return viewModel.emailField.valid
         case 2:
@@ -98,6 +96,19 @@ struct VaultSetupScreen: View {
                     tooltipOverlay
                 }
             }
+        }
+        .crossPlatformToolbar(showsBackButton: false) {
+            CustomToolbarItem(placement: .trailing, hideSharedBackground: true) {
+                referralButton
+            }
+        }
+        .crossPlatformSheet(isPresented: $showReferralSheet) {
+            ReferralCodeSheet(
+                isPresented: $showReferralSheet,
+                viewModel: viewModel
+            )
+            .sheetStyle()
+            .applySheetSize()
         }
         .onLoad {
             viewModel.onLoad()
@@ -163,28 +174,14 @@ struct VaultSetupScreen: View {
                 title: "nameYourVault".localized,
                 subtitle: "newWalletNameDescription".localized
             )
-            
-            VStack(spacing: 16) {
-                CommonTextField(
-                    text: $viewModel.nameField.value,
-                    placeholder: viewModel.nameField.placeholder,
-                    error: $viewModel.nameField.error,
-                    isValid: isValidBinding(for: viewModel.nameField)
-                )
-                .focused($focusedField, equals: .name)
-                
-                ExpandableView(isExpanded: $referralExpanded) {
-                    expandableHeader(label: "addReferral".localized)
-                } content: {
-                    CommonTextField(
-                        text: $viewModel.referralField.value,
-                        placeholder: viewModel.referralField.placeholder ?? .empty,
-                        error: $viewModel.referralField.error,
-                        isValid: isValidBinding(for: viewModel.referralField)
-                    )
-                    .focused($focusedField, equals: .referral)
-                }
-            }
+
+            CommonTextField(
+                text: $viewModel.nameField.value,
+                placeholder: viewModel.nameField.placeholder,
+                error: $viewModel.nameField.error,
+                isValid: isValidBinding(for: viewModel.nameField)
+            )
+            .focused($focusedField, equals: .name)
         }
     }
     
@@ -304,27 +301,44 @@ struct VaultSetupScreen: View {
         )
     }
     
-    // MARK: - Expandable Header
-    
-    private func expandableHeader(label: String) -> some View {
+    // MARK: - Referral Button
+
+    private var referralButton: some View {
         Button {
-            withAnimation(.interpolatingSpring) {
-                referralExpanded.toggle()
-            }
+            showReferralSheet = true
         } label: {
-            HStack {
-                Text(label)
-                    .foregroundStyle(Theme.colors.textTertiary)
-                    .font(Theme.fonts.footnote)
-                Spacer()
-                Icon(named: "chevron-down-small", color: Theme.colors.textPrimary, size: 16)
-                    .rotationEffect(.degrees(referralExpanded ? 180 : 0))
-            }
-            .padding(.bottom, referralExpanded ? 12 : 0)
+            referralButtonLabel
         }
-        .contentShape(Rectangle())
+        .buttonStyle(.plain)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Theme.colors.bgSurface2)
+                .stroke(Theme.colors.borderExtraLight.opacity(0.3), lineWidth: 1)
+        )
     }
-    
+
+    private var referralButtonLabel: some View {
+        HStack(spacing: 4) {
+            if !viewModel.referralField.value.isEmpty && viewModel.referralField.valid {
+                Icon(
+                    named: "check",
+                    color: Theme.colors.alertSuccess,
+                    size: 16
+                )
+
+                Text("referralAdded".localized)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textPrimary)
+            } else {
+                Text("addReferral".localized)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textPrimary)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+    }
+
     // MARK: - Actions
 
     private func navigateToStep(_ target: Int) {
