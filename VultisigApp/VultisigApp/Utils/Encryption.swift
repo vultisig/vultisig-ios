@@ -14,7 +14,7 @@ enum AESError: Error {
     case decryptionFailed
 }
 
-public extension String {
+extension String {
     func aesEncrypt(key: String) -> String? {
         guard
             let data = self.data(using: .utf8),
@@ -61,7 +61,7 @@ public extension String {
 }
 
 /// @see http://www.splinter.com.au/2019/06/09/pure-swift-common-crypto-aes-encryption/
-public extension Data {
+extension Data {
     /// Encrypts for you with all the good options turned on: CBC, an IV, PKCS7
     /// padding (so your input data doesn't have to be any particular length).
     /// Key can be 128, 192, or 256 bits.
@@ -144,7 +144,7 @@ public extension Data {
     }
 }
 
-public func randomGenerateBytes(count: Int) -> Data? {
+func randomGenerateBytes(count: Int) -> Data? {
     let bytes = UnsafeMutableRawPointer.allocate(byteCount: count, alignment: 1)
     defer { bytes.deallocate() }
     let status = CCRandomGenerateBytes(bytes, count)

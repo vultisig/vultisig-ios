@@ -12,37 +12,6 @@ import BigInt
 class CetusAggregatorService {
     static let shared = CetusAggregatorService()
 
-    // Cetus aggregator package information
-    struct CetusPackages {
-        static let aggregatorV2 = CetusPackage(
-            name: "aggregator-v2",
-            id: "0xeffc8ae61f439bb34c9b905ff8f29ec56873dcedf81c7123ff2f1f67c45ec302",
-            publishedAt: "0x47a7b90756fba96fe649c2aaa10ec60dec6b8cb8545573d621310072721133aa",
-            version: 12
-        )
-
-        static let aggregatorExtendV1 = CetusPackage(
-            name: "aggregator-extend-v1",
-            id: "0x43811be4677f5a5de7bf2dac740c10abddfaa524aee6b18e910eeadda8a2f6ae",
-            publishedAt: "0x8093d002bba575f1378b0da206a8df1fc55c4b5b3718752304f1b67a505d2be4",
-            version: 17
-        )
-
-        static let aggregatorExtendV2 = CetusPackage(
-            name: "aggregator-extend-v2",
-            id: "0x368d13376443a8051b22b42a9125f6a3bc836422bb2d9c4a53984b8d6624c326",
-            publishedAt: "0x5cb7499fc49c2642310e24a4ecffdbee00133f97e80e2b45bca90c64d55de880",
-            version: 9
-        )
-    }
-
-    struct CetusPackage {
-        let name: String
-        let id: String
-        let publishedAt: String
-        let version: Int
-    }
-
     private let baseURL: String
     private let jsonDecoder = JSONDecoder()
 

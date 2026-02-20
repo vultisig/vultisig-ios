@@ -101,7 +101,6 @@ struct SendDetailsAddressFields: View {
                 // Clear previous error
                 sendCryptoViewModel.showAddressAlert = false
                 sendCryptoViewModel.errorMessage = ""
-                sendCryptoViewModel.isValidAddress = true
 
                 // Mark address as done and move to amount
                 viewModel.addressSetupDone = true

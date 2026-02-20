@@ -91,14 +91,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         return logic.showDuration(tx: tx)
     }
 
-    func showAllowance(tx: SwapTransaction) -> Bool {
-        return logic.showAllowance(tx: tx)
-    }
-
-    func showToAmount(tx: SwapTransaction) -> Bool {
-        return logic.showToAmount(tx: tx)
-    }
-
     func swapFeeString(tx: SwapTransaction) -> String {
         return logic.swapFeeString(tx: tx)
     }
@@ -239,19 +231,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
     }
 
-    func fetchFees(tx: SwapTransaction, vault: Vault) {
-        updateFeesTask?.cancel()
-        updateFeesTask = Task {[weak self] in
-            try? await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds delay
-            guard !Task.isCancelled else { return }
-
-            self?.isLoadingFees = true
-            defer { self?.isLoadingFees = false }
-
-            await self?.updateFees(tx: tx, vault: vault)
-        }
-    }
-
     func fetchQuotes(tx: SwapTransaction, vault: Vault, referredCode: String) {
         // this method is called when the user changes the amount, from/to coins, or chains
         // it will update the quotes after a short delay to avoid excessive requests
@@ -298,10 +277,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         return logic.pickerToCoins(tx: tx, toChain: toChain)
     }
 
-    // Helper to get fee coin needed for view display
-    func feeCoin(tx: SwapTransaction) -> Coin {
-        return logic.feeCoin(tx: tx)
-    }
 }
 
 private extension SwapCryptoViewModel {

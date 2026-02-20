@@ -5,7 +5,7 @@
 //  Created by Gaston Mazzeo on 01/08/2025.
 //
 
-public enum Theme: ThemeProtocol {
-    public static let fonts: FontSystemProtocol = FontSystem()
-    public static let colors: ColorSystemProtocol = ColorSystem()
+enum Theme {
+    static let fonts: FontSystemProtocol = FontSystem()
+    static let colors: ColorSystemProtocol = ColorSystem()
 }

@@ -18,17 +18,11 @@ enum Field: Int, Hashable {
 
 struct SendDetailsScreen: View {
     @State var coin: Coin?
-    @State var selectedChain: Chain? = nil
     @ObservedObject var tx: SendTransaction
     @StateObject var sendCryptoViewModel = SendCryptoViewModel()
     @StateObject var sendDetailsViewModel: SendDetailsViewModel
     let vault: Vault
     @State var settingsPresented: Bool = false
-
-    @State var amount = ""
-    @State var nativeTokenBalance = ""
-    @State var coinBalance: String? = nil
-    @State var showMemoField = false
 
     @StateObject var keyboardObserver = KeyboardObserver()
 
@@ -271,36 +265,6 @@ struct SendDetailsScreen: View {
         }
     }
 
-    func getSummaryCell(leadingText: String, trailingText: String) -> some View {
-        HStack {
-            Text(leadingText)
-            Spacer()
-            Text(trailingText)
-        }
-        .font(Theme.fonts.bodySMedium)
-        .foregroundColor(Theme.colors.textPrimary)
-    }
-
-    private func getTitle(for text: String, isExpanded: Bool = true) -> some View {
-        Text(
-            NSLocalizedString(text, comment: "")
-                .replacingOccurrences(of: "Fiat", with: SettingsCurrency.current.rawValue)
-        )
-        .font(Theme.fonts.bodySMedium)
-        .foregroundColor(Theme.colors.textPrimary)
-        .frame(maxWidth: isExpanded ? .infinity : nil, alignment: .leading)
-    }
-
-    private func getPercentageCell(for text: String) -> some View {
-        Text(text + "%")
-            .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textPrimary)
-            .padding(.vertical, 6)
-            .padding(.horizontal, 20)
-            .background(Theme.colors.bgSurface1)
-            .cornerRadius(6)
-    }
-
     func validateForm() async {
         switch sendDetailsViewModel.selectedTab {
         case .none:
@@ -332,10 +296,6 @@ struct SendDetailsScreen: View {
 
     func getBalance() async {
         await BalanceService.shared.updateBalance(for: tx.coin)
-        if Task.isCancelled { return }
-        await MainActor.run {
-            coinBalance = tx.coin.balanceString
-        }
     }
 
     private func onRefresh() async {
@@ -344,9 +304,6 @@ struct SendDetailsScreen: View {
         async let pendingCheck: Void = PendingTransactionManager.shared.forceCheckPendingTransactions()
         _ = await (bal, pendingCheck)
         if Task.isCancelled { return }
-        await MainActor.run {
-            coinBalance = tx.coin.balanceString
-        }
         checkPendingTransactions()
     }
 }
@@ -387,7 +344,6 @@ private func setMainData() async {
 
             deeplinkViewModel.address = nil
             self.coin = nil
-            selectedChain = coin.chain
         } else {
             // Even if coin is nil, try to get address from deeplinkViewModel if tx.toAddress is empty
             if tx.toAddress.isEmpty, let deeplinkAddress = deeplinkViewModel.address {
@@ -402,10 +358,6 @@ private func setMainData() async {
         }
 
         await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
-    }
-
-    private func validateAddress(_ newValue: String) {
-        sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
     }
 
     private func validateAddress() {

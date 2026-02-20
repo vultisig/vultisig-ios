@@ -26,16 +26,6 @@ struct Keychain {
         self.serviceName = serviceName
     }
 
-    // MARK: - Data
-
-    func getData(key: KeychainIdentifier) -> Data? {
-        return get(for: key)
-    }
-
-    func setData(_ value: Data?, for key: KeychainIdentifier) {
-        set(value, for: key)
-    }
-
     // MARK: - String
 
     func getString(for key: KeychainIdentifier) -> String? {
@@ -49,19 +39,6 @@ struct Keychain {
     func setString(_ value: String?, for key: KeychainIdentifier) {
         let data = value?.data(using: .utf8)
         set(data, for: key)
-    }
-
-    // MARK: - Bool
-
-    func getBool(for key: KeychainIdentifier) -> Bool {
-        guard getString(for: key) != nil else {
-            return false
-        }
-        return true
-    }
-
-    func setBool(_ value: Bool, for key: KeychainIdentifier) {
-        setString(value ? "true" : nil, for: key)
     }
 
     // MARK: - Int
@@ -79,36 +56,13 @@ struct Keychain {
         setString(string, for: key)
     }
 
-    func getObject<T: Codable>(key: KeychainIdentifier) -> T? {
-        guard let data = get(for: key) else {
-            return nil
-        }
-        let object = try? JSONDecoder().decode(T.self, from: data)
-        return object
-    }
-
-    func setObject<T: Codable>(_ object: T, for key: KeychainIdentifier) {
-        let data = try? JSONEncoder().encode(object)
-        set(data, for: key)
-    }
-
     // MARK: - Helpers
-
-    func exist(_ key: KeychainIdentifier) -> Bool {
-        return get(for: key) != nil
-    }
 
     func delete(for key: KeychainIdentifier) {
         let query = generateQuery(for: key)
         SecItemDelete(query as CFDictionary)
     }
 
-    // MARK: - Cleanup
-
-    func cleanup() {
-        let dictionary = [kSecClass as String: kSecClassGenericPasswordValue]
-        SecItemDelete(dictionary as CFDictionary)
-    }
 }
 
 // MARK: - Privates

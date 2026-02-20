@@ -10,7 +10,6 @@ import Foundation
 enum THORChainLPsAPI: TargetType {
     case getLiquidityProviderDetails(assetId: String, address: String)
     case getPoolStats(period: String?)
-    case getDepthHistory(asset: String, interval: String, count: Int)
 
     var baseURL: URL {
         switch self {
@@ -27,14 +26,12 @@ enum THORChainLPsAPI: TargetType {
             return "/thorchain/pool/\(assetId)/liquidity_provider/\(address)"
         case .getPoolStats:
             return "/v2/pools"
-        case .getDepthHistory(let asset, _, _):
-            return "/v2/history/depths/\(asset)"
         }
     }
 
     var method: HTTPMethod {
         switch self {
-        case .getLiquidityProviderDetails, .getPoolStats, .getDepthHistory:
+        case .getLiquidityProviderDetails, .getPoolStats:
             return .get
         }
     }
@@ -53,12 +50,6 @@ enum THORChainLPsAPI: TargetType {
                 params["period"] = "30d"
             }
             return .requestParameters(params, .urlEncoding)
-
-        case .getDepthHistory(_, let interval, let count):
-            return .requestParameters([
-                "interval": interval,
-                "count": String(count)
-            ], .urlEncoding)
         }
     }
 

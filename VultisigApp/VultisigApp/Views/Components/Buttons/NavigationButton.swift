@@ -22,6 +22,13 @@ struct NavigationButton: View {
         Image(systemName: "arrow.right.circle.fill")
             .font(font)
     }
+
+    #if os(iOS)
+    var container: some View {
+        content
+            .foregroundColor(tint)
+    }
+    #endif
 }
 
 #Preview {

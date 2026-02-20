@@ -452,26 +452,6 @@ struct CoinService {
         }
     }
 
-    // MARK: - Diagnostic Functions
-
-    /// Check if vault is in an invalid state (has tokens without native token)
-    static func detectOrphanedTokens(vault: Vault) -> [Chain: [Coin]] {
-        var orphanedTokens: [Chain: [Coin]] = [:]
-
-        // Group coins by chain
-        let coinsByChain = Dictionary(grouping: vault.coins) { $0.chain }
-
-        // Check each chain
-        for (chain, coins) in coinsByChain {
-            let hasNativeToken = coins.contains { $0.isNativeToken }
-            if !hasNativeToken && !coins.isEmpty {
-                orphanedTokens[chain] = coins
-            }
-        }
-
-        return orphanedTokens
-    }
-
     /// Clear all hidden tokens for a specific chain
     static func clearHiddenTokensForChain(_ chain: Chain, vault: Vault) {
         // Find all hidden tokens for this chain

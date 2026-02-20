@@ -31,11 +31,4 @@ extension BigInt {
         self.description.toDecimal().truncated(toPlaces: decimals)
     }
 
-    func toDisplayDecimal(decimals: Int) -> Decimal {
-        self.description.toDecimal() / pow(10, decimals)
-    }
-    /// Converts the BigInt value to wei (multiplies by 10^18).
-    func toWei() -> BigInt {
-        return self * BigInt(10).power(18)
-    }
 }

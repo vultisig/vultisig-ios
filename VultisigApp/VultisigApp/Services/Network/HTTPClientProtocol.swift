@@ -8,7 +8,7 @@
 import Foundation
 
 /// Protocol defining the HTTP client interface
-public protocol HTTPClientProtocol {
+protocol HTTPClientProtocol {
     /// Performs a network request and returns raw data
     /// - Parameter target: The target defining the request configuration
     /// - Returns: HTTPResponse containing raw data and HTTP response
@@ -28,7 +28,7 @@ public protocol HTTPClientProtocol {
 }
 
 /// Default implementations for HTTPClientProtocol
-public extension HTTPClientProtocol {
+extension HTTPClientProtocol {
 
     // swiftlint:disable:next unused_parameter
     func request<T: Decodable>(_ target: TargetType, responseType: T.Type) async throws -> HTTPResponse<T> {

@@ -11,14 +11,6 @@ struct CustomHighlightText: View {
     let text: String
     let highlightRanges: [(start: Int, end: Int, style: AnyShapeStyle)]
 
-    // Primary initializer with index-based ranges
-    init(_ text: String, highlightRanges: [(Int, Int, AnyShapeStyle)]) {
-        self.text = text
-        self.highlightRanges = highlightRanges.filter { (start, end, _) in
-            start >= 0 && end <= text.count && start < end
-        }
-    }
-
     // Convenience initializer with string matching
     init<S: ShapeStyle>(_ text: String, highlight: String, style: S) {
         self.text = text
@@ -40,31 +32,6 @@ struct CustomHighlightText: View {
         }
 
         self.highlightRanges = ranges
-    }
-
-    // Convenience initializer with multiple string matches
-    init<S: ShapeStyle>(_ text: String, highlights: [(String, S)]) {
-        self.text = text
-        var ranges: [(Int, Int, AnyShapeStyle)] = []
-
-        for (highlightText, style) in highlights {
-            guard !highlightText.isEmpty else { continue }
-
-            var searchRange = text.startIndex..<text.endIndex
-            while let range = text.range(of: highlightText, range: searchRange) {
-                let startIndex = text.distance(from: text.startIndex, to: range.lowerBound)
-                let endIndex = text.distance(from: text.startIndex, to: range.upperBound)
-                ranges.append((startIndex, endIndex, AnyShapeStyle(style)))
-
-                searchRange = range.upperBound..<text.endIndex
-            }
-        }
-
-        self.highlightRanges = ranges
-    }
-
-    init(_ text: String, highlight: String, gradient: LinearGradient) {
-        self.init(text, highlight: highlight, style: gradient)
     }
 
     init(_ text: String, highlights: [(String, LinearGradient)]) {

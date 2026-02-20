@@ -8,7 +8,6 @@
 import SwiftUI
 
 enum BackupGuideAnimationType {
-    case secure
     case keyImport
 }
 

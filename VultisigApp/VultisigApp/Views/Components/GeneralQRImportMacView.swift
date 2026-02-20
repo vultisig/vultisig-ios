@@ -133,6 +133,25 @@ struct GeneralQRImportMacView: View {
         }
     }
 
+    #if os(iOS)
+    func setValues(_ urls: [URL]) {
+        do {
+            if let url = urls.first {
+                _ = url.startAccessingSecurityScopedResource()
+                fileName = url.lastPathComponent
+
+                let imageData = try Data(contentsOf: url)
+                if let uiImage = UIImage(data: imageData) {
+                    selectedImage = uiImage
+                }
+                isButtonEnabled = true
+            }
+        } catch {
+            print(error)
+        }
+    }
+    #endif
+
     private func handleTap() {
         guard let importResult else {
             return

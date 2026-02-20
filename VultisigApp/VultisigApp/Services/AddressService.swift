@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 import WalletCore
 
-public struct AddressService {
+struct AddressService {
 
     /// Detects which chain an address belongs to by validating against all WalletCore CoinTypes
     /// Returns the detected chain if found and it exists in the vault, or nil otherwise

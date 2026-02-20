@@ -11,9 +11,8 @@ struct SettingsAdvancedView: View {
     @EnvironmentObject var settingsViewModel: SettingsViewModel
 
     var body: some View {
-        ZStack {
-            Background()
-            container
+        Screen(title: "advanced".localized) {
+            content
         }
     }
 

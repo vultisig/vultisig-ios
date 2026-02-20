@@ -8,15 +8,8 @@
 import SwiftUI
 
 struct UnstakeTransactionScreen: View {
-    enum FocusedField {
-        case amount
-    }
-
     @StateObject var viewModel: UnstakeTransactionViewModel
     var onVerify: (TransactionBuilder) -> Void
-
-    @State var focusedFieldBinding: FocusedField? = .none
-    @FocusState private var focusedField: FocusedField?
 
     var body: some View {
         AmountFunctionTransactionScreen(
