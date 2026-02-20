@@ -1382,5 +1382,5 @@
 "referralCodeTitle" = "推荐码";
 "referralCodeDescription" = "在此输入您的推荐码。";
 "referralCodeDescriptionHighlight" = "每笔交易享受10%折扣。";
-"enter4DigitCode" = "输入4位代码";
+"enter4DigitCode" = "输入4个字符代码";
 "applyReferral" = "应用推荐";

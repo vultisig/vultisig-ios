@@ -16,7 +16,7 @@ struct VaultSetupScreen: View {
         case name, email, password, passwordConfirm
     }
     
-    @StateObject var viewModel: VaultSetupViewModel
+    @StateObject private var viewModel: VaultSetupViewModel
     
     @State private var currentStep = 0
     @State private var navigatingForward = true

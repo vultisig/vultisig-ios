@@ -121,8 +121,8 @@ struct ReferralCodeSheet: View {
                 viewModel.referralField.value = trimmed
                 viewModel.setReferralError(nil)
                 isPresented = false
-            } catch {
-                self.error = error.localizedDescription
+            } catch let caughtError {
+                self.error = NSLocalizedString(caughtError.localizedDescription, comment: "")
                 self.isValid = false
             }
         }
