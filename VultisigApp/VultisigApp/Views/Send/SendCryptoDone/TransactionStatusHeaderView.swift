@@ -31,9 +31,9 @@ struct TransactionStatusHeaderView: View {
         .onLoad {
             pendingAnimationVM = RiveViewModel(fileName: "transaction_pending", autoPlay: false)
             pendingAnimationVM?.fit = .contain
-            successAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: false)
+            successAnimationVM = RiveViewModel(fileName: "vault_created", autoPlay: false)
             successAnimationVM?.fit = .contain
-            errorAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: false)
+            errorAnimationVM = RiveViewModel(fileName: "vault_created", autoPlay: false)
             errorAnimationVM?.fit = .contain
         }
     }

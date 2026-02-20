@@ -53,8 +53,8 @@ struct KeygenView: View {
             }
             .onAppear {
                 hideBackButton = true
-                vaultCreatedAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
-                checkmarkAnimationVM = RiveViewModel(fileName: "CreatingVaultCheckmark", autoPlay: true)
+                vaultCreatedAnimationVM = RiveViewModel(fileName: "vault_created", autoPlay: true)
+                checkmarkAnimationVM = RiveViewModel(fileName: "creating_vault_checkmark", autoPlay: true)
                 keygenAnimationVM = RiveViewModel(
                     fileName: fastSignConfig != nil ? "keygen_fast" : "keygen_secure",
                     autoPlay: true,
