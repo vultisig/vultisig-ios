@@ -461,22 +461,7 @@ class KeygenViewModel: ObservableObject {
                 self.status = .KeygenEdDSA
                 try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0)
             }
-            var mldsa44KeyShare: DilithiumKeyshare? = nil
-            let enableMLDSA = UserDefaults.standard.bool(forKey: "isMLDSAEnabled")
-            if enableMLDSA {
-                await updateProgress(90)
-                let mldsaKeygen = DilithiumKeygen(vault: self.vault,
-                                                  tssType: self.tssType,
-                                                  keygenCommittee: self.keygenCommittee,
-                                                  vaultOldCommittee: self.vaultOldCommittee,
-                                                  mediatorURL: self.mediatorURL,
-                                                  sessionID: self.sessionID,
-                                                  encryptionKeyHex: self.encryptionKeyHex,
-                                                  isInitiateDevice: self.isInitiateDevice,
-                                                  setupMessage: dklsKeygen.getSetupMessage())
-                try await mldsaKeygen.DilithiumKeygenWithRetry(attempt: 0)
-                mldsa44KeyShare = mldsaKeygen.getKeyshare()
-            }
+            
             await updateProgress(100)
 
             self.vault.signers = self.keygenCommittee
@@ -512,15 +497,6 @@ class KeygenViewModel: ObservableObject {
             self.vault.keyshares = [KeyShare(pubkey: keyshareECDSA.PubKey, keyshare: keyshareECDSA.Keyshare),
                                     KeyShare(pubkey: keyshareEdDSA.PubKey, keyshare: keyshareEdDSA.Keyshare)]
 
-            if enableMLDSA {
-                if let mldsa44KeyShare {
-                    self.vault.publicKeyMLDSA44 = mldsa44KeyShare.PubKey
-                    self.vault.keyshares.append(KeyShare(pubkey: mldsa44KeyShare.PubKey, keyshare: mldsa44KeyShare.Keyshare))
-                } else {
-                    self.logger.error("MLDSA keygen enabled but failed to get MLDSA keyshare")
-                    throw HelperError.runtimeError("MLDSA keygen enabled but failed to get MLDSA keyshare")
-                }
-            }
 
             let needsInsert = self.tssType == .Keygen ||
                 !self.vaultOldCommittee.contains(self.vault.localPartyID)

@@ -16,5 +16,4 @@ struct VaultCreateRequest: Hashable, Codable {
     let encryption_password: String
     let email: String
     let lib_type: Int
-    let mldsa: Bool
 }
