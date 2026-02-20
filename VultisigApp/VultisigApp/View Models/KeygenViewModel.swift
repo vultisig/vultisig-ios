@@ -461,12 +461,13 @@ class KeygenViewModel: ObservableObject {
                 self.status = .KeygenEdDSA
                 try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0)
             }
-
+            
             await updateProgress(100)
 
             self.vault.signers = self.keygenCommittee
             let keyshareECDSA = dklsKeygen.getKeyshare()
             let keyshareEdDSA = schnorrKeygen.getKeyshare()
+
             guard let keyshareECDSA else {
                 throw HelperError.runtimeError("fail to get ECDSA keyshare")
             }
@@ -488,12 +489,14 @@ class KeygenViewModel: ObservableObject {
             self.vault.pubKeyECDSA = keyshareECDSA.PubKey
             self.vault.pubKeyEdDSA = keyshareEdDSA.PubKey
             self.vault.hexChainCode = keyshareECDSA.chaincode
+
             if self.tssType == .Migrate {
                 // make sure we set the vault's lib type to DKLS , otherwise it won't work
                 self.vault.libType = .DKLS
             }
             self.vault.keyshares = [KeyShare(pubkey: keyshareECDSA.PubKey, keyshare: keyshareECDSA.Keyshare),
                                     KeyShare(pubkey: keyshareEdDSA.PubKey, keyshare: keyshareEdDSA.Keyshare)]
+
 
             let needsInsert = self.tssType == .Keygen ||
                 !self.vaultOldCommittee.contains(self.vault.localPartyID)

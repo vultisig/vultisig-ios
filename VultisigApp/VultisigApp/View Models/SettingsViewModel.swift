@@ -33,6 +33,7 @@ class SettingsViewModel: ObservableObject {
     @AppStorage("sepolia") var enableSepolia: Bool = false
     @AppStorage("thorchainStagenet") var enableThorchainStagenet: Bool = false
     @AppStorage("SellEnabled") var sellEnabled: Bool = false
+    @AppStorage("isMLDSAEnabled") var isMLDSAEnabled: Bool = false
 
     init() {
         self.selectedCurrency = SettingsCurrency.current
