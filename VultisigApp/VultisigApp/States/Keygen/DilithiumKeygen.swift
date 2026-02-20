@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import dilithium
+import vscore
 import OSLog
 import Mediator
 
@@ -30,7 +30,7 @@ final class DilithiumKeygen {
     var cache = NSCache<NSString, AnyObject>()
     var setupMessage: [UInt8] = []
     var keyshare: DilithiumKeyshare?
-    let MLDSA_LIB_OK: dilithium.mldsa_lib_error = .init(0)
+    let MLDSA_LIB_OK: vscore.mldsa_lib_error = .init(0)
 
     init(vault: Vault,
          tssType: TssType,
@@ -64,14 +64,14 @@ final class DilithiumKeygen {
     }
 
     private func getDilithiumSetupMessage() throws -> [UInt8] {
-        var buf = dilithium.tss_buffer()
+        var buf = vscore.tss_buffer()
         defer {
-            dilithium.tss_buffer_free(&buf)
+            vscore.tss_buffer_free(&buf)
         }
         let threshold = DKLSHelper.getThreshod(input: self.keygenCommittee.count)
         let byteArray = DKLSHelper.arrayToBytes(parties: self.keygenCommittee)
         var ids = byteArray.to_mldsa_goslice()
-        let err = mldsa_keygen_setupmsg_new(threshold, nil, &ids, &buf)
+        let err = mldsa_keygen_setupmsg_new(vscore.MlDsa44,threshold, nil, &ids, &buf)
         if err != MLDSA_LIB_OK {
             throw HelperError.runtimeError("fail to setup keygen message, mldsa error:\(err)")
         }
@@ -79,10 +79,10 @@ final class DilithiumKeygen {
         return self.setupMessage
     }
 
-    func GetDilithiumOutboundMessage(handle: dilithium.Handle) -> (mldsa_lib_error, [UInt8]) {
-        var buf = dilithium.tss_buffer()
+    func GetDilithiumOutboundMessage(handle: vscore.Handle) -> (mldsa_lib_error, [UInt8]) {
+        var buf = vscore.tss_buffer()
         defer {
-            dilithium.tss_buffer_free(&buf)
+            vscore.tss_buffer_free(&buf)
         }
         let result = mldsa_keygen_session_output_message(handle, &buf)
         if result != MLDSA_LIB_OK {
@@ -92,10 +92,10 @@ final class DilithiumKeygen {
         return (result, Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len))))
     }
 
-    func getOutboundMessageReceiver(handle: dilithium.Handle, message: dilithium.go_slice, idx: UInt32) -> [UInt8] {
-        var buf_receiver = dilithium.tss_buffer()
+    func getOutboundMessageReceiver(handle: vscore.Handle, message: vscore.go_slice, idx: UInt32) -> [UInt8] {
+        var buf_receiver = vscore.tss_buffer()
         defer {
-            dilithium.tss_buffer_free(&buf_receiver)
+            vscore.tss_buffer_free(&buf_receiver)
         }
         var mutableMessage = message
         let receiverResult = mldsa_keygen_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
@@ -106,7 +106,7 @@ final class DilithiumKeygen {
         return Array(UnsafeBufferPointer(start: buf_receiver.ptr, count: Int(buf_receiver.len)))
     }
 
-    func processDilithiumOutboundMessage(handle: dilithium.Handle) async throws {
+    func processDilithiumOutboundMessage(handle: vscore.Handle) async throws {
         repeat {
             let (result, outboundMessage) = GetDilithiumOutboundMessage(handle: handle)
             if result != MLDSA_LIB_OK {
@@ -132,7 +132,7 @@ final class DilithiumKeygen {
         } while 1 > 0
     }
 
-    func pullInboundMessages(handle: dilithium.Handle) async throws -> Bool {
+    func pullInboundMessages(handle: vscore.Handle) async throws -> Bool {
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(self.localPartyID)"
         print("start pulling inbound messages from:\(urlString)")
         guard let url = URL(string: urlString) else {
@@ -173,7 +173,7 @@ final class DilithiumKeygen {
         return false
     }
 
-    func processInboundMessage(handle: dilithium.Handle, data: Data) async throws -> Bool {
+    func processInboundMessage(handle: vscore.Handle, data: Data) async throws -> Bool {
         if data.isEmpty {
             return false
         }
@@ -230,7 +230,7 @@ final class DilithiumKeygen {
         self.cache.removeAllObjects()
         do {
             var keygenSetupMsg: [UInt8]
-            var handler = dilithium.Handle()
+            var handler = vscore.Handle()
             if self.isInitiateDevice && attempt == 0 {
                 keygenSetupMsg = try getDilithiumSetupMessage()
                 self.setupMessage = keygenSetupMsg
@@ -244,7 +244,7 @@ final class DilithiumKeygen {
 
             let localPartyIDArr = self.localPartyID.toArray()
             var localPartySlice = localPartyIDArr.to_mldsa_goslice()
-            let result = mldsa_keygen_session_from_setup(&decodedSetupMsg, &localPartySlice, &handler)
+            let result = mldsa_keygen_session_from_setup(vscore.MlDsa44,&decodedSetupMsg, &localPartySlice, &handler)
             if result != MLDSA_LIB_OK {
                 throw HelperError.runtimeError("fail to create session from setup message,error:\(result)")
             }
@@ -260,7 +260,7 @@ final class DilithiumKeygen {
             let isFinished = try await pullInboundMessages(handle: h)
             if isFinished {
                 try await processDilithiumOutboundMessage(handle: h)
-                var keyshareHandler = dilithium.Handle()
+                var keyshareHandler = vscore.Handle()
                 let keyShareResult = mldsa_keygen_session_finish(handler, &keyshareHandler)
                 if keyShareResult != MLDSA_LIB_OK {
                     throw HelperError.runtimeError("fail to get keyshare,\(keyShareResult)")
@@ -293,10 +293,10 @@ final class DilithiumKeygen {
         }
     }
 
-    func getKeyshareBytes(handle: dilithium.Handle) throws -> [UInt8] {
-        var buf = dilithium.tss_buffer()
+    func getKeyshareBytes(handle: vscore.Handle) throws -> [UInt8] {
+        var buf = vscore.tss_buffer()
         defer {
-            dilithium.tss_buffer_free(&buf)
+            vscore.tss_buffer_free(&buf)
         }
         let result = mldsa_keyshare_to_bytes(handle, &buf)
         if result != MLDSA_LIB_OK {
@@ -305,10 +305,10 @@ final class DilithiumKeygen {
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
 
-    func getPublicKeyBytes(handle: dilithium.Handle) throws -> [UInt8] {
-        var buf = dilithium.tss_buffer()
+    func getPublicKeyBytes(handle: vscore.Handle) throws -> [UInt8] {
+        var buf = vscore.tss_buffer()
         defer {
-            dilithium.tss_buffer_free(&buf)
+            vscore.tss_buffer_free(&buf)
         }
         let result = mldsa_keyshare_public_key(handle, &buf)
         if result != MLDSA_LIB_OK {
@@ -317,10 +317,10 @@ final class DilithiumKeygen {
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
 
-    func getKeyId(handle: dilithium.Handle) throws -> [UInt8] {
-        var buf = dilithium.tss_buffer()
+    func getKeyId(handle: vscore.Handle) throws -> [UInt8] {
+        var buf = vscore.tss_buffer()
         defer {
-            dilithium.tss_buffer_free(&buf)
+            vscore.tss_buffer_free(&buf)
         }
         let result = mldsa_keyshare_key_id(handle, &buf)
         if result != MLDSA_LIB_OK {

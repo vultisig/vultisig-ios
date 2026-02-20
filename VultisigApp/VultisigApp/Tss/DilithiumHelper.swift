@@ -6,12 +6,12 @@
 //
 
 import Foundation
-import dilithium
+import vscore
 
 extension Array where Element == UInt8 {
-    func to_mldsa_goslice() -> dilithium.go_slice {
+    func to_mldsa_goslice() -> vscore.go_slice {
         let result = self.withUnsafeBufferPointer { bp in
-            return dilithium.go_slice(
+            return vscore.go_slice(
                 ptr: UnsafePointer(bp.baseAddress),
                 len: UInt(bp.count),
                 cap: UInt(bp.count)

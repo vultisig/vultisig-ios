@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import dilithium
+import vscore
 import OSLog
 import Mediator
 import Tss
@@ -34,7 +34,7 @@ final class DilithiumKeysign {
     var messenger: DKLSMessenger?
     var cache = NSCache<NSString, AnyObject>()
     var signatures = [String: DilithiumKeysignResponse]()
-    let MLDSA_LIB_OK: dilithium.mldsa_lib_error = .init(0)
+    let MLDSA_LIB_OK: vscore.mldsa_lib_error = .init(0)
 
     init(keysignCommittee: [String],
          mediatorURL: String,
@@ -82,13 +82,13 @@ final class DilithiumKeysign {
     }
 
     func getDilithiumKeyshareID() throws -> [UInt8] {
-        var buf = dilithium.tss_buffer()
+        var buf = vscore.tss_buffer()
         defer {
-            dilithium.tss_buffer_free(&buf)
+            vscore.tss_buffer_free(&buf)
         }
         let keyShareBytes = try getKeyshareBytes()
         var keyshareSlice = keyShareBytes.to_mldsa_goslice()
-        var h = dilithium.Handle()
+        var h = vscore.Handle()
         let result = mldsa_keyshare_from_bytes(&keyshareSlice, &h)
         if result != MLDSA_LIB_OK {
             throw HelperError.runtimeError("fail to create keyshare handle from bytes, \(result)")
@@ -108,9 +108,9 @@ final class DilithiumKeysign {
     }
 
     func getDilithiumKeysignSetupMessage(message: String) throws -> [UInt8] {
-        var buf = dilithium.tss_buffer()
+        var buf = vscore.tss_buffer()
         defer {
-            dilithium.tss_buffer_free(&buf)
+            vscore.tss_buffer_free(&buf)
         }
         let keyIdArr = try getDilithiumKeyshareID()
         var keyIdSlice = keyIdArr.to_mldsa_goslice()
@@ -125,7 +125,7 @@ final class DilithiumKeysign {
         }
         let msgArr = [UInt8](decodedMsgData)
         var msgSlice = msgArr.to_mldsa_goslice()
-        let err: dilithium.mldsa_lib_error
+        let err: vscore.mldsa_lib_error
         // For multi-chain vaults using Dilithium keys, only unhardened HD derivation is supported.
         // For vaults imported from a seed phrase/private key, only a single chain is supported (no derivation path).
         if !self.chainPath.isEmpty {
@@ -134,10 +134,10 @@ final class DilithiumKeysign {
             }
             let chainPathArr = [UInt8](chainPathData)
             var chainPathSlice = chainPathArr.to_mldsa_goslice()
-            err = mldsa_sign_setupmsg_new(&keyIdSlice, &chainPathSlice, &msgSlice, &ids, &buf)
+            err = mldsa_sign_setupmsg_new(vscore.MlDsa44, &keyIdSlice, &chainPathSlice, &msgSlice, &ids, &buf)
 
         } else {
-            err = mldsa_sign_setupmsg_new(&keyIdSlice, nil, &msgSlice, &ids, &buf)
+            err = mldsa_sign_setupmsg_new(vscore.MlDsa44, &keyIdSlice, nil, &msgSlice, &ids, &buf)
         }
         if err != MLDSA_LIB_OK {
             throw HelperError.runtimeError("fail to setup keysign message, mldsa error:\(err)")
@@ -145,7 +145,7 @@ final class DilithiumKeysign {
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
 
-    func getOutboundMessageReceiver(handle: dilithium.Handle, message: dilithium.go_slice, idx: UInt32) -> [UInt8] {
+    func getOutboundMessageReceiver(handle: vscore.Handle, message: vscore.go_slice, idx: UInt32) -> [UInt8] {
         var buf_receiver = tss_buffer()
         defer {
             tss_buffer_free(&buf_receiver)
@@ -159,10 +159,10 @@ final class DilithiumKeysign {
         return Array(UnsafeBufferPointer(start: buf_receiver.ptr, count: Int(buf_receiver.len)))
     }
 
-    func GetDilithiumOutboundMessage(handle: dilithium.Handle) -> (dilithium.mldsa_lib_error, [UInt8]) {
-        var buf = dilithium.tss_buffer()
+    func GetDilithiumOutboundMessage(handle: vscore.Handle) -> (vscore.mldsa_lib_error, [UInt8]) {
+        var buf = vscore.tss_buffer()
         defer {
-            dilithium.tss_buffer_free(&buf)
+            vscore.tss_buffer_free(&buf)
         }
         let result = mldsa_sign_session_output_message(handle, &buf)
         if result != MLDSA_LIB_OK {
@@ -172,7 +172,7 @@ final class DilithiumKeysign {
         return (result, Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len))))
     }
 
-    func processDilithiumOutboundMessage(handle: dilithium.Handle) async throws {
+    func processDilithiumOutboundMessage(handle: vscore.Handle) async throws {
         repeat {
             let (result, outboundMessage) = GetDilithiumOutboundMessage(handle: handle)
             if result != MLDSA_LIB_OK {
@@ -201,7 +201,7 @@ final class DilithiumKeysign {
 
     }
 
-    func pullInboundMessages(handle: dilithium.Handle, messageID: String) async throws -> Bool {
+    func pullInboundMessages(handle: vscore.Handle, messageID: String) async throws -> Bool {
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(self.localPartyID)"
         print("start pulling inbound messages from:\(urlString)")
         guard let url = URL(string: urlString) else {
@@ -247,7 +247,7 @@ final class DilithiumKeysign {
         return false
     }
 
-    func processInboundMessage(handle: dilithium.Handle, data: Data, messageID: String) async throws -> Bool {
+    func processInboundMessage(handle: vscore.Handle, data: Data, messageID: String) async throws -> Bool {
         let decoder = JSONDecoder()
         let msgs = try decoder.decode([Message].self, from: data)
         let sortedMsgs = msgs.sorted(by: { $0.sequence_no < $1.sequence_no })
@@ -322,14 +322,14 @@ final class DilithiumKeysign {
             let finalSetupMsgArr = keysignSetupMsg
             var decodedSetupMsg = finalSetupMsgArr.to_mldsa_goslice()
 
-            var handler = dilithium.Handle()
+            var handler = vscore.Handle()
 
             let localPartyIDArr = self.localPartyID.toArray()
             var localPartySlice = localPartyIDArr.to_mldsa_goslice()
 
             let keyShareBytes = try getKeyshareBytes()
             var keyshareSlice = keyShareBytes.to_mldsa_goslice()
-            var keyshareHandle = dilithium.Handle()
+            var keyshareHandle = vscore.Handle()
             let result = mldsa_keyshare_from_bytes(&keyshareSlice, &keyshareHandle)
             if result != MLDSA_LIB_OK {
                 throw HelperError.runtimeError("fail to create keyshare handle from bytes, \(result)")
@@ -338,7 +338,7 @@ final class DilithiumKeysign {
             defer {
                 mldsa_keyshare_free(&keyshareHandle)
             }
-            let sessionResult = mldsa_sign_session_from_setup(&decodedSetupMsg,
+            let sessionResult = mldsa_sign_session_from_setup(vscore.MlDsa44,&decodedSetupMsg,
                                                              &localPartySlice,
                                                              keyshareHandle,
                                                              &handler)
@@ -375,10 +375,10 @@ final class DilithiumKeysign {
         }
     }
 
-    func dilithiumSignSessionFinish(handle: dilithium.Handle) throws -> [UInt8] {
-        var buf = dilithium.tss_buffer()
+    func dilithiumSignSessionFinish(handle: vscore.Handle) throws -> [UInt8] {
+        var buf = vscore.tss_buffer()
         defer {
-            dilithium.tss_buffer_free(&buf)
+            vscore.tss_buffer_free(&buf)
         }
         let result = mldsa_sign_session_finish(handle, &buf)
         if result != MLDSA_LIB_OK {
