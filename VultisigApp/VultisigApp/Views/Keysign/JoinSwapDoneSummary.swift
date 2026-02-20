@@ -27,7 +27,7 @@ struct JoinSwapDoneSummary: View {
         }
         .buttonStyle(BorderlessButtonStyle())
         .onLoad {
-            animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
+            animationVM = RiveViewModel(fileName: "vault_created", autoPlay: true)
         }
     }
 

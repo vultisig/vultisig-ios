@@ -25,7 +25,7 @@ struct LookingForDevicesLoader: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .cornerRadius(10)
         .onAppear {
-            animationVM = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
+            animationVM = RiveViewModel(fileName: "connecting_with_server", autoPlay: true)
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 didSwitch.toggle()

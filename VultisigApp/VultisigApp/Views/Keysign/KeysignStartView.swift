@@ -38,7 +38,7 @@ struct KeysignStartView: View {
         .multilineTextAlignment(.center)
         .padding(30)
         .onAppear {
-            loadingAnimationVM = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
+            loadingAnimationVM = RiveViewModel(fileName: "connecting_with_server", autoPlay: true)
         }
         .task {
             await viewModel.waitForKeysignStart()

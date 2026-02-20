@@ -19,7 +19,7 @@ struct PeerDiscoveryInfoBanner: View {
             content
         }
         .onAppear {
-            animationVM = RiveViewModel(fileName: "PeerDiscoveryInfoBanner", autoPlay: true)
+            animationVM = RiveViewModel(fileName: "peer_discovery_info_banner", autoPlay: true)
         }
         .onDisappear {
             animationVM?.stop()
