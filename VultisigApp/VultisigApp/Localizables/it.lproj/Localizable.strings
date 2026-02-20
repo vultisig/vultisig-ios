@@ -1375,3 +1375,9 @@
 "iUnderstand" = "Ho capito";
 "replaceExistingVault" = "Sostituisci";
 "duplicateVaultMessage" = "Un caveau chiamato \"%@\" ha già le stesse chiavi. Sostituendolo, i suoi dati verranno sovrascritti.";
+"referralAdded" = "Referral aggiunto";
+"referralCodeTitle" = "Codice referral";
+"referralCodeDescription" = "Inserisci qui il tuo codice referral.";
+"referralCodeDescriptionHighlight" = "Goditi il 10% di sconto su ogni transazione.";
+"enter4DigitCode" = "Inserisci codice a 4 cifre";
+"applyReferral" = "Applica referral";

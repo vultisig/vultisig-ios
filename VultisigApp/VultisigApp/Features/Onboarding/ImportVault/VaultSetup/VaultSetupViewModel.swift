@@ -10,10 +10,7 @@ import Combine
 
 final class VaultSetupViewModel: ObservableObject, Form {
     @Published var validForm: Bool = false
-    @Published var validatingReferralCode: Bool = false
     private let setupType: KeyImportSetupType
-
-    @Published var validFormWithReferral: Bool = false
 
     private(set) lazy var form: [FormField] = {
         // For secure setup, only name is required
@@ -21,14 +18,13 @@ final class VaultSetupViewModel: ObservableObject, Form {
         if setupType.requiresFastSign {
             return [
                 nameField,
-                referralField,
                 emailField,
                 passwordField,
                 passwordConfirmField,
                 hintField
             ]
         } else {
-            return [nameField, referralField]
+            return [nameField]
         }
     }()
 
@@ -46,16 +42,10 @@ final class VaultSetupViewModel: ObservableObject, Form {
     )
 
     var formCancellable: AnyCancellable?
-    var cancellables = Set<AnyCancellable>()
-    var task: Task<Void, Error>?
 
     /// Whether to show FastSign fields (email and password)
     var showFastSignFields: Bool {
         setupType.requiresFastSign
-    }
-
-    var canContinue: Bool {
-        validFormWithReferral && !validatingReferralCode
     }
 
     init(setupType: KeyImportSetupType) {
@@ -129,49 +119,18 @@ final class VaultSetupViewModel: ObservableObject, Form {
 
     func onLoad() {
         setupForm()
-
-        Publishers.CombineLatest($validForm, referralField.$valid)
-            .eraseToAnyPublisher()
-            .receive(on: DispatchQueue.main)
-            .sink(weak: self) { viewModel, valid in
-                viewModel.validFormWithReferral = valid.0 && valid.1
-            }
-            .store(in: &cancellables)
-
-        referralField.$value
-            .debounce(for: 0.3, scheduler: DispatchQueue.main)
-            .sink(weak: self) { viewModel, value in
-                guard !value.isEmpty else {
-                    viewModel.referralField.error = nil
-                    return
-                }
-
-                guard value.count <= 4 else {
-                    viewModel.setReferralError("referralLaunchCodeLengthError".localized)
-                    return
-                }
-
-                viewModel.task?.cancel()
-                viewModel.task = Task { @MainActor in
-                    defer { viewModel.validatingReferralCode = false }
-                    do {
-                        viewModel.validatingReferralCode = true
-                        try await ReferredCodeInteractor().verify(code: value)
-                        if Task.isCancelled { return }
-                        viewModel.setReferralError(nil)
-                    } catch {
-                        if Task.isCancelled { return }
-                        viewModel.setReferralError(error.localizedDescription)
-                    }
-                }
-            }
-            .store(in: &cancellables)
-
     }
 
-    private func setReferralError(_ error: String?) {
+    func setReferralError(_ error: String?) {
         referralField.error = error
         referralField.valid = error == nil
+    }
+
+    func clearReferral() {
+        referralField.value = ""
+        referralField.valid = false
+        referralField.error = nil
+        referralField.touched = false
     }
 
     func isPasswordConfirmValid(value: String) -> Bool {

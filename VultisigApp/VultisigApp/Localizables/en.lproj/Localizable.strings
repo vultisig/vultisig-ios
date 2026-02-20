@@ -1156,6 +1156,12 @@
 "reEnterPassword" = "Re-enter password";
 "addHint" = "Add Hint (Optional)";
 "addReferral" = "Add Referral";
+"referralAdded" = "Referral added";
+"referralCodeTitle" = "Referral code";
+"referralCodeDescription" = "Enter your referral code here.";
+"referralCodeDescriptionHighlight" = "Enjoy 10% off every transaction.";
+"enter4DigitCode" = "Enter 4-digit code";
+"applyReferral" = "Apply referral";
 "cacaoUnstakeMaturityMessage" = "%@ until deposit maturity reached";
 "importVaultSelectionTitle" = "Recover your vault or convert your seedphrase to a vault";
 "importSeedphraseTitle" = "Import seedphrase";

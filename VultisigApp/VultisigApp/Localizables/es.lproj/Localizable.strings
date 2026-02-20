@@ -1375,3 +1375,9 @@
 "iUnderstand" = "Entiendo";
 "replaceExistingVault" = "Reemplazar";
 "duplicateVaultMessage" = "Un almacén llamado \"%@\" ya tiene las mismas claves. Reemplazarlo sobrescribirá sus datos.";
+"referralAdded" = "Referido añadido";
+"referralCodeTitle" = "Código de referido";
+"referralCodeDescription" = "Ingresa tu código de referido aquí.";
+"referralCodeDescriptionHighlight" = "Disfruta un 10% de descuento en cada transacción.";
+"enter4DigitCode" = "Ingresa código de 4 dígitos";
+"applyReferral" = "Aplicar referido";
