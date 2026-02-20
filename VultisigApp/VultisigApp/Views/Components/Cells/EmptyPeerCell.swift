@@ -30,7 +30,7 @@ struct EmptyPeerCell: View {
             text
             Spacer()
 
-            if let index, let totalCount {
+            if let index {
                 badge(index: index, totalCount: totalCount)
             }
         }
@@ -58,8 +58,8 @@ struct EmptyPeerCell: View {
             .frame(width: 32, height: 32)
     }
 
-    private func badge(index: Int, totalCount: Int) -> some View {
-        Text("\(index) of \(totalCount)")
+    private func badge(index: Int, totalCount: Int?) -> some View {
+        Text("\(index) of \(totalCount.map { "\($0)" } ?? "\u{221E}")")
             .font(Theme.fonts.caption12)
             .foregroundStyle(Theme.colors.textSecondary)
             .padding(.horizontal, 16)

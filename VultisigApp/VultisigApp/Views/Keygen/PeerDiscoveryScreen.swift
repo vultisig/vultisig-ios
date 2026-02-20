@@ -84,6 +84,39 @@ struct PeerDiscoveryScreen: View {
         }
     }
 
+    var isFixedDeviceMode: Bool {
+        totalDeviceCount <= 3
+    }
+
+    var badgeTotalCount: Int? {
+        isFixedDeviceMode ? totalDeviceCount : nil
+    }
+
+    var minRequiredDevices: Int { 4 }
+
+    func thresholdForCount(_ count: Int) -> Int {
+        Int(ceil(Double(count) * 2.0 / 3.0))
+    }
+
+    var openEndedButtonTitle: String {
+        let count = viewModel.selections.count
+        if count < minRequiredDevices {
+            let remaining = minRequiredDevices - count
+            return String(format: NSLocalizedString("addAtLeastNMoreDevices", comment: ""), remaining)
+        }
+        let threshold = thresholdForCount(count)
+        return String(format: NSLocalizedString("continueThresholdOfTotal", comment: ""), threshold, count)
+    }
+
+    var isOpenEndedContinueDisabled: Bool {
+        switch viewModel.tssType {
+        case .Migrate:
+            return Set(viewModel.selections) != Set(viewModel.vault.signers)
+        default:
+            return viewModel.selections.count < minRequiredDevices
+        }
+    }
+
     var isInternetMode: Bool {
         viewModel.selectedNetwork == .Internet
     }
@@ -166,6 +199,9 @@ struct PeerDiscoveryScreen: View {
             viewModel.restartParticipantDiscovery()
             qrCodeImage = nil
             setData()
+        }
+        .onChange(of: viewModel.selections) {
+            autoStartKeygenIfReady()
         }
     }
 
@@ -270,14 +306,14 @@ struct PeerDiscoveryScreen: View {
                 id: idiom == .phone ? "iPhone" : "iPad",
                 isThisDevice: true,
                 index: 1,
-                totalCount: totalDeviceCount
+                totalCount: badgeTotalCount
             )
 #else
             PeerCell(
                 id: "Mac",
                 isThisDevice: true,
                 index: 1,
-                totalCount: totalDeviceCount
+                totalCount: badgeTotalCount
             )
 #endif
 
@@ -286,7 +322,7 @@ struct PeerDiscoveryScreen: View {
             if let nextEmptyIndex = nextEmptySlotIndex {
                 EmptyPeerCell(
                     index: nextEmptyIndex,
-                    totalCount: totalDeviceCount
+                    totalCount: badgeTotalCount
                 )
             }
         }
@@ -312,7 +348,7 @@ struct PeerDiscoveryScreen: View {
                     id: peer,
                     isSelected: viewModel.selections.contains(peer),
                     index: offset + 2,
-                    totalCount: totalDeviceCount
+                    totalCount: badgeTotalCount
                 )
             }
         }
@@ -320,26 +356,32 @@ struct PeerDiscoveryScreen: View {
 
     var nextEmptySlotIndex: Int? {
         let filledCount = 1 + participantDiscovery.peersFound.count
-        guard filledCount < totalDeviceCount else { return nil }
-        return filledCount + 1
+        if isFixedDeviceMode {
+            guard filledCount < totalDeviceCount else { return nil }
+            return filledCount + 1
+        } else {
+            return filledCount + 1
+        }
     }
 
     @ViewBuilder
     var bottomButton: some View {
-        let isButtonDisabled = disableContinueButton()
-
-        PrimaryButton(title: isButtonDisabled ? "waitingOnDevices..." : "next") {
-            viewModel.startKeygen()
-        }
-        .padding(.horizontal, 16)
-        .padding(.top, 20)
+        if isFixedDeviceMode {
+            EmptyView()
+        } else {
+            PrimaryButton(title: openEndedButtonTitle) {
+                viewModel.startKeygen()
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 20)
 #if os(iOS)
-        .padding(.bottom, idiom == .phone ? 10 : 30)
+            .padding(.bottom, idiom == .phone ? 10 : 30)
 #else
-        .padding(.bottom, 10)
+            .padding(.bottom, 10)
 #endif
-        .disabled(isButtonDisabled)
-        .animation(.easeInOut(duration: 0.2), value: isButtonDisabled)
+            .disabled(isOpenEndedContinueDisabled)
+            .animation(.easeInOut(duration: 0.2), value: isOpenEndedContinueDisabled)
+        }
     }
 
     var switchLink: some View {
@@ -355,6 +397,15 @@ struct PeerDiscoveryScreen: View {
             tssType: tssType,
             selectedTab: selectedTab
         )
+    }
+
+    func autoStartKeygenIfReady() {
+        guard isFixedDeviceMode,
+              !disableContinueButton(),
+              viewModel.status == .WaitingForDevices else {
+            return
+        }
+        viewModel.startKeygen()
     }
 
     func disableContinueButton() -> Bool {

@@ -1421,3 +1421,5 @@
 "iUnderstand" = "I understand";
 "replaceExistingVault" = "Replace";
 "duplicateVaultMessage" = "A vault named \"%@\" already has the same keys. Replacing it will overwrite its data.";
+"addAtLeastNMoreDevices" = "Add at least %d more devices";
+"continueThresholdOfTotal" = "Continue (%d-of-%d)";
