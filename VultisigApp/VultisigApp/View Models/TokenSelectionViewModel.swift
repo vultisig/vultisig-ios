@@ -98,7 +98,9 @@ struct TokenSelectionLogic {
             coin.toCoinMeta()
         }
 
-        return filteredTokens + tickerTokens
+        let combined = filteredTokens + tickerTokens
+        // Deduplicate by normalized ticker to prevent same token appearing twice
+        return combined.uniqueBy { $0.ticker.lowercased() }
     }
 
     func preExistingTokens(groupedChain: GroupedChain) -> [CoinMeta] {
