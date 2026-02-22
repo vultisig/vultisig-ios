@@ -41,14 +41,12 @@ class DeeplinkViewModel: ObservableObject {
 
     @discardableResult
     func extractParameters(_ url: URL, vaults: [Vault], isInternal: Bool = false) throws -> Bool {
-        print("[DEEPLINK] extractParameters called with URL: \(url.absoluteString)")
         resetFieldsForExtraction()
         isInternalDeeplink = isInternal
         viewID = UUID()
         receivedUrl = url
 
         let result = try logic.extractParameters(url, vaults: vaults)
-        print("[DEEPLINK] Parsed type: \(String(describing: result.type)), vault: \(String(describing: result.selectedVault?.name)), jsonData: \(String(describing: result.jsonData?.prefix(100))), shouldNotify: \(result.shouldNotify)")
         apply(result: result)
 
         if result.shouldNotify {
