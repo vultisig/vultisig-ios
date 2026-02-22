@@ -68,6 +68,11 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         }
     }
 
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(self.rawValue)
+    }
+
     enum MigrationKeys: String, CodingKey {
         case ticker
     }

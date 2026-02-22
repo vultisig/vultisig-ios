@@ -15,20 +15,36 @@ struct SettingsCustomMessageView: View {
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
 
     @State var keysignView: KeysignView?
-    @State var method: String = .empty
-    @State var message: String = .empty
+    @State var method: String
+    @State var message: String
 
     let vault: Vault
     let chain: String
-    var autoSign: Bool = false
-    var callbackUrl: String? = nil
+    var autoSign: Bool
+    var callbackUrl: String?
     private let fastVaultService = FastVaultService.shared
 
-    @State var fastVaultPassword: String = .empty
-    @State var fastPasswordPresented = false
-    @State var isFastVault = false
+    @State private var fastVaultPassword: String = .empty
+    @State private var fastPasswordPresented = false
+    @State private var isFastVault = false
 
     @State private var autoSignPasswordPresented = false
+
+    init(
+        method: String = .empty,
+        message: String = .empty,
+        vault: Vault,
+        chain: String,
+        autoSign: Bool = false,
+        callbackUrl: String? = nil
+    ) {
+        self._method = State(initialValue: method)
+        self._message = State(initialValue: message)
+        self.vault = vault
+        self.chain = chain
+        self.autoSign = autoSign
+        self.callbackUrl = callbackUrl
+    }
 
     var body: some View {
         ZStack {

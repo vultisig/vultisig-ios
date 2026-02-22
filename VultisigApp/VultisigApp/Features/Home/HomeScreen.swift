@@ -493,7 +493,9 @@ extension HomeScreen {
     }
 
     private func handleSignMessageDeeplink() {
-        guard let vault = deeplinkViewModel.selectedVault else {
+        let resolvedVault = deeplinkViewModel.selectedVault ?? appViewModel.selectedVault ?? (vaults.count == 1 ? vaults.first : nil)
+
+        guard let vault = resolvedVault else {
             deeplinkError = DeeplinkError.unrelatedQRCode
             deeplinkViewModel.resetData()
             return
@@ -590,7 +592,13 @@ extension HomeScreen {
         let vaultPubKey = vault.pubKeyECDSA
         deeplinkViewModel.resetData()
 
-        if let finalUrl = URL(string: "\(callbackUrl)?address=\(address)&vault=\(vaultPubKey)") {
+        guard var components = URLComponents(string: callbackUrl) else { return }
+        var queryItems = components.queryItems ?? []
+        queryItems.append(URLQueryItem(name: "address", value: address))
+        queryItems.append(URLQueryItem(name: "vault", value: vaultPubKey))
+        components.queryItems = queryItems
+        
+        if let finalUrl = components.url {
             openURL(finalUrl)
         }
     }

@@ -41,12 +41,18 @@ class DeeplinkViewModel: ObservableObject {
 
     @discardableResult
     func extractParameters(_ url: URL, vaults: [Vault], isInternal: Bool = false) throws -> Bool {
+#if DEBUG
+        print("[DEEPLINK] extractParameters called with URL: \(url.absoluteString)")
+#endif
         resetFieldsForExtraction()
         isInternalDeeplink = isInternal
         viewID = UUID()
         receivedUrl = url
 
         let result = try logic.extractParameters(url, vaults: vaults)
+#if DEBUG
+        print("[DEEPLINK] Parsed type: \(String(describing: result.type)), vault: \(String(describing: result.selectedVault?.name)), jsonData: \(String(describing: result.jsonData?.prefix(100))), shouldNotify: \(result.shouldNotify)")
+#endif
         apply(result: result)
 
         if result.shouldNotify {
@@ -102,6 +108,7 @@ class DeeplinkViewModel: ObservableObject {
         sendAmount = result.sendAmount
         sendMemo = result.sendMemo
         pendingSendDeeplink = result.pendingSendDeeplink
+        pendingConnectDeeplink = result.pendingConnectDeeplink
         dappUrl = result.dappUrl
         callbackUrl = result.callbackUrl
     }
@@ -119,6 +126,7 @@ struct DeeplinkLogic {
         var sendAmount: String?
         var sendMemo: String?
         var pendingSendDeeplink: Bool = false
+        var pendingConnectDeeplink: Bool = false
         var shouldNotify: Bool = false
         var dappUrl: String?
         var callbackUrl: String?
@@ -234,6 +242,7 @@ struct DeeplinkLogic {
     private func processConnectDeeplink(queryItems: [URLQueryItem]?, vaults: [Vault]) -> DeeplinkResult {
         var result = DeeplinkResult()
         result.type = .ConnectDapp
+        result.pendingConnectDeeplink = true
         result.dappUrl = queryItems?.first(where: { $0.name == "dappUrl" })?.value?.removingPercentEncoding
         result.callbackUrl = queryItems?.first(where: { $0.name == "callback" })?.value?.removingPercentEncoding
         result.assetChain = queryItems?.first(where: { $0.name == "chain" })?.value?.removingPercentEncoding
