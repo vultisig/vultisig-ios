@@ -510,6 +510,13 @@ extension HomeScreen {
             deeplinkViewModel.resetData()
             return
         }
+
+        // Validate that the resolved vault actually supports the requested chain
+        guard vault.coins.first(where: { $0.chain.name.caseInsensitiveCompare(chain) == .orderedSame }) != nil else {
+            deeplinkError = DeeplinkError.unrelatedQRCode
+            deeplinkViewModel.resetData()
+            return
+        }
         
         let method = json["method"] as? String ?? "sign_message"
         let callbackUrl = json["callbackUrl"] as? String
@@ -576,8 +583,13 @@ extension HomeScreen {
         deeplinkViewModel.pendingConnectDeeplink = false
         appViewModel.set(selectedVault: vault, restartNavigation: false)
 
-        let chainName = deeplinkViewModel.assetChain ?? "solana"
-        guard let coin = vault.coins.first(where: { $0.chain.name.lowercased() == chainName.lowercased() }) else {
+        guard let chainName = deeplinkViewModel.assetChain else {
+            deeplinkError = DeeplinkError.chainNotAdded(chainName: "")
+            deeplinkViewModel.resetData()
+            return
+        }
+
+        guard let coin = vault.coins.first(where: { $0.chain.name.caseInsensitiveCompare(chainName) == .orderedSame }) else {
             deeplinkError = DeeplinkError.chainNotAdded(chainName: chainName.capitalized)
             deeplinkViewModel.resetData()
             return

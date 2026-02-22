@@ -15,8 +15,9 @@ struct SettingsCustomMessageView: View {
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
 
     @State var keysignView: KeysignView?
-    @State var method: String
-    @State var message: String
+
+    @State private var method: String
+    @State private var message: String
 
     let vault: Vault
     let chain: String
@@ -117,6 +118,14 @@ struct SettingsCustomMessageView: View {
 
     func textField(title: String, text: Binding<String>) -> some View {
         CommonTextField(text: text, placeholder: title)
+    }
+
+    var methodTextField: some View {
+        textField(title: "Signing method", text: $method)
+    }
+
+    var messageTextField: some View {
+        textField(title: "Message to sign", text: $message)
     }
 
     var pair: some View {
