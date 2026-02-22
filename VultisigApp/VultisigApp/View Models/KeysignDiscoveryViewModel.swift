@@ -333,6 +333,9 @@ class KeysignDiscoveryViewModel: ObservableObject {
     private var keysignType: KeyType {
         if let keysignPayload {
             return keysignPayload.coin.chain.signingKeyType
+        } else if let customMessagePayload,
+                  let chain = Chain(name: customMessagePayload.chain) {
+            return chain.signingKeyType
         } else {
             return .ECDSA
         }

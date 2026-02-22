@@ -92,6 +92,10 @@ struct GeneralQRImportMacView: View {
             text = "keysign"
         case .Send:
             text = "scanQRCode"
+        case .ConnectDapp:
+            text = "scanQRCode"
+        case .SignMessage:
+            text = "scanQRCode"
         case .Unknown:
             text = "scanQRCode"
         }
@@ -108,6 +112,10 @@ struct GeneralQRImportMacView: View {
         case .SignTransaction:
             text = "uploadQRCodeImageKeysign"
         case .Send:
+            text = "uploadFileWithQRCode"
+        case .ConnectDapp:
+            text = "uploadFileWithQRCode"
+        case .SignMessage:
             text = "uploadFileWithQRCode"
         case .Unknown:
             text = "uploadFileWithQRCode"

@@ -16,4 +16,5 @@ enum VaultAction: Equatable, Hashable {
     case swap(fromCoin: Coin)
     case function(coin: Coin?)
     case buy(address: String, blockChainCode: String, coinType: String)
+    case signMessage(method: String, message: String, chain: String, autoSign: Bool, callbackUrl: String?)
 }

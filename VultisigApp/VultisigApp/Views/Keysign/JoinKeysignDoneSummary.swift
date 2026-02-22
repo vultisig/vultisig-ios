@@ -136,6 +136,30 @@ struct JoinKeysignDoneSummary: View {
     }
 
     private func onDoneButtonPressed() {
+        // If the dApp provided a callbackUrl, redirect back with the signature
+        if let callbackUrl = viewModel.customMessagePayload?.callbackUrl,
+           !callbackUrl.isEmpty {
+            let signature = viewModel.customMessageSignature()
+            let message = viewModel.customMessagePayload?.message ?? ""
+
+            // Derive the chain-specific wallet address from the vault's coins
+            let chainName = viewModel.customMessagePayload?.chain ?? ""
+            let address = vault.coins.first(where: {
+                $0.chain.name.caseInsensitiveCompare(chainName) == .orderedSame
+            })?.address ?? ""
+
+            var components = URLComponents(string: callbackUrl)
+            var queryItems = components?.queryItems ?? []
+            queryItems.append(URLQueryItem(name: "signature", value: signature))
+            queryItems.append(URLQueryItem(name: "address", value: address))
+            queryItems.append(URLQueryItem(name: "message", value: message))
+            components?.queryItems = queryItems
+
+            if let url = components?.url {
+                openURL(url)
+            }
+        }
+
         appViewModel.restart()
     }
 

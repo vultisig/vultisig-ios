@@ -15,6 +15,10 @@ struct CustomMessagePayload: Codable, Hashable {
     let vaultLocalPartyID: String
     let chain: String
 
+    /// URL where Vultisig redirects after signing, with signature as query params.
+    /// Any dApp can provide this to receive the signature back.
+    var callbackUrl: String? = nil
+
     /// Decoded human-readable version of the message (populated asynchronously)
     var decodedMessage: String? = nil
 

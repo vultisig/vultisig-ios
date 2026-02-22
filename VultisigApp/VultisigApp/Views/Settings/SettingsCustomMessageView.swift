@@ -15,15 +15,36 @@ struct SettingsCustomMessageView: View {
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
 
     @State var keysignView: KeysignView?
-    @State var method: String = .empty
-    @State var message: String = .empty
-
-    @State var fastVaultPassword: String = .empty
-    @State var fastPasswordPresented = false
-    @State var isFastVault = false
+    @State var method: String
+    @State var message: String
 
     let vault: Vault
+    let chain: String
+    var autoSign: Bool
+    var callbackUrl: String?
     private let fastVaultService = FastVaultService.shared
+
+    @State private var fastVaultPassword: String = .empty
+    @State private var fastPasswordPresented = false
+    @State private var isFastVault = false
+
+    @State private var autoSignPasswordPresented = false
+
+    init(
+        method: String = .empty,
+        message: String = .empty,
+        vault: Vault,
+        chain: String,
+        autoSign: Bool = false,
+        callbackUrl: String? = nil
+    ) {
+        self._method = State(initialValue: method)
+        self._message = State(initialValue: message)
+        self.vault = vault
+        self.chain = chain
+        self.autoSign = autoSign
+        self.callbackUrl = callbackUrl
+    }
 
     var body: some View {
         ZStack {
@@ -31,6 +52,15 @@ struct SettingsCustomMessageView: View {
             main
         }
         .onLoad(perform: onLoad)
+        .crossPlatformSheet(isPresented: $autoSignPasswordPresented) {
+            FastVaultEnterPasswordView(
+                password: $fastVaultPassword,
+                vault: vault,
+                onSubmit: {
+                    onSignPress()
+                }
+            )
+        }
     }
 
     var view: some View {
@@ -143,7 +173,8 @@ struct SettingsCustomMessageView: View {
                                     message: message,
                                     vaultPublicKeyECDSA: vault.pubKeyECDSA,
                                     vaultLocalPartyID: vault.localPartyID,
-                                    chain: Chain.ethereum.name,
+                                    chain: chain,
+                                    callbackUrl: callbackUrl,
                                     decodedMessage: nil)
     }
 
@@ -181,6 +212,13 @@ struct SettingsCustomMessageView: View {
     func onLoad() {
         Task { @MainActor in
             isFastVault = await fastVaultService.isEligibleForFastSign(vault: vault)
+            if autoSign && !method.isEmpty && !message.isEmpty {
+                if isFastVault {
+                    autoSignPasswordPresented = true
+                } else {
+                    viewModel.moveToNextView()
+                }
+            }
         }
     }
 
