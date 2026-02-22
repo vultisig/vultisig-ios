@@ -18,12 +18,17 @@ struct SettingsCustomMessageView: View {
     @State var method: String = .empty
     @State var message: String = .empty
 
+    let vault: Vault
+    let chain: String
+    var autoSign: Bool = false
+    var callbackUrl: String? = nil
+    private let fastVaultService = FastVaultService.shared
+
     @State var fastVaultPassword: String = .empty
     @State var fastPasswordPresented = false
     @State var isFastVault = false
 
-    let vault: Vault
-    private let fastVaultService = FastVaultService.shared
+    @State private var autoSignPasswordPresented = false
 
     var body: some View {
         ZStack {
@@ -31,6 +36,15 @@ struct SettingsCustomMessageView: View {
             main
         }
         .onLoad(perform: onLoad)
+        .crossPlatformSheet(isPresented: $autoSignPasswordPresented) {
+            FastVaultEnterPasswordView(
+                password: $fastVaultPassword,
+                vault: vault,
+                onSubmit: {
+                    onSignPress()
+                }
+            )
+        }
     }
 
     var view: some View {
@@ -143,7 +157,8 @@ struct SettingsCustomMessageView: View {
                                     message: message,
                                     vaultPublicKeyECDSA: vault.pubKeyECDSA,
                                     vaultLocalPartyID: vault.localPartyID,
-                                    chain: Chain.ethereum.name,
+                                    chain: chain,
+                                    callbackUrl: callbackUrl,
                                     decodedMessage: nil)
     }
 
@@ -181,6 +196,13 @@ struct SettingsCustomMessageView: View {
     func onLoad() {
         Task { @MainActor in
             isFastVault = await fastVaultService.isEligibleForFastSign(vault: vault)
+            if autoSign && !method.isEmpty && !message.isEmpty {
+                if isFastVault {
+                    autoSignPasswordPresented = true
+                } else {
+                    viewModel.moveToNextView()
+                }
+            }
         }
     }
 

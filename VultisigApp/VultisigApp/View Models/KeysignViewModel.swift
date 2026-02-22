@@ -667,12 +667,31 @@ class KeysignViewModel: ObservableObject {
     }
 
     func customMessageSignature() -> String {
-        // currently keysign for custom message is using ETH , and the signature should be get signature with recoveryid
-        switch signatures.first?.value.getSignatureWithRecoveryID() {
-        case .success(let sig):
-            return sig.hexString
-        case .none, .failure:
-            return .empty
+        guard let sig = signatures.first?.value else { return .empty }
+
+        // Determine key type from chain — EdDSA for Solana/Polkadot/etc, ECDSA for EVM
+        let isEdDSA: Bool
+        if let chainName = customMessagePayload?.chain,
+           let chain = Chain(name: chainName) {
+            isEdDSA = chain.signingKeyType == .EdDSA
+        } else {
+            isEdDSA = false
+        }
+
+        if isEdDSA {
+            switch sig.getSignature() {
+            case .success(let data):
+                return data.hexString
+            case .failure:
+                return .empty
+            }
+        } else {
+            switch sig.getSignatureWithRecoveryID() {
+            case .success(let data):
+                return data.hexString
+            case .failure:
+                return .empty
+            }
         }
     }
 

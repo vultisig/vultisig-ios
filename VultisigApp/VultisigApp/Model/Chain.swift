@@ -47,6 +47,27 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case hyperliquid
     case sei
 
+    /// Maps removed chain raw values to their replacement chain.
+    /// This prevents SwiftData from crashing when decoding legacy persisted data.
+    private static let removedChainMigrations: [String: Chain] = [
+        "thorChainStagenet2": .thorChainStagenet,
+    ]
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let rawValue = try container.decode(String.self)
+        if let chain = Chain(rawValue: rawValue) {
+            self = chain
+        } else if let migrated = Chain.removedChainMigrations[rawValue] {
+            self = migrated
+        } else {
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "Cannot initialize Chain from invalid String value \(rawValue)"
+            )
+        }
+    }
+
     enum MigrationKeys: String, CodingKey {
         case ticker
     }

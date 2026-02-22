@@ -11,6 +11,8 @@ enum DeeplinkFlowType {
     case NewVault
     case SignTransaction
     case Send
+    case ConnectDapp
+    case SignMessage
     case Unknown
 }
 
@@ -30,18 +32,23 @@ class DeeplinkViewModel: ObservableObject {
     @Published var sendAmount: String? = nil
     @Published var sendMemo: String? = nil
     @Published var pendingSendDeeplink: Bool = false
+    @Published var pendingConnectDeeplink: Bool = false
     @Published var isInternalDeeplink: Bool = false
+    @Published var dappUrl: String? = nil
+    @Published var callbackUrl: String? = nil
 
     private let logic = DeeplinkLogic()
 
     @discardableResult
     func extractParameters(_ url: URL, vaults: [Vault], isInternal: Bool = false) throws -> Bool {
+        print("[DEEPLINK] extractParameters called with URL: \(url.absoluteString)")
         resetFieldsForExtraction()
         isInternalDeeplink = isInternal
         viewID = UUID()
         receivedUrl = url
 
         let result = try logic.extractParameters(url, vaults: vaults)
+        print("[DEEPLINK] Parsed type: \(String(describing: result.type)), vault: \(String(describing: result.selectedVault?.name)), jsonData: \(String(describing: result.jsonData?.prefix(100))), shouldNotify: \(result.shouldNotify)")
         apply(result: result)
 
         if result.shouldNotify {
@@ -81,6 +88,9 @@ class DeeplinkViewModel: ObservableObject {
         sendAmount = nil
         sendMemo = nil
         pendingSendDeeplink = false
+        pendingConnectDeeplink = false
+        dappUrl = nil
+        callbackUrl = nil
     }
 
     private func apply(result: DeeplinkLogic.DeeplinkResult) {
@@ -94,6 +104,8 @@ class DeeplinkViewModel: ObservableObject {
         sendAmount = result.sendAmount
         sendMemo = result.sendMemo
         pendingSendDeeplink = result.pendingSendDeeplink
+        dappUrl = result.dappUrl
+        callbackUrl = result.callbackUrl
     }
 }
 
@@ -110,6 +122,8 @@ struct DeeplinkLogic {
         var sendMemo: String?
         var pendingSendDeeplink: Bool = false
         var shouldNotify: Bool = false
+        var dappUrl: String?
+        var callbackUrl: String?
     }
 
     func extractParameters(_ url: URL, vaults: [Vault]) throws -> DeeplinkResult {
@@ -130,8 +144,17 @@ struct DeeplinkLogic {
             urlString.contains("://send") ||
             urlString.hasPrefix("vultisig://send")
 
+        let isConnectPath = path.contains("connect") ||
+            pathComponents.contains("connect") ||
+            host == "connect" ||
+            host.contains("connect") ||
+            urlString.contains("://connect") ||
+            urlString.hasPrefix("vultisig://connect")
+
         if isSendPath {
             return processSendDeeplink(queryItems: queryItems, vaults: vaults)
+        } else if isConnectPath {
+            return processConnectDeeplink(queryItems: queryItems, vaults: vaults)
         } else if queryItems == nil {
             return buildAddressOnlyResult(url: url)
         } else {
@@ -210,6 +233,16 @@ struct DeeplinkLogic {
         return result
     }
 
+    private func processConnectDeeplink(queryItems: [URLQueryItem]?, vaults: [Vault]) -> DeeplinkResult {
+        var result = DeeplinkResult()
+        result.type = .ConnectDapp
+        result.dappUrl = queryItems?.first(where: { $0.name == "dappUrl" })?.value?.removingPercentEncoding
+        result.callbackUrl = queryItems?.first(where: { $0.name == "callback" })?.value?.removingPercentEncoding
+        result.assetChain = queryItems?.first(where: { $0.name == "chain" })?.value?.removingPercentEncoding
+        result.shouldNotify = true
+        return result
+    }
+
     private func processKeygenOrKeysignDeeplink(queryItems: [URLQueryItem]?, vaults: [Vault]) throws -> DeeplinkResult {
         var result = DeeplinkResult()
 
@@ -238,6 +271,8 @@ struct DeeplinkLogic {
             return .NewVault
         case "SignTransaction":
             return .SignTransaction
+        case "SignMessage":
+            return .SignMessage
         case "Send":
             return .Send
         default:
