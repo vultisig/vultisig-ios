@@ -1375,3 +1375,11 @@
 "iUnderstand" = "Razumijem";
 "replaceExistingVault" = "Zamijeni";
 "duplicateVaultMessage" = "Spremište pod nazivom \"%@\" već ima iste ključeve. Zamjenom će se prebrisati njegovi podatci.";
+
+"scannerModeCamera" = "Kamera";
+"scannerModeScreen" = "Zaslon";
+"scanningScreenForQR" = "Skeniranje zaslona u potrazi za QR kodovima...";
+"scanningScreenHint" = "Prikažite QR kod bilo gdje na zaslonu i automatski će biti prepoznat.";
+"screenRecordingPermissionDenied" = "Potrebna je dozvola za snimanje zaslona kako bi se mogli skenirati QR kodovi s vašeg zaslona.";
+"openSystemSettings" = "Otvori Postavke sustava";
+"initializingScreenCapture" = "Pokretanje snimanja zaslona";
