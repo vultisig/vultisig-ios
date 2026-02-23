@@ -51,37 +51,37 @@ struct MacOSToolbarView<Content: View>: View {
     }
 
     private var toolbarContent: some View {
-        HStack(alignment: .center) {
-            // Leading items with automatic back button
-            HStack(spacing: 8) {
-                // Automatic back button
-                if showsBackButton {
-                    ToolbarButton(image: "chevron-right", action: {
-                        dismiss()
-                    })
+        ZStack {
+            HStack(alignment: .center) {
+                // Leading items with automatic back button
+                HStack(spacing: 8) {
+                    // Automatic back button
+                    if showsBackButton {
+                        ToolbarButton(image: "chevron-right", action: {
+                            dismiss()
+                        })
                         .rotationEffect(.radians(.pi))
+                    }
+                    
+                    // Custom leading items
+                    ForEach(Array(leadingItems.enumerated()), id: \.offset) { _, item in
+                        item.content
+                    }
                 }
-
-                // Custom leading items
-                ForEach(Array(leadingItems.enumerated()), id: \.offset) { _, item in
+                
+                Spacer()
+                
+                // Trailing items
+                ForEach(Array(trailingItems.enumerated()), id: \.offset) { _, item in
                     item.content
                 }
             }
-
-            Spacer()
-
+            
             // Navigation title in the center
             if let navigationTitle {
                 Text(navigationTitle)
                     .foregroundColor(Theme.colors.textPrimary)
                     .font(Theme.fonts.bodyLMedium)
-            }
-
-            Spacer()
-
-            // Trailing items
-            ForEach(Array(trailingItems.enumerated()), id: \.offset) { _, item in
-                item.content
             }
         }
         .frame(height: 60)

@@ -56,7 +56,6 @@ struct ContentView: View {
         .colorScheme(.dark)
         .accentColor(.white)
         .sheetPresentedStyle()
-        .background(Theme.colors.bgPrimary)
         .onOpenURL { incomingURL in
             handleDeeplink(incomingURL)
         }
