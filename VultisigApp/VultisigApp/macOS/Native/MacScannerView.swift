@@ -90,11 +90,6 @@ struct MacScannerView: View {
                 guard let newValue = newValue, !newValue.isEmpty else { return }
                 screenCaptureService.stopCapture()
                 cameraViewModel.detectedQRCode = newValue
-                cameraViewModel.handleScan(
-                    vaults: vaults,
-                    deeplinkViewModel: deeplinkViewModel,
-                    error: $deeplinkError
-                )
             }
     }
     

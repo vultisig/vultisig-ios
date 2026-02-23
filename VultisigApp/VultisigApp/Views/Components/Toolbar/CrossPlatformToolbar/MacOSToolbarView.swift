@@ -51,38 +51,38 @@ struct MacOSToolbarView<Content: View>: View {
     }
 
     private var toolbarContent: some View {
-        ZStack {
-            HStack(alignment: .center) {
-                // Leading items with automatic back button
-                HStack(spacing: 8) {
-                    // Automatic back button
-                    if showsBackButton {
-                        ToolbarButton(image: "chevron-right", action: {
-                            dismiss()
-                        })
-                        .rotationEffect(.radians(.pi))
-                    }
-                    
-                    // Custom leading items
-                    ForEach(Array(leadingItems.enumerated()), id: \.offset) { _, item in
-                        item.content
-                    }
+        HStack(spacing: 0) {
+            // Leading
+            HStack(spacing: 8) {
+                if showsBackButton {
+                    ToolbarButton(image: "chevron-right", action: {
+                        dismiss()
+                    })
+                    .rotationEffect(.radians(.pi))
                 }
-                
-                Spacer()
-                
-                // Trailing items
+
+                ForEach(Array(leadingItems.enumerated()), id: \.offset) { _, item in
+                    item.content
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            // Title
+            if let navigationTitle {
+                Text(navigationTitle)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .font(Theme.fonts.bodyLMedium)
+                    .lineLimit(1)
+                    .layoutPriority(1)
+            }
+
+            // Trailing
+            HStack(spacing: 8) {
                 ForEach(Array(trailingItems.enumerated()), id: \.offset) { _, item in
                     item.content
                 }
             }
-            
-            // Navigation title in the center
-            if let navigationTitle {
-                Text(navigationTitle)
-                    .foregroundColor(Theme.colors.textPrimary)
-                    .font(Theme.fonts.bodyLMedium)
-            }
+            .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .frame(height: 60)
         .padding(.horizontal, 16)

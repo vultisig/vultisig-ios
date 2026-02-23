@@ -5343,6 +5343,7 @@
 				A6386DA22C90235600DDD58E /* Components */,
 				A69FBBCC2C8BB86300A4B78B /* Native */,
 				A6ECA1AA2C9410DA00456110 /* View Model */,
+				CA5D2C06B4B37316FBB2E449 /* Services */,
 				A6505AD52CA66BE40002FBF4 /* Utils */,
 				A6505AE12CA6707B0002FBF4 /* Extension */,
 				5CE33B88DCDFF12E426896B3 /* Model */,
@@ -5988,9 +5989,24 @@
 				A6ECA1AB2C9410EA00456110 /* ShareSheetViewModel+macOS.swift */,
 				A6ECA1AF2C9411E200456110 /* EncryptedBackupViewModel+macOS.swift */,
 				A6ECA1B32C94129D00456110 /* VaultDetailQRCodeViewModel+macOS.swift */,
-				CA5D2C05B4B37315FBB2E448 /* MacScreenCaptureService.swift */,
 			);
 			path = "View Model";
+			sourceTree = "<group>";
+		};
+		CA5D2C06B4B37316FBB2E449 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				CA5D2C07B4B37317FBB2E44A /* MacScreenCapture */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		CA5D2C07B4B37317FBB2E44A /* MacScreenCapture */ = {
+			isa = PBXGroup;
+			children = (
+				CA5D2C05B4B37315FBB2E448 /* MacScreenCaptureService.swift */,
+			);
+			path = MacScreenCapture;
 			sourceTree = "<group>";
 		};
 		A6F7B6702D42BDB700AC8104 /* Animations */ = {

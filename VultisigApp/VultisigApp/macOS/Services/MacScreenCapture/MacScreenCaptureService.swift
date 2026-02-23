@@ -32,6 +32,7 @@ class MacScreenCaptureService: ObservableObject {
 
     func startCapture() async {
         detectedQRCode = nil
+        isPermissionDenied = false
 
         do {
             let content = try await SCShareableContent.current
