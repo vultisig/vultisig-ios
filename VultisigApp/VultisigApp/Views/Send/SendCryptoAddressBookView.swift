@@ -25,12 +25,13 @@ struct SendCryptoAddressBookView: View {
     }
 
     var body: some View {
-        Screen(title: "addressBook".localized) {
+        Screen {
             VStack(spacing: 12) {
                 listSelector
                 list
             }
         }
+        .screenTitle("addressBook".localized)
         .presentationDetents([.medium, .large])
         .applySheetSize()
     }

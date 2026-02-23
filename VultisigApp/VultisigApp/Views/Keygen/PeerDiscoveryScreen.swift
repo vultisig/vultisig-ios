@@ -90,13 +90,12 @@ struct PeerDiscoveryScreen: View {
 
     var body: some View {
         GeometryReader { proxy in
-            Screen(
-                showNavigationBar: false,
-                edgeInsets: ScreenEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0),
-                backgroundType: .gradient
-            ) {
+            Screen {
                 states
             }
+            .screenNavigationBarHidden()
+            .screenEdgeInsets(ScreenEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+            .screenBackground(.gradient)
             .onAppear {
                 screenWidth = proxy.size.width
                 screenHeight = proxy.size.height

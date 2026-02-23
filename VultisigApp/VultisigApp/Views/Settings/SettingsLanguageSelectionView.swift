@@ -13,7 +13,7 @@ struct SettingsLanguageSelectionView: View {
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
-        Screen(title: "language".localized, edgeInsets: ScreenEdgeInsets(bottom: 0)) {
+        Screen {
             ScrollView(showsIndicators: false) {
                 SettingsSectionContainerView {
                     VStack(spacing: .zero) {
@@ -33,6 +33,8 @@ struct SettingsLanguageSelectionView: View {
                 }
             }
         }
+        .screenTitle("language".localized)
+        .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
         .alert(isPresented: $showAlert) {
             Alert(
                 title: Text(NSLocalizedString("languageChangeTitle", comment: "Language Changed")),

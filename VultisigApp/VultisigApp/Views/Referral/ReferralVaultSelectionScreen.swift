@@ -15,7 +15,7 @@ struct ReferralVaultSelectionScreen: View {
     @ObservedObject var viewModel: VaultSelectedViewModel
 
     var body: some View {
-        Screen(title: "referral".localized) {
+        Screen {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 14) {
                     Text("vaults".localized)
@@ -39,6 +39,7 @@ struct ReferralVaultSelectionScreen: View {
                 }
             }
         }
+        .screenTitle("referral".localized)
     }
 
     func vaultRow(vault: Vault) -> some View {

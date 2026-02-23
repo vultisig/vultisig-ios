@@ -14,7 +14,7 @@ struct VaultAdvancedSettingsScreen: View {
     @Environment(\.router) var router
 
     var body: some View {
-        Screen(title: "advanced".localized) {
+        Screen {
             ScrollView(showsIndicators: false) {
                 SettingsSectionContainerView {
                     VStack(spacing: 0) {
@@ -25,6 +25,7 @@ struct VaultAdvancedSettingsScreen: View {
                 }
             }
         }
+        .screenTitle("advanced".localized)
     }
 
     @ViewBuilder

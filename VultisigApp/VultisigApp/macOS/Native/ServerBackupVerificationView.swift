@@ -38,7 +38,7 @@ struct ServerBackupVerificationScreen: View {
     // MARK: - Body
 
     var body: some View {
-        Screen(showNavigationBar: false) {
+        Screen {
             VStack(spacing: 32) {
                 VaultSetupStepIcon(state: .active, icon: "email-circle")
                     .padding(.top, 56)
@@ -61,6 +61,7 @@ struct ServerBackupVerificationScreen: View {
                     .animation(.easeInOut, value: isLoading)
             }
         }
+        .screenNavigationBarHidden()
         .applySheetSize()
         .sheetStyle()
         .onAppear {

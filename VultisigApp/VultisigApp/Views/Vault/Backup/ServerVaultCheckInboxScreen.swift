@@ -16,7 +16,7 @@ struct ServerVaultCheckInboxScreen: View {
     @State var presentEmailDialog = false
 
     var body: some View {
-        Screen(title: "serverBackup".localized) {
+        Screen {
             VStack {
                 Spacer()
                 VStack(spacing: 40) {
@@ -57,6 +57,7 @@ struct ServerVaultCheckInboxScreen: View {
                 }
             }
         }
+        .screenTitle("serverBackup".localized)
         .sheetStyle()
         .applySheetSize()
         .confirmationDialog("chooseEmailApp".localized, isPresented: $presentEmailDialog) {

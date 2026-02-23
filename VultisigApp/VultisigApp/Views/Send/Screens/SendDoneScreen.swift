@@ -15,7 +15,7 @@ struct SendDoneScreen: View {
     let keysignPayload: KeysignPayload?
 
     var body: some View {
-        Screen(title: "done".localized) {
+        Screen {
             SendCryptoDoneView(
                 vault: vault,
                 hash: hash,
@@ -27,6 +27,7 @@ struct SendDoneScreen: View {
                 keysignPayload: keysignPayload
             )
         }
+        .screenTitle("done".localized)
         .navigationBarBackButtonHidden(true)
     }
 }

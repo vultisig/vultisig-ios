@@ -65,7 +65,7 @@ struct SettingsMainScreen: View {
     ]
 
     var body: some View {
-        Screen(showNavigationBar: false, edgeInsets: ScreenEdgeInsets(bottom: 0)) {
+        Screen {
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 14) {
                     ForEach(groups) { group in
@@ -76,7 +76,9 @@ struct SettingsMainScreen: View {
                 }
             }
         }
-        .crossPlatformToolbar("settings".localized) {
+        .screenTitle("settings".localized)
+        .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
+        .screenToolbar {
             CustomToolbarItem(placement: .trailing) {
                 ToolbarButton(image: "qr-code") {
                     router.navigate(to: SettingsRoute.vaultDetailQRCode(vault: vault))

@@ -32,7 +32,7 @@ struct VaultBackupPasswordScreen: View {
             backupType: backupType,
             isNewVault: isNewVault
         ) {
-            Screen(title: "backup".localized) {
+            Screen {
                 VStack {
                     passwordField
                     Spacer()
@@ -42,6 +42,7 @@ struct VaultBackupPasswordScreen: View {
                     }
                 }
             }
+            .screenTitle("backup".localized)
         }
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {

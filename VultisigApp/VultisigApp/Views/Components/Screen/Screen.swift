@@ -8,24 +8,17 @@
 import SwiftUI
 
 struct Screen<Content: View>: View {
-    let title: String
-    let edgeInsets: ScreenEdgeInsets
-    let showNavigationBar: Bool
-    let backgroundType: BackgroundType
+    @Environment(\.screenTitle) private var title
+    @Environment(\.screenEdgeInsets) private var edgeInsets
+    @Environment(\.screenBackgroundType) private var backgroundType
+    @Environment(\.screenNavigationBarHidden) private var navigationBarHidden
+    @Environment(\.screenBackButtonHidden) private var backButtonHidden
+    @Environment(\.screenIgnoresTopEdge) private var ignoresTopEdge
+    @Environment(\.screenToolbarItems) private var toolbarItems
 
     let content: () -> Content
 
-    init(
-        title: String = "",
-        showNavigationBar: Bool = true,
-        edgeInsets: ScreenEdgeInsets = .noInsets,
-        backgroundType: BackgroundType = .plain,
-        @ViewBuilder content: @escaping () -> Content
-    ) {
-        self.title = title
-        self.showNavigationBar = showNavigationBar
-        self.edgeInsets = edgeInsets
-        self.backgroundType = backgroundType
+    init(@ViewBuilder content: @escaping () -> Content) {
         self.content = content
     }
 
@@ -37,19 +30,29 @@ struct Screen<Content: View>: View {
 
     @ViewBuilder
     var container: some View {
-#if os(macOS)
-        VStack {
+        if navigationBarHidden {
             contentContainer
-                .if(showNavigationBar) {
-                    $0.crossPlatformToolbar(title)
-                }
-        }
-#else
-        contentContainer
-            .if(showNavigationBar) {
-                $0.crossPlatformToolbar(title)
+        } else {
+#if os(macOS)
+            VStack {
+                contentContainer
+                    .crossPlatformToolbar(
+                        title,
+                        ignoresTopEdge: ignoresTopEdge,
+                        showsBackButton: !backButtonHidden,
+                        items: toolbarItems
+                    )
             }
+#else
+            contentContainer
+                .crossPlatformToolbar(
+                    title,
+                    ignoresTopEdge: ignoresTopEdge,
+                    showsBackButton: !backButtonHidden,
+                    items: toolbarItems
+                )
 #endif
+        }
     }
 
     var contentContainer: some View {
@@ -80,12 +83,6 @@ struct Screen<Content: View>: View {
         case .clear:
             Color.clear
         }
-    }
-
-    enum BackgroundType {
-        case plain
-        case gradient
-        case clear
     }
 }
 

@@ -12,9 +12,10 @@ extension SendDetailsScreen {
     private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 
     var container: some View {
-        Screen(title: "send".localized) {
+        Screen {
             content
         }
+        .screenTitle("send".localized)
     }
 
     var view: some View {

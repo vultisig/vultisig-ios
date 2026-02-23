@@ -380,7 +380,7 @@ struct SwapCryptoDoneView: View {
 }
 
 #Preview {
-    Screen(backgroundType: .gradient) {
+    Screen {
         SwapCryptoDoneView(
             tx: SwapTransaction(),
             vault: Vault.example,
@@ -395,4 +395,5 @@ struct SwapCryptoDoneView: View {
         .environmentObject(SettingsViewModel())
         .environmentObject(AppViewModel())
     }
+    .screenBackground(.gradient)
 }

@@ -14,7 +14,7 @@ struct PreferredAssetSelectionView: View {
     @StateObject var viewModel = PreferredAssetSelectionViewModel()
 
     var body: some View {
-        Screen(showNavigationBar: false) {
+        Screen {
             VStack(spacing: 8) {
                 SearchTextField(value: $viewModel.searchText)
                 ScrollView {
@@ -29,15 +29,17 @@ struct PreferredAssetSelectionView: View {
                 .cornerRadius(12)
             }
         }
-        .applySheetSize()
-        .sheetStyle()
-        .crossPlatformToolbar("selectAsset".localized, showsBackButton: false) {
+        .screenTitle("selectAsset".localized)
+        .screenBackButtonHidden()
+        .screenToolbar {
             CustomToolbarItem(placement: .leading) {
                 ToolbarButton(image: "x") {
                     isPresented.toggle()
                 }
             }
         }
+        .applySheetSize()
+        .sheetStyle()
         .onDisappear { viewModel.searchText = "" }
         .onLoad {
             Task {

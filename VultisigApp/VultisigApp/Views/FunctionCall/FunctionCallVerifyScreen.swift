@@ -22,7 +22,7 @@ struct FunctionCallVerifyScreen: View {
     @State private var error: HelperError?
 
     var body: some View {
-        Screen(title: "verify".localized) {
+        Screen {
             VStack(spacing: 0) {
                 if isForReferral {
                     ReferralSendOverviewView(sendTx: tx)
@@ -36,6 +36,7 @@ struct FunctionCallVerifyScreen: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .blur(radius: depositVerifyViewModel.isLoading ? 1 : 0)
         }
+        .screenTitle("verify".localized)
         .onDisappear {
             depositVerifyViewModel.isLoading = false
             // Clear password if navigating back (not forward to keysign)

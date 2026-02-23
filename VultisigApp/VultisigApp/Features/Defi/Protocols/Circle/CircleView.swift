@@ -21,11 +21,7 @@ struct CircleView: View {
     }
 
     var content: some View {
-        Screen(
-            title: NSLocalizedString("circleTitle", comment: "Circle"),
-            showNavigationBar: true,
-            backgroundType: .plain
-        ) {
+        Screen {
             if !hasCheckedBackend {
                 // Show loading while checking backend
                 ProgressView()
@@ -63,6 +59,7 @@ struct CircleView: View {
                 }
             }
         }
+        .screenTitle(NSLocalizedString("circleTitle", comment: "Circle"))
         .onAppear {
             Task { await checkExistingWallet() }
         }
