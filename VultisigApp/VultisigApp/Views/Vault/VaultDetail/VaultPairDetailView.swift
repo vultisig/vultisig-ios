@@ -19,7 +19,7 @@ struct VaultPairDetailView: View {
     @Environment(\.displayScale) var displayScale
 
     var body: some View {
-        Screen(title: "vaultDetailsTitle".localized) {
+        Screen {
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 24) {
                     VaultPairDetailCard(
@@ -30,7 +30,9 @@ struct VaultPairDetailView: View {
                     )
                 }
             }
-        } toolbarItems: {
+        }
+        .screenTitle("vaultDetailsTitle".localized)
+        .screenToolbar {
             CustomToolbarItem(placement: .trailing) {
                 if let renderedImage = viewModel.renderedImage {
                     CrossPlatformShareButton(image: renderedImage, caption: imageName) { onShare in

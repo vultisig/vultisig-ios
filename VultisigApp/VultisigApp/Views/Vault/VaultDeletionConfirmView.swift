@@ -28,7 +28,7 @@ struct VaultDeletionConfirmView: View {
     }
 
     var body: some View {
-        Screen(title: "deleteVaultTitle".localized) {
+        Screen {
             VStack {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 14) {
@@ -41,6 +41,7 @@ struct VaultDeletionConfirmView: View {
             }
             .background(backgroundView)
         }
+        .screenTitle("deleteVaultTitle".localized)
     }
 
     var header: some View {

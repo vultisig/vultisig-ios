@@ -28,16 +28,13 @@ struct CircleDepositView: View {
     }
 
     var content: some View {
-        Screen(
-            title: NSLocalizedString("circleDepositTitle", comment: "Deposit to Circle Account"),
-            showNavigationBar: true,
-            backgroundType: .plain
-        ) {
+        Screen {
             VStack(spacing: 0) {
                 scrollableContent
                 footerView
             }
         }
+        .screenTitle(NSLocalizedString("circleDepositTitle", comment: "Deposit to Circle Account"))
         .withLoading(isLoading: $isLoading)
         .task {
             await loadData()

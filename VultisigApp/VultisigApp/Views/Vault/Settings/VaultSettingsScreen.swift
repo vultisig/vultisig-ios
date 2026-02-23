@@ -29,7 +29,7 @@ struct VaultSettingsScreen: View {
     }
 
     var body: some View {
-        Screen(title: "vaultSettings".localized) {
+        Screen {
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 14) {
                     SettingsSectionView(title: "vaultManagement".localized) {
@@ -62,6 +62,7 @@ struct VaultSettingsScreen: View {
                 }
             }
         }
+        .screenTitle("vaultSettings".localized)
         .onLoad(perform: onLoad)
         .crossPlatformSheet(isPresented: $showUpgradeYourVaultSheet) {
             UpgradeYourVaultView(

@@ -10,9 +10,10 @@ import SwiftUI
 
 extension SendDetailsScreen {
     var container: some View {
-        Screen(title: "send".localized) {
+        Screen {
             content
         }
+        .screenTitle("send".localized)
     }
 
     var view: some View {

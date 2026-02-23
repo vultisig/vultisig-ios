@@ -20,7 +20,7 @@ struct RenameVaultView: View {
     @Environment(\.router) var router
 
     var body: some View {
-        Screen(title: "renameVaultTitle".localized) {
+        Screen {
             VStack {
                 CommonTextField(
                     text: $name,
@@ -31,6 +31,7 @@ struct RenameVaultView: View {
                 button
             }
         }
+        .screenTitle("renameVaultTitle".localized)
         .alert(isPresented: $showAlert) {
             Alert(
                 title: Text(NSLocalizedString("error", comment: "")),

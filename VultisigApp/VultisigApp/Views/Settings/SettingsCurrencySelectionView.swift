@@ -21,7 +21,7 @@ struct SettingsCurrencySelectionView: View {
     @State var isLoading = false
 
     var body: some View {
-        Screen(title: "currency".localized, edgeInsets: ScreenEdgeInsets(bottom: 0)) {
+        Screen {
             ScrollView(showsIndicators: false) {
                 SettingsSectionContainerView {
                     VStack(spacing: .zero) {
@@ -40,6 +40,8 @@ struct SettingsCurrencySelectionView: View {
                 }
             }
         }
+        .screenTitle("currency".localized)
+        .screenEdgeInsets(ScreenEdgeInsets(bottom: 0))
         .overlay(isLoading ? Loader() : nil)
         .onLoad(perform: onLoad)
     }
