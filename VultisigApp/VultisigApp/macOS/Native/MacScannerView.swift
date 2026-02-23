@@ -126,7 +126,7 @@ struct MacScannerView: View {
     
     var screenCaptureView: some View {
         ZStack {
-            if screenCaptureService.permissionState == .denied {
+            if screenCaptureService.isPermissionDenied {
                 VStack {
                     Spacer()
                     screenPermissionDeniedView

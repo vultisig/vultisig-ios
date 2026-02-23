@@ -8,12 +8,6 @@ import ScreenCaptureKit
 import CoreImage
 import SwiftUI
 
-enum ScreenCapturePermissionState {
-    case unknown
-    case granted
-    case denied
-}
-
 /// Thread-safe normalized rect (0..1) in screen coordinates (bottom-left origin).
 /// Written by the preview NSView, read by the stream output for cropping QR detection.
 final class ScanRegion: @unchecked Sendable {
@@ -29,8 +23,7 @@ final class ScanRegion: @unchecked Sendable {
 @MainActor
 class MacScreenCaptureService: ObservableObject {
     @Published var detectedQRCode: String?
-    @Published var permissionState: ScreenCapturePermissionState = .unknown
-    @Published var isCapturing = false
+    @Published var isPermissionDenied = false
 
     let scanRegion = ScanRegion()
 
@@ -42,7 +35,6 @@ class MacScreenCaptureService: ObservableObject {
 
         do {
             let content = try await SCShareableContent.current
-            permissionState = .granted
 
             guard let display = content.displays.first else { return }
 
@@ -77,10 +69,9 @@ class MacScreenCaptureService: ObservableObject {
             try await newStream.startCapture()
 
             stream = newStream
-            isCapturing = true
         } catch {
             if (error as NSError).domain == "com.apple.ScreenCaptureKit" {
-                permissionState = .denied
+                isPermissionDenied = true
             }
         }
     }
@@ -93,7 +84,6 @@ class MacScreenCaptureService: ObservableObject {
         }
         self.stream = nil
         self.streamOutput = nil
-        isCapturing = false
     }
 }
 
@@ -101,8 +91,7 @@ private class ScreenCaptureStreamOutput: NSObject, SCStreamOutput {
     private let scanRegion: ScanRegion
     private let onQRCodeDetected: (String) -> Void
     private let ciContext = CIContext()
-    private var lastDetectionTime: Date = .distantPast
-    private let detectionInterval: TimeInterval = 0.5
+    private let qrDetector: CIDetector?
 
     init(
         scanRegion: ScanRegion,
@@ -110,24 +99,24 @@ private class ScreenCaptureStreamOutput: NSObject, SCStreamOutput {
     ) {
         self.scanRegion = scanRegion
         self.onQRCodeDetected = onQRCodeDetected
+        self.qrDetector = CIDetector(
+            ofType: CIDetectorTypeQRCode,
+            context: ciContext,
+            options: [CIDetectorAccuracy: CIDetectorAccuracyHigh]
+        )
         super.init()
     }
 
     func stream(
-        _ stream: SCStream,
+        _: SCStream,
         didOutputSampleBuffer sampleBuffer: CMSampleBuffer,
         of type: SCStreamOutputType
     ) {
         guard type == .screen else { return }
-
-        let now = Date()
-        guard now.timeIntervalSince(lastDetectionTime) >= detectionInterval else { return }
-        lastDetectionTime = now
-
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+
         let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
 
-        // Crop to the visible preview region before QR detection
         let region = scanRegion.normalizedRect
         guard !region.isEmpty else { return }
 
@@ -141,17 +130,8 @@ private class ScreenCaptureStreamOutput: NSObject, SCStreamOutput {
 
         guard !cropRect.isEmpty else { return }
         let croppedImage = ciImage.cropped(to: cropRect)
-        detectQRCode(in: croppedImage)
-    }
 
-    private func detectQRCode(in image: CIImage) {
-        let detector = CIDetector(
-            ofType: CIDetectorTypeQRCode,
-            context: ciContext,
-            options: [CIDetectorAccuracy: CIDetectorAccuracyHigh]
-        )
-
-        guard let features = detector?.features(in: image) as? [CIQRCodeFeature] else { return }
+        guard let features = qrDetector?.features(in: croppedImage) as? [CIQRCodeFeature] else { return }
 
         for feature in features {
             if let qrString = feature.messageString, !qrString.isEmpty {
