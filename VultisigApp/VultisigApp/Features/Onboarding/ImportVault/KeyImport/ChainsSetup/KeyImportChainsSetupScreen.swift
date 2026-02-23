@@ -16,7 +16,7 @@ struct KeyImportChainsSetupScreen: View {
     var body: some View {
         Screen(
             title: viewModel.screenTitle,
-            showNavigationBar: false,
+            ignoresTopEdge: viewModel.state == .activeChains,
             backgroundType: viewModel.state == .activeChains ? .gradient : .plain
         ) {
             Group {
@@ -46,9 +46,9 @@ struct KeyImportChainsSetupScreen: View {
             }
             .transition(.opacity)
             .animation(.interpolatingSpring, value: viewModel.state)
+        } toolbarItems: {
         }
         .withLoading(isLoading: $viewModel.isLoading)
-        .crossPlatformToolbar(viewModel.screenTitle, ignoresTopEdge: viewModel.state == .activeChains)
     }
 
     func onCustomizeChains() {

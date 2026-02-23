@@ -11,7 +11,12 @@ struct Screen<Content: View>: View {
     let title: String
     let edgeInsets: ScreenEdgeInsets
     let showNavigationBar: Bool
+    let showsBackButton: Bool
+    let ignoresTopEdge: Bool
+    let toolbarItems: [CustomToolbarItem]
     let backgroundType: BackgroundType
+
+    private let usesCustomToolbar: Bool
 
     let content: () -> Content
 
@@ -24,6 +29,30 @@ struct Screen<Content: View>: View {
     ) {
         self.title = title
         self.showNavigationBar = showNavigationBar
+        self.showsBackButton = true
+        self.ignoresTopEdge = false
+        self.toolbarItems = []
+        self.usesCustomToolbar = false
+        self.edgeInsets = edgeInsets
+        self.backgroundType = backgroundType
+        self.content = content
+    }
+
+    init(
+        title: String = "",
+        showsBackButton: Bool = true,
+        ignoresTopEdge: Bool = false,
+        edgeInsets: ScreenEdgeInsets = .noInsets,
+        backgroundType: BackgroundType = .plain,
+        @ViewBuilder content: @escaping () -> Content,
+        @CustomToolbarItemsBuilder toolbarItems: () -> [CustomToolbarItem]
+    ) {
+        self.title = title
+        self.showNavigationBar = true
+        self.showsBackButton = showsBackButton
+        self.ignoresTopEdge = ignoresTopEdge
+        self.toolbarItems = toolbarItems()
+        self.usesCustomToolbar = true
         self.edgeInsets = edgeInsets
         self.backgroundType = backgroundType
         self.content = content
@@ -37,19 +66,41 @@ struct Screen<Content: View>: View {
 
     @ViewBuilder
     var container: some View {
+        if usesCustomToolbar {
 #if os(macOS)
-        VStack {
+            VStack {
+                contentContainer
+                    .crossPlatformToolbar(
+                        title,
+                        ignoresTopEdge: ignoresTopEdge,
+                        showsBackButton: showsBackButton,
+                        items: toolbarItems
+                    )
+            }
+#else
+            contentContainer
+                .crossPlatformToolbar(
+                    title,
+                    ignoresTopEdge: ignoresTopEdge,
+                    showsBackButton: showsBackButton,
+                    items: toolbarItems
+                )
+#endif
+        } else {
+#if os(macOS)
+            VStack {
+                contentContainer
+                    .if(showNavigationBar) {
+                        $0.crossPlatformToolbar(title)
+                    }
+            }
+#else
             contentContainer
                 .if(showNavigationBar) {
                     $0.crossPlatformToolbar(title)
                 }
-        }
-#else
-        contentContainer
-            .if(showNavigationBar) {
-                $0.crossPlatformToolbar(title)
-            }
 #endif
+        }
     }
 
     var contentContainer: some View {

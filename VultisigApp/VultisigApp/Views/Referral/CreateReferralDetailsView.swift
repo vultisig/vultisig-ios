@@ -17,13 +17,19 @@ struct CreateReferralDetailsView: View {
     @State var showTooltip = false
 
     var body: some View {
-        Screen(showNavigationBar: false) {
+        Screen(title: "createReferral".localized) {
             VStack {
                 if showTooltip {
                     tooltip
                 }
                 main
                 button
+            }
+        } toolbarItems: {
+            CustomToolbarItem(placement: .trailing) {
+                ToolbarButton(image: "circle-info") {
+                    showTooltip.toggle()
+                }
             }
         }
         .onLoad {
@@ -34,13 +40,6 @@ struct CreateReferralDetailsView: View {
         }
         .onChange(of: referralViewModel.expireInCount) { _, _ in
             calculateFees()
-        }
-        .crossPlatformToolbar("createReferral".localized) {
-            CustomToolbarItem(placement: .trailing) {
-                ToolbarButton(image: "circle-info") {
-                    showTooltip.toggle()
-                }
-            }
         }
     }
 
