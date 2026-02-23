@@ -173,4 +173,18 @@ extension View {
         )
     }
 
+    /// Array-based overload used internally by Screen
+    func crossPlatformToolbar(
+        _ navigationTitle: String,
+        ignoresTopEdge: Bool = false,
+        showsBackButton: Bool = true,
+        items: [CustomToolbarItem]
+    ) -> some View {
+        modifier(CrossPlatformToolbarModifier(
+            items: items,
+            navigationTitle: navigationTitle,
+            ignoresTopEdge: ignoresTopEdge,
+            showsBackButton: showsBackButton
+        ))
+    }
 }

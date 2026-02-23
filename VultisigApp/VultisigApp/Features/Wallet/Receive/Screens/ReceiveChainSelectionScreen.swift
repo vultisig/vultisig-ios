@@ -29,7 +29,7 @@ struct ReceiveChainSelectionScreen: View {
     }
 
     var body: some View {
-        Screen(showNavigationBar: false) {
+        Screen(title: "selectChain".localized, showsBackButton: false) {
             VStack(spacing: 12) {
                 SearchTextField(value: $viewModel.searchText)
                 ScrollView {
@@ -41,15 +41,14 @@ struct ReceiveChainSelectionScreen: View {
                 }
                 .cornerRadius(12)
             }
-        }
-        .onDisappear { viewModel.searchText = "" }
-        .crossPlatformToolbar("selectChain".localized, showsBackButton: false) {
+        } toolbarItems: {
             CustomToolbarItem(placement: .leading) {
                 ToolbarButton(image: "x") {
                     isPresented.toggle()
                 }
             }
         }
+        .onDisappear { viewModel.searchText = "" }
         .crossPlatformSheet(item: $selectedCoin) { coin in
             ReceiveQRCodeBottomSheet(
                 coin: coin,

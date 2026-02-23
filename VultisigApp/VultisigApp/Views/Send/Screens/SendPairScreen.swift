@@ -17,7 +17,7 @@ struct SendPairScreen: View {
     let fastVaultPassword: String?
 
     var body: some View {
-        Screen(showNavigationBar: false) {
+        Screen(title: "pair".localized) {
             KeysignDiscoveryView(
                 vault: vault,
                 keysignPayload: keysignPayload,
@@ -29,8 +29,7 @@ struct SendPairScreen: View {
             ) { input in
                 router.navigate(to: SendRoute.keysign(input: input, tx: tx))
             }
-        }
-        .crossPlatformToolbar("pair".localized) {
+        } toolbarItems: {
             CustomToolbarItem(placement: .trailing) {
                 NavigationQRShareButton(
                     vault: vault,

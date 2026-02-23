@@ -79,7 +79,7 @@ struct OnboardingOverviewScreen: View {
     }
 
     var body: some View {
-        Screen(showNavigationBar: false) {
+        Screen(showsBackButton: false) {
             VStack(alignment: .leading, spacing: 0) {
                 Spacer()
                 animation
@@ -95,6 +95,7 @@ struct OnboardingOverviewScreen: View {
                     }
                 }
             }
+        } toolbarItems: {
         }
         .onAppear(perform: onAppear)
         .crossPlatformSheet(isPresented: $isVerificationLinkActive, isDismissable: false) {
@@ -114,7 +115,6 @@ struct OnboardingOverviewScreen: View {
                 }
             )
         }
-        .crossPlatformToolbar(.empty, showsBackButton: false)
         .navigationBarBackButtonHidden(true)
         .onNavigationStackChange { isVisible in
             if isVisible { onAppear() }

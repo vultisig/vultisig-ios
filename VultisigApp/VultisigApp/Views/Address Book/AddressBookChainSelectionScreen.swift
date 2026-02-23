@@ -19,7 +19,7 @@ struct AddressBookChainSelectionScreen: View {
     }
 
     var body: some View {
-        Screen(showNavigationBar: false) {
+        Screen(title: "selectChain".localized, showsBackButton: false) {
             VStack(spacing: 12) {
                 SearchTextField(value: $viewModel.searchText)
                 ScrollView(showsIndicators: false) {
@@ -31,16 +31,15 @@ struct AddressBookChainSelectionScreen: View {
                 }
                 .cornerRadius(12)
             }
-        }
-        .applySheetSize()
-        .onLoad(perform: viewModel.setup)
-        .crossPlatformToolbar("selectChain".localized, showsBackButton: false) {
+        } toolbarItems: {
             CustomToolbarItem(placement: .leading) {
                 ToolbarButton(image: "x") {
                     isPresented.toggle()
                 }
             }
         }
+        .applySheetSize()
+        .onLoad(perform: viewModel.setup)
     }
 
     var list: some View {
