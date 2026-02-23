@@ -235,15 +235,6 @@ struct MacScannerView: View {
         }
     }
     
-    var overlay: some View {
-        VStack {
-            Spacer()
-            qrCodeOutline
-            Spacer()
-        }
-        .allowsHitTesting(false)
-    }
-    
     var qrCodeOutline: some View {
         Image("QRScannerOutline")
             .resizable()

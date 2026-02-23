@@ -8437,7 +8437,7 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "We need access to the local network to discover services.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photo library to save photos.";
-				INFOPLIST_KEY_NSScreenCaptureUsageDescription = "Vultisig needs screen recording permission to scan QR codes displayed on your screen.";
+				"INFOPLIST_KEY_NSScreenCaptureUsageDescription[sdk=macosx*]" = "Vultisig needs screen recording permission to scan QR codes displayed on your screen.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -8503,7 +8503,7 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "We need access to the local network to discover services.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photo library to save photos.";
-				INFOPLIST_KEY_NSScreenCaptureUsageDescription = "Vultisig needs screen recording permission to scan QR codes displayed on your screen.";
+				"INFOPLIST_KEY_NSScreenCaptureUsageDescription[sdk=macosx*]" = "Vultisig needs screen recording permission to scan QR codes displayed on your screen.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;

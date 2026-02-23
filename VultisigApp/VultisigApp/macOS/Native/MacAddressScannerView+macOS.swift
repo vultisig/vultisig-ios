@@ -249,7 +249,6 @@ struct MacAddressScannerView: View {
                 }
                 .onDisappear {
                     scannerViewModel.stopSession()
-                    screenCaptureService.stopCapture()
                 }
 
             uploadQRCodeButton

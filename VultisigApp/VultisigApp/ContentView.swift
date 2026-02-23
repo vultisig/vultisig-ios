@@ -39,6 +39,7 @@ struct ContentView: View {
                     splashView
                 } else {
                     container
+                        .background(Theme.colors.bgPrimary)
                 }
             }
             .navigationDestination(for: HomeRoute.self) { router.homeRouter.build($0) }

@@ -31,13 +31,16 @@ class MacScreenCaptureService: ObservableObject {
     private var streamOutput: ScreenCaptureStreamOutput?
 
     func startCapture() async {
+        guard stream == nil else { return }
+
         detectedQRCode = nil
         isPermissionDenied = false
 
         do {
             let content = try await SCShareableContent.current
 
-            guard let display = content.displays.first else { return }
+            let mainDisplayID = NSScreen.main?.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID
+            guard let display = content.displays.first(where: { $0.displayID == mainDisplayID }) ?? content.displays.first else { return }
 
             let excludedWindows = content.windows.filter {
                 $0.owningApplication?.bundleIdentifier == Bundle.main.bundleIdentifier
@@ -70,10 +73,10 @@ class MacScreenCaptureService: ObservableObject {
             try await newStream.startCapture()
 
             stream = newStream
+        } catch let error as SCStreamError where error.code == .userDeclined {
+            isPermissionDenied = true
         } catch {
-            if (error as NSError).domain == "com.apple.ScreenCaptureKit" {
-                isPermissionDenied = true
-            }
+            print("[MacScreenCaptureService] capture failed: \(error)")
         }
     }
 
