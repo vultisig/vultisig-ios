@@ -13,7 +13,7 @@ struct ImportVaultSelectionSheet: View {
     let onVaultShare: () -> Void
 
     var body: some View {
-        Screen(showsBackButton: false, ignoresTopEdge: true) {
+        Screen {
             VStack(spacing: 14) {
                 Text("importVaultSelectionTitle")
                     .foregroundStyle(Theme.colors.textPrimary)
@@ -39,7 +39,10 @@ struct ImportVaultSelectionSheet: View {
                     action: onVaultShare
                 )
             }
-        } toolbarItems: {
+        }
+        .screenBackButtonHidden()
+        .screenIgnoresTopEdge()
+        .screenToolbar {
             CustomToolbarItem(placement: .leading) {
                 ToolbarButton(image: "x") {
                     isPresented.toggle()

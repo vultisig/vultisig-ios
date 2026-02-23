@@ -18,7 +18,7 @@ struct RegisterVaultView: View {
     @Environment(\.displayScale) var displayScale
 
     var body: some View {
-        Screen(title: "registerVault".localized) {
+        Screen {
             VStack {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
@@ -47,6 +47,7 @@ struct RegisterVaultView: View {
                 saveVaultButton
             }
         }
+        .screenTitle("registerVault".localized)
         .onLoad(perform: setData)
     }
 

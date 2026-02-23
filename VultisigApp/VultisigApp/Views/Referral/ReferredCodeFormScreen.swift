@@ -14,12 +14,13 @@ struct ReferredCodeFormScreen: View {
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
-        Screen(title: referredViewModel.title.localized) {
+        Screen {
             VStack {
                 main
                 button
             }
         }
+        .screenTitle(referredViewModel.title.localized)
         .overlay(referredViewModel.isLoading ? loader : nil)
         .onAppear {
             setData()

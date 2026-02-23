@@ -25,7 +25,7 @@ struct SendCryptoSecondaryDoneView: View {
     }
 
     var body: some View {
-        Screen(title: "transactionDetails".localized) {
+        Screen {
             VStack {
                 ScrollView {
                     VStack {
@@ -38,6 +38,7 @@ struct SendCryptoSecondaryDoneView: View {
                 continueButton
             }
         }
+        .screenTitle("transactionDetails".localized)
         .onLoad {
             let address = input.toAddress
             let addressItemsDescriptor = FetchDescriptor<AddressBookItem>(

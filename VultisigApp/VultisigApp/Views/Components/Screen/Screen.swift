@@ -8,53 +8,17 @@
 import SwiftUI
 
 struct Screen<Content: View>: View {
-    let title: String
-    let edgeInsets: ScreenEdgeInsets
-    let showNavigationBar: Bool
-    let showsBackButton: Bool
-    let ignoresTopEdge: Bool
-    let toolbarItems: [CustomToolbarItem]
-    let backgroundType: BackgroundType
-
-    private let usesCustomToolbar: Bool
+    @Environment(\.screenTitle) private var title
+    @Environment(\.screenEdgeInsets) private var edgeInsets
+    @Environment(\.screenBackgroundType) private var backgroundType
+    @Environment(\.screenNavigationBarHidden) private var navigationBarHidden
+    @Environment(\.screenBackButtonHidden) private var backButtonHidden
+    @Environment(\.screenIgnoresTopEdge) private var ignoresTopEdge
+    @Environment(\.screenToolbarItems) private var toolbarItems
 
     let content: () -> Content
 
-    init(
-        title: String = "",
-        showNavigationBar: Bool = true,
-        edgeInsets: ScreenEdgeInsets = .noInsets,
-        backgroundType: BackgroundType = .plain,
-        @ViewBuilder content: @escaping () -> Content
-    ) {
-        self.title = title
-        self.showNavigationBar = showNavigationBar
-        self.showsBackButton = true
-        self.ignoresTopEdge = false
-        self.toolbarItems = []
-        self.usesCustomToolbar = false
-        self.edgeInsets = edgeInsets
-        self.backgroundType = backgroundType
-        self.content = content
-    }
-
-    init(
-        title: String = "",
-        showsBackButton: Bool = true,
-        ignoresTopEdge: Bool = false,
-        edgeInsets: ScreenEdgeInsets = .noInsets,
-        backgroundType: BackgroundType = .plain,
-        @ViewBuilder content: @escaping () -> Content,
-        @CustomToolbarItemsBuilder toolbarItems: () -> [CustomToolbarItem]
-    ) {
-        self.title = title
-        self.showNavigationBar = true
-        self.showsBackButton = showsBackButton
-        self.ignoresTopEdge = ignoresTopEdge
-        self.toolbarItems = toolbarItems()
-        self.usesCustomToolbar = true
-        self.edgeInsets = edgeInsets
-        self.backgroundType = backgroundType
+    init(@ViewBuilder content: @escaping () -> Content) {
         self.content = content
     }
 
@@ -66,14 +30,16 @@ struct Screen<Content: View>: View {
 
     @ViewBuilder
     var container: some View {
-        if usesCustomToolbar {
+        if navigationBarHidden {
+            contentContainer
+        } else {
 #if os(macOS)
             VStack {
                 contentContainer
                     .crossPlatformToolbar(
                         title,
                         ignoresTopEdge: ignoresTopEdge,
-                        showsBackButton: showsBackButton,
+                        showsBackButton: !backButtonHidden,
                         items: toolbarItems
                     )
             }
@@ -82,23 +48,9 @@ struct Screen<Content: View>: View {
                 .crossPlatformToolbar(
                     title,
                     ignoresTopEdge: ignoresTopEdge,
-                    showsBackButton: showsBackButton,
+                    showsBackButton: !backButtonHidden,
                     items: toolbarItems
                 )
-#endif
-        } else {
-#if os(macOS)
-            VStack {
-                contentContainer
-                    .if(showNavigationBar) {
-                        $0.crossPlatformToolbar(title)
-                    }
-            }
-#else
-            contentContainer
-                .if(showNavigationBar) {
-                    $0.crossPlatformToolbar(title)
-                }
 #endif
         }
     }
@@ -131,12 +83,6 @@ struct Screen<Content: View>: View {
         case .clear:
             Color.clear
         }
-    }
-
-    enum BackgroundType {
-        case plain
-        case gradient
-        case clear
     }
 }
 

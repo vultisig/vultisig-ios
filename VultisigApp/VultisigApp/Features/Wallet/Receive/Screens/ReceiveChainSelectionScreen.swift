@@ -29,7 +29,7 @@ struct ReceiveChainSelectionScreen: View {
     }
 
     var body: some View {
-        Screen(title: "selectChain".localized, showsBackButton: false) {
+        Screen {
             VStack(spacing: 12) {
                 SearchTextField(value: $viewModel.searchText)
                 ScrollView {
@@ -41,7 +41,10 @@ struct ReceiveChainSelectionScreen: View {
                 }
                 .cornerRadius(12)
             }
-        } toolbarItems: {
+        }
+        .screenTitle("selectChain".localized)
+        .screenBackButtonHidden()
+        .screenToolbar {
             CustomToolbarItem(placement: .leading) {
                 ToolbarButton(image: "x") {
                     isPresented.toggle()

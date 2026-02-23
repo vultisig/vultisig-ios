@@ -17,7 +17,7 @@ struct CreateReferralDetailsView: View {
     @State var showTooltip = false
 
     var body: some View {
-        Screen(title: "createReferral".localized) {
+        Screen {
             VStack {
                 if showTooltip {
                     tooltip
@@ -25,7 +25,9 @@ struct CreateReferralDetailsView: View {
                 main
                 button
             }
-        } toolbarItems: {
+        }
+        .screenTitle("createReferral".localized)
+        .screenToolbar {
             CustomToolbarItem(placement: .trailing) {
                 ToolbarButton(image: "circle-info") {
                     showTooltip.toggle()

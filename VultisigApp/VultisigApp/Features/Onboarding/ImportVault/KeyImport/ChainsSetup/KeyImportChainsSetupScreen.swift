@@ -14,11 +14,7 @@ struct KeyImportChainsSetupScreen: View {
     @Environment(\.router) var router
 
     var body: some View {
-        Screen(
-            title: viewModel.screenTitle,
-            ignoresTopEdge: viewModel.state == .activeChains,
-            backgroundType: viewModel.state == .activeChains ? .gradient : .plain
-        ) {
+        Screen {
             Group {
                 switch viewModel.state {
                 case .scanningChains:
@@ -46,8 +42,10 @@ struct KeyImportChainsSetupScreen: View {
             }
             .transition(.opacity)
             .animation(.interpolatingSpring, value: viewModel.state)
-        } toolbarItems: {
         }
+        .screenTitle(viewModel.screenTitle)
+        .screenIgnoresTopEdge(viewModel.state == .activeChains)
+        .screenBackground(viewModel.state == .activeChains ? .gradient : .plain)
         .withLoading(isLoading: $viewModel.isLoading)
     }
 

@@ -16,9 +16,10 @@ struct BanxaDisclaimer: View {
 
     var container: some View {
         ZStack(alignment: .center) {
-            Screen(title: "buy".localized) {
+            Screen {
                 content
             }
+            .screenTitle("buy".localized)
         }
     }
 

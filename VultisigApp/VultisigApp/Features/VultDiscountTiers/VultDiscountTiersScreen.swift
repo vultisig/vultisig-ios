@@ -21,7 +21,7 @@ struct VultDiscountTiersScreen: View {
     private let service = VultTierService()
 
     var body: some View {
-        Screen(title: "vultDiscountTiers".localized, edgeInsets: .init(bottom: 0)) {
+        Screen {
             ScrollViewReader { proxy in
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 12) {
@@ -57,7 +57,10 @@ struct VultDiscountTiersScreen: View {
                 #endif
                 .onLoad { scrollProxy = proxy }
             }
-        } toolbarItems: {
+        }
+        .screenTitle("vultDiscountTiers".localized)
+        .screenEdgeInsets(.init(bottom: 0))
+        .screenToolbar {
             CustomToolbarItem(placement: .trailing) {
                 ToolbarButton(image: "globus") {
                     openURL(StaticURL.VultisigVultURL)

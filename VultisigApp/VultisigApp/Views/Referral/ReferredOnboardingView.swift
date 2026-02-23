@@ -11,7 +11,7 @@ struct ReferredOnboardingView: View {
     @Environment(\.router) var router
 
     var body: some View {
-        Screen(title: "referral".localized) {
+        Screen {
             VStack {
                 ScrollView {
                     StepsAnimationView(title: "howItWorks".localized, steps: 4) { animationCell(index: $0)
@@ -24,6 +24,7 @@ struct ReferredOnboardingView: View {
             }
             .background(shadow)
         }
+        .screenTitle("referral".localized)
     }
 
     var shadow: some View {

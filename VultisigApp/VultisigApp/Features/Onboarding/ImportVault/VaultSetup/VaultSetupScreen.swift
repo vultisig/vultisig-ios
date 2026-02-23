@@ -71,20 +71,20 @@ struct VaultSetupScreen: View {
     // MARK: - Body
     
     var body: some View {
-        Screen(edgeInsets: .init(leading: 24, trailing: 24)) {
+        Screen {
             VStack(spacing: 0) {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
                         stepIndicator
                             .padding(.top, 24)
                             .padding(.bottom, 24)
-                        
+
                         stepContent
                     }
                 }
-                
+
                 Spacer()
-                
+
                 PrimaryButton(
                     title: isLastStep && isCurrentStepValid
                     ? "createVault".localized
@@ -99,6 +99,7 @@ struct VaultSetupScreen: View {
                 }
             }
         }
+        .screenEdgeInsets(.init(leading: 24, trailing: 24))
         .onLoad {
             viewModel.onLoad()
             focusedField = .name

@@ -23,7 +23,7 @@ struct OnboardingVaultSetupInformationScreen: View {
     }
 
     var body: some View {
-        Screen(edgeInsets: .init(leading: 24, trailing: 24)) {
+        Screen {
             VStack(alignment: .leading, spacing: 0) {
                 VStack(alignment: .leading, spacing: 20) {
                     Text("yourVaultSetup".localized)
@@ -52,6 +52,7 @@ struct OnboardingVaultSetupInformationScreen: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .screenEdgeInsets(.init(leading: 24, trailing: 24))
         .onLoad(perform: onLoad)
     }
 

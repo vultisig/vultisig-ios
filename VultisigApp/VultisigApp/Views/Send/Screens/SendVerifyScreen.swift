@@ -20,12 +20,13 @@ struct SendVerifyScreen: View {
     @State private var error: HelperError?
 
     var body: some View {
-        Screen(title: "verify".localized) {
+        Screen {
             VStack(spacing: 16) {
                 fields
                 pairedSignButton
             }
         }
+        .screenTitle("verify".localized)
         .alert(item: $error) { error in
             Alert(
                 title: Text(NSLocalizedString("error", comment: "")),

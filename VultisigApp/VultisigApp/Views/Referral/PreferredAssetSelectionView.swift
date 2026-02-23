@@ -14,7 +14,7 @@ struct PreferredAssetSelectionView: View {
     @StateObject var viewModel = PreferredAssetSelectionViewModel()
 
     var body: some View {
-        Screen(title: "selectAsset".localized, showsBackButton: false) {
+        Screen {
             VStack(spacing: 8) {
                 SearchTextField(value: $viewModel.searchText)
                 ScrollView {
@@ -28,7 +28,10 @@ struct PreferredAssetSelectionView: View {
                 }
                 .cornerRadius(12)
             }
-        } toolbarItems: {
+        }
+        .screenTitle("selectAsset".localized)
+        .screenBackButtonHidden()
+        .screenToolbar {
             CustomToolbarItem(placement: .leading) {
                 ToolbarButton(image: "x") {
                     isPresented.toggle()

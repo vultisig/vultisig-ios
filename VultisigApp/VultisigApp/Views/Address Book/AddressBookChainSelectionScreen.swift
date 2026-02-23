@@ -19,7 +19,7 @@ struct AddressBookChainSelectionScreen: View {
     }
 
     var body: some View {
-        Screen(title: "selectChain".localized, showsBackButton: false) {
+        Screen {
             VStack(spacing: 12) {
                 SearchTextField(value: $viewModel.searchText)
                 ScrollView(showsIndicators: false) {
@@ -31,7 +31,10 @@ struct AddressBookChainSelectionScreen: View {
                 }
                 .cornerRadius(12)
             }
-        } toolbarItems: {
+        }
+        .screenTitle("selectChain".localized)
+        .screenBackButtonHidden()
+        .screenToolbar {
             CustomToolbarItem(placement: .leading) {
                 ToolbarButton(image: "x") {
                     isPresented.toggle()

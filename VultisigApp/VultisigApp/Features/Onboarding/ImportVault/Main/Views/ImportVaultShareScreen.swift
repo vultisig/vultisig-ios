@@ -19,9 +19,10 @@ struct ImportVaultShareScreen: View {
     @EnvironmentObject var appViewModel: AppViewModel
 
     var body: some View {
-        Screen(title: "importVault".localized) {
+        Screen {
             content
         }
+        .screenTitle("importVault".localized)
         .fileImporter(
             isPresented: $backupViewModel.showVaultImporter,
             allowedContentTypes: [.vaultBackup, .vaultFile],

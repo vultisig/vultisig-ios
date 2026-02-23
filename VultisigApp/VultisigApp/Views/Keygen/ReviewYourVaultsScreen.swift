@@ -19,11 +19,7 @@ struct ReviewYourVaultsScreen: View {
     @Environment(\.router) var router
 
     var body: some View {
-        Screen(
-            title: "",
-            showNavigationBar: false,
-            edgeInsets: .init(top: 0, leading: 0, trailing: 0)
-        ) {
+        Screen {
             VStack(spacing: 0) {
                 Group {
                     animation
@@ -33,6 +29,8 @@ struct ReviewYourVaultsScreen: View {
                 buttons
             }
         }
+        .screenNavigationBarHidden()
+        .screenEdgeInsets(.init(top: 0, leading: 0, trailing: 0))
         .onAppear {
             animationVM = RiveViewModel(fileName: "review_devices", autoPlay: true)
             animationVM?.fit = .layout

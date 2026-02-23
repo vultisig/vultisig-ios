@@ -44,7 +44,7 @@ struct VaultBackupScreen: View {
             backupType: backupType,
             isNewVault: isNewVault
         ) {
-            Screen(edgeInsets: .init(leading: 24, trailing: 24)) {
+            Screen {
                 VStack(spacing: 32) {
                     animation?.view()
                     VaultSetupStepIcon(
@@ -67,6 +67,7 @@ struct VaultBackupScreen: View {
                     }
                 }
             }
+            .screenEdgeInsets(.init(leading: 24, trailing: 24))
         }
         .onLoad(perform: onLoad)
     }

@@ -21,11 +21,7 @@ struct TronView: View {
     }
 
     var content: some View {
-        Screen(
-            title: NSLocalizedString("tronTitle", comment: "TRON Staking"),
-            showNavigationBar: true,
-            backgroundType: .plain
-        ) {
+        Screen {
             if model.missingTrx {
                 // Show warning to add TRX
                 VStack(spacing: 24) {
@@ -53,6 +49,7 @@ struct TronView: View {
                 TronDashboardView(vault: vault, model: model, onRefresh: loadData)
             }
         }
+        .screenTitle(NSLocalizedString("tronTitle", comment: "TRON Staking"))
         .onAppear {
             Task { await loadData() }
         }
