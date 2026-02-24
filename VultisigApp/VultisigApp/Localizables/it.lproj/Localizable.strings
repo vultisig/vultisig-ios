@@ -434,6 +434,7 @@
 "mustAgreeTermsError" = "Devi accettare i termini.";
 "mustHaveETHError" = "Devi avere ETH per pagare il gas, prima di inviare un token.";
 "myVaults" = "I miei Vault";
+"nOfTotal" = "%d di %@";
 "name" = "Nome";
 "nameYourVault" = "Dai un nome al tuo vault";
 "need3Devices" = "Hai bisogno di almeno 2 dispositivi";

@@ -434,6 +434,7 @@
 "mustAgreeTermsError" = "Du musst den Bedingungen zustimmen.";
 "mustHaveETHError" = "Du musst ETH haben, um die Netzwerkgebühr zu bezahlen, bevor du Token senden kannst.";
 "myVaults" = "Meine Tresore";
+"nOfTotal" = "%d von %@";
 "name" = "Name";
 "nameYourVault" = "Benennen Sie Ihren Tresor";
 "need3Devices" = "Sie benötigen mindestens 2 Geräte";

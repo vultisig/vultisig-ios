@@ -88,7 +88,7 @@ struct PeerCell: View {
     }
 
     private func badge(index: Int, totalCount: Int?) -> some View {
-        Text("\(index) of \(totalCount.map { "\($0)" } ?? "\u{221E}")")
+        Text(String(format: NSLocalizedString("nOfTotal", comment: ""), index, totalCount.map { "\($0)" } ?? "\u{221E}"))
             .font(Theme.fonts.caption12)
             .foregroundStyle(Theme.colors.textSecondary)
             .padding(.horizontal, 16)

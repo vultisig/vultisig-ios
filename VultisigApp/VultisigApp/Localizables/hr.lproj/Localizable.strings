@@ -434,6 +434,7 @@
 "mustAgreeTermsError" = "Morate se složiti s uvjetima.";
 "mustHaveETHError" = "Morate imati ETH za plaćanje plina prije slanja tokena.";
 "myVaults" = "Moji trezori";
+"nOfTotal" = "%d od %@";
 "name" = "Ime";
 "nameYourVault" = "Imenujte svoj trezor";
 "need3Devices" = "Potrebna su vam najmanje 2 uređaja";

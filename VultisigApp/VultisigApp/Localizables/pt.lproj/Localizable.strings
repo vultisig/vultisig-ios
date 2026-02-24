@@ -434,6 +434,7 @@
 "mustAgreeTermsError" = "Você deve concordar com os termos.";
 "mustHaveETHError" = "Você deve ter ETH para pagar pelo gás, antes de enviar um token.";
 "myVaults" = "Meus Cofres";
+"nOfTotal" = "%d de %@";
 "name" = "Nome";
 "nameYourVault" = "Nomeie seu cofre";
 "need3Devices" = "Você precisa de pelo menos 2 dispositivos";

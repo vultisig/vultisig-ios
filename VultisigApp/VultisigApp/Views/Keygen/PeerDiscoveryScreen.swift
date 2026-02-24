@@ -112,7 +112,12 @@ struct PeerDiscoveryScreen: View {
         switch viewModel.tssType {
         case .Migrate:
             return Set(viewModel.selections) != Set(viewModel.vault.signers)
-        default:
+        case .Reshare:
+            let requiredCount = vault.getThreshold() + 1
+            return viewModel.selections.count < requiredCount
+        case .KeyImport:
+            return viewModel.selections.count < minRequiredDevices || showWaitingOnDevice
+        case .Keygen:
             return viewModel.selections.count < minRequiredDevices
         }
     }

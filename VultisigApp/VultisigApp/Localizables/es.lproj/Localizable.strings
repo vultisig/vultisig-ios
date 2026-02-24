@@ -434,6 +434,7 @@
 "mustAgreeTermsError" = "Debes estar de acuerdo con los términos.";
 "mustHaveETHError" = "Debes tener ETH para pagar el gas, antes de enviar un token.";
 "myVaults" = "Mis Bóvedas";
+"nOfTotal" = "%d de %@";
 "name" = "Nombre";
 "nameYourVault" = "Nombra tu bóveda";
 "need3Devices" = "Necesitas al menos 2 dispositivos";

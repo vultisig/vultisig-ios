@@ -436,6 +436,7 @@
 "mustAgreeTermsError" = "您必须同意条款";
 "mustHaveETHError" = "在发送代币之前，您必须有 ETH 来支付燃料费";
 "myVaults" = "我的保险库";
+"nOfTotal" = "%d / %@";
 "name" = "名称";
 "nameYourVault" = "命名您的保险库";
 "need3Devices" = "您至少需要 2 个设备";
