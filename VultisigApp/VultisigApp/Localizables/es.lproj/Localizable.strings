@@ -1360,6 +1360,11 @@
 "backupsTitleHighlight" = "Respaldos";
 "storeBackupsSeparately" = "Almacena los respaldos por separado";
 "storeBackupsSeparatelyDescription" = "Guarda cada respaldo en un lugar diferente. Si uno se ve comprometido, tus fondos permanecen seguros.";
+"storeBackupsSeparatelyDescriptionSecure" = "Guarda cada respaldo en una nube diferente o con una contraseña diferente. Si uno queda expuesto, tus fondos permanecen seguros.";
+"backupsDescriptionVault" = "Los respaldos son la base de tu bóveda. Cada dispositivo tiene su propio respaldo. Un respaldo solo no puede mover fondos, es solo para recuperación.";
+"backupDeviceDriver" = "Tu dispositivo es el conductor";
+"backupDeviceDriverDescription" = "El respaldo del dispositivo y la contraseña son la clave. El servidor solo co-firma.";
+"backupEachDeviceDescriptionSecure" = "Crearás %d respaldos en total. Harás esto en cada dispositivo.";
 
 "swap.outbound_fee" = "Tarifa de Salida";
 "swap.price_impact" = "Impacto del Precio";

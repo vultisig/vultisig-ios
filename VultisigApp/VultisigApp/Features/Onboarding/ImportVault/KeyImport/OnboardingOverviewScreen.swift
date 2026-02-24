@@ -19,6 +19,44 @@ struct OnboardingOverviewScreen: View {
     @State private var isVerificationLinkActive = false
     @Environment(\.router) var router
 
+    private var isKeyImport: Bool {
+        tssType == .KeyImport
+    }
+
+    private var descriptionText: String {
+        isKeyImport ? "backupsDescription".localized : "backupsDescriptionVault".localized
+    }
+
+    private var row1Title: String {
+        if !isKeyImport && setupType == .fast {
+            return "backupDeviceDriver".localized
+        }
+        return "backupEachDevice".localized
+    }
+
+    private var row1Subtitle: String {
+        if isKeyImport {
+            return "backupEachDeviceDescription".localized
+        }
+        switch setupType {
+        case .fast:
+            return "backupDeviceDriverDescription".localized
+        case .secure(let count):
+            return String(format: "backupEachDeviceDescriptionSecure".localized, count)
+        }
+    }
+
+    private var row2Subtitle: String {
+        if !isKeyImport, case .secure = setupType {
+            return "storeBackupsSeparatelyDescriptionSecure".localized
+        }
+        return "storeBackupsSeparatelyDescription".localized
+    }
+
+    private var buttonTitle: String {
+        isKeyImport ? "continue".localized : "iUnderstand".localized
+    }
+
     var animationFileName: String {
         switch setupType {
         case .fast:
@@ -36,7 +74,7 @@ struct OnboardingOverviewScreen: View {
                 Spacer()
                 VStack(spacing: 32) {
                     informationView
-                    PrimaryButton(title: "iUnderstand") {
+                    PrimaryButton(title: buttonTitle) {
                         router.navigate(to: KeygenRoute.backupNow(
                             tssType: tssType,
                             backupType: .single(vault: vault),
@@ -84,7 +122,7 @@ struct OnboardingOverviewScreen: View {
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.title2)
 
-                Text("backupsDescription".localized)
+                Text(descriptionText)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .font(Theme.fonts.footnote)
                     .frame(maxWidth: 329)
@@ -92,14 +130,14 @@ struct OnboardingOverviewScreen: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             OnboardingInformationRowView(
-                title: "backupEachDevice".localized,
-                subtitle: "backupEachDeviceDescription".localized,
+                title: row1Title,
+                subtitle: row1Subtitle,
                 icon: "cloud-upload-filled"
             )
 
             OnboardingInformationRowView(
                 title: "storeBackupsSeparately".localized,
-                subtitle: "storeBackupsSeparatelyDescription".localized,
+                subtitle: row2Subtitle,
                 icon: "arrow-split"
             )
         }
@@ -119,12 +157,12 @@ struct OnboardingOverviewScreen: View {
 
 #Preview {
     OnboardingOverviewScreen(
-        tssType: .Keygen,
+        tssType: .KeyImport,
         vault: .example,
         email: nil,
-        keyImportInput: nil,
-        setupType: .secure(numberOfDevices: 1)
+        keyImportInput: .init(mnemonic: "", chainSettings: []),
+        setupType: .secure(numberOfDevices: 3)
     )
-    .frame(width: 1500)
+    .frame(width: isMacOS ? 1500 : nil)
     .frame(maxHeight: isMacOS ? 800 : nil)
 }

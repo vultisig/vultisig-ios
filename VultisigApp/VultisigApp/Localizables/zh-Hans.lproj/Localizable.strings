@@ -1363,6 +1363,11 @@
 "backupsTitleHighlight" = "备份";
 "storeBackupsSeparately" = "分别存储备份";
 "storeBackupsSeparatelyDescription" = "将每个备份保存在不同的地方。如果一个被泄露，您的资金仍然安全。";
+"storeBackupsSeparatelyDescriptionSecure" = "将每个备份保存在不同的云端或使用不同的密码。如果一个被泄露，您的资金仍然安全。";
+"backupsDescriptionVault" = "备份是您保险库的核心。每个设备都有自己的备份。单个备份无法转移资金，仅用于恢复。";
+"backupDeviceDriver" = "您的设备是主导者";
+"backupDeviceDriverDescription" = "设备备份和密码是关键。服务器仅进行联合签名。";
+"backupEachDeviceDescriptionSecure" = "您将总共创建 %d 个备份。您需要在每个设备上执行此操作。";
 
 "swap.outbound_fee" = "出站费用";
 "swap.price_impact" = "价格影响";

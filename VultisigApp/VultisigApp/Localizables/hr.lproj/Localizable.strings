@@ -1360,6 +1360,11 @@
 "backupsTitleHighlight" = "Sigurnosne kopije";
 "storeBackupsSeparately" = "Čuvajte sigurnosne kopije odvojeno";
 "storeBackupsSeparatelyDescription" = "Čuvajte svaku sigurnosnu kopiju na drugom mjestu. Ako je jedna kompromitirana, vaša sredstva ostaju sigurna.";
+"storeBackupsSeparatelyDescriptionSecure" = "Spremite svaku sigurnosnu kopiju u drugi oblak ili s drugom lozinkom. Ako je jedna izložena, vaša sredstva ostaju sigurna.";
+"backupsDescriptionVault" = "Sigurnosne kopije pokreću vaš trezor. Svaki uređaj ima svoju sigurnosnu kopiju. Sigurnosna kopija sama ne može premjestiti sredstva, služi samo za oporavak.";
+"backupDeviceDriver" = "Vaš uređaj je pokretač";
+"backupDeviceDriverDescription" = "Sigurnosna kopija uređaja i lozinka su ključ. Poslužitelj samo supotpisuje.";
+"backupEachDeviceDescriptionSecure" = "Napravit ćete ukupno %d sigurnosnih kopija. To ćete učiniti na svakom uređaju.";
 
 "swap.outbound_fee" = "Izlazna naknada";
 "swap.price_impact" = "Utjecaj na cijenu";
