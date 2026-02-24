@@ -47,6 +47,8 @@ class THORChainSwaps {
             return try RippleHelper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
         case .tron:
             return try TronHelper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
+        case .solana:
+            return try SolanaHelper.getPreSignedInputData(keysignPayload: keysignPayload)
         default:
             throw HelperError.runtimeError("not support yet")
         }
@@ -74,6 +76,8 @@ class THORChainSwaps {
             return try RippleHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         case .tron:
             return try TronHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
+        case .solana:
+            return try SolanaHelper.getPreSignedImageHash(inputData: inputData)
         default:
             throw HelperError.runtimeError("not support yet")
         }
@@ -150,6 +154,8 @@ class THORChainSwaps {
             return try TronHelper.getSignedTransaction(
                 keysignPayload: keysignPayload,
                 signatures: signatures)
+        case .solana:
+            return try SolanaHelper.getSignedTransaction(coinHexPubKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
         default:
             throw HelperError.runtimeError("not support")
         }
