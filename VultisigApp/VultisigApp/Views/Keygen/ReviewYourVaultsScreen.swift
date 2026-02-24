@@ -49,7 +49,7 @@ struct ReviewYourVaultsScreen: View {
         ZStack(alignment: .top) {
             animationVM?.view()
                 .frame(idealWidth: 395, maxWidth: 395, alignment: .center)
-                .showIf(size != 0)
+                .showIf((size ?? 0) != 0)
             LinearGradient(
                 colors: [Theme.colors.bgPrimary, Theme.colors.bgPrimary, .clear],
                 startPoint: .top,

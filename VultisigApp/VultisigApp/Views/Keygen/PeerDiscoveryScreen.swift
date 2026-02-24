@@ -80,7 +80,14 @@ struct PeerDiscoveryScreen: View {
                     return numberOfDevices
                 }
             }
-            return 2
+            switch selectedTab {
+            case .fast:
+                return 2
+            case .active:
+                return 3
+            case .secure:
+                return minRequiredDevices
+            }
         }
     }
 
