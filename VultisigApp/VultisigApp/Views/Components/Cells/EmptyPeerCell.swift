@@ -47,7 +47,7 @@ struct EmptyPeerCell: View {
 
     var text: some View {
         Text(NSLocalizedString("waitingForDeviceToJoin", comment: ""))
-            .font(Theme.fonts.bodyMMedium)
+            .font(Theme.fonts.footnote)
             .foregroundStyle(Theme.colors.textSecondary)
             .lineLimit(2)
             .frame(maxWidth: .infinity, alignment: .leading)
