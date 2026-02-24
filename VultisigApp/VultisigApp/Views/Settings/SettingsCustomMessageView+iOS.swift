@@ -21,8 +21,8 @@ extension SettingsCustomMessageView {
 
     var customMessageContent: some View {
         VStack(spacing: 16) {
-            textField(title: "Signing method", text: $method)
-            textField(title: "Message to sign", text: $message)
+            methodTextField
+            messageTextField
         }
         .padding(.top, 12)
     }

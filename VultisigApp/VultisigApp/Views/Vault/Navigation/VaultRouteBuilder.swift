@@ -120,7 +120,7 @@ struct VaultRouteBuilder {
 
     @ViewBuilder
     func buildCustomMessageScreen(vault: Vault) -> some View {
-        SettingsCustomMessageView(vault: vault)
+        SettingsCustomMessageView(vault: vault, chain: Chain.ethereum.name)
     }
 
     @ViewBuilder

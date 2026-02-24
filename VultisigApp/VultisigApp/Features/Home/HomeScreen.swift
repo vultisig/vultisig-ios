@@ -41,6 +41,7 @@ struct HomeScreen: View {
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
     @EnvironmentObject var appViewModel: AppViewModel
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.openURL) var openURL
     var tabs: [HomeTab] {
         !(appViewModel.selectedVault?.availableDefiChains.isEmpty ?? true) ? [.wallet, .defi] : [.wallet]
     }
@@ -283,6 +284,8 @@ struct HomeScreen: View {
                         } else {
                             handleSendDeeplinkAfterVaultSelection(vault: vault)
                         }
+                    } else if deeplinkViewModel.pendingConnectDeeplink {
+                        handleConnectDeeplinkAfterVaultSelection(vault: vault)
                     } else {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                             appViewModel.set(selectedVault: vault, restartNavigation: false)
@@ -403,6 +406,8 @@ extension HomeScreen {
 
         deeplinkViewModel.type = nil
 
+
+
         switch type {
         case .NewVault:
             moveToCreateVaultView()
@@ -414,6 +419,10 @@ extension HomeScreen {
             moveToVaultsView()
         case .Send:
             handleSendDeeplink()
+        case .ConnectDapp:
+            handleConnectDeeplink()
+        case .SignMessage:
+            handleSignMessageDeeplink()
         case .Unknown:
             handleAddressOnlyDeeplink()
         }
@@ -453,6 +462,70 @@ extension HomeScreen {
         closeScannerIfNeeded {
             self.deeplinkViewModel.pendingSendDeeplink = true
             self.showVaultSelector = true
+        }
+    }
+
+    private func handleConnectDeeplink() {
+        guard deeplinkViewModel.dappUrl != nil, deeplinkViewModel.callbackUrl != nil else {
+            return
+        }
+
+        guard !vaults.isEmpty else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                if !vaults.isEmpty {
+                    handleConnectDeeplink()
+                }
+            }
+            return
+        }
+
+        if vaults.count == 1, let singleVault = vaults.first {
+            closeScannerIfNeeded {
+                self.handleConnectDeeplinkAfterVaultSelection(vault: singleVault)
+            }
+            return
+        }
+
+        closeScannerIfNeeded {
+            self.deeplinkViewModel.pendingConnectDeeplink = true
+            self.showVaultSelector = true
+        }
+    }
+
+    private func handleSignMessageDeeplink() {
+        let resolvedVault = deeplinkViewModel.selectedVault ?? appViewModel.selectedVault ?? (vaults.count == 1 ? vaults.first : nil)
+
+        guard let vault = resolvedVault else {
+            deeplinkError = DeeplinkError.unrelatedQRCode
+            deeplinkViewModel.resetData()
+            return
+        }
+
+        guard let jsonDataString = deeplinkViewModel.jsonData,
+              let data = jsonDataString.data(using: .utf8),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let message = json["message"] as? String,
+              let chain = json["chain"] as? String else {
+            deeplinkError = DeeplinkError.unrelatedQRCode
+            deeplinkViewModel.resetData()
+            return
+        }
+
+        // Validate that the resolved vault actually supports the requested chain
+        guard vault.coins.first(where: { $0.chain.name.caseInsensitiveCompare(chain) == .orderedSame }) != nil else {
+            deeplinkError = DeeplinkError.unrelatedQRCode
+            deeplinkViewModel.resetData()
+            return
+        }
+        
+        let method = json["method"] as? String ?? "sign_message"
+        let callbackUrl = json["callbackUrl"] as? String
+
+        appViewModel.set(selectedVault: vault, restartNavigation: false)
+        deeplinkViewModel.resetData()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            vaultRoute = .mainAction(.signMessage(method: method, message: message, chain: chain, autoSign: true, callbackUrl: callbackUrl))
         }
     }
 
@@ -503,6 +576,42 @@ extension HomeScreen {
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             vaultRoute = .mainAction(.send(coin: coinToUse, hasPreselectedCoin: coinToUse != nil))
+        }
+    }
+
+    private func handleConnectDeeplinkAfterVaultSelection(vault: Vault) {
+        deeplinkViewModel.pendingConnectDeeplink = false
+        appViewModel.set(selectedVault: vault, restartNavigation: false)
+
+        guard let chainName = deeplinkViewModel.assetChain else {
+            deeplinkError = DeeplinkError.chainNotAdded(chainName: "")
+            deeplinkViewModel.resetData()
+            return
+        }
+
+        guard let coin = vault.coins.first(where: { $0.chain.name.caseInsensitiveCompare(chainName) == .orderedSame }) else {
+            deeplinkError = DeeplinkError.chainNotAdded(chainName: chainName.capitalized)
+            deeplinkViewModel.resetData()
+            return
+        }
+        
+        guard let callbackUrl = deeplinkViewModel.callbackUrl else {
+            deeplinkViewModel.resetData()
+            return
+        }
+
+        let address = coin.address
+        let vaultPubKey = vault.pubKeyECDSA
+        deeplinkViewModel.resetData()
+
+        guard var components = URLComponents(string: callbackUrl) else { return }
+        var queryItems = components.queryItems ?? []
+        queryItems.append(URLQueryItem(name: "address", value: address))
+        queryItems.append(URLQueryItem(name: "vault", value: vaultPubKey))
+        components.queryItems = queryItems
+        
+        if let finalUrl = components.url {
+            openURL(finalUrl)
         }
     }
 

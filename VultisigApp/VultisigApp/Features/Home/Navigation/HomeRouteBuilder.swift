@@ -38,6 +38,8 @@ struct HomeRouteBuilder {
                 blockChainCode: blockChainCode,
                 coinType: coinType
             )
+        case .signMessage(let method, let message, let chain, let autoSign, let callbackUrl):
+            SettingsCustomMessageView(method: method, message: message, vault: vault, chain: chain, autoSign: autoSign, callbackUrl: callbackUrl)
         }
     }
 }

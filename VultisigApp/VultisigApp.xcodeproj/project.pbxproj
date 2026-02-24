@@ -1351,6 +1351,7 @@
 		089EF1D434FDC5673F1F090A /* ReviewYourVaultsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ReviewYourVaultsScreen.swift; path = VultisigApp/Views/Keygen/ReviewYourVaultsScreen.swift; sourceTree = SOURCE_ROOT; };
 		0ABEFADAC7EF33E20A932CD6 /* SolanaTransactionStatusResponse.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SolanaTransactionStatusResponse.swift; sourceTree = "<group>"; };
 		0BD426AD3A78890574917DE6 /* CustomMessageDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomMessageDecoder.swift; sourceTree = "<group>"; };
+		119B535922D19EB971A05AE5 /* ConnectDappView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConnectDappView.swift; sourceTree = "<group>"; };
 		13052B962E8C5511000285D2 /* CrossPlatformToolbarModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossPlatformToolbarModifier.swift; sourceTree = "<group>"; };
 		13052B982E8C5744000285D2 /* MacOSToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSToolbarView.swift; sourceTree = "<group>"; };
 		13052B9A2E8C574C000285D2 /* IOSToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOSToolbarView.swift; sourceTree = "<group>"; };
@@ -5843,6 +5844,7 @@
 				A6505AFB2CA67AAE0002FBF4 /* Swap */,
 				A6505AFA2CA67A880002FBF4 /* Send */,
 				A6505AF92CA67A7D0002FBF4 /* Settings */,
+				119B535922D19EB971A05AE5 /* ConnectDappView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
