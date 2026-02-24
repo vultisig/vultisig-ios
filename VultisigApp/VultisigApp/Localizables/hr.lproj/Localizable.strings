@@ -1025,6 +1025,12 @@
 "iUnderstand" = "Razumijem";
 "replaceExistingVault" = "Zamijeni";
 "duplicateVaultMessage" = "Spremište pod nazivom \"%@\" već ima iste ključeve. Zamjenom će se prebrisati njegovi podatci.";
+"referralAdded" = "Preporuka dodana";
+"referralCodeTitle" = "Kod preporuke";
+"referralCodeDescription" = "Unesite svoj kod preporuke ovdje.";
+"referralCodeDescriptionHighlight" = "Uživajte 10% popusta na svaku transakciju.";
+"enter4DigitCode" = "Unesite kod od 4 znaka";
+"applyReferral" = "Primijeni preporuku";
 
 "scannerModeCamera" = "Kamera";
 "scannerModeScreen" = "Zaslon";

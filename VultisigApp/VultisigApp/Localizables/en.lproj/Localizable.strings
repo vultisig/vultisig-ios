@@ -852,6 +852,12 @@
 "foundActiveChainsSubtitle" = "Each extra chain increases the time to generate your vault and possibility of an timeout.";
 "reEnterPassword" = "Re-enter password";
 "addReferral" = "Add Referral";
+"referralAdded" = "Referral added";
+"referralCodeTitle" = "Referral code";
+"referralCodeDescription" = "Enter your referral code here.";
+"referralCodeDescriptionHighlight" = "Enjoy 10% off every transaction.";
+"enter4DigitCode" = "Enter 4-character code";
+"applyReferral" = "Apply referral";
 "cacaoUnstakeMaturityMessage" = "%@ until deposit maturity reached";
 "importVaultSelectionTitle" = "Recover your vault or convert your seedphrase to a vault";
 "importSeedphraseTitle" = "Import seedphrase";

@@ -15,11 +15,17 @@ struct CustomToolbarItem {
         case trailing
     }
 
-    let placement: Placement
-    let content: AnyView
+    public let placement: Placement
+    public let content: AnyView
+    public let hideSharedBackground: Bool
 
-    init<Content: View>(placement: Placement, @ViewBuilder content: () -> Content) {
+    public init<Content: View>(
+        placement: Placement,
+        hideSharedBackground: Bool = false,
+        @ViewBuilder content: () -> Content
+    ) {
         self.placement = placement
+        self.hideSharedBackground = hideSharedBackground
         self.content = AnyView(content())
     }
 }

@@ -1028,6 +1028,12 @@
 "iUnderstand" = "我了解";
 "replaceExistingVault" = "替换";
 "duplicateVaultMessage" = "名为\"%@\"的保险库已拥有相同的密钥。替换将覆盖其数据。";
+"referralAdded" = "推荐已添加";
+"referralCodeTitle" = "推荐码";
+"referralCodeDescription" = "在此输入您的推荐码。";
+"referralCodeDescriptionHighlight" = "每笔交易享受10%折扣。";
+"enter4DigitCode" = "输入4个字符代码";
+"applyReferral" = "应用推荐";
 
 "scannerModeCamera" = "摄像头";
 "scannerModeScreen" = "屏幕";

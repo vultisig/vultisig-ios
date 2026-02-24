@@ -1025,6 +1025,12 @@
 "iUnderstand" = "Eu entendo";
 "replaceExistingVault" = "Substituir";
 "duplicateVaultMessage" = "Um cofre chamado \"%@\" já possui as mesmas chaves. Substituí-lo sobrescreverá seus dados.";
+"referralAdded" = "Indicação adicionada";
+"referralCodeTitle" = "Código de indicação";
+"referralCodeDescription" = "Insira seu código de indicação aqui.";
+"referralCodeDescriptionHighlight" = "Aproveite 10% de desconto em cada transação.";
+"enter4DigitCode" = "Insira código de 4 caracteres";
+"applyReferral" = "Aplicar indicação";
 
 "scannerModeCamera" = "Câmera";
 "scannerModeScreen" = "Tela";
