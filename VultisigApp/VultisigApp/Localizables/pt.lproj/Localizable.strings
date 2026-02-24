@@ -1375,3 +1375,11 @@
 "iUnderstand" = "Eu entendo";
 "replaceExistingVault" = "Substituir";
 "duplicateVaultMessage" = "Um cofre chamado \"%@\" já possui as mesmas chaves. Substituí-lo sobrescreverá seus dados.";
+
+"scannerModeCamera" = "Câmera";
+"scannerModeScreen" = "Tela";
+"scanningScreenForQR" = "Escaneando sua tela em busca de códigos QR...";
+"scanningScreenHint" = "Exiba um código QR em qualquer lugar da sua tela e ele será detectado automaticamente.";
+"screenRecordingPermissionDenied" = "A permissão de gravação de tela é necessária para escanear códigos QR da sua tela.";
+"openSystemSettings" = "Abrir Configurações do Sistema";
+"initializingScreenCapture" = "Inicializando captura de tela";

@@ -1375,3 +1375,11 @@
 "iUnderstand" = "Ich verstehe";
 "replaceExistingVault" = "Ersetzen";
 "duplicateVaultMessage" = "Ein Tresor namens \"%@\" hat bereits dieselben Schlüssel. Durch das Ersetzen werden seine Daten überschrieben.";
+
+"scannerModeCamera" = "Kamera";
+"scannerModeScreen" = "Bildschirm";
+"scanningScreenForQR" = "Bildschirm wird nach QR-Codes durchsucht...";
+"scanningScreenHint" = "Zeigen Sie einen QR-Code irgendwo auf Ihrem Bildschirm an – er wird automatisch erkannt.";
+"screenRecordingPermissionDenied" = "Die Bildschirmaufnahme-Berechtigung ist erforderlich, um QR-Codes von Ihrem Bildschirm zu scannen.";
+"openSystemSettings" = "Systemeinstellungen öffnen";
+"initializingScreenCapture" = "Bildschirmaufnahme wird initialisiert";

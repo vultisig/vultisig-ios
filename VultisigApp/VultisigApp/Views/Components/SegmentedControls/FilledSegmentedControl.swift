@@ -12,10 +12,22 @@ protocol FilledSegmentedControlType: Identifiable {
     var title: String { get }
 }
 
+enum FilledSegmentedControlSize {
+    case normal
+    case small
+}
+
 struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
     @Binding var selection: T
     let options: [T]
+    let size: FilledSegmentedControlSize
 
+    init(selection: Binding<T>, options: [T], size: FilledSegmentedControlSize = .normal) {
+        self._selection = selection
+        self.options = options
+        self.size = size
+    }
+    
     var selectionIndex: Int {
         options.firstIndex { $0.id == selection.id } ?? 0
     }
@@ -40,7 +52,7 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
                             Text(option.title)
                                 .font(Theme.fonts.bodySMedium)
                                 .foregroundStyle(Theme.colors.textPrimary)
-                                .padding(16)
+                                .padding(padding)
                                 .frame(maxWidth: .infinity)
                         }
                         .contentShape(Rectangle())
@@ -54,7 +66,25 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
                     .fill(Theme.colors.bgSurface2)
             )
         }
-        .frame(height: 60)
+        .frame(height: height)
+    }
+    
+    var padding: CGFloat {
+        switch size {
+        case .normal:
+            16
+        case .small:
+            8
+        }
+    }
+    
+    var height: CGFloat? {
+        switch size {
+        case .normal:
+            60
+        case .small:
+            30
+        }
     }
 }
 

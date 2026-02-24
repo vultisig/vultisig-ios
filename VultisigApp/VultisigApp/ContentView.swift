@@ -39,6 +39,7 @@ struct ContentView: View {
                     splashView
                 } else {
                     container
+                        .background(Theme.colors.bgPrimary)
                 }
             }
             .navigationDestination(for: HomeRoute.self) { router.homeRouter.build($0) }
@@ -56,7 +57,6 @@ struct ContentView: View {
         .colorScheme(.dark)
         .accentColor(.white)
         .sheetPresentedStyle()
-        .background(Theme.colors.bgPrimary)
         .onOpenURL { incomingURL in
             handleDeeplink(incomingURL)
         }

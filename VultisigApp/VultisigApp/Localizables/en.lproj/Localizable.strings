@@ -1421,3 +1421,11 @@
 "iUnderstand" = "I understand";
 "replaceExistingVault" = "Replace";
 "duplicateVaultMessage" = "A vault named \"%@\" already has the same keys. Replacing it will overwrite its data.";
+
+"scannerModeCamera" = "Camera";
+"scannerModeScreen" = "Screen";
+"scanningScreenForQR" = "Scanning your screen for QR codes...";
+"scanningScreenHint" = "Display a QR code anywhere on your screen and it will be detected automatically.";
+"screenRecordingPermissionDenied" = "Screen recording permission is required to scan QR codes from your screen.";
+"openSystemSettings" = "Open System Settings";
+"initializingScreenCapture" = "Initializing Screen Capture";
