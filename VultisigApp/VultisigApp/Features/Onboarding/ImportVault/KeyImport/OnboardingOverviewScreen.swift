@@ -1,5 +1,5 @@
 //
-//  KeyImportOverviewScreen.swift
+//  OnboardingOverviewScreen.swift
 //  VultisigApp
 //
 //  Created by Gaston Mazzeo on 11/12/2025.
@@ -8,7 +8,8 @@
 import SwiftUI
 import RiveRuntime
 
-struct KeyImportOverviewScreen: View {
+struct OnboardingOverviewScreen: View {
+    let tssType: TssType
     let vault: Vault
     let email: String?
     let keyImportInput: KeyImportInput?
@@ -35,9 +36,9 @@ struct KeyImportOverviewScreen: View {
                 Spacer()
                 VStack(spacing: 32) {
                     informationView
-                    PrimaryButton(title: "continue") {
+                    PrimaryButton(title: "iUnderstand") {
                         router.navigate(to: KeygenRoute.backupNow(
-                            tssType: .KeyImport,
+                            tssType: tssType,
                             backupType: .single(vault: vault),
                             isNewVault: true
                         ))
@@ -48,7 +49,7 @@ struct KeyImportOverviewScreen: View {
         .onLoad(perform: onLoad)
         .crossPlatformSheet(isPresented: $isVerificationLinkActive) {
             ServerBackupVerificationScreen(
-                tssType: .KeyImport,
+                tssType: tssType,
                 vault: vault,
                 email: email ?? .empty,
                 isPresented: $isVerificationLinkActive,
@@ -56,7 +57,7 @@ struct KeyImportOverviewScreen: View {
                 onBackup: { },
                 onBackToEmailSetup: {
                     router.navigate(to: OnboardingRoute.vaultSetup(
-                        tssType: .KeyImport,
+                        tssType: tssType,
                         keyImportInput: keyImportInput
                     ))
                 }
@@ -117,7 +118,8 @@ struct KeyImportOverviewScreen: View {
 }
 
 #Preview {
-    KeyImportOverviewScreen(
+    OnboardingOverviewScreen(
+        tssType: .Keygen,
         vault: .example,
         email: nil,
         keyImportInput: nil,

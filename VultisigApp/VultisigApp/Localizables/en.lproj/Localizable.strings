@@ -944,6 +944,11 @@
 "tronTimeRemainingDays" = "%d days, %d hours remaining";
 "tronTimeRemainingHours" = "%d hours, %d minutes remaining";
 
+// Tron Resources Info Modal
+"tronResourcesInfoTitle" = "Bandwidth & Energy";
+"tronBandwidthDescription" = "Bandwidth Points are required for every transaction on TRON, including both standard token sends and smart contract interactions. Every TRON user receives 600 free Bandwidth Points per day, which can cover approximately two basic sends. Additionally, you can earn extra Bandwidth Points by staking TRX, increasing your daily balance to support more transactions. If you have enough Bandwidth Points, you can send tokens, stake TRX, or interact with smart contracts without paying TRX in gas fees.";
+"tronEnergyDescription" = "Energy is a resource used exclusively for executing smart contracts on TRON. Unlike Bandwidth, Energy is not provided for free — it must be obtained by staking (freezing) TRX. If you don't have enough Energy, the TRON network will burn TRX from your balance to cover the cost. Staking TRX for Energy allows you to interact with DeFi protocols, transfer TRC-20 tokens, and use dApps without paying gas fees in TRX.";
+
 "selectChainsManually" = "Select chains manually";
 "noActiveChainsFound" = "No active chains found";
 "noActiveChainsFoundSubtitle" = "We didn’t detect any assets on this seed phrase.\n\nEach extra chain increases the time to generate your vault and possibility of a timeout.";
@@ -1039,5 +1044,14 @@
 
 "unrelatedQRCode" = "Unrelated QR Code";
 "unrelatedQRCodeMessage" = "Unrelated QR code is scanned.";
+"iUnderstand" = "I understand";
 "replaceExistingVault" = "Replace";
 "duplicateVaultMessage" = "A vault named \"%@\" already has the same keys. Replacing it will overwrite its data.";
+
+"scannerModeCamera" = "Camera";
+"scannerModeScreen" = "Screen";
+"scanningScreenForQR" = "Scanning your screen for QR codes...";
+"scanningScreenHint" = "Display a QR code anywhere on your screen and it will be detected automatically.";
+"screenRecordingPermissionDenied" = "Screen recording permission is required to scan QR codes from your screen.";
+"openSystemSettings" = "Open System Settings";
+"initializingScreenCapture" = "Initializing Screen Capture";

@@ -918,6 +918,11 @@
 "tronTimeRemainingDays" = "%d Tage, %d Stunden verbleibend";
 "tronTimeRemainingHours" = "%d Stunden, %d Minuten verbleibend";
 
+// Tron Resources Info Modal
+"tronResourcesInfoTitle" = "Bandbreite & Energie";
+"tronBandwidthDescription" = "Bandbreitenpunkte werden für jede Transaktion auf TRON benötigt, einschließlich Standard-Token-Sendungen und Smart-Contract-Interaktionen. Jeder TRON-Benutzer erhält täglich 600 kostenlose Bandbreitenpunkte, die ungefähr zwei grundlegende Sendungen abdecken können. Darüber hinaus können Sie durch das Staking von TRX zusätzliche Bandbreitenpunkte verdienen und so Ihr tägliches Kontingent erhöhen, um mehr Transaktionen zu unterstützen. Wenn Sie genügend Bandbreitenpunkte haben, können Sie Token senden, TRX staken oder mit Smart Contracts interagieren, ohne TRX als Gasgebühren zu zahlen.";
+"tronEnergyDescription" = "Energie ist eine Ressource, die ausschließlich zur Ausführung von Smart Contracts auf TRON verwendet wird. Im Gegensatz zur Bandbreite wird Energie nicht kostenlos bereitgestellt — sie muss durch Staking (Einfrieren) von TRX erworben werden. Wenn Sie nicht genügend Energie haben, verbrennt das TRON-Netzwerk TRX aus Ihrem Guthaben, um die Kosten zu decken. Das Staking von TRX für Energie ermöglicht es Ihnen, mit DeFi-Protokollen zu interagieren, TRC-20-Token zu transferieren und dApps zu nutzen, ohne Gasgebühren in TRX zu zahlen.";
+
 "scanningForChainsSubtitle" = "Wir prüfen, welche Blockchains aktive Adressen haben, die mit Ihrer Seed-Phrase verknüpft sind. Dieser Vorgang kann bis zu 2 Minuten dauern.";
 "scanningForChainsSubtitleHighlight" = "Dieser Vorgang kann bis zu 2 Minuten dauern.";
 "importTheseChains" = "Diese Chains importieren";
@@ -1017,5 +1022,14 @@
 "noPositionsFound" = "Keine Positionen gefunden";
 "unrelatedQRCode" = "Unbekannter QR-Code";
 "unrelatedQRCodeMessage" = "Es wurde ein nicht zugehöriger QR-Code gescannt.";
+"iUnderstand" = "Ich verstehe";
 "replaceExistingVault" = "Ersetzen";
 "duplicateVaultMessage" = "Ein Tresor namens \"%@\" hat bereits dieselben Schlüssel. Durch das Ersetzen werden seine Daten überschrieben.";
+
+"scannerModeCamera" = "Kamera";
+"scannerModeScreen" = "Bildschirm";
+"scanningScreenForQR" = "Bildschirm wird nach QR-Codes durchsucht...";
+"scanningScreenHint" = "Zeigen Sie einen QR-Code irgendwo auf Ihrem Bildschirm an – er wird automatisch erkannt.";
+"screenRecordingPermissionDenied" = "Die Bildschirmaufnahme-Berechtigung ist erforderlich, um QR-Codes von Ihrem Bildschirm zu scannen.";
+"openSystemSettings" = "Systemeinstellungen öffnen";
+"initializingScreenCapture" = "Bildschirmaufnahme wird initialisiert";
