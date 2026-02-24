@@ -29,10 +29,8 @@ struct KeygenView: View {
     @StateObject var viewModel = KeygenViewModel()
 
     @State var progressCounter: Double = 1
-    @State var showProgressRing = true
     @State var showDoneText = false
     @State var showError = false
-    @State var showVerificationView = false
     @State var vaultCreatedAnimationVM: RiveViewModel? = nil
     @State var checkmarkAnimationVM: RiveViewModel? = nil
 
@@ -51,8 +49,8 @@ struct KeygenView: View {
             }
             .onAppear {
                 hideBackButton = true
-                vaultCreatedAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
-                checkmarkAnimationVM = RiveViewModel(fileName: "CreatingVaultCheckmark", autoPlay: true)
+                vaultCreatedAnimationVM = RiveViewModel(fileName: "vault_created", autoPlay: true)
+                checkmarkAnimationVM = RiveViewModel(fileName: "creating_vault_checkmark", autoPlay: true)
             }
             .onDisappear {
                 vaultCreatedAnimationVM?.stop()
@@ -232,7 +230,6 @@ struct KeygenView: View {
         .onAppear {
             showError = true
             hideBackButton = false
-            showProgressRing = false
         }
     }
 
@@ -279,7 +276,6 @@ struct KeygenView: View {
 
     private func setDoneData() {
         showDoneText = true
-        checkVaultType()
 
         if tssType == .Reshare {
             vault.isBackedUp = false
@@ -291,12 +287,6 @@ struct KeygenView: View {
 
         progressCounter = 4
         viewModel.delaySwitchToMain()
-    }
-
-    private func checkVaultType() {
-        if fastSignConfig != nil {
-            showVerificationView = true
-        }
     }
 
 }

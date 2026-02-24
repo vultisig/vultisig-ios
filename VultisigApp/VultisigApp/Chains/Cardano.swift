@@ -115,33 +115,6 @@ class CardanoHelper {
         return (true, nil)
     }
 
-    /// Suggest valid send amounts when UTXO validation fails
-    /// - Parameters:
-    ///   - totalBalance: Total available balance in lovelaces
-    ///   - estimatedFee: Estimated transaction fee in lovelaces
-    /// - Returns: Tuple with suggested minimum and maximum valid amounts in ADA format
-    static func suggestValidSendAmounts(totalBalance: BigInt, estimatedFee: BigInt) -> (minSendADA: Decimal, maxSendADA: Decimal) {
-        let minUTXOValue = defaultMinUTXOValue
-
-        // Minimum send amount is always the minUTXO value
-        let minSendAmount = minUTXOValue
-
-        // Maximum send amount scenarios:
-        // 1. Send Max (total balance): WalletCore automatically subtracts fee
-        // 2. Send leaving exactly minUTXO as change: totalBalance - estimatedFee - minUTXOValue
-
-        let sendMaxAmount = totalBalance // "Send Max" sends total balance, WalletCore handles fee
-        let sendLeavingMinChangeAmount = totalBalance - estimatedFee - minUTXOValue
-
-        // The maximum valid send is the higher of these two valid options
-        let maxSendAmount = max(sendMaxAmount, sendLeavingMinChangeAmount)
-
-        let minSendADA = minSendAmount.toADA
-        let maxSendADA = maxSendAmount.toADA
-
-        return (minSendADA, max(minSendADA, maxSendADA))
-    }
-
     /// Check if balance is low and should recommend "Send Max" to avoid UTXO issues
     /// - Parameters:
     ///   - totalBalance: Total available balance in lovelaces

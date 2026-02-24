@@ -13,7 +13,7 @@ import SwiftUI
 enum Utils {
     static let logger = Logger(subsystem: "util", category: "network")
     static let context = CIContext()
-    public static func sendRequest<T: Codable>(urlString: String, method: String, headers: [String: String]? = nil, body: T?, completion: @escaping (Bool) -> Void) {
+    static func sendRequest<T: Codable>(urlString: String, method: String, headers: [String: String]? = nil, body: T?, completion: @escaping (Bool) -> Void) {
         logger.debug("url:\(urlString)")
         guard let url = URL(string: urlString) else {
             logger.error("URL can't be constructed from: \(urlString)")
@@ -57,7 +57,7 @@ enum Utils {
         }.resume()
     }
 
-    public static func deleteFromServer(urlString: String, headers: [String: String]) {
+    static func deleteFromServer(urlString: String, headers: [String: String]) {
         guard let url = URL(string: urlString) else {
             logger.error("URL can't be constructed from: \(urlString)")
             return
@@ -83,7 +83,7 @@ enum Utils {
         }.resume()
     }
 
-    public static func getRequest(urlString: String, headers: [String: String]?, completion: @escaping (Result<Data, Error>) -> Void) {
+    static func getRequest(urlString: String, headers: [String: String]?, completion: @escaping (Result<Data, Error>) -> Void) {
         guard let url = URL(string: urlString) else {
             completion(.failure(NSError(domain: "Invalid URL", code: 0, userInfo: nil)))
             return
@@ -147,7 +147,7 @@ enum Utils {
         }
     }
 
-    public static func asyncGetRequest(urlString: String, headers: [String: String]? = nil) async throws -> Data {
+    static func asyncGetRequest(urlString: String, headers: [String: String]? = nil) async throws -> Data {
         guard let url = URL(string: urlString) else {
             throw NSError(domain: "Invalid URL", code: 0, userInfo: nil)
         }
@@ -175,7 +175,7 @@ enum Utils {
         }
     }
 
-    public static func asyncPostRequest(urlString: String, headers: [String: String]?, body: Data) async throws -> Data {
+    static func asyncPostRequest(urlString: String, headers: [String: String]?, body: Data) async throws -> Data {
         guard let url = URL(string: urlString) else {
             throw NSError(domain: "Invalid URL", code: 0, userInfo: nil)
         }
@@ -204,18 +204,18 @@ enum Utils {
         }
     }
 
-    public static func getMessageBodyHash(msg: String) -> String {
+    static func getMessageBodyHash(msg: String) -> String {
         let digest = Insecure.MD5.hash(data: Data(msg.utf8))
         return digest.map {
             String(format: "%02hhx", $0)
         }.joined()
     }
 
-    public static func stringToHex(_ input: String) -> String {
+    static func stringToHex(_ input: String) -> String {
         input.utf8.map { String(format: "%02x", $0) }.joined()
     }
 
-    public static func getQrImage(data: Any?, size: CGFloat) -> Image {
+    static func getQrImage(data: Any?, size: CGFloat) -> Image {
         let context = CIContext()
         guard let qrFilter = CIFilter(name: "CIQRCodeGenerator") else {
             return Image(systemName: "xmark")
@@ -233,7 +233,7 @@ enum Utils {
         return Image(cgImage, scale: 1.0, orientation: .up, label: Text("QRCode"))
     }
 
-    public static func parseCryptoURI(_ uri: String) -> (address: String, amount: String, message: String) {
+    static func parseCryptoURI(_ uri: String) -> (address: String, amount: String, message: String) {
 
         var address: String = .empty
         var amount: String = .empty
@@ -289,11 +289,11 @@ enum Utils {
         return (address, amount, message)
     }
 
-    public static func isIOS() -> Bool {
+    static func isIOS() -> Bool {
         return true
     }
 
-    public static func handleJsonDecodingError(_ error: Error) -> String {
+    static func handleJsonDecodingError(_ error: Error) -> String {
         let errorDescription: String
         switch error {
         case let DecodingError.dataCorrupted(context):
@@ -312,7 +312,7 @@ enum Utils {
         return errorDescription
     }
 
-    public static func getChainCode() -> String? {
+    static func getChainCode() -> String? {
         var bytes = [UInt8](repeating: 0, count: 32)
         let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
 
@@ -324,11 +324,11 @@ enum Utils {
         return bytesToHexString(bytes)
     }
 
-    public static func bytesToHexString(_ bytes: [UInt8]) -> String {
+    static func bytesToHexString(_ bytes: [UInt8]) -> String {
         return bytes.map { String(format: "%02x", $0) }.joined()
     }
 
-    public static func extractResultFromJson<T: Decodable>(fromData data: Data, path: String) -> T? {
+    static func extractResultFromJson<T: Decodable>(fromData data: Data, path: String) -> T? {
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary
             if let result = getValueFromJson(for: path, in: json) {
@@ -341,7 +341,7 @@ enum Utils {
         return nil
     }
 
-    public static func extractResultFromJson<T: Decodable>(fromData data: Data, path: String, type: T.Type, mustHaveFields: [String] = []) -> [T]? {
+    static func extractResultFromJson<T: Decodable>(fromData data: Data, path: String, type: T.Type, mustHaveFields: [String] = []) -> [T]? {
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary
             if let result = getValueFromJson(for: path, in: json) as? [NSDictionary] {
@@ -388,7 +388,7 @@ enum Utils {
         return nil
     }
 
-    public static func extractResultFromJson(fromData data: Data, path: String) -> Any? {
+    static func extractResultFromJson(fromData data: Data, path: String) -> Any? {
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary
             return getValueFromJson(for: path, in: json)
@@ -398,7 +398,7 @@ enum Utils {
         return nil
     }
 
-    public static func getValueFromJson(for path: String, in dictionary: NSDictionary?) -> Any? {
+    static func getValueFromJson(for path: String, in dictionary: NSDictionary?) -> Any? {
         guard let dictionary = dictionary else { return nil }
 
         if path.contains(".") {
@@ -418,13 +418,13 @@ enum Utils {
         }
     }
 
-    public static func isCacheValid<T>(for key: String, in cache: [String: (data: T, timestamp: Date)], timeInSeconds: Double) -> Bool {
+    static func isCacheValid<T>(for key: String, in cache: [String: (data: T, timestamp: Date)], timeInSeconds: Double) -> Bool {
         guard let cacheEntry = cache[key] else { return false }
         let elapsedTime = Date().timeIntervalSince(cacheEntry.timestamp)
         return elapsedTime <= timeInSeconds
     }
 
-    public static func getCachedData<T>(cacheKey: String, cache: [String: (data: T, timestamp: Date)], timeInSeconds: TimeInterval) -> T? {
+    static func getCachedData<T>(cacheKey: String, cache: [String: (data: T, timestamp: Date)], timeInSeconds: TimeInterval) -> T? {
         if let cacheEntry = cache[cacheKey], isCacheValid(for: cacheKey, in: cache, timeInSeconds: timeInSeconds) {
             return cacheEntry.data
         } else {
@@ -432,7 +432,7 @@ enum Utils {
         }
     }
 
-    public static func getCachedData<T>(cacheKey: String, cache: ThreadSafeDictionary<String, (data: T, timestamp: Date)>, timeInSeconds: TimeInterval) -> T? {
+    static func getCachedData<T>(cacheKey: String, cache: ThreadSafeDictionary<String, (data: T, timestamp: Date)>, timeInSeconds: TimeInterval) -> T? {
         if let cacheEntry = cache.get(cacheKey), isCacheValid(entry: cacheEntry, timeInSeconds: timeInSeconds) {
             return cacheEntry.data
         } else {
@@ -440,7 +440,7 @@ enum Utils {
         }
     }
 
-    public static func isCacheValid<T>(entry: (data: T, timestamp: Date), timeInSeconds: TimeInterval) -> Bool {
+    static func isCacheValid<T>(entry: (data: T, timestamp: Date), timeInSeconds: TimeInterval) -> Bool {
         let elapsedTime = Date().timeIntervalSince(entry.timestamp)
         return elapsedTime < timeInSeconds
     }
@@ -462,7 +462,7 @@ enum Utils {
         return data
     }
 
-    public static func generateQRCodeImage(from string: String, tint: Color = .white, background: Color = .clear) -> Image {
+    static func generateQRCodeImage(from string: String, tint: Color = .white, background: Color = .clear) -> Image {
         let filter = CIFilter.qrCodeGenerator()
         filter.message = Data(string.utf8)
         defer {
@@ -513,7 +513,7 @@ enum Utils {
     }
 
 #if os(iOS)
-    public static func handleQrCodeFromImage(image: UIImage) -> Data {
+    static func handleQrCodeFromImage(image: UIImage) -> Data {
         let qrStrings = detectQRCode(image)
         if qrStrings.isEmpty {
             print("No QR codes detected.")
@@ -528,7 +528,7 @@ enum Utils {
         return Data()
     }
 
-    public static func detectQRCode(_ image: UIImage?) -> [String] {
+    static func detectQRCode(_ image: UIImage?) -> [String] {
         var detectedStrings = [String]()
         guard let image = image, let ciImage = CIImage(image: image) else { return detectedStrings }
 
@@ -548,7 +548,7 @@ enum Utils {
     }
 
 #elseif os(macOS)
-    public static func handleQrCodeFromImage(image: NSImage) -> Data {
+    static func handleQrCodeFromImage(image: NSImage) -> Data {
         let qrStrings = detectQRCode(image)
         if qrStrings.isEmpty {
             print("No QR codes detected.")
@@ -563,7 +563,7 @@ enum Utils {
         return Data()
     }
 
-    public static func detectQRCode(_ image: NSImage?) -> [String] {
+    static func detectQRCode(_ image: NSImage?) -> [String] {
         var detectedStrings = [String]()
 
         guard let image = image else {
@@ -592,7 +592,7 @@ enum Utils {
         return detectedStrings
     }
 
-    public static func getUniqueIdentifier() -> String {
+    static func getUniqueIdentifier() -> String {
         let userDefaults = UserDefaults.standard
         let uuidKey = "com.vultisig.wallet"
 
@@ -608,7 +608,7 @@ enum Utils {
     }
 #endif
 
-    public static func handleQrCodeFromImage(result: Result<[URL], Error>) throws -> Data {
+    static func handleQrCodeFromImage(result: Result<[URL], Error>) throws -> Data {
         switch result {
         case .success(let urls):
             guard let url = urls.first else { return Data() }
@@ -660,7 +660,7 @@ enum Utils {
         return Data()
     }
 
-    public static func getLocalDeviceIdentity() -> String {
+    static func getLocalDeviceIdentity() -> String {
 #if os(iOS)
         let identifierForVendor = UIDevice.current.identifierForVendor?.uuidString
         let parts = identifierForVendor?.components(separatedBy: "-")
@@ -671,7 +671,7 @@ enum Utils {
 #endif
     }
 
-    public static func getDeviceName() -> String {
+    static func getDeviceName() -> String {
 #if os(iOS)
         return UIDevice.current.name
 #elseif os(macOS)
@@ -679,7 +679,7 @@ enum Utils {
 #endif
     }
 
-    public static func sanitizeAddress(address: String) -> String {
+    static func sanitizeAddress(address: String) -> String {
         let sanitizedAddress = address
         if sanitizedAddress.hasPrefix("ethereum:") {
             return String(sanitizedAddress.dropFirst(9))

@@ -9,17 +9,23 @@ import SwiftUI
 
 // MARK: - CustomToolbarItem
 
-public struct CustomToolbarItem {
-    public enum Placement {
+struct CustomToolbarItem {
+    enum Placement {
         case leading
         case trailing
     }
 
     public let placement: Placement
     public let content: AnyView
+    public let hideSharedBackground: Bool
 
-    public init<Content: View>(placement: Placement, @ViewBuilder content: () -> Content) {
+    public init<Content: View>(
+        placement: Placement,
+        hideSharedBackground: Bool = false,
+        @ViewBuilder content: () -> Content
+    ) {
         self.placement = placement
+        self.hideSharedBackground = hideSharedBackground
         self.content = AnyView(content())
     }
 }
@@ -27,45 +33,45 @@ public struct CustomToolbarItem {
 // MARK: - CustomToolbarItemsBuilder
 
 @resultBuilder
-public struct CustomToolbarItemsBuilder {
-    public static func buildExpression(_ item: CustomToolbarItem) -> CustomToolbarItem {
+struct CustomToolbarItemsBuilder {
+    static func buildExpression(_ item: CustomToolbarItem) -> CustomToolbarItem {
         item
     }
 
-    public static func buildBlock(_ items: CustomToolbarItem...) -> [CustomToolbarItem] {
+    static func buildBlock(_ items: CustomToolbarItem...) -> [CustomToolbarItem] {
         items
     }
 
-    public static func buildOptional(_ item: [CustomToolbarItem]?) -> [CustomToolbarItem] {
+    static func buildOptional(_ item: [CustomToolbarItem]?) -> [CustomToolbarItem] {
         item ?? []
     }
 
-    public static func buildEither(first items: [CustomToolbarItem]) -> [CustomToolbarItem] {
+    static func buildEither(first items: [CustomToolbarItem]) -> [CustomToolbarItem] {
         items
     }
 
-    public static func buildEither(second items: [CustomToolbarItem]) -> [CustomToolbarItem] {
+    static func buildEither(second items: [CustomToolbarItem]) -> [CustomToolbarItem] {
         items
     }
 
-    public static func buildArray(_ items: [[CustomToolbarItem]]) -> [CustomToolbarItem] {
+    static func buildArray(_ items: [[CustomToolbarItem]]) -> [CustomToolbarItem] {
         items.flatMap { $0 }
     }
 
-    public static func buildBlock() -> [CustomToolbarItem] {
+    static func buildBlock() -> [CustomToolbarItem] {
         []
     }
 }
 
 // MARK: - CrossPlatformToolbarModifier
 
-public struct CrossPlatformToolbarModifier: ViewModifier {
+struct CrossPlatformToolbarModifier: ViewModifier {
     private let items: [CustomToolbarItem]
     private let navigationTitle: String?
     private let ignoresTopEdge: Bool
     private let showsBackButton: Bool
 
-    public init(
+    init(
         items: [CustomToolbarItem]? = nil,
         navigationTitle: String? = nil,
         ignoresTopEdge: Bool = false,
@@ -77,7 +83,7 @@ public struct CrossPlatformToolbarModifier: ViewModifier {
         self.showsBackButton = showsBackButton
     }
 
-    public func body(content: Content) -> some View {
+    func body(content: Content) -> some View {
         #if os(macOS)
         MacOSToolbarView(
             items: items,
@@ -98,41 +104,9 @@ public struct CrossPlatformToolbarModifier: ViewModifier {
     }
 }
 
-// MARK: - MacOSWindowModifier
-
-public struct MacOSWindowModifier: ViewModifier {
-    private let maxWidth: CGFloat?
-    private let minHeight: CGFloat?
-    private let topPadding: CGFloat
-    private let horizontalPadding: CGFloat
-
-    public init(
-        maxWidth: CGFloat? = nil,
-        minHeight: CGFloat? = nil,
-        topPadding: CGFloat = 0,
-        horizontalPadding: CGFloat = 0
-    ) {
-        self.maxWidth = maxWidth
-        self.minHeight = minHeight
-        self.topPadding = topPadding
-        self.horizontalPadding = horizontalPadding
-    }
-
-    public func body(content: Content) -> some View {
-        #if os(macOS)
-        content
-            .frame(maxWidth: maxWidth, minHeight: minHeight)
-            .padding(.top, topPadding)
-            .padding(.horizontal, horizontalPadding)
-        #else
-        content
-        #endif
-    }
-}
-
 // MARK: - View Extensions
 
-public extension View {
+extension View {
     /// Cross-platform toolbar modifier that works on both iOS and macOS
     /// - Parameters:
     ///   - navigationTitle: Optional title to display in the navigation bar/toolbar center
@@ -199,23 +173,4 @@ public extension View {
         )
     }
 
-    /// macOS-specific window sizing and padding modifier
-    /// - Parameters:
-    ///   - maxWidth: Maximum width for macOS window
-    ///   - minHeight: Minimum height for macOS window
-    ///   - topPadding: Additional top padding for macOS
-    ///   - horizontalPadding: Additional horizontal padding for macOS
-    func macOSWindow(
-        maxWidth: CGFloat? = nil,
-        minHeight: CGFloat? = nil,
-        topPadding: CGFloat = 0,
-        horizontalPadding: CGFloat = 0
-    ) -> some View {
-        modifier(MacOSWindowModifier(
-            maxWidth: maxWidth,
-            minHeight: minHeight,
-            topPadding: topPadding,
-            horizontalPadding: horizontalPadding
-        ))
-    }
 }

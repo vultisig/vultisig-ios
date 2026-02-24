@@ -20,7 +20,7 @@ struct BackupNowDisclaimer: View {
                 isNewVault: false
             ))
         } label: {
-            container
+            content
                 .listRowInsets(EdgeInsets())
                 .listRowSeparator(.hidden)
                 .padding(1)

@@ -291,34 +291,6 @@ extension ThorchainService {
         }
     }
 
-    /// Check if an asset exists in THORChain pools
-    /// - Parameter assetName: The fully qualified asset name to check
-    /// - Returns: True if the asset exists in THORChain pools
-    func assetExistsInPools(assetName: String) async -> Bool {
-        do {
-            _ = try await fetchAssetPrice(assetName: assetName)
-            return true
-        } catch {
-            logger.warning("Error in assetExistsInPools: \(error.localizedDescription)")
-            return false
-        }
-    }
-
-    /// Get THORChain asset name in the format expected by the API
-    /// - Parameters:
-    ///   - chain: The chain the asset is on
-    ///   - symbol: The ticker/symbol of the asset
-    /// - Returns: Formatted asset name (e.g., "THOR.RUNE", "BTC.BTC")
-    func formatAssetName(chain: Chain, symbol: String) -> String {
-        // For THORChain assets, the chain code should be "THOR"
-        let chainCode = chain == .thorChain ? "THOR" : chain.rawValue.uppercased()
-
-        // Uppercase the symbol
-        let assetSymbol = symbol.uppercased()
-
-        return "\(chainCode).\(assetSymbol)"
-    }
-
     private func fetchAssetPrice(assetName: String) async throws -> Double {
         // Use the generic pool endpoint for all assets
         let endpoint = Endpoint.fetchPoolInfo(asset: assetName)
@@ -359,13 +331,6 @@ extension ThorchainService {
         let ruji: Decimal
         let shares: String
         let price: Decimal
-    }
-
-    /// Structure representing a merged RUJI position
-    struct MergedPosition {
-        let token: String
-        let ruji: Decimal
-        let shares: String
     }
 
     /// Structure representing a RUJI Stake balance result
@@ -422,44 +387,6 @@ extension ThorchainService {
         let price = sharesDecimal > 0 ? ruji / sharesDecimal : 0
 
         return RujiBalance(ruji: ruji, shares: shares, price: price)
-    }
-
-    /// Fetch all merged RUJI positions for an address
-    /// - Parameter thorAddress: The THORChain address to query
-    /// - Returns: Array of merged positions with token info
-    func fetchAllMergedPositions(thorAddr: String) async throws -> [MergedPosition] {
-        let id = "Account:\(thorAddr)".data(using: .utf8)?.base64EncodedString() ?? ""
-
-        guard let url = URL(string: Endpoint.fetchThorchainMergedAssets()) else {
-            throw HelperError.runtimeError("Invalid GraphQL URL")
-        }
-
-        let query = String(format: Self.mergedAssetsQuery, id)
-
-        let requestBody: [String: Any] = ["query": query]
-
-        let bodyData = try JSONSerialization.data(withJSONObject: requestBody)
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = bodyData
-
-        let (data, _) = try await URLSession.shared.data(for: request)
-
-        let decoded = try JSONDecoder().decode(AccountRootData.self, from: data)
-
-        var positions: [MergedPosition] = []
-
-        if let accounts = decoded.data.node?.merge?.accounts {
-            for account in accounts {
-                let token = account.pool.mergeAsset.metadata.symbol
-                let ruji = Decimal(string: account.size.amount) ?? 0
-                let shares = account.shares
-                positions.append(MergedPosition(token: token, ruji: ruji, shares: shares))
-            }
-        }
-
-        return positions
     }
 
     func fetchRujiStakeBalance(thorAddr: String) async throws -> RujiStakeBalance {

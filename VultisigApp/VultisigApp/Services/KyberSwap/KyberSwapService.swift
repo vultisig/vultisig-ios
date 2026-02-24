@@ -191,13 +191,6 @@ struct KyberSwapService {
         return (evmQuote, fee)
     }
 
-    func fetchTokens(chain: Chain) async throws -> [KyberSwapToken] {
-        let chainName = try getChainName(for: chain)
-        let url = Endpoint.fetchKyberSwapTokens(chainId: chainName)
-        let response: KyberSwapTokensResponse = try await Utils.fetchObject(from: url.absoluteString)
-        return response.data.tokens
-    }
-
     func getChainName(for chain: Chain) throws -> String {
         switch chain {
         case .ethereum:
@@ -396,14 +389,6 @@ private extension KyberSwapService {
             self.source = source
             self.referral = referral
             self.ignoreCappedSlippage = ignoreCappedSlippage
-        }
-    }
-
-    struct KyberSwapTokensResponse: Codable {
-        let data: TokensData
-
-        struct TokensData: Codable {
-            let tokens: [KyberSwapToken]
         }
     }
 

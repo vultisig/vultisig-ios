@@ -65,7 +65,7 @@ struct ServerBackupVerificationScreen: View {
         .sheetStyle()
         .onAppear {
             focusedField = 0
-            animationVM = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
+            animationVM = RiveViewModel(fileName: "connecting_with_server", autoPlay: true)
         }
         .onDisappear {
             animationVM?.stop()
