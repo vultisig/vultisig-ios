@@ -263,7 +263,7 @@ struct JoinKeygenView: View {
 
     private func setData() {
         appViewModel.checkCameraPermission()
-        loadingAnimationVM = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
+        loadingAnimationVM = RiveViewModel(fileName: "connecting_with_server", autoPlay: true)
 
         viewModel.setData(
             vault: vault,

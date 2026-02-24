@@ -35,10 +35,6 @@ class FunctionCallLeave: FunctionCallAddressable, ObservableObject {
     required init() {
     }
 
-    init(nodeAddress: String) {
-        self.nodeAddress = nodeAddress
-    }
-
     init(tx: SendTransaction, vault: Vault) {
         self.tx = tx
         self.vault = vault

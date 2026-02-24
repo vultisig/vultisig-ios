@@ -48,10 +48,6 @@ class FunctionCallViewModel: ObservableObject {
         isValidAddress = AddressService.validateAddress(address: address, chain: tx.coin.chain)
     }
 
-    func setHash(_ hash: String) {
-        self.hash = hash
-    }
-
     func stopMediator() {
         self.mediator.stop()
         logger.info("mediator server stopped.")

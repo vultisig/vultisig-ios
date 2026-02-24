@@ -291,22 +291,6 @@ extension ThorchainStagenetService {
         }
     }
 
-    func assetExistsInPools(assetName: String) async -> Bool {
-        do {
-            _ = try await fetchAssetPrice(assetName: assetName)
-            return true
-        } catch {
-            print("Error in assetExistsInPools: \(error.localizedDescription)")
-            return false
-        }
-    }
-
-    func formatAssetName(chain: Chain, symbol: String) -> String {
-        let chainCode = chain == .thorChainStagenet ? "THOR" : chain.rawValue.uppercased()
-        let assetSymbol = symbol.uppercased()
-        return "\(chainCode).\(assetSymbol)"
-    }
-
     private func fetchAssetPrice(assetName: String) async throws -> Double {
         let endpoint = Endpoint.fetchStagenetPoolInfo(asset: assetName)
 

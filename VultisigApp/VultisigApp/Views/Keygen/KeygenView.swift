@@ -28,14 +28,9 @@ struct KeygenView: View {
 
     @StateObject var viewModel = KeygenViewModel()
 
-
-
-
     @State var progressCounter: Double = 1
-    @State var showProgressRing = true
     @State var showDoneText = false
     @State var showError = false
-    @State var showVerificationView = false
     @State var vaultCreatedAnimationVM: RiveViewModel? = nil
     @State var checkmarkAnimationVM: RiveViewModel? = nil
     @State var keygenAnimationVM: RiveViewModel? = nil
@@ -58,8 +53,8 @@ struct KeygenView: View {
             }
             .onAppear {
                 hideBackButton = true
-                vaultCreatedAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
-                checkmarkAnimationVM = RiveViewModel(fileName: "CreatingVaultCheckmark", autoPlay: true)
+                vaultCreatedAnimationVM = RiveViewModel(fileName: "vault_created", autoPlay: true)
+                checkmarkAnimationVM = RiveViewModel(fileName: "creating_vault_checkmark", autoPlay: true)
                 keygenAnimationVM = RiveViewModel(
                     fileName: fastSignConfig != nil ? "keygen_fast" : "keygen_secure",
                     autoPlay: true,
@@ -224,8 +219,6 @@ struct KeygenView: View {
         }
     }
 
-
-
     var doneText: some View {
         ZStack {
             vaultCreatedAnimationVM?.view()
@@ -270,7 +263,6 @@ struct KeygenView: View {
         .onAppear {
             showError = true
             hideBackButton = false
-            showProgressRing = false
         }
     }
 
@@ -300,10 +292,6 @@ struct KeygenView: View {
         ErrorMessage(text: "thresholdNotReachedMessage", width: 300)
     }
 
-
-
-
-
     func setData() async {
         await viewModel.setData(
             vault: vault,
@@ -321,7 +309,6 @@ struct KeygenView: View {
 
     private func setDoneData() {
         showDoneText = true
-        checkVaultType()
 
         if tssType == .Reshare {
             vault.isBackedUp = false
@@ -333,12 +320,6 @@ struct KeygenView: View {
 
         progressCounter = 4
         viewModel.delaySwitchToMain()
-    }
-
-    private func checkVaultType() {
-        if fastSignConfig != nil {
-            showVerificationView = true
-        }
     }
 
     private func animateProgress(to targetValue: Float) {

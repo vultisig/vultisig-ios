@@ -139,17 +139,6 @@ struct JoinKeysignDoneSummary: View {
         appViewModel.restart()
     }
 
-    var transactionLink: some View {
-        VStack {
-            Separator()
-
-            HStack {
-                Spacer()
-                progressLink(txid: viewModel.txid)
-            }
-        }
-    }
-
     private func getGeneralCell(title: String, description: String, isVerticalStacked: Bool = false) -> some View {
         ZStack {
             if isVerticalStacked {
