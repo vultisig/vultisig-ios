@@ -53,6 +53,17 @@ struct OnboardingOverviewScreen: View {
         return "storeBackupsSeparatelyDescription".localized
     }
 
+    private var descriptionHighlightedText: String? {
+        isKeyImport ? nil : "backupsDescriptionVaultHighlight".localized
+    }
+
+    private var row1HighlightedText: String? {
+        if !isKeyImport && setupType == .fast {
+            return "backupDeviceDriverDescriptionHighlight".localized
+        }
+        return nil
+    }
+
     private var buttonTitle: String {
         isKeyImport ? "continue".localized : "iUnderstand".localized
     }
@@ -122,17 +133,34 @@ struct OnboardingOverviewScreen: View {
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.title2)
 
-                Text(descriptionText)
-                    .foregroundStyle(Theme.colors.textTertiary)
-                    .font(Theme.fonts.footnote)
-                    .frame(maxWidth: 329)
+                Group {
+                    if let descriptionHighlightedText {
+                        HighlightedText(
+                            text: descriptionText,
+                            highlightedText: descriptionHighlightedText,
+                            textStyle: {
+                                $0.font = Theme.fonts.footnote
+                                $0.foregroundColor = Theme.colors.textTertiary
+                            },
+                            highlightedTextStyle: {
+                                $0.foregroundColor = Theme.colors.textPrimary
+                            }
+                        )
+                    } else {
+                        Text(descriptionText)
+                            .foregroundStyle(Theme.colors.textTertiary)
+                            .font(Theme.fonts.footnote)
+                    }
+                }
+                .frame(maxWidth: 329)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
             OnboardingInformationRowView(
                 title: row1Title,
                 subtitle: row1Subtitle,
-                icon: "cloud-upload-filled"
+                icon: "cloud-upload-filled",
+                highlightedText: row1HighlightedText
             )
 
             OnboardingInformationRowView(
@@ -161,7 +189,7 @@ struct OnboardingOverviewScreen: View {
         vault: .example,
         email: nil,
         keyImportInput: .init(mnemonic: "", chainSettings: []),
-        setupType: .secure(numberOfDevices: 3)
+        setupType: .fast
     )
     .frame(width: isMacOS ? 1500 : nil)
     .frame(maxHeight: isMacOS ? 800 : nil)

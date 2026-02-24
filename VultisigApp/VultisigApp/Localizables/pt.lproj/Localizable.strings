@@ -1360,10 +1360,12 @@
 "backupsTitleHighlight" = "Backups";
 "storeBackupsSeparately" = "Armazene backups separadamente";
 "storeBackupsSeparatelyDescription" = "Mantenha cada backup em um local diferente. Se um for comprometido, seus fundos permanecem seguros.";
-"storeBackupsSeparatelyDescriptionSecure" = "Salve cada backup em uma nuvem diferente ou com uma senha diferente. Se um for exposto, seus fundos permanecem seguros.";
-"backupsDescriptionVault" = "Os backups sustentam seu cofre. Cada dispositivo tem seu próprio backup. Um backup sozinho não pode mover fundos, serve apenas para recuperação.";
+"storeBackupsSeparatelyDescriptionSecure" = "Salve cada backup em um serviço de nuvem diferente ou com uma senha diferente. Se um for exposto, seus fundos permanecem seguros.";
+"backupsDescriptionVault" = "Os backups sustentam seu cofre. Cada dispositivo tem seu próprio backup. Um backup sozinho não pode mover fundos, serve apenas para recuperação. Importe e recupere qualquer dispositivo perdido";
+"backupsDescriptionVaultHighlight" = "próprio";
 "backupDeviceDriver" = "Seu dispositivo é o condutor";
-"backupDeviceDriverDescription" = "O backup do dispositivo e a senha são a chave. O servidor apenas co-assina.";
+"backupDeviceDriverDescription" = "O backup do Dispositivo e a senha são a chave. O servidor apenas co-assina e o backup pode ser solicitado.";
+"backupDeviceDriverDescriptionHighlight" = "e";
 "backupEachDeviceDescriptionSecure" = "Você criará %d backups no total. Fará isso em cada dispositivo.";
 
 "swap.outbound_fee" = "Taxa de Saída";

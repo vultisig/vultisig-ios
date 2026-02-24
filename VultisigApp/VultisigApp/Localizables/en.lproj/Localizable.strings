@@ -1403,10 +1403,12 @@
 "backupsTitleHighlight" = "Backups";
 "storeBackupsSeparately" = "Store backups separately";
 "storeBackupsSeparatelyDescription" = "Keep each backup in a different place. If one is compromised, your funds stay safe.";
-"storeBackupsSeparatelyDescriptionSecure" = "Save each backup in a different cloud or with a different password. If one is exposed, your funds stay safe.";
-"backupsDescriptionVault" = "Backups power your vault. Each device has its own backup. A backup alone can't move funds, it's only for recovery.";
+"storeBackupsSeparatelyDescriptionSecure" = "Save each backup in a different cloud service or with a different password. If one is exposed, your funds stay safe.";
+"backupsDescriptionVault" = "Backups power your vault. Each device has its own backup. A backup alone can't move funds, it's only for recovery. Import and recover any lost device";
+"backupsDescriptionVaultHighlight" = "own";
 "backupDeviceDriver" = "Your device is the driver";
-"backupDeviceDriverDescription" = "The device backup and password are the key. The server only co-signs.";
+"backupDeviceDriverDescription" = "The Device backup and password are the key. The server only co-signs and backup can be requested.";
+"backupDeviceDriverDescriptionHighlight" = "and";
 "backupEachDeviceDescriptionSecure" = "You'll create %d backups in total. You will do this on each device.";
 "message" = "Message";
 

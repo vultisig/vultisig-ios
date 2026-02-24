@@ -1360,10 +1360,12 @@
 "backupsTitleHighlight" = "Backups";
 "storeBackupsSeparately" = "Backups getrennt speichern";
 "storeBackupsSeparatelyDescription" = "Bewahren Sie jedes Backup an einem anderen Ort auf. Wenn eines kompromittiert wird, bleiben Ihre Gelder sicher.";
-"storeBackupsSeparatelyDescriptionSecure" = "Speichern Sie jedes Backup in einer anderen Cloud oder mit einem anderen Passwort. Wenn eines offengelegt wird, bleiben Ihre Gelder sicher.";
-"backupsDescriptionVault" = "Backups sind die Grundlage Ihres Tresors. Jedes Gerät hat sein eigenes Backup. Ein Backup allein kann keine Gelder bewegen, es dient nur der Wiederherstellung.";
+"storeBackupsSeparatelyDescriptionSecure" = "Speichern Sie jedes Backup in einem anderen Cloud-Dienst oder mit einem anderen Passwort. Wenn eines offengelegt wird, bleiben Ihre Gelder sicher.";
+"backupsDescriptionVault" = "Backups sind die Grundlage Ihres Tresors. Jedes Gerät hat sein eigenes Backup. Ein Backup allein kann keine Gelder bewegen, es dient nur der Wiederherstellung. Importieren und stellen Sie jedes verlorene Gerät wieder her";
+"backupsDescriptionVaultHighlight" = "eigenes";
 "backupDeviceDriver" = "Ihr Gerät ist der Schlüssel";
-"backupDeviceDriverDescription" = "Das Geräte-Backup und das Passwort sind der Schlüssel. Der Server signiert nur mit.";
+"backupDeviceDriverDescription" = "Das Geräte-Backup und das Passwort sind der Schlüssel. Der Server signiert nur mit und ein Backup kann angefordert werden.";
+"backupDeviceDriverDescriptionHighlight" = "und";
 "backupEachDeviceDescriptionSecure" = "Sie erstellen insgesamt %d Backups. Dies wiederholen Sie auf jedem Gerät.";
 
 "swap.outbound_fee" = "Ausgangsgebühr";
