@@ -157,7 +157,11 @@ struct KeysignDiscoveryView: View {
     }
 
     var lookingForDevices: some View {
-        LookingForDevicesLoader(selectedTab: keysignState)
+        KeygenAnimationView(
+            isFast: keysignState == .fast,
+            connected: .constant(false),
+            progress: .constant(0)
+        )
     }
 
     var keysignState: SetupVaultState {

@@ -67,6 +67,8 @@
 "backupPart2" = "Sicherungsanteil 2";
 "backupPasswordDisclaimer" = "Speichere niemals Tresoranteile von verschiedenen Geräten am selben Ort";
 "backupSetupSubtitle" = "Exportiere diese Sicherungsdatei und speichere sie in der Cloud. Verwende für jede Sicherung einen anderen Cloud-Dienst oder ein anderes Konto. Wenn du fertig bist, lösche die Datei von diesem Gerät.";
+"backupSetupSubtitleFast" = "Exportiere diese Sicherungsdatei und speichere sie in der Cloud. Sie ist verschlüsselt mit dem zuvor festgelegten Passwort zum Entsperren deines Vaults.";
+"backupSetupSubtitleFastHighlight" = "verschlüsselt";
 "backupSetupSubtitleHighlight" = "Verwende für jede Sicherung einen anderen Cloud-Dienst oder ein anderes Konto. Wenn du fertig bist, lösche die Datei von diesem Gerät.";
 "backupSetupTitle" = "Sicherung in der Cloud speichern";
 "backupSetupTitleSecure" = "Sicherung %d von %d in der Cloud speichern";

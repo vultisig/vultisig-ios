@@ -67,6 +67,8 @@
 "backupPart2" = "Backup Share 2";
 "backupPasswordDisclaimer" = "Never store Vault Shares from different devices in the same location";
 "backupSetupSubtitle" = "Export this backup file, then save it to the cloud. Use a different cloud service or account for each backup. When you're finished, delete the file from this device.";
+"backupSetupSubtitleFast" = "Export this backup file, then save it to the cloud. It is encrypted with the password set earlier to unlock your Vault.";
+"backupSetupSubtitleFastHighlight" = "encrypted";
 "backupSetupSubtitleHighlight" = "Use a different cloud service or account for each backup. When you're finished, delete the file from this device.";
 "backupSetupTitle" = "Save backup to the cloud";
 "backupSetupTitleSecure" = "Save backup %d of %d to the cloud";

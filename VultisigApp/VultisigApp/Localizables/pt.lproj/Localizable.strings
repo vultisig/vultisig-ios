@@ -67,6 +67,8 @@
 "backupPart2" = "Cópia de Segurança 2";
 "backupPasswordDisclaimer" = "Nunca armazene ações do Vault de diferentes dispositivos no mesmo local";
 "backupSetupSubtitle" = "Exporte este arquivo de backup e salve-o na nuvem. Use um serviço de nuvem ou conta diferente para cada backup. Quando terminar, apague o arquivo deste dispositivo.";
+"backupSetupSubtitleFast" = "Exporte este arquivo de backup e salve-o na nuvem. Ele é criptografado com a senha definida anteriormente para desbloquear seu Vault.";
+"backupSetupSubtitleFastHighlight" = "criptografado";
 "backupSetupSubtitleHighlight" = "Use um serviço de nuvem ou conta diferente para cada backup. Quando terminar, apague o arquivo deste dispositivo.";
 "backupSetupTitle" = "Salvar backup na nuvem";
 "backupSetupTitleSecure" = "Salvar backup %d de %d na nuvem";

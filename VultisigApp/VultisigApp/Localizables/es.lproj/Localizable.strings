@@ -67,6 +67,8 @@
 "backupPart2" = "Copia de Seguridad 2";
 "backupPasswordDisclaimer" = "Nunca almacene las partes del Vault de diferentes dispositivos en la misma ubicación";
 "backupSetupSubtitle" = "Exporta este archivo de respaldo y guárdalo en la nube. Usa un servicio o cuenta de nube diferente para cada respaldo. Cuando termines, elimina el archivo de este dispositivo.";
+"backupSetupSubtitleFast" = "Exporta este archivo de respaldo y guárdalo en la nube. Está encriptado con la contraseña establecida anteriormente para desbloquear tu Vault.";
+"backupSetupSubtitleFastHighlight" = "encriptado";
 "backupSetupSubtitleHighlight" = "Usa un servicio o cuenta de nube diferente para cada respaldo. Cuando termines, elimina el archivo de este dispositivo.";
 "backupSetupTitle" = "Guardar respaldo en la nube";
 "backupSetupTitleSecure" = "Guardar respaldo %d de %d en la nube";

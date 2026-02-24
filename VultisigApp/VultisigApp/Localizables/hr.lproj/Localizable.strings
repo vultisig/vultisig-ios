@@ -67,6 +67,8 @@
 "backupPart2" = "Rezervna Kopija 2";
 "backupPasswordDisclaimer" = "Nikada ne pohranjujte dionice Vaulta s različitih uređaja na istom mjestu";
 "backupSetupSubtitle" = "Izvezite ovu sigurnosnu kopiju, zatim je spremite u oblak. Koristite različite usluge oblaka ili račune za svaku sigurnosnu kopiju. Kada završite, izbrišite datoteku s ovog uređaja.";
+"backupSetupSubtitleFast" = "Izvezite ovu sigurnosnu kopiju, zatim je spremite u oblak. Šifrirana je lozinkom postavljenom ranije za otključavanje vašeg Vaulta.";
+"backupSetupSubtitleFastHighlight" = "Šifrirana";
 "backupSetupSubtitleHighlight" = "Koristite različite usluge oblaka ili račune za svaku sigurnosnu kopiju. Kada završite, izbrišite datoteku s ovog uređaja.";
 "backupSetupTitle" = "Spremite sigurnosnu kopiju u oblak";
 "backupSetupTitleSecure" = "Spremi sigurnosnu kopiju %d od %d u oblak";

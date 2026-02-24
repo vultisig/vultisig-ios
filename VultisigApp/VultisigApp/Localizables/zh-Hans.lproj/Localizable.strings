@@ -67,6 +67,8 @@
 "backupPart2" = "备份份额 2";
 "backupPasswordDisclaimer" = "切勿将来自不同设备的保险库份额存储在同一位置";
 "backupSetupSubtitle" = "导出此备份文件，然后将其保存到云端。每次备份请使用不同的云服务或账户。完成后，从此设备删除该文件。";
+"backupSetupSubtitleFast" = "导出此备份文件，然后将其保存到云端。它使用之前设置的密码进行了加密，用于解锁您的保险库。";
+"backupSetupSubtitleFastHighlight" = "加密";
 "backupSetupSubtitleHighlight" = "每次备份请使用不同的云服务或账户。完成后，从此设备删除该文件。";
 "backupSetupTitle" = "将备份保存到云端";
 "backupSetupTitleSecure" = "将备份 %d/%d 保存到云端";

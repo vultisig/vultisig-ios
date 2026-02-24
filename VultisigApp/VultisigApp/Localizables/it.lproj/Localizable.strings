@@ -67,6 +67,8 @@
 "backupPart2" = "Copia di Backup 2";
 "backupPasswordDisclaimer" = "Non memorizzare mai le quote del Vault di dispositivi diversi nello stesso luogo";
 "backupSetupSubtitle" = "Esporta questo file di backup, poi salvalo nel cloud. Usa un servizio cloud o un account diverso per ogni backup. Quando hai finito, elimina il file da questo dispositivo.";
+"backupSetupSubtitleFast" = "Esporta questo file di backup, poi salvalo nel cloud. È crittografato con la password impostata in precedenza per sbloccare il tuo Vault.";
+"backupSetupSubtitleFastHighlight" = "crittografato";
 "backupSetupSubtitleHighlight" = "Usa un servizio cloud o un account diverso per ogni backup. Quando hai finito, elimina il file da questo dispositivo.";
 "backupSetupTitle" = "Salva il backup nel cloud";
 "backupSetupTitleSecure" = "Salva il backup %d di %d nel cloud";

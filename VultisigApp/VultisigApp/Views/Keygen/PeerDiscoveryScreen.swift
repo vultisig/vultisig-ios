@@ -392,9 +392,10 @@ struct PeerDiscoveryScreen: View {
     }
 
     var lookingForDevices: some View {
-        LookingForDevicesLoader(
-            tssType: tssType,
-            selectedTab: selectedTab
+        KeygenAnimationView(
+            isFast: selectedTab == .fast,
+            connected: .constant(false),
+            progress: .constant(0)
         )
     }
 
