@@ -1234,6 +1234,11 @@
 "tronTimeRemainingDays" = "%d giorni, %d ore rimanenti";
 "tronTimeRemainingHours" = "%d ore, %d minuti rimanenti";
 
+// Tron Resources Info Modal
+"tronResourcesInfoTitle" = "Larghezza di Banda & Energia";
+"tronBandwidthDescription" = "I Punti di Larghezza di Banda sono necessari per ogni transazione su TRON, inclusi invii standard di token e interazioni con smart contract. Ogni utente TRON riceve 600 Punti di Larghezza di Banda gratuiti al giorno, che possono coprire circa due invii base. Inoltre, puoi guadagnare Punti di Larghezza di Banda aggiuntivi facendo staking di TRX, aumentando la tua quota giornaliera per supportare più transazioni. Se hai abbastanza Punti di Larghezza di Banda, puoi inviare token, fare staking di TRX o interagire con smart contract senza pagare TRX in commissioni gas.";
+"tronEnergyDescription" = "L'Energia è una risorsa utilizzata esclusivamente per eseguire smart contract su TRON. A differenza della Larghezza di Banda, l'Energia non viene fornita gratuitamente — deve essere ottenuta facendo staking (congelando) TRX. Se non hai abbastanza Energia, la rete TRON brucerà TRX dal tuo saldo per coprire il costo. Fare staking di TRX per Energia ti permette di interagire con protocolli DeFi, trasferire token TRC-20 e usare dApp senza pagare commissioni gas in TRX.";
+
 "scanningForChainsSubtitle" = "Stiamo verificando quali blockchain hanno indirizzi attivi associati alla tua seed phrase. Questo processo può richiedere fino a 2 minuti.";
 "scanningForChainsSubtitleHighlight" = "Questo processo può richiedere fino a 2 minuti.";
 "importTheseChains" = "Importa queste chain";
@@ -1370,3 +1375,11 @@
 "iUnderstand" = "Ho capito";
 "replaceExistingVault" = "Sostituisci";
 "duplicateVaultMessage" = "Un caveau chiamato \"%@\" ha già le stesse chiavi. Sostituendolo, i suoi dati verranno sovrascritti.";
+
+"scannerModeCamera" = "Fotocamera";
+"scannerModeScreen" = "Schermo";
+"scanningScreenForQR" = "Scansione dello schermo alla ricerca di codici QR...";
+"scanningScreenHint" = "Mostra un codice QR in qualsiasi punto dello schermo e verrà rilevato automaticamente.";
+"screenRecordingPermissionDenied" = "È necessaria l'autorizzazione alla registrazione dello schermo per scansionare i codici QR dal tuo schermo.";
+"openSystemSettings" = "Apri Impostazioni di Sistema";
+"initializingScreenCapture" = "Inizializzazione acquisizione schermo";

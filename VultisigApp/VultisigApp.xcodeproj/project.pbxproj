@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		03FC7C642AC179BADB973C88 /* TronResourcesCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1BE569DF07B97F7C31210E2 /* TronResourcesCardView.swift */; };
 		049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB672B71E9C5004C231F /* WifiInstruction.swift */; };
 		064D3D2833A07505317CC841 /* CosmosTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB8B4E59B83927709B99177 /* CosmosTransactionStatusProvider.swift */; };
 		12C88E627244748C55FB97F2 /* EVMTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DC3C4A790D620AB105DF39D /* EVMTransactionStatusProvider.swift */; };
@@ -575,6 +576,7 @@
 		46C8CBBF2BA777BF00E68E08 /* BlockchairService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C8CBBE2BA777BF00E68E08 /* BlockchairService.swift */; };
 		46DE08902BD0D03E00AE8BDE /* CosmosService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46DE088F2BD0D03E00AE8BDE /* CosmosService.swift */; };
 		46DE08952BD0DCA200AE8BDE /* EvmService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46DE08942BD0DCA200AE8BDE /* EvmService.swift */; };
+		46E982F4917E0FE159D1DC0A /* ScannerMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C4FDA6EBC0D15510EDB236 /* ScannerMode.swift */; };
 		46E98FFC2BAE407300C53D97 /* DecodingErrorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46E98FFB2BAE407300C53D97 /* DecodingErrorExtension.swift */; };
 		46F47CBB2B870EE900D964EA /* UTXOTransactionMempool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F47CBA2B870EE900D964EA /* UTXOTransactionMempool.swift */; };
 		46F8F7212B99FDB70099454E /* TransactionBroadcastResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F8F7202B99FDB70099454E /* TransactionBroadcastResponse.swift */; };
@@ -582,6 +584,7 @@
 		4F04ED93D3530E7DB36F6A5B /* CosmosTransactionStatusAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CD3665CC777D1BD45B08AC8 /* CosmosTransactionStatusAPI.swift */; };
 		5EB3252A1288D9B9D78B55E6 /* CustomMessageDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD426AD3A78890574917DE6 /* CustomMessageDecoder.swift */; };
 		60A0614473DB30544D99C624 /* DefiCircleRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BE8825D6F0DBD6E8F28CB49 /* DefiCircleRow.swift */; };
+		6992816E311669B6632756F4 /* MacScreenCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5D2C05B4B37315FBB2E448 /* MacScreenCaptureService.swift */; };
 		6AE564F37876C2BB01674194 /* CircleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03EC7383A8308BD94F081C10 /* CircleService.swift */; };
 		6F9D0331A5913F75BDE1B874 /* KyberSwapToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C796F13B6313681B4F992A /* KyberSwapToken.swift */; };
 		7024891B02B07FF1A3BCCFB4 /* ReviewYourVaultsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 089EF1D434FDC5673F1F090A /* ReviewYourVaultsScreen.swift */; };
@@ -590,7 +593,7 @@
 		784957DA9E44EAC291A4E593 /* CircleSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2082307F2DAAB6FA5911FFDC /* CircleSetupView.swift */; };
 		8572B6910CB7E64BD6260D6C /* TransactionStatusService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6548A1DE3664347EBFA4F1B5 /* TransactionStatusService.swift */; };
 		8F55CD3B2DC382E500B53E85 /* TokensStore+Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F55CD3A2DC382E400B53E85 /* TokensStore+Token.swift */; };
-		927BE27A46C4476AA7DA2901 /* Services/SuiTokenPriceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927BE27A46C4476AA7DA2902 /* Services/SuiTokenPriceTests.swift */; };
+		927BE27A46C4476AA7DA2901 /* SuiTokenPriceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927BE27A46C4476AA7DA2902 /* SuiTokenPriceTests.swift */; };
 		9802909F69AF78B4BCE010CE /* CircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35953B42171F515630BA7E9B /* CircleView.swift */; };
 		9976DC2B005ADF44E38FE464 /* CircleApiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29B3EE2059C84ADD4F8C4F16 /* CircleApiService.swift */; };
 		9FA6AFD6FC9B88C620BEE525 /* BackgroundTransactionPoller.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E88FD1F757A82DCD9EF240 /* BackgroundTransactionPoller.swift */; };
@@ -771,6 +774,7 @@
 		A6505AF72CA678B30002FBF4 /* OnDropQRUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505AF62CA678B30002FBF4 /* OnDropQRUtils.swift */; };
 		A6521C562C6EC769002D5C5F /* MacScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6521C552C6EC769002D5C5F /* MacScannerView.swift */; };
 		A6521C582C6ECA1A002D5C5F /* MacCameraPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6521C572C6ECA19002D5C5F /* MacCameraPreview.swift */; };
+		A6521C5F2C6ECB00002D5C5F /* MacScreenCapturePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6521C5E2C6ECB00002D5C5F /* MacScreenCapturePreview.swift */; };
 		A6521C5A2C6ECA62002D5C5F /* MacCameraServiceViewModel+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6521C592C6ECA62002D5C5F /* MacCameraServiceViewModel+macOS.swift */; };
 		A65324282BA51E8700DDE6EB /* QRCodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65324272BA51E8700DDE6EB /* QRCodeScannerView.swift */; };
 		A653242A2BA52A4700DDE6EB /* SendCryptoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65324292BA52A4700DDE6EB /* SendCryptoViewModel.swift */; };
@@ -1033,6 +1037,7 @@
 		B2ADDD782E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2ADDD772E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift */; };
 		B2ADDDC52E5D63AD00DB3B98 /* BanxaDisclaimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2ADDDC42E5D639700DB3B98 /* BanxaDisclaimer.swift */; };
 		B2C8B53A2E684A4200DFA097 /* SwapFeatureGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C8B5392E684A3700DFA097 /* SwapFeatureGate.swift */; };
+		B3D2F81A92C4E05D7F1A38E9 /* TronResourcesLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E4C8B2D53A1F06E8D2B49FA /* TronResourcesLoader.swift */; };
 		B500DFBD2EB4F864009F5C68 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = ZPZIPPROD0000000000000001 /* ZIPFoundation */; };
 		B505BF8F2E686D1700A5698B /* FeeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B505BF8E2E686D1500A5698B /* FeeService.swift */; };
 		B50E399B2BF5AB2100B9A269 /* FunctionCallAddressable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E399A2BF5AB2100B9A269 /* FunctionCallAddressable.swift */; };
@@ -1247,6 +1252,7 @@
 		DEFF59012BD238CF005DFDF9 /* SignedTransactionResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF59002BD238CF005DFDF9 /* SignedTransactionResult.swift */; };
 		DF8917B11AEF852E22110853 /* TransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D2B4750EBE796D6A026060 /* TransactionStatusProvider.swift */; };
 		E6B0BA6F0B65023EBC142F76 /* UTXOTransactionStatusAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = E423B7D2BCCD2F1943ED30F8 /* UTXOTransactionStatusAPI.swift */; };
+		F60EA90567B7702B28A569C8 /* TronResourcesInfoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A9A754C4091B21ACE6FB82D /* TronResourcesInfoSheet.swift */; };
 		F6MAHZO7QADAUEOCUKP14KWW /* ThorchainLP.swift in Sources */ = {isa = PBXBuildFile; fileRef = VX9GYT3ZT7ENIW24C32BA8O7 /* ThorchainLP.swift */; };
 		FB000BDFB76736F8CCD80FDF /* CircleDepositView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B96312D2493F377B159E118 /* CircleDepositView.swift */; };
 		FCB47344D1011A902B285619 /* CosmosTransactionStatusResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = E422D27702256FB07565C6D0 /* CosmosTransactionStatusResponse.swift */; };
@@ -1811,6 +1817,7 @@
 		1DC3C4A790D620AB105DF39D /* EVMTransactionStatusProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EVMTransactionStatusProvider.swift; sourceTree = "<group>"; };
 		2082307F2DAAB6FA5911FFDC /* CircleSetupView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CircleSetupView.swift; sourceTree = "<group>"; };
 		25397BD8D2AFBC8FB7C3DDBB /* CircleDashboardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CircleDashboardView.swift; sourceTree = "<group>"; };
+		27C4FDA6EBC0D15510EDB236 /* ScannerMode.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScannerMode.swift; sourceTree = "<group>"; };
 		29B3EE2059C84ADD4F8C4F16 /* CircleApiService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CircleApiService.swift; sourceTree = "<group>"; };
 		35953B42171F515630BA7E9B /* CircleView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CircleView.swift; sourceTree = "<group>"; };
 		4600167D2B71A12D00CE17C7 /* Tss.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:G8Q5XUAJD9:Cortina Ventures PTY LTD"; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
@@ -1851,15 +1858,18 @@
 		5C1F4585DF366BFCCCC513A9 /* DerivationPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivationPath.swift; sourceTree = "<group>"; };
 		5E7878748BB9E16298184860 /* KyberSwapQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapQuote.swift; sourceTree = "<group>"; };
 		6548A1DE3664347EBFA4F1B5 /* TransactionStatusService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionStatusService.swift; sourceTree = "<group>"; };
+		6A9A754C4091B21ACE6FB82D /* TronResourcesInfoSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronResourcesInfoSheet.swift; sourceTree = "<group>"; };
 		6B96312D2493F377B159E118 /* CircleDepositView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CircleDepositView.swift; sourceTree = "<group>"; };
 		78CA9F7989A44AB965FF32F3 /* SolanaTransactionStatusProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SolanaTransactionStatusProvider.swift; sourceTree = "<group>"; };
 		7CD3665CC777D1BD45B08AC8 /* CosmosTransactionStatusAPI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CosmosTransactionStatusAPI.swift; sourceTree = "<group>"; };
+		7E4C8B2D53A1F06E8D2B49FA /* TronResourcesLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronResourcesLoader.swift; sourceTree = "<group>"; };
 		8BE8825D6F0DBD6E8F28CB49 /* DefiCircleRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DefiCircleRow.swift; sourceTree = "<group>"; };
 		8F55CD3A2DC382E400B53E85 /* TokensStore+Token.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TokensStore+Token.swift"; sourceTree = "<group>"; };
-		927BE27A46C4476AA7DA2902 /* Services/SuiTokenPriceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SuiTokenPriceTests.swift; sourceTree = "<group>"; };
+		927BE27A46C4476AA7DA2902 /* SuiTokenPriceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SuiTokenPriceTests.swift; sourceTree = "<group>"; };
 		9C3E3E97CE3E3775F004F4EE /* LPUnitsValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LPUnitsValidator.swift; sourceTree = "<group>"; };
 		9FB8B4E59B83927709B99177 /* CosmosTransactionStatusProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CosmosTransactionStatusProvider.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6A7B8C9D0E1F2 /* Tooltip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tooltip.swift; sourceTree = "<group>"; };
+		A1BE569DF07B97F7C31210E2 /* TronResourcesCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronResourcesCardView.swift; sourceTree = "<group>"; };
 		A500603E2C10E3EA008237D9 /* ThorchainSwapProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainSwapProvider.swift; sourceTree = "<group>"; };
 		A506B59C2D3AB77A00490BEB /* LifiQuoteResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifiQuoteResponse.swift; sourceTree = "<group>"; };
 		A506B59E2D3AD1DB00490BEB /* SolanaSwaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaSwaps.swift; sourceTree = "<group>"; };
@@ -2037,6 +2047,7 @@
 		A6505AF62CA678B30002FBF4 /* OnDropQRUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnDropQRUtils.swift; sourceTree = "<group>"; };
 		A6521C552C6EC769002D5C5F /* MacScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacScannerView.swift; sourceTree = "<group>"; };
 		A6521C572C6ECA19002D5C5F /* MacCameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCameraPreview.swift; sourceTree = "<group>"; };
+		A6521C5E2C6ECB00002D5C5F /* MacScreenCapturePreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacScreenCapturePreview.swift; sourceTree = "<group>"; };
 		A6521C592C6ECA62002D5C5F /* MacCameraServiceViewModel+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MacCameraServiceViewModel+macOS.swift"; sourceTree = "<group>"; };
 		A65324272BA51E8700DDE6EB /* QRCodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeScannerView.swift; sourceTree = "<group>"; };
 		A65324292BA52A4700DDE6EB /* SendCryptoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoViewModel.swift; sourceTree = "<group>"; };
@@ -2406,6 +2417,7 @@
 		BC586168CA29D811C28C56A4 /* TransactionStatus.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionStatus.swift; sourceTree = "<group>"; };
 		BD1A1FCF78FFFE8E23B38F0E /* UTXOTransactionStatusResponse.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UTXOTransactionStatusResponse.swift; sourceTree = "<group>"; };
 		BWXBB99J8F32LB10N1PT9BIH /* FunctionCallAddThorLP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallAddThorLP.swift; sourceTree = "<group>"; };
+		CA5D2C05B4B37315FBB2E448 /* MacScreenCaptureService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MacScreenCaptureService.swift; sourceTree = "<group>"; };
 		CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapService.swift; sourceTree = "<group>"; };
 		D0C75B7553CE05272D632058 /* UTXOTransactionStatusProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UTXOTransactionStatusProvider.swift; sourceTree = "<group>"; };
 		D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ApplicationState.swift; path = "VultisigApp/View Models/ApplicationState.swift"; sourceTree = SOURCE_ROOT; };
@@ -2523,7 +2535,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		DE2EDA742E324604004713ED /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		DE2EDA742E324604004713ED /* Exceptions for "TestData" folder in "VultisigAppTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				arb.json,
@@ -2554,7 +2566,18 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		DE2EDA722E3245A4004713ED /* TestData */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (DE2EDA742E324604004713ED /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = TestData; sourceTree = "<group>"; };
+		DE2EDA722E3245A4004713ED /* TestData */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				DE2EDA742E324604004713ED /* Exceptions for "TestData" folder in "VultisigAppTests" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = TestData;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -4891,6 +4914,15 @@
 			path = TransactionManager;
 			sourceTree = "<group>";
 		};
+		5CE33B88DCDFF12E426896B3 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				27C4FDA6EBC0D15510EDB236 /* ScannerMode.swift */,
+			);
+			name = Model;
+			path = Model;
+			sourceTree = "<group>";
+		};
 		9690397CDD1E0CE7CD6E2A18 /* Circle */ = {
 			isa = PBXGroup;
 			children = (
@@ -5158,8 +5190,10 @@
 				A6386DA22C90235600DDD58E /* Components */,
 				A69FBBCC2C8BB86300A4B78B /* Native */,
 				A6ECA1AA2C9410DA00456110 /* View Model */,
+				CA5D2C06B4B37316FBB2E449 /* Services */,
 				A6505AD52CA66BE40002FBF4 /* Utils */,
 				A6505AE12CA6707B0002FBF4 /* Extension */,
+				5CE33B88DCDFF12E426896B3 /* Model */,
 			);
 			path = macOS;
 			sourceTree = "<group>";
@@ -5645,6 +5679,7 @@
 				A6B84B0B2CE56D79006929A0 /* ServerBackupVerificationView.swift */,
 				A6521C552C6EC769002D5C5F /* MacScannerView.swift */,
 				A6521C572C6ECA19002D5C5F /* MacCameraPreview.swift */,
+				A6521C5E2C6ECB00002D5C5F /* MacScreenCapturePreview.swift */,
 				A6B662D22D38CD54001E8BC1 /* MacAddressScannerView+macOS.swift */,
 			);
 			path = Native;
@@ -5738,6 +5773,22 @@
 				A6ECA1B32C94129D00456110 /* VaultDetailQRCodeViewModel+macOS.swift */,
 			);
 			path = "View Model";
+			sourceTree = "<group>";
+		};
+		CA5D2C06B4B37316FBB2E449 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				CA5D2C07B4B37317FBB2E44A /* MacScreenCapture */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		CA5D2C07B4B37317FBB2E44A /* MacScreenCapture */ = {
+			isa = PBXGroup;
+			children = (
+				CA5D2C05B4B37315FBB2E448 /* MacScreenCaptureService.swift */,
+			);
+			path = MacScreenCapture;
 			sourceTree = "<group>";
 		};
 		A6F7B6702D42BDB700AC8104 /* Animations */ = {
@@ -5900,6 +5951,9 @@
 				B50F263E2F182DBE0015DCCB /* Navigation */,
 				B50F26402F182DBE0015DCCB /* TronConstants.swift */,
 				B50F26412F182DBE0015DCCB /* TronDashboardView.swift */,
+				A1BE569DF07B97F7C31210E2 /* TronResourcesCardView.swift */,
+				6A9A754C4091B21ACE6FB82D /* TronResourcesInfoSheet.swift */,
+				7E4C8B2D53A1F06E8D2B49FA /* TronResourcesLoader.swift */,
 				B50F26442F182DBE0015DCCB /* TronFreezeView.swift */,
 				B50F26472F182DBE0015DCCB /* TronUnfreezeView.swift */,
 				B50F264A2F182DBE0015DCCB /* TronView.swift */,
@@ -6382,7 +6436,7 @@
 				DE8AD7482BC7A84100339775 /* Utils */,
 				DEF2E2CE2B9DA41A000737B8 /* Chains */,
 				DE49A17A2B65F6DB000F3AFB /* VultisigAppTests.swift */,
-				927BE27A46C4476AA7DA2902 /* Services/SuiTokenPriceTests.swift */,
+				927BE27A46C4476AA7DA2902 /* SuiTokenPriceTests.swift */,
 			);
 			path = VultisigAppTests;
 			sourceTree = "<group>";
@@ -6578,7 +6632,7 @@
 			);
 			mainGroup = DE49A15A2B65F6D9000F3AFB;
 			packageReferences = (
-				D9A22EB52B667C41007281BF /* XCLocalSwiftPackageReference "../Mediator" */,
+				D9A22EB52B667C41007281BF /* XCLocalSwiftPackageReference "Mediator" */,
 				DE49A1B32B6A1088000F3AFB /* XCRemoteSwiftPackageReference "CodeScanner" */,
 				DEEDAEE62B8B50A4005170E8 /* XCRemoteSwiftPackageReference "BigInt" */,
 				DEFF59022BD23A12005DFDF9 /* XCRemoteSwiftPackageReference "CryptoSwift" */,
@@ -6761,6 +6815,7 @@
 				13095A362E3264E6009F8785 /* HapticFeedbackManager.swift in Sources */,
 				13B1C2CB2E65FC3800050637 /* VaultServerBackupViewModel.swift in Sources */,
 				A6521C582C6ECA1A002D5C5F /* MacCameraPreview.swift in Sources */,
+				A6521C5F2C6ECB00002D5C5F /* MacScreenCapturePreview.swift in Sources */,
 				46E98FFC2BAE407300C53D97 /* DecodingErrorExtension.swift in Sources */,
 				137FA5922EABC38D00843DB1 /* THORChainStakingAPI.swift in Sources */,
 				1326BEE72F212807007F18F8 /* SolanaTransactionParser.swift in Sources */,
@@ -7768,6 +7823,9 @@
 				B50F26512F182DBE0015DCCB /* TronUnfreezeView.swift in Sources */,
 				B50F26522F182DBE0015DCCB /* TronViewLogic.swift in Sources */,
 				B50F26572F182DBE0015DCCB /* TronDashboardView.swift in Sources */,
+				03FC7C642AC179BADB973C88 /* TronResourcesCardView.swift in Sources */,
+				F60EA90567B7702B28A569C8 /* TronResourcesInfoSheet.swift in Sources */,
+				B3D2F81A92C4E05D7F1A38E9 /* TronResourcesLoader.swift in Sources */,
 				B50F26582F182DBE0015DCCB /* TronRoute.swift in Sources */,
 				B50F26592F182DBE0015DCCB /* TronRouter.swift in Sources */,
 				B50F265A2F182DBE0015DCCB /* TronView.swift in Sources */,
@@ -7819,6 +7877,8 @@
 				29661F44FBA4B69305932D72 /* SolanaTransactionStatusResponse.swift in Sources */,
 				B7DE0CA908924F17917DC24B /* TransactionStatusViewModel.swift in Sources */,
 				A1B2C3D4E5F6A7B8C9D0E1F3 /* Tooltip.swift in Sources */,
+				46E982F4917E0FE159D1DC0A /* ScannerMode.swift in Sources */,
+				6992816E311669B6632756F4 /* MacScreenCaptureService.swift in Sources */,
 				A6182F372C92328E0059BFDD /* NetworkPromptCell+iOS.swift in Sources */,
 				A6381D802CB71B4E003F628B /* RegisterVaultView+iOS.swift in Sources */,
 				A6386D882C8BBB7200DDD58E /* JoinKeysignDoneView+iOS.swift in Sources */,
@@ -7862,7 +7922,7 @@
 				DEF4295B2CA66D57004B6D0B /* ERC20Test.swift in Sources */,
 				DE49A17B2B65F6DB000F3AFB /* VultisigAppTests.swift in Sources */,
 				DE214FF62E308EEE00CEEA71 /* ChainHelperTests.swift in Sources */,
-				927BE27A46C4476AA7DA2901 /* Services/SuiTokenPriceTests.swift in Sources */,
+				927BE27A46C4476AA7DA2901 /* SuiTokenPriceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -7880,7 +7940,7 @@
 /* Begin PBXTargetDependency section */
 		B227A2B22F203CF800A32DBE /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = B227A2B12F203CF800A32DBE /* SwiftLintBuildToolPlugin */;
+			productRef = B227A2B12F203CF800A32DBE /* plugin:SwiftLintBuildToolPlugin */;
 		};
 		DE49A1782B65F6DB000F3AFB /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -8069,6 +8129,7 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "We need access to the local network to discover services.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photo library to save photos.";
+				"INFOPLIST_KEY_NSScreenCaptureUsageDescription[sdk=macosx*]" = "Vultisig needs screen recording permission to scan QR codes displayed on your screen.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -8134,6 +8195,7 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "We need access to the local network to discover services.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photo library to save photos.";
+				"INFOPLIST_KEY_NSScreenCaptureUsageDescription[sdk=macosx*]" = "Vultisig needs screen recording permission to scan QR codes displayed on your screen.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -8302,7 +8364,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		D9A22EB52B667C41007281BF /* XCLocalSwiftPackageReference "../Mediator" */ = {
+		D9A22EB52B667C41007281BF /* XCLocalSwiftPackageReference "Mediator" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Mediator;
 		};
@@ -8386,7 +8448,7 @@
 			package = A6D44A592D51950600C66726 /* XCRemoteSwiftPackageReference "rive-ios" */;
 			productName = RiveRuntime;
 		};
-		B227A2B12F203CF800A32DBE /* SwiftLintBuildToolPlugin */ = {
+		B227A2B12F203CF800A32DBE /* plugin:SwiftLintBuildToolPlugin */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = B227A2B02F203C8000A32DBE /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */;
 			productName = "plugin:SwiftLintBuildToolPlugin";

@@ -1234,6 +1234,11 @@
 "tronTimeRemainingDays" = "%d dias, %d horas restantes";
 "tronTimeRemainingHours" = "%d horas, %d minutos restantes";
 
+// Tron Resources Info Modal
+"tronResourcesInfoTitle" = "Largura de Banda & Energia";
+"tronBandwidthDescription" = "Pontos de Largura de Banda são necessários para cada transação na TRON, incluindo envios padrão de tokens e interações com contratos inteligentes. Cada usuário TRON recebe 600 Pontos de Largura de Banda gratuitos por dia, que podem cobrir aproximadamente dois envios básicos. Além disso, você pode ganhar Pontos de Largura de Banda extras fazendo staking de TRX, aumentando seu saldo diário para suportar mais transações. Se você tiver Pontos de Largura de Banda suficientes, pode enviar tokens, fazer staking de TRX ou interagir com contratos inteligentes sem pagar TRX em taxas de gas.";
+"tronEnergyDescription" = "Energia é um recurso usado exclusivamente para executar contratos inteligentes na TRON. Diferente da Largura de Banda, Energia não é fornecida gratuitamente — ela deve ser obtida fazendo staking (congelando) TRX. Se você não tiver Energia suficiente, a rede TRON queimará TRX do seu saldo para cobrir o custo. Fazer staking de TRX para Energia permite que você interaja com protocolos DeFi, transfira tokens TRC-20 e use dApps sem pagar taxas de gas em TRX.";
+
 "scanningForChainsSubtitle" = "Estamos verificando quais blockchains têm endereços ativos associados à sua frase semente. Este processo pode levar até 2 minutos.";
 "scanningForChainsSubtitleHighlight" = "Este processo pode levar até 2 minutos.";
 "importTheseChains" = "Importar estas chains";
@@ -1370,3 +1375,11 @@
 "iUnderstand" = "Eu entendo";
 "replaceExistingVault" = "Substituir";
 "duplicateVaultMessage" = "Um cofre chamado \"%@\" já possui as mesmas chaves. Substituí-lo sobrescreverá seus dados.";
+
+"scannerModeCamera" = "Câmera";
+"scannerModeScreen" = "Tela";
+"scanningScreenForQR" = "Escaneando sua tela em busca de códigos QR...";
+"scanningScreenHint" = "Exiba um código QR em qualquer lugar da sua tela e ele será detectado automaticamente.";
+"screenRecordingPermissionDenied" = "A permissão de gravação de tela é necessária para escanear códigos QR da sua tela.";
+"openSystemSettings" = "Abrir Configurações do Sistema";
+"initializingScreenCapture" = "Inicializando captura de tela";
