@@ -50,7 +50,7 @@ struct SettingsCurrencySelectionView: View {
 
         // Refresh prices in the background without blocking the UI
         if let currentVault = appViewModel.selectedVault {
-            Task.detached {
+            Task {
                 await BalanceService.shared.updateBalances(vault: currentVault)
             }
         }

@@ -52,7 +52,12 @@ struct ChainDetailScreenContainer: View {
                     }
                     #endif
                 case .defi:
-                    DefiChainMainScreen(vault: vault, group: group)
+                    switch group.chain {
+                    case .tron:
+                        TronView(vault: vault)
+                    default:
+                        DefiChainMainScreen(vault: vault, group: group)
+                    }
                 case .camera:
                     EmptyView()
                 }
