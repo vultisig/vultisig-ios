@@ -193,7 +193,6 @@ struct PeerDiscoveryScreen: View {
         }
         .crossPlatformSheet(isPresented: $showInfoSheet) {
             PeerDiscoveryInfoBanner(isPresented: $showInfoSheet)
-                .presentationDetents([.height(450)])
         }
         .onChange(of: viewModel.selectedNetwork) {
             viewModel.restartParticipantDiscovery()

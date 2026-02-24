@@ -524,9 +524,9 @@
 "passwordProtectBackup" = "Zaštitite svoju sigurnosnu kopiju lozinkom";
 "passwordVerifiedSuccessfully" = "Lozinka uspješno potvrđena";
 "paste" = "Zalijepi";
-"peerDiscoveryInfoDescription" = "Preuzmite Vultisig na svoj drugi uređaj i odaberite ‘Skeniraj QR kod’";
-"peerDiscoveryInfoTitle1" = "Skenirajte ";
-"peerDiscoveryInfoTitle2" = "QR kod";
+"peerDiscoveryInfoDescription" = "Na drugom uređaju otvorite aplikaciju i dodirnite \"Skeniraj QR\" za povezivanje.";
+"peerDiscoveryInfoTitle" = "Skenirajte QR na svojim drugim uređajima";
+"startScanning" = "Započni skeniranje";
 "peerDiscoveryScanDeviceDisclaimer" = "Skenirajte QR kod s drugim uređajem. Preporučena je konfiguracija s 3 uređaja, 2 su dovoljna.";
 "pendingRewards" = "Nagrade na čekanju";
 "phantomWallet" = "Phantom wallet";

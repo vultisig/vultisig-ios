@@ -524,9 +524,9 @@
 "passwordProtectBackup" = "Protege tu copia de seguridad con una contraseña";
 "passwordVerifiedSuccessfully" = "Contraseña verificada exitosamente";
 "paste" = "Pegar";
-"peerDiscoveryInfoDescription" = "Descarga Vultisig en tu otro dispositivo y selecciona ‘Escanear código QR’";
-"peerDiscoveryInfoTitle1" = "Escanea el ";
-"peerDiscoveryInfoTitle2" = "código QR";
+"peerDiscoveryInfoDescription" = "En tu otro dispositivo, abre la app y toca \"Escanear QR\" para conectarlo.";
+"peerDiscoveryInfoTitle" = "Escanea el QR en tus otros dispositivos";
+"startScanning" = "Iniciar escaneo";
 "peerDiscoveryScanDeviceDisclaimer" = "Escanea el QR con otro dispositivo. Se recomienda una configuración de 3 dispositivos, 2 son suficientes.";
 "pendingRewards" = "Recompensas pendientes";
 "phantomWallet" = "Phantom wallet";

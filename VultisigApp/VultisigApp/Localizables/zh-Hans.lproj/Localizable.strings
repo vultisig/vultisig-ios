@@ -526,9 +526,9 @@
 "passwordProtectBackup" = "使用密码保护您的备份";
 "passwordVerifiedSuccessfully" = "密码验证成功";
 "paste" = "粘贴";
-"peerDiscoveryInfoDescription" = "在您的其他设备上下载 Vultisig 并选择\"扫描二维码\"";
-"peerDiscoveryInfoTitle1" = "扫描";
-"peerDiscoveryInfoTitle2" = "二维码";
+"peerDiscoveryInfoDescription" = "在您的其他设备上打开应用，点击\"扫描二维码\"进行连接。";
+"peerDiscoveryInfoTitle" = "在其他设备上扫描二维码";
+"startScanning" = "开始扫描";
 "peerDiscoveryScanDeviceDisclaimer" = "使用其他设备扫描二维码。建议使用 3 个设备设置，2 个也足够";
 "pendingRewards" = "待领取奖励";
 "phantomWallet" = "Phantom wallet";
