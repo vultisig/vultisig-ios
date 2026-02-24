@@ -9,10 +9,6 @@ import Foundation
 import BigInt
 import VultisigCommonData
 
-enum KeysignPayloadFactoryError: Error {
-    case invalidSwapProvider
-}
-
 extension KeysignMessage: ProtoMappable {
 
     init(proto: VSKeysignMessage) throws {

@@ -28,14 +28,9 @@ struct KeygenView: View {
 
     @StateObject var viewModel = KeygenViewModel()
 
-    let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-    let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
-
     @State var progressCounter: Double = 1
-    @State var showProgressRing = true
     @State var showDoneText = false
     @State var showError = false
-    @State var showVerificationView = false
     @State var vaultCreatedAnimationVM: RiveViewModel? = nil
     @State var checkmarkAnimationVM: RiveViewModel? = nil
     @State var keygenAnimationVM: RiveViewModel? = nil
@@ -58,10 +53,10 @@ struct KeygenView: View {
             }
             .onAppear {
                 hideBackButton = true
-                vaultCreatedAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
-                checkmarkAnimationVM = RiveViewModel(fileName: "CreatingVaultCheckmark", autoPlay: true)
+                vaultCreatedAnimationVM = RiveViewModel(fileName: "vault_created", autoPlay: true)
+                checkmarkAnimationVM = RiveViewModel(fileName: "creating_vault_checkmark", autoPlay: true)
                 keygenAnimationVM = RiveViewModel(
-                    fileName: "keygen_animation",
+                    fileName: fastSignConfig != nil ? "keygen_fast" : "keygen_secure",
                     autoPlay: true,
                 )
                 keygenAnimationVM?.fit = .layout
@@ -83,34 +78,76 @@ struct KeygenView: View {
 
     private func handleNavigation() {
         switch tssType {
-        case .Keygen, .Reshare:
-            if let fastSignConfig, showVerificationView {
-                router.navigate(to: KeygenRoute.fastBackupOverview(
-                    tssType: tssType,
-                    vault: vault,
-                    email: fastSignConfig.email
-                ))
-            } else {
-                router.navigate(to: KeygenRoute.secureBackupOverview(vault: vault))
-            }
         case .Migrate:
             router.navigate(to: KeygenRoute.backupNow(
                 tssType: tssType,
                 backupType: .single(vault: vault),
                 isNewVault: true
             ))
-        case .KeyImport:
-            let setupType: KeyImportSetupType = fastSignConfig != nil
-                ? .fast
-                : .secure(numberOfDevices: keygenCommittee.count)
-
-            router.navigate(to: KeygenRoute.keyImportOverview(
-                vault: vault,
-                email: fastSignConfig?.email,
-                keyImportInput: keyImportInput,
-                setupType: setupType
-            ))
+        case .KeyImport, .Keygen, .Reshare:
+            if fastSignConfig != nil {
+                router.navigate(to: KeygenRoute.keyImportOverview(
+                    tssType: tssType,
+                    vault: vault,
+                    email: fastSignConfig?.email,
+                    keyImportInput: keyImportInput,
+                    setupType: .fast
+                ))
+            } else {
+                router.navigate(to: KeygenRoute.reviewYourVaults(
+                    vault: vault,
+                    tssType: tssType,
+                    keygenCommittee: keygenCommittee,
+                    email: nil,
+                    keyImportInput: keyImportInput,
+                    isInitiateDevice: isInitiateDevice
+                ))
+            }
         }
+    }
+
+    var content: some View {
+        container
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .onLoad {
+                Task {
+                    await setData()
+                    await viewModel.startKeygen(context: context)
+                }
+            }
+            #if os(iOS)
+            .onAppear {
+                UIApplication.shared.isIdleTimerDisabled = true
+            }
+            .onDisappear {
+                UIApplication.shared.isIdleTimerDisabled = false
+            }
+            #endif
+            .alert(
+                NSLocalizedString("vaultAlreadyExists", comment: ""),
+                isPresented: $viewModel.showDuplicateVaultAlert
+            ) {
+                Button(NSLocalizedString("replaceExistingVault", comment: ""), role: .destructive) {
+                    viewModel.resolveDuplicateVault(shouldReplace: true)
+                }
+                Button(NSLocalizedString("cancel", comment: ""), role: .cancel) {
+                    viewModel.resolveDuplicateVault(shouldReplace: false)
+                }
+            } message: {
+                Text(
+                    String(
+                        format: NSLocalizedString("duplicateVaultMessage", comment: ""),
+                        viewModel.duplicateVaultName
+                    )
+                )
+            }
+            .onChange(of: viewModel.didCancelDuplicateVault) { _, didCancel in
+                if didCancel {
+                    router.navigateToRoot()
+                }
+            }
     }
 
     var container: some View {
@@ -126,6 +163,7 @@ struct KeygenView: View {
                 }
             }
         }
+        .ignoresSafeArea()
     }
 
     var migrateView: some View {
@@ -168,22 +206,16 @@ struct KeygenView: View {
     }
 
     var migrationFailedText: some View {
-        VStack(spacing: 32) {
-            Spacer()
-            ErrorMessage(text: viewModel.keygenError)
-            Spacer()
-            appVersion
-            migrateRetryButton
+        ErrorView(
+            type: .alert,
+            title: "migrationFailed".localized,
+            description: viewModel.keygenError,
+            buttonTitle: "retry".localized
+        ) {
+            dismiss()
         }
-        .padding(32)
         .onAppear {
             showError = true
-        }
-    }
-
-    var migrateRetryButton: some View {
-        PrimaryButton(title: "retry") {
-            dismiss()
         }
     }
 
@@ -210,6 +242,8 @@ struct KeygenView: View {
             }
             .offset(y: 120)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Theme.colors.bgPrimary)
         .onAppear {
             setDoneData()
         }
@@ -229,62 +263,33 @@ struct KeygenView: View {
         .onAppear {
             showError = true
             hideBackButton = false
-            showProgressRing = false
         }
     }
 
     var migrateFailedText: some View {
-        VStack(spacing: 18) {
-            Text(NSLocalizedString("migrationFailed", comment: "migration failed"))
-                .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(Theme.colors.textPrimary)
-                .multilineTextAlignment(.center)
-            Text(viewModel.keygenError)
-                .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(Theme.colors.textPrimary)
-                .multilineTextAlignment(.center)
+        ErrorView(
+            type: .alert,
+            title: "migrationFailed".localized,
+            description: viewModel.keygenError,
+            buttonTitle: "retry".localized
+        ) {
+            dismiss()
         }
     }
 
     var keygenFailedText: some View {
-        VStack(spacing: 18) {
-            Text(NSLocalizedString("keygenFailed", comment: "key generation failed"))
-                .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(Theme.colors.textPrimary)
-                .multilineTextAlignment(.center)
-            Text(viewModel.keygenError)
-                .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(Theme.colors.textPrimary)
-                .multilineTextAlignment(.center)
+        ErrorView(
+            type: .alert,
+            title: "keygenFailed".localized,
+            description: viewModel.keygenError,
+            buttonTitle: "retry".localized
+        ) {
+            dismiss()
         }
     }
 
     var keygenReshareFailedText: some View {
         ErrorMessage(text: "thresholdNotReachedMessage", width: 300)
-    }
-
-    var retryButton: some View {
-        VStack(spacing: 32) {
-            appVersion
-            button
-        }
-        .padding(.horizontal, 16)
-    }
-
-    var appVersion: some View {
-        return VStack {
-            Text("Vultisig APP V\(version ?? "1")")
-            Text("(Build \(build ?? "1"))")
-        }
-        .textCase(.uppercase)
-        .font(Theme.fonts.bodySRegular)
-        .foregroundColor(Theme.colors.bgButtonPrimary)
-    }
-
-    var button: some View {
-        PrimaryButton(title: "retry") {
-            dismiss()
-        }
     }
 
     func setData() async {
@@ -304,7 +309,6 @@ struct KeygenView: View {
 
     private func setDoneData() {
         showDoneText = true
-        checkVaultType()
 
         if tssType == .Reshare {
             vault.isBackedUp = false
@@ -316,12 +320,6 @@ struct KeygenView: View {
 
         progressCounter = 4
         viewModel.delaySwitchToMain()
-    }
-
-    private func checkVaultType() {
-        if fastSignConfig != nil {
-            showVerificationView = true
-        }
     }
 
     private func animateProgress(to targetValue: Float) {

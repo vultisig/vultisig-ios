@@ -10,30 +10,12 @@ import SwiftUI
 struct KeygenRouteBuilder {
 
     @ViewBuilder
-    func buildFastBackupOverviewScreen(
-        tssType: TssType,
-        vault: Vault,
-        email: String
-    ) -> some View {
-        FastBackupVaultOverview(
-            tssType: tssType,
-            vault: vault,
-            email: email
-        )
-    }
-
-    @ViewBuilder
-    func buildSecureBackupOverviewScreen(vault: Vault) -> some View {
-        SecureBackupVaultOverview(vault: vault)
-    }
-
-    @ViewBuilder
     func buildBackupNowScreen(
         tssType: TssType,
         backupType: VaultBackupType,
         isNewVault: Bool
     ) -> some View {
-        VaultBackupNowScreen(
+        VaultBackupScreen(
             tssType: tssType,
             backupType: backupType,
             isNewVault: isNewVault
@@ -42,12 +24,14 @@ struct KeygenRouteBuilder {
 
     @ViewBuilder
     func buildKeyImportOverviewScreen(
+        tssType: TssType,
         vault: Vault,
         email: String?,
         keyImportInput: KeyImportInput?,
         setupType: KeyImportSetupType
     ) -> some View {
-        KeyImportOverviewScreen(
+        OnboardingOverviewScreen(
+            tssType: tssType,
             vault: vault,
             email: email,
             keyImportInput: keyImportInput,
@@ -64,7 +48,7 @@ struct KeygenRouteBuilder {
         keyImportInput: KeyImportInput?,
         setupType: KeyImportSetupType?
     ) -> some View {
-        PeerDiscoveryView(
+        PeerDiscoveryScreen(
             tssType: tssType,
             vault: vault,
             selectedTab: selectedTab,
@@ -126,19 +110,6 @@ struct KeygenRouteBuilder {
     }
 
     @ViewBuilder
-    func buildNewWalletNameScreen(
-        tssType: TssType,
-        selectedTab: SetupVaultState,
-        name: String
-    ) -> some View {
-        NewWalletNameView(
-            tssType: tssType,
-            selectedTab: selectedTab,
-            name: name
-        )
-    }
-
-    @ViewBuilder
     func buildJoinKeysignScreen(vault: Vault) -> some View {
         JoinKeysignView(vault: vault)
     }
@@ -187,5 +158,24 @@ struct KeygenRouteBuilder {
         ) { address in
             sendTx?.toAddress = address
         }
+    }
+
+    @ViewBuilder
+    func buildReviewYourVaultsScreen(
+        vault: Vault,
+        tssType: TssType,
+        keygenCommittee: [String],
+        email: String?,
+        keyImportInput: KeyImportInput?,
+        isInitiateDevice: Bool
+    ) -> some View {
+        ReviewYourVaultsScreen(
+            vault: vault,
+            tssType: tssType,
+            keygenCommittee: keygenCommittee,
+            email: email,
+            keyImportInput: keyImportInput,
+            isInitiateDevice: isInitiateDevice
+        )
     }
 }

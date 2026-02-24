@@ -29,7 +29,40 @@ class BalanceService {
 
     private let cryptoPriceService = CryptoPriceService.shared
 
+    /// Value type to identify a coin for balance fetching without holding SwiftData model references
+    /// Reuses CoinMeta and adds only the minimal additional fields needed for balance operations
+    private struct CoinIdentifier: Hashable {
+        let coinId: String
+        let coinMeta: CoinMeta
+        let address: String
+
+        init(from coin: Coin) {
+            self.coinId = coin.id
+            self.coinMeta = coin.toCoinMeta()
+            self.address = coin.address
+        }
+
+        // Convenience accessors for commonly used CoinMeta properties
+        var chain: Chain { coinMeta.chain }
+        var ticker: String { coinMeta.ticker }
+        var isNativeToken: Bool { coinMeta.isNativeToken }
+    }
+
+    /// Value type containing balance update data for a specific coin
+    private struct CoinBalanceUpdate {
+        let coinId: String
+        let rawBalance: String?
+        let stakedBalance: String?
+        let bondedNodes: [RuneBondNode]?
+        let error: Error?
+
+        var hasUpdates: Bool {
+            rawBalance != nil || stakedBalance != nil || bondedNodes != nil
+        }
+    }
+
     func updateBalances(vault: Vault) async {
+        // Phase 0: Fetch prices (already async-safe)
         do {
             try await cryptoPriceService.fetchPrices(vault: vault)
         } catch {
@@ -38,35 +71,128 @@ class BalanceService {
             }
         }
 
+        // Phase 1: Extract coin identifiers on MainActor
+        let coinIdentifiers = await extractCoinIdentifiers(from: vault)
+
+        // Phase 2: Fetch balances concurrently (off MainActor)
+        let updates = await fetchBalanceUpdates(for: coinIdentifiers)
+
+        // Phase 3: Apply updates in batch on MainActor
         do {
-            await withTaskGroup(of: Void.self) { group in
-                for coin in vault.coins {
-                    group.addTask { [unowned self]  in
-                        if !Task.isCancelled {
-                            do {
-                                let rawBalance = try await fetchBalance(for: coin)
-                                try await updateCoin(coin, rawBalance: rawBalance)
-
-                                if let stakedBalance = try await fetchStakedBalance(for: coin) {
-                                    try await updateCoin(coin, stakedBalance: stakedBalance)
-                                }
-
-                                try await updateBondedIfNeeded(for: coin)
-                            } catch {
-                                self.logger.warning("Fetch Balances error: \(error.localizedDescription)")
-                            }
-                        }
-                    }
-                }
-            }
-
-            try await Storage.shared.save()
+            try await applyBalanceUpdates(updates, to: vault)
         } catch {
             logger.error("Update Balances error: \(error.localizedDescription)")
         }
     }
 
+    /// Phase 1: Extract coin identifiers on MainActor
+    @MainActor
+    private func extractCoinIdentifiers(from vault: Vault) -> [CoinIdentifier] {
+        return vault.coins.map { CoinIdentifier(from: $0) }
+    }
+
+    /// Phase 2: Fetch balance updates concurrently using identifiers
+    private func fetchBalanceUpdates(for identifiers: [CoinIdentifier]) async -> [CoinBalanceUpdate] {
+        await withTaskGroup(of: CoinBalanceUpdate.self) { group in
+            var updates: [CoinBalanceUpdate] = []
+            updates.reserveCapacity(identifiers.count)
+
+            for identifier in identifiers {
+                group.addTask { [weak self] in
+                    guard let self, !Task.isCancelled else {
+                        return CoinBalanceUpdate(
+                            coinId: identifier.coinId,
+                            rawBalance: nil,
+                            stakedBalance: nil,
+                            bondedNodes: nil,
+                            error: nil
+                        )
+                    }
+
+                    return await self.fetchBalanceUpdate(for: identifier)
+                }
+            }
+
+            for await update in group {
+                updates.append(update)
+            }
+
+            return updates
+        }
+    }
+
+    /// Fetch balance update for a single coin identifier
+    private func fetchBalanceUpdate(for identifier: CoinIdentifier) async -> CoinBalanceUpdate {
+        var rawBalance: String?
+        var stakedBalance: String?
+        var bondedNodes: [RuneBondNode]?
+        var capturedError: Error?
+
+        do {
+            // Fetch raw balance
+            rawBalance = try await fetchBalance(
+                for: identifier.coinMeta,
+                address: identifier.address
+            )
+
+            // Fetch staked balance if supported
+            if let staked = try await fetchStakedBalance(for: identifier) {
+                stakedBalance = staked
+            }
+
+            // Fetch bonded nodes if applicable
+            bondedNodes = try await fetchBondedNodes(for: identifier)
+
+        } catch {
+            capturedError = error
+            self.logger.warning("Fetch Balance error for \(identifier.ticker): \(error.localizedDescription)")
+        }
+
+        return CoinBalanceUpdate(
+            coinId: identifier.coinId,
+            rawBalance: rawBalance,
+            stakedBalance: stakedBalance,
+            bondedNodes: bondedNodes,
+            error: capturedError
+        )
+    }
+
+    /// Phase 3: Apply balance updates to coins in batch on MainActor
+    @MainActor
+    private func applyBalanceUpdates(_ updates: [CoinBalanceUpdate], to vault: Vault) throws {
+        // Create lookup dictionary for O(1) access (follows DefiPositionsStorageService pattern)
+        let coinsByID = Dictionary(uniqueKeysWithValues: vault.coins.map { ($0.id, $0) })
+
+        // Apply all updates
+        for update in updates where update.hasUpdates {
+            guard let coin = coinsByID[update.coinId] else {
+                logger.warning("Coin not found for update: \(update.coinId)")
+                continue
+            }
+
+            // Update raw balance if present and changed
+            if let rawBalance = update.rawBalance, coin.rawBalance != rawBalance {
+                coin.rawBalance = rawBalance
+            }
+
+            // Update staked balance if present and changed
+            if let stakedBalance = update.stakedBalance, coin.stakedBalance != stakedBalance {
+                coin.stakedBalance = stakedBalance
+            }
+
+            // Update bonded nodes if present (transient property, always update)
+            if let bondedNodes = update.bondedNodes {
+                coin.bondedNodes = bondedNodes
+            }
+        }
+
+        // Single save operation for all changes
+        try Storage.shared.save()
+    }
+
+    @MainActor
     func updateBalance(for coin: Coin) async {
+        // Fetch price
         do {
             try await cryptoPriceService.fetchPrice(coin: coin)
         } catch {
@@ -74,20 +200,31 @@ class BalanceService {
                 logger.warning("Fetch Price error: \(error.localizedDescription)")
             }
         }
-        do {
-            let rawBalance = try await fetchBalance(for: coin)
-            try await updateCoin(coin, rawBalance: rawBalance)
 
-            if let stakedBalance = try await fetchStakedBalance(for: coin) {
-                try await updateCoin(coin, stakedBalance: stakedBalance)
+        // Extract identifier (already on MainActor)
+        let identifier = CoinIdentifier(from: coin)
+
+        // Fetch update (async work happens off MainActor internally)
+        let update = await fetchBalanceUpdate(for: identifier)
+
+        // Apply update (already on MainActor)
+        do {
+            if let rawBalance = update.rawBalance, coin.rawBalance != rawBalance {
+                coin.rawBalance = rawBalance
             }
-            try await updateBondedIfNeeded(for: coin)
-            try await MainActor.run {
-                try Storage.shared.save()
+
+            if let stakedBalance = update.stakedBalance, coin.stakedBalance != stakedBalance {
+                coin.stakedBalance = stakedBalance
             }
+
+            if let bondedNodes = update.bondedNodes {
+                coin.bondedNodes = bondedNodes
+            }
+
+            try Storage.shared.save()
         } catch {
             if (error as? URLError)?.code != .cancelled {
-                logger.warning("Fetch Balance error: \(error.localizedDescription)")
+                logger.warning("Update Balance error: \(error.localizedDescription)")
             }
         }
     }
@@ -158,21 +295,55 @@ private extension BalanceService {
 
     private var enableAutoCompoundStakedBalance: Bool { false }
 
-    func fetchStakedBalance(for coin: Coin) async throws -> String? {
-        switch coin.chain {
-        case .thorChain:
-            // Should be handled by `updateBondedIfNeeded`
-            guard !coin.isNativeToken else {
+    private func fetchBondedNodes(for identifier: CoinIdentifier) async throws -> [RuneBondNode]? {
+        switch identifier.chain {
+        case .thorChain, .thorChainStagenet, .thorChainStagenet2:
+            guard identifier.ticker.caseInsensitiveCompare("RUNE") == .orderedSame else {
                 return nil
             }
 
-            switch coin.ticker.uppercased() {
+            let bondedNodes = try await thorchainAPIService.getBondedNodes(address: identifier.address)
+            return bondedNodes.nodes
+
+        case .mayaChain:
+            guard identifier.isNativeToken, identifier.ticker.caseInsensitiveCompare("CACAO") == .orderedSame else {
+                return nil
+            }
+
+            do {
+                let bondedNodes = try await mayaChainAPIService.getBondedNodes(address: identifier.address)
+                return bondedNodes.nodes.map { mayaNode in
+                    RuneBondNode(
+                        status: mayaNode.status,
+                        address: mayaNode.address,
+                        bond: mayaNode.bond
+                    )
+                }
+            } catch {
+                print("Error fetching MayaChain bonded nodes: \(error.localizedDescription)")
+                return nil
+            }
+
+        default:
+            return nil
+        }
+    }
+
+    private func fetchStakedBalance(for identifier: CoinIdentifier) async throws -> String? {
+        switch identifier.chain {
+        case .thorChain:
+            // Should be handled by `fetchBondedNodes`
+            guard !identifier.isNativeToken else {
+                return nil
+            }
+
+            switch identifier.ticker.uppercased() {
             case "TCY":
-                let service = ThorchainServiceFactory.getService(for: coin.chain)
-                let tcyStakedBalance = await service.fetchTcyStakedAmount(address: coin.address)
+                let service = ThorchainServiceFactory.getService(for: identifier.chain)
+                let tcyStakedBalance = await service.fetchTcyStakedAmount(address: identifier.address)
 
                 if enableAutoCompoundStakedBalance {
-                    let tcyAutoCompoundBalance = await service.fetchTcyAutoCompoundAmount(address: coin.address)
+                    let tcyAutoCompoundBalance = await service.fetchTcyAutoCompoundAmount(address: identifier.address)
                     let totalStakedBalance = tcyStakedBalance + tcyAutoCompoundBalance
                     return totalStakedBalance.description
                 }
@@ -180,18 +351,18 @@ private extension BalanceService {
                 let totalStakedBalance = tcyStakedBalance
                 return totalStakedBalance.description
             case "RUJI":
-                return (try? await ThorchainService.shared.fetchRujiStakeBalance(thorAddr: coin.address))?.stakeAmount.description ?? "0"
+                return (try? await ThorchainService.shared.fetchRujiStakeBalance(thorAddr: identifier.address))?.stakeAmount.description ?? "0"
             default:
                 break
             }
 
             // Handle merge account balances for non-native tokens
-            if !coin.isNativeToken {
-                let service = ThorchainServiceFactory.getService(for: coin.chain)
-                let mergedAccounts = await service.fetchMergeAccounts(address: coin.address)
+            if !identifier.isNativeToken {
+                let service = ThorchainServiceFactory.getService(for: identifier.chain)
+                let mergedAccounts = await service.fetchMergeAccounts(address: identifier.address)
 
                 if let matchedAccount = mergedAccounts.first(where: {
-                    $0.pool.mergeAsset.metadata.symbol.caseInsensitiveCompare(coin.ticker) == .orderedSame
+                    $0.pool.mergeAsset.metadata.symbol.caseInsensitiveCompare(identifier.ticker) == .orderedSame
                 }) {
                     let amountInDecimal = matchedAccount.size.amount.toDecimal()
                     return amountInDecimal.description
@@ -203,13 +374,13 @@ private extension BalanceService {
 
         case .mayaChain:
             // Only CACAO (native token) supports staking via CACAO pool
-            guard coin.isNativeToken, coin.ticker.uppercased() == "CACAO" else {
+            guard identifier.isNativeToken, identifier.ticker.uppercased() == "CACAO" else {
                 return nil
             }
 
             do {
                 // Fetch CACAO pool position
-                let position = try await mayaChainAPIService.getCacaoPoolPosition(address: coin.address)
+                let position = try await mayaChainAPIService.getCacaoPoolPosition(address: identifier.address)
 
                 // Return staked amount (current value in CACAO)
                 let stakedAmountInAtomicUnits = position.stakedAmount
@@ -226,74 +397,4 @@ private extension BalanceService {
         }
     }
 
-    func fetchBalance(for coin: Coin) async throws -> String {
-        try await fetchBalance(for: coin.toCoinMeta(), address: coin.address)
-    }
-
-    @MainActor func updateCoin(_ coin: Coin, rawBalance: String) throws {
-        guard coin.rawBalance != rawBalance else {
-            return
-        }
-
-        coin.rawBalance = rawBalance
-    }
-
-    @MainActor func updateCoin(_ coin: Coin, stakedBalance: String) throws {
-        guard coin.stakedBalance != stakedBalance else {
-            return
-        }
-
-        coin.stakedBalance = stakedBalance
-    }
-}
-
-private extension BalanceService {
-    func updateBondedIfNeeded(for coin: Coin) async throws {
-        switch coin.chain {
-        case .thorChain, .thorChainStagenet, .thorChainStagenet2:
-            // Handle RUNE bonds
-            guard coin.ticker.caseInsensitiveCompare("RUNE") == .orderedSame else {
-                return
-            }
-
-            let bondedNodes = try await thorchainAPIService.getBondedNodes(address: coin.address)
-            await MainActor.run {
-                coin.bondedNodes = bondedNodes.nodes
-            }
-            try await updateCoin(coin, stakedBalance: bondedNodes.totalBonded.description)
-
-        case .mayaChain:
-            // Handle CACAO bonds - Maya uses LP units bonded to nodes
-            guard coin.isNativeToken, coin.ticker.caseInsensitiveCompare("CACAO") == .orderedSame else {
-                return
-            }
-
-            do {
-                let bondedNodes = try await mayaChainAPIService.getBondedNodes(address: coin.address)
-
-                // Convert Maya bonds to the same format as THORChain for consistency
-                let nodes = bondedNodes.nodes.map { mayaNode in
-                    RuneBondNode(
-                        status: mayaNode.status,
-                        address: mayaNode.address,
-                        bond: mayaNode.bond
-                    )
-                }
-
-                await MainActor.run {
-                    coin.bondedNodes = nodes
-                }
-
-                // Note: For Maya, staked balance already includes CACAO pool staking
-                // Bond value is in LP units which represent CACAO value, but we don't
-                // add it to stakedBalance to avoid double counting with CACAO pool staking
-            } catch {
-                print("Error fetching MayaChain bonded nodes: \(error.localizedDescription)")
-            }
-
-        default:
-            // Other chains don't support bonding
-            return
-        }
-    }
 }

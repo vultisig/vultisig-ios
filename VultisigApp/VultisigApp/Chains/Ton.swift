@@ -143,20 +143,6 @@ enum TonHelper {
         return transfer
     }
 
-    static func convertToUserFriendly(address: String, bounceable: Bool, testOnly: Bool) throws -> String {
-        // Convert address to TON format and then to user-friendly format
-        guard let anyAddress = AnyAddress(string: address, coin: .ton) else {
-            throw HelperError.runtimeError("Invalid TON address: \(address)")
-        }
-
-        // Use TONAddressConverter to convert to user-friendly format (matching Android implementation)
-        guard let convertedAddress = TONAddressConverter.toUserFriendly(address: anyAddress.description, bounceable: bounceable, testnet: testOnly) else {
-            throw HelperError.runtimeError("Failed to convert address to user-friendly format")
-        }
-
-        return convertedAddress
-    }
-
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .ton, txInputData: inputData)

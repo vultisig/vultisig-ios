@@ -8,7 +8,7 @@ enum UTXOTransactionError: Error {
     case unexpectedResponse
     case unknown(Error) // Wraps an unknown error
 }
-public class UTXOTransactionsService: ObservableObject {
+class UTXOTransactionsService: ObservableObject {
     @Published var walletData: [UTXOTransactionMempool]?
     @Published var errorMessage: String?
 
@@ -57,7 +57,7 @@ public class UTXOTransactionsService: ObservableObject {
     }
 
     // Currently there is a bug in Blockchair API that broadcasting Bitcoin transactions sometimes doesn't sync with bitcoin network
-    public static func broadcastBitcoinTransaction(signedTransaction: String, completion: @escaping (Result<String, Error>) -> Void) {
+    static func broadcastBitcoinTransaction(signedTransaction: String, completion: @escaping (Result<String, Error>) -> Void) {
         let url = Endpoint.bitcoinBroadcast()
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -78,7 +78,7 @@ public class UTXOTransactionsService: ObservableObject {
         task.resume()
     }
 
-    public static func broadcastTransaction(chain: String, signedTransaction: String, completion: @escaping (Result<String, Error>) -> Void) {
+    static func broadcastTransaction(chain: String, signedTransaction: String, completion: @escaping (Result<String, Error>) -> Void) {
         let url = Endpoint.blockchairBroadcast(chain.lowercased())
         var request = URLRequest(url: url)
         request.httpMethod = "POST"

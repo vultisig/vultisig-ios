@@ -68,19 +68,6 @@ class JoinKeysignViewModel: ObservableObject {
         self.isShowingScanner = false
     }
 
-    func getSpender() -> String {
-        return keysignPayload?.approvePayload?.spender ?? .empty
-    }
-
-    func getAmount() -> String {
-        guard let fromCoin = keysignPayload?.coin, let amount = keysignPayload?.approvePayload?.amount else {
-            return .empty
-        }
-
-        let decimalAmount = fromCoin.decimal(for: amount)
-        return "\(decimalAmount.formatForDisplay()) \(fromCoin.ticker)"
-    }
-
     private func fetchVaults() -> [Vault] {
         let fetchVaultDescriptor = FetchDescriptor<Vault>()
         do {
@@ -145,10 +132,6 @@ class JoinKeysignViewModel: ObservableObject {
         self.netService = NetService(domain: "local.", type: "_http._tcp.", name: self.serviceName)
         self.netService?.delegate = self.serviceDelegate
         self.netService?.resolve(withTimeout: 10)
-    }
-
-    func stopJoiningKeysign() {
-        self.status = .DiscoverSigningMsg
     }
 
     func waitForKeysignStart() async {
@@ -268,9 +251,7 @@ class JoinKeysignViewModel: ObservableObject {
             await ensureCustomMessagePayload()
             // Decode custom message if present
             if let customMessage = customMessagePayload {
-                if let decodedMessage = await customMessage.message.decodedExtensionMemoAsync() {
-                    self.customMessagePayload?.decodedMessage = decodedMessage
-                }
+                self.customMessagePayload?.decodedMessage = await CustomMessageDecoder.decode(customMessage)
                 if customMessage.vaultPublicKeyECDSA != .empty {
                     vaultPublicKeyECDSAInQrCode = customMessage.vaultPublicKeyECDSA
                 }
@@ -454,11 +435,6 @@ class JoinKeysignViewModel: ObservableObject {
         return gasViewModel.getCalculatedNetworkFee(payload: keysignPayload)
     }
 
-    func getJoinedCalculatedNetworkFee() -> String {
-        guard let keysignPayload else { return "" }
-        return gasViewModel.getJoinedCalculatedNetworkFee(payload: keysignPayload)
-    }
-
     func getFromFiatAmount() -> String {
         guard let payload = keysignPayload?.swapPayload else { return .empty }
         let amount = payload.fromCoin.decimal(for: payload.fromAmount)
@@ -471,4 +447,5 @@ class JoinKeysignViewModel: ObservableObject {
         let fiatDecimal = payload.toCoin.fiat(decimal: payload.toAmountDecimal)
         return fiatDecimal.formatToFiat(includeCurrencySymbol: true)
     }
+
 }

@@ -30,6 +30,10 @@ struct CustomMessagePayload: Codable, Hashable {
         if method == "eth_signTypedData_v4" {
             // Handle eth_signTypedData_v4 (EIP-712)
             return keysignMessagesForTypedData()
+        } else if method == "sign_message" && chain.lowercased() == "tron" {
+            // TRON: message has TIP-191/legacy header prefix from extension, hash with keccak256
+            let hash = data.sha3(.keccak256)
+            return [hash.hexString]
         } else if method == "personal_sign" || (method != "sign_message" && chain.lowercased() != "solana") {
             // For Ethereum personal_sign, use keccak256 hash
             // For Solana sign_message, use the message directly without hashing

@@ -1,5 +1,5 @@
 //
-//  ServerBackupVerificationView.swift
+//  ServerBackupVerificationScreen.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2024-11-13.
@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 import RiveRuntime
 
-struct ServerBackupVerificationView: View {
+struct ServerBackupVerificationScreen: View {
     let tssType: TssType
     let vault: Vault
     let email: String
@@ -21,75 +21,203 @@ struct ServerBackupVerificationView: View {
 
     @FocusState var focusedField: Int?
 
-    @State var otp: [String] = Array(repeating: "", count: codeLength)
-
-    @State var isLoading: Bool = false
-
-    @State var alertDescription = "verificationCodeTryAgain"
-    @State var showAlert: Bool = false
-    @State var animationVM: RiveViewModel? = nil
+    @State private var otp: [String] = Array(repeating: "", count: codeLength)
+    @State private var isLoading: Bool = false
+    @State private var showAlert: Bool = false
+    @State private var alertDescription = "incorrectCodeTryAgain"
+    @State private var animationVM: RiveViewModel?
 
     @Environment(\.modelContext) private var modelContext
 
-    static var codeLength: Int {
-        return 4
-    }
+    static var codeLength: Int { 4 }
 
     var verificationCode: String {
-        return otp.joined().trimmingCharacters(in: .whitespaces)
+        otp.joined().trimmingCharacters(in: .whitespaces)
     }
 
+    // MARK: - Body
+
     var body: some View {
-        ZStack {
-            Background()
-            container
+        Screen(showNavigationBar: false) {
+            VStack(spacing: 32) {
+                VaultSetupStepIcon(state: .active, icon: "email-circle")
+                    .padding(.top, 56)
+
+                VStack(spacing: 16) {
+                    titleView
+                    subtitleView
+                }
+
+                VStack(alignment: .leading, spacing: 12) {
+                    otpField
+                    statusView
+                }
+
+                Spacer()
+
+                footerView
+                    .padding(.bottom, 32)
+                    .opacity(isLoading ? 0 : 1)
+                    .animation(.easeInOut, value: isLoading)
+            }
         }
+        .applySheetSize()
+        .sheetStyle()
         .onAppear {
             focusedField = 0
-            animationVM = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
+            animationVM = RiveViewModel(fileName: "connecting_with_server", autoPlay: true)
         }
-        .safeAreaInset(edge: .bottom) {
-            cancelButton
-        }
-        .animation(.easeInOut, value: showAlert)
         .onDisappear {
             animationVM?.stop()
         }
+        .animation(.easeInOut, value: showAlert)
         .interactiveDismissDisabled()
     }
 
-    var title: some View {
-        Text(NSLocalizedString("enter5DigitVerificationCode", comment: ""))
-            .font(Theme.fonts.largeTitle)
-            .foregroundColor(Theme.colors.textPrimary)
-            .multilineTextAlignment(.leading)
-            .padding(.top, 50)
+    // MARK: - Header
+
+    private var titleView: some View {
+        Text("enter4DigitVerificationCode".localized)
+            .font(Theme.fonts.title2)
+            .foregroundStyle(Theme.colors.textPrimary)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: 243)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
-    var description: some View {
-        Text(NSLocalizedString("enter5DigitVerificationCodeDescription", comment: ""))
+    private var subtitleView: some View {
+        Text("enter4DigitVerificationCodeDescription".localized)
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textTertiary)
+            .foregroundStyle(Theme.colors.textTertiary)
+            .multilineTextAlignment(.center)
     }
 
-    private var cancelButton: some View {
-        Button {
-            deleteVault()
-        } label: {
-            VStack(spacing: 12) {
-                Text(String(format: NSLocalizedString("emailSentTo", comment: ""), email))
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(Theme.colors.textTertiary)
+    // MARK: - OTP Field
 
-                Text(NSLocalizedString("changeEmailAndRestart", comment: ""))
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(Theme.colors.textSecondary)
-                    .underline()
+    private var otpField: some View {
+        HStack(spacing: 8) {
+            digitFields
+            pasteButton
+        }
+    }
+
+    private var digitFields: some View {
+        HStack(spacing: 8) {
+            ForEach(0..<Self.codeLength, id: \.self) { index in
+                digitInput(index: index)
             }
         }
-        .padding(.bottom, 24)
+    }
+
+    private func digitInput(index: Int) -> some View {
+        digitTextField(index: index)
+            .font(Theme.fonts.title1)
+            .foregroundStyle(Theme.colors.textPrimary)
+            .multilineTextAlignment(.center)
+            .disableAutocorrection(true)
+            .frame(width: 58, height: 46)
+            .background(Theme.colors.bgSurface1)
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            .overlay(
+                RoundedRectangle(cornerRadius: 24)
+                    .strokeBorder(digitBorderColor(index), lineWidth: 1.5)
+            )
+            .focused($focusedField, equals: index)
+            .onChange(of: otp[index]) { _, newValue in
+                handleInputChange(newValue, index: index)
+            }
+    }
+
+    @ViewBuilder
+    private func digitTextField(index: Int) -> some View {
+        #if os(iOS)
+        OTPCharTextField(text: $otp[index]) {
+            focusedField = max(0, index - 1)
+        }
+        .keyboardType(.numberPad)
+        #else
+        BackspaceDetectingTextField(text: $otp[index]) {
+            handleBackspaceTap(index: index)
+        }
+        .borderlessTextFieldStyle()
+        #endif
+    }
+
+    private func digitBorderColor(_ index: Int) -> Color {
+        if showAlert {
+            return Theme.colors.alertError
+        }
+        return focusedField == index ? Theme.colors.border : Theme.colors.bgSurface2
+    }
+
+    private var pasteButton: some View {
+        Button {
+            pasteCode()
+        } label: {
+            Text("paste".localized)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .frame(height: 46)
+                .frame(maxWidth: 76)
+                .background(Theme.colors.bgSurface2)
+                .clipShape(RoundedRectangle(cornerRadius: 24))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24)
+                        .strokeBorder(Theme.colors.borderExtraLight.opacity(0.03), lineWidth: 1)
+                )
+        }
         .buttonStyle(.plain)
     }
+
+    // MARK: - Status
+
+    @ViewBuilder
+    private var statusView: some View {
+        if isLoading {
+            HStack(spacing: 8) {
+                animationVM?.view()
+                    .frame(width: 24, height: 24)
+
+                Text("verifyingCodePleaseWait".localized)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .font(Theme.fonts.bodySMedium)
+            }
+        } else if showAlert {
+            Text(alertDescription.localized)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .foregroundStyle(Theme.colors.alertError)
+                .font(Theme.fonts.bodySMedium)
+        }
+    }
+
+    // MARK: - Footer
+
+    private var footerView: some View {
+        VStack(spacing: 12) {
+            Text(String(format: "emailSentTo".localized, email))
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textTertiary)
+
+            Button {
+                deleteVault()
+            } label: {
+                Text("useDifferentEmail".localized)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Theme.colors.bgSurface2)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .strokeBorder(Theme.colors.borderExtraLight.opacity(0.03), lineWidth: 1)
+                    )
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    // MARK: - Actions
 
     func handleInputChange(_ newValue: String, index: Int) {
         if newValue.count == Self.codeLength {
@@ -107,64 +235,50 @@ struct ServerBackupVerificationView: View {
         }
     }
 
-    func getBorderColor(_ index: Int) -> Color {
-        if showAlert {
-            return Theme.colors.alertError
-        } else {
-            return focusedField == index ? Theme.colors.border : Theme.colors.bgSurface2
+    func pasteCode() {
+        #if os(iOS)
+        guard
+            let raw = UIPasteboard.general.string?.trimmingCharacters(in: .whitespacesAndNewlines),
+            raw.count == Self.codeLength,
+            raw.unicodeScalars.allSatisfy(CharacterSet.decimalDigits.contains)
+        else { return }
+
+        otp = raw.map(String.init)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            focusedField = Self.codeLength - 1
+        }
+        #else
+        let pasteboard = NSPasteboard.general
+        if let clipboardContent = pasteboard.string(forType: .string),
+           clipboardContent.count == Self.codeLength {
+            otp = clipboardContent.map { String($0) }
+        }
+        #endif
+    }
+
+    #if os(macOS)
+    private func handleBackspaceTap(index: Int) {
+        if otp[index].isEmpty && index > 0 {
+            otp[index] = ""
+            focusedField = index - 1
         }
     }
-
-    var pasteButton: some View {
-        Button {
-            pasteCode()
-        } label: {
-            Text(NSLocalizedString("paste", comment: ""))
-                .padding(12)
-                .frame(height: 46)
-                .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(Theme.colors.textPrimary)
-                .background(Theme.colors.bgSurface1)
-                .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Theme.colors.border, lineWidth: 1)
-                )
-        }
-        .listStyle(PlainListStyle())
-        .buttonStyle(BorderlessButtonStyle())
-    }
-
-    var loadingText: some View {
-        HStack {
-            animationVM?.view()
-                .frame(width: 24, height: 24)
-
-            Text(NSLocalizedString("verifyingCodePleaseWait", comment: ""))
-                .foregroundColor(Theme.colors.textPrimary)
-                .font(Theme.fonts.bodySMedium)
-
-            Spacer()
-        }
-    }
-
-    var alertText: some View {
-        Text(NSLocalizedString(alertDescription, comment: ""))
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .foregroundColor(Theme.colors.alertError)
-            .font(Theme.fonts.bodySMedium)
-    }
+    #endif
 
     private func verifyCode() {
+        guard !isLoading else { return }
+
         guard !verificationCode.isEmpty else {
             alertDescription = "emptyField"
             showAlert = true
             return
         }
 
+        isLoading = true
+
         Task {
-            alertDescription = "verificationCodeTryAgain"
-            isLoading = true
+            alertDescription = "incorrectCodeTryAgain"
 
             let isSuccess = await FastVaultService.shared.verifyBackupOTP(
                 ecdsaKey: vault.pubKeyECDSA,
@@ -202,7 +316,7 @@ struct ServerBackupVerificationView: View {
 }
 
 #Preview {
-    ServerBackupVerificationView(
+    ServerBackupVerificationScreen(
         tssType: .Keygen,
         vault: Vault.example,
         email: "mail@email.com",

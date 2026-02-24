@@ -22,7 +22,6 @@ struct SwapCryptoDoneView: View {
     @StateObject private var statusViewModel: TransactionStatusViewModel
 
     @Environment(\.openURL) var openURL
-    @EnvironmentObject var settingsViewModel: SettingsViewModel
     @EnvironmentObject var appViewModel: AppViewModel
 
     init(
@@ -83,7 +82,7 @@ struct SwapCryptoDoneView: View {
     }
 
     var buttons: some View {
-        VStack(spacing: 9) {
+        HStack(spacing: 8) {
             if progressLink != nil {
                 trackButton
             }
@@ -392,7 +391,6 @@ struct SwapCryptoDoneView: View {
             showAlert: .constant(false),
             alertTitle: .constant("")
         )
-        .environmentObject(SettingsViewModel())
         .environmentObject(AppViewModel())
     }
 }

@@ -83,7 +83,11 @@ class KeygenViewModel: ObservableObject {
     @Published var keygenError: String = ""
     @Published var status = KeygenStatus.CreatingInstance
     @Published var progress: Float = 0.0
+    @Published var showDuplicateVaultAlert = false
+    @Published var duplicateVaultName: String = ""
+    @Published var didCancelDuplicateVault = false
 
+    private var duplicateVaultContinuation: CheckedContinuation<Bool, Never>?
     private var tssService: TssServiceImpl? = nil
     private var tssMessenger: TssMessengerImpl? = nil
     private var stateAccess: LocalStateAccessorImpl? = nil
@@ -153,6 +157,30 @@ class KeygenViewModel: ObservableObject {
         }
         return hexString
     }
+    func confirmDuplicateVaultIfNeeded(context: ModelContext) async -> Bool {
+        let pubKey = self.vault.pubKeyECDSA
+        guard !pubKey.isEmpty else { return true }
+
+        let descriptor = FetchDescriptor<Vault>()
+        guard let existingVaults = try? context.fetch(descriptor) else { return true }
+        guard let existing = existingVaults.first(where: { $0.pubKeyECDSA == pubKey }) else {
+            return true
+        }
+
+        self.duplicateVaultName = existing.name
+        self.showDuplicateVaultAlert = true
+
+        return await withCheckedContinuation { continuation in
+            self.duplicateVaultContinuation = continuation
+        }
+    }
+
+    func resolveDuplicateVault(shouldReplace: Bool) {
+        showDuplicateVaultAlert = false
+        duplicateVaultContinuation?.resume(returning: shouldReplace)
+        duplicateVaultContinuation = nil
+    }
+
     func startKeygen(context: ModelContext) async {
         let vaultLibType = self.vault.libType ?? .GG20
         switch vaultLibType {
@@ -282,7 +310,15 @@ class KeygenViewModel: ObservableObject {
                                         localPartyID: self.vault.localPartyID,
                                         keygenCommittee: self.keygenCommittee)
         await keygenVerify.markLocalPartyComplete()
-        if self.tssType == .Keygen || !self.vaultOldCommittee.contains(self.vault.localPartyID) {
+        let needsInsert = self.tssType == .Keygen ||
+            !self.vaultOldCommittee.contains(self.vault.localPartyID)
+
+        if needsInsert {
+            let shouldProceed = await confirmDuplicateVaultIfNeeded(context: modelContext)
+            if !shouldProceed {
+                self.didCancelDuplicateVault = true
+                return
+            }
             VaultDefaultCoinService(context: modelContext)
                 .setDefaultCoinsOnce(vault: self.vault)
             modelContext.insert(self.vault)
@@ -459,7 +495,15 @@ class KeygenViewModel: ObservableObject {
             self.vault.keyshares = [KeyShare(pubkey: keyshareECDSA.PubKey, keyshare: keyshareECDSA.Keyshare),
                                     KeyShare(pubkey: keyshareEdDSA.PubKey, keyshare: keyshareEdDSA.Keyshare)]
 
-            if self.tssType == .Keygen || !self.vaultOldCommittee.contains(self.vault.localPartyID) {
+            let needsInsert = self.tssType == .Keygen ||
+                !self.vaultOldCommittee.contains(self.vault.localPartyID)
+
+            if needsInsert {
+                let shouldProceed = await confirmDuplicateVaultIfNeeded(context: context)
+                if !shouldProceed {
+                    self.didCancelDuplicateVault = true
+                    return
+                }
                 VaultDefaultCoinService(context: context)
                     .setDefaultCoinsOnce(vault: self.vault)
                 context.insert(self.vault)
@@ -499,40 +543,41 @@ class KeygenViewModel: ObservableObject {
                 throw HelperError.runtimeError("TSS instance is nil")
             }
             try await keygenWithRetry(tssIns: tssService, attempt: 1)
-            // if keygenWithRetry return without exception, it means keygen finished successfully
-            self.status = .KeygenFinished
-
             self.vault.signers = self.keygenCommittee
             // save the vault
             if let stateAccess {
                 self.vault.keyshares = stateAccess.keyshares
             }
+
+            let needsInsert: Bool
             switch self.tssType {
             case .Keygen:
-                // make sure the newly created vault has default coins
-                VaultDefaultCoinService(context: context)
-                    .setDefaultCoinsOnce(vault: self.vault)
-                context.insert(self.vault)
+                needsInsert = true
             case .Reshare:
-                // if local party is not in the old committee , then he is the new guy , need to add the vault
-                // otherwise , they previously have the vault
-                if !self.vaultOldCommittee.contains(self.vault.localPartyID) {
-                    VaultDefaultCoinService(context: context)
-                        .setDefaultCoinsOnce(vault: self.vault)
-                    context.insert(self.vault)
-                }
+                needsInsert = !self.vaultOldCommittee.contains(self.vault.localPartyID)
             case .Migrate:
-                // this should not happen
                 self.logger.error("Failed to migration vault")
                 self.status = .KeygenFailed
                 return
             case .KeyImport:
-                // this should not happen
                 self.logger.error("Failed to key import vault")
                 self.status = .KeygenFailed
                 return
             }
+
+            if needsInsert {
+                let shouldProceed = await confirmDuplicateVaultIfNeeded(context: context)
+                if !shouldProceed {
+                    self.didCancelDuplicateVault = true
+                    return
+                }
+                VaultDefaultCoinService(context: context)
+                    .setDefaultCoinsOnce(vault: self.vault)
+                context.insert(self.vault)
+            }
+
             try context.save()
+            self.status = .KeygenFinished
         } catch {
             self.logger.error("Failed to generate key, error: \(error.localizedDescription)")
             self.status = .KeygenFailed

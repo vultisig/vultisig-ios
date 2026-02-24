@@ -236,113 +236,13 @@ struct TronDashboardView: View {
     // MARK: - Resources Card (Bandwidth & Energy)
 
     var resourcesCard: some View {
-        HStack(spacing: 0) {
-            // Bandwidth Section (Green)
-            resourceSection(
-                title: NSLocalizedString("tronBandwidth", comment: "Bandwidth"),
-                icon: "gauge.with.needle",
-                available: model.availableBandwidth,
-                total: max(model.totalBandwidth, 1),  // Avoid division by zero
-                accentColor: Theme.colors.alertSuccess,
-                unit: "KB"
-            )
-            .padding(.leading, 16)
-            .padding(.trailing, 12)
-
-            // Vertical divider - touches top and bottom
-            Rectangle()
-                .fill(Theme.colors.textSecondary.opacity(0.3))
-                .frame(width: 1)
-
-            // Energy Section (Yellow/Orange)
-            resourceSection(
-                title: NSLocalizedString("tronEnergy", comment: "Energy"),
-                icon: "bolt.fill",
-                available: model.availableEnergy,
-                total: max(model.totalEnergy, 1),  // Avoid division by zero
-                accentColor: Theme.colors.alertWarning,
-                unit: ""
-            )
-            .padding(.leading, 12)
-            .padding(.trailing, 16)
-        }
-        .padding(.vertical, 12)
-        .background(
-            RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
-                .fill(Theme.colors.bgSurface1)
+        TronResourcesCardView(
+            availableBandwidth: model.availableBandwidth,
+            totalBandwidth: model.totalBandwidth,
+            availableEnergy: model.availableEnergy,
+            totalEnergy: model.totalEnergy,
+            isLoading: model.isLoadingResources
         )
-        .overlay(
-            RoundedRectangle(cornerRadius: TronConstants.Design.cornerRadius)
-                .stroke(Theme.colors.textSecondary.opacity(0.2), lineWidth: 1)
-        )
-    }
-
-    func resourceSection(title: String, icon: String, available: Int64, total: Int64, accentColor: Color, unit: String) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            // Title Label
-            Text(title)
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(accentColor)
-
-            // Content row with icon and value
-            HStack(spacing: 8) {
-                // Icon with accent color background
-                ZStack {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(accentColor.opacity(0.15))
-                        .frame(width: 36, height: 36)
-
-                    Image(systemName: icon)
-                        .font(Theme.fonts.bodySMedium)
-                        .foregroundStyle(accentColor)
-                }
-
-                VStack(alignment: .leading, spacing: 4) {
-                    // Value display
-                    if model.isLoadingResources {
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(Theme.colors.bgSurface1)
-                            .frame(width: 60, height: 14)
-                            .shimmer()
-                    } else {
-                        Text(TronViewLogic.formatResourceValue(available: available, total: total, unit: unit))
-                            .font(Theme.fonts.bodyMMedium)
-                            .foregroundStyle(Theme.colors.textPrimary)
-                    }
-
-                    // Progress bar
-                    GeometryReader { geometry in
-                        ZStack(alignment: .leading) {
-                            // Background track
-                            RoundedRectangle(cornerRadius: 2)
-                                .fill(Theme.colors.bgPrimary)
-                                .frame(height: 3)
-
-                            if model.isLoadingResources {
-                                // Shimmer loading state
-                                RoundedRectangle(cornerRadius: 2)
-                                    .fill(accentColor.opacity(0.3))
-                                    .frame(width: geometry.size.width * 0.5, height: 3)
-                                    .shimmer()
-                            } else {
-                                // Progress fill
-                                RoundedRectangle(cornerRadius: 2)
-                                    .fill(accentColor)
-                                    .frame(width: geometry.size.width * progressValue(available: available, total: total), height: 3)
-                            }
-                        }
-                    }
-                    .frame(height: 3)
-                }
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    func progressValue(available: Int64, total: Int64) -> CGFloat {
-        guard total > 0 else { return 0 }
-        // Progress shows available percentage - full bar = all resources available
-        return min(CGFloat(available) / CGFloat(total), 1.0)
     }
 
     @ViewBuilder

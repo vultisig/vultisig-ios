@@ -21,33 +21,6 @@ struct CircleApiService {
 
     private init() {}
 
-    // MARK: - DTOs
-
-    struct CircleWalletResponse: Decodable {
-        let address: String
-        let status: String
-    }
-
-    struct CircleBalanceResponse: Decodable {
-        let amount: String
-        let currency: String
-    }
-
-    struct CircleYieldResponse: Decodable {
-        let apy: String
-        let totalRewards: String
-        let currentRewards: String
-    }
-
-    struct CircleTransactionData: Decodable {
-        let to: String
-        let value: String
-        let data: String
-        let gasLimit: String
-        let maxFeePerGas: String
-        let maxPriorityFeePerGas: String
-    }
-
     // MARK: - Public API
 
     struct CircleWalletItem: Decodable {
@@ -65,7 +38,7 @@ struct CircleApiService {
         let scaCore: String?
     }
 
-    public func fetchWallet(ethAddress: String) async throws -> String? {
+    func fetchWallet(ethAddress: String) async throws -> String? {
         let fetchUrlString = Endpoint.fetchCircleWallets(refId: ethAddress)
         guard let fetchUrl = URL(string: fetchUrlString) else {
             throw CircleApiError.invalidUrl

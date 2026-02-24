@@ -13,7 +13,6 @@ class HomeViewModel: ObservableObject {
     @Published var filteredVaults: [Vault] = []
 
     @Published var showAlert: Bool = false
-    @Published var alertTitle: String = ""
 
     @Published var shouldShowScanner: Bool = false
 

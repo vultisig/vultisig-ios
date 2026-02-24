@@ -8,7 +8,7 @@
 import SwiftUI
 
 extension View {
-    func applySheetSize(_ width: CGFloat = 700, _ height: CGFloat? = 650) -> some View {
+    func applySheetSize(_ width: CGFloat = 700, _ height: CGFloat? = 550) -> some View {
         #if os(macOS)
         self.frame(width: width, height: height)
         #else

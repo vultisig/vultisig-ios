@@ -13,22 +13,15 @@ struct KeygenRouter {
     @ViewBuilder
     func build(_ route: KeygenRoute) -> some View {
         switch route {
-        case .fastBackupOverview(let tssType, let vault, let email):
-            viewBuilder.buildFastBackupOverviewScreen(
-                tssType: tssType,
-                vault: vault,
-                email: email
-            )
-        case .secureBackupOverview(let vault):
-            viewBuilder.buildSecureBackupOverviewScreen(vault: vault)
         case .backupNow(let tssType, let backupType, let isNewVault):
             viewBuilder.buildBackupNowScreen(
                 tssType: tssType,
                 backupType: backupType,
                 isNewVault: isNewVault
             )
-        case .keyImportOverview(let vault, let email, let keyImportInput, let setupType):
+        case .keyImportOverview(let tssType, let vault, let email, let keyImportInput, let setupType):
             viewBuilder.buildKeyImportOverviewScreen(
+                tssType: tssType,
                 vault: vault,
                 email: email,
                 keyImportInput: keyImportInput,
@@ -67,12 +60,6 @@ struct KeygenRouter {
                 fastVaultEmail: fastVaultEmail,
                 fastVaultExist: fastVaultExist
             )
-        case .newWalletName(let tssType, let selectedTab, let name):
-            viewBuilder.buildNewWalletNameScreen(
-                tssType: tssType,
-                selectedTab: selectedTab,
-                name: name
-            )
         case .joinKeysign(let vault):
             viewBuilder.buildJoinKeysignScreen(vault: vault)
         case .macScanner(let type, let sendTx, let selectedVault):
@@ -91,6 +78,15 @@ struct KeygenRouter {
                 type: type,
                 selectedVault: selectedVault,
                 sendTx: sendTx
+            )
+        case .reviewYourVaults(let vault, let tssType, let keygenCommittee, let email, let keyImportInput, let isInitiateDevice):
+            viewBuilder.buildReviewYourVaultsScreen(
+                vault: vault,
+                tssType: tssType,
+                keygenCommittee: keygenCommittee,
+                email: email,
+                keyImportInput: keyImportInput,
+                isInitiateDevice: isInitiateDevice
             )
         }
     }

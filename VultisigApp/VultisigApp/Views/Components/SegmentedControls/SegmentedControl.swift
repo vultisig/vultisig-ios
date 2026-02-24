@@ -115,22 +115,6 @@ struct SegmentedControl<T: Hashable>: View {
 
 }
 
-extension SegmentedControl {
-    init(selection: Binding<T>, items: [(value: T, title: String)]) {
-        let segmentItems = items.map { SegmentedControlItem(value: $0.value, title: $0.title) }
-        self._selection = selection
-        self.items = segmentItems
-        self._segmentFrames = State(initialValue: Array(repeating: .zero, count: segmentItems.count))
-    }
-
-    init(selection: Binding<T>, items: [(value: T, title: String, isEnabled: Bool)]) {
-        let segmentItems = items.map { SegmentedControlItem(value: $0.value, title: $0.title, isEnabled: $0.isEnabled) }
-        self._selection = selection
-        self.items = segmentItems
-        self._segmentFrames = State(initialValue: Array(repeating: .zero, count: segmentItems.count))
-    }
-}
-
 #Preview {
     struct PreviewContainer: View {
         @State private var selectedTab = "Portfolio"

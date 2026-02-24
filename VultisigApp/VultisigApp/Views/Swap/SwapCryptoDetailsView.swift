@@ -231,14 +231,6 @@ struct SwapCryptoDetailsView: View {
         }
     }
 
-    var loader: some View {
-        VStack {
-            Spacer()
-            Loader()
-            Spacer()
-        }
-    }
-
     var refreshCounter: some View {
         SwapRefreshQuoteCounter(timer: swapViewModel.timer)
     }
@@ -264,10 +256,6 @@ struct SwapCryptoDetailsView: View {
         let fromChain = swapViewModel.fromChain
         swapViewModel.fromChain = swapViewModel.toChain
         swapViewModel.toChain = fromChain
-    }
-
-    func showSheet() -> Bool {
-        swapViewModel.showFromChainSelector || swapViewModel.showToChainSelector || swapViewModel.showFromCoinSelector || swapViewModel.showToCoinSelector
     }
 }
 
