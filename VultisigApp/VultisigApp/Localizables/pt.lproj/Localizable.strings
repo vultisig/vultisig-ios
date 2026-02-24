@@ -1368,7 +1368,7 @@
 "backupsDescriptionVaultHighlight" = "próprio";
 "backupDeviceDriver" = "Seu dispositivo é o condutor";
 "backupDeviceDriverDescription" = "O backup do Dispositivo e a senha são a chave. O servidor apenas co-assina e o backup pode ser solicitado.";
-"backupDeviceDriverDescriptionHighlight" = "e";
+"backupDeviceDriverDescriptionHighlight" = "e a senha";
 "backupEachDeviceDescriptionSecure" = "Você criará %d backups no total. Fará isso em cada dispositivo.";
 
 "swap.outbound_fee" = "Taxa de Saída";

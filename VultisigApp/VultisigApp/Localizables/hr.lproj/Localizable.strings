@@ -1368,7 +1368,7 @@
 "backupsDescriptionVaultHighlight" = "svoju";
 "backupDeviceDriver" = "Vaš uređaj je pokretač";
 "backupDeviceDriverDescription" = "Sigurnosna kopija Uređaja i lozinka su ključ. Poslužitelj samo supotpisuje i sigurnosna kopija se može zatražiti.";
-"backupDeviceDriverDescriptionHighlight" = "i";
+"backupDeviceDriverDescriptionHighlight" = "i lozinka";
 "backupEachDeviceDescriptionSecure" = "Napravit ćete ukupno %d sigurnosnih kopija. To ćete učiniti na svakom uređaju.";
 
 "swap.outbound_fee" = "Izlazna naknada";
