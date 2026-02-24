@@ -18,6 +18,7 @@ struct PeerDiscoveryInfoBanner: View {
             Background()
             content
         }
+        .presentationDetents([.height(416)])
         .onAppear {
             animationVM = RiveViewModel(fileName: "peer_discovery_info_banner", autoPlay: true)
         }
@@ -32,6 +33,7 @@ struct PeerDiscoveryInfoBanner: View {
             text
             button
         }
+        .frame(maxWidth: 370)
     }
 
     var display: some View {
@@ -43,7 +45,7 @@ struct PeerDiscoveryInfoBanner: View {
     }
 
     var image: some View {
-        Image("PeerDiscoveryInfoBanner")
+        Image("secure-qr-tutorial")
             .resizable()
             .frame(width: 290, height: 230)
     }
@@ -51,7 +53,7 @@ struct PeerDiscoveryInfoBanner: View {
     var animation: some View {
         animationVM?.view()
             .frame(width: 80, height: 80)
-            .offset(x: -80, y: 6)
+            .offset(x: -16, y: -30)
     }
 
     var text: some View {
@@ -62,37 +64,33 @@ struct PeerDiscoveryInfoBanner: View {
     }
 
     var title: some View {
-        Group {
-            Text(NSLocalizedString("peerDiscoveryInfoTitle1", comment: ""))
-                .foregroundColor(Theme.colors.textPrimary) +
-            Text(NSLocalizedString("peerDiscoveryInfoTitle2", comment: ""))
-                .foregroundStyle(LinearGradient.primaryGradient)
-        }
-        .font(Theme.fonts.title2)
+        Text(NSLocalizedString("peerDiscoveryInfoTitle", comment: ""))
+            .font(Theme.fonts.title3)
+            .foregroundStyle(Theme.colors.textPrimary)
+            .multilineTextAlignment(.center)
     }
 
     var description: some View {
         Text(NSLocalizedString("peerDiscoveryInfoDescription", comment: ""))
-            .multilineTextAlignment(.center)
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textSecondary)
+            .foregroundStyle(Theme.colors.textSecondary)
+            .multilineTextAlignment(.center)
             .padding(.horizontal, 32)
-            .multilineTextAlignment(.leading)
-            .lineLimit(nil)
-            .fixedSize(horizontal: false, vertical: true)
-            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     var button: some View {
-        PrimaryButton(title: "gotIt") {
+        PrimaryButton(title: "startScanning") {
             isPresented = false
         }
-        .padding(.horizontal, 32)
-        .padding(.bottom, 32)
-        .buttonStyle(.plain)
+        .frame(maxWidth: 165)
     }
 }
 
 #Preview {
-    PeerDiscoveryInfoBanner(isPresented: .constant(false))
+    Screen {
+        VStack {}
+    }
+    .crossPlatformSheet(isPresented: .constant(true)) {
+        PeerDiscoveryInfoBanner(isPresented: .constant(false))
+    }
 }

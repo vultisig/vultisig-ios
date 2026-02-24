@@ -50,6 +50,8 @@
 "backupOptionsTitle" = "Do you want to encrypt your backup with a password?";
 "backupPasswordDisclaimer" = "Never store Vault Shares from different devices in the same location";
 "backupSetupSubtitle" = "Export this backup file, then save it to the cloud. Use a different cloud service or account for each backup. When you're finished, delete the file from this device.";
+"backupSetupSubtitleFast" = "Export this backup file, then save it to the cloud. It is encrypted with the password set earlier to unlock your Vault.";
+"backupSetupSubtitleFastHighlight" = "encrypted";
 "backupSetupSubtitleHighlight" = "Use a different cloud service or account for each backup. When you're finished, delete the file from this device.";
 "backupSetupTitle" = "Save backup to the cloud";
 "backupSetupTitleSecure" = "Save backup %d of %d to the cloud";
@@ -311,6 +313,7 @@
 "moreInfoDescription" = "This occurs because the password is used to locally encrypt the backup file, similar to how a hard drive is encrypted. In the following step, you have the option to add a hint";
 "mustAgreeTermsError" = "You must agree with the terms.";
 "myVaults" = "My Vaults";
+"nOfTotal" = "%d of %@";
 "name" = "Name";
 "nameYourVault" = "Name your vault";
 "needToRemoveTokens" = "All the tokens within this chain needs to be removed before proceeding.";
@@ -377,9 +380,11 @@
 "passwordIsRequired" = "Password is required.";
 "passwordMismatch" = "Password Mismatch";
 "paste" = "Paste";
-"peerDiscoveryInfoDescription" = "Download Vultisig on your other device(s) and select ‘Scan QR code’";
-"peerDiscoveryInfoTitle1" = "Scan the ";
-"peerDiscoveryInfoTitle2" = "QR code";
+"peerDiscoveryInfoDescription" = "On your other device, open the app and tap \"Scan QR\" to connect it.";
+"peerDiscoveryInfoTitle" = "Scan the QR on your other devices";
+"startScanning" = "Start scanning";
+"peerDiscoveryScanDeviceDisclaimer" = "Scan QR with other device. 3-device setup recommended, 2 is sufficient.";
+"pendingRewards" = "Pending Rewards";
 "phantomWallet" = "Phantom wallet";
 "photoLibrary" = "Photo Library";
 "pickReferralCode" = "Pick Referral Code";
@@ -1035,6 +1040,13 @@
 "backupsTitleHighlight" = "Backups";
 "storeBackupsSeparately" = "Store backups separately";
 "storeBackupsSeparatelyDescription" = "Keep each backup in a different place. If one is compromised, your funds stay safe.";
+"storeBackupsSeparatelyDescriptionSecure" = "Save each backup in a different cloud service or with a different password. If one is exposed, your funds stay safe.";
+"backupsDescriptionVault" = "Backups power your vault. Each device has its own backup. A backup alone can't move funds, it's only for recovery. Import and recover any lost device";
+"backupsDescriptionVaultHighlight" = "own";
+"backupDeviceDriver" = "Your device is the driver";
+"backupDeviceDriverDescription" = "The Device backup and password are the key. The server only co-signs and backup can be requested.";
+"backupDeviceDriverDescriptionHighlight" = "and";
+"backupEachDeviceDescriptionSecure" = "You'll create %d backups in total. You will do this on each device.";
 "message" = "Message";
 
 "transactionBroadcasted" = "Transaction broadcasted";
@@ -1053,7 +1065,8 @@
 "iUnderstand" = "I understand";
 "replaceExistingVault" = "Replace";
 "duplicateVaultMessage" = "A vault named \"%@\" already has the same keys. Replacing it will overwrite its data.";
-
+"addAtLeastNMoreDevices" = "Add at least %d more devices";
+"continueThresholdOfTotal" = "Continue (%d-of-%d)";
 "scannerModeCamera" = "Camera";
 "scannerModeScreen" = "Screen";
 "scanningScreenForQR" = "Scanning your screen for QR codes...";

@@ -50,6 +50,8 @@
 "backupOptionsTitle" = "Möchten Sie Ihre Sicherung mit einem Passwort verschlüsseln?";
 "backupPasswordDisclaimer" = "Speichere niemals Tresoranteile von verschiedenen Geräten am selben Ort";
 "backupSetupSubtitle" = "Exportiere diese Sicherungsdatei und speichere sie in der Cloud. Verwende für jede Sicherung einen anderen Cloud-Dienst oder ein anderes Konto. Wenn du fertig bist, lösche die Datei von diesem Gerät.";
+"backupSetupSubtitleFast" = "Exportiere diese Sicherungsdatei und speichere sie in der Cloud. Sie ist verschlüsselt mit dem zuvor festgelegten Passwort zum Entsperren deines Vaults.";
+"backupSetupSubtitleFastHighlight" = "verschlüsselt";
 "backupSetupSubtitleHighlight" = "Verwende für jede Sicherung einen anderen Cloud-Dienst oder ein anderes Konto. Wenn du fertig bist, lösche die Datei von diesem Gerät.";
 "backupSetupTitle" = "Sicherung in der Cloud speichern";
 "backupSetupTitleSecure" = "Sicherung %d von %d in der Cloud speichern";
@@ -310,6 +312,7 @@
 "moreInfoDescription" = "Dies geschieht, weil das Passwort verwendet wird, um die Sicherungsdatei lokal zu verschlüsseln, ähnlich wie eine Festplatte verschlüsselt wird. Im folgenden Schritt haben Sie die Möglichkeit, einen Hinweis hinzuzufügen.";
 "mustAgreeTermsError" = "Du musst den Bedingungen zustimmen.";
 "myVaults" = "Meine Tresore";
+"nOfTotal" = "%d von %@";
 "name" = "Name";
 "nameYourVault" = "Benennen Sie Ihren Tresor";
 "needToRemoveTokens" = "Alle Token innerhalb dieser Kette müssen entfernt werden, bevor du fortfahren kannst.";
@@ -375,9 +378,11 @@
 "passwordIsRequired" = "Passwort ist erforderlich.";
 "passwordMismatch" = "Passwort stimmt nicht überein";
 "paste" = "Einfügen";
-"peerDiscoveryInfoDescription" = "Laden Sie Vultisig auf Ihr anderes Gerät herunter und wählen Sie ‚QR-Code scannen‘";
-"peerDiscoveryInfoTitle1" = "Scannen Sie den ";
-"peerDiscoveryInfoTitle2" = "QR-Code";
+"peerDiscoveryInfoDescription" = "Öffnen Sie auf Ihrem anderen Gerät die App und tippen Sie auf \"QR scannen\", um es zu verbinden.";
+"peerDiscoveryInfoTitle" = "Scannen Sie den QR auf Ihren anderen Geräten";
+"startScanning" = "Scannen starten";
+"peerDiscoveryScanDeviceDisclaimer" = "Scanne den QR-Code mit einem anderen Gerät. 3-Geräte-Setup empfohlen, 2 sind ausreichend.";
+"pendingRewards" = "Ausstehende Belohnungen";
 "phantomWallet" = "Phantom wallet";
 "photoLibrary" = "Fotobibliothek";
 "pickReferralCode" = "Wähle Empfehlungscode";
@@ -1010,6 +1015,13 @@
 "backupsTitleHighlight" = "Backups";
 "storeBackupsSeparately" = "Backups getrennt speichern";
 "storeBackupsSeparatelyDescription" = "Bewahren Sie jedes Backup an einem anderen Ort auf. Wenn eines kompromittiert wird, bleiben Ihre Gelder sicher.";
+"storeBackupsSeparatelyDescriptionSecure" = "Speichern Sie jedes Backup in einem anderen Cloud-Dienst oder mit einem anderen Passwort. Wenn eines offengelegt wird, bleiben Ihre Gelder sicher.";
+"backupsDescriptionVault" = "Backups sind die Grundlage Ihres Tresors. Jedes Gerät hat sein eigenes Backup. Ein Backup allein kann keine Gelder bewegen, es dient nur der Wiederherstellung. Importieren und stellen Sie jedes verlorene Gerät wieder her";
+"backupsDescriptionVaultHighlight" = "eigenes";
+"backupDeviceDriver" = "Ihr Gerät ist der Schlüssel";
+"backupDeviceDriverDescription" = "Das Geräte-Backup und das Passwort sind der Schlüssel. Der Server signiert nur mit und ein Backup kann angefordert werden.";
+"backupDeviceDriverDescriptionHighlight" = "und";
+"backupEachDeviceDescriptionSecure" = "Sie erstellen insgesamt %d Backups. Dies wiederholen Sie auf jedem Gerät.";
 
 "swap.outbound_fee" = "Ausgangsgebühr";
 "swap.price_impact" = "Preisauswirkung";
@@ -1029,9 +1041,10 @@
 "referralCodeTitle" = "Empfehlungscode";
 "referralCodeDescription" = "Geben Sie hier Ihren Empfehlungscode ein.";
 "referralCodeDescriptionHighlight" = "Genießen Sie 10 % Rabatt auf jede Transaktion.";
-"enter4DigitCode" = "4-stelligen Zeichencode eingeben";
+"enter4DigitCode" = "4-stelligen Code eingeben";
 "applyReferral" = "Empfehlung anwenden";
-
+"addAtLeastNMoreDevices" = "Mindestens %d weitere Geräte hinzufügen";
+"continueThresholdOfTotal" = "Weiter (%d-von-%d)";
 "scannerModeCamera" = "Kamera";
 "scannerModeScreen" = "Bildschirm";
 "scanningScreenForQR" = "Bildschirm wird nach QR-Codes durchsucht...";

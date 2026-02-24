@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct VaultSetupScreen: View {
     let tssType: TssType
@@ -24,6 +25,7 @@ struct VaultSetupScreen: View {
     @State private var showPasswordTooltip = false
     @FocusState private var focusedField: FocusedField?
     @Environment(\.router) var router
+    @Environment(\.modelContext) var modelContext
     
     init(tssType: TssType, keyImportInput: KeyImportInput?, setupType: KeyImportSetupType? = nil) {
         self.tssType = tssType
@@ -112,6 +114,7 @@ struct VaultSetupScreen: View {
         }
         .onLoad {
             viewModel.onLoad()
+            viewModel.nameField.value = Vault.getUniqueVaultName(modelContext: modelContext, setupType: setupType)
             focusedField = .name
         }
         .onSubmit {

@@ -50,6 +50,8 @@
 "backupOptionsTitle" = "Vuoi crittografare il tuo backup con una password?";
 "backupPasswordDisclaimer" = "Non memorizzare mai le quote del Vault di dispositivi diversi nello stesso luogo";
 "backupSetupSubtitle" = "Esporta questo file di backup, poi salvalo nel cloud. Usa un servizio cloud o un account diverso per ogni backup. Quando hai finito, elimina il file da questo dispositivo.";
+"backupSetupSubtitleFast" = "Esporta questo file di backup, poi salvalo nel cloud. È crittografato con la password impostata in precedenza per sbloccare il tuo Vault.";
+"backupSetupSubtitleFastHighlight" = "crittografato";
 "backupSetupSubtitleHighlight" = "Usa un servizio cloud o un account diverso per ogni backup. Quando hai finito, elimina il file da questo dispositivo.";
 "backupSetupTitle" = "Salva il backup nel cloud";
 "backupSetupTitleSecure" = "Salva il backup %d di %d nel cloud";
@@ -310,6 +312,7 @@
 "moreInfoDescription" = "Questo accade perché la password viene utilizzata per crittografare localmente il file di backup, in modo simile a come viene crittografato un disco rigido. Nel passaggio successivo, hai la possibilità di aggiungere un suggerimento.";
 "mustAgreeTermsError" = "Devi accettare i termini.";
 "myVaults" = "I miei Vault";
+"nOfTotal" = "%d di %@";
 "name" = "Nome";
 "nameYourVault" = "Dai un nome al tuo vault";
 "needToRemoveTokens" = "Tutti i token all'interno di questa catena devono essere rimossi prima di procedere.";
@@ -375,9 +378,11 @@
 "passwordIsRequired" = "È richiesta la password.";
 "passwordMismatch" = "Le password non corrispondono";
 "paste" = "Incolla";
-"peerDiscoveryInfoDescription" = "Scarica Vultisig sul tuo altro dispositivo e seleziona ‘Scansiona codice QR’";
-"peerDiscoveryInfoTitle1" = "Scansiona il ";
-"peerDiscoveryInfoTitle2" = "codice QR";
+"peerDiscoveryInfoDescription" = "Sull'altro dispositivo, apri l'app e tocca \"Scansiona QR\" per connetterlo.";
+"peerDiscoveryInfoTitle" = "Scansiona il QR sugli altri dispositivi";
+"startScanning" = "Avvia scansione";
+"peerDiscoveryScanDeviceDisclaimer" = "Scansiona il QR con un altro dispositivo. Si consiglia un setup con 3 dispositivi, 2 sono sufficienti.";
+"pendingRewards" = "Premio in sospeso";
 "phantomWallet" = "Phantom wallet";
 "photoLibrary" = "Biblioteca di foto";
 "pickReferralCode" = "Scegli codice di invito";
@@ -1010,6 +1015,13 @@
 "backupsTitleHighlight" = "Backup";
 "storeBackupsSeparately" = "Conserva i backup separatamente";
 "storeBackupsSeparatelyDescription" = "Conserva ogni backup in un luogo diverso. Se uno viene compromesso, i tuoi fondi rimangono al sicuro.";
+"storeBackupsSeparatelyDescriptionSecure" = "Salva ogni backup in un servizio cloud diverso o con una password diversa. Se uno viene esposto, i tuoi fondi rimangono al sicuro.";
+"backupsDescriptionVault" = "I backup alimentano il tuo vault. Ogni dispositivo ha il proprio backup. Un backup da solo non può spostare fondi, serve solo per il recupero. Importa e recupera qualsiasi dispositivo perso";
+"backupsDescriptionVaultHighlight" = "proprio";
+"backupDeviceDriver" = "Il tuo dispositivo è il conducente";
+"backupDeviceDriverDescription" = "Il backup del Dispositivo e la password sono la chiave. Il server si limita a co-firmare e il backup può essere richiesto.";
+"backupDeviceDriverDescriptionHighlight" = "e la password";
+"backupEachDeviceDescriptionSecure" = "Creerai %d backup in totale. Lo farai su ogni dispositivo.";
 
 "swap.outbound_fee" = "Commissione in Uscita";
 "swap.price_impact" = "Impatto sul Prezzo";
@@ -1029,9 +1041,10 @@
 "referralCodeTitle" = "Codice referral";
 "referralCodeDescription" = "Inserisci qui il tuo codice referral.";
 "referralCodeDescriptionHighlight" = "Goditi il 10% di sconto su ogni transazione.";
-"enter4DigitCode" = "Inserisci codice di 4 caratteri";
+"enter4DigitCode" = "Inserisci codice a 4 cifre";
 "applyReferral" = "Applica referral";
-
+"addAtLeastNMoreDevices" = "Aggiungi almeno %d altri dispositivi";
+"continueThresholdOfTotal" = "Continua (%d-di-%d)";
 "scannerModeCamera" = "Fotocamera";
 "scannerModeScreen" = "Schermo";
 "scanningScreenForQR" = "Scansione dello schermo alla ricerca di codici QR...";

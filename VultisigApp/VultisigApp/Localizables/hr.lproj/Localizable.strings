@@ -50,6 +50,8 @@
 "backupOptionsTitle" = "Želite li svoju sigurnosnu kopiju šifrirati lozinkom?";
 "backupPasswordDisclaimer" = "Nikada ne pohranjujte dionice Vaulta s različitih uređaja na istom mjestu";
 "backupSetupSubtitle" = "Izvezite ovu sigurnosnu kopiju, zatim je spremite u oblak. Koristite različite usluge oblaka ili račune za svaku sigurnosnu kopiju. Kada završite, izbrišite datoteku s ovog uređaja.";
+"backupSetupSubtitleFast" = "Izvezite ovu sigurnosnu kopiju, zatim je spremite u oblak. Šifrirana je lozinkom postavljenom ranije za otključavanje vašeg Vaulta.";
+"backupSetupSubtitleFastHighlight" = "Šifrirana";
 "backupSetupSubtitleHighlight" = "Koristite različite usluge oblaka ili račune za svaku sigurnosnu kopiju. Kada završite, izbrišite datoteku s ovog uređaja.";
 "backupSetupTitle" = "Spremite sigurnosnu kopiju u oblak";
 "backupSetupTitleSecure" = "Spremi sigurnosnu kopiju %d od %d u oblak";
@@ -310,6 +312,7 @@
 "moreInfoDescription" = "Ovo se događa jer se lozinka koristi za lokalno šifriranje datoteke sigurnosne kopije, slično kao što se šifrira tvrdi disk. U sljedećem koraku imate mogućnost dodati savjet.";
 "mustAgreeTermsError" = "Morate se složiti s uvjetima.";
 "myVaults" = "Moji trezori";
+"nOfTotal" = "%d od %@";
 "name" = "Ime";
 "nameYourVault" = "Imenujte svoj trezor";
 "needToRemoveTokens" = "Svi tokeni unutar ovog lanca moraju biti uklonjeni prije nastavka.";
@@ -375,9 +378,11 @@
 "passwordIsRequired" = "Potrebna je lozinka.";
 "passwordMismatch" = "Lozinke se ne podudaraju";
 "paste" = "Zalijepi";
-"peerDiscoveryInfoDescription" = "Preuzmite Vultisig na svoj drugi uređaj i odaberite ‘Skeniraj QR kod’";
-"peerDiscoveryInfoTitle1" = "Skenirajte ";
-"peerDiscoveryInfoTitle2" = "QR kod";
+"peerDiscoveryInfoDescription" = "Na drugom uređaju otvorite aplikaciju i dodirnite \"Skeniraj QR\" za povezivanje.";
+"peerDiscoveryInfoTitle" = "Skenirajte QR na svojim drugim uređajima";
+"startScanning" = "Započni skeniranje";
+"peerDiscoveryScanDeviceDisclaimer" = "Skenirajte QR kod s drugim uređajem. Preporučena je konfiguracija s 3 uređaja, 2 su dovoljna.";
+"pendingRewards" = "Nagrade na čekanju";
 "phantomWallet" = "Phantom wallet";
 "photoLibrary" = "Biblioteka fotografija";
 "pickReferralCode" = "Odaberi referalni kod";
@@ -1010,6 +1015,13 @@
 "backupsTitleHighlight" = "Sigurnosne kopije";
 "storeBackupsSeparately" = "Čuvajte sigurnosne kopije odvojeno";
 "storeBackupsSeparatelyDescription" = "Čuvajte svaku sigurnosnu kopiju na drugom mjestu. Ako je jedna kompromitirana, vaša sredstva ostaju sigurna.";
+"storeBackupsSeparatelyDescriptionSecure" = "Spremite svaku sigurnosnu kopiju u drugu uslugu oblaka ili s drugom lozinkom. Ako je jedna izložena, vaša sredstva ostaju sigurna.";
+"backupsDescriptionVault" = "Sigurnosne kopije pokreću vaš trezor. Svaki uređaj ima svoju sigurnosnu kopiju. Sigurnosna kopija sama ne može premjestiti sredstva, služi samo za oporavak. Uvezite i oporavite bilo koji izgubljeni uređaj";
+"backupsDescriptionVaultHighlight" = "svoju";
+"backupDeviceDriver" = "Vaš uređaj je pokretač";
+"backupDeviceDriverDescription" = "Sigurnosna kopija Uređaja i lozinka su ključ. Poslužitelj samo supotpisuje i sigurnosna kopija se može zatražiti.";
+"backupDeviceDriverDescriptionHighlight" = "i lozinka";
+"backupEachDeviceDescriptionSecure" = "Napravit ćete ukupno %d sigurnosnih kopija. To ćete učiniti na svakom uređaju.";
 
 "swap.outbound_fee" = "Izlazna naknada";
 "swap.price_impact" = "Utjecaj na cijenu";
@@ -1029,9 +1041,10 @@
 "referralCodeTitle" = "Kod preporuke";
 "referralCodeDescription" = "Unesite svoj kod preporuke ovdje.";
 "referralCodeDescriptionHighlight" = "Uživajte 10% popusta na svaku transakciju.";
-"enter4DigitCode" = "Unesite kod od 4 znaka";
+"enter4DigitCode" = "Unesite 4-znamenkasti kod";
 "applyReferral" = "Primijeni preporuku";
-
+"addAtLeastNMoreDevices" = "Dodajte barem još %d uređaja";
+"continueThresholdOfTotal" = "Nastavi (%d-od-%d)";
 "scannerModeCamera" = "Kamera";
 "scannerModeScreen" = "Zaslon";
 "scanningScreenForQR" = "Skeniranje zaslona u potrazi za QR kodovima...";
