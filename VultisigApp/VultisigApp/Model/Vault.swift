@@ -217,7 +217,7 @@ final class Vault: ObservableObject, Codable {
         return self.keyshares.first(where: {$0.pubkey == pubKey})?.keyshare
     }
 
-    static func getUniqueVaultName(modelContext: ModelContext, state: SetupVaultState? = nil) -> String {
+    static func getUniqueVaultName(modelContext: ModelContext, setupType: KeyImportSetupType? = nil) -> String {
         let fetchVaultDescriptor = FetchDescriptor<Vault>()
         do {
             let vaults = try modelContext.fetch(fetchVaultDescriptor)
@@ -226,8 +226,15 @@ final class Vault: ObservableObject, Codable {
             repeat {
                 let vaultName: String?
 
-                if let state {
-                    vaultName = "\(state.title.capitalized) Vault #\(idx + 1)"
+                if let setupType {
+                    let prefix: String
+                    switch setupType {
+                    case .fast:
+                        prefix = "Fast"
+                    case .secure:
+                        prefix = "Secure"
+                    }
+                    vaultName = "\(prefix) Vault #\(idx + 1)"
                 } else {
                     vaultName = "Vault #\(idx + 1)"
                 }
