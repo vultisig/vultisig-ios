@@ -42,15 +42,4 @@ extension TokensStore {
             CoinMeta(chain: Chain.mantle, ticker: "MNT", logo: "mantle", decimals: 18, priceProviderId: "mantle", contractAddress: "", isNativeToken: true)
         }
     }
-
-    enum TokenSelectionAssetError: Error {
-        case error(message: String)
-
-        var localizedDescription: String {
-            switch self {
-            case let .error(message):
-                return "Error: \(message)"
-            }
-        }
-    }
 }

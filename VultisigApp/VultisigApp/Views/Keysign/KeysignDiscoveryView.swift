@@ -32,17 +32,11 @@ struct KeysignDiscoveryView: View {
     @StateObject var participantDiscovery = ParticipantDiscovery()
     @StateObject var viewModel = KeysignDiscoveryViewModel()
 
-    @State var isPhoneSE = false
     @State var isLoading = false
-    @State var isiOSAppOnMac = false
     @State var screenWidth: CGFloat = 0
     @State var screenHeight: CGFloat = 0
     @State var qrCodeImage: Image? = nil
     @State var selectedNetwork = VultisigRelay.IsRelayEnabled ? NetworkPromptType.Internet : NetworkPromptType.Local
-
-    @State var qrSize: CGFloat = .zero
-    @State var qrOutlineSize: CGFloat = .zero
-    @State var showDisclaimer: Bool = true
 
     @State var qrScannedAnimation: RiveViewModel? = nil
 
@@ -77,7 +71,7 @@ struct KeysignDiscoveryView: View {
         }
         .onLoad {
             Task { @MainActor in
-                qrScannedAnimation = RiveViewModel(fileName: "QRScanner", autoPlay: true)
+                qrScannedAnimation = RiveViewModel(fileName: "qrscanner", autoPlay: true)
                 await setData()
                 viewModel.startDiscovery()
             }
@@ -157,7 +151,11 @@ struct KeysignDiscoveryView: View {
     }
 
     var lookingForDevices: some View {
-        LookingForDevicesLoader(selectedTab: keysignState)
+        KeygenAnimationView(
+            isFast: keysignState == .fast,
+            connected: .constant(false),
+            progress: .constant(0)
+        )
     }
 
     var keysignState: SetupVaultState {
@@ -165,8 +163,6 @@ struct KeysignDiscoveryView: View {
     }
 
     func setData() async {
-        isiOSAppOnMac = ProcessInfo.processInfo.isiOSAppOnMac
-
         if VultisigRelay.IsRelayEnabled {
             self.selectedNetwork = .Internet
         } else {

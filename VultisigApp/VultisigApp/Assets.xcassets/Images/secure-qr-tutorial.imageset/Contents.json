@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "secure-qr-tutorial.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

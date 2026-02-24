@@ -31,11 +31,14 @@ struct SwitchToLocalLink: View {
                     .foregroundStyle(Theme.colors.textTertiary)
             }
 
-            modeButton(
-                title: NSLocalizedString("useLocalMode", comment: ""),
-                background: Color(red: 0.07, green: 0.16, blue: 0.29),
-                borderColor: .white.opacity(0.03)
-            )
+            Button {
+                toggleNetwork()
+            } label: {
+                Text(NSLocalizedString("switchToLocalMode", comment: ""))
+                    .underline()
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textSecondary)
+            }
         }
     }
 

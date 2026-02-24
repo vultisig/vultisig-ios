@@ -154,16 +154,6 @@ struct SendVerifyScreen: View {
     }
 }
 
-struct VerifyKeysignPayload: Identifiable, Hashable {
-    let id: String
-    let payload: KeysignPayload
-
-    init(id: String = UUID().uuidString, payload: KeysignPayload) {
-        self.id = id
-        self.payload = payload
-    }
-}
-
 #Preview {
     SendVerifyScreen(
         tx: SendTransaction(),

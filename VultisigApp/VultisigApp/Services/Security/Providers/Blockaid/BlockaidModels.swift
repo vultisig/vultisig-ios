@@ -172,13 +172,6 @@ struct BlockaidTransactionScanResponseJson: Codable {
                 case extendedFeatures = "extended_features"
             }
 
-            init(resultType: String, reason: String, features: [String] = [], extendedFeatures: [BlockaidSolanaExtendedFeaturesJson] = []) {
-                self.resultType = resultType
-                self.reason = reason
-                self.features = features
-                self.extendedFeatures = extendedFeatures
-            }
-
             struct BlockaidSolanaExtendedFeaturesJson: Codable {
                 let type: String
                 let description: String

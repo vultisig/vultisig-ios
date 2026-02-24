@@ -14,7 +14,6 @@ enum KeygenRoute: Hashable {
     case fastVaultEmail(tssType: TssType, vault: Vault, selectedTab: SetupVaultState, fastVaultExist: Bool)
     case fastVaultSetHint(tssType: TssType, vault: Vault, selectedTab: SetupVaultState, fastVaultEmail: String, fastVaultPassword: String, fastVaultExist: Bool)
     case fastVaultSetPassword(tssType: TssType, vault: Vault, selectedTab: SetupVaultState, fastVaultEmail: String, fastVaultExist: Bool)
-    case newWalletName(tssType: TssType, selectedTab: SetupVaultState, name: String)
     case joinKeysign(vault: Vault)
     case macScanner(type: DeeplinkFlowType, sendTx: SendTransaction, selectedVault: Vault?)
     case macAddressScanner(selectedVault: Vault?, resultId: UUID)

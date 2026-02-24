@@ -8,7 +8,7 @@
 import SwiftUI
 
 /// Custom Picker using ScrollView to visualize elements with non-3D effect like the built-in Picker/UIPicker
-public struct FlatPicker<ItemView: View, Item: Equatable & Hashable>: View {
+struct FlatPicker<ItemView: View, Item: Equatable & Hashable>: View {
     @Binding var selectedItem: Item?
     let items: [Item]
     let itemViewBuilder: (Item) -> ItemView
@@ -19,7 +19,7 @@ public struct FlatPicker<ItemView: View, Item: Equatable & Hashable>: View {
         Array(items.enumerated())
     }
 
-    public init(selectedItem: Binding<Item?>, items: [Item], itemSize: CGFloat, axis: Axis.Set = .vertical, @ViewBuilder itemViewBuilder: @escaping (Item) -> ItemView) {
+    init(selectedItem: Binding<Item?>, items: [Item], itemSize: CGFloat, axis: Axis.Set = .vertical, @ViewBuilder itemViewBuilder: @escaping (Item) -> ItemView) {
         self._selectedItem = selectedItem
         self.items = items
         self.itemSize = itemSize
@@ -36,7 +36,7 @@ public struct FlatPicker<ItemView: View, Item: Equatable & Hashable>: View {
     private let impactGenerator = UIImpactFeedbackGenerator(style: .light)
 #endif
 
-    public var body: some View {
+    var body: some View {
         GeometryReader { geometry in
             let containerSize = axis == .vertical ? geometry.size.height : geometry.size.width
             ZStack {
