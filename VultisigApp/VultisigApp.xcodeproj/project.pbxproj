@@ -498,7 +498,7 @@
 		13DACCC62EDF672700BE0F97 /* KeyImportChainsSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DACCC52EDF671A00BE0F97 /* KeyImportChainsSetupScreen.swift */; };
 		13DACCC82EDF674F00BE0F97 /* KeyImportChainsSetupViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DACCC72EDF674D00BE0F97 /* KeyImportChainsSetupViewModel.swift */; };
 		13DACCCB2EDF6C4500BE0F97 /* KeyImportScanningForChainsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DACCCA2EDF6C4400BE0F97 /* KeyImportScanningForChainsView.swift */; };
-		13DAD9452F4E006F0020C0F6 /* devices_component.riv in Resources */ = {isa = PBXBuildFile; fileRef = 13DAD9442F4E006F0020C0F6 /* devices_component.riv */; };
+		13DAD94D2F4E08A90020C0F6 /* devices_component.riv in Resources */ = {isa = PBXBuildFile; fileRef = 13DAD94C2F4E08A90020C0F6 /* devices_component.riv */; };
 		13DB87602E9FD78E008E89B0 /* DefiMainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DB875F2E9FD78A008E89B0 /* DefiMainScreen.swift */; };
 		13DB87632EA01182008E89B0 /* DefiMainBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DB87622EA0117E008E89B0 /* DefiMainBalanceView.swift */; };
 		13DD00422EF2F3E40091F833 /* OnboardingRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD003E2EF2F3E40091F833 /* OnboardingRoute.swift */; };
@@ -1835,7 +1835,7 @@
 		13DACCC52EDF671A00BE0F97 /* KeyImportChainsSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyImportChainsSetupScreen.swift; sourceTree = "<group>"; };
 		13DACCC72EDF674D00BE0F97 /* KeyImportChainsSetupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyImportChainsSetupViewModel.swift; sourceTree = "<group>"; };
 		13DACCCA2EDF6C4400BE0F97 /* KeyImportScanningForChainsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyImportScanningForChainsView.swift; sourceTree = "<group>"; };
-		13DAD9442F4E006F0020C0F6 /* devices_component.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = devices_component.riv; sourceTree = "<group>"; };
+		13DAD94C2F4E08A90020C0F6 /* devices_component.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = devices_component.riv; sourceTree = "<group>"; };
 		13DB875F2E9FD78A008E89B0 /* DefiMainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiMainScreen.swift; sourceTree = "<group>"; };
 		13DB87622EA0117E008E89B0 /* DefiMainBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefiMainBalanceView.swift; sourceTree = "<group>"; };
 		13DD003E2EF2F3E40091F833 /* OnboardingRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingRoute.swift; sourceTree = "<group>"; };
@@ -5971,7 +5971,6 @@
 				13333D002F3511CF00AB9E6F /* backup_device1.riv */,
 				13333D012F3511CF00AB9E6F /* backup_device2.riv */,
 				13333D022F3511CF00AB9E6F /* backup_device3.riv */,
-				13DAD9442F4E006F0020C0F6 /* devices_component.riv */,
 				13333D032F3511CF00AB9E6F /* backup_device4.riv */,
 				136A08602F3E1E1B004B3153 /* searching_device.riv */,
 				132E01642F1AA2FA007E717C /* vault_setup_device2.riv */,
@@ -5983,6 +5982,7 @@
 				136A08642F3E1EB4004B3153 /* keygen_secure_paired_device.riv */,
 				136A08652F3E1EB4004B3153 /* onboarding_success.riv */,
 				132E01662F1AA2FA007E717C /* vault_setup_device4.riv */,
+				13DAD94C2F4E08A90020C0F6 /* devices_component.riv */,
 				130C058B2EE9A42200A7303A /* import_seedphrase.riv */,
 				DEE8B2AB2E40842B0020DA63 /* upgrade_success.riv */,
 				1387FDA72E32C2CC007ECDB4 /* QRScanner.riv */,
@@ -6876,7 +6876,7 @@
 				13333D062F3511CF00AB9E6F /* backup_device1.riv in Resources */,
 				13333D072F3511CF00AB9E6F /* backup_device2.riv in Resources */,
 				1387FDA82E32C2CC007ECDB4 /* QRScanner.riv in Resources */,
-				13DAD9452F4E006F0020C0F6 /* devices_component.riv in Resources */,
+				13DAD94D2F4E08A90020C0F6 /* devices_component.riv in Resources */,
 				A65F8A192D42224100CF4DDB /* Brockmann-Medium.otf in Resources */,
 				A6F7B6F82D4C94D700AC8104 /* ConnectingWithServer.riv in Resources */,
 				DE8AD7432BC64A4C00339775 /* PrivacyInfo.xcprivacy in Resources */,
