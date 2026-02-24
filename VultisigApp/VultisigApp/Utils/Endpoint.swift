@@ -745,7 +745,7 @@ class Endpoint {
     }
 
     static func getStagenetSwapProgressURL(txid: String) -> String {
-        return "https://runescan.io/tx/\(txid.stripHexPrefix())"
+        return "https://runescan.io/tx/\(txid.stripHexPrefix())?network=stagenet"
     }
 
     static func thorchainNodeExplorerURL(_ address: String) -> String {
@@ -791,9 +791,9 @@ class Endpoint {
         case .thorChain:
             return "https://runescan.io/tx/\(txid.stripHexPrefix())"
         case .thorChainChainnet:
-            return "https://runescan.io/tx/\(txid.stripHexPrefix())"
+            return "https://runescan.io/tx/\(txid.stripHexPrefix())?network=stagenet"
         case .thorChainStagenet2:
-            return "https://runescan.io/tx/\(txid.stripHexPrefix())"
+            return "https://runescan.io/tx/\(txid.stripHexPrefix())?network=stagenet"
         case .solana:
             return "https://orb.helius.dev/tx/\(txid)"
         case .ethereum:
