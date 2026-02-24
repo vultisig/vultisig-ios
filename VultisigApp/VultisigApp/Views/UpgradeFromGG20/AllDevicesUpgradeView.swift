@@ -24,6 +24,24 @@ struct AllDevicesUpgradeView: View {
         }
     }
 
+    #if os(iOS)
+    var content: some View {
+        VStack(spacing: 0) {
+            Spacer()
+            animation
+            Spacer()
+            description
+            button
+        }
+        .padding(36)
+        .toolbar {
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                NavigationHelpButton()
+            }
+        }
+    }
+    #endif
+
     var animation: some View {
         animationVM?.view()
     }

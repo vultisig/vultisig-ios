@@ -10,10 +10,6 @@ import VultisigCommonData
 struct SignSolana: Codable, Hashable {
     let rawTransactions: [String]  // base64 encoded
 
-    init(rawTransactions: [String]) {
-        self.rawTransactions = rawTransactions
-    }
-
     init(proto: VSSignSolana) {
         self.rawTransactions = proto.rawTransactions
     }

@@ -7,14 +7,14 @@
 
 import SwiftUI
 
-public enum FontStyle: String, CaseIterable {
+enum FontStyle: String, CaseIterable {
     case brockmanBold
     case brockmanMedium
     case brockmanRegular
     case brockmanSemibold
     case satoshiMedium
 
-    public func size(_ size: CGFloat) -> Font {
+    func size(_ size: CGFloat) -> Font {
         return Font.custom(fontName, size: size)
     }
 

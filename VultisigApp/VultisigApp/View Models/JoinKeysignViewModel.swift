@@ -68,19 +68,6 @@ class JoinKeysignViewModel: ObservableObject {
         self.isShowingScanner = false
     }
 
-    func getSpender() -> String {
-        return keysignPayload?.approvePayload?.spender ?? .empty
-    }
-
-    func getAmount() -> String {
-        guard let fromCoin = keysignPayload?.coin, let amount = keysignPayload?.approvePayload?.amount else {
-            return .empty
-        }
-
-        let decimalAmount = fromCoin.decimal(for: amount)
-        return "\(decimalAmount.formatForDisplay()) \(fromCoin.ticker)"
-    }
-
     private func fetchVaults() -> [Vault] {
         let fetchVaultDescriptor = FetchDescriptor<Vault>()
         do {
@@ -145,10 +132,6 @@ class JoinKeysignViewModel: ObservableObject {
         self.netService = NetService(domain: "local.", type: "_http._tcp.", name: self.serviceName)
         self.netService?.delegate = self.serviceDelegate
         self.netService?.resolve(withTimeout: 10)
-    }
-
-    func stopJoiningKeysign() {
-        self.status = .DiscoverSigningMsg
     }
 
     func waitForKeysignStart() async {
@@ -450,11 +433,6 @@ class JoinKeysignViewModel: ObservableObject {
     func getCalculatedNetworkFee() -> (feeCrypto: String, feeFiat: String) {
         guard let keysignPayload else { return (.empty, .empty) }
         return gasViewModel.getCalculatedNetworkFee(payload: keysignPayload)
-    }
-
-    func getJoinedCalculatedNetworkFee() -> String {
-        guard let keysignPayload else { return "" }
-        return gasViewModel.getJoinedCalculatedNetworkFee(payload: keysignPayload)
     }
 
     func getFromFiatAmount() -> String {

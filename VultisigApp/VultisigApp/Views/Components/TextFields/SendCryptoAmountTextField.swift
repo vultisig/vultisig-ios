@@ -16,7 +16,13 @@ struct SendCryptoAmountTextField: View {
     @Environment(\.isEnabled) var isEnabled
 
     var body: some View {
-        container
+        textField
+        #if os(iOS)
+            .keyboardType(.decimalPad)
+            .submitLabel(.next)
+            .disableAutocorrection(true)
+            .textFieldStyle(TappableTextFieldStyle())
+        #endif
     }
 
     var textField: some View {

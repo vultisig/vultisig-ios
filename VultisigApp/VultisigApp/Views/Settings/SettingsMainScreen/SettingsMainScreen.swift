@@ -13,11 +13,9 @@ struct SettingsMainScreen: View {
     @EnvironmentObject var settingsViewModel: SettingsViewModel
 
     @StateObject var referredViewModel = ReferredViewModel()
-    @StateObject var referralViewModel = ReferralViewModel()
 
     @State var tapCount = 0
     @State var scale: CGFloat = 1
-    @State var showVaultDetailQRCode: Bool = false
     @State var showReferralBannerSheet = false
 
     let groups: [SettingsOptionGroup] = [
@@ -202,10 +200,6 @@ struct SettingsMainScreen: View {
                 router.navigate(to: SettingsRoute.advancedSettings)
             }
         }
-    }
-
-    var checkUpdateView: some View {
-        PhoneCheckUpdateView()
     }
 
     func onOption(_ option: SettingsOption) {

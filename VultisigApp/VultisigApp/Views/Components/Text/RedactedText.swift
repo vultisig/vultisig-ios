@@ -7,18 +7,18 @@
 
 import SwiftUI
 
-public struct RedactedText: View {
+struct RedactedText: View {
     let text: String
     let redactedText: String?
     @Binding var isLoading: Bool
 
-    public init(_ text: String, redactedText: String?, isLoading: Binding<Bool>) {
+    init(_ text: String, redactedText: String?, isLoading: Binding<Bool>) {
         self.text = text
         self.redactedText = redactedText
         self._isLoading = isLoading
     }
 
-    public var body: some View {
+    var body: some View {
         Text(isLoading ? redactedText ?? "redacted" : text)
             .redacted(reason: isLoading ? .placeholder : [])
     }

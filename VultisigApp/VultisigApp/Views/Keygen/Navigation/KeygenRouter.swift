@@ -60,12 +60,6 @@ struct KeygenRouter {
                 fastVaultEmail: fastVaultEmail,
                 fastVaultExist: fastVaultExist
             )
-        case .newWalletName(let tssType, let selectedTab, let name):
-            viewBuilder.buildNewWalletNameScreen(
-                tssType: tssType,
-                selectedTab: selectedTab,
-                name: name
-            )
         case .joinKeysign(let vault):
             viewBuilder.buildJoinKeysignScreen(vault: vault)
         case .macScanner(let type, let sendTx, let selectedVault):
