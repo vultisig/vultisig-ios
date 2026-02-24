@@ -186,7 +186,7 @@ struct CoinService {
             tokens = try await SuiService.shared.getAllTokensWithMetadata(address: address)
         case .THORChain:
             switch nativeCoin.chain {
-            case .thorChain, .thorChainStagenet, .thorChainStagenet2:
+            case .thorChain, .thorChainChainnet, .thorChainStagenet2:
                 let service = ThorchainServiceFactory.getService(for: nativeCoin.chain)
                 tokens = try await service.fetchTokens(address)
             case .mayaChain:

@@ -296,7 +296,7 @@ extension ThorchainStagenet2Service {
     }
 
     func formatAssetName(chain: Chain, symbol: String) -> String {
-        let chainCode = (chain == .thorChainStagenet || chain == .thorChainStagenet2) ? "THOR" : chain.rawValue.uppercased()
+        let chainCode = (chain == .thorChainChainnet || chain == .thorChainStagenet2) ? "THOR" : chain.rawValue.uppercased()
         let assetSymbol = symbol.uppercased()
         return "\(chainCode).\(assetSymbol)"
     }

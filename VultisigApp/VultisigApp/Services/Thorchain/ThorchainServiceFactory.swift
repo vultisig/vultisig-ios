@@ -26,15 +26,15 @@ protocol ThorchainServiceProtocol {
 }
 
 extension ThorchainService: ThorchainServiceProtocol {}
-extension ThorchainStagenetService: ThorchainServiceProtocol {}
+extension ThorchainChainnetService: ThorchainServiceProtocol {}
 extension ThorchainStagenet2Service: ThorchainServiceProtocol {}
 
 enum ThorchainServiceFactory {
 
     static func getService(for chain: Chain) -> ThorchainServiceProtocol {
         switch chain {
-        case .thorChainStagenet:
-            return ThorchainStagenetService.shared
+        case .thorChainChainnet:
+            return ThorchainChainnetService.shared
         case .thorChainStagenet2:
             return ThorchainStagenet2Service.shared
         default:

@@ -9,7 +9,7 @@ import Foundation
 
 enum SwapProvider: Equatable {
     case thorchain
-    case thorchainStagenet
+    case thorchainChainnet
     case thorchainStagenet2
     case mayachain
     case oneinch(Chain)
@@ -20,7 +20,7 @@ enum SwapProvider: Equatable {
         switch self {
         case .mayachain:
             return 3
-        case .thorchain, .thorchainStagenet, .thorchainStagenet2:
+        case .thorchain, .thorchainChainnet, .thorchainStagenet2:
             return 1
         default:
             return 0

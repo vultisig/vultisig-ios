@@ -26,7 +26,7 @@ struct AddressService {
 
         // Special handling for ThorChain Stagenet
         if AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "cthor") {
-            return vault.coins.contains(where: { $0.chain == .thorChainStagenet && $0.isNativeToken }) ? .thorChainStagenet : nil
+            return vault.coins.contains(where: { $0.chain == .thorChainChainnet && $0.isNativeToken }) ? .thorChainChainnet : nil
         }
 
         // Special handling for ThorChain Stagenet-2
@@ -73,14 +73,14 @@ struct AddressService {
             }
         }
 
-        if chain == .thorChainStagenet {
+        if chain == .thorChainChainnet {
             let isValid = AnyAddress.isValidBech32(string: input, coin: .thorchain, hrp: "cthor")
 
             if isValid {
                 return input
             } else {
                 // Try TNS resolution for stagenet
-                let service = ThorchainServiceFactory.getService(for: .thorChainStagenet)
+                let service = ThorchainServiceFactory.getService(for: .thorChainChainnet)
                 return try await service.resolveTNS(name: input, chain: chain)
             }
         }
@@ -118,7 +118,7 @@ struct AddressService {
             return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
         }
 
-        if chain == .thorChainStagenet {
+        if chain == .thorChainChainnet {
             return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "cthor")
         }
 
@@ -135,7 +135,7 @@ struct AddressService {
             if firstCoin.chain == .mayaChain {
                 return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
             }
-            if firstCoin.chain == .thorChainStagenet {
+            if firstCoin.chain == .thorChainChainnet {
                 return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "cthor")
             }
             if firstCoin.chain == .thorChainStagenet2 {

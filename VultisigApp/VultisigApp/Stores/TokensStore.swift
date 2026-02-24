@@ -1761,7 +1761,7 @@ class TokensStore {
         ),
         rune,
         CoinMeta(
-            chain: .thorChainStagenet,
+            chain: .thorChainChainnet,
             ticker: "RUNE",
             logo: "rune",
             decimals: 8,

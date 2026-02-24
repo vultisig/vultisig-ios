@@ -8,7 +8,7 @@ import WalletCore
 
 enum Chain: String, Codable, Hashable, CaseIterable {
     case thorChain
-    case thorChainStagenet
+    case thorChainChainnet
     case thorChainStagenet2
     case solana
     case ethereum
@@ -55,7 +55,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     var name: String {
         switch self {
         case .thorChain: return "THORChain"
-        case .thorChainStagenet: return "THORChain-Stagenet"
+        case .thorChainChainnet: return "THORChain-Chainnet"
         case .thorChainStagenet2: return "THORChain-Stagenet2"
         case .solana: return "Solana"
         case .ethereum: return "Ethereum"
@@ -98,7 +98,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     }
     var feeUnit: String {
         switch self {
-        case .thorChain, .thorChainStagenet, .thorChainStagenet2: return "RUNE"
+        case .thorChain, .thorChainChainnet, .thorChainStagenet2: return "RUNE"
         case .solana: return "SOL"
         case .ethereum, .avalanche, .base, .blast, .arbitrum, .polygon, .polygonV2, .optimism, .bscChain, .cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid, .sei: return "Gwei"
         case .bitcoin: return "BTC/vbyte"
@@ -127,7 +127,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
 
     var ticker: String {
         switch self {
-        case .thorChain, .thorChainStagenet, .thorChainStagenet2: return "RUNE"
+        case .thorChain, .thorChainChainnet, .thorChainStagenet2: return "RUNE"
         case .solana: return "SOL"
         case .ethereum, .ethereumSepolia: return "ETH"
         case .avalanche: return "AVAX"
@@ -169,7 +169,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
 
     var swapAsset: String {
         switch self {
-        case .thorChain, .thorChainStagenet, .thorChainStagenet2: return "THOR"
+        case .thorChain, .thorChainChainnet, .thorChainStagenet2: return "THOR"
         case .ethereum: return "ETH"
         case .avalanche: return "AVAX"
         case .bscChain: return "BSC"
@@ -223,7 +223,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         switch self {
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync, .ethereumSepolia, .mantle, .hyperliquid, .sei:
             return .EVM
-        case .thorChain, .thorChainStagenet, .thorChainStagenet2, .mayaChain:
+        case .thorChain, .thorChainChainnet, .thorChainStagenet2, .mayaChain:
             return .THORChain
         case .solana:
             return .Solana
@@ -248,7 +248,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
 
     var logo: String {
         switch self {
-        case .thorChain, .thorChainStagenet, .thorChainStagenet2:
+        case .thorChain, .thorChainChainnet, .thorChainStagenet2:
             return "rune"
         case .solana:
             return "solana"
@@ -359,7 +359,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return 999
         case .sei:
             return 1329
-        case .thorChain, .thorChainStagenet, .thorChainStagenet2, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron, .zcash, .cardano:
+        case .thorChain, .thorChainChainnet, .thorChainStagenet2, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron, .zcash, .cardano:
             return nil
         }
     }
@@ -367,7 +367,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         switch self {
         case .bitcoin:
             return CoinType.bitcoin
-        case .thorChain, .thorChainStagenet, .thorChainStagenet2:
+        case .thorChain, .thorChainChainnet, .thorChainStagenet2:
             return CoinType.thorchain
         case .solana:
             return CoinType.solana
@@ -455,7 +455,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     var isSwapAvailable: Bool {
         switch self {
         case .thorChain,
-                .thorChainStagenet,
+                .thorChainChainnet,
                 .thorChainStagenet2,
                 .mayaChain,
                 .gaiaChain,
@@ -501,7 +501,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
 
     var type: ChainType {
         switch self {
-        case .thorChain, .thorChainStagenet, .thorChainStagenet2, .mayaChain:
+        case .thorChain, .thorChainChainnet, .thorChainStagenet2, .mayaChain:
             return .THORChain
         case .solana:
             return .Solana
@@ -542,7 +542,7 @@ extension Chain {
     /// Indicates if this chain supports pending transaction tracking via sequence numbers (nonce)
     var supportsPendingTransactions: Bool {
         switch self {
-        case .thorChain, .thorChainStagenet, .thorChainStagenet2, .mayaChain, .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash:
+        case .thorChain, .thorChainChainnet, .thorChainStagenet2, .mayaChain, .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash:
             return true
         default:
             return false
@@ -552,7 +552,7 @@ extension Chain {
     static var keyImportEnabledChains: [Chain] {
         allCases.filter {
             switch $0 {
-            case .cardano, .thorChainStagenet, .thorChainStagenet2, .polygonV2:
+            case .cardano, .thorChainChainnet, .thorChainStagenet2, .polygonV2:
                 return false
             default:
                 return true
