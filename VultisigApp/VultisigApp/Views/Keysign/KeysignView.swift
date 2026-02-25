@@ -44,7 +44,7 @@ struct KeysignView: View {
                 viewModel.stopMessagePuller()
             }
         #endif
-            
+
     }
 
     var content: some View {

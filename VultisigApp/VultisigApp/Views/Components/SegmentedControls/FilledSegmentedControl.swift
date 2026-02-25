@@ -27,7 +27,7 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
         self.options = options
         self.size = size
     }
-    
+
     var selectionIndex: Int {
         options.firstIndex { $0.id == selection.id } ?? 0
     }
@@ -68,7 +68,7 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
         }
         .frame(height: height)
     }
-    
+
     var padding: CGFloat {
         switch size {
         case .normal:
@@ -77,7 +77,7 @@ struct FilledSegmentedControl<T: FilledSegmentedControlType>: View {
             8
         }
     }
-    
+
     var height: CGFloat? {
         switch size {
         case .normal:
