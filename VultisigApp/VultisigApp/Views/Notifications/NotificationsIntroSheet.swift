@@ -118,9 +118,6 @@ struct NotificationsIntroSheet: View {
 #if DEBUG
 #Preview {
     NotificationsIntroSheet(isPresented: .constant(true))
-        .environmentObject(
-            MockPushNotificationManager(permissionGranted: false)
-                as PushNotificationManager
-        )
+        .environmentObject(PushNotificationManager())
 }
 #endif

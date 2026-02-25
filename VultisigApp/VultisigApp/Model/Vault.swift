@@ -32,6 +32,7 @@ final class Vault: ObservableObject, Codable {
     @Relationship(deleteRule: .cascade) var hiddenTokens = [HiddenToken]()
     @Relationship(deleteRule: .cascade) var referralCode: ReferralCode?
     @Relationship(deleteRule: .cascade) var referredCode: ReferredCode?
+    @Relationship(deleteRule: .cascade) var settings: VaultSettings?
     // Visible Defi Positions
     @Relationship(deleteRule: .cascade) var defiPositions: [DefiPositions] = []
     // Defi Positions Data for caching

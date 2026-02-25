@@ -18,9 +18,7 @@ struct PostVaultNotificationModifier: ViewModifier {
             }
             .onChange(of: shouldShow) { _, newValue in
                 if !newValue {
-                    pushNotificationManager.markVaultNotificationPrompted(
-                        pubKeyECDSA: vault.pubKeyECDSA
-                    )
+                    pushNotificationManager.markVaultNotificationPrompted(vault)
                 }
             }
             .onLoad {
@@ -47,9 +45,7 @@ struct PostVaultNotificationModifier: ViewModifier {
 
     private func checkIfNeeded() {
         guard !vault.isFastVault else { return }
-        guard !pushNotificationManager.hasPromptedVaultNotification(
-            pubKeyECDSA: vault.pubKeyECDSA
-        ) else { return }
+        guard !pushNotificationManager.hasPromptedVaultNotification(vault) else { return }
         shouldShow = true
     }
 }
@@ -62,9 +58,7 @@ extension View {
 
 #if DEBUG
 #Preview("Permission Granted") {
-    let mock: PushNotificationManager = MockPushNotificationManager(
-        permissionGranted: true
-    )
+    let mock = PushNotificationManager()
 
     Screen {
         Color.clear
@@ -80,9 +74,7 @@ extension View {
 }
 
 #Preview("Permission Not Granted") {
-    let mock: PushNotificationManager = MockPushNotificationManager(
-        permissionGranted: false
-    )
+    let mock = PushNotificationManager()
 
     Screen {
         Color.clear

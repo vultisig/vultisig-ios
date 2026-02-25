@@ -16,10 +16,10 @@ protocol PushNotificationManaging: AnyObject {
     func requestPermission() async -> Bool
     func checkPermissionStatus() async
     func setDeviceToken(_ token: Data)
-    func isVaultOptedIn(pubKeyECDSA: String) -> Bool
-    func setVaultOptIn(vault: Vault, enabled: Bool)
-    func hasPromptedVaultNotification(pubKeyECDSA: String) -> Bool
-    func markVaultNotificationPrompted(pubKeyECDSA: String)
+    func isVaultOptedIn(_ vault: Vault) -> Bool
+    func setVaultOptIn(_ vault: Vault, enabled: Bool)
+    func hasPromptedVaultNotification(_ vault: Vault) -> Bool
+    func markVaultNotificationPrompted(_ vault: Vault)
     func registerVault(pubKeyECDSA: String, localPartyID: String) async
     func reRegisterOptedInVaults(_ vaults: [Vault]) async
     func notifyVaultDevices(vault: Vault, qrCodeData: String) async

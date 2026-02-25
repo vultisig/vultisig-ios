@@ -67,9 +67,6 @@ struct NotificationsSettingsScreen: View {
 #if DEBUG
 #Preview {
     NotificationsSettingsScreen()
-        .environmentObject(
-            MockPushNotificationManager(permissionGranted: true)
-                as PushNotificationManager
-        )
+        .environmentObject(PushNotificationManager())
 }
 #endif

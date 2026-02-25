@@ -6,6 +6,7 @@
 import Foundation
 import UserNotifications
 import SwiftUI
+import SwiftData
 import OSLog
 
 @MainActor
@@ -24,9 +25,6 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
         subsystem: "com.vultisig.wallet",
         category: "PushNotifications"
     )
-
-    private let vaultOptInKey = "vaultNotificationOptIn"
-    private let vaultNotificationPromptedKey = "vaultNotificationPrompted"
 
     private let notificationDelegate = NotificationDelegate()
 
@@ -72,17 +70,26 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
         }
     }
 
-    // MARK: - Vault Opt-In
+    // MARK: - Vault Settings
 
-    func isVaultOptedIn(pubKeyECDSA: String) -> Bool {
-        let optInDict = UserDefaults.standard.dictionary(forKey: vaultOptInKey) as? [String: Bool] ?? [:]
-        return optInDict[pubKeyECDSA] ?? false
+    private func getOrCreateSettings(for vault: Vault) -> VaultSettings {
+        if let settings = vault.settings { return settings }
+        let settings = VaultSettings(vault: vault)
+        Storage.shared.insert(settings)
+        vault.settings = settings
+        return settings
     }
 
-    func setVaultOptIn(vault: Vault, enabled: Bool) {
-        var optInDict = UserDefaults.standard.dictionary(forKey: vaultOptInKey) as? [String: Bool] ?? [:]
-        optInDict[vault.pubKeyECDSA] = enabled
-        UserDefaults.standard.set(optInDict, forKey: vaultOptInKey)
+    // MARK: - Vault Opt-In
+
+    func isVaultOptedIn(_ vault: Vault) -> Bool {
+        vault.settings?.notificationsEnabled ?? false
+    }
+
+    func setVaultOptIn(_ vault: Vault, enabled: Bool) {
+        let settings = getOrCreateSettings(for: vault)
+        settings.notificationsEnabled = enabled
+        try? Storage.shared.save()
 
         if enabled {
             Task {
@@ -96,15 +103,14 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
 
     // MARK: - Vault Notification Prompt
 
-    func hasPromptedVaultNotification(pubKeyECDSA: String) -> Bool {
-        let dict = UserDefaults.standard.dictionary(forKey: vaultNotificationPromptedKey) as? [String: Bool] ?? [:]
-        return dict[pubKeyECDSA] ?? false
+    func hasPromptedVaultNotification(_ vault: Vault) -> Bool {
+        vault.settings?.notificationsPrompted ?? false
     }
 
-    func markVaultNotificationPrompted(pubKeyECDSA: String) {
-        var dict = UserDefaults.standard.dictionary(forKey: vaultNotificationPromptedKey) as? [String: Bool] ?? [:]
-        dict[pubKeyECDSA] = true
-        UserDefaults.standard.set(dict, forKey: vaultNotificationPromptedKey)
+    func markVaultNotificationPrompted(_ vault: Vault) {
+        let settings = getOrCreateSettings(for: vault)
+        settings.notificationsPrompted = true
+        try? Storage.shared.save()
     }
 
     // MARK: - Registration
@@ -133,7 +139,7 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
     }
 
     func reRegisterOptedInVaults(_ vaults: [Vault]) async {
-        for vault in vaults where isVaultOptedIn(pubKeyECDSA: vault.pubKeyECDSA) {
+        for vault in vaults where isVaultOptedIn(vault) {
             await registerVault(
                 pubKeyECDSA: vault.pubKeyECDSA,
                 localPartyID: vault.localPartyID
@@ -174,9 +180,17 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
     private func reRegisterOptedInVaults() async {
         guard deviceToken != nil else { return }
 
-        let optInDict = UserDefaults.standard.dictionary(forKey: vaultOptInKey) as? [String: Bool] ?? [:]
-        for (pubKeyECDSA, isOptedIn) in optInDict where isOptedIn {
-            await registerVault(pubKeyECDSA: pubKeyECDSA, localPartyID: "")
+        let descriptor = FetchDescriptor<VaultSettings>(
+            predicate: #Predicate<VaultSettings> { $0.notificationsEnabled == true }
+        )
+        guard let results = try? Storage.shared.modelContext.fetch(descriptor) else { return }
+
+        for settings in results {
+            guard let vault = settings.vault else { continue }
+            await registerVault(
+                pubKeyECDSA: vault.pubKeyECDSA,
+                localPartyID: vault.localPartyID
+            )
         }
     }
 }

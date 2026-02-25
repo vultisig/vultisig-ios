@@ -99,9 +99,7 @@ struct NotificationSetupSheet: View {
 
 #if DEBUG
 #Preview {
-    let mock: PushNotificationManager = MockPushNotificationManager(
-        permissionGranted: false
-    )
+    let mock = PushNotificationManager()
 
     Screen {
         Color.clear

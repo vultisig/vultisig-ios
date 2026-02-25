@@ -41,9 +41,6 @@ struct VaultNotificationOptInSheet: View {
         vault: Vault.example,
         isPresented: .constant(true)
     )
-    .environmentObject(
-        MockPushNotificationManager(permissionGranted: true)
-            as PushNotificationManager
-    )
+    .environmentObject(PushNotificationManager())
 }
 #endif
