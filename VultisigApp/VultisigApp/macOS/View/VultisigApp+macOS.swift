@@ -22,6 +22,7 @@ extension VultisigApp {
             .environmentObject(homeViewModel)
             .environmentObject(coinSelectionViewModel)
             .environmentObject(deeplinkViewModel)
+            .environmentObject(pushNotificationManager)
             .buttonStyle(BorderlessButtonStyle())
             .frame(minWidth: 900, minHeight: 600)
             .onAppear {
@@ -30,6 +31,15 @@ extension VultisigApp {
 
                 NSWindow.allowsAutomaticWindowTabbing = false
                 continueLogin()
+
+                pushNotificationManager.setupNotificationDelegate()
+
+                Task {
+                    await pushNotificationManager.checkPermissionStatus()
+                    if pushNotificationManager.isPermissionGranted {
+                        pushNotificationManager.registerForRemoteNotifications()
+                    }
+                }
             }
     }
 }

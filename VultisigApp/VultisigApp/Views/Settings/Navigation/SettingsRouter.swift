@@ -25,6 +25,8 @@ struct SettingsRouter {
             viewBuilder.buildLanguageScreen()
         case .currency:
             viewBuilder.buildCurrencyScreen()
+        case .notifications:
+            viewBuilder.buildNotificationsScreen()
         case .addressBook:
             viewBuilder.buildAddressBookScreen()
         case .addAddressBook(let address, let chain):

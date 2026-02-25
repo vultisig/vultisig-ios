@@ -23,6 +23,7 @@ struct ContentView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
+    @EnvironmentObject var pushNotificationManager: PushNotificationManager
 
     @State private var rootRoute: RootRoute?
     @State private var deeplinkError: Error?
@@ -60,6 +61,14 @@ struct ContentView: View {
         .onOpenURL { incomingURL in
             handleDeeplink(incomingURL)
         }
+        .onReceive(
+            NotificationCenter.default.publisher(
+                for: NSNotification.Name("HandlePushNotification")
+            )
+        ) { notification in
+            guard let url = notification.object as? URL else { return }
+            handleDeeplink(url)
+        }
         .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
             if let incomingURL = userActivity.webpageURL {
                 handleDeeplink(incomingURL)
@@ -67,6 +76,8 @@ struct ContentView: View {
         }
         .overlay(appViewModel.showCover ? CoverView().ignoresSafeArea() : nil)
         .onLoad {
+            pushNotificationManager.hadVaultsOnStartup = !vaults.isEmpty
+
             if vaults.isEmpty {
                 appViewModel.showSplashView = false
                 rootRoute = .createVault

@@ -22,6 +22,7 @@ extension VultisigApp {
             .environmentObject(homeViewModel)
             .environmentObject(coinSelectionViewModel)
             .environmentObject(deeplinkViewModel)
+            .environmentObject(pushNotificationManager)
             .onChange(of: scenePhase) {
                 switch scenePhase {
                 case .active:
@@ -38,6 +39,15 @@ extension VultisigApp {
 
                 if ProcessInfo.processInfo.isiOSAppOnMac {
                     continueLogin()
+                }
+
+                pushNotificationManager.setupNotificationDelegate()
+
+                Task {
+                    await pushNotificationManager.checkPermissionStatus()
+                    if pushNotificationManager.isPermissionGranted {
+                        pushNotificationManager.registerForRemoteNotifications()
+                    }
                 }
             }
     }

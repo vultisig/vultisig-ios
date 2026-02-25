@@ -28,6 +28,7 @@ enum SettingsOption: String, Identifiable {
     case registerVaults
     case language
     case currency
+    case notifications
     case addressBook
     case referralCode
     case faq
@@ -53,6 +54,8 @@ enum SettingsOption: String, Identifiable {
             return "language"
         case .currency:
             return "currency"
+        case .notifications:
+            return "notifications"
         case .addressBook:
             return "addressBook"
         case .referralCode:
@@ -92,6 +95,8 @@ enum SettingsOption: String, Identifiable {
             return "languages"
         case .currency:
             return "circle-dollar-sign"
+        case .notifications:
+            return "bell"
         case .addressBook:
             return "book-marked"
         case .referralCode:

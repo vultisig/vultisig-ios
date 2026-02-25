@@ -32,6 +32,7 @@ struct SettingsMainScreen: View {
             options: [
                 .language,
                 .currency,
+                .notifications,
                 .addressBook,
                 .referralCode
             ]
@@ -151,6 +152,8 @@ struct SettingsMainScreen: View {
             router.navigate(to: SettingsRoute.language)
         case .currency:
             router.navigate(to: SettingsRoute.currency)
+        case .notifications:
+            router.navigate(to: SettingsRoute.notifications)
         case .addressBook:
             router.navigate(to: SettingsRoute.addressBook)
         case .faq:
