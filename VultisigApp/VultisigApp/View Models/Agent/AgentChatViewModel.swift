@@ -15,6 +15,7 @@ final class AgentChatViewModel: ObservableObject {
     // MARK: - Published State
 
     @Published var messages: [AgentChatMessage] = []
+    @Published var starters: [String] = []
     @Published var isLoading = false
     @Published var error: String?
     @Published var conversationTitle: String?
@@ -98,7 +99,12 @@ final class AgentChatViewModel: ObservableObject {
                     conversationId = conv.id
                     print("[AgentChat] ✅ Conversation created: \(conv.id)")
                 }
-
+                
+                // Fetch starters if needed
+                if messages.isEmpty && starters.isEmpty {
+                    await loadStarters(vault: vault)
+                }
+                
                 guard let convId = conversationId else {
                     print("[AgentChat] ❌ No conversation ID")
                     throw AgentBackendClient.AgentBackendError.noBody
@@ -251,6 +257,34 @@ final class AgentChatViewModel: ObservableObject {
         // Agent backend uses public_key for identity, no auth token needed
         print("[AgentChat] 🔌 checkConnection: always connected (public_key auth)")
         isConnected = true
+    }
+    
+    // MARK: - Load Starters
+    
+    func loadStarters(vault: Vault) async {
+        let token = await getValidToken(vault: vault)
+        
+        do {
+            let context = AgentContextBuilder.buildContext(vault: vault)
+            let request = AgentGetStartersRequest(
+                publicKey: vault.pubKeyECDSA,
+                context: context
+            )
+            
+            let response = try await backendClient.getStarters(
+                request: request,
+                token: token?.token ?? ""
+            )
+            
+            if response.starters.isEmpty {
+                starters = Array(AgentChatViewModel.fallbackStarters.shuffled().prefix(4))
+            } else {
+                starters = Array(response.starters.shuffled().prefix(4))
+            }
+        } catch {
+            logger.warning("Failed to load starters, using fallback: \(error.localizedDescription)")
+            starters = Array(AgentChatViewModel.fallbackStarters.shuffled().prefix(4))
+        }
     }
 
     func disconnect(vault: Vault) async {

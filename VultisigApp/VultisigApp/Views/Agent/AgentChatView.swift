@@ -57,6 +57,10 @@ struct AgentChatView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(spacing: 12) {
+                    if viewModel.messages.isEmpty && !viewModel.isLoading {
+                        startersView
+                    }
+                    
                     ForEach(viewModel.messages) { message in
                         AgentChatMessageView(message: message)
                             .id(message.id)
@@ -140,6 +144,10 @@ struct AgentChatView: View {
             Task {
                 await viewModel.loadConversation(id: convId, vault: vault)
             }
+        } else {
+            Task {
+                await viewModel.loadStarters(vault: vault)
+            }
         }
 
         // Check for pending starter message
@@ -159,6 +167,74 @@ struct AgentChatView: View {
         inputText = ""
         isInputFocused = false
         viewModel.sendMessage(text, vault: vault)
+    }
+    
+    // MARK: - Starters UI
+    
+    private var startersView: some View {
+        VStack(spacing: 24) {
+            Spacer().frame(height: 40)
+
+            Image(systemName: "sparkles")
+                .font(.system(size: 48))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Theme.colors.turquoise, Theme.colors.primaryAccent3],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+
+            Text("Ask Vulti Anything")
+                .font(.title2.bold())
+                .foregroundColor(Theme.colors.textPrimary)
+
+            Text("Try one of these suggestions below or type your own question.")
+                .font(.subheadline)
+                .foregroundColor(Theme.colors.textTertiary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+
+            // Starter suggestions
+            LazyVGrid(columns: [
+                GridItem(.flexible(), spacing: 12),
+                GridItem(.flexible(), spacing: 12)
+            ], spacing: 12) {
+                ForEach(viewModel.starters, id: \.self) { starter in
+                    starterCard(starter)
+                }
+            }
+            .padding(.top, 8)
+
+            Spacer()
+        }
+    }
+
+    private func starterCard(_ text: String) -> some View {
+        Button {
+            inputText = text
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                sendMessage()
+            }
+        } label: {
+            HStack {
+                Text(text)
+                    .font(.footnote)
+                    .foregroundColor(Theme.colors.textPrimary)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(3)
+
+                Spacer()
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity, minHeight: 72, alignment: .topLeading)
+            .background(Theme.colors.bgSurface1)
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Theme.colors.border, lineWidth: 1)
+            )
+        }
     }
 }
 

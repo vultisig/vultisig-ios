@@ -31,84 +31,59 @@ struct AgentConversationsView: View {
 
     // MARK: - Content
 
-    @ViewBuilder
     private var content: some View {
-        ScrollView {
+        VaultMainScreenScrollView(showsIndicators: false, contentInset: 78, scrollOffset: .constant(0)) {
             VStack(spacing: 16) {
                 if viewModel.conversations.isEmpty {
-                    emptyState
+                    VStack(spacing: 24) {
+                        Spacer().frame(height: 40)
+                        
+                        Image(systemName: "bubble.left.and.bubble.right.fill")
+                            .font(.system(size: 48))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Theme.colors.turquoise, Theme.colors.primaryAccent3],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                        
+                        Text("No Past Conversations")
+                            .font(.title2.bold())
+                            .foregroundColor(Theme.colors.textPrimary)
+                        
+                        Text("Start a new chat to begin interacting with Vulti.")
+                            .font(.subheadline)
+                            .foregroundColor(Theme.colors.textTertiary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                        
+                        // New chat button
+                        Button {
+                            navigateToChat(with: nil)
+                        } label: {
+                            HStack {
+                                Image(systemName: "plus.bubble.fill")
+                                    .foregroundColor(Theme.colors.surface)
+                                Text("New Chat")
+                                    .font(.body.bold())
+                                    .foregroundColor(Theme.colors.surface)
+                            }
+                            .padding()
+                            .background(Theme.colors.turquoise)
+                            .cornerRadius(12)
+                        }
+                    }
                 } else {
                     conversationList
                 }
             }
             .padding()
+            .padding(.bottom, 32)
         }
     }
 
-    // MARK: - Empty State (Starters)
 
-    private var emptyState: some View {
-        VStack(spacing: 24) {
-            Spacer().frame(height: 40)
-
-            Image(systemName: "bubble.left.and.bubble.right.fill")
-                .font(.system(size: 48))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [Theme.colors.turquoise, Theme.colors.primaryAccent3],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-
-            Text("Ask Vulti Anything")
-                .font(.title2.bold())
-                .foregroundColor(Theme.colors.textPrimary)
-
-            Text("Your AI assistant for managing your vault, checking prices, swapping tokens, and more.")
-                .font(.subheadline)
-                .foregroundColor(Theme.colors.textTertiary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-
-            // Starter suggestions
-            LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: 12),
-                GridItem(.flexible(), spacing: 12)
-            ], spacing: 12) {
-                ForEach(viewModel.starters, id: \.self) { starter in
-                    starterCard(starter)
-                }
-            }
-            .padding(.top, 8)
-
-            Spacer()
-        }
-    }
-
-    private func starterCard(_ text: String) -> some View {
-        Button {
-            navigateToChat(with: text)
-        } label: {
-            HStack {
-                Text(text)
-                    .font(.footnote)
-                    .foregroundColor(Theme.colors.textPrimary)
-                    .multilineTextAlignment(.leading)
-                    .lineLimit(3)
-
-                Spacer()
-            }
-            .padding(12)
-            .frame(maxWidth: .infinity, minHeight: 72, alignment: .topLeading)
-            .background(Theme.colors.bgSurface1)
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Theme.colors.border, lineWidth: 1)
-            )
-        }
-    }
 
     // MARK: - Conversation List
 
