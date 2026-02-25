@@ -10,6 +10,7 @@ import BigInt
 
 enum SwapQuote: Hashable {
     case thorchain(ThorchainSwapQuote)
+    case thorchainChainnet(ThorchainSwapQuote)
     case thorchainStagenet(ThorchainSwapQuote)
     case mayachain(ThorchainSwapQuote)
     case oneinch(EVMQuote, fee: BigInt?)
@@ -18,7 +19,7 @@ enum SwapQuote: Hashable {
 
     var swapProviderId: SwapProviderId? {
         switch self {
-        case .thorchain, .thorchainStagenet, .mayachain:
+        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
             return nil
         case .oneinch:
             return .oneInch
@@ -31,7 +32,7 @@ enum SwapQuote: Hashable {
 
     var router: String? {
         switch self {
-        case .thorchain(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
+        case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
             return quote.router
         case .oneinch(let quote, _),
                 .lifi(let quote, _, _),
@@ -42,7 +43,7 @@ enum SwapQuote: Hashable {
 
     var totalSwapSeconds: Int? {
         switch self {
-        case .thorchain(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
+        case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
             return quote.totalSwapSeconds
         case .oneinch, .kyberswap, .lifi:
             return nil
@@ -51,7 +52,7 @@ enum SwapQuote: Hashable {
 
     var inboundAddress: String? {
         switch self {
-        case .thorchain(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
+        case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
             return quote.inboundAddress
         case .oneinch(let quote, _),
                 .lifi(let quote, _, _),
@@ -64,6 +65,8 @@ enum SwapQuote: Hashable {
         switch self {
         case .thorchain:
             return "THORChain"
+        case .thorchainChainnet:
+            return "THORChain-Chainnet"
         case .thorchainStagenet:
             return "THORChain-Stagenet"
         case .mayachain:
@@ -79,7 +82,7 @@ enum SwapQuote: Hashable {
 
     func inboundFeeDecimal(toCoin: Coin) -> Decimal? {
         switch self {
-        case .thorchain(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
+        case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
             guard let fees = Decimal(string: quote.fees.total) else { return nil }
             return fees / toCoin.thorswapMultiplier
         case .lifi(let quote, _, let integratorFee):
@@ -94,7 +97,7 @@ enum SwapQuote: Hashable {
 
     var memo: String? {
         switch self {
-        case .thorchain(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
+        case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
             return quote.memo
         case .oneinch, .kyberswap, .lifi:
             return nil
@@ -103,7 +106,7 @@ enum SwapQuote: Hashable {
 
     var priceImpact: Decimal? {
         switch self {
-        case .thorchain(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
+        case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
             guard let slippageBps = quote.slippageBps else { return nil }
             return Decimal(slippageBps) / 10000
         case .oneinch, .kyberswap, .lifi:
@@ -113,7 +116,7 @@ enum SwapQuote: Hashable {
 
     var totalFees: String? {
         switch self {
-        case .thorchain(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
+        case .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote), .mayachain(let quote):
             return quote.fees.total
         case .oneinch, .kyberswap, .lifi:
             return nil
@@ -123,6 +126,8 @@ enum SwapQuote: Hashable {
     func hash(into hasher: inout Hasher) {
         switch self {
         case .thorchain(let quote):
+            hasher.combine(quote)
+        case .thorchainChainnet(let quote):
             hasher.combine(quote)
         case .thorchainStagenet(let quote):
             hasher.combine(quote)

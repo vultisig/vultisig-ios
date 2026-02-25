@@ -20,7 +20,7 @@ struct SwitchToLocalLink: View {
     }
 
     var internetModeView: some View {
-        VStack(spacing: 8) {
+        HStack(spacing: 4) {
             if isForKeygen {
                 Text(NSLocalizedString("wantToCreateVaultPrivately", comment: ""))
                     .font(Theme.fonts.caption12)

@@ -39,7 +39,7 @@ struct SettingsAdvancedView: View {
             SettingToggleCell(
                 title: "THORChain Stagenet",
                 icon: "timelapse",
-                isEnabled: $settingsViewModel.enableThorchainStagenet
+                isEnabled: $settingsViewModel.enableThorchainChainnet
             )
 
             SettingToggleCell(
@@ -52,6 +52,12 @@ struct SettingsAdvancedView: View {
                 title: "Sell",
                 icon: "creditcard",
                 isEnabled: $settingsViewModel.sellEnabled
+            )
+
+            SettingToggleCell(
+                title: "MLDSA",
+                icon: "lock.shield",
+                isEnabled: $settingsViewModel.isMLDSAEnabled
             )
         }
     }

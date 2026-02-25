@@ -425,13 +425,6 @@
 "referralProgram" = "Programa de Indicação";
 "referralProgramTooltipDescription" = "O programa de indicação se aplica às trocas da THORChain e opera com base no melhor esforço. Para usar a indicação Vultisig, você deve registrar um THORName. A taxa de registro é de 10 RUNE mais 1 RUNE por ano, paga à rede THORChain.";
 "referredSaveOnSwaps" = "Economize %@ em swaps - Adicione uma indicação";
-"registerGuide" = "Guia de registro";
-"registerVault" = "Registrar Cofre";
-"registerVaultText1" = "1. Salve o código QR do seu Cofre";
-"registerVaultText2" = "2. Acesse ";
-"registerVaultText3" = "3. Carregue o código QR do seu Cofre";
-"registerVaultText4" = "4. Acompanhe seus VULTIES (Pontos de Cofre)!";
-"registerYourVaults" = "Registre seus Cofres!";
 "registrationFee" = "Taxa de registro";
 "rename" = "Renomear";
 "renameVault" = "Editar o nome do seu cofre";
@@ -780,6 +773,7 @@
 "Merge" = "Fundir";
 "Withdraw RUJI" = "Sacar RUJI";
 "Switch" = "Trocar";
+"switchToLocalMode" = "Mudar para modo local";
 "Add THORChain LP" = "Adicionar LP THORChain";
 "Secured Assets" = "Ativos Segurados";
 "Withdraw Secured Asset" = "Sacar Ativo Segurado";

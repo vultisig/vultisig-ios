@@ -25,7 +25,6 @@ enum SettingsOption: String, Identifiable {
 
     case vaultSettings
     case vultDiscountTiers
-    case registerVaults
     case language
     case currency
     case addressBook
@@ -47,8 +46,6 @@ enum SettingsOption: String, Identifiable {
             return "vaultSettings"
         case .vultDiscountTiers:
             return "vultDiscountTiers"
-        case .registerVaults:
-            return "registerYourVaults"
         case .language:
             return "language"
         case .currency:
@@ -86,8 +83,6 @@ enum SettingsOption: String, Identifiable {
             return "settings"
         case .vultDiscountTiers:
             return "coins"
-        case .registerVaults:
-            return "logo-outline"
         case .language:
             return "languages"
         case .currency:
