@@ -24,11 +24,6 @@ struct SettingsRouteBuilder {
     }
 
     @ViewBuilder
-    func buildRegisterVaultsScreen(vault: Vault) -> some View {
-        RegisterVaultView(vault: vault)
-    }
-
-    @ViewBuilder
     func buildLanguageScreen() -> some View {
         SettingsLanguageSelectionView()
     }
