@@ -14,24 +14,24 @@ struct MacScannerView: View {
     let type: DeeplinkFlowType
     let sendTx: SendTransaction
     let selectedVault: Vault?
-    
+
     @Query var vaults: [Vault]
-    
+
     @EnvironmentObject var appViewModel: AppViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
-    
+
     @Environment(\.router) var router
-    
+
     @StateObject var cameraViewModel = MacCameraServiceViewModel()
     @StateObject var screenCaptureService = MacScreenCaptureService()
-    
+
     @State private var scannerMode: ScannerMode = .camera
     @State private var deeplinkError: Error?
-    
+
     private let scanSize: CGFloat = 400
-    
+
     var body: some View {
         ZStack(alignment: .top) {
             Background()
@@ -74,7 +74,7 @@ struct MacScannerView: View {
             }
         }
     }
-    
+
     var main: some View {
         scannerContent
             .onChange(of: cameraViewModel.detectedQRCode) { _, newValue in
@@ -92,7 +92,7 @@ struct MacScannerView: View {
                 cameraViewModel.detectedQRCode = newValue
             }
     }
-    
+
     @ViewBuilder
     var scannerContent: some View {
         switch scannerMode {
@@ -102,13 +102,13 @@ struct MacScannerView: View {
             screenCaptureView
         }
     }
-    
+
     var cameraView: some View {
         ZStack {
             if cameraViewModel.showPlaceholderError {
                 fallbackErrorView
             }
-            
+
             if !cameraViewModel.showCamera {
                 loader
             } else if cameraViewModel.isCameraUnavailable {
@@ -118,7 +118,7 @@ struct MacScannerView: View {
             }
         }
     }
-    
+
     var screenCaptureView: some View {
         ZStack {
             if screenCaptureService.isPermissionDenied {
@@ -132,7 +132,7 @@ struct MacScannerView: View {
             }
         }
     }
-    
+
     @ViewBuilder
     var screenPreviewView: some View {
         let padding: CGFloat = 40
@@ -159,7 +159,7 @@ struct MacScannerView: View {
             }.compositingGroup()
         )
     }
-    
+
     var screenPermissionDeniedView: some View {
         VStack(spacing: 20) {
             Text(NSLocalizedString("screenRecordingPermissionDenied", comment: ""))
@@ -167,7 +167,7 @@ struct MacScannerView: View {
                 .foregroundStyle(Theme.colors.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
-            
+
             PrimaryButton(title: "openSystemSettings") {
                 if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture") {
                     NSWorkspace.shared.open(url)
@@ -176,24 +176,24 @@ struct MacScannerView: View {
             .padding(.horizontal, 40)
         }
     }
-    
+
     var loader: some View {
         VStack {
             Spacer()
-            
+
             HStack(spacing: 20) {
                 Text(NSLocalizedString("initializingCamera", comment: ""))
                     .font(Theme.fonts.bodyMMedium)
                     .foregroundColor(Theme.colors.textPrimary)
-                
+
                 ProgressView()
                     .preferredColorScheme(.dark)
             }
-            
+
             Spacer()
         }
     }
-    
+
     var errorView: some View {
         VStack {
             Spacer()
@@ -202,7 +202,7 @@ struct MacScannerView: View {
             buttons
         }
     }
-    
+
     var fallbackErrorView: some View {
         VStack {
             Spacer()
@@ -210,7 +210,7 @@ struct MacScannerView: View {
             Spacer()
         }
     }
-    
+
     var buttons: some View {
         VStack(spacing: 20) {
             uploadQRCodeButton
@@ -218,7 +218,7 @@ struct MacScannerView: View {
         }
         .padding(40)
     }
-    
+
     var uploadQRCodeButton: some View {
         PrimaryButton(title: "uploadQRCodeImage") {
             router.navigate(to: KeygenRoute.generalQRImport(
@@ -228,19 +228,19 @@ struct MacScannerView: View {
             ))
         }
     }
-    
+
     var tryAgainButton: some View {
         PrimaryButton(title: "tryAgain", type: .secondary) {
             cameraViewModel.setupSession()
         }
     }
-    
+
     var qrCodeOutline: some View {
         Image("QRScannerOutline")
             .resizable()
             .frame(width: scanSize, height: scanSize)
     }
-    
+
     private func handleModeChange(_ newMode: ScannerMode) {
         switch newMode {
         case .camera:
@@ -253,7 +253,7 @@ struct MacScannerView: View {
             }
         }
     }
-    
+
     private func handleModeVisible() {
         switch scannerMode {
         case .camera:
@@ -264,22 +264,22 @@ struct MacScannerView: View {
             }
         }
     }
-    
+
     private func handleModeHidden() {
         stopCamera()
         screenCaptureService.stopCapture()
     }
-    
+
     private func startCamera() {
         cameraViewModel.setupSession()
         cameraViewModel.startSession()
     }
-    
+
     private func stopCamera() {
         cameraViewModel.stopSession()
         cameraViewModel.resetData()
     }
-    
+
     private func getScanner(_ session: AVCaptureSession) -> some View {
         VStack(spacing: 0) {
             Spacer()
