@@ -76,7 +76,6 @@ class ThorchainStagenet2Service: ThorchainSwapProvider {
             }
             return coinMetaList
         } catch {
-            print("Error in fetchTokens: \(error)")
             throw error
         }
     }
@@ -181,7 +180,6 @@ class ThorchainStagenet2Service: ThorchainSwapProvider {
             self.cacheInboundAddresses.set(cacheKey, (data: inboundAddresses, timestamp: Date()))
             return inboundAddresses
         } catch {
-            print("JSON decoding error: \(error.localizedDescription)")
             return []
         }
     }
@@ -207,7 +205,7 @@ class ThorchainStagenet2Service: ThorchainSwapProvider {
                 do {
                     _ =  try await self.getTHORChainChainID()
                 } catch {
-                    print("fail to get thorchain stagenet2 id \(error.localizedDescription)")
+                    // Expected failure during network init
                 }
                 group.leave()
             }
