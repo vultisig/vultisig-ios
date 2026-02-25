@@ -737,8 +737,6 @@
 		A633B1362B997D57003D1738 /* NavigationBackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B1352B997D57003D1738 /* NavigationBackButton.swift */; };
 		A633B1382B997F39003D1738 /* NavigationHelpButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B1372B997F39003D1738 /* NavigationHelpButton.swift */; };
 		A633B13A2B9A5A22003D1738 /* ImportVaultShareScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B1392B9A5A22003D1738 /* ImportVaultShareScreen.swift */; };
-		A6381D802CB71B4E003F628B /* RegisterVaultView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6381D7F2CB71B4E003F628B /* RegisterVaultView+iOS.swift */; };
-		A6381D822CB71B5D003F628B /* RegisterVaultView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6381D812CB71B5D003F628B /* RegisterVaultView+macOS.swift */; };
 		A6386D882C8BBB7200DDD58E /* JoinKeysignDoneView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386D872C8BBB7200DDD58E /* JoinKeysignDoneView+iOS.swift */; };
 		A6386D8A2C8BBB7C00DDD58E /* JoinKeysignDoneView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386D892C8BBB7C00DDD58E /* JoinKeysignDoneView+macOS.swift */; };
 		A6386D902C8C290F00DDD58E /* SwapVerifyView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386D8F2C8C290F00DDD58E /* SwapVerifyView+iOS.swift */; };
@@ -780,8 +778,6 @@
 		A65617F92CB4F53C00E9CF19 /* CreateFolderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65617F82CB4F53C00E9CF19 /* CreateFolderViewModel.swift */; };
 		A65617FB2CB4F6DF00E9CF19 /* FolderDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65617FA2CB4F6DF00E9CF19 /* FolderDetailViewModel.swift */; };
 		A65617FF2CB4FE1500E9CF19 /* FolderDetailHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65617FE2CB4FE1500E9CF19 /* FolderDetailHeader.swift */; };
-		A65618012CB64EB200E9CF19 /* SettingVaultRegistrationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65618002CB64EB200E9CF19 /* SettingVaultRegistrationCell.swift */; };
-		A65618032CB6500A00E9CF19 /* RegisterVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65618022CB6500A00E9CF19 /* RegisterVaultView.swift */; };
 		A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D82B96602700E4B329 /* BigUIntExtension.swift */; };
 		A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D92B96602700E4B329 /* Int64Extension.swift */; };
 		A65649E22B96602700E4B329 /* DataExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649DA2B96602700E4B329 /* DataExtension.swift */; };
@@ -1996,8 +1992,6 @@
 		A633B1352B997D57003D1738 /* NavigationBackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBackButton.swift; sourceTree = "<group>"; };
 		A633B1372B997F39003D1738 /* NavigationHelpButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationHelpButton.swift; sourceTree = "<group>"; };
 		A633B1392B9A5A22003D1738 /* ImportVaultShareScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportVaultShareScreen.swift; sourceTree = "<group>"; };
-		A6381D7F2CB71B4E003F628B /* RegisterVaultView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RegisterVaultView+iOS.swift"; sourceTree = "<group>"; };
-		A6381D812CB71B5D003F628B /* RegisterVaultView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RegisterVaultView+macOS.swift"; sourceTree = "<group>"; };
 		A6386D872C8BBB7200DDD58E /* JoinKeysignDoneView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoinKeysignDoneView+iOS.swift"; sourceTree = "<group>"; };
 		A6386D892C8BBB7C00DDD58E /* JoinKeysignDoneView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoinKeysignDoneView+macOS.swift"; sourceTree = "<group>"; };
 		A6386D8F2C8C290F00DDD58E /* SwapVerifyView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwapVerifyView+iOS.swift"; sourceTree = "<group>"; };
@@ -2039,8 +2033,6 @@
 		A65617F82CB4F53C00E9CF19 /* CreateFolderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateFolderViewModel.swift; sourceTree = "<group>"; };
 		A65617FA2CB4F6DF00E9CF19 /* FolderDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailViewModel.swift; sourceTree = "<group>"; };
 		A65617FE2CB4FE1500E9CF19 /* FolderDetailHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailHeader.swift; sourceTree = "<group>"; };
-		A65618002CB64EB200E9CF19 /* SettingVaultRegistrationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingVaultRegistrationCell.swift; sourceTree = "<group>"; };
-		A65618022CB6500A00E9CF19 /* RegisterVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterVaultView.swift; sourceTree = "<group>"; };
 		A65649D82B96602700E4B329 /* BigUIntExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BigUIntExtension.swift; sourceTree = "<group>"; };
 		A65649D92B96602700E4B329 /* Int64Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Int64Extension.swift; sourceTree = "<group>"; };
 		A65649DA2B96602700E4B329 /* DataExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataExtension.swift; sourceTree = "<group>"; };
@@ -5585,7 +5577,6 @@
 				A6BB9BD02DA9E56A0085E117 /* VaultShareBackupsView+iOS.swift */,
 				A6BB9BD62DA9EAB10085E117 /* UpgradeYourVaultView+iOS.swift */,
 				A6E0C9392DF0AC8700A01543 /* ReferralTextField+iOS.swift */,
-				A6381D7F2CB71B4E003F628B /* RegisterVaultView+iOS.swift */,
 				A6505B002CA67B560002FBF4 /* Keygen */,
 				A6505AFF2CA67B4F0002FBF4 /* Keysign */,
 				A6505AFD2CA67ADE0002FBF4 /* FunctionCall */,
@@ -5608,7 +5599,6 @@
 				A6505B052CA67BF90002FBF4 /* Address */,
 				A6505B042CA67BF20002FBF4 /* Vault */,
 				A6505B022CA67B970002FBF4 /* Keysign */,
-				A6381D812CB71B5D003F628B /* RegisterVaultView+macOS.swift */,
 				A6BB9BCC2DA9E1D60085E117 /* AllDevicesUpgradeView+macOS.swift */,
 				A622C8332C9BB28000908332 /* VultisigApp+macOS.swift */,
 				A6BB9BD42DA9EAA20085E117 /* UpgradeYourVaultView+macOS.swift */,
@@ -5815,7 +5805,6 @@
 				A6725D422C40C45800D47716 /* AddressBookCell.swift */,
 				A675305D2CAFB2CE00B1E344 /* FolderVaultCell.swift */,
 				A698222B2CB398E700966D19 /* FolderCell.swift */,
-				A65618002CB64EB200E9CF19 /* SettingVaultRegistrationCell.swift */,
 				A6ACAD5A2D0A613A00432CC4 /* CoinPickerCell.swift */,
 				A6ACAD642D110B6000432CC4 /* SettingToggleCell.swift */,
 				A6F7B6C52D4AB86900AC8104 /* EmptyPeerCell.swift */,
@@ -6212,7 +6201,6 @@
 				A6FA40202C10241700D6C6B7 /* VaultDeletionConfirmView.swift */,
 				A533E63F2CEC814F00FCBAEB /* MonthlyBackupView.swift */,
 				A6B7F4972C49402F006D83D1 /* VaultDetailQRCodeView.swift */,
-				A65618022CB6500A00E9CF19 /* RegisterVaultView.swift */,
 				A601D3AA2DBB687E004B6A0A /* PasswordVerifyReminderView.swift */,
 			);
 			path = Vault;
@@ -6863,7 +6851,6 @@
 				A6AF96122C2E3D6100992578 /* ImportFileCell.swift in Sources */,
 				A65BA98A2BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift in Sources */,
 				1394501B2EBB8EA500A72AE9 /* WithdrawRewardsTransactionScreen.swift in Sources */,
-				A65618012CB64EB200E9CF19 /* SettingVaultRegistrationCell.swift in Sources */,
 				13A74CCD2ED3D91C00B97173 /* MayaNetworkInfo.swift in Sources */,
 				13A74CCE2ED3D91C00B97173 /* MayaChainBondsAPI.swift in Sources */,
 				13A74CCF2ED3D91C00B97173 /* MayaChainAPIService+Bonds.swift in Sources */,
@@ -6891,7 +6878,6 @@
 				DE64A4CC2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift in Sources */,
 				13988BA22EFEE486005AD1C8 /* CosmosSignDataBuilder.swift in Sources */,
 				13DACCCB2EDF6C4500BE0F97 /* KeyImportScanningForChainsView.swift in Sources */,
-				A65618032CB6500A00E9CF19 /* RegisterVaultView.swift in Sources */,
 				A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */,
 				A594EC2D2D072DAA00B74EBC /* SettingsCustomMessageView+iOS.swift in Sources */,
 				A6F2C54F2BA009420095C8E3 /* CoinSelectionViewModel.swift in Sources */,
@@ -7716,7 +7702,6 @@
 				1306524D2EA7CCE8002CAD99 /* LastBlockResponse.swift in Sources */,
 				1306524E2EA7CCE8002CAD99 /* THORName.swift in Sources */,
 				1394501A2EBB8EA500A72AE9 /* WithdrawRewardsTransactionViewModel.swift in Sources */,
-				A6381D822CB71B5D003F628B /* RegisterVaultView+macOS.swift in Sources */,
 				1334C7442E301E4300CBAA3E /* SendCryptoDoneContentView.swift in Sources */,
 				A58CC34F2C32FC530086D16B /* BlockChainSpecific.swift in Sources */,
 				13A65B5B2F2A884800349AD0 /* UTType+VaultBackup.swift in Sources */,
@@ -7814,7 +7799,6 @@
 				46E982F4917E0FE159D1DC0A /* ScannerMode.swift in Sources */,
 				6992816E311669B6632756F4 /* MacScreenCaptureService.swift in Sources */,
 				A6182F372C92328E0059BFDD /* NetworkPromptCell+iOS.swift in Sources */,
-				A6381D802CB71B4E003F628B /* RegisterVaultView+iOS.swift in Sources */,
 				A6386D882C8BBB7200DDD58E /* JoinKeysignDoneView+iOS.swift in Sources */,
 				A6386D902C8C290F00DDD58E /* SwapVerifyView+iOS.swift in Sources */,
 				A69FBBA02C8AD7C700A4B78B /* ContentView+iOS.swift in Sources */,

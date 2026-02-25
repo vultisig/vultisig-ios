@@ -19,8 +19,6 @@ struct SettingsRouter {
             viewBuilder.buildVaultSettingsScreen(vault: vault)
         case .vultDiscountTiers(let vault):
             viewBuilder.buildVultDiscountTiersScreen(vault: vault)
-        case .registerVaults(let vault):
-            viewBuilder.buildRegisterVaultsScreen(vault: vault)
         case .language:
             viewBuilder.buildLanguageScreen()
         case .currency:

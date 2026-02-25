@@ -425,13 +425,6 @@
 "referralProgram" = "Empfehlungsprogramm";
 "referralProgramTooltipDescription" = "Das Empfehlungsprogramm gilt für THORChain-Swaps und wird nach dem Best-Effort-Prinzip betrieben. Um die Vultisig-Empfehlung zu nutzen, musst du einen THORName registrieren. Die Registrierungsgebühr beträgt 10 RUNE plus 1 RUNE pro Jahr und wird an das THORChain-Netzwerk gezahlt.";
 "referredSaveOnSwaps" = "Speichern Sie %@ bei Swaps - Fügen Sie eine Empfehlung hinzu";
-"registerGuide" = "Registerhandbuch";
-"registerVault" = "Tresor registrieren";
-"registerVaultText1" = "1. Speicher deinen Tresor-QR-Code";
-"registerVaultText2" = "2. Öffne ";
-"registerVaultText3" = "3. Lade deinen Tresor-QR-Code hoch";
-"registerVaultText4" = "4. Verfolge die Entwicklung deiner VULTIES (Tresorpunkte)!";
-"registerYourVaults" = "Registriere deine Tresore!";
 "registrationFee" = "Registrierungsgebühr";
 "rename" = "Umbenennen";
 "renameVault" = "Namen deines Tresors bearbeiten";

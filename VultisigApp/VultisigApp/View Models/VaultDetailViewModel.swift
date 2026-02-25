@@ -182,7 +182,7 @@ struct GroupedChainListBuilder {
         // Check if coin already exists in group to prevent duplicates
         // Match by ID, or fall back to matching by exact ticker and contract address
         let isDuplicate = group.coins.contains { existing in
-            existing.id == coin.id || 
+            existing.id == coin.id ||
             (existing.ticker.lowercased() == coin.ticker.lowercased() &&
              existing.contractAddress.lowercased() == coin.contractAddress.lowercased())
         }
