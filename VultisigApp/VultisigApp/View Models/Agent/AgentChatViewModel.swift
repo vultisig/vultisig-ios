@@ -113,8 +113,15 @@ final class AgentChatViewModel: ObservableObject {
                 let request = AgentSendMessageRequest(
                     publicKey: vault.pubKeyECDSA,
                     content: text,
+                    model: "anthropic/claude-sonnet-4.5",
                     context: context
                 )
+
+                if let data = try? JSONEncoder().encode(request), let jsonString = String(data: data, encoding: .utf8) {
+                    print("\n[AgentChat] 🐛 Outgoing Request Payload:")
+                    print(jsonString)
+                    print("-------------------------------------------\n")
+                }
 
                 // Stream the response
                 print("[AgentChat] 🌊 Starting SSE stream for convId: \(convId)")
@@ -160,6 +167,7 @@ final class AgentChatViewModel: ObservableObject {
 
                 let request = AgentSendMessageRequest(
                     publicKey: vault.pubKeyECDSA,
+                    model: "anthropic/claude-sonnet-4.5",
                     actionResult: result
                 )
 

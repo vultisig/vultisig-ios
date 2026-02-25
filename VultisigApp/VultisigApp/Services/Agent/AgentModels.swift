@@ -12,6 +12,7 @@ import Foundation
 struct AgentSendMessageRequest: Codable {
     let publicKey: String
     var content: String?
+    var model: String?
     var context: AgentMessageContext?
     var selectedSuggestionId: String?
     var actionResult: AgentActionResult?
@@ -19,6 +20,7 @@ struct AgentSendMessageRequest: Codable {
     enum CodingKeys: String, CodingKey {
         case publicKey = "public_key"
         case content
+        case model
         case context
         case selectedSuggestionId = "selected_suggestion_id"
         case actionResult = "action_result"
