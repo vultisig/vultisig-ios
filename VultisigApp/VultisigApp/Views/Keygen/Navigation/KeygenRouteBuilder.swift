@@ -24,12 +24,14 @@ struct KeygenRouteBuilder {
 
     @ViewBuilder
     func buildKeyImportOverviewScreen(
+        tssType: TssType,
         vault: Vault,
         email: String?,
         keyImportInput: KeyImportInput?,
         setupType: KeyImportSetupType
     ) -> some View {
-        KeyImportOverviewScreen(
+        OnboardingOverviewScreen(
+            tssType: tssType,
             vault: vault,
             email: email,
             keyImportInput: keyImportInput,
@@ -104,19 +106,6 @@ struct KeygenRouteBuilder {
             selectedTab: selectedTab,
             fastVaultEmail: fastVaultEmail,
             fastVaultExist: fastVaultExist
-        )
-    }
-
-    @ViewBuilder
-    func buildNewWalletNameScreen(
-        tssType: TssType,
-        selectedTab: SetupVaultState,
-        name: String
-    ) -> some View {
-        NewWalletNameView(
-            tssType: tssType,
-            selectedTab: selectedTab,
-            name: name
         )
     }
 

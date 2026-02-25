@@ -28,12 +28,6 @@ class FunctionCallVote: FunctionCallAddressable, ObservableObject {
         setupValidation()
     }
 
-    init(selectedMemo: TW_Cosmos_Proto_Message.VoteOption, proposalID: Int = 0) {
-        self.selectedMemo = selectedMemo
-        self.proposalID = proposalID
-        setupValidation()
-    }
-
     private func setupValidation() {
         $selectedMemo
             .combineLatest($proposalID)

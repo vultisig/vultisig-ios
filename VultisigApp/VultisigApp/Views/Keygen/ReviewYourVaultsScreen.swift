@@ -15,41 +15,50 @@ struct ReviewYourVaultsScreen: View {
     let isInitiateDevice: Bool
 
     @State private var animationVM: RiveViewModel?
+    @State private var size: CGFloat?
+    let animationHeight: CGFloat = 280
+    var animationOffset: CGFloat {
+        isMacOS ? -100 : 0
+    }
 
     @Environment(\.router) var router
 
     var body: some View {
         Screen(
             title: "",
-            showNavigationBar: false,
             edgeInsets: .init(top: 0, leading: 0, trailing: 0)
         ) {
-            VStack(spacing: 0) {
-                Group {
-                    animation
+            VStack(spacing: 24) {
+                Spacer().frame(height: animationHeight + animationOffset)
+                VStack(spacing: 8) {
                     content
+                    buttons
                 }
-                .offset(y: -30)
-                buttons
             }
+            .background(animation, alignment: .top)
+            .ignoresSafeArea()
         }
+        .readSize { size = $0.width }
         .onAppear {
             animationVM = RiveViewModel(fileName: "review_devices", autoPlay: true)
-            animationVM?.fit = .layout
+            animationVM?.fit = .fitWidth
         }
     }
 
     var animation: some View {
-        animationVM?.view()
-            .frame(maxWidth: 395)
-            .overlay(
-                LinearGradient(
-                    colors: [Theme.colors.bgPrimary, .clear],
-                    startPoint: .top,
-                    endPoint: .bottom
-                ).frame(height: 120),
-                alignment: .top
+        ZStack(alignment: .top) {
+            animationVM?.view()
+                .frame(idealWidth: 395, maxWidth: 395, alignment: .center)
+                .showIf((size ?? 0) != 0)
+            LinearGradient(
+                colors: [Theme.colors.bgPrimary, Theme.colors.bgPrimary, .clear],
+                startPoint: .top,
+                endPoint: .bottom
             )
+            .frame(width: 50, height: 120)
+        }
+        .frame(height: animationHeight)
+        .offset(y: animationOffset)
     }
 
     var content: some View {
@@ -103,6 +112,7 @@ struct ReviewYourVaultsScreen: View {
 
     private func navigateToOverview() {
         router.navigate(to: KeygenRoute.keyImportOverview(
+            tssType: tssType,
             vault: vault,
             email: email,
             keyImportInput: keyImportInput,

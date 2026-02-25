@@ -957,6 +957,20 @@ Add to `ContentView.swift`:
 
 **CRITICAL:** Never introduce new SwiftLint warnings. The codebase uses SwiftLint for code quality enforcement.
 
+**After every code change, run SwiftLint and resolve all warnings before considering the task complete:**
+
+```bash
+swiftlint lint --config VultisigApp/.swiftlint.yml VultisigApp/
+```
+
+**Workflow:**
+
+1. Make code changes
+2. Run SwiftLint on the changed files
+3. Fix all warnings and errors reported
+4. Re-run SwiftLint to confirm zero new warnings
+5. Only then consider the task complete
+
 **Before submitting code:**
 
 1. Ensure all code changes are SwiftLint-compliant

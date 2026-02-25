@@ -29,6 +29,8 @@ struct IOSToolbarView<Content: View>: View {
         contentContainer
             .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {
+                trailingPlainToolbarItems
+
                 ToolbarItemGroup(placement: .cancellationAction) {
                     ForEach(Array(leadingItems.enumerated()), id: \.offset) { _, item in
                         item.content
@@ -37,12 +39,31 @@ struct IOSToolbarView<Content: View>: View {
                 }
 
                 ToolbarItemGroup(placement: .confirmationAction) {
-                    ForEach(Array(trailingItems.enumerated()), id: \.offset) { _, item in
+                    ForEach(Array(trailingGlassItems.enumerated()), id: \.offset) { _, item in
                         item.content
                             .environment(\.isNativeToolbarItem, true)
                     }
                 }
             }
+    }
+
+    @ToolbarContentBuilder
+    private var trailingPlainToolbarItems: some ToolbarContent {
+        if #available(iOS 26.0, *) {
+            trailingToolbarItems
+                .sharedBackgroundVisibility(.hidden)
+        } else {
+            trailingToolbarItems
+        }
+    }
+
+    private var trailingToolbarItems: some ToolbarContent {
+        ToolbarItemGroup(placement: .confirmationAction) {
+            ForEach(Array(trailingPlainItems.enumerated()), id: \.offset) { _, item in
+                item.content
+                    .environment(\.isNativeToolbarItem, true)
+            }
+        }
     }
 
     @ViewBuilder
@@ -68,8 +89,12 @@ struct IOSToolbarView<Content: View>: View {
         items.filter { $0.placement == .leading }
     }
 
-    private var trailingItems: [CustomToolbarItem] {
-        items.filter { $0.placement == .trailing }
+    private var trailingGlassItems: [CustomToolbarItem] {
+        items.filter { $0.placement == .trailing && !$0.hideSharedBackground }
+    }
+
+    private var trailingPlainItems: [CustomToolbarItem] {
+        items.filter { $0.placement == .trailing && $0.hideSharedBackground }
     }
 }
 #endif

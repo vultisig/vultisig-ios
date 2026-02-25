@@ -26,10 +26,25 @@ struct KeysignView: View {
     @EnvironmentObject var globalStateViewModel: GlobalStateViewModel
 
     var body: some View {
-        container
+        content
             .sensoryFeedback(.success, trigger: showDoneText)
             .sensoryFeedback(.error, trigger: showError)
             .sensoryFeedback(.impact(weight: .heavy), trigger: viewModel.status)
+        #if os(iOS)
+            .onAppear {
+                UIApplication.shared.isIdleTimerDisabled = true
+            }
+            .onDisappear {
+                viewModel.stopMessagePuller()
+                UIApplication.shared.isIdleTimerDisabled = false
+            }
+            .navigationBarBackButtonHidden(viewModel.status == .KeysignFinished ? true : false)
+        #else
+            .onDisappear {
+                viewModel.stopMessagePuller()
+            }
+        #endif
+
     }
 
     var content: some View {

@@ -62,6 +62,21 @@ struct AsyncImageView: View {
         }
     }
 
+    #if os(iOS)
+    func imageContainer(_ logoName: String) -> some View {
+        ZStack {
+            if let image = UIImage(named: logoName) {
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: size.width, height: size.height)
+            } else {
+                fallbackText
+            }
+        }
+    }
+    #endif
+
     var fallbackText: some View {
         Text(String(ticker.prefix(1)).uppercased())
             .font(Theme.fonts.bodyMMedium)

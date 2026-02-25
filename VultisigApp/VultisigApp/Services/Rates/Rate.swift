@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Rate: DatabaseMappable, Hashable {
+struct Rate: Hashable {
     static let identity: Rate = .init(fiat: "", crypto: "", value: 1)
     static func identifier(fiat: String, crypto: String) -> String {
         return "\(fiat.lowercased())-\(crypto.lowercased())"

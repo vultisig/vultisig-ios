@@ -15,8 +15,6 @@ struct FunctionCallVerifyScreen: View {
     @ObservedObject var tx: SendTransaction
     let vault: Vault
 
-    @EnvironmentObject var settingsViewModel: SettingsViewModel
-
     @State var fastPasswordPresented = false
     @State var isForReferral = false
     @State private var error: HelperError?
@@ -170,5 +168,4 @@ struct FunctionCallVerifyScreen: View {
         tx: SendTransaction(),
         vault: Vault.example
     )
-    .environmentObject(SettingsViewModel())
 }

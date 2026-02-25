@@ -55,8 +55,7 @@ struct TokenSelectionScreen: View {
     }
 
     @ViewBuilder
-    // swiftlint:disable:next unused_parameter
-    func cellBuilder(_ asset: TokenSelectionAsset, _ index: Int) -> some View {
+    func cellBuilder(_ asset: TokenSelectionAsset, _: Int) -> some View {
         switch asset {
         case .custom:
             CustomTokenGridCell(action: onCustomToken)

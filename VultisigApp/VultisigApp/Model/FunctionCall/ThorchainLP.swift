@@ -85,8 +85,6 @@ struct ThorchainPoolLPResponse: Codable {
     }
 }
 
-// Note: The LP API returns an array of positions directly, not wrapped in an object
-
 // Structure for Add LP memo data
 struct AddLPMemoData {
     let pool: String

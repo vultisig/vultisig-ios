@@ -41,12 +41,6 @@ class FunctionCallCustom: FunctionCallAddressable, ObservableObject {
         self.vault = vault
     }
 
-    init(custom: String, tx: SendTransaction, vault: Vault) {
-        self.custom = custom
-        self.tx = tx
-        self.vault = vault
-    }
-
     func initialize() {
         setupValidation()
         loadTokens()

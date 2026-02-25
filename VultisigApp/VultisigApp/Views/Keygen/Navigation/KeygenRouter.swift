@@ -19,8 +19,9 @@ struct KeygenRouter {
                 backupType: backupType,
                 isNewVault: isNewVault
             )
-        case .keyImportOverview(let vault, let email, let keyImportInput, let setupType):
+        case .keyImportOverview(let tssType, let vault, let email, let keyImportInput, let setupType):
             viewBuilder.buildKeyImportOverviewScreen(
+                tssType: tssType,
                 vault: vault,
                 email: email,
                 keyImportInput: keyImportInput,
@@ -58,12 +59,6 @@ struct KeygenRouter {
                 selectedTab: selectedTab,
                 fastVaultEmail: fastVaultEmail,
                 fastVaultExist: fastVaultExist
-            )
-        case .newWalletName(let tssType, let selectedTab, let name):
-            viewBuilder.buildNewWalletNameScreen(
-                tssType: tssType,
-                selectedTab: selectedTab,
-                name: name
             )
         case .joinKeysign(let vault):
             viewBuilder.buildJoinKeysignScreen(vault: vault)
