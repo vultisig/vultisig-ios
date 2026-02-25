@@ -26,6 +26,12 @@ final class AgentToolExecutor {
         case "sign_transaction_bundle":
             // TODO: Implement tx bundle flow
             return buildErrorResult(action: action, error: "not_implemented_yet")
+        case "get_balances":
+            return await executeGetBalances(action: action, vault: vault)
+        case "get_portfolio":
+            return await executeGetPortfolio(action: action, vault: vault)
+        case "get_market_price":
+            return await executeGetMarketPrice(action: action, vault: vault)
         default:
             return buildErrorResult(action: action, error: "unknown_action_type")
         }
@@ -318,9 +324,54 @@ final class AgentToolExecutor {
         return AgentActionResult(action: action.type, actionId: action.id, success: true, data: anyCodableDict)
     }
     
+    // MARK: - Read-only Context Builders
+    
+    private static func executeGetBalances(action: AgentBackendAction, vault: Vault) async -> AgentActionResult {
+        let balances = vault.coins.map { coin in
+            return [
+                "chain": coin.chain.name,
+                "ticker": coin.ticker,
+                "balance": coin.balanceString,
+                "fiatBalance": RateProvider.shared.fiatBalanceString(for: coin)
+            ]
+        }
+        return buildSuccessResult(action: action, data: ["balances": balances])
+    }
+    
+    private static func executeGetPortfolio(action: AgentBackendAction, vault: Vault) async -> AgentActionResult {
+        let totalFiat = vault.coins.reduce(Decimal.zero) { $0 + RateProvider.shared.fiatBalance(for: $1) }
+        return buildSuccessResult(action: action, data: ["totalFiatBalance": totalFiat.formatToFiat(includeCurrencySymbol: true)])
+    }
+    
+    private static func executeGetMarketPrice(action: AgentBackendAction, vault: Vault) async -> AgentActionResult {
+        guard let params = action.params,
+              let assetProvider = params["asset"]?.value as? String else {
+            return buildErrorResult(action: action, error: "missing_asset_param")
+        }
+        
+        let asset = assetProvider.lowercased()
+        
+        if let coin = vault.coins.first(where: { $0.ticker.lowercased() == asset }) {
+            if let rate = RateProvider.shared.rate(for: coin) {
+                return buildSuccessResult(action: action, data: [
+                    "asset": coin.ticker,
+                    "price": rate.value,
+                    "fiat": rate.fiat
+                ])
+            }
+        }
+        
+        return buildErrorResult(action: action, error: "price_not_found_in_cache")
+    }
+    
     // MARK: - Helpers
     
     private static func buildErrorResult(action: AgentBackendAction, error: String) -> AgentActionResult {
-        AgentActionResult(action: action.type, actionId: action.id, success: false, data: nil, error: error)
+        return AgentActionResult(action: action.type, actionId: action.id, success: false, data: nil, error: error)
+    }
+    
+    private static func buildSuccessResult(action: AgentBackendAction, data: [String: Any]) -> AgentActionResult {
+        let codableData = data.mapValues { AnyCodable($0) }
+        return AgentActionResult(action: action.type, actionId: action.id, success: true, data: codableData, error: nil)
     }
 }
