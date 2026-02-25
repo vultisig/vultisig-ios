@@ -145,7 +145,7 @@ struct ChainDetailScreen: View {
             ChainDetailHeaderView(
                 vault: vault,
                 nativeCoin: nativeCoin,
-                coins: vault.coins(for: nativeCoin.chain),
+                coins: viewModel.tokens,
                 onCopy: onCopy
             )
             CoinActionsView(
