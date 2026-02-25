@@ -49,7 +49,7 @@ class UTXOChainsHelper {
         }
         let thorChainSwapPayload: THORChainSwapPayload
         switch swapPayload {
-        case .thorchain(let payload), .thorchainChainnet(let payload), .thorchainStagenet2(let payload):
+        case .thorchain(let payload), .thorchainChainnet(let payload), .thorchainStagenet(let payload):
             thorChainSwapPayload = payload
         default:
             throw HelperError.runtimeError("fail to get swap payload")

@@ -64,7 +64,7 @@ private extension THORChainSwapPayload {
     func swapAsset(for coin: Coin, source: Bool) -> THORChainSwapAsset {
         return THORChainSwapAsset.with {
             switch coin.chain {
-            case .thorChain, .thorChainChainnet, .thorChainStagenet2:
+            case .thorChain, .thorChainChainnet, .thorChainStagenet:
                 $0.chain = .thor
             case .ethereum:
                 $0.chain = .eth

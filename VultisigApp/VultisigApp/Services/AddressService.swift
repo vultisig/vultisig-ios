@@ -31,7 +31,7 @@ struct AddressService {
 
         // Special handling for ThorChain Stagenet-2
         if AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor") {
-            return vault.coins.contains(where: { $0.chain == .thorChainStagenet2 && $0.isNativeToken }) ? .thorChainStagenet2 : nil
+            return vault.coins.contains(where: { $0.chain == .thorChainStagenet && $0.isNativeToken }) ? .thorChainStagenet : nil
         }
 
         // Check if it's an EVM address - don't auto-switch for safety
@@ -85,13 +85,13 @@ struct AddressService {
             }
         }
 
-        if chain == .thorChainStagenet2 {
+        if chain == .thorChainStagenet {
             let isValid = AnyAddress.isValidBech32(string: input, coin: .thorchain, hrp: "sthor")
 
             if isValid {
                 return input
             } else {
-                let service = ThorchainServiceFactory.getService(for: .thorChainStagenet2)
+                let service = ThorchainServiceFactory.getService(for: .thorChainStagenet)
                 return try await service.resolveTNS(name: input, chain: chain)
             }
         }
@@ -122,7 +122,7 @@ struct AddressService {
             return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "cthor")
         }
 
-        if chain == .thorChainStagenet2 {
+        if chain == .thorChainStagenet {
             return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor")
         }
 
@@ -138,7 +138,7 @@ struct AddressService {
             if firstCoin.chain == .thorChainChainnet {
                 return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "cthor")
             }
-            if firstCoin.chain == .thorChainStagenet2 {
+            if firstCoin.chain == .thorChainStagenet {
                 return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor")
             }
             return firstCoin.coinType.validate(address: address)

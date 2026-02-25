@@ -17,9 +17,9 @@ enum THORChainHelper {
                 throw HelperError.runtimeError("\(address) is invalid stagenet address (expected cthor1...)")
             }
             return addr
-        } else if chain == .thorChainStagenet2 {
+        } else if chain == .thorChainStagenet {
             guard let addr = AnyAddress(string: address, coin: .thorchain, hrp: "sthor") else {
-                throw HelperError.runtimeError("\(address) is invalid stagenet2 address (expected sthor1...)")
+                throw HelperError.runtimeError("\(address) is invalid stagenet address (expected sthor1...)")
             }
             return addr
         } else {
@@ -80,7 +80,7 @@ enum THORChainHelper {
 
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         switch keysignPayload.coin.chain {
-        case .thorChain, .thorChainChainnet, .thorChainStagenet2:
+        case .thorChain, .thorChainChainnet, .thorChainStagenet:
             break
         default:
             throw HelperError.runtimeError("coin is not RUNE or RUNE Stagenet")

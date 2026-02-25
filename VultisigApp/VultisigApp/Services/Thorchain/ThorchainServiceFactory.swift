@@ -27,7 +27,7 @@ protocol ThorchainServiceProtocol {
 
 extension ThorchainService: ThorchainServiceProtocol {}
 extension ThorchainChainnetService: ThorchainServiceProtocol {}
-extension ThorchainStagenet2Service: ThorchainServiceProtocol {}
+extension ThorchainStagenetService: ThorchainServiceProtocol {}
 
 enum ThorchainServiceFactory {
 
@@ -35,8 +35,8 @@ enum ThorchainServiceFactory {
         switch chain {
         case .thorChainChainnet:
             return ThorchainChainnetService.shared
-        case .thorChainStagenet2:
-            return ThorchainStagenet2Service.shared
+        case .thorChainStagenet:
+            return ThorchainStagenetService.shared
         default:
             guard chain.chainType == .THORChain else {
                 fatalError("Chain \(chain) is not a THORChain variant")

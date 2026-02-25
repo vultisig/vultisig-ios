@@ -70,7 +70,7 @@ struct CoinFactory {
         case .thorChainChainnet:
             let anyAddress = AnyAddress(publicKey: publicKey, coin: .thorchain, hrp: "cthor")
             address = anyAddress.description
-        case .thorChainStagenet2:
+        case .thorChainStagenet:
             let anyAddress = AnyAddress(publicKey: publicKey, coin: .thorchain, hrp: "sthor")
             address = anyAddress.description
         case .cardano:

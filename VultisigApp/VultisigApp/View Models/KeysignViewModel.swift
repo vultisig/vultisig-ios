@@ -136,7 +136,7 @@ class KeysignViewModel: ObservableObject {
             return Endpoint.getSwapProgressURL(txid: txid)
         case .thorchainChainnet:
             return Endpoint.getStagenetSwapProgressURL(txid: txid)
-        case .thorchainStagenet2:
+        case .thorchainStagenet:
             return Endpoint.getStagenetSwapProgressURL(txid: txid)
         case .mayachain:
             return Endpoint.getMayaSwapTracker(txid: txid)
@@ -386,7 +386,7 @@ class KeysignViewModel: ObservableObject {
         if let swapPayload = keysignPayload.swapPayload {
             let incrementNonce = keysignPayload.approvePayload != nil
             switch swapPayload {
-            case .thorchain(let payload), .thorchainChainnet(let payload), .thorchainStagenet2(let payload):
+            case .thorchain(let payload), .thorchainChainnet(let payload), .thorchainStagenet(let payload):
                 let swaps = THORChainSwaps()
                 let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                 signedTransactions.append(transaction)
@@ -438,7 +438,7 @@ class KeysignViewModel: ObservableObject {
 
         case .THORChain:
             switch keysignPayload.coin.chain {
-            case .thorChain, .thorChainChainnet, .thorChainStagenet2:
+            case .thorChain, .thorChainChainnet, .thorChainStagenet:
                 let transaction = try THORChainHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
             case .mayaChain:
@@ -502,7 +502,7 @@ class KeysignViewModel: ObservableObject {
             switch transactionType {
             case .regular(let tx):
                 switch keysignPayload.coin.chain {
-                case .thorChain, .thorChainChainnet, .thorChainStagenet2:
+                case .thorChain, .thorChainChainnet, .thorChainStagenet:
                     let service = ThorchainServiceFactory.getService(for: keysignPayload.coin.chain)
                     let broadcastResult = await service.broadcastTransaction(jsonString: tx.rawTransaction)
                     switch broadcastResult {

@@ -1770,7 +1770,7 @@ class TokensStore {
             isNativeToken: true
         ),
         CoinMeta(
-            chain: .thorChainStagenet2,
+            chain: .thorChainStagenet,
             ticker: "RUNE",
             logo: "rune",
             decimals: 8,

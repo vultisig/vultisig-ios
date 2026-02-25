@@ -145,7 +145,7 @@ class EVMHelper {
         }
         var thorChainSwapPayload: THORChainSwapPayload? = nil
         switch swapPayload {
-        case .thorchain(let payload), .thorchainChainnet(let payload), .thorchainStagenet2(let payload), .mayachain(let payload):
+        case .thorchain(let payload), .thorchainChainnet(let payload), .thorchainStagenet(let payload), .mayachain(let payload):
             thorChainSwapPayload = payload
         default:
             throw HelperError.runtimeError("fail to get swap payload")

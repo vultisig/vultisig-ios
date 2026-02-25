@@ -35,8 +35,8 @@ struct KeysignMessageFactory {
                 _ = service.ensureTHORChainChainID()
                 let swaps = THORChainSwaps()
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
-            case .thorchainStagenet2(let swapPayload):
-                let service = ThorchainServiceFactory.getService(for: .thorChainStagenet2)
+            case .thorchainStagenet(let swapPayload):
+                let service = ThorchainServiceFactory.getService(for: .thorChainStagenet)
                 _ = service.ensureTHORChainChainID()
                 let swaps = THORChainSwaps()
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
@@ -76,7 +76,7 @@ struct KeysignMessageFactory {
             } else {
                 return try ERC20Helper.getHelper(coin: payload.coin).getPreSignedImageHash(keysignPayload: payload)
             }
-        case .thorChain, .thorChainChainnet, .thorChainStagenet2:
+        case .thorChain, .thorChainChainnet, .thorChainStagenet:
             let service = ThorchainServiceFactory.getService(for: payload.coin.chain)
             _ = service.ensureTHORChainChainID()
             return try THORChainHelper.getPreSignedImageHash(keysignPayload: payload)

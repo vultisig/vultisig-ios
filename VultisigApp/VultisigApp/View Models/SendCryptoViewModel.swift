@@ -388,7 +388,7 @@ struct SendCryptoLogic {
                 print("⚠️ Failed to load Sui balance: \(error.localizedDescription)")
             }
 
-        case .kujira, .gaiaChain, .mayaChain, .thorChain, .thorChainChainnet, .thorChainStagenet2, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash:
+        case .kujira, .gaiaChain, .mayaChain, .thorChain, .thorChainChainnet, .thorChainStagenet, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash:
             tx.sendMaxAmount = percentage == 100
             await balanceService.updateBalance(for: tx.coin)
 

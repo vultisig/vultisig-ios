@@ -17,7 +17,7 @@ class Endpoint {
     enum SwapChain {
         case thorchain
         case thorchainChainnet
-        case thorchainStagenet2
+        case thorchainStagenet
         case maya
 
         var baseUrl: String {
@@ -26,7 +26,7 @@ class Endpoint {
                 return "https://thornode.ninerealms.com/thorchain"
             case .thorchainChainnet:
                 return "https://chainnet-thornode.thorchain.network/thorchain"
-            case .thorchainStagenet2:
+            case .thorchainStagenet:
                 return "https://stagenet-thornode.ninerealms.com/thorchain"
             case .maya:
                 return "https://mayanode.mayachain.info/mayachain"
@@ -191,7 +191,7 @@ class Endpoint {
         "https://thornode.ninerealms.com/thorchain/pool/\(asset)"
     }
 
-    static func fetchStagenetPoolInfo(asset: String) -> String {
+    static func fetchChainnetPoolInfo(asset: String) -> String {
         "https://chainnet-thornode.thorchain.network/thorchain/pool/\(asset)"
     }
 
@@ -237,40 +237,40 @@ class Endpoint {
     static let fetchThorchainChainnetPools = "https://chainnet-thornode.thorchain.network/thorchain/pools"
 
     // THORChain Stagenet-2 endpoints (sthor prefix, stagenet-thornode.ninerealms.com)
-    static func fetchAccountNumberThorchainStagenet2(_ address: String) -> String {
+    static func fetchAccountNumberThorchainStagenet(_ address: String) -> String {
         "https://stagenet-thornode.ninerealms.com/auth/accounts/\(address)"
     }
 
-    static let fetchThorchainStagenet2NetworkInfoNineRealms = "https://stagenet-thornode.ninerealms.com/thorchain/network"
+    static let fetchThorchainStagenetNetworkInfoNineRealms = "https://stagenet-thornode.ninerealms.com/thorchain/network"
 
-    static func fetchThorchainStagenet2DenomMetadata(denom: String) -> String {
+    static func fetchThorchainStagenetDenomMetadata(denom: String) -> String {
         "https://stagenet-thornode.ninerealms.com/cosmos/bank/v1beta1/denoms_metadata/\(encodePathComponent(denom))"
     }
 
-    static func fetchThorchainStagenet2AllDenomMetadata() -> String {
+    static func fetchThorchainStagenetAllDenomMetadata() -> String {
         "https://stagenet-thornode.ninerealms.com/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
     }
 
-    static let thorchainStagenet2NetworkInfo = "https://stagenet-rpc.ninerealms.com/status".asUrl
+    static let thorchainStagenetNetworkInfo = "https://stagenet-rpc.ninerealms.com/status".asUrl
 
-    static let fetchThorchainStagenet2InboundAddressesNineRealms = "https://stagenet-thornode.ninerealms.com/thorchain/inbound_addresses"
+    static let fetchThorchainStagenetInboundAddressesNineRealms = "https://stagenet-thornode.ninerealms.com/thorchain/inbound_addresses"
 
-    static let broadcastTransactionThorchainStagenet2 = "https://stagenet-thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
+    static let broadcastTransactionThorchainStagenet = "https://stagenet-thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
 
-    static func fetchAccountBalanceThorchainStagenet2(address: String) -> String {
+    static func fetchAccountBalanceThorchainStagenet(address: String) -> String {
         "https://stagenet-thornode.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)"
     }
 
-    static func fetchStagenet2PoolInfo(asset: String) -> String {
+    static func fetchStagenetPoolInfo(asset: String) -> String {
         "https://stagenet-thornode.ninerealms.com/thorchain/pool/\(asset)"
     }
 
     // THORChain Stagenet-2 LP endpoints
-    static func fetchThorchainStagenet2PoolLiquidityProvider(asset: String, address: String) -> String {
+    static func fetchThorchainStagenetPoolLiquidityProvider(asset: String, address: String) -> String {
         "https://stagenet-thornode.ninerealms.com/thorchain/pool/\(asset)/liquidity_provider/\(address)"
     }
 
-    static let fetchThorchainStagenet2Pools = "https://stagenet-thornode.ninerealms.com/thorchain/pools"
+    static let fetchThorchainStagenetPools = "https://stagenet-thornode.ninerealms.com/thorchain/pools"
 
     static func fetchSwapQuoteThorchain(
         chain: SwapChain,
@@ -602,7 +602,7 @@ class Endpoint {
     }
 
     static func resolveTNS(name: String, chain: Chain = .thorChain) -> URL {
-        let baseUrl = (chain == .thorChainChainnet || chain == .thorChainStagenet2)
+        let baseUrl = (chain == .thorChainChainnet || chain == .thorChainStagenet)
             ? "https://stagenet-midgard.ninerealms.com"
             : "https://midgard.ninerealms.com"
         return "\(baseUrl)/v2/thorname/lookup/\(name)".asUrl
@@ -791,8 +791,8 @@ class Endpoint {
         case .thorChain:
             return "https://runescan.io/tx/\(txid.stripHexPrefix())"
         case .thorChainChainnet:
-            return "https://runescan.io/tx/\(txid.stripHexPrefix())?network=stagenet"
-        case .thorChainStagenet2:
+            return "https://runescan.io/tx/\(txid.stripHexPrefix())?network=chainnet"
+        case .thorChainStagenet:
             return "https://runescan.io/tx/\(txid.stripHexPrefix())?network=stagenet"
         case .solana:
             return "https://orb.helius.dev/tx/\(txid)"
@@ -879,8 +879,8 @@ class Endpoint {
         case .thorChain:
             return "https://runescan.io/address/\(address)"
         case .thorChainChainnet:
-            return "https://runescan.io/address/\(address)?network=stagenet"
-        case .thorChainStagenet2:
+            return "https://runescan.io/address/\(address)?network=chainnet"
+        case .thorChainStagenet:
             return "https://runescan.io/address/\(address)?network=stagenet"
         case .solana:
             return "https://orb.helius.dev/address/\(address)"
@@ -962,8 +962,8 @@ class Endpoint {
             // For THORChain tokens, show the address with the token
             return "https://runescan.io/address/\(coin.address)"
         case .thorChainChainnet:
-            return "https://runescan.io/address/\(coin.address)?network=stagenet"
-        case .thorChainStagenet2:
+            return "https://runescan.io/address/\(coin.address)?network=chainnet"
+        case .thorChainStagenet:
             return "https://runescan.io/address/\(coin.address)?network=stagenet"
         case .solana:
             return "https://orb.helius.dev/address/\(contractAddress)"
@@ -1036,8 +1036,8 @@ class Endpoint {
         case .thorChain:
             return "https://runescan.io/address/\(address)"
         case .thorChainChainnet:
-            return "https://runescan.io/address/\(address)?network=stagenet"
-        case .thorChainStagenet2:
+            return "https://runescan.io/address/\(address)?network=chainnet"
+        case .thorChainStagenet:
             return "https://runescan.io/address/\(address)?network=stagenet"
         case .solana:
             return "https://orb.helius.dev/address/\(address)"

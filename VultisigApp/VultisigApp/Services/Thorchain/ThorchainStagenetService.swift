@@ -288,7 +288,7 @@ extension ThorchainChainnetService {
     }
 
     private func fetchAssetPrice(assetName: String) async throws -> Double {
-        let endpoint = Endpoint.fetchStagenetPoolInfo(asset: assetName)
+        let endpoint = Endpoint.fetchChainnetPoolInfo(asset: assetName)
 
         guard let url = URL(string: endpoint) else {
             throw Errors.invalidURL
@@ -514,7 +514,7 @@ extension ThorchainChainnetService {
     }
 
     func fetchPoolInfo(asset: String) async throws -> ThorchainPool {
-        let urlString = Endpoint.fetchStagenetPoolInfo(asset: asset)
+        let urlString = Endpoint.fetchChainnetPoolInfo(asset: asset)
 
         guard let url = URL(string: urlString) else {
             throw HelperError.runtimeError("Invalid URL")

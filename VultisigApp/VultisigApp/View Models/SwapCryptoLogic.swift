@@ -97,7 +97,7 @@ struct SwapCryptoLogic {
             return Endpoint.getSwapProgressURL(txid: hash)
         case .thorchainChainnet:
             return Endpoint.getStagenetSwapProgressURL(txid: hash)
-        case .thorchainStagenet2:
+        case .thorchainStagenet:
             return Endpoint.getStagenetSwapProgressURL(txid: hash)
         case .mayachain:
             return Endpoint.getMayaSwapTracker(txid: hash)
@@ -214,7 +214,7 @@ struct SwapCryptoLogic {
         let feeCoin: Coin = tx.toCoin // Assumption based on existing pattern (fees in output asset)
 
         switch quote {
-        case .thorchain(let q), .thorchainChainnet(let q), .thorchainStagenet2(let q), .mayachain(let q):
+        case .thorchain(let q), .thorchainChainnet(let q), .thorchainStagenet(let q), .mayachain(let q):
             affiliateFeeString = q.fees.affiliate
             // Verify if fee asset matches toCoin or fromCoin if needed, currently assuming toCoin as per SwapQuote.swift
         default:
@@ -251,7 +251,7 @@ struct SwapCryptoLogic {
         // We need raw numbers for math, reusing logic for efficiency
         var feeAmt: Decimal = 0
         switch quote {
-        case .thorchain(let q), .thorchainChainnet(let q), .thorchainStagenet2(let q), .mayachain(let q):
+        case .thorchain(let q), .thorchainChainnet(let q), .thorchainStagenet(let q), .mayachain(let q):
             feeAmt = q.fees.affiliate.toDecimal() / pow(10, 8)
         default:
              break
@@ -280,7 +280,7 @@ struct SwapCryptoLogic {
         let feeCoin: Coin = tx.toCoin // Outbound fee is in output asset
 
         switch quote {
-        case .thorchain(let q), .thorchainChainnet(let q), .thorchainStagenet2(let q), .mayachain(let q):
+        case .thorchain(let q), .thorchainChainnet(let q), .thorchainStagenet(let q), .mayachain(let q):
             outboundFeeString = q.fees.outbound
         default:
             return .empty
@@ -362,7 +362,7 @@ struct SwapCryptoLogic {
         var actualFeeFiat: Decimal = 0
          if let quote = tx.quote {
             switch quote {
-            case .thorchain(let q), .thorchainChainnet(let q), .thorchainStagenet2(let q), .mayachain(let q):
+            case .thorchain(let q), .thorchainChainnet(let q), .thorchainStagenet(let q), .mayachain(let q):
                  let feeAmt = q.fees.affiliate.toDecimal() / pow(10, 8)
                  actualFeeFiat = tx.toCoin.fiat(decimal: feeAmt)
             default: break
@@ -653,7 +653,7 @@ struct SwapCryptoLogic {
                 vault: vault
             )
 
-        case .thorchainStagenet2(let quote):
+        case .thorchainStagenet(let quote):
             let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
             return try await keysignFactory.buildTransfer(
                 coin: tx.fromCoin,
@@ -661,9 +661,9 @@ struct SwapCryptoLogic {
                 amount: tx.amountInCoinDecimal,
                 memo: quote.memo,
                 chainSpecific: chainSpecific,
-                swapPayload: .thorchainStagenet2(tx.buildThorchainSwapPayload(
+                swapPayload: .thorchainStagenet(tx.buildThorchainSwapPayload(
                     quote: quote,
-                    provider: .thorchainStagenet2
+                    provider: .thorchainStagenet
                 )),
                 approvePayload: buildApprovePayload(tx: tx),
                 vault: vault

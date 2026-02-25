@@ -42,17 +42,17 @@ struct SwapCoinsResolver {
 
         // If either coin is thorchain stagenet, remove mainnet thorchain provider to avoid mixing networks
         if toCoin.chain == .thorChainChainnet || fromCoin.chain == .thorChainChainnet {
-            commonProviders = commonProviders.filter { $0 != .thorchain && $0 != .thorchainStagenet2 }
+            commonProviders = commonProviders.filter { $0 != .thorchain && $0 != .thorchainStagenet }
         }
 
-        // If either coin is thorchain stagenet-2, remove mainnet and stagenet-1 providers
-        if toCoin.chain == .thorChainStagenet2 || fromCoin.chain == .thorChainStagenet2 {
+        // If either coin is thorchain stagenet, remove mainnet and chainnet providers
+        if toCoin.chain == .thorChainStagenet || fromCoin.chain == .thorChainStagenet {
             commonProviders = commonProviders.filter { $0 != .thorchain && $0 != .thorchainChainnet }
         }
 
         // If either coin is thorchain mainnet, remove stagenet providers to avoid mixing networks
         if toCoin.chain == .thorChain || fromCoin.chain == .thorChain {
-            commonProviders = commonProviders.filter { $0 != .thorchainChainnet && $0 != .thorchainStagenet2 }
+            commonProviders = commonProviders.filter { $0 != .thorchainChainnet && $0 != .thorchainStagenet }
         }
 
         return commonProviders

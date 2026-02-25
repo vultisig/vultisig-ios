@@ -152,7 +152,7 @@ class Coin: ObservableObject, Codable, Hashable {
 
     var feeDefault: String {
         switch self.chain {
-        case .thorChain, .thorChainChainnet, .thorChainStagenet2:
+        case .thorChain, .thorChainChainnet, .thorChainStagenet:
             return "2000000"
         case .mayaChain:
             return "2000000000"
