@@ -782,6 +782,7 @@
 "Merge" = "合并";
 "Withdraw RUJI" = "提取 RUJI";
 "Switch" = "切换";
+"switchToLocalMode" = "切换到本地模式";
 "Add THORChain LP" = "添加 THORChain 流动性";
 "Secured Assets" = "担保资产";
 "Withdraw Secured Asset" = "提取担保资产";

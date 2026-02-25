@@ -34,6 +34,7 @@ struct PeerDiscoveryInfoBanner: View {
             button
         }
         .frame(maxWidth: 370)
+        .padding(.bottom, 8)
     }
 
     var display: some View {
