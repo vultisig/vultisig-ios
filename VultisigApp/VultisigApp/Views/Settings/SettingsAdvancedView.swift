@@ -39,7 +39,7 @@ struct SettingsAdvancedView: View {
             SettingToggleCell(
                 title: "THORChain Stagenet",
                 icon: "timelapse",
-                isEnabled: $settingsViewModel.enableThorchainStagenet
+                isEnabled: $settingsViewModel.enableThorchainChainnet
             )
 
             SettingToggleCell(

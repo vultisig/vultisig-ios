@@ -1056,6 +1056,7 @@
 		B547A3FC2DF3EF6A0052164D /* Cardano.swift in Sources */ = {isa = PBXBuildFile; fileRef = B547A3FB2DF3EF6A0052164D /* Cardano.swift */; };
 		B547A3FF2DF3F9220052164D /* CardanoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B547A3FD2DF3F9220052164D /* CardanoService.swift */; };
 		B548BEDE2EA2D3B600E32308 /* ThorchainStagenetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B548BEDD2EA2D3B600E32308 /* ThorchainStagenetService.swift */; };
+		03CE221FFD984BC3A906CC88 /* ThorchainStagenet2Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = 509045C58D1144858A15FE41 /* ThorchainStagenet2Service.swift */; };
 		B548BEDF2EA2D3B600E32308 /* ThorchainServiceFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B548BEDC2EA2D3B600E32308 /* ThorchainServiceFactory.swift */; };
 		B54B01972BDCEB8E00FDA472 /* Polkadot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B01962BDCEB8E00FDA472 /* Polkadot.swift */; };
 		B54B019A2BDE0A1D00FDA472 /* PolkadotService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B01992BDE0A1D00FDA472 /* PolkadotService.swift */; };
@@ -2314,6 +2315,7 @@
 		B547A3FD2DF3F9220052164D /* CardanoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardanoService.swift; sourceTree = "<group>"; };
 		B548BEDC2EA2D3B600E32308 /* ThorchainServiceFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainServiceFactory.swift; sourceTree = "<group>"; };
 		B548BEDD2EA2D3B600E32308 /* ThorchainStagenetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainStagenetService.swift; sourceTree = "<group>"; };
+		509045C58D1144858A15FE41 /* ThorchainStagenet2Service.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainStagenet2Service.swift; sourceTree = "<group>"; };
 		B54B01962BDCEB8E00FDA472 /* Polkadot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Polkadot.swift; sourceTree = "<group>"; };
 		B54B01992BDE0A1D00FDA472 /* PolkadotService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolkadotService.swift; sourceTree = "<group>"; };
 		B54B019B2BDE135C00FDA472 /* RpcService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RpcService.swift; sourceTree = "<group>"; };
@@ -4767,6 +4769,7 @@
 				137FA5932EABC39000843DB1 /* Staking */,
 				B548BEDC2EA2D3B600E32308 /* ThorchainServiceFactory.swift */,
 				B548BEDD2EA2D3B600E32308 /* ThorchainStagenetService.swift */,
+				509045C58D1144858A15FE41 /* ThorchainStagenet2Service.swift */,
 				B57178B52E66F85B00BABE2E /* ThorchainService+Yield+Prices.swift */,
 				13A899012E43CEEB006F75F0 /* THORChainTokenMetadataFactory.swift */,
 				DEA1C7032DB0CDFE00424466 /* NetworkInfo.swift */,
@@ -7617,6 +7620,7 @@
 				B59173312C641F3D007100E3 /* CoinService.swift in Sources */,
 				B5C5B4AC2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift in Sources */,
 				B548BEDE2EA2D3B600E32308 /* ThorchainStagenetService.swift in Sources */,
+				03CE221FFD984BC3A906CC88 /* ThorchainStagenet2Service.swift in Sources */,
 				B5FF07032ED9424E00B0FD55 /* SendCryptoVerifyLogic.swift in Sources */,
 				B548BEDF2EA2D3B600E32308 /* ThorchainServiceFactory.swift in Sources */,
 				132309FC2EAFFFD100CD60F9 /* FunctionCallPairScreen.swift in Sources */,

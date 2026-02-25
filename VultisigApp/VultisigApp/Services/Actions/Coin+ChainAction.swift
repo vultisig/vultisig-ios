@@ -11,13 +11,13 @@ extension CoinAction {
 
     static var swapChains: [Chain] = [
         .solana, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash,
-        .thorChain, .thorChainStagenet, .mayaChain, .ethereum, .avalanche, .base, .arbitrum, .blast, .mantle, .hyperliquid,
+        .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain, .ethereum, .avalanche, .base, .arbitrum, .blast, .mantle, .hyperliquid,
         .polygon, .polygonV2, .optimism, .bscChain, .gaiaChain, .kujira, .zksync, .zcash, .ripple,
         .cronosChain, .tron
     ]
 
     static var memoChains: [Chain] = [
-        .thorChain, .thorChainStagenet, .mayaChain, .ton, .dydx, .kujira, .gaiaChain, .osmosis,
+        .thorChain, .thorChainChainnet, .thorChainStagenet, .mayaChain, .ton, .dydx, .kujira, .gaiaChain, .osmosis,
         // THORChain LP supported chains
         .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple
     ]

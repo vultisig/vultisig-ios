@@ -87,6 +87,16 @@ struct SwapService {
                 referredCode: referredCode,
                 vultTierDiscount: vultTierDiscount
             )
+        case .thorchainChainnet:
+            return try await fetchCrossChainQuote(
+                service: ThorchainChainnetService.shared,
+                provider: provider,
+                amount: amount,
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                referredCode: referredCode,
+                vultTierDiscount: vultTierDiscount
+            )
         case .thorchainStagenet:
             return try await fetchCrossChainQuote(
                 service: ThorchainStagenetService.shared,
@@ -185,6 +195,8 @@ private extension SwapService {
             switch service {
             case _ as ThorchainService:
                 return .thorchain(quote)
+            case _ as ThorchainChainnetService:
+                return .thorchainChainnet(quote)
             case _ as ThorchainStagenetService:
                 return .thorchainStagenet(quote)
             case _ as MayachainService:
@@ -199,7 +211,8 @@ private extension SwapService {
                     throw SwapError.swapAmountTooSmall
                 } else if error.message.localizedCaseInsensitiveContains("invalid symbol") ||
                           error.message.localizedCaseInsensitiveContains("bad to asset") ||
-                          error.message.localizedCaseInsensitiveContains("bad from asset") {
+                          error.message.localizedCaseInsensitiveContains("bad from asset") ||
+                          error.message.localizedCaseInsensitiveContains("pool does not exist") {
                     // This typically means no liquidity pool exists for this token pair
                     throw SwapError.noLiquidityPool
                 } else {

@@ -60,14 +60,17 @@ class CoinSelectionViewModel: ObservableObject {
 
         // Filter out Sepolia and Thorchain Stagenet based on settings
         let enableETHSepolia = UserDefaults.standard.bool(forKey: "sepolia")
-        let enableThorchainStagenet = UserDefaults.standard.bool(forKey: "thorchainStagenet")
+        let enableThorchainChainnet = UserDefaults.standard.bool(forKey: "thorchainChainnet")
 
         let filteredAssets = TokensStore.TokenSelectionAssets.filter { asset in
             if asset.chain == .ethereumSepolia {
                 return enableETHSepolia
             }
+            if asset.chain == .thorChainChainnet {
+                return enableThorchainChainnet
+            }
             if asset.chain == .thorChainStagenet {
-                return enableThorchainStagenet
+                return enableThorchainChainnet
             }
             return true
         }
