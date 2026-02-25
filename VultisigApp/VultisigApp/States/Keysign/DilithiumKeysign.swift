@@ -24,7 +24,7 @@ final class DilithiumKeysign {
     let keysignCommittee: [String]
     let mediatorURL: String
     let sessionID: String
-    let messsageToSign: [String]
+    let messageToSign: [String]
     let vault: Vault
     let encryptionKeyHex: String
     let isInitiateDevice: Bool
@@ -39,7 +39,7 @@ final class DilithiumKeysign {
     init(keysignCommittee: [String],
          mediatorURL: String,
          sessionID: String,
-         messsageToSign: [String],
+         messageToSign: [String],
          vault: Vault,
          encryptionKeyHex: String,
          chainPath: String,
@@ -48,7 +48,7 @@ final class DilithiumKeysign {
         self.keysignCommittee = keysignCommittee
         self.mediatorURL = mediatorURL
         self.sessionID = sessionID
-        self.messsageToSign = messsageToSign
+        self.messageToSign = messageToSign
         self.vault = vault
         self.encryptionKeyHex = encryptionKeyHex
         self.chainPath = chainPath
@@ -126,19 +126,7 @@ final class DilithiumKeysign {
         let msgArr = [UInt8](decodedMsgData)
         var msgSlice = msgArr.to_mldsa_goslice()
         let err: vscore.mldsa_error
-        // For multi-chain vaults using Dilithium keys, only unhardened HD derivation is supported.
-        // For vaults imported from a seed phrase/private key, only a single chain is supported (no derivation path).
-        if !self.chainPath.isEmpty {
-            guard let chainPathData = self.chainPath.replacingOccurrences(of: "'", with: "").data(using: .utf8) else {
-                throw HelperError.runtimeError("fail to encode chainPath to UTF-8")
-            }
-            let chainPathArr = [UInt8](chainPathData)
-            var chainPathSlice = chainPathArr.to_mldsa_goslice()
-            err = mldsa_sign_setupmsg_new(vscore.MlDsa44, &keyIdSlice, &chainPathSlice, &msgSlice, &ids, &buf)
-
-        } else {
-            err = mldsa_sign_setupmsg_new(vscore.MlDsa44, &keyIdSlice, nil, &msgSlice, &ids, &buf)
-        }
+        err = mldsa_sign_setupmsg_new(vscore.MlDsa44, &keyIdSlice, nil, &msgSlice, &ids, &buf)
         if err != MLDSA_LIB_OK {
             throw HelperError.runtimeError("fail to setup keysign message, mldsa error:\(err)")
         }
@@ -371,6 +359,8 @@ final class DilithiumKeysign {
             print("Failed to sign message (\(messageToSign)), error: \(error.localizedDescription)")
             if attempt < 3 {
                 try await DilithiumKeysignOneMessageWithRetry(attempt: attempt+1, messageToSign: messageToSign)
+            } else {
+                throw error
             }
         }
     }
@@ -398,7 +388,7 @@ final class DilithiumKeysign {
     }
 
     func DilithiumKeysignWithRetry() async throws {
-        for msg in self.messsageToSign {
+        for msg in self.messageToSign {
             try await DilithiumKeysignOneMessageWithRetry(attempt: 0, messageToSign: msg)
         }
     }

@@ -59,6 +59,7 @@ final class Vault: ObservableObject, Codable {
         case activeBondedNodes
         case stakePositions
         case lpPositions
+        case publicKeyMLDSA44
     }
 
     required init(from decoder: Decoder) throws {
@@ -77,6 +78,7 @@ final class Vault: ObservableObject, Codable {
         defiChains = try container.decodeIfPresent([Chain].self, forKey: .defiChains) ?? []
         isCircleEnabled = try container.decodeIfPresent(Bool.self, forKey: .isCircleEnabled) ?? true
         defiPositions = try container.decodeIfPresent([DefiPositions].self, forKey: .defiPositions) ?? []
+        publicKeyMLDSA44 = try container.decodeIfPresent(String.self, forKey: .publicKeyMLDSA44)
     }
 
     init(name: String, libType: LibType? = nil) {
@@ -123,6 +125,7 @@ final class Vault: ObservableObject, Codable {
         try container.encodeIfPresent(defiChains, forKey: .defiChains)
         try container.encodeIfPresent(isCircleEnabled, forKey: .isCircleEnabled)
         try container.encodeIfPresent(defiPositions, forKey: .defiPositions)
+        try container.encodeIfPresent(publicKeyMLDSA44, forKey: .publicKeyMLDSA44)
     }
 
     func setOrder(_ index: Int) {
