@@ -425,13 +425,6 @@
 "referralProgram" = "Referalni program";
 "referralProgramTooltipDescription" = "Program preporuka odnosi se na THORChain zamjene i djeluje na principu najboljeg truda. Za korištenje Vultisig preporuke, morate registrirati THORName. Naknada za registraciju iznosi 10 RUNE plus 1 RUNE godišnje, plaća se THORChain mreži.";
 "referredSaveOnSwaps" = "Spremi %@ na zamjene - Dodajte preporuku";
-"registerGuide" = "Vodič za registraciju";
-"registerVault" = "Registriraj trezor";
-"registerVaultText1" = "1. Spremite svoj QR kod trezora";
-"registerVaultText2" = "2. Idite na ";
-"registerVaultText3" = "3. Učitajte svoj QR kod trezora";
-"registerVaultText4" = "4. Pratite svoje VULTIES (Bodovi trezora)!";
-"registerYourVaults" = "Registrirajte svoje trezore!";
 "registrationFee" = "Naknada za registraciju";
 "rename" = "Preimenuj";
 "renameVault" = "Uredite ime vašeg sefa";

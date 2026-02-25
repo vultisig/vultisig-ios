@@ -427,13 +427,6 @@
 "referralProgram" = "Referral Program";
 "referralProgramTooltipDescription" = "The referral program applies to THORChain swaps and operates on a best-effort basis. To use the Vultisig referral, you must register a THORName. The registration fee is 10 RUNE plus 1 RUNE per year, paid to the THORChain network.";
 "referredSaveOnSwaps" = "Save %@ on swaps - Add a Referral";
-"registerGuide" = "Register Guide";
-"registerVault" = "Register Vault";
-"registerVaultText1" = "Save your Vault QR Code";
-"registerVaultText2" = "Go to ";
-"registerVaultText3" = "Upload your Vault QR Code";
-"registerVaultText4" = "Track your VULTIES (Vault Points)!";
-"registerYourVaults" = "Register your Vaults!";
 "registrationFee" = "Registration Fee";
 "rename" = "Rename";
 "renameVault" = "Edit your vault name";
