@@ -19,10 +19,6 @@ struct PostVaultNotificationModifier: ViewModifier {
         case vaultOptIn
     }
 
-    private var hasSecureVaults: Bool {
-        vaults.contains { !$0.isFastVault }
-    }
-
     func body(content: Content) -> some View {
         content
             .crossPlatformSheet(isPresented: $shouldShow) {
@@ -66,14 +62,13 @@ struct PostVaultNotificationModifier: ViewModifier {
         // Case 1: First app opening with existing vaults — show intro
         if !pushNotificationManager.hasSeenNotificationPrompt
             && pushNotificationManager.hadVaultsOnStartup
-            && hasSecureVaults {
+            && !vaults.isEmpty {
             activeSheetType = .intro
             shouldShow = true
             return
         }
 
         // Case 2: New/imported vault — show single vault opt-in
-        guard !vault.isFastVault else { return }
         guard !pushNotificationManager.hasPromptedVaultNotification(vault) else { return }
         activeSheetType = .vaultOptIn
         shouldShow = true
