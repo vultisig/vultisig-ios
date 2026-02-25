@@ -34,7 +34,7 @@ extension Vault: ProtoMappable {
                 isEddsa: $0.isEddsa
             )
         }
-        self.publicKeyMLDSA44 = proto.publicKeyMldsa44.isEmpty ? nil : proto.publicKeyMldsa44
+        self.publicKeyMLDSA44 = proto.publicKeyMldsa44.nilIfEmpty
     }
 
     func mapToProtobuff() -> VSVault {
