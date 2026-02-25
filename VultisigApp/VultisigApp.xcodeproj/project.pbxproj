@@ -1011,11 +1011,15 @@
 		A6SEC0132E1234567890AB01 /* SecurityScannerBottomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0132E1234567890AB02 /* SecurityScannerBottomSheet.swift */; };
 		AA0001012E4D000000000001 /* KeygenAnimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001002E4D000000000001 /* KeygenAnimationView.swift */; };
 		AEF2CEAD64A344FB85D7E3DE /* PendingTransactionStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F3285329CA1572874A8F92 /* PendingTransactionStorage.swift */; };
+		B20C65452F3AFEFF00AF8334 /* DilithiumKeygen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20C65442F3AFEF900AF8334 /* DilithiumKeygen.swift */; };
 		B21561E02F18A5D90052C892 /* Vultisig-Logo.icon in Resources */ = {isa = PBXBuildFile; fileRef = B21561DF2F18A5D90052C892 /* Vultisig-Logo.icon */; };
 		B217CEA92ED5A01B00503503 /* ChainPublicKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = B217CEA82ED5A00800503503 /* ChainPublicKey.swift */; };
 		B217D44E2EDE80B700503503 /* KeyImportRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B217D44D2EDE80B300503503 /* KeyImportRequest.swift */; };
+		B21B4EE62F48718F00CF976D /* vscore.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = B21B4EE52F48718F00CF976D /* vscore.xcframework */; };
 		B23481202E6E7DCF00AA655D /* WalletCore in Frameworks */ = {isa = PBXBuildFile; productRef = B2482ADF2E6E47D900B29B6F /* WalletCore */; };
 		B2482AE22E6E47D900B29B6F /* WalletCoreSwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = B2482AE12E6E47D900B29B6F /* WalletCoreSwiftProtobuf */; };
+		B2626CE42F3D5E8400D2C934 /* DilithiumHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2626CE32F3D5E8400D2C934 /* DilithiumHelper.swift */; };
+		B2626D122F3D6B0300D2C934 /* DilithiumKeysign.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2626D112F3D6B0300D2C934 /* DilithiumKeysign.swift */; };
 		B2ADDD782E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2ADDD772E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift */; };
 		B2ADDDC52E5D63AD00DB3B98 /* BanxaDisclaimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2ADDDC42E5D639700DB3B98 /* BanxaDisclaimer.swift */; };
 		B2C8B53A2E684A4200DFA097 /* SwapFeatureGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C8B5392E684A3700DFA097 /* SwapFeatureGate.swift */; };
@@ -2268,9 +2272,13 @@
 		AA0001002E4D000000000001 /* KeygenAnimationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenAnimationView.swift; sourceTree = "<group>"; };
 		B08FAA81BD1AD27E98344042 /* SolanaTransactionStatusAPI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SolanaTransactionStatusAPI.swift; sourceTree = "<group>"; };
 		B0F3285329CA1572874A8F92 /* PendingTransactionStorage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PendingTransactionStorage.swift; sourceTree = "<group>"; };
+		B20C65442F3AFEF900AF8334 /* DilithiumKeygen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DilithiumKeygen.swift; sourceTree = "<group>"; };
 		B21561DF2F18A5D90052C892 /* Vultisig-Logo.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = "Vultisig-Logo.icon"; sourceTree = "<group>"; };
 		B217CEA82ED5A00800503503 /* ChainPublicKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainPublicKey.swift; sourceTree = "<group>"; };
 		B217D44D2EDE80B300503503 /* KeyImportRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyImportRequest.swift; sourceTree = "<group>"; };
+		B21B4EE52F48718F00CF976D /* vscore.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:5BP27CHH4Y:Vulti Holdings Limited"; lastKnownFileType = wrapper.xcframework; path = vscore.xcframework; sourceTree = "<group>"; };
+		B2626CE32F3D5E8400D2C934 /* DilithiumHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DilithiumHelper.swift; sourceTree = "<group>"; };
+		B2626D112F3D6B0300D2C934 /* DilithiumKeysign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DilithiumKeysign.swift; sourceTree = "<group>"; };
 		B2ADDD772E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChainDetailActionButtons+macOS.swift"; sourceTree = "<group>"; };
 		B2ADDDC42E5D639700DB3B98 /* BanxaDisclaimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BanxaDisclaimer.swift; sourceTree = "<group>"; };
 		B2C8B5392E684A3700DFA097 /* SwapFeatureGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapFeatureGate.swift; sourceTree = "<group>"; };
@@ -2553,6 +2561,7 @@
 				B2482AE22E6E47D900B29B6F /* WalletCoreSwiftProtobuf in Frameworks */,
 				DE03EA112D0D3D0900AA4BB0 /* goschnorr.xcframework in Frameworks */,
 				DE3D44AD2BD2445100BD64CD /* CryptoSwift in Frameworks */,
+				B21B4EE62F48718F00CF976D /* vscore.xcframework in Frameworks */,
 				DE49A19A2B660D8D000F3AFB /* Mediator in Frameworks */,
 				DEEDAEE82B8B50A4005170E8 /* BigInt in Frameworks */,
 				DE8AD7402BC649A600339775 /* Tss.xcframework in Frameworks */,
@@ -5642,6 +5651,7 @@
 		A6A793E22BB508C000CC5950 /* Keygen */ = {
 			isa = PBXGroup;
 			children = (
+				B20C65442F3AFEF900AF8334 /* DilithiumKeygen.swift */,
 				DEEB571C2D08F80500B120D1 /* SchnorrKeygen.swift */,
 				DE6EF0522D068BE200A36D6A /* DKLSKeygen.swift */,
 				DE9EB0EB2BA2CC3C001747D9 /* TssType.swift */,
@@ -6211,6 +6221,7 @@
 		DE1572932B70F254009BC7C5 /* Tss */ = {
 			isa = PBXGroup;
 			children = (
+				B2626CE32F3D5E8400D2C934 /* DilithiumHelper.swift */,
 				DE6EF0502D06708C00A36D6A /* DKLSMessenger.swift */,
 				DE6EF04E2D06610800A36D6A /* DKLSHelper.swift */,
 				DE1572942B70F254009BC7C5 /* TssMessenger.swift */,
@@ -6313,6 +6324,7 @@
 				DE49A1642B65F6D9000F3AFB /* Products */,
 				DE49A1A12B67158A000F3AFB /* Frameworks */,
 				D7347C222B74717F00887E57 /* Recovered References */,
+				B21B4EE52F48718F00CF976D /* vscore.xcframework */,
 			);
 			sourceTree = "<group>";
 		};
@@ -6416,6 +6428,7 @@
 		DEEB57272D096BC100B120D1 /* Keysign */ = {
 			isa = PBXGroup;
 			children = (
+				B2626D112F3D6B0300D2C934 /* DilithiumKeysign.swift */,
 				DEEAE0D62D0A7EC9007FDA14 /* SchnorrKeysign.swift */,
 				DEEB57252D096BC100B120D1 /* DERSignature.swift */,
 				DEEB57262D096BC100B120D1 /* DKLSKeysign.swift */,
@@ -7057,6 +7070,7 @@
 				1321A8332ED0A4ED004CBB99 /* DefiChainStakedPositionView.swift in Sources */,
 				1321A8342ED0A4ED004CBB99 /* DefiChainMainScreen.swift in Sources */,
 				1321A8352ED0A4ED004CBB99 /* DefiChainMainViewModel.swift in Sources */,
+				B20C65452F3AFEFF00AF8334 /* DilithiumKeygen.swift in Sources */,
 				1321A8362ED0A4ED004CBB99 /* BondNode.swift in Sources */,
 				1321A8372ED0A4ED004CBB99 /* DefiChainPositionType.swift in Sources */,
 				1321A8382ED0A4ED004CBB99 /* DefiChainActiveNodeView.swift in Sources */,
@@ -7302,6 +7316,7 @@
 				13A078702E8484280093496F /* ListBottomSection.swift in Sources */,
 				A6505AF72CA678B30002FBF4 /* OnDropQRUtils.swift in Sources */,
 				132354552ECB5C9500BAFE7C /* ThrottledOnAppearModifier.swift in Sources */,
+				B2626CE42F3D5E8400D2C934 /* DilithiumHelper.swift in Sources */,
 				DED05FE42BBB824D00E0496C /* ThorchainAccountValue.swift in Sources */,
 				A60CA7E52BB0D37D00FDEB5C /* ContentView.swift in Sources */,
 				B5F7581D2BD8FDA20097B5B9 /* SuiCoin.swift in Sources */,
@@ -7751,6 +7766,7 @@
 				B50F265B2F182DBE0015DCCB /* TronFreezeView.swift in Sources */,
 				B50F265D2F182DBE0015DCCB /* TronConstants.swift in Sources */,
 				B50F265F2F182DBE0015DCCB /* TronRouteBuilder.swift in Sources */,
+				B2626D122F3D6B0300D2C934 /* DilithiumKeysign.swift in Sources */,
 				B50F26622F182DBE0015DCCB /* TronViewModel.swift in Sources */,
 				13C7C1E72E86EEBE00A529FD /* CustomTokenGridCell.swift in Sources */,
 				A6C671272CA3C0FF00F59B6A /* FunctionCallAddressTextField+iOS.swift in Sources */,
