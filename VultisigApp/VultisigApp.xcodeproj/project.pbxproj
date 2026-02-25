@@ -588,7 +588,6 @@
 		5589A8E15B5CE4DB4C3090AB /* VaultNotificationToggleRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BA8B3D6314175F82FEC27D8 /* VaultNotificationToggleRow.swift */; };
 		5EB3252A1288D9B9D78B55E6 /* CustomMessageDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD426AD3A78890574917DE6 /* CustomMessageDecoder.swift */; };
 		60A0614473DB30544D99C624 /* DefiCircleRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BE8825D6F0DBD6E8F28CB49 /* DefiCircleRow.swift */; };
-		66A826A9AC15EFA639AEFCF4 /* NotificationsPromptModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12965B9794F61AD7FB8E3B3E /* NotificationsPromptModifier.swift */; };
 		6992816E311669B6632756F4 /* MacScreenCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5D2C05B4B37315FBB2E448 /* MacScreenCaptureService.swift */; };
 		6AE564F37876C2BB01674194 /* CircleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03EC7383A8308BD94F081C10 /* CircleService.swift */; };
 		6F9D0331A5913F75BDE1B874 /* KyberSwapToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C796F13B6313681B4F992A /* KyberSwapToken.swift */; };
@@ -1282,7 +1281,6 @@
 		089EF1D434FDC5673F1F090A /* ReviewYourVaultsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ReviewYourVaultsScreen.swift; path = VultisigApp/Views/Keygen/ReviewYourVaultsScreen.swift; sourceTree = SOURCE_ROOT; };
 		0ABEFADAC7EF33E20A932CD6 /* SolanaTransactionStatusResponse.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SolanaTransactionStatusResponse.swift; sourceTree = "<group>"; };
 		0BD426AD3A78890574917DE6 /* CustomMessageDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomMessageDecoder.swift; sourceTree = "<group>"; };
-		12965B9794F61AD7FB8E3B3E /* NotificationsPromptModifier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationsPromptModifier.swift; sourceTree = "<group>"; };
 		13052B962E8C5511000285D2 /* CrossPlatformToolbarModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossPlatformToolbarModifier.swift; sourceTree = "<group>"; };
 		13052B982E8C5744000285D2 /* MacOSToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSToolbarView.swift; sourceTree = "<group>"; };
 		13052B9A2E8C574C000285D2 /* IOSToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOSToolbarView.swift; sourceTree = "<group>"; };
@@ -2712,7 +2710,6 @@
 		0CB754653CA5B091880EF5B1 /* Notifications */ = {
 			isa = PBXGroup;
 			children = (
-				12965B9794F61AD7FB8E3B3E /* NotificationsPromptModifier.swift */,
 				1884D10560CC1D55166D1D84 /* NotificationsIntroSheet.swift */,
 				A8F5B728DE1B9BF68381E504 /* PostVaultNotificationModifier.swift */,
 				2987AFF9D2BF542D8A798F9E /* NotificationSetupSheet.swift */,
@@ -7907,7 +7904,6 @@
 				B1F76C6989E9227786F79133 /* MacAppDelegate.swift in Sources */,
 				E0E3AB85C38590BFC65A8CE8 /* NotificationsSettingsScreen.swift in Sources */,
 				5589A8E15B5CE4DB4C3090AB /* VaultNotificationToggleRow.swift in Sources */,
-				66A826A9AC15EFA639AEFCF4 /* NotificationsPromptModifier.swift in Sources */,
 				E41DA91BBEFA59413E4FD229 /* NotificationsIntroSheet.swift in Sources */,
 				024AA73E7955C2E7F2172B39 /* PostVaultNotificationModifier.swift in Sources */,
 				E9C0D9C24B2101FC125F4770 /* NotificationSetupSheet.swift in Sources */,

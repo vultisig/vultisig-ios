@@ -3,13 +3,25 @@
 //  VultisigApp
 //
 
+import SwiftData
 import SwiftUI
 
 struct PostVaultNotificationModifier: ViewModifier {
     let vault: Vault
+    @Query var vaults: [Vault]
     @EnvironmentObject var pushNotificationManager: PushNotificationManager
 
     @State private var shouldShow: Bool = false
+    @State private var activeSheetType: SheetType?
+
+    private enum SheetType {
+        case intro
+        case vaultOptIn
+    }
+
+    private var hasSecureVaults: Bool {
+        vaults.contains { !$0.isFastVault }
+    }
 
     func body(content: Content) -> some View {
         content
@@ -18,7 +30,7 @@ struct PostVaultNotificationModifier: ViewModifier {
             }
             .onChange(of: shouldShow) { _, newValue in
                 if !newValue {
-                    pushNotificationManager.markVaultNotificationPrompted(vault)
+                    handleDismiss()
                 }
             }
             .onLoad {
@@ -30,23 +42,54 @@ struct PostVaultNotificationModifier: ViewModifier {
 
     @ViewBuilder
     private var sheetContent: some View {
-        if pushNotificationManager.isPermissionGranted {
-            VaultNotificationOptInSheet(
-                vault: vault,
-                isPresented: $shouldShow
-            )
-        } else {
-            NotificationSetupSheet(
-                vault: vault,
-                isPresented: $shouldShow
-            )
+        switch activeSheetType {
+        case .intro:
+            NotificationsIntroSheet(isPresented: $shouldShow)
+        case .vaultOptIn:
+            if pushNotificationManager.isPermissionGranted {
+                VaultNotificationOptInSheet(
+                    vault: vault,
+                    isPresented: $shouldShow
+                )
+            } else {
+                NotificationSetupSheet(
+                    vault: vault,
+                    isPresented: $shouldShow
+                )
+            }
+        case nil:
+            EmptyView()
         }
     }
 
     private func checkIfNeeded() {
+        // Case 1: First app opening with existing vaults — show intro
+        if !pushNotificationManager.hasSeenNotificationPrompt
+            && pushNotificationManager.hadVaultsOnStartup
+            && hasSecureVaults {
+            activeSheetType = .intro
+            shouldShow = true
+            return
+        }
+
+        // Case 2: New/imported vault — show single vault opt-in
         guard !vault.isFastVault else { return }
         guard !pushNotificationManager.hasPromptedVaultNotification(vault) else { return }
+        activeSheetType = .vaultOptIn
         shouldShow = true
+    }
+
+    private func handleDismiss() {
+        switch activeSheetType {
+        case .intro:
+            pushNotificationManager.hasSeenNotificationPrompt = true
+            pushNotificationManager.markVaultNotificationPrompted(vault)
+        case .vaultOptIn:
+            pushNotificationManager.markVaultNotificationPrompted(vault)
+        case nil:
+            break
+        }
+        activeSheetType = nil
     }
 }
 
@@ -57,7 +100,20 @@ extension View {
 }
 
 #if DEBUG
-#Preview("Permission Granted") {
+#Preview("Intro Sheet") {
+    let mock = PushNotificationManager()
+
+    Screen {
+        Color.clear
+    }
+    .crossPlatformSheet(isPresented: .constant(true)) {
+        NotificationsIntroSheet(isPresented: .constant(true))
+            .environmentObject(mock)
+    }
+    .environmentObject(mock)
+}
+
+#Preview("Vault Opt-In - Permission Granted") {
     let mock = PushNotificationManager()
 
     Screen {
@@ -73,7 +129,7 @@ extension View {
     .environmentObject(mock)
 }
 
-#Preview("Permission Not Granted") {
+#Preview("Vault Opt-In - Permission Not Granted") {
     let mock = PushNotificationManager()
 
     Screen {
