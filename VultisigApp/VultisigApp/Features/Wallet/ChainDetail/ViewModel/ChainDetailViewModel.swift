@@ -48,6 +48,7 @@ final class ChainDetailViewModel: ObservableObject {
 
     var tokens: [Coin] {
         return vault.coins.filter { $0.chain == nativeCoin.chain }
+            .uniqueBy { "\($0.chain.rawValue)-\($0.ticker.lowercased())-\($0.contractAddress.lowercased())" }
             .sorted {
                 if $0.isNativeToken != $1.isNativeToken {
                     return $0.isNativeToken
