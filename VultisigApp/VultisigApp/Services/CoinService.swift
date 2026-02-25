@@ -212,6 +212,13 @@ struct CoinService {
 
             for token in tokens {
                 do {
+                    // Skip discovered tokens that match the native token's ticker
+                    // (e.g. cosmos balance API returns "rune" denom as a non-native token,
+                    // but it's already tracked as the native RUNE coin)
+                    if token.ticker.caseInsensitiveCompare(nativeToken.ticker) == .orderedSame {
+                        continue
+                    }
+
                     // Check if token is hidden by user
                     if isTokenHidden(token, vault: vault) {
                         continue
