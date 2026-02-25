@@ -464,7 +464,7 @@ class KeygenViewModel: ObservableObject {
                 self.status = .KeygenEdDSA
                 try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0)
             }
-            
+
             await updateProgress(100)
 
             self.vault.signers = self.keygenCommittee
@@ -499,7 +499,6 @@ class KeygenViewModel: ObservableObject {
             }
             self.vault.keyshares = [KeyShare(pubkey: keyshareECDSA.PubKey, keyshare: keyshareECDSA.Keyshare),
                                     KeyShare(pubkey: keyshareEdDSA.PubKey, keyshare: keyshareEdDSA.Keyshare)]
-
 
             let needsInsert = self.tssType == .Keygen ||
                 !self.vaultOldCommittee.contains(self.vault.localPartyID)

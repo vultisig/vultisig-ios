@@ -34,7 +34,7 @@ final class DilithiumKeysign {
     var messenger: DKLSMessenger?
     var cache = NSCache<NSString, AnyObject>()
     var signatures = [String: DilithiumKeysignResponse]()
-    let MLDSA_LIB_OK: vscore.mldsa_lib_error = .init(0)
+    let MLDSA_LIB_OK: vscore.mldsa_error = .init(0)
 
     init(keysignCommittee: [String],
          mediatorURL: String,
@@ -125,7 +125,7 @@ final class DilithiumKeysign {
         }
         let msgArr = [UInt8](decodedMsgData)
         var msgSlice = msgArr.to_mldsa_goslice()
-        let err: vscore.mldsa_lib_error
+        let err: vscore.mldsa_error
         // For multi-chain vaults using Dilithium keys, only unhardened HD derivation is supported.
         // For vaults imported from a seed phrase/private key, only a single chain is supported (no derivation path).
         if !self.chainPath.isEmpty {
@@ -159,7 +159,7 @@ final class DilithiumKeysign {
         return Array(UnsafeBufferPointer(start: buf_receiver.ptr, count: Int(buf_receiver.len)))
     }
 
-    func GetDilithiumOutboundMessage(handle: vscore.Handle) -> (vscore.mldsa_lib_error, [UInt8]) {
+    func GetDilithiumOutboundMessage(handle: vscore.Handle) -> (vscore.mldsa_error, [UInt8]) {
         var buf = vscore.tss_buffer()
         defer {
             vscore.tss_buffer_free(&buf)
@@ -338,7 +338,7 @@ final class DilithiumKeysign {
             defer {
                 mldsa_keyshare_free(&keyshareHandle)
             }
-            let sessionResult = mldsa_sign_session_from_setup(vscore.MlDsa44,&decodedSetupMsg,
+            let sessionResult = mldsa_sign_session_from_setup(vscore.MlDsa44, &decodedSetupMsg,
                                                              &localPartySlice,
                                                              keyshareHandle,
                                                              &handler)

@@ -30,7 +30,7 @@ final class DilithiumKeygen {
     var cache = NSCache<NSString, AnyObject>()
     var setupMessage: [UInt8] = []
     var keyshare: DilithiumKeyshare?
-    let MLDSA_LIB_OK: vscore.mldsa_lib_error = .init(0)
+    let MLDSA_LIB_OK: vscore.mldsa_error = .init(0)
 
     init(vault: Vault,
          tssType: TssType,
@@ -71,7 +71,7 @@ final class DilithiumKeygen {
         let threshold = DKLSHelper.getThreshod(input: self.keygenCommittee.count)
         let byteArray = DKLSHelper.arrayToBytes(parties: self.keygenCommittee)
         var ids = byteArray.to_mldsa_goslice()
-        let err = mldsa_keygen_setupmsg_new(vscore.MlDsa44,threshold, nil, &ids, &buf)
+        let err = mldsa_keygen_setupmsg_new(vscore.MlDsa44, threshold, nil, &ids, &buf)
         if err != MLDSA_LIB_OK {
             throw HelperError.runtimeError("fail to setup keygen message, mldsa error:\(err)")
         }
@@ -79,7 +79,7 @@ final class DilithiumKeygen {
         return self.setupMessage
     }
 
-    func GetDilithiumOutboundMessage(handle: vscore.Handle) -> (mldsa_lib_error, [UInt8]) {
+    func GetDilithiumOutboundMessage(handle: vscore.Handle) -> (mldsa_error, [UInt8]) {
         var buf = vscore.tss_buffer()
         defer {
             vscore.tss_buffer_free(&buf)
@@ -244,7 +244,7 @@ final class DilithiumKeygen {
 
             let localPartyIDArr = self.localPartyID.toArray()
             var localPartySlice = localPartyIDArr.to_mldsa_goslice()
-            let result = mldsa_keygen_session_from_setup(vscore.MlDsa44,&decodedSetupMsg, &localPartySlice, &handler)
+            let result = mldsa_keygen_session_from_setup(vscore.MlDsa44, &decodedSetupMsg, &localPartySlice, &handler)
             if result != MLDSA_LIB_OK {
                 throw HelperError.runtimeError("fail to create session from setup message,error:\(result)")
             }

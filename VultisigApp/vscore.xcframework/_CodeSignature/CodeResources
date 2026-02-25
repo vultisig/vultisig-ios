@@ -10,11 +10,11 @@
 		</data>
 		<key>ios-arm64/Headers/vs-core.h</key>
 		<data>
-		U3WHW5jzBuJaXUT17rCqyn+ywBI=
+		5wyQLlcix72+mjFyzSMwphESQm8=
 		</data>
 		<key>ios-arm64/libvscore.a</key>
 		<data>
-		a7azUhTjHEKzjaADrj12GwMZUsA=
+		fFbMp5ijLmpCqH1SteFu8cn72q0=
 		</data>
 		<key>ios-arm64_x86_64-simulator/Headers/module.modulemap</key>
 		<data>
@@ -22,11 +22,11 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/Headers/vs-core.h</key>
 		<data>
-		U3WHW5jzBuJaXUT17rCqyn+ywBI=
+		5wyQLlcix72+mjFyzSMwphESQm8=
 		</data>
 		<key>ios-arm64_x86_64-simulator/libvscore.a</key>
 		<data>
-		8ow0aClxzc7HgwdgjAGw5kAU9Ss=
+		cf5xSVaBltjq2XM9RDstTd6WJIc=
 		</data>
 		<key>macos-arm64_x86_64/Headers/module.modulemap</key>
 		<data>
@@ -34,11 +34,11 @@
 		</data>
 		<key>macos-arm64_x86_64/Headers/vs-core.h</key>
 		<data>
-		U3WHW5jzBuJaXUT17rCqyn+ywBI=
+		5wyQLlcix72+mjFyzSMwphESQm8=
 		</data>
 		<key>macos-arm64_x86_64/libvscore.a</key>
 		<data>
-		Iz8Yq+u9ic4P3B+7+CXnfxmg0Ag=
+		Sz+3dJELvE9ZjvkDWVZkquK3OlQ=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -54,14 +54,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			d8v9NNh2dm3HCSv94oJUAB1mNlyQU3aWA3kKr5zy16M=
+			T8zg1TWhkW9y/KFyCUEb2qfRR4jZbVtZ1q6uhXIIyO4=
 			</data>
 		</dict>
 		<key>ios-arm64/libvscore.a</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			KTH+RXmB9cpDYclw7eFjkekpBIX5vSQRYSwuSGW3FS8=
+			dQQIZozfaMrvI1SUFb0VtTnA354kB6sEOp9tzloBRTI=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/Headers/module.modulemap</key>
@@ -75,14 +75,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			d8v9NNh2dm3HCSv94oJUAB1mNlyQU3aWA3kKr5zy16M=
+			T8zg1TWhkW9y/KFyCUEb2qfRR4jZbVtZ1q6uhXIIyO4=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/libvscore.a</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			K8POQj34OcTgvQz+V7G/mCSAqEDVll7vRamDaG4/xAY=
+			QnH/Vyx2upK2D4HMj5zTnAc/78k4IJBoQoCnb9w9J+8=
 			</data>
 		</dict>
 		<key>macos-arm64_x86_64/Headers/module.modulemap</key>
@@ -96,14 +96,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			d8v9NNh2dm3HCSv94oJUAB1mNlyQU3aWA3kKr5zy16M=
+			T8zg1TWhkW9y/KFyCUEb2qfRR4jZbVtZ1q6uhXIIyO4=
 			</data>
 		</dict>
 		<key>macos-arm64_x86_64/libvscore.a</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			Bu3EoygY2Rk+bQBKtBSjKAO+bwxagXmBIcuhjCULM3s=
+			00I/0m39ODV5fURD8kD7AwzqMPms8OFNLeb2xdeing8=
 			</data>
 		</dict>
 	</dict>
