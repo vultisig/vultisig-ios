@@ -212,8 +212,8 @@ private class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
-        let body = response.notification.request.content.body
-        if let url = URL(string: body), url.scheme == "vultisig" {
+        let deeplink = response.notification.request.content.userInfo["deeplink"] as? String
+        if let deeplink, let url = URL(string: deeplink) {
             DispatchQueue.main.async {
                 NotificationCenter.default.post(
                     name: NSNotification.Name("HandlePushNotification"),
