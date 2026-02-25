@@ -34,6 +34,7 @@ extension Vault: ProtoMappable {
                 isEddsa: $0.isEddsa
             )
         }
+        self.publicKeyMLDSA44 = proto.publicKeyMldsa44.nilIfEmpty
     }
 
     func mapToProtobuff() -> VSVault {
@@ -41,6 +42,7 @@ extension Vault: ProtoMappable {
             $0.name = name
             $0.publicKeyEcdsa = pubKeyECDSA
             $0.publicKeyEddsa = pubKeyEdDSA
+            $0.publicKeyMldsa44 = publicKeyMLDSA44 ?? ""
             $0.signers = signers
             $0.hexChainCode = hexChainCode
             $0.localPartyID = self.localPartyID

@@ -53,6 +53,12 @@ struct SettingsAdvancedView: View {
                 icon: "creditcard",
                 isEnabled: $settingsViewModel.sellEnabled
             )
+
+            SettingToggleCell(
+                title: "MLDSA",
+                icon: "lock.shield",
+                isEnabled: $settingsViewModel.isMLDSAEnabled
+            )
         }
     }
 }
