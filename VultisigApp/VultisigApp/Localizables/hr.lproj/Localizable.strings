@@ -780,6 +780,7 @@
 "Merge" = "Spoji";
 "Withdraw RUJI" = "Povuci RUJI";
 "Switch" = "Prebaci";
+"switchToLocalMode" = "Prebaci na lokalni način";
 "Add THORChain LP" = "Dodaj THORChain LP";
 "Secured Assets" = "Osigurana imovina";
 "Withdraw Secured Asset" = "Povuci osiguranu imovinu";

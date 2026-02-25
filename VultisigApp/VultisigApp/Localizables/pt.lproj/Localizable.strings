@@ -780,6 +780,7 @@
 "Merge" = "Fundir";
 "Withdraw RUJI" = "Sacar RUJI";
 "Switch" = "Trocar";
+"switchToLocalMode" = "Mudar para modo local";
 "Add THORChain LP" = "Adicionar LP THORChain";
 "Secured Assets" = "Ativos Segurados";
 "Withdraw Secured Asset" = "Sacar Ativo Segurado";
