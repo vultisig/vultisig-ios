@@ -12,7 +12,7 @@ import AppKit
 struct MacScreenCapturePreview: NSViewRepresentable {
     var scanRegion: ScanRegion
 
-    func makeNSView(context: Context) -> ScreenTransparentNSView {
+    func makeNSView(context _: Context) -> ScreenTransparentNSView {
         let view = ScreenTransparentNSView()
         view.scanRegion = scanRegion
         return view

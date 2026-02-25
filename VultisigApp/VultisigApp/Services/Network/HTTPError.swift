@@ -47,14 +47,8 @@ enum HTTPError: Error, LocalizedError {
 struct HTTPResponse<T> {
     let data: T
     let response: HTTPURLResponse
-
-    init(data: T, response: HTTPURLResponse) {
-        self.data = data
-        self.response = response
-    }
 }
 
 /// Empty response type for requests that don't return data
 struct EmptyResponse: Codable {
-    init() {}
 }

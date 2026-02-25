@@ -30,7 +30,7 @@ struct IOSToolbarView<Content: View>: View {
             .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {
                 trailingPlainToolbarItems
-                
+
                 ToolbarItemGroup(placement: .cancellationAction) {
                     ForEach(Array(leadingItems.enumerated()), id: \.offset) { _, item in
                         item.content
@@ -56,7 +56,7 @@ struct IOSToolbarView<Content: View>: View {
             trailingToolbarItems
         }
     }
-    
+
     private var trailingToolbarItems: some ToolbarContent {
         ToolbarItemGroup(placement: .confirmationAction) {
             ForEach(Array(trailingPlainItems.enumerated()), id: \.offset) { _, item in

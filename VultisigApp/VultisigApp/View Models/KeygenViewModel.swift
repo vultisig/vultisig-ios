@@ -158,7 +158,7 @@ class KeygenViewModel: ObservableObject {
         }
         return hexString
     }
-    
+
     func confirmDuplicateVaultIfNeeded(context: ModelContext) async -> Bool {
         let pubKey = self.vault.pubKeyECDSA
         guard !pubKey.isEmpty else { return true }
