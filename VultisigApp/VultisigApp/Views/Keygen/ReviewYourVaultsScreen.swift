@@ -20,7 +20,7 @@ struct ReviewYourVaultsScreen: View {
     var animationOffset: CGFloat {
         isMacOS ? -100 : 0
     }
-    
+
     @Environment(\.router) var router
 
     var body: some View {
@@ -44,7 +44,7 @@ struct ReviewYourVaultsScreen: View {
             animationVM?.fit = .fitWidth
         }
     }
-    
+
     var animation: some View {
         ZStack(alignment: .top) {
             animationVM?.view()
