@@ -86,6 +86,7 @@ class KeygenViewModel: ObservableObject {
     @Published var showDuplicateVaultAlert = false
     @Published var duplicateVaultName: String = ""
     @Published var didCancelDuplicateVault = false
+    @Published var keygenConnected = false
 
     private var duplicateVaultContinuation: CheckedContinuation<Bool, Never>?
     private var tssService: TssServiceImpl? = nil
@@ -157,6 +158,7 @@ class KeygenViewModel: ObservableObject {
         }
         return hexString
     }
+    
     func confirmDuplicateVaultIfNeeded(context: ModelContext) async -> Bool {
         let pubKey = self.vault.pubKeyECDSA
         guard !pubKey.isEmpty else { return true }
@@ -182,6 +184,7 @@ class KeygenViewModel: ObservableObject {
     }
 
     func startKeygen(context: ModelContext) async {
+        self.keygenConnected = true
         let vaultLibType = self.vault.libType ?? .GG20
         switch vaultLibType {
         case .GG20:

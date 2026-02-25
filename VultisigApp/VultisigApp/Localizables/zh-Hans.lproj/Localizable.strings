@@ -50,6 +50,8 @@
 "backupOptionsTitle" = "您想用密码加密备份吗？";
 "backupPasswordDisclaimer" = "切勿将来自不同设备的保险库份额存储在同一位置";
 "backupSetupSubtitle" = "导出此备份文件，然后将其保存到云端。每次备份请使用不同的云服务或账户。完成后，从此设备删除该文件。";
+"backupSetupSubtitleFast" = "导出此备份文件，然后将其保存到云端。它使用之前设置的密码进行了加密，用于解锁您的保险库。";
+"backupSetupSubtitleFastHighlight" = "加密";
 "backupSetupSubtitleHighlight" = "每次备份请使用不同的云服务或账户。完成后，从此设备删除该文件。";
 "backupSetupTitle" = "将备份保存到云端";
 "backupSetupTitleSecure" = "将备份 %d/%d 保存到云端";
@@ -312,6 +314,7 @@
 "moreInfoDescription" = "这是因为密码用于本地加密备份文件，类似于硬盘驱动器的加密方式。在下一步中，您可以选择添加提示";
 "mustAgreeTermsError" = "您必须同意条款";
 "myVaults" = "我的保险库";
+"nOfTotal" = "%d / %@";
 "name" = "名称";
 "nameYourVault" = "命名您的保险库";
 "needToRemoveTokens" = "在继续之前，需要删除此链中的所有代币";
@@ -377,9 +380,11 @@
 "passwordIsRequired" = "密码是必需的";
 "passwordMismatch" = "密码不匹配";
 "paste" = "粘贴";
-"peerDiscoveryInfoDescription" = "在您的其他设备上下载 Vultisig 并选择\"扫描二维码\"";
-"peerDiscoveryInfoTitle1" = "扫描";
-"peerDiscoveryInfoTitle2" = "二维码";
+"peerDiscoveryInfoDescription" = "在您的其他设备上打开应用，点击\"扫描二维码\"进行连接。";
+"peerDiscoveryInfoTitle" = "在其他设备上扫描二维码";
+"startScanning" = "开始扫描";
+"peerDiscoveryScanDeviceDisclaimer" = "使用其他设备扫描二维码。建议使用 3 个设备设置，2 个也足够";
+"pendingRewards" = "待领取奖励";
 "phantomWallet" = "Phantom wallet";
 "photoLibrary" = "照片库";
 "pickReferralCode" = "选择推荐码";
@@ -1013,6 +1018,13 @@
 "backupsTitleHighlight" = "备份";
 "storeBackupsSeparately" = "分别存储备份";
 "storeBackupsSeparatelyDescription" = "将每个备份保存在不同的地方。如果一个被泄露，您的资金仍然安全。";
+"storeBackupsSeparatelyDescriptionSecure" = "将每个备份保存在不同的云服务或使用不同的密码。如果一个被泄露，您的资金仍然安全。";
+"backupsDescriptionVault" = "备份是您保险库的核心。每个设备都有自己的备份。单个备份无法转移资金，仅用于恢复。导入并恢复任何丢失的设备";
+"backupsDescriptionVaultHighlight" = "自己的";
+"backupDeviceDriver" = "您的设备是主导者";
+"backupDeviceDriverDescription" = "设备备份和密码是关键。服务器仅进行联合签名，备份可以被请求。";
+"backupDeviceDriverDescriptionHighlight" = "和";
+"backupEachDeviceDescriptionSecure" = "您将总共创建 %d 个备份。您需要在每个设备上执行此操作。";
 
 "swap.outbound_fee" = "出站费用";
 "swap.price_impact" = "价格影响";
@@ -1032,9 +1044,10 @@
 "referralCodeTitle" = "推荐码";
 "referralCodeDescription" = "在此输入您的推荐码。";
 "referralCodeDescriptionHighlight" = "每笔交易享受10%折扣。";
-"enter4DigitCode" = "输入4个字符代码";
+"enter4DigitCode" = "输入4位代码";
 "applyReferral" = "应用推荐";
-
+"addAtLeastNMoreDevices" = "至少再添加 %d 台设备";
+"continueThresholdOfTotal" = "继续 (%d/%d)";
 "scannerModeCamera" = "摄像头";
 "scannerModeScreen" = "屏幕";
 "scanningScreenForQR" = "正在扫描屏幕上的二维码...";
