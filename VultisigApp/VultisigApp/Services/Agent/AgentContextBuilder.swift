@@ -1,0 +1,55 @@
+//
+//  AgentContextBuilder.swift
+//  VultisigApp
+//
+//  Created by Enrique Souza on 2026-02-25.
+//
+
+import Foundation
+
+enum AgentContextBuilder {
+
+    static let instructions = [
+        "Prefer using your knowledge and conversation context over calling tools.",
+        "Only call a tool when you are missing information that you cannot answer from context.",
+        "Use markdown formatting for readability."
+    ].joined(separator: " ")
+
+    /// Build the message context from the current vault state
+    static func buildContext(vault: Vault, balances: [AgentBalanceInfo]? = nil) -> AgentMessageContext {
+        var addresses: [String: String] = [:]
+        var coins: [AgentCoinInfo] = []
+
+        for coin in vault.coins {
+            // One address per chain from native tokens
+            if coin.isNativeToken && !coin.address.isEmpty {
+                if addresses[coin.chain.rawValue] == nil {
+                    addresses[coin.chain.rawValue] = coin.address
+                }
+            }
+
+            coins.append(AgentCoinInfo(
+                chain: coin.chain.rawValue,
+                ticker: coin.ticker,
+                contractAddress: coin.contractAddress.isEmpty ? nil : coin.contractAddress,
+                isNativeToken: coin.isNativeToken,
+                decimals: coin.decimals
+            ))
+        }
+
+        return AgentMessageContext(
+            vaultAddress: vault.pubKeyECDSA,
+            vaultName: vault.name,
+            balances: balances,
+            addresses: addresses,
+            coins: coins,
+            addressBook: nil, // TODO: wire up address book items
+            instructions: instructions
+        )
+    }
+
+    /// Build a lightweight context (without balances) for subsequent messages
+    static func buildLightContext(vault: Vault) -> AgentMessageContext {
+        buildContext(vault: vault, balances: nil)
+    }
+}

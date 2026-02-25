@@ -108,7 +108,8 @@ struct SettingsCustomMessageView: View {
                 customMessagePayload: input.customMessagePayload,
                 transferViewModel: viewModel,
                 encryptionKeyHex: input.encryptionKeyHex,
-                isInitiateDevice: input.isInitiateDevice
+                isInitiateDevice: input.isInitiateDevice,
+                fastVaultPassword: input.fastVaultPassword
             )
             viewModel.moveToNextView()
         }

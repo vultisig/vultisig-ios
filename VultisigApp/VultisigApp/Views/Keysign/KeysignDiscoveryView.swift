@@ -16,6 +16,7 @@ struct KeysignInput: Hashable {
     let customMessagePayload: CustomMessagePayload?
     let encryptionKeyHex: String
     let isInitiateDevice: Bool
+    let fastVaultPassword: String?
 }
 
 struct KeysignDiscoveryView: View {

@@ -95,7 +95,8 @@ struct JoinKeysignView: View {
             customMessagePayload: viewModel.customMessagePayload,
             transferViewModel: nil,
             encryptionKeyHex: viewModel.encryptionKeyHex,
-            isInitiateDevice: false
+            isInitiateDevice: false,
+            fastVaultPassword: nil
         )
     }
 

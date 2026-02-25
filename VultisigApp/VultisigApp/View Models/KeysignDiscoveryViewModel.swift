@@ -24,6 +24,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
     var customMessagePayload: CustomMessagePayload?
     var participantDiscovery: ParticipantDiscovery?
     var encryptionKeyHex: String?
+    var fastVaultPassword: String?
 
     private let mediator = Mediator.shared
     private let fastVaultService = FastVaultService.shared
@@ -219,7 +220,8 @@ class KeysignDiscoveryViewModel: ObservableObject {
             keysignPayload: keysignPayload,
             customMessagePayload: customMessagePayload,
             encryptionKeyHex: encryptionKeyHex ?? "",
-            isInitiateDevice: true
+            isInitiateDevice: true,
+            fastVaultPassword: fastVaultPassword
         )
     }
 

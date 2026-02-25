@@ -90,7 +90,8 @@ struct SwapCryptoView: View {
                         customMessagePayload: input.customMessagePayload,
                         transferViewModel: swapViewModel,
                         encryptionKeyHex: input.encryptionKeyHex,
-                        isInitiateDevice: input.isInitiateDevice
+                        isInitiateDevice: input.isInitiateDevice,
+                        fastVaultPassword: input.fastVaultPassword
                     )
                     swapViewModel.moveToNextView()
                 }
