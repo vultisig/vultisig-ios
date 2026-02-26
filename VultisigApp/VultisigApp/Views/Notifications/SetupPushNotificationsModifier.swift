@@ -1,12 +1,12 @@
 //
-//  PostVaultNotificationModifier.swift
+//  SetupPushNotificationsModifier.swift
 //  VultisigApp
 //
 
 import SwiftData
 import SwiftUI
 
-struct PostVaultNotificationModifier: ViewModifier {
+struct SetupPushNotificationsModifier: ViewModifier {
     let vault: Vault
     @Query var vaults: [Vault]
     @EnvironmentObject var pushNotificationManager: PushNotificationManager
@@ -42,7 +42,7 @@ struct PostVaultNotificationModifier: ViewModifier {
         case .intro:
             NotificationsIntroSheet(isPresented: $shouldShow)
         case .vaultOptIn:
-            NotificationSetupSheet(
+            VaultNotificationSetupSheet(
                 vault: vault,
                 isPresented: $shouldShow
             )
@@ -82,8 +82,8 @@ struct PostVaultNotificationModifier: ViewModifier {
 }
 
 extension View {
-    func withPostVaultNotificationPrompt(vault: Vault) -> some View {
-        modifier(PostVaultNotificationModifier(vault: vault))
+    func withSetupPushNotifications(vault: Vault) -> some View {
+        modifier(SetupPushNotificationsModifier(vault: vault))
     }
 }
 
@@ -108,7 +108,7 @@ extension View {
         Color.clear
     }
     .crossPlatformSheet(isPresented: .constant(true)) {
-        NotificationSetupSheet(
+        VaultNotificationSetupSheet(
             vault: Vault.example,
             isPresented: .constant(true)
         )

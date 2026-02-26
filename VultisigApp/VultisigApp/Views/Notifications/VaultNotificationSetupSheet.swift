@@ -1,11 +1,11 @@
 //
-//  NotificationSetupSheet.swift
+//  VaultNotificationSetupSheet.swift
 //  VultisigApp
 //
 
 import SwiftUI
 
-struct NotificationSetupSheet: View {
+struct VaultNotificationSetupSheet: View {
     let vault: Vault
     @Binding var isPresented: Bool
     @EnvironmentObject var pushNotificationManager: PushNotificationManager
@@ -37,6 +37,7 @@ struct NotificationSetupSheet: View {
                         if granted {
                             pushNotificationManager.setVaultOptIn(vault, enabled: true)
                         }
+                        pushNotificationManager.hasSeenNotificationPrompt = true
                         isPresented = false
                     }
                 }
@@ -63,7 +64,7 @@ struct NotificationSetupSheet: View {
         Color.clear
     }
     .crossPlatformSheet(isPresented: .constant(true)) {
-        NotificationSetupSheet(
+        VaultNotificationSetupSheet(
             vault: .example,
             isPresented: .constant(true)
         )
