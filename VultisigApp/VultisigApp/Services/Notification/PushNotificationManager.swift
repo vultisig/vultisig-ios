@@ -204,10 +204,14 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
     }
 
     func reRegisterOptedInVaults(_ vaults: [Vault]) async {
-        for vault in vaults where isVaultOptedIn(vault) {
+        let optedInIdentifiers = vaults
+            .filter { isVaultOptedIn($0) }
+            .map { ($0.pubKeyECDSA, $0.localPartyID) }
+
+        for (pubKeyECDSA, localPartyID) in optedInIdentifiers {
             await registerVault(
-                pubKeyECDSA: vault.pubKeyECDSA,
-                localPartyID: vault.localPartyID
+                pubKeyECDSA: pubKeyECDSA,
+                localPartyID: localPartyID
             )
         }
     }
@@ -239,7 +243,7 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
         NSApplication.shared.registerForRemoteNotifications()
         #endif
     }
-    
+
     func unregisterForRemoteNotifications() {
         #if os(iOS)
         UIApplication.shared.unregisterForRemoteNotifications()
@@ -258,11 +262,15 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
         )
         guard let results = try? Storage.shared.modelContext.fetch(descriptor) else { return }
 
-        for settings in results {
-            guard let vault = settings.vault else { continue }
+        let identifiers = results.compactMap { settings -> (String, String)? in
+            guard let vault = settings.vault else { return nil }
+            return (vault.pubKeyECDSA, vault.localPartyID)
+        }
+
+        for (pubKeyECDSA, localPartyID) in identifiers {
             await registerVault(
-                pubKeyECDSA: vault.pubKeyECDSA,
-                localPartyID: vault.localPartyID
+                pubKeyECDSA: pubKeyECDSA,
+                localPartyID: localPartyID
             )
         }
     }
