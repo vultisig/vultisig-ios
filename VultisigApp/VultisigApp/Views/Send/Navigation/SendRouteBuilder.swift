@@ -33,14 +33,12 @@ struct SendRouteBuilder {
     func buildPairScreen(
         vault: Vault,
         tx: SendTransaction,
-        keysignPayload: KeysignPayload,
-        fastVaultPassword: String?
+        keysignPayload: KeysignPayload
     ) -> some View {
         SendPairScreen(
             vault: vault,
             tx: tx,
-            keysignPayload: keysignPayload,
-            fastVaultPassword: fastVaultPassword
+            keysignPayload: keysignPayload
         )
     }
 

@@ -26,7 +26,9 @@ struct AgentChatView: View {
             }
         }
         .navigationTitle(viewModel.conversationTitle ?? "Vulti")
+        #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+        #endif
         .onAppear {
             setupChat()
         }

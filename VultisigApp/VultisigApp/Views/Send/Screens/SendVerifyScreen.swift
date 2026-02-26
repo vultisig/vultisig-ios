@@ -111,8 +111,7 @@ struct SendVerifyScreen: View {
                     router.navigate(to: SendRoute.pairing(
                         vault: vault,
                         tx: tx,
-                        keysignPayload: result,
-                        fastVaultPassword: tx.fastVaultPassword.nilIfEmpty
+                        keysignPayload: result
                     ))
                 }
             } catch {

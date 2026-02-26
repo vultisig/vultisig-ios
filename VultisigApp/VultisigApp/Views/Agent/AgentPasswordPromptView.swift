@@ -78,10 +78,17 @@ struct AgentPasswordPromptView: View {
                 }
             }
             .toolbar {
+                #if os(iOS)
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") { dismiss() }
                         .foregroundColor(Theme.colors.textTertiary)
                 }
+                #else
+                ToolbarItem(placement: .automatic) {
+                    Button("Cancel") { dismiss() }
+                        .foregroundColor(Theme.colors.textTertiary)
+                }
+                #endif
             }
         }
         .presentationDetents([.medium])

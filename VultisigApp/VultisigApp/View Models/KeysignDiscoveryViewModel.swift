@@ -24,7 +24,6 @@ class KeysignDiscoveryViewModel: ObservableObject {
     var customMessagePayload: CustomMessagePayload?
     var participantDiscovery: ParticipantDiscovery?
     var encryptionKeyHex: String?
-    var fastVaultPassword: String?
 
     private let mediator = Mediator.shared
     private let fastVaultService = FastVaultService.shared
@@ -71,9 +70,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         vault: Vault,
         keysignPayload: KeysignPayload?,
         customMessagePayload: CustomMessagePayload?,
-        participantDiscovery: ParticipantDiscovery,
-        fastVaultPassword: String?,
-        onFastKeysign: (() -> Void)?
+        participantDiscovery: ParticipantDiscovery
     ) async {
         self.vault = vault
         self.keysignPayload = keysignPayload
@@ -128,52 +125,6 @@ class KeysignDiscoveryViewModel: ObservableObject {
             status = .FailToStart
         }
 
-        if let fastVaultPassword, let coin {
-            // when fast sign , always using relay server
-            serverAddr = Endpoint.vultisigRelay
-
-            if vault.signers.count <= 3 {
-                // skip device lookup if possible
-                status = .WaitingForFast
-            }
-
-            fastVaultService.sign(
-                publicKeyEcdsa: vault.pubKeyECDSA,
-                keysignMessages: self.keysignMessages,
-                sessionID: self.sessionID,
-                hexEncryptionKey: self.encryptionKeyHex!,
-                derivePath: coin.coinType.derivationPath(),
-                isECDSA: coin.chain.isECDSA,
-                vaultPassword: fastVaultPassword,
-                chain: coin.chain.name
-            ) { isSuccess in
-                if !isSuccess {
-                    self.logger.error("Fast Vault signing failed")
-                    self.status = .FailToStart
-                    self.errorMessage = "Fast Vault signing failed. Please check your password or try Paired Sign by long-pressing the button."
-                } else {
-                    self.logger.info("Fast Vault signing initiated successfully")
-                }
-            }
-
-            cancellables.forEach { $0.cancel() }
-
-            participantDiscovery.$peersFound
-                .removeDuplicates()
-                .filter { !$0.isEmpty }
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] in
-                guard let self else { return }
-                    if $0.isEmpty {
-                    return
-                }
-                $0.forEach { peer in
-                    self.handleSelection(peer)
-                }
-                self.startFastKeysignIfNeeded(vault: vault, onFastKeysign: onFastKeysign)
-            }
-            .store(in: &cancellables)
-        }
     }
 
     func startDiscovery() {
@@ -197,10 +148,6 @@ class KeysignDiscoveryViewModel: ObservableObject {
         }
     }
 
-    func startFastKeysignIfNeeded(vault: Vault, onFastKeysign: (() -> Void)?) {
-        guard isValidPeers(vault: vault) else { return }
-        onFastKeysign?()
-    }
 
     func isValidPeers(vault: Vault) -> Bool {
         return selections.count >= (vault.getThreshold() + 1)
@@ -220,8 +167,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             keysignPayload: keysignPayload,
             customMessagePayload: customMessagePayload,
             encryptionKeyHex: encryptionKeyHex ?? "",
-            isInitiateDevice: true,
-            fastVaultPassword: fastVaultPassword
+            isInitiateDevice: true
         )
     }
 

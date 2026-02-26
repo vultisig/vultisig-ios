@@ -17,8 +17,7 @@ struct KeysignView: View {
     let transferViewModel: TransferViewModel?
     let encryptionKeyHex: String
     let isInitiateDevice: Bool
-    let fastVaultPassword: String?
-    @StateObject var viewModel = KeysignViewModel()
+        @StateObject var viewModel = KeysignViewModel()
 
     @State var showAlert = false
     @State var showDoneText = false
@@ -135,8 +134,7 @@ struct KeysignView: View {
             keysignPayload: keysignPayload,
             customMessagePayload: customMessagePayload,
             encryptionKeyHex: encryptionKeyHex,
-            isInitiateDevice: self.isInitiateDevice,
-            fastVaultPassword: self.fastVaultPassword
+            isInitiateDevice: self.isInitiateDevice
         )
     }
 
@@ -166,8 +164,7 @@ struct KeysignView: View {
             customMessagePayload: nil,
             transferViewModel: nil,
             encryptionKeyHex: "",
-            isInitiateDevice: false,
-            fastVaultPassword: nil
+            isInitiateDevice: false
         )
     }
     .environmentObject(HomeViewModel())

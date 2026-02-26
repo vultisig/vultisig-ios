@@ -47,7 +47,6 @@ class KeysignViewModel: ObservableObject {
     var customMessagePayload: CustomMessagePayload?
     var encryptionKeyHex: String
     var isInitiateDevice: Bool
-    var fastVaultPassword: String?
 
     private let gasViewModel = JoinKeysignGasViewModel()
 
@@ -73,7 +72,6 @@ class KeysignViewModel: ObservableObject {
         self.keysignPayload = nil
         self.encryptionKeyHex = ""
         self.isInitiateDevice = false
-        self.fastVaultPassword = nil
     }
 
     func setData(keysignCommittee: [String],
@@ -85,8 +83,7 @@ class KeysignViewModel: ObservableObject {
         keysignPayload: KeysignPayload?,
         customMessagePayload: CustomMessagePayload?,
         encryptionKeyHex: String,
-        isInitiateDevice: Bool,
-        fastVaultPassword: String? = nil
+        isInitiateDevice: Bool
     ) async {
         self.keysignCommittee = keysignCommittee
         self.mediatorURL = mediatorURL
@@ -97,8 +94,7 @@ class KeysignViewModel: ObservableObject {
         self.keysignPayload = keysignPayload
         self.customMessagePayload = customMessagePayload
         self.encryptionKeyHex = encryptionKeyHex
-        self.fastVaultPassword = fastVaultPassword
-        let isEncryptGCM =  await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
+                let isEncryptGCM =  await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
         self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex, pubKey: vault.pubKeyECDSA, encryptGCM: isEncryptGCM)
         self.isInitiateDevice = isInitiateDevice
 
@@ -156,10 +152,6 @@ class KeysignViewModel: ObservableObject {
     }
 
     func startKeysign() async {
-        if let fastVaultPassword {
-            await startFastVaultKeysign(password: fastVaultPassword)
-            return
-        }
 
         switch vault.libType {
         case .GG20, .none:
@@ -171,60 +163,6 @@ class KeysignViewModel: ObservableObject {
         }
     }
 
-    func startFastVaultKeysign(password: String) async {
-        do {
-            guard self.keysignPayload != nil || self.customMessagePayload != nil else {
-                throw HelperError.runtimeError("keysign payload is nil")
-            }
-            
-            var chainPath: String
-            var targetChain: Chain = .ethereum // Default
-            
-            if let keysignPayload = self.keysignPayload {
-                chainPath = keysignPayload.coin.coinType.derivationPath()
-                targetChain = keysignPayload.coin.chain
-            } else if let customMessagePayload = self.customMessagePayload {
-                if let chain = Chain.allCases.first(where: { $0.name.caseInsensitiveCompare(customMessagePayload.chain) == .orderedSame }) {
-                    chainPath = chain.coinType.derivationPath()
-                    targetChain = chain
-                } else {
-                    chainPath = TokensStore.Token.ethereum.coinType.derivationPath()
-                }
-            } else {
-                throw HelperError.runtimeError("keysign payload is nil")
-            }
-
-            switch self.keysignType {
-            case .ECDSA:
-                status = .KeysignECDSA
-            case .EdDSA:
-                status = .KeysignEdDSA
-            }
-
-            let input = FastVaultKeysignInput(
-                vault: vault,
-                keysignMessages: messsageToSign,
-                derivePath: chainPath,
-                isECDSA: keysignType == .ECDSA,
-                vaultPassword: password,
-                chain: targetChain.name
-            )
-
-            let result = try await FastVaultKeysignService.shared.keysign(input: input)
-            self.signatures = result.signatures
-
-            await broadcastTransaction()
-            if let customMessagePayload {
-                txid = customMessagePayload.message
-            }
-            status = .KeysignFinished
-
-        } catch {
-            logger.error("Fast Vault keysign failed, error: \(error.localizedDescription)")
-            keysignError = error.localizedDescription
-            status = .KeysignFailed
-        }
-    }
 
     func startKeysignDKLS(isImport: Bool) async {
         do {

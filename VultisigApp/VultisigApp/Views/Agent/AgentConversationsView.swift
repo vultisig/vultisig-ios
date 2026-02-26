@@ -18,11 +18,19 @@ struct AgentConversationsView: View {
             content
         }
         .navigationTitle("Vulti")
+        #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+        #endif
         .toolbar {
+            #if os(iOS)
             ToolbarItem(placement: .topBarTrailing) {
                 connectionButton
             }
+            #else
+            ToolbarItem(placement: .automatic) {
+                connectionButton
+            }
+            #endif
         }
         .onAppear {
             loadData()
@@ -64,10 +72,10 @@ struct AgentConversationsView: View {
                         } label: {
                             HStack {
                                 Image(systemName: "plus.bubble.fill")
-                                    .foregroundColor(Theme.colors.surface)
+                                    .foregroundColor(Theme.colors.bgPrimary)
                                 Text("New Chat")
                                     .font(.body.bold())
-                                    .foregroundColor(Theme.colors.surface)
+                                    .foregroundColor(Theme.colors.bgPrimary)
                             }
                             .padding()
                             .background(Theme.colors.turquoise)

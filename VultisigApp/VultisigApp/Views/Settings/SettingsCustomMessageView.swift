@@ -94,7 +94,6 @@ struct SettingsCustomMessageView: View {
             vault: vault,
             keysignPayload: nil,
             customMessagePayload: customMessagePayload,
-            fastVaultPassword: fastVaultPassword.nilIfEmpty,
             shareSheetViewModel: shareSheetViewModel
         ) { input in
             self.keysignView = KeysignView(
@@ -108,8 +107,7 @@ struct SettingsCustomMessageView: View {
                 customMessagePayload: input.customMessagePayload,
                 transferViewModel: viewModel,
                 encryptionKeyHex: input.encryptionKeyHex,
-                isInitiateDevice: input.isInitiateDevice,
-                fastVaultPassword: input.fastVaultPassword
+                isInitiateDevice: input.isInitiateDevice
             )
             viewModel.moveToNextView()
         }

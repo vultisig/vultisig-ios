@@ -16,15 +16,13 @@ struct KeysignInput: Hashable {
     let customMessagePayload: CustomMessagePayload?
     let encryptionKeyHex: String
     let isInitiateDevice: Bool
-    let fastVaultPassword: String?
-}
+    }
 
 struct KeysignDiscoveryView: View {
     let vault: Vault
     let keysignPayload: KeysignPayload?
     let customMessagePayload: CustomMessagePayload? // TODO: Switch to enum
-    let fastVaultPassword: String?
-    @ObservedObject var shareSheetViewModel: ShareSheetViewModel
+        @ObservedObject var shareSheetViewModel: ShareSheetViewModel
     @State var previewType: QRShareSheetType = .Send
     var swapTransaction: SwapTransaction = SwapTransaction()
     var contentPadding: CGFloat?
@@ -153,14 +151,10 @@ struct KeysignDiscoveryView: View {
 
     var lookingForDevices: some View {
         KeygenAnimationView(
-            isFast: keysignState == .fast,
+            isFast: false,
             connected: .constant(false),
             progress: .constant(0)
         )
-    }
-
-    var keysignState: SetupVaultState {
-        return fastVaultPassword == nil ? .secure : .fast
     }
 
     func setData() async {
@@ -174,9 +168,7 @@ struct KeysignDiscoveryView: View {
             vault: vault,
             keysignPayload: keysignPayload,
             customMessagePayload: customMessagePayload,
-            participantDiscovery: participantDiscovery,
-            fastVaultPassword: fastVaultPassword,
-            onFastKeysign: { startKeysign() }
+            participantDiscovery: participantDiscovery
         )
 
         guard let (qrCodeData, qrCodeImage) = await viewModel.getQrImage() else {
@@ -249,7 +241,6 @@ struct KeysignDiscoveryView: View {
         vault: Vault.example,
         keysignPayload: KeysignPayload.example,
         customMessagePayload: nil,
-        fastVaultPassword: nil,
         shareSheetViewModel: ShareSheetViewModel()
     ) { _ in }
         .environmentObject(SettingsViewModel())
