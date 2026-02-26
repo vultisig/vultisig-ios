@@ -17,8 +17,9 @@ struct NotificationService {
     }
 
     func unregisterDevice(vaultId: String, partyName: String) async throws {
+        let request = DeviceUnregisterRequest(vaultId: vaultId, partyName: partyName)
         _ = try await httpClient.requestEmpty(
-            NotificationAPI.unregister(vaultId: vaultId, partyName: partyName)
+            NotificationAPI.unregister(payload: request)
         )
     }
 

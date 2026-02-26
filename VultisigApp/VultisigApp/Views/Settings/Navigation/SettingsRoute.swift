@@ -11,7 +11,6 @@ enum SettingsRoute: Hashable {
     case main(vault: Vault)
     case vaultSettings(vault: Vault)
     case vultDiscountTiers(vault: Vault)
-    case registerVaults(vault: Vault)
     case language
     case currency
     case addressBook

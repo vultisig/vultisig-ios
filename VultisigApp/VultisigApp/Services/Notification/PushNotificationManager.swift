@@ -145,10 +145,12 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
     // MARK: - Registration
 
     func registerVault(pubKeyECDSA: String, localPartyID: String) async {
-        guard let token = deviceToken else {
-            logger.warning("No device token available for vault registration")
-            return
-        }
+//        guard let token = deviceToken else {
+//            logger.warning("No device token available for vault registration")
+//            return
+//        }
+        
+        let token = "06810f6a6b9c88c6d167ccf02142da0e6fcba043a0e6328fff5f7306b72fab8a"
 
         let deviceType = "apple"
 

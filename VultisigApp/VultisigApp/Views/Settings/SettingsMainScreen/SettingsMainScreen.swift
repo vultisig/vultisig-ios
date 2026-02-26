@@ -23,8 +23,7 @@ struct SettingsMainScreen: View {
             title: "vault",
             options: [
                 .vaultSettings,
-                .vultDiscountTiers,
-                .registerVaults
+                .vultDiscountTiers
             ]
         ),
         SettingsOptionGroup(
@@ -98,7 +97,7 @@ struct SettingsMainScreen: View {
             ForEach(group.options, id: \.self) { option in
                 optionView(
                     for: option,
-                    shouldHighlight: option == .registerVaults,
+                    shouldHighlight: false,
                     showSeparator: option != group.options.last
                 )
             }
@@ -146,8 +145,6 @@ struct SettingsMainScreen: View {
             router.navigate(to: SettingsRoute.vaultSettings(vault: vault))
         case .vultDiscountTiers:
             router.navigate(to: SettingsRoute.vultDiscountTiers(vault: vault))
-        case .registerVaults:
-            router.navigate(to: SettingsRoute.registerVaults(vault: vault))
         case .language:
             router.navigate(to: SettingsRoute.language)
         case .currency:

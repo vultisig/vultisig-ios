@@ -261,7 +261,7 @@ class ThorchainStagenetService: ThorchainSwapProvider {
 
 // MARK: - THORChain Stagenet-2 Pool Prices & Token Metadata
 extension ThorchainStagenetService {
-    // swiftlint:disable:next unused_parameter
+    // swiftlint:disable:next unused_parameter async_without_await
     func fetchYieldTokenPrice(for contract: String) async -> Double? {
         return nil
     }
@@ -588,15 +588,15 @@ extension ThorchainStagenetService {
     }
 
     // MARK: - TCY Staking Methods (Not supported on Stagenet-2)
-    // swiftlint:disable:next unused_parameter
+    // swiftlint:disable:next unused_parameter async_without_await
     func fetchTcyStakedAmount(address: String) async -> Decimal {
         return 0
     }
-    // swiftlint:disable:next unused_parameter
+    // swiftlint:disable:next unused_parameter async_without_await
     func fetchTcyAutoCompoundAmount(address: String) async -> Decimal {
         return 0
     }
-    // swiftlint:disable:next unused_parameter
+    // swiftlint:disable:next unused_parameter async_without_await
     func fetchMergeAccounts(address: String) async -> [MergeAccountResponse.ResponseData.Node.AccountMerge.MergeAccount] {
         return []
     }

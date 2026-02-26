@@ -35,7 +35,7 @@ class Endpoint {
     }
 
     static let vultisigApiProxy = "https://api.vultisig.com"
-    static let vultisigNotification = "https://api.vultisig.com/notification"
+    static let vultisigNotification = "http://localhost:8080"
     static let supportDocumentLink = "https://docs.vultisig.com/vultisig-app-actions/managing-your-vault/vault-backup#recovering-a-lost-device"
     static let vultisigRelay = "https://api.vultisig.com/router"
     static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"

@@ -425,13 +425,6 @@
 "referralProgram" = "Programa de Referidos";
 "referralProgramTooltipDescription" = "El programa de referidos se aplica a los intercambios de THORChain y funciona sobre la base del mejor esfuerzo. Para usar el referido de Vultisig, debes registrar un THORName. La tarifa de registro es de 10 RUNE más 1 RUNE por año, pagada a la red THORChain.";
 "referredSaveOnSwaps" = "Guardar %@ en swaps - agregue una referencia";
-"registerGuide" = "Guía de registro";
-"registerVault" = "Registrar Vault";
-"registerVaultText1" = "1. Guarda tu código QR del Vault";
-"registerVaultText2" = "2. Ve a ";
-"registerVaultText3" = "3. Sube tu código QR del Vault";
-"registerVaultText4" = "4. ¡Sigue tus VULTIES (Puntos Vault)!";
-"registerYourVaults" = "¡Registra tus Vaults!";
 "registrationFee" = "Tarifa de registro";
 "rename" = "Renombrar";
 "renameVault" = "Editar el nombre de tu caja fuerte";
@@ -780,6 +773,7 @@
 "Merge" = "Fusionar";
 "Withdraw RUJI" = "Retirar RUJI";
 "Switch" = "Cambiar";
+"switchToLocalMode" = "Cambiar a modo local";
 "Add THORChain LP" = "Añadir THORChain LP";
 "Secured Assets" = "Activos asegurados";
 "Withdraw Secured Asset" = "Retirar activo asegurado";

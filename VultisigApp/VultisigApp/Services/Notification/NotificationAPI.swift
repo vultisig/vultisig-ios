@@ -7,7 +7,7 @@ import Foundation
 
 enum NotificationAPI: TargetType {
     case register(payload: DeviceRegistrationRequest)
-    case unregister(vaultId: String, partyName: String)
+    case unregister(payload: DeviceUnregisterRequest)
     case isVaultRegistered(vaultId: String)
     case notify(payload: NotifyRequest)
 
@@ -19,8 +19,8 @@ enum NotificationAPI: TargetType {
         switch self {
         case .register:
             return "/register"
-        case .unregister(let vaultId, let partyName):
-            return "/unregister/\(vaultId)/\(partyName)"
+        case .unregister:
+            return "/unregister"
         case .isVaultRegistered(let vaultId):
             return "/vault/\(vaultId)"
         case .notify:
@@ -43,8 +43,8 @@ enum NotificationAPI: TargetType {
         switch self {
         case .register(let payload):
             return .requestCodable(payload, .jsonEncoding)
-        case .unregister:
-            return .requestPlain
+        case .unregister(let payload):
+            return .requestCodable(payload, .jsonEncoding)
         case .isVaultRegistered:
             return .requestPlain
         case .notify(let payload):
