@@ -1052,3 +1052,15 @@
 "screenRecordingPermissionDenied" = "A permissão de gravação de tela é necessária para escanear códigos QR da sua tela.";
 "openSystemSettings" = "Abrir Configurações do Sistema";
 "initializingScreenCapture" = "Inicializando captura de tela";
+
+// MARK: - Notifications
+"notifications" = "Notificações";
+"pushNotifications" = "Notificações push";
+"enablePushNotifications" = "Ativar notificações push";
+"notificationsAreHere" = "As notificações chegaram";
+"notificationsDescription" = "Fique por dentro da atividade do seu cofre, como quando outro dispositivo inicia a assinatura de uma transação.";
+"chooseVaultsForNotifications" = "Escolher cofres para notificações";
+"enableNotificationsForVault" = "Ativar notificações para este cofre";
+"notNow" = "Agora não";
+"vaultNotifications" = "Notificações do cofre";
+"enableAll" = "Ativar todas";

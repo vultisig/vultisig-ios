@@ -1052,3 +1052,15 @@
 "screenRecordingPermissionDenied" = "Se requiere permiso de grabación de pantalla para escanear códigos QR desde tu pantalla.";
 "openSystemSettings" = "Abrir Configuración del Sistema";
 "initializingScreenCapture" = "Inicializando captura de pantalla";
+
+// MARK: - Notifications
+"notifications" = "Notificaciones";
+"pushNotifications" = "Notificaciones push";
+"enablePushNotifications" = "Activar notificaciones push";
+"notificationsAreHere" = "Las notificaciones están aquí";
+"notificationsDescription" = "Mantente al tanto de la actividad de tu bóveda, como cuando otro dispositivo inicia la firma de una transacción.";
+"chooseVaultsForNotifications" = "Elegir bóvedas para notificaciones";
+"enableNotificationsForVault" = "Activar notificaciones para esta bóveda";
+"notNow" = "Ahora no";
+"vaultNotifications" = "Notificaciones de bóveda";
+"enableAll" = "Activar todas";

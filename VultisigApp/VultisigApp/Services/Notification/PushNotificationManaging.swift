@@ -18,6 +18,7 @@ protocol PushNotificationManaging: AnyObject {
     func setDeviceToken(_ token: Data)
     func isVaultOptedIn(_ vault: Vault) -> Bool
     func setVaultOptIn(_ vault: Vault, enabled: Bool)
+    func setAllVaultsOptIn(_ vaults: [Vault], enabled: Bool)
     func hasPromptedVaultNotification(_ vault: Vault) -> Bool
     func markVaultNotificationPrompted(_ vault: Vault)
     func registerVault(pubKeyECDSA: String, localPartyID: String) async

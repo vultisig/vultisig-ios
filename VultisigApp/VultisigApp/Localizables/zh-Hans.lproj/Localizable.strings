@@ -1055,3 +1055,15 @@
 "screenRecordingPermissionDenied" = "需要屏幕录制权限才能从屏幕扫描二维码。";
 "openSystemSettings" = "打开系统设置";
 "initializingScreenCapture" = "正在初始化屏幕捕获";
+
+// MARK: - Notifications
+"notifications" = "通知";
+"pushNotifications" = "推送通知";
+"enablePushNotifications" = "启用推送通知";
+"notificationsAreHere" = "通知功能已上线";
+"notificationsDescription" = "随时了解保险库动态，例如当另一台设备发起交易签名时。";
+"chooseVaultsForNotifications" = "选择接收通知的保险库";
+"enableNotificationsForVault" = "为此保险库启用通知";
+"notNow" = "暂时不用";
+"vaultNotifications" = "保险库通知";
+"enableAll" = "全部启用";

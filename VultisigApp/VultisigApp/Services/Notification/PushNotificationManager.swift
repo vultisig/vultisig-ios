@@ -106,6 +106,30 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
         }
     }
 
+    func setAllVaultsOptIn(_ vaults: [Vault], enabled: Bool) {
+        for vault in vaults {
+            let settings = getOrCreateSettings(for: vault)
+            settings.notificationsEnabled = enabled
+        }
+        try? Storage.shared.save()
+
+        Task {
+            for vault in vaults {
+                if enabled {
+                    await registerVault(
+                        pubKeyECDSA: vault.pubKeyECDSA,
+                        localPartyID: vault.localPartyID
+                    )
+                } else {
+                    await unregisterVault(
+                        pubKeyECDSA: vault.pubKeyECDSA,
+                        localPartyID: vault.localPartyID
+                    )
+                }
+            }
+        }
+    }
+
     // MARK: - Vault Notification Prompt
 
     func hasPromptedVaultNotification(_ vault: Vault) -> Bool {

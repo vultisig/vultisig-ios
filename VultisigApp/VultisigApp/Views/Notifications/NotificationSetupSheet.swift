@@ -10,39 +10,11 @@ struct NotificationSetupSheet: View {
     @Binding var isPresented: Bool
     @EnvironmentObject var pushNotificationManager: PushNotificationManager
 
-    @State private var step: Step = .permission
-
-    private enum Step {
-        case permission
-        case vaultOptIn
-    }
-
     var body: some View {
         VStack(spacing: 24) {
-            Group {
-                switch step {
-                case .permission:
-                    permissionContent
-                case .vaultOptIn:
-                    vaultOptInContent
-                }
-            }
-            .transition(.opacity)
-            .animation(.interpolatingSpring, value: step)
-        }
-        .padding(24)
-        .presentationDetents([.height(320)])
-        .presentationDragIndicator(.visible)
-        .presentationCompactAdaptation(.none)
-        .presentationBackground { Theme.colors.bgPrimary.padding(.bottom, -1000) }
-        .background(Theme.colors.bgPrimary)
-    }
-
-    // MARK: - Permission
-
-    var permissionContent: some View {
-        VStack(spacing: 24) {
             VStack(spacing: 12) {
+                VaultSetupStepIcon(state: .active, icon: "bell")
+                    .padding(.vertical, 8)
                 Text("enablePushNotifications".localized)
                     .font(Theme.fonts.title2)
                     .foregroundStyle(Theme.colors.textPrimary)
@@ -52,6 +24,8 @@ struct NotificationSetupSheet: View {
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .multilineTextAlignment(.center)
+                    .frame(maxWidth: 321)
+                    .fixedSize()
             }
 
             Spacer()
@@ -61,12 +35,9 @@ struct NotificationSetupSheet: View {
                     Task {
                         let granted = await pushNotificationManager.requestPermission()
                         if granted {
-                            withAnimation(.interpolatingSpring) {
-                                step = .vaultOptIn
-                            }
-                        } else {
-                            isPresented = false
+                            pushNotificationManager.setVaultOptIn(vault, enabled: true)
                         }
+                        isPresented = false
                     }
                 }
 
@@ -75,25 +46,12 @@ struct NotificationSetupSheet: View {
                 }
             }
         }
-    }
-
-    // MARK: - Vault Opt-In
-
-    var vaultOptInContent: some View {
-        VStack(spacing: 24) {
-            Text("enableNotificationsForVault".localized)
-                .font(Theme.fonts.title2)
-                .foregroundStyle(Theme.colors.textPrimary)
-                .multilineTextAlignment(.center)
-
-            VaultNotificationToggleRow(vault: vault)
-
-            Spacer()
-
-            PrimaryButton(title: "done") {
-                isPresented = false
-            }
-        }
+        .padding(24)
+        .presentationDetents([.height(340)])
+        .presentationDragIndicator(.visible)
+        .presentationCompactAdaptation(.none)
+        .presentationBackground { Theme.colors.bgPrimary.padding(.bottom, -1000) }
+        .background(Theme.colors.bgPrimary)
     }
 }
 

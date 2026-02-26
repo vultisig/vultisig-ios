@@ -10,11 +10,16 @@ struct VaultNotificationToggleRow: View {
     let showSeparator: Bool
     @EnvironmentObject var pushNotificationManager: PushNotificationManager
 
-    @State private var isEnabled: Bool = false
-
     init(vault: Vault, showSeparator: Bool = false) {
         self.vault = vault
         self.showSeparator = showSeparator
+    }
+
+    private var isEnabled: Binding<Bool> {
+        Binding(
+            get: { pushNotificationManager.isVaultOptedIn(vault) },
+            set: { pushNotificationManager.setVaultOptIn(vault, enabled: $0) }
+        )
     }
 
     var body: some View {
@@ -25,13 +30,7 @@ struct VaultNotificationToggleRow: View {
             type: .normal,
             showSeparator: showSeparator
         ) {
-            VultiToggle(isOn: $isEnabled)
-        }
-        .onAppear {
-            isEnabled = pushNotificationManager.isVaultOptedIn(vault)
-        }
-        .onChange(of: isEnabled) { _, newValue in
-            pushNotificationManager.setVaultOptIn(vault, enabled: newValue)
+            VultiToggle(isOn: isEnabled)
         }
     }
 }

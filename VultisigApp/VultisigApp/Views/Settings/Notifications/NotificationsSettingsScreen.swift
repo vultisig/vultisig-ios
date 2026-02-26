@@ -12,8 +12,8 @@ struct NotificationsSettingsScreen: View {
 
     @State private var notificationsEnabled: Bool = false
 
-    var secureVaults: [Vault] {
-        vaults.filter { !$0.isFastVault }
+    var allVaultsEnabled: Bool {
+        !vaults.isEmpty && vaults.allSatisfy { pushNotificationManager.isVaultOptedIn($0) }
     }
 
     var body: some View {
@@ -22,7 +22,7 @@ struct NotificationsSettingsScreen: View {
                 LazyVStack(spacing: 14) {
                     mainToggleSection
                     vaultListSection
-                        .showIf(notificationsEnabled && !secureVaults.isEmpty)
+                        .showIf(notificationsEnabled && !vaults.isEmpty)
                 }
             }
         }
@@ -57,8 +57,24 @@ struct NotificationsSettingsScreen: View {
 
     var vaultListSection: some View {
         SettingsSectionView(title: "vaultNotifications".localized) {
-            ForEach(secureVaults, id: \.id) { vault in
-                VaultNotificationToggleRow(vault: vault, showSeparator: vault != secureVaults.last)
+            SettingsOptionView(
+                icon: nil,
+                title: "enableAll".localized,
+                subtitle: nil,
+                type: .highlighted,
+                showSeparator: true
+            ) {
+                VultiToggle(isOn: Binding(
+                    get: { allVaultsEnabled },
+                    set: { pushNotificationManager.setAllVaultsOptIn(vaults, enabled: $0) }
+                ))
+            }
+
+            ForEach(vaults, id: \.id) { vault in
+                VaultNotificationToggleRow(
+                    vault: vault,
+                    showSeparator: vault != vaults.last
+                )
             }
         }
     }

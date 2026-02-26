@@ -42,17 +42,10 @@ struct PostVaultNotificationModifier: ViewModifier {
         case .intro:
             NotificationsIntroSheet(isPresented: $shouldShow)
         case .vaultOptIn:
-            if pushNotificationManager.isPermissionGranted {
-                VaultNotificationOptInSheet(
-                    vault: vault,
-                    isPresented: $shouldShow
-                )
-            } else {
-                NotificationSetupSheet(
-                    vault: vault,
-                    isPresented: $shouldShow
-                )
-            }
+            NotificationSetupSheet(
+                vault: vault,
+                isPresented: $shouldShow
+            )
         case nil:
             EmptyView()
         }
@@ -108,23 +101,7 @@ extension View {
     .environmentObject(mock)
 }
 
-#Preview("Vault Opt-In - Permission Granted") {
-    let mock = PushNotificationManager()
-
-    Screen {
-        Color.clear
-    }
-    .crossPlatformSheet(isPresented: .constant(true)) {
-        VaultNotificationOptInSheet(
-            vault: Vault.example,
-            isPresented: .constant(true)
-        )
-        .environmentObject(mock)
-    }
-    .environmentObject(mock)
-}
-
-#Preview("Vault Opt-In - Permission Not Granted") {
+#Preview("Notification Setup") {
     let mock = PushNotificationManager()
 
     Screen {

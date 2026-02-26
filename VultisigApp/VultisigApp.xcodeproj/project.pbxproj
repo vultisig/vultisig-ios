@@ -554,7 +554,6 @@
 		2B86966ABA5D0FB899F26AEF /* ReviewDeviceCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE6DF580ABA99F8941A501F /* ReviewDeviceCell.swift */; };
 		3438005C33774BADE4B163FD /* KyberSwapService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */; };
 		381B08598606C73AB7BED741 /* TransactionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC586168CA29D811C28C56A4 /* TransactionStatus.swift */; };
-		3970F0BAB0024B69F3A59204 /* VaultNotificationOptInSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED872CC4187E1570FCB2EBBB /* VaultNotificationOptInSheet.swift */; };
 		43E0C072714FC369B3B91499 /* HiddenToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCB0CAFF343CC6FF8986E07F /* HiddenToken.swift */; };
 		4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */; };
 		461AD1BB2BC7239C00959278 /* DeviceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 461AD1BA2BC7239C00959278 /* DeviceInfo.swift */; };
@@ -2522,7 +2521,6 @@
 		E423B7D2BCCD2F1943ED30F8 /* UTXOTransactionStatusAPI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UTXOTransactionStatusAPI.swift; sourceTree = "<group>"; };
 		E7DBBE9179D24F73ADF22596 /* ExtensionMemoServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionMemoServiceTests.swift; sourceTree = "<group>"; };
 		E8C796F13B6313681B4F992A /* KyberSwapToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapToken.swift; sourceTree = "<group>"; };
-		ED872CC4187E1570FCB2EBBB /* VaultNotificationOptInSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VaultNotificationOptInSheet.swift; sourceTree = "<group>"; };
 		FB189371E4AEE3FD55C1FE44 /* PushNotificationManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PushNotificationManager.swift; sourceTree = "<group>"; };
 		FBEBFE69D4F5F9620BCA6F9C /* VaultSettings.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VaultSettings.swift; sourceTree = "<group>"; };
 		FCB0CAFF343CC6FF8986E07F /* HiddenToken.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HiddenToken.swift; sourceTree = "<group>"; };
@@ -2713,7 +2711,6 @@
 				1884D10560CC1D55166D1D84 /* NotificationsIntroSheet.swift */,
 				A8F5B728DE1B9BF68381E504 /* PostVaultNotificationModifier.swift */,
 				2987AFF9D2BF542D8A798F9E /* NotificationSetupSheet.swift */,
-				ED872CC4187E1570FCB2EBBB /* VaultNotificationOptInSheet.swift */,
 			);
 			path = Notifications;
 			sourceTree = "<group>";
@@ -7907,7 +7904,6 @@
 				E41DA91BBEFA59413E4FD229 /* NotificationsIntroSheet.swift in Sources */,
 				024AA73E7955C2E7F2172B39 /* PostVaultNotificationModifier.swift in Sources */,
 				E9C0D9C24B2101FC125F4770 /* NotificationSetupSheet.swift in Sources */,
-				3970F0BAB0024B69F3A59204 /* VaultNotificationOptInSheet.swift in Sources */,
 				ED16FD9B4142BCC4C997BA94 /* PushNotificationManaging.swift in Sources */,
 				FD4041B37F8AA80055E6D433 /* VaultSettings.swift in Sources */,
 			);

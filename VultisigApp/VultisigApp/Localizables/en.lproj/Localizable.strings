@@ -1077,11 +1077,12 @@
 
 // MARK: - Notifications
 "notifications" = "Notifications";
-"pushNotifications" = "Push Notifications";
-"enablePushNotifications" = "Enable Push Notifications";
-"notificationsAreHere" = "Notifications Are Here";
-"notificationsDescription" = "Get notified when another device in your vault initiates a transaction signing.";
-"chooseVaultsForNotifications" = "Choose Vaults for Notifications";
-"enableNotificationsForVault" = "Enable Notifications for This Vault";
-"notNow" = "Not Now";
-"vaultNotifications" = "Vault Notifications";
+"pushNotifications" = "Push notifications";
+"enablePushNotifications" = "Enable push notifications";
+"notificationsAreHere" = "Notifications are here";
+"notificationsDescription" = "Stay updated on your vault activity, like when another device initiates a transaction signing.";
+"chooseVaultsForNotifications" = "Choose vaults for notifications";
+"enableNotificationsForVault" = "Enable notifications for this vault";
+"notNow" = "Not now";
+"vaultNotifications" = "Vault notifications";
+"enableAll" = "Enable all";
