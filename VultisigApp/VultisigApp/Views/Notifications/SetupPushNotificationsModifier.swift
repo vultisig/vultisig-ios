@@ -71,7 +71,9 @@ struct SetupPushNotificationsModifier: ViewModifier {
         switch activeSheetType {
         case .intro:
             pushNotificationManager.hasSeenNotificationPrompt = true
-            pushNotificationManager.markVaultNotificationPrompted(vault)
+            for vault in vaults {
+                pushNotificationManager.markVaultNotificationPrompted(vault)
+            }
         case .vaultOptIn:
             pushNotificationManager.markVaultNotificationPrompted(vault)
         case nil:

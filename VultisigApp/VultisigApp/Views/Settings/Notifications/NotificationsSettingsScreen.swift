@@ -47,10 +47,15 @@ struct NotificationsSettingsScreen: View {
             if newValue {
                 Task {
                     let granted = await pushNotificationManager.requestPermission()
-                    if !granted {
+                    if granted {
+                        pushNotificationManager.setAllVaultsOptIn(vaults, enabled: true)
+                    } else {
                         notificationsEnabled = false
                     }
                 }
+            } else {
+                pushNotificationManager.setAllVaultsOptIn(vaults, enabled: false)
+                pushNotificationManager.unregisterForRemoteNotifications()
             }
         }
     }

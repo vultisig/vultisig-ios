@@ -26,4 +26,5 @@ protocol PushNotificationManaging: AnyObject {
     func reRegisterOptedInVaults(_ vaults: [Vault]) async
     func notifyVaultDevices(vault: Vault, qrCodeData: String) async
     func registerForRemoteNotifications()
+    func unregisterForRemoteNotifications()
 }

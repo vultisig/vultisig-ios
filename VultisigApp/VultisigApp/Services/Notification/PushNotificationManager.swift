@@ -239,6 +239,14 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
         NSApplication.shared.registerForRemoteNotifications()
         #endif
     }
+    
+    func unregisterForRemoteNotifications() {
+        #if os(iOS)
+        UIApplication.shared.unregisterForRemoteNotifications()
+        #elseif os(macOS)
+        NSApplication.shared.unregisterForRemoteNotifications()
+        #endif
+    }
 
     // MARK: - Private
 
