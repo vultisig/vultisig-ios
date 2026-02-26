@@ -16,6 +16,12 @@ struct NotificationService {
         _ = try await httpClient.requestEmpty(NotificationAPI.register(payload: request))
     }
 
+    func unregisterDevice(vaultId: String, partyName: String) async throws {
+        _ = try await httpClient.requestEmpty(
+            NotificationAPI.unregister(vaultId: vaultId, partyName: partyName)
+        )
+    }
+
     func isVaultRegistered(vaultId: String) async throws -> Bool {
         let response = try await httpClient.request(NotificationAPI.isVaultRegistered(vaultId: vaultId))
         return response.response.statusCode == 200

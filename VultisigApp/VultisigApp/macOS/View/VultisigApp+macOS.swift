@@ -32,8 +32,6 @@ extension VultisigApp {
                 NSWindow.allowsAutomaticWindowTabbing = false
                 continueLogin()
 
-                pushNotificationManager.setupNotificationDelegate()
-
                 Task {
                     await pushNotificationManager.checkPermissionStatus()
                     if pushNotificationManager.isPermissionGranted {

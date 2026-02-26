@@ -41,8 +41,6 @@ extension VultisigApp {
                     continueLogin()
                 }
 
-                pushNotificationManager.setupNotificationDelegate()
-
                 Task {
                     await pushNotificationManager.checkPermissionStatus()
                     if pushNotificationManager.isPermissionGranted {

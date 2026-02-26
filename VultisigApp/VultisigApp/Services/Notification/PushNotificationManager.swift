@@ -91,9 +91,14 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
         settings.notificationsEnabled = enabled
         try? Storage.shared.save()
 
-        if enabled {
-            Task {
+        Task {
+            if enabled {
                 await registerVault(
+                    pubKeyECDSA: vault.pubKeyECDSA,
+                    localPartyID: vault.localPartyID
+                )
+            } else {
+                await unregisterVault(
                     pubKeyECDSA: vault.pubKeyECDSA,
                     localPartyID: vault.localPartyID
                 )
@@ -135,6 +140,18 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
             logger.info("Vault registered for notifications")
         } catch {
             logger.error("Failed to register vault: \(error.localizedDescription)")
+        }
+    }
+
+    func unregisterVault(pubKeyECDSA: String, localPartyID: String) async {
+        do {
+            try await notificationService.unregisterDevice(
+                vaultId: pubKeyECDSA,
+                partyName: localPartyID
+            )
+            logger.info("Vault unregistered from notifications")
+        } catch {
+            logger.error("Failed to unregister vault: \(error.localizedDescription)")
         }
     }
 

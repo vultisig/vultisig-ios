@@ -7,6 +7,10 @@
 import AppKit
 
 class MacAppDelegate: NSObject, NSApplicationDelegate {
+    func applicationDidFinishLaunching(_: Notification) {
+        PushNotificationManager.shared.setupNotificationDelegate()
+    }
+
     func application(
         _: NSApplication,
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
