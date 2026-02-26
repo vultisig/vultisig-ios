@@ -20,7 +20,7 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
 
     @AppStorage("hasSeenNotificationPrompt") var hasSeenNotificationPrompt: Bool = false
 
-    private let notificationService = NotificationService()
+    private let notificationService: NotificationServicing
     private let logger = Logger(
         subsystem: "com.vultisig.wallet",
         category: "PushNotifications"
@@ -28,7 +28,9 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
 
     private let notificationDelegate = NotificationDelegate()
 
-    init() {}
+    init(notificationService: NotificationServicing = NotificationService()) {
+        self.notificationService = notificationService
+    }
 
     // MARK: - Notification Delegate
 
@@ -89,18 +91,27 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
     func setVaultOptIn(_ vault: Vault, enabled: Bool) {
         let settings = getOrCreateSettings(for: vault)
         settings.notificationsEnabled = enabled
-        try? Storage.shared.save()
+
+        do {
+            try Storage.shared.save()
+        } catch {
+            logger.error("Failed to save vault opt-in: \(error.localizedDescription)")
+            return
+        }
+
+        let pubKeyECDSA = vault.pubKeyECDSA
+        let localPartyID = vault.localPartyID
 
         Task {
             if enabled {
                 await registerVault(
-                    pubKeyECDSA: vault.pubKeyECDSA,
-                    localPartyID: vault.localPartyID
+                    pubKeyECDSA: pubKeyECDSA,
+                    localPartyID: localPartyID
                 )
             } else {
                 await unregisterVault(
-                    pubKeyECDSA: vault.pubKeyECDSA,
-                    localPartyID: vault.localPartyID
+                    pubKeyECDSA: pubKeyECDSA,
+                    localPartyID: localPartyID
                 )
             }
         }
@@ -111,19 +122,27 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
             let settings = getOrCreateSettings(for: vault)
             settings.notificationsEnabled = enabled
         }
-        try? Storage.shared.save()
+
+        do {
+            try Storage.shared.save()
+        } catch {
+            logger.error("Failed to save all vaults opt-in: \(error.localizedDescription)")
+            return
+        }
+
+        let vaultIdentifiers = vaults.map { ($0.pubKeyECDSA, $0.localPartyID) }
 
         Task {
-            for vault in vaults {
+            for (pubKeyECDSA, localPartyID) in vaultIdentifiers {
                 if enabled {
                     await registerVault(
-                        pubKeyECDSA: vault.pubKeyECDSA,
-                        localPartyID: vault.localPartyID
+                        pubKeyECDSA: pubKeyECDSA,
+                        localPartyID: localPartyID
                     )
                 } else {
                     await unregisterVault(
-                        pubKeyECDSA: vault.pubKeyECDSA,
-                        localPartyID: vault.localPartyID
+                        pubKeyECDSA: pubKeyECDSA,
+                        localPartyID: localPartyID
                     )
                 }
             }
@@ -139,7 +158,12 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
     func markVaultNotificationPrompted(_ vault: Vault) {
         let settings = getOrCreateSettings(for: vault)
         settings.notificationsPrompted = true
-        try? Storage.shared.save()
+
+        do {
+            try Storage.shared.save()
+        } catch {
+            logger.error("Failed to save vault notification prompt: \(error.localizedDescription)")
+        }
     }
 
     // MARK: - Registration

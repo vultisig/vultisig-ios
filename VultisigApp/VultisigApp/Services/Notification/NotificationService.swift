@@ -5,7 +5,14 @@
 
 import Foundation
 
-struct NotificationService {
+protocol NotificationServicing {
+    func registerDevice(request: DeviceRegistrationRequest) async throws
+    func unregisterDevice(vaultId: String, partyName: String) async throws
+    func sendNotification(request: NotifyRequest) async throws
+    func isVaultRegistered(vaultId: String) async throws -> Bool
+}
+
+struct NotificationService: NotificationServicing {
     let httpClient: HTTPClientProtocol
 
     init(httpClient: HTTPClientProtocol = HTTPClient()) {
