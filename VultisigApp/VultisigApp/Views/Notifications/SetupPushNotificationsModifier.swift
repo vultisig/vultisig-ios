@@ -30,9 +30,10 @@ struct SetupPushNotificationsModifier: ViewModifier {
                 }
             }
             .onLoad {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    checkIfNeeded()
-                }
+                checkIfNeeded()
+            }
+            .onChange(of: vault) { _, _ in
+                checkIfNeeded()
             }
     }
 
