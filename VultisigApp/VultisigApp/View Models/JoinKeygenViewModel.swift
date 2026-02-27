@@ -222,7 +222,7 @@ class JoinKeygenViewModel: ObservableObject {
                     status = .FailToStart
                     return
                 }
-            case .Reshare, .Migrate:
+            case .Reshare, .Migrate, .DilithiumKeygen:
                 let reshareMsg: ReshareMessage = try ProtoSerializer.deserialize(
                     base64EncodedString: scanData)
                 oldCommittee = reshareMsg.oldParties

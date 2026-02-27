@@ -12,6 +12,7 @@ struct VaultAdvancedSettingsScreen: View {
     let vault: Vault
 
     @Environment(\.router) var router
+    @State private var showDilithiumAlreadyGenerated = false
 
     var body: some View {
         Screen(title: "advanced".localized) {
@@ -19,11 +20,15 @@ struct VaultAdvancedSettingsScreen: View {
                 SettingsSectionContainerView {
                     VStack(spacing: 0) {
                         reshareVaultRow
+                        dilithiumKeygenRow
                         customMessageRow
                         onChainSecurityRow
                     }
                 }
             }
+        }
+        .crossPlatformSheet(isPresented: $showDilithiumAlreadyGenerated) {
+            DilithiumAlreadyGeneratedSheet(isPresented: $showDilithiumAlreadyGenerated)
         }
     }
 
@@ -35,6 +40,31 @@ struct VaultAdvancedSettingsScreen: View {
             } label: {
                 SettingsCommonOptionView(icon: "share", title: "reshare".localized, subtitle: "reshareVault".localized)
             }
+        }
+    }
+
+    var dilithiumKeygenRow: some View {
+        Button {
+            if vault.publicKeyMLDSA44 != nil {
+                showDilithiumAlreadyGenerated = true
+            } else {
+                router.navigate(
+                    to: KeygenRoute.peerDiscovery(
+                        tssType: .DilithiumKeygen,
+                        vault: vault,
+                        selectedTab: .secure,
+                        fastSignConfig: nil,
+                        keyImportInput: nil,
+                        setupType: nil
+                    )
+                )
+            }
+        } label: {
+            SettingsCommonOptionView(
+                icon: "atom-shield",
+                title: "dilithiumKeygen".localized,
+                subtitle: "dilithiumKeygenSubtitle".localized
+            )
         }
     }
 

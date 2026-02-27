@@ -10,4 +10,5 @@ enum TssType: String {
     case Reshare
     case Migrate
     case KeyImport
+    case DilithiumKeygen
 }

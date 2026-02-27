@@ -11,7 +11,7 @@ final class Vault: ObservableObject, Codable {
     @Attribute(.unique) var name: String
     @Attribute(.unique) var pubKeyECDSA: String = ""
     @Attribute(.unique) var pubKeyEdDSA: String = ""
-    var publicKeyMLDSA44: String? = nil
+    @Attribute(.unique) var publicKeyMLDSA44: String? = nil
     var circleWalletAddress: String?
 
     var signers: [String] = []
