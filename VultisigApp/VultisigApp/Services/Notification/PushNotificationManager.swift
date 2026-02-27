@@ -3,6 +3,7 @@
 //  VultisigApp
 //
 
+import CryptoKit
 import Foundation
 import UserNotifications
 import SwiftUI
@@ -20,6 +21,7 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
 
     @AppStorage("hasSeenNotificationPrompt") var hasSeenNotificationPrompt: Bool = false
 
+    private let keychainService: KeychainService
     private let notificationService: NotificationServicing
     private let logger = Logger(
         subsystem: "com.vultisig.wallet",
@@ -28,8 +30,12 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
 
     private let notificationDelegate = NotificationDelegate()
 
-    init(notificationService: NotificationServicing = NotificationService()) {
+    init(
+        notificationService: NotificationServicing = NotificationService(),
+        keychainService: KeychainService = DefaultKeychainService.shared
+    ) {
         self.notificationService = notificationService
+        self.keychainService = keychainService
     }
 
     // MARK: - Notification Delegate
@@ -64,9 +70,16 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
 
     func setDeviceToken(_ token: Data) {
         let tokenString = token.map { String(format: "%02x", $0) }.joined()
+        let previousToken = keychainService.getDeviceToken()
         deviceToken = tokenString
-        logger.info("Device token received")
+        keychainService.setDeviceToken(tokenString)
 
+        guard tokenString != previousToken else {
+            logger.info("Device token unchanged, skipping re-registration")
+            return
+        }
+
+        logger.info("Device token changed, re-registering vaults")
         Task {
             await reRegisterOptedInVaults()
         }
@@ -99,18 +112,18 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
             return
         }
 
-        let pubKeyECDSA = vault.pubKeyECDSA
+        let vaultId = notificationVaultId(for: vault)
         let localPartyID = vault.localPartyID
 
         Task {
             if enabled {
                 await registerVault(
-                    pubKeyECDSA: pubKeyECDSA,
+                    vaultId: vaultId,
                     localPartyID: localPartyID
                 )
             } else {
                 await unregisterVault(
-                    pubKeyECDSA: pubKeyECDSA,
+                    vaultId: vaultId,
                     localPartyID: localPartyID
                 )
             }
@@ -130,18 +143,20 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
             return
         }
 
-        let vaultIdentifiers = vaults.map { ($0.pubKeyECDSA, $0.localPartyID) }
+        let vaultIdentifiers = vaults.map {
+            (notificationVaultId(for: $0), $0.localPartyID)
+        }
 
         Task {
-            for (pubKeyECDSA, localPartyID) in vaultIdentifiers {
+            for (vaultId, localPartyID) in vaultIdentifiers {
                 if enabled {
                     await registerVault(
-                        pubKeyECDSA: pubKeyECDSA,
+                        vaultId: vaultId,
                         localPartyID: localPartyID
                     )
                 } else {
                     await unregisterVault(
-                        pubKeyECDSA: pubKeyECDSA,
+                        vaultId: vaultId,
                         localPartyID: localPartyID
                     )
                 }
@@ -168,19 +183,17 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
 
     // MARK: - Registration
 
-    func registerVault(pubKeyECDSA: String, localPartyID: String) async {
+    func registerVault(vaultId: String, localPartyID: String) async {
         guard let token = deviceToken else {
             logger.warning("No device token available for vault registration")
             return
         }
 
-        let deviceType = "apple"
-
         let request = DeviceRegistrationRequest(
-            vaultId: pubKeyECDSA,
+            vaultId: vaultId,
             partyName: localPartyID,
             token: token,
-            deviceType: deviceType
+            deviceType: "apple"
         )
 
         do {
@@ -191,10 +204,10 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
         }
     }
 
-    func unregisterVault(pubKeyECDSA: String, localPartyID: String) async {
+    func unregisterVault(vaultId: String, localPartyID: String) async {
         do {
             try await notificationService.unregisterDevice(
-                vaultId: pubKeyECDSA,
+                vaultId: vaultId,
                 partyName: localPartyID
             )
             logger.info("Vault unregistered from notifications")
@@ -206,11 +219,13 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
     func reRegisterOptedInVaults(_ vaults: [Vault]) async {
         let optedInIdentifiers = vaults
             .filter { isVaultOptedIn($0) }
-            .map { ($0.pubKeyECDSA, $0.localPartyID) }
+            .map {
+                (notificationVaultId(for: $0), $0.localPartyID)
+            }
 
-        for (pubKeyECDSA, localPartyID) in optedInIdentifiers {
+        for (vaultId, localPartyID) in optedInIdentifiers {
             await registerVault(
-                pubKeyECDSA: pubKeyECDSA,
+                vaultId: vaultId,
                 localPartyID: localPartyID
             )
         }
@@ -220,7 +235,7 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
 
     func notifyVaultDevices(vault: Vault, qrCodeData: String) async {
         let request = NotifyRequest(
-            vaultId: vault.pubKeyECDSA,
+            vaultId: notificationVaultId(for: vault),
             vaultName: vault.name,
             localPartyId: vault.localPartyID,
             qrCodeData: qrCodeData
@@ -254,6 +269,12 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
 
     // MARK: - Private
 
+    private func notificationVaultId(for vault: Vault) -> String {
+        let data = Data((vault.pubKeyECDSA + vault.hexChainCode).utf8)
+        let digest = SHA256.hash(data: data)
+        return digest.map { String(format: "%02x", $0) }.joined()
+    }
+
     private func reRegisterOptedInVaults() async {
         guard deviceToken != nil else { return }
 
@@ -264,12 +285,12 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
 
         let identifiers = results.compactMap { settings -> (String, String)? in
             guard let vault = settings.vault else { return nil }
-            return (vault.pubKeyECDSA, vault.localPartyID)
+            return (notificationVaultId(for: vault), vault.localPartyID)
         }
 
-        for (pubKeyECDSA, localPartyID) in identifiers {
+        for (vaultId, localPartyID) in identifiers {
             await registerVault(
-                pubKeyECDSA: pubKeyECDSA,
+                vaultId: vaultId,
                 localPartyID: localPartyID
             )
         }

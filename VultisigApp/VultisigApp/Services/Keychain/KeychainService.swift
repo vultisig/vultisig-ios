@@ -14,6 +14,8 @@ protocol KeychainService: AnyObject {
     func setFastHint(_ fastHint: String?, pubKeyECDSA: String)
     func getLastMigratedVersion() -> Int?
     func setLastMigratedVersion(_ version: Int?)
+    func getDeviceToken() -> String?
+    func setDeviceToken(_ token: String?)
 }
 
 final class DefaultKeychainService: KeychainService {
@@ -54,6 +56,14 @@ final class DefaultKeychainService: KeychainService {
     func setLastMigratedVersion(_ version: Int?) {
         keychain.setInt(version, for: Keys.lastMigratedVersion)
     }
+
+    func getDeviceToken() -> String? {
+        return keychain.getString(for: Keys.deviceToken)
+    }
+
+    func setDeviceToken(_ token: String?) {
+        keychain.setString(token, for: Keys.deviceToken)
+    }
 }
 
 private extension DefaultKeychainService {
@@ -62,6 +72,7 @@ private extension DefaultKeychainService {
         case fastPassword(pubKeyECDSA: String)
         case fastHint(pubKeyECDSA: String)
         case lastMigratedVersion
+        case deviceToken
 
         var identifier: String {
             return "\(DefaultKeychainService.serviceName).\(key)"
@@ -75,6 +86,8 @@ private extension DefaultKeychainService {
                 return "fastHint-\(pubKeyECDSA)"
             case .lastMigratedVersion:
                 return "lastMigratedVersion"
+            case .deviceToken:
+                return "deviceToken"
             }
         }
     }
