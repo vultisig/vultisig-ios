@@ -21,6 +21,7 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
 
     @AppStorage("hasSeenNotificationPrompt") var hasSeenNotificationPrompt: Bool = false
 
+    private let keychainService: KeychainService
     private let notificationService: NotificationServicing
     private let logger = Logger(
         subsystem: "com.vultisig.wallet",
@@ -29,8 +30,12 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
 
     private let notificationDelegate = NotificationDelegate()
 
-    init(notificationService: NotificationServicing = NotificationService()) {
+    init(
+        notificationService: NotificationServicing = NotificationService(),
+        keychainService: KeychainService = DefaultKeychainService.shared
+    ) {
         self.notificationService = notificationService
+        self.keychainService = keychainService
     }
 
     // MARK: - Notification Delegate
@@ -65,9 +70,16 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
 
     func setDeviceToken(_ token: Data) {
         let tokenString = token.map { String(format: "%02x", $0) }.joined()
+        let previousToken = keychainService.getDeviceToken()
         deviceToken = tokenString
-        logger.info("Device token received")
+        keychainService.setDeviceToken(tokenString)
 
+        guard tokenString != previousToken else {
+            logger.info("Device token unchanged, skipping re-registration")
+            return
+        }
+
+        logger.info("Device token changed, re-registering vaults")
         Task {
             await reRegisterOptedInVaults()
         }
