@@ -1046,3 +1046,15 @@
 "screenRecordingPermissionDenied" = "Die Bildschirmaufnahme-Berechtigung ist erforderlich, um QR-Codes von Ihrem Bildschirm zu scannen.";
 "openSystemSettings" = "Systemeinstellungen öffnen";
 "initializingScreenCapture" = "Bildschirmaufnahme wird initialisiert";
+
+// MARK: - Notifications
+"notifications" = "Benachrichtigungen";
+"pushNotifications" = "Push-Benachrichtigungen";
+"enablePushNotifications" = "Push-Benachrichtigungen aktivieren";
+"notificationsAreHere" = "Benachrichtigungen sind da";
+"notificationsDescription" = "Bleiben Sie über Ihre Tresor-Aktivitäten informiert, z. B. wenn ein anderes Gerät eine Transaktionssignierung startet.";
+"chooseVaultsForNotifications" = "Tresore für Benachrichtigungen auswählen";
+"enableNotificationsForVault" = "Benachrichtigungen für diesen Tresor aktivieren";
+"notNow" = "Nicht jetzt";
+"vaultNotifications" = "Tresor-Benachrichtigungen";
+"enableAll" = "Alle aktivieren";

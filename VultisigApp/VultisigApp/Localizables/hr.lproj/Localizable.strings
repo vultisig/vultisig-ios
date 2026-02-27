@@ -1046,3 +1046,15 @@
 "screenRecordingPermissionDenied" = "Potrebna je dozvola za snimanje zaslona kako bi se mogli skenirati QR kodovi s vašeg zaslona.";
 "openSystemSettings" = "Otvori Postavke sustava";
 "initializingScreenCapture" = "Pokretanje snimanja zaslona";
+
+// MARK: - Notifications
+"notifications" = "Obavijesti";
+"pushNotifications" = "Push obavijesti";
+"enablePushNotifications" = "Omogući push obavijesti";
+"notificationsAreHere" = "Obavijesti su stigle";
+"notificationsDescription" = "Budite u tijeku s aktivnostima trezora, poput pokretanja potpisivanja transakcije s drugog uređaja.";
+"chooseVaultsForNotifications" = "Odaberite trezore za obavijesti";
+"enableNotificationsForVault" = "Omogući obavijesti za ovaj trezor";
+"notNow" = "Ne sada";
+"vaultNotifications" = "Obavijesti trezora";
+"enableAll" = "Omogući sve";

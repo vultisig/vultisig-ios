@@ -1068,3 +1068,15 @@
 "screenRecordingPermissionDenied" = "Screen recording permission is required to scan QR codes from your screen.";
 "openSystemSettings" = "Open System Settings";
 "initializingScreenCapture" = "Initializing Screen Capture";
+
+// MARK: - Notifications
+"notifications" = "Notifications";
+"pushNotifications" = "Push notifications";
+"enablePushNotifications" = "Enable push notifications";
+"notificationsAreHere" = "Notifications are here";
+"notificationsDescription" = "Stay updated on your vault activity, like when another device initiates a transaction signing.";
+"chooseVaultsForNotifications" = "Choose vaults for notifications";
+"enableNotificationsForVault" = "Enable notifications for this vault";
+"notNow" = "Not now";
+"vaultNotifications" = "Vault notifications";
+"enableAll" = "Enable all";

@@ -1046,3 +1046,15 @@
 "screenRecordingPermissionDenied" = "È necessaria l'autorizzazione alla registrazione dello schermo per scansionare i codici QR dal tuo schermo.";
 "openSystemSettings" = "Apri Impostazioni di Sistema";
 "initializingScreenCapture" = "Inizializzazione acquisizione schermo";
+
+// MARK: - Notifications
+"notifications" = "Notifiche";
+"pushNotifications" = "Notifiche push";
+"enablePushNotifications" = "Attiva notifiche push";
+"notificationsAreHere" = "Le notifiche sono arrivate";
+"notificationsDescription" = "Resta aggiornato sull'attività del tuo vault, come quando un altro dispositivo avvia la firma di una transazione.";
+"chooseVaultsForNotifications" = "Scegli i vault per le notifiche";
+"enableNotificationsForVault" = "Attiva notifiche per questo vault";
+"notNow" = "Non ora";
+"vaultNotifications" = "Notifiche del vault";
+"enableAll" = "Attiva tutte";
