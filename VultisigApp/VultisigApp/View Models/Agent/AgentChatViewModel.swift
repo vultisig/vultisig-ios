@@ -479,6 +479,11 @@ final class AgentChatViewModel: ObservableObject {
                 data: summaryData,
                 error: errors.isEmpty ? nil : errors.joined(separator: "; ")
             )
+
+            // Re-enable the loading spinner while waiting for the backend's
+            // follow-up SSE response. The first stream already set isLoading=false
+            // on .done, leaving a silent gap of a few seconds that feels like a freeze.
+            await MainActor.run { self.isLoading = true }
             self.sendActionResult(aggregatedResult, vault: vault)
         }
     }
