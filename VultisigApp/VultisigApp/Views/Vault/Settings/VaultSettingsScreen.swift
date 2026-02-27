@@ -99,14 +99,10 @@ struct VaultSettingsScreen: View {
             title: "biometricsFastSigning".localized,
             showSeparator: false
         ) {
-            Toggle("", isOn: Binding(
+            VultiToggle(isOn: Binding(
                 get: { viewModel.isBiometryEnabled },
                 set: { onBiometryEnabledChanged($0) }
             ))
-            .labelsHidden()
-            .scaleEffect(0.8)
-            .tint(Theme.colors.primaryAccent4)
-            .toggleStyle(.switch)
         }
     }
 

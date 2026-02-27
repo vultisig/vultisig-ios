@@ -176,6 +176,16 @@ struct KeysignDiscoveryView: View {
         }
 
         self.qrCodeImage = qrCodeImage
+
+        if !vault.isFastVault {
+            Task {
+                await PushNotificationManager.shared.notifyVaultDevices(
+                    vault: vault,
+                    qrCodeData: qrCodeData
+                )
+            }
+        }
+
         shareSheetViewModel.render(
             qrCodeImage: qrCodeImage,
             qrCodeData: qrCodeData,

@@ -49,11 +49,7 @@ struct AutocompoundToggle: View {
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
             Spacer()
-            Toggle("", isOn: $isEnabled)
-                .scaleEffect(0.8)
-                .tint(Theme.colors.primaryAccent4)
-                .toggleStyle(.switch)
-                .labelsHidden()
+            VultiToggle(isOn: $isEnabled)
         }
     }
 }

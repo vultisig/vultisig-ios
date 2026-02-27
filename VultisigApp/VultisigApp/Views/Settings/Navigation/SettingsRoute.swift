@@ -16,6 +16,7 @@ enum SettingsRoute: Hashable {
     case addressBook
     case addAddressBook(address: String? = nil, chain: AddressBookChainType? = nil)
     case editAddressBook(addressBookItem: AddressBookItem)
+    case notifications
     case faq
     case checkForUpdates
     case advancedSettings
