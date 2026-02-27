@@ -98,6 +98,8 @@ final class AgentChatViewModel: ObservableObject {
                     )
                     conversationId = conv.id
                     print("[AgentChat] ✅ Conversation created: \(conv.id)")
+
+                    await primeMCPSession(vault: vault, token: token, convId: conv.id)
                 }
                 
                 // Fetch starters if needed
@@ -213,6 +215,8 @@ final class AgentChatViewModel: ObservableObject {
 
             conversationTitle = conv.title
 
+            await primeMCPSession(vault: vault, token: token, convId: id)
+
             // Convert backend messages to chat messages
             messages = conv.messages.map { msg in
                 AgentChatMessage(
@@ -324,9 +328,8 @@ final class AgentChatViewModel: ObservableObject {
             // Suggestions are displayed in the conversation starters, not inline
             break
 
-        case .txReady:
-            // TODO: Handle tx_ready events for transaction signing
-            break
+        case .txReady(let txReady):
+            handleTxReady(txReady)
 
         case .tokens(let tokenResults):
             // Attach token results to the current streaming message
@@ -360,6 +363,7 @@ final class AgentChatViewModel: ObservableObject {
         } else {
             let msgId = "streaming-\(Date().timeIntervalSince1970)"
             streamingMessageId = msgId
+            print("[AgentChat] 💬 Created new streaming message id: \(msgId)")
             let streamMsg = AgentChatMessage(
                 id: msgId,
                 role: .assistant,
@@ -381,7 +385,7 @@ final class AgentChatViewModel: ObservableObject {
                 timestamp: Date(),
                 toolCall: AgentToolCallInfo(
                     actionType: action.type,
-                    title: action.title,
+                    title: formatActionTitle(action.type, title: action.title),
                     params: action.params,
                     status: .running
                 )
@@ -401,18 +405,21 @@ final class AgentChatViewModel: ObservableObject {
         Task {
             let result = await AgentToolExecutor.execute(action: action, vault: vault)
             
-            if let idx = messages.firstIndex(where: { $0.id == toolCallId }) {
-                messages[idx].toolCall?.status = result.success ? .success : .error
-                messages[idx].toolCall?.resultData = result.data
-                messages[idx].toolCall?.error = result.error
+            await MainActor.run {
+                if let idx = self.messages.firstIndex(where: { $0.id == toolCallId }) {
+                    self.messages[idx].toolCall?.status = result.success ? .success : .error
+                    self.messages[idx].toolCall?.resultData = result.data
+                    self.messages[idx].toolCall?.error = result.error
+                }
             }
             
             // Stream the result back
-            sendActionResult(result, vault: vault)
+            self.sendActionResult(result, vault: vault)
         }
     }
 
     private func finalizeStreamingMessage(with backendMsg: AgentBackendMessage) {
+        print("[AgentChat] 🏁 Finalizing streaming message id: \(backendMsg.id). Current streamingMessageId: \(streamingMessageId ?? "nil")")
         if let streamId = streamingMessageId,
            let idx = messages.firstIndex(where: { $0.id == streamId }) {
             let oldMsg = messages[idx]
@@ -423,7 +430,8 @@ final class AgentChatViewModel: ObservableObject {
                 timestamp: oldMsg.timestamp,
                 toolCall: oldMsg.toolCall,
                 txStatus: oldMsg.txStatus,
-                tokenResults: oldMsg.tokenResults
+                tokenResults: oldMsg.tokenResults,
+                txProposal: oldMsg.txProposal
             )
         } else if !backendMsg.content.trimmingCharacters(in: .whitespaces).isEmpty {
             let msg = AgentChatMessage(
@@ -438,6 +446,31 @@ final class AgentChatViewModel: ObservableObject {
         isLoading = false
     }
 
+    private func handleTxReady(_ txReady: AgentTxReady) {
+        let msg = AgentChatMessage(
+            id: "tx-proposal-\(Date().timeIntervalSince1970)",
+            role: .assistant,
+            content: "",
+            timestamp: Date(),
+            txProposal: txReady
+        )
+        messages.append(msg)
+        isLoading = false
+    }
+
+    func acceptTxProposal(_ proposal: AgentTxReady, vault: Vault) {
+        print("[AgentChat] 💳 User ACCEPTED transaction. Not fully implemented yet. keysignPayload length: \(proposal.keysignPayload?.count ?? 0)")
+        appendAssistantMessage("Transaction accepted. Launching keysign...")
+        
+        // TODO: This is where we will route the keysign payload to the Vultisig router in Phase 13.
+        isLoading = false
+    }
+
+    func rejectTxProposal(_ proposal: AgentTxReady, vault: Vault) {
+        print("[AgentChat] ❌ User REJECTED transaction.")
+        sendMessage("Cancel the transaction. I do not want to execute it.", vault: vault)
+    }
+
     private func appendAssistantMessage(_ content: String) {
         guard !content.trimmingCharacters(in: .whitespaces).isEmpty else { return }
         let msg = AgentChatMessage(
@@ -450,6 +483,27 @@ final class AgentChatViewModel: ObservableObject {
     }
 
     // MARK: - Helpers
+
+    private func primeMCPSession(vault: Vault, token: String, convId: String) async {
+        print("[AgentChat] 🔐 Priming backend MCP session with set_vault...")
+        let setVaultResult = AgentActionResult(
+            action: "set_vault",
+            success: true,
+            data: [
+                "ecdsa_public_key": AnyCodable(vault.pubKeyECDSA),
+                "eddsa_public_key": AnyCodable(vault.pubKeyEdDSA),
+                "chain_code": AnyCodable(vault.hexChainCode)
+            ]
+        )
+        let primeRequest = AgentSendMessageRequest(
+            publicKey: vault.pubKeyECDSA,
+            model: "anthropic/claude-sonnet-4.5",
+            actionResult: setVaultResult
+        )
+        // Execute without streaming back to UI
+        _ = try? await backendClient.sendMessage(convId: convId, request: primeRequest, token: token)
+        print("[AgentChat] ✅ MCP session primed")
+    }
 
     private func getValidToken(vault: Vault) async -> AgentAuthToken? {
         print("[AgentChat] 🔑 getValidToken: checking cached token for \(vault.pubKeyECDSA.prefix(20))...")
@@ -477,6 +531,19 @@ final class AgentChatViewModel: ObservableObject {
         }
 
         logger.error("Agent error: \(error.localizedDescription)")
+    }
+
+    private func formatActionTitle(_ type: String, title: String) -> String {
+        switch type {
+        case "get_balances": return "FETCHING BALANCES"
+        case "get_market_price": return "FETCHING PRICES"
+        case "build_swap_tx": return "PREPARING SWAP"
+        case "add_token": return "ADDING TOKEN"
+        case "add_chain": return "ADDING CHAIN"
+        case "get_address_book": return "CHECKING ADDRESS BOOK"
+        case "add_address_book": return "UPDATING ADDRESS BOOK"
+        default: return title.uppercased()
+        }
     }
 
     private func normalizeErrorMessage(_ error: String) -> String {

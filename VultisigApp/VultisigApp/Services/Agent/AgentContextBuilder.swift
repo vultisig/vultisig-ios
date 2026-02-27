@@ -10,6 +10,9 @@ import Foundation
 enum AgentContextBuilder {
 
     static let instructions = [
+        "You are currently running inside the Vultisig iOS App.",
+        "Do NOT use external tools (like get_eth_balance or get_token_balance) for balances or portfolio.",
+        "To fetch balances or prices, you MUST use the respond_to_user tool with actions: [{type: \"get_balances\"}] or actions: [{type: \"get_market_price\"}].",
         "Prefer using your knowledge and conversation context over calling tools.",
         "Only call a tool when you are missing information that you cannot answer from context.",
         "Use markdown formatting for readability."

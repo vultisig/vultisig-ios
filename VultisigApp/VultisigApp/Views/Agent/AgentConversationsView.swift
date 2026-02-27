@@ -35,6 +35,14 @@ struct AgentConversationsView: View {
         .onAppear {
             loadData()
         }
+        .sheet(isPresented: $viewModel.passwordRequired) {
+            AgentPasswordPromptView { password in
+                guard let vault = appViewModel.selectedVault else { return }
+                Task {
+                    await viewModel.signIn(vault: vault, password: password)
+                }
+            }
+        }
     }
 
     // MARK: - Content
@@ -42,7 +50,19 @@ struct AgentConversationsView: View {
     private var content: some View {
         VaultMainScreenScrollView(showsIndicators: false, contentInset: 78, scrollOffset: .constant(0)) {
             VStack(spacing: 16) {
-                if viewModel.conversations.isEmpty {
+                if viewModel.isLoading && viewModel.conversations.isEmpty {
+                    VStack {
+                        Spacer().frame(height: 100)
+                        ProgressView()
+                            .controlSize(.large)
+                            .tint(Theme.colors.turquoise)
+                        Text("Loading conversations...")
+                            .font(.subheadline)
+                            .foregroundColor(Theme.colors.textTertiary)
+                            .padding(.top, 8)
+                        Spacer()
+                    }
+                } else if viewModel.conversations.isEmpty {
                     VStack(spacing: 24) {
                         Spacer().frame(height: 40)
                         
@@ -174,8 +194,7 @@ struct AgentConversationsView: View {
         viewModel.checkConnection(vault: vault)
 
         Task {
-            await viewModel.loadConversations(vault: vault)
-            await viewModel.loadStarters(vault: vault)
+            await viewModel.checkAuthAndLoad(vault: vault)
         }
     }
 

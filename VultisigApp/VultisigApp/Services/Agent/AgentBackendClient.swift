@@ -12,6 +12,18 @@ final class AgentBackendClient {
 
     private let logger = Logger(subsystem: "com.vultisig", category: "AgentBackendClient")
 
+    /// Builds a fresh URLSession for each SSE stream.
+    /// We use ephemeral configuration so there is NO shared connection pool:
+    /// HTTP/2 ignores the `Connection: close` header and reuses TCP streams,
+    /// causing -1017 "Connection reset by peer" when the server closes an
+    /// old SSE connection mid-session. A fresh ephemeral session avoids that.
+    private static func makeSseSession() -> URLSession {
+        let config = URLSessionConfiguration.ephemeral
+        config.timeoutIntervalForRequest = 300
+        config.timeoutIntervalForResource = 600
+        return URLSession(configuration: config)
+    }
+
     // MARK: - Errors
 
     enum AgentBackendError: Error, LocalizedError {
@@ -112,7 +124,12 @@ final class AgentBackendClient {
                     }
                     urlRequest.httpBody = try JSONEncoder().encode(request)
 
-                    let (bytes, response) = try await URLSession.shared.bytes(for: urlRequest)
+                    // Fresh ephemeral session per stream. HTTP/2 ignores Connection: close
+                    // and reuses the same TCP stream across requests — creating a new session
+                    // guarantees a new connection for this SSE stream.
+                    let session = AgentBackendClient.makeSseSession()
+                    defer { session.finishTasksAndInvalidate() }
+                    let (bytes, response) = try await session.bytes(for: urlRequest)
                     print("[AgentBackend] 🌊 SSE response received")
 
                     guard let httpResponse = response as? HTTPURLResponse else {

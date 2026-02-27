@@ -15,6 +15,8 @@ struct AgentChatMessageView: View {
             toolCallView
         } else if message.txStatus != nil {
             txStatusView
+        } else if message.txProposal != nil {
+            txProposalView
         } else {
             messageBubble
         }
@@ -58,7 +60,7 @@ struct AgentChatMessageView: View {
                 statusIcon(for: toolCall.status)
 
                 Text(toolCall.title)
-                    .font(.footnote)
+                    .font(.system(.footnote, design: .monospaced))
                     .foregroundColor(Theme.colors.textTertiary)
 
                 Spacer()
@@ -70,10 +72,8 @@ struct AgentChatMessageView: View {
                         .lineLimit(1)
                 }
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, 16)
             .padding(.vertical, 8)
-            .background(Theme.colors.bgSurface1.opacity(0.5))
-            .cornerRadius(8)
         }
     }
 
@@ -81,9 +81,9 @@ struct AgentChatMessageView: View {
         Group {
             switch status {
             case .running:
-                ProgressView()
-                    .scaleEffect(0.6)
-                    .frame(width: 16, height: 16)
+                Image(systemName: "sun.max") // Figma uses a sun/spinner
+                    .font(.caption)
+                    .foregroundColor(Theme.colors.textTertiary)
             case .success:
                 Image(systemName: "checkmark.circle.fill")
                     .font(.caption)
@@ -93,6 +93,91 @@ struct AgentChatMessageView: View {
                     .font(.caption)
                     .foregroundColor(Theme.colors.alertError)
             }
+        }
+    }
+    
+    // MARK: - Transaction Proposal
+    
+    @ViewBuilder
+    private var txProposalView: some View {
+        if let tx = message.txProposal {
+            VStack(alignment: .leading, spacing: 12) {
+                
+                // Route header
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "arrow.left.arrow.right.circle")
+                        .font(.footnote)
+                        .foregroundColor(Theme.colors.textTertiary)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("\(tx.txType ?? "SWAP") \(tx.amount) \(tx.fromSymbol) → \(tx.toSymbol ?? "")")
+                            .font(.system(.footnote, design: .monospaced))
+                            .foregroundColor(Theme.colors.textTertiary)
+                        
+                        if let provider = tx.provider {
+                            Text("ROUTE: \(provider)".uppercased())
+                                .font(.system(.footnote, design: .monospaced))
+                                .foregroundColor(Theme.colors.textTertiary)
+                        }
+                        
+                        // Using a dummy fee since it's not strictly typed in the payload yet
+                        Text("EST. FEE: 0.001 \(tx.fromSymbol)")
+                            .font(.system(.footnote, design: .monospaced))
+                            .foregroundColor(Theme.colors.textTertiary)
+                    }
+                }
+                .padding(.bottom, 8)
+                
+                Text(tx.needsApproval == true ? "Should I execute the swap?" : "Transaction ready to sign.")
+                    .font(.body)
+                    .foregroundColor(Theme.colors.textPrimary)
+                
+                HStack(spacing: 12) {
+                    Spacer()
+                    if tx.needsApproval == true {
+                        Button {
+                            // Action handled by ViewModel via Notifications or a completion block.
+                            // To keep View clean, we post a Notification
+                            NotificationCenter.default.post(name: .agentDidRejectTx, object: tx)
+                        } label: {
+                            Text("No")
+                                .font(.body.bold())
+                                .foregroundColor(Theme.colors.textPrimary)
+                                .padding(.horizontal, 24)
+                                .padding(.vertical, 12)
+                                .background(Theme.colors.bgSurface1)
+                                .cornerRadius(20)
+                        }
+                        
+                        Button {
+                            NotificationCenter.default.post(name: .agentDidAcceptTx, object: tx)
+                        } label: {
+                            Text("Yes")
+                                .font(.body.bold())
+                                .foregroundColor(Theme.colors.bgPrimary)
+                                .padding(.horizontal, 24)
+                                .padding(.vertical, 12)
+                                .background(Theme.colors.turquoise)
+                                .cornerRadius(20)
+                        }
+                    } else {
+                        Button {
+                            NotificationCenter.default.post(name: .agentDidAcceptTx, object: tx)
+                        } label: {
+                            Text("Sign Transaction")
+                                .font(.body.bold())
+                                .foregroundColor(Theme.colors.bgPrimary)
+                                .padding(.horizontal, 24)
+                                .padding(.vertical, 12)
+                                .background(Theme.colors.turquoise)
+                                .cornerRadius(20)
+                        }
+                    }
+                }
+            }
+            .padding(16)
+            .background(Theme.colors.bgSurface1.opacity(0.3)) // Slight tint
+            .cornerRadius(16)
         }
     }
 

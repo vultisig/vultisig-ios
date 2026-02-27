@@ -43,6 +43,14 @@ struct AgentChatView: View {
                 }
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .agentDidAcceptTx)) { notif in
+            guard let tx = notif.object as? AgentTxReady, let vault = appViewModel.selectedVault else { return }
+            viewModel.acceptTxProposal(tx, vault: vault)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .agentDidRejectTx)) { notif in
+            guard let tx = notif.object as? AgentTxReady, let vault = appViewModel.selectedVault else { return }
+            viewModel.rejectTxProposal(tx, vault: vault)
+        }
         .alert("Error", isPresented: .init(
             get: { viewModel.error != nil },
             set: { if !$0 { viewModel.dismissError() } }
@@ -245,4 +253,9 @@ struct AgentChatView: View {
         AgentChatView(conversationId: nil)
             .environmentObject(AppViewModel())
     }
+}
+
+extension Notification.Name {
+    static let agentDidAcceptTx = Notification.Name("agentDidAcceptTx")
+    static let agentDidRejectTx = Notification.Name("agentDidRejectTx")
 }

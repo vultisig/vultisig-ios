@@ -1118,7 +1118,7 @@ class Endpoint {
 
     // MARK: - Agent
 
-    static let agentBackendUrl = "https://agent.vultisig.com"
+    static let agentBackendUrl = "http://localhost:8084"
     static let verifierUrl = "https://verifier.vultisig.com"
 
     static func agentConversations() -> String {
