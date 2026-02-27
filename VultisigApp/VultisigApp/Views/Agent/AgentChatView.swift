@@ -70,7 +70,7 @@ struct AgentChatView: View {
                     if viewModel.messages.isEmpty && !viewModel.isLoading {
                         startersView
                     }
-                    
+
                     ForEach(viewModel.messages) { message in
                         AgentChatMessageView(message: message)
                             .id(message.id)
@@ -178,9 +178,9 @@ struct AgentChatView: View {
         isInputFocused = false
         viewModel.sendMessage(text, vault: vault)
     }
-    
+
     // MARK: - Starters UI
-    
+
     private var startersView: some View {
         VStack(spacing: 24) {
             Spacer().frame(height: 40)

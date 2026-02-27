@@ -213,7 +213,7 @@ final class FastVaultKeysignService {
                 continuation.resume(returning: success)
             }
         }
-        
+
         guard success else {
             throw FastVaultKeysignError.keysignFailed("FastVaultService.sign failed")
         }

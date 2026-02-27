@@ -65,7 +65,7 @@ struct AgentConversationsView: View {
                 } else if viewModel.conversations.isEmpty {
                     VStack(spacing: 24) {
                         Spacer().frame(height: 40)
-                        
+
                         Image(systemName: "bubble.left.and.bubble.right.fill")
                             .font(.system(size: 48))
                             .foregroundStyle(
@@ -75,17 +75,17 @@ struct AgentConversationsView: View {
                                     endPoint: .bottomTrailing
                                 )
                             )
-                        
+
                         Text("No Past Conversations")
                             .font(.title2.bold())
                             .foregroundColor(Theme.colors.textPrimary)
-                        
+
                         Text("Start a new chat to begin interacting with Vulti.")
                             .font(.subheadline)
                             .foregroundColor(Theme.colors.textTertiary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
-                        
+
                         // New chat button
                         Button {
                             navigateToChat(with: nil)
@@ -110,8 +110,6 @@ struct AgentConversationsView: View {
             .padding(.bottom, 32)
         }
     }
-
-
 
     // MARK: - Conversation List
 
@@ -147,7 +145,7 @@ struct AgentConversationsView: View {
 
     private func conversationRow(_ conv: AgentConversation) -> some View {
         Button {
-            router.navigate(to:AgentRoute.chat(conversationId: conv.id))
+            router.navigate(to: AgentRoute.chat(conversationId: conv.id))
         } label: {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
@@ -199,7 +197,7 @@ struct AgentConversationsView: View {
     }
 
     private func navigateToChat(with starter: String?) {
-        router.navigate(to:AgentRoute.chat(conversationId: nil))
+        router.navigate(to: AgentRoute.chat(conversationId: nil))
         if let starter {
             UserDefaults.standard.set(starter, forKey: "agent_pending_starter")
         }

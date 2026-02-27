@@ -34,14 +34,14 @@ final class AgentConversationsViewModel: ObservableObject {
     func checkAuthAndLoad(vault: Vault) async {
         isLoading = true
         let token = await getValidToken(vault: vault)
-        
+
         if token == nil {
             isLoading = false
             isConnected = false
             passwordRequired = true
             return
         }
-        
+
         isConnected = true
         // Load data in parallel
         async let convos: () = loadConversations(vault: vault)
@@ -170,7 +170,7 @@ final class AgentConversationsViewModel: ObservableObject {
 
     // MARK: - Auth
 
-    func checkConnection(vault: Vault) {
+    func checkConnection(vault _: Vault) {
         // Obsolete: We now verify actual token auth via checkAuthAndLoad
     }
 

@@ -14,7 +14,7 @@ struct SendPairScreen: View {
     let vault: Vault
     let tx: SendTransaction
     let keysignPayload: KeysignPayload
-    
+
     var body: some View {
         Screen(showNavigationBar: false) {
             KeysignDiscoveryView(

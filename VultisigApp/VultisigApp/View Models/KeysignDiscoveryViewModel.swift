@@ -148,7 +148,6 @@ class KeysignDiscoveryViewModel: ObservableObject {
         }
     }
 
-
     func isValidPeers(vault: Vault) -> Bool {
         return selections.count >= (vault.getThreshold() + 1)
     }

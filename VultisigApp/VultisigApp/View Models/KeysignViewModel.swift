@@ -163,7 +163,6 @@ class KeysignViewModel: ObservableObject {
         }
     }
 
-
     func startKeysignDKLS(isImport: Bool) async {
         do {
             // Check if we have either keysignPayload or customMessagePayload

@@ -278,13 +278,13 @@ final class AgentAuthService {
         guard let httpResponse = response as? HTTPURLResponse else {
             throw AgentAuthError.authFailed
         }
-        
+
         if httpResponse.statusCode != 200 {
             let responseBody = String(data: data, encoding: .utf8) ?? "n/a"
             print("[AgentAuth] ❌ Verifier returned \(httpResponse.statusCode): \(responseBody)")
             throw AgentAuthError.authFailed
         }
-        
+
         do {
             return try JSONDecoder().decode(AgentAuthResponse.self, from: data)
         } catch {
@@ -348,8 +348,7 @@ final class AgentAuthService {
 
         var payload = String(parts[1])
         let remainder = payload.count % 4
-        if remainder == 2 { payload += "==" }
-        else if remainder == 3 { payload += "=" }
+        if remainder == 2 { payload += "==" } else if remainder == 3 { payload += "=" }
 
         let base64 = payload
             .replacingOccurrences(of: "-", with: "+")

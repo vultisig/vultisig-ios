@@ -51,7 +51,7 @@ final class AgentChatViewModel: ObservableObject {
     func sendMessage(_ text: String, vault: Vault) {
         print("[AgentChat] 📤 sendMessage called with text: \(text.prefix(50))...")
         print("[AgentChat] 📤 vault pubKeyECDSA: \(vault.pubKeyECDSA.prefix(20))...")
-        
+
         // Add user message to UI
         let userMsg = AgentChatMessage(
             id: "msg-\(Date().timeIntervalSince1970)",
@@ -67,7 +67,7 @@ final class AgentChatViewModel: ObservableObject {
         currentTask = Task {
             // Get token if available
             let token = await getValidToken(vault: vault)?.token ?? ""
-            
+
             // If token is empty, we must authenticate first
             if token.isEmpty {
                 print("[AgentChat] 🔑 No valid token, prompting for password")
@@ -82,7 +82,7 @@ final class AgentChatViewModel: ObservableObject {
             }
 
             print("[AgentChat] 🔑 Using token: \(token.prefix(20).description)...")
-            
+
             await executeSendMessage(text: text, vault: vault, token: token)
         }
     }
@@ -101,12 +101,12 @@ final class AgentChatViewModel: ObservableObject {
 
                     await primeMCPSession(vault: vault, token: token, convId: conv.id)
                 }
-                
+
                 // Fetch starters if needed
                 if messages.isEmpty && starters.isEmpty {
                     await loadStarters(vault: vault)
                 }
-                
+
                 guard let convId = conversationId else {
                     print("[AgentChat] ❌ No conversation ID")
                     throw AgentBackendClient.AgentBackendError.noBody
@@ -244,7 +244,7 @@ final class AgentChatViewModel: ObservableObject {
             print("[AgentChat] ✅ signIn succeeded")
             isConnected = true
             passwordRequired = false
-            
+
             if let pending = pendingMessage {
                 print("[AgentChat] 📤 Sending pending message after login")
                 let msgToSend = pending
@@ -257,29 +257,29 @@ final class AgentChatViewModel: ObservableObject {
         }
     }
 
-    func checkConnection(vault: Vault) {
+    func checkConnection(vault _: Vault) {
         // Agent backend uses public_key for identity, no auth token needed
         print("[AgentChat] 🔌 checkConnection: always connected (public_key auth)")
         isConnected = true
     }
-    
+
     // MARK: - Load Starters
-    
+
     func loadStarters(vault: Vault) async {
         let token = await getValidToken(vault: vault)
-        
+
         do {
             let context = AgentContextBuilder.buildContext(vault: vault)
             let request = AgentGetStartersRequest(
                 publicKey: vault.pubKeyECDSA,
                 context: context
             )
-            
+
             let response = try await backendClient.getStarters(
                 request: request,
                 token: token?.token ?? ""
             )
-            
+
             if response.starters.isEmpty {
                 starters = Array(AgentChatViewModel.fallbackStarters.shuffled().prefix(4))
             } else {
@@ -311,7 +311,7 @@ final class AgentChatViewModel: ObservableObject {
 
     // MARK: - SSE Event Handling
 
-    private func handleSSEEvent(_ event: AgentSSEEvent, vault: Vault? = nil) {
+    private func handleSSEEvent(_ event: AgentSSEEvent, vault _: Vault? = nil) {
         switch event {
         case .textDelta(let delta):
             handleTextDelta(delta)
@@ -404,7 +404,7 @@ final class AgentChatViewModel: ObservableObject {
 
         Task {
             let result = await AgentToolExecutor.execute(action: action, vault: vault)
-            
+
             await MainActor.run {
                 if let idx = self.messages.firstIndex(where: { $0.id == toolCallId }) {
                     self.messages[idx].toolCall?.status = result.success ? .success : .error
@@ -412,7 +412,7 @@ final class AgentChatViewModel: ObservableObject {
                     self.messages[idx].toolCall?.error = result.error
                 }
             }
-            
+
             // Stream the result back
             self.sendActionResult(result, vault: vault)
         }
@@ -458,15 +458,15 @@ final class AgentChatViewModel: ObservableObject {
         isLoading = false
     }
 
-    func acceptTxProposal(_ proposal: AgentTxReady, vault: Vault) {
+    func acceptTxProposal(_ proposal: AgentTxReady, vault _: Vault) {
         print("[AgentChat] 💳 User ACCEPTED transaction. Not fully implemented yet. keysignPayload length: \(proposal.keysignPayload?.count ?? 0)")
         appendAssistantMessage("Transaction accepted. Launching keysign...")
-        
+
         // TODO: This is where we will route the keysign payload to the Vultisig router in Phase 13.
         isLoading = false
     }
 
-    func rejectTxProposal(_ proposal: AgentTxReady, vault: Vault) {
+    func rejectTxProposal(_: AgentTxReady, vault: Vault) {
         print("[AgentChat] ❌ User REJECTED transaction.")
         sendMessage("Cancel the transaction. I do not want to execute it.", vault: vault)
     }

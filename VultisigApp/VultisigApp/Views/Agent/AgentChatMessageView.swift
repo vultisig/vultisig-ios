@@ -95,31 +95,31 @@ struct AgentChatMessageView: View {
             }
         }
     }
-    
+
     // MARK: - Transaction Proposal
-    
+
     @ViewBuilder
     private var txProposalView: some View {
         if let tx = message.txProposal {
             VStack(alignment: .leading, spacing: 12) {
-                
+
                 // Route header
                 HStack(alignment: .top, spacing: 8) {
                     Image(systemName: "arrow.left.arrow.right.circle")
                         .font(.footnote)
                         .foregroundColor(Theme.colors.textTertiary)
-                    
+
                     VStack(alignment: .leading, spacing: 4) {
                         Text("\(tx.txType ?? "SWAP") \(tx.amount) \(tx.fromSymbol) → \(tx.toSymbol ?? "")")
                             .font(.system(.footnote, design: .monospaced))
                             .foregroundColor(Theme.colors.textTertiary)
-                        
+
                         if let provider = tx.provider {
                             Text("ROUTE: \(provider)".uppercased())
                                 .font(.system(.footnote, design: .monospaced))
                                 .foregroundColor(Theme.colors.textTertiary)
                         }
-                        
+
                         // Using a dummy fee since it's not strictly typed in the payload yet
                         Text("EST. FEE: 0.001 \(tx.fromSymbol)")
                             .font(.system(.footnote, design: .monospaced))
@@ -127,11 +127,11 @@ struct AgentChatMessageView: View {
                     }
                 }
                 .padding(.bottom, 8)
-                
+
                 Text(tx.needsApproval == true ? "Should I execute the swap?" : "Transaction ready to sign.")
                     .font(.body)
                     .foregroundColor(Theme.colors.textPrimary)
-                
+
                 HStack(spacing: 12) {
                     Spacer()
                     if tx.needsApproval == true {
@@ -148,7 +148,7 @@ struct AgentChatMessageView: View {
                                 .background(Theme.colors.bgSurface1)
                                 .cornerRadius(20)
                         }
-                        
+
                         Button {
                             NotificationCenter.default.post(name: .agentDidAcceptTx, object: tx)
                         } label: {
