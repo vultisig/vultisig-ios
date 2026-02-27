@@ -376,6 +376,8 @@ final class AgentChatViewModel: ObservableObject {
     }
 
     private func handleActions(_ actions: [AgentBackendAction], vault: Vault) {
+        var autoExecuteActions: [AgentBackendAction] = []
+
         for action in actions {
             // Add tool call status message
             let toolCallMsg = AgentChatMessage(
@@ -392,12 +394,17 @@ final class AgentChatViewModel: ObservableObject {
             )
             messages.append(toolCallMsg)
 
-            // Auto-execute simple tools
             if action.autoExecute {
-                handleAutoExecuteAction(action, vault: vault)
+                autoExecuteActions.append(action)
             }
         }
+
+        // Execute all auto-execute actions sequentially to avoid rate limiting
+        if !autoExecuteActions.isEmpty {
+            handleAutoExecuteActions(autoExecuteActions, vault: vault)
+        }
     }
+
 
     private func handleAutoExecuteAction(_ action: AgentBackendAction, vault: Vault) {
         let toolCallId = "tool-call-\(action.id)"
@@ -417,6 +424,65 @@ final class AgentChatViewModel: ObservableObject {
             self.sendActionResult(result, vault: vault)
         }
     }
+
+    private func handleAutoExecuteActions(_ actions: [AgentBackendAction], vault: Vault) {
+        // Execute all actions locally (no backend round-trip per action), then
+        // send a SINGLE aggregated action result. This prevents N×backend calls
+        // (e.g. "remove all 22 chains" becomes 1 request instead of 22).
+        Task {
+            var allSucceeded = true
+            var aggregatedData: [String: AnyCodable] = [:]
+            var errors: [String] = []
+            let actionType = actions.first?.type ?? "batch"
+
+            for action in actions {
+                if Task.isCancelled { break }
+
+                let toolCallId = "tool-call-\(action.id)"
+                let result = await AgentToolExecutor.execute(action: action, vault: vault)
+
+                await MainActor.run {
+                    if let idx = self.messages.firstIndex(where: { $0.id == toolCallId }) {
+                        self.messages[idx].toolCall?.status = result.success ? .success : .error
+                        self.messages[idx].toolCall?.resultData = result.data
+                        self.messages[idx].toolCall?.error = result.error
+                    }
+                }
+
+                if !result.success {
+                    allSucceeded = false
+                    if let err = result.error { errors.append(err) }
+                }
+
+                // Merge result data (keyed by action id to avoid collisions)
+                if let data = result.data {
+                    aggregatedData["result_\(action.id.prefix(8))"] = AnyCodable(data)
+                }
+            }
+
+            // Send ONE aggregated result back to the backend
+            var summaryData: [String: AnyCodable] = [
+                "completed": AnyCodable(actions.count),
+                "succeeded": AnyCodable(allSucceeded ? actions.count : actions.count - errors.count),
+                "failed": AnyCodable(errors.count)
+            ]
+            if !aggregatedData.isEmpty {
+                summaryData["results"] = AnyCodable(aggregatedData)
+            }
+            if !errors.isEmpty {
+                summaryData["errors"] = AnyCodable(errors)
+            }
+
+            let aggregatedResult = AgentActionResult(
+                action: actionType,
+                success: allSucceeded,
+                data: summaryData,
+                error: errors.isEmpty ? nil : errors.joined(separator: "; ")
+            )
+            self.sendActionResult(aggregatedResult, vault: vault)
+        }
+    }
+
 
     private func finalizeStreamingMessage(with backendMsg: AgentBackendMessage) {
         print("[AgentChat] 🏁 Finalizing streaming message id: \(backendMsg.id). Current streamingMessageId: \(streamingMessageId ?? "nil")")
