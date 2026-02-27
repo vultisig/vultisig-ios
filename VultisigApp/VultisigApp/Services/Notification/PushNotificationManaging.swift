@@ -21,8 +21,8 @@ protocol PushNotificationManaging: AnyObject {
     func setAllVaultsOptIn(_ vaults: [Vault], enabled: Bool)
     func hasPromptedVaultNotification(_ vault: Vault) -> Bool
     func markVaultNotificationPrompted(_ vault: Vault)
-    func registerVault(pubKeyECDSA: String, localPartyID: String) async
-    func unregisterVault(pubKeyECDSA: String, localPartyID: String) async
+    func registerVault(vaultId: String, localPartyID: String) async
+    func unregisterVault(vaultId: String, localPartyID: String) async
     func reRegisterOptedInVaults(_ vaults: [Vault]) async
     func notifyVaultDevices(vault: Vault, qrCodeData: String) async
     func registerForRemoteNotifications()

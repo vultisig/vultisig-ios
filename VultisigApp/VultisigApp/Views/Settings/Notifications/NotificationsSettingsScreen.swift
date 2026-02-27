@@ -39,25 +39,16 @@ struct NotificationsSettingsScreen: View {
 
             Spacer()
 
-            VultiToggle(isOn: $notificationsEnabled)
+            VultiToggle(isOn: Binding(
+                get: { notificationsEnabled },
+                set: {
+                    guard $0 != notificationsEnabled else { return }
+                    onNotificationsEnabled($0)
+                }
+            ))
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 4)
-        .onChange(of: notificationsEnabled) { _, newValue in
-            if newValue {
-                Task {
-                    let granted = await pushNotificationManager.requestPermission()
-                    if granted {
-                        pushNotificationManager.setAllVaultsOptIn(vaults, enabled: true)
-                    } else {
-                        notificationsEnabled = false
-                    }
-                }
-            } else {
-                pushNotificationManager.setAllVaultsOptIn(vaults, enabled: false)
-                pushNotificationManager.unregisterForRemoteNotifications()
-            }
-        }
     }
 
     var vaultListSection: some View {
@@ -81,6 +72,23 @@ struct NotificationsSettingsScreen: View {
                     showSeparator: vault != vaults.last
                 )
             }
+        }
+    }
+    
+    func onNotificationsEnabled(_ enabled: Bool) {
+        notificationsEnabled = enabled
+        if enabled {
+            Task {
+                let granted = await pushNotificationManager.requestPermission()
+                if granted {
+                    pushNotificationManager.setAllVaultsOptIn(vaults, enabled: true)
+                } else {
+                    notificationsEnabled = false
+                }
+            }
+        } else {
+            pushNotificationManager.setAllVaultsOptIn(vaults, enabled: false)
+            pushNotificationManager.unregisterForRemoteNotifications()
         }
     }
 }
