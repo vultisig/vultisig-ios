@@ -19,11 +19,7 @@ struct AddFolderVaultCellView: View {
                 .opacity(isSelectedInternal ? 1 : 0.5)
                 .animation(.interpolatingSpring, value: isSelectedInternal)
             Spacer()
-            Toggle("", isOn: $isSelectedInternal)
-                .labelsHidden()
-                .scaleEffect(0.8)
-                .tint(Theme.colors.primaryAccent4)
-                .toggleStyle(.switch)
+            VultiToggle(isOn: $isSelectedInternal)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)

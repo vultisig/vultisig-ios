@@ -23,11 +23,7 @@ struct VaultFolderCellView: View {
             showDragIndicator: isOnFolder,
             showTrailingDetails: false,
             trailingView: {
-                Toggle("", isOn: $isOnFolderInternal)
-                    .labelsHidden()
-                    .scaleEffect(0.8)
-                    .tint(Theme.colors.primaryAccent4)
-                    .toggleStyle(.switch)
+                VultiToggle(isOn: $isOnFolderInternal)
             }
         )
         .background(Theme.colors.bgPrimary)

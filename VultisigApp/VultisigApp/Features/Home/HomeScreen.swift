@@ -173,6 +173,7 @@ struct HomeScreen: View {
             .withUpgradeVault(vault: selectedVault, shouldShow: $showUpgradeVaultSheet)
             .withBiweeklyPasswordVerification(vault: selectedVault)
             .withMonthlyBackupWarning(vault: selectedVault)
+            .withSetupPushNotifications(vault: selectedVault)
             .onLoad {
                 onVaultLoaded(vault: selectedVault)
             }

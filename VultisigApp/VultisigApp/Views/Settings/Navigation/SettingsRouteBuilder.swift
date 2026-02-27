@@ -34,6 +34,11 @@ struct SettingsRouteBuilder {
     }
 
     @ViewBuilder
+    func buildNotificationsScreen() -> some View {
+        NotificationsSettingsScreen()
+    }
+
+    @ViewBuilder
     func buildAddressBookScreen() -> some View {
         AddressBookScreen(
             shouldReturnAddress: false,
