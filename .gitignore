@@ -93,3 +93,6 @@ iOSInjectionProject/
 *.dmg
 VultisigApp.app
 *.log
+
+# Claude Code - ignore local settings
+.claude/settings.local.json
