@@ -57,8 +57,8 @@ struct AgentConversationsView: View {
                             .controlSize(.large)
                             .tint(Theme.colors.turquoise)
                         Text("Loading conversations...")
-                            .font(.subheadline)
-                            .foregroundColor(Theme.colors.textTertiary)
+                            .font(Theme.fonts.bodySMedium)
+                            .foregroundStyle(Theme.colors.textTertiary)
                             .padding(.top, 8)
                         Spacer()
                     }
@@ -77,12 +77,12 @@ struct AgentConversationsView: View {
                             )
 
                         Text("No Past Conversations")
-                            .font(.title2.bold())
-                            .foregroundColor(Theme.colors.textPrimary)
+                            .font(Theme.fonts.title3)
+                            .foregroundStyle(Theme.colors.textPrimary)
 
                         Text("Start a new chat to begin interacting with Vulti.")
-                            .font(.subheadline)
-                            .foregroundColor(Theme.colors.textTertiary)
+                            .font(Theme.fonts.bodySMedium)
+                            .foregroundStyle(Theme.colors.textTertiary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
 
@@ -92,10 +92,10 @@ struct AgentConversationsView: View {
                         } label: {
                             HStack {
                                 Image(systemName: "plus.bubble.fill")
-                                    .foregroundColor(Theme.colors.bgPrimary)
+                                    .foregroundStyle(Theme.colors.bgPrimary)
                                 Text("New Chat")
-                                    .font(.body.bold())
-                                    .foregroundColor(Theme.colors.bgPrimary)
+                                    .font(Theme.fonts.bodyMMedium)
+                                    .foregroundStyle(Theme.colors.bgPrimary)
                             }
                             .padding()
                             .background(Theme.colors.turquoise)
@@ -121,14 +121,14 @@ struct AgentConversationsView: View {
             } label: {
                 HStack {
                     Image(systemName: "plus.bubble.fill")
-                        .foregroundColor(Theme.colors.turquoise)
+                        .foregroundStyle(Theme.colors.turquoise)
                     Text("New Chat")
-                        .font(.body.bold())
-                        .foregroundColor(Theme.colors.textPrimary)
+                        .font(Theme.fonts.bodyMMedium)
+                        .foregroundStyle(Theme.colors.textPrimary)
                     Spacer()
                     Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundColor(Theme.colors.textTertiary)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.textTertiary)
                 }
                 .padding()
                 .background(Theme.colors.bgSurface1)
@@ -150,18 +150,18 @@ struct AgentConversationsView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(conv.title ?? "New Chat")
-                        .font(.body)
-                        .foregroundColor(Theme.colors.textPrimary)
+                        .font(Theme.fonts.bodyMMedium)
+                        .foregroundStyle(Theme.colors.textPrimary)
                         .lineLimit(1)
 
                     Text(formatDate(conv.updatedAt))
-                        .font(.caption)
-                        .foregroundColor(Theme.colors.textTertiary)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.textTertiary)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundColor(Theme.colors.textTertiary)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textTertiary)
             }
             .padding()
             .background(Theme.colors.bgSurface1)
@@ -181,7 +181,7 @@ struct AgentConversationsView: View {
 
     private var connectionButton: some View {
         Circle()
-            .fill(viewModel.isConnected ? Theme.colors.alertSuccess : Color.gray)
+            .fill(viewModel.isConnected ? Theme.colors.alertSuccess : Theme.colors.textTertiary)
             .frame(width: 10, height: 10)
     }
 

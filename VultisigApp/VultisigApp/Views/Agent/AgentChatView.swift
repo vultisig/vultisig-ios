@@ -113,7 +113,7 @@ struct AgentChatView: View {
                 .padding(.vertical, 10)
                 .background(Theme.colors.bgSurface1)
                 .cornerRadius(20)
-                .foregroundColor(Theme.colors.textPrimary)
+                .foregroundStyle(Theme.colors.textPrimary)
                 .focused($isInputFocused)
 
             if viewModel.isLoading {
@@ -121,15 +121,15 @@ struct AgentChatView: View {
                     viewModel.cancelRequest()
                 } label: {
                     Image(systemName: "stop.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(Theme.colors.alertError)
+                        .font(Theme.fonts.title2)
+                        .foregroundStyle(Theme.colors.alertError)
                 }
             } else {
                 Button {
                     sendMessage()
                 } label: {
                     Image(systemName: "arrow.up.circle.fill")
-                        .font(.title2)
+                        .font(Theme.fonts.title2)
                         .foregroundStyle(
                             inputText.trimmingCharacters(in: .whitespaces).isEmpty
                                 ? Theme.colors.textTertiary
@@ -164,8 +164,9 @@ struct AgentChatView: View {
         if let starter = UserDefaults.standard.string(forKey: "agent_pending_starter") {
             UserDefaults.standard.removeObject(forKey: "agent_pending_starter")
             inputText = starter
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                sendMessage()
+            Task {
+                try? await Task.sleep(nanoseconds: 500_000_000)
+                await MainActor.run { sendMessage() }
             }
         }
     }
@@ -196,12 +197,12 @@ struct AgentChatView: View {
                 )
 
             Text("Ask Vulti Anything")
-                .font(.title2.bold())
-                .foregroundColor(Theme.colors.textPrimary)
+                .font(Theme.fonts.title3)
+                .foregroundStyle(Theme.colors.textPrimary)
 
             Text("Try one of these suggestions below or type your own question.")
-                .font(.subheadline)
-                .foregroundColor(Theme.colors.textTertiary)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textTertiary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
 
@@ -223,14 +224,15 @@ struct AgentChatView: View {
     private func starterCard(_ text: String) -> some View {
         Button {
             inputText = text
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                sendMessage()
+            Task {
+                try? await Task.sleep(nanoseconds: 100_000_000)
+                await MainActor.run { sendMessage() }
             }
         } label: {
             HStack {
                 Text(text)
-                    .font(.footnote)
-                    .foregroundColor(Theme.colors.textPrimary)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textPrimary)
                     .multilineTextAlignment(.leading)
                     .lineLimit(3)
 
