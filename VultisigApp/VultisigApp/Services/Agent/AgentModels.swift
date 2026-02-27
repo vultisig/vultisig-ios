@@ -314,6 +314,27 @@ struct AgentAddChainResult: Codable {
     var error: String?
 }
 
+struct AgentRemoveChainParams: Codable {
+    let chains: [AgentChainParam]
+}
+
+struct AgentRemoveChainResult: Codable {
+    let chain: String
+    let success: Bool
+    var error: String?
+}
+
+struct AgentRemoveTokenParams: Codable {
+    let tokens: [AgentTokenParam]
+}
+
+struct AgentRemoveTokenResult: Codable {
+    let chain: String
+    let ticker: String
+    let success: Bool
+    var error: String?
+}
+
 struct AgentGetAddressBookParams: Codable {
     var chain: String?
     var query: String?
@@ -474,6 +495,7 @@ struct AgentChatMessage: Identifiable {
     var toolCall: AgentToolCallInfo?
     var txStatus: AgentTxStatusInfo?
     var tokenResults: [AgentTokenSearchResult]?
+    var txProposal: AgentTxReady?
 }
 
 enum AgentChatRole {
