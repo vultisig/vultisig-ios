@@ -302,7 +302,7 @@ func updateBalances(vault: Vault) async {
 
 ## Correct Pattern: Three-Phase Architecture
 
-### Phase 1: Define value types
+### Setup: Define value types
 
 ```swift
 private struct CoinIdentifier: Hashable {
@@ -324,7 +324,7 @@ private struct CoinBalanceUpdate {
 }
 ```
 
-### Phase 2: Extract on MainActor
+### Phase 1: Extract on MainActor
 
 ```swift
 @MainActor
@@ -333,7 +333,7 @@ private func extractCoinIdentifiers(from vault: Vault) -> [CoinIdentifier] {
 }
 ```
 
-### Phase 3: Fetch concurrently (value types only)
+### Phase 2: Fetch concurrently (value types only)
 
 ```swift
 private func fetchUpdates(for identifiers: [CoinIdentifier]) async -> [CoinBalanceUpdate] {
@@ -355,7 +355,7 @@ private func fetchUpdates(for identifiers: [CoinIdentifier]) async -> [CoinBalan
 }
 ```
 
-### Phase 4: Apply on MainActor in batch
+### Phase 3: Apply on MainActor in batch
 
 ```swift
 @MainActor
@@ -369,7 +369,7 @@ private func applyUpdates(_ updates: [CoinBalanceUpdate], to vault: Vault) throw
 }
 ```
 
-### Phase 5: Orchestrate
+### Usage: Orchestrate
 
 ```swift
 func updateBalances(vault: Vault) async {

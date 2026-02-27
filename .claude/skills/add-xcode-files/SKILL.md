@@ -70,5 +70,6 @@ RUBY
 
 After running, confirm the file compiles:
 ```bash
+set -o pipefail
 xcodebuild -project VultisigApp/VultisigApp.xcodeproj -scheme VultisigApp -sdk iphonesimulator build 2>&1 | tail -5
 ```

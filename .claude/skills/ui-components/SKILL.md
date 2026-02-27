@@ -368,13 +368,13 @@ struct MyFeatureScreen: View {
 
 | Language | Directory |
 |----------|-----------|
-| English (base) | `VultisigApp/Localizables/en.lproj/Localizable.strings` |
-| German | `VultisigApp/Localizables/de.lproj/Localizable.strings` |
-| Spanish | `VultisigApp/Localizables/es.lproj/Localizable.strings` |
-| Croatian | `VultisigApp/Localizables/hr.lproj/Localizable.strings` |
-| Italian | `VultisigApp/Localizables/it.lproj/Localizable.strings` |
-| Portuguese | `VultisigApp/Localizables/pt.lproj/Localizable.strings` |
-| Simplified Chinese | `VultisigApp/Localizables/zh-Hans.lproj/Localizable.strings` |
+| English (base) | `VultisigApp/VultisigApp/Localizables/en.lproj/Localizable.strings` |
+| German | `VultisigApp/VultisigApp/Localizables/de.lproj/Localizable.strings` |
+| Spanish | `VultisigApp/VultisigApp/Localizables/es.lproj/Localizable.strings` |
+| Croatian | `VultisigApp/VultisigApp/Localizables/hr.lproj/Localizable.strings` |
+| Italian | `VultisigApp/VultisigApp/Localizables/it.lproj/Localizable.strings` |
+| Portuguese | `VultisigApp/VultisigApp/Localizables/pt.lproj/Localizable.strings` |
+| Simplified Chinese | `VultisigApp/VultisigApp/Localizables/zh-Hans.lproj/Localizable.strings` |
 
 ### Rules
 

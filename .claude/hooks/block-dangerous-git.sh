@@ -4,7 +4,7 @@
 INPUT=$(cat)
 CMD=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
 
-if echo "$CMD" | grep -qE 'git (push.*--force|reset --hard|clean -f|branch -D)'; then
+if echo "$CMD" | grep -qE 'git (push.*(--force|--force-with-lease|-f|-F)|reset --hard|clean -[a-z]*f|branch.*(--delete|-D))'; then
   echo "Dangerous git command blocked. Ask the user first." >&2
   exit 2
 fi

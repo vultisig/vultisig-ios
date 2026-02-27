@@ -58,11 +58,8 @@ def find_sources_build_phase(content: str):
     return abs_start, section_end
 
 
-def add_file_to_project(pbxproj_path: str, swift_file_path: str):
-    """Add a single Swift file to the project.pbxproj."""
-    with open(pbxproj_path, "r", encoding="utf-8") as f:
-        content = f.read()
-
+def add_file_to_project(content: str, swift_file_path: str):
+    """Add a single Swift file to the project.pbxproj content in-memory."""
     filename = os.path.basename(swift_file_path)
     file_basename = os.path.splitext(filename)[0]
 
@@ -74,11 +71,6 @@ def add_file_to_project(pbxproj_path: str, swift_file_path: str):
     # Generate UUIDs
     file_ref_uuid = generate_uuid(f"fileref-{swift_file_path}")
     build_file_uuid = generate_uuid(f"buildfile-{swift_file_path}")
-
-    # Compute the relative path from the project to the swift file
-    # The path in pbxproj is relative to the project directory
-    proj_dir = os.path.dirname(os.path.dirname(pbxproj_path))
-    rel_path = os.path.relpath(swift_file_path, proj_dir)
 
     # Determine the source tree
     source_tree = '"<group>"'
@@ -162,7 +154,7 @@ def main():
         if not swift_file.endswith(".swift"):
             print(f"  SKIP: {swift_file} is not a .swift file")
             continue
-        content = add_file_to_project(pbxproj_path, swift_file)
+        content = add_file_to_project(content, swift_file)
 
     # Write modified content
     with open(pbxproj_path, "w", encoding="utf-8") as f:

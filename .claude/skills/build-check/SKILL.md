@@ -24,7 +24,7 @@ If lint fails, fix all warnings before proceeding to build.
 xcodebuild -project VultisigApp/VultisigApp.xcodeproj \
     -scheme VultisigApp \
     -sdk iphonesimulator \
-    -destination 'platform=iOS Simulator,name=iPhone 16' \
+    -destination 'generic/platform=iOS Simulator' \
     build 2>&1 | tail -20
 ```
 

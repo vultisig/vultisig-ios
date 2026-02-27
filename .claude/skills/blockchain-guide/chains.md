@@ -21,6 +21,7 @@ All under `VultisigApp/VultisigApp/Services/`:
 | `Tron/` | Tron |
 
 **Swap/DeFi services:**
+
 | Directory | Purpose |
 |-----------|---------|
 | `SwapService/` | Swap coordination |
@@ -75,5 +76,5 @@ Centralized endpoint management with categories:
 - Cosmos: Cosmos, Kujira, Osmosis, dYdX, Terra, Terra-Classic, Noble, Akash
 - Other: Ripple, Tron
 
-**EdDSA (Ed25519) — 6 chains:**
+**EdDSA (Ed25519) — 5 chains:**
 - Solana, Cardano, Polkadot, Ton, Sui

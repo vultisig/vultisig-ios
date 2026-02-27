@@ -6,7 +6,7 @@ Vultisig is a multi-chain cryptocurrency wallet for iOS and macOS built with Swi
 
 ## Directory Structure
 
-```
+```text
 VultisigApp/
 ├── DesignSystem/       # Theme, colors, fonts (Theme.colors.*, Theme.fonts.*)
 ├── Services/           # API clients, blockchain services, networking (HTTPClient, TargetType)
