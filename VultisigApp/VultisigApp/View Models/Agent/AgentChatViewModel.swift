@@ -480,10 +480,27 @@ final class AgentChatViewModel: ObservableObject {
                 error: errors.isEmpty ? nil : errors.joined(separator: "; ")
             )
 
-            // Re-enable the loading spinner while waiting for the backend's
-            // follow-up SSE response. The first stream already set isLoading=false
-            // on .done, leaving a silent gap of a few seconds that feels like a freeze.
-            await MainActor.run { self.isLoading = true }
+            // Plant an empty "seed" assistant message and register it as the
+            // current streaming message BEFORE calling sendActionResult.
+            //
+            // This achieves two things:
+            //   1. isLoading = true → spinner shows during the gap
+            //   2. streamingMessageId is set so the second SSE stream's
+            //      text_delta events stream character-by-character into the
+            //      seed message (real-time typing effect). If the backend
+            //      sends a `message` event instead, finalizeStreamingMessage
+            //      replaces the seed cleanly with the real content.
+            await MainActor.run {
+                self.isLoading = true
+                let seedId = "streaming-\(Date().timeIntervalSince1970)"
+                self.streamingMessageId = seedId
+                self.messages.append(AgentChatMessage(
+                    id: seedId,
+                    role: .assistant,
+                    content: "",
+                    timestamp: Date()
+                ))
+            }
             self.sendActionResult(aggregatedResult, vault: vault)
         }
     }
