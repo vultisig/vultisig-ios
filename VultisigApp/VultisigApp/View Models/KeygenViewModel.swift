@@ -17,6 +17,7 @@ enum KeygenStatus {
     case ReshareECDSA
     case ReshareEdDSA
     case KeygenEdDSA
+    case KeygenMLDSA
     case KeygenFinished
     case KeygenFailed
 }
@@ -185,6 +186,12 @@ class KeygenViewModel: ObservableObject {
 
     func startKeygen(context: ModelContext) async {
         self.keygenConnected = true
+
+        if self.tssType == .DilithiumKeygen {
+            await startDilithiumOnlyKeygen(context: context)
+            return
+        }
+
         let vaultLibType = self.vault.libType ?? .GG20
         switch vaultLibType {
         case .GG20:
@@ -224,6 +231,8 @@ class KeygenViewModel: ObservableObject {
                 await startKeygenDKLS(context: context, localUIEcdsa: localUIECDSA, localUIEddsa: localUIEdDSA)
             case .KeyImport:
                 self.logger.error("it should not get to here")
+            case .DilithiumKeygen:
+                self.logger.error("DilithiumKeygen should not reach GG20 path")
             }
         case .DKLS:
             await startKeygenDKLS(context: context)
@@ -235,6 +244,53 @@ class KeygenViewModel: ObservableObject {
                 self.status = .KeygenFailed
                 self.keygenError = error.localizedDescription
             }
+        }
+    }
+
+    func startDilithiumOnlyKeygen(context: ModelContext) async {
+        do {
+            self.status = .KeygenMLDSA
+            let dilithiumKeygen = DilithiumKeygen(
+                vault: self.vault,
+                tssType: self.tssType,
+                keygenCommittee: self.keygenCommittee,
+                vaultOldCommittee: self.vault.signers,
+                mediatorURL: self.mediatorURL,
+                sessionID: self.sessionID,
+                encryptionKeyHex: self.encryptionKeyHex,
+                isInitiateDevice: self.isInitiateDevice,
+                setupMessage: [UInt8]()
+            )
+            try await dilithiumKeygen.DilithiumKeygenWithRetry(attempt: 0)
+
+            guard let keyshare = dilithiumKeygen.getKeyshare() else {
+                throw HelperError.runtimeError("fail to get MLDSA keyshare")
+            }
+
+            let keygenVerify = KeygenVerify(
+                serverAddr: self.mediatorURL,
+                sessionID: self.sessionID,
+                localPartyID: self.vault.localPartyID,
+                keygenCommittee: self.keygenCommittee
+            )
+            await keygenVerify.markLocalPartyComplete()
+            let allFinished = await keygenVerify.checkCompletedParties()
+            if !allFinished {
+                throw HelperError.runtimeError("not all parties finished MLDSA keygen successfully")
+            }
+
+            self.vault.publicKeyMLDSA44 = keyshare.PubKey
+            self.vault.keyshares.append(
+                KeyShare(pubkey: keyshare.PubKey, keyshare: keyshare.Keyshare, keyId: keyshare.keyId)
+            )
+            self.vault.isBackedUp = false
+
+            try context.save()
+            self.status = .KeygenFinished
+        } catch {
+            self.logger.error("Failed to generate MLDSA key, error: \(error.localizedDescription)")
+            self.status = .KeygenFailed
+            self.keygenError = error.localizedDescription
         }
     }
 
@@ -439,6 +495,8 @@ class KeygenViewModel: ObservableObject {
             case .KeyImport:
                 self.status = .KeygenECDSA
                 try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0)
+            case .DilithiumKeygen:
+                break
             }
 
             await updateProgress(80)
@@ -463,6 +521,8 @@ class KeygenViewModel: ObservableObject {
             case .KeyImport:
                 self.status = .KeygenEdDSA
                 try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0)
+            case .DilithiumKeygen:
+                break
             }
 
             await updateProgress(100)
@@ -568,6 +628,10 @@ class KeygenViewModel: ObservableObject {
                 self.logger.error("Failed to key import vault")
                 self.status = .KeygenFailed
                 return
+            case .DilithiumKeygen:
+                self.logger.error("DilithiumKeygen should not reach GG20 path")
+                self.status = .KeygenFailed
+                return
             }
 
             if needsInsert {
@@ -641,6 +705,8 @@ class KeygenViewModel: ObservableObject {
                 throw HelperError.runtimeError("Migrate not supported yet")
             case .KeyImport: // Vultisig will not support import private key to GG20 vault
                 throw HelperError.runtimeError("Key Import not supported yet")
+            case .DilithiumKeygen:
+                throw HelperError.runtimeError("DilithiumKeygen should not reach GG20 path")
             }
             // start an additional step to make sure all parties involved in the keygen committee complete successfully
             // avoid to create a partial vault, meaning some parties finished create the vault successfully, and one still in failed state

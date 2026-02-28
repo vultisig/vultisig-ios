@@ -121,7 +121,7 @@ final class DKLSKeygen {
         }
         var result: godkls.lib_error
         switch self.tssType {
-        case .Keygen, .Migrate, .KeyImport:
+        case .Keygen, .Migrate, .KeyImport, .DilithiumKeygen:
             result = dkls_keygen_session_output_message(handle, &buf)
         case .Reshare:
             result = dkls_qc_session_output_message(handle, &buf)
@@ -143,7 +143,7 @@ final class DKLSKeygen {
         var mutableMessage = message
         var receiverResult: godkls.lib_error
         switch self.tssType {
-        case .Keygen, .Migrate, .KeyImport:
+        case .Keygen, .Migrate, .KeyImport, .DilithiumKeygen:
             receiverResult = dkls_keygen_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
         case .Reshare:
             receiverResult = dkls_qc_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
@@ -253,7 +253,7 @@ final class DKLSKeygen {
             var isFinished: UInt32 = 0
             var result: godkls.lib_error
             switch self.tssType {
-            case .Keygen, .Migrate, .KeyImport:
+            case .Keygen, .Migrate, .KeyImport, .DilithiumKeygen:
                 result = dkls_keygen_session_input_message(handle, &decryptedBodySlice, &isFinished)
             case .Reshare:
                 result = dkls_qc_session_input_message(handle, &decryptedBodySlice, &isFinished)
@@ -295,7 +295,7 @@ final class DKLSKeygen {
             var handler = godkls.Handle()
             if self.isInitiateDevice && attempt == 0 {
                 switch self.tssType {
-                case .Keygen, .Migrate, .Reshare:
+                case .Keygen, .Migrate, .Reshare, .DilithiumKeygen:
                     // only for the first time , and on the initiating device , we create the setup message
                     // for retry , let's just use the existing setup message
                     keygenSetupMsg = try getDklsSetupMessage()
@@ -352,6 +352,8 @@ final class DKLSKeygen {
             case .Reshare:
                 // it should not get here for reshare
                 throw HelperError.runtimeError("invalid tss type for keygen:\(self.tssType)")
+            case .DilithiumKeygen:
+                throw HelperError.runtimeError("DilithiumKeygen should not reach DKLS path")
             }
             // free the handler
             defer {

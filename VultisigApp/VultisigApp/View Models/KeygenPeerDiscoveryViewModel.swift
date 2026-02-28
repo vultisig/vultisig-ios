@@ -145,6 +145,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                          lib_type: vault.libType == .DKLS ? 1 : 0)
             case .Migrate:
                 fastVaultService.migrate(publicKeyECDSA: vault.pubKeyECDSA, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, encryptionPassword: config.password, email: config.email)
+            case .DilithiumKeygen:
+                break
             }
         }
         self.isLoading = false
@@ -332,7 +334,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                 )
                 let data = try ProtoSerializer.serialize(keygenMsg)
                 return "https://vultisig.com?type=NewVault&tssType=\(tssType.rawValue)&jsonData=\(data)"
-            case .Reshare, .Migrate:
+            case .Reshare, .Migrate, .DilithiumKeygen:
                 let reshareMsg = ReshareMessage(
                     sessionID: sessionID,
                     hexChainCode: vault.hexChainCode,

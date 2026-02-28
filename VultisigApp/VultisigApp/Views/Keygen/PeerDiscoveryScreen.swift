@@ -69,7 +69,7 @@ struct PeerDiscoveryScreen: View {
         switch tssType {
         case .Reshare:
             return vault.signers.count
-        case .Migrate:
+        case .Migrate, .DilithiumKeygen:
             return vault.signers.count
         case .KeyImport, .Keygen:
             if let setupType {
@@ -117,7 +117,7 @@ struct PeerDiscoveryScreen: View {
 
     var isOpenEndedContinueDisabled: Bool {
         switch viewModel.tssType {
-        case .Migrate:
+        case .Migrate, .DilithiumKeygen:
             return Set(viewModel.selections) != Set(viewModel.vault.signers)
         case .Reshare:
             let requiredCount = vault.getThreshold() + 1
@@ -434,7 +434,7 @@ struct PeerDiscoveryScreen: View {
         case .Reshare:
             let requiredCount = vault.getThreshold() + 1
             return viewModel.selections.count < requiredCount
-        case .Migrate:
+        case .Migrate, .DilithiumKeygen:
             return Set(viewModel.selections) != Set(viewModel.vault.signers)
         case .KeyImport:
             return showWaitingOnDevice
@@ -497,6 +497,8 @@ struct PeerDiscoveryScreen: View {
         case .Migrate:
             showInfoSheet = false
         case .KeyImport:
+            showInfoSheet = false
+        case .DilithiumKeygen:
             showInfoSheet = false
         }
     }

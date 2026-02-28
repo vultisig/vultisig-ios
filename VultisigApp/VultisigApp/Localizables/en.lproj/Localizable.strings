@@ -124,6 +124,10 @@
 "devicesOnSameInternet" = "Connect all devices to the\nInternet with the Vultisig App open.";
 "devicesOnSameNetwork" = "Connect all devices to the same\nNetwork with Vultisig App open.";
 "devicesOnSameWifi" = "Keep devices on the same network with Vultisig open.";
+"dilithiumAlreadyGeneratedTitle" = "Post-Quantum Key Active";
+"dilithiumAlreadyGeneratedSubtitle" = "This vault already has an MLDSA-44 post-quantum key generated. No further action is needed.";
+"dilithiumKeygen" = "Post-Quantum Key";
+"dilithiumKeygenSubtitle" = "Generate MLDSA-44 key for quantum resistance";
 "discord" = "Discord";
 "discoveringMediator" = "Discovering mediator service, please wait...";
 "dismiss" = "Dismiss";

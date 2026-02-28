@@ -59,6 +59,12 @@ struct KeygenView: View {
 
     private func handleNavigation() {
         switch tssType {
+        case .DilithiumKeygen:
+            router.navigate(to: KeygenRoute.backupNow(
+                tssType: tssType,
+                backupType: .single(vault: vault),
+                isNewVault: false
+            ))
         case .Migrate:
             router.navigate(to: KeygenRoute.backupNow(
                 tssType: tssType,
@@ -158,7 +164,8 @@ struct KeygenView: View {
                     .KeygenECDSA,
                     .KeygenEdDSA,
                     .ReshareECDSA,
-                    .ReshareEdDSA:
+                    .ReshareEdDSA,
+                    .KeygenMLDSA:
                 KeygenAnimationView(
                     isFast: fastSignConfig != nil,
                     connected: $viewModel.keygenConnected,
@@ -219,7 +226,7 @@ struct KeygenView: View {
     var keygenFailedView: some View {
         ZStack {
             switch tssType {
-            case .Keygen, .KeyImport:
+            case .Keygen, .KeyImport, .DilithiumKeygen:
                 keygenFailedText
             case .Reshare:
                 keygenReshareFailedText
@@ -277,7 +284,7 @@ struct KeygenView: View {
     private func setDoneData() {
         showDoneText = true
 
-        if tssType == .Reshare {
+        if tssType == .Reshare || tssType == .DilithiumKeygen {
             vault.isBackedUp = false
         }
 
