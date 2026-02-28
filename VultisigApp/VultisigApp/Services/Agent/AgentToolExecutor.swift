@@ -449,7 +449,11 @@ final class AgentToolExecutor {
             var allItems = try context.fetch(descriptor)
 
             if let chainParam = params?.chain, !chainParam.isEmpty {
-                allItems = allItems.filter { $0.coinMeta.chain.rawValue.lowercased() == chainParam.lowercased() }
+                let param = chainParam.lowercased()
+                allItems = allItems.filter {
+                    $0.coinMeta.chain.rawValue.lowercased() == param ||
+                    $0.coinMeta.chain.name.lowercased() == param
+                }
             }
             if let query = params?.query, !query.isEmpty {
                 let lowerQuery = query.lowercased()

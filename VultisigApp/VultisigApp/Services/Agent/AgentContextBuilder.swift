@@ -40,13 +40,27 @@ enum AgentContextBuilder {
             ))
         }
 
+        // Wire up address book items from SwiftData
+        var addressBookEntries: [AgentAddressBookEntry]? = nil
+        if let modelContext = Storage.shared.modelContext,
+           let items = try? modelContext.fetch(FetchDescriptor<AddressBookItem>()),
+           !items.isEmpty {
+            addressBookEntries = items.map {
+                AgentAddressBookEntry(
+                    title: $0.title,
+                    address: $0.address,
+                    chain: $0.coinMeta.chain.name
+                )
+            }
+        }
+
         return AgentMessageContext(
             vaultAddress: vault.pubKeyECDSA,
             vaultName: vault.name,
             balances: balances,
             addresses: addresses,
             coins: coins,
-            addressBook: nil, // TODO: wire up address book items
+            addressBook: addressBookEntries,
             instructions: instructions
         )
     }
