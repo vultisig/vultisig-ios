@@ -80,10 +80,10 @@ class KeysignViewModel: ObservableObject {
                  keysignType: KeyType,
                  messagesToSign: [String],
                  vault: Vault,
-                 keysignPayload: KeysignPayload?,
-                 customMessagePayload: CustomMessagePayload?,
-                 encryptionKeyHex: String,
-                 isInitiateDevice: Bool
+        keysignPayload: KeysignPayload?,
+        customMessagePayload: CustomMessagePayload?,
+        encryptionKeyHex: String,
+        isInitiateDevice: Bool
     ) async {
         self.keysignCommittee = keysignCommittee
         self.mediatorURL = mediatorURL
@@ -94,7 +94,7 @@ class KeysignViewModel: ObservableObject {
         self.keysignPayload = keysignPayload
         self.customMessagePayload = customMessagePayload
         self.encryptionKeyHex = encryptionKeyHex
-        let isEncryptGCM =  await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
+                let isEncryptGCM =  await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
         self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex, pubKey: vault.pubKeyECDSA, encryptGCM: isEncryptGCM)
         self.isInitiateDevice = isInitiateDevice
 
@@ -152,6 +152,7 @@ class KeysignViewModel: ObservableObject {
     }
 
     func startKeysign() async {
+
         switch vault.libType {
         case .GG20, .none:
             await startKeysignGG20()

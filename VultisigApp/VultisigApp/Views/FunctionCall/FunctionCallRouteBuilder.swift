@@ -31,14 +31,12 @@ struct FunctionCallRouteBuilder {
     func buildPairScreen(
         vault: Vault,
         tx: SendTransaction,
-        keysignPayload: KeysignPayload,
-        fastVaultPassword: String?
+        keysignPayload: KeysignPayload
     ) -> some View {
         FunctionCallPairScreen(
             vault: vault,
             tx: tx,
-            keysignPayload: keysignPayload,
-            fastVaultPassword: fastVaultPassword
+            keysignPayload: keysignPayload
         )
     }
 

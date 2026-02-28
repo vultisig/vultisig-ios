@@ -53,6 +53,7 @@ struct ContentView: View {
             .navigationDestination(for: SettingsRoute.self) { router.settingsRouter.build($0) }
             .navigationDestination(for: CircleRoute.self) { router.circleRouter.build($0) }
             .navigationDestination(for: TronRoute.self) { router.tronRouter.build($0) }
+            .navigationDestination(for: AgentRoute.self) { router.agentRouter.build($0) }
         }
         .environment(\.router, router.navigationRouter)
         .colorScheme(.dark)

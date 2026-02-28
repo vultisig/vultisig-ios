@@ -17,7 +17,7 @@ struct KeysignView: View {
     let transferViewModel: TransferViewModel?
     let encryptionKeyHex: String
     let isInitiateDevice: Bool
-    @StateObject var viewModel = KeysignViewModel()
+        @StateObject var viewModel = KeysignViewModel()
 
     @State var showAlert = false
     @State var showDoneText = false

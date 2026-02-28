@@ -74,7 +74,6 @@ struct SwapCryptoView: View {
                     vault: vault,
                     keysignPayload: keysignPayload,
                     customMessagePayload: nil,
-                    fastVaultPassword: tx.fastVaultPassword.nilIfEmpty,
                     shareSheetViewModel: shareSheetViewModel,
                     previewType: .Swap,
                     swapTransaction: tx

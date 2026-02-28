@@ -1112,6 +1112,48 @@ class Endpoint {
         }
     }
 
+    // MARK: - Agent
+
+    static let agentBackendUrl = "http://localhost:8084"
+    static let verifierUrl = "https://verifier.vultisig.com"
+
+    static func agentConversations() -> String {
+        "\(agentBackendUrl)/agent/conversations"
+    }
+
+    static func agentConversationsList() -> String {
+        "\(agentBackendUrl)/agent/conversations/list"
+    }
+
+    static func agentConversation(id: String) -> String {
+        "\(agentBackendUrl)/agent/conversations/\(id)"
+    }
+
+    static func agentConversationMessages(id: String) -> String {
+        "\(agentBackendUrl)/agent/conversations/\(id)/messages"
+    }
+
+    static func agentStarters() -> String {
+        "\(agentBackendUrl)/agent/starters"
+    }
+
+    // Verifier auth
+    static func verifierAuth() -> String {
+        "\(verifierUrl)/auth"
+    }
+
+    static func verifierAuthRefresh() -> String {
+        "\(verifierUrl)/auth/refresh"
+    }
+
+    static func verifierAuthMe() -> String {
+        "\(verifierUrl)/auth/me"
+    }
+
+    static func verifierAuthRevokeAll() -> String {
+        "\(verifierUrl)/auth/tokens/all"
+    }
+
     // Referral
 
     static let ReferralBase = "https://thornode.ninerealms.com/thorchain"

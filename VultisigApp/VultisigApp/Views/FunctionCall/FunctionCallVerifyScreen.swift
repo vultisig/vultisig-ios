@@ -150,8 +150,7 @@ struct FunctionCallVerifyScreen: View {
                     router.navigate(to: FunctionCallRoute.pair(
                         vault: vault,
                         tx: tx,
-                        keysignPayload: result,
-                        fastVaultPassword: tx.fastVaultPassword.nilIfEmpty
+                        keysignPayload: result
                     ))
                 }
             } catch {
