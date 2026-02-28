@@ -186,8 +186,9 @@ final class AgentToolExecutor {
             }
 
             let isNative = tokenParam.isNative ?? (tokenParam.contractAddress == nil || tokenParam.contractAddress!.isEmpty)
-            // Use TokensStore to resolve native decimals, fallback to 18
-            let defaultDecimals = TokensStore.TokenSelectionAssets.first(where: { $0.chain == chainObj })?.decimals ?? 18
+            // Use TokensStore to resolve native token decimals — MUST filter by isNativeToken
+            // to avoid picking a non-native coin (e.g. JUP decimals:6 instead of SOL decimals:9 on Solana)
+            let defaultDecimals = TokensStore.TokenSelectionAssets.first(where: { $0.chain == chainObj && $0.isNativeToken })?.decimals ?? 18
             let decimals = tokenParam.decimals ?? (isNative ? defaultDecimals : 18)
 
             let coinMeta = CoinMeta(
@@ -273,7 +274,8 @@ final class AgentToolExecutor {
                 continue
             }
 
-            let defaultDecimals = TokensStore.TokenSelectionAssets.first(where: { $0.chain == chainObj })?.decimals ?? 18
+            // Filter by isNativeToken to get correct chain decimals (e.g. SOL=9, not JUP=6)
+            let defaultDecimals = TokensStore.TokenSelectionAssets.first(where: { $0.chain == chainObj && $0.isNativeToken })?.decimals ?? 18
             // Native fee coin asset
             let feeAsset = CoinMeta(
                 chain: chainObj,
@@ -499,7 +501,8 @@ final class AgentToolExecutor {
                 continue
             }
 
-            let defaultDecimals = TokensStore.TokenSelectionAssets.first(where: { $0.chain == chainObj })?.decimals ?? 18
+            // Filter by isNativeToken to get correct chain decimals (e.g. SOL=9, not JUP=6)
+            let defaultDecimals = TokensStore.TokenSelectionAssets.first(where: { $0.chain == chainObj && $0.isNativeToken })?.decimals ?? 18
             let meta = CoinMeta(chain: chainObj, ticker: chainObj.ticker, logo: chainObj.logo, decimals: defaultDecimals, priceProviderId: "", contractAddress: "", isNativeToken: true)
             let item = AddressBookItem(title: entryParam.title, address: entryParam.address, coinMeta: meta, order: 0)
 
