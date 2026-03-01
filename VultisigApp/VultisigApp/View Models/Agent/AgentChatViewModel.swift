@@ -22,6 +22,12 @@ final class AgentChatViewModel: ObservableObject {
     @Published var passwordRequired = false
     @Published var isConnected = false
 
+    @Published var pendingSendTx: SendTransaction?
+    @Published var shouldShowPairingSheet = false
+    @Published var showFastVaultPasswordPrompt = false
+    @Published var activeKeysignPayload: KeysignPayload?
+    var activeSignTxCallId: String?
+
     // MARK: - Private
 
     private let backendClient = AgentBackendClient()
@@ -30,6 +36,7 @@ final class AgentChatViewModel: ObservableObject {
     private var streamingMessageId: String?
     private var currentTask: Task<Void, Never>?
     private var pendingMessage: String?
+    private var cachedFastVaultPassword: String?
 
     var conversationId: String?
 
@@ -244,6 +251,7 @@ final class AgentChatViewModel: ObservableObject {
             print("[AgentChat] ✅ signIn succeeded")
             isConnected = true
             passwordRequired = false
+            cachedFastVaultPassword = password  // Cache for headless keysign reuse
 
             if let pending = pendingMessage {
                 print("[AgentChat] 📤 Sending pending message after login")
@@ -393,6 +401,13 @@ final class AgentChatViewModel: ObservableObject {
                 )
             )
             messages.append(toolCallMsg)
+
+            if action.type == "build_send_tx" {
+                self.createPendingSendTx(from: action.params, vault: vault)
+            } else if action.type == "sign_tx" {
+                self.activeSignTxCallId = "tool-call-\(action.id)"
+                self.confirmSignTx(vault: vault)
+            }
 
             if action.autoExecute {
                 autoExecuteActions.append(action)
@@ -557,6 +572,176 @@ final class AgentChatViewModel: ObservableObject {
     func rejectTxProposal(_: AgentTxReady, vault: Vault) {
         print("[AgentChat] ❌ User REJECTED transaction.")
         sendMessage("Cancel the transaction. I do not want to execute it.", vault: vault)
+    }
+
+    func handleTxBroadcasted(txid: String, vault: Vault) {
+        guard let callId = activeSignTxCallId else { return }
+
+        // Send the result to AI
+        let result = AgentActionResult(
+            action: "sign_tx",
+            success: true,
+            data: ["txid": AnyCodable(txid)]
+        )
+
+        MainActor.assumeIsolated {
+            self.shouldShowPairingSheet = false
+            self.pendingSendTx = nil
+            self.activeSignTxCallId = nil
+
+            if let idx = self.messages.firstIndex(where: { $0.id == callId }) {
+                self.messages[idx].toolCall?.status = .success
+                self.messages[idx].toolCall?.resultData = ["txid": AnyCodable(txid)]
+            }
+            self.sendActionResult(result, vault: vault)
+        }
+    }
+
+    func confirmSignTx(vault: Vault) {
+        guard let pendingSendTx else { return }
+        
+        if vault.isFastVault {
+            // Fully headless: use cached password from signIn, no sheets at all
+            if let password = cachedFastVaultPassword, !password.isEmpty {
+                executeFastVaultKeysign(password: password, vault: vault)
+            } else {
+                // Fallback: prompt for password if not cached
+                self.showFastVaultPasswordPrompt = true
+            }
+        } else {
+            Task {
+                await MainActor.run {
+                    self.isLoading = true
+                    self.appendAssistantMessage("Generating keysign payload...")
+                }
+                
+                do {
+                    let logic = SendCryptoVerifyLogic()
+                    
+                    await BalanceService.shared.updateBalance(for: pendingSendTx.coin)
+                    let feeResult = try await logic.calculateFee(tx: pendingSendTx)
+                    pendingSendTx.fee = feeResult.fee
+                    pendingSendTx.gas = feeResult.gas
+                    
+                    let result = logic.validateBalanceWithFee(tx: pendingSendTx)
+                    if !result.isValid {
+                        throw HelperError.runtimeError(result.errorMessage ?? "Insufficient balance to cover fee.")
+                    }
+                    
+                    try await logic.validateUtxosIfNeeded(tx: pendingSendTx)
+                    let payload = try await logic.buildKeysignPayload(tx: pendingSendTx, vault: vault)
+                    
+                    await MainActor.run {
+                        self.isLoading = false
+                        self.activeKeysignPayload = payload
+                        self.shouldShowPairingSheet = true
+                    }
+                } catch {
+                    await MainActor.run {
+                        self.isLoading = false
+                        self.error = error.localizedDescription
+                    }
+                }
+            }
+        }
+    }
+
+    func executeFastVaultKeysign(password: String, vault: Vault) {
+        guard let tx = pendingSendTx else { return }
+        
+        Task {
+            await MainActor.run {
+                self.isLoading = true
+                self.appendAssistantMessage("Signing and broadcasting transaction...")
+            }
+            
+            do {
+                let logic = SendCryptoVerifyLogic()
+                
+                // 1. Fetch fees
+                await BalanceService.shared.updateBalance(for: tx.coin)
+                let feeResult = try await logic.calculateFee(tx: tx)
+                tx.fee = feeResult.fee
+                tx.gas = feeResult.gas
+                
+                // 2. Validate form
+                let keysignPayload = try await logic.buildKeysignPayload(tx: tx, vault: vault)
+                
+                // 3. Generate Keysign Messages (Matches KeysignDiscoveryViewModel flow)
+                let finalPayload = keysignPayload.coin.chain == .solana ?
+                    try await BlockChainService.shared.refreshSolanaBlockhash(for: keysignPayload) : keysignPayload
+                let keysignFactory = KeysignMessageFactory(payload: finalPayload)
+                let preSignedImageHash = try keysignFactory.getKeysignMessages()
+                let keysignMessages = preSignedImageHash.sorted()
+
+                guard !keysignMessages.isEmpty else {
+                    throw HelperError.runtimeError("No message need to be signed")
+                }
+
+                // 4. FastVault Keysign execution
+                let input = FastVaultKeysignInput(
+                    vault: vault,
+                    keysignMessages: keysignMessages,
+                    derivePath: finalPayload.coin.coinType.derivationPath(),
+                    isECDSA: finalPayload.coin.chain.signingKeyType == .ECDSA,
+                    vaultPassword: password,
+                    chain: finalPayload.coin.chain.name
+                )
+                
+                let result = try await FastVaultKeysignService.shared.keysign(input: input)
+                
+                // 5. Broadcast Transaction
+                await MainActor.run {
+                    self.appendAssistantMessage("Transaction signed! Broadcasting to network...")
+                }
+                
+                // Let's look up how broadcast is done in KeysignViewModel
+                let keysignViewModel = KeysignViewModel()
+                keysignViewModel.vault = vault
+                keysignViewModel.keysignPayload = finalPayload
+                keysignViewModel.signatures = result.signatures
+                
+                await keysignViewModel.broadcastTransaction()
+                
+                if !keysignViewModel.txid.isEmpty {
+                    // Send back to AI
+                    self.handleTxBroadcasted(txid: keysignViewModel.txid, vault: vault)
+                } else if !keysignViewModel.keysignError.isEmpty {
+                    throw HelperError.runtimeError(keysignViewModel.keysignError)
+                }
+            } catch {
+                await MainActor.run {
+                    self.isLoading = false
+                    self.error = error.localizedDescription
+                }
+            }
+        }
+    }
+
+    private func createPendingSendTx(from params: [String: AnyCodable]?, vault: Vault) {
+        guard let params = params,
+              let chainStr = params["chain"]?.value as? String,
+              let symbolStr = params["symbol"]?.value as? String,
+              let amountStr = params["amount"]?.value as? String,
+              let addressStr = params["address"]?.value as? String else { return }
+
+        // Find coin in vault
+        if let coin = vault.coins.first(where: {
+            $0.chain.name.lowercased() == chainStr.lowercased() &&
+            $0.ticker.lowercased() == symbolStr.lowercased()
+        }) {
+            let tx = SendTransaction()
+            tx.coin = coin
+            tx.toAddress = addressStr
+            tx.amount = amountStr
+            tx.vault = vault // Explicitly assign Vault to allow isFastVault detection
+
+            if let memoStr = params["memo"]?.value as? String {
+                tx.memo = memoStr
+            }
+
+            self.pendingSendTx = tx
+        }
     }
 
     private func appendAssistantMessage(_ content: String) {

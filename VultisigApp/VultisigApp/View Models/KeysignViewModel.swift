@@ -645,6 +645,10 @@ class KeysignViewModel: ObservableObject {
 
         // Save to pending transactions for status tracking
         savePendingTransaction()
+
+        if !txid.isEmpty && txid != "Transaction already broadcasted." {
+            NotificationCenter.default.post(name: .agentDidBroadcastTx, object: nil, userInfo: ["txid": txid])
+        }
     }
 
     private func savePendingTransaction() {

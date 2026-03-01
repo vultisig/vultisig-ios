@@ -77,7 +77,10 @@ final class FastVaultKeysignService {
             throw FastVaultKeysignError.keysignFailed("Failed to generate encryption key")
         }
 
-        let publicKey = input.isECDSA ? input.vault.pubKeyECDSA : input.vault.pubKeyEdDSA
+        // The server ALWAYS identifies vaults by the ECDSA public key.
+        // For the MPC ceremony, we use the correct signing key type.
+        let signingPublicKey = input.isECDSA ? input.vault.pubKeyECDSA : input.vault.pubKeyEdDSA
+        let vaultIdentifierKey = input.vault.pubKeyECDSA  // Always ECDSA for server API
 
         print("[FastVaultKeysign] 🚀 Starting keysign ceremony")
         print("[FastVaultKeysign]   sessionID=\(sessionID)")
@@ -87,16 +90,17 @@ final class FastVaultKeysignService {
         print("[FastVaultKeysign]   isECDSA=\(input.isECDSA)")
         print("[FastVaultKeysign]   chain=\(input.chain)")
         print("[FastVaultKeysign]   messages=\(input.keysignMessages.map { String($0.prefix(20)) })")
-        print("[FastVaultKeysign]   publicKey=\(publicKey.prefix(20))...")
+        print("[FastVaultKeysign]   signingPublicKey=\(signingPublicKey.prefix(20))...")
+        print("[FastVaultKeysign]   vaultIdentifierKey=\(vaultIdentifierKey.prefix(20))...")
 
         // Step 1: Register session on relay
         try await registerSession(serverAddr: serverAddr, sessionID: sessionID, localPartyID: localPartyID)
         print("[FastVaultKeysign] ✅ Step 1: Session registered on relay")
 
-        // Step 2: Invite VultiServer
+        // Step 2: Invite VultiServer (uses ECDSA key for vault identification)
         print("[FastVaultKeysign] 📡 Step 2: Inviting VultiServer via FastVaultService.sign()...")
         try await inviteServer(
-            publicKey: publicKey,
+            publicKey: vaultIdentifierKey,
             keysignMessages: input.keysignMessages,
             sessionID: sessionID,
             encryptionKeyHex: encryptionKeyHex,
@@ -132,7 +136,7 @@ final class FastVaultKeysignService {
         print("[FastVaultKeysign]   committee=\(keysignCommittee)")
         print("[FastVaultKeysign]   encryptionKeyHex=\(encryptionKeyHex.prefix(8))...")
         print("[FastVaultKeysign]   vault.localPartyID=\(input.vault.localPartyID)")
-        print("[FastVaultKeysign]   vault.publicKeys=\(publicKey.prefix(20))...")
+        print("[FastVaultKeysign]   vault.publicKeys=\(signingPublicKey.prefix(20))...")
 
         let signatures: [String: TssKeysignResponse]
         if input.isECDSA {
@@ -145,7 +149,7 @@ final class FastVaultKeysignService {
                 encryptionKeyHex: encryptionKeyHex,
                 chainPath: chainPath,
                 isInitiateDevice: true,
-                publicKeyECDSA: publicKey
+                publicKeyECDSA: signingPublicKey
             )
             try await dklsKeysign.DKLSKeysignWithRetry()
             signatures = dklsKeysign.getSignatures()
@@ -158,7 +162,7 @@ final class FastVaultKeysignService {
                 vault: input.vault,
                 encryptionKeyHex: encryptionKeyHex,
                 isInitiateDevice: true,
-                publicKeyEdDSA: publicKey
+                publicKeyEdDSA: signingPublicKey
             )
             try await schnorrKeysign.KeysignWithRetry()
             signatures = schnorrKeysign.getSignatures()

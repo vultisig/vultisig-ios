@@ -59,6 +59,40 @@ struct AgentChatView: View {
         } message: {
             Text(viewModel.error ?? "")
         }
+        .sheet(isPresented: $viewModel.shouldShowPairingSheet) {
+            if let tx = viewModel.pendingSendTx, let vault = appViewModel.selectedVault, let keysignPayload = viewModel.activeKeysignPayload {
+                NavigationStack {
+                    SendPairScreen(
+                        vault: vault,
+                        tx: tx,
+                        keysignPayload: keysignPayload
+                    )
+                    .navigationDestination(for: SendRoute.self) { route in
+                        SendRouter().build(route)
+                    }
+                    .environmentObject(NavigationRouter())
+                }
+            }
+        }
+        .sheet(isPresented: $viewModel.showFastVaultPasswordPrompt) {
+            if let tx = viewModel.pendingSendTx, let vault = appViewModel.selectedVault {
+                FastVaultEnterPasswordView(
+                    password: Binding(
+                        get: { tx.fastVaultPassword },
+                        set: { tx.fastVaultPassword = $0 }
+                    ),
+                    vault: vault,
+                    onSubmit: {
+                        viewModel.executeFastVaultKeysign(password: tx.fastVaultPassword, vault: vault)
+                    }
+                )
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .agentDidBroadcastTx)) { notif in
+            if let txid = notif.userInfo?["txid"] as? String, let vault = appViewModel.selectedVault {
+                viewModel.handleTxBroadcasted(txid: txid, vault: vault)
+            }
+        }
     }
 
     // MARK: - Messages List
@@ -260,4 +294,5 @@ struct AgentChatView: View {
 extension Notification.Name {
     static let agentDidAcceptTx = Notification.Name("agentDidAcceptTx")
     static let agentDidRejectTx = Notification.Name("agentDidRejectTx")
+    static let agentDidBroadcastTx = Notification.Name("agentDidBroadcastTx")
 }
