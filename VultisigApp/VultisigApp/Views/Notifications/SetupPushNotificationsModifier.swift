@@ -29,15 +29,15 @@ struct SetupPushNotificationsModifier: ViewModifier {
                     handleDismiss()
                 }
             }
-            .onLoad {
-                checkIfNeeded()
-            }
+            .onLoad { checkIfNeeded() }
             .onChange(of: vault) { _, _ in
                 checkIfNeeded()
             }
     }
 
     private func checkIfNeeded() {
+        guard !shouldShow else { return }
+
         // Case 1: First app opening with existing vaults — show intro
         if !pushNotificationManager.hasSeenNotificationPrompt
             && pushNotificationManager.hadVaultsOnStartup
@@ -55,6 +55,7 @@ struct SetupPushNotificationsModifier: ViewModifier {
 
         // Case 2: New/imported vault — show single vault opt-in
         guard !pushNotificationManager.hasPromptedVaultNotification(vault) else { return }
+
         pushNotificationManager.hasSeenNotificationPrompt = true
         pushNotificationManager.markVaultNotificationPrompted(vault)
         activeSheetType = .vaultOptIn
