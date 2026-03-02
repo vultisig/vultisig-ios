@@ -39,7 +39,7 @@ struct DefiChainMainScreen: View {
             .padding(.top, isMacOS ? 60 : 16)
             .padding(.horizontal, 16)
         }
-        .background(VaultMainScreenBackground())
+        .background(MainBackgroundWithNotification())
         .overlay(bottomGradient, alignment: .bottom)
         .onLoad {
             viewModel.onLoad()

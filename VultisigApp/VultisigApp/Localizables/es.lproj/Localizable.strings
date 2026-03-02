@@ -334,6 +334,9 @@
 "followVultisigBannerButtonTitle" = "Seguir @Vultisig";
 "followVultisigBannerSubtitle" = "Síguenos en X";
 "followVultisigBannerTitle" = "Vultisig está construyendo contigo.";
+"foregroundNotificationGeneric" = "Transacción pendiente de aprobación";
+"foregroundNotificationSend" = "Enviar %@";
+"foregroundNotificationSwap" = "Intercambiar %@ → %@";
 "foundActiveChainsSubtitle" = "Cada cadena adicional duplica aproximadamente el tiempo para generar tu bóveda. Tiempo estimado para todas las cadenas seleccionadas: %d minutos";
 "foundActiveChainsSubtitleHighlight" = "%d minutos";
 "foundActiveChainsTitle" = "Encontramos %d cadenas activas";
@@ -454,6 +457,7 @@
 "lpUnitsLabel" = "LPUNITS";
 "madeVaultBackupPrompt" = "He hecho una copia de seguridad del almacén";
 "makeSureCorrectDevices" = "Asegúrate de que estos son los dispositivos correctos que has añadido:";
+"manageNotificationsInSettings" = "Puedes gestionar las notificaciones en los ajustes del sistema.";
 "managePositions" = "Administrar posiciones";
 "maxTotalFee" = "Tarifa total máx.";
 "memo" = "Memorándum";
@@ -522,8 +526,9 @@
 "notEnoughUTXOError" = "UTXOs insuficientes disponibles. Tu billetera tiene suficiente saldo pero los UTXOs (salidas de transacción) son demasiado pequeños o no suficientes para cubrir el monto de la transacción más las tarifas. Intenta enviar una cantidad menor o espera a que se confirmen las transacciones pendientes.";
 "noThorAddressFound" = "No THORChain address found";
 "notifications" = "Notificaciones";
-"notificationsAreHere" = "Las notificaciones están aquí";
-"notificationsDescription" = "Mantente al tanto de la actividad de tu bóveda, como cuando otro dispositivo inicia la firma de una transacción.";
+"notificationsAreHere" = "Las notificaciones seguras están aquí";
+"notificationsDescription" = "Recibe alertas cuando otro dispositivo solicite unirse a tu bóveda o cuando se requiera tu firma.";
+"notificationSentSuccessfully" = "¡Notificación enviada con éxito!";
 "notNow" = "Ahora no";
 "noTokensFound" = "No se encontraron tokens";
 "noTokensFoundSubtitle" = "Agrega tokens para verlos aquí.";
@@ -600,6 +605,7 @@
 "provider" = "Proveedor";
 "providerLabel" = "Proveedor (opcional)";
 "pushNotifications" = "Notificaciones push";
+"pushNotificationsDescription" = "Recibe notificaciones cuando se requiera tu firma o un dispositivo solicite acceso.";
 "ready" = "Listo";
 "Rebond" = "Rebond";
 "rebondAmount" = "Cantidad de rebond (Opcional - dejar vacío para transferir todo el RUNE vinculado)";
@@ -648,6 +654,8 @@
 "requestServerVaultShareTooManyRequestsError" = "Ha solicitado una bóveda de compartir demasiadas veces en un corto período de tiempo. Espere un par de minutos y vuelva a intentarlo.";
 "requestServerVaultShareUnknownError" = "No pudimos enviar una nueva copia de su bóveda compartida. Espere un par de minutos y vuelva a intentarlo.";
 "requestToBond" = "Solicitud de Vinculación";
+"resendNotification" = "Reenviar notificación";
+"resendNotificationIn" = "Reenviar notificación en %@";
 "reshare" = "Recompartir";
 "reshareLabelDisclaimer" = "Para todas las acciones de compartir nuevamente, siempre se requiere el umbral de dispositivos.";
 "reshareLabelSubtitle" = "La opción de compartir nuevamente se puede usar para actualizar, expandir o reducir la cantidad de dispositivos en una Bóveda.";

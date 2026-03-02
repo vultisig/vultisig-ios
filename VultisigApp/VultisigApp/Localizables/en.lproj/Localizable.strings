@@ -340,6 +340,9 @@
 "followVultisigBannerButtonTitle" = "Follow @Vultisig";
 "followVultisigBannerSubtitle" = "Follow us on X";
 "followVultisigBannerTitle" = "Vultisig is building with you";
+"foregroundNotificationGeneric" = "Transaction pending approval";
+"foregroundNotificationSend" = "Send %@";
+"foregroundNotificationSwap" = "Swap %@ → %@";
 "foundActiveChainsSubtitle" = "Each extra chain increases the time to generate your vault and possibility of an timeout.";
 "foundActiveChainsTitle" = "We found %d active chains";
 "from" = "From";
@@ -460,6 +463,7 @@
 "lpUnitsLabel" = "LPUNITS";
 "madeVaultBackupPrompt" = "I have made a vault backup";
 "makeSureCorrectDevices" = "Make sure that these are the correct devices you've added:";
+"manageNotificationsInSettings" = "You can manage notifications in system settings.";
 "managePositions" = "Manage Positions";
 "maxTotalFee" = "Max. Total Fee";
 "memo" = "Memo";
@@ -530,8 +534,9 @@
 "notEnoughUTXOError" = "Insufficient UTXOs available. Your wallet has enough balance but the UTXOs (transaction outputs) are too small or not sufficient to cover the transaction amount plus fees. Try sending a smaller amount or wait for pending transactions to confirm.";
 "noThorAddressFound" = "No THORChain address found";
 "notifications" = "Notifications";
-"notificationsAreHere" = "Notifications are here";
-"notificationsDescription" = "Stay updated on your vault activity, like when another device initiates a transaction signing.";
+"notificationsAreHere" = "Secure Notifications are here";
+"notificationsDescription" = "Receive alerts when another device requests to join your vault or when your signature is required.";
+"notificationSentSuccessfully" = "Notification was successfully sent!";
 "notNow" = "Not now";
 "noTokensFound" = "No tokens selected";
 "noTokensFoundSubtitle" = "You’ve disabled all tokens. Make sure that the token you’re looking for is enabled.";
@@ -608,6 +613,7 @@
 "provider" = "Provider";
 "providerLabel" = "Provider (optional)";
 "pushNotifications" = "Push notifications";
+"pushNotificationsDescription" = "Get notified when your signature is required or a device requests access.";
 "ready" = "Ready";
 "Rebond" = "Rebond";
 "rebondAmount" = "Rebond Amount (Optional - leave empty to transfer all bonded RUNE)";
@@ -657,6 +663,8 @@
 "requestServerVaultShareTooManyRequestsError" = "You've requested a vault share too many times in a short period of time. Please wait %@ minutes and try again.";
 "requestServerVaultShareUnknownError" = "We couldn't send a new copy of your vault share. Please wait a couple of minutes and try again.";
 "requestToBond" = "Request to Bond";
+"resendNotification" = "Resend notification";
+"resendNotificationIn" = "Resend notification in %@";
 "reservesForGas" = "Reserves %@ %@ for gas";
 "reshare" = "Reshare";
 "reshareLabelDisclaimer" = "For all Reshare actions the threshold of devices is always required.";

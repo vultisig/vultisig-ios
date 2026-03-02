@@ -334,6 +334,9 @@
 "followVultisigBannerButtonTitle" = "Segui @Vultisig";
 "followVultisigBannerSubtitle" = "Seguici su X";
 "followVultisigBannerTitle" = "Vultisig sta costruendo con te.";
+"foregroundNotificationGeneric" = "Transazione in attesa di approvazione";
+"foregroundNotificationSend" = "Invia %@";
+"foregroundNotificationSwap" = "Scambia %@ → %@";
 "foundActiveChainsSubtitle" = "Ogni chain aggiuntiva raddoppia approssimativamente il tempo per generare il tuo vault. Tempo stimato per tutte le chain selezionate: %d minuti";
 "foundActiveChainsSubtitleHighlight" = "%d minuti";
 "foundActiveChainsTitle" = "Abbiamo trovato %d chain attive";
@@ -437,7 +440,7 @@
 "Leave" = "Lascia";
 "legal" = "Legale";
 "liquidityPools" = "Pool di liquidità";
-"loading" = "Loading...";
+"loading" = "Caricamento...";
 "loadingDetails" = "Caricamento dettagli";
 "loadingPools" = "Caricamento pool...";
 "loadingSecuredAssets" = "Caricamento asset garantiti...";
@@ -454,6 +457,7 @@
 "lpUnitsLabel" = "Unità LP";
 "madeVaultBackupPrompt" = "Ho fatto un backup del caveau";
 "makeSureCorrectDevices" = "Assicurati che questi siano i dispositivi corretti che hai aggiunto:";
+"manageNotificationsInSettings" = "Puoi gestire le notifiche nelle impostazioni di sistema.";
 "managePositions" = "Gestisci posizioni";
 "maxTotalFee" = "Commissione totale max.";
 "memo" = "Memo";
@@ -522,8 +526,9 @@
 "notEnoughUTXOError" = "UTXO insufficienti disponibili. Il tuo portafoglio ha saldo sufficiente ma gli UTXO (output di transazione) sono troppo piccoli o non sufficienti per coprire l'importo della transazione più le commissioni. Prova a inviare un importo minore o attendi che le transazioni in sospeso vengano confermate.";
 "noThorAddressFound" = "Nessun indirizzo THORChain trovato";
 "notifications" = "Notifiche";
-"notificationsAreHere" = "Le notifiche sono arrivate";
-"notificationsDescription" = "Resta aggiornato sull'attività del tuo vault, come quando un altro dispositivo avvia la firma di una transazione.";
+"notificationsAreHere" = "Le notifiche sicure sono arrivate";
+"notificationsDescription" = "Ricevi avvisi quando un altro dispositivo richiede di unirsi al tuo vault o quando è richiesta la tua firma.";
+"notificationSentSuccessfully" = "Notifica inviata con successo!";
 "notNow" = "Non ora";
 "noTokensFound" = "Nessun token trovato";
 "noTokensFoundSubtitle" = "Non sono stati trovati token per questa selezione.";
@@ -600,6 +605,7 @@
 "provider" = "Fornitore";
 "providerLabel" = "Fornitore (opzionale)";
 "pushNotifications" = "Notifiche push";
+"pushNotificationsDescription" = "Ricevi una notifica quando è richiesta la tua firma o un dispositivo richiede l'accesso.";
 "ready" = "Pronto";
 "Rebond" = "Rebond";
 "rebondAmount" = "Importo rebond (Opzionale - lascia vuoto per trasferire tutto il RUNE vincolato)";
@@ -648,6 +654,8 @@
 "requestServerVaultShareTooManyRequestsError" = "Hai richiesto una condivisione del caveau troppe volte in un breve periodo di tempo. Per favore attendi un paio di minuti e riprova.";
 "requestServerVaultShareUnknownError" = "Non potremmo inviare una nuova copia della tua condivisione Vault. Per favore attendi un paio di minuti e riprova.";
 "requestToBond" = "Richiesta di Vincolo";
+"resendNotification" = "Rinvia notifica";
+"resendNotificationIn" = "Rinvia notifica tra %@";
 "reshare" = "Ricondividi";
 "reshareLabelDisclaimer" = "Per tutte le azioni di ricondivisione è sempre richiesto il numero minimo di dispositivi.";
 "reshareLabelSubtitle" = "La ricondivisione può essere utilizzata per aggiornare, espandere o ridurre il numero di dispositivi in un Vault.";

@@ -334,6 +334,9 @@
 "followVultisigBannerButtonTitle" = "关注 @Vultisig";
 "followVultisigBannerSubtitle" = "在 X 上关注我们";
 "followVultisigBannerTitle" = "Vultisig 与您一起构建";
+"foregroundNotificationGeneric" = "交易待审批";
+"foregroundNotificationSend" = "发送 %@";
+"foregroundNotificationSwap" = "兑换 %@ → %@";
 "foundActiveChainsSubtitle" = "每增加一条链大约会使生成保险库的时间翻倍。所有选定链的预计时间：%d分钟";
 "foundActiveChainsSubtitleHighlight" = "%d分钟";
 "foundActiveChainsTitle" = "我们找到了%d条活跃链";
@@ -454,6 +457,7 @@
 "lpUnitsLabel" = "LP单位";
 "madeVaultBackupPrompt" = "我已进行保险库备份";
 "makeSureCorrectDevices" = "确保这些是你添加的正确设备：";
+"manageNotificationsInSettings" = "您可以在系统设置中管理通知。";
 "managePositions" = "管理仓位";
 "maxTotalFee" = "最大总费用";
 "memo" = "备忘录";
@@ -491,7 +495,6 @@
 "nextAward" = "下次奖励";
 "nextChurn" = "下次淘汰";
 "nextPayout" = "下次支付";
-"no_unencrypted_vaults_to_import" = "没有未加密的保险库可导入";
 "noActiveChainsFound" = "未找到活跃链";
 "noActiveChainsFoundSubtitle" = "我们未在此助记词中检测到任何资产。\n\n每增加一条链都会增加生成保险库的时间和超时的可能性。";
 "noBarcodesFound" = "未找到条形码";
@@ -523,8 +526,9 @@
 "notEnoughUTXOError" = "可用的 UTXO 不足。您的钱包有足够的余额，但 UTXO（交易输出）太小或不足以支付交易金额加费用。尝试发送较小的金额或等待待处理的交易确认";
 "noThorAddressFound" = "未找到 THORChain 地址";
 "notifications" = "通知";
-"notificationsAreHere" = "通知功能已上线";
-"notificationsDescription" = "随时了解保险库动态，例如当另一台设备发起交易签名时。";
+"notificationsAreHere" = "安全通知功能已上线";
+"notificationsDescription" = "当其他设备请求加入您的保险库或需要您的签名时，接收提醒通知。";
+"notificationSentSuccessfully" = "通知已成功发送！";
 "notNow" = "暂时不用";
 "noTokensFound" = "未选择代币";
 "noTokensFoundSubtitle" = "您已禁用所有代币。确保您要查找的代币已启用";
@@ -583,7 +587,7 @@
 "photoLibrary" = "照片库";
 "pickReferralCode" = "选择推荐码";
 "pickValidCode" = "请选择有效的推荐码";
-"pleaseChooseDifferentVaultName" = "请选择其他Vault名称。";
+"pleaseChooseDifferentVaultName" = "请选择其他保险库名称。";
 "pleaseWait" = "请稍候...";
 "pleaseWaitMinutes" = "请等待 %@ 分钟";
 "plusMore" = "+%d 更多";
@@ -602,6 +606,7 @@
 "provider" = "提供商";
 "providerLabel" = "提供商（可选）";
 "pushNotifications" = "推送通知";
+"pushNotificationsDescription" = "当需要您的签名或设备请求访问时收到通知。";
 "ready" = "就绪";
 "Rebond" = "重新绑定";
 "rebondAmount" = "重新绑定金额（可选 - 留空以转移所有已绑定的 RUNE）";
@@ -650,6 +655,8 @@
 "requestServerVaultShareTooManyRequestsError" = "您在短时间内请求保险库份额的次数过多。请等待 %@ 分钟后重试";
 "requestServerVaultShareUnknownError" = "我们无法发送新的保险库份额副本。请等待几分钟后重试";
 "requestToBond" = "请求绑定";
+"resendNotification" = "重新发送通知";
+"resendNotificationIn" = "在 %@ 后重新发送通知";
 "reshare" = "重新共享";
 "reshareLabelDisclaimer" = "对于所有重新共享操作，始终需要达到设备阈值";
 "reshareLabelSubtitle" = "重新共享可用于刷新、扩展或减少保险库中的设备数量";
@@ -921,7 +928,7 @@
 "vaultLibType" = "保险库类型";
 "vaultManagement" = "保险库管理";
 "vaultName" = "保险库名称";
-"vaultNameAlreadyInUse" = "Vault名称已被使用";
+"vaultNameAlreadyInUse" = "保险库名称已被使用";
 "vaultNameExists" = "保险库名称 %s 已存在";
 "vaultNotifications" = "保险库通知";
 "vaultNotImportedDescription" = "请导入正确的份额。";
@@ -974,7 +981,7 @@
 "vaultType" = "保险库份额";
 "vaultTypeDoesnotMatch" = "保险库类型不匹配";
 "vaultTypeMismatch" = "保险库类型不匹配，发起设备和配对设备的保险库类型不同";
-"vaultTypeMismatchDescription" = "发起设备和配对设备具有不同的Vault类型。请确保两个设备使用相同的Vault类型。";
+"vaultTypeMismatchDescription" = "发起设备和配对设备具有不同的保险库类型。请确保两个设备使用相同的保险库类型。";
 "vaultValue" = "保险库价值";
 "vaultWillBeDeletedPermanentlyPrompt" = "我知道保险库将被永久删除";
 "verify" = "验证";
@@ -1010,7 +1017,7 @@
 "wrongPassword" = "密码错误";
 "wrongVaultPassword" = "保险库密码错误。请重试";
 "wrongVaultSelected" = "您选择了错误的保险库";
-"wrongVaultSelectedDescription" = "您选择的Vault与keygen会话不匹配。请选择正确的Vault。";
+"wrongVaultSelectedDescription" = "您选择的保险库与keygen会话不匹配。请选择正确的保险库。";
 "wrongVaultTryAgain" = "错误的保险库或配对";
 "x" = "X（推特）";
 "youAreEnteringAnewEra" = "您正在进入一个新时代，将旧助记词抛在身后。您需要：";

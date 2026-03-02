@@ -23,15 +23,26 @@ struct VaultNotificationToggleRow: View {
     }
 
     var body: some View {
-        SettingsOptionView(
-            icon: nil,
-            title: vault.name,
-            subtitle: nil,
-            type: .normal,
-            showSeparator: showSeparator
-        ) {
-            VultiToggle(isOn: isEnabled)
+        VStack(spacing: 0) {
+            HStack(spacing: 12) {
+                VaultIconTypeView(isFastVault: vault.isFastVault)
+                    .padding(12)
+                    .overlay(Circle().stroke(Theme.colors.borderLight, lineWidth: 1))
+
+                Text(vault.name)
+                    .font(Theme.fonts.footnote)
+                    .foregroundStyle(Theme.colors.textPrimary)
+
+                Spacer()
+
+                VultiToggle(isOn: isEnabled)
+            }
+            .padding(.vertical, 12)
+
+            Separator(color: Theme.colors.borderLight, opacity: 1)
+                .showIf(showSeparator)
         }
+        .padding(.horizontal, 16)
     }
 }
 
