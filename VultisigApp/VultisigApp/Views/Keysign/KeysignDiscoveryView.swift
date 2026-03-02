@@ -151,7 +151,7 @@ struct KeysignDiscoveryView: View {
 
     var lookingForDevices: some View {
         KeygenAnimationView(
-            isFast: false,
+            isFast: vault.isFastVault,
             connected: .constant(false),
             progress: .constant(0)
         )

@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		002DB83AA9A8A2442010A809 /* AgentPasswordPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51EA594D7EE41E0889397FBD /* AgentPasswordPromptView.swift */; };
+		002DB83AA9A8A2442010A809 /* AgentPasswordPromptScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51EA594D7EE41E0889397FBD /* AgentPasswordPromptScreen.swift */; };
 		024AA73E7955C2E7F2172B39 /* SetupPushNotificationsModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8F5B728DE1B9BF68381E504 /* SetupPushNotificationsModifier.swift */; };
 		03CE221FFD984BC3A906CC88 /* ThorchainStagenet2Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = 509045C58D1144858A15FE41 /* ThorchainStagenet2Service.swift */; };
 		03FC7C642AC179BADB973C88 /* TronResourcesCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1BE569DF07B97F7C31210E2 /* TronResourcesCardView.swift */; };
@@ -1877,7 +1877,7 @@
 		46F8F7202B99FDB70099454E /* TransactionBroadcastResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionBroadcastResponse.swift; sourceTree = "<group>"; };
 		46F8F7272B9A011B0099454E /* ThorchainBroadcastTransactionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainBroadcastTransactionService.swift; sourceTree = "<group>"; };
 		4D2E9E8EAEC023EBFCD45393 /* AgentContextBuilder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AgentContextBuilder.swift; sourceTree = "<group>"; };
-		51EA594D7EE41E0889397FBD /* AgentPasswordPromptView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AgentPasswordPromptView.swift; sourceTree = "<group>"; };
+		51EA594D7EE41E0889397FBD /* AgentPasswordPromptScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AgentPasswordPromptScreen.swift; sourceTree = "<group>"; };
 		4B48C2DF897CAFC419193329 /* PushNotificationManaging.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PushNotificationManaging.swift; sourceTree = "<group>"; };
 		509045C58D1144858A15FE41 /* ThorchainStagenet2Service.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainStagenet2Service.swift; sourceTree = "<group>"; };
 		544EB5E7CBD182E832CC537C /* PendingTransaction.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PendingTransaction.swift; sourceTree = "<group>"; };
@@ -5100,7 +5100,7 @@
 				01A833FC1DD926C6EE89A843 /* AgentChatMessageView.swift */,
 				8ADCC6D81BD4C648D49E7837 /* AgentChatView.swift */,
 				B5C757AF2F3F1B43A82D29B8 /* AgentThinkingIndicator.swift */,
-				51EA594D7EE41E0889397FBD /* AgentPasswordPromptView.swift */,
+				51EA594D7EE41E0889397FBD /* AgentPasswordPromptScreen.swift */,
 			);
 			name = Agent;
 			path = Agent;
@@ -7992,7 +7992,7 @@
 				CE8855188E4025F0590B5F07 /* AgentChatMessageView.swift in Sources */,
 				2B721F92703EFECE0F687738 /* AgentChatView.swift in Sources */,
 				E693C8087FAF429E9E243ECE /* AgentThinkingIndicator.swift in Sources */,
-				002DB83AA9A8A2442010A809 /* AgentPasswordPromptView.swift in Sources */,
+				002DB83AA9A8A2442010A809 /* AgentPasswordPromptScreen.swift in Sources */,
 				E182CB2105CDFAD512908C88 /* NotificationAPI.swift in Sources */,
 				F320BF5E96AB5CEACB25A05F /* DeviceRegistrationRequest.swift in Sources */,
 				A84DEFF6EE720694FC92EC4B /* NotifyRequest.swift in Sources */,

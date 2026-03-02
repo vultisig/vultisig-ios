@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct AgentPasswordPromptView: View {
+struct AgentPasswordPromptScreen: View {
     let onSubmit: (String) -> Void
 
     @State private var password = ""
@@ -15,10 +15,8 @@ struct AgentPasswordPromptView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationView {
+        Screen(title: "") {
             ZStack {
-                Theme.colors.bgPrimary.ignoresSafeArea()
-
                 VStack(spacing: 24) {
                     Spacer()
 
@@ -36,40 +34,20 @@ struct AgentPasswordPromptView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
 
-                    SecureField("Password", text: $password)
-                        .textFieldStyle(.plain)
-                        .padding()
-                        .background(Theme.colors.bgSurface1)
-                        .cornerRadius(12)
-                        .foregroundColor(Theme.colors.textPrimary)
-                        .padding(.horizontal)
+                    CommonTextField(
+                        text: $password,
+                        placeholder: "Password",
+                        isSecure: .constant(true)
+                    )
+                    .padding(.horizontal)
 
-                    Button {
+                    PrimaryButton(
+                        title: "Connect",
+                        isLoading: isSubmitting
+                    ) {
                         isSubmitting = true
                         onSubmit(password)
                         dismiss()
-                    } label: {
-                        HStack {
-                            if isSubmitting {
-                                ProgressView()
-                                    .tint(.white)
-                            }
-                            Text("Connect")
-                                .font(.body.bold())
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(
-                            password.isEmpty
-                                ? Theme.colors.bgButtonDisabled
-                                : Theme.colors.bgButtonPrimary
-                        )
-                        .foregroundColor(
-                            password.isEmpty
-                                ? Theme.colors.textButtonDisabled
-                                : Theme.colors.textButtonDark
-                        )
-                        .cornerRadius(12)
                     }
                     .disabled(password.isEmpty)
                     .padding(.horizontal)
@@ -96,7 +74,7 @@ struct AgentPasswordPromptView: View {
 }
 
 #Preview {
-    AgentPasswordPromptView { password in
+    AgentPasswordPromptScreen { password in
         print("Password: \(password)")
     }
 }

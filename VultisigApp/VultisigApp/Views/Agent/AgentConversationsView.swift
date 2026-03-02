@@ -35,8 +35,8 @@ struct AgentConversationsView: View {
         .onAppear {
             loadData()
         }
-        .sheet(isPresented: $viewModel.passwordRequired) {
-            AgentPasswordPromptView { password in
+        .crossPlatformSheet(isPresented: $viewModel.passwordRequired) {
+            AgentPasswordPromptScreen { password in
                 guard let vault = appViewModel.selectedVault else { return }
                 Task {
                     await viewModel.signIn(vault: vault, password: password)
@@ -87,19 +87,8 @@ struct AgentConversationsView: View {
                             .padding(.horizontal)
 
                         // New chat button
-                        Button {
+                        PrimaryButton(title: "New Chat") {
                             navigateToChat(with: nil)
-                        } label: {
-                            HStack {
-                                Image(systemName: "plus.bubble.fill")
-                                    .foregroundStyle(Theme.colors.bgPrimary)
-                                Text("New Chat")
-                                    .font(Theme.fonts.bodyMMedium)
-                                    .foregroundStyle(Theme.colors.bgPrimary)
-                            }
-                            .padding()
-                            .background(Theme.colors.turquoise)
-                            .cornerRadius(12)
                         }
                     }
                 } else {
@@ -116,23 +105,8 @@ struct AgentConversationsView: View {
     private var conversationList: some View {
         VStack(spacing: 0) {
             // New chat button
-            Button {
+            PrimaryButton(title: "New Chat") {
                 navigateToChat(with: nil)
-            } label: {
-                HStack {
-                    Image(systemName: "plus.bubble.fill")
-                        .foregroundStyle(Theme.colors.turquoise)
-                    Text("New Chat")
-                        .font(Theme.fonts.bodyMMedium)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textTertiary)
-                }
-                .padding()
-                .background(Theme.colors.bgSurface1)
-                .cornerRadius(12)
             }
             .padding(.bottom, 16)
 
