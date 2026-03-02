@@ -181,7 +181,7 @@ private extension CryptoPriceService {
 
             try await RateProvider.shared.save(rates: rates)
 
-        } else if chain == .thorChain || chain == .thorChainStagenet {
+        } else if chain == .thorChain || chain == .thorChainChainnet || chain == .thorChainStagenet {
 
             let thorService = ThorchainServiceFactory.getService(for: chain)
             var rates: [Rate] = []
@@ -292,7 +292,7 @@ private extension CryptoPriceService {
             return "zksync"
         case .mantle:
             return "mantle"
-        case .thorChain, .thorChainStagenet, .solana, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .cronosChain, .polkadot, .dydx, .sui, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron, .zcash, .cardano, .hyperliquid, .sei:
+        case .thorChain, .thorChainChainnet, .thorChainStagenet, .solana, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .cronosChain, .polkadot, .dydx, .sui, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron, .zcash, .cardano, .hyperliquid, .sei:
             return .empty
         }
     }

@@ -5,6 +5,9 @@ import BigInt
 @Model
 class Coin: ObservableObject, Codable, Hashable {
     var id: String
+    var uniqueId: String {
+        "\(ticker.lowercased())-\(contractAddress.lowercased())"
+    }
     var chain: Chain
     var address: String
     var hexPublicKey: String
@@ -152,7 +155,7 @@ class Coin: ObservableObject, Codable, Hashable {
 
     var feeDefault: String {
         switch self.chain {
-        case .thorChain, .thorChainStagenet:
+        case .thorChain, .thorChainChainnet, .thorChainStagenet:
             return "2000000"
         case .mayaChain:
             return "2000000000"

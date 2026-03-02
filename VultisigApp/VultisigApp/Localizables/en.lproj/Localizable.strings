@@ -124,6 +124,10 @@
 "devicesOnSameInternet" = "Connect all devices to the\nInternet with the Vultisig App open.";
 "devicesOnSameNetwork" = "Connect all devices to the same\nNetwork with Vultisig App open.";
 "devicesOnSameWifi" = "Keep devices on the same network with Vultisig open.";
+"dilithiumAlreadyGeneratedTitle" = "Post-Quantum Key Active";
+"dilithiumAlreadyGeneratedSubtitle" = "This vault already has an MLDSA-44 post-quantum key generated. No further action is needed.";
+"dilithiumKeygen" = "Post-Quantum Key";
+"dilithiumKeygenSubtitle" = "Generate MLDSA-44 key for quantum resistance";
 "discord" = "Discord";
 "discoveringMediator" = "Discovering mediator service, please wait...";
 "dismiss" = "Dismiss";
@@ -427,13 +431,6 @@
 "referralProgram" = "Referral Program";
 "referralProgramTooltipDescription" = "The referral program applies to THORChain swaps and operates on a best-effort basis. To use the Vultisig referral, you must register a THORName. The registration fee is 10 RUNE plus 1 RUNE per year, paid to the THORChain network.";
 "referredSaveOnSwaps" = "Save %@ on swaps - Add a Referral";
-"registerGuide" = "Register Guide";
-"registerVault" = "Register Vault";
-"registerVaultText1" = "Save your Vault QR Code";
-"registerVaultText2" = "Go to ";
-"registerVaultText3" = "Upload your Vault QR Code";
-"registerVaultText4" = "Track your VULTIES (Vault Points)!";
-"registerYourVaults" = "Register your Vaults!";
 "registrationFee" = "Registration Fee";
 "rename" = "Rename";
 "renameVault" = "Edit your vault name";
@@ -796,6 +793,7 @@
 "Merge" = "Merge";
 "Withdraw RUJI" = "Withdraw RUJI";
 "Switch" = "Switch";
+"switchToLocalMode" = "Switch to local mode";
 "Add THORChain LP" = "Add THORChain LP";
 "Secured Assets" = "Secured Assets";
 "Withdraw Secured Asset" = "Withdraw Secured Asset";
@@ -1074,3 +1072,15 @@
 "screenRecordingPermissionDenied" = "Screen recording permission is required to scan QR codes from your screen.";
 "openSystemSettings" = "Open System Settings";
 "initializingScreenCapture" = "Initializing Screen Capture";
+
+// MARK: - Notifications
+"notifications" = "Notifications";
+"pushNotifications" = "Push notifications";
+"enablePushNotifications" = "Enable push notifications";
+"notificationsAreHere" = "Notifications are here";
+"notificationsDescription" = "Stay updated on your vault activity, like when another device initiates a transaction signing.";
+"chooseVaultsForNotifications" = "Choose vaults for notifications";
+"enableNotificationsForVault" = "Enable notifications for this vault";
+"notNow" = "Not now";
+"vaultNotifications" = "Vault notifications";
+"enableAll" = "Enable all";

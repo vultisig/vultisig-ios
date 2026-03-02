@@ -24,11 +24,6 @@ struct SettingsRouteBuilder {
     }
 
     @ViewBuilder
-    func buildRegisterVaultsScreen(vault: Vault) -> some View {
-        RegisterVaultView(vault: vault)
-    }
-
-    @ViewBuilder
     func buildLanguageScreen() -> some View {
         SettingsLanguageSelectionView()
     }
@@ -36,6 +31,11 @@ struct SettingsRouteBuilder {
     @ViewBuilder
     func buildCurrencyScreen() -> some View {
         SettingsCurrencySelectionView()
+    }
+
+    @ViewBuilder
+    func buildNotificationsScreen() -> some View {
+        NotificationsSettingsScreen()
     }
 
     @ViewBuilder

@@ -179,7 +179,7 @@ final class BlockChainService {
 
         let action: Action
         switch tx.quote {
-        case .thorchain, .thorchainStagenet, .mayachain:
+        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
             action = .transfer
         default:
             action = .swap
@@ -341,7 +341,7 @@ private extension BlockChainService {
             let ttl = try await cardano.calculateDynamicTTL()
             let estimatedFee = cardano.estimateTransactionFee()
             return .Cardano(byteFee: BigInt(estimatedFee), sendMaxAmount: sendMaxAmount, ttl: ttl)
-        case .thorChain, .thorChainStagenet:
+        case .thorChain, .thorChainChainnet, .thorChainStagenet:
             let service = ThorchainServiceFactory.getService(for: coin.chain)
             _ = try await service.getTHORChainChainID()
             let account = try await service.fetchAccountNumber(coin.address)
@@ -668,7 +668,7 @@ private extension BlockChainService {
         }
         let service = try EvmService.getService(forChain: tx.fromCoin.chain)
         switch tx.quote {
-        case .mayachain, .thorchain, .thorchainStagenet:
+        case .mayachain, .thorchain, .thorchainChainnet, .thorchainStagenet:
             // Swapping native ETH/AVAX/BSC to THORChain router is a contract call, not a simple transfer.
             // 23000 is too low. Using 120000 (same as ERC20) is safer.
             return BigInt(EVMHelper.defaultERC20TransferGasUnit)

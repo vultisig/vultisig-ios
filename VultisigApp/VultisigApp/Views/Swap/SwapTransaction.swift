@@ -46,7 +46,7 @@ class SwapTransaction: ObservableObject {
 
     var fee: BigInt {
         switch quote {
-        case .thorchain, .thorchainStagenet, .mayachain:
+        case .thorchain, .thorchainChainnet, .thorchainStagenet, .mayachain:
             return thorchainFee
         case .oneinch(_, let fee), .kyberswap(_, let fee), .lifi(_, let fee, _):
             return fee ?? 0
@@ -60,7 +60,7 @@ class SwapTransaction: ObservableObject {
             return .zero
         }
         switch quote {
-        case .mayachain(let quote), .thorchain(let quote), .thorchainStagenet(let quote):
+        case .mayachain(let quote), .thorchain(let quote), .thorchainChainnet(let quote), .thorchainStagenet(let quote):
             let expected = quote.expectedAmountOut.toDecimal()
             return expected / toCoin.thorswapMultiplier
         case .oneinch(let quote, _), .lifi(let quote, _, _):

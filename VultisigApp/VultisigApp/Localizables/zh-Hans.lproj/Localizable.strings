@@ -427,13 +427,6 @@
 "referralProgram" = "推荐计划";
 "referralProgramTooltipDescription" = "推荐计划适用于 THORChain 交换，并尽力而为。要使用 Vultisig 推荐，您必须注册 THORName。注册费为 10 RUNE 加上每年 1 RUNE，支付给 THORChain 网络";
 "referredSaveOnSwaps" = "在交换中节省 %@ - 添加推荐";
-"registerGuide" = "注册指南";
-"registerVault" = "注册保险库";
-"registerVaultText1" = "保存您的保险库二维码";
-"registerVaultText2" = "前往";
-"registerVaultText3" = "上传您的保险库二维码";
-"registerVaultText4" = "跟踪您的 VULTIES（保险库积分）！";
-"registerYourVaults" = "注册您的保险库！";
 "registrationFee" = "注册费";
 "rename" = "重命名";
 "renameVault" = "编辑您的保险库名称";
@@ -782,6 +775,7 @@
 "Merge" = "合并";
 "Withdraw RUJI" = "提取 RUJI";
 "Switch" = "切换";
+"switchToLocalMode" = "切换到本地模式";
 "Add THORChain LP" = "添加 THORChain 流动性";
 "Secured Assets" = "担保资产";
 "Withdraw Secured Asset" = "提取担保资产";
@@ -1055,3 +1049,15 @@
 "screenRecordingPermissionDenied" = "需要屏幕录制权限才能从屏幕扫描二维码。";
 "openSystemSettings" = "打开系统设置";
 "initializingScreenCapture" = "正在初始化屏幕捕获";
+
+// MARK: - Notifications
+"notifications" = "通知";
+"pushNotifications" = "推送通知";
+"enablePushNotifications" = "启用推送通知";
+"notificationsAreHere" = "通知功能已上线";
+"notificationsDescription" = "随时了解保险库动态，例如当另一台设备发起交易签名时。";
+"chooseVaultsForNotifications" = "选择接收通知的保险库";
+"enableNotificationsForVault" = "为此保险库启用通知";
+"notNow" = "暂时不用";
+"vaultNotifications" = "保险库通知";
+"enableAll" = "全部启用";

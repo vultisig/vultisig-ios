@@ -154,11 +154,7 @@ struct CoinService {
             return vault.coins.first(where: { $0.id == newCoin.id })
         }
 
-        // Secondary check: also verify by semantic identity (chain + ticker + contract)
-        // This catches duplicates where contract address format differs between sources
-        if let existingCoin = vault.coin(for: asset) {
-            return existingCoin
-        }
+
 
         if let priceProviderId {
             newCoin.priceProviderId = priceProviderId
@@ -192,7 +188,7 @@ struct CoinService {
             tokens = try await SuiService.shared.getAllTokensWithMetadata(address: address)
         case .THORChain:
             switch nativeCoin.chain {
-            case .thorChain, .thorChainStagenet:
+            case .thorChain, .thorChainChainnet, .thorChainStagenet:
                 let service = ThorchainServiceFactory.getService(for: nativeCoin.chain)
                 tokens = try await service.fetchTokens(address)
             case .mayaChain:
@@ -213,6 +209,13 @@ struct CoinService {
 
             for token in tokens {
                 do {
+                    // Skip discovered tokens that match the native token's ticker
+                    // (e.g. cosmos balance API returns "rune" denom as a non-native token,
+                    // but it's already tracked as the native RUNE coin)
+                    if token.ticker.caseInsensitiveCompare(nativeToken.ticker) == .orderedSame {
+                        continue
+                    }
+
                     // Check if token is hidden by user
                     if isTokenHidden(token, vault: vault) {
                         continue

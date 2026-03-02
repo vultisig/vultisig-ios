@@ -44,9 +44,7 @@ struct FolderVaultCell: View {
     }
 
     var toggle: some View {
-        Toggle("Is selected", isOn: $isSelected)
-            .labelsHidden()
-            .scaleEffect(0.8)
+        VultiToggle(isOn: $isSelected)
     }
 
     private func setData() {

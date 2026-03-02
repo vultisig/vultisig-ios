@@ -105,6 +105,8 @@ struct QRCodeScannerView: View {
 
     var overlay: some View {
         Image("QRScannerOutline")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
             .padding(60)
     }
 

@@ -30,7 +30,7 @@ class THORChainSwaps {
 
     func getPreSignedInputData(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> Data {
         switch swapPayload.fromCoin.chain {
-        case .thorChain, .thorChainStagenet:
+        case .thorChain, .thorChainChainnet, .thorChainStagenet:
             return try THORChainHelper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin:
             let helper = UTXOChainsHelper(coin: swapPayload.fromCoin.coinType)
@@ -47,6 +47,8 @@ class THORChainSwaps {
             return try RippleHelper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
         case .tron:
             return try TronHelper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
+        case .solana:
+            return try SolanaHelper.getPreSignedInputData(keysignPayload: keysignPayload)
         default:
             throw HelperError.runtimeError("not support yet")
         }
@@ -56,7 +58,7 @@ class THORChainSwaps {
         let inputData = try getPreSignedInputData(swapPayload: swapPayload, keysignPayload: keysignPayload, incrementNonce: incrementNonce)
 
         switch swapPayload.fromCoin.chain {
-        case .thorChain, .thorChainStagenet, .ethereum, .bscChain, .avalanche, .gaiaChain, .base, .arbitrum:
+        case .thorChain, .thorChainChainnet, .thorChainStagenet, .ethereum, .bscChain, .avalanche, .gaiaChain, .base, .arbitrum:
             let hashes = TransactionCompiler.preImageHashes(coinType: swapPayload.fromCoin.coinType, txInputData: inputData)
             let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
             if !preSigningOutput.errorMessage.isEmpty {
@@ -74,6 +76,8 @@ class THORChainSwaps {
             return try RippleHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         case .tron:
             return try TronHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
+        case .solana:
+            return try SolanaHelper.getPreSignedImageHash(inputData: inputData)
         default:
             throw HelperError.runtimeError("not support yet")
         }
@@ -124,7 +128,7 @@ class THORChainSwaps {
         )
 
         switch swapPayload.fromCoin.chain {
-        case .thorChain, .thorChainStagenet:
+        case .thorChain, .thorChainChainnet, .thorChainStagenet:
             return try THORChainHelper.getSignedTransaction(coinHexPublicKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
         case .bitcoin:
             let utxoHelper = UTXOChainsHelper(coin: .bitcoin)
@@ -150,6 +154,8 @@ class THORChainSwaps {
             return try TronHelper.getSignedTransaction(
                 keysignPayload: keysignPayload,
                 signatures: signatures)
+        case .solana:
+            return try SolanaHelper.getSignedTransaction(coinHexPubKey: keysignPayload.coin.hexPublicKey, inputData: inputData, signatures: signatures)
         default:
             throw HelperError.runtimeError("not support")
         }
