@@ -16,6 +16,7 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
 
     @Published var isPermissionGranted: Bool = false
     @Published var deviceToken: String?
+    @Published var foregroundNotification: ForegroundNotificationData?
 
     var hadVaultsOnStartup = false
 
@@ -41,6 +42,11 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
     // MARK: - Notification Delegate
 
     func setupNotificationDelegate() {
+        notificationDelegate.onForegroundNotification = { [weak self] notification in
+            Task { @MainActor in
+                self?.handleForegroundNotification(notification)
+            }
+        }
         UNUserNotificationCenter.current().delegate = notificationDelegate
     }
 
@@ -275,6 +281,16 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
         return digest.map { String(format: "%02x", $0) }.joined()
     }
 
+    private func handleForegroundNotification(_ notification: UNNotification) {
+        let descriptor = FetchDescriptor<Vault>()
+        guard let vaults = try? Storage.shared.modelContext.fetch(descriptor) else { return }
+
+        foregroundNotification = ForegroundNotificationParser.parse(
+            notification: notification,
+            vaults: vaults
+        )
+    }
+
     private func reRegisterOptedInVaults() async {
         guard deviceToken != nil else { return }
 
@@ -301,12 +317,15 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
 
 private class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
 
+    var onForegroundNotification: ((UNNotification) -> Void)?
+
     func userNotificationCenter(
         _: UNUserNotificationCenter,
-        willPresent _: UNNotification,
+        willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        completionHandler([.banner, .sound])
+        onForegroundNotification?(notification)
+        completionHandler([.sound])
     }
 
     func userNotificationCenter(

@@ -12,11 +12,6 @@ struct NotificationsIntroSheet: View {
     @EnvironmentObject var pushNotificationManager: PushNotificationManager
 
     @State private var step: Step = .welcome
-    @State private var detents: [PresentationDetent] = []
-    
-    var minDetent: PresentationDetent {
-        .height(340)
-    }
 
     private enum Step {
         case welcome
@@ -28,66 +23,72 @@ struct NotificationsIntroSheet: View {
     }
 
     var body: some View {
-        VStack(spacing: 24) {
-            Group {
-                switch step {
-                case .welcome:
-                    welcomeContent
-                case .vaultOptIn:
-                    vaultOptInContent
-                }
+        Group {
+            switch step {
+            case .welcome:
+                welcomeContent
+            case .vaultOptIn:
+                vaultOptInContent
             }
-            .transition(.opacity)
-            .animation(.interpolatingSpring, value: step)
         }
-        .padding(24)
-        .presentationDetents(Set(detents))
-        .presentationDragIndicator(.visible)
-        .presentationCompactAdaptation(.none)
-        .presentationBackground { Theme.colors.bgPrimary.padding(.bottom, -1000) }
-        .background(Theme.colors.bgPrimary)
-        .onLoad { detents = [minDetent] }
+        .transition(.opacity)
+        .animation(.interpolatingSpring, value: step)
+        .padding(.horizontal, 24)
+        .padding(.bottom, 24)
+        .padding(.top, step == .welcome ? 0 : 24)
+        .presentationDetents(Set(step == .welcome ? [.height(416)] : [.medium, .large]))
+        .if(step == .welcome) {
+            $0
+                .edgesIgnoringSafeArea(.top)
+                .presentationDragIndicator(.visible)
+                .presentationCompactAdaptation(.none)
+        }
+        .presentationBackground { Theme.colors.bgSurface1.padding(.bottom, -1000) }
+        .background(Theme.colors.bgSurface1)
     }
 
     // MARK: - Welcome
 
     var welcomeContent: some View {
-        VStack(spacing: 24) {
-            VStack(spacing: 12) {
-                VaultSetupStepIcon(state: .active, icon: "bell")
-                    .padding(.vertical, 8)
+        VStack(spacing: 36) {
+            Image("notifications-intro")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(maxWidth: 270)
+
+            VStack(spacing: 0) {
                 Text("notificationsAreHere".localized)
-                    .font(Theme.fonts.title2)
+                    .font(Theme.fonts.title3)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .multilineTextAlignment(.center)
+                    .padding(.bottom, 12)
 
                 Text("notificationsDescription".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 321)
-                    .fixedSize()
             }
 
-            Spacer()
+            HStack(spacing: 12) {
+                PrimaryButton(title: "notNow", type: .secondary) {
+                    dismiss()
+                }
 
-            VStack(spacing: 12) {
-                PrimaryButton(title: "enablePushNotifications") {
+                PrimaryButton(title: "enable") {
                     Task {
                         let granted = await pushNotificationManager.requestPermission()
-                        if granted && !vaults.isEmpty {
-                            updateDetentsForVaultOptIn()
+                        if granted && vaults.count > 1 {
                             withAnimation(.interpolatingSpring) {
                                 step = .vaultOptIn
                             }
                         } else {
+                            if let vault = vaults.first {
+                                pushNotificationManager.setVaultOptIn(vault, enabled: true)
+                            }
                             dismiss()
                         }
                     }
-                }
-
-                PrimaryButton(title: "notNow", type: .secondary) {
-                    dismiss()
                 }
             }
         }
@@ -97,35 +98,31 @@ struct NotificationsIntroSheet: View {
 
     var vaultOptInContent: some View {
         VStack(spacing: 24) {
-            Text("chooseVaultsForNotifications".localized)
-                .font(Theme.fonts.title2)
-                .foregroundStyle(Theme.colors.textPrimary)
-                .multilineTextAlignment(.center)
-                .padding(.top, 8)
+            VStack(spacing: 12) {
+                Text("chooseVaultsForNotifications".localized)
+                    .font(Theme.fonts.title3)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                    .multilineTextAlignment(.center)
+
+                Text("manageNotificationsInSettings".localized)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textTertiary)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: 320)
 
             ScrollView(showsIndicators: false) {
-                SettingsSectionView(title: .empty) {
-                    SettingsOptionView(
-                        icon: nil,
-                        title: "enableAll".localized,
-                        subtitle: nil,
-                        type: .highlighted,
-                        showSeparator: true
-                    ) {
-                        VultiToggle(isOn: Binding(
-                            get: { allVaultsEnabled },
-                            set: {
-                                pushNotificationManager.setAllVaultsOptIn(
-                                    vaults, enabled: $0
-                                )
-                            }
-                        ))
-                    }
-
+                VStack(spacing: 0) {
+                    enableAllView
+                        .showIf(vaults.count > 1)
                     ForEach(vaults, id: \.id) { vault in
                         VaultNotificationToggleRow(vault: vault)
                     }
                 }
+                .background(
+                    RoundedRectangle(cornerRadius: 24)
+                        .fill(Theme.colors.bgSurface12)
+                )
             }
 
             Spacer()
@@ -136,20 +133,26 @@ struct NotificationsIntroSheet: View {
         }
     }
 
-    // MARK: - Private
-
-    private func updateDetentsForVaultOptIn() {
-        let elementsCount = vaults.count + 1 // +1 for "Enable all" row
-        switch elementsCount {
-        case 1:
-            detents = [minDetent]
-        case 2:
-            detents = [.height(278)]
-        case 3:
-            detents = [.medium]
-        default:
-            detents = isIPadOS ? [.large] : [.medium, .large]
+    var enableAllView: some View {
+        VStack(spacing: 0) {
+            HStack(alignment: .center, spacing: 0) {
+                Text("enableAll".localized)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                Spacer()
+                VultiToggle(isOn: Binding(
+                    get: { allVaultsEnabled },
+                    set: {
+                        pushNotificationManager.setAllVaultsOptIn(
+                            vaults, enabled: $0
+                        )
+                    }
+                ))
+            }
+            .padding(.vertical, 16)
+            Separator(color: Theme.colors.borderLight, opacity: 1)
         }
+        .padding(.horizontal, 16)
     }
 
     private func dismiss() {

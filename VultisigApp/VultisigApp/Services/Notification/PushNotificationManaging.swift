@@ -11,6 +11,7 @@ protocol PushNotificationManaging: AnyObject {
     var deviceToken: String? { get }
     var hasSeenNotificationPrompt: Bool { get set }
     var hadVaultsOnStartup: Bool { get set }
+    var foregroundNotification: ForegroundNotificationData? { get set }
 
     func setupNotificationDelegate()
     func requestPermission() async -> Bool

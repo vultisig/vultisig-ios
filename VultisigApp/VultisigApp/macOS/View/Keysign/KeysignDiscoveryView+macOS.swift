@@ -52,16 +52,12 @@ extension KeysignDiscoveryView {
     }
 
     var deviceList: some View {
-        VStack {
-            listTitle
-
-            LazyVGrid(columns: adaptiveColumnsMac, spacing: 18) {
-                PeerCell(id: "Mac", isThisDevice: true)
-                devices
-                EmptyPeerCell()
-            }
-            .padding(.bottom, 120)
+        VStack(spacing: 18) {
+            PeerCell(id: "Mac", isThisDevice: true)
+            devices
+            EmptyPeerCell()
         }
+        .padding(.bottom, 120)
     }
 
     var devices: some View {

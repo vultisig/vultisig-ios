@@ -75,7 +75,7 @@ struct ChainDetailScreen: View {
         .refreshable {
             refresh()
         }
-        .background(VaultMainScreenBackground())
+        .background(MainBackgroundWithNotification())
         .crossPlatformSheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(
                 coin: nativeCoin,
