@@ -54,16 +54,12 @@ extension KeysignDiscoveryView {
     }
 
     var deviceList: some View {
-        VStack {
-            listTitle
-
-            LazyVGrid(columns: adaptiveColumns, spacing: 18) {
-                PeerCell(id: idiom == .phone ? "iPhone" : "iPad", isThisDevice: true)
-                devices
-                EmptyPeerCell()
-            }
-            .padding(.bottom, 120)
+        VStack(spacing: 12) {
+            PeerCell(id: idiom == .phone ? "iPhone" : "iPad", isThisDevice: true)
+            devices
+            EmptyPeerCell()
         }
+        .padding(.bottom, 120)
     }
 
     var devices: some View {
