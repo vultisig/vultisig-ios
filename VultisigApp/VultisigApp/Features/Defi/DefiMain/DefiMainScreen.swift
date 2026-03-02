@@ -55,7 +55,7 @@ struct DefiMainScreen: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .background(VaultMainScreenBackground())
+            .background(MainBackgroundWithNotification())
             .onChange(of: showSearchHeader) { _, showSearchHeader in
                 if showSearchHeader {
                     focusSearch = true
