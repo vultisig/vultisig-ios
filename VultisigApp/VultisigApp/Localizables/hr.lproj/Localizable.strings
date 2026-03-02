@@ -533,6 +533,7 @@
 "noTokensFound" = "Nema pronađenih tokena";
 "noTokensFoundSubtitle" = "Dodajte tokene u postavkama";
 "notWhitelistedOnNode" = "Niste na bijeloj listi ovog čvora";
+"noVaultsFoundInZip" = "Nisu pronađeni trezori u ZIP datoteci.";
 "of" = "od";
 "ok" = "U redu";
 "on" = "na";
@@ -787,7 +788,7 @@
 "success" = "Uspjeh";
 "successfully" = "uspješno";
 "support" = "Podržati";
-"supportedFileTypesUpload" = "Podržane vrste datoteka: .bak & .vult";
+"supportedFileTypesUpload" = "Podržane vrste datoteka: .bak, .vult & .zip";
 "swap" = "Zamjena";
 "swap.duration.instant" = "Trenutno";
 "swap.outbound_fee" = "Izlazna naknada";
