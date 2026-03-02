@@ -1,0 +1,27 @@
+<svg width="24" height="24" viewBox="0 0 16.1 16.1" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Atom: horizontal orbit (flush to left/right edges) -->
+  <ellipse
+    cx="8.05" cy="8.05"
+    rx="7.25" ry="2.85"
+    stroke="#F0F4FC" stroke-width="1.6"
+    stroke-linecap="round" stroke-linejoin="round"
+  />
+  <!-- Atom: tilted orbit 1 -->
+  <ellipse
+    cx="8.05" cy="8.05"
+    rx="7.25" ry="2.85"
+    transform="rotate(60 8.05 8.05)"
+    stroke="#F0F4FC" stroke-width="1.6"
+    stroke-linecap="round" stroke-linejoin="round"
+  />
+  <!-- Atom: tilted orbit 2 -->
+  <ellipse
+    cx="8.05" cy="8.05"
+    rx="7.25" ry="2.85"
+    transform="rotate(-60 8.05 8.05)"
+    stroke="#F0F4FC" stroke-width="1.6"
+    stroke-linecap="round" stroke-linejoin="round"
+  />
+  <!-- Atom: nucleus -->
+  <circle cx="8.05" cy="8.05" r="1.6" fill="#F0F4FC"/>
+</svg>

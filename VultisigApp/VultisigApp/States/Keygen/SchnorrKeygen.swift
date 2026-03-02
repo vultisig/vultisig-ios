@@ -98,7 +98,7 @@ final class SchnorrKeygen {
         }
         var result: goschnorr.schnorr_lib_error
         switch self.tssType {
-        case .Keygen, .Migrate, .KeyImport:
+        case .Keygen, .Migrate, .KeyImport, .DilithiumKeygen:
             result = schnorr_keygen_session_output_message(handle, &buf)
         case .Reshare:
             result = schnorr_qc_session_output_message(handle, &buf)
@@ -119,7 +119,7 @@ final class SchnorrKeygen {
         var mutableMessage = message
         var receiverResult: goschnorr.schnorr_lib_error
         switch self.tssType {
-        case .Keygen, .Migrate, .KeyImport:
+        case .Keygen, .Migrate, .KeyImport, .DilithiumKeygen:
             receiverResult = schnorr_keygen_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
         case .Reshare:
             receiverResult = schnorr_qc_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
@@ -228,7 +228,7 @@ final class SchnorrKeygen {
             var isFinished: UInt32 = 0
             var result: goschnorr.schnorr_lib_error
             switch self.tssType {
-            case .Keygen, .Migrate, .KeyImport:
+            case .Keygen, .Migrate, .KeyImport, .DilithiumKeygen:
                 result = schnorr_keygen_session_input_message(handle, &decryptedBodySlice, &isFinished)
             case .Reshare:
                 result = schnorr_qc_session_input_message(handle, &decryptedBodySlice, &isFinished)
@@ -314,6 +314,8 @@ final class SchnorrKeygen {
                 }
             case .Reshare:
                 throw HelperError.runtimeError("Reshare should call SchnorrReshareWithRetry function")
+            case .DilithiumKeygen:
+                throw HelperError.runtimeError("DilithiumKeygen should not reach Schnorr path")
             }
 
             // free the handler

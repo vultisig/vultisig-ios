@@ -295,11 +295,6 @@ class Endpoint {
             let affiliateFeeRateBp = bps(for: discountBps, affiliateFeeRate: THORChainSwaps.referredAffiliateFeeRateBp)
             affiliateParams.append((referredCode, THORChainSwaps.referredUserFeeRateBp))
             affiliateParams.append((THORChainSwaps.affiliateFeeAddress, "\(affiliateFeeRateBp)"))
-        } else if chain == .maya && !referredCode.isEmpty {
-            // MayaChain nested affiliates (same structure as THORChain)
-            let affiliateFeeRateBp = bps(for: discountBps, affiliateFeeRate: THORChainSwaps.referredAffiliateFeeRateBp)
-            affiliateParams.append((referredCode, THORChainSwaps.referredUserFeeRateBp))
-            affiliateParams.append((THORChainSwaps.affiliateFeeAddress, "\(affiliateFeeRateBp)"))
         } else {
             // No referral code — single affiliate
             let affiliateFeeRateBp = bps(for: discountBps, affiliateFeeRate: THORChainSwaps.affiliateFeeRateBp)

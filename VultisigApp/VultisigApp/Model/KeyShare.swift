@@ -10,9 +10,11 @@ import Foundation
 class KeyShare: Codable {
     let pubkey: String
     let keyshare: String
+    let keyId: String?
 
-    init(pubkey: String, keyshare: String) {
+    init(pubkey: String, keyshare: String, keyId: String? = nil) {
         self.pubkey = pubkey
         self.keyshare = keyshare
+        self.keyId = keyId
     }
 }

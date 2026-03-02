@@ -246,12 +246,8 @@ struct DeeplinkLogic {
     }
 
     private func parseTssType(_ value: String?) -> TssType? {
-        switch value {
-        case "Reshare":
-            return .Reshare
-        default:
-            return .Keygen
-        }
+        guard let value else { return .Keygen }
+        return TssType(rawValue: value) ?? .Keygen
     }
 
     private func getVault(for vaultPubKey: String?, vaults: [Vault]) -> Vault? {
