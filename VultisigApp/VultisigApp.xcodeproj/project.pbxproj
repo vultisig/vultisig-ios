@@ -46,6 +46,7 @@
 		130C40F32E7353D500509C61 /* VaultChainCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40F22E7353D400509C61 /* VaultChainCellView.swift */; };
 		130C40F52E73583100509C61 /* NotificationBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40F42E73583100509C61 /* NotificationBannerView.swift */; };
 		130C40F82E737FD000509C61 /* HomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40F72E737FCD00509C61 /* HomeScreen.swift */; };
+		220C40F82E737FD000509C62 /* DeeplinkRouterModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 220C40F72E737FCD00509C62 /* DeeplinkRouterModifier.swift */; };
 		130C40FB2E7381E700509C61 /* HomeTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40FA2E7381E400509C61 /* HomeTab.swift */; };
 		130C40FE2E7389C000509C61 /* VultiTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40FD2E7389BD00509C61 /* VultiTabBar.swift */; };
 		130C704B2E31791E00EF2248 /* LongPressPrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */; };
@@ -1316,6 +1317,7 @@
 		130C40F22E7353D400509C61 /* VaultChainCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultChainCellView.swift; sourceTree = "<group>"; };
 		130C40F42E73583100509C61 /* NotificationBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationBannerView.swift; sourceTree = "<group>"; };
 		130C40F72E737FCD00509C61 /* HomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreen.swift; sourceTree = "<group>"; };
+		220C40F72E737FCD00509C62 /* DeeplinkRouterModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeeplinkRouterModifier.swift; sourceTree = "<group>"; };
 		130C40FA2E7381E400509C61 /* HomeTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTab.swift; sourceTree = "<group>"; };
 		130C40FD2E7389BD00509C61 /* VultiTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultiTabBar.swift; sourceTree = "<group>"; };
 		130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongPressPrimaryButton.swift; sourceTree = "<group>"; };
@@ -2839,6 +2841,7 @@
 				135C7AE22EA1434A002F879A /* Service */,
 				130C40F92E7381E000509C61 /* Model */,
 				130C40F72E737FCD00509C61 /* HomeScreen.swift */,
+				220C40F72E737FCD00509C62 /* DeeplinkRouterModifier.swift */,
 			);
 			path = Home;
 			sourceTree = "<group>";
@@ -7404,6 +7407,7 @@
 				A6D0BA6A2C08353700E24DC9 /* NoCameraPermissionView.swift in Sources */,
 				1369C2212E34006F0002D815 /* WasmExecuteContractPayload.swift in Sources */,
 				130C40F82E737FD000509C61 /* HomeScreen.swift in Sources */,
+				220C40F82E737FD000509C62 /* DeeplinkRouterModifier.swift in Sources */,
 				A66E90A12D778B1A00BF7BCB /* IconCapsule.swift in Sources */,
 				13204DDC2EEB1CCA00297D01 /* OnboardingInformationRowView.swift in Sources */,
 				B57DD59E2C3E69F500934CBB /* TokenAccountsByOwner.swift in Sources */,

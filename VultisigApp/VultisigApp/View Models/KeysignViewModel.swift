@@ -672,13 +672,12 @@ class KeysignViewModel: ObservableObject {
         guard let sig = signatures.first?.value else { return .empty }
 
         // Determine key type from chain — EdDSA for Solana/Polkadot/etc, ECDSA for EVM
-        let isEdDSA: Bool
-        if let chainName = customMessagePayload?.chain,
-           let chain = Chain(name: chainName) {
-            isEdDSA = chain.signingKeyType == .EdDSA
-        } else {
-            isEdDSA = false
+        guard let chainName = customMessagePayload?.chain,
+              let chain = Chain.allCases.first(where: { $0.name.caseInsensitiveCompare(chainName) == .orderedSame }) else {
+            return .empty
         }
+        
+        let isEdDSA = chain.signingKeyType == .EdDSA
 
         if isEdDSA {
             switch sig.getSignature() {

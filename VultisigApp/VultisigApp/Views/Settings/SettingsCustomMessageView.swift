@@ -21,29 +21,23 @@ struct SettingsCustomMessageView: View {
 
     let vault: Vault
     let chain: String
-    var autoSign: Bool
     var callbackUrl: String?
     private let fastVaultService = FastVaultService.shared
 
     @State private var fastVaultPassword: String = .empty
     @State private var fastPasswordPresented = false
     @State private var isFastVault = false
-
-    @State private var autoSignPasswordPresented = false
-
     init(
         method: String = .empty,
         message: String = .empty,
         vault: Vault,
         chain: String,
-        autoSign: Bool = false,
         callbackUrl: String? = nil
     ) {
         self._method = State(initialValue: method)
         self._message = State(initialValue: message)
         self.vault = vault
         self.chain = chain
-        self.autoSign = autoSign
         self.callbackUrl = callbackUrl
     }
 
@@ -53,15 +47,6 @@ struct SettingsCustomMessageView: View {
             main
         }
         .onLoad(perform: onLoad)
-        .crossPlatformSheet(isPresented: $autoSignPasswordPresented) {
-            FastVaultEnterPasswordView(
-                password: $fastVaultPassword,
-                vault: vault,
-                onSubmit: {
-                    onSignPress()
-                }
-            )
-        }
     }
 
     var view: some View {
@@ -221,13 +206,6 @@ struct SettingsCustomMessageView: View {
     func onLoad() {
         Task { @MainActor in
             isFastVault = await fastVaultService.isEligibleForFastSign(vault: vault)
-            if autoSign && !method.isEmpty && !message.isEmpty {
-                if isFastVault {
-                    autoSignPasswordPresented = true
-                } else {
-                    viewModel.moveToNextView()
-                }
-            }
         }
     }
 
