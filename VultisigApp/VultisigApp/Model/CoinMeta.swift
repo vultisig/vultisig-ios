@@ -55,6 +55,10 @@ struct CoinMeta: Hashable, Codable {
     private var normalizedContract: String {
         contractAddress.lowercased()
     }
+    
+    var uniqueId: String {
+        "\(chain.rawValue)-\(normalizedTicker)-\(normalizedContract)"
+    }
 }
 
 extension CoinMeta: Equatable {
