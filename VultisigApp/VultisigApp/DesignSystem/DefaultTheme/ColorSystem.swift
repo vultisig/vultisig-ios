@@ -26,6 +26,7 @@ struct ColorSystem: ColorSystemProtocol {
     var bgPrimary: Color { .init(hex: "02122B") }
     var bgSurface1: Color { .init(hex: "061B3A") }
     var bgSurface2: Color { .init(hex: "11284A") }
+    var bgSurface12: Color { .init(hex: "0D2240") }
 
     var bgSuccess: Color { .init(hex: "042436") }
     var bgAlert: Color { .init(hex: "362B17") }

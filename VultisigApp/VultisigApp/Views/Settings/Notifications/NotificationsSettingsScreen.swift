@@ -32,12 +32,17 @@ struct NotificationsSettingsScreen: View {
     }
 
     var mainToggleSection: some View {
-        HStack {
-            Text("enablePushNotifications".localized)
-                .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
+        HStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("pushNotifications".localized)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
 
-            Spacer()
+                Text("pushNotificationsDescription".localized)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textSecondary)
+                    .frame(maxWidth: 235, alignment: .leading)
+            }.frame(maxWidth: .infinity, alignment: .leading)
 
             VultiToggle(isOn: Binding(
                 get: { notificationsEnabled },
@@ -45,26 +50,15 @@ struct NotificationsSettingsScreen: View {
                     guard $0 != notificationsEnabled else { return }
                     onNotificationsEnabled($0)
                 }
-            ))
+            )).fixedSize()
         }
         .padding(.vertical, 8)
-        .padding(.horizontal, 4)
     }
 
     var vaultListSection: some View {
         SettingsSectionView(title: "vaultNotifications".localized) {
-            SettingsOptionView(
-                icon: nil,
-                title: "enableAll".localized,
-                subtitle: nil,
-                type: .highlighted,
-                showSeparator: true
-            ) {
-                VultiToggle(isOn: Binding(
-                    get: { allVaultsEnabled },
-                    set: { pushNotificationManager.setAllVaultsOptIn(vaults, enabled: $0) }
-                ))
-            }
+            enableAllView
+                .showIf(vaults.count > 1)
 
             ForEach(vaults, id: \.id) { vault in
                 VaultNotificationToggleRow(
@@ -74,7 +68,25 @@ struct NotificationsSettingsScreen: View {
             }
         }
     }
-    
+
+    var enableAllView: some View {
+        VStack(spacing: 0) {
+            HStack(alignment: .center, spacing: 0) {
+                Text("enableAll".localized)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textPrimary)
+                Spacer()
+                VultiToggle(isOn: Binding(
+                    get: { allVaultsEnabled },
+                    set: { pushNotificationManager.setAllVaultsOptIn(vaults, enabled: $0) }
+                ))
+            }
+            .padding(.vertical, 16)
+            Separator(color: Theme.colors.borderLight, opacity: 1)
+        }
+        .padding(.horizontal, 16)
+    }
+
     func onNotificationsEnabled(_ enabled: Bool) {
         notificationsEnabled = enabled
         if enabled {

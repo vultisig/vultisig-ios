@@ -15,5 +15,6 @@ struct VultiToggle: View {
             .scaleEffect(0.8)
             .tint(Theme.colors.primaryAccent4)
             .toggleStyle(.switch)
+            .fixedSize()
     }
 }

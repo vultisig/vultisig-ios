@@ -103,6 +103,7 @@ struct ContentView: View {
             // Retry action - clear error to allow user to try again
             deeplinkError = nil
         }
+        .withForegroundNotificationBanner()
     }
 
     func navigateToHome() {
