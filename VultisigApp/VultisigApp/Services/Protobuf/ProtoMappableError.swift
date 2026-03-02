@@ -9,7 +9,6 @@ import Foundation
 
 enum ProtoMappableError: Error {
     case chainNotSupport
-    case coinNotFound
     case blockchainSpecificNotFound
     case base64EncodedDataNotFound
 }

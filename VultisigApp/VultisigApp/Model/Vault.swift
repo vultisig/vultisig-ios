@@ -11,6 +11,7 @@ final class Vault: ObservableObject, Codable {
     @Attribute(.unique) var name: String
     @Attribute(.unique) var pubKeyECDSA: String = ""
     @Attribute(.unique) var pubKeyEdDSA: String = ""
+    @Attribute(.unique) var publicKeyMLDSA44: String? = nil
     var circleWalletAddress: String?
 
     var signers: [String] = []
@@ -32,6 +33,7 @@ final class Vault: ObservableObject, Codable {
     @Relationship(deleteRule: .cascade) var hiddenTokens = [HiddenToken]()
     @Relationship(deleteRule: .cascade) var referralCode: ReferralCode?
     @Relationship(deleteRule: .cascade) var referredCode: ReferredCode?
+    @Relationship(deleteRule: .cascade) var settings: VaultSettings?
     // Visible Defi Positions
     @Relationship(deleteRule: .cascade) var defiPositions: [DefiPositions] = []
     // Defi Positions Data for caching
@@ -58,6 +60,7 @@ final class Vault: ObservableObject, Codable {
         case activeBondedNodes
         case stakePositions
         case lpPositions
+        case publicKeyMLDSA44
     }
 
     required init(from decoder: Decoder) throws {
@@ -76,6 +79,7 @@ final class Vault: ObservableObject, Codable {
         defiChains = try container.decodeIfPresent([Chain].self, forKey: .defiChains) ?? []
         isCircleEnabled = try container.decodeIfPresent(Bool.self, forKey: .isCircleEnabled) ?? true
         defiPositions = try container.decodeIfPresent([DefiPositions].self, forKey: .defiPositions) ?? []
+        publicKeyMLDSA44 = try container.decodeIfPresent(String.self, forKey: .publicKeyMLDSA44)
     }
 
     init(name: String, libType: LibType? = nil) {
@@ -122,6 +126,7 @@ final class Vault: ObservableObject, Codable {
         try container.encodeIfPresent(defiChains, forKey: .defiChains)
         try container.encodeIfPresent(isCircleEnabled, forKey: .isCircleEnabled)
         try container.encodeIfPresent(defiPositions, forKey: .defiPositions)
+        try container.encodeIfPresent(publicKeyMLDSA44, forKey: .publicKeyMLDSA44)
     }
 
     func setOrder(_ index: Int) {
@@ -217,7 +222,7 @@ final class Vault: ObservableObject, Codable {
         return self.keyshares.first(where: {$0.pubkey == pubKey})?.keyshare
     }
 
-    static func getUniqueVaultName(modelContext: ModelContext, state: SetupVaultState? = nil) -> String {
+    static func getUniqueVaultName(modelContext: ModelContext, setupType: KeyImportSetupType? = nil) -> String {
         let fetchVaultDescriptor = FetchDescriptor<Vault>()
         do {
             let vaults = try modelContext.fetch(fetchVaultDescriptor)
@@ -226,8 +231,15 @@ final class Vault: ObservableObject, Codable {
             repeat {
                 let vaultName: String?
 
-                if let state {
-                    vaultName = "\(state.title.capitalized) Vault #\(idx + 1)"
+                if let setupType {
+                    let prefix: String
+                    switch setupType {
+                    case .fast:
+                        prefix = "Fast"
+                    case .secure:
+                        prefix = "Secure"
+                    }
+                    vaultName = "\(prefix) Vault #\(idx + 1)"
                 } else {
                     vaultName = "Vault #\(idx + 1)"
                 }

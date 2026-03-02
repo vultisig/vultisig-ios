@@ -88,7 +88,7 @@ struct SendCryptoKeysignView: View {
     }
 
     private func setData() {
-        loadingAnimationVM = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
+        loadingAnimationVM = RiveViewModel(fileName: "connecting_with_server", autoPlay: true)
     }
 }
 

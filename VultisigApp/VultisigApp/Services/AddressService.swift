@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 import WalletCore
 
-public struct AddressService {
+struct AddressService {
 
     /// Detects which chain an address belongs to by validating against all WalletCore CoinTypes
     /// Returns the detected chain if found and it exists in the vault, or nil otherwise
@@ -26,6 +26,11 @@ public struct AddressService {
 
         // Special handling for ThorChain Stagenet
         if AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "cthor") {
+            return vault.coins.contains(where: { $0.chain == .thorChainChainnet && $0.isNativeToken }) ? .thorChainChainnet : nil
+        }
+
+        // Special handling for ThorChain Stagenet-2
+        if AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor") {
             return vault.coins.contains(where: { $0.chain == .thorChainStagenet && $0.isNativeToken }) ? .thorChainStagenet : nil
         }
 
@@ -68,13 +73,24 @@ public struct AddressService {
             }
         }
 
-        if chain == .thorChainStagenet {
+        if chain == .thorChainChainnet {
             let isValid = AnyAddress.isValidBech32(string: input, coin: .thorchain, hrp: "cthor")
 
             if isValid {
                 return input
             } else {
                 // Try TNS resolution for stagenet
+                let service = ThorchainServiceFactory.getService(for: .thorChainChainnet)
+                return try await service.resolveTNS(name: input, chain: chain)
+            }
+        }
+
+        if chain == .thorChainStagenet {
+            let isValid = AnyAddress.isValidBech32(string: input, coin: .thorchain, hrp: "sthor")
+
+            if isValid {
+                return input
+            } else {
                 let service = ThorchainServiceFactory.getService(for: .thorChainStagenet)
                 return try await service.resolveTNS(name: input, chain: chain)
             }
@@ -102,8 +118,12 @@ public struct AddressService {
             return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
         }
 
-        if chain == .thorChainStagenet {
+        if chain == .thorChainChainnet {
             return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "cthor")
+        }
+
+        if chain == .thorChainStagenet {
+            return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor")
         }
 
         return chain.coinType.validate(address: address)
@@ -115,8 +135,11 @@ public struct AddressService {
             if firstCoin.chain == .mayaChain {
                 return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
             }
-            if firstCoin.chain == .thorChainStagenet {
+            if firstCoin.chain == .thorChainChainnet {
                 return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "cthor")
+            }
+            if firstCoin.chain == .thorChainStagenet {
+                return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "sthor")
             }
             return firstCoin.coinType.validate(address: address)
         }

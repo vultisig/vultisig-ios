@@ -8,15 +8,8 @@
 import SwiftUI
 
 struct UnstakeTransactionScreen: View {
-    enum FocusedField {
-        case amount
-    }
-
     @StateObject var viewModel: UnstakeTransactionViewModel
     var onVerify: (TransactionBuilder) -> Void
-
-    @State var focusedFieldBinding: FocusedField? = .none
-    @FocusState private var focusedField: FocusedField?
 
     var body: some View {
         AmountFunctionTransactionScreen(
@@ -56,11 +49,7 @@ struct AutocompoundToggle: View {
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
             Spacer()
-            Toggle("", isOn: $isEnabled)
-                .scaleEffect(0.8)
-                .tint(Theme.colors.primaryAccent4)
-                .toggleStyle(.switch)
-                .labelsHidden()
+            VultiToggle(isOn: $isEnabled)
         }
     }
 }

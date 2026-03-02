@@ -8,13 +8,13 @@
 import Foundation
 import Combine
 
-public protocol Form: AnyObject {
+protocol Form: AnyObject {
     var validForm: Bool { get set }
     var form: [FormField] { get }
     var formCancellable: AnyCancellable? { get set }
 }
 
-public extension Form {
+extension Form {
     func setupForm() {
         formCancellable?.cancel()
         formCancellable = form

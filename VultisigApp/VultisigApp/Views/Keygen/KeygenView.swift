@@ -28,20 +28,11 @@ struct KeygenView: View {
 
     @StateObject var viewModel = KeygenViewModel()
 
-
-
-
     @State var progressCounter: Double = 1
-    @State var showProgressRing = true
     @State var showDoneText = false
     @State var showError = false
-    @State var showVerificationView = false
     @State var vaultCreatedAnimationVM: RiveViewModel? = nil
     @State var checkmarkAnimationVM: RiveViewModel? = nil
-    @State var keygenAnimationVM: RiveViewModel? = nil
-    @State var keygenAnimationVMInstance: RiveDataBindingViewModel.Instance?
-    @State var displayedProgress: Float = 0
-    @State var progressAnimationTimer: Timer?
 
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var context
@@ -58,31 +49,22 @@ struct KeygenView: View {
             }
             .onAppear {
                 hideBackButton = true
-                vaultCreatedAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
-                checkmarkAnimationVM = RiveViewModel(fileName: "CreatingVaultCheckmark", autoPlay: true)
-                keygenAnimationVM = RiveViewModel(
-                    fileName: fastSignConfig != nil ? "keygen_fast" : "keygen_secure",
-                    autoPlay: true,
-                )
-                keygenAnimationVM?.fit = .layout
-                keygenAnimationVM?.layoutScaleFactor = RiveViewModel.layoutScaleFactorAutomatic
-                keygenAnimationVM?.riveModel?.enableAutoBind { instance in
-                    keygenAnimationVMInstance = instance
-                }
+                vaultCreatedAnimationVM = RiveViewModel(fileName: "vault_created", autoPlay: true)
+                checkmarkAnimationVM = RiveViewModel(fileName: "creating_vault_checkmark", autoPlay: true)
             }
             .onDisappear {
                 vaultCreatedAnimationVM?.stop()
-                progressAnimationTimer?.invalidate()
-                progressAnimationTimer = nil
-            }
-            .onChange(of: keygenAnimationVMInstance) { _, instance in
-                let connected = instance?.booleanProperty(fromPath: "Connected")
-                connected?.value = true
             }
     }
 
     private func handleNavigation() {
         switch tssType {
+        case .DilithiumKeygen:
+            router.navigate(to: KeygenRoute.backupNow(
+                tssType: tssType,
+                backupType: .single(vault: vault),
+                isNewVault: false
+            ))
         case .Migrate:
             router.navigate(to: KeygenRoute.backupNow(
                 tssType: tssType,
@@ -182,26 +164,13 @@ struct KeygenView: View {
                     .KeygenECDSA,
                     .KeygenEdDSA,
                     .ReshareECDSA,
-                    .ReshareEdDSA:
-                keygenAnimationVM?.view()
-                    .ignoresSafeArea()
-                    .readSize { size in
-                        let posXcircles = keygenAnimationVMInstance?.numberProperty(fromPath: "posXcircles")
-                        posXcircles?.value = Float(size.width / 2)
-                    }
-                    .onChange(of: viewModel.progress) { _, newValue in
-                        animateProgress(to: newValue)
-                    }
-                    .onAppear {
-                        #if os(iOS)
-                        HapticFeedbackManager.shared.playAHAPFile(named: "keygen_animation_haptic", looping: true)
-                        #endif
-                    }
-                    .onDisappear {
-                        #if os(iOS)
-                        HapticFeedbackManager.shared.stopAHAPPlayback()
-                        #endif
-                    }
+                    .ReshareEdDSA,
+                    .KeygenMLDSA:
+                KeygenAnimationView(
+                    isFast: fastSignConfig != nil,
+                    connected: $viewModel.keygenConnected,
+                    progress: $viewModel.progress
+                )
             case .KeygenFinished:
                 doneText
             case .KeygenFailed:
@@ -223,8 +192,6 @@ struct KeygenView: View {
             showError = true
         }
     }
-
-
 
     var doneText: some View {
         ZStack {
@@ -259,7 +226,7 @@ struct KeygenView: View {
     var keygenFailedView: some View {
         ZStack {
             switch tssType {
-            case .Keygen, .KeyImport:
+            case .Keygen, .KeyImport, .DilithiumKeygen:
                 keygenFailedText
             case .Reshare:
                 keygenReshareFailedText
@@ -270,7 +237,6 @@ struct KeygenView: View {
         .onAppear {
             showError = true
             hideBackButton = false
-            showProgressRing = false
         }
     }
 
@@ -300,10 +266,6 @@ struct KeygenView: View {
         ErrorMessage(text: "thresholdNotReachedMessage", width: 300)
     }
 
-
-
-
-
     func setData() async {
         await viewModel.setData(
             vault: vault,
@@ -321,9 +283,8 @@ struct KeygenView: View {
 
     private func setDoneData() {
         showDoneText = true
-        checkVaultType()
 
-        if tssType == .Reshare {
+        if tssType == .Reshare || tssType == .DilithiumKeygen {
             vault.isBackedUp = false
         }
 
@@ -335,52 +296,6 @@ struct KeygenView: View {
         viewModel.delaySwitchToMain()
     }
 
-    private func checkVaultType() {
-        if fastSignConfig != nil {
-            showVerificationView = true
-        }
-    }
-
-    private func animateProgress(to targetValue: Float) {
-        progressAnimationTimer?.invalidate()
-
-        let duration: TimeInterval = 3.0
-        let frameRate: TimeInterval = 1.0 / 60.0
-        let totalSteps = Int(duration / frameRate)
-        let startValue = displayedProgress
-        let delta = targetValue - startValue
-
-        guard delta != 0, totalSteps > 0 else {
-            displayedProgress = targetValue
-            updateRiveProgress(targetValue)
-            return
-        }
-
-        var currentStep = 0
-
-        progressAnimationTimer = Timer.scheduledTimer(withTimeInterval: frameRate, repeats: true) { timer in
-            currentStep += 1
-            let progress = Float(currentStep) / Float(totalSteps)
-            // Ease-out curve for smoother deceleration
-            let easedProgress = 1 - pow(1 - progress, 3)
-            let newValue = startValue + delta * easedProgress
-
-            displayedProgress = newValue
-            updateRiveProgress(newValue)
-
-            if currentStep >= totalSteps {
-                timer.invalidate()
-                progressAnimationTimer = nil
-                displayedProgress = targetValue
-                updateRiveProgress(targetValue)
-            }
-        }
-    }
-
-    private func updateRiveProgress(_ value: Float) {
-        let progressProperty = keygenAnimationVMInstance?.numberProperty(fromPath: "progessPercentage")
-        progressProperty?.value = value
-    }
 }
 
 #Preview("keygen") {

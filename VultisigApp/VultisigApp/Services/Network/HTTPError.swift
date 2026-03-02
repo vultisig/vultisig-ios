@@ -8,7 +8,7 @@
 import Foundation
 
 /// HTTP networking errors
-public enum HTTPError: Error, LocalizedError {
+enum HTTPError: Error, LocalizedError {
     case invalidURL
     case noData
     case invalidResponse
@@ -19,7 +19,7 @@ public enum HTTPError: Error, LocalizedError {
     case timeout
     case invalidSSLCertificate
 
-    public var errorDescription: String? {
+    var errorDescription: String? {
         switch self {
         case .invalidURL:
             return "Invalid URL"
@@ -44,17 +44,11 @@ public enum HTTPError: Error, LocalizedError {
 }
 
 /// HTTP response model
-public struct HTTPResponse<T> {
-    public let data: T
-    public let response: HTTPURLResponse
-
-    public init(data: T, response: HTTPURLResponse) {
-        self.data = data
-        self.response = response
-    }
+struct HTTPResponse<T> {
+    let data: T
+    let response: HTTPURLResponse
 }
 
 /// Empty response type for requests that don't return data
-public struct EmptyResponse: Codable {
-    public init() {}
+struct EmptyResponse: Codable {
 }

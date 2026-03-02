@@ -12,6 +12,12 @@ import OSLog
 struct VultisigApp: App {
     @Environment(\.scenePhase) var scenePhase
 
+    #if os(iOS)
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    #elseif os(macOS)
+    @NSApplicationDelegateAdaptor(MacAppDelegate.self) var appDelegate
+    #endif
+
     @StateObject var applicationState = ApplicationState.shared
     @StateObject var vaultDetailViewModel = VaultDetailViewModel()
     @StateObject var coinSelectionViewModel = CoinSelectionViewModel()
@@ -24,6 +30,7 @@ struct VultisigApp: App {
     @StateObject var globalStateViewModel = GlobalStateViewModel()
     @StateObject var navigationRouter = NavigationRouter()
     @StateObject var sheetPresentedCounterManager = SheetPresentedCounterManager()
+    @StateObject var pushNotificationManager = PushNotificationManager.shared
 
     init() {
 #if os(macOS)
@@ -68,7 +75,8 @@ struct VultisigApp: App {
             BondPosition.self,
             StakePosition.self,
             LPPosition.self,
-            StoredPendingTransaction.self
+            StoredPendingTransaction.self,
+            VaultSettings.self
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,

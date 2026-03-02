@@ -26,11 +26,7 @@ enum FeeEnum {
     }
 }
 
-protocol FeeService {
-    func calculateFees(chain: Chain, limit: BigInt, isSwap: Bool, fromAddress: String, feeMode: FeeMode) async throws -> FeeEnum
-}
-
-class EthereumFeeService: FeeService {
+class EthereumFeeService {
     private let chain: Chain
     private let evmService: EvmService
 
@@ -110,9 +106,4 @@ class EthereumFeeService: FeeService {
     func inflatedGasLimit(_ gasLimit: BigInt) -> BigInt {
         return gasLimit + (gasLimit / 2) // add 50%
     }
-}
-
-enum FeeServiceError: Error {
-    case invalidResponse
-    case unsupportedChain
 }

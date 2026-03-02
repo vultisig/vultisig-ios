@@ -39,7 +39,7 @@ struct ReviewDeviceCell: View {
             if isThisDevice {
                 Text("\(deviceName) ") +
                 Text("(\(NSLocalizedString("thisDevice", comment: "").lowercased()))")
-                    .foregroundColor(Theme.colors.textTertiary)
+                    .foregroundColor(Theme.colors.textPrimary)
             } else {
                 Text(deviceName)
             }
@@ -60,7 +60,7 @@ struct ReviewDeviceCell: View {
         let idString = id.lowercased()
 
         if idString.contains("mac") {
-            return "MacBook Pro"
+            return "Mac"
         } else if idString.contains("iphone") {
             return "iPhone"
         } else if idString.contains("ipad") {

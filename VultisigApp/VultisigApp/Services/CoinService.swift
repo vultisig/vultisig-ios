@@ -154,6 +154,11 @@ struct CoinService {
             return vault.coins.first(where: { $0.id == newCoin.id })
         }
 
+        // Secondary check using vault.coin(for:) to catch duplicates with differing contract address formats or IDs
+        if let existing = vault.coin(for: asset) {
+            return existing
+        }
+
         if let priceProviderId {
             newCoin.priceProviderId = priceProviderId
         }
@@ -186,7 +191,7 @@ struct CoinService {
             tokens = try await SuiService.shared.getAllTokensWithMetadata(address: address)
         case .THORChain:
             switch nativeCoin.chain {
-            case .thorChain, .thorChainStagenet:
+            case .thorChain, .thorChainChainnet, .thorChainStagenet:
                 let service = ThorchainServiceFactory.getService(for: nativeCoin.chain)
                 tokens = try await service.fetchTokens(address)
             case .mayaChain:
@@ -207,6 +212,13 @@ struct CoinService {
 
             for token in tokens {
                 do {
+                    // Skip discovered tokens that match the native token's ticker
+                    // (e.g. cosmos balance API returns "rune" denom as a non-native token,
+                    // but it's already tracked as the native RUNE coin)
+                    if token.ticker.caseInsensitiveCompare(nativeToken.ticker) == .orderedSame {
+                        continue
+                    }
+
                     // Check if token is hidden by user
                     if isTokenHidden(token, vault: vault) {
                         continue
@@ -450,26 +462,6 @@ struct CoinService {
             vault.hiddenTokens.remove(at: index)
             Storage.shared.delete(hiddenToken)
         }
-    }
-
-    // MARK: - Diagnostic Functions
-
-    /// Check if vault is in an invalid state (has tokens without native token)
-    static func detectOrphanedTokens(vault: Vault) -> [Chain: [Coin]] {
-        var orphanedTokens: [Chain: [Coin]] = [:]
-
-        // Group coins by chain
-        let coinsByChain = Dictionary(grouping: vault.coins) { $0.chain }
-
-        // Check each chain
-        for (chain, coins) in coinsByChain {
-            let hasNativeToken = coins.contains { $0.isNativeToken }
-            if !hasNativeToken && !coins.isEmpty {
-                orphanedTokens[chain] = coins
-            }
-        }
-
-        return orphanedTokens
     }
 
     /// Clear all hidden tokens for a specific chain

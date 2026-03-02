@@ -33,7 +33,7 @@ struct PeerCell: View {
 
             Spacer()
 
-            if let index, let totalCount {
+            if let index {
                 badge(index: index, totalCount: totalCount)
             }
         }
@@ -87,8 +87,8 @@ struct PeerCell: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func badge(index: Int, totalCount: Int) -> some View {
-        Text("\(index) of \(totalCount)")
+    private func badge(index: Int, totalCount: Int?) -> some View {
+        Text(String(format: NSLocalizedString("nOfTotal", comment: ""), index, totalCount.map { "\($0)" } ?? "∞"))
             .font(Theme.fonts.caption12)
             .foregroundStyle(Theme.colors.textSecondary)
             .padding(.horizontal, 16)

@@ -38,7 +38,7 @@ struct KeyImportScanningForChainsView: View {
             )
         }
         .onAppear {
-            animationVMLoader = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
+            animationVMLoader = RiveViewModel(fileName: "connecting_with_server", autoPlay: true)
         }
         .onDisappear {
             animationVMLoader?.stop()

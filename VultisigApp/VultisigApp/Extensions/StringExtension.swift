@@ -61,14 +61,6 @@ extension String {
         return ""
     }
 
-    static var newline: String {
-        return "\n"
-    }
-
-    static var space: String {
-        return " "
-    }
-
     static var zero: String {
         return "0"
     }
@@ -234,10 +226,4 @@ extension String {
         return Data(base64Encoded: self)
     }
 
-    /// Converts a base64-encoded string to a byte array ([UInt8])
-    /// - Returns: Array of bytes if decoding succeeds, nil otherwise
-    func fromBase64Bytes() -> [UInt8]? {
-        guard let data = fromBase64() else { return nil }
-        return Array(data)
-    }
 }

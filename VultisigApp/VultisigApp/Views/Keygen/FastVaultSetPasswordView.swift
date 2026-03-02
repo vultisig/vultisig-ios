@@ -46,6 +46,33 @@ struct FastVaultSetPasswordView: View {
             }
     }
 
+    #if os(iOS)
+    var content: some View {
+        ZStack {
+            Background()
+            main
+
+            if isLoading {
+                Loader()
+            }
+        }
+        .navigationTitle(NSLocalizedString("", comment: ""))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    var main: some View {
+        view
+    }
+
+    var view: some View {
+        VStack {
+            passwordField
+            Spacer()
+            button
+        }
+    }
+    #endif
+
     private func handleNavigation() {
         if tssType == .Migrate {
             router.navigate(to: KeygenRoute.peerDiscovery(

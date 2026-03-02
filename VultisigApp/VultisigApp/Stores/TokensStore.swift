@@ -1761,6 +1761,15 @@ class TokensStore {
         ),
         rune,
         CoinMeta(
+            chain: .thorChainChainnet,
+            ticker: "RUNE",
+            logo: "rune",
+            decimals: 8,
+            priceProviderId: "thorchain",
+            contractAddress: "",
+            isNativeToken: true
+        ),
+        CoinMeta(
             chain: .thorChainStagenet,
             ticker: "RUNE",
             logo: "rune",

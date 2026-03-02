@@ -51,11 +51,6 @@ class CoinSelectionViewModel: ObservableObject {
         groupAssets()
     }
 
-    func hasTokens(chain: Chain) -> Bool {
-        guard let coins = groupedAssets[chain] else { return false }
-        return coins.count > 1
-    }
-
     private func checkSelected(for vault: Vault) {
         selection = Set(vault.coins.map { $0.toCoinMeta() })
     }
@@ -65,14 +60,17 @@ class CoinSelectionViewModel: ObservableObject {
 
         // Filter out Sepolia and Thorchain Stagenet based on settings
         let enableETHSepolia = UserDefaults.standard.bool(forKey: "sepolia")
-        let enableThorchainStagenet = UserDefaults.standard.bool(forKey: "thorchainStagenet")
+        let enableThorchainChainnet = UserDefaults.standard.bool(forKey: "thorchainChainnet")
 
         let filteredAssets = TokensStore.TokenSelectionAssets.filter { asset in
             if asset.chain == .ethereumSepolia {
                 return enableETHSepolia
             }
+            if asset.chain == .thorChainChainnet {
+                return enableThorchainChainnet
+            }
             if asset.chain == .thorChainStagenet {
-                return enableThorchainStagenet
+                return enableThorchainChainnet
             }
             return true
         }

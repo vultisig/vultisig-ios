@@ -16,8 +16,6 @@ struct FunctionCallDetailsScreen: View {
     @State var fnCallInstance: FunctionCallInstance?
     let defaultCoin: Coin
 
-    @StateObject var keyboardObserver = KeyboardObserver()
-
     init(
         vault: Vault,
         tx: SendTransaction,

@@ -11,6 +11,7 @@ struct OnboardingInformationRowView: View {
     let title: String
     let subtitle: String
     let icon: String
+    var highlightedText: String? = nil
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
@@ -24,9 +25,23 @@ struct OnboardingInformationRowView: View {
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.subtitle)
 
-                Text(subtitle)
-                    .foregroundStyle(Theme.colors.textTertiary)
-                    .font(Theme.fonts.footnote)
+                if let highlightedText {
+                    HighlightedText(
+                        text: subtitle,
+                        highlightedText: highlightedText,
+                        textStyle: {
+                            $0.font = Theme.fonts.footnote
+                            $0.foregroundColor = Theme.colors.textTertiary
+                        },
+                        highlightedTextStyle: {
+                            $0.foregroundColor = Theme.colors.textPrimary
+                        }
+                    )
+                } else {
+                    Text(subtitle)
+                        .foregroundStyle(Theme.colors.textTertiary)
+                        .font(Theme.fonts.footnote)
+                }
             }
         }
     }

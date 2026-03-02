@@ -16,11 +16,6 @@ struct PresentableError: Error, Identifiable, Equatable {
         lhs.title == rhs.title && lhs.description == rhs.description
     }
 
-    init(title: String, description: String) {
-        self.title = title
-        self.description = description
-    }
-
     init(from error: Error) {
         if let customError = error as? ErrorWithCustomPresentation {
             self.title = customError.errorTitle

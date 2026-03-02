@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct SolanaFmTokenInfo: Codable {
+struct SolanaFmTokenInfo: Codable {
     struct TokenList: Codable {
         let name: String?
         let symbol: String?
@@ -59,7 +59,7 @@ public struct SolanaFmTokenInfo: Codable {
     let tokenList: TokenList?
     let tokenMetadata: TokenMetadata?
 
-    public init(from decoder: Decoder) throws {
+    init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         mint = try? container.decode(String.self, forKey: .mint)
         decimals = try? container.decode(Int.self, forKey: .decimals)

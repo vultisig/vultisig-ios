@@ -109,11 +109,6 @@ struct FlexibleArrayEntry: Codable {
     let type: String?
     let value: FlexibleValue?
 
-    init(type: String?, value: FlexibleValue?) {
-        self.type = type
-        self.value = value
-    }
-
     init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
 

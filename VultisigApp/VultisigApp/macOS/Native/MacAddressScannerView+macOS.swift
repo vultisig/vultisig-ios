@@ -41,8 +41,10 @@ struct MacAddressScannerView: View {
     var onParsedResult: ((AddressResult?) -> Void)?
 
     @State var showImportOptions: Bool = false
+    @State private var scannerMode: ScannerMode = .camera
 
     @StateObject var scannerViewModel = MacAddressScannerViewModel()
+    @StateObject var screenCaptureService = MacScreenCaptureService()
 
     @Environment(\.dismiss) var dismiss
 
@@ -61,9 +63,22 @@ struct MacAddressScannerView: View {
             Background()
             content
         }
-        .crossPlatformToolbar("scanQRCode".localized, ignoresTopEdge: true)
+        .crossPlatformToolbar("scanQRCode".localized, ignoresTopEdge: true) {
+            CustomToolbarItem(placement: .trailing) {
+                FilledSegmentedControl(selection: $scannerMode, options: ScannerMode.allCases)
+                    .frame(maxWidth: 200, maxHeight: 24)
+            }
+        }
         .onChange(of: scannerViewModel.detectedQRCode) { _, _ in
             handleScan()
+        }
+        .onChange(of: screenCaptureService.detectedQRCode) { _, newValue in
+            guard let newValue = newValue, !newValue.isEmpty else { return }
+            screenCaptureService.stopCapture()
+            scannerViewModel.detectedQRCode = newValue
+        }
+        .onChange(of: scannerMode) { _, newMode in
+            handleModeChange(newMode)
         }
     }
 
@@ -72,8 +87,18 @@ struct MacAddressScannerView: View {
             if showImportOptions {
                 importOption
             } else {
-                camera
+                scannerContent
             }
+        }
+    }
+
+    @ViewBuilder
+    var scannerContent: some View {
+        switch scannerMode {
+        case .camera:
+            camera
+        case .screen:
+            screenCaptureView
         }
     }
 
@@ -99,6 +124,66 @@ struct MacAddressScannerView: View {
             } else if let session = scannerViewModel.getSession() {
                 getScanner(session)
             }
+        }
+    }
+
+    var screenCaptureView: some View {
+        ZStack {
+            if screenCaptureService.isPermissionDenied {
+                VStack {
+                    Spacer()
+                    screenPermissionDeniedView
+                    Spacer()
+                }
+            } else {
+                screenPreviewView
+            }
+        }
+    }
+
+    var screenPreviewView: some View {
+        GeometryReader { geometry in
+            let side = min(geometry.size.width, geometry.size.height) * 0.65
+
+            ZStack {
+                MacScreenCapturePreview(scanRegion: screenCaptureService.scanRegion)
+                    .frame(width: side, height: side)
+
+                ZStack {
+                    Theme.colors.bgPrimary
+
+                    RoundedRectangle(cornerRadius: 16)
+                        .frame(width: side, height: side)
+                        .blendMode(.destinationOut)
+                }
+                .compositingGroup()
+
+                Image("QRScannerOutline")
+                    .resizable()
+                    .frame(width: side, height: side)
+            }
+            .frame(width: geometry.size.width, height: geometry.size.height)
+            .overlay(alignment: .bottom) {
+                uploadQRCodeButton
+                    .padding(40)
+            }
+        }
+    }
+
+    var screenPermissionDeniedView: some View {
+        VStack(spacing: 20) {
+            Text(NSLocalizedString("screenRecordingPermissionDenied", comment: ""))
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundStyle(Theme.colors.textSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+
+            PrimaryButton(title: "openSystemSettings") {
+                if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture") {
+                    NSWorkspace.shared.open(url)
+                }
+            }
+            .padding(.horizontal, 40)
         }
     }
 
@@ -171,6 +256,20 @@ struct MacAddressScannerView: View {
         }
     }
 
+    private func handleModeChange(_ newMode: ScannerMode) {
+        switch newMode {
+        case .camera:
+            screenCaptureService.stopCapture()
+            scannerViewModel.setupSession()
+            scannerViewModel.startSession()
+        case .screen:
+            scannerViewModel.stopSession()
+            Task {
+                await screenCaptureService.startCapture()
+            }
+        }
+    }
+
     private func handleScan() {
         guard let detectedQRCode = scannerViewModel.detectedQRCode else {
             return
@@ -184,6 +283,7 @@ struct MacAddressScannerView: View {
 
     private func goBack() {
         scannerViewModel.stopSession()
+        screenCaptureService.stopCapture()
         showImportOptions = false
         dismiss()
     }

@@ -1,0 +1,4 @@
+module vscore {
+    umbrella header "vs-core.h"
+    export *
+}

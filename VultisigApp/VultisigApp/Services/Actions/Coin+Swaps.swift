@@ -37,7 +37,6 @@ extension Coin {
 
             if thorEthTokens.contains(ticker) {
                 providers.append(.thorchain)
-                providers.append(.thorchainStagenet)
             }
 
             if mayaEthTokens.contains(ticker) {
@@ -47,13 +46,13 @@ extension Coin {
             return providers + defaultProviders
         case .bscChain:
             if thorBscTokens.contains(ticker) {
-                return [.thorchain, .thorchainStagenet, .oneinch(chain), .lifi, .kyberswap(chain)]
+                return [.thorchain, .oneinch(chain), .lifi, .kyberswap(chain)]
             } else {
                 return [.oneinch(chain), .lifi, .kyberswap(chain) ]
             }
         case .avalanche:
             if thorAvaxTokens.contains(ticker) {
-                return [.thorchain, .thorchainStagenet, .oneinch(chain), .lifi, .kyberswap(chain)]
+                return [.thorchain, .oneinch(chain), .lifi, .kyberswap(chain)]
             } else {
                 return [.oneinch(chain), .lifi, .kyberswap(chain)]
             }
@@ -65,7 +64,7 @@ extension Coin {
             }
         case .base:
             if thorBaseTokens.contains(ticker) {
-                return [.thorchain, .thorchainStagenet, .oneinch(chain), .lifi] // KyberSwap not supported
+                return [.thorchain, .oneinch(chain), .lifi] // KyberSwap not supported
             }
             return [.oneinch(chain), .lifi] // KyberSwap not supported
         case .optimism, .polygon, .polygonV2, .mantle:
@@ -76,14 +75,16 @@ extension Coin {
             return [.lifi] // KyberSwap not supported on Blast
         case .thorChain:
             return [.thorchain, .mayachain]
+        case .thorChainChainnet:
+            return [.thorchainChainnet]
         case .thorChainStagenet:
             return [.thorchainStagenet]
         case .bitcoin:
-            return [.thorchain, .thorchainStagenet, .mayachain]
+            return [.thorchain, .mayachain]
         case .dogecoin, .bitcoinCash, .litecoin, .gaiaChain:
-            return [.thorchain, .thorchainStagenet]
+            return [.thorchain]
         case .solana:
-            return [.lifi]
+            return [.thorchain, .lifi]
         case .hyperliquid:
             return [.lifi]
         case .cronosChain:
@@ -91,9 +92,9 @@ extension Coin {
         case .zcash:
             return [.mayachain]
         case .ripple:
-            return [.thorchain, .thorchainStagenet]
+            return [.thorchain]
         case .tron:
-            return [.thorchain, .thorchainStagenet]
+            return [.thorchain]
         case .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .akash, .ethereumSepolia, .cardano, .sei:
             return []
         }

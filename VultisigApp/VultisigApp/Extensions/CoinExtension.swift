@@ -14,9 +14,6 @@ extension Coin {
         return chain.coinType
     }
 
-    func allowZeroGas() -> Bool {
-        return self.chain == .polkadot || self.chain == .tron
-    }
 }
 
 extension Array where Element: Coin {

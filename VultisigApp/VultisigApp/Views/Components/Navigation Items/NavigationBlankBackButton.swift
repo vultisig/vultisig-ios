@@ -10,7 +10,7 @@ import SwiftUI
 struct NavigationBlankBackButton: View {
     var tint: Color = Theme.colors.textPrimary
 
-    var image: some View {
+    var body: some View {
         Image(systemName: "chevron.backward")
             .font(Theme.fonts.bodyLMedium)
             .foregroundColor(tint)

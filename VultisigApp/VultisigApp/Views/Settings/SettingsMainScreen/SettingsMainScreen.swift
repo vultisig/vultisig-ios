@@ -13,11 +13,9 @@ struct SettingsMainScreen: View {
     @EnvironmentObject var settingsViewModel: SettingsViewModel
 
     @StateObject var referredViewModel = ReferredViewModel()
-    @StateObject var referralViewModel = ReferralViewModel()
 
     @State var tapCount = 0
     @State var scale: CGFloat = 1
-    @State var showVaultDetailQRCode: Bool = false
     @State var showReferralBannerSheet = false
 
     let groups: [SettingsOptionGroup] = [
@@ -25,8 +23,7 @@ struct SettingsMainScreen: View {
             title: "vault",
             options: [
                 .vaultSettings,
-                .vultDiscountTiers,
-                .registerVaults
+                .vultDiscountTiers
             ]
         ),
         SettingsOptionGroup(
@@ -34,6 +31,7 @@ struct SettingsMainScreen: View {
             options: [
                 .language,
                 .currency,
+                .notifications,
                 .addressBook,
                 .referralCode
             ]
@@ -99,7 +97,7 @@ struct SettingsMainScreen: View {
             ForEach(group.options, id: \.self) { option in
                 optionView(
                     for: option,
-                    shouldHighlight: option == .registerVaults,
+                    shouldHighlight: false,
                     showSeparator: option != group.options.last
                 )
             }
@@ -147,12 +145,12 @@ struct SettingsMainScreen: View {
             router.navigate(to: SettingsRoute.vaultSettings(vault: vault))
         case .vultDiscountTiers:
             router.navigate(to: SettingsRoute.vultDiscountTiers(vault: vault))
-        case .registerVaults:
-            router.navigate(to: SettingsRoute.registerVaults(vault: vault))
         case .language:
             router.navigate(to: SettingsRoute.language)
         case .currency:
             router.navigate(to: SettingsRoute.currency)
+        case .notifications:
+            router.navigate(to: SettingsRoute.notifications)
         case .addressBook:
             router.navigate(to: SettingsRoute.addressBook)
         case .faq:
@@ -202,10 +200,6 @@ struct SettingsMainScreen: View {
                 router.navigate(to: SettingsRoute.advancedSettings)
             }
         }
-    }
-
-    var checkUpdateView: some View {
-        PhoneCheckUpdateView()
     }
 
     func onOption(_ option: SettingsOption) {

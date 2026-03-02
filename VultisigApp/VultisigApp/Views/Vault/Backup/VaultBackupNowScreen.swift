@@ -81,17 +81,38 @@ struct VaultBackupScreen: View {
     }
 
     private var subtitleView: some View {
-        HighlightedText(
-            text: "backupSetupSubtitle".localized,
-            highlightedText: "backupSetupSubtitleHighlight".localized,
-            textStyle: { attributedString in
-                attributedString.font = Theme.fonts.bodySMedium
-                attributedString.foregroundColor = Theme.colors.textTertiary
-            },
-            highlightedTextStyle: { substring in
-                substring.foregroundColor = Theme.colors.textPrimary
+        VStack(spacing: 0) {
+            if vault.isFastVault {
+                HighlightedText(
+                    text: "backupSetupSubtitleFast".localized,
+                    highlightedText: "backupSetupSubtitleFastHighlight".localized,
+                    textStyle: { attributedString in
+                        attributedString.font = Theme.fonts.bodySMedium
+                        attributedString.foregroundColor = Theme.colors.textTertiary
+                    },
+                    highlightedTextStyle: { substring in
+                        substring.foregroundColor = Theme.colors.textPrimary
+                    }
+                )
+            } else {
+                HighlightedText(
+                    text: "backupSetupSubtitle".localized,
+                    highlightedText: "backupSetupSubtitleHighlight".localized,
+                    textStyle: { attributedString in
+                        attributedString.font = Theme.fonts.bodySMedium
+                        attributedString.foregroundColor = Theme.colors.textTertiary
+                    },
+                    highlightedTextStyle: { substring in
+                        substring.foregroundColor = Theme.colors.textPrimary
+                    }
+                )
             }
-        )
+
+            Text("backupSetupSubtitleHighlight".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .showIf(vault.isFastVault)
+        }
         .multilineTextAlignment(.center)
         .frame(maxWidth: 321)
         .fixedSize(horizontal: false, vertical: true)
@@ -102,7 +123,8 @@ struct VaultBackupScreen: View {
     private var checkboxView: some View {
         Checkbox(
             isChecked: $checkboxChecked,
-            text: "backupSaveCheckbox".localized
+            text: "backupSaveCheckbox".localized,
+            isExtended: false
         )
     }
 

@@ -42,11 +42,7 @@ struct OnChainSecurityScreen: View {
                 .font(Theme.fonts.bodyMMedium)
             Text("vaultSettingsSecurityScreenTitleContent".localized)
                 .font(Theme.fonts.caption12)
-            Toggle("", isOn: $securityScannerEnabled)
-                .labelsHidden()
-                .scaleEffect(0.8)
-                .tint(Theme.colors.primaryAccent4)
-                .toggleStyle(.switch)
+            VultiToggle(isOn: $securityScannerEnabled)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())

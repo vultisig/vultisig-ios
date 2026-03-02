@@ -110,19 +110,6 @@ struct KeygenRouteBuilder {
     }
 
     @ViewBuilder
-    func buildNewWalletNameScreen(
-        tssType: TssType,
-        selectedTab: SetupVaultState,
-        name: String
-    ) -> some View {
-        NewWalletNameView(
-            tssType: tssType,
-            selectedTab: selectedTab,
-            name: name
-        )
-    }
-
-    @ViewBuilder
     func buildJoinKeysignScreen(vault: Vault) -> some View {
         JoinKeysignView(vault: vault)
     }

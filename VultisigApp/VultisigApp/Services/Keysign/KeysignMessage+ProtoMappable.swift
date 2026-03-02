@@ -9,10 +9,6 @@ import Foundation
 import BigInt
 import VultisigCommonData
 
-enum KeysignPayloadFactoryError: Error {
-    case invalidSwapProvider
-}
-
 extension KeysignMessage: ProtoMappable {
 
     init(proto: VSKeysignMessage) throws {
@@ -260,7 +256,7 @@ extension SwapPayload {
 
     func mapToProtobuff() -> VSKeysignPayload.OneOf_SwapPayload {
         switch self {
-        case .thorchain(let payload), .thorchainStagenet(let payload):
+        case .thorchain(let payload), .thorchainChainnet(let payload), .thorchainStagenet(let payload):
             return .thorchainSwapPayload(.with {
                 $0.fromAddress = payload.fromAddress
                 $0.fromCoin = ProtoCoinResolver.proto(from: payload.fromCoin)

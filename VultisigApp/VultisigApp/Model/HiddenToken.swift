@@ -24,10 +24,6 @@ class HiddenToken {
         self.hiddenAt = Date()
     }
 
-    convenience init(coinMeta: CoinMeta) {
-        self.init(chain: coinMeta.chain, ticker: coinMeta.ticker, contractAddress: coinMeta.contractAddress)
-    }
-
     convenience init(coin: Coin) {
         self.init(chain: coin.chain, ticker: coin.ticker, contractAddress: coin.contractAddress)
     }

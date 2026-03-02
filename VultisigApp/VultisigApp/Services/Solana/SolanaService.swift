@@ -34,21 +34,7 @@ class SolanaService {
 
     private let rpcURL = URL(string: Endpoint.solanaServiceRpc)!
 
-    private let accountQueryMethods = Set([
-        "getTokenAccountsByOwner",
-        "getAccountInfo",
-        "getMultipleAccounts"
-    ])
-
-    private let jsonDecoder = JSONDecoder()
-
     private let TOKEN_PROGRAM_ID_2022 = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-
-    // Token account cache
-    private struct TokenAccountCacheKey: Hashable {
-        let walletAddress: String
-        let mintAddress: String
-    }
 
     private struct TokenAccountCacheValue {
         let accountAddress: String
@@ -432,40 +418,6 @@ class SolanaService {
         }
 
         return coinMetaList
-    }
-
-    func fetchHighPriorityFee(account: String) async throws -> UInt64 {
-        do {
-            struct PrioritizationFeeResponse: Decodable {
-                let result: [FeeObject]
-            }
-
-            struct FeeObject: Decodable {
-                let prioritizationFee: Int
-                let slot: Int
-            }
-
-            let requestBody: [String: Any] = [
-                "jsonrpc": "2.0",
-                "id": 1,
-                "method": "getRecentPrioritizationFees",
-                "params": [[account]]
-            ]
-
-            let data = try await postRequest(with: requestBody, url: rpcURL)
-            let decoder = JSONDecoder()
-            let response = try decoder.decode(
-                PrioritizationFeeResponse.self, from: data)
-
-            let fees = response.result.map { $0.prioritizationFee }
-            let nonZeroFees = fees.filter { $0 > 0 }
-
-            let highPriorityFee = nonZeroFees.max() ?? 0
-            return UInt64(highPriorityFee)
-        } catch {
-            print("Error in fetchHighPriorityFee:")
-            throw error
-        }
     }
 
     private func postRequest(with requestBody: [String: Any], url: URL) async throws -> Data {

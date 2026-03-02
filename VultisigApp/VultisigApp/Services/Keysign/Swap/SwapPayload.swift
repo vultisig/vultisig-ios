@@ -10,13 +10,14 @@ import BigInt
 
 enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
     case thorchain(THORChainSwapPayload)
+    case thorchainChainnet(THORChainSwapPayload)
     case thorchainStagenet(THORChainSwapPayload)
     case mayachain(THORChainSwapPayload)
     case generic(GenericSwapPayload)
 
     var fromCoin: Coin {
         switch self {
-        case .thorchain(let payload), .thorchainStagenet(let payload), .mayachain(let payload):
+        case .thorchain(let payload), .thorchainChainnet(let payload), .thorchainStagenet(let payload), .mayachain(let payload):
             return payload.fromCoin
         case .generic(let payload):
             return payload.fromCoin
@@ -25,7 +26,7 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
 
     var toCoin: Coin {
         switch self {
-        case .thorchain(let payload), .thorchainStagenet(let payload), .mayachain(let payload):
+        case .thorchain(let payload), .thorchainChainnet(let payload), .thorchainStagenet(let payload), .mayachain(let payload):
             return payload.toCoin
         case .generic(let payload):
             return payload.toCoin
@@ -34,7 +35,7 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
 
     var fromAmount: BigInt {
         switch self {
-        case .thorchain(let payload), .thorchainStagenet(let payload), .mayachain(let payload):
+        case .thorchain(let payload), .thorchainChainnet(let payload), .thorchainStagenet(let payload), .mayachain(let payload):
             return payload.fromAmount
         case .generic(let payload):
             return payload.fromAmount
@@ -43,7 +44,7 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
 
     var toAmountDecimal: Decimal {
         switch self {
-        case .thorchain(let payload), .thorchainStagenet(let payload), .mayachain(let payload):
+        case .thorchain(let payload), .thorchainChainnet(let payload), .thorchainStagenet(let payload), .mayachain(let payload):
             return payload.toAmountDecimal
         case .generic(let payload):
             return payload.toAmountDecimal
@@ -52,7 +53,7 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
 
     var router: String? {
         switch self {
-        case .thorchain(let payload), .thorchainStagenet(let payload), .mayachain(let payload):
+        case .thorchain(let payload), .thorchainChainnet(let payload), .thorchainStagenet(let payload), .mayachain(let payload):
             return payload.routerAddress
         case .generic(let payload):
             return payload.quote.tx.to
@@ -63,7 +64,7 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
         switch self {
         case .mayachain(let payload):
             return payload.fromCoin.chain == .mayaChain && payload.toCoin.chain == .thorChain
-        case .generic, .thorchain, .thorchainStagenet:
+        case .generic, .thorchain, .thorchainChainnet, .thorchainStagenet:
             return false
         }
     }
@@ -72,6 +73,8 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
         switch self {
         case .thorchain:
             return "THORChain"
+        case .thorchainChainnet:
+            return "THORChain-Chainnet"
         case .thorchainStagenet:
             return "THORChain-Stagenet"
         case .mayachain:

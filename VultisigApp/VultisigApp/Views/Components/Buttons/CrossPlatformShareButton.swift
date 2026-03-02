@@ -7,14 +7,14 @@
 
 import SwiftUI
 
-public struct CrossPlatformShareButton<Content: View>: View {
+struct CrossPlatformShareButton<Content: View>: View {
     private let image: Image
     private let caption: String
     private let scale: CGFloat
     private let onComplete: (() -> Void)?
     private let content: (@escaping () -> Void) -> Content
 
-    public init(
+    init(
         image: Image,
         caption: String,
         scale: CGFloat = 2,
@@ -28,7 +28,7 @@ public struct CrossPlatformShareButton<Content: View>: View {
         self.content = content
     }
 
-    public var body: some View {
+    var body: some View {
         #if os(iOS)
         IOSShareButton(image: image, caption: caption, scale: scale, onComplete: onComplete, content: content)
         #elseif os(macOS)

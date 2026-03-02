@@ -59,13 +59,6 @@ extension THORChainAPIService {
     /// - `saversAPR`: Savers APR if applicable (string decimal)
     /// - `earningsAnnualAsPercentOfDepth`: Alternative earnings-based APR (optional)
     ///
-    /// ## Manual APR Calculation:
-    /// For transparency and verification, you can manually calculate APR from LUVI history:
-    /// - Use `getDepthHistory(asset:interval:count:)` to fetch historical LUVI data
-    /// - Use `calculateManualAPR(asset:days:)` to compute APR from the history
-    /// - The manual calculation uses `meta.luviIncrease` if available, or calculates
-    ///   growth from first/last interval LUVI values
-    ///
     /// ## Notes:
     /// - Default period is **30d** for consistency with thorchain.org
     /// - All APR/APY values are returned as strings (e.g., "0.2433" = 24.33%)
@@ -96,31 +89,6 @@ extension THORChainAPIService {
         if period == nil {
             await cache.cachePoolStats(data)
         }
-
-        return data
-    }
-
-    /// Fetches depth history for a pool to calculate manual APR from LUVI
-    /// - Parameters:
-    ///   - asset: The pool asset identifier (e.g., "BTC.BTC")
-    ///   - interval: Time interval for data points (e.g., "day", "hour")
-    ///   - count: Number of intervals to fetch
-    /// - Returns: Depth history with LUVI data
-    /// - Note: Results are cached for 5 minutes to improve performance
-    func getDepthHistory(asset: String, interval: String = "day", count: Int = 30) async throws -> THORChainDepthHistory {
-        // Check cache first
-        if let cached = await cache.getCachedDepthHistory(asset: asset, interval: interval, count: count) {
-            return cached
-        }
-
-        let response = try await httpClient.request(
-            THORChainLPsAPI.getDepthHistory(asset: asset, interval: interval, count: count),
-            responseType: THORChainDepthHistory.self
-        )
-        let data = response.data
-
-        // Cache the result
-        await cache.cacheDepthHistory(data, asset: asset, interval: interval, count: count)
 
         return data
     }
