@@ -38,6 +38,23 @@
 				<string>com.vultisig.backup</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>zip</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>ZIP Archive</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.pkware.zip-archive</string>
+				<string>public.zip-archive</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleGetInfoString</key>
 	<string></string>

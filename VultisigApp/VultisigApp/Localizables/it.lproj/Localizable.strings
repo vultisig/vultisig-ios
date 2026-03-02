@@ -533,6 +533,7 @@
 "noTokensFound" = "Nessun token trovato";
 "noTokensFoundSubtitle" = "Non sono stati trovati token per questa selezione.";
 "notWhitelistedOnNode" = "Non sei nella whitelist di questo nodo";
+"noVaultsFoundInZip" = "Nessun vault trovato nel file ZIP.";
 "of" = "Di";
 "ok" = "OK";
 "on" = "su";
@@ -787,7 +788,7 @@
 "success" = "Successo";
 "successfully" = "con successo";
 "support" = "Supporto";
-"supportedFileTypesUpload" = "Tipi di file supportati: .bak & .vult";
+"supportedFileTypesUpload" = "Tipi di file supportati: .bak, .vult & .zip";
 "swap" = "Scambio";
 "swap.duration.instant" = "Istantaneo";
 "swap.outbound_fee" = "Commissione in Uscita";

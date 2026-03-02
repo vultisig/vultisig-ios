@@ -495,7 +495,6 @@
 "nextAward" = "下次奖励";
 "nextChurn" = "下次淘汰";
 "nextPayout" = "下次支付";
-"no_unencrypted_vaults_to_import" = "没有未加密的保险库可导入";
 "noActiveChainsFound" = "未找到活跃链";
 "noActiveChainsFoundSubtitle" = "我们未在此助记词中检测到任何资产。\n\n每增加一条链都会增加生成保险库的时间和超时的可能性。";
 "noBarcodesFound" = "未找到条形码";
@@ -535,6 +534,7 @@
 "noTokensFoundSubtitle" = "您已禁用所有代币。确保您要查找的代币已启用";
 "notWhitelistedOnNode" = "您不在此节点的白名单中";
 "noUnencryptedVaultsToImport" = "没有未加密的保险库可导入";
+"noVaultsFoundInZip" = "ZIP文件中未找到任何保险库。";
 "of" = "的";
 "ok" = "确定";
 "on" = "在";
@@ -788,7 +788,7 @@
 "success" = "成功";
 "successfully" = "成功";
 "support" = "支持";
-"supportedFileTypesUpload" = "支持的文件类型：.bak 和 .vult";
+"supportedFileTypesUpload" = "支持的文件类型：.bak、.vult 和 .zip";
 "swap" = "交换";
 "swap.duration.instant" = "即时";
 "swap.outbound_fee" = "出站费用";

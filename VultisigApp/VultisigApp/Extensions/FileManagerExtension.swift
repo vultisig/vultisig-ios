@@ -33,8 +33,6 @@ extension FileManager {
             throw ZipFileError.failedToExtractZIP("Failed to open ZIP archive")
         }
 
-        let destinationRoot = destinationURL.standardizedFileURL
-
         for entry in archive {
             // Security: Deny symlinks entirely to prevent escaping via link targets
             guard entry.type != .symlink else {
@@ -43,18 +41,19 @@ extension FileManager {
             }
 
             // Security: Sanitize path to prevent zip-slip attacks
-            let unsafeDestination = destinationURL.appendingPathComponent(entry.path)
-            let resolvedDestination = unsafeDestination.standardizedFileURL
+            // Check the entry path directly for traversal components rather than
+            // relying on URL standardization which behaves differently for
+            // existing vs non-existing paths (e.g. /private stripping on iOS).
+            let entryPath = entry.path
+            let pathComponents = entryPath.components(separatedBy: "/")
 
-            // Verify the resolved path stays within the destination directory
-            let rootPath = destinationRoot.path
-            let targetPath = resolvedDestination.path
-            let isWithinRoot = targetPath == rootPath || targetPath.hasPrefix(rootPath + "/")
-
-            guard isWithinRoot else {
+            guard !pathComponents.contains(".."),
+                  !entryPath.hasPrefix("/") else {
                 logger.error("Blocked path traversal attempt for entry: \(entry.path, privacy: .public)")
                 continue
             }
+
+            let resolvedDestination = destinationURL.appendingPathComponent(entryPath)
 
             // Create parent directory only after security verification
             let parentDir = resolvedDestination.deletingLastPathComponent()
