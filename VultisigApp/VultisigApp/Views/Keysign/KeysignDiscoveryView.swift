@@ -55,10 +55,6 @@ struct KeysignDiscoveryView: View {
         GridItem(.adaptive(minimum: 150, maximum: 300), spacing: 16)
     ]
 
-    let adaptiveColumnsMac = [
-        GridItem(.adaptive(minimum: 300, maximum: 500), spacing: 8)
-    ]
-
     var localModeAvailable: Bool { vault.libType != .KeyImport }
 
     var body: some View {
@@ -113,6 +109,7 @@ struct KeysignDiscoveryView: View {
         ZStack(alignment: .bottom) {
             orientedContent
             switchLink
+                .frame(maxWidth: .infinity)
                 .background(Theme.colors.bgPrimary)
                 .showIf(localModeAvailable)
         }
@@ -178,7 +175,7 @@ struct KeysignDiscoveryView: View {
             }
         }
     }
-    
+
     @ViewBuilder
     var waitingForDevicesText: some View {
         let description = selectedNetwork == .Internet ? "waitingForDevicesToConnect" : "localModeWaitingOnDevices"
@@ -267,7 +264,7 @@ struct KeysignDiscoveryView: View {
             toAmount: previewType == .Swap ? getSwapToAmount() : ""
         )
     }
-    
+
     func notifyVaultDevices() {
         guard let qrCodeString else { return }
         Task {

@@ -11,7 +11,7 @@ struct NotificationsSettingsScreen: View {
     @EnvironmentObject var pushNotificationManager: PushNotificationManager
 
     @State private var notificationsEnabled: Bool = false
-    
+
     var allVaultsEnabled: Bool {
         !vaults.isEmpty && vaults.allSatisfy { pushNotificationManager.isVaultOptedIn($0) }
     }
@@ -68,7 +68,7 @@ struct NotificationsSettingsScreen: View {
             }
         }
     }
-    
+
     var enableAllView: some View {
         VStack(spacing: 0) {
             HStack(alignment: .center, spacing: 0) {
@@ -86,7 +86,7 @@ struct NotificationsSettingsScreen: View {
         }
         .padding(.horizontal, 16)
     }
-    
+
     func onNotificationsEnabled(_ enabled: Bool) {
         notificationsEnabled = enabled
         if enabled {

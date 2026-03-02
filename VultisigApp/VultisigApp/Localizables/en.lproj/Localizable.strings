@@ -340,6 +340,9 @@
 "followVultisigBannerButtonTitle" = "Follow @Vultisig";
 "followVultisigBannerSubtitle" = "Follow us on X";
 "followVultisigBannerTitle" = "Vultisig is building with you";
+"foregroundNotificationGeneric" = "Transaction pending approval";
+"foregroundNotificationSend" = "Send %@";
+"foregroundNotificationSwap" = "Swap %@ → %@";
 "foundActiveChainsSubtitle" = "Each extra chain increases the time to generate your vault and possibility of an timeout.";
 "foundActiveChainsTitle" = "We found %d active chains";
 "from" = "From";

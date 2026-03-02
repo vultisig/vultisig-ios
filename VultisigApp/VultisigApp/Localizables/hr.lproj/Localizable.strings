@@ -334,6 +334,9 @@
 "followVultisigBannerButtonTitle" = "Prati @Vultisig";
 "followVultisigBannerSubtitle" = "Prati nas na X";
 "followVultisigBannerTitle" = "Vultisig gradi s tobom.";
+"foregroundNotificationGeneric" = "Transakcija čeka odobrenje";
+"foregroundNotificationSend" = "Pošalji %@";
+"foregroundNotificationSwap" = "Zamijeni %@ → %@";
 "foundActiveChainsSubtitle" = "Svaki dodatni chain otprilike udvostručuje vrijeme za generiranje vašeg trezora. Procijenjeno vrijeme za sve odabrane chainove: %d minuta";
 "foundActiveChainsSubtitleHighlight" = "%d minuta";
 "foundActiveChainsTitle" = "Pronašli smo %d aktivnih chainova";

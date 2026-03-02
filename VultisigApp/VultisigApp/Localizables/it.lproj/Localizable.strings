@@ -334,6 +334,9 @@
 "followVultisigBannerButtonTitle" = "Segui @Vultisig";
 "followVultisigBannerSubtitle" = "Seguici su X";
 "followVultisigBannerTitle" = "Vultisig sta costruendo con te.";
+"foregroundNotificationGeneric" = "Transazione in attesa di approvazione";
+"foregroundNotificationSend" = "Invia %@";
+"foregroundNotificationSwap" = "Scambia %@ → %@";
 "foundActiveChainsSubtitle" = "Ogni chain aggiuntiva raddoppia approssimativamente il tempo per generare il tuo vault. Tempo stimato per tutte le chain selezionate: %d minuti";
 "foundActiveChainsSubtitleHighlight" = "%d minuti";
 "foundActiveChainsTitle" = "Abbiamo trovato %d chain attive";

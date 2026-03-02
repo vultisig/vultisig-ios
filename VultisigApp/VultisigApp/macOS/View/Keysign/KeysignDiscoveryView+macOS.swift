@@ -52,7 +52,7 @@ extension KeysignDiscoveryView {
     }
 
     var deviceList: some View {
-        LazyVGrid(columns: adaptiveColumnsMac, spacing: 18) {
+        VStack(spacing: 18) {
             PeerCell(id: "Mac", isThisDevice: true)
             devices
             EmptyPeerCell()

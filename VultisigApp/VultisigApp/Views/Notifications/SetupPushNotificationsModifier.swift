@@ -42,12 +42,12 @@ struct SetupPushNotificationsModifier: ViewModifier {
         if !pushNotificationManager.hasSeenNotificationPrompt
             && pushNotificationManager.hadVaultsOnStartup
             && !vaults.isEmpty {
-            
+
             pushNotificationManager.hasSeenNotificationPrompt = true
             for vault in vaults {
                 pushNotificationManager.markVaultNotificationPrompted(vault)
             }
-            
+
             activeSheetType = .intro
             shouldShow = true
             return

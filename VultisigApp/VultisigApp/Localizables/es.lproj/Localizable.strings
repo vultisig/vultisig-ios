@@ -334,6 +334,9 @@
 "followVultisigBannerButtonTitle" = "Seguir @Vultisig";
 "followVultisigBannerSubtitle" = "Síguenos en X";
 "followVultisigBannerTitle" = "Vultisig está construyendo contigo.";
+"foregroundNotificationGeneric" = "Transacción pendiente de aprobación";
+"foregroundNotificationSend" = "Enviar %@";
+"foregroundNotificationSwap" = "Intercambiar %@ → %@";
 "foundActiveChainsSubtitle" = "Cada cadena adicional duplica aproximadamente el tiempo para generar tu bóveda. Tiempo estimado para todas las cadenas seleccionadas: %d minutos";
 "foundActiveChainsSubtitleHighlight" = "%d minutos";
 "foundActiveChainsTitle" = "Encontramos %d cadenas activas";

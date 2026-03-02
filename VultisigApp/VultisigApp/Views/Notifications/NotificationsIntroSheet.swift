@@ -10,18 +10,18 @@ struct NotificationsIntroSheet: View {
     @Binding var isPresented: Bool
     @Query var vaults: [Vault]
     @EnvironmentObject var pushNotificationManager: PushNotificationManager
-    
+
     @State private var step: Step = .welcome
-    
+
     private enum Step {
         case welcome
         case vaultOptIn
     }
-    
+
     var allVaultsEnabled: Bool {
         !vaults.isEmpty && vaults.allSatisfy { pushNotificationManager.isVaultOptedIn($0) }
     }
-    
+
     var body: some View {
         Group {
             switch step {
@@ -46,35 +46,35 @@ struct NotificationsIntroSheet: View {
         .presentationBackground { Theme.colors.bgSurface1.padding(.bottom, -1000) }
         .background(Theme.colors.bgSurface1)
     }
-    
+
     // MARK: - Welcome
-    
+
     var welcomeContent: some View {
         VStack(spacing: 36) {
             Image("notifications-intro")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(maxWidth: 270)
-            
+
             VStack(spacing: 0) {
                 Text("notificationsAreHere".localized)
                     .font(Theme.fonts.title3)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .multilineTextAlignment(.center)
                     .padding(.bottom, 12)
-                
+
                 Text("notificationsDescription".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 321)
             }
-            
+
             HStack(spacing: 12) {
                 PrimaryButton(title: "notNow", type: .secondary) {
                     dismiss()
                 }
-                
+
                 PrimaryButton(title: "enable") {
                     Task {
                         let granted = await pushNotificationManager.requestPermission()
@@ -93,9 +93,9 @@ struct NotificationsIntroSheet: View {
             }
         }
     }
-    
+
     // MARK: - Vault Opt-In
-    
+
     var vaultOptInContent: some View {
         VStack(spacing: 24) {
             VStack(spacing: 12) {
@@ -103,14 +103,14 @@ struct NotificationsIntroSheet: View {
                     .font(Theme.fonts.title3)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .multilineTextAlignment(.center)
-                
+
                 Text("manageNotificationsInSettings".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textTertiary)
                     .multilineTextAlignment(.center)
             }
             .frame(maxWidth: 320)
-            
+
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
                     enableAllView
@@ -124,15 +124,15 @@ struct NotificationsIntroSheet: View {
                         .fill(Theme.colors.bgSurface12)
                 )
             }
-            
+
             Spacer()
-            
+
             PrimaryButton(title: "done") {
                 dismiss()
             }
         }
     }
-    
+
     var enableAllView: some View {
         VStack(spacing: 0) {
             HStack(alignment: .center, spacing: 0) {
@@ -154,7 +154,7 @@ struct NotificationsIntroSheet: View {
         }
         .padding(.horizontal, 16)
     }
-    
+
     private func dismiss() {
         pushNotificationManager.hasSeenNotificationPrompt = true
         isPresented = false

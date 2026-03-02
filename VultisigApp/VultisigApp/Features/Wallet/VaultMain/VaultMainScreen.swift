@@ -64,7 +64,7 @@ struct VaultMainScreen: View {
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .background(VaultMainScreenBackground())
+                .background(MainBackgroundWithNotification())
                 .onAppear {
                     // Capture geometry width to avoid circular layout dependency
                     capturedGeometryWidth = geo.size.width

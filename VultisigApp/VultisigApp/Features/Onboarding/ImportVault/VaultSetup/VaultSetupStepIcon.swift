@@ -10,10 +10,17 @@ import SwiftUI
 struct VaultSetupStepIcon: View {
     let state: VaultSetupStepState
     let icon: String
+    let isSmall: Bool
+
+    init(state: VaultSetupStepState, icon: String, isSmall: Bool = false) {
+        self.state = state
+        self.icon = icon
+        self.isSmall = isSmall
+    }
 
     var body: some View {
-        Icon(named: icon, color: iconColor, size: 24, isSystem: false)
-            .padding(10)
+        Icon(named: icon, color: iconColor, size: iconSize, isSystem: false)
+            .padding(padding)
             .if(state == .active) {
                 $0.background(alignment: .bottom) { shadowView }
             }
@@ -61,6 +68,14 @@ struct VaultSetupStepIcon: View {
         case .inactive:
             Theme.colors.borderLight
         }
+    }
+
+    var padding: CGFloat {
+        isSmall ? 14 : 10
+    }
+
+    var iconSize: CGFloat {
+        isSmall ? 16 : 24
     }
 }
 
