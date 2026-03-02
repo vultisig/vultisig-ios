@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct AgentChatMessageView: View {
+    @Environment(\.openURL) var openURL
     let message: AgentChatMessage
 
     var body: some View {
@@ -263,13 +264,9 @@ struct AgentChatMessageView: View {
 
     private func openExplorer(txHash: String, chain: String) {
         if let chainEnum = Chain(rawValue: chain) {
-            let url = Endpoint.getExplorerURL(chain: chainEnum, txid: txHash)
-            if let explorerUrl = URL(string: url) {
-                #if os(iOS)
-                UIApplication.shared.open(explorerUrl)
-                #elseif os(macOS)
-                NSWorkspace.shared.open(explorerUrl)
-                #endif
+            let urlString = Endpoint.getExplorerURL(chain: chainEnum, txid: txHash)
+            if let explorerUrl = URL(string: urlString) {
+                openURL(explorerUrl)
             }
         }
     }
