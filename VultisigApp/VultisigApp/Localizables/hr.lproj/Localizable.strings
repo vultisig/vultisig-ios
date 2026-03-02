@@ -14,7 +14,7 @@
 "addFolder" = "Dodaj mapu";
 "addFriendsReferral" = "Dodajte preporuku prijatelja";
 "addingToken" = "Dodavanje tokena";
-"addLiquidityTransaction" = "2. Add liquidity transaction";
+"addLiquidityTransaction" = "2. Transakcija dodavanja likvidnosti";
 "addMemo" = "Dodaj MEMO";
 "addNewChainToVault1" = "Želite li dodati";
 "addNewChainToVault2" = "do trezora?";
@@ -35,14 +35,14 @@
 "alreadyTaken" = "Već zauzeto";
 "aminoSign" = "Amino Potpis";
 "amount" = "Iznos";
-"amountBalance" = "Amount ( Balance: %@ %@ )";
+"amountBalance" = "Iznos ( Stanje: %@ %@ )";
 "amountCannotBeZero" = "Iznos ne može biti nula";
 "amountExceeded" = "Iznos ne može premašiti saldo";
-"amountSelectToken" = "Amount ( Select a token )";
-"amountToWithdraw" = "Amount to Withdraw";
+"amountSelectToken" = "Iznos ( Odaberite token )";
+"amountToWithdraw" = "Iznos za povlačenje";
 "applyReferral" = "Primijeni preporuku";
-"approvalRequiredMessageLP" = "This ERC20 token requires approval before adding to liquidity pool. Two transactions will be signed:";
-"approvalTransaction" = "1. Approval transaction";
+"approvalRequiredMessageLP" = "Ovaj ERC20 token zahtijeva odobrenje prije dodavanja u bazen likvidnosti. Potpisat će se dvije transakcije:";
+"approvalTransaction" = "1. Transakcija odobrenja";
 "approvalTXHash" = "Hash odobrenja transakcije";
 "approveAndSwap" = "Odobri i zamijeni";
 "appUpToDate" = "Aplikacija je ažurirana";
@@ -280,8 +280,8 @@
 "enterYourSeedphrase" = "Unesite svoju seed frazu";
 "enterYourSeedphraseSubtitle" = "Ostavite razmak između svake riječi. Podržane su seed fraze od 12 ili 24 riječi.";
 "enterYourSeedphraseSubtitleHighlight" = "12 ili 24";
-"erc20ApprovalRequired" = "ERC20 Approval Required";
-"erc20ApprovalRequiredMessage" = "This ERC20 token requires approval before minting. Two transactions will be signed:";
+"erc20ApprovalRequired" = "Potrebno ERC20 odobrenje";
+"erc20ApprovalRequiredMessage" = "Ovaj ERC20 token zahtijeva odobrenje prije kreiranja. Potpisat će se dvije transakcije:";
 "error" = "Greška";
 "errorLoadingBalance" = "Error loading balance";
 "errorSavingFile" = "Pogreška pri spremanju datoteke";
@@ -440,9 +440,9 @@
 "Leave" = "Napusti";
 "legal" = "Pravno";
 "liquidityPools" = "Bazeni likvidnosti";
-"loading" = "Loading...";
+"loading" = "Učitavanje...";
 "loadingDetails" = "Učitavanje detalja";
-"loadingPools" = "Loading pools...";
+"loadingPools" = "Učitavanje bazena...";
 "loadingSecuredAssets" = "Loading secured assets...";
 "localModeWaitingOnDevices" = "Lokalni način, čekanje na uređaje...";
 "loginUsingFaceID" = "Prijava pomoću Face ID";
@@ -511,7 +511,7 @@
 "nOfTotal" = "%d od %@";
 "noGasTokenFoundError" = "Nije pronađen token za plin za %@ lanac. Molimo dodajte nativni token u vaš trezor.";
 "noLiquidityPool" = "Nema dostupnog pool likvidnosti za ovaj par tokena. Ovaj asset možda nije podržan.";
-"noPoolsAvailable" = "No pools available";
+"noPoolsAvailable" = "Nema dostupnih bazena";
 "noPositionsFound" = "Nema pronađenih pozicija";
 "noPositionsSelectedSubtitle" = "Onemogućili ste sve pozicije za ovaj lanac. Omogućite barem jednu poziciju za prikaz stanja i upravljanje akcijama.";
 "noPositionsSelectedTitle" = "Nema odabranih pozicija";
@@ -717,7 +717,7 @@
 "seedPhraseInvalidError" = "Seed fraza nije točna, molimo provjerite sve riječi.";
 "seedPhraseWordCountError" = "Unijeli ste %d riječi. Seed fraza mora imati 12 ili 24 riječi.";
 "selectAsset" = "Odaberi imovinu";
-"selectAssetToSeeBalance" = "Select asset to see balance";
+"selectAssetToSeeBalance" = "Odaberite imovinu za prikaz stanja";
 "selectAtleastOneVault" = "Odaberite barem jedan trezor i pokušajte ponovno.";
 "selectChain" = "Odaberi lanac";
 "selectChains" = "Odaberite lance";
@@ -821,7 +821,7 @@
 "switchBackToInternetMode" = "Ne želite koristiti lokalni način? Vratite se.";
 "switchToLocalMode" = "Prebaci na lokalni način";
 "systemErrorMessage" = "Sistemska greška. Pokušajte ponovno.";
-"targetAsset" = "Target Asset: %@";
+"targetAsset" = "Ciljna imovina: %@";
 "termsOfService" = "Uvjeti korištenja";
 "theUnmerge" = "The Unmerge";
 "thisDevice" = "Ovaj uređaj";
@@ -1011,7 +1011,7 @@
 "Withdraw Secured Asset" = "Povuci osiguranu imovinu";
 "withdrawAmount" = "Podignite %@";
 "withdrawPercentage" = "Postotak povlačenja";
-"withdrawSecuredAssetError" = "To withdraw %@, you need to add the %@ coin to your vault first. Go to vault settings and add %@ to continue.";
+"withdrawSecuredAssetError" = "Za povlačenje %@, prvo morate dodati %@ kovanicu u svoj trezor. Idite u postavke trezora i dodajte %@ za nastavak.";
 "wrongPassword" = "Pogrešna lozinka";
 "wrongVaultPassword" = "Pogrešna lozinka trezora. Molim vas, pokušajte ponovo.";
 "wrongVaultSelected" = "Odabrali ste pogrešan trezor";

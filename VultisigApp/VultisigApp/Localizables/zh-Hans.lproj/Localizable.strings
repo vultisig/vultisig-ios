@@ -587,7 +587,7 @@
 "photoLibrary" = "照片库";
 "pickReferralCode" = "选择推荐码";
 "pickValidCode" = "请选择有效的推荐码";
-"pleaseChooseDifferentVaultName" = "请选择其他Vault名称。";
+"pleaseChooseDifferentVaultName" = "请选择其他保险库名称。";
 "pleaseWait" = "请稍候...";
 "pleaseWaitMinutes" = "请等待 %@ 分钟";
 "plusMore" = "+%d 更多";
@@ -928,7 +928,7 @@
 "vaultLibType" = "保险库类型";
 "vaultManagement" = "保险库管理";
 "vaultName" = "保险库名称";
-"vaultNameAlreadyInUse" = "Vault名称已被使用";
+"vaultNameAlreadyInUse" = "保险库名称已被使用";
 "vaultNameExists" = "保险库名称 %s 已存在";
 "vaultNotifications" = "保险库通知";
 "vaultNotImportedDescription" = "请导入正确的份额。";
@@ -981,7 +981,7 @@
 "vaultType" = "保险库份额";
 "vaultTypeDoesnotMatch" = "保险库类型不匹配";
 "vaultTypeMismatch" = "保险库类型不匹配，发起设备和配对设备的保险库类型不同";
-"vaultTypeMismatchDescription" = "发起设备和配对设备具有不同的Vault类型。请确保两个设备使用相同的Vault类型。";
+"vaultTypeMismatchDescription" = "发起设备和配对设备具有不同的保险库类型。请确保两个设备使用相同的保险库类型。";
 "vaultValue" = "保险库价值";
 "vaultWillBeDeletedPermanentlyPrompt" = "我知道保险库将被永久删除";
 "verify" = "验证";
@@ -1017,7 +1017,7 @@
 "wrongPassword" = "密码错误";
 "wrongVaultPassword" = "保险库密码错误。请重试";
 "wrongVaultSelected" = "您选择了错误的保险库";
-"wrongVaultSelectedDescription" = "您选择的Vault与keygen会话不匹配。请选择正确的Vault。";
+"wrongVaultSelectedDescription" = "您选择的保险库与keygen会话不匹配。请选择正确的保险库。";
 "wrongVaultTryAgain" = "错误的保险库或配对";
 "x" = "X（推特）";
 "youAreEnteringAnewEra" = "您正在进入一个新时代，将旧助记词抛在身后。您需要：";

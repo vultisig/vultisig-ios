@@ -77,8 +77,8 @@ struct ForegroundNotificationBannerView: View {
         ZStack {
             LinearGradient(
                 stops: [
-                    Gradient.Stop(color: Color(hex: "4879FD"), location: 0.00),
-                    Gradient.Stop(color: Color(hex: "0439C7"), location: 1.00)
+                    Gradient.Stop(color: Theme.colors.primaryAccent4, location: 0.00),
+                    Gradient.Stop(color: Theme.colors.primaryAccent2, location: 1.00)
                 ],
                 startPoint: UnitPoint(x: 0.5, y: 0),
                 endPoint: UnitPoint(x: 0.5, y: 1)

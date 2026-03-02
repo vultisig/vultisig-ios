@@ -25,7 +25,7 @@ enum ForegroundNotificationParser {
         let vaultPubKey = queryItems?.first(where: { $0.name == "vault" })?.value
         let vault = vaults.first(where: { $0.pubKeyECDSA == vaultPubKey })
 
-        let vaultName = vault?.name ?? "Unknown"
+        let vaultName = vault?.name ?? "unknown".localized
         let isFastVault = vault?.isFastVault ?? false
 
         let transactionType = parseTransactionType(

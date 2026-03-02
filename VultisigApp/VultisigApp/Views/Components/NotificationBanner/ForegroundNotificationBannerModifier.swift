@@ -11,6 +11,8 @@ private struct ForegroundNotificationBannerModifier: ViewModifier {
     @State private var currentData: ForegroundNotificationData?
     @State private var isVisible: Bool = false
     @State private var dismissTask: Task<Void, Never>?
+    @State private var backgroundHideTask: Task<Void, Never>?
+    @State private var cleanupTask: Task<Void, Never>?
     @State private var showBackground: Bool = false
 
     func body(content: Content) -> some View {
@@ -37,9 +39,13 @@ private struct ForegroundNotificationBannerModifier: ViewModifier {
         }
         .onChange(of: isVisible) { _, newValue in
             if newValue {
+                backgroundHideTask?.cancel()
                 showBackground = true
             } else {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                backgroundHideTask?.cancel()
+                backgroundHideTask = Task { @MainActor in
+                    try? await Task.sleep(for: .seconds(2))
+                    guard !Task.isCancelled else { return }
                     showBackground = false
                 }
             }
@@ -48,6 +54,8 @@ private struct ForegroundNotificationBannerModifier: ViewModifier {
 
     private func show(data: ForegroundNotificationData) {
         dismissTask?.cancel()
+        cleanupTask?.cancel()
+        backgroundHideTask?.cancel()
 
         currentData = data
 
@@ -65,24 +73,29 @@ private struct ForegroundNotificationBannerModifier: ViewModifier {
 
     private func dismiss() {
         dismissTask?.cancel()
+        cleanupTask?.cancel()
 
         withAnimation(.spring(duration: 0.3, bounce: 0)) {
             isVisible = false
         }
 
-        Task { @MainActor in
+        cleanupTask = Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
             currentData = nil
             pushNotificationManager.foregroundNotification = nil
         }
     }
 
     private func handleTap(data: ForegroundNotificationData) {
+        let url = data.deeplinkURL
         dismiss()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(500))
+            guard !Task.isCancelled else { return }
             NotificationCenter.default.post(
                 name: NSNotification.Name("HandlePushNotification"),
-                object: data.deeplinkURL
+                object: url
             )
         }
     }
