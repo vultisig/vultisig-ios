@@ -22,7 +22,7 @@ struct SetupPushNotificationsModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .crossPlatformSheet(isPresented: $shouldShow) {
-                sheetContent
+                NotificationsIntroSheet(isPresented: $shouldShow)
             }
             .onChange(of: shouldShow) { _, newValue in
                 if !newValue {
@@ -37,26 +37,17 @@ struct SetupPushNotificationsModifier: ViewModifier {
             }
     }
 
-    @ViewBuilder
-    private var sheetContent: some View {
-        switch activeSheetType {
-        case .intro:
-            NotificationsIntroSheet(isPresented: $shouldShow)
-        case .vaultOptIn:
-            VaultNotificationSetupSheet(
-                vault: vault,
-                isPresented: $shouldShow
-            )
-        case nil:
-            EmptyView()
-        }
-    }
-
     private func checkIfNeeded() {
         // Case 1: First app opening with existing vaults — show intro
         if !pushNotificationManager.hasSeenNotificationPrompt
             && pushNotificationManager.hadVaultsOnStartup
             && !vaults.isEmpty {
+            
+            pushNotificationManager.hasSeenNotificationPrompt = true
+            for vault in vaults {
+                pushNotificationManager.markVaultNotificationPrompted(vault)
+            }
+            
             activeSheetType = .intro
             shouldShow = true
             return
@@ -64,22 +55,13 @@ struct SetupPushNotificationsModifier: ViewModifier {
 
         // Case 2: New/imported vault — show single vault opt-in
         guard !pushNotificationManager.hasPromptedVaultNotification(vault) else { return }
+        pushNotificationManager.hasSeenNotificationPrompt = true
+        pushNotificationManager.markVaultNotificationPrompted(vault)
         activeSheetType = .vaultOptIn
         shouldShow = true
     }
 
     private func handleDismiss() {
-        switch activeSheetType {
-        case .intro:
-            pushNotificationManager.hasSeenNotificationPrompt = true
-            for vault in vaults {
-                pushNotificationManager.markVaultNotificationPrompted(vault)
-            }
-        case .vaultOptIn:
-            pushNotificationManager.markVaultNotificationPrompted(vault)
-        case nil:
-            break
-        }
         activeSheetType = nil
     }
 }

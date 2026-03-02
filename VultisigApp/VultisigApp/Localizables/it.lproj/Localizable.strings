@@ -1051,10 +1051,14 @@
 "notifications" = "Notifiche";
 "pushNotifications" = "Notifiche push";
 "enablePushNotifications" = "Attiva notifiche push";
-"notificationsAreHere" = "Le notifiche sono arrivate";
-"notificationsDescription" = "Resta aggiornato sull'attività del tuo vault, come quando un altro dispositivo avvia la firma di una transazione.";
+"notificationsAreHere" = "Le notifiche sicure sono arrivate";
+"notificationsDescription" = "Ricevi avvisi quando un altro dispositivo richiede di unirsi al tuo vault o quando è richiesta la tua firma.";
+"notificationSentSuccessfully" = "Notifica inviata con successo!";
 "chooseVaultsForNotifications" = "Scegli i vault per le notifiche";
 "enableNotificationsForVault" = "Attiva notifiche per questo vault";
 "notNow" = "Non ora";
 "vaultNotifications" = "Notifiche del vault";
 "enableAll" = "Attiva tutte";
+"manageNotificationsInSettings" = "Puoi gestire le notifiche nelle impostazioni di sistema.";
+"pushNotificationsDescription" = "Ricevi una notifica quando è richiesta la tua firma o un dispositivo richiede l'accesso.";
+"resendNotification" = "Rinvia notifica";

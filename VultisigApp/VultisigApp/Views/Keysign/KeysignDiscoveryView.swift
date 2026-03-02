@@ -36,6 +36,8 @@ struct KeysignDiscoveryView: View {
     @State var screenWidth: CGFloat = 0
     @State var screenHeight: CGFloat = 0
     @State var qrCodeImage: Image? = nil
+    @State var qrCodeString: String? = nil
+    @State var bannerText: String? = nil
     @State var selectedNetwork = VultisigRelay.IsRelayEnabled ? NetworkPromptType.Internet : NetworkPromptType.Local
 
     @State var qrScannedAnimation: RiveViewModel? = nil
@@ -69,6 +71,7 @@ struct KeysignDiscoveryView: View {
                 loader
             }
         }
+        .withBanner(text: $bannerText)
         .onLoad {
             Task { @MainActor in
                 qrScannedAnimation = RiveViewModel(fileName: "qrscanner", autoPlay: true)
@@ -116,9 +119,36 @@ struct KeysignDiscoveryView: View {
         ScrollView(showsIndicators: false) {
             paringQRCode
             disclaimer
+            resendNotificationButton
             list
         }
         .padding(.horizontal, contentPadding ?? 16)
+    }
+
+    @ViewBuilder
+    var resendNotificationButton: some View {
+        if selectedNetwork == .Internet, let qrCodeString {
+            Button {
+                Task {
+                    await PushNotificationManager.shared.notifyVaultDevices(vault: vault, qrCodeData: qrCodeString)
+                    bannerText = "notificationSentSuccessfully".localized
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Icon(named: "bell", color: Theme.colors.primaryAccent4, size: 16)
+                    Text("resendNotification".localized)
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(Theme.colors.primaryAccent4)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .overlay(
+                    Capsule()
+                        .stroke(Theme.colors.primaryAccent4, lineWidth: 1)
+                )
+            }
+            .padding(.bottom, 8)
+        }
     }
 
     @ViewBuilder
@@ -182,6 +212,7 @@ struct KeysignDiscoveryView: View {
             return
         }
 
+        self.qrCodeString = qrCodeData
         self.qrCodeImage = qrCodeImage
 
         if !vault.isFastVault {

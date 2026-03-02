@@ -1051,10 +1051,14 @@
 "notifications" = "Benachrichtigungen";
 "pushNotifications" = "Push-Benachrichtigungen";
 "enablePushNotifications" = "Push-Benachrichtigungen aktivieren";
-"notificationsAreHere" = "Benachrichtigungen sind da";
-"notificationsDescription" = "Bleiben Sie über Ihre Tresor-Aktivitäten informiert, z. B. wenn ein anderes Gerät eine Transaktionssignierung startet.";
+"notificationsAreHere" = "Sichere Benachrichtigungen sind da";
+"notificationsDescription" = "Erhalten Sie Benachrichtigungen, wenn ein anderes Gerät Ihrem Tresor beitreten möchte oder wenn Ihre Signatur erforderlich ist.";
+"notificationSentSuccessfully" = "Benachrichtigung wurde erfolgreich gesendet!";
 "chooseVaultsForNotifications" = "Tresore für Benachrichtigungen auswählen";
 "enableNotificationsForVault" = "Benachrichtigungen für diesen Tresor aktivieren";
 "notNow" = "Nicht jetzt";
 "vaultNotifications" = "Tresor-Benachrichtigungen";
 "enableAll" = "Alle aktivieren";
+"manageNotificationsInSettings" = "Du kannst Benachrichtigungen in den Systemeinstellungen verwalten.";
+"pushNotificationsDescription" = "Erhalte eine Benachrichtigung, wenn deine Signatur erforderlich ist oder ein Gerät Zugang anfordert.";
+"resendNotification" = "Benachrichtigung erneut senden";

@@ -1051,10 +1051,14 @@
 "notifications" = "Obavijesti";
 "pushNotifications" = "Push obavijesti";
 "enablePushNotifications" = "Omogući push obavijesti";
-"notificationsAreHere" = "Obavijesti su stigle";
-"notificationsDescription" = "Budite u tijeku s aktivnostima trezora, poput pokretanja potpisivanja transakcije s drugog uređaja.";
+"notificationsAreHere" = "Sigurne obavijesti su stigle";
+"notificationsDescription" = "Primajte obavijesti kada drugi uređaj zatraži pridruživanje vašem trezoru ili kada je potreban vaš potpis.";
+"notificationSentSuccessfully" = "Obavijest je uspješno poslana!";
 "chooseVaultsForNotifications" = "Odaberite trezore za obavijesti";
 "enableNotificationsForVault" = "Omogući obavijesti za ovaj trezor";
 "notNow" = "Ne sada";
 "vaultNotifications" = "Obavijesti trezora";
 "enableAll" = "Omogući sve";
+"manageNotificationsInSettings" = "Možete upravljati obavijestima u postavkama sustava.";
+"pushNotificationsDescription" = "Primajte obavijesti kada je potreban vaš potpis ili kada uređaj zahtijeva pristup.";
+"resendNotification" = "Ponovo pošalji obavijest";

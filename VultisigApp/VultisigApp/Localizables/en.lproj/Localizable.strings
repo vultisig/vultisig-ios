@@ -1077,10 +1077,14 @@
 "notifications" = "Notifications";
 "pushNotifications" = "Push notifications";
 "enablePushNotifications" = "Enable push notifications";
-"notificationsAreHere" = "Notifications are here";
-"notificationsDescription" = "Stay updated on your vault activity, like when another device initiates a transaction signing.";
+"notificationsAreHere" = "Secure Notifications are here";
+"notificationsDescription" = "Receive alerts when another device requests to join your vault or when your signature is required.";
+"notificationSentSuccessfully" = "Notification was successfully sent!";
 "chooseVaultsForNotifications" = "Choose vaults for notifications";
 "enableNotificationsForVault" = "Enable notifications for this vault";
 "notNow" = "Not now";
 "vaultNotifications" = "Vault notifications";
 "enableAll" = "Enable all";
+"manageNotificationsInSettings" = "You can manage notifications in system settings.";
+"pushNotificationsDescription" = "Get notified when your signature is required or a device requests access.";
+"resendNotification" = "Resend notification";

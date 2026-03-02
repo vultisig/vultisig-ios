@@ -26,6 +26,7 @@ public protocol ColorSystemProtocol {
     var bgPrimary: Color { get }
     var bgSurface1: Color { get }
     var bgSurface2: Color { get }
+    var bgSurface12: Color { get }
 
     var bgSuccess: Color { get }
     var bgAlert: Color { get }

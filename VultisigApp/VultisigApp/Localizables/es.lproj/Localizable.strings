@@ -1051,10 +1051,14 @@
 "notifications" = "Notificaciones";
 "pushNotifications" = "Notificaciones push";
 "enablePushNotifications" = "Activar notificaciones push";
-"notificationsAreHere" = "Las notificaciones están aquí";
-"notificationsDescription" = "Mantente al tanto de la actividad de tu bóveda, como cuando otro dispositivo inicia la firma de una transacción.";
+"notificationsAreHere" = "Las notificaciones seguras están aquí";
+"notificationsDescription" = "Recibe alertas cuando otro dispositivo solicite unirse a tu bóveda o cuando se requiera tu firma.";
+"notificationSentSuccessfully" = "¡Notificación enviada con éxito!";
 "chooseVaultsForNotifications" = "Elegir bóvedas para notificaciones";
 "enableNotificationsForVault" = "Activar notificaciones para esta bóveda";
 "notNow" = "Ahora no";
 "vaultNotifications" = "Notificaciones de bóveda";
 "enableAll" = "Activar todas";
+"manageNotificationsInSettings" = "Puedes gestionar las notificaciones en los ajustes del sistema.";
+"pushNotificationsDescription" = "Recibe notificaciones cuando se requiera tu firma o un dispositivo solicite acceso.";
+"resendNotification" = "Reenviar notificación";

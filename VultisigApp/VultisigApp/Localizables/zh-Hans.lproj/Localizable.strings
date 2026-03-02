@@ -1054,10 +1054,14 @@
 "notifications" = "通知";
 "pushNotifications" = "推送通知";
 "enablePushNotifications" = "启用推送通知";
-"notificationsAreHere" = "通知功能已上线";
-"notificationsDescription" = "随时了解保险库动态，例如当另一台设备发起交易签名时。";
+"notificationsAreHere" = "安全通知功能已上线";
+"notificationsDescription" = "当其他设备请求加入您的保险库或需要您的签名时，接收提醒通知。";
+"notificationSentSuccessfully" = "通知已成功发送！";
 "chooseVaultsForNotifications" = "选择接收通知的保险库";
 "enableNotificationsForVault" = "为此保险库启用通知";
 "notNow" = "暂时不用";
 "vaultNotifications" = "保险库通知";
 "enableAll" = "全部启用";
+"manageNotificationsInSettings" = "您可以在系统设置中管理通知。";
+"pushNotificationsDescription" = "当需要您的签名或设备请求访问时收到通知。";
+"resendNotification" = "重新发送通知";

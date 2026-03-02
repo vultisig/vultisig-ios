@@ -1051,10 +1051,14 @@
 "notifications" = "Notificações";
 "pushNotifications" = "Notificações push";
 "enablePushNotifications" = "Ativar notificações push";
-"notificationsAreHere" = "As notificações chegaram";
-"notificationsDescription" = "Fique por dentro da atividade do seu cofre, como quando outro dispositivo inicia a assinatura de uma transação.";
+"notificationsAreHere" = "As notificações seguras chegaram";
+"notificationsDescription" = "Receba alertas quando outro dispositivo solicitar ingresso no seu cofre ou quando sua assinatura for necessária.";
+"notificationSentSuccessfully" = "Notificação enviada com sucesso!";
 "chooseVaultsForNotifications" = "Escolher cofres para notificações";
 "enableNotificationsForVault" = "Ativar notificações para este cofre";
 "notNow" = "Agora não";
 "vaultNotifications" = "Notificações do cofre";
 "enableAll" = "Ativar todas";
+"manageNotificationsInSettings" = "Você pode gerenciar notificações nas configurações do sistema.";
+"pushNotificationsDescription" = "Receba notificações quando sua assinatura for necessária ou um dispositivo solicitar acesso.";
+"resendNotification" = "Reenviar notificação";

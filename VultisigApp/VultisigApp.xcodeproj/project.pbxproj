@@ -1255,6 +1255,7 @@
 		FB000BDFB76736F8CCD80FDF /* CircleDepositView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B96312D2493F377B159E118 /* CircleDepositView.swift */; };
 		FCB47344D1011A902B285619 /* CosmosTransactionStatusResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = E422D27702256FB07565C6D0 /* CosmosTransactionStatusResponse.swift */; };
 		FD4041B37F8AA80055E6D433 /* VaultSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBEBFE69D4F5F9620BCA6F9C /* VaultSettings.swift */; };
+		D9CD3A3F19909C27507EE93B /* BannerViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68274C3A94E4F6B7BDEC9A94 /* BannerViewModifier.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -2529,6 +2530,7 @@
 		FBEBFE69D4F5F9620BCA6F9C /* VaultSettings.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VaultSettings.swift; sourceTree = "<group>"; };
 		FCB0CAFF343CC6FF8986E07F /* HiddenToken.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HiddenToken.swift; sourceTree = "<group>"; };
 		VX9GYT3ZT7ENIW24C32BA8O7 /* ThorchainLP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainLP.swift; sourceTree = "<group>"; };
+		68274C3A94E4F6B7BDEC9A94 /* BannerViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerViewModifier.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -4064,6 +4066,7 @@
 		13B25BF42E82FA24002BCF55 /* NotificationBanner */ = {
 			isa = PBXGroup;
 			children = (
+				68274C3A94E4F6B7BDEC9A94 /* BannerViewModifier.swift */,
 				13B25BF52E82FA2B002BCF55 /* AddressCopyBannerViewModifier.swift */,
 				130C40F42E73583100509C61 /* NotificationBannerView.swift */,
 			);
@@ -6733,6 +6736,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D9CD3A3F19909C27507EE93B /* BannerViewModifier.swift in Sources */,
 				13E4280C2ED494700097AD11 /* BondMayaTransactionViewModel.swift in Sources */,
 				130652562EA7CEC6002CAD99 /* BondedNodesResponse.swift in Sources */,
 				A649AB9E2C6C54AA004710A9 /* PopupCapsule.swift in Sources */,
