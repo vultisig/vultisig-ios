@@ -57,7 +57,7 @@ struct CoinMeta: Hashable, Codable {
     }
     
     var uniqueId: String {
-        "\(normalizedTicker)-\(normalizedContract)"
+        "\(chain.rawValue)-\(normalizedTicker)-\(normalizedContract)"
     }
 }
 

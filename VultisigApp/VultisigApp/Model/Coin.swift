@@ -6,7 +6,7 @@ import BigInt
 class Coin: ObservableObject, Codable, Hashable {
     var id: String
     var uniqueId: String {
-        "\(ticker.lowercased())-\(contractAddress.lowercased())"
+        "\(chain.rawValue)-\(ticker.lowercased())-\(contractAddress.lowercased())"
     }
     var chain: Chain
     var address: String
