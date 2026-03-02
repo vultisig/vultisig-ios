@@ -59,7 +59,7 @@ struct KeygenView: View {
 
     private func handleNavigation() {
         switch tssType {
-        case .DilithiumKeygen:
+        case .SingleKeygen:
             router.navigate(to: KeygenRoute.backupNow(
                 tssType: tssType,
                 backupType: .single(vault: vault),
@@ -226,7 +226,7 @@ struct KeygenView: View {
     var keygenFailedView: some View {
         ZStack {
             switch tssType {
-            case .Keygen, .KeyImport, .DilithiumKeygen:
+            case .Keygen, .KeyImport, .SingleKeygen:
                 keygenFailedText
             case .Reshare:
                 keygenReshareFailedText
@@ -284,7 +284,7 @@ struct KeygenView: View {
     private func setDoneData() {
         showDoneText = true
 
-        if tssType == .Reshare || tssType == .DilithiumKeygen {
+        if tssType == .Reshare || tssType == .SingleKeygen {
             vault.isBackedUp = false
         }
 

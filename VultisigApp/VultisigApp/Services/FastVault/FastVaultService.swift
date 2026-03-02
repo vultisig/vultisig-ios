@@ -169,6 +169,18 @@ final class FastVaultService {
         }
     }
 
+    func singleKeygen(
+        name _: String,
+        sessionID _: String,
+        hexEncryptionKey _: String,
+        hexChainCode _: String,
+        encryptionPassword _: String,
+        email _: String,
+        singleKeygenType _: Int
+    ) {
+        print("SingleKeygen fast vault not yet supported")
+    }
+
     func migrate(
         publicKeyECDSA: String,
         sessionID: String,

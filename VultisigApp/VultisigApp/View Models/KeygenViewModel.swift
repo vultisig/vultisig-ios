@@ -187,8 +187,8 @@ class KeygenViewModel: ObservableObject {
     func startKeygen(context: ModelContext) async {
         self.keygenConnected = true
 
-        if self.tssType == .DilithiumKeygen {
-            await startDilithiumOnlyKeygen(context: context)
+        if self.tssType == .SingleKeygen {
+            await startSingleKeygen(context: context)
             return
         }
 
@@ -231,8 +231,8 @@ class KeygenViewModel: ObservableObject {
                 await startKeygenDKLS(context: context, localUIEcdsa: localUIECDSA, localUIEddsa: localUIEdDSA)
             case .KeyImport:
                 self.logger.error("it should not get to here")
-            case .DilithiumKeygen:
-                self.logger.error("DilithiumKeygen should not reach GG20 path")
+            case .SingleKeygen:
+                self.logger.error("SingleKeygen should not reach GG20 path")
             }
         case .DKLS:
             await startKeygenDKLS(context: context)
@@ -247,7 +247,7 @@ class KeygenViewModel: ObservableObject {
         }
     }
 
-    func startDilithiumOnlyKeygen(context: ModelContext) async {
+    func startSingleKeygen(context: ModelContext) async {
         do {
             self.status = .KeygenMLDSA
             let dilithiumKeygen = DilithiumKeygen(
@@ -495,7 +495,7 @@ class KeygenViewModel: ObservableObject {
             case .KeyImport:
                 self.status = .KeygenECDSA
                 try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0)
-            case .DilithiumKeygen:
+            case .SingleKeygen:
                 break
             }
 
@@ -521,7 +521,7 @@ class KeygenViewModel: ObservableObject {
             case .KeyImport:
                 self.status = .KeygenEdDSA
                 try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0)
-            case .DilithiumKeygen:
+            case .SingleKeygen:
                 break
             }
 
@@ -628,8 +628,8 @@ class KeygenViewModel: ObservableObject {
                 self.logger.error("Failed to key import vault")
                 self.status = .KeygenFailed
                 return
-            case .DilithiumKeygen:
-                self.logger.error("DilithiumKeygen should not reach GG20 path")
+            case .SingleKeygen:
+                self.logger.error("SingleKeygen should not reach GG20 path")
                 self.status = .KeygenFailed
                 return
             }
@@ -705,8 +705,8 @@ class KeygenViewModel: ObservableObject {
                 throw HelperError.runtimeError("Migrate not supported yet")
             case .KeyImport: // Vultisig will not support import private key to GG20 vault
                 throw HelperError.runtimeError("Key Import not supported yet")
-            case .DilithiumKeygen:
-                throw HelperError.runtimeError("DilithiumKeygen should not reach GG20 path")
+            case .SingleKeygen:
+                throw HelperError.runtimeError("SingleKeygen should not reach GG20 path")
             }
             // start an additional step to make sure all parties involved in the keygen committee complete successfully
             // avoid to create a partial vault, meaning some parties finished create the vault successfully, and one still in failed state

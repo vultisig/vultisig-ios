@@ -145,8 +145,16 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                          lib_type: vault.libType == .DKLS ? 1 : 0)
             case .Migrate:
                 fastVaultService.migrate(publicKeyECDSA: vault.pubKeyECDSA, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, encryptionPassword: config.password, email: config.email)
-            case .DilithiumKeygen:
-                break
+            case .SingleKeygen:
+                fastVaultService.singleKeygen(
+                    name: vault.name,
+                    sessionID: sessionID,
+                    hexEncryptionKey: encryptionKeyHex!,
+                    hexChainCode: vault.hexChainCode,
+                    encryptionPassword: config.password,
+                    email: config.email,
+                    singleKeygenType: 0
+                )
             }
         }
         self.isLoading = false
@@ -334,7 +342,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                 )
                 let data = try ProtoSerializer.serialize(keygenMsg)
                 return "https://vultisig.com?type=NewVault&tssType=\(tssType.rawValue)&jsonData=\(data)"
-            case .Reshare, .Migrate, .DilithiumKeygen:
+            case .Reshare, .Migrate:
                 let reshareMsg = ReshareMessage(
                     sessionID: sessionID,
                     hexChainCode: vault.hexChainCode,
@@ -348,6 +356,21 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     libType: vault.libType ?? .GG20
                 )
                 let data = try ProtoSerializer.serialize(reshareMsg)
+                return "https://vultisig.com?type=NewVault&tssType=\(tssType.rawValue)&jsonData=\(data)"
+            case .SingleKeygen:
+                let singleKeygenMsg = SingleKeygenMessage(
+                    sessionID: sessionID,
+                    hexChainCode: vault.hexChainCode,
+                    serviceName: serviceName,
+                    pubKeyECDSA: vault.pubKeyECDSA,
+                    oldParties: vault.signers,
+                    encryptionKeyHex: encryptionKeyHex,
+                    useVultisigRelay: VultisigRelay.IsRelayEnabled,
+                    vaultName: vault.name,
+                    libType: vault.libType ?? .GG20,
+                    singleKeygenType: .MLDSA
+                )
+                let data = try ProtoSerializer.serialize(singleKeygenMsg)
                 return "https://vultisig.com?type=NewVault&tssType=\(tssType.rawValue)&jsonData=\(data)"
             }
         } catch {

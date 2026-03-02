@@ -12,6 +12,7 @@
 		03FC7C642AC179BADB973C88 /* TronResourcesCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1BE569DF07B97F7C31210E2 /* TronResourcesCardView.swift */; };
 		049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB672B71E9C5004C231F /* WifiInstruction.swift */; };
 		064D3D2833A07505317CC841 /* CosmosTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB8B4E59B83927709B99177 /* CosmosTransactionStatusProvider.swift */; };
+		06A85C472977E4D585B98B5C /* SingleKeygenMessage+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D16AB3F011FE4BF1A497C6 /* SingleKeygenMessage+ProtoMappable.swift */; };
 		12C88E627244748C55FB97F2 /* EVMTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DC3C4A790D620AB105DF39D /* EVMTransactionStatusProvider.swift */; };
 		13052B972E8C5511000285D2 /* CrossPlatformToolbarModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13052B962E8C5511000285D2 /* CrossPlatformToolbarModifier.swift */; };
 		13052B992E8C5744000285D2 /* MacOSToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13052B982E8C5744000285D2 /* MacOSToolbarView.swift */; };
@@ -600,7 +601,9 @@
 		744B8E55385C46399CB8AEC8 /* ExtensionMemoServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7DBBE9179D24F73ADF22596 /* ExtensionMemoServiceTests.swift */; };
 		76EBA303440DAF9FE8673F87 /* UTXOTransactionStatusProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C75B7553CE05272D632058 /* UTXOTransactionStatusProvider.swift */; };
 		784957DA9E44EAC291A4E593 /* CircleSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2082307F2DAAB6FA5911FFDC /* CircleSetupView.swift */; };
+		83686209DD51EC3F558B532F /* SingleKeygenType.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA5F6BCDC1260C8E4D57052 /* SingleKeygenType.swift */; };
 		8572B6910CB7E64BD6260D6C /* TransactionStatusService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6548A1DE3664347EBFA4F1B5 /* TransactionStatusService.swift */; };
+		8D8CD1A7DF304D8074C03B4E /* SingleKeygenMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD1706BAF79A7E992FFEBF71 /* SingleKeygenMessage.swift */; };
 		8F55CD3B2DC382E500B53E85 /* TokensStore+Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F55CD3A2DC382E400B53E85 /* TokensStore+Token.swift */; };
 		927BE27A46C4476AA7DA2901 /* Services/SuiTokenPriceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927BE27A46C4476AA7DA2902 /* Services/SuiTokenPriceTests.swift */; };
 		9802909F69AF78B4BCE010CE /* CircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35953B42171F515630BA7E9B /* CircleView.swift */; };
@@ -2419,8 +2422,10 @@
 		B5F7581C2BD8FDA20097B5B9 /* SuiCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuiCoin.swift; sourceTree = "<group>"; };
 		B5FF07022ED9424E00B0FD55 /* SendCryptoVerifyLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifyLogic.swift; sourceTree = "<group>"; };
 		B5FFB0F32E7858E90062F63C /* PendingTransactionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingTransactionManager.swift; sourceTree = "<group>"; };
+		B7D16AB3F011FE4BF1A497C6 /* SingleKeygenMessage+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SingleKeygenMessage+ProtoMappable.swift"; sourceTree = "<group>"; };
 		BA94F61754C5BFEECCC60925 /* CircleWithdrawView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CircleWithdrawView.swift; sourceTree = "<group>"; };
 		BC586168CA29D811C28C56A4 /* TransactionStatus.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionStatus.swift; sourceTree = "<group>"; };
+		BD1706BAF79A7E992FFEBF71 /* SingleKeygenMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleKeygenMessage.swift; sourceTree = "<group>"; };
 		BD1A1FCF78FFFE8E23B38F0E /* UTXOTransactionStatusResponse.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UTXOTransactionStatusResponse.swift; sourceTree = "<group>"; };
 		BWXBB99J8F32LB10N1PT9BIH /* FunctionCallAddThorLP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallAddThorLP.swift; sourceTree = "<group>"; };
 		C36F934AD4667C64D3C753F2 /* NotificationsSettingsScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationsSettingsScreen.swift; sourceTree = "<group>"; };
@@ -2536,6 +2541,7 @@
 		E423B7D2BCCD2F1943ED30F8 /* UTXOTransactionStatusAPI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UTXOTransactionStatusAPI.swift; sourceTree = "<group>"; };
 		E7DBBE9179D24F73ADF22596 /* ExtensionMemoServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionMemoServiceTests.swift; sourceTree = "<group>"; };
 		E8C796F13B6313681B4F992A /* KyberSwapToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapToken.swift; sourceTree = "<group>"; };
+		ECA5F6BCDC1260C8E4D57052 /* SingleKeygenType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleKeygenType.swift; sourceTree = "<group>"; };
 		F9FDC0FE2F5DEF7240D0D3B7 /* ForegroundNotificationBannerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ForegroundNotificationBannerView.swift; sourceTree = "<group>"; };
 		FB189371E4AEE3FD55C1FE44 /* PushNotificationManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PushNotificationManager.swift; sourceTree = "<group>"; };
 		FBEBFE69D4F5F9620BCA6F9C /* VaultSettings.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VaultSettings.swift; sourceTree = "<group>"; };
@@ -5720,6 +5726,9 @@
 				A527DD2B2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift */,
 				DE9EB0EF2BA2CFB7001747D9 /* ReshareMessage.swift */,
 				A527DD2D2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift */,
+				ECA5F6BCDC1260C8E4D57052 /* SingleKeygenType.swift */,
+				BD1706BAF79A7E992FFEBF71 /* SingleKeygenMessage.swift */,
+				B7D16AB3F011FE4BF1A497C6 /* SingleKeygenMessage+ProtoMappable.swift */,
 			);
 			path = Keygen;
 			sourceTree = "<group>";
@@ -6892,6 +6901,9 @@
 				130C40F02E734BB000509C61 /* VaultMainChainListView.swift in Sources */,
 				A575F2CE2D50D421000C4F14 /* FastVaultSetHintView+macOS.swift in Sources */,
 				A527DD2E2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift in Sources */,
+				83686209DD51EC3F558B532F /* SingleKeygenType.swift in Sources */,
+				8D8CD1A7DF304D8074C03B4E /* SingleKeygenMessage.swift in Sources */,
+				06A85C472977E4D585B98B5C /* SingleKeygenMessage+ProtoMappable.swift in Sources */,
 				DEEB571D2D08F80C00B120D1 /* SchnorrKeygen.swift in Sources */,
 				465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */,
 				B571384D2CC560F2000E925B /* Ton.swift in Sources */,
@@ -8404,7 +8416,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/vultisig/commondata";
 			requirement = {
-				branch = main;
+				branch = "feat/single-keygen-message";
 				kind = branch;
 			};
 		};

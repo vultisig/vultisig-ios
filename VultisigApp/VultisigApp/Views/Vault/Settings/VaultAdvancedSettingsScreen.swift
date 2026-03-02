@@ -50,7 +50,7 @@ struct VaultAdvancedSettingsScreen: View {
             } else {
                 router.navigate(
                     to: KeygenRoute.peerDiscovery(
-                        tssType: .DilithiumKeygen,
+                        tssType: .SingleKeygen,
                         vault: vault,
                         selectedTab: .secure,
                         fastSignConfig: nil,
