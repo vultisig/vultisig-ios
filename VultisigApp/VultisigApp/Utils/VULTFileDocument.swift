@@ -14,7 +14,7 @@ struct VULTFileDocument: FileDocument {
 
     // Specify the supported UTI
     static var readableContentTypes: [UTType] {
-        [.vaultFile]
+        [.vaultFile, .vaultBackup, .zip]
     }
 
     // Custom initializer for creating new documents (no URLs at this point, just an empty success)

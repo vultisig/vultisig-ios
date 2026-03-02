@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 
 struct ImportVaultShareScreen: View {
     @Environment(\.modelContext) private var context
@@ -24,7 +25,7 @@ struct ImportVaultShareScreen: View {
         }
         .fileImporter(
             isPresented: $backupViewModel.showVaultImporter,
-            allowedContentTypes: [.vaultBackup, .vaultFile],
+            allowedContentTypes: [.vaultBackup, .vaultFile, .zip],
             allowsMultipleSelection: false
         ) { result in
             backupViewModel.handleFileImporter(result)
