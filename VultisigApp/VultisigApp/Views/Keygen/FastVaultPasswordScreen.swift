@@ -87,8 +87,8 @@ struct FastVaultPasswordScreen: View {
                 }
             }
         }
-        .alert(NSLocalizedString("wrongPassword", comment: ""), isPresented: $viewModel.isWrongPassword) {
-            Button("OK", role: .cancel) { }
+        .alert("wrongPassword".localized, isPresented: $viewModel.isWrongPassword) {
+            Button("ok".localized, role: .cancel) { }
         }
         .withLoading(isLoading: $viewModel.isLoading)
         .onLoad {

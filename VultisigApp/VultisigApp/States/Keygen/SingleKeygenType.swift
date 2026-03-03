@@ -18,12 +18,12 @@ enum SingleKeygenType: Int, Codable, CaseIterable {
 }
 
 extension VSSingleKeygenType {
-    func toSingleKeygenType() -> SingleKeygenType {
+    func toSingleKeygenType() throws -> SingleKeygenType {
         switch self {
         case .mldsa:
             return .MLDSA
         default:
-            return .MLDSA
+            throw HelperError.runtimeError("Unknown VSSingleKeygenType: \(self)")
         }
     }
 }

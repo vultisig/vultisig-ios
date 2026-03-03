@@ -315,7 +315,7 @@ final class SchnorrKeygen {
             case .Reshare:
                 throw HelperError.runtimeError("Reshare should call SchnorrReshareWithRetry function")
             case .SingleKeygen:
-                throw HelperError.runtimeError("DilithiumKeygen should not reach Schnorr path")
+                throw HelperError.runtimeError("SingleKeygen should not reach Schnorr path")
             }
 
             // free the handler

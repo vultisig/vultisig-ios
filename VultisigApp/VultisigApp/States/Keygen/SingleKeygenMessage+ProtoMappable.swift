@@ -17,7 +17,7 @@ extension SingleKeygenMessage: ProtoMappable {
         self.useVultisigRelay = proto.useVultisigRelay
         self.vaultName = proto.vaultName
         self.libType = proto.libType.toLibType()
-        self.singleKeygenType = proto.singleKeygenType.toSingleKeygenType()
+        self.singleKeygenType = try proto.singleKeygenType.toSingleKeygenType()
     }
 
     func mapToProtobuff() -> VSSingleKeygenMessage {

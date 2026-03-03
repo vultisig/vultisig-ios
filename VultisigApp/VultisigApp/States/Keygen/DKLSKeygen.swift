@@ -353,7 +353,7 @@ final class DKLSKeygen {
                 // it should not get here for reshare
                 throw HelperError.runtimeError("invalid tss type for keygen:\(self.tssType)")
             case .SingleKeygen:
-                throw HelperError.runtimeError("DilithiumKeygen should not reach DKLS path")
+                throw HelperError.runtimeError("SingleKeygen should not reach DKLS path")
             }
             // free the handler
             defer {

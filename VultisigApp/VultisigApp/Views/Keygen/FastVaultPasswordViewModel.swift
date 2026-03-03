@@ -69,6 +69,7 @@ final class FastVaultPasswordViewModel: ObservableObject, Form {
     }
 
     @MainActor func checkPassword(pubKeyECDSA: String) async -> Bool {
+        isWrongPassword = false
         isLoading = true
         defer { isLoading = false }
 
