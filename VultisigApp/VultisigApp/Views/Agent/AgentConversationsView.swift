@@ -171,10 +171,10 @@ struct AgentConversationsView: View {
     }
 
     private func navigateToChat(with starter: String?) {
-        router.navigate(to: AgentRoute.chat(conversationId: nil))
         if let starter {
             UserDefaults.standard.set(starter, forKey: "agent_pending_starter")
         }
+        router.navigate(to: AgentRoute.chat(conversationId: nil))
     }
 
     private func deleteConversation(_ conv: AgentConversation) {

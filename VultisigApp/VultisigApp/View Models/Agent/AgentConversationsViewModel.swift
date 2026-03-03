@@ -53,7 +53,6 @@ final class AgentConversationsViewModel: ObservableObject {
         let token = await getValidToken(vault: vault)
         print("[AgentConvos] 📝 loadConversations: token=\(token != nil ? "present" : "none")")
 
-        isConnected = true
         isLoading = true
         error = nil
 
@@ -99,7 +98,7 @@ final class AgentConversationsViewModel: ObservableObject {
         let token = await getValidToken(vault: vault)
 
         do {
-            let context = AgentContextBuilder.buildContext(vault: vault)
+            let context = await AgentContextBuilder.buildContext(vault: vault)
             let request = AgentGetStartersRequest(
                 publicKey: vault.pubKeyECDSA,
                 context: context
