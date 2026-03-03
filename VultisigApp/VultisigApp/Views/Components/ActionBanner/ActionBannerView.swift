@@ -51,12 +51,13 @@ struct ActionBannerView: View {
                 }
                 .frame(maxWidth: 263)
 
-                PrimaryButton(
-                    title: buttonTitle,
-                    leadingIcon: buttonIcon,
-                    size: .mini,
-                    action: action
-                )
+                Group {
+                    if let buttonIcon {
+                        PrimaryButton(title: buttonTitle, leadingIcon: buttonIcon, size: .mini, action: action)
+                    } else {
+                        PrimaryButton(title: buttonTitle, size: .mini, action: action)
+                    }
+                }
                     .fixedSize()
                     .showIf(showsActionButton)
             }
