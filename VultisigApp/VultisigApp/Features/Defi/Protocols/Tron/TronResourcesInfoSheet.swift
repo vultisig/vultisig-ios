@@ -37,23 +37,17 @@ struct TronResourcesInfoSheet: View {
                 .padding(.horizontal, 24)
                 .padding(.bottom, 24)
         }
-        #if os(macOS)
-        .overlay(alignment: .topTrailing) {
-            Button {
-                onDismiss?()
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(Theme.colors.textSecondary.opacity(0.6))
-            }
-            .buttonStyle(.plain)
-            .padding(16)
-        }
-        #endif
         .presentationDetents([.medium, .large])
         .presentationBackground(Theme.colors.bgSurface1)
         .background(Theme.colors.bgSurface1)
         .presentationDragIndicator(.visible)
+        .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "x") {
+                    onDismiss?()
+                }
+            }
+        }
     }
 
     // MARK: - Header
