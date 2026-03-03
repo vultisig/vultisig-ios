@@ -40,10 +40,12 @@
 "amountExceeded" = "Iznos ne može premašiti saldo";
 "amountSelectToken" = "Iznos ( Odaberite token )";
 "amountToWithdraw" = "Iznos za povlačenje";
+"apply" = "Primijeni";
 "applyReferral" = "Primijeni preporuku";
 "approvalRequiredMessageLP" = "Ovaj ERC20 token zahtijeva odobrenje prije dodavanja u bazen likvidnosti. Potpisat će se dvije transakcije:";
 "approvalTransaction" = "1. Transakcija odobrenja";
 "approvalTXHash" = "Hash odobrenja transakcije";
+"approve" = "Odobri";
 "approveAndSwap" = "Odobri i zamijeni";
 "appUpToDate" = "Aplikacija je ažurirana";
 "apr" = "APR";
@@ -207,6 +209,7 @@
 "customMemo" = "Custom Memo";
 "customToken" = "Prilagođeni Token";
 "customTokenErrorSubtitle" = "Provjerite adresu tokena i pokušajte ponovo.";
+"date" = "Datum";
 "defiPortfolio" = "DeFi Portfelj";
 "delete" = "Izbriši";
 "deleteFolder" = "Izbriši mapu";
@@ -326,6 +329,7 @@
 "fastSetUp" = "Brza postavka";
 "fastVaultSecureTextDescription" = "Potrebno je samo 1 uređaj\nPohrani manja sredstva za brze radnje\nVultiserver trenutno supotpisuje";
 "fee" = "Naknada";
+"filterByAsset" = "Filtriraj po imovini";
 "findCustomTokens" = "Pronađite Svoj Prilagođeni Token";
 "folder" = "Mapa";
 "folderName" = "Naziv Mape";
@@ -376,6 +380,7 @@
 "initializingCamera" = "Inicijalizacija kamere";
 "initializingScreenCapture" = "Pokretanje snimanja zaslona";
 "initiatingDevice" = "Pokrećući uređaj";
+"inProgress" = "U tijeku";
 "insufficientBalance" = "Nedovoljno sredstava";
 "insufficientBalanceForFunctions" = "Nedovoljan saldo. Molimo unesite iznos manji ili jednak vašim dostupnim sredstvima.";
 "insufficientGasTokenError" = "Nedovoljno %@ za pokrivanje naknada za plin za slanje %@";
@@ -532,6 +537,7 @@
 "notNow" = "Ne sada";
 "noTokensFound" = "Nema pronađenih tokena";
 "noTokensFoundSubtitle" = "Dodajte tokene u postavkama";
+"noTransactionsYet" = "Još nema transakcija";
 "notWhitelistedOnNode" = "Niste na bijeloj listi ovog čvora";
 "noVaultsFoundInZip" = "Nisu pronađeni trezori u ZIP datoteci.";
 "of" = "od";
@@ -786,6 +792,7 @@
 "storeBackupsSeparatelyDescription" = "Čuvajte svaku sigurnosnu kopiju na drugom mjestu. Ako je jedna kompromitirana, vaša sredstva ostaju sigurna.";
 "storeBackupsSeparatelyDescriptionSecure" = "Spremite svaku sigurnosnu kopiju u drugu uslugu oblaka ili s drugom lozinkom. Ako je jedna izložena, vaša sredstva ostaju sigurna.";
 "success" = "Uspjeh";
+"successful" = "Uspješno";
 "successfully" = "uspješno";
 "support" = "Podržati";
 "supportedFileTypesUpload" = "Podržane vrste datoteka: .bak, .vult & .zip";
@@ -813,6 +820,7 @@
 "swapFee" = "Naknada za zamjenu";
 "swapOverview" = "Pregled zamjene";
 "swapRouteNotAvailable" = "Ruta zamjene nije dostupna";
+"swaps" = "Zamjene";
 "swapTrackingLink" = "Poveznica za praćenje zamjene";
 "swapTXHash" = "Zamjenski Tx hash";
 "swapVerifyCheckbox1Description" = "Iznos zamjene je točan";
@@ -833,6 +841,7 @@
 "thresholdNotReachedMessage" = "Prag nije dosegnut.\nNedostaje dovoljno početnih uređaja.";
 "title" = "Naslov";
 "to" = "Do";
+"today" = "Danas";
 "tokens" = "Tokeni";
 "totalFee" = "Ukupna naknada";
 "track" = "Prati";
@@ -841,6 +850,7 @@
 "transactionDetails" = "Detalji transakcije";
 "transactionFailed" = "Transakcija nije uspjela";
 "transactionHash" = "Hash transakcije";
+"transactionHistory" = "Povijest transakcija";
 "transactionID" = "ID transakcije";
 "transactionSuccessful" = "Transakcija uspješna";
 "transactionTrackingLink" = "Poveznica za praćenje transakcije";
@@ -986,6 +996,8 @@
 "verify" = "Provjeri";
 "verifyingCodePleaseWait" = "Provjera koda, pričekajte";
 "verifyPassword" = "Potvrdite lozinku";
+"via" = "putem";
+"viewOnExplorer" = "Prikaži u Exploreru";
 "Vote" = "Glasaj";
 "vult" = "$ VOLT";
 "vultDiscount" = "Popust: %dbps";
@@ -1019,6 +1031,7 @@
 "wrongVaultSelectedDescription" = "Vault koji ste odabrali ne odgovara keygen sesiji. Molimo odaberite ispravan Vault.";
 "wrongVaultTryAgain" = "Pogrešan sef ili upareni uređaj.";
 "x" = "x";
+"yesterday" = "Jučer";
 "youAreEnteringAnewEra" = "Ulazite u novu eru, ostavljajući stare seed fraze iza sebe. Trebat će vam:";
 "youAreEnteringAnewEraHighlight" = "ostavljajući stare seed fraze iza sebe.";
 "youAreInLocalMode" = "Nalazite se u lokalnom načinu rada";

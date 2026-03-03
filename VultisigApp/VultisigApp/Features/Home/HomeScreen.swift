@@ -200,6 +200,12 @@ struct HomeScreen: View {
                     router.navigate(to: VaultRoute.createVault(showBackButton: true))
                 case .mainAction(let action):
                     router.navigate(to: HomeRoute.vaultAction(action: action, sendTx: sendTx, vault: selectedVault))
+                case .transactionHistory:
+                    router.navigate(to: TransactionHistoryRoute.list(
+                        pubKeyECDSA: selectedVault.pubKeyECDSA,
+                        vaultName: selectedVault.name,
+                        chainFilter: nil
+                    ))
                 }
 
                 vaultRoute = nil
@@ -304,6 +310,7 @@ struct HomeScreen: View {
             activeTab: $selectedTab,
             showBalance: $showPortfolioHeader,
             vaultSelectorAction: { showVaultSelector.toggle() },
+            historyAction: { vaultRoute = .transactionHistory },
             settingsAction: { vaultRoute = .settings },
             onRefresh: { shouldRefresh = true }
         )

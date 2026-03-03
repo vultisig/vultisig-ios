@@ -14,6 +14,7 @@ struct HomeMainHeaderView: View {
     @Binding var activeTab: HomeTab
     @Binding var showBalance: Bool
     var vaultSelectorAction: () -> Void
+    var historyAction: () -> Void
     var settingsAction: () -> Void
     var onRefresh: () -> Void
 
@@ -78,6 +79,9 @@ struct HomeMainHeaderView: View {
             RefreshToolbarButton(onRefresh: onRefresh)
             #endif
 
+            ToolbarButton(image: "clock.arrow.circlepath", action: historyAction) { _ in
+                Icon(named: "clock.arrow.circlepath", color: Theme.colors.textPrimary, size: 20, isSystem: true)
+            }
             ToolbarButton(image: "settings", action: settingsAction)
         }
     }
@@ -101,6 +105,8 @@ struct HomeMainHeaderView: View {
             showBalance: .constant(true)
         ) {
             print("Vault Selector Action")
+        } historyAction: {
+            print("History action")
         } settingsAction: {
             print("Settings action")
         } onRefresh: {

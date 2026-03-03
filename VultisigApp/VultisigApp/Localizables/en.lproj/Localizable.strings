@@ -41,10 +41,12 @@
 "amountExceeded" = "Amount cannot exceed balance";
 "amountSelectToken" = "Amount ( Select a token )";
 "amountToWithdraw" = "Amount to Withdraw";
+"apply" = "Apply";
 "applyReferral" = "Apply referral";
 "approvalRequiredMessageLP" = "This ERC20 token requires approval before adding to liquidity pool. Two transactions will be signed:";
 "approvalTransaction" = "1. Approval transaction";
 "approvalTXHash" = "Approval Tx Hash";
+"approve" = "Approve";
 "approveAndSwap" = "Approve and Swap";
 "appUpToDate" = "Application is up to date.";
 "apr" = "APR";
@@ -209,6 +211,7 @@
 "customMemo" = "Custom Memo";
 "customToken" = "Custom Token";
 "customTokenErrorSubtitle" = "Possible reasons: wrong contract, unsupported chain, or token removed from registries.";
+"date" = "Date";
 "defiPortfolio" = "DeFi Portfolio";
 "delete" = "Delete";
 "deleteFolder" = "Delete Folder";
@@ -332,6 +335,7 @@
 "fastSetUp" = "Fast set-up";
 "fastVaultSecureTextDescription" = "Only 1 device needed\nStore small funds for quick actions\nVultiserver co-signs instantly";
 "fee" = "Fee";
+"filterByAsset" = "Filter by Asset";
 "findCustomTokens" = "Find custom token";
 "folder" = "Folder";
 "folderName" = "Folder Name";
@@ -382,6 +386,7 @@
 "initializingCamera" = "Initializing Camera";
 "initializingScreenCapture" = "Initializing Screen Capture";
 "initiatingDevice" = "Initiating Device";
+"inProgress" = "In Progress";
 "insufficientBalance" = "Insufficient Balance";
 "insufficientBalanceForFunctions" = "Insufficient balance. Please enter an amount less than or equal to your available funds.";
 "insufficientGasTokenError" = "Not enough %@ to cover gas fees for sending %@";
@@ -540,6 +545,7 @@
 "notNow" = "Not now";
 "noTokensFound" = "No tokens selected";
 "noTokensFoundSubtitle" = "You’ve disabled all tokens. Make sure that the token you’re looking for is enabled.";
+"noTransactionsYet" = "No transactions yet";
 "notWhitelistedOnNode" = "You are not whitelisted on this node";
 "noVaultsFoundInZip" = "No vaults found in the ZIP file.";
 "of" = "of";
@@ -796,6 +802,7 @@
 "storeBackupsSeparatelyDescription" = "Keep each backup in a different place. If one is compromised, your funds stay safe.";
 "storeBackupsSeparatelyDescriptionSecure" = "Save each backup in a different cloud service or with a different password. If one is exposed, your funds stay safe.";
 "success" = "Success";
+"successful" = "Successful";
 "successfully" = "successfully";
 "support" = "Support";
 "supportedFileTypesUpload" = "Supported file types: .bak, .vult & .zip";
@@ -823,6 +830,7 @@
 "swapFee" = "Swap Fee";
 "swapOverview" = "Swap overview";
 "swapRouteNotAvailable" = "Swap route not available";
+"swaps" = "Swaps";
 "swapTrackingLink" = "Swap tracking link";
 "swapTXHash" = "Swap Tx Hash";
 "swapVerifyCheckbox1Description" = "The swap amount is correct";
@@ -843,6 +851,7 @@
 "thresholdNotReachedMessage" = "Threshold not reached.\nMissing enough initial devices.";
 "title" = "Title";
 "to" = "To";
+"today" = "Today";
 "tokens" = "Tokens";
 "totalFee" = "Total Fee";
 "track" = "Track";
@@ -853,6 +862,7 @@
 "transactionFailed" = "Transaction failed";
 "transactionFailedHighlight" = "failed";
 "transactionHash" = "Transaction Hash";
+"transactionHistory" = "Transaction History";
 "transactionID" = "Transaction ID";
 "transactionPending" = "Transaction pending...";
 "transactionSuccessful" = "Transaction successful";
@@ -1002,6 +1012,8 @@
 "verify" = "Verify";
 "verifyingCodePleaseWait" = "Verifying code, please wait";
 "verifyPassword" = "Verify Password";
+"via" = "via";
+"viewOnExplorer" = "View on Explorer";
 "Vote" = "Vote";
 "vult" = "$VULT";
 "vultDiscount" = "Discount: %dbps";
@@ -1035,6 +1047,7 @@
 "wrongVaultSelectedDescription" = "The vault you selected doesn't match the keygen session. Please select the correct vault.";
 "wrongVaultTryAgain" = "Wrong Vault or Pair";
 "x" = "X (Twitter)";
+"yesterday" = "Yesterday";
 "youAreEnteringAnewEra" = "You are entering a new era, leaving old seed phrases behind. You’ll need:";
 "youAreEnteringAnewEraHighlight" = "leaving old seed phrases behind.";
 "youAreInLocalMode" = "You’re in local mode";

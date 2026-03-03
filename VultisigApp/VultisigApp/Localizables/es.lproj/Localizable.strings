@@ -40,10 +40,12 @@
 "amountExceeded" = "La cantidad no puede exceder el saldo";
 "amountSelectToken" = "Amount ( Select a token )";
 "amountToWithdraw" = "Amount to Withdraw";
+"apply" = "Aplicar";
 "applyReferral" = "Aplicar referido";
 "approvalRequiredMessageLP" = "This ERC20 token requires approval before adding to liquidity pool. Two transactions will be signed:";
 "approvalTransaction" = "1. Approval transaction";
 "approvalTXHash" = "Hash de la transacción de aprobación";
+"approve" = "Aprobar";
 "approveAndSwap" = "Aprobar e intercambiar";
 "appUpToDate" = "La aplicación está actualizada";
 "apr" = "TAE";
@@ -207,6 +209,7 @@
 "customMemo" = "Custom Memo";
 "customToken" = "Token Personalizado";
 "customTokenErrorSubtitle" = "No pudimos encontrar el token. Por favor, verifica la dirección del contrato e inténtalo de nuevo.";
+"date" = "Fecha";
 "defiPortfolio" = "Portafolio DeFi";
 "delete" = "Eliminar";
 "deleteFolder" = "Eliminar carpeta";
@@ -326,6 +329,7 @@
 "fastSetUp" = "Configuración rápida";
 "fastVaultSecureTextDescription" = "Solo se necesita 1 dispositivo\nGuarda fondos pequeños para acciones rápidas\nVultiserver cofirma al instante";
 "fee" = "Tarifa";
+"filterByAsset" = "Filtrar por activo";
 "findCustomTokens" = "Encuentra Tu Token Personalizado";
 "folder" = "Carpeta";
 "folderName" = "Nombre de la Carpeta";
@@ -376,6 +380,7 @@
 "initializingCamera" = "Inicializando la cámara";
 "initializingScreenCapture" = "Inicializando captura de pantalla";
 "initiatingDevice" = "Dispositivo iniciador";
+"inProgress" = "En progreso";
 "insufficientBalance" = "Saldo insuficiente";
 "insufficientBalanceForFunctions" = "Saldo insuficiente. Por favor, ingresa una cantidad menor o igual a tus fondos disponibles.";
 "insufficientGasTokenError" = "No hay suficiente %@ para cubrir las tarifas de gas para enviar %@";
@@ -532,6 +537,7 @@
 "notNow" = "Ahora no";
 "noTokensFound" = "No se encontraron tokens";
 "noTokensFoundSubtitle" = "Agrega tokens para verlos aquí.";
+"noTransactionsYet" = "Sin transacciones aún";
 "notWhitelistedOnNode" = "No estás en la lista blanca de este nodo";
 "noVaultsFoundInZip" = "No se encontraron bóvedas en el archivo ZIP.";
 "of" = "de";
@@ -786,6 +792,7 @@
 "storeBackupsSeparatelyDescription" = "Guarda cada respaldo en un lugar diferente. Si uno se ve comprometido, tus fondos permanecen seguros.";
 "storeBackupsSeparatelyDescriptionSecure" = "Guarda cada respaldo en un servicio de nube diferente o con una contraseña diferente. Si uno queda expuesto, tus fondos permanecen seguros.";
 "success" = "Éxito";
+"successful" = "Exitosa";
 "successfully" = "exitosamente";
 "support" = "Apoyo";
 "supportedFileTypesUpload" = "Tipos de archivos soportados: .bak, .vult & .zip";
@@ -813,6 +820,7 @@
 "swapFee" = "Tarifa de intercambio";
 "swapOverview" = "Resumen del intercambio";
 "swapRouteNotAvailable" = "Ruta de intercambio no disponible";
+"swaps" = "Intercambios";
 "swapTrackingLink" = "Enlace de seguimiento del intercambio";
 "swapTXHash" = "Hash de la transacción de intercambio";
 "swapVerifyCheckbox1Description" = "La cantidad del intercambio es correcta";
@@ -833,6 +841,7 @@
 "thresholdNotReachedMessage" = "Umbral no alcanzado.\nFaltan suficientes dispositivos iniciales.";
 "title" = "Título";
 "to" = "A";
+"today" = "Hoy";
 "tokens" = "Tokens";
 "totalFee" = "Comisión total";
 "track" = "Rastrear";
@@ -841,6 +850,7 @@
 "transactionDetails" = "Detalles de la transacción";
 "transactionFailed" = "Transacción fallida";
 "transactionHash" = "Hash de transacción";
+"transactionHistory" = "Historial de transacciones";
 "transactionID" = "ID de Transacción";
 "transactionSuccessful" = "Transacción exitosa";
 "transactionTrackingLink" = "Enlace de seguimiento de transacción";
@@ -986,6 +996,8 @@
 "verify" = "Verificar";
 "verifyingCodePleaseWait" = "Verificando código, por favor espera";
 "verifyPassword" = "Verificar contraseña";
+"via" = "vía";
+"viewOnExplorer" = "Ver en Explorer";
 "Vote" = "Votar";
 "vult" = "$ Vult";
 "vultDiscount" = "Descuento: %dbps";
@@ -1019,6 +1031,7 @@
 "wrongVaultSelectedDescription" = "El Vault que seleccionaste no coincide con la sesión de keygen. Por favor selecciona el Vault correcto.";
 "wrongVaultTryAgain" = "Caja Fuerte o Dispositivo Emparejado Incorrecto.";
 "x" = "x";
+"yesterday" = "Ayer";
 "youAreEnteringAnewEra" = "Estás entrando en una nueva era, dejando atrás las viejas frases semilla. Necesitarás:";
 "youAreEnteringAnewEraHighlight" = "dejando atrás las viejas frases semilla.";
 "youAreInLocalMode" = "Estás en modo local";

@@ -40,10 +40,12 @@
 "amountExceeded" = "金额不能超过余额";
 "amountSelectToken" = "金额 ( 选择代币 )";
 "amountToWithdraw" = "提取金额";
+"apply" = "应用";
 "applyReferral" = "应用推荐";
 "approvalRequiredMessageLP" = "添加到流动性池前需要批准此 ERC20 代币。将签署两笔交易：";
 "approvalTransaction" = "1. 批准交易";
 "approvalTXHash" = "授权交易哈希";
+"approve" = "批准";
 "approveAndSwap" = "授权并交换";
 "appUpToDate" = "应用程序已是最新版本";
 "apr" = "年化利率";
@@ -207,6 +209,7 @@
 "customMemo" = "自定义备注";
 "customToken" = "自定义代币";
 "customTokenErrorSubtitle" = "可能的原因：错误的合约、不支持的链或代币已从注册表中删除";
+"date" = "日期";
 "defiPortfolio" = "DeFi 投资组合";
 "delete" = "删除";
 "deleteFolder" = "删除文件夹";
@@ -326,6 +329,7 @@
 "fastSetUp" = "快速设置";
 "fastVaultSecureTextDescription" = "只需 1 个设备\n存储小额资金以进行快速操作\nVultiserver 即时共同签名";
 "fee" = "费用";
+"filterByAsset" = "按资产筛选";
 "findCustomTokens" = "查找自定义代币";
 "folder" = "文件夹";
 "folderName" = "文件夹名称";
@@ -376,6 +380,7 @@
 "initializingCamera" = "正在初始化相机";
 "initializingScreenCapture" = "正在初始化屏幕捕获";
 "initiatingDevice" = "发起设备";
+"inProgress" = "进行中";
 "insufficientBalance" = "余额不足";
 "insufficientBalanceForFunctions" = "余额不足。请输入小于或等于可用资金的金额";
 "insufficientGasTokenError" = "没有足够的 %@ 来支付发送 %@ 的燃料费";
@@ -532,6 +537,7 @@
 "notNow" = "暂时不用";
 "noTokensFound" = "未选择代币";
 "noTokensFoundSubtitle" = "您已禁用所有代币。确保您要查找的代币已启用";
+"noTransactionsYet" = "暂无交易记录";
 "notWhitelistedOnNode" = "您不在此节点的白名单中";
 "noUnencryptedVaultsToImport" = "没有未加密的保险库可导入";
 "noVaultsFoundInZip" = "ZIP文件中未找到任何保险库。";
@@ -786,6 +792,7 @@
 "storeBackupsSeparatelyDescription" = "将每个备份保存在不同的地方。如果一个被泄露，您的资金仍然安全。";
 "storeBackupsSeparatelyDescriptionSecure" = "将每个备份保存在不同的云服务或使用不同的密码。如果一个被泄露，您的资金仍然安全。";
 "success" = "成功";
+"successful" = "成功";
 "successfully" = "成功";
 "support" = "支持";
 "supportedFileTypesUpload" = "支持的文件类型：.bak、.vult 和 .zip";
@@ -813,6 +820,7 @@
 "swapFee" = "交换费用";
 "swapOverview" = "交换概览";
 "swapRouteNotAvailable" = "交换路由不可用";
+"swaps" = "兑换";
 "swapTrackingLink" = "交换跟踪链接";
 "swapTXHash" = "交换交易哈希";
 "swapVerifyCheckbox1Description" = "交换金额正确";
@@ -833,6 +841,7 @@
 "thresholdNotReachedMessage" = "未达到阈值。\n缺少足够的初始设备";
 "title" = "标题";
 "to" = "至";
+"today" = "今天";
 "tokens" = "代币";
 "totalFee" = "总费用";
 "track" = "跟踪";
@@ -841,6 +850,7 @@
 "transactionDetails" = "交易详情";
 "transactionFailed" = "交易失败";
 "transactionHash" = "交易哈希";
+"transactionHistory" = "交易历史";
 "transactionID" = "交易 ID";
 "transactionSuccessful" = "交易成功";
 "transactionTrackingLink" = "交易跟踪链接";
@@ -987,6 +997,8 @@
 "verify" = "验证";
 "verifyingCodePleaseWait" = "正在验证代码，请稍候";
 "verifyPassword" = "验证密码";
+"via" = "通过";
+"viewOnExplorer" = "在浏览器中查看";
 "Vote" = "投票";
 "vult" = "$VULT";
 "vultDiscount" = "折扣：%d 个基点";
@@ -1020,6 +1032,7 @@
 "wrongVaultSelectedDescription" = "您选择的保险库与keygen会话不匹配。请选择正确的保险库。";
 "wrongVaultTryAgain" = "错误的保险库或配对";
 "x" = "X（推特）";
+"yesterday" = "昨天";
 "youAreEnteringAnewEra" = "您正在进入一个新时代，将旧助记词抛在身后。您需要：";
 "youAreEnteringAnewEraHighlight" = "将旧助记词抛在身后。";
 "youAreInLocalMode" = "您处于本地模式";

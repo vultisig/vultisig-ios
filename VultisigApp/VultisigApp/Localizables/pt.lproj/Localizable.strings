@@ -40,10 +40,12 @@
 "amountExceeded" = "A quantidade não pode exceder o saldo";
 "amountSelectToken" = "Amount ( Select a token )";
 "amountToWithdraw" = "Amount to Withdraw";
+"apply" = "Aplicar";
 "applyReferral" = "Aplicar indicação";
 "approvalRequiredMessageLP" = "This ERC20 token requires approval before adding to liquidity pool. Two transactions will be signed:";
 "approvalTransaction" = "1. Approval transaction";
 "approvalTXHash" = "Hash da transação de aprovação";
+"approve" = "Aprovar";
 "approveAndSwap" = "Aprovar e trocar";
 "appUpToDate" = "Aplicativo está atualizado";
 "apr" = "APR";
@@ -207,6 +209,7 @@
 "customMemo" = "Custom Memo";
 "customToken" = "Token Personalizado";
 "customTokenErrorSubtitle" = "Não foi possível encontrar o token. Verifique o endereço do contrato e tente novamente.";
+"date" = "Data";
 "defiPortfolio" = "Portfólio DeFi";
 "delete" = "Deletar";
 "deleteFolder" = "Excluir pasta";
@@ -326,6 +329,7 @@
 "fastSetUp" = "Configuração rápida";
 "fastVaultSecureTextDescription" = "Apenas 1 dispositivo necessário\nArmazene pequenos fundos para ações rápidas\nVultiserver coassina instantaneamente";
 "fee" = "Taxa";
+"filterByAsset" = "Filtrar por ativo";
 "findCustomTokens" = "Encontre Seu Token Personalizado";
 "folder" = "Pasta";
 "folderName" = "Nome da Pasta";
@@ -376,6 +380,7 @@
 "initializingCamera" = "Inicializando a câmera";
 "initializingScreenCapture" = "Inicializando captura de tela";
 "initiatingDevice" = "Dispositivo de início";
+"inProgress" = "Em andamento";
 "insufficientBalance" = "Saldo insuficiente";
 "insufficientBalanceForFunctions" = "Saldo insuficiente. Por favor, digite um valor menor ou igual aos seus fundos disponíveis.";
 "insufficientGasTokenError" = "Não há %@ suficiente para cobrir as taxas de gas para enviar %@";
@@ -532,6 +537,7 @@
 "notNow" = "Agora não";
 "noTokensFound" = "Nenhum token encontrado";
 "noTokensFoundSubtitle" = "Adicione tokens para vê-los aqui";
+"noTransactionsYet" = "Nenhuma transação ainda";
 "notWhitelistedOnNode" = "Você não está na lista branca deste nó";
 "noVaultsFoundInZip" = "Nenhum cofre encontrado no arquivo ZIP.";
 "of" = "de";
@@ -786,6 +792,7 @@
 "storeBackupsSeparatelyDescription" = "Mantenha cada backup em um local diferente. Se um for comprometido, seus fundos permanecem seguros.";
 "storeBackupsSeparatelyDescriptionSecure" = "Salve cada backup em um serviço de nuvem diferente ou com uma senha diferente. Se um for exposto, seus fundos permanecem seguros.";
 "success" = "Sucesso";
+"successful" = "Bem-sucedida";
 "successfully" = "com sucesso";
 "support" = "Apoiar";
 "supportedFileTypesUpload" = "Tipos de arquivos suportados: .bak, .vult & .zip";
@@ -813,6 +820,7 @@
 "swapFee" = "Taxa de troca";
 "swapOverview" = "Visão geral da troca";
 "swapRouteNotAvailable" = "Rota de troca não disponível";
+"swaps" = "Trocas";
 "swapTrackingLink" = "Link de rastreamento da troca";
 "swapTXHash" = "Hash da Tx da troca";
 "swapVerifyCheckbox1Description" = "O valor da troca está correto";
@@ -833,6 +841,7 @@
 "thresholdNotReachedMessage" = "Limite não alcançado.\nFaltam dispositivos iniciais suficientes.";
 "title" = "Título";
 "to" = "Para";
+"today" = "Hoje";
 "tokens" = "Tokens";
 "totalFee" = "Taxa total";
 "track" = "Acompanhar";
@@ -841,6 +850,7 @@
 "transactionDetails" = "Detalhes da transação";
 "transactionFailed" = "Transação falhou";
 "transactionHash" = "Hash da transação";
+"transactionHistory" = "Histórico de transações";
 "transactionID" = "ID de Transação";
 "transactionSuccessful" = "Transação bem-sucedida";
 "transactionTrackingLink" = "Link de rastreamento de transação";
@@ -986,6 +996,8 @@
 "verify" = "Verificar";
 "verifyingCodePleaseWait" = "Verificando código, aguarde";
 "verifyPassword" = "Verificar senha";
+"via" = "via";
+"viewOnExplorer" = "Ver no Explorer";
 "Vote" = "Votar";
 "vult" = "$ VULT";
 "vultDiscount" = "Desconto: %dbps";
@@ -1019,6 +1031,7 @@
 "wrongVaultSelectedDescription" = "O Vault que você selecionou não corresponde à sessão de keygen. Por favor, selecione o Vault correto.";
 "wrongVaultTryAgain" = "Cofre ou Dispositivo Emparelhado Incorreto.";
 "x" = "x";
+"yesterday" = "Ontem";
 "youAreEnteringAnewEra" = "Você está entrando em uma nova era, deixando frases semente antigas para trás. Você precisará de:";
 "youAreEnteringAnewEraHighlight" = "deixando frases semente antigas para trás.";
 "youAreInLocalMode" = "Você está no modo local";

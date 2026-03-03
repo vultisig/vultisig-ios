@@ -18,6 +18,7 @@ struct ChainDetailScreenContainer: View {
 
     @EnvironmentObject var appViewModel: AppViewModel
     @Environment(\.openURL) var openURL
+    @Environment(\.router) var router
 
     init(group: GroupedChain, vault: Vault) {
         self.group = group
@@ -45,6 +46,11 @@ struct ChainDetailScreenContainer: View {
                     .crossPlatformToolbar(ignoresTopEdge: true) {
                         CustomToolbarItem(placement: .trailing) {
                             RefreshToolbarButton(onRefresh: { refreshTrigger.toggle() })
+                        }
+                        CustomToolbarItem(placement: .trailing) {
+                            ToolbarButton(image: "clock.arrow.circlepath", action: onHistory) { _ in
+                                Icon(named: "clock.arrow.circlepath", color: Theme.colors.textPrimary, size: 20, isSystem: true)
+                            }
                         }
                         CustomToolbarItem(placement: .trailing) {
                             ToolbarButton(image: "square-3d", action: onExplorer)
@@ -75,11 +81,24 @@ struct ChainDetailScreenContainer: View {
         #if os(iOS)
         .crossPlatformToolbar(ignoresTopEdge: true) {
             CustomToolbarItem(placement: .trailing) {
+                ToolbarButton(image: "clock.arrow.circlepath", action: onHistory) { _ in
+                    Icon(named: "clock.arrow.circlepath", color: Theme.colors.textPrimary, size: 20, isSystem: true)
+                }
+            }
+            CustomToolbarItem(placement: .trailing) {
                 ToolbarButton(image: "square-3d", action: onExplorer)
             }
         }
         #endif
         .withAddressCopy(coin: $addressToCopy)
+    }
+
+    func onHistory() {
+        router.navigate(to: TransactionHistoryRoute.list(
+            pubKeyECDSA: vault.pubKeyECDSA,
+            vaultName: vault.name,
+            chainFilter: group.chain
+        ))
     }
 
     func onExplorer() {
