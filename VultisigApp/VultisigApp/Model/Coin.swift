@@ -5,6 +5,9 @@ import BigInt
 @Model
 class Coin: ObservableObject, Codable, Hashable {
     var id: String
+    var uniqueId: String {
+        "\(chain.rawValue)-\(ticker.lowercased())-\(contractAddress.lowercased())"
+    }
     var chain: Chain
     var address: String
     var hexPublicKey: String
