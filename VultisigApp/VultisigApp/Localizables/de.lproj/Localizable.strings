@@ -529,6 +529,8 @@
 "notifications" = "Benachrichtigungen";
 "notificationsAreHere" = "Sichere Benachrichtigungen sind da";
 "notificationsDescription" = "Erhalten Sie Benachrichtigungen, wenn ein anderes Gerät Ihrem Tresor beitreten möchte oder wenn Ihre Signatur erforderlich ist.";
+"notificationsDisabledMessage" = "Benachrichtigungen sind für Vultisig deaktiviert. Bitte aktivieren Sie diese in den Einstellungen.";
+"notificationsDisabledTitle" = "Benachrichtigungen deaktiviert";
 "notificationSentSuccessfully" = "Benachrichtigung wurde erfolgreich gesendet!";
 "notNow" = "Nicht jetzt";
 "noTokensFound" = "Keine Token gefunden";

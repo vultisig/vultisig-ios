@@ -529,6 +529,8 @@
 "notifications" = "Notifiche";
 "notificationsAreHere" = "Le notifiche sicure sono arrivate";
 "notificationsDescription" = "Ricevi avvisi quando un altro dispositivo richiede di unirsi al tuo vault o quando è richiesta la tua firma.";
+"notificationsDisabledMessage" = "Le notifiche sono disabilitate per Vultisig. Abilitale nelle Impostazioni.";
+"notificationsDisabledTitle" = "Notifiche disabilitate";
 "notificationSentSuccessfully" = "Notifica inviata con successo!";
 "notNow" = "Non ora";
 "noTokensFound" = "Nessun token trovato";

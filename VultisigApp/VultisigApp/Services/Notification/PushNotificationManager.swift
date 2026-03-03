@@ -67,6 +67,11 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
         }
     }
 
+    func authorizationStatus() async -> UNAuthorizationStatus {
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        return settings.authorizationStatus
+    }
+
     func checkPermissionStatus() async {
         let settings = await UNUserNotificationCenter.current().notificationSettings()
         isPermissionGranted = settings.authorizationStatus == .authorized

@@ -529,6 +529,8 @@
 "notifications" = "通知";
 "notificationsAreHere" = "安全通知功能已上线";
 "notificationsDescription" = "当其他设备请求加入您的保险库或需要您的签名时，接收提醒通知。";
+"notificationsDisabledMessage" = "Vultisig 的通知已被禁用。请在设置中启用。";
+"notificationsDisabledTitle" = "通知已禁用";
 "notificationSentSuccessfully" = "通知已成功发送！";
 "notNow" = "暂时不用";
 "noTokensFound" = "未选择代币";
