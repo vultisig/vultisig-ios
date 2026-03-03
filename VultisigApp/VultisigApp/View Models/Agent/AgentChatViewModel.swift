@@ -612,14 +612,21 @@ final class AgentChatViewModel: ObservableObject {
     }
 
     func confirmSignTx(vault: Vault) {
-        guard let pendingSendTx else { return }
+        print("[AgentChat] 🔐 confirmSignTx called. pendingSendTx=\(pendingSendTx != nil ? "SET (\(pendingSendTx!.coin.ticker) on \(pendingSendTx!.coin.chain.name))" : "NIL")")
+        guard let pendingSendTx else {
+            print("[AgentChat] ❌ confirmSignTx: pendingSendTx is nil, returning early")
+            return
+        }
         
+        print("[AgentChat] 🔐 confirmSignTx: isFastVault=\(vault.isFastVault), cachedPassword=\(cachedFastVaultPassword != nil ? "SET" : "NIL")")
         if vault.isFastVault {
             // Fully headless: use cached password from signIn, no sheets at all
             if let password = cachedFastVaultPassword, !password.isEmpty {
+                print("[AgentChat] 🔐 confirmSignTx: using cached password, calling executeFastVaultKeysign")
                 executeFastVaultKeysign(password: password, vault: vault)
             } else {
                 // Fallback: prompt for password if not cached
+                print("[AgentChat] 🔐 confirmSignTx: no cached password, showing FastVaultPasswordPrompt")
                 self.showFastVaultPasswordPrompt = true
             }
         } else {
@@ -661,7 +668,15 @@ final class AgentChatViewModel: ObservableObject {
     }
 
     func executeFastVaultKeysign(password: String, vault: Vault) {
-        guard let tx = pendingSendTx else { return }
+        guard let tx = pendingSendTx else {
+            print("[AgentChat] ❌ executeFastVaultKeysign: pendingSendTx is nil")
+            return
+        }
+        
+        // Cache password for future transactions in this session
+        if cachedFastVaultPassword == nil {
+            cachedFastVaultPassword = password
+        }
         
         Task {
             await MainActor.run {
@@ -678,9 +693,15 @@ final class AgentChatViewModel: ObservableObject {
                 tx.fee = feeResult.fee
                 tx.gas = feeResult.gas
                 
+                print("[AgentChat] 💰 Balance check: rawBalance='\(tx.coin.rawBalance)', decimals=\(tx.coin.decimals)")
+                print("[AgentChat] 💰 amount=\(tx.amount), amountInRaw=\(tx.amountInRaw)")
+                print("[AgentChat] 💰 fee=\(tx.fee), gas=\(tx.gas)")
+                print("[AgentChat] 💰 isNativeToken=\(tx.coin.isNativeToken), sendMaxAmount=\(tx.sendMaxAmount)")
+                
                 let validationResult = logic.validateBalanceWithFee(tx: tx)
                 if !validationResult.isValid {
                     let errStr = validationResult.errorMessage ?? "Insufficient balance to cover fee."
+                    print("[AgentChat] ❌ Balance validation FAILED: \(errStr)")
                     let localizedErr = NSLocalizedString(errStr, comment: "")
                     throw HelperError.runtimeError(localizedErr == errStr ? errStr : localizedErr)
                 }
@@ -742,11 +763,17 @@ final class AgentChatViewModel: ObservableObject {
     }
 
     private func createPendingSendTx(from params: [String: AnyCodable]?, vault: Vault) {
+        print("[AgentChat] 🏗️ createPendingSendTx called. params=\(params != nil ? "present" : "nil")")
         guard let params = params,
               let chainStr = params["chain"]?.value as? String,
               let symbolStr = params["symbol"]?.value as? String,
               let amountStr = params["amount"]?.value as? String,
-              let addressStr = params["address"]?.value as? String else { return }
+              let addressStr = params["address"]?.value as? String else {
+            print("[AgentChat] ❌ createPendingSendTx: missing required params. chain=\(params?["chain"]?.value ?? "nil"), symbol=\(params?["symbol"]?.value ?? "nil"), amount=\(params?["amount"]?.value ?? "nil"), address=\(params?["address"]?.value ?? "nil")")
+            return
+        }
+
+        print("[AgentChat] 🏗️ createPendingSendTx: chain=\(chainStr), symbol=\(symbolStr), amount=\(amountStr), to=\(addressStr.prefix(10))...")
 
         // Find coin in vault
         if let coin = vault.coins.first(where: {
@@ -755,8 +782,10 @@ final class AgentChatViewModel: ObservableObject {
         }) {
             let tx = SendTransaction()
             tx.coin = coin
+            tx.fromAddress = coin.address
             tx.toAddress = addressStr
-            tx.amount = amountStr
+            let localizedAmount = amountStr.replacingOccurrences(of: ".", with: Locale.current.decimalSeparator ?? ".")
+            tx.amount = localizedAmount
             tx.vault = vault // Explicitly assign Vault to allow isFastVault detection
 
             if let memoStr = params["memo"]?.value as? String {
@@ -764,6 +793,9 @@ final class AgentChatViewModel: ObservableObject {
             }
 
             self.pendingSendTx = tx
+            print("[AgentChat] ✅ createPendingSendTx: SUCCESS — \(coin.ticker) on \(coin.chain.name), from=\(coin.address.prefix(10))..., to=\(addressStr.prefix(10))..., amount=\(amountStr)")
+        } else {
+            print("[AgentChat] ❌ createPendingSendTx: coin NOT FOUND in vault. Looking for chain=\(chainStr), symbol=\(symbolStr). Available coins: \(vault.coins.map { "\($0.chain.name)/\($0.ticker)" }.joined(separator: ", "))")
         }
     }
 

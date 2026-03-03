@@ -236,7 +236,9 @@ struct KeysignDiscoveryView: View {
             vault: vault,
             keysignPayload: keysignPayload,
             customMessagePayload: customMessagePayload,
-            participantDiscovery: participantDiscovery
+            participantDiscovery: participantDiscovery,
+            fastVaultPassword: fastVaultPassword,
+            onFastKeysign: { startKeysign() }
         )
 
         guard let (qrCodeData, qrCodeImage) = await viewModel.getQrImage() else {
