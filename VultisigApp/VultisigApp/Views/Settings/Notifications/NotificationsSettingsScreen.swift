@@ -10,6 +10,8 @@ struct NotificationsSettingsScreen: View {
     @Query var vaults: [Vault]
     @EnvironmentObject var pushNotificationManager: PushNotificationManager
 
+    @Environment(\.scenePhase) private var scenePhase
+
     @State private var notificationsEnabled: Bool = false
     @State private var showSettingsAlert: Bool = false
 
@@ -23,12 +25,17 @@ struct NotificationsSettingsScreen: View {
                 LazyVStack(spacing: 14) {
                     mainToggleSection
                     vaultListSection
+                        .transition(.verticalGrowAndFade)
+                        .animation(.interpolatingSpring, value: notificationsEnabled && !vaults.isEmpty)
                         .showIf(notificationsEnabled && !vaults.isEmpty)
                 }
             }
         }
-        .onAppear {
-            notificationsEnabled = pushNotificationManager.isPermissionGranted
+        .onLoad { Task { await checkForPermissions() } }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                Task { await checkForPermissions() }
+            }
         }
         .alert(
             "notificationsDisabledTitle".localized,
@@ -132,6 +139,13 @@ struct NotificationsSettingsScreen: View {
             NSWorkspace.shared.open(url)
         }
         #endif
+    }
+    
+    @MainActor
+    func checkForPermissions() async {
+        await pushNotificationManager.checkPermissionStatus()
+        let isEnabled = pushNotificationManager.isPermissionGranted
+        onNotificationsEnabled(isEnabled)
     }
 }
 
