@@ -414,26 +414,38 @@ final class AgentChatViewModel: ObservableObject {
             }
         }
 
-        // Execute all auto-execute actions sequentially to avoid rate limiting
+        // Execute all auto-execute actions
         if !autoExecuteActions.isEmpty {
-            handleAutoExecuteActions(autoExecuteActions, vault: vault)
+            if autoExecuteActions.count == 1 {
+                handleAutoExecuteAction(autoExecuteActions[0], vault: vault)
+            } else {
+                handleAutoExecuteActions(autoExecuteActions, vault: vault)
+            }
         }
     }
-
 
     private func handleAutoExecuteAction(_ action: AgentBackendAction, vault: Vault) {
         let toolCallId = "tool-call-\(action.id)"
 
-        Task {
+        Task { @MainActor in
             let result = await AgentToolExecutor.execute(action: action, vault: vault)
 
-            await MainActor.run {
-                if let idx = self.messages.firstIndex(where: { $0.id == toolCallId }) {
-                    self.messages[idx].toolCall?.status = result.success ? .success : .error
-                    self.messages[idx].toolCall?.resultData = result.data
-                    self.messages[idx].toolCall?.error = result.error
-                }
+            if let idx = self.messages.firstIndex(where: { $0.id == toolCallId }) {
+                self.messages[idx].toolCall?.status = result.success ? .success : .error
+                self.messages[idx].toolCall?.resultData = result.data
+                self.messages[idx].toolCall?.error = result.error
             }
+
+            // Plant an empty "seed" assistant message before streaming the result back
+            self.isLoading = true
+            let seedId = "streaming-\(Date().timeIntervalSince1970)"
+            self.streamingMessageId = seedId
+            self.messages.append(AgentChatMessage(
+                id: seedId,
+                role: .assistant,
+                content: "",
+                timestamp: Date()
+            ))
 
             // Stream the result back
             self.sendActionResult(result, vault: vault)
@@ -444,7 +456,7 @@ final class AgentChatViewModel: ObservableObject {
         // Execute all actions locally (no backend round-trip per action), then
         // send a SINGLE aggregated action result. This prevents N×backend calls
         // (e.g. "remove all 22 chains" becomes 1 request instead of 22).
-        Task {
+        Task { @MainActor in
             var allSucceeded = true
             var aggregatedData: [String: AnyCodable] = [:]
             var errors: [String] = []
@@ -456,22 +468,21 @@ final class AgentChatViewModel: ObservableObject {
                 let toolCallId = "tool-call-\(action.id)"
                 let result = await AgentToolExecutor.execute(action: action, vault: vault)
 
-                await MainActor.run {
-                    if let idx = self.messages.firstIndex(where: { $0.id == toolCallId }) {
-                        self.messages[idx].toolCall?.status = result.success ? .success : .error
-                        self.messages[idx].toolCall?.resultData = result.data
-                        self.messages[idx].toolCall?.error = result.error
-                    }
+                if let idx = self.messages.firstIndex(where: { $0.id == toolCallId }) {
+                    self.messages[idx].toolCall?.status = result.success ? .success : .error
+                    self.messages[idx].toolCall?.resultData = result.data
+                    self.messages[idx].toolCall?.error = result.error
                 }
 
                 if !result.success {
                     allSucceeded = false
-                    if let err = result.error { errors.append(err) }
+                    errors.append(result.error ?? "unknown error for action \(action.id)")
                 }
 
-                // Merge result data (keyed by action id to avoid collisions)
-                if let data = result.data {
-                    aggregatedData["result_\(action.id.prefix(8))"] = AnyCodable(data)
+                if let outData = result.data {
+                    for (k, v) in outData {
+                        aggregatedData["\(action.id)_\(k)"] = v
+                    }
                 }
             }
 
@@ -663,6 +674,15 @@ final class AgentChatViewModel: ObservableObject {
                 let feeResult = try await logic.calculateFee(tx: tx)
                 tx.fee = feeResult.fee
                 tx.gas = feeResult.gas
+                
+                let validationResult = logic.validateBalanceWithFee(tx: tx)
+                if !validationResult.isValid {
+                    let errStr = validationResult.errorMessage ?? "Insufficient balance to cover fee."
+                    let localizedErr = NSLocalizedString(errStr, comment: "")
+                    throw HelperError.runtimeError(localizedErr == errStr ? errStr : localizedErr)
+                }
+                
+                try await logic.validateUtxosIfNeeded(tx: tx)
                 
                 // 2. Validate form
                 let keysignPayload = try await logic.buildKeysignPayload(tx: tx, vault: vault)
