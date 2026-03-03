@@ -20,7 +20,7 @@ enum AgentContextBuilder {
     ].joined(separator: " ")
 
     /// Build the message context from the current vault state
-    static func buildContext(vault: Vault, balances: [AgentBalanceInfo]? = nil) -> AgentMessageContext {
+    @MainActor static func buildContext(vault: Vault, balances: [AgentBalanceInfo]? = nil) -> AgentMessageContext {
         var addresses: [String: String] = [:]
         var coins: [AgentCoinInfo] = []
 
@@ -67,7 +67,7 @@ enum AgentContextBuilder {
     }
 
     /// Build a lightweight context (without balances) for subsequent messages
-    static func buildLightContext(vault: Vault) -> AgentMessageContext {
+    @MainActor static func buildLightContext(vault: Vault) -> AgentMessageContext {
         buildContext(vault: vault, balances: nil)
     }
 }

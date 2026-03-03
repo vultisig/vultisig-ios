@@ -487,29 +487,42 @@ final class AgentToolExecutor {
 
     private static func executeAddAddressBook(action: AgentBackendAction) -> AgentActionResult {
         guard let paramsDict = action.params,
-              let paramsData = try? JSONEncoder().encode(paramsDict),
-              let params = try? JSONDecoder().decode(AgentAddAddressBookParams.self, from: paramsData) else {
+              let paramsData = try? JSONEncoder().encode(paramsDict) else {
+            return buildErrorResult(action: action, error: "invalid_params")
+        }
+
+        // Support both {entries: [...]} and flat {name, address, chain}
+        var entriesToProcess: [AgentAddAddressBookEntryParam] = []
+        if let multiParams = try? JSONDecoder().decode(AgentAddAddressBookParams.self, from: paramsData) {
+            entriesToProcess = multiParams.entries
+        } else if let singleParam = try? JSONDecoder().decode(AgentAddAddressBookEntryParam.self, from: paramsData) {
+            entriesToProcess = [singleParam]
+        } else {
             return buildErrorResult(action: action, error: "invalid_params")
         }
 
         var results: [AgentAddAddressBookResult] = []
         var anySuccess = false
 
-        for entryParam in params.entries {
-            guard let chainObj = Chain.allCases.first(where: { $0.rawValue.lowercased() == entryParam.chain.lowercased() }) else {
-                results.append(AgentAddAddressBookResult(id: "", title: entryParam.title, address: entryParam.address, chain: entryParam.chain, success: false, error: "unknown_chain"))
+        for entryParam in entriesToProcess {
+            let chainName = entryParam.chain
+            guard let chainObj = Chain.allCases.first(where: {
+                $0.rawValue.lowercased() == chainName.lowercased() ||
+                $0.name.lowercased() == chainName.lowercased()
+            }) else {
+                results.append(AgentAddAddressBookResult(id: "", title: entryParam.resolvedTitle, address: entryParam.address, chain: chainName, success: false, error: "unknown_chain"))
                 continue
             }
 
             // Filter by isNativeToken to get correct chain decimals (e.g. SOL=9, not JUP=6)
             let defaultDecimals = TokensStore.TokenSelectionAssets.first(where: { $0.chain == chainObj && $0.isNativeToken })?.decimals ?? 18
             let meta = CoinMeta(chain: chainObj, ticker: chainObj.ticker, logo: chainObj.logo, decimals: defaultDecimals, priceProviderId: "", contractAddress: "", isNativeToken: true)
-            let item = AddressBookItem(title: entryParam.title, address: entryParam.address, coinMeta: meta, order: 0)
+            let item = AddressBookItem(title: entryParam.resolvedTitle, address: entryParam.address, coinMeta: meta, order: 0)
 
             Storage.shared.insert(item)
             results.append(AgentAddAddressBookResult(
                 id: item.id.uuidString,
-                title: entryParam.title,
+                title: entryParam.resolvedTitle,
                 address: entryParam.address,
                 chain: chainObj.rawValue,
                 success: true,
@@ -536,8 +549,17 @@ final class AgentToolExecutor {
         }
 
         guard let paramsDict = action.params,
-              let paramsData = try? JSONEncoder().encode(paramsDict),
-              let params = try? JSONDecoder().decode(AgentDeleteAddressBookParams.self, from: paramsData) else {
+              let paramsData = try? JSONEncoder().encode(paramsDict) else {
+            return buildErrorResult(action: action, error: "invalid_params")
+        }
+
+        // Support both {entries: [...]} and flat {name, address, chain}
+        var entriesToProcess: [AgentDeleteAddressBookEntryParam] = []
+        if let multiParams = try? JSONDecoder().decode(AgentDeleteAddressBookParams.self, from: paramsData) {
+            entriesToProcess = multiParams.entries
+        } else if let singleParam = try? JSONDecoder().decode(AgentDeleteAddressBookEntryParam.self, from: paramsData) {
+            entriesToProcess = [singleParam]
+        } else {
             return buildErrorResult(action: action, error: "invalid_params")
         }
 
@@ -547,15 +569,27 @@ final class AgentToolExecutor {
         do {
             let allItems = try context.fetch(FetchDescriptor<AddressBookItem>())
 
-            for param in params.entries {
+            for param in entriesToProcess {
                 var match: AddressBookItem?
 
                 if let idParam = param.id, let uuid = UUID(uuidString: idParam) {
                     match = allItems.first(where: { $0.id == uuid })
-                } else if let title = param.title, let chain = param.chain {
-                    match = allItems.first(where: { $0.title.lowercased() == title.lowercased() && $0.coinMeta.chain.rawValue.lowercased() == chain.lowercased() })
+                } else if let title = param.resolvedTitle, let chain = param.chain {
+                    match = allItems.first(where: {
+                        $0.title.lowercased() == title.lowercased() &&
+                        ($0.coinMeta.chain.rawValue.lowercased() == chain.lowercased() ||
+                         $0.coinMeta.chain.name.lowercased() == chain.lowercased())
+                    })
                 } else if let address = param.address, let chain = param.chain {
-                    match = allItems.first(where: { $0.address.lowercased() == address.lowercased() && $0.coinMeta.chain.rawValue.lowercased() == chain.lowercased() })
+                    match = allItems.first(where: {
+                        $0.address.lowercased() == address.lowercased() &&
+                        ($0.coinMeta.chain.rawValue.lowercased() == chain.lowercased() ||
+                         $0.coinMeta.chain.name.lowercased() == chain.lowercased())
+                    })
+                } else if let title = param.resolvedTitle {
+                    match = allItems.first(where: { $0.title.lowercased() == title.lowercased() })
+                } else if let address = param.address {
+                    match = allItems.first(where: { $0.address.lowercased() == address.lowercased() })
                 }
 
                 if let found = match {
@@ -563,7 +597,7 @@ final class AgentToolExecutor {
                     results.append(AgentDeleteAddressBookResult(id: found.id.uuidString, title: found.title, chain: found.coinMeta.chain.rawValue, success: true, error: nil))
                     anySuccess = true
                 } else {
-                    results.append(AgentDeleteAddressBookResult(id: param.id, title: param.title, chain: param.chain, success: false, error: "not_found"))
+                    results.append(AgentDeleteAddressBookResult(id: param.id, title: param.resolvedTitle, chain: param.chain, success: false, error: "not_found"))
                 }
             }
 

@@ -120,9 +120,12 @@ final class AgentChatViewModel: ObservableObject {
                 }
 
                 // Build context (full context on first message, light on subsequent)
-                let context = messages.count <= 2
-                    ? AgentContextBuilder.buildContext(vault: vault)
-                    : AgentContextBuilder.buildLightContext(vault: vault)
+                let context: AgentMessageContext
+                if messages.count <= 2 {
+                    context = await AgentContextBuilder.buildContext(vault: vault)
+                } else {
+                    context = await AgentContextBuilder.buildLightContext(vault: vault)
+                }
                 print("[AgentChat] 📋 Context built (\(messages.count <= 2 ? "full" : "light"))")
 
                 let request = AgentSendMessageRequest(
@@ -277,7 +280,7 @@ final class AgentChatViewModel: ObservableObject {
         let token = await getValidToken(vault: vault)
 
         do {
-            let context = AgentContextBuilder.buildContext(vault: vault)
+            let context = await AgentContextBuilder.buildContext(vault: vault)
             let request = AgentGetStartersRequest(
                 publicKey: vault.pubKeyECDSA,
                 context: context

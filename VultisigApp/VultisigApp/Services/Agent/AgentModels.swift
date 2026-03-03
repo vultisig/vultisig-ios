@@ -368,9 +368,15 @@ struct AgentAddAddressBookParams: Codable {
 }
 
 struct AgentAddAddressBookEntryParam: Codable {
-    let title: String
+    var title: String?
+    var name: String?
     let address: String
     let chain: String
+
+    /// The backend may send "name" instead of "title"
+    var resolvedTitle: String {
+        title ?? name ?? "Untitled"
+    }
 }
 
 struct AgentAddAddressBookResult: Codable {
@@ -389,8 +395,14 @@ struct AgentDeleteAddressBookParams: Codable {
 struct AgentDeleteAddressBookEntryParam: Codable {
     var id: String?
     var title: String?
+    var name: String?
     var address: String?
     var chain: String?
+
+    /// The backend may send "name" instead of "title"
+    var resolvedTitle: String? {
+        title ?? name
+    }
 }
 
 struct AgentDeleteAddressBookResult: Codable {
