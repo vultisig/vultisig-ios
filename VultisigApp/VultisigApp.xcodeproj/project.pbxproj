@@ -8396,7 +8396,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/vultisig/commondata";
 			requirement = {
-				branch = "feat/single-keygen-message";
+				branch = main;
 				kind = branch;
 			};
 		};
