@@ -79,6 +79,7 @@ class KeygenViewModel: ObservableObject {
     var oldResharePrefix: String
     var isInitiateDevice: Bool
     var keyImportInput: KeyImportInput?
+    var singleKeygenType: SingleKeygenType?
 
     @Published var isLinkActive = false
     @Published var keygenError: String = ""
@@ -118,7 +119,8 @@ class KeygenViewModel: ObservableObject {
                  encryptionKeyHex: String,
                  oldResharePrefix: String,
                  initiateDevice: Bool,
-                 keyImportInput: KeyImportInput? = nil
+                 keyImportInput: KeyImportInput? = nil,
+                 singleKeygenType: SingleKeygenType? = nil
     ) async {
         self.vault = vault
         self.tssType = tssType
@@ -130,6 +132,7 @@ class KeygenViewModel: ObservableObject {
         self.oldResharePrefix = oldResharePrefix
         self.isInitiateDevice = initiateDevice
         self.keyImportInput = keyImportInput
+        self.singleKeygenType = singleKeygenType
         let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
         messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex, pubKey: vault.pubKeyECDSA,
                                       encryptGCM: isEncryptGCM)
@@ -249,41 +252,46 @@ class KeygenViewModel: ObservableObject {
 
     func startSingleKeygen(context: ModelContext) async {
         do {
-            self.status = .KeygenMLDSA
-            let dilithiumKeygen = DilithiumKeygen(
-                vault: self.vault,
-                tssType: self.tssType,
-                keygenCommittee: self.keygenCommittee,
-                vaultOldCommittee: self.vault.signers,
-                mediatorURL: self.mediatorURL,
-                sessionID: self.sessionID,
-                encryptionKeyHex: self.encryptionKeyHex,
-                isInitiateDevice: self.isInitiateDevice,
-                setupMessage: [UInt8]()
-            )
-            try await dilithiumKeygen.DilithiumKeygenWithRetry(attempt: 0)
-
-            guard let keyshare = dilithiumKeygen.getKeyshare() else {
-                throw HelperError.runtimeError("fail to get MLDSA keyshare")
+            guard let singleKeygenType else {
+                throw HelperError.runtimeError("singleKeygenType is not set")
             }
+            switch singleKeygenType {
+            case .MLDSA:
+                self.status = .KeygenMLDSA
+                let dilithiumKeygen = DilithiumKeygen(
+                    vault: self.vault,
+                    tssType: self.tssType,
+                    keygenCommittee: self.keygenCommittee,
+                    mediatorURL: self.mediatorURL,
+                    sessionID: self.sessionID,
+                    encryptionKeyHex: self.encryptionKeyHex,
+                    isInitiateDevice: self.isInitiateDevice,
+                    setupMessage: [UInt8]()
+                )
+                try await dilithiumKeygen.DilithiumKeygenWithRetry(attempt: 0)
 
-            let keygenVerify = KeygenVerify(
-                serverAddr: self.mediatorURL,
-                sessionID: self.sessionID,
-                localPartyID: self.vault.localPartyID,
-                keygenCommittee: self.keygenCommittee
-            )
-            await keygenVerify.markLocalPartyComplete()
-            let allFinished = await keygenVerify.checkCompletedParties()
-            if !allFinished {
-                throw HelperError.runtimeError("not all parties finished MLDSA keygen successfully")
+                guard let keyshare = dilithiumKeygen.getKeyshare() else {
+                    throw HelperError.runtimeError("fail to get MLDSA keyshare")
+                }
+
+                let keygenVerify = KeygenVerify(
+                    serverAddr: self.mediatorURL,
+                    sessionID: self.sessionID,
+                    localPartyID: self.vault.localPartyID,
+                    keygenCommittee: self.keygenCommittee
+                )
+                await keygenVerify.markLocalPartyComplete()
+                let allFinished = await keygenVerify.checkCompletedParties()
+                if !allFinished {
+                    throw HelperError.runtimeError("not all parties finished MLDSA keygen successfully")
+                }
+
+                self.vault.publicKeyMLDSA44 = keyshare.PubKey
+                self.vault.keyshares.append(
+                    KeyShare(pubkey: keyshare.PubKey, keyshare: keyshare.Keyshare, keyId: keyshare.keyId)
+                )
+                self.vault.isBackedUp = false
             }
-
-            self.vault.publicKeyMLDSA44 = keyshare.PubKey
-            self.vault.keyshares.append(
-                KeyShare(pubkey: keyshare.PubKey, keyshare: keyshare.Keyshare, keyId: keyshare.keyId)
-            )
-            self.vault.isBackedUp = false
 
             try context.save()
             self.status = .KeygenFinished

@@ -47,6 +47,15 @@ struct VaultAdvancedSettingsScreen: View {
         Button {
             if vault.publicKeyMLDSA44 != nil {
                 showDilithiumAlreadyGenerated = true
+            } else if vault.isFastVault {
+                router.navigate(
+                    to: KeygenRoute.fastVaultPassword(
+                        tssType: .SingleKeygen,
+                        vault: vault,
+                        selectedTab: .fast,
+                        isExistingVault: true
+                    )
+                )
             } else {
                 router.navigate(
                     to: KeygenRoute.peerDiscovery(
@@ -55,7 +64,8 @@ struct VaultAdvancedSettingsScreen: View {
                         selectedTab: .secure,
                         fastSignConfig: nil,
                         keyImportInput: nil,
-                        setupType: nil
+                        setupType: nil,
+                        singleKeygenType: .MLDSA
                     )
                 )
             }

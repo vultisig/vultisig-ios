@@ -367,7 +367,8 @@ struct VaultSetupScreen: View {
                 selectedTab: selectedTab,
                 fastSignConfig: viewModel.showFastSignFields ? viewModel.fastConfig : nil,
                 keyImportInput: keyImportInput,
-                setupType: setupType
+                setupType: setupType,
+                singleKeygenType: nil
             ))
         } else {
             focusedField = nil

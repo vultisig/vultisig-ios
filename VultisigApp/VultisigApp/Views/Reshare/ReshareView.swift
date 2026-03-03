@@ -121,18 +121,19 @@ struct ReshareView: View {
                 selectedTab: .secure,
                 fastSignConfig: nil,
                 keyImportInput: nil,
-                setupType: nil
+                setupType: nil,
+                singleKeygenType: nil
             ))
         }
     }
 
     var startReshareVultisignerButton: some View {
         PrimaryButton(title: "startFastVaultReshare", type: .secondary) {
-            router.navigate(to: KeygenRoute.fastVaultEmail(
+            router.navigate(to: KeygenRoute.fastVaultPassword(
                 tssType: .Reshare,
                 vault: vault,
                 selectedTab: .secure,
-                fastVaultExist: viewModel.isFastVault
+                isExistingVault: viewModel.isFastVault
             ))
         }
     }

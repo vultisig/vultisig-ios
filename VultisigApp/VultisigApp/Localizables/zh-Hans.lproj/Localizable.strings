@@ -280,6 +280,7 @@
 "enterYourSeedphrase" = "输入您的助记词";
 "enterYourSeedphraseSubtitle" = "在每个单词之间留一个空格。支持12或24个单词的助记词。";
 "enterYourSeedphraseSubtitleHighlight" = "12或24";
+"enterYourVaultsPassword" = "输入您的金库密码";
 "erc20ApprovalRequired" = "需要 ERC20 批准";
 "erc20ApprovalRequiredMessage" = "铸造前需要批准此 ERC20 代币。将签署两笔交易：";
 "error" = "错误";

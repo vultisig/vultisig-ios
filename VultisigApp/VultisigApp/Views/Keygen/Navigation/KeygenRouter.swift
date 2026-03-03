@@ -27,38 +27,22 @@ struct KeygenRouter {
                 keyImportInput: keyImportInput,
                 setupType: setupType
             )
-        case .peerDiscovery(let tssType, let vault, let selectedTab, let fastSignConfig, let keyImportInput, let setupType):
+        case .peerDiscovery(let tssType, let vault, let selectedTab, let fastSignConfig, let keyImportInput, let setupType, let singleKeygenType):
             viewBuilder.buildPeerDiscoveryScreen(
                 tssType: tssType,
                 vault: vault,
                 selectedTab: selectedTab,
                 fastSignConfig: fastSignConfig,
                 keyImportInput: keyImportInput,
-                setupType: setupType
+                setupType: setupType,
+                singleKeygenType: singleKeygenType
             )
-        case .fastVaultEmail(let tssType, let vault, let selectedTab, let fastVaultExist):
-            viewBuilder.buildFastVaultEmailScreen(
+        case .fastVaultPassword(let tssType, let vault, let selectedTab, let isExistingVault):
+            viewBuilder.buildFastVaultPasswordScreen(
                 tssType: tssType,
                 vault: vault,
                 selectedTab: selectedTab,
-                fastVaultExist: fastVaultExist
-            )
-        case .fastVaultSetHint(let tssType, let vault, let selectedTab, let fastVaultEmail, let fastVaultPassword, let fastVaultExist):
-            viewBuilder.buildFastVaultSetHintScreen(
-                tssType: tssType,
-                vault: vault,
-                selectedTab: selectedTab,
-                fastVaultEmail: fastVaultEmail,
-                fastVaultPassword: fastVaultPassword,
-                fastVaultExist: fastVaultExist
-            )
-        case .fastVaultSetPassword(let tssType, let vault, let selectedTab, let fastVaultEmail, let fastVaultExist):
-            viewBuilder.buildFastVaultSetPasswordScreen(
-                tssType: tssType,
-                vault: vault,
-                selectedTab: selectedTab,
-                fastVaultEmail: fastVaultEmail,
-                fastVaultExist: fastVaultExist
+                isExistingVault: isExistingVault
             )
         case .joinKeysign(let vault):
             viewBuilder.buildJoinKeysignScreen(vault: vault)

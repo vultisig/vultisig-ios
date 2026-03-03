@@ -1,0 +1,14 @@
+//
+//  CreateMldsaRequest.swift
+//  VultisigApp
+//
+
+import Foundation
+
+struct CreateMldsaRequest: Hashable, Codable {
+    let public_key: String
+    let session_id: String
+    let hex_encryption_key: String
+    let encryption_password: String
+    let email: String
+}

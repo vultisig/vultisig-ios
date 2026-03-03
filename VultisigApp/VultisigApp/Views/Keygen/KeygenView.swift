@@ -23,6 +23,7 @@ struct KeygenView: View {
     let oldResharePrefix: String
     let fastSignConfig: FastSignConfig?
     let keyImportInput: KeyImportInput?
+    let singleKeygenType: SingleKeygenType?
     let isInitiateDevice: Bool
     @Binding var hideBackButton: Bool
 
@@ -277,7 +278,8 @@ struct KeygenView: View {
             encryptionKeyHex: encryptionKeyHex,
             oldResharePrefix: oldResharePrefix,
             initiateDevice: isInitiateDevice,
-            keyImportInput: keyImportInput
+            keyImportInput: keyImportInput,
+            singleKeygenType: singleKeygenType
         )
     }
 
@@ -310,6 +312,7 @@ struct KeygenView: View {
         oldResharePrefix: "",
         fastSignConfig: nil,
         keyImportInput: nil,
+        singleKeygenType: nil,
         isInitiateDevice: false,
         hideBackButton: .constant(false)
     )

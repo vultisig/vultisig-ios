@@ -8,7 +8,6 @@ struct SingleKeygenMessage {
     let hexChainCode: String
     let serviceName: String
     let pubKeyECDSA: String
-    let oldParties: [String]
     let encryptionKeyHex: String
     let useVultisigRelay: Bool
     let vaultName: String

@@ -13,7 +13,6 @@ extension SingleKeygenMessage: ProtoMappable {
         self.hexChainCode = proto.hexChainCode
         self.serviceName = proto.serviceName
         self.pubKeyECDSA = proto.publicKeyEcdsa
-        self.oldParties = proto.oldParties
         self.encryptionKeyHex = proto.encryptionKeyHex
         self.useVultisigRelay = proto.useVultisigRelay
         self.vaultName = proto.vaultName
@@ -27,7 +26,6 @@ extension SingleKeygenMessage: ProtoMappable {
             $0.hexChainCode = hexChainCode
             $0.serviceName = serviceName
             $0.publicKeyEcdsa = pubKeyECDSA
-            $0.oldParties = oldParties
             $0.encryptionKeyHex = encryptionKeyHex
             $0.useVultisigRelay = useVultisigRelay
             $0.vaultName = vaultName

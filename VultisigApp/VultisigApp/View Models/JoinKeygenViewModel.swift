@@ -55,6 +55,7 @@ class JoinKeygenViewModel: ObservableObject {
     @Published var oldResharePrefix: String = ""
 
     var encryptionKeyHex: String = ""
+    var singleKeygenType: SingleKeygenType = .MLDSA
     var vaults: [Vault] = []
 
     init() {
@@ -276,12 +277,12 @@ class JoinKeygenViewModel: ObservableObject {
             case .SingleKeygen:
                 let singleKeygenMsg: SingleKeygenMessage = try ProtoSerializer.deserialize(
                     base64EncodedString: scanData)
-                oldCommittee = singleKeygenMsg.oldParties
                 sessionID = singleKeygenMsg.sessionID
                 hexChainCode = singleKeygenMsg.hexChainCode
                 serviceName = singleKeygenMsg.serviceName
                 encryptionKeyHex = singleKeygenMsg.encryptionKeyHex
                 useVultisigRelay = singleKeygenMsg.useVultisigRelay
+                singleKeygenType = singleKeygenMsg.singleKeygenType
 
                 if vault.pubKeyECDSA.isEmpty {
                     if !singleKeygenMsg.pubKeyECDSA.isEmpty {

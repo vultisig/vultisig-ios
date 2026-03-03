@@ -133,27 +133,33 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                            chains: chains?.map { $0.name } ?? [])
             case .Reshare:
                 let pubKeyECDSA = config.isExist ? vault.pubKeyECDSA : .empty
-                fastVaultService.reshare(name: vault.name,
-                                         publicKeyECDSA: pubKeyECDSA,
-                                         sessionID: sessionID,
-                                         hexEncryptionKey: encryptionKeyHex!,
-                                         hexChainCode: vault.hexChainCode,
-                                         encryptionPassword: config.password,
-                                         email: config.email,
-                                         oldParties: vault.signers,
-                                         oldResharePrefix: vault.resharePrefix ?? "",
-                                         lib_type: vault.libType == .DKLS ? 1 : 0)
-            case .Migrate:
-                fastVaultService.migrate(publicKeyECDSA: vault.pubKeyECDSA, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, encryptionPassword: config.password, email: config.email)
-            case .SingleKeygen:
-                fastVaultService.singleKeygen(
+                fastVaultService.reshare(
                     name: vault.name,
+                    publicKeyECDSA: pubKeyECDSA,
                     sessionID: sessionID,
                     hexEncryptionKey: encryptionKeyHex!,
                     hexChainCode: vault.hexChainCode,
                     encryptionPassword: config.password,
                     email: config.email,
-                    singleKeygenType: 0
+                    oldParties: vault.signers,
+                    oldResharePrefix: vault.resharePrefix ?? "",
+                    lib_type: vault.libType == .DKLS ? 1 : 0
+                )
+            case .Migrate:
+                fastVaultService.migrate(
+                    publicKeyECDSA: vault.pubKeyECDSA,
+                    sessionID: sessionID,
+                    hexEncryptionKey: encryptionKeyHex!,
+                    encryptionPassword: config.password,
+                    email: config.email
+                )
+            case .SingleKeygen:
+                fastVaultService.singleKeygen(
+                    publicKeyECDSA: vault.pubKeyECDSA,
+                    sessionID: sessionID,
+                    hexEncryptionKey: encryptionKeyHex!,
+                    encryptionPassword: config.password,
+                    email: config.email
                 )
             }
         }
@@ -363,7 +369,6 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     hexChainCode: vault.hexChainCode,
                     serviceName: serviceName,
                     pubKeyECDSA: vault.pubKeyECDSA,
-                    oldParties: vault.signers,
                     encryptionKeyHex: encryptionKeyHex,
                     useVultisigRelay: VultisigRelay.IsRelayEnabled,
                     vaultName: vault.name,
