@@ -10,7 +10,10 @@ struct NotificationsSettingsScreen: View {
     @Query var vaults: [Vault]
     @EnvironmentObject var pushNotificationManager: PushNotificationManager
 
+    @Environment(\.scenePhase) private var scenePhase
+
     @State private var notificationsEnabled: Bool = false
+    @State private var showSettingsAlert: Bool = false
 
     var allVaultsEnabled: Bool {
         !vaults.isEmpty && vaults.allSatisfy { pushNotificationManager.isVaultOptedIn($0) }
@@ -22,12 +25,28 @@ struct NotificationsSettingsScreen: View {
                 LazyVStack(spacing: 14) {
                     mainToggleSection
                     vaultListSection
+                        .transition(.verticalGrowAndFade)
+                        .animation(.interpolatingSpring, value: notificationsEnabled && !vaults.isEmpty)
                         .showIf(notificationsEnabled && !vaults.isEmpty)
                 }
             }
         }
-        .onAppear {
-            notificationsEnabled = pushNotificationManager.isPermissionGranted
+        .onLoad { Task { await checkForPermissions() } }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                Task { await checkForPermissions() }
+            }
+        }
+        .alert(
+            "notificationsDisabledTitle".localized,
+            isPresented: $showSettingsAlert
+        ) {
+            Button("openSettings".localized) {
+                openSettings()
+            }
+            Button("cancel".localized, role: .cancel) {}
+        } message: {
+            Text("notificationsDisabledMessage".localized)
         }
     }
 
@@ -88,20 +107,45 @@ struct NotificationsSettingsScreen: View {
     }
 
     func onNotificationsEnabled(_ enabled: Bool) {
-        notificationsEnabled = enabled
         if enabled {
             Task {
+                let status = await pushNotificationManager.authorizationStatus()
+                if status == .denied {
+                    notificationsEnabled = false
+                    showSettingsAlert = true
+                    return
+                }
+
                 let granted = await pushNotificationManager.requestPermission()
                 if granted {
+                    notificationsEnabled = true
                     pushNotificationManager.setAllVaultsOptIn(vaults, enabled: true)
                 } else {
                     notificationsEnabled = false
                 }
             }
         } else {
+            notificationsEnabled = enabled
             pushNotificationManager.setAllVaultsOptIn(vaults, enabled: false)
             pushNotificationManager.unregisterForRemoteNotifications()
         }
+    }
+
+    private func openSettings() {
+        #if os(iOS)
+        UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+        #elseif os(macOS)
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications") {
+            NSWorkspace.shared.open(url)
+        }
+        #endif
+    }
+    
+    @MainActor
+    func checkForPermissions() async {
+        await pushNotificationManager.checkPermissionStatus()
+        let isEnabled = pushNotificationManager.isPermissionGranted
+        onNotificationsEnabled(isEnabled)
     }
 }
 

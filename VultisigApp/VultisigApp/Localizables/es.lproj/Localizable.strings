@@ -528,6 +528,8 @@
 "notifications" = "Notificaciones";
 "notificationsAreHere" = "Las notificaciones seguras están aquí";
 "notificationsDescription" = "Recibe alertas cuando otro dispositivo solicite unirse a tu bóveda o cuando se requiera tu firma.";
+"notificationsDisabledMessage" = "Las notificaciones están desactivadas para Vultisig. Por favor, actívalas en Ajustes.";
+"notificationsDisabledTitle" = "Notificaciones desactivadas";
 "notificationSentSuccessfully" = "¡Notificación enviada con éxito!";
 "notNow" = "Ahora no";
 "noTokensFound" = "No se encontraron tokens";

@@ -92,20 +92,30 @@ struct PeerDiscoveryScreen: View {
     }
 
     var isFixedDeviceMode: Bool {
-        totalDeviceCount <= 3
+        if tssType == .Reshare { return false }
+        return totalDeviceCount <= 3
     }
 
     var badgeTotalCount: Int? {
         isFixedDeviceMode ? totalDeviceCount : nil
     }
 
-    var minRequiredDevices: Int { 4 }
+    var minRequiredDevices: Int {
+        switch tssType {
+        case .Reshare:
+            return vault.getThreshold() + 1
+        case .Keygen, .KeyImport:
+            return 4
+        case .Migrate, .DilithiumKeygen:
+            return vault.signers.count
+        }
+    }
 
     func thresholdForCount(_ count: Int) -> Int {
         Int(ceil(Double(count) * 2.0 / 3.0))
     }
 
-    var openEndedButtonTitle: String {
+    var continueButtonTitle: String {
         let count = viewModel.selections.count
         if count < minRequiredDevices {
             let remaining = minRequiredDevices - count
@@ -115,13 +125,12 @@ struct PeerDiscoveryScreen: View {
         return String(format: NSLocalizedString("continueThresholdOfTotal", comment: ""), threshold, count)
     }
 
-    var isOpenEndedContinueDisabled: Bool {
+    var continueButtonDisabled: Bool {
         switch viewModel.tssType {
         case .Migrate, .DilithiumKeygen:
             return Set(viewModel.selections) != Set(viewModel.vault.signers)
         case .Reshare:
-            let requiredCount = vault.getThreshold() + 1
-            return viewModel.selections.count < requiredCount
+            return viewModel.selections.count < minRequiredDevices
         case .KeyImport:
             return viewModel.selections.count < minRequiredDevices || showWaitingOnDevice
         case .Keygen:
@@ -377,10 +386,8 @@ struct PeerDiscoveryScreen: View {
 
     @ViewBuilder
     var bottomButton: some View {
-        if isFixedDeviceMode {
-            EmptyView()
-        } else {
-            PrimaryButton(title: openEndedButtonTitle) {
+        if !isFixedDeviceMode {
+            PrimaryButton(title: continueButtonTitle) {
                 viewModel.startKeygen()
             }
             .padding(.horizontal, 16)
@@ -390,8 +397,8 @@ struct PeerDiscoveryScreen: View {
 #else
             .padding(.bottom, 10)
 #endif
-            .disabled(isOpenEndedContinueDisabled)
-            .animation(.easeInOut(duration: 0.2), value: isOpenEndedContinueDisabled)
+            .disabled(continueButtonDisabled)
+            .animation(.easeInOut(duration: 0.2), value: continueButtonDisabled)
         }
     }
 
@@ -432,8 +439,7 @@ struct PeerDiscoveryScreen: View {
                 return viewModel.selections.count < 2
             }
         case .Reshare:
-            let requiredCount = vault.getThreshold() + 1
-            return viewModel.selections.count < requiredCount
+            return viewModel.selections.count < minRequiredDevices
         case .Migrate, .DilithiumKeygen:
             return Set(viewModel.selections) != Set(viewModel.vault.signers)
         case .KeyImport:

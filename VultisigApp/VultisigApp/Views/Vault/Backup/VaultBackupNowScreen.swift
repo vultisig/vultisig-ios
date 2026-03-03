@@ -26,9 +26,10 @@ struct VaultBackupScreen: View {
         if vault.isFastVault {
             return "backupSetupTitle".localized
         }
+        let position = (vault.signers.firstIndex(of: vault.localPartyID) ?? 0) + 1
         return String(
             format: "backupSetupTitleSecure".localized,
-            1,
+            position,
             vault.signers.count
         )
     }
