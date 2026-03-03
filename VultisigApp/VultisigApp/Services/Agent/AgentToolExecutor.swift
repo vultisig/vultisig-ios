@@ -72,15 +72,34 @@ final class AgentToolExecutor {
             return buildErrorResult(action: action, error: "storage_unavailable")
         }
         do {
-            let vaults = try context.fetch(FetchDescriptor<Vault>())
+            var vaults = try context.fetch(FetchDescriptor<Vault>())
+
+            // Support optional search/filter by partial vault name (case-insensitive)
+            if let paramsDict = action.params,
+               let searchValue = paramsDict["search"]?.value as? String,
+               !searchValue.isEmpty {
+                vaults = vaults.filter { $0.name.localizedCaseInsensitiveContains(searchValue) }
+            }
+
             let result = vaults.map { v in
-                return [
+                let nativeCoins = v.coins.filter { $0.isNativeToken }
+                var addresses: [String: String] = [:]
+                for coin in nativeCoins {
+                    addresses[coin.chain.name] = coin.address
+                }
+                var entry: [String: Any] = [
                     "name": v.name,
-                    "pubkey_ecdsa": String(v.pubKeyECDSA.prefix(16)),
-                    "chains": v.coins.filter { $0.isNativeToken }.map { $0.chain.name },
+                    "pubkey_ecdsa": v.pubKeyECDSA,
+                    "pubkey_eddsa": v.pubKeyEdDSA,
+                    "chains": nativeCoins.map { $0.chain.name },
+                    "addresses": addresses,
                     "is_fast_vault": v.isFastVault,
                     "created_at": ISO8601DateFormatter().string(from: v.createdAt)
-                ] as [String: Any]
+                ]
+                if let mldsa = v.publicKeyMLDSA44, !mldsa.isEmpty {
+                    entry["pubkey_mldsa44"] = mldsa
+                }
+                return entry
             }
             return buildSuccessResult(action: action, data: ["vaults": result, "count": vaults.count])
         } catch {
@@ -92,15 +111,37 @@ final class AgentToolExecutor {
 
     private static func executeGetAddresses(action: AgentBackendAction, vault: Vault) -> AgentActionResult {
         let chainParam: String?
+        let vaultNameParam: String?
+
         if let paramsDict = action.params,
            let paramsData = try? JSONEncoder().encode(paramsDict),
            let decoded = try? JSONDecoder().decode([String: String].self, from: paramsData) {
             chainParam = decoded["chain"]
+            vaultNameParam = decoded["vault_name"]
         } else {
             chainParam = nil
+            vaultNameParam = nil
         }
 
-        var coins = vault.coins.filter { $0.isNativeToken }
+        // Resolve target vault: if vault_name is provided, look it up with wildcard matching
+        var targetVault = vault
+        if let searchName = vaultNameParam, !searchName.isEmpty {
+            guard let context = Storage.shared.modelContext else {
+                return buildErrorResult(action: action, error: "storage_unavailable")
+            }
+            do {
+                let allVaults = try context.fetch(FetchDescriptor<Vault>())
+                if let matched = allVaults.first(where: { $0.name.localizedCaseInsensitiveContains(searchName) }) {
+                    targetVault = matched
+                } else {
+                    return buildErrorResult(action: action, error: "vault_not_found: no vault matching '\(searchName)'")
+                }
+            } catch {
+                return buildErrorResult(action: action, error: error.localizedDescription)
+            }
+        }
+
+        var coins = targetVault.coins.filter { $0.isNativeToken }
         if let filter = chainParam, !filter.isEmpty {
             coins = coins.filter { $0.chain.rawValue.lowercased() == filter.lowercased() || $0.chain.name.lowercased() == filter.lowercased() }
         }
@@ -112,7 +153,17 @@ final class AgentToolExecutor {
                 "address": coin.address
             ]
         }
-        return buildSuccessResult(action: action, data: ["addresses": addresses])
+
+        var resultData: [String: Any] = [
+            "addresses": addresses,
+            "vault_name": targetVault.name,
+            "pubkey_ecdsa": targetVault.pubKeyECDSA,
+            "pubkey_eddsa": targetVault.pubKeyEdDSA
+        ]
+        if let mldsa = targetVault.publicKeyMLDSA44, !mldsa.isEmpty {
+            resultData["pubkey_mldsa44"] = mldsa
+        }
+        return buildSuccessResult(action: action, data: resultData)
     }
 
     // MARK: - Search Token

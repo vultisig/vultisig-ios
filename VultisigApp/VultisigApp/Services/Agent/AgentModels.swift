@@ -34,6 +34,7 @@ struct AgentMessageContext: Codable {
     var addresses: [String: String]?
     var coins: [AgentCoinInfo]?
     var addressBook: [AgentAddressBookEntry]?
+    var allVaults: [AgentVaultInfo]?
     var instructions: String?
 
     enum CodingKeys: String, CodingKey {
@@ -41,7 +42,24 @@ struct AgentMessageContext: Codable {
         case vaultName = "vault_name"
         case balances, addresses, coins
         case addressBook = "address_book"
+        case allVaults = "all_vaults"
         case instructions
+    }
+}
+
+struct AgentVaultInfo: Codable {
+    let name: String
+    let pubKeyECDSA: String
+    let pubKeyEdDSA: String
+    var pubKeyMLDSA44: String?
+    let addresses: [String: String]
+
+    enum CodingKeys: String, CodingKey {
+        case name
+        case pubKeyECDSA = "pubkey_ecdsa"
+        case pubKeyEdDSA = "pubkey_eddsa"
+        case pubKeyMLDSA44 = "pubkey_mldsa44"
+        case addresses
     }
 }
 
