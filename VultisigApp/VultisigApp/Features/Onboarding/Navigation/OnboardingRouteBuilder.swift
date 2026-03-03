@@ -64,10 +64,12 @@ struct OnboardingRouteBuilder {
         vault: Vault
     ) -> some View {
         if selectedTab.isFastVault {
-            FastVaultEmailView(
+            FastVaultPasswordScreen(
                 tssType: tssType,
                 vault: vault,
-                selectedTab: selectedTab
+                selectedTab: selectedTab,
+                isExistingVault: false,
+                singleKeygenType: nil
             )
         } else {
             PeerDiscoveryScreen(

@@ -102,6 +102,7 @@ struct JoinKeygenView: View {
             oldResharePrefix: viewModel.oldResharePrefix,
             fastSignConfig: nil,
             keyImportInput: viewModel.keyImportInput,
+            singleKeygenType: viewModel.singleKeygenType,
             isInitiateDevice: false,
             hideBackButton: $hideBackButton
         )

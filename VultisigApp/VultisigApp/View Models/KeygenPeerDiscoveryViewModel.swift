@@ -133,20 +133,34 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                            chains: chains?.map { $0.name } ?? [])
             case .Reshare:
                 let pubKeyECDSA = config.isExist ? vault.pubKeyECDSA : .empty
-                fastVaultService.reshare(name: vault.name,
-                                         publicKeyECDSA: pubKeyECDSA,
-                                         sessionID: sessionID,
-                                         hexEncryptionKey: encryptionKeyHex!,
-                                         hexChainCode: vault.hexChainCode,
-                                         encryptionPassword: config.password,
-                                         email: config.email,
-                                         oldParties: vault.signers,
-                                         oldResharePrefix: vault.resharePrefix ?? "",
-                                         lib_type: vault.libType == .DKLS ? 1 : 0)
+                fastVaultService.reshare(
+                    name: vault.name,
+                    publicKeyECDSA: pubKeyECDSA,
+                    sessionID: sessionID,
+                    hexEncryptionKey: encryptionKeyHex!,
+                    hexChainCode: vault.hexChainCode,
+                    encryptionPassword: config.password,
+                    email: config.email,
+                    oldParties: vault.signers,
+                    oldResharePrefix: vault.resharePrefix ?? "",
+                    lib_type: vault.libType == .DKLS ? 1 : 0
+                )
             case .Migrate:
-                fastVaultService.migrate(publicKeyECDSA: vault.pubKeyECDSA, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, encryptionPassword: config.password, email: config.email)
-            case .DilithiumKeygen:
-                break
+                fastVaultService.migrate(
+                    publicKeyECDSA: vault.pubKeyECDSA,
+                    sessionID: sessionID,
+                    hexEncryptionKey: encryptionKeyHex!,
+                    encryptionPassword: config.password,
+                    email: config.email
+                )
+            case .SingleKeygen:
+                fastVaultService.singleKeygen(
+                    publicKeyECDSA: vault.pubKeyECDSA,
+                    sessionID: sessionID,
+                    hexEncryptionKey: encryptionKeyHex!,
+                    encryptionPassword: config.password,
+                    email: config.email
+                )
             }
         }
         self.isLoading = false
@@ -334,7 +348,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                 )
                 let data = try ProtoSerializer.serialize(keygenMsg)
                 return "https://vultisig.com?type=NewVault&tssType=\(tssType.rawValue)&jsonData=\(data)"
-            case .Reshare, .Migrate, .DilithiumKeygen:
+            case .Reshare, .Migrate:
                 let reshareMsg = ReshareMessage(
                     sessionID: sessionID,
                     hexChainCode: vault.hexChainCode,
@@ -348,6 +362,20 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     libType: vault.libType ?? .GG20
                 )
                 let data = try ProtoSerializer.serialize(reshareMsg)
+                return "https://vultisig.com?type=NewVault&tssType=\(tssType.rawValue)&jsonData=\(data)"
+            case .SingleKeygen:
+                let singleKeygenMsg = SingleKeygenMessage(
+                    sessionID: sessionID,
+                    hexChainCode: vault.hexChainCode,
+                    serviceName: serviceName,
+                    pubKeyECDSA: vault.pubKeyECDSA,
+                    encryptionKeyHex: encryptionKeyHex,
+                    useVultisigRelay: VultisigRelay.IsRelayEnabled,
+                    vaultName: vault.name,
+                    libType: vault.libType ?? .GG20,
+                    singleKeygenType: .MLDSA
+                )
+                let data = try ProtoSerializer.serialize(singleKeygenMsg)
                 return "https://vultisig.com?type=NewVault&tssType=\(tssType.rawValue)&jsonData=\(data)"
             }
         } catch {

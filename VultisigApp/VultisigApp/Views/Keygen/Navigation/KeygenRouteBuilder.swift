@@ -46,7 +46,8 @@ struct KeygenRouteBuilder {
         selectedTab: SetupVaultState,
         fastSignConfig: FastSignConfig?,
         keyImportInput: KeyImportInput?,
-        setupType: KeyImportSetupType?
+        setupType: KeyImportSetupType?,
+        singleKeygenType: SingleKeygenType?
     ) -> some View {
         PeerDiscoveryScreen(
             tssType: tssType,
@@ -54,58 +55,25 @@ struct KeygenRouteBuilder {
             selectedTab: selectedTab,
             fastSignConfig: fastSignConfig,
             keyImportInput: keyImportInput,
-            setupType: setupType
+            setupType: setupType,
+            singleKeygenType: singleKeygenType
         )
     }
 
     @ViewBuilder
-    func buildFastVaultEmailScreen(
+    func buildFastVaultPasswordScreen(
         tssType: TssType,
         vault: Vault,
         selectedTab: SetupVaultState,
-        fastVaultExist: Bool
+        isExistingVault: Bool,
+        singleKeygenType: SingleKeygenType?
     ) -> some View {
-        FastVaultEmailView(
+        FastVaultPasswordScreen(
             tssType: tssType,
             vault: vault,
             selectedTab: selectedTab,
-            fastVaultExist: fastVaultExist
-        )
-    }
-
-    @ViewBuilder
-    func buildFastVaultSetHintScreen(
-        tssType: TssType,
-        vault: Vault,
-        selectedTab: SetupVaultState,
-        fastVaultEmail: String,
-        fastVaultPassword: String,
-        fastVaultExist: Bool
-    ) -> some View {
-        FastVaultSetHintView(
-            tssType: tssType,
-            vault: vault,
-            selectedTab: selectedTab,
-            fastVaultEmail: fastVaultEmail,
-            fastVaultPassword: fastVaultPassword,
-            fastVaultExist: fastVaultExist
-        )
-    }
-
-    @ViewBuilder
-    func buildFastVaultSetPasswordScreen(
-        tssType: TssType,
-        vault: Vault,
-        selectedTab: SetupVaultState,
-        fastVaultEmail: String,
-        fastVaultExist: Bool
-    ) -> some View {
-        FastVaultSetPasswordView(
-            tssType: tssType,
-            vault: vault,
-            selectedTab: selectedTab,
-            fastVaultEmail: fastVaultEmail,
-            fastVaultExist: fastVaultExist
+            isExistingVault: isExistingVault,
+            singleKeygenType: singleKeygenType
         )
     }
 

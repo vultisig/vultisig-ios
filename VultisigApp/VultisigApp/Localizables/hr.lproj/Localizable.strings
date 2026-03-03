@@ -280,6 +280,7 @@
 "enterYourSeedphrase" = "Unesite svoju seed frazu";
 "enterYourSeedphraseSubtitle" = "Ostavite razmak između svake riječi. Podržane su seed fraze od 12 ili 24 riječi.";
 "enterYourSeedphraseSubtitleHighlight" = "12 ili 24";
+"enterYourVaultsPassword" = "Unesite lozinku svog trezora";
 "erc20ApprovalRequired" = "Potrebno ERC20 odobrenje";
 "erc20ApprovalRequiredMessage" = "Ovaj ERC20 token zahtijeva odobrenje prije kreiranja. Potpisat će se dvije transakcije:";
 "error" = "Greška";

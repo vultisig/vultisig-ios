@@ -128,7 +128,8 @@ struct ReviewYourVaultsScreen: View {
                 selectedTab: .secure,
                 fastSignConfig: nil,
                 keyImportInput: keyImportInput,
-                setupType: .secure(numberOfDevices: keygenCommittee.count)
+                setupType: .secure(numberOfDevices: keygenCommittee.count),
+                singleKeygenType: nil
             ))
         } else {
             router.navigateToRoot()
