@@ -53,7 +53,8 @@ struct VaultAdvancedSettingsScreen: View {
                         tssType: .SingleKeygen,
                         vault: vault,
                         selectedTab: .fast,
-                        isExistingVault: true
+                        isExistingVault: true,
+                        singleKeygenType: .MLDSA
                     )
                 )
             } else {

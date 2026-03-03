@@ -133,7 +133,8 @@ struct ReshareView: View {
                 tssType: .Reshare,
                 vault: vault,
                 selectedTab: .secure,
-                isExistingVault: viewModel.isFastVault
+                isExistingVault: viewModel.isFastVault,
+                singleKeygenType: nil
             ))
         }
     }

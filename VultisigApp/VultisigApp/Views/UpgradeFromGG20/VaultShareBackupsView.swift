@@ -71,7 +71,8 @@ struct VaultShareBackupsView: View {
                 tssType: .Migrate,
                 vault: vault,
                 selectedTab: vault.signers.count == 2 ? .fast : .active,
-                isExistingVault: true
+                isExistingVault: true,
+                singleKeygenType: nil
             ))
         }
     }

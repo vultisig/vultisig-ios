@@ -37,12 +37,13 @@ struct KeygenRouter {
                 setupType: setupType,
                 singleKeygenType: singleKeygenType
             )
-        case .fastVaultPassword(let tssType, let vault, let selectedTab, let isExistingVault):
+        case .fastVaultPassword(let tssType, let vault, let selectedTab, let isExistingVault, let singleKeygenType):
             viewBuilder.buildFastVaultPasswordScreen(
                 tssType: tssType,
                 vault: vault,
                 selectedTab: selectedTab,
-                isExistingVault: isExistingVault
+                isExistingVault: isExistingVault,
+                singleKeygenType: singleKeygenType
             )
         case .joinKeysign(let vault):
             viewBuilder.buildJoinKeysignScreen(vault: vault)

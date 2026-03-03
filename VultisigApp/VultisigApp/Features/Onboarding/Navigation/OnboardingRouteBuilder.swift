@@ -68,7 +68,8 @@ struct OnboardingRouteBuilder {
                 tssType: tssType,
                 vault: vault,
                 selectedTab: selectedTab,
-                isExistingVault: false
+                isExistingVault: false,
+                singleKeygenType: nil
             )
         } else {
             PeerDiscoveryScreen(

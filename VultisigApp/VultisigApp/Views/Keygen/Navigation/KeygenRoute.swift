@@ -19,7 +19,13 @@ enum KeygenRoute: Hashable {
         setupType: KeyImportSetupType?,
         singleKeygenType: SingleKeygenType?
     )
-    case fastVaultPassword(tssType: TssType, vault: Vault, selectedTab: SetupVaultState, isExistingVault: Bool)
+    case fastVaultPassword(
+        tssType: TssType,
+        vault: Vault,
+        selectedTab: SetupVaultState,
+        isExistingVault: Bool,
+        singleKeygenType: SingleKeygenType?
+    )
     case joinKeysign(vault: Vault)
     case macScanner(type: DeeplinkFlowType, sendTx: SendTransaction, selectedVault: Vault?)
     case macAddressScanner(selectedVault: Vault?, resultId: UUID)

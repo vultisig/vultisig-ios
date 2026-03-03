@@ -65,13 +65,15 @@ struct KeygenRouteBuilder {
         tssType: TssType,
         vault: Vault,
         selectedTab: SetupVaultState,
-        isExistingVault: Bool
+        isExistingVault: Bool,
+        singleKeygenType: SingleKeygenType?
     ) -> some View {
         FastVaultPasswordScreen(
             tssType: tssType,
             vault: vault,
             selectedTab: selectedTab,
-            isExistingVault: isExistingVault
+            isExistingVault: isExistingVault,
+            singleKeygenType: singleKeygenType
         )
     }
 

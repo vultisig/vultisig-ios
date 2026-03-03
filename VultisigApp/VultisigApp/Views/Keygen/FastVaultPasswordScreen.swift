@@ -10,6 +10,7 @@ struct FastVaultPasswordScreen: View {
     let vault: Vault
     let selectedTab: SetupVaultState
     let isExistingVault: Bool
+    let singleKeygenType: SingleKeygenType?
 
     enum FocusedField {
         case email, password, passwordConfirm
@@ -21,11 +22,18 @@ struct FastVaultPasswordScreen: View {
     @FocusState private var focusedField: FocusedField?
     @Environment(\.router) var router
 
-    init(tssType: TssType, vault: Vault, selectedTab: SetupVaultState, isExistingVault: Bool) {
+    init(
+        tssType: TssType,
+        vault: Vault,
+        selectedTab: SetupVaultState,
+        isExistingVault: Bool,
+        singleKeygenType: SingleKeygenType?
+    ) {
         self.tssType = tssType
         self.vault = vault
         self.selectedTab = selectedTab
         self.isExistingVault = isExistingVault
+        self.singleKeygenType = singleKeygenType
         _viewModel = StateObject(wrappedValue: FastVaultPasswordViewModel(isExistingVault: isExistingVault))
     }
 
@@ -273,7 +281,7 @@ struct FastVaultPasswordScreen: View {
             fastSignConfig: viewModel.fastSignConfig,
             keyImportInput: nil,
             setupType: nil,
-            singleKeygenType: nil
+            singleKeygenType: singleKeygenType
         ))
     }
 }
