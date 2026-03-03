@@ -11,6 +11,7 @@ struct NotificationsSettingsScreen: View {
     @EnvironmentObject var pushNotificationManager: PushNotificationManager
 
     @State private var notificationsEnabled: Bool = false
+    @State private var showSettingsAlert: Bool = false
 
     var allVaultsEnabled: Bool {
         !vaults.isEmpty && vaults.allSatisfy { pushNotificationManager.isVaultOptedIn($0) }
@@ -28,6 +29,17 @@ struct NotificationsSettingsScreen: View {
         }
         .onAppear {
             notificationsEnabled = pushNotificationManager.isPermissionGranted
+        }
+        .alert(
+            "notificationsDisabledTitle".localized,
+            isPresented: $showSettingsAlert
+        ) {
+            Button("openSettings".localized) {
+                openSettings()
+            }
+            Button("cancel".localized, role: .cancel) {}
+        } message: {
+            Text("notificationsDisabledMessage".localized)
         }
     }
 
@@ -88,20 +100,38 @@ struct NotificationsSettingsScreen: View {
     }
 
     func onNotificationsEnabled(_ enabled: Bool) {
-        notificationsEnabled = enabled
         if enabled {
             Task {
+                let status = await pushNotificationManager.authorizationStatus()
+                if status == .denied {
+                    notificationsEnabled = false
+                    showSettingsAlert = true
+                    return
+                }
+
                 let granted = await pushNotificationManager.requestPermission()
                 if granted {
+                    notificationsEnabled = true
                     pushNotificationManager.setAllVaultsOptIn(vaults, enabled: true)
                 } else {
                     notificationsEnabled = false
                 }
             }
         } else {
+            notificationsEnabled = enabled
             pushNotificationManager.setAllVaultsOptIn(vaults, enabled: false)
             pushNotificationManager.unregisterForRemoteNotifications()
         }
+    }
+
+    private func openSettings() {
+        #if os(iOS)
+        UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+        #elseif os(macOS)
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications") {
+            NSWorkspace.shared.open(url)
+        }
+        #endif
     }
 }
 

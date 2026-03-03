@@ -528,6 +528,8 @@
 "notifications" = "Obavijesti";
 "notificationsAreHere" = "Sigurne obavijesti su stigle";
 "notificationsDescription" = "Primajte obavijesti kada drugi uređaj zatraži pridruživanje vašem trezoru ili kada je potreban vaš potpis.";
+"notificationsDisabledMessage" = "Obavijesti su onemogućene za Vultisig. Molimo omogućite ih u Postavkama.";
+"notificationsDisabledTitle" = "Obavijesti onemogućene";
 "notificationSentSuccessfully" = "Obavijest je uspješno poslana!";
 "notNow" = "Ne sada";
 "noTokensFound" = "Nema pronađenih tokena";
