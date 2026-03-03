@@ -108,18 +108,13 @@ struct CreateVaultView: View {
     }
 
     var importVaultButton: some View {
-        ZStack(alignment: .center) {
-            PrimaryButton(
-                title: "import",
-                leadingIcon: "arrow-down-circle",
-                type: .secondary,
-                reserveTrailingIconSpace: true
-            ) {
-                showImportSelectionSheet = true
-            }
-            newTag
-                .offset(x: 48)
-        }
+        PrimaryButton(
+            title: "import",
+            leadingIcon: "arrow-down-circle",
+            trailingView: { newTag },
+            type: .secondary,
+            action: { showImportSelectionSheet = true }
+        )
     }
 
     private var newTag: some View {
@@ -127,12 +122,37 @@ struct CreateVaultView: View {
             Icon(
                 named: "stars",
                 color: Theme.colors.alertWarning,
-                size: 8
+                size: canFitFullNewTag ? 8 : 12
             )
             Text("new")
                 .foregroundStyle(Theme.colors.alertWarning)
                 .font(FontStyle.brockmanMedium.size(8))
+                .showIf(canFitFullNewTag)
         }
+    }
+
+    private var canFitFullNewTag: Bool {
+        #if os(iOS)
+        let titleText = "import".localized
+        let tagText = "new".localized
+
+        let titleFont = FontStyle.brockmanSemibold.uiFont(16)
+        let tagFont = FontStyle.brockmanMedium.uiFont(8)
+
+        let titleWidth = (titleText as NSString).size(withAttributes: [.font: titleFont]).width
+        let tagTextWidth = (tagText as NSString).size(withAttributes: [.font: tagFont]).width
+
+        // Button width: each button gets half of (screen - 2×24 horizontal padding - 8 HStack spacing)
+        let buttonWidth = CGFloat((Float(UIScreen.main.bounds.width) - 48 - 8) / 2)
+
+        // Content inside PrimaryButtonView HStack(spacing: 8):
+        // leadingIcon(15) + title + tagIcon(8) + tagSpacing(2) + tagText + 3×spacing(8)
+        let contentWidth: CGFloat = 15 + titleWidth * 1.5 + 8 + 2 + tagTextWidth + 24
+
+        return contentWidth <= buttonWidth
+        #else
+        return true
+        #endif
     }
 
     private func setData() {

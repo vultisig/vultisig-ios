@@ -18,6 +18,12 @@ enum FontStyle: String, CaseIterable {
         return Font.custom(fontName, size: size)
     }
 
+    #if os(iOS)
+    func uiFont(_ size: CGFloat) -> UIFont {
+        UIFont(name: fontName, size: size) ?? .systemFont(ofSize: size)
+    }
+    #endif
+
     var fontName: String {
         switch self {
         case .brockmanBold:
