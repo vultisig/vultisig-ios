@@ -71,7 +71,7 @@ struct VaultSetupScreen: View {
     // MARK: - Body
 
     var body: some View {
-        Screen(edgeInsets: .init(leading: 24, trailing: 24)) {
+        Screen(showNavigationBar: false, edgeInsets: .init(leading: 24, trailing: 24)) {
             VStack(spacing: 0) {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
@@ -99,7 +99,7 @@ struct VaultSetupScreen: View {
                 }
             }
         }
-        .crossPlatformToolbar(showsBackButton: false) {
+        .crossPlatformToolbar {
             CustomToolbarItem(placement: .trailing, hideSharedBackground: true) {
                 referralButton
             }
