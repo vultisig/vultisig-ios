@@ -34,7 +34,7 @@ struct VaultAdvancedSettingsScreen: View {
 
     @ViewBuilder
     var reshareVaultRow: some View {
-        if !vault.isFastVault {
+        if !vault.isFastVault && vault.publicKeyMLDSA44 == nil {
             Button {
                 router.navigate(to: VaultRoute.reshare(vault: vault))
             } label: {
