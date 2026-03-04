@@ -46,7 +46,9 @@ struct HomeScreen: View {
         if !(appViewModel.selectedVault?.availableDefiChains.isEmpty ?? true) {
             baseTabs.append(.defi)
         }
-        baseTabs.append(.agent)
+        if SettingsViewModel.shared.agentEnabled {
+            baseTabs.append(.agent)
+        }
         return baseTabs
     }
 

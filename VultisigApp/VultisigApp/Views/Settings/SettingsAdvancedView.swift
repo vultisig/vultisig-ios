@@ -59,6 +59,12 @@ struct SettingsAdvancedView: View {
                 icon: "lock.shield",
                 isEnabled: $settingsViewModel.isMLDSAEnabled
             )
+
+            SettingToggleCell(
+                title: "AI Agent (Vulti)",
+                icon: "sparkles",
+                isEnabled: $settingsViewModel.agentEnabled
+            )
         }
     }
 }
