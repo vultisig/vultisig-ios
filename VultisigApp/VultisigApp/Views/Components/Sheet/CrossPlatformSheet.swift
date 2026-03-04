@@ -36,11 +36,11 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
 
     func body(content: Content) -> some View {
         #if os(macOS)
-//        if #available(macOS 26.0, *) {
-//            nativeSheet(content: content)
-//        } else {
+        if #available(macOS 26.0, *) {
+            nativeSheet(content: content)
+        } else {
             customSheet(content: content)
-//        }
+        }
         #else
         nativeSheet(content: content)
         #endif
