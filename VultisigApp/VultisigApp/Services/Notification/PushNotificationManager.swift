@@ -21,6 +21,7 @@ class PushNotificationManager: ObservableObject, PushNotificationManaging {
     var hadVaultsOnStartup = false
 
     @AppStorage("hasSeenNotificationPrompt") var hasSeenNotificationPrompt: Bool = false
+    @AppStorage("notificationsEnabled") var isNotificationsEnabled: Bool = false
 
     private let keychainService: KeychainService
     private let notificationService: NotificationServicing
