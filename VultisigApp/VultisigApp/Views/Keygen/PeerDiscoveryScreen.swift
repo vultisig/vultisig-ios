@@ -168,7 +168,7 @@ struct PeerDiscoveryScreen: View {
             }
 #endif
         }
-        .if(viewModel.status == .WaitingForDevices) {
+        .if(viewModel.status == .WaitingForDevices && selectedTab.hasOtherDevices) {
             $0.crossPlatformToolbar("", showsBackButton: !hideBackButton) {
                 CustomToolbarItem(placement: .trailing) {
                     if isShareButtonVisible {
