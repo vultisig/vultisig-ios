@@ -32,11 +32,7 @@ struct DefiCircleRow: View {
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textPrimary)
 
-                    if let address = vault.circleWalletAddress {
-                        Text(address.truncatedMiddle)
-                            .font(Theme.fonts.caption12)
-                            .foregroundStyle(Theme.colors.textTertiary)
-                    } else {
+                    if vault.circleWalletAddress == nil {
                         Text(NSLocalizedString("circleRowCreateWallet", comment: "Create Wallet"))
                             .font(Theme.fonts.caption12)
                             .foregroundStyle(Theme.colors.textTertiary)
