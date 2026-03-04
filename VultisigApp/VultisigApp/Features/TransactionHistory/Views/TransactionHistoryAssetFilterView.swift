@@ -7,69 +7,26 @@ import SwiftUI
 
 struct TransactionHistoryAssetFilterView: View {
     @ObservedObject var viewModel: TransactionHistoryViewModel
+    @Binding var isPresented: Bool
 
-    @State private var searchText = ""
-    @Environment(\.dismiss) var dismiss
+    var sections: [AssetSection<Int, TransactionHistoryCoinAsset>] {
+        let coins = viewModel.filteredAvailableCoins
+        return coins.isEmpty ? [] : [AssetSection(assets: coins)]
+    }
 
     var body: some View {
-        NavigationView {
-            VStack(spacing: 16) {
-                searchBar
-                coinGrid
-                applyButton
-            }
-            .padding(16)
-            .background(Theme.colors.bgPrimary)
-            .navigationTitle("filterByAsset".localized)
-            #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-            #endif
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .foregroundStyle(Theme.colors.textPrimary)
-                    }
-                }
-            }
-        }
+        AssetSelectionContainerSheet(
+            title: "filterByAsset".localized,
+            isPresented: $isPresented,
+            searchText: $viewModel.filterSearchText,
+            elements: sections,
+            onSave: { isPresented = false },
+            cellBuilder: cellBuilder,
+            emptyStateBuilder: { EmptyView() }
+        )
     }
 
-    // MARK: - Search Bar
-
-    private var searchBar: some View {
-        HStack {
-            Image(systemName: "magnifyingglass")
-                .foregroundStyle(Theme.colors.textTertiary)
-            TextField("search".localized, text: $searchText)
-                .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(Theme.colors.textPrimary)
-        }
-        .padding(12)
-        .background(Theme.colors.bgSurface1)
-        .cornerRadius(12)
-    }
-
-    // MARK: - Coin Grid
-
-    private var coinGrid: some View {
-        let columns = [GridItem(.adaptive(minimum: 70), spacing: 12)]
-        let filteredCoins = viewModel.availableCoins.filter { coin in
-            searchText.isEmpty || coin.ticker.localizedCaseInsensitiveContains(searchText)
-        }
-
-        return ScrollView {
-            LazyVGrid(columns: columns, spacing: 12) {
-                ForEach(filteredCoins, id: \.ticker) { coin in
-                    coinItem(coin)
-                }
-            }
-        }
-    }
-
-    private func coinItem(_ coin: (ticker: String, logo: String, chainLogo: String?)) -> some View {
+    func cellBuilder(_ coin: TransactionHistoryCoinAsset, _: Int) -> some View {
         let isSelected = viewModel.selectedAssetFilters.contains(coin.ticker)
 
         return Button {
@@ -117,13 +74,5 @@ struct TransactionHistoryAssetFilterView: View {
             )
         }
         .buttonStyle(.plain)
-    }
-
-    // MARK: - Apply Button
-
-    private var applyButton: some View {
-        PrimaryButton(title: "apply") {
-            dismiss()
-        }
     }
 }

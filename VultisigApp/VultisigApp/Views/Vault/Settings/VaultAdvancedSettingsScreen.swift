@@ -34,7 +34,7 @@ struct VaultAdvancedSettingsScreen: View {
 
     @ViewBuilder
     var reshareVaultRow: some View {
-        if !vault.isFastVault {
+        if !vault.isFastVault && vault.publicKeyMLDSA44 == nil {
             Button {
                 router.navigate(to: VaultRoute.reshare(vault: vault))
             } label: {
@@ -47,15 +47,26 @@ struct VaultAdvancedSettingsScreen: View {
         Button {
             if vault.publicKeyMLDSA44 != nil {
                 showDilithiumAlreadyGenerated = true
+            } else if vault.isFastVault {
+                router.navigate(
+                    to: KeygenRoute.fastVaultPassword(
+                        tssType: .SingleKeygen,
+                        vault: vault,
+                        selectedTab: .fast,
+                        isExistingVault: true,
+                        singleKeygenType: .MLDSA
+                    )
+                )
             } else {
                 router.navigate(
                     to: KeygenRoute.peerDiscovery(
-                        tssType: .DilithiumKeygen,
+                        tssType: .SingleKeygen,
                         vault: vault,
                         selectedTab: .secure,
                         fastSignConfig: nil,
                         keyImportInput: nil,
-                        setupType: nil
+                        setupType: nil,
+                        singleKeygenType: .MLDSA
                     )
                 )
             }

@@ -6,12 +6,19 @@
 import Foundation
 import SwiftUI
 
+struct TransactionHistoryCoinAsset: Hashable {
+    let ticker: String
+    let logo: String
+    let chainLogo: String?
+}
+
 @MainActor
 class TransactionHistoryViewModel: ObservableObject {
     @Published var transactions: [TransactionHistoryData] = []
     @Published var selectedTab: TransactionHistoryTab = .overview
     @Published var selectedAssetFilters: Set<String> = []
     @Published var showAssetFilter = false
+    @Published var filterSearchText = ""
     @Published var selectedDetail: TransactionHistoryData?
 
     let pubKeyECDSA: String
@@ -116,6 +123,16 @@ class TransactionHistoryViewModel: ObservableObject {
         }
 
         return result
+    }
+
+    var filteredAvailableCoins: [TransactionHistoryCoinAsset] {
+        let coins = availableCoins.map {
+            TransactionHistoryCoinAsset(ticker: $0.ticker, logo: $0.logo, chainLogo: $0.chainLogo)
+        }
+
+        guard !filterSearchText.isEmpty else { return coins }
+
+        return coins.filter { $0.ticker.localizedCaseInsensitiveContains(filterSearchText) }
     }
 
     // MARK: - Chain Filter Display

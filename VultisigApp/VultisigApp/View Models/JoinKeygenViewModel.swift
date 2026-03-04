@@ -55,6 +55,7 @@ class JoinKeygenViewModel: ObservableObject {
     @Published var oldResharePrefix: String = ""
 
     var encryptionKeyHex: String = ""
+    var singleKeygenType: SingleKeygenType = .MLDSA
     var vaults: [Vault] = []
 
     init() {
@@ -222,7 +223,7 @@ class JoinKeygenViewModel: ObservableObject {
                     status = .FailToStart
                     return
                 }
-            case .Reshare, .Migrate, .DilithiumKeygen:
+            case .Reshare, .Migrate:
                 let reshareMsg: ReshareMessage = try ProtoSerializer.deserialize(
                     base64EncodedString: scanData)
                 oldCommittee = reshareMsg.oldParties
@@ -268,6 +269,46 @@ class JoinKeygenViewModel: ObservableObject {
                         return
                     }
                     if vault.libType != reshareMsg.libType {
+                        error = .vaultTypeMismatch
+                        status = .FailToStart
+                        return
+                    }
+                }
+            case .SingleKeygen:
+                let singleKeygenMsg: SingleKeygenMessage = try ProtoSerializer.deserialize(
+                    base64EncodedString: scanData)
+                sessionID = singleKeygenMsg.sessionID
+                hexChainCode = singleKeygenMsg.hexChainCode
+                serviceName = singleKeygenMsg.serviceName
+                encryptionKeyHex = singleKeygenMsg.encryptionKeyHex
+                useVultisigRelay = singleKeygenMsg.useVultisigRelay
+                singleKeygenType = singleKeygenMsg.singleKeygenType
+
+                if vault.pubKeyECDSA.isEmpty {
+                    if !singleKeygenMsg.pubKeyECDSA.isEmpty {
+                        if let existingVault = vaults.first(where: { $0.pubKeyECDSA == singleKeygenMsg.pubKeyECDSA }) {
+                            self.vault = existingVault
+                            self.localPartyID = existingVault.localPartyID
+                        } else {
+                            vault.hexChainCode = singleKeygenMsg.hexChainCode
+                            vault.libType = singleKeygenMsg.libType
+                            vault.name = singleKeygenMsg.vaultName
+                            if isVaultNameAlreadyExist(name: singleKeygenMsg.vaultName) {
+                                error = .vaultNameAlreadyExists
+                                logger.error("Vault name already exists: \(singleKeygenMsg.vaultName)")
+                                status = .FailToStart
+                                return
+                            }
+                        }
+                    }
+                } else {
+                    if vault.pubKeyECDSA != singleKeygenMsg.pubKeyECDSA {
+                        error = .wrongVaultSelected
+                        logger.error("The vault's public key doesn't match the single keygen message's public key")
+                        status = .FailToStart
+                        return
+                    }
+                    if vault.libType != singleKeygenMsg.libType {
                         error = .vaultTypeMismatch
                         status = .FailToStart
                         return

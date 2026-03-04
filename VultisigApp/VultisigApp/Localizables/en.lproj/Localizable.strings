@@ -289,6 +289,7 @@
 "enterYourSeedphrase" = "Enter your seedphrase";
 "enterYourSeedphraseSubtitle" = "Leave a space between each word. Seed phrases of 12 or 24 words are supported.";
 "enterYourSeedphraseSubtitleHighlight" = "12 or 24";
+"enterYourVaultsPassword" = "Enter your vault's password";
 "erc20ApprovalRequired" = "ERC20 Approval Required";
 "erc20ApprovalRequiredMessage" = "This ERC20 token requires approval before minting. Two transactions will be signed:";
 "error" = "Error";
@@ -541,6 +542,8 @@
 "notifications" = "Notifications";
 "notificationsAreHere" = "Secure Notifications are here";
 "notificationsDescription" = "Receive alerts when another device requests to join your vault or when your signature is required.";
+"notificationsDisabledMessage" = "Notifications are disabled for Vultisig. Please enable them in Settings.";
+"notificationsDisabledTitle" = "Notifications Disabled";
 "notificationSentSuccessfully" = "Notification was successfully sent!";
 "notNow" = "Not now";
 "noTokensFound" = "No tokens selected";

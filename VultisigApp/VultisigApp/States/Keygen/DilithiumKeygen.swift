@@ -20,7 +20,6 @@ final class DilithiumKeygen {
     let vault: Vault
     let tssType: TssType
     let keygenCommittee: [String]
-    let vaultOldCommittee: [String]
     let mediatorURL: String
     let sessionID: String
     let encryptionKeyHex: String
@@ -35,7 +34,6 @@ final class DilithiumKeygen {
     init(vault: Vault,
          tssType: TssType,
          keygenCommittee: [String],
-         vaultOldCommittee: [String],
          mediatorURL: String,
          sessionID: String,
          encryptionKeyHex: String,
@@ -45,7 +43,6 @@ final class DilithiumKeygen {
         self.vault = vault
         self.tssType = tssType
         self.keygenCommittee = keygenCommittee
-        self.vaultOldCommittee = vaultOldCommittee
         self.mediatorURL = mediatorURL
         self.sessionID = sessionID
         self.encryptionKeyHex = encryptionKeyHex

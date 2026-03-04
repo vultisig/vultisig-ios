@@ -9,6 +9,12 @@ import SwiftUI
 
 struct TronResourcesInfoSheet: View {
 
+    let onDismiss: (() -> Void)?
+
+    init(onDismiss: (() -> Void)? = nil) {
+        self.onDismiss = onDismiss
+    }
+
     @State private var bandwidthExpanded = true
     @State private var energyExpanded = false
 
@@ -35,6 +41,13 @@ struct TronResourcesInfoSheet: View {
         .presentationBackground(Theme.colors.bgSurface1)
         .background(Theme.colors.bgSurface1)
         .presentationDragIndicator(.visible)
+        .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "x") {
+                    onDismiss?()
+                }
+            }
+        }
     }
 
     // MARK: - Header

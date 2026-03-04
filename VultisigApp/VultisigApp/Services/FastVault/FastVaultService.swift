@@ -169,6 +169,26 @@ final class FastVaultService {
         }
     }
 
+    func singleKeygen(
+        publicKeyECDSA: String,
+        sessionID: String,
+        hexEncryptionKey: String,
+        encryptionPassword: String,
+        email: String
+    ) {
+        let req = CreateMldsaRequest(
+            public_key: publicKeyECDSA,
+            session_id: sessionID,
+            hex_encryption_key: hexEncryptionKey,
+            encryption_password: encryptionPassword,
+            email: email
+        )
+
+        Utils.sendRequest(urlString: "\(endpoint)/mldsa", method: "POST", headers: [:], body: req) { _ in
+            print("Send MLDSA keygen request to Vultiserver successfully")
+        }
+    }
+
     func migrate(
         publicKeyECDSA: String,
         sessionID: String,

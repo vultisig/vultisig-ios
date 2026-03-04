@@ -184,7 +184,6 @@ struct ServerBackupVerificationScreen: View {
             }
         } else if showAlert {
             Text(alertDescription.localized)
-                .frame(maxWidth: .infinity, alignment: .leading)
                 .foregroundStyle(Theme.colors.alertError)
                 .font(Theme.fonts.bodySMedium)
         }

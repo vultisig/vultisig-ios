@@ -283,6 +283,7 @@
 "enterYourSeedphrase" = "输入您的助记词";
 "enterYourSeedphraseSubtitle" = "在每个单词之间留一个空格。支持12或24个单词的助记词。";
 "enterYourSeedphraseSubtitleHighlight" = "12或24";
+"enterYourVaultsPassword" = "输入您的金库密码";
 "erc20ApprovalRequired" = "需要 ERC20 批准";
 "erc20ApprovalRequiredMessage" = "铸造前需要批准此 ERC20 代币。将签署两笔交易：";
 "error" = "错误";
@@ -533,6 +534,8 @@
 "notifications" = "通知";
 "notificationsAreHere" = "安全通知功能已上线";
 "notificationsDescription" = "当其他设备请求加入您的保险库或需要您的签名时，接收提醒通知。";
+"notificationsDisabledMessage" = "Vultisig 的通知已被禁用。请在设置中启用。";
+"notificationsDisabledTitle" = "通知已禁用";
 "notificationSentSuccessfully" = "通知已成功发送！";
 "notNow" = "暂时不用";
 "noTokensFound" = "未选择代币";

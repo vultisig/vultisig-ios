@@ -29,70 +29,40 @@ struct TransactionHistoryScreen: View {
         .onAppear {
             viewModel.load()
         }
-        .sheet(item: $viewModel.selectedDetail) { detail in
+        .crossPlatformSheet(item: $viewModel.selectedDetail) { detail in
             detailSheet(for: detail)
         }
-        .sheet(isPresented: $viewModel.showAssetFilter) {
-            TransactionHistoryAssetFilterView(viewModel: viewModel)
+        .crossPlatformSheet(isPresented: $viewModel.showAssetFilter) {
+            TransactionHistoryAssetFilterView(
+                viewModel: viewModel,
+                isPresented: $viewModel.showAssetFilter
+            )
+        }
+        .onChange(of: viewModel.showAssetFilter) { _, isShowing in
+            if !isShowing {
+                viewModel.filterSearchText = ""
+            }
         }
     }
 
     // MARK: - Tab Bar
 
     private var tabBar: some View {
-        HStack(spacing: 0) {
-            ForEach(TransactionHistoryTab.allCases, id: \.self) { tab in
-                tabItem(tab)
-            }
+        HStack(spacing: .zero) {
+            SegmentedControl(
+                selection: $viewModel.selectedTab,
+                items: TransactionHistoryTab.allCases.map {
+                    SegmentedControlItem(value: $0, title: $0.title)
+                }
+            )
+            .fixedSize()
 
             Spacer()
 
-            filterButton
-        }
-        .padding(.horizontal, 16)
-    }
-
-    private func tabItem(_ tab: TransactionHistoryTab) -> some View {
-        Button {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                viewModel.selectedTab = tab
+            CircularAccessoryIconButton(icon: "magnifying-glass") {
+                viewModel.showAssetFilter = true
             }
-        } label: {
-            VStack(spacing: 6) {
-                Text(tab.title)
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(
-                        viewModel.selectedTab == tab
-                            ? Theme.colors.textPrimary
-                            : Theme.colors.textTertiary
-                    )
-
-                Rectangle()
-                    .fill(
-                        viewModel.selectedTab == tab
-                            ? Theme.colors.primaryAccent4
-                            : Color.clear
-                    )
-                    .frame(height: 2)
-            }
-            .padding(.horizontal, 12)
         }
-        .buttonStyle(.plain)
-    }
-
-    private var filterButton: some View {
-        Button {
-            viewModel.showAssetFilter = true
-        } label: {
-            Image(systemName: "line.3.horizontal.decrease")
-                .font(Theme.fonts.bodySMedium)
-                .foregroundStyle(
-                    viewModel.selectedAssetFilters.isEmpty
-                        ? Theme.colors.textTertiary
-                        : Theme.colors.primaryAccent4
-                )
-        }
-        .buttonStyle(.plain)
     }
 
     // MARK: - Chain Filter Chip
@@ -141,7 +111,6 @@ struct TransactionHistoryScreen: View {
                         }
                     }
                 }
-                .padding(.horizontal, 16)
             }
         }
     }

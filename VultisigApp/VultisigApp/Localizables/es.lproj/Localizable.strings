@@ -283,6 +283,7 @@
 "enterYourSeedphrase" = "Ingresa tu frase semilla";
 "enterYourSeedphraseSubtitle" = "Deja un espacio entre cada palabra. Se admiten frases semilla de 12 o 24 palabras.";
 "enterYourSeedphraseSubtitleHighlight" = "12 o 24";
+"enterYourVaultsPassword" = "Ingrese la contraseña de su bóveda";
 "erc20ApprovalRequired" = "ERC20 Approval Required";
 "erc20ApprovalRequiredMessage" = "This ERC20 token requires approval before minting. Two transactions will be signed:";
 "error" = "Error";
@@ -533,6 +534,8 @@
 "notifications" = "Notificaciones";
 "notificationsAreHere" = "Las notificaciones seguras están aquí";
 "notificationsDescription" = "Recibe alertas cuando otro dispositivo solicite unirse a tu bóveda o cuando se requiera tu firma.";
+"notificationsDisabledMessage" = "Las notificaciones están desactivadas para Vultisig. Por favor, actívalas en Ajustes.";
+"notificationsDisabledTitle" = "Notificaciones desactivadas";
 "notificationSentSuccessfully" = "¡Notificación enviada con éxito!";
 "notNow" = "Ahora no";
 "noTokensFound" = "No se encontraron tokens";
