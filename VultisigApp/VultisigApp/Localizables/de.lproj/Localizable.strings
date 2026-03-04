@@ -280,6 +280,7 @@
 "enterYourSeedphrase" = "Geben Sie Ihre Seed-Phrase ein";
 "enterYourSeedphraseSubtitle" = "Lassen Sie ein Leerzeichen zwischen jedem Wort. Seed-Phrasen mit 12 oder 24 Wörtern werden unterstützt.";
 "enterYourSeedphraseSubtitleHighlight" = "12 oder 24";
+"enterYourVaultsPassword" = "Geben Sie das Passwort Ihres Tresors ein";
 "erc20ApprovalRequired" = "ERC20 Approval Required";
 "erc20ApprovalRequiredMessage" = "This ERC20 token requires approval before minting. Two transactions will be signed:";
 "error" = "Fehler";

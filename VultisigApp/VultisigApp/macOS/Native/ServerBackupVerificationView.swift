@@ -16,6 +16,7 @@ struct ServerBackupVerificationScreen: View {
 
     @Binding var isPresented: Bool
     @Binding var tabIndex: Int
+    @Binding var otpVerified: Bool
     let onBackup: () -> Void
     let onBackToEmailSetup: () -> Void
 
@@ -71,7 +72,6 @@ struct ServerBackupVerificationScreen: View {
             animationVM?.stop()
         }
         .animation(.easeInOut, value: showAlert)
-        .interactiveDismissDisabled()
     }
 
     // MARK: - Header
@@ -184,7 +184,6 @@ struct ServerBackupVerificationScreen: View {
             }
         } else if showAlert {
             Text(alertDescription.localized)
-                .frame(maxWidth: .infinity, alignment: .leading)
                 .foregroundStyle(Theme.colors.alertError)
                 .font(Theme.fonts.bodySMedium)
         }
@@ -284,7 +283,8 @@ struct ServerBackupVerificationScreen: View {
                 ecdsaKey: vault.pubKeyECDSA,
                 OTPCode: verificationCode
             )
-
+            
+            otpVerified = isSuccess
             if isSuccess {
                 tabIndex = 3
                 isPresented = false
@@ -322,6 +322,7 @@ struct ServerBackupVerificationScreen: View {
         email: "mail@email.com",
         isPresented: .constant(false),
         tabIndex: .constant(2),
+        otpVerified: .constant(false),
         onBackup: {},
         onBackToEmailSetup: {}
     )

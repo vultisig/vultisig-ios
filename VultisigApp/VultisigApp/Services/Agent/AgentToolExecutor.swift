@@ -227,71 +227,70 @@ final class AgentToolExecutor {
             return buildErrorResult(action: action, error: "invalid_params")
         }
 
-        var results: [AgentAddTokenResult] = []
-        var anySuccess = false
-
-        for tokenParam in tokensToProcess {
-            guard let chainObj = Chain.allCases.first(where: { $0.rawValue.lowercased() == tokenParam.chain.lowercased() }) else {
-                results.append(AgentAddTokenResult(chain: tokenParam.chain, ticker: tokenParam.ticker, address: nil, contractAddress: tokenParam.contractAddress, success: false, error: "unknown_chain"))
-                continue
-            }
-
-            let isNative = tokenParam.isNative ?? (tokenParam.contractAddress == nil || tokenParam.contractAddress!.isEmpty)
-            // Use TokensStore to resolve native token decimals — MUST filter by isNativeToken
-            // to avoid picking a non-native coin (e.g. JUP decimals:6 instead of SOL decimals:9 on Solana)
-            let defaultDecimals = TokensStore.TokenSelectionAssets.first(where: { $0.chain == chainObj && $0.isNativeToken })?.decimals ?? 18
-            let decimals = tokenParam.decimals ?? (isNative ? defaultDecimals : 18)
-
-            let coinMeta = CoinMeta(
-                chain: chainObj,
-                ticker: tokenParam.ticker,
-                logo: tokenParam.logo ?? chainObj.logo,
-                decimals: decimals,
-                priceProviderId: tokenParam.priceProviderId ?? "",
-                contractAddress: tokenParam.contractAddress ?? "",
-                isNativeToken: isNative
-            )
-
-            // Check if chain added
-            let hasChain = vault.coins.contains(where: { $0.chain == chainObj && $0.isNativeToken })
-
-            do {
-                if let newCoin = try await CoinService.addIfNeeded(asset: coinMeta, to: vault, priceProviderId: coinMeta.priceProviderId) {
-                    if isNative {
-                        await CoinService.addDiscoveredTokens(nativeToken: newCoin, to: vault)
-                    }
-                    results.append(AgentAddTokenResult(
-                        chain: chainObj.rawValue,
-                        ticker: newCoin.ticker,
-                        address: newCoin.address,
-                        contractAddress: newCoin.contractAddress,
-                        success: true,
-                        error: nil,
-                        chainAdded: !hasChain
-                    ))
-                    anySuccess = true
-
-                    // Add to defiChains if not already there to show up in dashboard
-                    if !vault.defiChains.contains(chainObj) && vault.availableDefiChains.contains(chainObj) {
-                        vault.defiChains.append(chainObj)
+        // Process tokens concurrently
+        let tokenResults: [AgentAddTokenResult] = await withTaskGroup(of: AgentAddTokenResult.self) { group in
+            for tokenParam in tokensToProcess {
+                group.addTask {
+                    guard let chainObj = Chain.allCases.first(where: { $0.rawValue.lowercased() == tokenParam.chain.lowercased() }) else {
+                        return AgentAddTokenResult(chain: tokenParam.chain, ticker: tokenParam.ticker, address: nil, contractAddress: tokenParam.contractAddress, success: false, error: "unknown_chain")
                     }
 
-                } else {
-                    results.append(AgentAddTokenResult(chain: chainObj.rawValue, ticker: tokenParam.ticker, contractAddress: tokenParam.contractAddress, success: false, error: "failed_to_add"))
+                    let isNative = tokenParam.isNative ?? (tokenParam.contractAddress == nil || tokenParam.contractAddress!.isEmpty)
+                    // Use TokensStore to resolve native token decimals — MUST filter by isNativeToken
+                    // to avoid picking a non-native coin (e.g. JUP decimals:6 instead of SOL decimals:9 on Solana)
+                    let defaultDecimals = TokensStore.TokenSelectionAssets.first(where: { $0.chain == chainObj && $0.isNativeToken })?.decimals ?? 18
+                    let decimals = tokenParam.decimals ?? (isNative ? defaultDecimals : 18)
+
+                    let coinMeta = CoinMeta(
+                        chain: chainObj,
+                        ticker: tokenParam.ticker,
+                        logo: tokenParam.logo ?? chainObj.logo,
+                        decimals: decimals,
+                        priceProviderId: tokenParam.priceProviderId ?? "",
+                        contractAddress: tokenParam.contractAddress ?? "",
+                        isNativeToken: isNative
+                    )
+
+                    let hasChain = vault.coins.contains(where: { $0.chain == chainObj && $0.isNativeToken })
+
+                    do {
+                        if let newCoin = try await CoinService.addIfNeeded(asset: coinMeta, to: vault, priceProviderId: coinMeta.priceProviderId) {
+                            if isNative {
+                                await CoinService.addDiscoveredTokens(nativeToken: newCoin, to: vault)
+                            }
+                            await MainActor.run {
+                                if !vault.defiChains.contains(chainObj) && vault.availableDefiChains.contains(chainObj) {
+                                    vault.defiChains.append(chainObj)
+                                }
+                            }
+                            return AgentAddTokenResult(
+                                chain: chainObj.rawValue,
+                                ticker: newCoin.ticker,
+                                address: newCoin.address,
+                                contractAddress: newCoin.contractAddress,
+                                success: true,
+                                error: nil,
+                                chainAdded: !hasChain
+                            )
+                        } else {
+                            return AgentAddTokenResult(chain: chainObj.rawValue, ticker: tokenParam.ticker, contractAddress: tokenParam.contractAddress, success: false, error: "failed_to_add")
+                        }
+                    } catch {
+                        return AgentAddTokenResult(chain: chainObj.rawValue, ticker: tokenParam.ticker, contractAddress: tokenParam.contractAddress, success: false, error: error.localizedDescription)
+                    }
                 }
-            } catch {
-                results.append(AgentAddTokenResult(chain: chainObj.rawValue, ticker: tokenParam.ticker, contractAddress: tokenParam.contractAddress, success: false, error: error.localizedDescription))
             }
+            var collected: [AgentAddTokenResult] = []
+            for await result in group { collected.append(result) }
+            return collected
         }
 
+        let anySuccess = tokenResults.contains(where: { $0.success })
         if anySuccess {
             try? Storage.shared.save()
         }
 
-        let dict = (try? JSONSerialization.jsonObject(with: JSONEncoder().encode(["results": results])) as? [String: Any]) ?? [:]
-        let anyCodableDict = dict.mapValues { AnyCodable($0) }
-
-        return AgentActionResult(action: action.type, actionId: action.id, success: true, data: anyCodableDict)
+        return AgentActionResult(action: action.type, actionId: action.id, success: true, data: encodeToAnyCodableDict(["results": tokenResults]))
     }
 
     // MARK: - Add Chain
@@ -365,10 +364,7 @@ final class AgentToolExecutor {
             try? Storage.shared.save()
         }
 
-        let dict = (try? JSONSerialization.jsonObject(with: JSONEncoder().encode(["results": results])) as? [String: Any]) ?? [:]
-        let anyCodableDict = dict.mapValues { AnyCodable($0) }
-
-        return AgentActionResult(action: action.type, actionId: action.id, success: true, data: anyCodableDict)
+        return AgentActionResult(action: action.type, actionId: action.id, success: true, data: encodeToAnyCodableDict(["results": results]))
     }
 
     // MARK: - Remove Token
@@ -422,10 +418,7 @@ final class AgentToolExecutor {
             try? Storage.shared.save()
         }
 
-        let dict = (try? JSONSerialization.jsonObject(with: JSONEncoder().encode(["results": results])) as? [String: Any]) ?? [:]
-        let anyCodableDict = dict.mapValues { AnyCodable($0) }
-
-        return AgentActionResult(action: action.type, actionId: action.id, success: true, data: anyCodableDict)
+        return AgentActionResult(action: action.type, actionId: action.id, success: true, data: encodeToAnyCodableDict(["results": results]))
     }
 
     // MARK: - Remove Chain
@@ -477,10 +470,7 @@ final class AgentToolExecutor {
             try? Storage.shared.save()
         }
 
-        let dict = (try? JSONSerialization.jsonObject(with: JSONEncoder().encode(["results": results])) as? [String: Any]) ?? [:]
-        let anyCodableDict = dict.mapValues { AnyCodable($0) }
-
-        return AgentActionResult(action: action.type, actionId: action.id, success: true, data: anyCodableDict)
+        return AgentActionResult(action: action.type, actionId: action.id, success: true, data: encodeToAnyCodableDict(["results": results]))
     }
 
     // MARK: - Get Address Book
@@ -524,10 +514,7 @@ final class AgentToolExecutor {
             }
 
             let response = AgentGetAddressBookResult(entries: results, totalCount: results.count)
-            let dict = (try? JSONSerialization.jsonObject(with: JSONEncoder().encode(response)) as? [String: Any]) ?? [:]
-            let anyCodableDict = dict.mapValues { AnyCodable($0) }
-
-            return AgentActionResult(action: action.type, actionId: action.id, success: true, data: anyCodableDict)
+            return AgentActionResult(action: action.type, actionId: action.id, success: true, data: encodeToAnyCodableDict(response))
 
         } catch {
             return buildErrorResult(action: action, error: error.localizedDescription)
@@ -586,10 +573,7 @@ final class AgentToolExecutor {
             try? Storage.shared.save()
         }
 
-        let dict = (try? JSONSerialization.jsonObject(with: JSONEncoder().encode(["results": results])) as? [String: Any]) ?? [:]
-        let anyCodableDict = dict.mapValues { AnyCodable($0) }
-
-        return AgentActionResult(action: action.type, actionId: action.id, success: true, data: anyCodableDict)
+        return AgentActionResult(action: action.type, actionId: action.id, success: true, data: encodeToAnyCodableDict(["results": results]))
     }
 
     // MARK: - Delete Address Book
@@ -660,10 +644,7 @@ final class AgentToolExecutor {
             return buildErrorResult(action: action, error: error.localizedDescription)
         }
 
-        let dict = (try? JSONSerialization.jsonObject(with: JSONEncoder().encode(["results": results])) as? [String: Any]) ?? [:]
-        let anyCodableDict = dict.mapValues { AnyCodable($0) }
-
-        return AgentActionResult(action: action.type, actionId: action.id, success: true, data: anyCodableDict)
+        return AgentActionResult(action: action.type, actionId: action.id, success: true, data: encodeToAnyCodableDict(["results": results]))
     }
 
     // MARK: - Read-only Context Builders
@@ -715,5 +696,14 @@ final class AgentToolExecutor {
     private static func buildSuccessResult(action: AgentBackendAction, data: [String: Any]) -> AgentActionResult {
         let codableData = data.mapValues { AnyCodable($0) }
         return AgentActionResult(action: action.type, actionId: action.id, success: true, data: codableData, error: nil)
+    }
+
+    /// Encodes any Encodable value to [String: AnyCodable] via JSON round-trip.
+    private static func encodeToAnyCodableDict<T: Encodable>(_ value: T) -> [String: AnyCodable] {
+        guard let data = try? JSONEncoder().encode(value),
+              let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return [:]
+        }
+        return dict.mapValues { AnyCodable($0) }
     }
 }

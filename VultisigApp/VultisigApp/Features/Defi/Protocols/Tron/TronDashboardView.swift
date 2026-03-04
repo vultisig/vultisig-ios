@@ -113,7 +113,7 @@ struct TronDashboardView: View {
                             .frame(width: 120, height: 24)
                             .shimmer()
                     } else {
-                        Text(availableBalanceFiat)
+                        HiddenBalanceText(availableBalanceFiat)
                             .font(Theme.fonts.priceTitle1)
                             .foregroundStyle(Theme.colors.textPrimary)
                     }
@@ -170,7 +170,7 @@ struct TronDashboardView: View {
                             .frame(width: 80, height: 20)
                             .shimmer()
                     } else {
-                        Text(frozenBalanceFiat)
+                        HiddenBalanceText(frozenBalanceFiat)
                             .font(Theme.fonts.priceTitle1)
                             .foregroundStyle(Theme.colors.textPrimary)
                     }
@@ -195,7 +195,7 @@ struct TronDashboardView: View {
                         .frame(width: 100, height: 20)
                         .shimmer()
                 } else {
-                    Text("\(model.totalFrozenBalance.formatted()) TRX")
+                    HiddenBalanceText("\(model.totalFrozenBalance.formatted()) TRX")
                         .font(Theme.fonts.title2)
                         .foregroundStyle(Theme.colors.textPrimary)
                 }
@@ -259,7 +259,7 @@ struct TronDashboardView: View {
 
                     Spacer()
 
-                    Text("\(model.unfreezingBalance.formatted()) TRX")
+                    HiddenBalanceText("\(model.unfreezingBalance.formatted()) TRX")
                         .font(Theme.fonts.bodyLMedium)
                         .foregroundStyle(Theme.colors.textSecondary)
                 }
@@ -270,7 +270,7 @@ struct TronDashboardView: View {
                 ForEach(model.pendingWithdrawals) { withdrawal in
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("\(withdrawal.amount.formatted()) TRX")
+                            HiddenBalanceText("\(withdrawal.amount.formatted()) TRX")
                                 .font(Theme.fonts.bodyMRegular)
                                 .foregroundStyle(Theme.colors.textPrimary)
 

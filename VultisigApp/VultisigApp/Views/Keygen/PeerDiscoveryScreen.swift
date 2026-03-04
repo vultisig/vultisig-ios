@@ -13,6 +13,7 @@ struct PeerDiscoveryScreen: View {
     let fastSignConfig: FastSignConfig?
     let keyImportInput: KeyImportInput?
     let setupType: KeyImportSetupType?
+    let singleKeygenType: SingleKeygenType?
 
     init(
         tssType: TssType,
@@ -20,7 +21,8 @@ struct PeerDiscoveryScreen: View {
         selectedTab: SetupVaultState,
         fastSignConfig: FastSignConfig?,
         keyImportInput: KeyImportInput? = nil,
-        setupType: KeyImportSetupType? = nil
+        setupType: KeyImportSetupType? = nil,
+        singleKeygenType: SingleKeygenType? = nil
     ) {
         self.tssType = tssType
         self.vault = vault
@@ -28,6 +30,7 @@ struct PeerDiscoveryScreen: View {
         self.fastSignConfig = fastSignConfig
         self.keyImportInput = keyImportInput
         self.setupType = setupType
+        self.singleKeygenType = singleKeygenType
     }
 
     @StateObject var viewModel = KeygenPeerDiscoveryViewModel()
@@ -69,7 +72,7 @@ struct PeerDiscoveryScreen: View {
         switch tssType {
         case .Reshare:
             return vault.signers.count
-        case .Migrate, .DilithiumKeygen:
+        case .Migrate, .SingleKeygen:
             return vault.signers.count
         case .KeyImport, .Keygen:
             if let setupType {
@@ -106,7 +109,7 @@ struct PeerDiscoveryScreen: View {
             return vault.getThreshold() + 1
         case .Keygen, .KeyImport:
             return 4
-        case .Migrate, .DilithiumKeygen:
+        case .Migrate, .SingleKeygen:
             return vault.signers.count
         }
     }
@@ -127,7 +130,7 @@ struct PeerDiscoveryScreen: View {
 
     var continueButtonDisabled: Bool {
         switch viewModel.tssType {
-        case .Migrate, .DilithiumKeygen:
+        case .Migrate, .SingleKeygen:
             return Set(viewModel.selections) != Set(viewModel.vault.signers)
         case .Reshare:
             return viewModel.selections.count < minRequiredDevices
@@ -165,7 +168,7 @@ struct PeerDiscoveryScreen: View {
             }
 #endif
         }
-        .if(viewModel.status == .WaitingForDevices) {
+        .if(viewModel.status == .WaitingForDevices && selectedTab.hasOtherDevices) {
             $0.crossPlatformToolbar("", showsBackButton: !hideBackButton) {
                 CustomToolbarItem(placement: .trailing) {
                     if isShareButtonVisible {
@@ -440,7 +443,7 @@ struct PeerDiscoveryScreen: View {
             }
         case .Reshare:
             return viewModel.selections.count < minRequiredDevices
-        case .Migrate, .DilithiumKeygen:
+        case .Migrate, .SingleKeygen:
             return Set(viewModel.selections) != Set(viewModel.vault.signers)
         case .KeyImport:
             return showWaitingOnDevice
@@ -475,6 +478,7 @@ struct PeerDiscoveryScreen: View {
             oldResharePrefix: viewModel.vault.resharePrefix ?? "",
             fastSignConfig: fastSignConfig,
             keyImportInput: keyImportInput,
+            singleKeygenType: singleKeygenType,
             isInitiateDevice: true,
             hideBackButton: $hideBackButton
         )
@@ -504,7 +508,7 @@ struct PeerDiscoveryScreen: View {
             showInfoSheet = false
         case .KeyImport:
             showInfoSheet = false
-        case .DilithiumKeygen:
+        case .SingleKeygen:
             showInfoSheet = false
         }
     }

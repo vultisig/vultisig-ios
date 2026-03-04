@@ -23,6 +23,7 @@ struct KeygenView: View {
     let oldResharePrefix: String
     let fastSignConfig: FastSignConfig?
     let keyImportInput: KeyImportInput?
+    let singleKeygenType: SingleKeygenType?
     let isInitiateDevice: Bool
     @Binding var hideBackButton: Bool
 
@@ -59,7 +60,7 @@ struct KeygenView: View {
 
     private func handleNavigation() {
         switch tssType {
-        case .DilithiumKeygen:
+        case .SingleKeygen:
             router.navigate(to: KeygenRoute.backupNow(
                 tssType: tssType,
                 backupType: .single(vault: vault),
@@ -226,7 +227,7 @@ struct KeygenView: View {
     var keygenFailedView: some View {
         ZStack {
             switch tssType {
-            case .Keygen, .KeyImport, .DilithiumKeygen:
+            case .Keygen, .KeyImport, .SingleKeygen:
                 keygenFailedText
             case .Reshare:
                 keygenReshareFailedText
@@ -277,14 +278,15 @@ struct KeygenView: View {
             encryptionKeyHex: encryptionKeyHex,
             oldResharePrefix: oldResharePrefix,
             initiateDevice: isInitiateDevice,
-            keyImportInput: keyImportInput
+            keyImportInput: keyImportInput,
+            singleKeygenType: singleKeygenType
         )
     }
 
     private func setDoneData() {
         showDoneText = true
 
-        if tssType == .Reshare || tssType == .DilithiumKeygen {
+        if tssType == .Reshare || tssType == .SingleKeygen {
             vault.isBackedUp = false
         }
 
@@ -310,6 +312,7 @@ struct KeygenView: View {
         oldResharePrefix: "",
         fastSignConfig: nil,
         keyImportInput: nil,
+        singleKeygenType: nil,
         isInitiateDevice: false,
         hideBackButton: .constant(false)
     )

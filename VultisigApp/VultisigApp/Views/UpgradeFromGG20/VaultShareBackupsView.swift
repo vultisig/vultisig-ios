@@ -58,7 +58,8 @@ struct VaultShareBackupsView: View {
                 selectedTab: .secure,
                 fastSignConfig: nil,
                 keyImportInput: nil,
-                setupType: nil
+                setupType: nil,
+                singleKeygenType: nil
             ))
         }
         .frame(width: 120)
@@ -66,11 +67,12 @@ struct VaultShareBackupsView: View {
 
     var migrateFastVault: some View {
         PrimaryButton(title: "next") {
-            router.navigate(to: KeygenRoute.fastVaultEmail(
+            router.navigate(to: KeygenRoute.fastVaultPassword(
                 tssType: .Migrate,
                 vault: vault,
                 selectedTab: vault.signers.count == 2 ? .fast : .active,
-                fastVaultExist: true
+                isExistingVault: true,
+                singleKeygenType: nil
             ))
         }
     }

@@ -45,7 +45,8 @@ struct OnboardingVaultSetupInformationScreen: View {
                             selectedTab: selectedTab,
                             fastSignConfig: fastSignConfig,
                             keyImportInput: keyImportInput,
-                            setupType: setupType
+                            setupType: setupType,
+                            singleKeygenType: nil
                         ))
                     }
                 }

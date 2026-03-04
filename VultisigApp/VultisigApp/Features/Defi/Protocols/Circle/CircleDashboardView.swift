@@ -127,7 +127,7 @@ struct CircleDashboardView: View {
                         .font(CircleConstants.Fonts.title)
                         .foregroundStyle(Theme.colors.textSecondary)
 
-                    Text("$\(model.balance.formatted())")
+                    HiddenBalanceText("$\(model.balance.formatted())")
                         .font(CircleConstants.Fonts.balance)
                         .foregroundStyle(Theme.colors.textPrimary)
                 }
