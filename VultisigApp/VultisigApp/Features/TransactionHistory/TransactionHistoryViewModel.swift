@@ -26,6 +26,7 @@ class TransactionHistoryViewModel: ObservableObject {
     let chainFilter: Chain?
 
     private let storage = TransactionHistoryStorage.shared
+    private let poller = TransactionStatusPoller.shared
 
     init(pubKeyECDSA: String, vaultName: String, chainFilter: Chain?) {
         self.pubKeyECDSA = pubKeyECDSA
@@ -42,9 +43,67 @@ class TransactionHistoryViewModel: ObservableObject {
             } else {
                 transactions = try storage.fetchAll(pubKeyECDSA: pubKeyECDSA)
             }
+            pollInProgressTransactions()
         } catch {
             print("TransactionHistoryViewModel: Failed to load: \(error)")
         }
+    }
+
+    func stopPolling() {
+        for tx in transactions where tx.status == .inProgress {
+            poller.stopPolling(txHash: tx.txHash)
+        }
+    }
+
+    // MARK: - Status Polling
+
+    private func pollInProgressTransactions() {
+        for tx in transactions where tx.status == .inProgress {
+            guard let chain = Chain(rawValue: tx.chainRawValue) else { continue }
+
+            poller.poll(
+                txHash: tx.txHash,
+                chain: chain,
+                pubKeyECDSA: pubKeyECDSA
+            ) { [weak self] newStatus in
+                self?.updateTransaction(txHash: tx.txHash, status: newStatus)
+            }
+        }
+    }
+
+    private func updateTransaction(txHash: String, status: TransactionHistoryStatus) {
+        guard let index = transactions.firstIndex(where: { $0.txHash == txHash }) else { return }
+
+        let old = transactions[index]
+        transactions[index] = TransactionHistoryData(
+            id: old.id,
+            txHash: old.txHash,
+            approveTxHash: old.approveTxHash,
+            pubKeyECDSA: old.pubKeyECDSA,
+            type: old.type,
+            status: status,
+            chainRawValue: old.chainRawValue,
+            coinTicker: old.coinTicker,
+            coinLogo: old.coinLogo,
+            coinChainLogo: old.coinChainLogo,
+            amountCrypto: old.amountCrypto,
+            amountFiat: old.amountFiat,
+            fromAddress: old.fromAddress,
+            toAddress: old.toAddress,
+            toCoinTicker: old.toCoinTicker,
+            toCoinLogo: old.toCoinLogo,
+            toCoinChainLogo: old.toCoinChainLogo,
+            toAmountCrypto: old.toAmountCrypto,
+            toAmountFiat: old.toAmountFiat,
+            swapProvider: old.swapProvider,
+            feeCrypto: old.feeCrypto,
+            feeFiat: old.feeFiat,
+            network: old.network,
+            explorerLink: old.explorerLink,
+            createdAt: old.createdAt,
+            completedAt: Date(),
+            estimatedTime: old.estimatedTime
+        )
     }
 
     // MARK: - Filtered Transactions

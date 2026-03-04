@@ -29,6 +29,9 @@ struct TransactionHistoryScreen: View {
         .onAppear {
             viewModel.load()
         }
+        .onDisappear {
+            viewModel.stopPolling()
+        }
         .crossPlatformSheet(item: $viewModel.selectedDetail) { detail in
             detailSheet(for: detail)
         }

@@ -49,13 +49,6 @@ struct TransactionHistoryTypePill: View {
     }
 
     private var foregroundColor: Color {
-        switch type {
-        case .send:
-            return Theme.colors.primaryAccent4
-        case .swap:
-            return Theme.colors.alertWarning
-        case .approve:
-            return Theme.colors.alertSuccess
-        }
+        Theme.colors.alertInfo
     }
 }
