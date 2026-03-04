@@ -12,6 +12,8 @@ struct AgentConversationsView: View {
     @StateObject private var viewModel = AgentConversationsViewModel()
     @Environment(\.router) private var router
 
+    @State private var showDeleteAllConfirm = false
+
     var body: some View {
         ZStack {
             Theme.colors.bgPrimary.ignoresSafeArea()
@@ -23,14 +25,23 @@ struct AgentConversationsView: View {
         #endif
         .toolbar {
             #if os(iOS)
-            ToolbarItem(placement: .topBarTrailing) {
-                connectionButton
-            }
+            ToolbarItem(placement: .topBarTrailing) { trailingToolbarItems }
             #else
-            ToolbarItem(placement: .automatic) {
-                connectionButton
-            }
+            ToolbarItem(placement: .automatic) { trailingToolbarItems }
             #endif
+        }
+        .confirmationDialog(
+            "Delete all conversations?",
+            isPresented: $showDeleteAllConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("Delete All", role: .destructive) {
+                guard let vault = appViewModel.selectedVault else { return }
+                Task { await viewModel.deleteAllConversations(vault: vault) }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This will permanently delete all your conversations. This cannot be undone.")
         }
         .onAppear {
             loadData()
@@ -40,6 +51,27 @@ struct AgentConversationsView: View {
                 guard let vault = appViewModel.selectedVault else { return }
                 Task {
                     await viewModel.signIn(vault: vault, password: password)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var trailingToolbarItems: some View {
+        HStack(spacing: 12) {
+            Circle()
+                .fill(viewModel.isConnected ? Theme.colors.alertSuccess : Theme.colors.textTertiary)
+                .frame(width: 10, height: 10)
+            if !viewModel.conversations.isEmpty {
+                Menu {
+                    Button(role: .destructive) {
+                        showDeleteAllConfirm = true
+                    } label: {
+                        Label("Delete All Conversations", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .foregroundStyle(Theme.colors.textPrimary)
                 }
             }
         }
@@ -110,10 +142,22 @@ struct AgentConversationsView: View {
             }
             .padding(.bottom, 16)
 
-            // Past conversations
-            ForEach(viewModel.conversations) { conv in
-                conversationRow(conv)
+            // Past conversations — List with native swipe-to-delete
+            List {
+                ForEach(viewModel.conversations) { conv in
+                    conversationRow(conv)
+                        .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                }
+                .onDelete { indexSet in
+                    deleteConversations(at: indexSet)
+                }
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .frame(minHeight: CGFloat(viewModel.conversations.count) * 74)
+            .scrollDisabled(true)
         }
     }
 
@@ -141,22 +185,6 @@ struct AgentConversationsView: View {
             .background(Theme.colors.bgSurface1)
             .cornerRadius(12)
         }
-        .contextMenu {
-            Button(role: .destructive) {
-                deleteConversation(conv)
-            } label: {
-                Label("Delete", systemImage: "trash")
-            }
-        }
-        .padding(.bottom, 8)
-    }
-
-    // MARK: - Connection Button
-
-    private var connectionButton: some View {
-        Circle()
-            .fill(viewModel.isConnected ? Theme.colors.alertSuccess : Theme.colors.textTertiary)
-            .frame(width: 10, height: 10)
     }
 
     // MARK: - Actions
@@ -177,10 +205,13 @@ struct AgentConversationsView: View {
         router.navigate(to: AgentRoute.chat(conversationId: nil))
     }
 
-    private func deleteConversation(_ conv: AgentConversation) {
+    private func deleteConversations(at indexSet: IndexSet) {
         guard let vault = appViewModel.selectedVault else { return }
-        Task {
-            await viewModel.deleteConversation(id: conv.id, vault: vault)
+        for index in indexSet {
+            let conv = viewModel.conversations[index]
+            Task {
+                await viewModel.deleteConversation(id: conv.id, vault: vault)
+            }
         }
     }
 

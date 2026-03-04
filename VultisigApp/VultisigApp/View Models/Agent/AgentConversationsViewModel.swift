@@ -167,6 +167,18 @@ final class AgentConversationsViewModel: ObservableObject {
         }
     }
 
+    func deleteAllConversations(vault: Vault) async {
+        let all = conversations
+        await withTaskGroup(of: Void.self) { group in
+            for conv in all {
+                group.addTask { [weak self] in
+                    guard let self else { return }
+                    await self.deleteConversation(id: conv.id, vault: vault)
+                }
+            }
+        }
+    }
+
     // MARK: - Auth
 
     func checkConnection(vault _: Vault) {

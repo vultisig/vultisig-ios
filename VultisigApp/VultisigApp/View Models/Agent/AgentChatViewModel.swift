@@ -320,6 +320,27 @@ final class AgentChatViewModel: ObservableObject {
         error = nil
     }
 
+    // MARK: - Delete Conversation
+
+    @Published var conversationDeleted = false
+
+    func deleteCurrentConversation(vault: Vault) {
+        guard let convId = conversationId else { return }
+        Task {
+            let token = await getValidToken(vault: vault)
+            do {
+                try await backendClient.deleteConversation(
+                    id: convId,
+                    publicKey: vault.pubKeyECDSA,
+                    token: token?.token ?? ""
+                )
+                conversationDeleted = true
+            } catch {
+                self.error = error.localizedDescription
+            }
+        }
+    }
+
     // MARK: - SSE Event Handling
 
     private func handleSSEEvent(_ event: AgentSSEEvent, vault _: Vault? = nil) {

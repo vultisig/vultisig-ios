@@ -14,7 +14,9 @@ struct AgentChatView: View {
     @StateObject private var viewModel = AgentChatViewModel()
     @State private var inputText = ""
     @State private var showPasswordPrompt = false
+    @State private var showDeleteConfirm = false
     @FocusState private var isInputFocused: Bool
+    @Environment(\.router) private var router
 
     var body: some View {
         ZStack {
@@ -25,10 +27,40 @@ struct AgentChatView: View {
                 inputBar
             }
         }
-        .navigationTitle(viewModel.conversationTitle ?? "Vulti")
-        #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-        #endif
+        .crossPlatformToolbar("Vulti", ignoresTopEdge: false) {
+            CustomToolbarItem(placement: .trailing) {
+                if conversationId != nil || viewModel.conversationId != nil {
+                    Menu {
+                        Button(role: .destructive) {
+                            showDeleteConfirm = true
+                        } label: {
+                            Label("Delete Conversation", systemImage: "trash")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .foregroundStyle(Theme.colors.textPrimary)
+                    }
+                }
+            }
+        }
+        .confirmationDialog(
+            "Delete this conversation?",
+            isPresented: $showDeleteConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) {
+                guard let vault = appViewModel.selectedVault else { return }
+                viewModel.deleteCurrentConversation(vault: vault)
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This action cannot be undone.")
+        }
+        .onChange(of: viewModel.conversationDeleted) { _, deleted in
+            if deleted {
+                router.navigateBack()
+            }
+        }
         .onAppear {
             setupChat()
         }
