@@ -97,7 +97,7 @@ struct OnboardingOverviewScreen: View {
             }
         }
         .onAppear(perform: onAppear)
-        .crossPlatformSheet(isPresented: $isVerificationLinkActive) {
+        .crossPlatformSheet(isPresented: $isVerificationLinkActive, isDismissable: false) {
             ServerBackupVerificationScreen(
                 tssType: tssType,
                 vault: vault,
