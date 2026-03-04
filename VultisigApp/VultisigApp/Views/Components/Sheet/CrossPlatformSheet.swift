@@ -8,8 +8,8 @@
 import SwiftUI
 
 extension View {
-    func crossPlatformSheet<SheetContent: View>(isPresented: Binding<Bool>, @ViewBuilder sheetContent: @escaping () -> SheetContent) -> some View {
-        modifier(CrossPlatformSheet(isPresented: isPresented, sheetContent: sheetContent))
+    func crossPlatformSheet<SheetContent: View>(isPresented: Binding<Bool>, isDismissable: Bool = true, @ViewBuilder sheetContent: @escaping () -> SheetContent) -> some View {
+        modifier(CrossPlatformSheet(isPresented: isPresented, isDismissable: isDismissable, sheetContent: sheetContent))
     }
 
     func crossPlatformSheet<Item: Identifiable & Equatable, SheetContent: View>(item: Binding<Item?>, @ViewBuilder sheetContent: @escaping (Item) -> SheetContent) -> some View {
@@ -20,6 +20,7 @@ extension View {
 private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
     @Binding var isPresented: Bool
 
+    let isDismissable: Bool
     var sheetContent: () -> SheetContent
 
     @Environment(\.sheetPresentedCounterManager) var counterManager
@@ -27,18 +28,19 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
     @State var counter: Int = 0
     @State private var internalIsPresented: Bool = false
 
-    init(isPresented: Binding<Bool>, @ViewBuilder sheetContent: @escaping () -> SheetContent) {
+    init(isPresented: Binding<Bool>, isDismissable: Bool = true, @ViewBuilder sheetContent: @escaping () -> SheetContent) {
         self._isPresented = isPresented
+        self.isDismissable = isDismissable
         self.sheetContent = sheetContent
     }
 
     func body(content: Content) -> some View {
         #if os(macOS)
-        if #available(macOS 26.0, *) {
-            nativeSheet(content: content)
-        } else {
+//        if #available(macOS 26.0, *) {
+//            nativeSheet(content: content)
+//        } else {
             customSheet(content: content)
-        }
+//        }
         #else
         nativeSheet(content: content)
         #endif
@@ -55,6 +57,7 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
                 Color.black.opacity(0.1)
                     .ignoresSafeArea()
                     .onTapGesture {
+                        guard isDismissable else { return }
                         withAnimation(.interpolatingSpring(duration: 0.2)) {
                             internalIsPresented = false
                         }
@@ -88,6 +91,7 @@ private struct CrossPlatformSheet<SheetContent: View>: ViewModifier {
             .sheet(isPresented: $isPresented) {
                 sheetContent()
                     .environment(\.isSheetPresented, true)
+                    .interactiveDismissDisabled(!isDismissable)
             }
             .onChange(of: isPresented) { _, newValue in
                 // Defer state updates to avoid interfering with sheet animation on macOS 15.5
