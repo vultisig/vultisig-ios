@@ -27,7 +27,9 @@ struct ChainDetailScreenContainer: View {
         if supportsDefiTab {
             newTabs.append(.defi)
         }
-        newTabs.append(.agent)
+        if SettingsViewModel.shared.agentEnabled {
+            newTabs.append(.agent)
+        }
         self.tabs = newTabs
     }
 
