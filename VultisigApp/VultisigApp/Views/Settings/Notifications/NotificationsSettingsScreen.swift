@@ -140,7 +140,7 @@ struct NotificationsSettingsScreen: View {
         }
         #endif
     }
-    
+
     @MainActor
     func checkForPermissions() async {
         await pushNotificationManager.checkPermissionStatus()

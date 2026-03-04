@@ -71,7 +71,6 @@ struct ServerBackupVerificationScreen: View {
             animationVM?.stop()
         }
         .animation(.easeInOut, value: showAlert)
-        .interactiveDismissDisabled()
     }
 
     // MARK: - Header
