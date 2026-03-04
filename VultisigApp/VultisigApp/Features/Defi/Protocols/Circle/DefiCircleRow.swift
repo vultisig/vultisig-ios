@@ -84,15 +84,15 @@ struct DefiCircleRow: View {
                         .foregroundStyle(Theme.colors.textTertiary)
                 } else if let balance = circleBalance, balance > 0 {
                     // Has positive balance - show amount
-                    Text("\(balance.formatted()) USDC")
+                    HiddenBalanceText("\(balance.formatted()) USDC")
                         .font(Theme.fonts.priceBodyS)
                         .foregroundStyle(Theme.colors.textPrimary)
-                    Text("$\(balance.formatted())")
+                    HiddenBalanceText("$\(balance.formatted())")
                         .font(Theme.fonts.caption12)
                         .foregroundStyle(Theme.colors.textTertiary)
                 } else {
                     // Balance is zero or nil - show Yield Account
-                    Text("0 USDC")
+                    HiddenBalanceText("0 USDC")
                         .font(Theme.fonts.priceBodyS)
                         .foregroundStyle(Theme.colors.textPrimary)
                     Text(NSLocalizedString("circleRowYieldAccount", comment: "Yield Account"))
