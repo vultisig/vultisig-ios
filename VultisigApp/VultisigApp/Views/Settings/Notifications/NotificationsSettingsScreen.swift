@@ -112,6 +112,7 @@ struct NotificationsSettingsScreen: View {
                 let status = await pushNotificationManager.authorizationStatus()
                 if status == .denied {
                     notificationsEnabled = false
+                    pushNotificationManager.isNotificationsEnabled = false
                     showSettingsAlert = true
                     return
                 }
@@ -119,13 +120,16 @@ struct NotificationsSettingsScreen: View {
                 let granted = await pushNotificationManager.requestPermission()
                 if granted {
                     notificationsEnabled = true
+                    pushNotificationManager.isNotificationsEnabled = true
                     pushNotificationManager.setAllVaultsOptIn(vaults, enabled: true)
                 } else {
                     notificationsEnabled = false
+                    pushNotificationManager.isNotificationsEnabled = false
                 }
             }
         } else {
-            notificationsEnabled = enabled
+            notificationsEnabled = false
+            pushNotificationManager.isNotificationsEnabled = false
             pushNotificationManager.setAllVaultsOptIn(vaults, enabled: false)
             pushNotificationManager.unregisterForRemoteNotifications()
         }
@@ -143,9 +147,15 @@ struct NotificationsSettingsScreen: View {
 
     @MainActor
     func checkForPermissions() async {
+        let userEnabled = pushNotificationManager.isNotificationsEnabled
         await pushNotificationManager.checkPermissionStatus()
-        let isEnabled = pushNotificationManager.isPermissionGranted
-        onNotificationsEnabled(isEnabled)
+        let osGranted = pushNotificationManager.isPermissionGranted
+
+        if userEnabled && !osGranted {
+            onNotificationsEnabled(false)
+        } else {
+            notificationsEnabled = userEnabled
+        }
     }
 }
 

@@ -10,6 +10,7 @@ protocol PushNotificationManaging: AnyObject {
     var isPermissionGranted: Bool { get set }
     var deviceToken: String? { get }
     var hasSeenNotificationPrompt: Bool { get set }
+    var isNotificationsEnabled: Bool { get set }
     var hadVaultsOnStartup: Bool { get set }
     var foregroundNotification: ForegroundNotificationData? { get set }
 
