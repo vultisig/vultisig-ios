@@ -104,6 +104,9 @@ struct VaultSetupScreen: View {
                 referralButton
             }
         }
+        .onSubmit {
+            onContinue()
+        }
         .crossPlatformSheet(isPresented: $showReferralSheet) {
             ReferralCodeSheet(
                 isPresented: $showReferralSheet,
@@ -116,9 +119,6 @@ struct VaultSetupScreen: View {
             viewModel.onLoad()
             viewModel.nameField.value = Vault.getUniqueVaultName(modelContext: modelContext, setupType: setupType)
             focusedField = .name
-        }
-        .onSubmit {
-            onContinue()
         }
     }
 
