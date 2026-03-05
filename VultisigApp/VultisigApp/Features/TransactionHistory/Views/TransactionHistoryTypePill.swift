@@ -37,8 +37,9 @@ struct TransactionHistoryTypePill: View {
                 .resizable()
                 .frame(width: 12, height: 12)
         case .approve:
-            Image(systemName: "checkmark.shield")
-                .font(.system(size: 10))
+            Image("bubble-check")
+                .resizable()
+                .frame(width: 12, height: 12)
         }
     }
 

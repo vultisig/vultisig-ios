@@ -112,6 +112,49 @@ final class TransactionHistoryRecorder {
         try? storage.save(data)
     }
 
+    // MARK: - Record Approve
+
+    func recordApprove(
+        txHash: String,
+        pubKeyECDSA: String,
+        coin: Coin,
+        amountCrypto: String,
+        spender: String,
+        chain: Chain,
+        explorerLink: String
+    ) {
+        let data = TransactionHistoryData(
+            id: UUID(),
+            txHash: txHash,
+            approveTxHash: nil,
+            pubKeyECDSA: pubKeyECDSA,
+            type: .approve,
+            status: .inProgress,
+            chainRawValue: chain.rawValue,
+            coinTicker: coin.ticker,
+            coinLogo: coin.logo,
+            coinChainLogo: coin.tokenChainLogo,
+            amountCrypto: amountCrypto,
+            amountFiat: "",
+            fromAddress: coin.address,
+            toAddress: spender,
+            toCoinTicker: nil,
+            toCoinLogo: nil,
+            toCoinChainLogo: nil,
+            toAmountCrypto: nil,
+            toAmountFiat: nil,
+            swapProvider: nil,
+            feeCrypto: "",
+            feeFiat: "",
+            network: chain.name,
+            explorerLink: explorerLink,
+            createdAt: Date(),
+            completedAt: nil,
+            estimatedTime: ChainStatusConfig.config(for: chain).estimatedTime
+        )
+        try? storage.save(data)
+    }
+
     // MARK: - Record from KeysignPayload (co-signer path)
 
     func recordFromKeysignPayload(
@@ -154,6 +197,18 @@ final class TransactionHistoryRecorder {
                 feeFiat: "",
                 chain: keysignPayload.coin.chain,
                 explorerLink: Endpoint.getExplorerURL(chain: keysignPayload.coin.chain, txid: txHash)
+            )
+        }
+
+        if let approveTxHash, let approvePayload = keysignPayload.approvePayload {
+            recordApprove(
+                txHash: approveTxHash,
+                pubKeyECDSA: vault.pubKeyECDSA,
+                coin: keysignPayload.coin,
+                amountCrypto: keysignPayload.fromAmountString,
+                spender: approvePayload.spender,
+                chain: keysignPayload.coin.chain,
+                explorerLink: Endpoint.getExplorerURL(chain: keysignPayload.coin.chain, txid: approveTxHash)
             )
         }
     }

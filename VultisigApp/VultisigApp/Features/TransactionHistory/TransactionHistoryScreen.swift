@@ -138,10 +138,10 @@ struct TransactionHistoryScreen: View {
                 emptyState
             } else {
                 LazyVStack(alignment: .leading, spacing: 0) {
-                    ForEach(grouped, id: \.0) { section in
-                        CommonListHeaderView(title: section.0)
+                    ForEach(grouped, id: \.title) { section in
+                        CommonListHeaderView(title: section.title, subtitle: section.subtitle)
 
-                        ForEach(section.1) { tx in
+                        ForEach(section.transactions) { tx in
                             cardView(for: tx)
                                 .onTapGesture {
                                     viewModel.selectedDetail = tx

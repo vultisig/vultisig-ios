@@ -14,7 +14,7 @@ struct TransactionHistoryCardView: View {
 
     init(transaction: TransactionHistoryData) {
         self.transaction = transaction
-        _isExpanded = State(initialValue: transaction.status == .inProgress)
+        _isExpanded = State(initialValue: transaction.status == .inProgress && transaction.type != .approve)
     }
 
     var body: some View {
@@ -42,7 +42,7 @@ struct TransactionHistoryCardView: View {
         }
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isExpanded)
         .onAppear {
-            if isExpanded { startTimer() }
+            if transaction.status == .inProgress { startTimer() }
         }
         .onDisappear { stopTimer() }
         .onChange(of: transaction.status) { _, newStatus in
@@ -63,7 +63,7 @@ struct TransactionHistoryCardView: View {
 
             Spacer()
 
-            if isExpanded {
+            if transaction.status == .inProgress {
                 inProgressChip
             } else {
                 statusView
@@ -276,7 +276,7 @@ struct TransactionHistoryCardView: View {
 
             Spacer()
 
-            if transaction.type != .swap {
+            if transaction.type == .send {
                 addressPill
             }
         }

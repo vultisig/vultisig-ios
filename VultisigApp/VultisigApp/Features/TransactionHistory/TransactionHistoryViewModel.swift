@@ -138,40 +138,56 @@ class TransactionHistoryViewModel: ObservableObject {
 
     // MARK: - Grouped by Date
 
-    var groupedTransactions: [(String, [TransactionHistoryData])] {
+    var groupedTransactions: [(title: String, subtitle: String?, transactions: [TransactionHistoryData])] {
         let calendar = Calendar.current
         let now = Date()
 
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMM d, yyyy"
+
         var groups: [String: [TransactionHistoryData]] = [:]
+        var groupMeta: [String: (title: String, subtitle: String?)] = [:]
         var groupOrder: [String] = []
 
         for tx in filteredTransactions {
             let key: String
+            let title: String
+            let subtitle: String?
+
             if calendar.isDateInToday(tx.createdAt) {
-                key = "today".localized
+                key = "today"
+                title = "today".localized
+                subtitle = dateFormatter.string(from: tx.createdAt)
             } else if calendar.isDateInYesterday(tx.createdAt) {
-                key = "yesterday".localized
+                key = "yesterday"
+                title = "yesterday".localized
+                subtitle = dateFormatter.string(from: tx.createdAt)
             } else if calendar.isDate(tx.createdAt, equalTo: now, toGranularity: .weekOfYear) {
-                let formatter = DateFormatter()
-                formatter.dateFormat = "EEEE"
-                key = formatter.string(from: tx.createdAt)
+                let dayFormatter = DateFormatter()
+                dayFormatter.dateFormat = "EEEE"
+                key = dayFormatter.string(from: tx.createdAt)
+                title = key
+                subtitle = dateFormatter.string(from: tx.createdAt)
             } else {
-                let formatter = DateFormatter()
-                formatter.dateStyle = .medium
-                formatter.timeStyle = .none
-                key = formatter.string(from: tx.createdAt)
+                let mediumFormatter = DateFormatter()
+                mediumFormatter.dateStyle = .medium
+                mediumFormatter.timeStyle = .none
+                key = mediumFormatter.string(from: tx.createdAt)
+                title = key
+                subtitle = nil
             }
 
             if groups[key] == nil {
                 groups[key] = []
+                groupMeta[key] = (title, subtitle)
                 groupOrder.append(key)
             }
             groups[key]?.append(tx)
         }
 
         return groupOrder.compactMap { key in
-            guard let items = groups[key] else { return nil }
-            return (key, items)
+            guard let items = groups[key], let meta = groupMeta[key] else { return nil }
+            return (meta.title, meta.subtitle, items)
         }
     }
 

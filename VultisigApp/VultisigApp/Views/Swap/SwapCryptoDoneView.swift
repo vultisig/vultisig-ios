@@ -65,6 +65,19 @@ struct SwapCryptoDoneView: View {
             // Start polling for transaction status
             statusViewModel.startPolling()
 
+            // Record approve to transaction history (if applicable)
+            if let approveHash {
+                TransactionHistoryRecorder.shared.recordApprove(
+                    txHash: approveHash,
+                    pubKeyECDSA: vault.pubKeyECDSA,
+                    coin: tx.fromCoin,
+                    amountCrypto: sendSummaryViewModel.getFromAmount(tx),
+                    spender: tx.router ?? "",
+                    chain: tx.fromCoin.chain,
+                    explorerLink: Endpoint.getExplorerURL(chain: tx.fromCoin.chain, txid: approveHash)
+                )
+            }
+
             // Record swap to transaction history
             TransactionHistoryRecorder.shared.recordSwap(
                 txHash: hash,
