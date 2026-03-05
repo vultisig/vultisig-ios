@@ -290,7 +290,7 @@ final class AgentToolExecutor {
             try? Storage.shared.save()
         }
 
-        return AgentActionResult(action: action.type, actionId: action.id, success: true, data: encodeToAnyCodableDict(["results": tokenResults]))
+        return AgentActionResult(action: action.type, actionId: action.id, success: tokenResults.contains(where: { $0.success }), data: encodeToAnyCodableDict(["results": tokenResults]))
     }
 
     // MARK: - Add Chain
@@ -364,10 +364,7 @@ final class AgentToolExecutor {
             try? Storage.shared.save()
         }
 
-        return AgentActionResult(action: action.type, actionId: action.id, success: true, data: encodeToAnyCodableDict(["results": results]))
-    }
-
-    // MARK: - Remove Token
+        return AgentActionResult(action: action.type, actionId: action.id, success: results.contains(where: { $0.success }), data: encodeToAnyCodableDict(["results": results]))
 
     private static func executeRemoveToken(action: AgentBackendAction, vault: Vault) -> AgentActionResult {
         guard let paramsDict = action.params,
@@ -418,7 +415,7 @@ final class AgentToolExecutor {
             try? Storage.shared.save()
         }
 
-        return AgentActionResult(action: action.type, actionId: action.id, success: true, data: encodeToAnyCodableDict(["results": results]))
+        return AgentActionResult(action: action.type, actionId: action.id, success: results.contains(where: { $0.success }), data: encodeToAnyCodableDict(["results": results]))
     }
 
     // MARK: - Remove Chain
@@ -470,7 +467,7 @@ final class AgentToolExecutor {
             try? Storage.shared.save()
         }
 
-        return AgentActionResult(action: action.type, actionId: action.id, success: true, data: encodeToAnyCodableDict(["results": results]))
+        return AgentActionResult(action: action.type, actionId: action.id, success: results.contains(where: { $0.success }), data: encodeToAnyCodableDict(["results": results]))
     }
 
     // MARK: - Get Address Book
@@ -573,7 +570,7 @@ final class AgentToolExecutor {
             try? Storage.shared.save()
         }
 
-        return AgentActionResult(action: action.type, actionId: action.id, success: true, data: encodeToAnyCodableDict(["results": results]))
+        return AgentActionResult(action: action.type, actionId: action.id, success: results.contains(where: { $0.success }), data: encodeToAnyCodableDict(["results": results]))
     }
 
     // MARK: - Delete Address Book
@@ -644,7 +641,7 @@ final class AgentToolExecutor {
             return buildErrorResult(action: action, error: error.localizedDescription)
         }
 
-        return AgentActionResult(action: action.type, actionId: action.id, success: true, data: encodeToAnyCodableDict(["results": results]))
+        return AgentActionResult(action: action.type, actionId: action.id, success: results.contains(where: { $0.success }), data: encodeToAnyCodableDict(["results": results]))
     }
 
     // MARK: - Read-only Context Builders

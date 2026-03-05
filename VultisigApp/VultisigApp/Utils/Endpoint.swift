@@ -1126,11 +1126,13 @@ class Endpoint {
     }
 
     static func agentConversation(id: String) -> String {
-        "\(agentBackendUrl)/agent/conversations/\(id)"
+        let safeId = id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? id
+        return "\(agentBackendUrl)/agent/conversations/\(safeId)"
     }
 
     static func agentConversationMessages(id: String) -> String {
-        "\(agentBackendUrl)/agent/conversations/\(id)/messages"
+        let safeId = id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? id
+        return "\(agentBackendUrl)/agent/conversations/\(safeId)/messages"
     }
 
     static func agentStarters() -> String {

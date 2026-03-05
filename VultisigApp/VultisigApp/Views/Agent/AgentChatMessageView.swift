@@ -61,7 +61,7 @@ struct AgentChatMessageView: View {
                 statusIcon(for: toolCall.status)
 
                 Text(toolCall.title)
-                    .font(.system(size: 12, design: .monospaced))
+                    .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textTertiary)
 
                 Spacer()
@@ -112,17 +112,17 @@ struct AgentChatMessageView: View {
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text("\(tx.txType ?? "SWAP") \(tx.amount) \(tx.fromSymbol) → \(tx.toSymbol ?? "")")
-                            .font(.system(size: 12, design: .monospaced))
+                            .font(Theme.fonts.caption12)
                             .foregroundStyle(Theme.colors.textTertiary)
 
                         if let provider = tx.provider {
                             Text("ROUTE: \(provider)".uppercased())
-                                .font(.system(size: 12, design: .monospaced))
+                                .font(Theme.fonts.caption12)
                                 .foregroundStyle(Theme.colors.textTertiary)
                         }
 
                         Text("EST. FEE: 0.001 \(tx.fromSymbol)")
-                            .font(.system(size: 12, design: .monospaced))
+                            .font(Theme.fonts.caption12)
                             .foregroundStyle(Theme.colors.textTertiary)
                     }
                 }

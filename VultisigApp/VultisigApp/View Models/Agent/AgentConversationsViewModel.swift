@@ -53,6 +53,12 @@ final class AgentConversationsViewModel: ObservableObject {
         let token = await getValidToken(vault: vault)
         print("[AgentConvos] 📝 loadConversations: token=\(token != nil ? "present" : "none")")
 
+        guard let token else {
+            isLoading = false
+            passwordRequired = true
+            return
+        }
+
         isLoading = true
         error = nil
 
@@ -61,7 +67,7 @@ final class AgentConversationsViewModel: ObservableObject {
                 publicKey: vault.pubKeyECDSA,
                 skip: 0,
                 take: 50,
-                token: token?.token ?? ""
+                token: token.token
             )
             conversations = response.conversations
             print("[AgentConvos] ✅ Loaded \(response.conversations.count) conversations")
@@ -152,13 +158,16 @@ final class AgentConversationsViewModel: ObservableObject {
     // MARK: - Delete Conversation
 
     func deleteConversation(id: String, vault: Vault) async {
-        let token = await getValidToken(vault: vault)
+        guard let token = await getValidToken(vault: vault) else {
+            passwordRequired = true
+            return
+        }
 
         do {
             try await backendClient.deleteConversation(
                 id: id,
                 publicKey: vault.pubKeyECDSA,
-                token: token?.token ?? ""
+                token: token.token
             )
             conversations.removeAll { $0.id == id }
         } catch {

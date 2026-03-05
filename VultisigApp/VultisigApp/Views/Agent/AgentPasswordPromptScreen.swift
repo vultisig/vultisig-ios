@@ -22,15 +22,15 @@ struct AgentPasswordPromptScreen: View {
 
                     Image(systemName: "lock.shield.fill")
                         .font(.system(size: 48))
-                        .foregroundColor(Theme.colors.turquoise)
+                        .foregroundStyle(Theme.colors.turquoise)
 
                     Text("Enter Vault Password")
                         .font(.title3.bold())
-                        .foregroundColor(Theme.colors.textPrimary)
+                        .foregroundStyle(Theme.colors.textPrimary)
 
                     Text("Your password is needed to sign into the agent service using your vault.")
                         .font(.subheadline)
-                        .foregroundColor(Theme.colors.textTertiary)
+                        .foregroundStyle(Theme.colors.textTertiary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
 
@@ -59,12 +59,12 @@ struct AgentPasswordPromptScreen: View {
                 #if os(iOS)
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") { dismiss() }
-                        .foregroundColor(Theme.colors.textTertiary)
+                        .foregroundStyle(Theme.colors.textTertiary)
                 }
                 #else
                 ToolbarItem(placement: .automatic) {
                     Button("Cancel") { dismiss() }
-                        .foregroundColor(Theme.colors.textTertiary)
+                        .foregroundStyle(Theme.colors.textTertiary)
                 }
                 #endif
             }

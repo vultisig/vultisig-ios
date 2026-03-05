@@ -352,8 +352,9 @@ final class AgentChatViewModel: ObservableObject {
             conversationTitle = title
 
         case .actions(let actions):
-            if let vault = AppViewModel.shared.selectedVault {
-                handleActions(actions, vault: vault)
+            let effectiveVault = vault ?? AppViewModel.shared.selectedVault
+            if let v = effectiveVault {
+                handleActions(actions, vault: v)
             }
 
         case .suggestions:

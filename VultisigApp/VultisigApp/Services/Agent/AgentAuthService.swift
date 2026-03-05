@@ -25,11 +25,11 @@ final class AgentAuthService {
     func signIn(vault: Vault, password: String) async throws -> AgentAuthToken {
         print("[AgentAuth] 🔐 signIn starting for vault: \(vault.pubKeyECDSA.prefix(20))...")
         let authMessage = generateAuthMessage(vault: vault)
-        print("[AgentAuth] 📝 Auth message generated: \(authMessage.prefix(80))...")
+        print("[AgentAuth] 📝 Auth message generated")
 
         // EIP-191 hash the message
         let messageHash = ethereumSignHash(authMessage)
-        print("[AgentAuth] #️⃣ Message hash: \(messageHash.prefix(20))...")
+        print("[AgentAuth] #️⃣ Message hashed")
 
         // Fast vault keysign — runs the full DKLS MPC ceremony
         print("[AgentAuth] ✍️ Starting FastVault keysign ceremony...")
@@ -38,7 +38,7 @@ final class AgentAuthService {
             messageHash: messageHash,
             password: password
         )
-        print("[AgentAuth] ✅ Got real signature: \(signature.prefix(20))... (length=\(signature.count))")
+        print("[AgentAuth] ✅ FastVault keysign succeeded (signature length=\(signature.count))")
 
         // Authenticate with verifier
         print("[AgentAuth] 🌐 Authenticating with verifier...")
@@ -48,7 +48,7 @@ final class AgentAuthService {
             signature: signature,
             message: authMessage
         )
-        print("[AgentAuth] 🌐 Auth response: accessToken=\(authResponse.data.accessToken.prefix(20))..., expiresIn=\(authResponse.data.expiresIn)")
+        print("[AgentAuth] 🌐 Authenticated (token present, expiresIn=\(authResponse.data.expiresIn))")
 
         guard !authResponse.data.accessToken.isEmpty else {
             print("[AgentAuth] ❌ Empty token received")
@@ -177,7 +177,7 @@ final class AgentAuthService {
         let prefixedData = Data(prefixed.utf8)
         let hash = prefixedData.sha3(.keccak256)
         let hex = hash.hexString
-        print("[AgentAuth] #️⃣ EIP-191 keccak256 hash: \(hex.prefix(20))... (input len=\(message.count))")
+        print("[AgentAuth] #️⃣ EIP-191 keccak256 hash computed (input len=\(message.count))")
         return hex
     }
 
@@ -254,7 +254,7 @@ final class AgentAuthService {
 
         // Format as "0x" + r + s + recoveryID (matching Windows formatKeysignSignatureHex)
         let signature = "0x" + keysignResponse.r + keysignResponse.s + keysignResponse.recoveryID
-        print("[AgentAuth] ✅ Formatted signature: \(signature.prefix(20))... (length=\(signature.count))")
+        print("[AgentAuth] ✅ Signature formatted (length=\(signature.count))")
         return signature
     }
 
