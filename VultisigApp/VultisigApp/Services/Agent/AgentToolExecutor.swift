@@ -365,6 +365,9 @@ final class AgentToolExecutor {
         }
 
         return AgentActionResult(action: action.type, actionId: action.id, success: results.contains(where: { $0.success }), data: encodeToAnyCodableDict(["results": results]))
+    }
+
+    // MARK: - Remove Token
 
     private static func executeRemoveToken(action: AgentBackendAction, vault: Vault) -> AgentActionResult {
         guard let paramsDict = action.params,

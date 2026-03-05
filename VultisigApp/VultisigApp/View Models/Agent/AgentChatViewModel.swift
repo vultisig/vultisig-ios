@@ -343,7 +343,7 @@ final class AgentChatViewModel: ObservableObject {
 
     // MARK: - SSE Event Handling
 
-    private func handleSSEEvent(_ event: AgentSSEEvent, vault _: Vault? = nil) {
+    private func handleSSEEvent(_ event: AgentSSEEvent, vault: Vault? = nil) {
         switch event {
         case .textDelta(let delta):
             handleTextDelta(delta)
