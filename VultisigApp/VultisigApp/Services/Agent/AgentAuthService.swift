@@ -373,7 +373,11 @@ final class AgentAuthService {
         ]
 
         SecItemDelete(query as CFDictionary)
-        SecItemAdd(query as CFDictionary, nil)
+        let status = SecItemAdd(query as CFDictionary, nil)
+        
+        if status != errSecSuccess {
+            print("[AgentAuth] ❌ Failed to persist token in Keychain. OSStatus: \(status)")
+        }
     }
 
     private func loadPersistedToken(vaultPubKey: String) -> AgentAuthToken? {

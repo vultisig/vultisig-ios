@@ -193,10 +193,6 @@ final class AgentConversationsViewModel: ObservableObject {
 
     // MARK: - Auth
 
-    func checkConnection(vault _: Vault) {
-        // Obsolete: We now verify actual token auth via checkAuthAndLoad
-    }
-
     func signIn(vault: Vault, password: String) async {
         isLoading = true
         do {
