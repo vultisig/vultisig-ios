@@ -610,7 +610,7 @@ final class AgentChatViewModel: ObservableObject {
     }
 
     func handleTxBroadcasted(txid: String, vault: Vault) {
-        guard let callId = activeSignTxCallId else { return }
+        let callId = activeSignTxCallId
 
         // Send the result to AI
         let result = AgentActionResult(
@@ -624,10 +624,15 @@ final class AgentChatViewModel: ObservableObject {
             self.pendingSendTx = nil
             self.activeSignTxCallId = nil
 
-            if let idx = self.messages.firstIndex(where: { $0.id == callId }) {
+            // Update the tool-call message bubble if we have a matching ID
+            if let callId, let idx = self.messages.firstIndex(where: { $0.id == callId }) {
                 self.messages[idx].toolCall?.status = .success
                 self.messages[idx].toolCall?.resultData = ["txid": AnyCodable(txid)]
             }
+
+            // Always append the txid to chat so it's visible to the user
+            self.appendAssistantMessage("✅ Transaction broadcast!\nTxID: `\(txid)`")
+
             self.sendActionResult(result, vault: vault)
         }
     }
@@ -754,29 +759,105 @@ final class AgentChatViewModel: ObservableObject {
                 )
                 
                 let result = try await FastVaultKeysignService.shared.keysign(input: input)
+                print("[AgentChat] ✅ Keysign returned \(result.signatures.count) signature(s)")
                 
                 // 5. Broadcast Transaction
                 await MainActor.run {
                     self.appendAssistantMessage("Transaction signed! Broadcasting to network...")
                 }
                 
-                // Let's look up how broadcast is done in KeysignViewModel
                 let keysignViewModel = KeysignViewModel()
                 keysignViewModel.vault = vault
                 keysignViewModel.keysignPayload = finalPayload
                 keysignViewModel.signatures = result.signatures
                 
-                await keysignViewModel.broadcastTransaction()
+                print("[AgentChat] 📡 Calling broadcastTransaction() for \(finalPayload.coin.ticker) on \(finalPayload.coin.chain.name)")
                 
-                if !keysignViewModel.txid.isEmpty {
-                    // Send back to AI
-                    self.handleTxBroadcasted(txid: keysignViewModel.txid, vault: vault)
-                } else if !keysignViewModel.keysignError.isEmpty {
-                    throw HelperError.runtimeError(keysignViewModel.keysignError)
+                // For UTXO chains (DOGE, BTC, LTC, DASH, ZEC, BCH), broadcastTransaction()
+                // uses a completion-handler internally, so the txid isn't set when the
+                // async function returns. We wait for the NotificationCenter post instead,
+                // with a 30-second timeout.
+                let isUTXO = finalPayload.coin.chain.chainType == .UTXO
+                
+                if isUTXO {
+                    // Start an async waitUntil-style listener before calling broadcast
+                    let txid = await withCheckedContinuation { (continuation: CheckedContinuation<String, Never>) in
+                        var token: NSObjectProtocol?
+                        var completed = false
+                        token = NotificationCenter.default.addObserver(
+                            forName: .agentDidBroadcastTx,
+                            object: nil,
+                            queue: .main
+                        ) { notification in
+                            guard !completed else { return }
+                            completed = true
+                            if let t = notification.userInfo?["txid"] as? String {
+                                print("[AgentChat] 📬 NotificationCenter got txid: \(t)")
+                                continuation.resume(returning: t)
+                            } else {
+                                continuation.resume(returning: "")
+                            }
+                            if let token { NotificationCenter.default.removeObserver(token) }
+                        }
+                        
+                        // Kick off broadcast AFTER registering listener
+                        Task { @MainActor in
+                            await keysignViewModel.broadcastTransaction()
+                            print("[AgentChat] 📡 broadcastTransaction() returned (UTXO). txid='\(keysignViewModel.txid)' error='\(keysignViewModel.keysignError)'")
+                            
+                            // If we already have a result (error path or immediate success), resume
+                            if !completed {
+                                if !keysignViewModel.keysignError.isEmpty {
+                                    completed = true
+                                    if let token { NotificationCenter.default.removeObserver(token) }
+                                    continuation.resume(returning: "")
+                                } else {
+                                    // Schedule a 30-second timeout
+                                    Task {
+                                        try? await Task.sleep(for: .seconds(30))
+                                        if !completed {
+                                            completed = true
+                                            print("[AgentChat] ⏰ UTXO broadcast timeout — no txid received after 30s")
+                                            if let token { NotificationCenter.default.removeObserver(token) }
+                                            continuation.resume(returning: "")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    if !txid.isEmpty {
+                        print("[AgentChat] ✅ UTXO broadcast success. txid=\(txid)")
+                        self.handleTxBroadcasted(txid: txid, vault: vault)
+                    } else if !keysignViewModel.keysignError.isEmpty {
+                        print("[AgentChat] ❌ Broadcast error: \(keysignViewModel.keysignError)")
+                        throw HelperError.runtimeError(keysignViewModel.keysignError)
+                    } else {
+                        throw HelperError.runtimeError("Broadcast timed out or returned no txid. Check your balance and network, then try again.")
+                    }
+                } else {
+                    // Non-UTXO chains set txid synchronously inside broadcastTransaction()
+                    await keysignViewModel.broadcastTransaction()
+                    print("[AgentChat] 📡 broadcastTransaction() finished — txid='\(keysignViewModel.txid)' keysignError='\(keysignViewModel.keysignError)'")
+                    
+                    if !keysignViewModel.txid.isEmpty {
+                        print("[AgentChat] ✅ Got txid: \(keysignViewModel.txid)")
+                        self.handleTxBroadcasted(txid: keysignViewModel.txid, vault: vault)
+                    } else if !keysignViewModel.keysignError.isEmpty {
+                        print("[AgentChat] ❌ Broadcast error from KeysignViewModel: \(keysignViewModel.keysignError)")
+                        throw HelperError.runtimeError(keysignViewModel.keysignError)
+                    } else {
+                        print("[AgentChat] ❌ Broadcast returned empty txid AND empty keysignError")
+                        throw HelperError.runtimeError("Broadcast completed but no txid or error returned. Check your balance and try again.")
+                    }
                 }
             } catch {
+                print("[AgentChat] ❌ executeFastVaultKeysign caught error: \(error)")
+                print("[AgentChat] ❌ localizedDescription: \(error.localizedDescription)")
                 await MainActor.run {
                     self.isLoading = false
+                    self.appendAssistantMessage("❌ Error: \(error.localizedDescription)")
                     self.error = error.localizedDescription
                 }
             }
