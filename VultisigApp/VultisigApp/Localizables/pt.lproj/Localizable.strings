@@ -541,6 +541,7 @@
 "noTokensFound" = "Nenhum token encontrado";
 "noTokensFoundSubtitle" = "Adicione tokens para vê-los aqui";
 "noTransactionsYet" = "Nenhuma transação ainda";
+"noTransactionsYetSubtitle" = "Você ainda não fez swaps, envios ou aprovações deste cofre.";
 "notWhitelistedOnNode" = "Você não está na lista branca deste nó";
 "noVaultsFoundInZip" = "Nenhum cofre encontrado no arquivo ZIP.";
 "of" = "de";

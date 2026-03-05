@@ -16,13 +16,22 @@ struct TransactionHistoryAssetFilterView: View {
 
     var body: some View {
         AssetSelectionContainerSheet(
-            title: "filterByAsset".localized,
+            title: "",
             isPresented: $isPresented,
             searchText: $viewModel.filterSearchText,
             elements: sections,
             onSave: { isPresented = false },
             cellBuilder: cellBuilder,
-            emptyStateBuilder: { EmptyView() }
+            emptyStateBuilder: {
+                ActionBannerView(
+                    icon: "calendar-days",
+                    title: "noTransactionsYet".localized,
+                    subtitle: "noTransactionsYetSubtitle".localized,
+                    buttonTitle: "",
+                    showsActionButton: false,
+                    action: {}
+                )
+            }
         )
     }
 

@@ -49,6 +49,12 @@ class TransactionHistoryViewModel: ObservableObject {
         }
     }
 
+    func refresh() async {
+        load()
+        // Allow pull-to-refresh animation to complete
+        try? await Task.sleep(for: .milliseconds(300))
+    }
+
     func stopPolling() {
         for tx in transactions where tx.status == .inProgress {
             poller.stopPolling(txHash: tx.txHash)

@@ -541,6 +541,7 @@
 "noTokensFound" = "Nema pronađenih tokena";
 "noTokensFoundSubtitle" = "Dodajte tokene u postavkama";
 "noTransactionsYet" = "Još nema transakcija";
+"noTransactionsYetSubtitle" = "Još niste napravili zamjene, slanja ili odobrenja iz ovog trezora.";
 "notWhitelistedOnNode" = "Niste na bijeloj listi ovog čvora";
 "noVaultsFoundInZip" = "Nisu pronađeni trezori u ZIP datoteci.";
 "of" = "od";

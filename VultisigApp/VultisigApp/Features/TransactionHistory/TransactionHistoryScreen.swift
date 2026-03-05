@@ -97,10 +97,10 @@ struct TransactionHistoryScreen: View {
     private var content: some View {
         let grouped = viewModel.groupedTransactions
 
-        if grouped.isEmpty {
-            emptyState
-        } else {
-            ScrollView {
+        ScrollView {
+            if grouped.isEmpty {
+                emptyState
+            } else {
                 LazyVStack(alignment: .leading, spacing: 0) {
                     ForEach(grouped, id: \.0) { section in
                         CommonListHeaderView(title: section.0)
@@ -116,6 +116,9 @@ struct TransactionHistoryScreen: View {
                 }
             }
         }
+        .refreshable {
+            await viewModel.refresh()
+        }
     }
 
     @ViewBuilder
@@ -128,17 +131,16 @@ struct TransactionHistoryScreen: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: 16) {
-            Spacer()
-            Image(systemName: "clock.arrow.circlepath")
-                .font(.system(size: 48))
-                .foregroundStyle(Theme.colors.textTertiary)
-            Text("noTransactionsYet".localized)
-                .font(Theme.fonts.bodyLMedium)
-                .foregroundStyle(Theme.colors.textTertiary)
-            Spacer()
-        }
-        .frame(maxWidth: .infinity)
+        ActionBannerView(
+            icon: "calendar-days",
+            title: "noTransactionsYet".localized,
+            subtitle: "noTransactionsYetSubtitle".localized,
+            buttonTitle: "",
+            showsActionButton: false,
+            action: {}
+        )
+        .padding(.horizontal, 16)
+        .padding(.top, 16)
     }
 
     // MARK: - Detail Sheet

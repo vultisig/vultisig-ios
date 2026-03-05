@@ -549,6 +549,7 @@
 "noTokensFound" = "No tokens selected";
 "noTokensFoundSubtitle" = "You’ve disabled all tokens. Make sure that the token you’re looking for is enabled.";
 "noTransactionsYet" = "No transactions yet";
+"noTransactionsYetSubtitle" = "You haven't made any swaps, sends, or approvals from this vault.";
 "notWhitelistedOnNode" = "You are not whitelisted on this node";
 "noVaultsFoundInZip" = "No vaults found in the ZIP file.";
 "of" = "of";

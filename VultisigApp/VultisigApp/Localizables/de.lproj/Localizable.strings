@@ -541,6 +541,7 @@
 "noTokensFound" = "Keine Token gefunden";
 "noTokensFoundSubtitle" = "Sie haben alle Tokens deaktiviert. Stellen Sie sicher, dass der gesuchte Token aktiviert ist.";
 "noTransactionsYet" = "Noch keine Transaktionen";
+"noTransactionsYetSubtitle" = "Du hast noch keine Swaps, Sends oder Genehmigungen aus diesem Vault durchgeführt.";
 "notWhitelistedOnNode" = "Sie sind nicht auf der Whitelist dieses Knotens";
 "noVaultsFoundInZip" = "Keine Tresore in der ZIP-Datei gefunden.";
 "of" = "von";

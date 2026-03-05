@@ -41,7 +41,7 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
     }
 
     var showEmptyState: Bool {
-        searchText.isNotEmpty && elements.isEmpty
+        elements.isEmpty
     }
 
     var content: some View {
@@ -50,6 +50,7 @@ struct AssetSelectionContainerView<Asset: Hashable, SectionType: Hashable, CellV
                 textfield
                 if showEmptyState {
                     emptyStateBuilder()
+                    Spacer()
                 } else {
                     ScrollView(showsIndicators: false) {
                         grid

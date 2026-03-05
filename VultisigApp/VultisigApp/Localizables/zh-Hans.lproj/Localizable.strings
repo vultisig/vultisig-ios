@@ -541,6 +541,7 @@
 "noTokensFound" = "未选择代币";
 "noTokensFoundSubtitle" = "您已禁用所有代币。确保您要查找的代币已启用";
 "noTransactionsYet" = "暂无交易记录";
+"noTransactionsYetSubtitle" = "您尚未从此金库进行任何兑换、发送或审批操作。";
 "notWhitelistedOnNode" = "您不在此节点的白名单中";
 "noUnencryptedVaultsToImport" = "没有未加密的保险库可导入";
 "noVaultsFoundInZip" = "ZIP文件中未找到任何保险库。";
