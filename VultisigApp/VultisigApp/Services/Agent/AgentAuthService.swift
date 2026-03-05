@@ -24,7 +24,7 @@ final class AgentAuthService {
     /// Sign in to the agent backend using TSS keysign
     func signIn(vault: Vault, password: String) async throws -> AgentAuthToken {
         print("[AgentAuth] 🔐 signIn starting for vault: \(vault.pubKeyECDSA.prefix(20))...")
-        let authMessage = generateAuthMessage(vault: vault)
+        let authMessage = try generateAuthMessage(vault: vault)
         print("[AgentAuth] 📝 Auth message generated")
 
         // EIP-191 hash the message
@@ -181,7 +181,7 @@ final class AgentAuthService {
         return hex
     }
 
-    private func generateAuthMessage(vault: Vault) -> String {
+    private func generateAuthMessage(vault: Vault) throws -> String {
         let address = deriveEthereumAddress(vault: vault)
         let expiresAt = ISO8601DateFormatter().string(from: Date().addingTimeInterval(15 * 60))
 
@@ -194,7 +194,7 @@ final class AgentAuthService {
 
         guard let data = try? JSONSerialization.data(withJSONObject: message, options: [.sortedKeys]),
               let jsonString = String(data: data, encoding: .utf8) else {
-            return "{}"
+            throw AgentAuthError.authFailed
         }
         return jsonString
     }

@@ -101,7 +101,11 @@ final class AgentConversationsViewModel: ObservableObject {
             return
         }
 
-        let token = await getValidToken(vault: vault)
+        guard let token = await getValidToken(vault: vault) else {
+            self.isConnected = false
+            self.passwordRequired = true
+            return
+        }
 
         do {
             let context = await AgentContextBuilder.buildContext(vault: vault)
@@ -112,7 +116,7 @@ final class AgentConversationsViewModel: ObservableObject {
 
             let response = try await backendClient.getStarters(
                 request: request,
-                token: token?.token ?? ""
+                token: token.token
             )
 
             if response.starters.isEmpty {
