@@ -210,12 +210,8 @@ final class AgentAuthService {
 
         guard let pubKeyData = Data(hexString: derivedPubKeyHex),
               let publicKey = WalletCore.PublicKey(data: pubKeyData, type: .secp256k1) else {
-            print("[AgentAuth] ⚠️ Failed to derive ETH address via WalletCore, using fallback")
-            // Fallback: use the raw compressed pub key suffix
-            let normalized = vault.pubKeyECDSA.hasPrefix("0x")
-                ? String(vault.pubKeyECDSA.dropFirst(2))
-                : vault.pubKeyECDSA
-            return "0x" + String(normalized.suffix(40))
+            print("[AgentAuth] ⚠️ Failed to derive ETH address via WalletCore")
+            return ""
         }
 
         let address = CoinType.ethereum.deriveAddressFromPublicKey(publicKey: publicKey)

@@ -140,12 +140,15 @@ final class AgentConversationsViewModel: ObservableObject {
     // MARK: - Create Conversation
 
     func createConversation(vault: Vault) async -> String? {
-        let token = await getValidToken(vault: vault)
+        guard let token = await getValidToken(vault: vault) else {
+            passwordRequired = true
+            return nil
+        }
 
         do {
             let conv = try await backendClient.createConversation(
                 publicKey: vault.pubKeyECDSA,
-                token: token?.token ?? ""
+                token: token.token
             )
             return conv.id
         } catch {

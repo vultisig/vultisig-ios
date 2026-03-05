@@ -56,8 +56,7 @@ final class AgentChatViewModel: ObservableObject {
     // MARK: - Send Message
 
     func sendMessage(_ text: String, vault: Vault) {
-        print("[AgentChat] 📤 sendMessage called with text: \(text.prefix(50))...")
-        print("[AgentChat] 📤 vault pubKeyECDSA: \(vault.pubKeyECDSA.prefix(20))...")
+        print("[AgentChat] 📤 sendMessage called")
 
         // Add user message to UI
         let userMsg = AgentChatMessage(
@@ -83,7 +82,7 @@ final class AgentChatViewModel: ObservableObject {
                     self.passwordRequired = true
                     self.isLoading = false
                     // Remove the user message from the UI since it hasn't sent yet, we'll append it when it actually sends
-                    self.messages.removeLast()
+                    self.messages.removeAll { $0.id == userMsg.id }
                 }
                 return
             }
@@ -304,6 +303,7 @@ final class AgentChatViewModel: ObservableObject {
 
     func disconnect(vault: Vault) async {
         await authService.disconnect(vaultPubKey: vault.pubKeyECDSA)
+        cachedFastVaultPassword = nil
         isConnected = false
     }
 
