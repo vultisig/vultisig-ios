@@ -26,6 +26,7 @@ struct ReviewYourVaultsScreen: View {
     var body: some View {
         Screen(
             title: "",
+            showNavigationBar: false,
             edgeInsets: .init(top: 0, leading: 0, trailing: 0)
         ) {
             VStack(spacing: 24) {
@@ -38,6 +39,7 @@ struct ReviewYourVaultsScreen: View {
             .background(animation, alignment: .top)
             .ignoresSafeArea()
         }
+        .navigationBarBackButtonHidden()
         .readSize { size = $0.width }
         .onAppear {
             animationVM = RiveViewModel(fileName: "review_devices", autoPlay: true)
