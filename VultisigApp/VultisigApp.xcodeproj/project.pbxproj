@@ -600,6 +600,7 @@
 		5E0E7A608BD5D13124215706 /* AgentToolExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA3B44655675C6DADF3F5E06 /* AgentToolExecutor.swift */; };
 		5EB3252A1288D9B9D78B55E6 /* CustomMessageDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD426AD3A78890574917DE6 /* CustomMessageDecoder.swift */; };
 		60A0614473DB30544D99C624 /* DefiCircleRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BE8825D6F0DBD6E8F28CB49 /* DefiCircleRow.swift */; };
+		60A0827D5A92EE75D770B516 /* WebViewCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 603C82E2F7FA7C6F77D2A1F8 /* WebViewCoordinator.swift */; };
 		6992816E311669B6632756F4 /* MacScreenCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5D2C05B4B37315FBB2E448 /* MacScreenCaptureService.swift */; };
 		6AE564F37876C2BB01674194 /* CircleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03EC7383A8308BD94F081C10 /* CircleService.swift */; };
 		6C34A4859C2EE1D9C31F45CD /* DeviceUnregisterRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3F77846C9027CFB58F3364 /* DeviceUnregisterRequest.swift */; };
@@ -1890,6 +1891,7 @@
 		5DD47F58E085AADDA037E719 /* DilithiumAlreadyGeneratedSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DilithiumAlreadyGeneratedSheet.swift; sourceTree = "<group>"; };
 		5E7878748BB9E16298184860 /* KyberSwapQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapQuote.swift; sourceTree = "<group>"; };
 		615D365EDC5D083737E59F94 /* FastVaultKeysignService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FastVaultKeysignService.swift; sourceTree = "<group>"; };
+		603C82E2F7FA7C6F77D2A1F8 /* WebViewCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "WebViewCoordinator.swift"; sourceTree = "<group>"; };
 		6548A1DE3664347EBFA4F1B5 /* TransactionStatusService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionStatusService.swift; sourceTree = "<group>"; };
 		68274C3A94E4F6B7BDEC9A94 /* BannerViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerViewModifier.swift; sourceTree = "<group>"; };
 		69409726FE812D77E37E1F08 /* MacAppDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MacAppDelegate.swift; sourceTree = "<group>"; };
@@ -2735,6 +2737,7 @@
 				A6E0C91A2DE6BC8500A01543 /* ReferralOnboardingBanner.swift */,
 				A68C00A42DF7B78C00FDE2AD /* PickReferralCode.swift */,
 				A6SEC0192E1234567890AB02 /* SecurityScanner */,
+				603C82E2F7FA7C6F77D2A1F8 /* WebViewCoordinator.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -8038,6 +8041,7 @@
 				12B3EB2EC4F83BC93D67CF00 /* AgentRoute.swift in Sources */,
 				AF7144CC5A9FFD41AD0D9277 /* AgentRouter.swift in Sources */,
 				3E02DB6F3E846E8630B17A35 /* FastVaultKeysignService.swift in Sources */,
+				60A0827D5A92EE75D770B516 /* WebViewCoordinator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
