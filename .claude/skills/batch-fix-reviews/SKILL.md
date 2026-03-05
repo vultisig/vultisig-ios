@@ -7,7 +7,7 @@ description: Fetch CodeRabbit review comments from batch PRs and auto-fix the is
 
 ## Overview
 
-Companion to `/batch`. After CodeRabbit reviews the batch PRs, this skill fetches the review comments, spawns agents to fix the issues, and pushes the fixes. Designed to iterate until CodeRabbit approves.
+Companion to `/batch-tasks`. After CodeRabbit reviews the batch PRs, this skill fetches the review comments, spawns agents to fix the issues, and pushes the fixes. Designed to iterate until CodeRabbit approves.
 
 ## Usage
 

@@ -17,6 +17,7 @@ struct OnboardingOverviewScreen: View {
 
     @State private var animationVM: RiveViewModel? = nil
     @State private var isVerificationLinkActive = false
+    @State private var otpVerified = false
     @Environment(\.router) var router
 
     private var isKeyImport: Bool {
@@ -95,14 +96,15 @@ struct OnboardingOverviewScreen: View {
                 }
             }
         }
-        .onLoad(perform: onLoad)
-        .crossPlatformSheet(isPresented: $isVerificationLinkActive) {
+        .onAppear(perform: onAppear)
+        .crossPlatformSheet(isPresented: $isVerificationLinkActive, isDismissable: false) {
             ServerBackupVerificationScreen(
                 tssType: tssType,
                 vault: vault,
                 email: email ?? .empty,
                 isPresented: $isVerificationLinkActive,
                 tabIndex: .constant(0),
+                otpVerified: $otpVerified,
                 onBackup: { },
                 onBackToEmailSetup: {
                     router.navigate(to: OnboardingRoute.vaultSetup(
@@ -114,6 +116,9 @@ struct OnboardingOverviewScreen: View {
         }
         .crossPlatformToolbar(.empty, showsBackButton: false)
         .navigationBarBackButtonHidden(true)
+        .onNavigationStackChange { isVisible in
+            if isVisible { onAppear() }
+        }
     }
 
     var animation: some View {
@@ -173,11 +178,11 @@ struct OnboardingOverviewScreen: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func onLoad() {
+    private func onAppear() {
         animationVM = RiveViewModel(fileName: animationFileName)
         animationVM?.fit = .fitHeight
 
-        if email != nil {
+        if email != nil, !otpVerified {
             isVerificationLinkActive = true
         }
     }

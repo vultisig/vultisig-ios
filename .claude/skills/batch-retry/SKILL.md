@@ -7,7 +7,7 @@ description: Retry failed batch tasks. Cleans up failed branches/PRs and re-runs
 
 ## Overview
 
-Companion to `/batch`. Retries specific tasks that failed during a batch run. Cleans up the failed attempt (branch + PR if created) and re-executes with the same PRD.
+Companion to `/batch-tasks`. Retries specific tasks that failed during a batch run. Cleans up the failed attempt (branch + PR if created) and re-executes with the same PRD.
 
 ## Usage
 
@@ -54,14 +54,14 @@ Confirm cleanup with the user before proceeding.
 
 ### Step 3 — Re-execute
 
-For each task, follow the same execution flow as `/batch` Phase 3:
+For each task, follow the same execution flow as `/batch-tasks` Phase 3:
 
 1. Spawn an Agent with:
    - `subagent_type: "general-purpose"`
    - `isolation: "worktree"`
    - `run_in_background: true`
 
-2. Use the same agent prompt template from `/batch`, but add context about the previous failure:
+2. Use the same agent prompt template from `/batch-tasks`, but add context about the previous failure:
 
 ```
 ## Previous Attempt
@@ -75,7 +75,7 @@ Avoid the same mistakes. Pay extra attention to:
 
 ### Step 4 — Report
 
-Present results in the same format as `/batch` Phase 4:
+Present results in the same format as `/batch-tasks` Phase 4:
 
 ```
 ## Retry Complete
@@ -91,4 +91,4 @@ Present results in the same format as `/batch` Phase 4:
 - Never force-push
 - Include failure context in the retry prompt so the agent doesn't repeat the same mistake
 - If a task fails twice, suggest that it may need manual intervention
-- Spawn all retry agents in parallel (same as /batch)
+- Spawn all retry agents in parallel (same as /batch-tasks)

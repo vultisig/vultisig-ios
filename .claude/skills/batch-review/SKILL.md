@@ -7,7 +7,7 @@ description: Morning review of batch PRs. Shows status, CodeRabbit feedback, and
 
 ## Overview
 
-Companion to `/batch`. Gives a quick overview of all PRs from the last batch run so you can review efficiently without opening each one individually.
+Companion to `/batch-tasks`. Gives a quick overview of all PRs from the last batch run so you can review efficiently without opening each one individually.
 
 ## Usage
 
@@ -108,4 +108,4 @@ Use AskUserQuestion with relevant options based on the dashboard:
 - Never merge PRs — only present information
 - Show CodeRabbit feedback prominently — it's the primary review mechanism
 - Group PRs by status: needs attention first, then passing
-- If no batch PRs are found, tell the user and suggest running `/batch`
+- If no batch PRs are found, tell the user and suggest running `/batch-tasks`

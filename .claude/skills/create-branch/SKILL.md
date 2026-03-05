@@ -8,12 +8,21 @@ description: Create a new git branch from conversation context. Use when startin
 ## Branch Naming
 
 1. **GitHub issue in context** (URL or #123):
-   - Format: `{issue-number}-{slugified-issue-title}`
-   - Example: Issue #42 "Fix TRC20 token transfers" → `42-fix-trc20-token-transfers`
+   - Format: `{type}/{issue-number}-{slugified-issue-title}`
+   - Determine `{type}` from the issue labels or title:
+     - `fix` — bugs, errors, corrections (labels: `bug`, `fix`)
+     - `feat` — new features, enhancements (labels: `enhancement`, `feature`)
+     - `refactor` — code improvements without behavior change
+     - `chore` — maintenance, CI, docs, dependencies
+     - Default to `fix` if unclear
+   - Example: Issue #42 "Fix TRC20 token transfers" (label: `bug`) → `fix/42-fix-trc20-token-transfers`
+   - Example: Issue #55 "Add dark mode support" (label: `enhancement`) → `feat/55-add-dark-mode-support`
 
 2. **No GitHub issue**:
-   - Descriptive kebab-case, no prefixes (`feat/`, `fix/`, etc.)
-   - Example: Adding dark mode → `add-dark-mode`
+   - Format: `{type}/{kebab-case-description}`
+   - Use the same type conventions as above
+   - Example: Adding dark mode → `feat/add-dark-mode`
+   - Example: Fix balance rounding → `fix/fix-balance-rounding`
 
 ## Workflow
 ```bash
