@@ -1,5 +1,15 @@
 # Vultisig iOS - Claude Guidelines
 
+## Security Tier
+
+HIGH — Wallet app with TSS key management. Crypto/JNI changes require maintainer review.
+
+## Critical Boundaries
+
+- `VultisigApp/Services/Tss/` — TSS keygen/keysign bindings. Do not modify without explicit review.
+- `VultisigApp/Model/` — SwiftData models. Schema changes affect migrations.
+- `VultisigApp.xcodeproj/project.pbxproj` — Use `/add-xcode-files` skill, never edit directly.
+
 ## Project Overview
 
 Vultisig is a multi-chain cryptocurrency wallet for iOS and macOS built with SwiftUI. Supports 40+ blockchains (THORChain, Maya, EVM, Cosmos, Solana, UTXO, etc.) with vault-based key management, DeFi integrations, and cross-device TSS signing.
