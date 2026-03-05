@@ -180,6 +180,7 @@
 "circleWithdrawInstruction" = "Unesite adresu i iznos za povlačenje";
 "circleWithdrawTitle" = "Povuci USDC";
 "circleYield" = "Prinos";
+"clearFilters" = "Očisti filtere";
 "close" = "Zatvori";
 "coinAddressCopied" = "Adresa kopirana";
 "coinPool" = "%@ Pool";

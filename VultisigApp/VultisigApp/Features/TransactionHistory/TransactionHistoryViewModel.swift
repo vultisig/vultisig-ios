@@ -10,6 +10,7 @@ struct TransactionHistoryCoinAsset: Hashable {
     let ticker: String
     let logo: String
     let chainLogo: String?
+    let network: String
 }
 
 @MainActor
@@ -174,16 +175,35 @@ class TransactionHistoryViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Selected Filter Assets
+
+    var selectedFilterAssets: [TransactionHistoryCoinAsset] {
+        availableCoins.filter { selectedAssetFilters.contains($0.ticker) }
+    }
+
+    func clearAssetFilters() {
+        selectedAssetFilters.removeAll()
+    }
+
+    func removeAssetFilter(_ ticker: String) {
+        selectedAssetFilters.remove(ticker)
+    }
+
     // MARK: - Available Coins for Filter
 
-    var availableCoins: [(ticker: String, logo: String, chainLogo: String?)] {
+    var availableCoins: [TransactionHistoryCoinAsset] {
         var seen = Set<String>()
-        var result: [(ticker: String, logo: String, chainLogo: String?)] = []
+        var result: [TransactionHistoryCoinAsset] = []
 
         for tx in transactions {
             if !seen.contains(tx.coinTicker) {
                 seen.insert(tx.coinTicker)
-                result.append((ticker: tx.coinTicker, logo: tx.coinLogo, chainLogo: tx.coinChainLogo))
+                result.append(TransactionHistoryCoinAsset(
+                    ticker: tx.coinTicker,
+                    logo: tx.coinLogo,
+                    chainLogo: tx.coinChainLogo,
+                    network: tx.network
+                ))
             }
         }
 
@@ -191,18 +211,11 @@ class TransactionHistoryViewModel: ObservableObject {
     }
 
     var filteredAvailableCoins: [TransactionHistoryCoinAsset] {
-        let coins = availableCoins.map {
-            TransactionHistoryCoinAsset(ticker: $0.ticker, logo: $0.logo, chainLogo: $0.chainLogo)
-        }
+        let coins = availableCoins
 
         guard !filterSearchText.isEmpty else { return coins }
 
         return coins.filter { $0.ticker.localizedCaseInsensitiveContains(filterSearchText) }
     }
 
-    // MARK: - Chain Filter Display
-
-    var chainFilterName: String? {
-        chainFilter?.name
-    }
 }

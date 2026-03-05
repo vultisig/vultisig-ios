@@ -22,7 +22,7 @@ struct TransactionHistoryScreen: View {
         Screen(title: "transactionHistory".localized, edgeInsets: ScreenEdgeInsets(bottom: 0)) {
             VStack(spacing: 0) {
                 tabBar
-                chainFilterChip
+                assetFilterChips
                 content
             }
         }
@@ -68,26 +68,62 @@ struct TransactionHistoryScreen: View {
         }
     }
 
-    // MARK: - Chain Filter Chip
+    // MARK: - Asset Filter Chips
 
     @ViewBuilder
-    private var chainFilterChip: some View {
-        if let chainName = viewModel.chainFilterName {
-            HStack {
-                HStack(spacing: 6) {
-                    Text(chainName)
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textPrimary)
+    private var assetFilterChips: some View {
+        let assets = viewModel.selectedFilterAssets
+        if !assets.isEmpty {
+            VStack(alignment: .trailing, spacing: 8) {
+                FlowLayout(spacing: 8) {
+                    ForEach(assets, id: \.ticker) { asset in
+                        assetChip(asset)
+                    }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(Theme.colors.bgSurface2)
-                .cornerRadius(20)
 
-                Spacer()
+                Button {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        viewModel.clearAssetFilters()
+                    }
+                } label: {
+                    Text("clearFilters".localized)
+                        .font(Theme.fonts.caption12)
+                        .foregroundStyle(Theme.colors.alertInfo)
+                }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.top, 12)
+        .transition(.opacity.combined(with: .move(edge: .top)))
+        }
+    }
+
+    private func assetChip(_ asset: TransactionHistoryCoinAsset) -> some View {
+        HStack(spacing: 6) {
+            AsyncImageView(
+                logo: asset.logo,
+                size: CGSize(width: 16, height: 16),
+                ticker: asset.ticker,
+                tokenChainLogo: asset.chainLogo
+            )
+
+            Text("\(asset.ticker) (\(asset.network))")
+                .font(Theme.fonts.caption12)
+                .foregroundStyle(Theme.colors.textPrimary)
+
+            Image(systemName: "xmark")
+                .font(.system(size: 10, weight: .bold))
+                .foregroundStyle(Theme.colors.textPrimary)
+                .padding(4)
+                .background(Circle().fill(.black.opacity(0.22)))
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(Theme.colors.bgSurface2)
+        .cornerRadius(6)
+        .transition(.opacity.combined(with: .scale))
+        .onTapGesture {
+            withAnimation(.easeInOut(duration: 0.25)) {
+                viewModel.removeAssetFilter(asset.ticker)
+            }
         }
     }
 

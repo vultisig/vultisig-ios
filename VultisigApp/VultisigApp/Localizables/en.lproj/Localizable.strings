@@ -182,6 +182,7 @@
 "circleWithdrawAmount" = "Amount";
 "circleWithdrawConfirm" = "Continue";
 "circleWithdrawTitle" = "Withdraw USDC";
+"clearFilters" = "Clear filters";
 "close" = "Close";
 "coinAddressCopied" = "%@ address copied";
 "coinPool" = "%@ Pool";

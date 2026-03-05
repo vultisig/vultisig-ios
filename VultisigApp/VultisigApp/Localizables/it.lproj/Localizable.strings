@@ -180,6 +180,7 @@
 "circleWithdrawInstruction" = "Inserisci indirizzo e importo da prelevare";
 "circleWithdrawTitle" = "Preleva USDC";
 "circleYield" = "Rendimento";
+"clearFilters" = "Cancella filtri";
 "close" = "Chiudi";
 "coinAddressCopied" = "Indirizzo %@ copiato";
 "coinPool" = "Pool %@";

@@ -180,6 +180,7 @@
 "circleWithdrawInstruction" = "输入提现地址和金额";
 "circleWithdrawTitle" = "提现 USDC";
 "circleYield" = "收益";
+"clearFilters" = "清除筛选";
 "close" = "关闭";
 "coinAddressCopied" = "%@ 地址已复制";
 "coinPool" = "%@ 池";
