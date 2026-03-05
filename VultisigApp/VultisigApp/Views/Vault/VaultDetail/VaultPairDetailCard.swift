@@ -13,8 +13,6 @@ struct VaultPairDetailCard: View {
     let isForSharing: Bool
     let onKeyCopy: (() -> Void)?
 
-    @State var deviceIndex: Int = 0
-
     init(vault: Vault, devicesInfo: [DeviceInfo], isForSharing: Bool = false, onKeyCopy: (() -> Void)? = nil) {
         self.vault = vault
         self.devicesInfo = devicesInfo
@@ -167,11 +165,6 @@ struct VaultPairDetailCard: View {
                 )
             }
             .frame(maxWidth: .infinity, maxHeight: 75, alignment: .center)
-            .onLoad {
-                if isLocalPary {
-                    deviceIndex = device.Index + 1
-                }
-            }
         }
     }
 
@@ -193,7 +186,8 @@ struct VaultPairDetailCard: View {
         let part = NSLocalizedString("share", comment: "")
         let of = NSLocalizedString("of", comment: "")
         let space = " "
-        let vaultIndex = "\(deviceIndex)"
+        let index = vault.signers.firstIndex(of: vault.localPartyID).map { $0 + 1 } ?? 0
+        let vaultIndex = "\(index)"
         let totalCount = "\(vault.signers.count)"
 
         return part + space + vaultIndex + space + of + space + totalCount
