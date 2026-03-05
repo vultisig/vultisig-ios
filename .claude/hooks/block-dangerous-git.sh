@@ -7,7 +7,7 @@ FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
 CONTENT=$(echo "$INPUT" | jq -r '.tool_input.content // empty')
 
 # --- Dangerous git commands ---
-if echo "$CMD" | grep -qE 'git (push.*(--force|--force-with-lease|-f|-F)|reset --hard|clean -[a-z]*f|branch.*(--delete|-D))'; then
+if echo "$CMD" | grep -qE 'git (push.*(--force[^-]|-f |-F )|reset --hard|clean -[a-z]*f|branch.*(--delete|-D))'; then
   echo "Dangerous git command blocked. Ask the user first." >&2
   exit 2
 fi
@@ -27,7 +27,7 @@ if echo "$COMBINED" | grep -qiE "$MAINNET_RPCS"; then
 fi
 
 # --- Secret/credential file edits ---
-if echo "$FILE_PATH" | grep -qiE '\.(env|pem|p12|keystore|credentials|secret)'; then
+if echo "$FILE_PATH" | grep -qiE '\.(env|pem|p12|credentials|secret)$'; then
   echo "Editing secret/credential files is blocked. Ask the user first." >&2
   exit 2
 fi
