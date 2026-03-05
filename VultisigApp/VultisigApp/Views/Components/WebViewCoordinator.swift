@@ -1,9 +1,8 @@
 //
-//  ChainDetailActionButtons+Coordinator.swift
+//  WebViewCoordinator.swift
 //  VultisigApp
 //
 
-#if os(iOS) || os(macOS)
 import WebKit
 
 #if os(iOS)
@@ -44,4 +43,3 @@ class WebViewCoordinator: NSObject, WKNavigationDelegate {
         spinner = nil
     }
 }
-#endif
