@@ -14,10 +14,19 @@ private typealias PlatformSpinner = NSProgressIndicator
 class WebViewCoordinator: NSObject, WKNavigationDelegate {
     private var spinner: PlatformSpinner?
 
+    private func removeSpinner() {
+        #if os(macOS)
+        spinner?.stopAnimation(nil)
+        #endif
+        spinner?.removeFromSuperview()
+        spinner = nil
+    }
+
     func webView(_ webView: WKWebView, didStartProvisionalNavigation _: WKNavigation!) {
+        removeSpinner()
         #if os(iOS)
         let spinner = UIActivityIndicatorView(style: .large)
-        spinner.color = .white
+        spinner.color = UIColor(Theme.colors.textPrimary)
         spinner.startAnimating()
         #else
         let spinner = NSProgressIndicator()
@@ -34,12 +43,14 @@ class WebViewCoordinator: NSObject, WKNavigationDelegate {
     }
 
     func webView(_: WKWebView, didFinish _: WKNavigation!) {
-        spinner?.removeFromSuperview()
-        spinner = nil
+        removeSpinner()
     }
 
     func webView(_: WKWebView, didFail _: WKNavigation!, withError _: Error) {
-        spinner?.removeFromSuperview()
-        spinner = nil
+        removeSpinner()
+    }
+
+    func webView(_: WKWebView, didFailProvisionalNavigation _: WKNavigation!, withError _: Error) {
+        removeSpinner()
     }
 }
