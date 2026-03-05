@@ -1,53 +1,78 @@
 //
-//  TransactionHistorySwapDetailSheet.swift
+//  TransactionHistoryDetailSheet.swift
 //  VultisigApp
 //
 
 import SwiftUI
 
-struct TransactionHistorySwapDetailSheet: View {
+struct TransactionHistoryDetailSheet: View {
     let transaction: TransactionHistoryData
 
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 16) {
-                    header
+        ScrollView {
+            VStack(spacing: 16) {
+                header
+                if transaction.type == .swap {
                     fromToCards
-                    detailRows
-                    explorerButton
                 }
-                .padding(16)
+                detailRows
+                explorerButton
             }
-            .background(Theme.colors.bgPrimary)
-            .navigationTitle("swap".localized)
-            #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-            #endif
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .foregroundStyle(Theme.colors.textPrimary)
-                    }
+            .padding(16)
+            .padding(.top, 20)
+        }
+        .background(ModalBackgroundView(width: .infinity))
+        .presentationBackground(Theme.colors.bgSurface1)
+        .presentationDragIndicator(.visible)
+        .background(Theme.colors.bgSurface1)
+        #if os(macOS)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark")
+                        .foregroundStyle(Theme.colors.textPrimary)
                 }
             }
         }
+        #endif
     }
 
     // MARK: - Header
 
+    @ViewBuilder
     private var header: some View {
-        TransactionHistoryTypePill(type: .swap)
-            .padding(.top, 8)
+        if transaction.type == .swap {
+            TransactionHistoryTypePill(type: .swap)
+                .padding(.top, 8)
+        } else {
+            VStack(spacing: 12) {
+                TransactionHistoryTypePill(type: transaction.type)
+
+                AsyncImageView(
+                    logo: transaction.coinLogo,
+                    size: CGSize(width: 48, height: 48),
+                    ticker: transaction.coinTicker,
+                    tokenChainLogo: transaction.coinChainLogo
+                )
+
+                Text(transaction.amountCrypto)
+                    .font(Theme.fonts.priceTitle1)
+                    .foregroundStyle(Theme.colors.textPrimary)
+
+                Text(transaction.amountFiat.formatToFiat(includeCurrencySymbol: true))
+                    .font(Theme.fonts.priceBodyS)
+                    .foregroundStyle(Theme.colors.textTertiary)
+            }
+            .padding(.vertical, 8)
+        }
     }
 
-    // MARK: - From/To Cards
+    // MARK: - From/To Cards (Swap only)
 
     private var fromToCards: some View {
         ZStack {
@@ -156,7 +181,7 @@ struct TransactionHistorySwapDetailSheet: View {
             Separator().opacity(0.2)
             detailRow(title: "network".localized, value: transaction.network)
         }
-        .padding(.horizontal, 24)
+        .padding(.horizontal, 16)
         .background(Theme.colors.bgSurface1)
         .cornerRadius(16)
         .overlay(
@@ -174,19 +199,24 @@ struct TransactionHistorySwapDetailSheet: View {
                 .foregroundStyle(valueColor ?? Theme.colors.textPrimary)
                 .lineLimit(1)
                 .truncationMode(.middle)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(Theme.colors.bgSurface2)
+                .cornerRadius(8)
         }
         .font(Theme.fonts.bodySMedium)
-        .padding(.vertical, 12)
+        .padding(.vertical, 16)
     }
 
     // MARK: - Explorer Button
 
     private var explorerButton: some View {
-        PrimaryButton(title: "viewOnExplorer") {
+        PrimaryButton(title: "viewOnExplorer", type: .secondary) {
             if let url = URL(string: transaction.explorerLink) {
                 openURL(url)
             }
         }
+        .fixedSize()
     }
 
     // MARK: - Helpers

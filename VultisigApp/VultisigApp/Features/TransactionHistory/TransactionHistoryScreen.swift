@@ -19,7 +19,7 @@ struct TransactionHistoryScreen: View {
     }
 
     var body: some View {
-        Screen(title: "transactionHistory".localized) {
+        Screen(title: "transactionHistory".localized, edgeInsets: ScreenEdgeInsets(bottom: 0)) {
             VStack(spacing: 0) {
                 tabBar
                 chainFilterChip
@@ -97,7 +97,7 @@ struct TransactionHistoryScreen: View {
     private var content: some View {
         let grouped = viewModel.groupedTransactions
 
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             if grouped.isEmpty {
                 emptyState
             } else {
@@ -119,15 +119,26 @@ struct TransactionHistoryScreen: View {
         .refreshable {
             await viewModel.refresh()
         }
+        .overlay(alignment: .bottom) {
+            bottomGradient
+        }
     }
 
-    @ViewBuilder
+    private var bottomGradient: some View {
+        LinearGradient(
+            colors: [
+                Theme.colors.bgPrimary,
+                Theme.colors.bgPrimary.opacity(0),
+            ],
+            startPoint: .bottom,
+            endPoint: .top
+        )
+        .frame(height: 40)
+        .allowsHitTesting(false)
+    }
+
     private func cardView(for tx: TransactionHistoryData) -> some View {
-        if tx.status == .inProgress {
-            TransactionHistoryInProgressCardView(transaction: tx)
-        } else {
-            TransactionHistoryCardView(transaction: tx)
-        }
+        TransactionHistoryCardView(transaction: tx)
     }
 
     private var emptyState: some View {
@@ -145,12 +156,7 @@ struct TransactionHistoryScreen: View {
 
     // MARK: - Detail Sheet
 
-    @ViewBuilder
     private func detailSheet(for detail: TransactionHistoryData) -> some View {
-        if detail.type == .swap {
-            TransactionHistorySwapDetailSheet(transaction: detail)
-        } else {
-            TransactionHistorySendDetailSheet(transaction: detail)
-        }
+        TransactionHistoryDetailSheet(transaction: detail)
     }
 }

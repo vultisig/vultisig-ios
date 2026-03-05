@@ -10,30 +10,35 @@ struct TransactionHistoryTypePill: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            Image(systemName: iconName)
-                .font(.system(size: 10))
+            iconView
             Text(title)
-                .font(Theme.fonts.caption10)
+                .font(Theme.fonts.caption12)
         }
         .foregroundStyle(foregroundColor)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
         .background(foregroundColor.opacity(0.1))
-        .cornerRadius(20)
+        .cornerRadius(99)
         .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(foregroundColor.opacity(0.3), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 99)
+                .stroke(foregroundColor, lineWidth: 1)
         )
     }
 
-    private var iconName: String {
+    @ViewBuilder
+    private var iconView: some View {
         switch type {
         case .send:
-            return "arrow.up.right"
+            Image("send")
+                .resizable()
+                .frame(width: 12, height: 12)
         case .swap:
-            return "arrow.left.arrow.right"
+            Image("arrow-rotate-left-right")
+                .resizable()
+                .frame(width: 12, height: 12)
         case .approve:
-            return "checkmark.shield"
+            Image(systemName: "checkmark.shield")
+                .font(.system(size: 10))
         }
     }
 

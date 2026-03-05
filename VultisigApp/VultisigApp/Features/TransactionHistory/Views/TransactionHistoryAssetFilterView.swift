@@ -38,50 +38,22 @@ struct TransactionHistoryAssetFilterView: View {
     func cellBuilder(_ coin: TransactionHistoryCoinAsset, _: Int) -> some View {
         let isSelected = viewModel.selectedAssetFilters.contains(coin.ticker)
 
-        return Button {
-            if isSelected {
-                viewModel.selectedAssetFilters.remove(coin.ticker)
-            } else {
-                viewModel.selectedAssetFilters.insert(coin.ticker)
-            }
-        } label: {
-            VStack(spacing: 6) {
-                ZStack(alignment: .bottomTrailing) {
-                    AsyncImageView(
-                        logo: coin.logo,
-                        size: CGSize(width: 40, height: 40),
-                        ticker: coin.ticker,
-                        tokenChainLogo: coin.chainLogo
-                    )
-
-                    if isSelected {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 14))
-                            .foregroundStyle(Theme.colors.alertSuccess)
-                            .background(Circle().fill(Theme.colors.bgPrimary).frame(width: 16, height: 16))
-                    }
+        return AssetSelectionGridCell(
+            name: coin.ticker,
+            ticker: coin.ticker,
+            logo: coin.logo,
+            tokenChainLogo: coin.chainLogo,
+            isSelected: Binding(
+                get: { isSelected },
+                set: { _ in }
+            ),
+            onSelection: {
+                if isSelected {
+                    viewModel.selectedAssetFilters.remove(coin.ticker)
+                } else {
+                    viewModel.selectedAssetFilters.insert(coin.ticker)
                 }
-
-                Text(coin.ticker)
-                    .font(Theme.fonts.caption10)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                    .lineLimit(1)
             }
-            .frame(width: 70, height: 70)
-            .background(
-                isSelected
-                    ? Theme.colors.primaryAccent4.opacity(0.1)
-                    : Theme.colors.bgSurface1
-            )
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(
-                        isSelected ? Theme.colors.primaryAccent4 : Theme.colors.border,
-                        lineWidth: 1
-                    )
-            )
-        }
-        .buttonStyle(.plain)
+        )
     }
 }

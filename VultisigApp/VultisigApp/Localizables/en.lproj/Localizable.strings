@@ -387,7 +387,7 @@
 "initializingCamera" = "Initializing Camera";
 "initializingScreenCapture" = "Initializing Screen Capture";
 "initiatingDevice" = "Initiating Device";
-"inProgress" = "In Progress";
+"inProgress" = "In progress";
 "insufficientBalance" = "Insufficient Balance";
 "insufficientBalanceForFunctions" = "Insufficient balance. Please enter an amount less than or equal to your available funds.";
 "insufficientGasTokenError" = "Not enough %@ to cover gas fees for sending %@";
