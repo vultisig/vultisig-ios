@@ -191,7 +191,6 @@ struct AgentConversationsView: View {
 
     private func loadData() {
         guard let vault = appViewModel.selectedVault else { return }
-        viewModel.checkConnection(vault: vault)
 
         Task {
             await viewModel.checkAuthAndLoad(vault: vault)
