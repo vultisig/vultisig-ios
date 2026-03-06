@@ -32,4 +32,10 @@ if echo "$FILE_PATH" | grep -qiE '\.(env|pem|p12|credentials|secret)$'; then
   exit 2
 fi
 
+# --- Environment variable exposure ---
+if echo "$CMD" | grep -qiE "\b(printenv|export -p)\b|echo.*(TOKEN|API_KEY|SECRET|PASSWORD|CREDENTIAL)|env\s*$|env\s*\|"; then
+  echo "Environment variable exposure blocked. Agents must not read secrets from the environment." >&2
+  exit 2
+fi
+
 exit 0
