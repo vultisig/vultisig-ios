@@ -19,30 +19,16 @@ struct AgentChatView: View {
     @Environment(\.router) private var router
 
     var body: some View {
-        ZStack {
-            Theme.colors.bgPrimary.ignoresSafeArea()
-
+        VStack(spacing: 0) {
+            inlineHeader
+            Separator(color: Theme.colors.borderLight, opacity: 1)
             VStack(spacing: 0) {
                 messagesList
                 inputBar
             }
         }
-        .crossPlatformToolbar(viewModel.conversationTitle ?? "Vultisig", ignoresTopEdge: false) {
-            CustomToolbarItem(placement: .trailing) {
-                if conversationId != nil || viewModel.conversationId != nil {
-                    Menu {
-                        Button(role: .destructive) {
-                            showDeleteConfirm = true
-                        } label: {
-                            Label("Delete Conversation", systemImage: "trash")
-                        }
-                    } label: {
-                        Image(systemName: "ellipsis")
-                            .foregroundStyle(Theme.colors.textPrimary)
-                    }
-                }
-            }
-        }
+        .background(Theme.colors.bgPrimary.ignoresSafeArea())
+        .navigationBarBackButtonHidden(true)
         .confirmationDialog(
             "Delete this conversation?",
             isPresented: $showDeleteConfirm,
@@ -126,6 +112,45 @@ struct AgentChatView: View {
                 viewModel.handleTxBroadcasted(txid: txid, vault: vault)
             }
         }
+    }
+
+    // MARK: - Inline Header
+
+    private var inlineHeader: some View {
+        ZStack {
+            Text(viewModel.conversationTitle ?? "Vultisig")
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+
+            HStack {
+                Button {
+                    router.navigateBack()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(Theme.fonts.bodyMMedium)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                }
+
+                Spacer()
+
+                if conversationId != nil || viewModel.conversationId != nil {
+                    Menu {
+                        Button(role: .destructive) {
+                            showDeleteConfirm = true
+                        } label: {
+                            Label("Delete Conversation", systemImage: "trash")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .rotationEffect(.degrees(90))
+                            .foregroundStyle(Theme.colors.textPrimary)
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Theme.colors.bgPrimary)
     }
 
     // MARK: - Messages List
