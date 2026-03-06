@@ -15,21 +15,12 @@ struct AgentConversationsView: View {
     @State private var showDeleteAllConfirm = false
 
     var body: some View {
-        ZStack {
-            Theme.colors.bgPrimary.ignoresSafeArea()
+        VStack(spacing: 0) {
+            inlineHeader
+            Separator(color: Theme.colors.borderLight, opacity: 1)
             content
         }
-        .navigationTitle("Vulti")
-        #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-        #endif
-        .toolbar {
-            #if os(iOS)
-            ToolbarItem(placement: .topBarTrailing) { trailingToolbarItems }
-            #else
-            ToolbarItem(placement: .automatic) { trailingToolbarItems }
-            #endif
-        }
+        .background(Theme.colors.bgPrimary.ignoresSafeArea())
         .confirmationDialog(
             "Delete all conversations?",
             isPresented: $showDeleteAllConfirm,
@@ -56,31 +47,44 @@ struct AgentConversationsView: View {
         }
     }
 
-    @ViewBuilder
-    private var trailingToolbarItems: some View {
-        HStack(spacing: 12) {
-            Circle()
-                .fill(viewModel.isConnected ? Theme.colors.alertSuccess : Theme.colors.textTertiary)
-                .frame(width: 10, height: 10)
-            if !viewModel.conversations.isEmpty {
-                Menu {
-                    Button(role: .destructive) {
-                        showDeleteAllConfirm = true
-                    } label: {
-                        Label("Delete All Conversations", systemImage: "trash")
+    // MARK: - Inline Header (root tab — no native NavBar)
+
+    private var inlineHeader: some View {
+        ZStack {
+            Text("Vultisig")
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+
+            HStack {
+                Spacer()
+                HStack(spacing: 12) {
+                    Circle()
+                        .fill(viewModel.isConnected ? Theme.colors.alertSuccess : Theme.colors.textTertiary)
+                        .frame(width: 10, height: 10)
+                    if !viewModel.conversations.isEmpty {
+                        Menu {
+                            Button(role: .destructive) {
+                                showDeleteAllConfirm = true
+                            } label: {
+                                Label("Delete All Conversations", systemImage: "trash")
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis")
+                                .foregroundStyle(Theme.colors.textPrimary)
+                        }
                     }
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .foregroundStyle(Theme.colors.textPrimary)
                 }
             }
         }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Theme.colors.bgPrimary)
     }
 
     // MARK: - Content
 
     private var content: some View {
-        VaultMainScreenScrollView(showsIndicators: false, contentInset: 78, scrollOffset: .constant(0)) {
+        ScrollView(showsIndicators: false) {
             VStack(spacing: 16) {
                 if viewModel.isLoading && viewModel.conversations.isEmpty {
                     VStack {

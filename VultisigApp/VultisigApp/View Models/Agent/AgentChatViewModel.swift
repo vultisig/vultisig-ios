@@ -96,80 +96,80 @@ final class AgentChatViewModel: ObservableObject {
     private func executeSendMessage(text: String, vault: Vault, token: String) async {
         do {
             // Create conversation if needed
-                if conversationId == nil {
-                    print("[AgentChat] 🆕 Creating new conversation...")
-                    let conv = try await backendClient.createConversation(
-                        publicKey: vault.pubKeyECDSA,
-                        token: token
-                    )
-                    conversationId = conv.id
-                    print("[AgentChat] ✅ Conversation created: \(conv.id)")
-
-                    await primeMCPSession(vault: vault, token: token, convId: conv.id)
-                }
-
-                // Fetch starters if needed
-                if messages.isEmpty && starters.isEmpty {
-                    await loadStarters(vault: vault)
-                }
-
-                guard let convId = conversationId else {
-                    print("[AgentChat] ❌ No conversation ID")
-                    throw AgentBackendClient.AgentBackendError.noBody
-                }
-
-                // Build context (full context on first message, light on subsequent)
-                let context: AgentMessageContext
-                if messages.count <= 2 {
-                    context = await AgentContextBuilder.buildContext(vault: vault)
-                } else {
-                    context = await AgentContextBuilder.buildLightContext(vault: vault)
-                }
-                print("[AgentChat] 📋 Context built (\(messages.count <= 2 ? "full" : "light"))")
-
-                let request = AgentSendMessageRequest(
+            if conversationId == nil {
+                print("[AgentChat] 🆕 Creating new conversation...")
+                let conv = try await backendClient.createConversation(
                     publicKey: vault.pubKeyECDSA,
-                    content: text,
-                    model: "anthropic/claude-sonnet-4.5",
-                    context: context
-                )
-
-                if let data = try? JSONEncoder().encode(request), let jsonString = String(data: data, encoding: .utf8) {
-                    print("\n[AgentChat] 🐛 Outgoing Request Payload:")
-                    print(jsonString)
-                    print("-------------------------------------------\n")
-                }
-
-                // Stream the response
-                print("[AgentChat] 🌊 Starting SSE stream for convId: \(convId)")
-                let stream = backendClient.sendMessageStream(
-                    convId: convId,
-                    request: request,
                     token: token
                 )
+                conversationId = conv.id
+                print("[AgentChat] ✅ Conversation created: \(conv.id)")
 
-                var eventCount = 0
-                for try await event in stream {
-                    if Task.isCancelled {
-                        print("[AgentChat] ⚠️ Task cancelled, breaking stream")
-                        break
-                    }
-                    eventCount += 1
-                    print("[AgentChat] 📨 SSE event #\(eventCount): \(event)")
-                    handleSSEEvent(event, vault: vault)
-                }
-                print("[AgentChat] 🏁 Stream ended, total events: \(eventCount)")
-
-                isLoading = false
-
-            } catch let error as AgentBackendClient.AgentBackendError {
-                print("[AgentChat] ❌ Backend error: \(error.localizedDescription ?? "unknown")")
-                handleError(error)
-            } catch {
-                print("[AgentChat] ❌ General error: \(error) — \(error.localizedDescription)")
-                handleError(error)
+                await primeMCPSession(vault: vault, token: token, convId: conv.id)
             }
+
+            // Fetch starters if needed
+            if messages.isEmpty && starters.isEmpty {
+                await loadStarters(vault: vault)
+            }
+
+            guard let convId = conversationId else {
+                print("[AgentChat] ❌ No conversation ID")
+                throw AgentBackendClient.AgentBackendError.noBody
+            }
+
+            // Build context (full context on first message, light on subsequent)
+            let context: AgentMessageContext
+            if messages.count <= 2 {
+                context = await AgentContextBuilder.buildContext(vault: vault)
+            } else {
+                context = await AgentContextBuilder.buildLightContext(vault: vault)
+            }
+            print("[AgentChat] 📋 Context built (\(messages.count <= 2 ? "full" : "light"))")
+
+            let request = AgentSendMessageRequest(
+                publicKey: vault.pubKeyECDSA,
+                content: text,
+                model: "anthropic/claude-sonnet-4.5",
+                context: context
+            )
+
+            if let data = try? JSONEncoder().encode(request), let jsonString = String(data: data, encoding: .utf8) {
+                print("\n[AgentChat] 🐛 Outgoing Request Payload:")
+                print(jsonString)
+                print("-------------------------------------------\n")
+            }
+
+            // Stream the response
+            print("[AgentChat] 🌊 Starting SSE stream for convId: \(convId)")
+            let stream = backendClient.sendMessageStream(
+                convId: convId,
+                request: request,
+                token: token
+            )
+
+            var eventCount = 0
+            for try await event in stream {
+                if Task.isCancelled {
+                    print("[AgentChat] ⚠️ Task cancelled, breaking stream")
+                    break
+                }
+                eventCount += 1
+                print("[AgentChat] 📨 SSE event #\(eventCount): \(event)")
+                handleSSEEvent(event, vault: vault)
+            }
+            print("[AgentChat] 🏁 Stream ended, total events: \(eventCount)")
+
+            isLoading = false
+
+        } catch let error as AgentBackendClient.AgentBackendError {
+            print("[AgentChat] ❌ Backend error: \(error.localizedDescription ?? "unknown")")
+            handleError(error)
+        } catch {
+            print("[AgentChat] ❌ General error: \(error) — \(error.localizedDescription)")
+            handleError(error)
         }
+    }
 
     // MARK: - Send Action Result
 
@@ -556,7 +556,6 @@ final class AgentChatViewModel: ObservableObject {
         }
     }
 
-
     private func finalizeStreamingMessage(with backendMsg: AgentBackendMessage) {
         print("[AgentChat] 🏁 Finalizing streaming message id: \(backendMsg.id). Current streamingMessageId: \(streamingMessageId ?? "nil")")
         if let streamId = streamingMessageId,
@@ -644,7 +643,7 @@ final class AgentChatViewModel: ObservableObject {
             print("[AgentChat] ❌ confirmSignTx: pendingSendTx is nil, returning early")
             return
         }
-        
+
         print("[AgentChat] 🔐 confirmSignTx: isFastVault=\(vault.isFastVault), cachedPassword=\(cachedFastVaultPassword != nil ? "SET" : "NIL")")
         if vault.isFastVault {
             // Fully headless: use cached password from signIn, no sheets at all
@@ -662,23 +661,23 @@ final class AgentChatViewModel: ObservableObject {
                     self.isLoading = true
                     self.appendAssistantMessage("Generating keysign payload...")
                 }
-                
+
                 do {
                     let logic = SendCryptoVerifyLogic()
-                    
+
                     await BalanceService.shared.updateBalance(for: pendingSendTx.coin)
                     let feeResult = try await logic.calculateFee(tx: pendingSendTx)
                     pendingSendTx.fee = feeResult.fee
                     pendingSendTx.gas = feeResult.gas
-                    
+
                     let result = logic.validateBalanceWithFee(tx: pendingSendTx)
                     if !result.isValid {
                         throw HelperError.runtimeError(result.errorMessage ?? "Insufficient balance to cover fee.")
                     }
-                    
+
                     try await logic.validateUtxosIfNeeded(tx: pendingSendTx)
                     let payload = try await logic.buildKeysignPayload(tx: pendingSendTx, vault: vault)
-                    
+
                     await MainActor.run {
                         self.isLoading = false
                         self.activeKeysignPayload = payload
@@ -699,32 +698,32 @@ final class AgentChatViewModel: ObservableObject {
             print("[AgentChat] ❌ executeFastVaultKeysign: pendingSendTx is nil")
             return
         }
-        
+
         // Cache password for future transactions in this session
         if cachedFastVaultPassword == nil {
             cachedFastVaultPassword = password
         }
-        
+
         Task {
             await MainActor.run {
                 self.isLoading = true
                 self.appendAssistantMessage("Signing and broadcasting transaction...")
             }
-            
+
             do {
                 let logic = SendCryptoVerifyLogic()
-                
+
                 // 1. Fetch fees
                 await BalanceService.shared.updateBalance(for: tx.coin)
                 let feeResult = try await logic.calculateFee(tx: tx)
                 tx.fee = feeResult.fee
                 tx.gas = feeResult.gas
-                
+
                 print("[AgentChat] 💰 Balance check: rawBalance='\(tx.coin.rawBalance)', decimals=\(tx.coin.decimals)")
                 print("[AgentChat] 💰 amount=\(tx.amount), amountInRaw=\(tx.amountInRaw)")
                 print("[AgentChat] 💰 fee=\(tx.fee), gas=\(tx.gas)")
                 print("[AgentChat] 💰 isNativeToken=\(tx.coin.isNativeToken), sendMaxAmount=\(tx.sendMaxAmount)")
-                
+
                 let validationResult = logic.validateBalanceWithFee(tx: tx)
                 if !validationResult.isValid {
                     let errStr = validationResult.errorMessage ?? "Insufficient balance to cover fee."
@@ -732,15 +731,15 @@ final class AgentChatViewModel: ObservableObject {
                     let localizedErr = NSLocalizedString(errStr, comment: "")
                     throw HelperError.runtimeError(localizedErr == errStr ? errStr : localizedErr)
                 }
-                
+
                 try await logic.validateUtxosIfNeeded(tx: tx)
-                
+
                 // 2. Validate form
                 let keysignPayload = try await logic.buildKeysignPayload(tx: tx, vault: vault)
-                
+
                 // 3. Generate Keysign Messages (Matches KeysignDiscoveryViewModel flow)
                 let finalPayload = keysignPayload.coin.chain == .solana ?
-                    try await BlockChainService.shared.refreshSolanaBlockhash(for: keysignPayload) : keysignPayload
+                try await BlockChainService.shared.refreshSolanaBlockhash(for: keysignPayload) : keysignPayload
                 let keysignFactory = KeysignMessageFactory(payload: finalPayload)
                 let preSignedImageHash = try keysignFactory.getKeysignMessages()
                 let keysignMessages = preSignedImageHash.sorted()
@@ -758,28 +757,28 @@ final class AgentChatViewModel: ObservableObject {
                     vaultPassword: password,
                     chain: finalPayload.coin.chain.name
                 )
-                
+
                 let result = try await FastVaultKeysignService.shared.keysign(input: input)
                 print("[AgentChat] ✅ Keysign returned \(result.signatures.count) signature(s)")
-                
+
                 // 5. Broadcast Transaction
                 await MainActor.run {
                     self.appendAssistantMessage("Transaction signed! Broadcasting to network...")
                 }
-                
+
                 let keysignViewModel = KeysignViewModel()
                 keysignViewModel.vault = vault
                 keysignViewModel.keysignPayload = finalPayload
                 keysignViewModel.signatures = result.signatures
-                
+
                 print("[AgentChat] 📡 Calling broadcastTransaction() for \(finalPayload.coin.ticker) on \(finalPayload.coin.chain.name)")
-                
+
                 // For UTXO chains (DOGE, BTC, LTC, DASH, ZEC, BCH), broadcastTransaction()
                 // uses a completion-handler internally, so the txid isn't set when the
                 // async function returns. We wait for the NotificationCenter post instead,
                 // with a 30-second timeout.
                 let isUTXO = finalPayload.coin.chain.chainType == .UTXO
-                
+
                 if isUTXO {
                     // Start an async waitUntil-style listener before calling broadcast
                     let txid = await withCheckedContinuation { (continuation: CheckedContinuation<String, Never>) in
@@ -800,12 +799,12 @@ final class AgentChatViewModel: ObservableObject {
                             }
                             if let token { NotificationCenter.default.removeObserver(token) }
                         }
-                        
+
                         // Kick off broadcast AFTER registering listener
                         Task { @MainActor in
                             await keysignViewModel.broadcastTransaction()
                             print("[AgentChat] 📡 broadcastTransaction() returned (UTXO). txid='\(keysignViewModel.txid)' error='\(keysignViewModel.keysignError)'")
-                            
+
                             // If we already have a result (error path or immediate success), resume
                             if !completed {
                                 if !keysignViewModel.keysignError.isEmpty {
@@ -827,7 +826,7 @@ final class AgentChatViewModel: ObservableObject {
                             }
                         }
                     }
-                    
+
                     if !txid.isEmpty {
                         print("[AgentChat] ✅ UTXO broadcast success. txid=\(txid)")
                         self.handleTxBroadcasted(txid: txid, vault: vault)
@@ -841,7 +840,7 @@ final class AgentChatViewModel: ObservableObject {
                     // Non-UTXO chains set txid synchronously inside broadcastTransaction()
                     await keysignViewModel.broadcastTransaction()
                     print("[AgentChat] 📡 broadcastTransaction() finished — txid='\(keysignViewModel.txid)' keysignError='\(keysignViewModel.keysignError)'")
-                    
+
                     if !keysignViewModel.txid.isEmpty {
                         print("[AgentChat] ✅ Got txid: \(keysignViewModel.txid)")
                         self.handleTxBroadcasted(txid: keysignViewModel.txid, vault: vault)

@@ -27,7 +27,7 @@ struct AgentChatView: View {
                 inputBar
             }
         }
-        .crossPlatformToolbar("Vulti", ignoresTopEdge: false) {
+        .crossPlatformToolbar(viewModel.conversationTitle ?? "Vultisig", ignoresTopEdge: false) {
             CustomToolbarItem(placement: .trailing) {
                 if conversationId != nil || viewModel.conversationId != nil {
                     Menu {
