@@ -25,7 +25,8 @@ final class StoredPendingTransactionStorage {
         status: TransactionStatus,
         coinTicker: String? = nil,
         amount: String? = nil,
-        toAddress: String? = nil
+        toAddress: String? = nil,
+        pubKeyECDSA: String? = nil
     ) throws {
         let config = ChainStatusConfig.config(for: chain)
 
@@ -58,7 +59,8 @@ final class StoredPendingTransactionStorage {
                 estimatedTime: config.estimatedTime,
                 coinTicker: coinTicker,
                 amount: amount,
-                toAddress: toAddress
+                toAddress: toAddress,
+                pubKeyECDSA: pubKeyECDSA
             )
             modelContext.insert(transaction)
         }

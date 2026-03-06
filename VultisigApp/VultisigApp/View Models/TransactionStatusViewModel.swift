@@ -56,7 +56,7 @@ class TransactionStatusViewModel: ObservableObject {
         self.coinTicker = pendingTransaction.coinTicker
         self.amount = pendingTransaction.amount
         self.toAddress = pendingTransaction.toAddress
-        self.pubKeyECDSA = nil
+        self.pubKeyECDSA = pendingTransaction.pubKeyECDSA
 
         // Restore status from persistence
         self.status = Self.statusFromString(
@@ -85,7 +85,8 @@ class TransactionStatusViewModel: ObservableObject {
                 status: status,
                 coinTicker: coinTicker,
                 amount: amount,
-                toAddress: toAddress
+                toAddress: toAddress,
+                pubKeyECDSA: pubKeyECDSA
             )
         }
 
@@ -174,7 +175,8 @@ class TransactionStatusViewModel: ObservableObject {
                 status: status,
                 coinTicker: coinTicker,
                 amount: amount,
-                toAddress: toAddress
+                toAddress: toAddress,
+                pubKeyECDSA: pubKeyECDSA
             )
         } catch {
             print("TransactionStatusViewModel: Failed to save status: \(error)")
