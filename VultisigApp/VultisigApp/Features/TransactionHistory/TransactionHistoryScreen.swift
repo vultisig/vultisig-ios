@@ -113,7 +113,7 @@ struct TransactionHistoryScreen: View {
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .padding(4)
-                .background(Circle().fill(Theme.colors.bgSurface3))
+                .background(Circle().fill(Theme.colors.bgPrimary.opacity(0.22)))
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 6)
