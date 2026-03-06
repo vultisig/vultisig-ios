@@ -145,7 +145,7 @@ struct TransactionHistoryCardView: View {
                             Circle()
                                 .stroke(Theme.colors.border, lineWidth: 1)
                         )
-                        .frame(width: 28, height: 28)
+                        .frame(width: 25, height: 25)
 
                     CircularProgressIndicator(
                         size: 24,

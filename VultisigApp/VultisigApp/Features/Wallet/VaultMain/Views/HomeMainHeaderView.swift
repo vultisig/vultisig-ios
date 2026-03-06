@@ -81,7 +81,7 @@ struct HomeMainHeaderView: View {
 
             ToolbarButton(image: "clock.arrow.circlepath", action: historyAction) { _ in
                 Icon(named: "clock.arrow.circlepath", color: Theme.colors.textPrimary, size: 20, isSystem: true)
-            }
+            }.showIf(SettingsViewModel.shared.txHistoryEnabled)
             ToolbarButton(image: "settings", action: settingsAction)
         }
     }

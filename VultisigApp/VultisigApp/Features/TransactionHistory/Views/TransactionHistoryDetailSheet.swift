@@ -12,6 +12,22 @@ struct TransactionHistoryDetailSheet: View {
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
+        container
+    }
+
+    var container: some View {
+#if os(iOS)
+        NavigationStack {
+            content
+        }
+#else
+        content
+            .presentationSizingFitted()
+            .applySheetSize(700, 550)
+#endif
+    }
+    
+    var content: some View {
         ScrollView {
             VStack(spacing: 16) {
                 header
@@ -28,18 +44,15 @@ struct TransactionHistoryDetailSheet: View {
         .presentationBackground(Theme.colors.bgSurface1)
         .presentationDragIndicator(.visible)
         .background(Theme.colors.bgSurface1)
-        #if os(macOS)
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button {
+        .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
+            #if os(macOS)
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "x") {
                     dismiss()
-                } label: {
-                    Image(systemName: "xmark")
-                        .foregroundStyle(Theme.colors.textPrimary)
                 }
             }
+            #endif
         }
-        #endif
     }
 
     // MARK: - Header
