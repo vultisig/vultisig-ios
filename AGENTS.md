@@ -38,3 +38,13 @@ open VultisigApp.xcodeproj
 - TSS bindings — do not modify without review
 - Always test keygen and keysign flows after refactoring
 - Use `.localized` for all user-facing strings
+
+## Knowledge Base
+
+For deeper context beyond this file, see [vultisig-knowledge](https://github.com/vultisig/vultisig-knowledge).
+
+Key docs for this repo:
+- [repos/vultisig-ios.md](https://github.com/vultisig/vultisig-knowledge/blob/main/repos/vultisig-ios.md)
+- [architecture/mpc-tss-explained.md](https://github.com/vultisig/vultisig-knowledge/blob/main/architecture/mpc-tss-explained.md)
+- [architecture/signing-flow.md](https://github.com/vultisig/vultisig-knowledge/blob/main/architecture/signing-flow.md)
+- [coding/gotchas.md](https://github.com/vultisig/vultisig-knowledge/blob/main/coding/gotchas.md) (see iOS section)
