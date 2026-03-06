@@ -1,34 +1,54 @@
 ---
-name: Bug report
-about: Create a report to help us improve
-title: "[BUG]"
+name: Bug Report
+about: Report a bug for agent or human resolution
+title: "[Fix] "
 labels: bug
 assignees: ''
-
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+<!-- Agent-ready issue template. Fill as much as you can — the more detail, the faster the fix. -->
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+---
+type: "bugfix"
+priority: ""              <!-- critical | high | medium | low -->
+size: ""                  <!-- tiny (<1 file) | small (1-3 files) | medium (3-8 files) -->
+platform: [ios]
+files:
+  read: []                <!-- Files the fixer should read for context -->
+  write: []               <!-- Files that need to be modified -->
+verify: ["xcodebuild -scheme Vultisig build"]
+---
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+# [Fix] <what's broken> [<screen/area>]
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+## Problem
+<!-- 2-3 sentences. What's broken? Who's affected? -->
 
-System:
 
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+## Expected Behavior
+<!-- What should happen instead? -->
 
-**Additional context**
-Add any other context about the problem here.
+
+## Steps to Reproduce
+1.
+2.
+3.
+
+## Solution
+<!-- 1 paragraph. WHAT to do and WHY this approach. Leave blank if unsure. -->
+
+
+## Scope
+
+### Must Do
+- [ ] <!-- Specific fix 1 -->
+- [ ] <!-- Specific fix 2 -->
+
+### Must NOT Do
+- Don't change unrelated code
+- Don't refactor surrounding logic
+
+## Acceptance Criteria
+- [ ] `xcodebuild -scheme Vultisig build` succeeds
+- [ ] <!-- Specific behavior check 1 -->
+- [ ] <!-- Specific behavior check 2 -->
