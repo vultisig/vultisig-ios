@@ -59,6 +59,12 @@ struct SettingsAdvancedView: View {
                 icon: "lock.shield",
                 isEnabled: $settingsViewModel.isMLDSAEnabled
             )
+
+            SettingToggleCell(
+                title: "transactionHistory",
+                icon: "clock.arrow.circlepath",
+                isEnabled: $settingsViewModel.txHistoryEnabled
+            )
         }
     }
 }

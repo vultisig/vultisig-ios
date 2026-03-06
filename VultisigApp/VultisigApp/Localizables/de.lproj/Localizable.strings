@@ -40,10 +40,12 @@
 "amountExceeded" = "Betrag darf das Guthaben nicht überschreiten";
 "amountSelectToken" = "Amount ( Select a token )";
 "amountToWithdraw" = "Amount to Withdraw";
+"apply" = "Anwenden";
 "applyReferral" = "Empfehlung anwenden";
 "approvalRequiredMessageLP" = "This ERC20 token requires approval before adding to liquidity pool. Two transactions will be signed:";
 "approvalTransaction" = "1. Approval transaction";
 "approvalTXHash" = "Genehmigungs-Transaktions-Hash";
+"approve" = "Genehmigen";
 "approveAndSwap" = "Genehmigen und tauschen";
 "appUpToDate" = "Anwendung ist auf dem neuesten Stand";
 "apr" = "APR";
@@ -178,6 +180,7 @@
 "circleWithdrawInstruction" = "Geben Sie Adresse und Betrag zum Abheben ein";
 "circleWithdrawTitle" = "USDC abheben";
 "circleYield" = "Rendite";
+"clearFilters" = "Filter löschen";
 "close" = "Schließen";
 "coinAddressCopied" = "Münzadresse kopiert";
 "coinPool" = "%@-Pool";
@@ -207,6 +210,7 @@
 "customMemo" = "Custom Memo";
 "customToken" = "Benutzerdefinierten Token";
 "customTokenErrorSubtitle" = "Stellen Sie sicher, dass die Adresse korrekt ist und zur ausgewählten Kette gehört.";
+"date" = "Datum";
 "defiPortfolio" = "DeFi Portfolio";
 "delete" = "Löschen";
 "deleteFolder" = "Ordner löschen";
@@ -327,6 +331,7 @@
 "fastSetUp" = "Schnelle Einrichtung";
 "fastVaultSecureTextDescription" = "Nur 1 Gerät erforderlich\nKleine Beträge für schnelle Aktionen speichern\nVultiserver unterzeichnet sofort";
 "fee" = "Gebühr";
+"filterByAsset" = "Nach Asset filtern";
 "findCustomTokens" = "Finde Deinen Benutzerdefinierten Token";
 "folder" = "Ordner";
 "folderName" = "Ordnername";
@@ -377,6 +382,7 @@
 "initializingCamera" = "Kamera wird initialisiert";
 "initializingScreenCapture" = "Bildschirmaufnahme wird initialisiert";
 "initiatingDevice" = "Initiierendes Gerät";
+"inProgress" = "In Bearbeitung";
 "insufficientBalance" = "Unzureichendes Guthaben";
 "insufficientBalanceForFunctions" = "Unzureichendes Guthaben. Bitte geben Sie einen Betrag ein, der kleiner oder gleich Ihren verfügbaren Mitteln ist.";
 "insufficientGasTokenError" = "Nicht genug %@ um die Gasgebühren für das Senden von %@ zu decken";
@@ -535,6 +541,8 @@
 "notNow" = "Nicht jetzt";
 "noTokensFound" = "Keine Token gefunden";
 "noTokensFoundSubtitle" = "Sie haben alle Tokens deaktiviert. Stellen Sie sicher, dass der gesuchte Token aktiviert ist.";
+"noTransactionsYet" = "Noch keine Transaktionen";
+"noTransactionsYetSubtitle" = "Du hast noch keine Swaps, Sends oder Genehmigungen aus diesem Vault durchgeführt.";
 "notWhitelistedOnNode" = "Sie sind nicht auf der Whitelist dieses Knotens";
 "noVaultsFoundInZip" = "Keine Tresore in der ZIP-Datei gefunden.";
 "of" = "von";
@@ -789,6 +797,7 @@
 "storeBackupsSeparatelyDescription" = "Bewahren Sie jedes Backup an einem anderen Ort auf. Wenn eines kompromittiert wird, bleiben Ihre Gelder sicher.";
 "storeBackupsSeparatelyDescriptionSecure" = "Speichern Sie jedes Backup in einem anderen Cloud-Dienst oder mit einem anderen Passwort. Wenn eines offengelegt wird, bleiben Ihre Gelder sicher.";
 "success" = "Erfolg";
+"successful" = "Erfolgreich";
 "successfully" = "erfolgreich";
 "support" = "Unterstützung";
 "supportedFileTypesUpload" = "Unterstützte Dateitypen: .bak, .vult & .zip";
@@ -816,6 +825,7 @@
 "swapFee" = "Tauschgebühr";
 "swapOverview" = "Tauschübersicht";
 "swapRouteNotAvailable" = "Tauschroute nicht verfügbar";
+"swaps" = "Swaps";
 "swapTrackingLink" = "Tauschverfolgungslink";
 "swapTXHash" = "Tausch-Tx-Hash";
 "swapVerifyCheckbox1Description" = "Der Tauschbetrag ist korrekt";
@@ -836,6 +846,7 @@
 "thresholdNotReachedMessage" = "Schwelle nicht erreicht.\nEs fehlen genügend Anfangsgeräte.";
 "title" = "Titel";
 "to" = "Zu";
+"today" = "Heute";
 "tokens" = "Token";
 "totalFee" = "Gesamtgebühr";
 "track" = "Verfolgen";
@@ -844,6 +855,7 @@
 "transactionDetails" = "Transaktionsdetails";
 "transactionFailed" = "Transaktion fehlgeschlagen";
 "transactionHash" = "Transaktions-Hash";
+"transactionHistory" = "Transaktionsverlauf";
 "transactionID" = "Transaktions-ID";
 "transactionSuccessful" = "Transaktion erfolgreich";
 "transactionTrackingLink" = "Transaktionsverfolgungslink";
@@ -989,6 +1001,8 @@
 "verify" = "Verifizieren";
 "verifyingCodePleaseWait" = "Code wird überprüft, bitte warten";
 "verifyPassword" = "Passwort bestätigen";
+"via" = "über";
+"viewOnExplorer" = "Im Explorer anzeigen";
 "Vote" = "Abstimmen";
 "vult" = "$ Vult";
 "vultDiscount" = "Rabatt: %dbps";
@@ -1022,6 +1036,7 @@
 "wrongVaultSelectedDescription" = "Der von Ihnen ausgewählte Vault stimmt nicht mit der Keygen-Sitzung überein. Bitte wählen Sie den richtigen Vault aus.";
 "wrongVaultTryAgain" = "Falscher Tresor oder gekoppeltes Gerät.";
 "x" = "x";
+"yesterday" = "Gestern";
 "youAreEnteringAnewEra" = "Sie betreten eine neue Ära und lassen alte Seed-Phrasen hinter sich. Sie benötigen:";
 "youAreEnteringAnewEraHighlight" = "alte Seed-Phrasen hinter sich lassen.";
 "youAreInLocalMode" = "Du bist im lokalen Modus";

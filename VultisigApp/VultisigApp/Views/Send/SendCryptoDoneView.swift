@@ -77,7 +77,8 @@ struct SendCryptoDoneView: View {
                 fromAddress: tx.fromAddress,
                 toAddress: tx.toAddress,
                 fee: FeeDisplay(crypto: tx.gasInReadable, fiat: sendSummaryViewModel.feesInReadable(tx: tx, vault: vault)),
-                keysignPayload: keysignPayload
+                keysignPayload: keysignPayload,
+                pubKeyECDSA: vault.pubKeyECDSA
             ),
             showAlert: $showAlert
         ) {

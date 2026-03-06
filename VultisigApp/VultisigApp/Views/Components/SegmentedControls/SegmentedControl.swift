@@ -25,94 +25,82 @@ struct SegmentedControl<T: Hashable>: View {
     @Binding var selection: T
     let items: [SegmentedControlItem<T>]
 
-    @State private var segmentFrames: [CGRect] = []
+    @State private var segmentFrames: [Int: CGRect] = [:]
 
     private var selectedIndex: Int {
         items.firstIndex { $0.value == selection } ?? 0
-    }
-
-    init(selection: Binding<T>, items: [SegmentedControlItem<T>]) {
-        self._selection = selection
-        self.items = items
-        self._segmentFrames = State(initialValue: Array(repeating: .zero, count: items.count))
     }
 
     var body: some View {
         VStack(spacing: 8) {
             HStack(spacing: 16) {
                 ForEach(Array(items.enumerated()), id: \.offset) { index, item in
-                    Button(
-                        action: {
-                            if item.isEnabled {
-                                withAnimation(.interpolatingSpring(duration: 0.3)) {
-                                    selection = item.value
-                                }
+                    Button {
+                        if item.isEnabled {
+                            withAnimation(.interpolatingSpring(duration: 0.3)) {
+                                selection = item.value
                             }
-                        },
-                        label: {
-                            HStack(spacing: 6) {
-                                Text(item.title)
-                                    .font(Theme.fonts.bodySMedium)
-                                    .foregroundStyle(item.isEnabled ? Theme.colors.textPrimary : Theme.colors.textButtonDisabled)
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text(item.title)
+                                .font(Theme.fonts.bodySMedium)
+                                .foregroundStyle(item.isEnabled ? Theme.colors.textPrimary : Theme.colors.textButtonDisabled)
 
                             if let tag = item.tag {
                                 Text(tag)
                                     .font(Theme.fonts.caption10)
-                                    .foregroundColor(Theme.colors.alertInfo)
+                                    .foregroundStyle(Theme.colors.alertInfo)
                                     .padding(6)
                                     .background(Theme.colors.alertInfo.opacity(0.12))
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
                             }
                         }
                         .fixedSize(horizontal: true, vertical: false)
-                        .foregroundColor(item.value == selection ? .white : (item.isEnabled ? Color.gray : Color.gray.opacity(0.5)))
-                        .background(
-                            GeometryReader { geometry in
-                                Color.clear
-                                    .onLoad {
-                                        let frame = geometry.frame(in: .named("SegmentedControlContainer"))
-                                        updateFrameIfNeeded(for: index, frame: frame)
-                                    }
-                                    .onChange(of: geometry.frame(in: .named("SegmentedControlContainer"))) { _, newFrame in
-                                        updateFrameIfNeeded(for: index, frame: newFrame)
-                                    }
-                            }
-                        )
                     }
-                        )
                     .disabled(!item.isEnabled)
-                    .buttonStyle(PlainButtonStyle())
+                    .buttonStyle(.plain)
+                    .background(
+                        GeometryReader { geometry in
+                            Color.clear
+                                .preference(
+                                    key: SegmentFramePreferenceKey.self,
+                                    value: [index: geometry.frame(in: .named("SegmentedControlContainer"))]
+                                )
+                        }
+                    )
                 }
             }
 
-            HStack(spacing: 0) {
-                Rectangle()
-                    .fill(Theme.colors.primaryAccent4)
-                    .frame(width: segmentFrames[safe: selectedIndex]?.width ?? 0, height: 2)
-                    .offset(x: segmentFrames[safe: selectedIndex]?.minX ?? 0)
-                    .animation(.easeInOut(duration: 0.3), value: selection)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            underline
         }
         .coordinateSpace(name: "SegmentedControlContainer")
-        .scaledToFit()
+        .onPreferenceChange(SegmentFramePreferenceKey.self) { frames in
+            segmentFrames = frames
+        }
+        .fixedSize(horizontal: false, vertical: true)
     }
 
-    private func updateFrameIfNeeded(for index: Int, frame: CGRect) {
-        // Ensure the array is properly sized
-        if segmentFrames.count != items.count {
-            segmentFrames = Array(repeating: .zero, count: items.count)
-        }
+    private var underline: some View {
+        let frame = segmentFrames[selectedIndex]
+        let width = frame?.width ?? 0
+        let offsetX = frame?.minX ?? 0
 
-        // Only update if the frame has actually changed to avoid unnecessary updates
-        guard index >= 0 && index < segmentFrames.count else { return }
-
-        let currentFrame = segmentFrames[safe: index] ?? .zero
-        if !currentFrame.equalTo(frame) {
-            segmentFrames[index] = frame
-        }
+        return Rectangle()
+            .fill(Theme.colors.primaryAccent4)
+            .frame(width: width, height: 2)
+            .offset(x: offsetX)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .animation(.easeInOut(duration: 0.3), value: selection)
     }
+}
 
+private struct SegmentFramePreferenceKey: PreferenceKey {
+    static var defaultValue: [Int: CGRect] = [:]
+
+    static func reduce(value: inout [Int: CGRect], nextValue: () -> [Int: CGRect]) {
+        value.merge(nextValue()) { _, new in new }
+    }
 }
 
 #Preview {

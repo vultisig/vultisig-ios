@@ -76,7 +76,8 @@ struct VultisigApp: App {
             StakePosition.self,
             LPPosition.self,
             StoredPendingTransaction.self,
-            VaultSettings.self
+            VaultSettings.self,
+            TransactionHistoryItem.self
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,

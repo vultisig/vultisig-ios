@@ -57,6 +57,10 @@ Domain knowledge loads on-demand via skills:
 | `/lint` | SwiftLint commands, config summary, common warnings, fix guidance |
 | `/build-check` | SwiftLint + xcodebuild full quality check |
 | `/add-xcode-files` | Add new .swift files to project.pbxproj |
+| `/batch` | Overnight task runner — PRDs, parallel worktree agents, PRs with CodeRabbit integration |
+| `/batch-review` | Morning dashboard — PR statuses, CodeRabbit feedback, next actions |
+| `/batch-retry` | Retry failed batch tasks — cleanup, re-execute with failure context |
+| `/batch-fix-reviews` | Auto-fix CodeRabbit review comments, push fixes, re-request review |
 
 ## Knowledge Base
 
