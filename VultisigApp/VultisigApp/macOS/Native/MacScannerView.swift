@@ -144,7 +144,6 @@ struct MacScannerView: View {
                 qrCodeOutline
             }
             Spacer()
-            uploadQRCodeButton
         }
         .frame(maxHeight: .infinity)
         .padding(padding)
