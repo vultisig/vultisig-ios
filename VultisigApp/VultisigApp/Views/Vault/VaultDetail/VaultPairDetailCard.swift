@@ -193,8 +193,8 @@ struct VaultPairDetailCard: View {
         let part = NSLocalizedString("share", comment: "")
         let of = NSLocalizedString("of", comment: "")
         let space = " "
-        let index = devicesInfo.first(where: { $0.Signer == vault.localPartyID })?.Index ?? 0
-        let vaultIndex = "\(index + 1)"
+        let matchedIndex = devicesInfo.first(where: { $0.Signer == vault.localPartyID })?.Index
+        let vaultIndex = matchedIndex.map { "\($0 + 1)" } ?? "0"
         let totalCount = "\(vault.signers.count)"
 
         return part + space + vaultIndex + space + of + space + totalCount
