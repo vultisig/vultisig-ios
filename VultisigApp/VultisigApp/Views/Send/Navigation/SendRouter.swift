@@ -22,11 +22,12 @@ struct SendRouter {
             )
         case .verify(let tx, let vault):
             viewBuilder.buildVerifyScreen(tx: tx, vault: vault)
-        case .pairing(let vault, let tx, let keysignPayload):
+        case .pairing(let vault, let tx, let keysignPayload, let fastVaultPassword):
             viewBuilder.buildPairScreen(
                 vault: vault,
                 tx: tx,
-                keysignPayload: keysignPayload
+                keysignPayload: keysignPayload,
+                fastVaultPassword: fastVaultPassword
             )
         case .keysign(let input, let tx):
             viewBuilder.buildKeysignScreen(input: input, tx: tx)

@@ -97,7 +97,8 @@ struct AgentChatView: View {
                     SendPairScreen(
                         vault: vault,
                         tx: tx,
-                        keysignPayload: keysignPayload
+                        keysignPayload: keysignPayload,
+                        fastVaultPassword: tx.fastVaultPassword.nilIfEmpty
                     )
                     .navigationDestination(for: SendRoute.self) { route in
                         SendRouter().build(route)

@@ -299,7 +299,8 @@ struct CircleWithdrawView: View {
                     to: SendRoute.pairing(
                         vault: vault,
                         tx: sendTransaction,
-                        keysignPayload: payload
+                        keysignPayload: payload,
+                        fastVaultPassword: fastVaultPassword.nilIfEmpty
                     )
                 )
 
