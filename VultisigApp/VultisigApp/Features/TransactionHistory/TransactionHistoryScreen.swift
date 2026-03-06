@@ -6,7 +6,7 @@
 import SwiftUI
 
 struct TransactionHistoryScreen: View {
-    @StateObject var viewModel: TransactionHistoryViewModel
+    @StateObject private var viewModel: TransactionHistoryViewModel
 
     @Environment(\.openURL) var openURL
 
@@ -110,10 +110,10 @@ struct TransactionHistoryScreen: View {
                 .foregroundStyle(Theme.colors.textPrimary)
 
             Image(systemName: "xmark")
-                .font(.system(size: 10, weight: .bold))
+                .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .padding(4)
-                .background(Circle().fill(.black.opacity(0.22)))
+                .background(Circle().fill(Theme.colors.bgSurface3))
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 6)
@@ -164,7 +164,7 @@ struct TransactionHistoryScreen: View {
         LinearGradient(
             colors: [
                 Theme.colors.bgPrimary,
-                Theme.colors.bgPrimary.opacity(0),
+                Theme.colors.bgPrimary.opacity(0)
             ],
             startPoint: .bottom,
             endPoint: .top

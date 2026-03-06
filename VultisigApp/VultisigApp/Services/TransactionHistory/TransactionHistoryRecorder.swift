@@ -219,7 +219,7 @@ final class TransactionHistoryRecorder {
                 txHash: approveTxHash,
                 pubKeyECDSA: vault.pubKeyECDSA,
                 coin: keysignPayload.coin,
-                amountCrypto: keysignPayload.fromAmountString,
+                amountCrypto: String(approvePayload.amount),
                 spender: approvePayload.spender,
                 chain: keysignPayload.coin.chain,
                 explorerLink: Endpoint.getExplorerURL(chain: keysignPayload.coin.chain, txid: approveTxHash)

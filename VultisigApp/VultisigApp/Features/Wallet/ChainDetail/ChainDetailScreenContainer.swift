@@ -51,6 +51,7 @@ struct ChainDetailScreenContainer: View {
                             ToolbarButton(image: "clock.arrow.circlepath", action: onHistory) { _ in
                                 Icon(named: "clock.arrow.circlepath", color: Theme.colors.textPrimary, size: 20, isSystem: true)
                             }
+                            .showIf(SettingsViewModel.shared.txHistoryEnabled)
                         }
                         CustomToolbarItem(placement: .trailing) {
                             ToolbarButton(image: "square-3d", action: onExplorer)
