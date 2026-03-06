@@ -47,13 +47,6 @@ struct ReceiveQRCodeBottomSheet: View {
         .background(Theme.colors.bgSurface1)
         .presentationDragIndicator(.visible)
         .applySheetSize(700, 450)
-        .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
-            CustomToolbarItem(placement: .leading) {
-                ToolbarButton(image: "x") {
-                    onClose()
-                }
-            }
-        }
         .onLoad {
             let qrCodeImage = QRCodeGenerator().generateImage(
                 qrStringData: coin.address,
@@ -74,6 +67,15 @@ struct ReceiveQRCodeBottomSheet: View {
                 type: .Address,
                 addressData: coin.address
             )
+        }
+        .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
+            #if os(macOS)
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "x") {
+                    onClose()
+                }
+            }
+            #endif
         }
     }
 
