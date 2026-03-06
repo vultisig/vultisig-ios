@@ -16,14 +16,14 @@ struct KeysignInput: Hashable {
     let customMessagePayload: CustomMessagePayload?
     let encryptionKeyHex: String
     let isInitiateDevice: Bool
-    }
+}
 
 struct KeysignDiscoveryView: View {
     let vault: Vault
     let keysignPayload: KeysignPayload?
     let customMessagePayload: CustomMessagePayload? // TODO: Switch to enum
     let fastVaultPassword: String?
-        @ObservedObject var shareSheetViewModel: ShareSheetViewModel
+    @ObservedObject var shareSheetViewModel: ShareSheetViewModel
     @State var previewType: QRShareSheetType = .Send
     var swapTransaction: SwapTransaction = SwapTransaction()
     var contentPadding: CGFloat?
@@ -36,14 +36,9 @@ struct KeysignDiscoveryView: View {
     @State var screenWidth: CGFloat = 0
     @State var screenHeight: CGFloat = 0
     @State var qrCodeImage: Image? = nil
-    @State var qrCodeString: String? = nil
-    @State var bannerText: String? = nil
-    @State private var resendCountdown: Int = 0
-    @State private var resendCountdownTask: Task<Void, Never>?
     @State var selectedNetwork = VultisigRelay.IsRelayEnabled ? NetworkPromptType.Internet : NetworkPromptType.Local
 
     @State var qrScannedAnimation: RiveViewModel? = nil
-    @State var dotsIndicatorVM: RiveViewModel? = nil
 
 #if os(iOS)
     @State var orientation = UIDevice.current.orientation
@@ -53,6 +48,10 @@ struct KeysignDiscoveryView: View {
 
     let adaptiveColumns = [
         GridItem(.adaptive(minimum: 150, maximum: 300), spacing: 16)
+    ]
+
+    let adaptiveColumnsMac = [
+        GridItem(.adaptive(minimum: 300, maximum: 500), spacing: 8)
     ]
 
     var localModeAvailable: Bool { vault.libType != .KeyImport }
@@ -70,7 +69,6 @@ struct KeysignDiscoveryView: View {
                 loader
             }
         }
-        .withBanner(text: $bannerText)
         .onLoad {
             Task { @MainActor in
                 qrScannedAnimation = RiveViewModel(fileName: "qrscanner", autoPlay: true)
@@ -109,7 +107,6 @@ struct KeysignDiscoveryView: View {
         ZStack(alignment: .bottom) {
             orientedContent
             switchLink
-                .frame(maxWidth: .infinity)
                 .background(Theme.colors.bgPrimary)
                 .showIf(localModeAvailable)
         }
@@ -118,44 +115,10 @@ struct KeysignDiscoveryView: View {
     var portraitContent: some View {
         ScrollView(showsIndicators: false) {
             paringQRCode
-            VStack(spacing: 10) {
-                waitingForDevicesText
-                disclaimer
-                resendNotificationButton
-            }
+            disclaimer
             list
         }
         .padding(.horizontal, contentPadding ?? 16)
-    }
-
-    @ViewBuilder
-    var resendNotificationButton: some View {
-        let isDisabled = resendCountdown > 0
-
-        Button {
-            notifyVaultDevices()
-        } label: {
-            HStack(spacing: 6) {
-                Icon(named: "bell", color: Theme.colors.alertInfo, size: 16)
-                Text(isDisabled
-                     ? String(format: "resendNotificationIn".localized, resendCountdownFormatted)
-                     : "resendNotification".localized
-                )
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.alertInfo)
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .inset(by: 0.5)
-                    .stroke(.white.opacity(0.03), lineWidth: 1)
-                    .fill(Theme.colors.bgButtonDisabled.opacity(0.5))
-            )
-        }
-        .disabled(isDisabled)
-        .padding(.bottom, 8)
-        .showIf(!vault.isFastVault)
     }
 
     @ViewBuilder
@@ -167,33 +130,24 @@ struct KeysignDiscoveryView: View {
         .padding(.bottom)
     }
 
-    @ViewBuilder
     var disclaimer: some View {
-        if selectedNetwork == .Local {
-            ZStack {
+        ZStack {
+            if selectedNetwork == .Local {
                 LocalModeDisclaimer()
             }
         }
     }
 
-    @ViewBuilder
-    var waitingForDevicesText: some View {
-        let description = selectedNetwork == .Internet ? "waitingForDevicesToConnect" : "localModeWaitingOnDevices"
-        HStack(alignment: .bottom, spacing: 2) {
-            Text(description.localized)
-                .font(Theme.fonts.title3)
-                .foregroundStyle(Theme.colors.textPrimary)
-
-            dotsIndicatorVM?.view()
-                .frame(width: 12, height: 12)
-                .offset(y: 2)
+    var listTitle: some View {
+        HStack(spacing: 8) {
+            Text(NSLocalizedString("devices", comment: ""))
+            Text("(\(viewModel.selections.count)/\(vault.getThreshold()+1))")
         }
-        .onAppear {
-            dotsIndicatorVM = RiveViewModel(fileName: "dots_indicator", autoPlay: true)
-        }
-        .onDisappear {
-            dotsIndicatorVM?.stop()
-        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .font(Theme.fonts.title2)
+        .foregroundColor(Theme.colors.textPrimary)
+        .padding(.bottom, 8)
+        .padding(.horizontal, 8)
     }
 
     var lookingForDevices: some View {
@@ -206,23 +160,6 @@ struct KeysignDiscoveryView: View {
 
     var keysignState: SetupVaultState {
         return fastVaultPassword == nil ? .secure : .fast
-    }
-
-    private var resendCountdownFormatted: String {
-        String(format: "%d:%02d", resendCountdown / 60, resendCountdown % 60)
-    }
-
-    private func startResendCountdown() {
-        resendCountdownTask?.cancel()
-        resendCountdown = 30
-        resendCountdownTask = Task { @MainActor in
-            while resendCountdown > 0 && !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(1))
-                if !Task.isCancelled && resendCountdown > 0 {
-                    resendCountdown -= 1
-                }
-            }
-        }
     }
 
     func setData() async {
@@ -245,11 +182,15 @@ struct KeysignDiscoveryView: View {
             return
         }
 
-        self.qrCodeString = qrCodeData
         self.qrCodeImage = qrCodeImage
 
         if !vault.isFastVault {
-            notifyVaultDevices()
+            Task {
+                await PushNotificationManager.shared.notifyVaultDevices(
+                    vault: vault,
+                    qrCodeData: qrCodeData
+                )
+            }
         }
 
         shareSheetViewModel.render(
@@ -263,15 +204,6 @@ struct KeysignDiscoveryView: View {
             fromAmount: previewType == .Swap ? getSwapFromAmount() : "",
             toAmount: previewType == .Swap ? getSwapToAmount() : ""
         )
-    }
-
-    func notifyVaultDevices() {
-        guard let qrCodeString else { return }
-        Task {
-            await PushNotificationManager.shared.notifyVaultDevices(vault: vault, qrCodeData: qrCodeString)
-            bannerText = "notificationSentSuccessfully".localized
-            startResendCountdown()
-        }
     }
 
     func getSwapFromAmount() -> String {
