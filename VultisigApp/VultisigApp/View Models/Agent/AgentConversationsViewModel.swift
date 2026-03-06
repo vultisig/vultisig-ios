@@ -43,15 +43,22 @@ final class AgentConversationsViewModel: ObservableObject {
         }
 
         isConnected = true
-        // Load data in parallel
-        async let convos: () = loadConversations(vault: vault)
-        async let starts: () = loadStarters(vault: vault)
+        // Load data in parallel, passing the already-fetched token to avoid re-fetching
+        async let convos: () = loadConversations(vault: vault, prefetchedToken: token)
+        async let starts: () = loadStarters(vault: vault, prefetchedToken: token)
         _ = await (convos, starts)
     }
 
-    func loadConversations(vault: Vault) async {
-        let token = await getValidToken(vault: vault)
+    func loadConversations(vault: Vault, prefetchedToken: AgentAuthToken? = nil) async {
+        let token: AgentAuthToken?
+        if let t = prefetchedToken {
+            token = t
+        } else {
+            token = await getValidToken(vault: vault)
+        }
+        #if DEBUG
         print("[AgentConvos] 📝 loadConversations: token=\(token != nil ? "present" : "none")")
+        #endif
 
         guard let token else {
             isLoading = false
@@ -70,20 +77,19 @@ final class AgentConversationsViewModel: ObservableObject {
                 token: token.token
             )
             conversations = response.conversations
+            #if DEBUG
             print("[AgentConvos] ✅ Loaded \(response.conversations.count) conversations")
+            #endif
             logger.info("Loaded \(response.conversations.count) conversations")
             self.isConnected = true
         } catch let error as AgentBackendClient.AgentBackendError {
             if case .unauthorized = error {
-                print("[AgentConvos] ⚠️ Unauthorized error in loadConversations")
                 self.passwordRequired = true
             } else {
-                print("[AgentConvos] ❌ Failed to load conversations: \(error)")
                 logger.error("Failed to load conversations: \(error.localizedDescription)")
                 self.error = error.localizedDescription
             }
         } catch {
-            print("[AgentConvos] ❌ Failed to load conversations: \(error)")
             logger.error("Failed to load conversations: \(error.localizedDescription)")
             self.error = error.localizedDescription
         }
@@ -93,7 +99,7 @@ final class AgentConversationsViewModel: ObservableObject {
 
     // MARK: - Load Starters
 
-    func loadStarters(vault: Vault) async {
+    func loadStarters(vault: Vault, prefetchedToken: AgentAuthToken? = nil) async {
         // Refresh every 30 minutes
         if let lastRefresh = lastStartersRefresh,
            Date().timeIntervalSince(lastRefresh) < 30 * 60,
@@ -101,14 +107,20 @@ final class AgentConversationsViewModel: ObservableObject {
             return
         }
 
-        guard let token = await getValidToken(vault: vault) else {
+        let token: AgentAuthToken?
+        if let t = prefetchedToken {
+            token = t
+        } else {
+            token = await getValidToken(vault: vault)
+        }
+        guard let token else {
             self.isConnected = false
             self.passwordRequired = true
             return
         }
 
         do {
-            let context = await AgentContextBuilder.buildContext(vault: vault)
+            let context = AgentContextBuilder.buildContext(vault: vault)
             let request = AgentGetStartersRequest(
                 publicKey: vault.pubKeyECDSA,
                 context: context
@@ -128,7 +140,6 @@ final class AgentConversationsViewModel: ObservableObject {
             lastStartersRefresh = Date()
         } catch let error as AgentBackendClient.AgentBackendError {
             if case .unauthorized = error {
-                print("[AgentConvos] ⚠️ Unauthorized error in loadStarters")
                 self.isConnected = false
                 self.passwordRequired = true
             } else {

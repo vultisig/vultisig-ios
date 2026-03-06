@@ -16,35 +16,47 @@ final class AgentToolExecutor {
 
         // MARK: Chain & Token Management (iOS-side)
         case "add_token", "add_coin":
-            return await executeAddToken(action: action, vault: vault)
+            let result = await executeAddToken(action: action, vault: vault)
+            if result.success { AgentContextBuilder.invalidateCache() }
+            return result
         case "add_chain":
-            return await executeAddChain(action: action, vault: vault)
+            let result = await executeAddChain(action: action, vault: vault)
+            if result.success { AgentContextBuilder.invalidateCache() }
+            return result
         case "remove_coin":
-            return await executeRemoveToken(action: action, vault: vault)
+            let result = executeRemoveToken(action: action, vault: vault)
+            if result.success { AgentContextBuilder.invalidateCache() }
+            return result
         case "remove_chain":
-            return await executeRemoveChain(action: action, vault: vault)
+            let result = executeRemoveChain(action: action, vault: vault)
+            if result.success { AgentContextBuilder.invalidateCache() }
+            return result
         case "search_token":
-            return await executeSearchToken(action: action, vault: vault)
+            return executeSearchToken(action: action, vault: vault)
 
         // MARK: Vault Info (iOS-side)
         case "list_vaults":
-            return await executeListVaults(action: action)
+            return executeListVaults(action: action)
         case "get_addresses":
-            return await executeGetAddresses(action: action, vault: vault)
+            return executeGetAddresses(action: action, vault: vault)
         case "get_balances":
-            return await executeGetBalances(action: action, vault: vault)
+            return executeGetBalances(action: action, vault: vault)
         case "get_portfolio":
-            return await executeGetPortfolio(action: action, vault: vault)
+            return executeGetPortfolio(action: action, vault: vault)
         case "get_market_price":
-            return await executeGetMarketPrice(action: action, vault: vault)
+            return executeGetMarketPrice(action: action, vault: vault)
 
         // MARK: Address Book (iOS-side)
         case "get_address_book":
-            return await executeGetAddressBook(action: action)
+            return executeGetAddressBook(action: action)
         case "add_address_book", "address_book_add":
-            return await executeAddAddressBook(action: action)
+            let result = executeAddAddressBook(action: action)
+            if result.success { AgentContextBuilder.invalidateCache() }
+            return result
         case "delete_address_book", "address_book_remove":
-            return await executeDeleteAddressBook(action: action)
+            let result = executeDeleteAddressBook(action: action)
+            if result.success { AgentContextBuilder.invalidateCache() }
+            return result
 
         // MARK: Signing (requires iOS Keysign flow - not auto-executeable)
         case "sign_tx", "sign_transaction_bundle":
@@ -338,7 +350,7 @@ final class AgentToolExecutor {
             )
 
             do {
-                if let newCoin = try await CoinService.addIfNeeded(asset: feeAsset, to: vault, priceProviderId: nil) {
+                if let newCoin = try CoinService.addIfNeeded(asset: feeAsset, to: vault, priceProviderId: nil) {
                     await CoinService.addDiscoveredTokens(nativeToken: newCoin, to: vault)
                     results.append(AgentAddChainResult(
                         chain: chainObj.rawValue,

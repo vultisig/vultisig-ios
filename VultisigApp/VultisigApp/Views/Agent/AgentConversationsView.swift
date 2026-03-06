@@ -147,22 +147,25 @@ struct AgentConversationsView: View {
             }
             .padding(.bottom, 16)
 
-            // Past conversations — List with native swipe-to-delete
-            List {
+            // Past conversations — LazyVStack for proper row virtualisation.
+            // (The outer ScrollView already handles scrolling; no inner List needed.)
+            LazyVStack(spacing: 0) {
                 ForEach(viewModel.conversations) { conv in
                     conversationRow(conv)
-                        .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-                }
-                .onDelete { indexSet in
-                    deleteConversations(at: indexSet)
+                        .padding(.bottom, 4)
+                        // Swipe-to-delete (replaces List's .onDelete)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                            Button(role: .destructive) {
+                                guard let vault = appViewModel.selectedVault else { return }
+                                if let idx = viewModel.conversations.firstIndex(where: { $0.id == conv.id }) {
+                                    deleteConversations(at: IndexSet(integer: idx))
+                                }
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
                 }
             }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
-            .frame(minHeight: CGFloat(viewModel.conversations.count) * 74)
-            .scrollDisabled(true)
         }
     }
 
@@ -219,13 +222,27 @@ struct AgentConversationsView: View {
         }
     }
 
-    private func formatDate(_ dateStr: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: dateStr) else { return dateStr }
+    // MARK: - Shared formatters (one allocation per view lifetime, not per row)
 
-        let relative = RelativeDateTimeFormatter()
-        relative.unitsStyle = .abbreviated
-        return relative.localizedString(for: date, relativeTo: Date())
+    private static let iso8601Formatter: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return f
+    }()
+    private static let relativeDateFormatter: RelativeDateTimeFormatter = {
+        let f = RelativeDateTimeFormatter()
+        f.unitsStyle = .abbreviated
+        return f
+    }()
+
+    private func formatDate(_ dateStr: String) -> String {
+        guard let date = Self.iso8601Formatter.date(from: dateStr) else {
+            // Fallback: try without fractional seconds
+            let plain = ISO8601DateFormatter()
+            guard let d = plain.date(from: dateStr) else { return dateStr }
+            return Self.relativeDateFormatter.localizedString(for: d, relativeTo: Date())
+        }
+        return Self.relativeDateFormatter.localizedString(for: date, relativeTo: Date())
     }
 }
 

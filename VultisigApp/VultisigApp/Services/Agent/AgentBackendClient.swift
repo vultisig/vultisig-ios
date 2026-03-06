@@ -12,6 +12,32 @@ final class AgentBackendClient {
 
     private let logger = Logger(subsystem: "com.vultisig", category: "AgentBackendClient")
 
+    // MARK: - Shared formatters (allocated once, reused on every call)
+
+    static let sharedEncoder = JSONEncoder()
+    static let sharedDecoder = JSONDecoder()
+
+    /// Primary ISO-8601 formatter — matches timestamps WITH fractional seconds (e.g. 2026-03-06T12:34:56.789Z)
+    static let sharedISO8601: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return f
+    }()
+
+    /// Fallback — matches timestamps WITHOUT fractional seconds (e.g. 2026-03-06T12:34:56Z)
+    /// Bug 5 fix: the backend sometimes omits fractional seconds; without a fallback those
+    /// dates silently became Date() and scrambled message ordering in loaded chats.
+    private static let sharedISO8601NoFrac: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
+        return f
+    }()
+
+    /// Parse an ISO-8601 string, trying fractional-second format first then falling back.
+    static func parseISO8601(_ string: String) -> Date? {
+        sharedISO8601.date(from: string) ?? sharedISO8601NoFrac.date(from: string)
+    }
+
     /// Builds a fresh URLSession for each SSE stream.
     /// We use ephemeral configuration so there is NO shared connection pool:
     /// HTTP/2 ignores the `Connection: close` header and reuses TCP streams,
@@ -122,7 +148,7 @@ final class AgentBackendClient {
                     if !token.isEmpty {
                         urlRequest.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
                     }
-                    urlRequest.httpBody = try JSONEncoder().encode(request)
+                    urlRequest.httpBody = try AgentBackendClient.sharedEncoder.encode(request)
 
                     // Fresh ephemeral session per stream. HTTP/2 ignores Connection: close
                     // and reuses the same TCP stream across requests — creating a new session
@@ -130,17 +156,27 @@ final class AgentBackendClient {
                     let session = AgentBackendClient.makeSseSession()
                     defer { session.finishTasksAndInvalidate() }
                     let (bytes, response) = try await session.bytes(for: urlRequest)
+                    #if DEBUG
                     print("[AgentBackend] 🌊 SSE response received")
+                    #endif
 
                     guard let httpResponse = response as? HTTPURLResponse else {
+                        #if DEBUG
                         print("[AgentBackend] ❌ Not an HTTP response")
+                        #endif
                         throw AgentBackendError.noBody
                     }
+                    #if DEBUG
                     print("[AgentBackend] 🌊 SSE HTTP status: \(httpResponse.statusCode)")
+                    #endif
+                    #if DEBUG
                     print("[AgentBackend] 🌊 Content-Type: \(httpResponse.value(forHTTPHeaderField: "Content-Type") ?? "nil")")
+                    #endif
 
                     if httpResponse.statusCode == 401 {
+                        #if DEBUG
                         print("[AgentBackend] ❌ 401 Unauthorized")
+                        #endif
                         throw AgentBackendError.unauthorized
                     }
 
@@ -150,7 +186,9 @@ final class AgentBackendClient {
                             body += line
                         }
                         let errMsg = Self.parseErrorMessage(from: body) ?? body
+                        #if DEBUG
                         print("[AgentBackend] ❌ HTTP \(httpResponse.statusCode): \(errMsg)")
+                        #endif
                         throw AgentBackendError.httpError(status: httpResponse.statusCode, message: errMsg)
                     }
 
@@ -179,12 +217,16 @@ final class AgentBackendClient {
 
                     for try await line in bytes.lines {
                         if Task.isCancelled {
+                            #if DEBUG
                             print("[AgentBackend] ⚠️ SSE task cancelled")
+                            #endif
                             continuation.finish()
                             return
                         }
                         lineCount += 1
+                        #if DEBUG
                         print("[AgentBackend] 📄 SSE line #\(lineCount): \(line.prefix(120))")
+                        #endif
 
                         if line.hasPrefix("event: ") {
                             currentEvent = String(line.dropFirst(7)).trimmingCharacters(in: .whitespaces)
@@ -193,7 +235,9 @@ final class AgentBackendClient {
 
                         if line.hasPrefix("data: ") {
                             let jsonStr = String(line.dropFirst(6)).trimmingCharacters(in: .init(charactersIn: "\r"))
+                            #if DEBUG
                             print("[AgentBackend] 📦 SSE data event='\(currentEvent)' json=\(jsonStr.prefix(200))")
+                            #endif
 
                             if let event = self.processSSEEvent(eventName: currentEvent, jsonStr: jsonStr) {
                                 if case .message = event {
@@ -201,13 +245,17 @@ final class AgentBackendClient {
                                 }
                                 continuation.yield(event)
                             } else {
+                                #if DEBUG
                                 print("[AgentBackend] ⚠️ SSE processSSEEvent returned nil for event='\(currentEvent)'")
+                                #endif
                             }
                             currentEvent = ""
                             continue
                         }
                     }
+                    #if DEBUG
                     print("[AgentBackend] 🏁 SSE stream ended, total lines: \(lineCount), hasMessage: \(hasMessage)")
+                    #endif
 
                     if !hasMessage {
                         logger.warning("SSE stream ended without message event")
@@ -235,44 +283,44 @@ final class AgentBackendClient {
             switch eventName {
             case "text_delta":
                 struct Delta: Decodable { let delta: String }
-                let parsed = try JSONDecoder().decode(Delta.self, from: data)
+                let parsed = try AgentBackendClient.sharedDecoder.decode(Delta.self, from: data)
                 return .textDelta(parsed.delta)
 
             case "title":
                 struct Title: Decodable { let title: String }
-                let parsed = try JSONDecoder().decode(Title.self, from: data)
+                let parsed = try AgentBackendClient.sharedDecoder.decode(Title.self, from: data)
                 return .title(parsed.title)
 
             case "actions":
                 struct Actions: Decodable { let actions: [AgentBackendAction] }
-                let parsed = try JSONDecoder().decode(Actions.self, from: data)
+                let parsed = try AgentBackendClient.sharedDecoder.decode(Actions.self, from: data)
                 return .actions(parsed.actions)
 
             case "suggestions":
                 struct Suggestions: Decodable { let suggestions: [AgentBackendSuggestion] }
-                let parsed = try JSONDecoder().decode(Suggestions.self, from: data)
+                let parsed = try AgentBackendClient.sharedDecoder.decode(Suggestions.self, from: data)
                 return .suggestions(parsed.suggestions)
 
             case "tx_ready":
-                let parsed = try JSONDecoder().decode(AgentTxReady.self, from: data)
+                let parsed = try AgentBackendClient.sharedDecoder.decode(AgentTxReady.self, from: data)
                 return .txReady(parsed)
 
             case "tokens":
                 // Can be { tokens: [...] } or direct array
-                if let wrapper = try? JSONDecoder().decode(TokensWrapper.self, from: data) {
+                if let wrapper = try? AgentBackendClient.sharedDecoder.decode(TokensWrapper.self, from: data) {
                     return .tokens(wrapper.tokens)
                 }
-                let tokens = try JSONDecoder().decode([AgentTokenSearchResult].self, from: data)
+                let tokens = try AgentBackendClient.sharedDecoder.decode([AgentTokenSearchResult].self, from: data)
                 return .tokens(tokens)
 
             case "message":
                 struct MessageWrapper: Decodable { let message: AgentBackendMessage }
-                let parsed = try JSONDecoder().decode(MessageWrapper.self, from: data)
+                let parsed = try AgentBackendClient.sharedDecoder.decode(MessageWrapper.self, from: data)
                 return .message(parsed.message)
 
             case "error":
                 struct ErrorPayload: Decodable { let error: String? }
-                let parsed = try JSONDecoder().decode(ErrorPayload.self, from: data)
+                let parsed = try AgentBackendClient.sharedDecoder.decode(ErrorPayload.self, from: data)
                 return .error(parsed.error ?? "stream error")
 
             case "done":
@@ -301,7 +349,7 @@ final class AgentBackendClient {
         if !token.isEmpty {
             request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
-        request.httpBody = try JSONEncoder().encode(body)
+        request.httpBody = try AgentBackendClient.sharedEncoder.encode(body)
 
         let (data, response) = try await URLSession.shared.data(for: request)
 
@@ -326,7 +374,7 @@ final class AgentBackendClient {
             }
         }
 
-        return try JSONDecoder().decode(T.self, from: data)
+        return try AgentBackendClient.sharedDecoder.decode(T.self, from: data)
     }
 
     // Overload for [String: Any] body (non-Encodable dictionaries)
@@ -365,7 +413,7 @@ final class AgentBackendClient {
             }
         }
 
-        return try JSONDecoder().decode(T.self, from: data)
+        return try AgentBackendClient.sharedDecoder.decode(T.self, from: data)
     }
 
     // MARK: - Helpers

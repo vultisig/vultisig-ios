@@ -21,6 +21,39 @@ enum AgentContextBuilder {
         "Use markdown formatting for readability."
     ].joined(separator: " ")
 
+    // MARK: - Context Cache
+
+    /// Cached address-book and vault slices for the light context path.
+    /// Both are stable across messages in a single conversation session, so we
+    /// hold them for up to `cacheMaxAge` seconds before re-fetching.
+    private static var cachedAddressBook: [AgentAddressBookEntry]? = nil
+    private static var cachedAllVaults: [AgentVaultInfo]? = nil
+    private static var cacheTimestamp: Date? = nil
+    private static let cacheMaxAge: TimeInterval = 5 * 60 // 5 minutes
+
+    /// Bug fix (bug 4): using non-nil Optionals as the cache sentinel is wrong when
+    /// `cachedAddressBook` legitimately stays nil for users with no address-book entries —
+    /// the `cachedAddressBook != nil && cachedAllVaults != nil` guard would never match
+    /// and would re-fetch from SwiftData on every message for those users.
+    /// A separate boolean flag correctly distinguishes "never populated" from "populated but empty".
+    private static var cachePopulated: Bool = false
+
+    private static var isCacheValid: Bool {
+        guard cachePopulated, let ts = cacheTimestamp else { return false }
+        return Date().timeIntervalSince(ts) < cacheMaxAge
+    }
+
+    /// Invalidate the cache. Call this whenever local vault or address-book data changes —
+    /// e.g. after add/remove token, add/remove chain, or add/delete address-book entry.
+    @MainActor static func invalidateCache() {
+        cachedAddressBook = nil
+        cachedAllVaults = nil
+        cacheTimestamp = nil
+        cachePopulated = false   // Bug fix (bug 3): reset sentinel so next call re-fetches
+    }
+
+    // MARK: - Full Context (first message)
+
     /// Build the message context from the current vault state
     @MainActor static func buildContext(vault: Vault, balances: [AgentBalanceInfo]? = nil) -> AgentMessageContext {
         var addresses: [String: String] = [:]
@@ -43,10 +76,65 @@ enum AgentContextBuilder {
             ))
         }
 
-        // Wire up address book items from SwiftData
+        // Fetch + cache address book and all vaults
+        let (addressBook, allVaults) = fetchAndCacheStaticSlices()
+
+        return AgentMessageContext(
+            vaultAddress: vault.pubKeyECDSA,
+            vaultName: vault.name,
+            balances: balances,
+            addresses: addresses,
+            coins: coins,
+            addressBook: addressBook,
+            allVaults: allVaults,
+            instructions: instructions
+        )
+    }
+
+    // MARK: - Light Context (subsequent messages)
+
+    /// Build a lightweight context for subsequent messages.
+    /// Skips coin enumeration and returns cached address-book / vault slices
+    /// rather than re-fetching from SwiftData on every message.
+    @MainActor static func buildLightContext(vault: Vault) -> AgentMessageContext {
+        let (addressBook, allVaults) = fetchAndCacheStaticSlices()
+
+        // Only include vault-specific coin list (cheap — it's already loaded in memory)
+        var addresses: [String: String] = [:]
+        for coin in vault.coins where coin.isNativeToken && !coin.address.isEmpty {
+            if addresses[coin.chain.rawValue] == nil {
+                addresses[coin.chain.rawValue] = coin.address
+            }
+        }
+
+        return AgentMessageContext(
+            vaultAddress: vault.pubKeyECDSA,
+            vaultName: vault.name,
+            balances: nil,
+            addresses: addresses,
+            coins: nil,          // Omit full coin list on light requests
+            addressBook: addressBook,
+            allVaults: allVaults,
+            instructions: instructions
+        )
+    }
+
+    // MARK: - Internal Cache Helper
+
+    @MainActor
+    private static func fetchAndCacheStaticSlices() -> (addressBook: [AgentAddressBookEntry]?, allVaults: [AgentVaultInfo]?) {
+        // Return cached values if they are still fresh (uses cachePopulated sentinel — not Optional nil-check)
+        if isCacheValid {
+            return (cachedAddressBook, cachedAllVaults)
+        }
+
+        guard let modelContext = Storage.shared.modelContext else {
+            return (nil, nil)
+        }
+
+        // --- Address Book ---
         var addressBookEntries: [AgentAddressBookEntry]? = nil
-        if let modelContext = Storage.shared.modelContext,
-           let items = try? modelContext.fetch(FetchDescriptor<AddressBookItem>()),
+        if let items = try? modelContext.fetch(FetchDescriptor<AddressBookItem>()),
            !items.isEmpty {
             addressBookEntries = items.map {
                 AgentAddressBookEntry(
@@ -57,10 +145,9 @@ enum AgentContextBuilder {
             }
         }
 
-        // Include all vaults with their addresses and public keys
+        // --- All Vaults ---
         var allVaults: [AgentVaultInfo]? = nil
-        if let modelContext = Storage.shared.modelContext,
-           let vaults = try? modelContext.fetch(FetchDescriptor<Vault>()) {
+        if let vaults = try? modelContext.fetch(FetchDescriptor<Vault>()) {
             allVaults = vaults.map { v in
                 let nativeCoins = v.coins.filter { $0.isNativeToken }
                 var vaultAddresses: [String: String] = [:]
@@ -79,20 +166,12 @@ enum AgentContextBuilder {
             }
         }
 
-        return AgentMessageContext(
-            vaultAddress: vault.pubKeyECDSA,
-            vaultName: vault.name,
-            balances: balances,
-            addresses: addresses,
-            coins: coins,
-            addressBook: addressBookEntries,
-            allVaults: allVaults,
-            instructions: instructions
-        )
-    }
+        // Store in cache — set sentinel LAST so isCacheValid stays false if we crash mid-fetch
+        cachedAddressBook = addressBookEntries
+        cachedAllVaults = allVaults
+        cacheTimestamp = Date()
+        cachePopulated = true   // Bug fix: sentinel marks cache as valid regardless of nil arrays
 
-    /// Build a lightweight context (without balances) for subsequent messages
-    @MainActor static func buildLightContext(vault: Vault) -> AgentMessageContext {
-        buildContext(vault: vault, balances: nil)
+        return (addressBookEntries, allVaults)
     }
 }

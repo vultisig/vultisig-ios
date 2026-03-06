@@ -526,6 +526,9 @@ struct AgentChatMessage: Identifiable {
     var txStatus: AgentTxStatusInfo?
     var tokenResults: [AgentTokenSearchResult]?
     var txProposal: AgentTxReady?
+    /// True while the SSE stream is still delivering characters.
+    /// The view renders plain text (no Markdown parsing) while this is true.
+    var isStreaming: Bool = false
 }
 
 enum AgentChatRole {

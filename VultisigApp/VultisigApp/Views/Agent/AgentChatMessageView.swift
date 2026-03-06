@@ -30,10 +30,19 @@ struct AgentChatMessageView: View {
             if message.role == .user { Spacer(minLength: 60) }
 
             VStack(alignment: message.role == .user ? .trailing : .leading, spacing: 4) {
-                Text(.init(message.content)) // Renders markdown
-                    .font(Theme.fonts.bodyMMedium)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                    .textSelection(.enabled)
+                // Use verbatim text while streaming to skip Markdown re-parsing on every delta.
+                // After the stream finalizes (isStreaming = false), switch to full Markdown.
+                if message.isStreaming {
+                    Text(verbatim: message.content)
+                        .font(Theme.fonts.bodyMMedium)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                        .textSelection(.enabled)
+                } else {
+                    Text(.init(message.content)) // Renders markdown
+                        .font(Theme.fonts.bodyMMedium)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                        .textSelection(.enabled)
+                }
 
                 // Token results
                 if let tokens = message.tokenResults, !tokens.isEmpty {
