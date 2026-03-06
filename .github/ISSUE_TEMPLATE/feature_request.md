@@ -11,7 +11,7 @@ assignees: ''
 ---
 type: "feature"
 priority: ""              <!-- critical | high | medium | low -->
-size: ""                  <!-- tiny (<1 file) | small (1-3 files) | medium (3-8 files) -->
+size: ""                  <!-- tiny (1 file) | small (1-3 files) | medium (3-8 files) -->
 platform: [ios]
 files:
   read: []                <!-- Files for context -->
