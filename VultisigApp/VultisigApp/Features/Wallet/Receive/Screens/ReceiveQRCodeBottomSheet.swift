@@ -41,13 +41,6 @@ struct ReceiveQRCodeBottomSheet: View {
             .padding(.horizontal, 16)
             .frame(maxWidth: .infinity) // Use maxWidth instead of GeometryReader
             .background(ModalBackgroundView(width: proxy.size.width))
-            .overlay(alignment: .topLeading) {
-                ToolbarButton(image: "x") {
-                    onClose()
-                }
-                .padding(.leading, 16)
-                .padding(.top, 16)
-            }
         }
         .presentationDetents([.height(465)])
         .presentationBackground(Theme.colors.bgSurface1)
@@ -74,6 +67,15 @@ struct ReceiveQRCodeBottomSheet: View {
                 type: .Address,
                 addressData: coin.address
             )
+        }
+        .crossPlatformToolbar(ignoresTopEdge: true, showsBackButton: false) {
+            #if os(macOS)
+            CustomToolbarItem(placement: .leading) {
+                ToolbarButton(image: "x") {
+                    onClose()
+                }
+            }
+            #endif
         }
     }
 
