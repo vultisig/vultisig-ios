@@ -32,7 +32,7 @@ struct DefiCircleRow: View {
                         .font(Theme.fonts.bodySMedium)
                         .foregroundStyle(Theme.colors.textPrimary)
 
-                    if vault.circleWalletAddress != nil {
+                    if let address = vault.circleWalletAddress, !address.isEmpty {
                         Text(NSLocalizedString("circleRowYieldAccount", comment: "Yield Account"))
                             .font(Theme.fonts.caption12)
                             .foregroundStyle(Theme.colors.textTertiary)
@@ -64,7 +64,7 @@ struct DefiCircleRow: View {
     @ViewBuilder
     private var rightSideContent: some View {
         VStack(alignment: .trailing, spacing: 4) {
-            if vault.circleWalletAddress != nil {
+            if let address = vault.circleWalletAddress, !address.isEmpty {
                 // Wallet exists - show balance or loading/error state
                 if isLoading {
                     // Loading state
@@ -109,7 +109,7 @@ struct DefiCircleRow: View {
     }
 
     private func loadBalance() async {
-        guard let address = vault.circleWalletAddress else {
+        guard let address = vault.circleWalletAddress, !address.isEmpty else {
             await MainActor.run {
                 isLoading = false
             }
