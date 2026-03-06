@@ -12,6 +12,7 @@ final class TransactionStatusPoller {
     private let service = TransactionStatusService.shared
     private let recorder = TransactionHistoryRecorder.shared
     private var activeTasks: [String: Task<Void, Never>] = [:]
+    private var taskTokens: [String: UUID] = [:]
 
     private init() {}
 
@@ -24,18 +25,20 @@ final class TransactionStatusPoller {
     ) {
         guard activeTasks[txHash] == nil else { return }
 
+        let token = UUID()
+        taskTokens[txHash] = token
         let config = ChainStatusConfig.config(for: chain)
 
-        activeTasks[txHash] = Task {
+        let task = Task { [weak self] in
             while !Task.isCancelled {
                 do {
-                    let result = try await service.checkTransactionStatus(
+                    let result = try await self?.service.checkTransactionStatus(
                         txHash: txHash,
                         chain: chain
                     )
 
-                    if let historyStatus = mapToHistoryStatus(result) {
-                        recorder.updateStatus(
+                    if let result, let historyStatus = self?.mapToHistoryStatus(result) {
+                        self?.recorder.updateStatus(
                             txHash: txHash,
                             pubKeyECDSA: pubKeyECDSA,
                             status: historyStatus
@@ -52,18 +55,27 @@ final class TransactionStatusPoller {
                 }
             }
 
-            activeTasks.removeValue(forKey: txHash)
+            await self?.cleanupTask(txHash: txHash, token: token)
         }
+        activeTasks[txHash] = task
     }
 
     func stopPolling(txHash: String) {
         activeTasks[txHash]?.cancel()
         activeTasks.removeValue(forKey: txHash)
+        taskTokens.removeValue(forKey: txHash)
     }
 
     func stopAll() {
         activeTasks.values.forEach { $0.cancel() }
         activeTasks.removeAll()
+        taskTokens.removeAll()
+    }
+
+    private func cleanupTask(txHash: String, token: UUID) {
+        guard taskTokens[txHash] == token else { return }
+        activeTasks.removeValue(forKey: txHash)
+        taskTokens.removeValue(forKey: txHash)
     }
 
     /// Returns a terminal TransactionHistoryStatus if the result is terminal, nil if still pending.
