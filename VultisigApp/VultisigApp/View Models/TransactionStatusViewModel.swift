@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 import SwiftUI
 
 @MainActor
@@ -17,6 +18,7 @@ class TransactionStatusViewModel: ObservableObject {
     private let config: ChainStatusConfig
     private let service = TransactionStatusService.shared
     private let storage = StoredPendingTransactionStorage.shared
+    private let logger = Logger(subsystem: "com.vultisig.app", category: "tx-status-viewmodel")
 
     // Optional metadata for persistence
     private let coinTicker: String?
@@ -120,7 +122,7 @@ class TransactionStatusViewModel: ObservableObject {
                 } catch is CancellationError {
                     break
                 } catch {
-                    print("TransactionStatusViewModel: Polling error: \(error)")
+                    logger.error("Polling error: \(error)")
                     // On error, retry after poll interval
                     try? await Task.sleep(for: .seconds(config.pollInterval))
                 }
@@ -179,7 +181,7 @@ class TransactionStatusViewModel: ObservableObject {
                 pubKeyECDSA: pubKeyECDSA
             )
         } catch {
-            print("TransactionStatusViewModel: Failed to save status: \(error)")
+            logger.error("Failed to save status: \(error)")
         }
     }
 

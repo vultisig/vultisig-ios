@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import OSLog
 import SwiftUI
 
 struct TransactionHistoryCoinAsset: Hashable {
@@ -28,6 +29,7 @@ class TransactionHistoryViewModel: ObservableObject {
 
     private let storage = TransactionHistoryStorage.shared
     private let poller = TransactionStatusPoller.shared
+    private let logger = Logger(subsystem: "com.vultisig.app", category: "tx-history-viewmodel")
 
     init(pubKeyECDSA: String, vaultName: String, chainFilter: Chain?) {
         self.pubKeyECDSA = pubKeyECDSA
@@ -46,7 +48,7 @@ class TransactionHistoryViewModel: ObservableObject {
             }
             pollInProgressTransactions()
         } catch {
-            print("TransactionHistoryViewModel: Failed to load: \(error)")
+            logger.error("Failed to load: \(error)")
         }
     }
 

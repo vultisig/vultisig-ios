@@ -4,12 +4,14 @@
 //
 
 import Foundation
+import OSLog
 
 @MainActor
 final class TransactionHistoryRecorder {
     static let shared = TransactionHistoryRecorder()
 
     private let storage = TransactionHistoryStorage.shared
+    private let logger = Logger(subsystem: "com.vultisig.app", category: "tx-history-recorder")
 
     private init() {}
 
@@ -60,7 +62,7 @@ final class TransactionHistoryRecorder {
         do {
             try storage.save(data)
         } catch {
-            print("TransactionHistoryRecorder: save failed for txHash=\(txHash): \(error)")
+            logger.error("Save failed for txHash=\(txHash): \(error)")
         }
     }
 
@@ -116,7 +118,7 @@ final class TransactionHistoryRecorder {
         do {
             try storage.save(data)
         } catch {
-            print("TransactionHistoryRecorder: save failed for txHash=\(txHash): \(error)")
+            logger.error("Save failed for txHash=\(txHash): \(error)")
         }
     }
 
@@ -163,7 +165,7 @@ final class TransactionHistoryRecorder {
         do {
             try storage.save(data)
         } catch {
-            print("TransactionHistoryRecorder: save failed for txHash=\(txHash): \(error)")
+            logger.error("Save failed for txHash=\(txHash): \(error)")
         }
     }
 
@@ -231,7 +233,7 @@ final class TransactionHistoryRecorder {
         do {
             try storage.updateStatus(txHash: txHash, pubKeyECDSA: pubKeyECDSA, status: status)
         } catch {
-            print("TransactionHistoryRecorder: updateStatus failed for txHash=\(txHash): \(error)")
+            logger.error("Update status failed for txHash=\(txHash): \(error)")
         }
     }
 }
