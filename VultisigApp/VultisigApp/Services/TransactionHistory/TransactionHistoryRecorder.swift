@@ -57,7 +57,11 @@ final class TransactionHistoryRecorder {
             completedAt: nil,
             estimatedTime: ChainStatusConfig.config(for: chain).estimatedTime
         )
-        try? storage.save(data)
+        do {
+            try storage.save(data)
+        } catch {
+            print("TransactionHistoryRecorder: save failed for txHash=\(txHash): \(error)")
+        }
     }
 
     // MARK: - Record Swap
@@ -109,7 +113,11 @@ final class TransactionHistoryRecorder {
             completedAt: nil,
             estimatedTime: ChainStatusConfig.config(for: chain).estimatedTime
         )
-        try? storage.save(data)
+        do {
+            try storage.save(data)
+        } catch {
+            print("TransactionHistoryRecorder: save failed for txHash=\(txHash): \(error)")
+        }
     }
 
     // MARK: - Record Approve
@@ -152,7 +160,11 @@ final class TransactionHistoryRecorder {
             completedAt: nil,
             estimatedTime: ChainStatusConfig.config(for: chain).estimatedTime
         )
-        try? storage.save(data)
+        do {
+            try storage.save(data)
+        } catch {
+            print("TransactionHistoryRecorder: save failed for txHash=\(txHash): \(error)")
+        }
     }
 
     // MARK: - Record from KeysignPayload (co-signer path)
@@ -216,6 +228,10 @@ final class TransactionHistoryRecorder {
     // MARK: - Update Status
 
     func updateStatus(txHash: String, pubKeyECDSA: String, status: TransactionHistoryStatus) {
-        try? storage.updateStatus(txHash: txHash, pubKeyECDSA: pubKeyECDSA, status: status)
+        do {
+            try storage.updateStatus(txHash: txHash, pubKeyECDSA: pubKeyECDSA, status: status)
+        } catch {
+            print("TransactionHistoryRecorder: updateStatus failed for txHash=\(txHash): \(error)")
+        }
     }
 }
