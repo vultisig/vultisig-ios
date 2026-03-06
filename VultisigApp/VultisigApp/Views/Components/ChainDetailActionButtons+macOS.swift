@@ -10,14 +10,21 @@ import WebKit
 
 struct PlatformWebView: NSViewRepresentable {
     let url: URL
-    // swiftlint:disable:next unused_parameter
+
     func makeNSView(context: Context) -> WKWebView {
         let webView = WKWebView()
+        webView.setValue(false, forKey: "drawsBackground")
+        webView.navigationDelegate = context.coordinator
         webView.load(URLRequest(url: url))
         return webView
     }
+
     // swiftlint:disable:next unused_parameter
     func updateNSView(_ nsView: WKWebView, context: Context) {}
+
+    func makeCoordinator() -> WebViewCoordinator {
+        WebViewCoordinator()
+    }
 }
 
 #endif
