@@ -6,12 +6,14 @@
 //
 
 import Foundation
+import OSLog
 
 final class FastVaultService {
 
     static let shared = FastVaultService()
 
     private let endpoint = "https://api.vultisig.com/vault"
+    private let logger = Logger(subsystem: "com.vultisig", category: "FastVaultService")
 
     static func localPartyID(sessionID: String) -> String {
         guard let data = sessionID.data(using: .utf8) else {
@@ -68,7 +70,7 @@ final class FastVaultService {
         let req = VaultCreateRequest(name: name, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email, lib_type: lib_type)
 
         Utils.sendRequest(urlString: "\(endpoint)/create", method: "POST", headers: [:], body: req) { _ in
-            print("Send create request to Vultiserver successfully")
+            self.logger.info("Sent FastVault create request successfully")
         }
     }
 
@@ -86,7 +88,7 @@ final class FastVaultService {
         let req = KeyImportRequest(name: name, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email, lib_type: lib_type, chains: chains)
 
         Utils.sendRequest(urlString: "\(endpoint)/import", method: "POST", headers: [:], body: req) { _ in
-            print("Send create request to Vultiserver successfully")
+            self.logger.info("Sent FastVault import request successfully")
         }
     }
 
@@ -116,7 +118,7 @@ final class FastVaultService {
                                  lib_type: lib_type)
 
         Utils.sendRequest(urlString: "\(endpoint)/reshare", method: "POST", headers: [:], body: req) { _ in
-            print("Send reshare request to Vultiserver successfully")
+            self.logger.info("Sent FastVault reshare request successfully")
         }
     }
 
@@ -159,7 +161,7 @@ final class FastVaultService {
         let urlString = Endpoint.FastVaultBackupVerification + parameters
 
         guard let url = URL(string: urlString) else {
-            print("Invalid URL string.")
+            logger.error("FastVault backup verification URL is invalid")
             return false
         }
 
@@ -176,7 +178,7 @@ final class FastVaultService {
                 return false
             }
         } catch {
-            print("Error fetching data: \(error.localizedDescription)")
+            logger.error("FastVault backup verification failed: \(error.localizedDescription, privacy: .public)")
             return false
         }
     }
@@ -197,7 +199,7 @@ final class FastVaultService {
         )
 
         Utils.sendRequest(urlString: "\(endpoint)/mldsa", method: "POST", headers: [:], body: req) { _ in
-            print("Send MLDSA keygen request to Vultiserver successfully")
+            self.logger.info("Sent FastVault MLDSA keygen request successfully")
         }
     }
 
@@ -214,7 +216,7 @@ final class FastVaultService {
                                  email: email)
 
         Utils.sendRequest(urlString: "\(endpoint)/migrate", method: "POST", headers: [:], body: req) { _ in
-            print("Send migration request to Vultiserver successfully")
+            self.logger.info("Sent FastVault migration request successfully")
         }
     }
 }

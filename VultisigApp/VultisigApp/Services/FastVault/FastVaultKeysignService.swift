@@ -44,6 +44,18 @@ final class FastVaultKeysignService {
 
     private let logger = Logger(subsystem: "com.vultisig", category: "FastVaultKeysignService")
 
+    private func debugLog(_ message: String) {
+        #if DEBUG
+        logger.debug("\(message, privacy: .public)")
+        #endif
+    }
+
+    private func warningLog(_ message: String) {
+        #if DEBUG
+        logger.warning("\(message, privacy: .public)")
+        #endif
+    }
+
     /// Perform a headless FastVault keysign with retry (mirrors Windows' `fastVaultKeysign()`).
     func keysign(input: FastVaultKeysignInput) async throws -> FastVaultKeysignResult {
         var lastError: Error?
@@ -54,7 +66,7 @@ final class FastVaultKeysignService {
                 return result
             } catch {
                 lastError = error
-                print("[FastVaultKeysign] ⚠️ Attempt \(attempt)/\(input.maxAttempts) failed: \(error.localizedDescription)")
+                warningLog("[FastVaultKeysign] Attempt \(attempt)/\(input.maxAttempts) failed: \(error.localizedDescription)")
                 if attempt < input.maxAttempts && isRetryable(error) {
                     try await Task.sleep(for: .seconds(2))
                     continue
@@ -82,23 +94,14 @@ final class FastVaultKeysignService {
         let signingPublicKey = input.isECDSA ? input.vault.pubKeyECDSA : input.vault.pubKeyEdDSA
         let vaultIdentifierKey = input.vault.pubKeyECDSA  // Always ECDSA for server API
 
-        print("[FastVaultKeysign] 🚀 Starting keysign ceremony")
-        print("[FastVaultKeysign]   sessionID=\(sessionID)")
-        print("[FastVaultKeysign]   localPartyID=\(localPartyID)")
-        print("[FastVaultKeysign]   serverAddr=\(serverAddr)")
-        print("[FastVaultKeysign]   derivePath=\(input.derivePath)")
-        print("[FastVaultKeysign]   isECDSA=\(input.isECDSA)")
-        print("[FastVaultKeysign]   chain=\(input.chain)")
-        print("[FastVaultKeysign]   messages=\(input.keysignMessages.map { String($0.prefix(20)) })")
-        print("[FastVaultKeysign]   signingPublicKey=\(signingPublicKey.prefix(20))...")
-        print("[FastVaultKeysign]   vaultIdentifierKey=\(vaultIdentifierKey.prefix(20))...")
+        debugLog("[FastVaultKeysign] Starting keysign ceremony for \(input.chain)")
 
         // Step 1: Register session on relay
         try await registerSession(serverAddr: serverAddr, sessionID: sessionID, localPartyID: localPartyID)
-        print("[FastVaultKeysign] ✅ Step 1: Session registered on relay")
+        debugLog("[FastVaultKeysign] Step 1: Session registered on relay")
 
         // Step 2: Invite VultiServer (uses ECDSA key for vault identification)
-        print("[FastVaultKeysign] 📡 Step 2: Inviting VultiServer via FastVaultService.sign()...")
+        debugLog("[FastVaultKeysign] Step 2: Inviting VultiServer")
         try await inviteServer(
             publicKey: vaultIdentifierKey,
             keysignMessages: input.keysignMessages,
@@ -109,34 +112,28 @@ final class FastVaultKeysignService {
             vaultPassword: input.vaultPassword,
             chain: input.chain
         )
-        print("[FastVaultKeysign] ✅ Step 2: VultiServer invited")
+        debugLog("[FastVaultKeysign] Step 2: VultiServer invited")
 
         // Step 3: Wait for VultiServer to join (poll participants)
         // IMPORTANT: Use ACTUAL discovered parties, not pre-computed IDs (matches Windows)
-        print("[FastVaultKeysign] 👥 Step 3: Waiting for peers...")
+        debugLog("[FastVaultKeysign] Step 3: Waiting for peers")
         let parties = try await waitForParties(serverAddr: serverAddr, sessionID: sessionID, expected: 2)
-        print("[FastVaultKeysign] ✅ Step 3: Peers discovered: \(parties)")
+        debugLog("[FastVaultKeysign] Step 3: Peers discovered: \(parties.count)")
 
         // Use actual discovered parties as the keysign committee (matching Windows)
         // Windows: const peers = parties.filter(p => p !== vault.localPartyId)
         let keysignCommittee = parties
         let actualPeers = parties.filter { $0 != localPartyID }
-        print("[FastVaultKeysign] 📋 Keysign committee (from discovered parties): \(keysignCommittee)")
-        print("[FastVaultKeysign] 📋 Actual peers: \(actualPeers)")
+        debugLog("[FastVaultKeysign] Step 3: Actual peers discovered: \(actualPeers.count)")
 
         // Step 4: Start the session with actual parties
-        print("[FastVaultKeysign] 🔄 Step 4: Starting session...")
+        debugLog("[FastVaultKeysign] Step 4: Starting session")
         try await startSession(serverAddr: serverAddr, sessionID: sessionID, parties: parties)
-        print("[FastVaultKeysign] ✅ Step 4: Keysign started")
+        debugLog("[FastVaultKeysign] Step 4: Keysign started")
 
         // Step 5: Run local keysign (DKLS for ECDSA, Schnorr for EdDSA)
         let chainPath = input.derivePath.replacingOccurrences(of: "'", with: "")
-        print("[FastVaultKeysign] ⚙️ Step 5: Starting \(input.isECDSA ? "DKLS (ECDSA)" : "Schnorr (EdDSA)") keysign...")
-        print("[FastVaultKeysign]   chainPath=\(chainPath)")
-        print("[FastVaultKeysign]   committee=\(keysignCommittee)")
-        print("[FastVaultKeysign]   encryptionKeyHex=\(encryptionKeyHex.prefix(8))...")
-        print("[FastVaultKeysign]   vault.localPartyID=\(input.vault.localPartyID)")
-        print("[FastVaultKeysign]   vault.publicKeys=\(signingPublicKey.prefix(20))...")
+        debugLog("[FastVaultKeysign] Step 5: Starting \(input.isECDSA ? "DKLS" : "Schnorr") keysign")
 
         let signatures: [String: TssKeysignResponse]
         if input.isECDSA {
@@ -168,13 +165,10 @@ final class FastVaultKeysignService {
             signatures = schnorrKeysign.getSignatures()
         }
 
-        print("[FastVaultKeysign] ✅ Step 5: Keysign completed!")
+        debugLog("[FastVaultKeysign] Step 5: Keysign completed")
 
         // Step 6: Return signatures
-        print("[FastVaultKeysign] 📝 Step 6: Got \(signatures.count) signature(s)")
-        for (hash, sig) in signatures {
-            print("[FastVaultKeysign]   hash=\(hash.prefix(20))... key=\(sig.r.prefix(10))...\(sig.s.prefix(10))...")
-        }
+        debugLog("[FastVaultKeysign] Step 6: Produced \(signatures.count) signature(s)")
         guard !signatures.isEmpty else {
             throw FastVaultKeysignError.keysignFailed("No signatures produced")
         }
@@ -227,7 +221,7 @@ final class FastVaultKeysignService {
                     if parties.count >= expected {
                         return parties
                     }
-                    print("[FastVaultKeysign] 👥 Waiting for peers: \(parties.count)/\(expected)")
+                    debugLog("[FastVaultKeysign] Waiting for peers: \(parties.count)/\(expected)")
                 }
             } catch {
                 // Ignore polling errors (matches Windows behavior)

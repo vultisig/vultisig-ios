@@ -54,9 +54,8 @@ struct AgentChatView: View {
             showPasswordPrompt = required
         }
         .sheet(isPresented: $showPasswordPrompt) {
-            AgentPasswordPromptScreen { password in
-                guard let vault = appViewModel.selectedVault else { return }
-                Task {
+            if let vault = appViewModel.selectedVault {
+                AgentPasswordPromptScreen(usesFastVault: vault.isFastVault) { password in
                     await viewModel.signIn(vault: vault, password: password)
                 }
             }

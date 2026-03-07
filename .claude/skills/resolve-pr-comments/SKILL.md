@@ -29,12 +29,37 @@ Implement fixes. Skip invalid suggestions.
 swiftlint lint --config VultisigApp/.swiftlint.yml VultisigApp/
 ```
 
-### 5. Push and Resolve
+### 5. Push
 ```bash
 git add -A && git commit -m "address review comments" && git push
 ```
 
-Then use `gh api` to resolve PR review threads.
+### 6. Resolve Threads
+Resolve all addressed threads using the GraphQL API:
+```bash
+gh api graphql -f query='mutation { resolveReviewThread(input: {threadId: "THREAD_ID"}) { thread { isResolved } } }'
+```
+
+To get thread IDs, query unresolved threads:
+```bash
+gh api graphql -f query='{
+  repository(owner: "OWNER", name: "REPO") {
+    pullRequest(number: PR_NUMBER) {
+      reviewThreads(first: 50) {
+        nodes {
+          id
+          isResolved
+          comments(first: 1) {
+            nodes { path line body }
+          }
+        }
+      }
+    }
+  }
+}' --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false) | {id, path: .comments.nodes[0].path, line: .comments.nodes[0].line}'
+```
+
+Resolve all threads — both fixed and intentionally skipped (with valid reason).
 
 ## Goal
 - All threads resolved, all checks pass, PR merge-ready

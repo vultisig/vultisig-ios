@@ -19,55 +19,72 @@ final class AgentAuthService {
     /// In-memory token cache
     private var tokens: [String: AgentAuthToken] = [:]
 
+    private func debugLog(_ message: String) {
+        #if DEBUG
+        logger.debug("\(message, privacy: .public)")
+        #endif
+    }
+
+    private func warningLog(_ message: String) {
+        #if DEBUG
+        logger.warning("\(message, privacy: .public)")
+        #endif
+    }
+
+    private func errorLog(_ message: String) {
+        #if DEBUG
+        logger.error("\(message, privacy: .public)")
+        #endif
+    }
+
     // MARK: - Public API
 
     /// Sign in to the agent backend using TSS keysign
     func signIn(vault: Vault, password: String) async throws -> AgentAuthToken {
-        #if DEBUG
-        print("[AgentAuth] 🔐 signIn starting for vault: \(vault.pubKeyECDSA.prefix(20))...")
-        #endif
+        debugLog("[AgentAuth] Starting sign-in flow")
+
+        guard vault.isFastVault else {
+            warningLog("[AgentAuth] Agent auth requires Fast Vault support")
+            throw AgentAuthError.fastVaultRequired
+        }
+
+        let isValidFastVaultPassword = await FastVaultService.shared.get(
+            pubKeyECDSA: vault.pubKeyECDSA,
+            password: password
+        )
+        guard isValidFastVaultPassword else {
+            warningLog("[AgentAuth] FastVault password preflight failed")
+            throw AgentAuthError.invalidFastVaultPassword
+        }
+
         let authMessage = try generateAuthMessage(vault: vault)
-        #if DEBUG
-        print("[AgentAuth] 📝 Auth message generated")
-        #endif
+        debugLog("[AgentAuth] Auth message generated")
 
         // EIP-191 hash the message
         let messageHash = ethereumSignHash(authMessage)
-        #if DEBUG
-        print("[AgentAuth] #️⃣ Message hashed")
-        #endif
+        debugLog("[AgentAuth] Auth message hashed")
 
         // Fast vault keysign — runs the full DKLS MPC ceremony
-        #if DEBUG
-        print("[AgentAuth] ✍️ Starting FastVault keysign ceremony...")
-        #endif
+        debugLog("[AgentAuth] Starting FastVault keysign ceremony")
         let signature = try await performFastVaultKeysign(
             vault: vault,
             messageHash: messageHash,
             password: password
         )
-        #if DEBUG
-        print("[AgentAuth] ✅ FastVault keysign succeeded (signature length=\(signature.count))")
-        #endif
+        debugLog("[AgentAuth] FastVault keysign succeeded")
 
         // Authenticate with verifier
-        #if DEBUG
-        print("[AgentAuth] 🌐 Authenticating with verifier...")
-        #endif
+        debugLog("[AgentAuth] Authenticating with verifier")
         let authResponse = try await authenticate(
             publicKey: vault.pubKeyECDSA,
             chainCodeHex: vault.hexChainCode,
             signature: signature,
             message: authMessage
         )
-        #if DEBUG
-        print("[AgentAuth] 🌐 Authenticated (token present, expiresIn=\(authResponse.data.expiresIn))")
-        #endif
+        debugLog("[AgentAuth] Verifier authentication succeeded")
 
         guard !authResponse.data.accessToken.isEmpty else {
-            #if DEBUG
-            print("[AgentAuth] ❌ Empty token received")
-            #endif
+            errorLog("[AgentAuth] Empty token received")
             throw AgentAuthError.emptyToken
         }
 
@@ -81,18 +98,14 @@ final class AgentAuthService {
         tokens[vault.pubKeyECDSA] = token
         persistToken(vaultPubKey: vault.pubKeyECDSA, token: token)
 
-        #if DEBUG
-        print("[AgentAuth] ✅ Agent auth signed in successfully, token expires: \(token.expiresAt)")
-        #endif
+        debugLog("[AgentAuth] Agent auth signed in successfully")
         logger.info("Agent auth signed in successfully")
         return token
     }
 
     /// Get a valid cached token, or nil if expired/missing
     func getCachedToken(vaultPubKey: String) -> AgentAuthToken? {
-        #if DEBUG
-        print("[AgentAuth] 🔍 getCachedToken for: \(vaultPubKey.prefix(20))...")
-        #endif
+        debugLog("[AgentAuth] Looking up cached token")
         if let token = tokens[vaultPubKey] {
             if token.token.trimmingCharacters(in: .whitespaces).isEmpty {
                 invalidateToken(vaultPubKey: vaultPubKey)
@@ -188,9 +201,7 @@ final class AgentAuthService {
         let prefixedData = Data(prefixed.utf8)
         let hash = prefixedData.sha3(.keccak256)
         let hex = hash.hexString
-        #if DEBUG
-        print("[AgentAuth] #️⃣ EIP-191 keccak256 hash computed (input len=\(message.count))")
-        #endif
+        debugLog("[AgentAuth] EIP-191 keccak256 hash computed")
         return hex
     }
 
@@ -223,16 +234,12 @@ final class AgentAuthService {
 
         guard let pubKeyData = Data(hexString: derivedPubKeyHex),
               let publicKey = WalletCore.PublicKey(data: pubKeyData, type: .secp256k1) else {
-            #if DEBUG
-            print("[AgentAuth] ⚠️ Failed to derive ETH address via WalletCore")
-            #endif
+            warningLog("[AgentAuth] Failed to derive ETH address via WalletCore")
             return ""
         }
 
         let address = CoinType.ethereum.deriveAddressFromPublicKey(publicKey: publicKey)
-        #if DEBUG
-        print("[AgentAuth] 📍 Derived ETH address: \(address)")
-        #endif
+        debugLog("[AgentAuth] Derived ETH address for auth flow")
         return address
     }
 
@@ -256,24 +263,18 @@ final class AgentAuthService {
             chain: "Ethereum"
         )
 
-        #if DEBUG
-        print("[AgentAuth] ✍️ Delegating keysign to FastVaultKeysignService")
-        #endif
+        debugLog("[AgentAuth] Delegating keysign to FastVaultKeysignService")
         let result = try await FastVaultKeysignService.shared.keysign(input: input)
 
         // Extract signature for the message hash
         guard let keysignResponse = result.signatures[messageHash] else {
-            #if DEBUG
-            print("[AgentAuth] ❌ No signature found for message hash in keysign result")
-            #endif
+            errorLog("[AgentAuth] No signature found for message hash in keysign result")
             throw AgentAuthError.keysignFailed
         }
 
         // Format as "0x" + r + s + recoveryID (matching Windows formatKeysignSignatureHex)
         let signature = "0x" + keysignResponse.r + keysignResponse.s + keysignResponse.recoveryID
-        #if DEBUG
-        print("[AgentAuth] ✅ Signature formatted (length=\(signature.count))")
-        #endif
+        debugLog("[AgentAuth] Keysign signature formatted")
         return signature
     }
 
@@ -300,18 +301,14 @@ final class AgentAuthService {
 
         if httpResponse.statusCode != 200 {
             let responseBody = String(data: data, encoding: .utf8) ?? "n/a"
-            #if DEBUG
-            print("[AgentAuth] ❌ Verifier returned \(httpResponse.statusCode): \(responseBody)")
-            #endif
+            errorLog("[AgentAuth] Verifier returned \(httpResponse.statusCode): \(responseBody)")
             throw AgentAuthError.authFailed
         }
 
         do {
             return try JSONDecoder().decode(AgentAuthResponse.self, from: data)
         } catch {
-            #if DEBUG
-            print("[AgentAuth] ❌ Decoding failed: \(error)")
-            #endif
+            errorLog("[AgentAuth] Failed to decode verifier auth response: \(error.localizedDescription)")
             throw AgentAuthError.authFailed
         }
     }
@@ -403,9 +400,7 @@ final class AgentAuthService {
         let status = SecItemAdd(query as CFDictionary, nil)
 
         if status != errSecSuccess {
-            #if DEBUG
-            print("[AgentAuth] ❌ Failed to persist token in Keychain. OSStatus: \(status)")
-            #endif
+            errorLog("[AgentAuth] Failed to persist token in Keychain. OSStatus: \(status)")
         }
     }
 
@@ -442,6 +437,8 @@ final class AgentAuthService {
 
 enum AgentAuthError: Error, LocalizedError {
     case emptyToken
+    case fastVaultRequired
+    case invalidFastVaultPassword
     case keysignFailed
     case authFailed
     case refreshFailed
@@ -450,6 +447,8 @@ enum AgentAuthError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .emptyToken: return "Authentication returned an empty token"
+        case .fastVaultRequired: return "Agent sign-in currently requires a Fast Vault."
+        case .invalidFastVaultPassword: return NSLocalizedString("incorrectPasswordTryAgain", comment: "")
         case .keysignFailed: return "Fast vault keysign failed"
         case .authFailed: return "Authentication failed"
         case .refreshFailed: return "Token refresh failed"

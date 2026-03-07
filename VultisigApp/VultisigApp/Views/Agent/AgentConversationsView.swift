@@ -38,9 +38,8 @@ struct AgentConversationsView: View {
             loadData()
         }
         .crossPlatformSheet(isPresented: $viewModel.passwordRequired) {
-            AgentPasswordPromptScreen { password in
-                guard let vault = appViewModel.selectedVault else { return }
-                Task {
+            if let vault = appViewModel.selectedVault {
+                AgentPasswordPromptScreen(usesFastVault: vault.isFastVault) { password in
                     await viewModel.signIn(vault: vault, password: password)
                 }
             }

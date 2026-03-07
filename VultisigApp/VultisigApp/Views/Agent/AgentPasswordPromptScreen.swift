@@ -8,10 +8,12 @@
 import SwiftUI
 
 struct AgentPasswordPromptScreen: View {
-    let onSubmit: (String) -> Void
+    let usesFastVault: Bool
+    let onSubmit: (String) async -> String?
 
     @State private var password = ""
     @State private var isSubmitting = false
+    @State private var errorMessage: String?
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -24,11 +26,11 @@ struct AgentPasswordPromptScreen: View {
                         .font(.system(size: 48))
                         .foregroundStyle(Theme.colors.turquoise)
 
-                    Text("Enter Vault Password")
+                    Text(usesFastVault ? "Enter Fast Vault Password" : "Enter Vault Password")
                         .font(.title3.bold())
                         .foregroundStyle(Theme.colors.textPrimary)
 
-                    Text("Your password is needed to sign into the agent service using your vault.")
+                    Text(promptDescription)
                         .font(.subheadline)
                         .foregroundStyle(Theme.colors.textTertiary)
                         .multilineTextAlignment(.center)
@@ -36,8 +38,9 @@ struct AgentPasswordPromptScreen: View {
 
                     CommonTextField(
                         text: $password,
-                        placeholder: "Password",
-                        isSecure: .constant(true)
+                        placeholder: usesFastVault ? "Fast Vault Password" : "Password",
+                        isSecure: .constant(true),
+                        error: $errorMessage
                     )
                     .padding(.horizontal)
 
@@ -45,9 +48,18 @@ struct AgentPasswordPromptScreen: View {
                         title: "Connect",
                         isLoading: isSubmitting
                     ) {
-                        isSubmitting = true
-                        onSubmit(password)
-                        dismiss()
+                        Task {
+                            isSubmitting = true
+                            errorMessage = nil
+                            let submitError = await onSubmit(password)
+                            isSubmitting = false
+
+                            if let submitError {
+                                errorMessage = submitError
+                            } else {
+                                dismiss()
+                            }
+                        }
                     }
                     .disabled(password.isEmpty)
                     .padding(.horizontal)
@@ -70,11 +82,23 @@ struct AgentPasswordPromptScreen: View {
             }
         }
         .presentationDetents([.medium])
+        .onChange(of: password) { _, _ in
+            errorMessage = nil
+        }
+    }
+
+    private var promptDescription: String {
+        if usesFastVault {
+            return "Your Fast Vault password is needed to sign into the agent service using your vault."
+        }
+
+        return "Your password is needed to sign into the agent service using your vault."
     }
 }
 
 #Preview {
-    AgentPasswordPromptScreen { password in
+    AgentPasswordPromptScreen(usesFastVault: true) { password in
         print("Password: \(password)")
+        return nil
     }
 }

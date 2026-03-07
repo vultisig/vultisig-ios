@@ -23,6 +23,7 @@ final class StoredPendingTransaction {
     var coinTicker: String?
     var amount: String?
     var toAddress: String?
+    var pubKeyECDSA: String?
 
     init(
         txHash: String,
@@ -31,7 +32,8 @@ final class StoredPendingTransaction {
         estimatedTime: String,
         coinTicker: String? = nil,
         amount: String? = nil,
-        toAddress: String? = nil
+        toAddress: String? = nil,
+        pubKeyECDSA: String? = nil
     ) {
         self.txHash = txHash
         self.chain = chain
@@ -41,5 +43,6 @@ final class StoredPendingTransaction {
         self.coinTicker = coinTicker
         self.amount = amount
         self.toAddress = toAddress
+        self.pubKeyECDSA = pubKeyECDSA
     }
 }

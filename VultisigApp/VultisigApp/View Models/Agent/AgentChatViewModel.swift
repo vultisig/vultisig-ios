@@ -44,6 +44,24 @@ final class AgentChatViewModel: ObservableObject {
 
     var conversationId: String?
 
+    private func debugLog(_ message: String) {
+        #if DEBUG
+        logger.debug("\(message, privacy: .public)")
+        #endif
+    }
+
+    private func warningLog(_ message: String) {
+        #if DEBUG
+        logger.warning("\(message, privacy: .public)")
+        #endif
+    }
+
+    private func errorLog(_ message: String) {
+        #if DEBUG
+        logger.error("\(message, privacy: .public)")
+        #endif
+    }
+
     // MARK: - Hardcoded Fallback Starters
 
     static let fallbackStarters = [
@@ -60,9 +78,7 @@ final class AgentChatViewModel: ObservableObject {
     // MARK: - Send Message
 
     func sendMessage(_ text: String, vault: Vault) {
-        #if DEBUG
-        print("[AgentChat] 📤 sendMessage called")
-        #endif
+        debugLog("[AgentChat] sendMessage called")
 
         // Add user message to UI
         let userMsg = AgentChatMessage(
@@ -78,9 +94,7 @@ final class AgentChatViewModel: ObservableObject {
 
         currentTask = Task {
             guard let token = await requireAccessToken(vault: vault) else {
-                #if DEBUG
-                print("[AgentChat] 🔑 No valid token, prompting for password")
-                #endif
+                warningLog("[AgentChat] No valid token available, prompting for password")
                 await MainActor.run {
                     self.pendingMessage = text
                     self.passwordRequired = true
@@ -91,9 +105,7 @@ final class AgentChatViewModel: ObservableObject {
                 return
             }
 
-            #if DEBUG
-            print("[AgentChat] 🔑 Using token: \(token.prefix(20).description)...")
-            #endif
+            debugLog("[AgentChat] Using validated agent token")
 
             await executeSendMessage(text: text, vault: vault, token: token)
         }
@@ -103,17 +115,13 @@ final class AgentChatViewModel: ObservableObject {
         do {
             // Create conversation if needed
             if conversationId == nil {
-                #if DEBUG
-                print("[AgentChat] 🆕 Creating new conversation...")
-                #endif
+                debugLog("[AgentChat] Creating new conversation")
                 let conv = try await backendClient.createConversation(
                     publicKey: vault.pubKeyECDSA,
                     token: token
                 )
                 conversationId = conv.id
-                #if DEBUG
-                print("[AgentChat] ✅ Conversation created: \(conv.id)")
-                #endif
+                debugLog("[AgentChat] Conversation created: \(conv.id)")
 
                 await primeMCPSession(vault: vault, token: token, convId: conv.id)
             }
@@ -124,9 +132,7 @@ final class AgentChatViewModel: ObservableObject {
             }
 
             guard let convId = conversationId else {
-                #if DEBUG
-                print("[AgentChat] ❌ No conversation ID")
-                #endif
+                errorLog("[AgentChat] Conversation ID is missing after creation")
                 throw AgentBackendClient.AgentBackendError.noBody
             }
 
@@ -137,9 +143,7 @@ final class AgentChatViewModel: ObservableObject {
             } else {
                 context = AgentContextBuilder.buildLightContext(vault: vault)  // @MainActor, not async
             }
-            #if DEBUG
-            print("[AgentChat] 📋 Context built (\(messages.count <= 2 ? "full" : "light"))")
-            #endif
+            debugLog("[AgentChat] Built \(messages.count <= 2 ? "full" : "light") context")
 
             let request = AgentSendMessageRequest(
                 publicKey: vault.pubKeyECDSA,
@@ -148,22 +152,12 @@ final class AgentChatViewModel: ObservableObject {
                 context: context
             )
 
-            if let data = try? JSONEncoder().encode(request), let jsonString = String(data: data, encoding: .utf8) {
-                #if DEBUG
-                print("\n[AgentChat] 🐛 Outgoing Request Payload:")
-                #endif
-                #if DEBUG
-                print(jsonString)
-                #endif
-                #if DEBUG
-                print("-------------------------------------------\n")
-                #endif
+            if let data = try? JSONEncoder().encode(request) {
+                debugLog("[AgentChat] Outgoing request payload encoded (\(data.count) bytes)")
             }
 
             // Stream the response
-            #if DEBUG
-            print("[AgentChat] 🌊 Starting SSE stream for convId: \(convId)")
-            #endif
+            debugLog("[AgentChat] Starting SSE stream for conversation \(convId)")
             let stream = backendClient.sendMessageStream(
                 convId: convId,
                 request: request,
@@ -173,32 +167,22 @@ final class AgentChatViewModel: ObservableObject {
             var eventCount = 0
             for try await event in stream {
                 if Task.isCancelled {
-                    #if DEBUG
-                    print("[AgentChat] ⚠️ Task cancelled, breaking stream")
-                    #endif
+                    warningLog("[AgentChat] Stream task was cancelled")
                     break
                 }
                 eventCount += 1
-                #if DEBUG
-                print("[AgentChat] 📨 SSE event #\(eventCount): \(event)")
-                #endif
+                debugLog("[AgentChat] Received SSE event #\(eventCount)")
                 handleSSEEvent(event, vault: vault)
             }
-            #if DEBUG
-            print("[AgentChat] 🏁 Stream ended, total events: \(eventCount)")
-            #endif
+            debugLog("[AgentChat] Stream ended after \(eventCount) events")
 
             isLoading = false
 
         } catch let error as AgentBackendClient.AgentBackendError {
-            #if DEBUG
-            print("[AgentChat] ❌ Backend error: \(error.localizedDescription)")
-            #endif
+            errorLog("[AgentChat] Backend error: \(error.localizedDescription)")
             handleError(error)
         } catch {
-            #if DEBUG
-            print("[AgentChat] ❌ General error: \(error) — \(error.localizedDescription)")
-            #endif
+            errorLog("[AgentChat] General error: \(error.localizedDescription)")
             handleError(error)
         }
     }
@@ -283,40 +267,32 @@ final class AgentChatViewModel: ObservableObject {
 
     // MARK: - Auth
 
-    func signIn(vault: Vault, password: String) async {
-        #if DEBUG
-        print("[AgentChat] 🔐 signIn called with password length: \(password.count)")
-        #endif
+    @discardableResult
+    func signIn(vault: Vault, password: String) async -> String? {
+        debugLog("[AgentChat] signIn called")
         do {
             _ = try await authService.signIn(vault: vault, password: password)
-            #if DEBUG
-            print("[AgentChat] ✅ signIn succeeded")
-            #endif
+            debugLog("[AgentChat] signIn succeeded")
             isConnected = true
             passwordRequired = false
             cachedFastVaultPassword = password  // Cache for headless keysign reuse
 
             if let pending = pendingMessage {
-                #if DEBUG
-                print("[AgentChat] 📤 Sending pending message after login")
-                #endif
+                debugLog("[AgentChat] Sending pending message after login")
                 let msgToSend = pending
                 pendingMessage = nil
                 self.sendMessage(msgToSend, vault: vault)
             }
+            return nil
         } catch {
-            #if DEBUG
-            print("[AgentChat] ❌ signIn failed: \(error)")
-            #endif
-            self.error = "Sign-in failed: \(error.localizedDescription)"
+            errorLog("[AgentChat] signIn failed: \(error.localizedDescription)")
+            return error.localizedDescription
         }
     }
 
     func checkConnection(vault _: Vault) {
         // Agent backend uses public_key for identity, no auth token needed
-        #if DEBUG
-        print("[AgentChat] 🔌 checkConnection: always connected (public_key auth)")
-        #endif
+        debugLog("[AgentChat] checkConnection reports connected for public_key auth")
         isConnected = true
     }
 
@@ -480,9 +456,7 @@ final class AgentChatViewModel: ObservableObject {
             // No pre-seeded message: create one and start streaming
             let msgId = "streaming-\(Date().timeIntervalSince1970)"
             streamingMessageId = msgId
-            #if DEBUG
-            print("[AgentChat] 💬 Created new streaming message id: \(msgId)")
-            #endif
+            debugLog("[AgentChat] Created new streaming message id: \(msgId)")
             let streamMsg = AgentChatMessage(
                 id: msgId,
                 role: .assistant,
@@ -678,9 +652,7 @@ final class AgentChatViewModel: ObservableObject {
     }
 
     private func finalizeStreamingMessage(with backendMsg: AgentBackendMessage) {
-        #if DEBUG
-        print("[AgentChat] 🏁 Finalizing streaming message id: \(backendMsg.id). Current streamingMessageId: \(streamingMessageId ?? "nil")")
-        #endif
+        debugLog("[AgentChat] Finalizing streaming message id: \(backendMsg.id)")
         // Stop timer and apply any remaining buffered text before replacing with final content
         stopFlushTimer()
         streamingBuffer = ""
@@ -726,9 +698,7 @@ final class AgentChatViewModel: ObservableObject {
     }
 
     func acceptTxProposal(_ proposal: AgentTxReady, vault _: Vault) {
-        #if DEBUG
-        print("[AgentChat] 💳 User ACCEPTED transaction. Not fully implemented yet. keysignPayload length: \(proposal.keysignPayload?.count ?? 0)")
-        #endif
+        debugLog("[AgentChat] User accepted transaction proposal")
         appendAssistantMessage("Transaction accepted. Launching keysign...")
 
         // TODO: This is where we will route the keysign payload to the Vultisig router in Phase 13.
@@ -736,9 +706,7 @@ final class AgentChatViewModel: ObservableObject {
     }
 
     func rejectTxProposal(_: AgentTxReady, vault: Vault) {
-        #if DEBUG
-        print("[AgentChat] ❌ User REJECTED transaction.")
-        #endif
+        debugLog("[AgentChat] User rejected transaction proposal")
         sendMessage("Cancel the transaction. I do not want to execute it.", vault: vault)
     }
 
@@ -771,31 +739,21 @@ final class AgentChatViewModel: ObservableObject {
     }
 
     func confirmSignTx(vault: Vault) {
-        #if DEBUG
-        print("[AgentChat] 🔐 confirmSignTx called. pendingSendTx=\(pendingSendTx != nil ? "SET (\(pendingSendTx!.coin.ticker) on \(pendingSendTx!.coin.chain.name))" : "NIL")")
-        #endif
+        debugLog("[AgentChat] confirmSignTx called")
         guard let pendingSendTx else {
-            #if DEBUG
-            print("[AgentChat] ❌ confirmSignTx: pendingSendTx is nil, returning early")
-            #endif
+            warningLog("[AgentChat] confirmSignTx aborted because pendingSendTx is nil")
             return
         }
 
-        #if DEBUG
-        print("[AgentChat] 🔐 confirmSignTx: isFastVault=\(vault.isFastVault), cachedPassword=\(cachedFastVaultPassword != nil ? "SET" : "NIL")")
-        #endif
+        debugLog("[AgentChat] confirmSignTx continuing for \(pendingSendTx.coin.ticker) on \(pendingSendTx.coin.chain.name)")
         if vault.isFastVault {
             // Fully headless: use cached password from signIn, no sheets at all
             if let password = cachedFastVaultPassword, !password.isEmpty {
-                #if DEBUG
-                print("[AgentChat] 🔐 confirmSignTx: using cached password, calling executeFastVaultKeysign")
-                #endif
+                debugLog("[AgentChat] Using cached FastVault password for keysign")
                 executeFastVaultKeysign(password: password, vault: vault)
             } else {
                 // Fallback: prompt for password if not cached
-                #if DEBUG
-                print("[AgentChat] 🔐 confirmSignTx: no cached password, showing FastVaultPasswordPrompt")
-                #endif
+                debugLog("[AgentChat] FastVault password not cached, showing prompt")
                 self.showFastVaultPasswordPrompt = true
             }
         } else {
@@ -838,9 +796,7 @@ final class AgentChatViewModel: ObservableObject {
 
     func executeFastVaultKeysign(password: String, vault: Vault) {
         guard let tx = pendingSendTx else {
-            #if DEBUG
-            print("[AgentChat] ❌ executeFastVaultKeysign: pendingSendTx is nil")
-            #endif
+            warningLog("[AgentChat] executeFastVaultKeysign aborted because pendingSendTx is nil")
             return
         }
 
@@ -864,25 +820,12 @@ final class AgentChatViewModel: ObservableObject {
                 tx.fee = feeResult.fee
                 tx.gas = feeResult.gas
 
-                #if DEBUG
-                print("[AgentChat] 💰 Balance check: rawBalance='\(tx.coin.rawBalance)', decimals=\(tx.coin.decimals)")
-                #endif
-                #if DEBUG
-                print("[AgentChat] 💰 amount=\(tx.amount), amountInRaw=\(tx.amountInRaw)")
-                #endif
-                #if DEBUG
-                print("[AgentChat] 💰 fee=\(tx.fee), gas=\(tx.gas)")
-                #endif
-                #if DEBUG
-                print("[AgentChat] 💰 isNativeToken=\(tx.coin.isNativeToken), sendMaxAmount=\(tx.sendMaxAmount)")
-                #endif
+                debugLog("[AgentChat] Validating balance for fast vault transaction")
 
                 let validationResult = logic.validateBalanceWithFee(tx: tx)
                 if !validationResult.isValid {
                     let errStr = validationResult.errorMessage ?? "Insufficient balance to cover fee."
-                    #if DEBUG
-                    print("[AgentChat] ❌ Balance validation FAILED: \(errStr)")
-                    #endif
+                    warningLog("[AgentChat] Balance validation failed: \(errStr)")
                     let localizedErr = NSLocalizedString(errStr, comment: "")
                     throw HelperError.runtimeError(localizedErr == errStr ? errStr : localizedErr)
                 }
@@ -914,9 +857,7 @@ final class AgentChatViewModel: ObservableObject {
                 )
 
                 let result = try await FastVaultKeysignService.shared.keysign(input: input)
-                #if DEBUG
-                print("[AgentChat] ✅ Keysign returned \(result.signatures.count) signature(s)")
-                #endif
+                debugLog("[AgentChat] Keysign returned \(result.signatures.count) signature(s)")
 
                 // 5. Broadcast Transaction
                 await MainActor.run {
@@ -928,9 +869,7 @@ final class AgentChatViewModel: ObservableObject {
                 keysignViewModel.keysignPayload = finalPayload
                 keysignViewModel.signatures = result.signatures
 
-                #if DEBUG
-                print("[AgentChat] 📡 Calling broadcastTransaction() for \(finalPayload.coin.ticker) on \(finalPayload.coin.chain.name)")
-                #endif
+                debugLog("[AgentChat] Broadcasting signed transaction for \(finalPayload.coin.ticker) on \(finalPayload.coin.chain.name)")
 
                 // For UTXO chains (DOGE, BTC, LTC, DASH, ZEC, BCH), broadcastTransaction()
                 // uses a completion-handler internally, so the txid isn't set when the
@@ -951,9 +890,6 @@ final class AgentChatViewModel: ObservableObject {
                             guard !completed else { return }
                             completed = true
                             if let t = notification.userInfo?["txid"] as? String {
-                                #if DEBUG
-                                print("[AgentChat] 📬 NotificationCenter got txid: \(t)")
-                                #endif
                                 continuation.resume(returning: t)
                             } else {
                                 continuation.resume(returning: "")
@@ -964,9 +900,7 @@ final class AgentChatViewModel: ObservableObject {
                         // Kick off broadcast AFTER registering listener
                         Task { @MainActor in
                             await keysignViewModel.broadcastTransaction()
-                            #if DEBUG
-                            print("[AgentChat] 📡 broadcastTransaction() returned (UTXO). txid='\(keysignViewModel.txid)' error='\(keysignViewModel.keysignError)'")
-                            #endif
+                            debugLog("[AgentChat] UTXO broadcastTransaction() returned")
 
                             // If we already have a result (error path or immediate success), resume
                             if !completed {
@@ -980,9 +914,7 @@ final class AgentChatViewModel: ObservableObject {
                                         try? await Task.sleep(for: .seconds(30))
                                         if !completed {
                                             completed = true
-                                            #if DEBUG
-                                            print("[AgentChat] ⏰ UTXO broadcast timeout — no txid received after 30s")
-                                            #endif
+                                            warningLog("[AgentChat] UTXO broadcast timed out after 30 seconds")
                                             if let token { NotificationCenter.default.removeObserver(token) }
                                             continuation.resume(returning: "")
                                         }
@@ -993,14 +925,10 @@ final class AgentChatViewModel: ObservableObject {
                     }
 
                     if !txid.isEmpty {
-                        #if DEBUG
-                        print("[AgentChat] ✅ UTXO broadcast success. txid=\(txid)")
-                        #endif
+                        debugLog("[AgentChat] UTXO broadcast succeeded")
                         self.handleTxBroadcasted(txid: txid, vault: vault)
                     } else if !keysignViewModel.keysignError.isEmpty {
-                        #if DEBUG
-                        print("[AgentChat] ❌ Broadcast error: \(keysignViewModel.keysignError)")
-                        #endif
+                        errorLog("[AgentChat] Broadcast error: \(keysignViewModel.keysignError)")
                         throw HelperError.runtimeError(keysignViewModel.keysignError)
                     } else {
                         throw HelperError.runtimeError("Broadcast timed out or returned no txid. Check your balance and network, then try again.")
@@ -1008,34 +936,21 @@ final class AgentChatViewModel: ObservableObject {
                 } else {
                     // Non-UTXO chains set txid synchronously inside broadcastTransaction()
                     await keysignViewModel.broadcastTransaction()
-                    #if DEBUG
-                    print("[AgentChat] 📡 broadcastTransaction() finished — txid='\(keysignViewModel.txid)' keysignError='\(keysignViewModel.keysignError)'")
-                    #endif
+                    debugLog("[AgentChat] Non-UTXO broadcastTransaction() finished")
 
                     if !keysignViewModel.txid.isEmpty {
-                        #if DEBUG
-                        print("[AgentChat] ✅ Got txid: \(keysignViewModel.txid)")
-                        #endif
+                        debugLog("[AgentChat] Broadcast returned a txid")
                         self.handleTxBroadcasted(txid: keysignViewModel.txid, vault: vault)
                     } else if !keysignViewModel.keysignError.isEmpty {
-                        #if DEBUG
-                        print("[AgentChat] ❌ Broadcast error from KeysignViewModel: \(keysignViewModel.keysignError)")
-                        #endif
+                        errorLog("[AgentChat] Broadcast error from KeysignViewModel: \(keysignViewModel.keysignError)")
                         throw HelperError.runtimeError(keysignViewModel.keysignError)
                     } else {
-                        #if DEBUG
-                        print("[AgentChat] ❌ Broadcast returned empty txid AND empty keysignError")
-                        #endif
+                        errorLog("[AgentChat] Broadcast returned empty txid and empty keysignError")
                         throw HelperError.runtimeError("Broadcast completed but no txid or error returned. Check your balance and try again.")
                     }
                 }
             } catch {
-                #if DEBUG
-                print("[AgentChat] ❌ executeFastVaultKeysign caught error: \(error)")
-                #endif
-                #if DEBUG
-                print("[AgentChat] ❌ localizedDescription: \(error.localizedDescription)")
-                #endif
+                errorLog("[AgentChat] executeFastVaultKeysign failed: \(error.localizedDescription)")
                 await MainActor.run {
                     self.isLoading = false
                     self.appendAssistantMessage("❌ Error: \(error.localizedDescription)")
@@ -1046,23 +961,17 @@ final class AgentChatViewModel: ObservableObject {
     }
 
     private func createPendingSendTx(from params: [String: AnyCodable]?, vault: Vault) {
-        #if DEBUG
-        print("[AgentChat] 🏗️ createPendingSendTx called. params=\(params != nil ? "present" : "nil")")
-        #endif
+        debugLog("[AgentChat] createPendingSendTx called with \(params != nil ? "present" : "missing") params")
         guard let params = params,
               let chainStr = params["chain"]?.value as? String,
               let symbolStr = params["symbol"]?.value as? String,
               let amountStr = params["amount"]?.value as? String,
               let addressStr = params["address"]?.value as? String else {
-            #if DEBUG
-            print("[AgentChat] ❌ createPendingSendTx: missing required params. chain=\(params?["chain"]?.value ?? "nil"), symbol=\(params?["symbol"]?.value ?? "nil"), amount=\(params?["amount"]?.value ?? "nil"), address=\(params?["address"]?.value ?? "nil")")
-            #endif
+            warningLog("[AgentChat] createPendingSendTx is missing required params")
             return
         }
 
-        #if DEBUG
-        print("[AgentChat] 🏗️ createPendingSendTx: chain=\(chainStr), symbol=\(symbolStr), amount=\(amountStr), to=\(addressStr.prefix(10))...")
-        #endif
+        debugLog("[AgentChat] Preparing pending send tx for \(symbolStr) on \(chainStr)")
 
         // Find coin in vault
         if let coin = vault.coins.first(where: {
@@ -1082,13 +991,9 @@ final class AgentChatViewModel: ObservableObject {
             }
 
             self.pendingSendTx = tx
-            #if DEBUG
-            print("[AgentChat] ✅ createPendingSendTx: SUCCESS — \(coin.ticker) on \(coin.chain.name), from=\(coin.address.prefix(10))..., to=\(addressStr.prefix(10))..., amount=\(amountStr)")
-            #endif
+            debugLog("[AgentChat] Pending send tx prepared for \(coin.ticker) on \(coin.chain.name)")
         } else {
-            #if DEBUG
-            print("[AgentChat] ❌ createPendingSendTx: coin NOT FOUND in vault. Looking for chain=\(chainStr), symbol=\(symbolStr). Available coins: \(vault.coins.map { "\($0.chain.name)/\($0.ticker)" }.joined(separator: ", "))")
-            #endif
+            warningLog("[AgentChat] Coin \(symbolStr) on \(chainStr) was not found in the current vault")
         }
     }
 
@@ -1106,9 +1011,7 @@ final class AgentChatViewModel: ObservableObject {
     // MARK: - Helpers
 
     private func primeMCPSession(vault: Vault, token: String, convId: String) async {
-        #if DEBUG
-        print("[AgentChat] 🔐 Priming backend MCP session with set_vault...")
-        #endif
+        debugLog("[AgentChat] Priming backend MCP session with set_vault")
         let setVaultResult = AgentActionResult(
             action: "set_vault",
             success: true,
@@ -1125,28 +1028,18 @@ final class AgentChatViewModel: ObservableObject {
         )
         // Execute without streaming back to UI
         _ = try? await backendClient.sendMessage(convId: convId, request: primeRequest, token: token)
-        #if DEBUG
-        print("[AgentChat] ✅ MCP session primed")
-        #endif
+        debugLog("[AgentChat] MCP session primed")
     }
 
     private func getValidToken(vault: Vault) async -> AgentAuthToken? {
-        #if DEBUG
-        print("[AgentChat] 🔑 getValidToken: checking cached token for \(vault.pubKeyECDSA.prefix(20))...")
-        #endif
+        debugLog("[AgentChat] Checking cached token")
         if let token = authService.getCachedToken(vaultPubKey: vault.pubKeyECDSA) {
-            #if DEBUG
-            print("[AgentChat] 🔑 getValidToken: found cached token, expires \(token.expiresAt)")
-            #endif
+            debugLog("[AgentChat] Found cached token")
             return token
         }
-        #if DEBUG
-        print("[AgentChat] 🔑 getValidToken: no cached token, trying to refresh...")
-        #endif
+        debugLog("[AgentChat] No cached token, attempting refresh")
         let refreshed = await authService.refreshIfNeeded(vaultPubKey: vault.pubKeyECDSA)
-        #if DEBUG
-        print("[AgentChat] 🔑 getValidToken: refresh result = \(refreshed != nil ? "token found" : "nil")")
-        #endif
+        debugLog("[AgentChat] Token refresh result: \(refreshed != nil ? "found" : "none")")
         return refreshed
     }
 
@@ -1182,16 +1075,12 @@ final class AgentChatViewModel: ObservableObject {
     }
 
     private func handleError(_ error: Error) {
-        #if DEBUG
-        print("[AgentChat] ⚠️ handleError: \(error) — \(error.localizedDescription)")
-        #endif
+        warningLog("[AgentChat] handleError: \(error.localizedDescription)")
         streamingMessageId = nil
         isLoading = false
 
         if case AgentBackendClient.AgentBackendError.unauthorized = error {
-            #if DEBUG
-            print("[AgentChat] ⚠️ handleError: unauthorized, showing password prompt")
-            #endif
+            warningLog("[AgentChat] Unauthorized error, showing password prompt")
             passwordRequired = true
             self.error = nil
         } else {

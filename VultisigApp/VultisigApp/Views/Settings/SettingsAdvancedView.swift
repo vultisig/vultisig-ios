@@ -65,6 +65,12 @@ struct SettingsAdvancedView: View {
                 icon: "sparkles",
                 isEnabled: $settingsViewModel.agentEnabled
             )
+
+            SettingToggleCell(
+                title: "transactionHistory",
+                icon: "clock.arrow.circlepath",
+                isEnabled: $settingsViewModel.txHistoryEnabled
+            )
         }
     }
 }

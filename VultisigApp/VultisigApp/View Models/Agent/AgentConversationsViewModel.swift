@@ -29,6 +29,12 @@ final class AgentConversationsViewModel: ObservableObject {
     private var startersRefreshTimer: Timer?
     private var lastStartersRefresh: Date?
 
+    private func debugLog(_ message: String) {
+        #if DEBUG
+        logger.debug("\(message, privacy: .public)")
+        #endif
+    }
+
     // MARK: - Load Conversations
 
     func checkAuthAndLoad(vault: Vault) async {
@@ -56,9 +62,7 @@ final class AgentConversationsViewModel: ObservableObject {
         } else {
             token = await getValidToken(vault: vault)
         }
-        #if DEBUG
-        print("[AgentConvos] 📝 loadConversations: token=\(token != nil ? "present" : "none")")
-        #endif
+        debugLog("[AgentConvos] Loading conversations with \(token != nil ? "available" : "missing") token")
 
         guard let token else {
             isLoading = false
@@ -77,9 +81,7 @@ final class AgentConversationsViewModel: ObservableObject {
                 token: token.token
             )
             conversations = response.conversations
-            #if DEBUG
-            print("[AgentConvos] ✅ Loaded \(response.conversations.count) conversations")
-            #endif
+            debugLog("[AgentConvos] Loaded \(response.conversations.count) conversations")
             logger.info("Loaded \(response.conversations.count) conversations")
             self.isConnected = true
         } catch let error as AgentBackendClient.AgentBackendError {
@@ -208,16 +210,18 @@ final class AgentConversationsViewModel: ObservableObject {
 
     // MARK: - Auth
 
-    func signIn(vault: Vault, password: String) async {
+    @discardableResult
+    func signIn(vault: Vault, password: String) async -> String? {
         isLoading = true
         do {
             _ = try await authService.signIn(vault: vault, password: password)
             passwordRequired = false
             isConnected = true
             await checkAuthAndLoad(vault: vault)
+            return nil
         } catch {
-            self.error = "Sign-in failed: \(error.localizedDescription)"
             isLoading = false
+            return error.localizedDescription
         }
     }
 
