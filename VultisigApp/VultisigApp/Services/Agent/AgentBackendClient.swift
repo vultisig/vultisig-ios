@@ -11,6 +11,11 @@ import OSLog
 final class AgentBackendClient {
 
     private let logger = Logger(subsystem: "com.vultisig", category: "AgentBackendClient")
+    private let httpClient: HTTPClientProtocol
+
+    init(httpClient: HTTPClientProtocol = HTTPClient()) {
+        self.httpClient = httpClient
+    }
 
     // MARK: - Shared formatters (allocated once, reused on every call)
 
@@ -75,59 +80,29 @@ final class AgentBackendClient {
     // MARK: - Conversations
 
     func createConversation(publicKey: String, token: String) async throws -> AgentConversation {
-        try await doRequest(
-            method: "POST",
-            url: Endpoint.agentConversations(),
-            token: token,
-            body: ["public_key": publicKey]
-        )
+        try await doRequest(.createConversation(publicKey: publicKey, token: token))
     }
 
     func listConversations(publicKey: String, skip: Int, take: Int, token: String) async throws -> AgentListConversationsResponse {
-        try await doRequest(
-            method: "POST",
-            url: Endpoint.agentConversationsList(),
-            token: token,
-            body: ["public_key": publicKey, "skip": skip, "take": take] as [String: Any]
-        )
+        try await doRequest(.listConversations(publicKey: publicKey, skip: skip, take: take, token: token))
     }
 
     func getConversation(id: String, publicKey: String, token: String) async throws -> AgentConversationWithMessages {
-        try await doRequest(
-            method: "POST",
-            url: Endpoint.agentConversation(id: id),
-            token: token,
-            body: ["public_key": publicKey]
-        )
+        try await doRequest(.getConversation(id: id, publicKey: publicKey, token: token))
     }
 
     func deleteConversation(id: String, publicKey: String, token: String) async throws {
-        let _: AgentEmptyResponse = try await doRequest(
-            method: "DELETE",
-            url: Endpoint.agentConversation(id: id),
-            token: token,
-            body: ["public_key": publicKey]
-        )
+        let _: AgentEmptyResponse = try await doRequest(.deleteConversation(id: id, publicKey: publicKey, token: token))
     }
 
     func getStarters(request: AgentGetStartersRequest, token: String) async throws -> AgentGetStartersResponse {
-        try await doRequest(
-            method: "POST",
-            url: Endpoint.agentStarters(),
-            token: token,
-            body: request
-        )
+        try await doRequest(.getStarters(request: request, token: token))
     }
 
     // MARK: - Send Message (non-streaming)
 
     func sendMessage(convId: String, request: AgentSendMessageRequest, token: String) async throws -> AgentSendMessageResponse {
-        try await doRequest(
-            method: "POST",
-            url: Endpoint.agentConversationMessages(id: convId),
-            token: token,
-            body: request
-        )
+        try await doRequest(.sendMessage(convId: convId, request: request, token: token))
     }
 
     // MARK: - Send Message (SSE streaming)
@@ -157,25 +132,23 @@ final class AgentBackendClient {
                     defer { session.finishTasksAndInvalidate() }
                     let (bytes, response) = try await session.bytes(for: urlRequest)
                     #if DEBUG
-                    print("[AgentBackend] 🌊 SSE response received")
+                    logger.debug("SSE response received")
                     #endif
 
                     guard let httpResponse = response as? HTTPURLResponse else {
                         #if DEBUG
-                        print("[AgentBackend] ❌ Not an HTTP response")
+                        logger.error("SSE did not receive an HTTP response")
                         #endif
                         throw AgentBackendError.noBody
                     }
                     #if DEBUG
-                    print("[AgentBackend] 🌊 SSE HTTP status: \(httpResponse.statusCode)")
-                    #endif
-                    #if DEBUG
-                    print("[AgentBackend] 🌊 Content-Type: \(httpResponse.value(forHTTPHeaderField: "Content-Type") ?? "nil")")
+                    logger.debug("SSE HTTP status: \(httpResponse.statusCode)")
+                    logger.debug("SSE Content-Type: \(httpResponse.value(forHTTPHeaderField: "Content-Type") ?? "nil")")
                     #endif
 
                     if httpResponse.statusCode == 401 {
                         #if DEBUG
-                        print("[AgentBackend] ❌ 401 Unauthorized")
+                        logger.error("SSE returned 401 Unauthorized")
                         #endif
                         throw AgentBackendError.unauthorized
                     }
@@ -187,7 +160,7 @@ final class AgentBackendClient {
                         }
                         let errMsg = Self.parseErrorMessage(from: body) ?? body
                         #if DEBUG
-                        print("[AgentBackend] ❌ HTTP \(httpResponse.statusCode): \(errMsg)")
+                        logger.error("SSE HTTP \(httpResponse.statusCode): \(errMsg)")
                         #endif
                         throw AgentBackendError.httpError(status: httpResponse.statusCode, message: errMsg)
                     }
@@ -218,14 +191,14 @@ final class AgentBackendClient {
                     for try await line in bytes.lines {
                         if Task.isCancelled {
                             #if DEBUG
-                            print("[AgentBackend] ⚠️ SSE task cancelled")
+                            logger.warning("SSE task cancelled")
                             #endif
                             continuation.finish()
                             return
                         }
                         lineCount += 1
                         #if DEBUG
-                        print("[AgentBackend] 📄 SSE line #\(lineCount): \(line.prefix(120))")
+                        logger.debug("SSE line #\(lineCount): \(String(line.prefix(120)))")
                         #endif
 
                         if line.hasPrefix("event: ") {
@@ -236,7 +209,7 @@ final class AgentBackendClient {
                         if line.hasPrefix("data: ") {
                             let jsonStr = String(line.dropFirst(6)).trimmingCharacters(in: .init(charactersIn: "\r"))
                             #if DEBUG
-                            print("[AgentBackend] 📦 SSE data event='\(currentEvent)' json=\(jsonStr.prefix(200))")
+                            logger.debug("SSE data event='\(currentEvent)' json=\(String(jsonStr.prefix(200)))")
                             #endif
 
                             if let event = self.processSSEEvent(eventName: currentEvent, jsonStr: jsonStr) {
@@ -246,7 +219,7 @@ final class AgentBackendClient {
                                 continuation.yield(event)
                             } else {
                                 #if DEBUG
-                                print("[AgentBackend] ⚠️ SSE processSSEEvent returned nil for event='\(currentEvent)'")
+                                logger.warning("SSE parser returned nil for event '\(currentEvent)'")
                                 #endif
                             }
                             currentEvent = ""
@@ -254,7 +227,7 @@ final class AgentBackendClient {
                         }
                     }
                     #if DEBUG
-                    print("[AgentBackend] 🏁 SSE stream ended, total lines: \(lineCount), hasMessage: \(hasMessage)")
+                    logger.debug("SSE stream ended. lines=\(lineCount) hasMessage=\(hasMessage)")
                     #endif
 
                     if !hasMessage {
@@ -338,73 +311,13 @@ final class AgentBackendClient {
 
     // MARK: - Generic Request
 
-    private func doRequest<T: Decodable>(method: String, url: String, token: String, body: some Encodable) async throws -> T {
-        guard let requestUrl = URL(string: url) else {
-            throw AgentBackendError.httpError(status: 0, message: "Invalid URL: \(url)")
-        }
-
-        var request = URLRequest(url: requestUrl)
-        request.httpMethod = method
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        if !token.isEmpty {
-            request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
-        request.httpBody = try AgentBackendClient.sharedEncoder.encode(body)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw AgentBackendError.noBody
-        }
-
-        if httpResponse.statusCode == 401 {
-            throw AgentBackendError.unauthorized
-        }
-
-        if httpResponse.statusCode >= 400 {
-            let text = String(data: data, encoding: .utf8) ?? ""
-            let errMsg = Self.parseErrorMessage(from: text) ?? text
-            throw AgentBackendError.httpError(status: httpResponse.statusCode, message: errMsg)
-        }
-
-        // Handle empty responses (e.g., DELETE)
-        if data.isEmpty || (String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespaces).isEmpty ?? true) {
-            if T.self == AgentEmptyResponse.self {
-                return AgentEmptyResponse() as! T
-            }
-        }
-
-        return try AgentBackendClient.sharedDecoder.decode(T.self, from: data)
-    }
-
-    // Overload for [String: Any] body (non-Encodable dictionaries)
-    private func doRequest<T: Decodable>(method: String, url: String, token: String, body: [String: Any]) async throws -> T {
-        guard let requestUrl = URL(string: url) else {
-            throw AgentBackendError.httpError(status: 0, message: "Invalid URL: \(url)")
-        }
-
-        var request = URLRequest(url: requestUrl)
-        request.httpMethod = method
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        if !token.isEmpty {
-            request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw AgentBackendError.noBody
-        }
-
-        if httpResponse.statusCode == 401 {
-            throw AgentBackendError.unauthorized
-        }
-
-        if httpResponse.statusCode >= 400 {
-            let text = String(data: data, encoding: .utf8) ?? ""
-            let errMsg = Self.parseErrorMessage(from: text) ?? text
-            throw AgentBackendError.httpError(status: httpResponse.statusCode, message: errMsg)
+    private func doRequest<T: Decodable>(_ target: AgentBackendAPI) async throws -> T {
+        let data: Data
+        do {
+            let response = try await httpClient.request(target)
+            data = response.data
+        } catch let error as HTTPError {
+            throw Self.mapHTTPError(error)
         }
 
         if data.isEmpty || (String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespaces).isEmpty ?? true) {
@@ -426,6 +339,28 @@ final class AgentBackendClient {
         }
         return error
     }
+
+    private static func mapHTTPError(_ error: HTTPError) -> Error {
+        switch error {
+        case .statusCode(let status, let data):
+            if status == 401 {
+                return AgentBackendError.unauthorized
+            }
+            let text = data.flatMap { String(data: $0, encoding: .utf8) } ?? ""
+            let errMsg = Self.parseErrorMessage(from: text) ?? text
+            return AgentBackendError.httpError(
+                status: status,
+                message: errMsg.isEmpty ? (error.errorDescription ?? "HTTP request failed") : errMsg
+            )
+        case .invalidResponse, .noData:
+            return AgentBackendError.noBody
+        default:
+            return AgentBackendError.httpError(
+                status: 0,
+                message: error.errorDescription ?? "HTTP request failed"
+            )
+        }
+    }
 }
 
 // MARK: - Helper Types
@@ -434,4 +369,80 @@ private struct AgentEmptyResponse: Decodable {}
 
 private struct TokensWrapper: Decodable {
     let tokens: [AgentTokenSearchResult]
+}
+
+private enum AgentBackendAPI: TargetType {
+    case createConversation(publicKey: String, token: String)
+    case listConversations(publicKey: String, skip: Int, take: Int, token: String)
+    case getConversation(id: String, publicKey: String, token: String)
+    case deleteConversation(id: String, publicKey: String, token: String)
+    case getStarters(request: AgentGetStartersRequest, token: String)
+    case sendMessage(convId: String, request: AgentSendMessageRequest, token: String)
+
+    var baseURL: URL {
+        URL(string: Endpoint.agentBackendUrl)!
+    }
+
+    var path: String {
+        switch self {
+        case .createConversation:
+            return "/agent/conversations"
+        case .listConversations:
+            return "/agent/conversations/list"
+        case .getConversation(let id, _, _), .deleteConversation(let id, _, _):
+            let safeId = id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? id
+            return "/agent/conversations/\(safeId)"
+        case .getStarters:
+            return "/agent/starters"
+        case .sendMessage(let convId, _, _):
+            let safeId = convId.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? convId
+            return "/agent/conversations/\(safeId)/messages"
+        }
+    }
+
+    var method: HTTPMethod {
+        switch self {
+        case .deleteConversation:
+            return .delete
+        default:
+            return .post
+        }
+    }
+
+    var task: HTTPTask {
+        switch self {
+        case .createConversation(let publicKey, _):
+            return .requestParameters(["public_key": publicKey], .jsonEncoding)
+        case .listConversations(let publicKey, let skip, let take, _):
+            return .requestParameters(["public_key": publicKey, "skip": skip, "take": take], .jsonEncoding)
+        case .getConversation(_, let publicKey, _):
+            return .requestParameters(["public_key": publicKey], .jsonEncoding)
+        case .deleteConversation(_, let publicKey, _):
+            return .requestParameters(["public_key": publicKey], .jsonEncoding)
+        case .getStarters(let request, _):
+            return .requestCodable(request, .jsonEncoding)
+        case .sendMessage(_, let request, _):
+            return .requestCodable(request, .jsonEncoding)
+        }
+    }
+
+    var headers: [String: String]? {
+        var headers = ["Content-Type": "application/json"]
+        if !token.isEmpty {
+            headers["Authorization"] = "Bearer \(token)"
+        }
+        return headers
+    }
+
+    private var token: String {
+        switch self {
+        case .createConversation(_, let token),
+             .listConversations(_, _, _, let token),
+             .getConversation(_, _, let token),
+             .deleteConversation(_, _, let token),
+             .getStarters(_, let token),
+             .sendMessage(_, _, let token):
+            return token
+        }
+    }
 }

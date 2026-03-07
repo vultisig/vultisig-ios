@@ -203,24 +203,16 @@ final class FastVaultKeysignService {
         vaultPassword: String,
         chain: String
     ) async throws {
-        let success = await withCheckedContinuation { continuation in
-            FastVaultService.shared.sign(
-                publicKeyEcdsa: publicKey,
-                keysignMessages: keysignMessages,
-                sessionID: sessionID,
-                hexEncryptionKey: encryptionKeyHex,
-                derivePath: derivePath,
-                isECDSA: isECDSA,
-                vaultPassword: vaultPassword,
-                chain: chain
-            ) { success in
-                continuation.resume(returning: success)
-            }
-        }
-
-        guard success else {
-            throw FastVaultKeysignError.keysignFailed("FastVaultService.sign failed")
-        }
+        try await FastVaultService.shared.sign(
+            publicKeyEcdsa: publicKey,
+            keysignMessages: keysignMessages,
+            sessionID: sessionID,
+            hexEncryptionKey: encryptionKeyHex,
+            derivePath: derivePath,
+            isECDSA: isECDSA,
+            vaultPassword: vaultPassword,
+            chain: chain
+        )
     }
 
     /// GET /{sessionID} — poll until expected number of parties join (mirrors Windows waitForParties)

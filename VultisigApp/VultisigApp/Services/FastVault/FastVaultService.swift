@@ -128,18 +128,30 @@ final class FastVaultService {
         derivePath: String,
         isECDSA: Bool,
         vaultPassword: String,
-        chain: String,
-        completion: @escaping (Bool) -> Void
-    ) {
+        chain: String
+    ) async throws {
         let request = KeysignRequest(public_key: publicKeyEcdsa, messages: keysignMessages, session: sessionID, hex_encryption_key: hexEncryptionKey, derive_path: derivePath, is_ecdsa: isECDSA, vault_password: vaultPassword, chain: chain)
+        guard let url = URL(string: "\(endpoint)/sign") else {
+            throw FastVaultServiceError.invalidSignURL
+        }
 
-        Utils.sendRequest(
-            urlString: "\(endpoint)/sign",
-            method: "POST",
-            headers: [:],
-            body: request,
-            completion: completion
-        )
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = "POST"
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        urlRequest.httpBody = try JSONEncoder().encode(request)
+
+        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw FastVaultServiceError.invalidResponse
+        }
+
+        guard (200...299).contains(httpResponse.statusCode) else {
+            let responseBody = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
+            throw FastVaultServiceError.signFailed(
+                statusCode: httpResponse.statusCode,
+                responseBody: responseBody
+            )
+        }
     }
 
     func verifyBackupOTP(ecdsaKey: String, OTPCode: String) async -> Bool {
@@ -203,6 +215,29 @@ final class FastVaultService {
 
         Utils.sendRequest(urlString: "\(endpoint)/migrate", method: "POST", headers: [:], body: req) { _ in
             print("Send migration request to Vultiserver successfully")
+        }
+    }
+}
+
+enum FastVaultServiceError: Error, LocalizedError {
+    case invalidSignURL
+    case invalidResponse
+    case signFailed(statusCode: Int, responseBody: String?)
+
+    var errorDescription: String? {
+        switch self {
+        case .invalidSignURL:
+            return "FastVault sign URL is invalid"
+        case .invalidResponse:
+            return "FastVault sign returned an invalid response"
+        case .signFailed(let statusCode, let responseBody):
+            let body: String
+            if let responseBody, !responseBody.isEmpty {
+                body = responseBody
+            } else {
+                body = "empty response body"
+            }
+            return "FastVault sign failed with status \(statusCode): \(body)"
         }
     }
 }

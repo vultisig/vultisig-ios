@@ -11,69 +11,156 @@ import SwiftData
 @MainActor
 final class AgentToolExecutor {
 
+    @MainActor
+    private protocol AgentActionHandler {
+        var supportedActionTypes: Set<String> { get }
+        func execute(action: AgentBackendAction, vault: Vault) async -> AgentActionResult
+    }
+
+    private static let cacheInvalidatingActionTypes: Set<String> = [
+        "add_token",
+        "add_coin",
+        "add_chain",
+        "remove_coin",
+        "remove_chain",
+        "add_address_book",
+        "address_book_add",
+        "delete_address_book",
+        "address_book_remove"
+    ]
+
+    private static let handlerRegistry: [String: any AgentActionHandler] = {
+        let handlers: [any AgentActionHandler] = [
+            ChainAndTokenActionHandler(),
+            VaultInfoActionHandler(),
+            AddressBookActionHandler(),
+            SigningActionHandler(),
+            ServerSideActionHandler()
+        ]
+
+        return handlers.reduce(into: [:]) { registry, handler in
+            for actionType in handler.supportedActionTypes {
+                registry[actionType] = handler
+            }
+        }
+    }()
+
     static func execute(action: AgentBackendAction, vault: Vault) async -> AgentActionResult {
-        switch action.type {
-
-        // MARK: Chain & Token Management (iOS-side)
-        case "add_token", "add_coin":
-            let result = await executeAddToken(action: action, vault: vault)
-            if result.success { AgentContextBuilder.invalidateCache() }
-            return result
-        case "add_chain":
-            let result = await executeAddChain(action: action, vault: vault)
-            if result.success { AgentContextBuilder.invalidateCache() }
-            return result
-        case "remove_coin":
-            let result = executeRemoveToken(action: action, vault: vault)
-            if result.success { AgentContextBuilder.invalidateCache() }
-            return result
-        case "remove_chain":
-            let result = executeRemoveChain(action: action, vault: vault)
-            if result.success { AgentContextBuilder.invalidateCache() }
-            return result
-        case "search_token":
-            return executeSearchToken(action: action, vault: vault)
-
-        // MARK: Vault Info (iOS-side)
-        case "list_vaults":
-            return executeListVaults(action: action)
-        case "get_addresses":
-            return executeGetAddresses(action: action, vault: vault)
-        case "get_balances":
-            return executeGetBalances(action: action, vault: vault)
-        case "get_portfolio":
-            return executeGetPortfolio(action: action, vault: vault)
-        case "get_market_price":
-            return executeGetMarketPrice(action: action, vault: vault)
-
-        // MARK: Address Book (iOS-side)
-        case "get_address_book":
-            return executeGetAddressBook(action: action)
-        case "add_address_book", "address_book_add":
-            let result = executeAddAddressBook(action: action)
-            if result.success { AgentContextBuilder.invalidateCache() }
-            return result
-        case "delete_address_book", "address_book_remove":
-            let result = executeDeleteAddressBook(action: action)
-            if result.success { AgentContextBuilder.invalidateCache() }
-            return result
-
-        // MARK: Signing (requires iOS Keysign flow - not auto-executeable)
-        case "sign_tx", "sign_transaction_bundle":
-            return buildErrorResult(action: action, error: "sign_requires_keysign_flow")
-
-        // MARK: Server-side only (handled by agent-backend/MCP, should not reach here)
-        case "build_swap_tx", "build_send_tx", "build_custom_tx",
-             "plugin_install", "create_policy", "delete_policy",
-             "read_evm_contract", "scan_tx", "thorchain_query",
-             "build_btc_send", "build_evm_tx", "build_utxo_tx",
-             "get_eth_balance", "get_token_balance", "get_utxo_balance",
-             "get_utxo_transactions", "list_utxos", "convert_amount",
-             "abi_encode", "abi_decode", "evm_call", "evm_tx_info", "btc_fee_rate":
-            return buildErrorResult(action: action, error: "handled_server_side")
-
-        default:
+        guard let handler = handlerRegistry[action.type] else {
             return buildErrorResult(action: action, error: "unknown_action_type")
+        }
+
+        let result = await handler.execute(action: action, vault: vault)
+        if result.success, cacheInvalidatingActionTypes.contains(action.type) {
+            AgentContextBuilder.invalidateCache()
+        }
+        return result
+    }
+
+    private struct ChainAndTokenActionHandler: AgentActionHandler {
+        let supportedActionTypes: Set<String> = ["add_token", "add_coin", "add_chain", "remove_coin", "remove_chain", "search_token"]
+
+        func execute(action: AgentBackendAction, vault: Vault) async -> AgentActionResult {
+            switch action.type {
+            case "add_token", "add_coin":
+                return await AgentToolExecutor.executeAddToken(action: action, vault: vault)
+            case "add_chain":
+                return await AgentToolExecutor.executeAddChain(action: action, vault: vault)
+            case "remove_coin":
+                return AgentToolExecutor.executeRemoveToken(action: action, vault: vault)
+            case "remove_chain":
+                return AgentToolExecutor.executeRemoveChain(action: action, vault: vault)
+            case "search_token":
+                return AgentToolExecutor.executeSearchToken(action: action, vault: vault)
+            default:
+                return AgentToolExecutor.buildErrorResult(action: action, error: "unknown_action_type")
+            }
+        }
+    }
+
+    private struct VaultInfoActionHandler: AgentActionHandler {
+        let supportedActionTypes: Set<String> = ["list_vaults", "get_addresses", "get_balances", "get_portfolio", "get_market_price"]
+
+        func execute(action: AgentBackendAction, vault: Vault) async -> AgentActionResult {
+            await MainActor.run {
+                switch action.type {
+                case "list_vaults":
+                    return AgentToolExecutor.executeListVaults(action: action)
+                case "get_addresses":
+                    return AgentToolExecutor.executeGetAddresses(action: action, vault: vault)
+                case "get_balances":
+                    return AgentToolExecutor.executeGetBalances(action: action, vault: vault)
+                case "get_portfolio":
+                    return AgentToolExecutor.executeGetPortfolio(action: action, vault: vault)
+                case "get_market_price":
+                    return AgentToolExecutor.executeGetMarketPrice(action: action, vault: vault)
+                default:
+                    return AgentToolExecutor.buildErrorResult(action: action, error: "unknown_action_type")
+                }
+            }
+        }
+    }
+
+    private struct AddressBookActionHandler: AgentActionHandler {
+        let supportedActionTypes: Set<String> = ["get_address_book", "add_address_book", "address_book_add", "delete_address_book", "address_book_remove"]
+
+        func execute(action: AgentBackendAction, vault _: Vault) async -> AgentActionResult {
+            await MainActor.run {
+                switch action.type {
+                case "get_address_book":
+                    return AgentToolExecutor.executeGetAddressBook(action: action)
+                case "add_address_book", "address_book_add":
+                    return AgentToolExecutor.executeAddAddressBook(action: action)
+                case "delete_address_book", "address_book_remove":
+                    return AgentToolExecutor.executeDeleteAddressBook(action: action)
+                default:
+                    return AgentToolExecutor.buildErrorResult(action: action, error: "unknown_action_type")
+                }
+            }
+        }
+    }
+
+    private struct SigningActionHandler: AgentActionHandler {
+        let supportedActionTypes: Set<String> = ["sign_tx", "sign_transaction_bundle"]
+
+        func execute(action: AgentBackendAction, vault _: Vault) async -> AgentActionResult {
+            await MainActor.run {
+                AgentToolExecutor.buildErrorResult(action: action, error: "sign_requires_keysign_flow")
+            }
+        }
+    }
+
+    private struct ServerSideActionHandler: AgentActionHandler {
+        let supportedActionTypes: Set<String> = [
+            "build_swap_tx",
+            "build_send_tx",
+            "build_custom_tx",
+            "plugin_install",
+            "create_policy",
+            "delete_policy",
+            "read_evm_contract",
+            "scan_tx",
+            "thorchain_query",
+            "build_btc_send",
+            "build_evm_tx",
+            "build_utxo_tx",
+            "get_eth_balance",
+            "get_token_balance",
+            "get_utxo_balance",
+            "get_utxo_transactions",
+            "list_utxos",
+            "convert_amount",
+            "abi_encode",
+            "abi_decode",
+            "evm_call",
+            "evm_tx_info",
+            "btc_fee_rate"
+        ]
+
+        func execute(action: AgentBackendAction, vault _: Vault) async -> AgentActionResult {
+            await MainActor.run {
+                AgentToolExecutor.buildErrorResult(action: action, error: "handled_server_side")
+            }
         }
     }
 

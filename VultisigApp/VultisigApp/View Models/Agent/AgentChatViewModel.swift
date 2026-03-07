@@ -77,11 +77,7 @@ final class AgentChatViewModel: ObservableObject {
         streamingMessageId = nil
 
         currentTask = Task {
-            // Get token if available
-            let token = await getValidToken(vault: vault)?.token ?? ""
-
-            // If token is empty, we must authenticate first
-            if token.isEmpty {
+            guard let token = await requireAccessToken(vault: vault) else {
                 #if DEBUG
                 print("[AgentChat] 🔑 No valid token, prompting for password")
                 #endif
@@ -216,7 +212,11 @@ final class AgentChatViewModel: ObservableObject {
 
         currentTask = Task {
             do {
-                let token = await getValidToken(vault: vault)?.token ?? ""
+                guard let token = await requireAccessToken(vault: vault) else {
+                    discardPendingStreamingSeedMessage()
+                    isLoading = false
+                    return
+                }
 
                 let request = AgentSendMessageRequest(
                     publicKey: vault.pubKeyECDSA,
@@ -250,7 +250,10 @@ final class AgentChatViewModel: ObservableObject {
         isLoading = true
 
         do {
-            let token = await getValidToken(vault: vault)?.token ?? ""
+            guard let token = await requireAccessToken(vault: vault) else {
+                isLoading = false
+                return
+            }
 
             let conv = try await backendClient.getConversation(
                 id: id,
@@ -274,9 +277,7 @@ final class AgentChatViewModel: ObservableObject {
 
             isLoading = false
         } catch {
-            logger.error("Failed to load conversation: \(error.localizedDescription)")
-            self.error = error.localizedDescription
-            isLoading = false
+            handleError(error)
         }
     }
 
@@ -322,7 +323,10 @@ final class AgentChatViewModel: ObservableObject {
     // MARK: - Load Starters
 
     func loadStarters(vault: Vault) async {
-        let token = await getValidToken(vault: vault)
+        guard let token = await requireAccessToken(vault: vault) else {
+            starters = Array(AgentChatViewModel.fallbackStarters.shuffled().prefix(4))
+            return
+        }
 
         do {
             let context = AgentContextBuilder.buildContext(vault: vault)  // @MainActor, not async
@@ -333,7 +337,7 @@ final class AgentChatViewModel: ObservableObject {
 
             let response = try await backendClient.getStarters(
                 request: request,
-                token: token?.token ?? ""
+                token: token
             )
 
             if response.starters.isEmpty {
@@ -341,6 +345,15 @@ final class AgentChatViewModel: ObservableObject {
             } else {
                 starters = Array(response.starters.shuffled().prefix(4))
             }
+            isConnected = true
+        } catch let error as AgentBackendClient.AgentBackendError {
+            if case .unauthorized = error {
+                isConnected = false
+                passwordRequired = true
+            } else {
+                logger.warning("Failed to load starters, using fallback: \(error.localizedDescription)")
+            }
+            starters = Array(AgentChatViewModel.fallbackStarters.shuffled().prefix(4))
         } catch {
             logger.warning("Failed to load starters, using fallback: \(error.localizedDescription)")
             starters = Array(AgentChatViewModel.fallbackStarters.shuffled().prefix(4))
@@ -375,16 +388,18 @@ final class AgentChatViewModel: ObservableObject {
     func deleteCurrentConversation(vault: Vault) {
         guard let convId = conversationId else { return }
         Task {
-            let token = await getValidToken(vault: vault)
+            guard let token = await requireAccessToken(vault: vault) else {
+                return
+            }
             do {
                 try await backendClient.deleteConversation(
                     id: convId,
                     publicKey: vault.pubKeyECDSA,
-                    token: token?.token ?? ""
+                    token: token
                 )
                 conversationDeleted = true
             } catch {
-                self.error = error.localizedDescription
+                handleError(error)
             }
         }
     }
@@ -1133,6 +1148,37 @@ final class AgentChatViewModel: ObservableObject {
         print("[AgentChat] 🔑 getValidToken: refresh result = \(refreshed != nil ? "token found" : "nil")")
         #endif
         return refreshed
+    }
+
+    private func requireAccessToken(vault: Vault) async -> String? {
+        guard let authToken = await getValidToken(vault: vault) else {
+            passwordRequired = true
+            isConnected = false
+            return nil
+        }
+
+        let token = authToken.token.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !token.isEmpty else {
+            passwordRequired = true
+            isConnected = false
+            return nil
+        }
+
+        isConnected = true
+        return token
+    }
+
+    private func discardPendingStreamingSeedMessage() {
+        guard let streamId = streamingMessageId,
+              let idx = messages.firstIndex(where: { $0.id == streamId }),
+              messages[idx].content.isEmpty,
+              messages[idx].isStreaming else {
+            streamingMessageId = nil
+            return
+        }
+
+        messages.remove(at: idx)
+        streamingMessageId = nil
     }
 
     private func handleError(_ error: Error) {
