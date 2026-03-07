@@ -6,18 +6,17 @@ labels: enhancement
 assignees: ''
 ---
 
-<!-- Agent-ready issue template. Fill as much as you can — the more detail, the faster the implementation. -->
-
----
+<!-- Fill in the AGENT block: priority = critical|high|medium|low, size = tiny|small|medium -->
+<!-- AGENT
 type: "feature"
-priority: ""              <!-- critical | high | medium | low -->
-size: ""                  <!-- tiny (1 file) | small (1-3 files) | medium (3-8 files) -->
-platform: [ios]
+priority: ""
+size: ""
+platform: [ios, macos]
 files:
-  read: []                <!-- Files for context -->
-  write: []               <!-- Files to create or modify -->
-verify: ["xcodebuild -scheme Vultisig build"]
----
+  read: []
+  write: []
+verify: ["xcodebuild -scheme VultisigApp -destination 'platform=iOS Simulator,name=iPhone 16'"]
+-->
 
 # [Add] <what to build> [<screen/area>]
 
@@ -44,6 +43,6 @@ verify: ["xcodebuild -scheme Vultisig build"]
 - <!-- Related but separate work — future issue -->
 
 ## Acceptance Criteria
-- [ ] `xcodebuild -scheme Vultisig build` succeeds
+- [ ] `xcodebuild -scheme VultisigApp` succeeds
 - [ ] <!-- Specific behavior check 1 -->
 - [ ] <!-- Specific behavior check 2 -->
