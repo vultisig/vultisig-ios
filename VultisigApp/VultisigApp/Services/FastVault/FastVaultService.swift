@@ -24,19 +24,55 @@ final class FastVaultService {
         return "Server-\(hash)"
     }
 
-    func get(pubKeyECDSA: String, password: String) async -> Bool {
-        do {
-            let urlString = "\(endpoint)/get/\(pubKeyECDSA)"
+    func validateAccess(pubKeyECDSA: String, password: String) async -> FastVaultAccessValidationResult {
+        let urlString = "\(endpoint)/get/\(pubKeyECDSA)"
 
-            let pwd = password.data(using: .utf8)?.base64EncodedString()
-            guard let pwd else {
-                return false
-            }
-            _ = try await Utils.asyncGetRequest(urlString: urlString, headers: ["x-password": pwd])
-            return true
-        } catch {
-            return false
+        guard let url = URL(string: urlString) else {
+            return .networkFailure("FastVault get URL is invalid")
         }
+
+        guard let pwd = password.data(using: .utf8)?.base64EncodedString() else {
+            return .networkFailure("Failed to encode FastVault password")
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.addValue(pwd, forHTTPHeaderField: "x-password")
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse else {
+                return .networkFailure("FastVault get returned an invalid response")
+            }
+
+            let responseBody = String(data: data, encoding: .utf8)?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+
+            switch httpResponse.statusCode {
+            case 200 ... 299:
+                return .valid
+            case 401, 403:
+                return .invalidPassword
+            case 404:
+                return .vaultNotFound
+            default:
+                return .requestFailed(
+                    statusCode: httpResponse.statusCode,
+                    responseBody: responseBody
+                )
+            }
+        } catch {
+            return .networkFailure(error.localizedDescription)
+        }
+    }
+
+    func get(pubKeyECDSA: String, password: String) async -> Bool {
+        let result = await validateAccess(pubKeyECDSA: pubKeyECDSA, password: password)
+        if case .valid = result {
+            return true
+        }
+        return false
     }
 
     func exist(pubKeyECDSA: String) async -> Bool {
@@ -242,4 +278,12 @@ enum FastVaultServiceError: Error, LocalizedError {
             return "FastVault sign failed with status \(statusCode): \(body)"
         }
     }
+}
+
+enum FastVaultAccessValidationResult {
+    case valid
+    case invalidPassword
+    case vaultNotFound
+    case requestFailed(statusCode: Int, responseBody: String?)
+    case networkFailure(String)
 }

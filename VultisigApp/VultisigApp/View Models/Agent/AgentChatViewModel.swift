@@ -746,7 +746,8 @@ final class AgentChatViewModel: ObservableObject {
         }
 
         debugLog("[AgentChat] confirmSignTx continuing for \(pendingSendTx.coin.ticker) on \(pendingSendTx.coin.chain.name)")
-        if vault.isFastVault {
+        let canUseHeadlessFastVault = vault.isFastVault || cachedFastVaultPassword != nil
+        if canUseHeadlessFastVault {
             // Fully headless: use cached password from signIn, no sheets at all
             if let password = cachedFastVaultPassword, !password.isEmpty {
                 debugLog("[AgentChat] Using cached FastVault password for keysign")

@@ -39,7 +39,7 @@ struct AgentConversationsView: View {
         }
         .crossPlatformSheet(isPresented: $viewModel.passwordRequired) {
             if let vault = appViewModel.selectedVault {
-                AgentPasswordPromptScreen(usesFastVault: vault.isFastVault) { password in
+                AgentPasswordPromptScreen(usesFastVault: true) { password in
                     await viewModel.signIn(vault: vault, password: password)
                 }
             }
@@ -155,7 +155,6 @@ struct AgentConversationsView: View {
                         // Swipe-to-delete (replaces List's .onDelete)
                         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                             Button(role: .destructive) {
-                                guard let vault = appViewModel.selectedVault else { return }
                                 if let idx = viewModel.conversations.firstIndex(where: { $0.id == conv.id }) {
                                     deleteConversations(at: IndexSet(integer: idx))
                                 }

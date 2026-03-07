@@ -42,19 +42,33 @@ final class AgentAuthService {
     /// Sign in to the agent backend using TSS keysign
     func signIn(vault: Vault, password: String) async throws -> AgentAuthToken {
         debugLog("[AgentAuth] Starting sign-in flow")
-
-        guard vault.isFastVault else {
-            warningLog("[AgentAuth] Agent auth requires Fast Vault support")
-            throw AgentAuthError.fastVaultRequired
+        if vault.isFastVault {
+            debugLog("[AgentAuth] Fast Vault detected from local vault metadata")
+        } else {
+            warningLog("[AgentAuth] Local vault metadata does not indicate Fast Vault. Falling back to backend password validation")
         }
 
-        let isValidFastVaultPassword = await FastVaultService.shared.get(
+        let fastVaultAccessValidation = await FastVaultService.shared.validateAccess(
             pubKeyECDSA: vault.pubKeyECDSA,
             password: password
         )
-        guard isValidFastVaultPassword else {
+        switch fastVaultAccessValidation {
+        case .valid:
+            debugLog("[AgentAuth] FastVault password preflight succeeded")
+        case .invalidPassword:
             warningLog("[AgentAuth] FastVault password preflight failed")
             throw AgentAuthError.invalidFastVaultPassword
+        case .vaultNotFound:
+            if vault.isFastVault {
+                warningLog("[AgentAuth] FastVault backend does not recognize this vault")
+                throw AgentAuthError.fastVaultUnavailable("This vault is not available for Fast Vault signing on the backend.")
+            }
+            warningLog("[AgentAuth] Agent auth requires Fast Vault support")
+            throw AgentAuthError.fastVaultRequired
+        case .requestFailed(let statusCode, let responseBody):
+            warningLog("[AgentAuth] FastVault password preflight returned HTTP \(statusCode). Proceeding to keysign. Body: \(responseBody ?? "empty")")
+        case .networkFailure(let message):
+            warningLog("[AgentAuth] FastVault password preflight failed due to network/backend issue. Proceeding to keysign. Error: \(message)")
         }
 
         let authMessage = try generateAuthMessage(vault: vault)
@@ -438,6 +452,7 @@ final class AgentAuthService {
 enum AgentAuthError: Error, LocalizedError {
     case emptyToken
     case fastVaultRequired
+    case fastVaultUnavailable(String)
     case invalidFastVaultPassword
     case keysignFailed
     case authFailed
@@ -447,7 +462,8 @@ enum AgentAuthError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .emptyToken: return "Authentication returned an empty token"
-        case .fastVaultRequired: return "Agent sign-in currently requires a Fast Vault."
+        case .fastVaultRequired: return "Agent sign-in currently requires a Fast Vault that is available on the backend."
+        case .fastVaultUnavailable(let message): return message
         case .invalidFastVaultPassword: return NSLocalizedString("incorrectPasswordTryAgain", comment: "")
         case .keysignFailed: return "Fast vault keysign failed"
         case .authFailed: return "Authentication failed"
