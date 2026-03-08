@@ -106,6 +106,9 @@ final class AgentBackendClient {
     }
 
     // MARK: - Send Message (SSE streaming)
+    // NOTE: SSE streaming uses raw URLSession instead of HTTPClient because
+    // HTTPClient doesn't support byte-level async streaming (AsyncBytes).
+    // All non-streaming REST calls go through HTTPClient via doRequest().
 
     func sendMessageStream(
         convId: String,

@@ -6,6 +6,9 @@
 //
 
 import SwiftUI
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig", category: "AgentPasswordPrompt")
 
 struct AgentPasswordPromptScreen: View {
     let usesFastVault: Bool
@@ -98,7 +101,7 @@ struct AgentPasswordPromptScreen: View {
 
 #Preview {
     AgentPasswordPromptScreen(usesFastVault: true) { password in
-        print("Password: \(password)")
+        logger.debug("Password submitted")
         return nil
     }
 }

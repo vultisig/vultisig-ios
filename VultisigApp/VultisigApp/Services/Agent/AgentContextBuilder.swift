@@ -10,6 +10,8 @@ import SwiftData
 
 enum AgentContextBuilder {
 
+    // TODO: Move these instructions to the backend so prompt logic isn't hardcoded in the iOS client.
+    // See PR #3910 review (gastonm5): "Is it safe to have these instructions here? Shouldn't we move them to the backend?"
     static let instructions = [
         "You are currently running inside the Vultisig iOS App.",
         "Do NOT use external tools (like get_eth_balance or get_token_balance) for balances, portfolio, or addresses.",
