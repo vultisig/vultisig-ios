@@ -26,7 +26,7 @@ struct TransactionHistoryDetailSheet: View {
             .applySheetSize(700, 550)
 #endif
     }
-    
+
     var content: some View {
         ScrollView {
             VStack(spacing: 16) {
