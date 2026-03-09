@@ -41,8 +41,16 @@ struct HomeScreen: View {
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
     @EnvironmentObject var appViewModel: AppViewModel
     @Environment(\.modelContext) private var modelContext
+    
     var tabs: [HomeTab] {
-        !(appViewModel.selectedVault?.availableDefiChains.isEmpty ?? true) ? [.wallet, .defi] : [.wallet]
+        var baseTabs: [HomeTab] = [.wallet]
+        if !(appViewModel.selectedVault?.availableDefiChains.isEmpty ?? true) {
+            baseTabs.append(.defi)
+        }
+        if SettingsViewModel.shared.agentEnabled {
+            baseTabs.append(.agent)
+        }
+        return baseTabs
     }
 
     init(showingVaultSelector: Bool = false) {
@@ -137,6 +145,8 @@ struct HomeScreen: View {
                             vault: selectedVault,
                             showBalanceInHeader: $defiShowPortfolioHeader
                         )
+                    case .agent:
+                        AgentConversationsView()
                     case .camera:
                         EmptyView()
                     }
@@ -149,6 +159,7 @@ struct HomeScreen: View {
             }
 
             header(vault: selectedVault)
+                .showIf(selectedTab != .agent)
         }
     }
 
@@ -325,6 +336,8 @@ extension HomeScreen {
             showOpaqueHeader = defiShowPortfolioHeader
         case .wallet:
             showOpaqueHeader = walletShowPortfolioHeader
+        case .agent:
+            showOpaqueHeader = false
         case .camera:
             return
         }
