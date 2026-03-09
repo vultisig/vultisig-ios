@@ -189,12 +189,22 @@ struct KeysignPayloadFactory {
             throw Errors.notEnoughUTXOError
         }
 
-        // Convert WalletCore's selected UTXOs back to UtxoInfo format
+        // Build lookup from original UTXOs to preserve token data
+        let utxoLookup = Dictionary(
+            uniqueKeysWithValues: cardanoUTXOs.map { ("\($0.hash):\($0.index)", $0) }
+        )
+
+        // Convert WalletCore's selected UTXOs back to UtxoInfo format, preserving token data
         return plan.utxos.map { utxo in
-            UtxoInfo(
-                hash: utxo.outPoint.txHash.toHexString(),
+            let txHash = utxo.outPoint.txHash.toHexString()
+            let outputIndex = UInt32(utxo.outPoint.outputIndex)
+            let original = utxoLookup["\(txHash):\(outputIndex)"]
+
+            return UtxoInfo(
+                hash: txHash,
                 amount: Int64(utxo.amount),
-                index: UInt32(utxo.outPoint.outputIndex)
+                index: outputIndex,
+                cardanoTokens: original?.cardanoTokens
             )
         }
     }

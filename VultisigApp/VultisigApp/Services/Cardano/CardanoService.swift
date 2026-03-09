@@ -5,6 +5,9 @@
 
 import Foundation
 import BigInt
+import OSLog
+
+private let logger = Logger(subsystem: "com.vultisig.app", category: "cardano-service")
 
 class CardanoService {
 
@@ -57,6 +60,57 @@ class CardanoService {
         }
     }
 
+    /// Fetch the balance of a specific Cardano native token
+    /// contractAddress format: policyId + assetNameHex (the "unit" in Koios terminology)
+    func getTokenBalance(address: String, contractAddress: String) async throws -> String {
+        let url = URL(string: Endpoint.fetchCardanoBalance())!
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let requestBody = [
+            "_addresses": [address]
+        ]
+
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+
+            let (data, response) = try await URLSession.shared.data(for: request)
+
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                return "0"
+            }
+
+            guard let dataArray = try JSONSerialization.jsonObject(with: data) as? [[String: Any]],
+                  let addressInfo = dataArray.first,
+                  let assetList = addressInfo["asset_list"] as? [[String: Any]] else {
+                return "0"
+            }
+
+            let unit = contractAddress.lowercased()
+
+            for asset in assetList {
+                guard let policyId = asset["policy_id"] as? String,
+                      let assetName = asset["asset_name"] as? String,
+                      let quantity = asset["quantity"] as? String else {
+                    continue
+                }
+
+                let assetUnit = (policyId + assetName).lowercased()
+                if assetUnit == unit {
+                    return quantity
+                }
+            }
+
+            return "0"
+        } catch {
+            logger.error("Failed to fetch Cardano token balance: \(error.localizedDescription)")
+            return "0"
+        }
+    }
+
     func getUTXOs(coin: Coin) async throws -> [UtxoInfo] {
         let url = URL(string: Endpoint.fetchCardanoUTXOs())!
 
@@ -97,10 +151,27 @@ class CardanoService {
                     continue
                 }
 
+                var tokenAssets: [CardanoTokenAsset]?
+                if let assetList = utxoData["asset_list"] as? [[String: Any]], !assetList.isEmpty {
+                    tokenAssets = assetList.compactMap { asset in
+                        guard let policyId = asset["policy_id"] as? String,
+                              let assetName = asset["asset_name"] as? String,
+                              let quantity = asset["quantity"] as? String else {
+                            return nil
+                        }
+                        return CardanoTokenAsset(
+                            policyId: policyId,
+                            assetNameHex: assetName,
+                            amount: quantity
+                        )
+                    }
+                }
+
                 let utxo = UtxoInfo(
                     hash: txHash,
                     amount: valueInt,
-                    index: UInt32(txIndex)
+                    index: UInt32(txIndex),
+                    cardanoTokens: tokenAssets
                 )
                 utxos.append(utxo)
             }
@@ -205,8 +276,7 @@ class CardanoService {
         )
 
         if sendMaxRecommendation.shouldRecommend {
-            // Log recommendation but don't throw error
-            print("Cardano Service: \(sendMaxRecommendation.message ?? "Consider Send Max")")
+            logger.info("\(sendMaxRecommendation.message ?? "Consider Send Max")")
         }
     }
 
@@ -267,7 +337,7 @@ class CardanoService {
                     // We should calculate the hash locally and return it as success.
                     if let txData = Data(hexString: signedTransaction) {
                         let txId = CardanoHelper.calculateCardanoTransactionHash(from: txData)
-                        print("Cardano Service: Transaction already in mempool (3117). Returning local hash: \(txId)")
+                        logger.info("Transaction already in mempool (3117). Returning local hash: \(txId)")
                         return txId
                     }
                 }

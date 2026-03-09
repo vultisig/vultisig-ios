@@ -7,10 +7,17 @@ import Foundation
 import Tss
 import WalletCore
 
+struct CardanoTokenAsset: Codable, Hashable {
+    let policyId: String
+    let assetNameHex: String
+    let amount: String
+}
+
 struct UtxoInfo: Codable, Hashable {
     let hash: String
     let amount: Int64
     let index: UInt32
+    var cardanoTokens: [CardanoTokenAsset]?
 }
 
 class UTXOChainsHelper {
