@@ -1083,3 +1083,5 @@
 "yourSeedphraseSubtitle" = "输入它，创建保险库，永不回头";
 "yourVaultIsReadyToUse" = "你的保险库已可使用";
 "yourVaultSetup" = "您的保险库设置";
+"zipImportAllDuplicates" = "全部 %d 个保险库已存在，已跳过：%@。";
+"zipImportPartialSuccess" = "已导入 %d 个保险库。跳过 %d 个重复项：%@。";

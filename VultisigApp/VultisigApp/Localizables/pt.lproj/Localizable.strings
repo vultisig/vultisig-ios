@@ -1082,3 +1082,5 @@
 "yourSeedphraseSubtitle" = "Digite-a, crie um cofre, nunca olhe para trás";
 "yourVaultIsReadyToUse" = "Seu cofre está pronto para uso";
 "yourVaultSetup" = "Sua configuração de cofre";
+"zipImportAllDuplicates" = "Todos os %d cofre(s) já existem e foram ignorados: %@.";
+"zipImportPartialSuccess" = "Importados %d cofre(s). Ignorados %d duplicado(s): %@.";

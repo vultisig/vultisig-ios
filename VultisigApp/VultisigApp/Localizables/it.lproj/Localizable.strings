@@ -1082,3 +1082,5 @@
 "yourSeedphraseSubtitle" = "Inseriscila, crea un vault, non voltarti mai indietro";
 "yourVaultIsReadyToUse" = "Il tuo vault è pronto all'uso";
 "yourVaultSetup" = "La tua configurazione del vault";
+"zipImportAllDuplicates" = "Tutti i %d vault esistono già e sono stati saltati: %@.";
+"zipImportPartialSuccess" = "Importati %d vault. Saltati %d duplicati: %@.";

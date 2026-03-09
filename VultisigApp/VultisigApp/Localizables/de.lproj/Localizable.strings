@@ -1082,3 +1082,5 @@
 "yourSeedphraseSubtitle" = "Geben Sie sie ein, erstellen Sie einen Tresor, schauen Sie nie zurück";
 "yourVaultIsReadyToUse" = "Dein Tresor ist einsatzbereit";
 "yourVaultSetup" = "Ihre Tresor-Einrichtung";
+"zipImportAllDuplicates" = "Alle %d Tresor(e) existieren bereits und wurden übersprungen: %@.";
+"zipImportPartialSuccess" = "%d Tresor(e) importiert. %d Duplikat(e) übersprungen: %@.";
