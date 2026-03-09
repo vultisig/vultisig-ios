@@ -28,6 +28,16 @@ struct JoinSwapDoneSummary: View {
         .buttonStyle(BorderlessButtonStyle())
         .onLoad {
             animationVM = RiveViewModel(fileName: "vault_created", autoPlay: true)
+
+            // Record swap to transaction history (co-signer path)
+            if let payload = keysignViewModel.keysignPayload {
+                TransactionHistoryRecorder.shared.recordFromKeysignPayload(
+                    txHash: keysignViewModel.txid,
+                    approveTxHash: keysignViewModel.approveTxid,
+                    vault: vault,
+                    keysignPayload: payload
+                )
+            }
         }
     }
 

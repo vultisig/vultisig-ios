@@ -51,7 +51,8 @@ struct SwapCryptoDoneView: View {
             chain: tx.fromCoin.chain,
             coinTicker: tx.fromCoin.ticker,
             amount: "\(tx.fromAmount) \(tx.fromCoin.ticker)",
-            toAddress: tx.toCoin.address
+            toAddress: tx.toCoin.address,
+            pubKeyECDSA: vault.pubKeyECDSA
         ))
     }
 
@@ -63,6 +64,39 @@ struct SwapCryptoDoneView: View {
         .onAppear {
             // Start polling for transaction status
             statusViewModel.startPolling()
+
+            // Record approve to transaction history (if applicable)
+            if let approveHash {
+                TransactionHistoryRecorder.shared.recordApprove(
+                    txHash: approveHash,
+                    pubKeyECDSA: vault.pubKeyECDSA,
+                    coin: tx.fromCoin,
+                    amountCrypto: sendSummaryViewModel.getFromAmount(tx),
+                    spender: tx.router ?? "",
+                    chain: tx.fromCoin.chain,
+                    explorerLink: Endpoint.getExplorerURL(chain: tx.fromCoin.chain, txid: approveHash)
+                )
+            }
+
+            // Record swap to transaction history
+            TransactionHistoryRecorder.shared.recordSwap(
+                txHash: hash,
+                approveTxHash: approveHash,
+                pubKeyECDSA: vault.pubKeyECDSA,
+                fromCoin: tx.fromCoin,
+                toCoin: tx.toCoin,
+                fromAmountCrypto: sendSummaryViewModel.getFromAmount(tx),
+                fromAmountFiat: swapSummaryViewModel.fromFiatAmount(tx: tx),
+                toAmountCrypto: sendSummaryViewModel.getToAmount(tx),
+                toAmountFiat: swapSummaryViewModel.toFiatAmount(tx: tx),
+                fromAddress: tx.fromCoin.address,
+                toAddress: tx.toCoin.address,
+                feeCrypto: swapSummaryViewModel.totalFeeString(tx: tx),
+                feeFiat: "",
+                chain: tx.fromCoin.chain,
+                explorerLink: Endpoint.getExplorerURL(chain: tx.fromCoin.chain, txid: hash),
+                provider: tx.quote?.displayName
+            )
         }
         .onDisappear {
             // Stop polling when view disappears

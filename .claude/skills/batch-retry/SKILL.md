@@ -33,6 +33,8 @@ gh pr list --search "Closes #{issue-number}" --json number,title,url,headRefName
 
 ### Step 2 — Cleanup Failed Attempt
 
+Confirm cleanup with the user before proceeding with any destructive operations.
+
 For each task to retry:
 
 #### a) Close the failed PR (if it exists)
@@ -49,8 +51,6 @@ git push origin --delete {branch-name}
 ```bash
 git branch -D {branch-name} 2>/dev/null || true
 ```
-
-Confirm cleanup with the user before proceeding.
 
 ### Step 3 — Re-execute
 

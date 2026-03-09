@@ -11,7 +11,17 @@ import SwiftUI
 extension SettingsCustomMessageView {
 
     var main: some View {
-        view
+        VStack(spacing: 18) {
+            switch viewModel.state {
+            case .initial:
+                customMessage
+                    .crossPlatformToolbar(viewModel.state.title)
+            case .pair:
+                pair
+            case .keysign, .done:
+                keysign
+            }
+        }
     }
 
     var customMessageContent: some View {

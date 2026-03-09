@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 import SwiftUI
 
 @MainActor
@@ -17,11 +18,13 @@ class TransactionStatusViewModel: ObservableObject {
     private let config: ChainStatusConfig
     private let service = TransactionStatusService.shared
     private let storage = StoredPendingTransactionStorage.shared
+    private let logger = Logger(subsystem: "com.vultisig.app", category: "tx-status-viewmodel")
 
     // Optional metadata for persistence
     private let coinTicker: String?
     private let amount: String?
     private let toAddress: String?
+    private let pubKeyECDSA: String?
 
     private var pollingTask: Task<Void, Never>?
     private var timerTask: Task<Void, Never>?
@@ -32,7 +35,8 @@ class TransactionStatusViewModel: ObservableObject {
         chain: Chain,
         coinTicker: String? = nil,
         amount: String? = nil,
-        toAddress: String? = nil
+        toAddress: String? = nil,
+        pubKeyECDSA: String? = nil
     ) {
         self.txHash = txHash
         self.chain = chain
@@ -40,6 +44,7 @@ class TransactionStatusViewModel: ObservableObject {
         self.coinTicker = coinTicker
         self.amount = amount
         self.toAddress = toAddress
+        self.pubKeyECDSA = pubKeyECDSA
 
         // Set initial state
         self.status = .broadcasted(estimatedTime: config.estimatedTime)
@@ -53,6 +58,7 @@ class TransactionStatusViewModel: ObservableObject {
         self.coinTicker = pendingTransaction.coinTicker
         self.amount = pendingTransaction.amount
         self.toAddress = pendingTransaction.toAddress
+        self.pubKeyECDSA = pendingTransaction.pubKeyECDSA
 
         // Restore status from persistence
         self.status = Self.statusFromString(
@@ -81,7 +87,8 @@ class TransactionStatusViewModel: ObservableObject {
                 status: status,
                 coinTicker: coinTicker,
                 amount: amount,
-                toAddress: toAddress
+                toAddress: toAddress,
+                pubKeyECDSA: pubKeyECDSA
             )
         }
 
@@ -115,7 +122,7 @@ class TransactionStatusViewModel: ObservableObject {
                 } catch is CancellationError {
                     break
                 } catch {
-                    print("TransactionStatusViewModel: Polling error: \(error)")
+                    logger.error("Polling error: \(error)")
                     // On error, retry after poll interval
                     try? await Task.sleep(for: .seconds(config.pollInterval))
                 }
@@ -149,6 +156,16 @@ class TransactionStatusViewModel: ObservableObject {
         // Save to SwiftData if status changed
         if previousStatus != status {
             saveStatus()
+
+            // Update transaction history status on terminal states
+            if let pubKeyECDSA, status.isTerminal {
+                let historyStatus: TransactionHistoryStatus = (status == .confirmed) ? .successful : .error
+                TransactionHistoryRecorder.shared.updateStatus(
+                    txHash: txHash,
+                    pubKeyECDSA: pubKeyECDSA,
+                    status: historyStatus
+                )
+            }
         }
     }
 
@@ -160,10 +177,11 @@ class TransactionStatusViewModel: ObservableObject {
                 status: status,
                 coinTicker: coinTicker,
                 amount: amount,
-                toAddress: toAddress
+                toAddress: toAddress,
+                pubKeyECDSA: pubKeyECDSA
             )
         } catch {
-            print("TransactionStatusViewModel: Failed to save status: \(error)")
+            logger.error("Failed to save status: \(error)")
         }
     }
 
