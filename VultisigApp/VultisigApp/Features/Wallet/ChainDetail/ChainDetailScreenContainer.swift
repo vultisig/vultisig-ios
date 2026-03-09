@@ -24,7 +24,14 @@ struct ChainDetailScreenContainer: View {
         self.group = group
         self.vault = vault
         let supportsDefiTab = vault.availableDefiChains.contains(group.chain)
-        tabs = supportsDefiTab ? [.wallet, .defi] : [.wallet]
+        var newTabs: [HomeTab] = [.wallet]
+        if supportsDefiTab {
+            newTabs.append(.defi)
+        }
+        if SettingsViewModel.shared.agentEnabled {
+            newTabs.append(.agent)
+        }
+        self.tabs = newTabs
     }
 
     var body: some View {
@@ -65,6 +72,8 @@ struct ChainDetailScreenContainer: View {
                     default:
                         DefiChainMainScreen(vault: vault, group: group)
                     }
+                case .agent:
+                    AgentConversationsView()
                 case .camera:
                     EmptyView()
                 }

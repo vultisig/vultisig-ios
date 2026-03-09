@@ -61,6 +61,12 @@ struct SettingsAdvancedView: View {
             )
 
             SettingToggleCell(
+                title: "AI Agent (Vulti)",
+                icon: "sparkles",
+                isEnabled: $settingsViewModel.agentEnabled
+            )
+
+            SettingToggleCell(
                 title: "transactionHistory",
                 icon: "clock.arrow.circlepath",
                 isEnabled: $settingsViewModel.txHistoryEnabled
