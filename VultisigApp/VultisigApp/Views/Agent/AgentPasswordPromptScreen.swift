@@ -29,7 +29,7 @@ struct AgentPasswordPromptScreen: View {
                         .font(.system(size: 48))
                         .foregroundStyle(Theme.colors.turquoise)
 
-                    Text(usesFastVault ? "Enter Fast Vault Password" : "Enter Vault Password")
+                    Text(usesFastVault ? "agentEnterFastVaultPassword".localized : "agentEnterVaultPassword".localized)
                         .font(.title3.bold())
                         .foregroundStyle(Theme.colors.textPrimary)
 
@@ -41,14 +41,14 @@ struct AgentPasswordPromptScreen: View {
 
                     CommonTextField(
                         text: $password,
-                        placeholder: usesFastVault ? "Fast Vault Password" : "Password",
+                        placeholder: usesFastVault ? "agentFastVaultPasswordPlaceholder".localized : "password".localized,
                         isSecure: .constant(true),
                         error: $errorMessage
                     )
                     .padding(.horizontal)
 
                     PrimaryButton(
-                        title: "Connect",
+                        title: "agentConnect".localized,
                         isLoading: isSubmitting
                     ) {
                         Task {
@@ -73,12 +73,12 @@ struct AgentPasswordPromptScreen: View {
             .toolbar {
                 #if os(iOS)
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") { dismiss() }
+                    Button("cancel".localized) { dismiss() }
                         .foregroundStyle(Theme.colors.textTertiary)
                 }
                 #else
                 ToolbarItem(placement: .automatic) {
-                    Button("Cancel") { dismiss() }
+                    Button("cancel".localized) { dismiss() }
                         .foregroundStyle(Theme.colors.textTertiary)
                 }
                 #endif
@@ -92,10 +92,10 @@ struct AgentPasswordPromptScreen: View {
 
     private var promptDescription: String {
         if usesFastVault {
-            return "Your Fast Vault password is needed to sign into the agent service using your vault."
+            return "agentFastVaultPasswordDescription".localized
         }
 
-        return "Your password is needed to sign into the agent service using your vault."
+        return "agentPasswordDescription".localized
     }
 }
 

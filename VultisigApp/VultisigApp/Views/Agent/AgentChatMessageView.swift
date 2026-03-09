@@ -125,19 +125,19 @@ struct AgentChatMessageView: View {
                             .foregroundStyle(Theme.colors.textTertiary)
 
                         if let provider = tx.provider {
-                            Text("ROUTE: \(provider)".uppercased())
+                            Text(String(format: "agentRoute".localized, provider).uppercased())
                                 .font(Theme.fonts.caption12)
                                 .foregroundStyle(Theme.colors.textTertiary)
                         }
 
-                        Text("EST. FEE: 0.001 \(tx.fromSymbol)")
+                        Text(String(format: "agentEstFee".localized, tx.fromSymbol))
                             .font(Theme.fonts.caption12)
                             .foregroundStyle(Theme.colors.textTertiary)
                     }
                 }
                 .padding(.bottom, 8)
 
-                Text(tx.needsApproval == true ? "Should I execute the swap?" : "Transaction ready to sign.")
+                Text(tx.needsApproval == true ? "agentShouldExecuteSwap".localized : "agentTransactionReady".localized)
                     .font(Theme.fonts.bodyMMedium)
                     .foregroundStyle(Theme.colors.textPrimary)
 
@@ -147,7 +147,7 @@ struct AgentChatMessageView: View {
                         Button {
                             NotificationCenter.default.post(name: .agentDidRejectTx, object: tx)
                         } label: {
-                            Text("No")
+                            Text("no".localized)
                                 .font(Theme.fonts.buttonRegularSemibold)
                                 .foregroundStyle(Theme.colors.textPrimary)
                                 .padding(.horizontal, 24)
@@ -159,7 +159,7 @@ struct AgentChatMessageView: View {
                         Button {
                             NotificationCenter.default.post(name: .agentDidAcceptTx, object: tx)
                         } label: {
-                            Text("Yes")
+                            Text("yes".localized)
                                 .font(Theme.fonts.buttonRegularSemibold)
                                 .foregroundStyle(Theme.colors.bgPrimary)
                                 .padding(.horizontal, 24)
@@ -171,7 +171,7 @@ struct AgentChatMessageView: View {
                         Button {
                             NotificationCenter.default.post(name: .agentDidAcceptTx, object: tx)
                         } label: {
-                            Text("Sign Transaction")
+                            Text("signTransaction".localized)
                                 .font(Theme.fonts.buttonRegularSemibold)
                                 .foregroundStyle(Theme.colors.bgPrimary)
                                 .padding(.horizontal, 24)
@@ -206,7 +206,7 @@ struct AgentChatMessageView: View {
                     Button {
                         openExplorer(txHash: txStatus.txHash, chain: txStatus.chain)
                     } label: {
-                        Text("View")
+                        Text("view".localized)
                             .font(Theme.fonts.caption12)
                             .foregroundStyle(Theme.colors.turquoise)
                     }
